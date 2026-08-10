@@ -2,6 +2,46 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — The macOS failure is an initialisation-order problem, not an ABI one
+
+Both hypotheses from the previous entry were wrong, and finding that out took a probe
+that separated receiving from forwarding: print the `mode` as received, and compare the
+stored "original" pointer against the replacement.
+
+The probe never got that far. It panicked on `real_open.?` — **null** — with a stack
+coming from `libxpc.dylib`.
+
+**Interposition takes effect the moment the library is loaded. The constructor that
+fills the pointer table runs much later.** Between those two points, system libraries
+are already calling `open`, and every one of those calls reached a replacement whose
+"original" was still null. `ops.zig` dutifully returned `missing()` — that is, `-1` —
+for each of them.
+
+That explains everything that looked like an ABI defect: files created with nonsense
+permissions, a state directory the engine could not read, a `mode` that seemed to be
+"something, but not what was passed". None of it was about argument passing.
+
+Linux does not show this because `.init_array` runs early enough that the shim is ready
+before anything interesting happens. `__DATA,__mod_init_func` does not offer the same
+guarantee, and the difference is invisible until a system library gets there first.
+
+### What it means for the design
+
+The `real` table is a Linux construct: it exists because `dlsym(RTLD_NEXT)` has to be
+called from somewhere. macOS never needed it — the original is directly callable — and
+routing through a stored pointer introduced a dependency on initialisation order that
+the platform does not honour.
+
+So on macOS the replacements should call the `extern` declarations directly, with no
+table and no constructor in the path. That touches all twenty-six entry points, so it
+is the next piece of work rather than a patch squeezed in here.
+
+Worth recording that the earlier standalone probe — the one that proved interposition
+works at all — did not catch this. It called `open` directly from the replacement,
+which is exactly the shape that turns out to be correct, and so it sailed past the
+problem the real shim would hit. A probe that validates a mechanism does not validate
+the way the mechanism is used.
+
 ## 2026-08-10 — Variadic handling: correct per platform, still not correct enough
 
 `@cVaStart` / `@cVaArg` work in Zig 0.16 — confirmed with a round-trip before touching
