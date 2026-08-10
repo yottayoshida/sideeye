@@ -2,6 +2,43 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — L2: the checker, and the requirement that it be shown to work
+
+The domain checker runs after each crash, in a fresh process, and its exit code is the
+verdict. On the buggy toy the report now reads:
+
+```
+invariant   built-in atomicity, and the checker
+earliest    crash point 5 of 5
+            after  unlink(/tmp/l2/state/key.json)
+            before rename(/tmp/l2/state/key.json.tmp)
+checker     falsified before the run (corrupted state -> check failed)
+```
+
+with `doctor says 'healthy' but the key is unloadable` on stderr. That is DESIGN §13's
+worked example arriving on its own — the diagnostic contradicting reality, in the world
+where the key is briefly absent. Both invariants fail in the same world, which is what
+they should do when they are describing the same bug from different angles.
+
+**Falsification runs first, and refuses to proceed without it** (DESIGN §14-13). A
+checker that cannot tell a corrupted state from a healthy one will call every world
+fine, and a PASS built on that is a statement about nothing. `/bin/true` as a checker
+is the purest case and is now an acceptance check: it must produce UNKNOWN.
+
+The way the state gets corrupted for that probe took a correction. Emptying the
+directory is the obvious method and it is wrong here: `check.sh` compares a diagnostic
+against reality, and an empty state is perfectly *consistent* — the diagnostic says
+unhealthy, nothing loads, they agree. The probe overwrites each file's contents instead,
+keeping the structure. Breaking the agreement is the point, not removing the subject.
+
+**Configuration is `--check <cmd>`, not `sideeye.toml`.** The plan called for the file;
+Zig has no toml parser and hand-writing one does not advance the spike. What L2 actually
+has to demonstrate — a fresh process after restart, an exit code as the verdict, and the
+falsification gate — is fully exercised through the flag. The three-commands-and-a-
+directory contract of DESIGN §12 is a v0.2 concern.
+
+Seven distinct detectors now fire across the acceptance suite.
+
 ## 2026-08-10 — First outside review: three ways to reach PASS while blind
 
 An adversarial review of the whole branch found six real defects, three of them capable

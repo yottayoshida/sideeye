@@ -187,6 +187,10 @@ pub const UnknownReason = enum {
     /// The trace ended mid-record. Everything after that point is unknown, including
     /// how many operations there were.
     trace_truncated,
+    /// A deliberately corrupted state did not make the checker fail, so the checker is
+    /// not testing what it claims to test. Every PASS it would go on to produce would
+    /// be a statement about nothing (DESIGN §14-13).
+    checker_not_falsified,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);

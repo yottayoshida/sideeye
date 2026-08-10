@@ -25,6 +25,7 @@ const Args = struct {
     shim: ?[]const u8 = null,
     work: []const u8 = "/tmp/sideeye-work",
     oracle: ?[]const u8 = null,
+    check: ?[]const u8 = null,
 };
 
 fn usage() void {
@@ -40,6 +41,7 @@ fn usage() void {
         \\  --shim       path to libsideeye_shim.so
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
         \\  --oracle     path to strace; the recording run is compared against it
+        \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\
@@ -102,6 +104,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v
         else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
+        else if (std.mem.eql(u8, argv[i], "--check")) args.check = v
         else setupError("unknown option");
     }
 
@@ -265,10 +268,43 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
+    // ---- checker falsification (DESIGN §14-13) -------------------------------------
+    //
+    // Run before exploring, not after: a checker that cannot tell a corrupted state
+    // from a good one will report every world as fine, and the resulting PASS would be
+    // a statement about nothing. Better to refuse than to produce a confident answer
+    // derived from an instrument that was never shown to respond.
+    var check_argv: ?[]const []const u8 = null;
+    var checker_note: []const u8 = "none configured";
+    if (args.check) |check_cmd| {
+        const cargv = splitArgs(arena, check_cmd) catch setupError("--check is empty");
+        if (cargv.len == 0) setupError("--check is empty");
+        check_argv = cargv;
+
+        if (engine.countFiles(initial) == 0)
+            unknown(.checker_not_falsified, "the state directory holds no files, so there was nothing to corrupt and the checker could not be tested");
+
+        engine.restore(initial, state_abs) catch setupError("could not restore before falsifying the checker");
+        engine.corruptState(initial, state_abs) catch setupError("could not corrupt the state for the falsification probe");
+
+        const probe = posix.runChild(gpa, cargv, &.{
+            .{ "TOY_STATE", state_abs },
+            .{ contract.env.state_dir, state_abs },
+        }) catch setupError("could not run --check");
+
+        switch (probe) {
+            .exited => |code| if (code == 0)
+                unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk"),
+            else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state"),
+        }
+        checker_note = "falsified before the run (corrupted state -> check failed)";
+    }
+
     // ---- exploration --------------------------------------------------------------
     var explored: u32 = 0;
     var failures: u32 = 0;
     var first_failure: ?engine.WorldResult = null;
+    var first_failure_l2 = false;
     var first_failure_path: [contract.max_path]u8 = undefined;
     var first_failure_path_len: usize = 0;
 
@@ -305,16 +341,36 @@ pub fn main(init: std.process.Init.Minimal) !void {
         defer crashed.deinit();
 
         explored += 1;
-        if (engine.judgeL0(initial, final, crashed)) |v| {
+
+        // The checker runs in a fresh process, after the crash, exactly as DESIGN §12
+        // requires: in-memory state hides corruption, so nothing is evaluated inside
+        // the lifetime of the process that died.
+        var l2_failed = false;
+        if (check_argv) |cargv| {
+            const ct = posix.runChild(gpa, cargv, &.{
+                .{ "TOY_STATE", state_abs },
+                .{ contract.env.state_dir, state_abs },
+            }) catch setupError("could not run --check");
+            l2_failed = switch (ct) {
+                .exited => |code| code != 0,
+                else => true,
+            };
+        }
+
+        const l0 = engine.judgeL0(initial, final, crashed);
+        if (l0 != null or l2_failed) {
             failures += 1;
             if (first_failure == null) {
-                first_failure = .{ .k = k, .term = term, .landed = landed, .violation = v };
-                const p = switch (v) {
-                    .missing => |p| p,
-                    .hybrid => |p| p,
-                };
-                @memcpy(first_failure_path[0..p.len], p);
-                first_failure_path_len = p.len;
+                first_failure = .{ .k = k, .term = term, .landed = landed, .violation = l0 };
+                first_failure_l2 = l2_failed;
+                if (l0) |v| {
+                    const p = switch (v) {
+                        .missing => |p| p,
+                        .hybrid => |p| p,
+                    };
+                    @memcpy(first_failure_path[0..p.len], p);
+                    first_failure_path_len = p.len;
+                }
             }
         }
     }
@@ -326,13 +382,24 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const after_path = if (addr.after) |a| a.path else "";
         const before = if (addr.before) |b| b.class.name() else "(end)";
         const before_path = if (addr.before) |b| b.path else "";
-        const what = switch (f.violation.?) {
+        const invariant = if (f.violation != null and first_failure_l2)
+            "built-in atomicity, and the checker"
+        else if (f.violation != null)
+            "built-in atomicity (L0)"
+        else
+            "the checker (L2)";
+        const what = if (f.violation) |v| switch (v) {
             .missing => "present before and after the operation, but gone from the crashed state",
             .hybrid => "holding neither the old nor the new content",
-        };
+        } else "the checker exited non-zero after restart";
+        const path_shown = if (first_failure_path_len > 0)
+            first_failure_path[0..first_failure_path_len]
+        else
+            "(named by the checker, not by path)";
         say(
-            \\FAIL  {d} of {d} crash worlds violated the built-in atomicity invariant
+            \\FAIL  {d} of {d} crash worlds violated an invariant
             \\
+            \\invariant   {s}
             \\earliest    crash point {d} of {d}
             \\            after  {s}({s})
             \\            before {s}({s})
@@ -340,19 +407,22 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\observed    {s}
             \\explored    {d} worlds (crash points {d} + 1 baseline)
             \\oracle      {s}
+            \\checker     {s}
             \\not tested  power loss, torn writes, concurrent processes
             \\
             \\reproduce   SIDEEYE_KILL_AT={d} LD_PRELOAD={s} <operation>
             \\
         , .{
             failures,   explored,
+            invariant,
             f.k,        n,
             after,      after_path,
             before,     before_path,
-            first_failure_path[0..first_failure_path_len],
+            path_shown,
             what,
             explored,   n,
             oracle_note,
+            checker_note,
             f.k,        shim,
         });
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
@@ -364,9 +434,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant
         \\      explored {d} worlds (crash points {d} + 1 baseline)
         \\      oracle: {s}
+        \\      checker: {s}
         \\      not tested: power loss, torn writes, concurrent processes
         \\
-    , .{ explored, explored, explored, n, oracle_note });
+    , .{ explored, explored, explored, n, oracle_note, checker_note });
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 

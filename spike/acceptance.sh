@@ -115,6 +115,60 @@ run_case "thread is UNKNOWN"     "$OUT/toy-bug"    2 "multiple_threads_detected"
 unset TOY_THREAD
 
 echo ""
+echo "=========== check 1b: the L2 checker judges the same worlds ==========="
+# check.sh cross-examines `doctor` against reality: it fails when the diagnostic claims
+# health while the key cannot be read. That is the DESIGN §12 example, and it should
+# fail in the same world L0 does.
+TOY=$OUT/toy-bug
+export TOY
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "atomicity, and the checker"; then
+    echo "ok   both invariants failed in the same world (exit 1)"
+else
+    echo "FAIL L2 on the buggy toy: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+TOY=$OUT/toy-fixed
+export TOY
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "falsified before the run"; then
+    echo "ok   the corrected toy passes, with the checker falsified first"
+else
+    echo "FAIL L2 on the corrected toy: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# A checker that cannot fail must not be trusted. /bin/true is the purest form of that.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /bin/true \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "checker_not_falsified"; then
+    echo "ok   a checker that always succeeds is refused (exit 2)"
+    reasons="$reasons checker_not_falsified"
+else
+    echo "FAIL unfalsifiable checker: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+unset TOY
+
+echo ""
 echo "=========== check 2c: the oracle fires on its own ==========="
 # toy-raw is caught by the structural detector even without an oracle, so running it
 # *with* one is how the oracle path itself gets shown to work rather than assumed to.

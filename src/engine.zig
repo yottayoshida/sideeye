@@ -380,6 +380,43 @@ pub fn judgeL0(pre: Snapshot, post: Snapshot, crashed: Snapshot) ?Violation {
     return null;
 }
 
+/// Content written over every file when probing whether a checker actually looks at
+/// the state. Distinctive enough to recognise in a report, and not valid content for
+/// anything a target is likely to store.
+pub const corruption_probe = "sideeye-corruption-probe\n";
+
+/// Overwrite every file in the state directory, leaving the structure intact.
+///
+/// This exists for DESIGN §14-13: before exploring, a deliberately corrupted state must
+/// make the checker fail, otherwise the checker is not testing what it claims and every
+/// PASS it produces afterwards is meaningless.
+///
+/// Emptying the directory would be the obvious way to corrupt it and is the wrong one.
+/// A checker that compares a diagnostic command against reality — the shape sideeye
+/// exists to encourage — finds an empty state perfectly *consistent*: the diagnostic
+/// says unhealthy, nothing loads, the two agree. Replacing contents while keeping the
+/// files in place breaks the agreement instead of removing the subject.
+pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
+    try assertSafeRoot(root);
+    for (snap.entries.items) |e| {
+        if (e.kind != .file) continue;
+        var full_buf: [contract.max_path]u8 = undefined;
+        const full = try joinZ(&full_buf, root, e.rel);
+        const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, 0o644);
+        if (fd < 0) continue;
+        _ = posix.write(fd, corruption_probe.ptr, corruption_probe.len);
+        _ = posix.close(fd);
+    }
+}
+
+pub fn countFiles(snap: Snapshot) usize {
+    var n: usize = 0;
+    for (snap.entries.items) |e| {
+        if (e.kind == .file) n += 1;
+    }
+    return n;
+}
+
 pub const WorldResult = struct {
     k: u32,
     term: posix.Term,
