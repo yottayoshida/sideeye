@@ -45,6 +45,38 @@ as a setup error that named nothing. Deleting in passes removes the bound entire
 directory of 301 entries is now in the acceptance suite, because the suite's own state
 directories hold one file and would never have noticed.
 
+**The check found a third defect in the same line.** Running the printed command in CI —
+the step added by this round — failed on macOS with exit 0 and an untouched state
+directory. Not a flaw in the check: `/tmp` is a symlink to `/private/tmp`, the engine
+resolves `--state` and the shim filters on the resolved spelling, and a target told the
+unresolved one passes *that* to `unlink` and `rename`. Only descriptor-based operations
+matched, so no crash point 5 existed to die before. Exploration never showed it because
+the engine hands the target the resolved path through the environment; the reproduce line
+cannot, because there the target finds its state its own way. The shim now accepts either
+spelling and records one, and Linux grows an explicit symlink to reach the same case.
+
+Half of that new check does not discriminate: the "same crash point" assertion stays
+green with the fix reverted, for the same reason the defect hid — the toy is handed the
+resolved path. Labelled as a baseline rather than left looking like proof.
+
+**And the check killed the suite.** Written with a `set +e` … `set -e` pair around a
+command whose failure is expected — a habit from the CI steps, which do start with
+`set -eu`. The acceptance suite does not; it runs under `set -u` alone. So the
+"restoring" `set -e` switched errexit *on* from that line, and the very next check runs
+the buggy toy, where sideeye correctly exits 1. The script ended there. What it printed
+was its last *passing* line, followed by nothing, with exit status 1 — indistinguishable
+at a glance from an ordinary failing run, and the missing summary was the only clue.
+
+Six increasingly desperate theories went by before measuring: environment leakage (no),
+a broken stdout (no), the shim loaded into the shell (no). `strace -f -e trace=%process`
+answered it in one run — the shell reaped sideeye's expected exit 1 and immediately called
+`exit_group(1)`. The suite now carries an EXIT trap that says so when it stops without
+reaching a verdict, confirmed by injecting an early exit.
+
+The shim also gained its first unit tests. It had none, which is backwards for the half
+that runs inside somebody else's process, and every defect found in it so far produced a
+plausible value rather than an error. Both new tests were confirmed by mutation.
+
 Two smaller notes. The review recommended replacing the hand-written JSON escaper with
 `std.json.Stringify.encodeJsonString`; that was checked against the pinned standard
 library and is wrong — its default options pass bytes ≥ 0x80 through unchanged, the same

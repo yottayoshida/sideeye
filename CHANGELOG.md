@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The oracle read `AT_REMOVEDIR` by searching the whole `strace` line, so a file whose *name* contained that text was classified as a directory removal. The flags argument is now parsed, including its numeric spelling.
 - Paths that are not valid UTF-8 — legal on Linux — produced a JSON document strict parsers reject, losing the counterexample entirely.
 - An oracle that could not be started was reported as the operation failing.
+- On macOS, a state directory named through a symlink — `/tmp`, always — made the `reproduce` line silently inert: the engine filters on the resolved spelling, while a target told the unresolved one passes that to `unlink` and `rename`. Operations under either spelling are now counted, and recorded under one.
 
 ### Notes
 

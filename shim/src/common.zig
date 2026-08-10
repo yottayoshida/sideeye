@@ -126,6 +126,9 @@ pub var real: struct {
 
 var state_dir_buf: [contract.max_path]u8 = undefined;
 var state_dir_len: usize = 0;
+/// A second spelling of the same directory; empty when there is only one.
+var alt_dir_buf: [contract.max_path]u8 = undefined;
+var alt_dir_len: usize = 0;
 var trace_fd: c_int = -1;
 var kill_at: u32 = 0;
 var seq: u32 = 0;
@@ -202,6 +205,17 @@ pub fn init() void {
     const normalized = contract.normalizePath(&state_dir_buf, "/", sd_slice) catch return;
     state_dir_len = normalized.len;
 
+    if (c.getenv(contract.env.state_dir_alt)) |alt| {
+        const a = std.mem.span(alt);
+        if (a.len != 0 and a.len <= contract.max_path) {
+            if (contract.normalizePath(&alt_dir_buf, "/", a)) |n| {
+                // Identical spellings would make `canonical` copy a path onto itself for
+                // no reason; only a genuinely different one is worth carrying.
+                if (!std.mem.eql(u8, n, normalized)) alt_dir_len = n.len;
+            } else |_| {}
+        }
+    }
+
     trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0o644);
     if (trace_fd < 0) return;
 
@@ -226,6 +240,36 @@ pub fn init() void {
 
 pub fn stateDir() []const u8 {
     return state_dir_buf[0..state_dir_len];
+}
+
+fn altDir() []const u8 {
+    return alt_dir_buf[0..alt_dir_len];
+}
+
+/// Is this path inside the state directory, under either spelling of it?
+pub fn isInState(path: []const u8) bool {
+    if (contract.isInsideDir(path, stateDir())) return true;
+    return alt_dir_len != 0 and contract.isInsideDir(path, altDir());
+}
+
+/// Rewrite a path under the alternative spelling into the canonical one.
+///
+/// Containment has to accept both spellings, but the *trace* must hold one: the engine
+/// compares paths textually to place crash points, and a run that recorded
+/// `/tmp/x/key.json` for the unlink and `/private/tmp/x/key.json` for the open would
+/// describe two files where the target touched one.
+///
+/// Returns `path` unchanged when it is already canonical or outside both.
+fn canonical(out: []u8, path: []const u8) []const u8 {
+    if (alt_dir_len == 0) return path;
+    if (contract.isInsideDir(path, stateDir())) return path;
+    if (!contract.isInsideDir(path, altDir())) return path;
+    const tail = path[alt_dir_len..];
+    const sd = stateDir();
+    if (sd.len + tail.len > out.len) return path;
+    @memcpy(out[0..sd.len], sd);
+    @memcpy(out[sd.len..][0..tail.len], tail);
+    return out[0 .. sd.len + tail.len];
 }
 
 /// Writes through the *real* `write`, obtained via dlsym, not through the symbol this
@@ -330,7 +374,7 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) 
     } else blk: {
         const b = fdPath(&base_buf, dirfd, &base_deleted) orelse return null;
         if (base_deleted) {
-            unresolvable.* = contract.isInsideDir(b, stateDir());
+            unresolvable.* = isInState(b);
             return null;
         }
         break :blk b;
@@ -353,7 +397,13 @@ fn noteUnresolved(path: []const u8) void {
 
 /// The single place where an operation becomes a counted event, and the single place
 /// where the process dies.
-fn observe(op: contract.OpClass, path: []const u8, aux: []const u8) void {
+fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void {
+    // Both spellings count; one is recorded.
+    var pbuf: [contract.max_path]u8 = undefined;
+    var abuf: [contract.max_path]u8 = undefined;
+    const path = canonical(&pbuf, raw_path);
+    const aux = canonical(&abuf, raw_aux);
+
     var s: u32 = 0;
     if (op.isKillPoint()) {
         if (!contract.isInsideDir(path, stateDir())) return;
@@ -433,7 +483,7 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
     // failed link read). That is evidence it is outside the state directory, not
     // uncertainty about it, so there is nothing to report.
     const resolved = fdPath(&buf, fd, &deleted) orelse return;
-    if (!contract.isInsideDir(resolved, stateDir())) return;
+    if (!isInState(resolved)) return;
     if (deleted) {
         // The file was inside the state directory and has since been unlinked. Writing
         // through such a descriptor still changes bytes the engine cannot see in any
@@ -595,4 +645,55 @@ pub fn noteBoundary(op: contract.OpClass) void {
     busy = true;
     defer busy = false;
     writeRecord(.{ .op = op, .seq = 0, .path = "", .aux = "" });
+}
+
+// ---------------------------------------------------------------------------------
+
+/// Set the two spellings directly. `init()` reads them from the environment, which a
+/// test cannot arrange without a child process.
+fn setDirsForTest(canonical_dir: []const u8, alt: []const u8) void {
+    @memcpy(state_dir_buf[0..canonical_dir.len], canonical_dir);
+    state_dir_len = canonical_dir.len;
+    @memcpy(alt_dir_buf[0..alt.len], alt);
+    alt_dir_len = alt.len;
+}
+
+test "both spellings of the state directory are inside it" {
+    setDirsForTest("/private/tmp/x/state", "/tmp/x/state");
+    defer setDirsForTest("", "");
+
+    try std.testing.expect(isInState("/private/tmp/x/state/key.json"));
+    try std.testing.expect(isInState("/tmp/x/state/key.json"));
+    // Component boundaries still hold for the alternative spelling.
+    try std.testing.expect(!isInState("/tmp/x/state2/key.json"));
+    try std.testing.expect(!isInState("/etc/passwd"));
+}
+
+test "a path under the alternative spelling is recorded under the canonical one" {
+    setDirsForTest("/private/tmp/x/state", "/tmp/x/state");
+    defer setDirsForTest("", "");
+
+    var buf: [contract.max_path]u8 = undefined;
+    // The reason this matters: the engine places crash points by comparing recorded
+    // paths textually. One file recorded under two spellings reads as two files.
+    try std.testing.expectEqualStrings(
+        "/private/tmp/x/state/key.json",
+        canonical(&buf, "/tmp/x/state/key.json"),
+    );
+    try std.testing.expectEqualStrings(
+        "/private/tmp/x/state/key.json",
+        canonical(&buf, "/private/tmp/x/state/key.json"),
+    );
+    // Outside both: returned untouched, not rewritten into the state directory.
+    try std.testing.expectEqualStrings("/etc/passwd", canonical(&buf, "/etc/passwd"));
+}
+
+test "with one spelling, canonical is the identity" {
+    setDirsForTest("/tmp/x/state", "");
+    defer setDirsForTest("", "");
+
+    var buf: [contract.max_path]u8 = undefined;
+    try std.testing.expectEqualStrings("/tmp/x/state/k", canonical(&buf, "/tmp/x/state/k"));
+    try std.testing.expect(isInState("/tmp/x/state/k"));
+    try std.testing.expect(!isInState("/private/tmp/x/state/k"));
 }

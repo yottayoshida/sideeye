@@ -37,6 +37,17 @@ pub const env = struct {
     /// Absolute path of the directory whose contents define the target's state.
     /// Operations outside it are not counted.
     pub const state_dir = "SIDEEYE_STATE_DIR";
+    /// A second spelling of the same directory, when the caller named it through a
+    /// symlink. Operations under either spelling are counted, and both are recorded
+    /// under the canonical one.
+    ///
+    /// macOS resolves `/tmp` to `/private/tmp`. A target told its state is at
+    /// `/tmp/x` passes `/tmp/x/key.json` to `unlink`, while `F_GETPATH` answers
+    /// `/private/tmp/x/key.json` for the same file: one operation, two spellings, and
+    /// a prefix test on either alone counts half of them. The engine hides this during
+    /// exploration by handing the target the resolved path, which is why it surfaced
+    /// only in the `reproduce` line — where the target finds its state its own way.
+    pub const state_dir_alt = "SIDEEYE_STATE_DIR_ALT";
     /// Absolute path the shim appends its trace to.
     pub const trace_path = "SIDEEYE_TRACE_PATH";
     /// 1-based index of the kill-point op to die immediately before.

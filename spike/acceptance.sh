@@ -11,6 +11,15 @@
 #   everything" from passing: the reasons have to come from distinct branches.
 set -u
 
+# The suite has to reach its own verdict.
+#
+# It once did not: a stray `set -e` added with a new check meant the next expected
+# non-zero exit ended the script immediately, after its last *passing* line, with no
+# failure message. The exit code was 1, which is what a failing suite looks like, so the
+# only clue was the missing summary. A run that stops early now says so out loud.
+reached_end=0
+trap '[ "$reached_end" = 1 ] || echo "ACCEPTANCE SUITE ENDED EARLY — no verdict was reached" >&2' EXIT
+
 ROOT=${SIDEEYE_ROOT:-/work}
 SIDEEYE=$ROOT/zig-out/bin/sideeye
 SHIM=$ROOT/zig-out/lib/libsideeye_shim.so
@@ -535,6 +544,54 @@ else
 fi
 
 echo ""
+echo "=========== check 2m: a state directory named through a symlink ==========="
+# The engine resolves --state, so the shim filters on the resolved spelling while a
+# target told the unresolved one hands *that* to unlink and rename. Path arguments then
+# fall outside the filter and only descriptor-based operations are counted.
+#
+# macOS meets this every time, because /tmp is a symlink to /private/tmp — and it showed
+# up only in the reproduce line, since during exploration the engine hands the target the
+# resolved path itself. Linux has to build the symlink to reach the same case.
+rm -rf /tmp/acc /tmp/acclink && mkdir -p /tmp/acc/state
+ln -s /tmp/acc /tmp/acclink
+o=$("$SIDEEYE" explore --state /tmp/acclink/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+# A baseline, not a discriminator: this stays green with the fix reverted, because the
+# engine hands the toy the resolved path through TOY_STATE and the two spellings never
+# meet. Kept so a regression in the ordinary path is visible; the assertion that pins the
+# fix is the reproduce line below, which went red without it.
+if [ "$rc" = "1" ] && echo "$o" | grep -q "crash point 5 of 5"; then
+    echo "ok   the symlinked spelling still reaches the same crash point (baseline)"
+else
+    echo "FAIL symlinked state dir: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# And the reproduce line printed for it has to work when the target is pointed at the
+# spelling the caller used, which is the only spelling the caller knows.
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acclink/state "$OUT/toy-bug" init >/dev/null 2>&1
+# No `set +e` / `set -e` pair here. This suite runs under `set -u` only, and a "restoring"
+# `set -e` would switch errexit *on* from that point — which it did: the next check runs
+# the buggy toy, sideeye correctly exits 1, and the whole suite ended there in silence,
+# after its last passing line. Commands whose failure is expected are simply not guarded.
+# shellcheck disable=SC2086
+env TOY_STATE=/tmp/acclink/state $line "$OUT/toy-bug" rotate >/dev/null 2>&1
+rc=$?
+if [ "$rc" = "137" ] && [ ! -f /tmp/acc/state/key.json ] && [ -f /tmp/acc/state/key.json.tmp ]; then
+    echo "ok   its reproduce line works through the symlink too"
+else
+    echo "FAIL symlinked reproduce line: exit $rc, state: $(ls /tmp/acc/state | tr '\n' ' ')"
+    echo "     | $line"
+    fails=$((fails + 1))
+fi
+rm -f /tmp/acclink
+
+echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to
 # run in the middle, and a later case appended to $reasons after the count had been
@@ -570,6 +627,7 @@ done
 echo "$same/3 runs produced identical reports"
 [ "$same" = "3" ] || { echo "FAIL: reports differed between runs"; fails=$((fails + 1)); }
 
+reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
     echo "ALL ACCEPTANCE CHECKS PASSED"

@@ -224,6 +224,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
         setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
     };
 
+    // The spelling the caller used, absolute but with symlinks left alone.
+    //
+    // On macOS `--state /tmp/x` resolves to `/private/tmp/x`, and a target told its state
+    // is at `/tmp/x` hands `/tmp/x/key.json` to `unlink` while `F_GETPATH` answers
+    // `/private/tmp/x/key.json` for the same file. Exploration never saw this because the
+    // engine hands the target the resolved path; the `reproduce` line did, because there
+    // the target finds its state its own way — and the result was a printed command that
+    // ran to completion and changed nothing.
+    var alt_buf: [contract.max_path]u8 = undefined;
+    const state_alt = blk: {
+        var cwd_buf: [contract.max_path]u8 = undefined;
+        const cwd = if (posix.getcwd(&cwd_buf, cwd_buf.len)) |p| std.mem.span(p) else "/";
+        const n = contract.normalizePath(&alt_buf, cwd, state) catch break :blk state_abs;
+        break :blk n;
+    };
+    const alt_differs = !std.mem.eql(u8, state_alt, state_abs);
+
     var work_buf: [contract.max_path]u8 = undefined;
     const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch setupError("--work is too long");
     _ = posix.mkdir(work_z.ptr, 0o755);
@@ -287,6 +304,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             const pairs = [_][2][]const u8{
                 .{ "TOY_STATE", state_abs },
                 .{ contract.env.state_dir, state_abs },
+                .{ contract.env.state_dir_alt, state_alt },
                 .{ contract.env.trace_path, rec_trace },
                 .{ preload_var, shim },
             };
@@ -301,6 +319,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         break :blk posix.runChild(gpa, op_argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
+            .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, rec_trace },
             .{ preload_var, shim },
         }) catch setupError("could not run --operation");
@@ -467,6 +486,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const term = posix.runChild(gpa, op_argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
+            .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, world_trace },
             .{ contract.env.kill_at, kstr },
             .{ preload_var, shim },
@@ -561,6 +581,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var repro_buf: [contract.max_path]u8 = undefined;
         const repro_trace = std.fmt.bufPrint(&repro_buf, "{s}/trace-repro.bin", .{args.work}) catch
             setupError("path too long");
+        // Only when the two spellings differ. Printing `A=x B=x` invites the reader to
+        // wonder which one matters, and the answer would be "neither, they are the same".
+        var alt_env_buf: [contract.max_path + 64]u8 = undefined;
+        const alt_env = if (alt_differs)
+            std.fmt.bufPrint(&alt_env_buf, " {s}={s}", .{ contract.env.state_dir_alt, state_alt }) catch
+                setupError("path too long")
+        else
+            "";
         say(
             \\FAIL  {d} of {d} crash worlds violated an invariant
             \\
@@ -575,7 +603,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\checker     {s}
             \\not tested  power loss, torn writes, concurrent processes
             \\
-            \\reproduce   SIDEEYE_STATE_DIR={s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} <operation>
+            \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} <operation>
             \\
         , .{
             violations, explored,
@@ -588,7 +616,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             explored,   n,
             oracle_note,
             checker_note,
-            state_abs,  repro_trace, preload_var, shim, f.k,
+            state_abs,  alt_env,     repro_trace, preload_var, shim, f.k,
         });
         if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
             .k = f.k,
