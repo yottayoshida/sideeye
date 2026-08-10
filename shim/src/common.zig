@@ -21,9 +21,14 @@ pub const c = struct {
     pub extern "c" fn raise(sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
-    /// macOS only: asks a descriptor for its path. Declared with a concrete third
-    /// argument rather than as variadic, which is how every caller uses F_GETPATH.
-    pub extern "c" fn fcntl(fd: c_int, cmd: c_int, arg: *anyopaque) c_int;
+    /// macOS only: asks a descriptor for its path.
+    ///
+    /// Variadic, as C declares it. A fixed third argument was the third instance of the
+    /// same ABI mistake in this codebase: on arm64 the buffer pointer went into a
+    /// register the callee never read, `F_GETPATH` failed, and every fd-based operation
+    /// (`write`, `fsync`, `close`) was silently dropped from the trace — macOS counted
+    /// three operations where Linux counted five, with nothing reporting an error.
+    pub extern "c" fn fcntl(fd: c_int, cmd: c_int, ...) c_int;
 };
 
 const SEEK_END: c_int = 2;

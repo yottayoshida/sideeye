@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Parity: both operating systems land on the same crash point
+
+`fcntl` was the third instance of the same mistake. Declared with a fixed third
+argument, `F_GETPATH` never received its buffer on arm64, so every fd-based operation —
+`write`, `fsync`, `close` — failed to resolve a path and was dropped. That is why macOS
+counted three operations where Linux counted five, and nothing anywhere reported an
+error.
+
+With it declared variadic:
+
+```
+                         Linux            macOS
+FAIL                     1 of 6           1 of 6
+earliest crash point     5 of 5           5 of 5
+                         after  unlink(state/key.json)
+                         before rename(state/key.json.tmp)
+explored                 6 worlds (5 + 1 baseline)
+```
+
+**Two entirely different interposition mechanisms — `LD_PRELOAD` with `dlsym` on one
+side, a `__DATA,__interpose` table on the other — landed on the same logical crash
+point.** That is what acceptance check 3 was written to demand, and it is not something
+reusing one implementation could produce.
+
+### The same mistake, three times
+
+`open` in the shim, `open` in the engine, `fcntl` in the shim. Each fixed one changed
+the symptom rather than removing it, which is what kept sending the investigation
+somewhere new:
+
+| declaration fixed | symptom before | symptom after |
+|---|---|---|
+| shim `open` | files created mode 0 | files created mode 0251 |
+| engine `open` | snapshot fails, looks like shim | works; N=3 against Linux's 5 |
+| shim `fcntl` | fd-based ops silently absent | N=5, parity |
+
+Fixed-arity declarations of variadic C functions are correct on Linux and wrong on
+arm64 macOS, and wrong in the specific way that produces plausible values rather than
+errors. Any remaining one in this codebase is a latent version of this bug; the three
+here were found by symptom, not by search. **That search is worth doing once,
+deliberately.**
+
 ## 2026-08-10 — macOS finds the bug. The defect was in the engine all along.
 
 Inverting the approach found it in one step. Instrumenting the shim showed `mode` read
