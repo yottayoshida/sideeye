@@ -248,19 +248,47 @@ fn cwdPath(out: []u8) ?[]const u8 {
 }
 
 /// Resolve a (dirfd, path) pair the way the kernel would, minus symlink following.
-fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8) ?[]const u8 {
+/// Resolve a (dirfd, path) pair, distinguishing "not our business" from "could not
+/// tell".
+///
+/// `unresolvable` is set only for the second kind. A directory descriptor that cannot
+/// name a path at all — a socket, a pipe — is proof the operation is not in the state
+/// directory, and treating that as uncertainty would make ordinary programs
+/// unjudgeable. A descriptor whose directory has been unlinked is the opposite: it
+/// named something once, and where that was decides whether this matters.
+fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) ?[]const u8 {
+    unresolvable.* = false;
     const p = std.mem.span(path);
     if (p.len == 0) return null;
-    if (p[0] == '/') return contract.normalizePath(out, "/", p) catch null;
+    if (p[0] == '/') {
+        return contract.normalizePath(out, "/", p) catch {
+            unresolvable.* = true;
+            return null;
+        };
+    }
 
     var base_buf: [contract.max_path]u8 = undefined;
     var base_deleted = false;
-    const base = if (dirfd == AT_FDCWD)
-        cwdPath(&base_buf) orelse return null
-    else
-        fdPath(&base_buf, dirfd, &base_deleted) orelse return null;
+    const base = if (dirfd == AT_FDCWD) blk: {
+        break :blk cwdPath(&base_buf) orelse {
+            // The working directory itself could not be read; a relative path cannot be
+            // placed, and it may well have been inside the state directory.
+            unresolvable.* = true;
+            return null;
+        };
+    } else blk: {
+        const b = fdPath(&base_buf, dirfd, &base_deleted) orelse return null;
+        if (base_deleted) {
+            unresolvable.* = contract.isInsideDir(b, stateDir());
+            return null;
+        }
+        break :blk b;
+    };
 
-    return contract.normalizePath(out, base, p) catch null;
+    return contract.normalizePath(out, base, p) catch {
+        unresolvable.* = true;
+        return null;
+    };
 }
 
 /// An operation that was seen but could not be placed.
@@ -305,11 +333,11 @@ pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
     defer busy = false;
 
     var buf: [contract.max_path]u8 = undefined;
-    const resolved = resolveAt(&buf, dirfd, path) orelse {
-        // A relative path whose directory descriptor could not be named. It may or may
-        // not have been inside the state directory, and that is exactly the situation
-        // that must not be resolved by assuming the harmless case.
-        noteUnresolved(std.mem.span(path));
+    var unresolvable = false;
+    const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
+        // Recorded only when the path genuinely could not be determined. A descriptor
+        // that names no path at all says the operation is elsewhere, which is an answer.
+        if (unresolvable) noteUnresolved(std.mem.span(path));
         return;
     };
     observe(op, resolved, "");
@@ -328,13 +356,14 @@ pub fn note2(
 
     var buf: [contract.max_path]u8 = undefined;
     var abuf: [contract.max_path]u8 = undefined;
-    const resolved = resolveAt(&buf, dirfd, path) orelse {
-        noteUnresolved(std.mem.span(path));
+    var unresolvable = false;
+    const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
+        if (unresolvable) noteUnresolved(std.mem.span(path));
         return;
     };
-    const aresolved = resolveAt(&abuf, adirfd, apath) orelse {
+    const aresolved = resolveAt(&abuf, adirfd, apath, &unresolvable) orelse {
         // Half of a rename is not something to record as a rename.
-        noteUnresolved(std.mem.span(apath));
+        if (unresolvable) noteUnresolved(std.mem.span(apath));
         return;
     };
     observe(op, resolved, aresolved);

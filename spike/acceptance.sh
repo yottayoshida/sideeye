@@ -165,6 +165,38 @@ else
 fi
 
 echo ""
+echo "=========== check 2f: the zero-operation path is guarded too ==========="
+# `doctor` only reads, so no crash points are recorded. That早期 PASS branch sits before
+# the exploration loop, and an operation count of zero is exactly the shape a target
+# takes when the shim could not see it — so it needs the same completeness requirement.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified"; then
+    echo "ok   zero observed operations without an oracle is UNKNOWN"
+else
+    echo "FAIL zero-op path: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# With an oracle the same run is a legitimate PASS: nothing happened, and that is known.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "no state-directory operations"; then
+    echo "ok   the same run passes once an oracle confirms it"
+else
+    echo "FAIL zero-op with oracle: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2e: restore does not follow a symlink out of the tree ==========="
 # restore() deletes the state tree once per world. A link inside it pointing outside
 # must be removed as a link, never descended into.

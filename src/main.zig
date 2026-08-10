@@ -58,6 +58,18 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
+/// Guards every path that ends in PASS.
+///
+/// FAIL does not need this — a counterexample is real whether or not the account of the
+/// run was complete. "No counterexample found" is only worth something if what was
+/// looked at is known. Both PASS exits call this, including the one for a target that
+/// appeared to perform no operations at all: that is the case where the shim saw
+/// nothing, which is precisely when the question of whether it *could* see matters most.
+fn requireCompleteness(has_oracle: bool) void {
+    if (!has_oracle)
+        unknown(.completeness_not_verified, "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle to make PASS meaningful");
+}
+
 fn setupError(detail: []const u8) noreturn {
     say("SETUP ERROR  {s}\n", .{detail});
     std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
@@ -243,6 +255,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     const n = trace.kill_point_count;
     if (n == 0) {
+        requireCompleteness(args.oracle != null);
         say(
             \\PASS  the operation performed no state-directory operations
             \\      explored 0 crash points; nothing to kill before
@@ -345,16 +358,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
-    // PASS requires a completeness check, FAIL does not.
-    //
-    // A counterexample is real whether or not the shim saw everything — the state is
-    // broken in front of us. "No counterexample found" is a different kind of claim: it
-    // is only worth anything if we know what was looked at. Without an oracle, a target
-    // that performs one ordinary operation and then bypasses libc for the rest counts as
-    // having mutated something, so `state_changed_without_ops` does not fire either, and
-    // the whole thing sails through looking clean.
-    if (args.oracle == null)
-        unknown(.completeness_not_verified, "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle to make PASS meaningful");
+    requireCompleteness(args.oracle != null);
 
     say(
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant
