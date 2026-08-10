@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Where the macOS investigation stands
+
+Four candidate explanations tested against a probe that is walked step by step toward
+the shim. Each addition kept `mode` at 0o644 and the file at `-rw-r--r--`:
+
+| added to the probe | result |
+|---|---|
+| nothing (one interposer, immediate forward) | correct |
+| a call between reading and forwarding (`getcwd`, as `note1` does) | correct |
+| forwarding through an inline wrapper | correct |
+| interposing `openat` alongside `open` | correct — and `openat` never fired, so macOS's `open` does not route through it |
+
+So the defect is not in variadic passing, not in doing work between the two calls, not
+in the wrapper, and not in `open`/`openat` interacting. What is left is the remaining
+distance between a two-symbol probe and a twenty-five-symbol shim.
+
+**The approach should invert here.** Building the probe up has cost four rounds and
+removed four hypotheses without arriving. Taking the shim apart — instrument it directly,
+print `mode` where it is read and again where it is forwarded, then remove interposers
+until the corruption stops — starts from the artefact that actually misbehaves. The
+probe has served its purpose: it established that every mechanism the shim relies on is
+sound in isolation, which is why the answer must be in the composition.
+
+Linux is unaffected by all of this and stays green throughout.
+
 ## 2026-08-10 — Narrowing: the work done between the two calls is not the problem either
 
 Second step of walking the probe toward the shim. The shim does something between
