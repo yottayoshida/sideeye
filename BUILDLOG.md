@@ -2,6 +2,23 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Same-class scan for the remaining variadic declarations
+
+Three occurrences of one mistake is enough to stop fixing them individually. Every
+`extern "c" fn` in the tree, plus every `@extern` in `darwin_libc.zig`, checked against
+whether C declares that function variadic.
+
+**23 `extern "c" fn` declarations, 25 `@extern` entries, 48 total. Two are variadic in
+C — `open` and `fcntl` — and both are now declared that way. No further instances.**
+
+The ones worth naming as deliberately *not* variadic, since they look similar:
+`creat(path, mode)`, `mkdir(path, mode)` and `execvp(file, argv)` are all fixed-arity in
+POSIX. (`execl` and friends are the variadic members of that family and are not used
+here.) `openat` appears only in the shim, already variadic; the engine never calls it.
+
+A count is recorded rather than "none found", because a scan that examined nothing
+produces the same sentence.
+
 ## 2026-08-10 — Parity: both operating systems land on the same crash point
 
 `fcntl` was the third instance of the same mistake. Declared with a fixed third
