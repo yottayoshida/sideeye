@@ -2,6 +2,32 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Variadic handling: correct per platform, still not correct enough
+
+`@cVaStart` / `@cVaArg` work in Zig 0.16 — confirmed with a round-trip before touching
+the shim — but only on some targets. For `aarch64-linux` the compiler refuses outright:
+*"disabled due to miscompilations"*. Which is itself informative: the fixed-arity form
+that has been working on Linux is the form Zig trusts there.
+
+So `open` and `openat` now use whichever declaration is correct for the target — variadic
+on macOS, fixed on Linux — selected at comptime, with the bodies otherwise identical.
+Both build. Linux is unaffected: 37 tests and the full acceptance suite still green.
+
+**macOS still gets `mode` wrong**, differently than before: files now come out `--w-r-x---`
+rather than `----------`. Something is being read, and it is not what was passed. Two
+candidates, neither confirmed:
+
+- `@cVaArg(&ap, c_uint)` may not match how the argument was promoted, though `mode_t`
+  promoting to `int` is what C promises here.
+- `common.real.open` holds a function *pointer*, and dyld's interposition rewrites
+  pointers in `__DATA`. The original may be getting rebound to the replacement — the
+  early standalone probe did not recurse, but it also did not route through a stored
+  pointer.
+
+The second explanation would mean the whole `real`-table design needs a different shape
+on macOS, so it is worth resolving properly rather than guessing. Recorded here rather
+than left as a puzzle for whoever looks next.
+
 ## 2026-08-10 — The macOS shim builds, runs, and gets the mode argument wrong
 
 The structure is in place: replacement functions live in one file (`ops.zig`) with

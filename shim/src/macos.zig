@@ -22,8 +22,8 @@ const ops = @import("ops.zig");
 
 // The real functions. Declaring them here and calling them from the same image is what
 // makes them reachable without a lookup.
-extern "c" fn open(path: [*:0]const u8, flags: c_int, mode: c_uint) c_int;
-extern "c" fn openat(dirfd: c_int, path: [*:0]const u8, flags: c_int, mode: c_uint) c_int;
+extern "c" fn open(path: [*:0]const u8, flags: c_int, ...) c_int;
+extern "c" fn openat(dirfd: c_int, path: [*:0]const u8, flags: c_int, ...) c_int;
 extern "c" fn creat(path: [*:0]const u8, mode: c_uint) c_int;
 extern "c" fn write(fd: c_int, buf: [*]const u8, count: usize) isize;
 extern "c" fn pwrite(fd: c_int, buf: [*]const u8, count: usize, offset: i64) isize;

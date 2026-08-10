@@ -15,6 +15,7 @@
 //! spike's oracle comparison is what confirms every call was seen and forwarded intact.
 
 const std = @import("std");
+const builtin = @import("builtin");
 const contract = @import("contract");
 const common = @import("common.zig");
 
@@ -27,18 +28,58 @@ fn missing() c_int {
 
 // --- kill-point ops: open family -------------------------------------------------
 
-pub fn open(path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
-    common.note1(.open, AT_FDCWD, path);
-    const f = common.real.open orelse return missing();
-    return f(path, flags, mode);
-}
+/// `open` and `openat` are the only variadic entry points here, and the right way to
+/// declare them differs by platform — not as a preference, but because each ABI makes
+/// the other form wrong.
+///
+/// On arm64 macOS variadic arguments are passed on the stack while fixed ones go in
+/// registers, so a fixed-arity declaration reads `mode` from a register the caller
+/// never wrote. Every created file came out with mode 0 and nothing reported an error.
+/// On Linux the two forms agree, and Zig refuses `@cVaStart` for this target outright
+/// ("disabled due to miscompilations") — which is its own statement about how much that
+/// ABI can be relied on.
+///
+/// So each side uses the form that is correct for it. The bodies stay identical apart
+/// from how `mode` is obtained.
+const open_impl = if (builtin.os.tag == .macos) struct {
+    pub fn f(path: [*:0]const u8, flags: c_int, ...) callconv(.c) c_int {
+        var ap = @cVaStart();
+        defer @cVaEnd(&ap);
+        // Reading it when O_CREAT is absent would consume something never pushed.
+        const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
+        common.note1(.open, AT_FDCWD, path);
+        const g = common.real.open orelse return missing();
+        return g(path, flags, mode);
+    }
+} else struct {
+    pub fn f(path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
+        common.note1(.open, AT_FDCWD, path);
+        const g = common.real.open orelse return missing();
+        return g(path, flags, mode);
+    }
+};
+
+pub const open = open_impl.f;
 
 
-pub fn openat(dirfd: c_int, path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
-    common.note1(.open, dirfd, path);
-    const f = common.real.openat orelse return missing();
-    return f(dirfd, path, flags, mode);
-}
+const openat_impl = if (builtin.os.tag == .macos) struct {
+    pub fn f(dirfd: c_int, path: [*:0]const u8, flags: c_int, ...) callconv(.c) c_int {
+        var ap = @cVaStart();
+        defer @cVaEnd(&ap);
+        const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
+        common.note1(.open, dirfd, path);
+        const g = common.real.openat orelse return missing();
+        return g(dirfd, path, flags, mode);
+    }
+} else struct {
+    pub fn f(dirfd: c_int, path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
+        common.note1(.open, dirfd, path);
+        const g = common.real.openat orelse return missing();
+        return g(dirfd, path, flags, mode);
+    }
+};
+
+pub const openat = openat_impl.f;
 
 
 pub fn creat(path: [*:0]const u8, mode: c_uint) callconv(.c) c_int {

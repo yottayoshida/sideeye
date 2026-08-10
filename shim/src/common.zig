@@ -44,12 +44,28 @@ const SIGKILL: c_int = 9;
 // like a bad flag.
 const is_darwin = builtin.os.tag == .macos;
 const O_WRONLY: c_int = 0o1;
-const O_CREAT: c_int = if (is_darwin) 0x200 else 0o100;
+/// Public because `ops.zig` has to decide whether a variadic `mode` argument is even
+/// present before reading it.
+pub const O_CREAT: c_int = if (is_darwin) 0x200 else 0o100;
 const O_APPEND: c_int = if (is_darwin) 0x8 else 0o2000;
 const O_CLOEXEC: c_int = if (is_darwin) 0x1000000 else 0o2000000;
 
-pub const OpenFn = *const fn ([*:0]const u8, c_int, c_uint) callconv(.c) c_int;
-pub const OpenatFn = *const fn (c_int, [*:0]const u8, c_int, c_uint) callconv(.c) c_int;
+// `open` and `openat` are variadic in C, and declaring them with a fixed third
+// argument is wrong in a way that only shows on some ABIs. On arm64 macOS variadic
+// arguments are passed on the stack while fixed ones go in registers, so a fixed-arity
+// declaration reads `mode` from a register the caller never wrote — every created file
+// came out with mode 0, with no error anywhere. The identical code is correct on Linux.
+// Declaring them variadic is correct on both.
+//
+// `creat` is genuinely two-argument in POSIX and stays as it is.
+pub const OpenFn = if (is_darwin)
+    *const fn ([*:0]const u8, c_int, ...) callconv(.c) c_int
+else
+    *const fn ([*:0]const u8, c_int, c_uint) callconv(.c) c_int;
+pub const OpenatFn = if (is_darwin)
+    *const fn (c_int, [*:0]const u8, c_int, ...) callconv(.c) c_int
+else
+    *const fn (c_int, [*:0]const u8, c_int, c_uint) callconv(.c) c_int;
 pub const CreatFn = *const fn ([*:0]const u8, c_uint) callconv(.c) c_int;
 pub const WriteFn = *const fn (c_int, [*]const u8, usize) callconv(.c) isize;
 pub const PwriteFn = *const fn (c_int, [*]const u8, usize, i64) callconv(.c) isize;
@@ -178,7 +194,7 @@ pub fn init() void {
     state_dir_len = normalized.len;
 
     const open_fn = real.open orelse return;
-    trace_fd = open_fn(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0o644);
+    trace_fd = open_fn(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, @as(c_uint, 0o644));
     if (trace_fd < 0) return;
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
