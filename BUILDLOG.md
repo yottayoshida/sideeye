@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — CI, green on both platforms, first run
+
+```
+linux: success    37/37 tests, ALL ACCEPTANCE CHECKS PASSED
+macos: success    37/37 tests, crash point 5 of 5, explored 6 worlds
+```
+
+The Linux job runs on **x86_64**, and everything before this had been arm64 — Docker on
+an Apple Silicon host, and the host itself. So this is the first evidence that the
+verdict holds across architectures as well as across operating systems. The libc symbol
+variants that differ between architectures were the specific risk the plan named there.
+
+Two decisions in the workflow are worth keeping:
+
+**Parity is asserted, not described.** The macOS job greps for `crash point 5 of 5` and
+`explored 6 worlds`. A sentence in the README claiming parity would have said the same
+thing while `fcntl` was quietly making macOS count three operations instead of five;
+the numbers would have caught it.
+
+**macOS asserts FAIL, not PASS.** There is no oracle on that platform, so the only claim
+it can support is that a real counterexample is found. "No counterexample" needs a
+completeness check that SIP makes unavailable, and making PASS the pass condition would
+have quietly weakened what green means. The job also checks the report labels the weaker
+claim (`NOT VERIFIED`) so that the two kinds of PASS stay distinguishable.
+
 ## 2026-08-10 — Same-class scan for the remaining variadic declarations
 
 Three occurrences of one mistake is enough to stop fixing them individually. Every
