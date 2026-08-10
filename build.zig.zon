@@ -1,0 +1,19 @@
+.{
+    .name = .sideeye,
+    .version = "0.1.0",
+    .fingerprint = 0x8264c345f73fec58, // Changing this has security and trust implications.
+    // Pinned to a tagged release, not a -dev build: ziglang.org keeps only tagged
+    // releases and the current master, so a pinned -dev version eventually 404s and
+    // CI stops being reproducible.
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "shim",
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "README.md",
+    },
+}
