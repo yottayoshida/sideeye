@@ -2,6 +2,35 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Variadic passing is not the problem: measured, at last
+
+The probe that earlier panicked before reaching its measurement now runs, because it no
+longer depends on a constructor. It reports what the replacement receives:
+
+```
+flags=0x00000601      O_WRONLY | O_CREAT | O_TRUNC
+ recv=0x000001a4      0o644
+```
+
+and the file lands as `-rw-r--r--`.
+
+So variadic passing works. `@cVaStart` and `@cVaArg` read what the caller pushed, and
+forwarding through an `@extern` pointer preserves it. Three hypotheses have now been
+eliminated in order — dyld rebinding the stored original, argument promotion, and
+initialisation order (that one was real and is fixed) — and the remaining defect is
+specific to how the shim itself is assembled, not to the platform's calling convention.
+
+That is a much smaller search space than "macOS is different", which is where this
+started. The next step is to narrow from the probe toward the shim: the probe replaces
+one symbol and calls the original immediately; the shim replaces twenty-five, runs
+`note1` in between, and routes through an inline wrapper. Whatever the difference is, it
+lives in that gap.
+
+Worth noting how little of this could have been reasoned out. Every step that moved the
+investigation forward was a measurement, and two of the three discarded hypotheses were
+plausible enough to have been "fixed" — which would have left the real defect in place
+under a layer of unnecessary changes.
+
 ## 2026-08-10 — The pointer table is gone from the macOS path; one defect remains
 
 The `real` table now exists only where it is needed. It was always a Linux construct —
