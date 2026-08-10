@@ -8,9 +8,15 @@ It breaks worlds, not inputs: same input, hostile universe.
 
 ## Status
 
-**v0.1 in development. Not released.** The engine, the shim and the acceptance suite
-exist and run on Linux and macOS; nothing is tagged and the report schema is explicitly
-experimental.
+**v0.1 — the feasibility milestone, released.** It proves the assumption everything else
+rests on: a process can be killed deterministically immediately before its k-th file
+operation, the resulting worlds can be judged, and the same run produces the same verdict
+on Linux and macOS. What it will not do is guess — a target it cannot fully observe is
+reported UNKNOWN, never as passing.
+
+The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and
+may change in any release. See [CHANGELOG.md](CHANGELOG.md) for what this version does and
+[PRD.md](PRD.md) for what comes next.
 
 | Document | What it is |
 |----------|------------|
@@ -32,22 +38,62 @@ never as passing.
   threads are all detected and refused.
 - **Keep its state in one directory**, passed with `--state`.
 
-## What it will look like
+## What it looks like
+
+Against a tool with a delete-before-rename bug — real output, not a mock-up:
 
 ```
-FAIL  case sideeye-000042
-invariant  : check.sh exited 1  (always-invariant)
-operation  : mytool rotate-key
-crash point: after unlink("state/key.json"),
-             before rename("state/key.json.tmp" -> "state/key.json")
-observed   : doctor: healthy=true / loadable key: none
-expected   : doctor's claim matches reality
-reproduce  : sideeye replay 000042        (reproduced 10/10)
-explored   : 5 crash points, 5 restarts, 5 checks
-not tested : power loss, torn writes, concurrent processes
+$ sideeye explore --state /tmp/se/state \
+    --setup "mytool init" --operation "mytool rotate" \
+    --check ./check.sh --shim ./zig-out/lib/libsideeye_shim.dylib \
+    --work /tmp/se/work --allow-unverified
+
+FAIL  1 of 6 crash worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 5 of 5
+            after  unlink(/tmp/se/state/key.json)
+            before rename(/tmp/se/state/key.json.tmp)
+path        key.json
+observed    present before and after the operation, but gone from the crashed state
+explored    6 worlds (crash points 5 + 1 baseline)
+oracle      NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
+checker     falsified before the run (corrupted state -> check failed)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/se/state SIDEEYE_TRACE_PATH=/tmp/se/work/trace-repro.bin DYLD_INSERT_LIBRARIES=./zig-out/lib/libsideeye_shim.dylib SIDEEYE_KILL_AT=5 <operation>
 ```
 
-The user's side of the contract is three commands and one directory:
+Read the last four lines first. `explored` says how much was looked at, `oracle` says
+whether anything checked that account, `checker` says the invariant was shown to be
+capable of failing before the run began, and `not tested` says what this verdict is
+silent about. A report that only said FAIL would be asking to be believed.
+
+`--json` writes the same content for a caller to branch on. Exit codes are 0 PASS,
+1 FAIL, 2 UNKNOWN, 3 SETUP ERROR — and UNKNOWN is never 0.
+
+The `check` script is where the interesting invariants live. This one cross-examines the
+tool's own diagnostic:
+
+```sh
+#!/bin/sh
+# The invariant is not "the key is readable" — a tool is allowed to be broken as long as
+# it says so. The invariant is that the claim and the observable truth agree.
+claim=$("$TOY" doctor 2>/dev/null) || claim="unhealthy"
+"$TOY" load-key >/dev/null 2>&1 && reality="loadable" || reality="unloadable"
+
+case "$claim:$reality" in
+    healthy:loadable | unhealthy:unloadable) exit 0 ;;
+    *) echo "doctor says '$claim' but the key is $reality" >&2; exit 1 ;;
+esac
+```
+
+The full version is [`spike/check.sh`](spike/check.sh). Sideeye refuses to trust a checker
+it has not seen fail: before exploring, it overwrites the state with junk and requires the
+check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS.
+
+Configuration is by flags in v0.1. The `sideeye.toml` form described in
+[DESIGN.md](DESIGN.md) §12 — three commands and one directory — arrives in v0.2:
 
 ```toml
 [world]

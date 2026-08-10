@@ -79,6 +79,9 @@ pub fn build(b: *std.Build) void {
                 .imports = &.{.{ .name = "contract", .module = contract }},
             }),
         });
+        // The package manifest, so a test can hold the version it declares against the
+        // one the binary prints. They are two hand-written strings for one number.
+        t.root_module.addAnonymousImport("build_zon", .{ .root_source_file = b.path("build.zig.zon") });
         test_step.dependOn(&b.addRunArtifact(t).step);
     }
 

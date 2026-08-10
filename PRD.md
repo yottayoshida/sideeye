@@ -29,15 +29,18 @@ Scope:
 - L0 built-in atomicity invariant (state-dir snapshot comparison). No checker support yet.
 - State snapshot/restore per world (DESIGN §14-11).
 - JSON + text reports with exploration counts; the full exit-code contract.
-- `sideeye replay <case>`.
+- Reproduction by re-running the operation with the crash point named in the report, printed as a `reproduce` line the caller can paste. `sideeye replay <case>` moves to v0.2, with the case storage it needs: this milestone listed the command while listing storage under v0.2, and a case that was never stored cannot be replayed.
 
 Acceptance:
 
 - A toy target with a planted delete-before-rename bug yields FAIL with a logical crash point, reproduced 10/10.
 - The corrected toy target yields PASS with exploration counts.
 - UNKNOWN and SETUP ERROR are demonstrably reachable — each verdict path falsified once. A gate whose failure paths were never seen firing is not a gate.
+- The printed `reproduce` line is executed by the suite, not read. It was wrong twice while looking right.
 
 Risk retired: interposition works at all; crash points are deterministic and reproducible.
+
+Delivered beyond this scope, because it cost less than deferring it: macOS interposition and OS parity (v0.3), and L2 checkers with falsification (v0.2). Those milestones keep their remaining scope.
 
 ### v0.2 — The full Define contract
 
@@ -49,7 +52,7 @@ Scope:
 - L2 checker scripts (fresh process, after restart, exit code = verdict).
 - Checker falsification before every run (corrupted state must FAIL the check, else UNKNOWN — DESIGN §14-13).
 - Shrinking: earliest/simplest failing crash point selected and reported.
-- Case storage with landing context (DESIGN §14-14).
+- Case storage with landing context (DESIGN §14-14), and `sideeye replay <case>` on top of it.
 
 Acceptance:
 

@@ -5,7 +5,10 @@ const engine = @import("engine.zig");
 const posix = @import("posix.zig");
 const oracle = @import("oracle.zig");
 
-pub const version = "0.1.0-dev";
+/// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
+/// same number, and they had already drifted: the package said 0.1.0 while `--help` said
+/// 0.1.0-dev. A test below holds them together.
+pub const version = "0.1.0";
 
 /// How the loader is told to inject the shim. Same idea, different spelling.
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
@@ -534,6 +537,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
 
         const l0 = engine.judgeL0(initial, final, crashed);
+
+        // The baseline world was never killed. If the invariant fails there, it fails
+        // without any help from sideeye — the checker rejects a state the operation
+        // produces normally, or the operation is broken on its own — and neither is a
+        // crash-consistency counterexample. Reporting it as "N of N crash worlds violated
+        // an invariant" blames crashing for something that happens without it.
+        //
+        // Only reachable through a checker: for the baseline, `crashed` *is* `final`, and
+        // judgeL0 compares every shared file against pre or post, so post always matches.
+        if (k > n and (l0 != null or l2_failed))
+            unknown(.baseline_violates_invariant, "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first");
+
         if (l0 != null or l2_failed) {
             violations += 1;
             if (first_failure == null) {
@@ -900,4 +915,15 @@ fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
         if (!std.mem.eql(u8, ae.content, be.content)) return false;
     }
     return true;
+}
+
+test "the version in build.zig.zon and the one the CLI prints are the same string" {
+    // Two hand-written copies of one number, and they had already drifted before anyone
+    // looked: the package manifest said 0.1.0 while `--help` said 0.1.0-dev. A release
+    // would have shipped a tag that disagreed with the binary it tagged.
+    const zon = @embedFile("build_zon");
+    const needle = ".version = \"";
+    const start = (std.mem.indexOf(u8, zon, needle) orelse return error.NoVersionField) + needle.len;
+    const end = std.mem.indexOfScalarPos(u8, zon, start, '"') orelse return error.Unterminated;
+    try std.testing.expectEqualStrings(zon[start..end], version);
 }

@@ -211,7 +211,11 @@ If Define ever needs more than this, that is movement toward the kill criteria i
 
 Define has three levels; the lower ones are zero-effort:
 
-- **L0 — built-in invariants, zero config.** Sideeye ships general invariants it can judge without any checker. The first is **atomicity**: after restart, the state directory must equal the pre-operation snapshot or the post-operation result — never a hybrid. An agent can point `sideeye` at an operation and get value with no configuration at all.
+- **L0 — built-in invariants, zero config.** Sideeye ships general invariants it can judge without any checker. The first is **atomicity**, stated per file rather than per directory: for every file present in *both* the pre-operation snapshot and the post-operation result, the state after restart must still contain it, holding either the old content or the new one — never a mixture of the two. An agent can point `sideeye` at an operation and get value with no configuration at all.
+
+  The obvious wording — "the state directory must equal the pre-operation snapshot or the post-operation result" — is stricter than it looks, and wrong. A program that writes atomically leaves `key.json.tmp` behind in every world killed between the `open` and the `rename`, so the directory equals neither snapshot and the *correct* program is reported as violating the built-in invariant. Files that appear in only one of the two snapshots are therefore left unconstrained.
+
+  This is deliberately narrower than the directory-equality reading, and the difference is worth naming: L0 does not catch a crash that leaves temporary files behind forever, or one that creates a file the operation never produces on a clean run. Those are real defects, and L0 stays quiet about them. They belong to a checker (L2), or to a future built-in invariant stated in terms the correct program can actually satisfy.
 - **L1 — the program's own words.** Declare a success marker (a pattern on stdout). In worlds where the marker appeared before the kill, Sideeye additionally enforces the post-success invariant (§4.1).
 - **L2 — domain checkers.** A checker script for what only the author knows — for example, cross-examining a diagnostic command:
 
