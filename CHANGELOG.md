@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Anything the target spawned outlived the run. The engine waited for the direct child only, so a grandchild kept writing into the state directory while the engine was snapshotting it, restoring it for the next world, or running the checker — the verdict described whatever happened to be on disk when the engine looked. Every child now runs in its own process group, and **descendants still in that group** are signalled once the direct child has exited. Reported as a fix rather than a feature because the hazard was present in v0.1.0, hidden only by the fact that targets which create processes are refused before any world is explored.
+
+### Notes
+
+- Confining the group is the strongest guarantee available here, and it is not a proof that nothing remains. A grandchild is reparented away when its parent dies, so `waitpid` reporting no children says nothing about it; and a descendant that calls `setsid` or `setpgid` leaves the group entirely, which nothing yet detects. Establishing that the state directory has actually stopped moving is a separate step, and it will be an observation rather than a proof.
+- Under an oracle the recording run is not timing-equivalent to an explored world: `strace -f` does not exit until its tracees do, so a stray child's work lands inside the measured window. Documented in `docs/adr/0002-boundary-events.md`.
+
 ## [0.1.0] - 2026-08-10
 
 First release. It proves the assumption the whole tool rests on — that a process can be killed deterministically immediately before its k-th file operation, and that the resulting worlds can be judged — and refuses to answer where it cannot see.

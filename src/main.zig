@@ -503,7 +503,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const landed = wtrace.kill_landed_seq != null and wtrace.kill_landed_seq.? == k;
         if (k <= n and !landed)
             unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not");
-        if (k <= n and !term.isSignal(9))
+        if (k <= n and !term.isSignal(posix.SIGKILL))
             unknown(.kill_did_not_land, "a world that should have been killed exited on its own");
         // The baseline world is not killed, so nothing above inspects it — which is
         // exactly the discarded-exit-status defect that was just fixed for the recording
