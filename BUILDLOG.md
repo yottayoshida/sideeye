@@ -2,6 +2,53 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — macOS, measured: interposition works, the oracle does not
+
+Two things the plan said would be decided by running them rather than by reading about
+them. Both are now decided.
+
+**`__DATA,__interpose` works from Zig.** A minimal library exporting one replacement for
+`open` gets it called, and the control run without injection does not. Two details:
+`@intFromPtr` cannot be evaluated at comptime for a function address, so the table holds
+`@ptrCast` pointers; and calling `open` from inside the replacement does **not** recurse.
+Same-image calls are not interposed, which means macOS needs no `dlsym(RTLD_NEXT)` dance
+at all — the original is simply callable.
+
+`fcntl(fd, F_GETPATH, buf)` supplies what `/proc/self/fd` supplies on Linux, including
+the same symlink resolution (`/etc/hosts` comes back as `/private/etc/hosts`).
+
+**`dtruss` is not usable.** SIP is enabled and DTrace refuses: *"DTrace requires
+additional privileges"*. `sudo dtruss` may work, but a tool that demands sudo to reach
+its own correctness check is not a tool anyone will run in CI. The alternatives —
+Endpoint Security and friends — need an entitlement a freely distributed binary cannot
+carry. The plan predicted this and built the structural detectors so they would not
+depend on an oracle; that decision is now load-bearing rather than precautionary.
+
+### The consequence, and the shape of the answer
+
+Requiring an oracle for PASS — the fix from the first review — would mean **macOS never
+produces a PASS at all**. FAIL would still work, so the tool would report bugs and never
+report their absence. That is not a usable half.
+
+Branching on the platform was the obvious repair and the wrong one: the whole point of
+acceptance check 3 is that the same scenario yields the same verdict on both operating
+systems, and a rule that only applies to one of them destroys the comparison.
+
+`--allow-unverified` instead. The caller states the weaker claim deliberately, and the
+report carries it:
+
+```
+oracle: NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
+```
+
+Two PASSes are now distinguishable by reading them, which is the property that matters.
+FAIL is untouched by the flag — a counterexample sitting in front of you does not become
+less real because the account of the run was incomplete — and that is asserted rather
+than assumed.
+
+Still to build: the macOS shim itself. The mechanism is proven; what remains is the
+symbol table and the `F_GETPATH` path resolution.
+
 ## 2026-08-10 — L2: the checker, and the requirement that it be shown to work
 
 The domain checker runs after each crash, in a fresh process, and its exit code is the

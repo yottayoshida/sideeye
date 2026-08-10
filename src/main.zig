@@ -26,6 +26,7 @@ const Args = struct {
     work: []const u8 = "/tmp/sideeye-work",
     oracle: ?[]const u8 = null,
     check: ?[]const u8 = null,
+    allow_unverified: bool = false,
 };
 
 fn usage() void {
@@ -42,6 +43,10 @@ fn usage() void {
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
         \\  --oracle     path to strace; the recording run is compared against it
         \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
+        \\  --allow-unverified
+        \\               accept PASS with no completeness check. Needed on macOS, which
+        \\               has no usable oracle: dtruss is blocked by SIP. The report says
+        \\               so, and the claim it makes is weaker.
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\
@@ -67,9 +72,16 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
 /// looked at is known. Both PASS exits call this, including the one for a target that
 /// appeared to perform no operations at all: that is the case where the shim saw
 /// nothing, which is precisely when the question of whether it *could* see matters most.
-fn requireCompleteness(has_oracle: bool) void {
-    if (!has_oracle)
-        unknown(.completeness_not_verified, "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle to make PASS meaningful");
+///
+/// `allow_unverified` exists because macOS has no oracle sideeye can use. `dtruss` is
+/// DTrace-based and refuses to run under System Integrity Protection, and the
+/// alternatives need an entitlement that a single distributed binary cannot carry.
+/// Rather than branch on the platform — which would break the claim that both operating
+/// systems produce the same verdict for the same scenario — the caller states the
+/// weaker claim deliberately, and the report says which claim was made.
+fn requireCompleteness(has_oracle: bool, allow_unverified: bool) void {
+    if (has_oracle or allow_unverified) return;
+    unknown(.completeness_not_verified, "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim");
 }
 
 fn setupError(detail: []const u8) noreturn {
@@ -95,7 +107,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     var args: Args = .{};
     var i: usize = 2;
-    while (i < argv.len) : (i += 2) {
+    while (i < argv.len) {
+        // Flags without a value are handled first; everything else consumes a pair.
+        if (std.mem.eql(u8, argv[i], "--allow-unverified")) {
+            args.allow_unverified = true;
+            i += 1;
+            continue;
+        }
         if (i + 1 >= argv.len) setupError("an option is missing its value");
         const v = argv[i + 1];
         if (std.mem.eql(u8, argv[i], "--state")) args.state = v
@@ -106,6 +124,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
         else if (std.mem.eql(u8, argv[i], "--check")) args.check = v
         else setupError("unknown option");
+        i += 2;
     }
 
     const state = args.state orelse setupError("--state is required");
@@ -223,7 +242,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     };
 
     // ---- oracle comparison ---------------------------------------------------------
-    var oracle_note: []const u8 = "not run (no --oracle given)";
+    // The wording matters: a PASS carrying this line is making a weaker claim than one
+    // that says the two views agreed, and a reader should be able to see which is which
+    // without knowing how the run was invoked.
+    var oracle_note: []const u8 = if (args.allow_unverified)
+        "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported"
+    else
+        "not run (no --oracle given)";
     if (args.oracle != null) {
         const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle produced no output");
         const parsed = oracle.parse(arena, text, state_abs) catch setupError("out of memory");
@@ -258,7 +283,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     const n = trace.kill_point_count;
     if (n == 0) {
-        requireCompleteness(args.oracle != null);
+        requireCompleteness(args.oracle != null, args.allow_unverified);
         say(
             \\PASS  the operation performed no state-directory operations
             \\      explored 0 crash points; nothing to kill before
@@ -428,7 +453,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
-    requireCompleteness(args.oracle != null);
+    requireCompleteness(args.oracle != null, args.allow_unverified);
 
     say(
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant

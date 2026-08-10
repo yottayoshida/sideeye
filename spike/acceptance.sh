@@ -219,6 +219,38 @@ else
 fi
 
 echo ""
+echo "=========== check 2g: the weaker claim is available, and says so ==========="
+# macOS has no oracle sideeye can use — dtruss is DTrace-based and SIP refuses it — so
+# there has to be a way to accept PASS without one. It must be asked for explicitly and
+# it must be visible in the report, otherwise the two kinds of PASS are indistinguishable.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "NOT VERIFIED"; then
+    echo "ok   --allow-unverified passes and the report labels the claim"
+else
+    echo "FAIL allow-unverified: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The buggy toy must still FAIL under the same flag: a weaker completeness claim does
+# not weaken a counterexample that is sitting right there.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+rc=$?
+if [ "$rc" = "1" ]; then
+    echo "ok   a real counterexample still FAILs under the weaker claim"
+else
+    echo "FAIL allow-unverified should not suppress FAIL: exit $rc"
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2f: the zero-operation path is guarded too ==========="
 # `doctor` only reads, so no crash points are recorded. That早期 PASS branch sits before
 # the exploration loop, and an operation count of zero is exactly the shape a target
