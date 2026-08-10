@@ -18,6 +18,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `--allow-unverified`, for platforms where no oracle is available. PASS then carries `oracle: NOT VERIFIED` in the report; FAIL is unaffected.
 - Continuous integration across both operating systems and both architectures, asserting that the verdict and the crash point match.
 
+### Fixed
+
+- Four paths that could reach PASS on a run that had not been fully observed: a discarded exit status from the recording run, a state directory resolved before it existed (so the engine and the shim filtered on different spellings of it on macOS), a recursive delete that stopped silently at 256 entries and left the previous world's files in place, and an oracle that reported agreement over zero examined lines.
+- `AT_REMOVEDIR` used the Linux constant on both platforms, so macOS recorded a directory removal as a file removal — the parity claim held everywhere except for targets that remove directories.
+- The oracle mapped `unlinkat` by name alone, disagreeing with the shim on architectures where `rmdir(3)` is implemented as `unlinkat(AT_REMOVEDIR)`, and reporting UNKNOWN for a correct target.
+- `restore` returned success after a failed write, so a world could start from a truncated file and produce a counterexample the target never caused.
+- A report longer than the output buffer printed nothing at all while still exiting non-zero.
+- The `reproduce` line omitted the environment the shim needs, so following it exactly did not reproduce anything.
+
 ### Notes
 
 - Targets that leave the supported boundary — raw syscalls, static linking, a hardened runtime, `fork`/`exec`, threads, or operations outside the modelled set — are reported UNKNOWN. They are never reported as passing.
