@@ -1,1 +1,9 @@
 .DS_Store
+
+# Zig build output
+.zig-cache/
+zig-out/
+
+# Spike artifacts: toys are rebuilt inside the container, runs are throwaway
+spike/out/
+spike/runs/

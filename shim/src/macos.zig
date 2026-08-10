@@ -1,0 +1,58 @@
+//! macOS symbol installation.
+//!
+//! dyld does not resolve by first-definition-wins the way `LD_PRELOAD` does. A library
+//! declares pairs of (replacement, original) in a `__DATA,__interpose` section and dyld
+//! rewrites calls that cross image boundaries.
+//!
+//! There is no `bindReal` here any more, and that absence is the point. Interposition
+//! is live from the moment this library loads; a constructor runs much later. A pointer
+//! table filled by that constructor is null for every call the system libraries make in
+//! between — which is exactly what happened: `libxpc` reached the replacement before
+//! `main`, found no original, and got -1 back. The replacements call the real functions
+//! directly instead (see `darwin_libc.zig`).
+//!
+//! What is *not* available here is an oracle: `dtruss` is DTrace-based and System
+//! Integrity Protection refuses it. The engine's structural detectors carry completeness
+//! alone on this platform, and a PASS requires the caller to say `--allow-unverified`.
+
+const libc = @import("darwin_libc.zig");
+const ops = @import("ops.zig");
+
+const Interpose = extern struct {
+    replacement: *const anyopaque,
+    original: *const anyopaque,
+};
+
+fn entry(replacement: anytype, original: anytype) Interpose {
+    return .{ .replacement = @ptrCast(replacement), .original = @ptrCast(original) };
+}
+
+/// `@intFromPtr` on a function address is not comptime-evaluable, so the table holds
+/// pointers rather than integers.
+export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpose{
+    entry(&ops.open, libc.open),
+    entry(&ops.openat, libc.openat),
+    entry(&ops.creat, libc.creat),
+    entry(&ops.write, libc.write),
+    entry(&ops.pwrite, libc.pwrite),
+    entry(&ops.writev, libc.writev),
+    entry(&ops.rename, libc.rename),
+    entry(&ops.renameat, libc.renameat),
+    entry(&ops.unlink, libc.unlink),
+    entry(&ops.unlinkat, libc.unlinkat),
+    entry(&ops.fsync, libc.fsync),
+    entry(&ops.close, libc.close),
+    entry(&ops.ftruncate, libc.ftruncate),
+    entry(&ops.truncate, libc.truncate),
+    entry(&ops.mkdir, libc.mkdir),
+    entry(&ops.mkdirat, libc.mkdirat),
+    entry(&ops.rmdir, libc.rmdir),
+    entry(&ops.fork, libc.fork),
+    entry(&ops.vfork, libc.vfork),
+    entry(&ops.execve, libc.execve),
+    entry(&ops.execv, libc.execv),
+    entry(&ops.execvp, libc.execvp),
+    entry(&ops.posix_spawn, libc.posix_spawn),
+    entry(&ops.posix_spawnp, libc.posix_spawnp),
+    entry(&ops.pthread_create, libc.pthread_create),
+};

@@ -1,0 +1,553 @@
+//! The single source of truth for everything the shim and the engine must agree on.
+//!
+//! Both sides import this file. There is deliberately no second definition anywhere:
+//! a trace written by the shim and read by the engine passes through the *same*
+//! encode/decode functions below. The worst failure mode of this product is
+//! "missed an operation and still reported PASS", and a contract duplicated across
+//! two components is one of the ways that happens — one side gets updated, the other
+//! does not, and the mismatch is silent. Keeping it in one file makes that impossible
+//! rather than merely detectable.
+//!
+//! Encoding rules (see DESIGN.md and the v0.1 plan):
+//!   - explicit little-endian for every integer,
+//!   - fixed-width integers, explicit tags, explicit lengths only,
+//!   - never a raw struct: `@bitCast` reinterprets *logical* bits from Zig 0.17 on,
+//!     which would silently change the byte layout across compiler versions.
+//!   - no pointers, no native-sized types, no padding, no `dev_t`/`ino_t`.
+//!
+//! Nothing here allocates. The shim runs inside the target process and must not
+//! touch the heap; the engine gets the same guarantee for free.
+
+const std = @import("std");
+
+/// Bumped whenever the trace format or the meaning of an `OpClass` changes.
+/// The engine refuses a trace whose version differs (`contract_version_mismatch`),
+/// because `contract.zig` is shared at *build* time — a stale shim binary paired
+/// with a fresh engine is a real combination that must not be misread.
+/// v2 added `OpClass.unresolved`: the shim now records that it saw an operation whose
+/// path it could not resolve, instead of dropping it. A v1 shim paired with a v2 engine
+/// would look like a target that never had such an operation, which is the difference
+/// between "nothing to report" and "something was not looked at".
+pub const contract_version: u32 = 2;
+
+pub const magic = "SIDEEYE1";
+
+/// Environment variables the engine sets and the shim reads.
+pub const env = struct {
+    /// Absolute path of the directory whose contents define the target's state.
+    /// Operations outside it are not counted.
+    pub const state_dir = "SIDEEYE_STATE_DIR";
+    /// Absolute path the shim appends its trace to.
+    pub const trace_path = "SIDEEYE_TRACE_PATH";
+    /// 1-based index of the kill-point op to die immediately before.
+    /// Absent or 0 means the recording run: observe everything, kill nothing.
+    pub const kill_at = "SIDEEYE_KILL_AT";
+};
+
+/// The exit-code contract from DESIGN.md §13. UNKNOWN is never 0: a caller that
+/// wants to treat "could not judge" as success has to write that down itself.
+pub const ExitCode = enum(u8) {
+    pass = 0,
+    fail = 1,
+    unknown = 2,
+    setup_error = 3,
+};
+
+/// Four categories, and the rule that anything outside them forces UNKNOWN.
+///
+/// The categories exist because "the set of supported operations" alone cannot
+/// describe `close`: it must be recorded (it is real, and the oracle will see it)
+/// yet must never become a crash point, since SIGKILL closes descriptors anyway —
+/// dying just before `close` and just after it leave the same state behind.
+pub const OpClass = enum(u16) {
+    // --- kill-point ops: recorded, eligible as crash points ---
+    open = 1,
+    write = 2,
+    rename = 3,
+    unlink = 4,
+    fsync = 5,
+    truncate = 6,
+    mkdir = 7,
+    rmdir = 8,
+
+    // --- lifecycle ops: recorded, never a crash point ---
+    close = 100,
+
+    // --- boundary detectors: a single occurrence forces UNKNOWN ---
+    fork = 200,
+    exec = 201,
+    thread = 202,
+
+    // --- markers written by the shim itself, never by the target ---
+    /// Written once when the shim finishes initialising. Its *absence* is how the
+    /// engine learns the shim never loaded at all (static linking, hardened runtime,
+    /// injection disabled) instead of concluding "the target performed no operations".
+    shim_ready = 900,
+    /// Written immediately before `raise(SIGKILL)`. This is the landing evidence:
+    /// proof that the process died where the engine asked it to, rather than the
+    /// engine assuming so because it set the variable.
+    kill_landed = 901,
+    /// The shim saw an operation but could not work out which path it referred to —
+    /// an unlinked descriptor, an `O_TMPFILE` handle, a `/proc/self/fd` link that no
+    /// longer resolves. Recorded rather than dropped: an operation nobody could place
+    /// is not the same as an operation that did not happen, and only the first of those
+    /// is compatible with reporting PASS.
+    unresolved = 902,
+
+    pub fn isKillPoint(self: OpClass) bool {
+        return switch (self) {
+            .open, .write, .rename, .unlink, .fsync, .truncate, .mkdir, .rmdir => true,
+            else => false,
+        };
+    }
+
+    pub fn isBoundary(self: OpClass) bool {
+        return switch (self) {
+            .fork, .exec, .thread => true,
+            else => false,
+        };
+    }
+
+    pub fn isMarker(self: OpClass) bool {
+        return switch (self) {
+            .shim_ready, .kill_landed, .unresolved => true,
+            else => false,
+        };
+    }
+
+    /// Operations that can change what is left on disk.
+    ///
+    /// `open` is deliberately excluded even though `O_CREAT` creates a file. The
+    /// engine uses this predicate for the `state_changed_without_ops` detector —
+    /// "the state directory changed but we counted no mutation" means we missed
+    /// something. Excluding `open` makes that test *stricter*, not looser: a target
+    /// that only ever opened files, yet changed the state, is exactly the kind of
+    /// blind spot worth catching. `fsync` is excluded for the same reason it is not
+    /// a verdict input — under a process crash the OS survives, so a completed write
+    /// is already visible whether or not it was synced.
+    pub fn isMutation(self: OpClass) bool {
+        return switch (self) {
+            .write, .rename, .unlink, .truncate, .mkdir, .rmdir => true,
+            else => false,
+        };
+    }
+
+    pub fn name(self: OpClass) []const u8 {
+        return switch (self) {
+            .open => "open",
+            .write => "write",
+            .rename => "rename",
+            .unlink => "unlink",
+            .fsync => "fsync",
+            .truncate => "truncate",
+            .mkdir => "mkdir",
+            .rmdir => "rmdir",
+            .close => "close",
+            .fork => "fork",
+            .exec => "exec",
+            .thread => "thread",
+            .shim_ready => "shim_ready",
+            .kill_landed => "kill_landed",
+            .unresolved => "unresolved",
+        };
+    }
+
+    pub fn fromInt(raw: u16) ?OpClass {
+        inline for (@typeInfo(OpClass).@"enum".fields) |f| {
+            if (f.value == raw) return @enumFromInt(raw);
+        }
+        return null;
+    }
+};
+
+/// Why a run could not be judged. Each value corresponds one-to-one with a distinct
+/// branch in the code, so a report naming two different reasons is evidence that two
+/// different detectors actually fired — not that someone wrote two different strings.
+pub const UnknownReason = enum {
+    no_shim_marker,
+    state_changed_without_ops,
+    contract_version_mismatch,
+    unsupported_syscall_observed,
+    /// The oracle saw a state-directory operation the shim did not record. Distinct
+    /// from `state_changed_without_ops`: that one notices the state moved while nothing
+    /// was counted, this one names the specific operation that went unseen.
+    oracle_missed_operation,
+    /// The shim recorded an operation the oracle never saw — over-counting, which
+    /// shifts every later crash point by one.
+    oracle_saw_phantom,
+    child_process_detected,
+    multiple_threads_detected,
+    unresolvable_path,
+    kill_did_not_land,
+    /// No oracle was available, so the shim's account of what happened could not be
+    /// checked against anything. Without it, a target that bypasses libc looks exactly
+    /// like one that touched no files — and the structural detectors only catch that
+    /// when the *whole* operation bypassed libc, not when part of it did.
+    completeness_not_verified,
+    /// The trace ended mid-record. Everything after that point is unknown, including
+    /// how many operations there were.
+    trace_truncated,
+    /// A deliberately corrupted state did not make the checker fail, so the checker is
+    /// not testing what it claims to test. Every PASS it would go on to produce would
+    /// be a statement about nothing (DESIGN §14-13).
+    checker_not_falsified,
+
+    pub fn name(self: UnknownReason) []const u8 {
+        return @tagName(self);
+    }
+};
+
+pub const max_path = 4096;
+
+pub const Record = struct {
+    op: OpClass,
+    /// 1-based position among kill-point ops inside the state directory.
+    /// Zero for lifecycle ops, boundary detectors and markers.
+    seq: u32,
+    path: []const u8,
+    /// Second path for two-path operations (`rename`), empty otherwise.
+    aux: []const u8,
+};
+
+pub const header_len = magic.len + 4;
+
+/// Largest byte length a single record can occupy. The shim builds a record in a
+/// stack buffer of this size and writes it with one `write(2)`, so a trace never
+/// contains a half-written record even if the process dies mid-run.
+pub const max_record_len = 2 + 4 + 4 + max_path + 4 + max_path;
+
+pub const EncodeError = error{ BufferTooSmall, PathTooLong };
+
+pub fn encodeHeader(buf: []u8) EncodeError!usize {
+    if (buf.len < header_len) return error.BufferTooSmall;
+    @memcpy(buf[0..magic.len], magic);
+    std.mem.writeInt(u32, buf[magic.len..][0..4], contract_version, .little);
+    return header_len;
+}
+
+pub fn encodeRecord(buf: []u8, rec: Record) EncodeError!usize {
+    if (rec.path.len > max_path or rec.aux.len > max_path) return error.PathTooLong;
+    const needed = 2 + 4 + 4 + rec.path.len + 4 + rec.aux.len;
+    if (buf.len < needed) return error.BufferTooSmall;
+
+    var i: usize = 0;
+    std.mem.writeInt(u16, buf[i..][0..2], @intFromEnum(rec.op), .little);
+    i += 2;
+    std.mem.writeInt(u32, buf[i..][0..4], rec.seq, .little);
+    i += 4;
+    std.mem.writeInt(u32, buf[i..][0..4], @intCast(rec.path.len), .little);
+    i += 4;
+    @memcpy(buf[i..][0..rec.path.len], rec.path);
+    i += rec.path.len;
+    std.mem.writeInt(u32, buf[i..][0..4], @intCast(rec.aux.len), .little);
+    i += 4;
+    @memcpy(buf[i..][0..rec.aux.len], rec.aux);
+    i += rec.aux.len;
+    return i;
+}
+
+pub const DecodeError = error{ Truncated, BadMagic, VersionMismatch, BadOpClass, PathTooLong };
+
+pub fn decodeHeader(bytes: []const u8) DecodeError!usize {
+    if (bytes.len < header_len) return error.Truncated;
+    if (!std.mem.eql(u8, bytes[0..magic.len], magic)) return error.BadMagic;
+    const version = std.mem.readInt(u32, bytes[magic.len..][0..4], .little);
+    if (version != contract_version) return error.VersionMismatch;
+    return header_len;
+}
+
+pub const Decoded = struct {
+    rec: Record,
+    consumed: usize,
+};
+
+/// Borrows from `bytes`; the returned slices stay valid as long as the buffer does.
+pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
+    if (bytes.len < 10) return error.Truncated;
+    var i: usize = 0;
+
+    const raw_op = std.mem.readInt(u16, bytes[i..][0..2], .little);
+    i += 2;
+    const op = OpClass.fromInt(raw_op) orelse return error.BadOpClass;
+
+    const seq = std.mem.readInt(u32, bytes[i..][0..4], .little);
+    i += 4;
+
+    const path_len = std.mem.readInt(u32, bytes[i..][0..4], .little);
+    i += 4;
+    if (path_len > max_path) return error.PathTooLong;
+    if (bytes.len < i + path_len + 4) return error.Truncated;
+    const path = bytes[i..][0..path_len];
+    i += path_len;
+
+    const aux_len = std.mem.readInt(u32, bytes[i..][0..4], .little);
+    i += 4;
+    if (aux_len > max_path) return error.PathTooLong;
+    if (bytes.len < i + aux_len) return error.Truncated;
+    const aux = bytes[i..][0..aux_len];
+    i += aux_len;
+
+    return .{
+        .rec = .{ .op = op, .seq = seq, .path = path, .aux = aux },
+        .consumed = i,
+    };
+}
+
+/// True when `path` is inside `dir`, comparing whole path components.
+///
+/// A plain prefix test would put `/tmp/state2` inside `/tmp/state`, which would make
+/// the engine count operations belonging to an unrelated directory — and, worse,
+/// miscount the ones belonging to the real one. Both paths are expected to be
+/// absolute and already normalised by the caller.
+pub fn isInsideDir(path: []const u8, dir: []const u8) bool {
+    const d = std.mem.trimEnd(u8, dir, "/");
+    if (d.len == 0) return path.len > 0 and path[0] == '/';
+    if (!std.mem.startsWith(u8, path, d)) return false;
+    if (path.len == d.len) return true;
+    return path[d.len] == '/';
+}
+
+pub const max_components = 256;
+
+pub const NormalizeError = error{ BufferTooSmall, NotAbsolute, TooDeep };
+
+/// Resolve `path` against `base` and remove `.` and `..` lexically, writing the result
+/// into `out`.
+///
+/// This never touches the filesystem, for two reasons. The shim calls it from inside an
+/// interposed function on paths that do not exist yet — a rename target, a file about to
+/// be created — where `realpath(3)` returns nothing useful. And performing I/O from
+/// inside an interposed call invites re-entrancy: the resolution itself would be observed
+/// and counted.
+///
+/// The trade-off is that a symlink in the middle of the path is not followed, so the
+/// normalised path can name a different file than the kernel will open. v0.1 treats
+/// symlinked state directories as out of bounds rather than pretending otherwise.
+pub fn normalizePath(out: []u8, base: []const u8, path: []const u8) NormalizeError![]const u8 {
+    const is_abs = path.len > 0 and path[0] == '/';
+    if (!is_abs and (base.len == 0 or base[0] != '/')) return error.NotAbsolute;
+
+    // Offsets where each surviving component starts, so `..` can pop one.
+    var starts: [max_components]usize = undefined;
+    var depth: usize = 0;
+
+    if (out.len < 1) return error.BufferTooSmall;
+    out[0] = '/';
+    var len: usize = 1;
+
+    const parts = [_][]const u8{
+        if (is_abs) path else base,
+        if (is_abs) "" else path,
+    };
+
+    for (parts) |part| {
+        var it = std.mem.splitScalar(u8, part, '/');
+        while (it.next()) |comp| {
+            if (comp.len == 0 or std.mem.eql(u8, comp, ".")) continue;
+            if (std.mem.eql(u8, comp, "..")) {
+                if (depth > 0) {
+                    depth -= 1;
+                    len = starts[depth];
+                    if (len > 1) len -= 1; // also drop the separator written before it
+                }
+                // At the root, `..` is the root. Matches how the kernel resolves it.
+                continue;
+            }
+            if (depth >= max_components) return error.TooDeep;
+            if (len > 1) {
+                if (len + 1 > out.len) return error.BufferTooSmall;
+                out[len] = '/';
+                len += 1;
+            }
+            starts[depth] = len;
+            depth += 1;
+            if (len + comp.len > out.len) return error.BufferTooSmall;
+            @memcpy(out[len..][0..comp.len], comp);
+            len += comp.len;
+        }
+    }
+
+    return out[0..len];
+}
+
+test "normalizePath resolves relative paths against the base" {
+    var buf: [max_path]u8 = undefined;
+    try std.testing.expectEqualStrings(
+        "/work/state/key.json",
+        try normalizePath(&buf, "/work/state", "key.json"),
+    );
+    try std.testing.expectEqualStrings(
+        "/work/state/key.json",
+        try normalizePath(&buf, "/work/state/", "key.json"),
+    );
+}
+
+test "normalizePath ignores the base for absolute paths" {
+    var buf: [max_path]u8 = undefined;
+    try std.testing.expectEqualStrings(
+        "/etc/passwd",
+        try normalizePath(&buf, "/work/state", "/etc/passwd"),
+    );
+}
+
+test "normalizePath removes dot and parent components" {
+    var buf: [max_path]u8 = undefined;
+    try std.testing.expectEqualStrings("/a/c", try normalizePath(&buf, "/", "/a/b/../c"));
+    try std.testing.expectEqualStrings("/a", try normalizePath(&buf, "/", "/a/./"));
+    try std.testing.expectEqualStrings("/", try normalizePath(&buf, "/", "/a/.."));
+    try std.testing.expectEqualStrings("/", try normalizePath(&buf, "/", "/a/../.."));
+    try std.testing.expectEqualStrings("/b", try normalizePath(&buf, "/a", "../b"));
+}
+
+test "normalizePath collapses repeated separators" {
+    var buf: [max_path]u8 = undefined;
+    try std.testing.expectEqualStrings("/a/b", try normalizePath(&buf, "/", "//a///b//"));
+}
+
+test "normalizePath escaping the state dir is visible to the containment test" {
+    // The pair matters: a target that opens "state/../elsewhere/f" must not be counted
+    // as touching the state directory just because the literal path starts with it.
+    var buf: [max_path]u8 = undefined;
+    const escaped = try normalizePath(&buf, "/work", "state/../elsewhere/f");
+    try std.testing.expectEqualStrings("/work/elsewhere/f", escaped);
+    try std.testing.expect(!isInsideDir(escaped, "/work/state"));
+
+    const inside = try normalizePath(&buf, "/work", "state/./sub/../key.json");
+    try std.testing.expectEqualStrings("/work/state/key.json", inside);
+    try std.testing.expect(isInsideDir(inside, "/work/state"));
+}
+
+test "normalizePath refuses a relative path with no absolute base" {
+    var buf: [max_path]u8 = undefined;
+    try std.testing.expectError(error.NotAbsolute, normalizePath(&buf, "relative", "key.json"));
+    try std.testing.expectError(error.NotAbsolute, normalizePath(&buf, "", "key.json"));
+}
+
+test "normalizePath reports a buffer that cannot hold the result" {
+    var small: [4]u8 = undefined;
+    try std.testing.expectError(error.BufferTooSmall, normalizePath(&small, "/", "/abcdefgh"));
+}
+
+test "header round-trips" {
+    var buf: [header_len]u8 = undefined;
+    const n = try encodeHeader(&buf);
+    try std.testing.expectEqual(header_len, n);
+    try std.testing.expectEqual(header_len, try decodeHeader(buf[0..n]));
+}
+
+test "header rejects a foreign magic" {
+    var buf: [header_len]u8 = undefined;
+    _ = try encodeHeader(&buf);
+    buf[0] = 'X';
+    try std.testing.expectError(error.BadMagic, decodeHeader(&buf));
+}
+
+test "header rejects a different contract version" {
+    var buf: [header_len]u8 = undefined;
+    _ = try encodeHeader(&buf);
+    std.mem.writeInt(u32, buf[magic.len..][0..4], contract_version + 1, .little);
+    try std.testing.expectError(error.VersionMismatch, decodeHeader(&buf));
+}
+
+test "record round-trips including the two-path form" {
+    var buf: [512]u8 = undefined;
+    const written = try encodeRecord(&buf, .{
+        .op = .rename,
+        .seq = 7,
+        .path = "/s/key.json.tmp",
+        .aux = "/s/key.json",
+    });
+    const got = try decodeRecord(buf[0..written]);
+    try std.testing.expectEqual(written, got.consumed);
+    try std.testing.expectEqual(OpClass.rename, got.rec.op);
+    try std.testing.expectEqual(@as(u32, 7), got.rec.seq);
+    try std.testing.expectEqualStrings("/s/key.json.tmp", got.rec.path);
+    try std.testing.expectEqualStrings("/s/key.json", got.rec.aux);
+}
+
+test "records decode back to back" {
+    var buf: [512]u8 = undefined;
+    var i: usize = 0;
+    i += try encodeRecord(buf[i..], .{ .op = .shim_ready, .seq = 0, .path = "", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .write, .seq = 1, .path = "/s/a", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .unlink, .seq = 2, .path = "/s/b", .aux = "" });
+
+    var off: usize = 0;
+    const first = try decodeRecord(buf[off..i]);
+    try std.testing.expectEqual(OpClass.shim_ready, first.rec.op);
+    off += first.consumed;
+    const second = try decodeRecord(buf[off..i]);
+    try std.testing.expectEqual(OpClass.write, second.rec.op);
+    try std.testing.expectEqualStrings("/s/a", second.rec.path);
+    off += second.consumed;
+    const third = try decodeRecord(buf[off..i]);
+    try std.testing.expectEqual(OpClass.unlink, third.rec.op);
+    off += third.consumed;
+    try std.testing.expectEqual(i, off);
+}
+
+test "a truncated record is reported, not silently accepted" {
+    var buf: [512]u8 = undefined;
+    const written = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .path = "/s/a", .aux = "" });
+    try std.testing.expectError(error.Truncated, decodeRecord(buf[0 .. written - 1]));
+}
+
+test "an unknown op class is rejected rather than guessed" {
+    var buf: [64]u8 = undefined;
+    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .path = "", .aux = "" });
+    std.mem.writeInt(u16, buf[0..2], 4242, .little);
+    try std.testing.expectError(error.BadOpClass, decodeRecord(&buf));
+}
+
+test "the encoding is little-endian regardless of host" {
+    var buf: [64]u8 = undefined;
+    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 0x01020304, .path = "", .aux = "" });
+    // op class 2 = write, as two little-endian bytes
+    try std.testing.expectEqual(@as(u8, 2), buf[0]);
+    try std.testing.expectEqual(@as(u8, 0), buf[1]);
+    // seq, least significant byte first
+    try std.testing.expectEqual(@as(u8, 0x04), buf[2]);
+    try std.testing.expectEqual(@as(u8, 0x03), buf[3]);
+    try std.testing.expectEqual(@as(u8, 0x02), buf[4]);
+    try std.testing.expectEqual(@as(u8, 0x01), buf[5]);
+}
+
+test "op categories are disjoint and cover every value" {
+    inline for (@typeInfo(OpClass).@"enum".fields) |f| {
+        const op: OpClass = @enumFromInt(f.value);
+        var categories: usize = 0;
+        if (op.isKillPoint()) categories += 1;
+        if (op.isBoundary()) categories += 1;
+        if (op.isMarker()) categories += 1;
+        if (op == .close) categories += 1; // the lifecycle category has exactly one member
+        try std.testing.expectEqual(@as(usize, 1), categories);
+    }
+}
+
+test "mutations are a strict subset of kill-point ops" {
+    inline for (@typeInfo(OpClass).@"enum".fields) |f| {
+        const op: OpClass = @enumFromInt(f.value);
+        if (op.isMutation()) try std.testing.expect(op.isKillPoint());
+    }
+    // open is observable but not treated as a mutation: excluding it makes
+    // state_changed_without_ops stricter, so assert it stays excluded.
+    try std.testing.expect(!OpClass.open.isMutation());
+    try std.testing.expect(OpClass.open.isKillPoint());
+}
+
+test "fromInt rejects values that are not op classes" {
+    try std.testing.expectEqual(OpClass.write, OpClass.fromInt(2).?);
+    try std.testing.expectEqual(@as(?OpClass, null), OpClass.fromInt(3333));
+}
+
+test "directory containment compares whole components" {
+    try std.testing.expect(isInsideDir("/tmp/state/key.json", "/tmp/state"));
+    try std.testing.expect(isInsideDir("/tmp/state", "/tmp/state"));
+    try std.testing.expect(isInsideDir("/tmp/state/", "/tmp/state"));
+    // the case a plain prefix test gets wrong
+    try std.testing.expect(!isInsideDir("/tmp/state2/key.json", "/tmp/state"));
+    try std.testing.expect(!isInsideDir("/tmp/other", "/tmp/state"));
+    // a trailing slash on the directory must not change the answer
+    try std.testing.expect(isInsideDir("/tmp/state/key.json", "/tmp/state/"));
+    try std.testing.expect(!isInsideDir("/tmp/state2/key.json", "/tmp/state/"));
+}

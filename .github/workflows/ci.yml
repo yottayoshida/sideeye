@@ -1,0 +1,109 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# The point of running both operating systems is not coverage for its own sake. v0.1
+# claims that the same scenario produces the same verdict on Linux and macOS, and the
+# two use entirely different interposition mechanisms to get there. A green Linux job
+# alone would leave that claim untested — and every macOS defect found so far was
+# invisible on Linux, including three that produced plausible values rather than errors.
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      # Reported with --summary all so the count is visible. A suite that silently
+      # collects a subset is green in exactly the same way as a complete one; that
+      # happened here once, at 19 of 24.
+      - name: Unit tests
+        run: zig build test --summary all
+
+      - name: Build engine and shim
+        run: zig build
+
+      - name: Install the completeness oracle
+        run: sudo apt-get update && sudo apt-get install -y strace
+
+      - name: Build the toy targets
+        run: sh spike/build-toys.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
+      - name: Acceptance suite
+        run: sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Unit tests
+        run: zig build test --summary all
+
+      - name: Build engine and shim
+        run: zig build
+
+      # No oracle here: dtruss is DTrace-based and System Integrity Protection refuses
+      # it. That is why this job asserts FAIL rather than PASS — a counterexample is
+      # real whether or not the account of the run was complete, while "no counter-
+      # example found" would need a completeness check this platform cannot provide.
+      - name: Interposition works and finds the planted bug
+        run: |
+          set -eu
+          mkdir -p /tmp/ci/state
+          zig cc -o /tmp/ci/toy-bug -DBUGGY=1 spike/toys/toy.c
+
+          set +e
+          out=$(./zig-out/bin/sideeye explore \
+            --state /tmp/ci/state \
+            --setup "/tmp/ci/toy-bug init" \
+            --operation "/tmp/ci/toy-bug rotate" \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci/work \
+            --allow-unverified 2>&1)
+          rc=$?
+          set -e
+
+          echo "$out"
+          [ "$rc" = "1" ] || { echo "expected FAIL (exit 1), got $rc"; exit 1; }
+          echo "$out" | grep -q "after  unlink" || { echo "crash point not named"; exit 1; }
+          echo "$out" | grep -q "before rename" || { echo "next operation not named"; exit 1; }
+          echo "$out" | grep -q "NOT VERIFIED" || { echo "weaker claim not labelled"; exit 1; }
+
+      # The parity claim, asserted rather than described: both platforms must reach the
+      # same logical crash point out of the same number of operations.
+      - name: Same crash point as Linux
+        run: |
+          set -eu
+          rm -rf /tmp/ci2 && mkdir -p /tmp/ci2/state
+          zig cc -o /tmp/ci2/toy-bug -DBUGGY=1 spike/toys/toy.c
+
+          set +e
+          out=$(./zig-out/bin/sideeye explore \
+            --state /tmp/ci2/state \
+            --setup "/tmp/ci2/toy-bug init" \
+            --operation "/tmp/ci2/toy-bug rotate" \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci2/work \
+            --allow-unverified 2>&1)
+          set -e
+
+          echo "$out" | grep -q "crash point 5 of 5" \
+            || { echo "expected crash point 5 of 5 (matching Linux)"; echo "$out"; exit 1; }
+          echo "$out" | grep -q "explored    6 worlds" \
+            || { echo "expected 6 explored worlds (5 + baseline)"; echo "$out"; exit 1; }
