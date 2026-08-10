@@ -2,6 +2,70 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — The engine judges, and the internal gate is passed
+
+All three v0.1 acceptance checks now run for real, in the container, from
+`spike/acceptance.sh`:
+
+```
+toy-bug   FAIL  crash point 5 of 5, after unlink(...key.json), before rename(...tmp)
+toy-fixed PASS  explored (5) == N (4) + 1
+toy-raw / toy-static / fork / thread   all exit 2, four *different* detectors
+determinism                            3/3 identical reports
+```
+
+The distinctness of the four reasons is the part worth keeping honest about: an
+implementation that always answers UNKNOWN passes check 2 on its own, and one that
+decides everything from `ldd` gives the same reason four times. Requiring four
+different detector names makes both of those visible.
+
+### The engine does not use std.Io
+
+`std.fs` no longer holds `File` or `Dir` in 0.16; spawning a child goes through an
+`Io` vtable; `std.process.argsAlloc` is gone. Meanwhile everything the engine needs is
+plain POSIX — walk a directory, read a file, fork, exec, wait — and the shim had
+already shown that `extern "c"` works fine. So `src/posix.zig` binds libc directly and
+the engine sits on that. ADR 0001's retreat condition ("two blocks from standard
+library churn moves the engine to Rust") is much less likely to be reached now, because
+the churning layer is not in the path.
+
+`std.c.Stat` turned out not to describe Linux's `struct stat` usably here, so entry
+kinds come from `dirent.type` instead — same information, no extra syscall, defined
+identically on both target platforms, with `opendir` as the fallback for filesystems
+that report DT_UNKNOWN.
+
+### A real bug, caught by the tool's own detector
+
+The engine first ran the target through `/bin/sh -c`. Every single run came back
+`child_process_detected` — correctly, because the shell *forks* to start the program
+and LD_PRELOAD applies to the shell too. Switching to `sh -c "exec …"` only trades the
+fork for an exec, which the same detector catches. The target has to be executed
+directly, so the engine now splits the command itself and calls `execvp`.
+
+Two things fell out of that. The boundary detector was proven to fire on a real
+occurrence rather than a contrived one. And the limitation is now explicit: arguments
+cannot contain spaces until the CLI takes an argv instead of a string.
+
+### Tests that were not running
+
+`zig build test` reported 19 passing while five more tests sat uncollected: Zig
+analyses declarations reachable from the root module, and a `test` block inside an
+imported file is not reachable that way. Naming each file with tests explicitly in
+`build.zig` took it to 26. Nothing was red at any point — the count was the only
+signal, which is the whole argument for asserting how much was measured rather than
+that the result was green.
+
+### An acceptance check that was wrong in the safe direction
+
+The first version asserted the corrected toy would report "crash points 5 + 1". It
+reports 4 + 1, because without the `unlink` it has one fewer operation — the
+implementation was right and the check was wrong. Rewritten to compare `explored`
+against `N + 1` as a relation, so it stays true whatever the toy does.
+
+Still open from the plan: the strace oracle comparison (Spike-2). The structural
+detectors carry the load in the meantime, and `toy-raw` shows they carry it — its
+trace is 30 bytes of "nothing happened" while the state directory visibly changed.
+
 ## 2026-08-10 — Spike-1: the interposition ground holds (Linux)
 
 The biggest risk retired first, as PRD.md promised. Measured, not argued.

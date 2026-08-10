@@ -19,7 +19,10 @@ pub const c = struct {
     pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
     pub extern "c" fn raise(sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
+    pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
 };
+
+const SEEK_END: c_int = 2;
 
 /// `RTLD_NEXT` is `((void *) -1)`: resolve the symbol in the search order *after* us,
 /// which is how we reach the real libc function we just replaced.
@@ -165,6 +168,19 @@ pub fn init() void {
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
 
+    // The shim writes the header, not the engine.
+    //
+    // If the engine wrote it, the version field would be one the engine had just
+    // produced and was about to read back — a check of nothing. Written here, it
+    // records which contract *this binary* was built against, which is what makes a
+    // stale shim paired with a fresh engine detectable instead of silently misread.
+    // The file is opened O_APPEND, so an offset of zero means nobody has written yet.
+    if (c.lseek(trace_fd, 0, SEEK_END) == 0) {
+        var head: [contract.header_len]u8 = undefined;
+        const n = contract.encodeHeader(&head) catch return;
+        _ = writeAll(head[0..n]);
+    }
+
     active = true;
     writeRecord(.{ .op = .shim_ready, .seq = 0, .path = stateDir(), .aux = "" });
 }
@@ -173,16 +189,24 @@ pub fn stateDir() []const u8 {
     return state_dir_buf[0..state_dir_len];
 }
 
-fn writeRecord(rec: contract.Record) void {
-    if (trace_fd < 0) return;
-    const write_fn = real.write orelse return;
-    const n = contract.encodeRecord(&record_buf, rec) catch return;
+/// Writes through the *real* `write`, obtained via dlsym, not through the symbol this
+/// library exports. The shim's own output therefore never passes its own interposition
+/// and cannot appear in the trace as if the target had produced it.
+fn writeAll(bytes: []const u8) bool {
+    if (trace_fd < 0) return false;
+    const write_fn = real.write orelse return false;
     var off: usize = 0;
-    while (off < n) {
-        const w = write_fn(trace_fd, record_buf[off..].ptr, n - off);
-        if (w <= 0) return;
+    while (off < bytes.len) {
+        const w = write_fn(trace_fd, bytes[off..].ptr, bytes.len - off);
+        if (w <= 0) return false;
         off += @intCast(w);
     }
+    return true;
+}
+
+fn writeRecord(rec: contract.Record) void {
+    const n = contract.encodeRecord(&record_buf, rec) catch return;
+    _ = writeAll(record_buf[0..n]);
 }
 
 /// Absolute path of an open descriptor, via `/proc/self/fd/N`.

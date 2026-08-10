@@ -1,0 +1,127 @@
+#!/bin/sh
+# The v0.1 acceptance checks, run for real rather than reasoned about.
+#
+# Check 1 — inside the supported boundary, judge correctly:
+#   the buggy toy FAILs, naming the crash point between unlink and rename;
+#   the corrected toy PASSes and claims explored == N+1.
+#
+# Check 2 — outside it, never report PASS:
+#   four out-of-bounds targets all exit 2, and each names a *different* detector.
+#   The last part is what stops "always answer UNKNOWN" and "one ldd check for
+#   everything" from passing: the reasons have to come from distinct branches.
+set -u
+
+ROOT=${SIDEEYE_ROOT:-/work}
+SIDEEYE=$ROOT/zig-out/bin/sideeye
+SHIM=$ROOT/zig-out/lib/libsideeye_shim.so
+OUT=$ROOT/spike/out
+
+fails=0
+reasons=""
+
+run_case() {
+    name=$1; toy=$2; want_exit=$3; want_text=$4
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    output=$("$SIDEEYE" explore \
+        --state /tmp/acc/state \
+        --setup "$toy init" \
+        --operation "$toy rotate" \
+        --shim "$SHIM" \
+        --work /tmp/acc/work 2>&1)
+    rc=$?
+
+    if [ "$rc" != "$want_exit" ]; then
+        echo "FAIL $name: exit $rc, wanted $want_exit"
+        echo "$output" | sed 's/^/     | /'
+        fails=$((fails + 1))
+        return
+    fi
+    if ! echo "$output" | grep -q "$want_text"; then
+        echo "FAIL $name: output did not contain '$want_text'"
+        echo "$output" | sed 's/^/     | /'
+        fails=$((fails + 1))
+        return
+    fi
+    echo "ok   $name (exit $rc)"
+
+    # Collect the detector name for the disjointness check below.
+    if [ "$rc" = "2" ]; then
+        r=$(echo "$output" | head -1 | awk '{print $2}')
+        reasons="$reasons $r"
+    fi
+}
+
+echo "=========== check 1: inside the boundary ==========="
+run_case "toy-bug FAILs"       "$OUT/toy-bug"   1 "crash point 5 of 5"
+run_case "  ...names the window" "$OUT/toy-bug" 1 "after  unlink"
+run_case "  ...and the next op"  "$OUT/toy-bug" 1 "before rename"
+run_case "toy-fixed PASSes"    "$OUT/toy-fixed" 0 "crash worlds satisfied"
+
+# Checked as a relation rather than a fixed number. The first version asserted
+# "crash points 5 + 1", which is the buggy toy's count — the corrected one performs no
+# unlink and so has four. A hard-coded expectation would keep needing adjustment and
+# would pass for the wrong reason if a count ever changed by accident.
+echo "     checking explored == N + 1 ..."
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+n=$(echo "$o" | grep -o 'crash points [0-9]*' | awk '{print $3}')
+e=$(echo "$o" | grep -o 'explored [0-9]*' | awk '{print $2}')
+if [ -n "$n" ] && [ -n "$e" ] && [ "$e" = "$((n + 1))" ]; then
+    echo "ok     ...explored ($e) == N ($n) + 1"
+else
+    echo "FAIL   explored=$e N=$n — the report does not account for every crash point"
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2: outside the boundary ==========="
+run_case "toy-raw is UNKNOWN"    "$OUT/toy-raw"    2 "state_changed_without_ops"
+run_case "toy-static is UNKNOWN" "$OUT/toy-static" 2 "no_shim_marker"
+
+TOY_FORK=1 export TOY_FORK
+run_case "fork is UNKNOWN"       "$OUT/toy-bug"    2 "child_process_detected"
+unset TOY_FORK
+TOY_THREAD=1 export TOY_THREAD
+run_case "thread is UNKNOWN"     "$OUT/toy-bug"    2 "multiple_threads_detected"
+unset TOY_THREAD
+
+echo ""
+echo "=========== check 2b: the four reasons are distinct ==========="
+distinct=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | sort -u | wc -l | tr -d ' ')
+total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')
+echo "detectors fired: $reasons"
+echo "distinct: $distinct of $total"
+if [ "$distinct" != "4" ]; then
+    echo "FAIL: expected four distinct detectors; a single always-UNKNOWN path would give 1"
+    fails=$((fails + 1))
+else
+    echo "ok   four different detectors fired"
+fi
+
+echo ""
+echo "=========== check 3: determinism across repeated runs ==========="
+first=""
+same=0
+i=1
+while [ $i -le 3 ]; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$("$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work /tmp/acc/work 2>&1)
+    if [ -z "$first" ]; then first=$o; same=1; else
+        [ "$o" = "$first" ] && same=$((same + 1))
+    fi
+    i=$((i + 1))
+done
+echo "$same/3 runs produced identical reports"
+[ "$same" = "3" ] || { echo "FAIL: reports differed between runs"; fails=$((fails + 1)); }
+
+echo ""
+if [ "$fails" = "0" ]; then
+    echo "ALL ACCEPTANCE CHECKS PASSED"
+    exit 0
+fi
+echo "$fails ACCEPTANCE CHECK(S) FAILED"
+exit 1

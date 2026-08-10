@@ -18,6 +18,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
+            // The engine talks to the operating system through libc directly rather
+            // than through std.Io — see src/posix.zig for why.
+            .link_libc = true,
             .imports = &.{.{ .name = "contract", .module = contract }},
         }),
     });
@@ -44,11 +47,33 @@ pub fn build(b: *std.Build) void {
 
     const test_step = b.step("test", "Run tests");
 
+    // Each file that carries tests is named explicitly.
+    //
+    // Testing through the executable's root module alone is not enough: Zig analyses
+    // declarations reachable from the root, and a `test` block in an imported file is
+    // not reachable that way. Doing that silently ran 19 tests while five more sat
+    // uncollected — green, and measuring less than it appeared to.
+    const test_sources = [_][]const u8{
+        "src/engine.zig",
+        "src/posix.zig",
+        "src/main.zig",
+    };
+
     const contract_tests = b.addTest(.{ .root_module = contract });
     test_step.dependOn(&b.addRunArtifact(contract_tests).step);
 
-    const exe_tests = b.addTest(.{ .root_module = exe.root_module });
-    test_step.dependOn(&b.addRunArtifact(exe_tests).step);
+    for (test_sources) |src| {
+        const t = b.addTest(.{
+            .root_module = b.createModule(.{
+                .root_source_file = b.path(src),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .imports = &.{.{ .name = "contract", .module = contract }},
+            }),
+        });
+        test_step.dependOn(&b.addRunArtifact(t).step);
+    }
 
     const run_step = b.step("run", "Run sideeye");
     const run_cmd = b.addRunArtifact(exe);
