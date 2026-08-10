@@ -28,7 +28,15 @@ fn say(comptime fmt: []const u8, args: anytype) void {
     var off: usize = 0;
     while (off < s.len) {
         const w = posix.write(1, s[off..].ptr, s.len - off);
-        if (w <= 0) return;
+        // A truncated report reads as a complete one — the reader has no way to know a
+        // line was cut. Nothing can be said about it on stdout, which is the stream that
+        // just failed, so it goes to stderr. Found by the same-class scan that this
+        // function's own overflow fix started.
+        if (w <= 0) {
+            const msg = "sideeye: the report was cut short; stdout stopped accepting output\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            return;
+        }
         off += @intCast(w);
     }
 }
