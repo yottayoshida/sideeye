@@ -1,5 +1,9 @@
 # sideeye
 
+<p align="center">
+  <img src="docs/sideeye.jpg" alt="Sideeye — doesn't believe it" width="360">
+</p>
+
 > *Sideeye doesn't believe it.*
 
 Sideeye is a deterministic skeptic for the coding loop. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye explores the worlds where your process died partway through, then brings back the **smallest reproducible counterexample**.
