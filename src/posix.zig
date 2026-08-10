@@ -43,6 +43,11 @@ pub extern "c" fn waitpid(pid: c_int, status: ?*c_int, options: c_int) c_int;
 pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
 pub extern "c" fn _exit(status: c_int) noreturn;
 pub extern "c" fn realpath(path: [*:0]const u8, resolved: [*]u8) ?[*:0]u8;
+pub extern "c" fn rename(old: [*:0]const u8, new: [*:0]const u8) c_int;
+pub extern "c" fn access(path: [*:0]const u8, mode: c_int) c_int;
+
+/// `access` mode: executable. Same value on Linux and the BSDs.
+pub const X_OK: c_int = 1;
 
 pub const O_RDONLY: c_int = 0;
 pub const O_WRONLY: c_int = 1;

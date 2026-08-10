@@ -107,3 +107,37 @@ jobs:
             || { echo "expected crash point 5 of 5 (matching Linux)"; echo "$out"; exit 1; }
           echo "$out" | grep -q "explored    6 worlds" \
             || { echo "expected 6 explored worlds (5 + baseline)"; echo "$out"; exit 1; }
+
+      # Run the line the report prints, on the platform where checking it by hand went
+      # wrong: the shell still had the variables exported from an earlier experiment, so
+      # an inert command appeared to work. A clean `env` cannot be fooled that way.
+      - name: The printed reproduce line reproduces
+        run: |
+          set -eu
+          rm -rf /tmp/ci3 && mkdir -p /tmp/ci3/state
+          zig cc -o /tmp/ci3/toy-bug -DBUGGY=1 spike/toys/toy.c
+
+          out=$(./zig-out/bin/sideeye explore \
+            --state /tmp/ci3/state \
+            --setup "/tmp/ci3/toy-bug init" \
+            --operation "/tmp/ci3/toy-bug rotate" \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci3/work \
+            --allow-unverified 2>&1) || true
+
+          line=$(echo "$out" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
+          [ -n "$line" ] || { echo "no reproduce line printed"; echo "$out"; exit 1; }
+
+          rm -rf /tmp/ci3/state && mkdir -p /tmp/ci3/state
+          TOY_STATE=/tmp/ci3/state /tmp/ci3/toy-bug init
+
+          set +e
+          # Unquoted deliberately: `env` must receive the VAR=VALUE words separately,
+          # exactly as a person pasting the line would.
+          env -i TOY_STATE=/tmp/ci3/state $line /tmp/ci3/toy-bug rotate
+          rc=$?
+          set -e
+
+          [ "$rc" = "137" ] || { echo "expected SIGKILL (137), got $rc"; echo "$line"; exit 1; }
+          [ ! -f /tmp/ci3/state/key.json ] || { echo "key.json survived; the kill did not land"; exit 1; }
+          [ -f /tmp/ci3/state/key.json.tmp ] || { echo "key.json.tmp missing; not the reported state"; exit 1; }

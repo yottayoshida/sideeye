@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Second review: the fix that was never run, and the scan that stopped one function short
+
+A second review of the fix branch found fifteen more defects. Three of them are worth
+recording because of *how* they survived, not what they were.
+
+**The `reproduce` line still did not reproduce.** The previous entry says it was fixed
+and verified by running it. It was neither. The line had been missing
+`SIDEEYE_STATE_DIR`; adding that left `SIDEEYE_TRACE_PATH` missing, and the shim returns
+from `init()` before arming itself when it has nowhere to write — so the printed command
+runs to completion, changes nothing, and looks like an ordinary successful run. The
+"verification" was done in a shell that still had those variables exported from an
+earlier experiment. **An environment that has been used for experiments is not a place
+to check whether a command carries its own environment.** Both the acceptance suite and
+the macOS CI job now execute the printed line with `env -i`.
+
+That mistake repeated inside this session. A local check of the same line reported
+failure, and the cause was the check: it rebuilt the state in a *different* directory
+from the one the report names in `SIDEEYE_STATE_DIR`, so every operation fell outside
+what the shim watches. Two probes in a row measured a path that did not reach the thing
+under test.
+
+**The same-class scan stopped at the two functions the finding named.** `restore` and
+`deleteTree` were fixed for silently ignoring failed writes. `corruptState`, twenty lines
+away in the same file, does the same thing for the same reason and was not looked at —
+and its failure mode is worse than the others: an uncorrupted state is one the checker is
+*right* to accept, so the run reports `checker_not_falsified`, blaming the caller's
+checker for the engine's own failed write. A scan driven by the finding's file list is
+not a scan of the class.
+
+**Two variables that had to agree, disagreeing.** The text report read a local
+`checker_note`; the JSON read a global copied from it on the success path only. An
+UNKNOWN therefore printed `unknown_reason: checker_not_falsified` beside
+`checker: none configured` — the report contradicting itself about whether a checker
+existed. Fixed by deleting one of each pair rather than by copying at the two sites where
+it showed.
+
+**A limit fixed in the wrong direction.** The previous round turned a silent truncation
+at 256 directory entries into a hard error. That removed the silence and introduced a
+worse limit: any state directory with more than 256 entries became unexplorable, reported
+as a setup error that named nothing. Deleting in passes removes the bound entirely. A
+directory of 301 entries is now in the acceptance suite, because the suite's own state
+directories hold one file and would never have noticed.
+
+Two smaller notes. The review recommended replacing the hand-written JSON escaper with
+`std.json.Stringify.encodeJsonString`; that was checked against the pinned standard
+library and is wrong — its default options pass bytes ≥ 0x80 through unchanged, the same
+defect, and `escape_unicode` decodes them with `catch unreachable`, so invalid UTF-8 is a
+panic instead of a bad document. And the new gate for a non-executable oracle appeared not
+to fire inside the container: the same 0644 file on a real filesystem is refused, but
+`access(X_OK)` over the Docker bind mount answers permissively. The gate is right; the
+mount reports something the filesystem does not.
+
 ## 2026-08-10 — Review after merge: four ways to reach PASS, and the report the caller reads
 
 A code review run against the merged branch found fifteen defects. Four of them reached

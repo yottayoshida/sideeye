@@ -25,7 +25,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The oracle mapped `unlinkat` by name alone, disagreeing with the shim on architectures where `rmdir(3)` is implemented as `unlinkat(AT_REMOVEDIR)`, and reporting UNKNOWN for a correct target.
 - `restore` returned success after a failed write, so a world could start from a truncated file and produce a counterexample the target never caused.
 - A report longer than the output buffer printed nothing at all while still exiting non-zero.
-- The `reproduce` line omitted the environment the shim needs, so following it exactly did not reproduce anything.
+- The `reproduce` line omitted the environment the shim needs, so following it exactly did not reproduce anything. It was wrong twice: adding the state directory left the trace path missing, and without that the shim never arms itself. The acceptance suite and the macOS job now run the line as printed.
+- A recursive delete that failed at 256 entries in one directory, which made any realistic state directory unexplorable. Directories are now drained in passes, and the buffer is no longer part of the contract.
+- `corruptState` ignored a failed open and a short write, so a state that had not been corrupted could be reported as one the checker wrongly accepted — the tool blaming the caller's checker for its own failure.
+- The un-killed baseline world's exit status was discarded, the same defect that was fixed for the recording run in the previous release.
+- The machine-readable report could be left half-written, or missing entirely, without saying so. It is now built in full and moved into place, and a failure is reported on stderr.
+- A setup error left any previous report in place, so a second run into the same `--json` path could be read as the first run's verdict.
+- An UNKNOWN reported zero crash points and zero explored worlds regardless of how far the run had got, and its `checker` and `oracle` fields could contradict its own `unknown_reason`.
+- The oracle read `AT_REMOVEDIR` by searching the whole `strace` line, so a file whose *name* contained that text was classified as a directory removal. The flags argument is now parsed, including its numeric spelling.
+- Paths that are not valid UTF-8 — legal on Linux — produced a JSON document strict parsers reject, losing the counterexample entirely.
+- An oracle that could not be started was reported as the operation failing.
 
 ### Notes
 

@@ -198,6 +198,11 @@ pub const UnknownReason = enum {
     /// The oracle produced no output at all. Reporting agreement between two empty
     /// views is agreement about nothing.
     oracle_saw_nothing,
+    /// The baseline world — the one run to completion without a kill — did not end the
+    /// way the recording run did. It is the same command over the same restored state,
+    /// so a different outcome means the restored state is not the state that was
+    /// recorded, and every verdict drawn from the other worlds rests on that state.
+    baseline_run_failed,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);

@@ -301,20 +301,6 @@ else
 fi
 
 echo ""
-echo "=========== check 2b: the reasons are distinct ==========="
-distinct=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | sort -u | wc -l | tr -d ' ')
-total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')
-echo "detectors fired: $reasons"
-echo "distinct: $distinct of $total"
-# A single always-UNKNOWN path would give 1 no matter how many cases ran.
-if [ "$distinct" -lt 5 ]; then
-    echo "FAIL: expected at least five distinct detectors, got $distinct"
-    fails=$((fails + 1))
-else
-    echo "ok   $distinct different detectors fired"
-fi
-
-echo ""
 echo "=========== check 2h: the remaining verdict paths fire ==========="
 # PRD's v0.1 acceptance requires every verdict path to be falsified once — "a gate whose
 # failure paths were never seen firing is not a gate". UNKNOWN is covered above by seven
@@ -349,9 +335,23 @@ fi
 
 echo ""
 echo "=========== check 2i: the machine-readable report ==========="
-# DESIGN §13: JSON for the caller, text for the reader, identical content. Checked by
-# reading the fields a caller would branch on, not by eyeballing the document — a report
-# that looks right and does not parse is worse than no report.
+# DESIGN §13: JSON for the caller, text for the reader, identical content.
+#
+# Read with a real parser, not with grep. The first version of this check extracted
+# fields with `tr | grep -o | cut`, which succeeds on a document truncated anywhere after
+# the field it wants — precisely the output a short write produces. A check for malformed
+# reports that passes on malformed reports is not a check.
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "FAIL python3 is required to parse the report; refusing to fall back to grep"
+    fails=$((fails + 1))
+fi
+
+field() { python3 -c 'import json,sys
+d=json.load(open(sys.argv[1]))
+for k in sys.argv[2].split("."):
+    d=d[k] if isinstance(d,dict) else None
+print(d)' "$1" "$2" 2>/dev/null; }
+
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
@@ -364,13 +364,13 @@ if [ ! -f /tmp/acc/report.json ]; then
 else
     # The text report says "crash point 5 of 5"; the JSON must agree, or the two forms
     # are not the same report in two shapes.
-    v=$(tr -d ' \n' < /tmp/acc/report.json | grep -o '"verdict":"[A-Z]*"' | cut -d'"' -f4)
-    cp_=$(tr -d ' \n' < /tmp/acc/report.json | grep -o '"crash_point":[0-9]*' | cut -d: -f2)
-    ex=$(tr -d ' \n' < /tmp/acc/report.json | grep -o '"explored":[0-9]*' | cut -d: -f2)
+    v=$(field /tmp/acc/report.json verdict)
+    cp_=$(field /tmp/acc/report.json earliest.crash_point)
+    ex=$(field /tmp/acc/report.json explored)
     if [ "$v" = "FAIL" ] && [ "$cp_" = "5" ] && [ "$ex" = "6" ]; then
-        echo "ok   JSON agrees with the text report (FAIL, crash point 5, explored 6)"
+        echo "ok   JSON parses and agrees with the text report (FAIL, crash point 5, explored 6)"
     else
-        echo "FAIL JSON disagrees: verdict=$v crash_point=$cp_ explored=$ex"
+        echo "FAIL JSON disagrees or does not parse: verdict=$v crash_point=$cp_ explored=$ex"
         fails=$((fails + 1))
     fi
 fi
@@ -382,12 +382,174 @@ rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
     --json /tmp/acc/unknown.json >/dev/null 2>&1
-r=$(tr -d ' \n' < /tmp/acc/unknown.json 2>/dev/null | grep -o '"unknown_reason":"[a-z_]*"' | cut -d'"' -f4)
+r=$(field /tmp/acc/unknown.json unknown_reason)
 if [ "$r" = "oracle_missed_operation" ]; then
     echo "ok   UNKNOWN reaches the JSON report, naming the detector"
 else
     echo "FAIL UNKNOWN JSON: reason=${r:-none}"
     fails=$((fails + 1))
+fi
+
+# The counts have to be the run's own, not zeroes.
+#
+# Which UNKNOWN is asked matters. The one above is raised by the oracle comparison, which
+# happens before the crash points are counted, so its `crash_points: 0` is true. The
+# checker falsification runs after counting and before exploring, so it is the case that
+# distinguishes "had not counted yet" from "counted and reported zero anyway" — the
+# writer used to hardcode both to zero and only the second is a lie.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+"$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /bin/true \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/counted.json >/dev/null 2>&1
+cpu=$(field /tmp/acc/counted.json crash_points)
+cnote=$(field /tmp/acc/counted.json checker)
+creason=$(field /tmp/acc/counted.json unknown_reason)
+if [ "$creason" = "checker_not_falsified" ] && [ -n "$cpu" ] && [ "$cpu" != "0" ]; then
+    echo "ok   UNKNOWN JSON carries the counts the run had reached ($cpu crash points)"
+else
+    echo "FAIL UNKNOWN JSON counts: reason=$creason crash_points=$cpu"
+    fails=$((fails + 1))
+fi
+# And the document must not argue with itself: a checker was configured, and the reason
+# says it failed falsification. "none configured" beside that is two facts that cannot
+# both hold.
+case "$cnote" in
+    "none configured")
+        echo "FAIL JSON says no checker was configured beside checker_not_falsified"
+        fails=$((fails + 1))
+        ;;
+    *)
+        echo "ok   the JSON agrees with itself about the checker ($cnote)"
+        ;;
+esac
+
+# A run that exits before writing must not leave the previous run's verdict behind.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+"$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/stale.json >/dev/null 2>&1
+before=$(field /tmp/acc/stale.json verdict)
+"$SIDEEYE" explore --json /tmp/acc/stale.json --no-such-flag x >/dev/null 2>&1
+after=$(field /tmp/acc/stale.json verdict)
+if [ "$before" = "FAIL" ] && [ "$after" = "SETUP_ERROR" ]; then
+    echo "ok   a setup error replaces the previous verdict instead of leaving it"
+else
+    echo "FAIL stale report: before=$before after=$after (wanted FAIL then SETUP_ERROR)"
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2j: the printed reproduce line reproduces ==========="
+# The line was wrong twice, and both times the report looked right. It omitted the state
+# directory; that was fixed without running the result, which left the trace path
+# missing — and without it the shim returns from init() before arming, so the command
+# runs to completion and changes nothing. Reading it is not enough. This runs it.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
+if [ -z "$line" ]; then
+    echo "FAIL the report printed no reproduce line"
+    fails=$((fails + 1))
+else
+    rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+    TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
+    # Unquoted on purpose: the line is a sequence of VAR=VALUE words and `env` has to
+    # receive them as separate arguments, exactly as a person pasting it would.
+    # shellcheck disable=SC2086
+    env TOY_STATE=/tmp/acc/state $line "$OUT/toy-bug" rotate >/dev/null 2>&1
+    rc=$?
+    if [ "$rc" = "137" ] && [ ! -f /tmp/acc/state/key.json ] && [ -f /tmp/acc/state/key.json.tmp ]; then
+        echo "ok   the printed line kills the target and leaves the reported state"
+    else
+        echo "FAIL reproduce line: exit $rc, state: $(ls /tmp/acc/state | tr '\n' ' ')"
+        echo "     | $line"
+        fails=$((fails + 1))
+    fi
+fi
+
+echo ""
+echo "=========== check 2k: an empty oracle is not agreement ==========="
+# The pair with check 2d. There, a target that touches nothing PASSes because a real
+# strace examined hundreds of lines and confirmed it. Here the same target meets an
+# oracle that recorded nothing: two empty views, which the comparison would call
+# agreement. It has to be UNKNOWN.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle "$ROOT/spike/empty-oracle.sh" 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "oracle_saw_nothing"; then
+    echo "ok   an oracle that observed nothing does not confirm anything (exit 2)"
+    reasons="$reasons oracle_saw_nothing"
+else
+    echo "FAIL empty oracle: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# And an oracle that cannot be started at all is a setup error, not a verdict about the
+# target. Without this the report blamed the operation for exiting non-zero when it was
+# the measuring apparatus that never ran.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/no-such-strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "oracle is not an executable"; then
+    echo "ok   a missing oracle is SETUP ERROR, not a verdict about the target"
+else
+    echo "FAIL missing oracle: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2l: a state directory larger than one buffer ==========="
+# restore() collects names into a fixed buffer before deleting. Stopping at the bound
+# left the previous world's files in place; failing at it made any directory of more than
+# 256 entries unexplorable, reported as a setup error naming nothing. Neither shows up
+# in a suite whose state directories hold one file.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-fixed" init >/dev/null 2>&1
+i=0
+while [ $i -lt 300 ]; do
+    echo "filler" > /tmp/acc/state/f$i.dat
+    i=$((i + 1))
+done
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+left=$(ls -1 /tmp/acc/state | wc -l | tr -d ' ')
+if [ "$rc" = "0" ] && [ "$left" = "301" ]; then
+    echo "ok   301 entries explored and restored intact"
+else
+    echo "FAIL large state directory: exit $rc, $left entries left of 301"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2b: the reasons are distinct ==========="
+# Last, so that every UNKNOWN-producing case above has already contributed. It used to
+# run in the middle, and a later case appended to $reasons after the count had been
+# taken — the value was written and never read, so the new detector could have collapsed
+# into an existing one without the count noticing.
+distinct=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | sort -u | wc -l | tr -d ' ')
+total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')
+echo "detectors fired: $reasons"
+echo "distinct: $distinct of $total"
+# A single always-UNKNOWN path would give 1 no matter how many cases ran.
+if [ "$distinct" -lt 9 ]; then
+    echo "FAIL: expected at least nine distinct detectors, got $distinct"
+    fails=$((fails + 1))
+else
+    echo "ok   $distinct different detectors fired"
 fi
 
 echo ""
