@@ -592,6 +592,51 @@ fi
 rm -f /tmp/acclink
 
 echo ""
+echo "=========== check 2n: a failure that needs no crash is not a counterexample ==========="
+# check.sh refuses to run without TOY, so it fails in every world — including the baseline,
+# which was never killed. Before this gate the report read "FAIL 6 of 6 crash worlds
+# violated an invariant", blaming crashing for something that happens without it. Found
+# while generating an example for the README, not by review.
+#
+# Only reachable through a checker: for the baseline world `crashed` is `final`, and
+# judgeL0 compares every shared file against pre or post, so post always matches.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+unset TOY 2>/dev/null || true
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "baseline_violates_invariant"; then
+    echo "ok   an invariant that fails without a crash is UNKNOWN, not FAIL (exit 2)"
+    reasons="$reasons baseline_violates_invariant"
+else
+    echo "FAIL baseline violation: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The control: the same checker, correctly configured, must still find the planted bug at
+# the crash point — otherwise the gate above would be indistinguishable from one that
+# swallows every L2 finding.
+TOY=$OUT/toy-bug
+export TOY
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY
+if [ "$rc" = "1" ] && echo "$o" | grep -q "crash point 5 of 5"; then
+    echo "ok   the same checker still reports the real counterexample (exit 1)"
+else
+    echo "FAIL configured checker control: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to
 # run in the middle, and a later case appended to $reasons after the count had been
@@ -602,8 +647,8 @@ total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')
 echo "detectors fired: $reasons"
 echo "distinct: $distinct of $total"
 # A single always-UNKNOWN path would give 1 no matter how many cases ran.
-if [ "$distinct" -lt 9 ]; then
-    echo "FAIL: expected at least nine distinct detectors, got $distinct"
+if [ "$distinct" -lt 10 ]; then
+    echo "FAIL: expected at least ten distinct detectors, got $distinct"
     fails=$((fails + 1))
 else
     echo "ok   $distinct different detectors fired"

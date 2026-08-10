@@ -209,6 +209,12 @@ pub const UnknownReason = enum {
     /// The oracle produced no output at all. Reporting agreement between two empty
     /// views is agreement about nothing.
     oracle_saw_nothing,
+    /// The invariant failed in the world that was never crashed. Whatever is wrong is
+    /// wrong without any help from sideeye: either the checker rejects a state the
+    /// operation produces normally, or the operation is broken on its own. Neither is a
+    /// crash-consistency counterexample, and reporting one as "N of N crash worlds
+    /// violated" would attribute to crashing something that happens without it.
+    baseline_violates_invariant,
     /// The baseline world — the one run to completion without a kill — did not end the
     /// way the recording run did. It is the same command over the same restored state,
     /// so a different outcome means the restored state is not the state that was
