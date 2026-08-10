@@ -104,8 +104,9 @@ pub fn unlink(path: [*:0]const u8) callconv(.c) c_int {
 }
 
 pub fn unlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) callconv(.c) c_int {
-    // AT_REMOVEDIR (0x200) makes this an rmdir; report it as what it does.
-    const op: contract.OpClass = if (flags & 0x200 != 0) .rmdir else .unlink;
+    // AT_REMOVEDIR makes this an rmdir; report it as what it does. The constant differs
+    // between platforms, which is why it is not spelled inline here.
+    const op: contract.OpClass = if (flags & common.AT_REMOVEDIR != 0) .rmdir else .unlink;
     common.note1(op, dirfd, path);
     return common.callUnlinkat(dirfd, path, flags);
 }

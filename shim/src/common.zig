@@ -41,6 +41,10 @@ const darwin_path_max: usize = 1024;
 pub const rtld_next: ?*anyopaque = @ptrFromInt(std.math.maxInt(usize));
 
 pub const AT_FDCWD: c_int = if (builtin.os.tag == .macos) -2 else -100;
+/// Also platform-specific, and getting it wrong is quiet: `unlinkat` with this flag is
+/// a directory removal, and misreading it records `.unlink` where Linux records
+/// `.rmdir` — a parity claim that fails only for targets which remove directories.
+pub const AT_REMOVEDIR: c_int = if (builtin.os.tag == .macos) 0x0080 else 0x200;
 const SIGKILL: c_int = 9;
 
 // These differ between the two platforms and getting them wrong is quiet: the trace

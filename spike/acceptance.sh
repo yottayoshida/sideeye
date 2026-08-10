@@ -315,6 +315,82 @@ else
 fi
 
 echo ""
+echo "=========== check 2h: the remaining verdict paths fire ==========="
+# PRD's v0.1 acceptance requires every verdict path to be falsified once — "a gate whose
+# failure paths were never seen firing is not a gate". UNKNOWN is covered above by seven
+# detectors; SETUP ERROR and the recording-run check were not, until now.
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+"$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-bug rotate" \
+    --work /tmp/acc/work --oracle /usr/bin/strace >/dev/null 2>&1
+rc=$?
+if [ "$rc" = "3" ]; then
+    echo "ok   a missing --shim is SETUP ERROR (exit 3)"
+else
+    echo "FAIL missing --shim: exit $rc, wanted 3"
+    fails=$((fails + 1))
+fi
+
+# An operation that fails immediately used to reach PASS: it wrote its shim_ready
+# marker, recorded nothing, changed nothing, and every structural detector stayed quiet.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug no-such-command" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "recording_run_failed"; then
+    echo "ok   an operation that exits non-zero is UNKNOWN, not PASS"
+    reasons="$reasons recording_run_failed"
+else
+    echo "FAIL failing operation: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2i: the machine-readable report ==========="
+# DESIGN §13: JSON for the caller, text for the reader, identical content. Checked by
+# reading the fields a caller would branch on, not by eyeballing the document — a report
+# that looks right and does not parse is worse than no report.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+"$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/report.json >/dev/null 2>&1
+
+if [ ! -f /tmp/acc/report.json ]; then
+    echo "FAIL no JSON report written"
+    fails=$((fails + 1))
+else
+    # The text report says "crash point 5 of 5"; the JSON must agree, or the two forms
+    # are not the same report in two shapes.
+    v=$(tr -d ' \n' < /tmp/acc/report.json | grep -o '"verdict":"[A-Z]*"' | cut -d'"' -f4)
+    cp_=$(tr -d ' \n' < /tmp/acc/report.json | grep -o '"crash_point":[0-9]*' | cut -d: -f2)
+    ex=$(tr -d ' \n' < /tmp/acc/report.json | grep -o '"explored":[0-9]*' | cut -d: -f2)
+    if [ "$v" = "FAIL" ] && [ "$cp_" = "5" ] && [ "$ex" = "6" ]; then
+        echo "ok   JSON agrees with the text report (FAIL, crash point 5, explored 6)"
+    else
+        echo "FAIL JSON disagrees: verdict=$v crash_point=$cp_ explored=$ex"
+        fails=$((fails + 1))
+    fi
+fi
+
+# UNKNOWN has to reach the JSON too: it is the verdict a CI caller is most likely to be
+# branching on, and it exits from deep inside the run rather than at the end.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+"$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/unknown.json >/dev/null 2>&1
+r=$(tr -d ' \n' < /tmp/acc/unknown.json 2>/dev/null | grep -o '"unknown_reason":"[a-z_]*"' | cut -d'"' -f4)
+if [ "$r" = "oracle_missed_operation" ]; then
+    echo "ok   UNKNOWN reaches the JSON report, naming the detector"
+else
+    echo "FAIL UNKNOWN JSON: reason=${r:-none}"
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 3: determinism across repeated runs ==========="
 first=""
 same=0

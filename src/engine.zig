@@ -171,7 +171,12 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
     while (posix.readdir(dirp)) |ent| {
         const name = posix.direntName(ent);
         if (std.mem.eql(u8, name, ".") or std.mem.eql(u8, name, "..")) continue;
-        if (count >= offsets.len or names_len + name.len > names_buf.len) break;
+        // Failing loudly rather than deleting a prefix. Stopping quietly would leave the
+        // previous world's files in place, and the next world would then run against
+        // contaminated state — an L2 checker would report a violation at crash point k
+        // that is really residue from k-1.
+        if (count >= offsets.len or names_len + name.len > names_buf.len)
+            return error.DeleteFailed;
         @memcpy(names_buf[names_len..][0..name.len], name);
         offsets[count] = .{ .start = names_len, .len = name.len, .dtype = ent.type };
         names_len += name.len;

@@ -31,7 +31,17 @@ const Args = struct {
     oracle: ?[]const u8 = null,
     check: ?[]const u8 = null,
     allow_unverified: bool = false,
+    json: ?[]const u8 = null,
 };
+
+/// Set once the arguments are parsed, so `unknown()` — which exits from deep inside the
+/// run — can still emit the machine-readable half of the report. DESIGN §13 requires
+/// both forms to carry identical content, and UNKNOWN is the verdict a caller is most
+/// likely to be branching on.
+var json_path: ?[]const u8 = null;
+var json_arena: ?std.mem.Allocator = null;
+var json_oracle_note: []const u8 = "not run";
+var json_checker_note: []const u8 = "none configured";
 
 fn usage() void {
     say(
@@ -47,6 +57,7 @@ fn usage() void {
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
         \\  --oracle     path to strace; the recording run is compared against it
         \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
+        \\  --json       write the machine-readable report to this path
         \\  --allow-unverified
         \\               accept PASS with no completeness check. Needed on macOS, which
         \\               has no usable oracle: dtruss is blocked by SIP. The report says
@@ -58,6 +69,8 @@ fn usage() void {
 }
 
 fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
+    if (json_path) |jp| if (json_arena) |ja|
+        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), 0, 0, 0, null, reason.name(), json_oracle_note, json_checker_note);
     say(
         \\UNKNOWN  {s}
         \\         {s}
@@ -127,9 +140,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
         else if (std.mem.eql(u8, argv[i], "--check")) args.check = v
+        else if (std.mem.eql(u8, argv[i], "--json")) args.json = v
         else setupError("unknown option");
         i += 2;
     }
+
+    json_path = args.json;
+    json_arena = arena_state.allocator();
 
     const state = args.state orelse setupError("--state is required");
     const operation = args.operation orelse setupError("--operation is required");
@@ -140,9 +157,20 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var real_buf: [contract.max_path]u8 = undefined;
     var state_z_buf: [contract.max_path]u8 = undefined;
     const state_z = std.fmt.bufPrintZ(&state_z_buf, "{s}", .{state}) catch setupError("--state is too long");
+    // Create the directory before resolving it, and refuse to continue if resolution
+    // still fails.
+    //
+    // The fallback used to be "use the argument as given", which is silently wrong on
+    // macOS: /tmp is a symlink to /private/tmp, so the engine would filter on
+    // /tmp/run/state while the shim — which asks the descriptor via F_GETPATH — sees
+    // /private/tmp/run/state. Every operation falls outside the state directory, the
+    // trace comes back empty, and the oracle cannot help because it is handed the same
+    // wrong spelling and also finds nothing. Two views agreeing on nothing looks exactly
+    // like two views agreeing.
+    _ = posix.mkdir(state_z.ptr, 0o755);
     const state_abs = blk: {
         if (posix.realpath(state_z.ptr, &real_buf)) |p| break :blk std.mem.span(p);
-        break :blk state;
+        setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
     };
 
     var work_buf: [contract.max_path]u8 = undefined;
@@ -213,7 +241,20 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ preload_var, shim },
         }) catch setupError("could not run --operation");
     };
-    _ = rec_term;
+    // The recording run's outcome decides whether its trace means anything.
+    //
+    // This used to be discarded. An operation that failed immediately — a bad argument,
+    // a missing input, EACCES — wrote its shim_ready marker, recorded no operations, and
+    // left the state untouched, so every structural detector stayed quiet and the run
+    // reported PASS over zero crash points. A partial failure was worse: five operations
+    // become two, and the exploration is confidently complete over a sequence the target
+    // never finishes. `--setup` was already checked here; the operation is the one whose
+    // result the entire trace depends on.
+    switch (rec_term) {
+        .exited => |code| if (code != 0)
+            unknown(.recording_run_failed, "the operation exited non-zero during the recording run, so the crash points derived from it describe an execution that did not happen"),
+        else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run"),
+    }
 
     var trace = engine.readTrace(gpa, rec_trace) catch setupError("could not read the trace");
     defer trace.deinit();
@@ -257,6 +298,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle produced no output");
         const parsed = oracle.parse(arena, text, state_abs) catch setupError("out of memory");
 
+        // An oracle that observed nothing agrees with a shim that observed nothing, and
+        // the report says "agreed" either way. The acceptance suite asserts by hand that
+        // more than ten lines were examined; the tool itself shipped without the check
+        // its own suite considered necessary.
+        if (parsed.lines_seen == 0)
+            unknown(.oracle_saw_nothing, "the oracle produced no output, so nothing was compared against the shim's account");
+
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name);
 
@@ -275,6 +323,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .unsupported => |name| unknown(.unsupported_syscall_observed, name),
         };
 
+        defer json_oracle_note = oracle_note;
         oracle_note = std.fmt.allocPrint(
             arena,
             "agreed on {d} operations ({d} syscall lines examined, {d} touching the state directory)",
@@ -294,6 +343,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\      not tested: power loss, torn writes, concurrent processes
             \\
         , .{});
+        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), 0, 0, 0, null, null, oracle_note, json_checker_note);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -327,6 +377,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state"),
         }
         checker_note = "falsified before the run (corrupted state -> check failed)";
+        json_checker_note = checker_note;
     }
 
     // ---- exploration --------------------------------------------------------------
@@ -454,6 +505,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
             checker_note,
             f.k,        preload_var, shim,
         });
+        if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), n, explored, failures, .{
+            .k = f.k,
+            .after = after,
+            .after_path = after_path,
+            .before = before,
+            .before_path = before_path,
+            .subject = path_shown,
+            .observed = what,
+            .invariant = invariant,
+        }, null, oracle_note, checker_note);
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
@@ -467,6 +528,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      not tested: power loss, torn writes, concurrent processes
         \\
     , .{ explored, explored, explored, n, oracle_note, checker_note });
+    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), n, explored, 0, null, null, oracle_note, checker_note);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -501,6 +563,122 @@ fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
         list.appendSlice(arena, chunk[0..@intCast(n)]) catch return null;
     }
     return list.items;
+}
+
+/// JSON for the caller, text for the reader, with identical content (DESIGN §13).
+///
+/// Hand-written rather than derived from a type: the schema is explicitly experimental
+/// until v1.0, and generating it would suggest a stability this release does not offer.
+/// Strings are escaped for the characters a path can actually contain — a quote or a
+/// backslash in a filename would otherwise produce a document that parses as something
+/// other than what was reported.
+fn jsonString(w: *std.ArrayList(u8), arena: std.mem.Allocator, s: []const u8) void {
+    w.append(arena, '"') catch return;
+    for (s) |ch| {
+        switch (ch) {
+            '"' => w.appendSlice(arena, "\\\"") catch return,
+            '\\' => w.appendSlice(arena, "\\\\") catch return,
+            '\n' => w.appendSlice(arena, "\\n") catch return,
+            '\r' => w.appendSlice(arena, "\\r") catch return,
+            '\t' => w.appendSlice(arena, "\\t") catch return,
+            else => {
+                if (ch < 0x20) {
+                    var esc: [6]u8 = undefined;
+                    const e = std.fmt.bufPrint(&esc, "\\u{x:0>4}", .{ch}) catch continue;
+                    w.appendSlice(arena, e) catch return;
+                } else {
+                    w.append(arena, ch) catch return;
+                }
+            },
+        }
+    }
+    w.append(arena, '"') catch return;
+}
+
+fn writeJsonReport(
+    arena: std.mem.Allocator,
+    path: []const u8,
+    verdict: []const u8,
+    exit_code: u8,
+    n: u32,
+    explored: u32,
+    failures: u32,
+    detail: ?struct {
+        k: u32,
+        after: []const u8,
+        after_path: []const u8,
+        before: []const u8,
+        before_path: []const u8,
+        subject: []const u8,
+        observed: []const u8,
+        invariant: []const u8,
+    },
+    unknown_reason: ?[]const u8,
+    oracle_note: []const u8,
+    checker_note: []const u8,
+) void {
+    var buf: std.ArrayList(u8) = .empty;
+    const w = &buf;
+
+    w.appendSlice(arena, "{\n  \"schema\": \"sideeye/report\",\n  \"schema_status\": \"experimental\",\n") catch return;
+    w.appendSlice(arena, "  \"contract_version\": ") catch return;
+    var nb: [16]u8 = undefined;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}) catch return) catch return;
+    w.appendSlice(arena, ",\n  \"verdict\": ") catch return;
+    jsonString(w, arena, verdict);
+    w.appendSlice(arena, ",\n  \"exit_code\": ") catch return;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{exit_code}) catch return) catch return;
+    w.appendSlice(arena, ",\n  \"crash_points\": ") catch return;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{n}) catch return) catch return;
+    w.appendSlice(arena, ",\n  \"explored\": ") catch return;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{explored}) catch return) catch return;
+    w.appendSlice(arena, ",\n  \"violations\": ") catch return;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{failures}) catch return) catch return;
+
+    if (unknown_reason) |r| {
+        w.appendSlice(arena, ",\n  \"unknown_reason\": ") catch return;
+        jsonString(w, arena, r);
+    }
+
+    if (detail) |d| {
+        w.appendSlice(arena, ",\n  \"earliest\": {\n    \"crash_point\": ") catch return;
+        w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{d.k}) catch return) catch return;
+        w.appendSlice(arena, ",\n    \"invariant\": ") catch return;
+        jsonString(w, arena, d.invariant);
+        w.appendSlice(arena, ",\n    \"after\": {\"op\": ") catch return;
+        jsonString(w, arena, d.after);
+        w.appendSlice(arena, ", \"path\": ") catch return;
+        jsonString(w, arena, d.after_path);
+        w.appendSlice(arena, "},\n    \"before\": {\"op\": ") catch return;
+        jsonString(w, arena, d.before);
+        w.appendSlice(arena, ", \"path\": ") catch return;
+        jsonString(w, arena, d.before_path);
+        w.appendSlice(arena, "},\n    \"subject\": ") catch return;
+        jsonString(w, arena, d.subject);
+        w.appendSlice(arena, ",\n    \"observed\": ") catch return;
+        jsonString(w, arena, d.observed);
+        w.appendSlice(arena, "\n  }") catch return;
+    }
+
+    w.appendSlice(arena, ",\n  \"oracle\": ") catch return;
+    jsonString(w, arena, oracle_note);
+    w.appendSlice(arena, ",\n  \"checker\": ") catch return;
+    jsonString(w, arena, checker_note);
+    // Stated in the report itself, not only in the documentation: a PASS that does not
+    // say what it did not look at is the kind of reassurance this tool refuses to give.
+    w.appendSlice(arena, ",\n  \"not_tested\": [\"power loss\", \"torn writes\", \"concurrent processes\"]\n}\n") catch return;
+
+    var pbuf: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&pbuf, "{s}", .{path}) catch return;
+    const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    if (fd < 0) return;
+    defer _ = posix.close(fd);
+    var off: usize = 0;
+    while (off < buf.items.len) {
+        const written = posix.write(fd, buf.items[off..].ptr, buf.items.len - off);
+        if (written <= 0) return;
+        off += @intCast(written);
+    }
 }
 
 fn removeFile(path: []const u8) void {

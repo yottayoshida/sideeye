@@ -191,6 +191,13 @@ pub const UnknownReason = enum {
     /// not testing what it claims to test. Every PASS it would go on to produce would
     /// be a statement about nothing (DESIGN §14-13).
     checker_not_falsified,
+    /// The recording run did not complete normally. Its trace describes a partial
+    /// execution, so the crash points derived from it address an operation sequence the
+    /// target does not actually perform.
+    recording_run_failed,
+    /// The oracle produced no output at all. Reporting agreement between two empty
+    /// views is agreement about nothing.
+    oracle_saw_nothing,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);

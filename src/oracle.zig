@@ -196,7 +196,15 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
 
         if (isReadOnly(name)) continue;
         if (classify(name)) |cls| {
-            try out.classes.append(arena, cls);
+            // `unlinkat` is two operations wearing one name, and which one it is decides
+            // whether the two views agree. aarch64 Linux has no rmdir syscall: glibc
+            // implements rmdir(3) as unlinkat(AT_REMOVEDIR), so the shim records .rmdir
+            // (it interposes the libc entry point) while a name-only mapping here would
+            // say .unlink — a positional divergence, and UNKNOWN for a target that did
+            // nothing wrong. The flag is right there in the line.
+            const actual: contract.OpClass = if (cls == .unlink and
+                std.mem.indexOf(u8, line, "AT_REMOVEDIR") != null) .rmdir else cls;
+            try out.classes.append(arena, actual);
         } else if (out.unsupported == null) {
             out.unsupported = try arena.dupe(u8, name);
         }
@@ -256,6 +264,22 @@ test "parse extracts the class sequence the shim should have recorded" {
     // The loader's own openat is outside the state directory and must not be counted.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+}
+
+test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // aarch64 Linux has no rmdir syscall; glibc's rmdir(3) becomes this. The shim
+    // records .rmdir because it interposes the libc entry point, so a name-only mapping
+    // here would disagree and blame a correct target.
+    const text =
+        \\unlinkat(AT_FDCWD, "/tmp/s/sub", AT_REMOVEDIR) = 0
+        \\unlinkat(AT_FDCWD, "/tmp/s/key.json", 0) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const expected = [_]contract.OpClass{ .rmdir, .unlink };
+    try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
 }
 
 test "a syscall v0.1 does not model is reported rather than skipped" {

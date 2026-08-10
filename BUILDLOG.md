@@ -2,6 +2,63 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Review after merge: four ways to reach PASS, and the report the caller reads
+
+A code review run against the merged branch found fifteen defects. Four of them reached
+PASS, which is the failure this project is built to prevent, so they are worth naming.
+
+**The recording run's exit status was discarded.** An operation that failed immediately —
+bad argument, missing input, EACCES — still wrote its `shim_ready` marker, recorded no
+operations, changed nothing, and every structural detector stayed quiet. The run reported
+`PASS  the operation performed no state-directory operations`, exit 0. A partial failure
+was worse: five operations become two, and the exploration is confidently complete over a
+sequence the target never finishes. `--setup`'s exit code was checked; the operation's,
+which the entire trace depends on, was thrown away.
+
+**The state directory was resolved before it existed.** `realpath` failed and the code
+fell back to the argument as written. On macOS `/tmp` is a symlink to `/private/tmp`, so
+the engine filtered on one spelling while the shim — asking the descriptor via
+`F_GETPATH` — saw the other. Every operation fell outside the state directory. The oracle
+could not save it, because it was handed the same wrong string and also found nothing:
+two views agreeing on nothing is indistinguishable from two views agreeing.
+
+**`deleteTree` stopped silently at 256 entries.** `restore` then wrote the snapshot over
+whatever remained and returned success, so every world after the first started
+contaminated. An L2 checker would report a violation at crash point k that was residue
+from k-1.
+
+**The oracle reported agreement over zero examined lines.** `acceptance.sh` asserts by
+hand that more than ten lines were scanned; the tool shipped without the check its own
+suite considered necessary.
+
+Also fixed: `AT_REMOVEDIR` was the Linux constant on both platforms, so macOS recorded
+`.unlink` where Linux recorded `.rmdir` — the parity claim in the README, the CHANGELOG
+and the CI job name was false for any target removing a directory, while the two lines
+of context around it *were* platform-branched. And the oracle mapped `unlinkat` to
+`.unlink` by name alone, which disagrees with the shim on aarch64 Linux, where glibc
+implements `rmdir(3)` as `unlinkat(AT_REMOVEDIR)`: a correct target would have been
+reported UNKNOWN.
+
+### The two acceptance conditions that were never checked
+
+PRD's v0.1 acceptance asks for every verdict path to be falsified once — "a gate whose
+failure paths were never seen firing is not a gate". UNKNOWN had seven detectors behind
+it. **SETUP ERROR had none**, and neither did the new recording-run check. Both now do,
+and the second went from red to green when the fix landed, which is the only way to know
+a check pins anything.
+
+### JSON report
+
+DESIGN §13 asks for both forms carrying identical content. The acceptance check reads the
+fields a caller would branch on and compares them against the text report, rather than
+inspecting the document by eye — a report that looks right and does not parse is worse
+than no report. UNKNOWN reaches it too, which took wiring, because that verdict exits from
+deep inside the run rather than at the end, and it is the one a CI caller is most likely
+to be branching on.
+
+Written by hand rather than generated from a type: the schema is explicitly experimental
+until v1.0, and generating it would imply a stability this release does not offer.
+
 ## 2026-08-10 — CI, green on both platforms, first run
 
 ```
