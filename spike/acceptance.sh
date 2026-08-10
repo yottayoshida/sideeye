@@ -88,6 +88,38 @@ run_case "thread is UNKNOWN"     "$OUT/toy-bug"    2 "multiple_threads_detected"
 unset TOY_THREAD
 
 echo ""
+echo "=========== check 2c: the oracle fires on its own ==========="
+# toy-raw is caught by the structural detector even without an oracle, so running it
+# *with* one is how the oracle path itself gets shown to work rather than assumed to.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "oracle_missed_operation"; then
+    echo "ok   the oracle names the missed operation (exit 2)"
+else
+    echo "FAIL oracle path: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# On a supported target the two views must agree — and the report must say how much was
+# examined. "agreed" over zero inspected lines would read the same as never looking.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+scanned=$(echo "$o" | grep -o '[0-9]* syscall lines examined' | cut -d' ' -f1)
+if echo "$o" | grep -q "agreed on 6 operations" && [ "${scanned:-0}" -gt 10 ]; then
+    echo "ok   the oracle agreed on 6 operations over $scanned examined lines"
+else
+    echo "FAIL oracle agreement: scanned=${scanned:-0}"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2b: the four reasons are distinct ==========="
 distinct=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | sort -u | wc -l | tr -d ' ')
 total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')

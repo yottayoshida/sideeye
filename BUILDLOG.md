@@ -2,6 +2,47 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Spike-2: the oracle agrees, and disagrees where it should
+
+The completeness comparison is in. The recording run goes through
+`strace -y -e trace=%file,%desc`, its output is normalised to the same `OpClass` the
+shim records, and the two class sequences are compared position by position.
+
+On the supported toy:
+
+```
+oracle      agreed on 6 operations (61 syscall lines examined, 9 touching the state directory)
+```
+
+The scan size is in the report on purpose. "Agreed" over zero examined lines reads
+exactly like agreement, and there is no way to tell them apart afterwards.
+
+On `toy-raw` the oracle names what was missed and the run ends UNKNOWN. That target is
+already caught by `state_changed_without_ops` without any oracle, so running it *with*
+one is how the oracle path itself gets exercised rather than assumed — otherwise the
+comparison code would sit there having never fired.
+
+Details worth keeping:
+
+- **strace must not have the shim loaded.** Environment reaches the target through
+  strace's `-E`, not through the engine's own `setenv`: `LD_PRELOAD` set on the engine
+  side would load the shim into strace, and strace's own file operations would land in
+  the trace as if the target had produced them.
+- **Read-only syscalls are excluded by name** (`newfstatat`, `read`, `access`, …). They
+  cannot be crash points in any meaningful sense, and counting them would make the two
+  views disagree for no reason. The exclusion is a fixed list, so a syscall that is
+  neither modelled nor listed becomes `unsupported_syscall_observed` — UNKNOWN, not a
+  silent skip.
+- **The oracle comparison runs before the structural detectors**, because when both can
+  catch something the oracle can say *which* operation was missed.
+- The oracle's two verdicts got their own reasons (`oracle_missed_operation`,
+  `oracle_saw_phantom`) rather than reusing `state_changed_without_ops`. Sharing a name
+  would have defeated the acceptance check that requires distinct detectors to fire —
+  the check would have passed while proving less.
+
+`spike/acceptance.sh` now covers all of it and is green end to end. What remains for
+v0.1: the L2 checker, macOS, the JSON report, and CI.
+
 ## 2026-08-10 — The engine judges, and the internal gate is passed
 
 All three v0.1 acceptance checks now run for real, in the container, from

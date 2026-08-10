@@ -2,6 +2,7 @@ const std = @import("std");
 const contract = @import("contract");
 const engine = @import("engine.zig");
 const posix = @import("posix.zig");
+const oracle = @import("oracle.zig");
 
 pub const version = "0.1.0-dev";
 
@@ -23,6 +24,7 @@ const Args = struct {
     operation: ?[]const u8 = null,
     shim: ?[]const u8 = null,
     work: []const u8 = "/tmp/sideeye-work",
+    oracle: ?[]const u8 = null,
 };
 
 fn usage() void {
@@ -37,6 +39,7 @@ fn usage() void {
         \\  --operation  command to explore; killed before each of its file operations
         \\  --shim       path to libsideeye_shim.so
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
+        \\  --oracle     path to strace; the recording run is compared against it
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\
@@ -86,6 +89,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = v
         else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v
         else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
+        else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
         else setupError("unknown option");
     }
 
@@ -131,12 +135,42 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const op_argv = splitArgs(arena_state.allocator(), operation) catch setupError("--operation is empty");
     if (op_argv.len == 0) setupError("--operation is empty");
 
-    const rec_term = posix.runChild(gpa, op_argv, &.{
-        .{ "TOY_STATE", state_abs },
-        .{ contract.env.state_dir, state_abs },
-        .{ contract.env.trace_path, rec_trace },
-        .{ "LD_PRELOAD", shim },
-    }) catch setupError("could not run --operation");
+    var oracle_out_buf: [contract.max_path]u8 = undefined;
+    const oracle_out = std.fmt.bufPrint(&oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError("path too long");
+    removeFile(oracle_out);
+
+    const arena = arena_state.allocator();
+    const rec_term = blk: {
+        if (args.oracle) |strace_path| {
+            // Environment goes to the target via strace's -E, not through our own
+            // setenv: LD_PRELOAD applied here would load the shim into strace itself,
+            // and strace's own file operations would land in the trace as if the
+            // target had produced them.
+            var list: std.ArrayList([]const u8) = .empty;
+            list.append(arena, strace_path) catch setupError("out of memory");
+            for ([_][]const u8{ "-y", "-e", "trace=%file,%desc", "-o", oracle_out }) |a|
+                list.append(arena, a) catch setupError("out of memory");
+            const pairs = [_][2][]const u8{
+                .{ "TOY_STATE", state_abs },
+                .{ contract.env.state_dir, state_abs },
+                .{ contract.env.trace_path, rec_trace },
+                .{ "LD_PRELOAD", shim },
+            };
+            for (pairs) |kv| {
+                list.append(arena, "-E") catch setupError("out of memory");
+                const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError("out of memory");
+                list.append(arena, joined) catch setupError("out of memory");
+            }
+            for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
+            break :blk posix.runChild(gpa, list.items, &.{}) catch setupError("could not run --operation under the oracle");
+        }
+        break :blk posix.runChild(gpa, op_argv, &.{
+            .{ "TOY_STATE", state_abs },
+            .{ contract.env.state_dir, state_abs },
+            .{ contract.env.trace_path, rec_trace },
+            .{ "LD_PRELOAD", shim },
+        }) catch setupError("could not run --operation");
+    };
     _ = rec_term;
 
     var trace = engine.readTrace(gpa, rec_trace) catch setupError("could not read the trace");
@@ -162,6 +196,34 @@ pub fn main(init: std.process.Init.Minimal) !void {
         .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic"),
         else => {},
     };
+
+    // ---- oracle comparison ---------------------------------------------------------
+    var oracle_note: []const u8 = "not run (no --oracle given)";
+    if (args.oracle != null) {
+        const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle produced no output");
+        const parsed = oracle.parse(arena, text, state_abs) catch setupError("out of memory");
+
+        if (parsed.unsupported) |name|
+            unknown(.unsupported_syscall_observed, name);
+
+        var shim_classes: std.ArrayList(contract.OpClass) = .empty;
+        for (trace.ops.items) |op| {
+            if (op.class.isMarker() or op.class.isBoundary()) continue;
+            shim_classes.append(arena, op.class) catch setupError("out of memory");
+        }
+
+        if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
+            .missed => unknown(.oracle_missed_operation, "the oracle saw a state-directory operation the shim did not record"),
+            .phantom => unknown(.oracle_saw_phantom, "the shim recorded an operation the oracle did not see"),
+            .unsupported => |name| unknown(.unsupported_syscall_observed, name),
+        };
+
+        oracle_note = std.fmt.allocPrint(
+            arena,
+            "agreed on {d} operations ({d} syscall lines examined, {d} touching the state directory)",
+            .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
+        ) catch "agreed";
+    }
 
     if (!snapshotsEqual(initial, final) and trace.mutation_count == 0)
         unknown(.state_changed_without_ops, "the state directory changed while zero mutating operations were recorded: operations were missed");
@@ -251,6 +313,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\path        {s}
             \\observed    {s}
             \\explored    {d} worlds (crash points {d} + 1 baseline)
+            \\oracle      {s}
             \\not tested  power loss, torn writes, concurrent processes
             \\
             \\reproduce   SIDEEYE_KILL_AT={d} LD_PRELOAD={s} <operation>
@@ -263,6 +326,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             first_failure_path[0..first_failure_path_len],
             what,
             explored,   n,
+            oracle_note,
             f.k,        shim,
         });
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
@@ -271,9 +335,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     say(
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant
         \\      explored {d} worlds (crash points {d} + 1 baseline)
+        \\      oracle: {s}
         \\      not tested: power loss, torn writes, concurrent processes
         \\
-    , .{ explored, explored, explored, n });
+    , .{ explored, explored, explored, n, oracle_note });
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -291,6 +356,22 @@ fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
     var list: std.ArrayList([]const u8) = .empty;
     var it = std.mem.tokenizeScalar(u8, cmd, ' ');
     while (it.next()) |tok| try list.append(arena, tok);
+    return list.items;
+}
+
+fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
+    var buf: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
+    const fd = posix.open(z.ptr, posix.O_RDONLY, 0);
+    if (fd < 0) return null;
+    defer _ = posix.close(fd);
+    var list: std.ArrayList(u8) = .empty;
+    var chunk: [64 * 1024]u8 = undefined;
+    while (true) {
+        const n = posix.read(fd, &chunk, chunk.len);
+        if (n <= 0) break;
+        list.appendSlice(arena, chunk[0..@intCast(n)]) catch return null;
+    }
     return list.items;
 }
 

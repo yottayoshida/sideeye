@@ -157,6 +157,13 @@ pub const UnknownReason = enum {
     state_changed_without_ops,
     contract_version_mismatch,
     unsupported_syscall_observed,
+    /// The oracle saw a state-directory operation the shim did not record. Distinct
+    /// from `state_changed_without_ops`: that one notices the state moved while nothing
+    /// was counted, this one names the specific operation that went unseen.
+    oracle_missed_operation,
+    /// The shim recorded an operation the oracle never saw — over-counting, which
+    /// shifts every later crash point by one.
+    oracle_saw_phantom,
     child_process_detected,
     multiple_threads_detected,
     unresolvable_path,

@@ -56,6 +56,7 @@ pub fn build(b: *std.Build) void {
     const test_sources = [_][]const u8{
         "src/engine.zig",
         "src/posix.zig",
+        "src/oracle.zig",
         "src/main.zig",
     };
 
