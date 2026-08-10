@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — The pointer table is gone from the macOS path; one defect remains
+
+The `real` table now exists only where it is needed. It was always a Linux construct —
+somewhere to keep what `dlsym(RTLD_NEXT)` returns — and on macOS it introduced a
+dependency on initialisation order that the platform does not honour. The replacements
+reach the original through `common.call*` wrappers, which go through the table on Linux
+and call `darwin_libc.zig` directly on macOS. `bindReal` and the constructor's part in
+this are gone.
+
+The wrappers are also what the trace writer uses, so writing a record no longer depends
+on the table being populated either.
+
+The failure moved: the run used to die snapshotting the *final* state, and now dies
+snapshotting a *crashed* state. The recording run completes, which it never did before.
+
+**Files are still created with mode `--w-r-x---`.** So something remains wrong with how
+`mode` crosses the boundary — 0o644 going in, 0o251 landing on disk, and those two share
+no obvious relationship (not a shift, not a mask, not umask). It needs the measurement
+the last probe never reached: print the value as received inside the replacement, and
+again as passed to the original. Guessing at promotions has already cost one wrong
+hypothesis.
+
+Linux remains unaffected throughout: 37 tests and the acceptance suite green after every
+one of these changes.
+
 ## 2026-08-10 — The macOS failure is an initialisation-order problem, not an ABI one
 
 Both hypotheses from the previous entry were wrong, and finding that out took a probe

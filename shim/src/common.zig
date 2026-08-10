@@ -193,8 +193,7 @@ pub fn init() void {
     const normalized = contract.normalizePath(&state_dir_buf, "/", sd_slice) catch return;
     state_dir_len = normalized.len;
 
-    const open_fn = real.open orelse return;
-    trace_fd = open_fn(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, @as(c_uint, 0o644));
+    trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0o644);
     if (trace_fd < 0) return;
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
@@ -225,10 +224,9 @@ pub fn stateDir() []const u8 {
 /// and cannot appear in the trace as if the target had produced it.
 fn writeAll(bytes: []const u8) bool {
     if (trace_fd < 0) return false;
-    const write_fn = real.write orelse return false;
     var off: usize = 0;
     while (off < bytes.len) {
-        const w = write_fn(trace_fd, bytes[off..].ptr, bytes.len - off);
+        const w = callWrite(trace_fd, bytes[off..].ptr, bytes.len - off);
         if (w <= 0) return false;
         off += @intCast(w);
     }
@@ -435,6 +433,151 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         return;
     }
     observe(op, resolved, "");
+}
+
+// --- reaching the real function ---------------------------------------------------
+//
+// Linux has to look the original up with `dlsym` and keep it somewhere, so it goes
+// through the `real` table. macOS must NOT: interposition is live from the moment the
+// library loads, while the constructor that would fill such a table runs much later,
+// and every call the system libraries make in between would find it empty. There the
+// original is called directly.
+//
+// These wrappers are the only place that difference appears. `ops.zig` calls them and
+// stays identical on both platforms.
+
+const darwin = if (is_darwin) @import("darwin_libc.zig") else struct {};
+
+pub inline fn callOpen(path: [*:0]const u8, flags: c_int, mode: c_uint) c_int {
+    if (is_darwin) return darwin.open(path, flags, mode);
+    const f = real.open orelse return -1;
+    return f(path, flags, mode);
+}
+pub inline fn callOpenat(dirfd: c_int, path: [*:0]const u8, flags: c_int, mode: c_uint) c_int {
+    if (is_darwin) return darwin.openat(dirfd, path, flags, mode);
+    const f = real.openat orelse return -1;
+    return f(dirfd, path, flags, mode);
+}
+pub inline fn callCreat(path: [*:0]const u8, mode: c_uint) c_int {
+    if (is_darwin) return darwin.creat(path, mode);
+    const f = real.creat orelse return -1;
+    return f(path, mode);
+}
+pub inline fn callWrite(fd: c_int, buf: [*]const u8, n: usize) isize {
+    if (is_darwin) return darwin.write(fd, buf, n);
+    const f = real.write orelse return -1;
+    return f(fd, buf, n);
+}
+pub inline fn callPwrite(fd: c_int, buf: [*]const u8, n: usize, off: i64) isize {
+    if (is_darwin) return darwin.pwrite(fd, buf, n, off);
+    const f = real.pwrite orelse return -1;
+    return f(fd, buf, n, off);
+}
+pub inline fn callWritev(fd: c_int, iov: *const anyopaque, cnt: c_int) isize {
+    if (is_darwin) return darwin.writev(fd, iov, cnt);
+    const f = real.writev orelse return -1;
+    return f(fd, iov, cnt);
+}
+pub inline fn callRename(old: [*:0]const u8, new: [*:0]const u8) c_int {
+    if (is_darwin) return darwin.rename(old, new);
+    const f = real.rename orelse return -1;
+    return f(old, new);
+}
+pub inline fn callRenameat(od: c_int, old: [*:0]const u8, nd: c_int, new: [*:0]const u8) c_int {
+    if (is_darwin) return darwin.renameat(od, old, nd, new);
+    const f = real.renameat orelse return -1;
+    return f(od, old, nd, new);
+}
+pub inline fn callUnlink(path: [*:0]const u8) c_int {
+    if (is_darwin) return darwin.unlink(path);
+    const f = real.unlink orelse return -1;
+    return f(path);
+}
+pub inline fn callUnlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) c_int {
+    if (is_darwin) return darwin.unlinkat(dirfd, path, flags);
+    const f = real.unlinkat orelse return -1;
+    return f(dirfd, path, flags);
+}
+pub inline fn callFsync(fd: c_int) c_int {
+    if (is_darwin) return darwin.fsync(fd);
+    const f = real.fsync orelse return -1;
+    return f(fd);
+}
+pub inline fn callFdatasync(fd: c_int) c_int {
+    // Darwin has no fdatasync; fsync is the honest equivalent.
+    if (is_darwin) return darwin.fsync(fd);
+    const f = real.fdatasync orelse return -1;
+    return f(fd);
+}
+pub inline fn callClose(fd: c_int) c_int {
+    if (is_darwin) return darwin.close(fd);
+    const f = real.close orelse return -1;
+    return f(fd);
+}
+pub inline fn callFtruncate(fd: c_int, len: i64) c_int {
+    if (is_darwin) return darwin.ftruncate(fd, len);
+    const f = real.ftruncate orelse return -1;
+    return f(fd, len);
+}
+pub inline fn callTruncate(path: [*:0]const u8, len: i64) c_int {
+    if (is_darwin) return darwin.truncate(path, len);
+    const f = real.truncate orelse return -1;
+    return f(path, len);
+}
+pub inline fn callMkdir(path: [*:0]const u8, mode: c_uint) c_int {
+    if (is_darwin) return darwin.mkdir(path, mode);
+    const f = real.mkdir orelse return -1;
+    return f(path, mode);
+}
+pub inline fn callMkdirat(dirfd: c_int, path: [*:0]const u8, mode: c_uint) c_int {
+    if (is_darwin) return darwin.mkdirat(dirfd, path, mode);
+    const f = real.mkdirat orelse return -1;
+    return f(dirfd, path, mode);
+}
+pub inline fn callRmdir(path: [*:0]const u8) c_int {
+    if (is_darwin) return darwin.rmdir(path);
+    const f = real.rmdir orelse return -1;
+    return f(path);
+}
+pub inline fn callFork() c_int {
+    if (is_darwin) return darwin.fork();
+    const f = real.fork orelse return -1;
+    return f();
+}
+pub inline fn callVfork() c_int {
+    if (is_darwin) return darwin.vfork();
+    const f = real.vfork orelse return -1;
+    return f();
+}
+pub inline fn callExecve(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
+    if (is_darwin) return darwin.execve(p, a, e);
+    const f = real.execve orelse return -1;
+    return f(p, a, e);
+}
+pub inline fn callExecv(p: [*:0]const u8, a: [*]const ?[*:0]const u8) c_int {
+    if (is_darwin) return darwin.execv(p, a);
+    const f = real.execv orelse return -1;
+    return f(p, a);
+}
+pub inline fn callExecvp(p: [*:0]const u8, a: [*]const ?[*:0]const u8) c_int {
+    if (is_darwin) return darwin.execvp(p, a);
+    const f = real.execvp orelse return -1;
+    return f(p, a);
+}
+pub inline fn callPosixSpawn(pid: ?*anyopaque, p: [*:0]const u8, fa: ?*const anyopaque, at: ?*const anyopaque, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
+    if (is_darwin) return darwin.posix_spawn(pid, p, fa, at, a, e);
+    const f = real.posix_spawn orelse return -1;
+    return f(pid, p, fa, at, a, e);
+}
+pub inline fn callPosixSpawnp(pid: ?*anyopaque, p: [*:0]const u8, fa: ?*const anyopaque, at: ?*const anyopaque, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
+    if (is_darwin) return darwin.posix_spawnp(pid, p, fa, at, a, e);
+    const f = real.posix_spawnp orelse return -1;
+    return f(pid, p, fa, at, a, e);
+}
+pub inline fn callPthreadCreate(t: *anyopaque, at: ?*const anyopaque, s: *const anyopaque, arg: ?*anyopaque) c_int {
+    if (is_darwin) return darwin.pthread_create(t, at, s, arg);
+    const f = real.pthread_create orelse return -1;
+    return f(t, at, s, arg);
 }
 
 /// Boundary detectors carry no path: their presence alone forces UNKNOWN.

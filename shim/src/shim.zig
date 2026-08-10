@@ -9,10 +9,6 @@ const common = @import("common.zig");
 const is_macos = builtin.os.tag == .macos;
 
 fn ctor() callconv(.c) void {
-    // On macOS the real functions are directly callable, so `common.real` is filled
-    // from `extern` declarations rather than by `dlsym`. Order matters: `common.init`
-    // opens the trace through `real.open`.
-    if (is_macos) @import("macos.zig").bindReal();
     common.init();
 }
 
