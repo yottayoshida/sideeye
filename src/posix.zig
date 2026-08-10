@@ -21,7 +21,15 @@ pub const Dirent = std.c.dirent;
 pub extern "c" fn opendir(name: [*:0]const u8) ?*anyopaque;
 pub extern "c" fn readdir(dirp: *anyopaque) ?*Dirent;
 pub extern "c" fn closedir(dirp: *anyopaque) c_int;
-pub extern "c" fn open(path: [*:0]const u8, flags: c_int, mode: c_uint) c_int;
+/// Declared variadic, as C declares it.
+///
+/// This was a fixed three-argument declaration, and on arm64 macOS that silently loses
+/// `mode`: variadic arguments travel on the stack, fixed ones in registers, so the
+/// callee read a register the caller never wrote. Every file `restore()` wrote came out
+/// with permissions nobody asked for — and since the engine then failed to read its own
+/// output, the symptom looked like a shim defect for several rounds. The shim was fine.
+/// Calling a variadic function correctly needs no `@cVaStart`; only receiving does.
+pub extern "c" fn open(path: [*:0]const u8, flags: c_int, ...) c_int;
 pub extern "c" fn read(fd: c_int, buf: [*]u8, n: usize) isize;
 pub extern "c" fn write(fd: c_int, buf: [*]const u8, n: usize) isize;
 pub extern "c" fn close(fd: c_int) c_int;
@@ -87,7 +95,7 @@ pub fn isDirPath(path: [*:0]const u8) bool {
 
 pub fn kindOfPath(path: [*:0]const u8) Kind {
     if (isDirPath(path)) return .dir;
-    const fd = open(path, O_RDONLY, 0);
+    const fd = open(path, O_RDONLY, @as(c_uint, 0));
     if (fd < 0) return .missing;
     _ = close(fd);
     return .file;

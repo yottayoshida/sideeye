@@ -439,7 +439,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\checker     {s}
             \\not tested  power loss, torn writes, concurrent processes
             \\
-            \\reproduce   SIDEEYE_KILL_AT={d} LD_PRELOAD={s} <operation>
+            \\reproduce   SIDEEYE_KILL_AT={d} {s}={s} <operation>
             \\
         , .{
             failures,   explored,
@@ -452,7 +452,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             explored,   n,
             oracle_note,
             checker_note,
-            f.k,        shim,
+            f.k,        preload_var, shim,
         });
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
@@ -490,7 +490,7 @@ fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
 fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, 0);
+    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
     var list: std.ArrayList(u8) = .empty;

@@ -47,7 +47,7 @@ fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u
 }
 
 fn readWhole(arena: Allocator, path: [*:0]const u8) SnapshotError![]const u8 {
-    const fd = posix.open(path, posix.O_RDONLY, 0);
+    const fd = posix.open(path, posix.O_RDONLY, @as(c_uint, 0));
     if (fd < 0) return error.ReadFailed;
     defer _ = posix.close(fd);
 
@@ -227,7 +227,7 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
         switch (e.kind) {
             .dir => _ = posix.mkdir(full.ptr, 0o755),
             .file => {
-                const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, 0o644);
+                const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
                 if (fd < 0) return error.CreateFailed;
                 var off: usize = 0;
                 while (off < e.content.len) {
@@ -402,7 +402,7 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
         if (e.kind != .file) continue;
         var full_buf: [contract.max_path]u8 = undefined;
         const full = try joinZ(&full_buf, root, e.rel);
-        const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, 0o644);
+        const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
         if (fd < 0) continue;
         _ = posix.write(fd, corruption_probe.ptr, corruption_probe.len);
         _ = posix.close(fd);

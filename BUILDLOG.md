@@ -2,6 +2,43 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — macOS finds the bug. The defect was in the engine all along.
+
+Inverting the approach found it in one step. Instrumenting the shim showed `mode` read
+as `0x1a4` and forwarded as `0x1a4`, and the file landing `-rw-r--r--`. **The shim was
+correct.** What was wrong was `src/posix.zig`: the engine's own `open` declaration was
+fixed-arity, so every file `restore()` wrote lost its mode — and since the engine then
+could not read back what it had just written, the symptom appeared during a snapshot and
+looked like the shim's doing.
+
+Five rounds were spent examining the component that was not at fault, because the first
+symptom appeared under injection and "macOS interposition is the new thing here" was too
+easy an assumption. The engine runs without the shim; it was never a suspect. Calling a
+variadic function correctly needs no `@cVaStart` — only receiving does — so the fix is
+one declaration and a few literal casts.
+
+macOS now produces the finding:
+
+```
+FAIL  1 of 4 crash worlds violated an invariant
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  unlink(.../state/key.json)
+            before rename(.../state/key.json.tmp)
+explored    4 worlds (crash points 3 + 1 baseline)
+```
+
+Same bug, same logical crash point, second platform.
+
+**But N is 3 here and 5 on Linux.** The shim is not seeing `write` and `fsync` on
+Darwin — most likely the `$NOCANCEL` symbol variants, which are their own entry points.
+So detection works while observation is incomplete, which is precisely the situation the
+completeness rule was written for: this run is only allowed to report FAIL, and it did.
+A PASS would have required `--allow-unverified`, and would have carried the label.
+
+Fixing the missing variants is the next macOS task. Linux is unaffected: 37 tests and
+the acceptance suite green.
+
 ## 2026-08-10 — Where the macOS investigation stands
 
 Four candidate explanations tested against a probe that is walked step by step toward

@@ -580,6 +580,29 @@ pub inline fn callPthreadCreate(t: *anyopaque, at: ?*const anyopaque, s: *const 
     return f(t, at, s, arg);
 }
 
+/// Temporary instrumentation for the macOS `mode` investigation. Enabled only when
+/// SIDEEYE_DEBUG is set, writes hex directly to fd 2 with no formatting machinery —
+/// this has to be safe to call before anything is initialised.
+pub fn debugHex(tag: []const u8, v: u32) void {
+    if (c.getenv("SIDEEYE_DEBUG") == null) return;
+    var buf: [64]u8 = undefined;
+    var i: usize = 0;
+    if (tag.len < 32) {
+        @memcpy(buf[0..tag.len], tag);
+        i = tag.len;
+    }
+    var j: usize = 8;
+    while (j > 0) {
+        j -= 1;
+        const d: u8 = @intCast((v >> @intCast(j * 4)) & 0xf);
+        buf[i] = if (d < 10) '0' + d else 'a' + d - 10;
+        i += 1;
+    }
+    buf[i] = '\n';
+    i += 1;
+    _ = callWrite(2, &buf, i);
+}
+
 /// Boundary detectors carry no path: their presence alone forces UNKNOWN.
 pub fn noteBoundary(op: contract.OpClass) void {
     if (!active or busy) return;
