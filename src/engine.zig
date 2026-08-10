@@ -237,7 +237,14 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
                 var off: usize = 0;
                 while (off < e.content.len) {
                     const w = posix.write(fd, e.content[off..].ptr, e.content.len - off);
-                    if (w <= 0) break;
+                    // Breaking here and returning success would start the next world from
+                    // a truncated file, and judgeL0 would then report a hybrid — a
+                    // counterexample manufactured by the tool rather than found in the
+                    // target. readWhole distinguishes these cases; this loop did not.
+                    if (w <= 0) {
+                        _ = posix.close(fd);
+                        return error.CreateFailed;
+                    }
                     off += @intCast(w);
                 }
                 _ = posix.close(fd);

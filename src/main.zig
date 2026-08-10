@@ -12,8 +12,19 @@ const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "
 
 var out_buf: [16 * 1024]u8 = undefined;
 
+/// The report is the product. Losing it silently is not an option.
+///
+/// This used to `catch return` on overflow, so a FAIL whose paths pushed the text past
+/// 16 KB exited 1 having printed nothing at all — the caller would see a bare exit code
+/// and no counterexample. Formatting into a fixed buffer is still right for a tool that
+/// must work when the heap is uninteresting, so the failure is reported instead of
+/// swallowed.
 fn say(comptime fmt: []const u8, args: anytype) void {
-    const s = std.fmt.bufPrint(&out_buf, fmt, args) catch return;
+    const s = std.fmt.bufPrint(&out_buf, fmt, args) catch {
+        const msg = "sideeye: the report did not fit in the output buffer; paths are unusually long\n";
+        _ = posix.write(2, msg.ptr, msg.len);
+        return;
+    };
     var off: usize = 0;
     while (off < s.len) {
         const w = posix.write(1, s[off..].ptr, s.len - off);
