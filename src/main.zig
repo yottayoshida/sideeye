@@ -1,10 +1,14 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const contract = @import("contract");
 const engine = @import("engine.zig");
 const posix = @import("posix.zig");
 const oracle = @import("oracle.zig");
 
 pub const version = "0.1.0-dev";
+
+/// How the loader is told to inject the shim. Same idea, different spelling.
+const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
 
 var out_buf: [16 * 1024]u8 = undefined;
 
@@ -192,7 +196,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 .{ "TOY_STATE", state_abs },
                 .{ contract.env.state_dir, state_abs },
                 .{ contract.env.trace_path, rec_trace },
-                .{ "LD_PRELOAD", shim },
+                .{ preload_var, shim },
             };
             for (pairs) |kv| {
                 list.append(arena, "-E") catch setupError("out of memory");
@@ -206,7 +210,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.trace_path, rec_trace },
-            .{ "LD_PRELOAD", shim },
+            .{ preload_var, shim },
         }) catch setupError("could not run --operation");
     };
     _ = rec_term;
@@ -348,7 +352,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.trace_path, world_trace },
             .{ contract.env.kill_at, kstr },
-            .{ "LD_PRELOAD", shim },
+            .{ preload_var, shim },
         }) catch setupError("could not run --operation");
 
         var wtrace = engine.readTrace(gpa, world_trace) catch setupError("could not read a world trace");

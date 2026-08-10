@@ -30,7 +30,9 @@ pub fn build(b: *std.Build) void {
     // v0.1 covers Linux (LD_PRELOAD); macOS (DYLD_INSERT_LIBRARIES + __DATA,__interpose)
     // arrives after the Linux ground is proven, so building for macOS today would
     // install a library that cannot do its job. Say so instead of shipping it.
-    if (target.result.os.tag == .linux) {
+    // Both platforms now have an interposition mechanism: LD_PRELOAD on Linux,
+    // DYLD_INSERT_LIBRARIES with a __DATA,__interpose table on macOS.
+    if (target.result.os.tag == .linux or target.result.os.tag == .macos) {
         const shim = b.addLibrary(.{
             .name = "sideeye_shim",
             .linkage = .dynamic,

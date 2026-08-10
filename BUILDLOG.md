@@ -2,6 +2,42 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — The macOS shim builds, runs, and gets the mode argument wrong
+
+The structure is in place: replacement functions live in one file (`ops.zig`) with
+identical bodies on both platforms, and only the installation differs — `linux.zig`
+exports the symbols for `LD_PRELOAD`, `macos.zig` lists them in a `__DATA,__interpose`
+table and fills `common.real` from `extern` declarations. The constructor section
+switches between `.init_array` and `__DATA,__mod_init_func`; `fdPath` switches between
+`/proc/self/fd` and `fcntl(F_GETPATH)`; the engine switches between `LD_PRELOAD` and
+`DYLD_INSERT_LIBRARIES`. It builds, injects, and the target completes.
+
+Then the engine failed to snapshot the state, and the reason turned out to be the whole
+point of testing on the second platform.
+
+**Every file created under the shim had mode `----------`.** Not a crash, not an error
+return — the files existed, held the right bytes, and were unreadable. `open` is a
+variadic function, and on arm64 macOS variadic arguments are passed **on the stack**,
+while the fixed-arity declaration used here passes them **in registers**. So the third
+argument was read from a register the caller never wrote, and `mode` came out zero.
+Both directions are affected: the target's `mode` never reaches the replacement, and
+the replacement's `mode` never reaches the real `open`.
+
+The same code is correct on Linux, where variadic arguments do go in registers. This is
+the class of defect that only appears when the second platform arrives, and the reason
+the plan put macOS inside v0.1 rather than after it. Discovering it in v0.3 would have
+meant discovering it on top of a codebase built around the wrong assumption.
+
+The fix is real variadic handling — `@cVaStart` / `@cVaArg` in the replacements, and
+variadic function-pointer types for the originals — which touches every `open`-family
+entry point. Left for the next pass rather than rushed. Linux is unaffected: the full
+acceptance suite is still green with seven distinct detectors.
+
+Also corrected while here: `O_CREAT`, `O_APPEND` and `O_CLOEXEC` had Linux's values
+compiled into the shim unconditionally. On Darwin those constants differ, and the
+failure mode would have been a trace file opened with the wrong semantics — records
+missing rather than a bad flag reported.
+
 ## 2026-08-10 — macOS, measured: interposition works, the oracle does not
 
 Two things the plan said would be decided by running them rather than by reading about

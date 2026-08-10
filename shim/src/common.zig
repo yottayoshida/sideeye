@@ -10,6 +10,7 @@
 //! hide the very condition we must report.
 
 const std = @import("std");
+const builtin = @import("builtin");
 const contract = @import("contract");
 
 pub const c = struct {
@@ -20,20 +21,32 @@ pub const c = struct {
     pub extern "c" fn raise(sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
+    /// macOS only: asks a descriptor for its path. Declared with a concrete third
+    /// argument rather than as variadic, which is how every caller uses F_GETPATH.
+    pub extern "c" fn fcntl(fd: c_int, cmd: c_int, arg: *anyopaque) c_int;
 };
 
 const SEEK_END: c_int = 2;
+/// Darwin's F_GETPATH. The buffer must hold at least PATH_MAX (1024) bytes.
+const F_GETPATH: c_int = 50;
+const darwin_path_max: usize = 1024;
 
 /// `RTLD_NEXT` is `((void *) -1)`: resolve the symbol in the search order *after* us,
 /// which is how we reach the real libc function we just replaced.
 pub const rtld_next: ?*anyopaque = @ptrFromInt(std.math.maxInt(usize));
 
-pub const AT_FDCWD: c_int = -100;
+pub const AT_FDCWD: c_int = if (builtin.os.tag == .macos) -2 else -100;
 const SIGKILL: c_int = 9;
+
+// These differ between the two platforms and getting them wrong is quiet: the trace
+// file would open with the wrong semantics — truncating instead of appending, or
+// leaking across an exec — and the failure would look like missing records rather than
+// like a bad flag.
+const is_darwin = builtin.os.tag == .macos;
 const O_WRONLY: c_int = 0o1;
-const O_CREAT: c_int = 0o100;
-const O_APPEND: c_int = 0o2000;
-const O_CLOEXEC: c_int = 0o2000000;
+const O_CREAT: c_int = if (is_darwin) 0x200 else 0o100;
+const O_APPEND: c_int = if (is_darwin) 0x8 else 0o2000;
+const O_CLOEXEC: c_int = if (is_darwin) 0x1000000 else 0o2000000;
 
 pub const OpenFn = *const fn ([*:0]const u8, c_int, c_uint) callconv(.c) c_int;
 pub const OpenatFn = *const fn (c_int, [*:0]const u8, c_int, c_uint) callconv(.c) c_int;
@@ -152,7 +165,9 @@ fn parseU32(s: []const u8) u32 {
 /// same empty trace. The `shim_ready` marker written here is what lets the engine tell
 /// those apart, so it has to be written whether or not the target does anything.
 pub fn init() void {
-    resolveAll();
+    // macOS fills `real` from extern declarations before this runs (see shim.zig);
+    // dlsym is a Linux-only step.
+    if (builtin.os.tag != .macos) resolveAll();
 
     const sd = c.getenv(contract.env.state_dir) orelse return;
     const tp = c.getenv(contract.env.trace_path) orelse return;
@@ -229,6 +244,19 @@ const deleted_suffix = " (deleted)";
 /// know whether it was inside the state directory before deciding what it means.
 fn fdPath(out: []u8, fd: c_int, deleted: *bool) ?[]const u8 {
     deleted.* = false;
+
+    if (builtin.os.tag == .macos) {
+        // `fcntl(F_GETPATH)` is the Darwin equivalent of reading /proc/self/fd, and it
+        // resolves symlinks the same way (/etc/hosts comes back as /private/etc/hosts).
+        // It has no "(deleted)" spelling, so an unlinked file simply reports its last
+        // path; that is a known gap rather than a silent one — see BUILDLOG.
+        if (out.len < darwin_path_max) return null;
+        if (c.fcntl(fd, F_GETPATH, out.ptr) == -1) return null;
+        const p = std.mem.sliceTo(out, 0);
+        if (p.len == 0 or p[0] != '/') return null;
+        return p;
+    }
+
     var link_buf: [64]u8 = undefined;
     const link = std.fmt.bufPrintZ(&link_buf, "/proc/self/fd/{d}", .{fd}) catch return null;
     const n = c.readlink(link, out.ptr, out.len);
