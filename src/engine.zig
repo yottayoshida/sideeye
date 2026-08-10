@@ -562,3 +562,45 @@ test "L0 ignores files the operation legitimately creates or deletes" {
     defer empty.deinit();
     try std.testing.expectEqual(@as(?Violation, null), judgeL0(pre, post, empty));
 }
+
+test "a trace written against another contract version is a mismatch, not a short trace" {
+    // The third structural detector, and the only one that had never been seen firing.
+    // It is what stops a stale shim paired with a fresh engine from being read as a
+    // target that performed fewer operations than it did — sharing contract.zig at build
+    // time says nothing about which binaries end up in the same run.
+    var buf: [contract.header_len]u8 = undefined;
+    _ = try contract.encodeHeader(&buf);
+    std.mem.writeInt(u32, buf[contract.magic.len..][0..4], contract.contract_version + 1, .little);
+
+    const dir = "/tmp/sideeye-version-test";
+    var pbuf: [contract.max_path]u8 = undefined;
+    const dz = std.fmt.bufPrintZ(&pbuf, "{s}", .{dir}) catch unreachable;
+    _ = posix.mkdir(dz.ptr, 0o755);
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try joinZ(&fbuf, dir, "trace.bin");
+    const fd = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    try std.testing.expectEqual(@as(isize, buf.len), posix.write(fd, &buf, buf.len));
+    _ = posix.close(fd);
+
+    var info = try readTrace(std.testing.allocator, std.mem.span(fz.ptr));
+    defer info.deinit();
+    try std.testing.expect(info.version_mismatch);
+    // Distinct from truncation: the two lead to different verdicts and different advice.
+    try std.testing.expect(!info.truncated);
+    try std.testing.expect(info.saw_header);
+
+    // Control: the same header at the right version is not a mismatch.
+    var ok_buf: [contract.header_len]u8 = undefined;
+    _ = try contract.encodeHeader(&ok_buf);
+    const fd2 = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd2 >= 0);
+    try std.testing.expectEqual(@as(isize, ok_buf.len), posix.write(fd2, &ok_buf, ok_buf.len));
+    _ = posix.close(fd2);
+    var ok_info = try readTrace(std.testing.allocator, std.mem.span(fz.ptr));
+    defer ok_info.deinit();
+    try std.testing.expect(!ok_info.version_mismatch);
+
+    _ = posix.unlink(fz.ptr);
+    _ = posix.rmdir(dz.ptr);
+}
