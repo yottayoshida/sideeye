@@ -32,10 +32,7 @@ const open_impl = if (builtin.os.tag == .macos) struct {
         defer @cVaEnd(&ap);
         // Reading it when O_CREAT is absent would consume something never pushed.
         const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
-        common.debugHex("open flags=0x", @bitCast(flags));
-        common.debugHex("open  read=0x", mode);
         common.note1(.open, AT_FDCWD, path);
-        common.debugHex("open  fwd =0x", mode);
         return common.callOpen(path, flags, mode);
     }
 } else struct {

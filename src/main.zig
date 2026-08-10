@@ -490,7 +490,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\checker     {s}
             \\not tested  power loss, torn writes, concurrent processes
             \\
-            \\reproduce   SIDEEYE_KILL_AT={d} {s}={s} <operation>
+            \\reproduce   SIDEEYE_STATE_DIR={s} {s}={s} SIDEEYE_KILL_AT={d} <operation>
             \\
         , .{
             failures,   explored,
@@ -503,7 +503,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             explored,   n,
             oracle_note,
             checker_note,
-            f.k,        preload_var, shim,
+            state_abs,  preload_var, shim, f.k,
         });
         if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), n, explored, failures, .{
             .k = f.k,

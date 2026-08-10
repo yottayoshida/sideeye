@@ -252,7 +252,7 @@ fi
 
 echo ""
 echo "=========== check 2f: the zero-operation path is guarded too ==========="
-# `doctor` only reads, so no crash points are recorded. That早期 PASS branch sits before
+# `doctor` only reads, so no crash points are recorded. That early-PASS branch sits before
 # the exploration loop, and an operation count of zero is exactly the shape a target
 # takes when the shim could not see it — so it needs the same completeness requirement.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
