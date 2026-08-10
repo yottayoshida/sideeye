@@ -28,6 +28,20 @@ OUT=$ROOT/spike/out
 fails=0
 reasons=""
 
+# The binary has to run at all before any verdict means anything.
+#
+# `zig-out` holds one platform's build at a time, so a `zig build` for the host silently
+# replaces the Linux cross-build this suite needs. When that happens every case fails for
+# the same reason and the summary says "36 acceptance checks failed" — which reads like a
+# regression in the tool rather than a stale artifact. Asked directly, once, the answer is
+# one line. This is the difference between "measured and it broke" and "could not measure".
+if ! "$SIDEEYE" 2>&1 | grep -q "^sideeye "; then
+    echo "CANNOT RUN: $SIDEEYE did not print its usage banner." >&2
+    echo "  built for this platform? try: zig build -Dtarget=aarch64-linux-gnu" >&2
+    "$SIDEEYE" 2>&1 | head -2 | sed 's/^/  | /' >&2
+    exit 1
+fi
+
 # Every case runs with an oracle. PASS without one is refused by design — see the
 # completeness_not_verified case below — so a suite that omitted it would only ever be
 # exercising the FAIL and UNKNOWN paths.
@@ -634,6 +648,47 @@ else
     echo "FAIL configured checker control: exit $rc"
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2o: nothing the target spawned outlives the run ==========="
+# `runChild` used to wait for the direct child only. Everything the target spawned kept
+# running — writing into the state directory while the engine was snapshotting, restoring
+# for the next world, or running the checker. The verdict then describes a moment nobody
+# chose. v0.1 only got away with it because a target that forks is refused before any
+# world is explored; the recording run still had the hazard.
+#
+# The observation point is a file, not the verdict. `TOY_FORK_LATE` is still
+# `child_process_detected`, so this check works without boundary tolerance existing.
+#
+# Deliberately no `--oracle`: `strace -f` follows the late child and does not exit until
+# its tracees do, so the write would land before the engine ever returned and the check
+# would be measuring strace instead of containment. Measured, not assumed — see BUILDLOG.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_FORK_LATE=1 export TOY_FORK_LATE
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+unset TOY_FORK_LATE
+
+# The absence of a file is only evidence if the thing that would have created it ran.
+# `child_process_detected` is that proof: the shim can only report it after the operation
+# started and forked. Without this, a run that died in setup would leave no late.txt and
+# the check would pass having measured nothing.
+if [ "$rc" != "2" ] || ! echo "$o" | grep -q "child_process_detected"; then
+    echo "FAIL the operation never reached the fork: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+else
+    # The child sleeps 300ms before writing. Wait past that, then look.
+    sleep 1
+    if [ -f /tmp/acc/state/late.txt ]; then
+        echo "FAIL a descendant outlived the run and wrote into the state directory"
+        fails=$((fails + 1))
+    else
+        echo "ok   the target forked, and no descendant survived to write afterwards"
+    fi
 fi
 
 echo ""

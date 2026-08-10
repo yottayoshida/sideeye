@@ -2,6 +2,59 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — The first real target, and a hazard that was there all along
+
+Pointed sideeye at omamori, the v0.4 dogfood subject. Two attempts, two UNKNOWNs, for two
+different correct reasons — and the investigation cost three of my own claims.
+
+**The issue I wrote about this was wrong.** I described omamori as "does its file work,
+then execs". Decoding the trace: `posix_spawn` twice, **no `exec` at all**, at records 1–2
+of 152, *before* any state work. All 143 kill-point operations happen in the process
+sideeye already watches. The refusal was throwing away a complete picture.
+
+**And the reason for the refusal was not what the code says.** The comments frame it as
+"v0.1 explores single-process targets". The measured reason is *addressing*: `seq` is a
+per-process counter while a crash point has to be a globally unique address. `fork` makes
+parent and child both number their operations 3 and 4; `exec` resets to 1 and collides with
+the parent's early numbers. `SIDEEYE_KILL_AT=3` names two operations, so it names none.
+
+Two adversarial review rounds then broke two premises of the design I wrote for this.
+
+**`runChild` waits for the direct child only.** Everything the target spawns outlives it.
+After the subject is killed at crash point k, a grandchild keeps running while the engine
+snapshots, restores for the next world, and runs the checker — so the "crashed state" is
+whatever happened to be on disk when the engine looked. This is not a new hazard introduced
+by tolerating children; **it is present today**, hidden only because such targets are
+refused before any world is explored. The recording run still had it.
+
+Confirmed both directions before believing it: a toy whose child sleeps 300 ms and then
+writes `late.txt` produces that file with the group kill disabled, and never produces it
+with the group kill in place.
+
+**The guard I planned for it turned out to be unnecessary.** The plan said to confirm
+`getpgid(child) == child` before signalling, because a failed `setpgid` would leave the
+group id equal to the engine's own and `kill(-pgid)` would kill the engine. That cannot
+happen: the id being signalled is the child's freshly allocated pid, and POSIX keeps a pid
+out of circulation while it is in use as a group id, so it can never be the engine's group.
+Removed the check and wrote down the argument instead. A structural reason beats a guard,
+and it is one fewer thing that has to stay true.
+
+**The second review found the acceptance condition itself was non-deterministic.** The
+design had each child announce itself, and read "no announcement" as "unobserved". A child
+killed by the group kill before it announces leaves no announcement, so the same target
+would produce different verdicts on different runs. For a tool whose product is
+determinism, that is worse than a wrong answer. It also conflates "died before doing
+anything" with "ran unobserved" — the confusion this project exists to avoid, one level
+down. Replaced by letting the oracle decide, which removed the announcement marker, the
+race and the ambiguity together. **The design after two rounds of attack is smaller than
+the one before.**
+
+One measurement worth keeping: **the oracle changes the timing of the recording run.**
+`strace -f` does not exit until its tracees do, so the same stray child makes the recording
+run take 310 ms and its write lands inside the measured window. The recording run and an
+explored world are therefore not timing-equivalent. The containment check deliberately runs
+without an oracle for that reason — otherwise it would be measuring strace.
+
 ## 2026-08-10 — Second review: the fix that was never run, and the scan that stopped one function short
 
 A second review of the fix branch found fifteen more defects. Three of them are worth

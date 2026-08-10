@@ -12,9 +12,15 @@
  * while the thing it is diagnosing is unusable.
  *
  * Environment:
- *   TOY_STATE   state directory (default ./state)
- *   TOY_FORK    if set, fork a trivial child before rotating (boundary case)
- *   TOY_THREAD  if set, create and join a trivial thread before rotating
+ *   TOY_STATE      state directory (default ./state)
+ *   TOY_FORK       if set, fork a trivial child before rotating (boundary case)
+ *   TOY_THREAD     if set, create and join a trivial thread before rotating
+ *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
+ *                  state directory after a delay, then rotate without waiting for it.
+ *                  The parent finishing (or being killed) must not leave that write to
+ *                  land: it would arrive while the engine is snapshotting, restoring or
+ *                  running the checker, and the verdict would describe a moment nobody
+ *                  chose. Used to check that the engine confines the whole process group.
  */
 
 #define _GNU_SOURCE
@@ -84,6 +90,18 @@ static void maybe_leave_the_supported_region(void) {
     if (getenv("TOY_THREAD")) {
         pthread_t t;
         if (pthread_create(&t, NULL, noop_thread, NULL) == 0) pthread_join(t, NULL);
+    }
+    /* Deliberately not waited for. The child sleeps past anything the parent will do,
+     * so its write lands only if the engine let it survive. */
+    if (getenv("TOY_FORK_LATE")) {
+        pid_t p = fork();
+        if (p == 0) {
+            char late[4096];
+            join_path(late, sizeof late, "late.txt");
+            usleep(300 * 1000);
+            write_file(late, "written after the parent was gone\n");
+            _exit(0);
+        }
     }
 }
 
