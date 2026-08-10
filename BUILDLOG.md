@@ -2,6 +2,63 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — First outside review: three ways to reach PASS while blind
+
+An adversarial review of the whole branch found six real defects, three of them capable
+of producing PASS on a target that had not been fully observed. That is the specific
+failure this project exists to avoid, so they are worth recording individually.
+
+**PASS was reachable without any completeness check.** `--oracle` was optional and its
+absence only produced a line in the report. The reviewer pointed out the case the toys
+did not cover: a target that performs *one* ordinary libc operation and then bypasses
+libc for the rest. Something was mutated, so `state_changed_without_ops` stays quiet;
+the trace is short but not empty, so nothing looks wrong. Every toy so far was either
+entirely visible or entirely invisible, and the gap between those was invisible too.
+`spike/toys/toy_mixed.c` now occupies it. PASS requires an oracle; FAIL does not,
+because a counterexample is real whether or not the account of it was complete.
+
+**The oracle could not see a raw `clone`.** It was invoked with
+`-e trace=%file,%desc` and no `-f`, so process creation was outside its view — the same
+blind spot the shim documents for itself. A child touching the state directory while
+the parent performs ordinary operations passed everything. Now `-f` and `%process`,
+with the check placed *before* the state-directory filter, since the child's work never
+mentions the directory in the parent's account.
+
+**`restore()` could delete outside the state directory.** It asked `isDirPath`, which
+calls `opendir` and therefore follows symlinks; a link inside the state directory
+pointing anywhere else would have had its target's contents deleted, once per explored
+world. `assertSafeRoot` never had a chance — it only inspects the root string.
+Deletion now decides from `dirent.type`, which has not followed anything yet.
+
+Three smaller ones: a truncated trace was parsed as far as it went and then judged; an
+operation whose path could not be resolved was dropped silently (`unresolvable_path`
+existed as a value and was never produced); and the acceptance suite ran without an
+oracle, so none of the above was pinned.
+
+### Two regressions the fixes introduced, both found by running them
+
+Fixing the oracle's blind spot broke the oracle twice, and neither showed up as an
+error — both produced confident wrong answers.
+
+`strace -f -o file` prefixes lines with `13    `, not `[pid 13]`. Only the bracketed
+form was handled, so every line failed to yield a syscall name, the oracle's view came
+back empty, and it reported that the *shim* had invented operations. And strace's own
+`execve` of the target was counted as the target creating a child process, so every run
+returned `child_process_detected` — the measuring apparatus flagging the act of
+measuring.
+
+Both were caught by running the acceptance suite, not by reading the diff. The first
+one is a good illustration of why: the code looked right, the tests for it passed, and
+the format it parsed was one that documentation and memory both agree exists.
+
+### Where this leaves the boundary
+
+`spike/acceptance.sh` is green with **six distinct detectors** firing across the
+out-of-bounds cases, up from four. Two of them cover the same target from different
+sides on purpose: `toy-raw` is caught by the oracle when one is available, and by
+`state_changed_without_ops` when it is not. macOS is expected to have no usable oracle,
+so the second path has to work alone, and now that is asserted rather than assumed.
+
 ## 2026-08-10 — Spike-2: the oracle agrees, and disagrees where it should
 
 The completeness comparison is in. The recording run goes through

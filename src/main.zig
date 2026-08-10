@@ -148,7 +148,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // target had produced them.
             var list: std.ArrayList([]const u8) = .empty;
             list.append(arena, strace_path) catch setupError("out of memory");
-            for ([_][]const u8{ "-y", "-e", "trace=%file,%desc", "-o", oracle_out }) |a|
+            // `-f` follows children and `%process` covers clone/fork/execve. Without
+            // both, a target that creates a child through a raw clone is invisible to
+            // the oracle as well as to the shim, and the child's work on the state
+            // directory never appears anywhere.
+            for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process", "-o", oracle_out }) |a|
                 list.append(arena, a) catch setupError("out of memory");
             const pairs = [_][2][]const u8{
                 .{ "TOY_STATE", state_abs },
@@ -191,6 +195,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (!trace.saw_shim_ready)
         unknown(.no_shim_marker, "the shim never initialised: statically linked, hardened, or not injected at all");
 
+    if (trace.truncated)
+        unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown");
+
+    if (trace.saw_unresolved)
+        unknown(.unresolvable_path, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points");
+
     if (trace.boundary) |b| switch (b) {
         .fork, .exec => unknown(.child_process_detected, "the target created a child process; v0.1 explores single-process targets"),
         .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic"),
@@ -202,6 +212,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (args.oracle != null) {
         const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle produced no output");
         const parsed = oracle.parse(arena, text, state_abs) catch setupError("out of memory");
+
+        if (parsed.boundary) |name|
+            unknown(.child_process_detected, name);
 
         if (parsed.unsupported) |name|
             unknown(.unsupported_syscall_observed, name);
@@ -331,6 +344,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
         });
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
+
+    // PASS requires a completeness check, FAIL does not.
+    //
+    // A counterexample is real whether or not the shim saw everything — the state is
+    // broken in front of us. "No counterexample found" is a different kind of claim: it
+    // is only worth anything if we know what was looked at. Without an oracle, a target
+    // that performs one ordinary operation and then bypasses libc for the rest counts as
+    // having mutated something, so `state_changed_without_ops` does not fire either, and
+    // the whole thing sails through looking clean.
+    if (args.oracle == null)
+        unknown(.completeness_not_verified, "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle to make PASS meaningful");
 
     say(
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant

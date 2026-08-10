@@ -162,16 +162,18 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
     const dirp = posix.opendir(dir_path.ptr) orelse return;
     var names_buf: [4096]u8 = undefined;
     var names_len: usize = 0;
-    var offsets: [256]struct { start: usize, len: usize } = undefined;
+    var offsets: [256]struct { start: usize, len: usize, dtype: u8 } = undefined;
     var count: usize = 0;
 
     // Collect names first: deleting while iterating a DIR* is not portable.
+    // The entry type is collected with them, because it is the only description of the
+    // entry that has not followed a symlink yet.
     while (posix.readdir(dirp)) |ent| {
         const name = posix.direntName(ent);
         if (std.mem.eql(u8, name, ".") or std.mem.eql(u8, name, "..")) continue;
         if (count >= offsets.len or names_len + name.len > names_buf.len) break;
         @memcpy(names_buf[names_len..][0..name.len], name);
-        offsets[count] = .{ .start = names_len, .len = name.len };
+        offsets[count] = .{ .start = names_len, .len = name.len, .dtype = ent.type };
         names_len += name.len;
         count += 1;
     }
@@ -188,7 +190,21 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
 
         var full_buf: [contract.max_path]u8 = undefined;
         const full = try joinZ(&full_buf, root, child_rel);
-        if (posix.isDirPath(full.ptr)) {
+
+        // Recurse only into a real directory, never into a symlink that points at one.
+        //
+        // The first version asked `isDirPath`, which calls `opendir` and therefore
+        // follows links: a link inside the state directory pointing outside it would
+        // have redirected this recursive delete out of the tree, once per explored
+        // world. `assertSafeRoot` cannot see that — it only inspects the root string.
+        // Unlinking a symlink removes the link itself, which is what is wanted here.
+        const dt = offsets[i].dtype;
+        const recurse = switch (dt) {
+            posix.DT_DIR => true,
+            posix.DT_UNKNOWN => !posix.isSymlink(full.ptr) and posix.isDirPath(full.ptr),
+            else => false, // DT_REG, DT_LNK and everything else: remove the entry itself
+        };
+        if (recurse) {
             try deleteTree(root, child_rel, depth + 1);
             _ = posix.rmdir(full.ptr);
         } else {
@@ -241,6 +257,9 @@ pub const TraceInfo = struct {
     saw_header: bool = false,
     version_mismatch: bool = false,
     saw_shim_ready: bool = false,
+    /// The shim saw an operation it could not place. Any verdict computed from a trace
+    /// containing one is a verdict about an incomplete picture.
+    saw_unresolved: bool = false,
     kill_landed_seq: ?u32 = null,
     kill_point_count: u32 = 0,
     mutation_count: u32 = 0,
@@ -310,6 +329,7 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
         switch (op.class) {
             .shim_ready => info.saw_shim_ready = true,
             .kill_landed => info.kill_landed_seq = op.seq,
+            .unresolved => info.saw_unresolved = true,
             else => {},
         }
         if (op.class.isKillPoint()) {

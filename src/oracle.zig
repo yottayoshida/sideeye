@@ -66,7 +66,40 @@ const read_only = [_][]const u8{
     "dup3",   "ioctl",     "mmap",    "munmap",     "mprotect",
 };
 
-fn syscallName(line: []const u8) ?[]const u8 {
+/// Syscalls that leave the single-process, single-thread region v0.1 can reason about.
+///
+/// The shim interposes the libc wrappers for these, but `clone`, `clone3` and a raw
+/// `syscall(SYS_clone, …)` go straight past it. Without the oracle watching for them,
+/// a target whose *child* touches the state directory while the parent performs
+/// ordinary operations passes every structural detector: something was mutated, so
+/// `state_changed_without_ops` stays quiet, and the parent's own trace looks complete.
+const process_syscalls = [_][]const u8{
+    "clone", "clone3", "fork", "vfork", "execve", "execveat", "unshare",
+};
+
+/// Strip the process identifier strace prefixes each line with under `-f`.
+///
+/// There are two spellings and they are not interchangeable. Writing to a file
+/// (`-f -o out`) produces `1234  openat(…)`; interleaved output on a terminal produces
+/// `[pid  1234] openat(…)`. Handling only the bracketed form — which is the one that
+/// gets written about — silently defeats every syscall-name lookup, and the failure
+/// surfaces as the oracle claiming the shim invented operations.
+fn stripPidPrefix(line: []const u8) []const u8 {
+    if (std.mem.startsWith(u8, line, "[pid")) {
+        const close = std.mem.indexOfScalar(u8, line, ']') orelse return line;
+        return std.mem.trimStart(u8, line[close + 1 ..], " \t");
+    }
+    var i: usize = 0;
+    while (i < line.len and std.ascii.isDigit(line[i])) i += 1;
+    // A bare number followed by whitespace: no syscall is spelled that way.
+    if (i > 0 and i < line.len and (line[i] == ' ' or line[i] == '\t')) {
+        return std.mem.trimStart(u8, line[i..], " \t");
+    }
+    return line;
+}
+
+fn syscallName(raw: []const u8) ?[]const u8 {
+    const line = stripPidPrefix(raw);
     const paren = std.mem.indexOfScalar(u8, line, '(') orelse return null;
     const name = line[0..paren];
     if (name.len == 0) return null;
@@ -74,6 +107,13 @@ fn syscallName(line: []const u8) ?[]const u8 {
         if (!std.ascii.isAlphanumeric(ch) and ch != '_') return null;
     }
     return name;
+}
+
+fn isProcessSyscall(name: []const u8) bool {
+    for (process_syscalls) |p| {
+        if (std.mem.eql(u8, p, name)) return true;
+    }
+    return false;
 }
 
 /// True when any path mentioned on the line lies inside the state directory.
@@ -115,6 +155,9 @@ fn isReadOnly(name: []const u8) bool {
 pub const Parsed = struct {
     classes: std.ArrayList(contract.OpClass),
     unsupported: ?[]const u8 = null,
+    /// A process- or thread-creating syscall, named. Unlike the shim's boundary
+    /// detectors this also catches the raw forms the shim cannot see.
+    boundary: ?[]const u8 = null,
     /// How many lines were examined. Reported so that "no mismatches" can be told
     /// apart from "the oracle file was empty and nothing was compared".
     lines_seen: usize = 0,
@@ -123,6 +166,7 @@ pub const Parsed = struct {
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) !Parsed {
     var out: Parsed = .{ .classes = .empty };
+    var execs: usize = 0;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     while (it.next()) |raw| {
@@ -131,6 +175,22 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
         out.lines_seen += 1;
 
         const name = syscallName(line) orelse continue;
+
+        // Checked before the state-directory filter: creating a process is out of
+        // bounds regardless of which files it goes on to touch, and the child's own
+        // operations may never mention the directory in the parent's view at all.
+        if (isProcessSyscall(name)) {
+            // The very first execve is strace starting the target. Counting it would
+            // report every single run as having created a child process — the
+            // measuring apparatus flagging its own act of measuring.
+            if (std.mem.eql(u8, name, "execve") or std.mem.eql(u8, name, "execveat")) {
+                execs += 1;
+                if (execs == 1) continue;
+            }
+            if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
+            continue;
+        }
+
         if (!touchesStateDir(line, state_dir)) continue;
         out.lines_in_scope += 1;
 
@@ -218,6 +278,68 @@ test "read-only syscalls do not enter the comparison" {
     try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
     try std.testing.expectEqual(@as(usize, 2), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+}
+
+test "both of strace's -f pid prefixes are stripped" {
+    // Bracketed form: interleaved output.
+    try std.testing.expectEqualStrings("openat", syscallName("[pid  1234] openat(AT_FDCWD, \"x\") = 3").?);
+    try std.testing.expectEqualStrings("clone", syscallName("[pid 99] clone(child_stack=NULL) = 100").?);
+    // Bare-number form: what `-f -o file` actually writes. Missing this one made every
+    // line unparseable while the parser still looked like it worked.
+    try std.testing.expectEqualStrings("openat", syscallName("13    openat(AT_FDCWD, \"x\") = 3").?);
+    try std.testing.expectEqualStrings("write", syscallName("7\twrite(3, \"x\", 1) = 1").?);
+    // No prefix at all, unchanged.
+    try std.testing.expectEqualStrings("write", syscallName("write(3, \"x\", 1) = 1").?);
+}
+
+test "process-creating syscalls are caught even outside the state directory" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The child's work never mentions the parent's state directory here, and the parent
+    // performs a perfectly ordinary write. Without the process check this parses as one
+    // clean operation and nothing else.
+    const text =
+        \\openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
+        \\clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\[pid  4242] write(5</elsewhere/f>, "x", 1) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expectEqualStrings("clone", p.boundary.?);
+}
+
+test "the launch execve is not mistaken for the target creating a child" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // strace's own act of starting the target appears as the first execve.
+    const text =
+        \\execve("/work/spike/out/toy-bug", ["toy-bug", "rotate"], 0x7ff) = 0
+        \\openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
+    try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
+}
+
+test "a second execve is the target replacing itself, and counts" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const text =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\execve("/bin/sh", ["sh", "-c", "x"], 0x7ff) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expectEqualStrings("execve", p.boundary.?);
+}
+
+test "a raw clone3 is caught the same way" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const p = try parse(arena_state.allocator(), "clone3({flags=0}, 88) = 777\n", "/tmp/s");
+    try std.testing.expectEqualStrings("clone3", p.boundary.?);
 }
 
 test "compare finds the first divergence and the direction of it" {

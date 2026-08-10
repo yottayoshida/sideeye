@@ -19,6 +19,9 @@ OUT=$ROOT/spike/out
 fails=0
 reasons=""
 
+# Every case runs with an oracle. PASS without one is refused by design — see the
+# completeness_not_verified case below — so a suite that omitted it would only ever be
+# exercising the FAIL and UNKNOWN paths.
 run_case() {
     name=$1; toy=$2; want_exit=$3; want_text=$4
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
@@ -27,7 +30,8 @@ run_case() {
         --setup "$toy init" \
         --operation "$toy rotate" \
         --shim "$SHIM" \
-        --work /tmp/acc/work 2>&1)
+        --work /tmp/acc/work \
+        --oracle /usr/bin/strace 2>&1)
     rc=$?
 
     if [ "$rc" != "$want_exit" ]; then
@@ -65,7 +69,7 @@ echo "     checking explored == N + 1 ..."
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 n=$(echo "$o" | grep -o 'crash points [0-9]*' | awk '{print $3}')
 e=$(echo "$o" | grep -o 'explored [0-9]*' | awk '{print $2}')
 if [ -n "$n" ] && [ -n "$e" ] && [ "$e" = "$((n + 1))" ]; then
@@ -77,8 +81,31 @@ fi
 
 echo ""
 echo "=========== check 2: outside the boundary ==========="
-run_case "toy-raw is UNKNOWN"    "$OUT/toy-raw"    2 "state_changed_without_ops"
+# With an oracle present the oracle speaks first, because it can name the operation
+# that went unseen rather than only observing that something moved.
+run_case "toy-raw is UNKNOWN"    "$OUT/toy-raw"    2 "oracle_missed_operation"
 run_case "toy-static is UNKNOWN" "$OUT/toy-static" 2 "no_shim_marker"
+
+# And the oracle-independent layer has to work on its own, because macOS may not have
+# an oracle at all. Same target, no --oracle: a different detector must catch it.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "state_changed_without_ops"; then
+    echo "ok   toy-raw is caught without an oracle too (exit 2)"
+    reasons="$reasons state_changed_without_ops"
+else
+    echo "FAIL structural detector without oracle: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The case the structural detectors cannot see on their own: one ordinary libc write
+# (so something *was* counted as mutated) followed by a raw syscall that changes the
+# key behind the shim's back. state_changed_without_ops stays quiet here.
+run_case "toy-mixed is UNKNOWN"  "$OUT/toy-mixed"  2 "oracle_missed_operation"
 
 TOY_FORK=1 export TOY_FORK
 run_case "fork is UNKNOWN"       "$OUT/toy-bug"    2 "child_process_detected"
@@ -120,16 +147,53 @@ else
 fi
 
 echo ""
-echo "=========== check 2b: the four reasons are distinct ==========="
+echo "=========== check 2d: PASS is refused without an oracle ==========="
+# The corrected toy is genuinely correct, so this is the one place where the *only*
+# thing standing between the run and a PASS is the completeness requirement.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified"; then
+    echo "ok   a target that would otherwise PASS is UNKNOWN without an oracle"
+    reasons="$reasons completeness_not_verified"
+else
+    echo "FAIL no-oracle PASS suppression: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2e: restore does not follow a symlink out of the tree ==========="
+# restore() deletes the state tree once per world. A link inside it pointing outside
+# must be removed as a link, never descended into.
+rm -rf /tmp/outside /tmp/acc && mkdir -p /tmp/outside /tmp/acc/state
+echo "precious" > /tmp/outside/keepme.txt
+TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
+ln -s /tmp/outside /tmp/acc/state/link
+"$SIDEEYE" explore --state /tmp/acc/state \
+    --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace >/dev/null 2>&1
+if [ -f /tmp/outside/keepme.txt ]; then
+    echo "ok   the file outside the state directory survived"
+else
+    echo "FAIL restore followed the symlink and deleted outside the root"
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2b: the reasons are distinct ==========="
 distinct=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | sort -u | wc -l | tr -d ' ')
 total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')
 echo "detectors fired: $reasons"
 echo "distinct: $distinct of $total"
-if [ "$distinct" != "4" ]; then
-    echo "FAIL: expected four distinct detectors; a single always-UNKNOWN path would give 1"
+# A single always-UNKNOWN path would give 1 no matter how many cases ran.
+if [ "$distinct" -lt 5 ]; then
+    echo "FAIL: expected at least five distinct detectors, got $distinct"
     fails=$((fails + 1))
 else
-    echo "ok   four different detectors fired"
+    echo "ok   $distinct different detectors fired"
 fi
 
 echo ""

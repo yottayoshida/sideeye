@@ -29,6 +29,9 @@ echo "building toy-static"
 # statically linked binaries does not apply to what this toy does.
 gcc $cc_flags -static -DBUGGY=1 -o "$out/toy-static" "$root/spike/toys/toy.c" -lpthread
 
+echo "building toy-mixed"
+gcc $cc_flags -o "$out/toy-mixed" "$root/spike/toys/toy_mixed.c"
+
 echo "building toy-rust"
 rustc -O -o "$out/toy-rust" "$root/spike/toys/toy_rust.rs"
 

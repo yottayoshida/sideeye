@@ -24,7 +24,11 @@ const std = @import("std");
 /// The engine refuses a trace whose version differs (`contract_version_mismatch`),
 /// because `contract.zig` is shared at *build* time — a stale shim binary paired
 /// with a fresh engine is a real combination that must not be misread.
-pub const contract_version: u32 = 1;
+/// v2 added `OpClass.unresolved`: the shim now records that it saw an operation whose
+/// path it could not resolve, instead of dropping it. A v1 shim paired with a v2 engine
+/// would look like a target that never had such an operation, which is the difference
+/// between "nothing to report" and "something was not looked at".
+pub const contract_version: u32 = 2;
 
 pub const magic = "SIDEEYE1";
 
@@ -83,6 +87,12 @@ pub const OpClass = enum(u16) {
     /// proof that the process died where the engine asked it to, rather than the
     /// engine assuming so because it set the variable.
     kill_landed = 901,
+    /// The shim saw an operation but could not work out which path it referred to —
+    /// an unlinked descriptor, an `O_TMPFILE` handle, a `/proc/self/fd` link that no
+    /// longer resolves. Recorded rather than dropped: an operation nobody could place
+    /// is not the same as an operation that did not happen, and only the first of those
+    /// is compatible with reporting PASS.
+    unresolved = 902,
 
     pub fn isKillPoint(self: OpClass) bool {
         return switch (self) {
@@ -100,7 +110,7 @@ pub const OpClass = enum(u16) {
 
     pub fn isMarker(self: OpClass) bool {
         return switch (self) {
-            .shim_ready, .kill_landed => true,
+            .shim_ready, .kill_landed, .unresolved => true,
             else => false,
         };
     }
@@ -138,6 +148,7 @@ pub const OpClass = enum(u16) {
             .thread => "thread",
             .shim_ready => "shim_ready",
             .kill_landed => "kill_landed",
+            .unresolved => "unresolved",
         };
     }
 
@@ -168,6 +179,14 @@ pub const UnknownReason = enum {
     multiple_threads_detected,
     unresolvable_path,
     kill_did_not_land,
+    /// No oracle was available, so the shim's account of what happened could not be
+    /// checked against anything. Without it, a target that bypasses libc looks exactly
+    /// like one that touched no files — and the structural detectors only catch that
+    /// when the *whole* operation bypassed libc, not when part of it did.
+    completeness_not_verified,
+    /// The trace ended mid-record. Everything after that point is unknown, including
+    /// how many operations there were.
+    trace_truncated,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);

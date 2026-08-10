@@ -28,6 +28,7 @@ pub extern "c" fn close(fd: c_int) c_int;
 pub extern "c" fn mkdir(path: [*:0]const u8, mode: c_uint) c_int;
 pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
+pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
 pub extern "c" fn fork() c_int;
 pub extern "c" fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) c_int;
 pub extern "c" fn waitpid(pid: c_int, status: ?*c_int, options: c_int) c_int;
@@ -41,9 +42,21 @@ pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 
 // Values of `dirent.type`, identical on Linux and the BSDs.
-const DT_UNKNOWN: u8 = 0;
-const DT_DIR: u8 = 4;
-const DT_REG: u8 = 8;
+pub const DT_UNKNOWN: u8 = 0;
+pub const DT_DIR: u8 = 4;
+pub const DT_REG: u8 = 8;
+pub const DT_LNK: u8 = 10;
+
+/// True when the path itself is a symbolic link, without following it.
+///
+/// `readlink` on a non-link fails with EINVAL, which is the cheapest way to ask this
+/// question without a `stat` struct. It matters for deletion: `opendir` follows links,
+/// so treating "can be opened as a directory" as "is a directory" would let a link
+/// inside the state directory redirect a recursive delete outside of it.
+pub fn isSymlink(path: [*:0]const u8) bool {
+    var buf: [1]u8 = undefined;
+    return readlink(path, &buf, buf.len) >= 0;
+}
 
 pub const Kind = enum { file, dir, other, missing };
 

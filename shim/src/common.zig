@@ -214,15 +214,31 @@ fn writeRecord(rec: contract.Record) void {
 /// Returns null when the link cannot be read — an unlinked file, an `O_TMPFILE`
 /// descriptor, a socket. The caller turns that into UNKNOWN rather than guessing,
 /// because a descriptor we cannot name is one we cannot decide is in scope.
-fn fdPath(out: []u8, fd: c_int) ?[]const u8 {
+const deleted_suffix = " (deleted)";
+
+/// Absolute path of an open descriptor, via `/proc/self/fd/N`.
+///
+/// Returns null only when the descriptor cannot name a filesystem path at all — the
+/// link failed to read, or it resolves to something like `socket:[12345]`, which is
+/// proof the descriptor is *not* in the state directory rather than uncertainty about
+/// it. Those must not become UNKNOWN: a target that writes to a socket would otherwise
+/// be unjudgeable, and there would be nothing wrong with it.
+///
+/// A descriptor whose file has been unlinked reads back as `/path/to/file (deleted)`.
+/// That case sets `deleted` and still returns the path, because the caller needs to
+/// know whether it was inside the state directory before deciding what it means.
+fn fdPath(out: []u8, fd: c_int, deleted: *bool) ?[]const u8 {
+    deleted.* = false;
     var link_buf: [64]u8 = undefined;
     const link = std.fmt.bufPrintZ(&link_buf, "/proc/self/fd/{d}", .{fd}) catch return null;
     const n = c.readlink(link, out.ptr, out.len);
     if (n <= 0) return null;
-    const raw = out[0..@intCast(n)];
-    // A deleted file reads back as "/path/to/file (deleted)".
-    if (std.mem.endsWith(u8, raw, " (deleted)")) return null;
+    var raw = out[0..@intCast(n)];
     if (raw.len == 0 or raw[0] != '/') return null;
+    if (std.mem.endsWith(u8, raw, deleted_suffix)) {
+        deleted.* = true;
+        raw = raw[0 .. raw.len - deleted_suffix.len];
+    }
     return raw;
 }
 
@@ -238,12 +254,22 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8) ?[]const u8 {
     if (p[0] == '/') return contract.normalizePath(out, "/", p) catch null;
 
     var base_buf: [contract.max_path]u8 = undefined;
+    var base_deleted = false;
     const base = if (dirfd == AT_FDCWD)
         cwdPath(&base_buf) orelse return null
     else
-        fdPath(&base_buf, dirfd) orelse return null;
+        fdPath(&base_buf, dirfd, &base_deleted) orelse return null;
 
     return contract.normalizePath(out, base, p) catch null;
+}
+
+/// An operation that was seen but could not be placed.
+///
+/// Dropping it silently is the failure this whole tool exists to avoid: the engine
+/// would then see a trace that is complete as far as it can tell, and PASS is the
+/// honest-looking answer to that. Recorded instead, so the engine can refuse to judge.
+fn noteUnresolved(path: []const u8) void {
+    writeRecord(.{ .op = .unresolved, .seq = 0, .path = path, .aux = "" });
 }
 
 /// The single place where an operation becomes a counted event, and the single place
@@ -279,7 +305,13 @@ pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
     defer busy = false;
 
     var buf: [contract.max_path]u8 = undefined;
-    const resolved = resolveAt(&buf, dirfd, path) orelse return;
+    const resolved = resolveAt(&buf, dirfd, path) orelse {
+        // A relative path whose directory descriptor could not be named. It may or may
+        // not have been inside the state directory, and that is exactly the situation
+        // that must not be resolved by assuming the harmless case.
+        noteUnresolved(std.mem.span(path));
+        return;
+    };
     observe(op, resolved, "");
 }
 
@@ -296,8 +328,15 @@ pub fn note2(
 
     var buf: [contract.max_path]u8 = undefined;
     var abuf: [contract.max_path]u8 = undefined;
-    const resolved = resolveAt(&buf, dirfd, path) orelse return;
-    const aresolved = resolveAt(&abuf, adirfd, apath) orelse "";
+    const resolved = resolveAt(&buf, dirfd, path) orelse {
+        noteUnresolved(std.mem.span(path));
+        return;
+    };
+    const aresolved = resolveAt(&abuf, adirfd, apath) orelse {
+        // Half of a rename is not something to record as a rename.
+        noteUnresolved(std.mem.span(apath));
+        return;
+    };
     observe(op, resolved, aresolved);
 }
 
@@ -309,7 +348,19 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
     defer busy = false;
 
     var buf: [contract.max_path]u8 = undefined;
-    const resolved = fdPath(&buf, fd) orelse return;
+    var deleted = false;
+    // A null here means the descriptor cannot name a path at all (a socket, a pipe, a
+    // failed link read). That is evidence it is outside the state directory, not
+    // uncertainty about it, so there is nothing to report.
+    const resolved = fdPath(&buf, fd, &deleted) orelse return;
+    if (!contract.isInsideDir(resolved, stateDir())) return;
+    if (deleted) {
+        // The file was inside the state directory and has since been unlinked. Writing
+        // through such a descriptor still changes bytes the engine cannot see in any
+        // snapshot, so the operation exists but has no address.
+        noteUnresolved(resolved);
+        return;
+    }
     observe(op, resolved, "");
 }
 
