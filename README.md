@@ -8,7 +8,9 @@ It breaks worlds, not inputs: same input, hostile universe.
 
 ## Status
 
-**Design phase. There is no code yet.** What exists:
+**v0.1 in development. Not released.** The engine, the shim and the acceptance suite
+exist and run on Linux and macOS; nothing is tagged and the report schema is explicitly
+experimental.
 
 | Document | What it is |
 |----------|------------|
@@ -16,6 +18,19 @@ It breaks worlds, not inputs: same input, hostile universe.
 | [PRD.md](PRD.md) | The road from v0.1 to v1.0 |
 | [BUILDLOG.md](BUILDLOG.md) | Decisions as they happen, including the wrong ones |
 | [CHANGELOG.md](CHANGELOG.md) | Releases (none yet) |
+
+### What the target has to do for v0.1
+
+Sideeye refuses to guess. A target outside these limits is reported UNKNOWN (exit 2),
+never as passing.
+
+- **Exit zero during the recording run.** The crash points are read off that run, so a
+  target that fails partway through would have Sideeye explore a sequence it never
+  performs. There is no way yet to declare a different expected status.
+- **Be dynamically linked, single-process and single-threaded**, and reach its files
+  through libc. Raw syscalls, static linking, a hardened runtime, `fork`/`exec` and
+  threads are all detected and refused.
+- **Keep its state in one directory**, passed with `--state`.
 
 ## What it will look like
 

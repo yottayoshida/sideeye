@@ -138,6 +138,73 @@ fn touchesStateDir(line: []const u8, state_dir: []const u8) bool {
     return false;
 }
 
+/// The `index`th top-level argument of a syscall line, or null.
+///
+/// Arguments are separated by commas at depth zero. Quoted strings are skipped whole and
+/// bracketed groups are counted, so neither a comma inside a filename nor a struct
+/// argument splits the list. Reading a field this way rather than searching the whole
+/// line is what keeps a *filename* from being read as a *flag*.
+fn syscallArg(raw: []const u8, index: usize) ?[]const u8 {
+    const line = stripPidPrefix(raw);
+    const open = std.mem.indexOfScalar(u8, line, '(') orelse return null;
+    var i = open + 1;
+    var start = i;
+    var arg: usize = 0;
+    var depth: usize = 0;
+    while (i < line.len) : (i += 1) {
+        switch (line[i]) {
+            '"' => {
+                i += 1;
+                while (i < line.len) : (i += 1) {
+                    if (line[i] == '\\') {
+                        i += 1; // strace escapes quotes and backslashes inside strings
+                        continue;
+                    }
+                    if (line[i] == '"') break;
+                }
+            },
+            '[', '{', '<' => depth += 1,
+            ']', '}', '>' => {
+                if (depth > 0) depth -= 1;
+            },
+            ',' => if (depth == 0) {
+                if (arg == index) return std.mem.trim(u8, line[start..i], " \t");
+                arg += 1;
+                start = i + 1;
+            },
+            ')' => if (depth == 0) {
+                if (arg == index) return std.mem.trim(u8, line[start..i], " \t");
+                return null;
+            },
+            else => {},
+        }
+    }
+    return null;
+}
+
+/// `AT_REMOVEDIR` as Linux spells it.
+///
+/// A hardcoded platform constant is what made the shim disagree with itself across
+/// operating systems, so it is worth saying why one is right here: this file parses
+/// `strace` output, `strace` exists only on Linux, and the number therefore cannot be
+/// read on a platform where it means something else.
+const at_removedir_linux: u64 = 0x200;
+
+/// True when an `unlinkat` line asks for a directory removal.
+///
+/// `unlinkat` is two operations wearing one name, and which one it is decides whether the
+/// two views agree: aarch64 Linux has no `rmdir` syscall, so glibc implements `rmdir(3)`
+/// as `unlinkat(AT_REMOVEDIR)`. The shim interposes the libc entry point and records
+/// `.rmdir`; a name-only mapping here would say `.unlink`, diverge positionally, and
+/// report UNKNOWN for a target that did nothing wrong.
+fn unlinkatRemovesDir(line: []const u8) bool {
+    const flags = syscallArg(line, 2) orelse return false;
+    if (std.mem.indexOf(u8, flags, "AT_REMOVEDIR") != null) return true;
+    // `strace -X raw`, and some builds, print the flags as a number.
+    const v = std.fmt.parseInt(u64, flags, 0) catch return false;
+    return (v & at_removedir_linux) != 0;
+}
+
 fn classify(name: []const u8) ?contract.OpClass {
     for (known) |m| {
         if (std.mem.eql(u8, m.name, name)) return m.class;
@@ -196,7 +263,9 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
 
         if (isReadOnly(name)) continue;
         if (classify(name)) |cls| {
-            try out.classes.append(arena, cls);
+            const actual: contract.OpClass = if (cls == .unlink and
+                std.mem.eql(u8, name, "unlinkat") and unlinkatRemovesDir(line)) .rmdir else cls;
+            try out.classes.append(arena, actual);
         } else if (out.unsupported == null) {
             out.unsupported = try arena.dupe(u8, name);
         }
@@ -256,6 +325,47 @@ test "parse extracts the class sequence the shim should have recorded" {
     // The loader's own openat is outside the state directory and must not be counted.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+}
+
+test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // aarch64 Linux has no rmdir syscall; glibc's rmdir(3) becomes this. The shim
+    // records .rmdir because it interposes the libc entry point, so a name-only mapping
+    // here would disagree and blame a correct target.
+    const text =
+        \\unlinkat(AT_FDCWD, "/tmp/s/sub", AT_REMOVEDIR) = 0
+        \\unlinkat(AT_FDCWD, "/tmp/s/key.json", 0) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const expected = [_]contract.OpClass{ .rmdir, .unlink };
+    try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
+}
+
+test "the AT_REMOVEDIR flag is read from the flags argument, not from the line" {
+    // A filename is attacker-controlled in the only sense that matters here: the target
+    // chooses it. Searching the whole line for the flag name lets a *file* called
+    // AT_REMOVEDIR be classified as a *directory removal*, which diverges from the shim
+    // and reports UNKNOWN for a target that did nothing wrong.
+    try std.testing.expect(!unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/AT_REMOVEDIR.bak\", 0) = 0"));
+    try std.testing.expect(unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/sub\", AT_REMOVEDIR) = 0"));
+    // Numeric spelling: `strace -X raw`, and some builds by default.
+    try std.testing.expect(unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/sub\", 0x200) = 0"));
+    try std.testing.expect(unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/sub\", 512) = 0"));
+    try std.testing.expect(!unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/f\", 0) = 0"));
+    // A pid prefix must not shift the argument positions.
+    try std.testing.expect(unlinkatRemovesDir("13    unlinkat(AT_FDCWD, \"/tmp/s/sub\", AT_REMOVEDIR) = 0"));
+}
+
+test "arguments are split on top-level commas only" {
+    const line = "renameat(AT_FDCWD</w>, \"/tmp/s/a,b\", AT_FDCWD</w>, \"/tmp/s/c\") = 0";
+    try std.testing.expectEqualStrings("\"/tmp/s/a,b\"", syscallArg(line, 1).?);
+    try std.testing.expectEqualStrings("\"/tmp/s/c\"", syscallArg(line, 3).?);
+    try std.testing.expectEqual(@as(?[]const u8, null), syscallArg(line, 4));
+    // A struct argument is one argument, however many commas it contains.
+    const st = "newfstatat(AT_FDCWD, \"/tmp/s/k\", {st_mode=S_IFREG|0644, st_size=6}, 0) = 0";
+    try std.testing.expectEqualStrings("0", syscallArg(st, 3).?);
 }
 
 test "a syscall v0.1 does not model is reported rather than skipped" {

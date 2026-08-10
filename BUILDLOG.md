@@ -2,6 +2,147 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Second review: the fix that was never run, and the scan that stopped one function short
+
+A second review of the fix branch found fifteen more defects. Three of them are worth
+recording because of *how* they survived, not what they were.
+
+**The `reproduce` line still did not reproduce.** The previous entry says it was fixed
+and verified by running it. It was neither. The line had been missing
+`SIDEEYE_STATE_DIR`; adding that left `SIDEEYE_TRACE_PATH` missing, and the shim returns
+from `init()` before arming itself when it has nowhere to write — so the printed command
+runs to completion, changes nothing, and looks like an ordinary successful run. The
+"verification" was done in a shell that still had those variables exported from an
+earlier experiment. **An environment that has been used for experiments is not a place
+to check whether a command carries its own environment.** Both the acceptance suite and
+the macOS CI job now execute the printed line with `env -i`.
+
+That mistake repeated inside this session. A local check of the same line reported
+failure, and the cause was the check: it rebuilt the state in a *different* directory
+from the one the report names in `SIDEEYE_STATE_DIR`, so every operation fell outside
+what the shim watches. Two probes in a row measured a path that did not reach the thing
+under test.
+
+**The same-class scan stopped at the two functions the finding named.** `restore` and
+`deleteTree` were fixed for silently ignoring failed writes. `corruptState`, twenty lines
+away in the same file, does the same thing for the same reason and was not looked at —
+and its failure mode is worse than the others: an uncorrupted state is one the checker is
+*right* to accept, so the run reports `checker_not_falsified`, blaming the caller's
+checker for the engine's own failed write. A scan driven by the finding's file list is
+not a scan of the class.
+
+**Two variables that had to agree, disagreeing.** The text report read a local
+`checker_note`; the JSON read a global copied from it on the success path only. An
+UNKNOWN therefore printed `unknown_reason: checker_not_falsified` beside
+`checker: none configured` — the report contradicting itself about whether a checker
+existed. Fixed by deleting one of each pair rather than by copying at the two sites where
+it showed.
+
+**A limit fixed in the wrong direction.** The previous round turned a silent truncation
+at 256 directory entries into a hard error. That removed the silence and introduced a
+worse limit: any state directory with more than 256 entries became unexplorable, reported
+as a setup error that named nothing. Deleting in passes removes the bound entirely. A
+directory of 301 entries is now in the acceptance suite, because the suite's own state
+directories hold one file and would never have noticed.
+
+**The check found a third defect in the same line.** Running the printed command in CI —
+the step added by this round — failed on macOS with exit 0 and an untouched state
+directory. Not a flaw in the check: `/tmp` is a symlink to `/private/tmp`, the engine
+resolves `--state` and the shim filters on the resolved spelling, and a target told the
+unresolved one passes *that* to `unlink` and `rename`. Only descriptor-based operations
+matched, so no crash point 5 existed to die before. Exploration never showed it because
+the engine hands the target the resolved path through the environment; the reproduce line
+cannot, because there the target finds its state its own way. The shim now accepts either
+spelling and records one, and Linux grows an explicit symlink to reach the same case.
+
+Half of that new check does not discriminate: the "same crash point" assertion stays
+green with the fix reverted, for the same reason the defect hid — the toy is handed the
+resolved path. Labelled as a baseline rather than left looking like proof.
+
+**And the check killed the suite.** Written with a `set +e` … `set -e` pair around a
+command whose failure is expected — a habit from the CI steps, which do start with
+`set -eu`. The acceptance suite does not; it runs under `set -u` alone. So the
+"restoring" `set -e` switched errexit *on* from that line, and the very next check runs
+the buggy toy, where sideeye correctly exits 1. The script ended there. What it printed
+was its last *passing* line, followed by nothing, with exit status 1 — indistinguishable
+at a glance from an ordinary failing run, and the missing summary was the only clue.
+
+Six increasingly desperate theories went by before measuring: environment leakage (no),
+a broken stdout (no), the shim loaded into the shell (no). `strace -f -e trace=%process`
+answered it in one run — the shell reaped sideeye's expected exit 1 and immediately called
+`exit_group(1)`. The suite now carries an EXIT trap that says so when it stops without
+reaching a verdict, confirmed by injecting an early exit.
+
+The shim also gained its first unit tests. It had none, which is backwards for the half
+that runs inside somebody else's process, and every defect found in it so far produced a
+plausible value rather than an error. Both new tests were confirmed by mutation.
+
+Two smaller notes. The review recommended replacing the hand-written JSON escaper with
+`std.json.Stringify.encodeJsonString`; that was checked against the pinned standard
+library and is wrong — its default options pass bytes ≥ 0x80 through unchanged, the same
+defect, and `escape_unicode` decodes them with `catch unreachable`, so invalid UTF-8 is a
+panic instead of a bad document. And the new gate for a non-executable oracle appeared not
+to fire inside the container: the same 0644 file on a real filesystem is refused, but
+`access(X_OK)` over the Docker bind mount answers permissively. The gate is right; the
+mount reports something the filesystem does not.
+
+## 2026-08-10 — Review after merge: four ways to reach PASS, and the report the caller reads
+
+A code review run against the merged branch found fifteen defects. Four of them reached
+PASS, which is the failure this project is built to prevent, so they are worth naming.
+
+**The recording run's exit status was discarded.** An operation that failed immediately —
+bad argument, missing input, EACCES — still wrote its `shim_ready` marker, recorded no
+operations, changed nothing, and every structural detector stayed quiet. The run reported
+`PASS  the operation performed no state-directory operations`, exit 0. A partial failure
+was worse: five operations become two, and the exploration is confidently complete over a
+sequence the target never finishes. `--setup`'s exit code was checked; the operation's,
+which the entire trace depends on, was thrown away.
+
+**The state directory was resolved before it existed.** `realpath` failed and the code
+fell back to the argument as written. On macOS `/tmp` is a symlink to `/private/tmp`, so
+the engine filtered on one spelling while the shim — asking the descriptor via
+`F_GETPATH` — saw the other. Every operation fell outside the state directory. The oracle
+could not save it, because it was handed the same wrong string and also found nothing:
+two views agreeing on nothing is indistinguishable from two views agreeing.
+
+**`deleteTree` stopped silently at 256 entries.** `restore` then wrote the snapshot over
+whatever remained and returned success, so every world after the first started
+contaminated. An L2 checker would report a violation at crash point k that was residue
+from k-1.
+
+**The oracle reported agreement over zero examined lines.** `acceptance.sh` asserts by
+hand that more than ten lines were scanned; the tool shipped without the check its own
+suite considered necessary.
+
+Also fixed: `AT_REMOVEDIR` was the Linux constant on both platforms, so macOS recorded
+`.unlink` where Linux recorded `.rmdir` — the parity claim in the README, the CHANGELOG
+and the CI job name was false for any target removing a directory, while the two lines
+of context around it *were* platform-branched. And the oracle mapped `unlinkat` to
+`.unlink` by name alone, which disagrees with the shim on aarch64 Linux, where glibc
+implements `rmdir(3)` as `unlinkat(AT_REMOVEDIR)`: a correct target would have been
+reported UNKNOWN.
+
+### The two acceptance conditions that were never checked
+
+PRD's v0.1 acceptance asks for every verdict path to be falsified once — "a gate whose
+failure paths were never seen firing is not a gate". UNKNOWN had seven detectors behind
+it. **SETUP ERROR had none**, and neither did the new recording-run check. Both now do,
+and the second went from red to green when the fix landed, which is the only way to know
+a check pins anything.
+
+### JSON report
+
+DESIGN §13 asks for both forms carrying identical content. The acceptance check reads the
+fields a caller would branch on and compares them against the text report, rather than
+inspecting the document by eye — a report that looks right and does not parse is worse
+than no report. UNKNOWN reaches it too, which took wiring, because that verdict exits from
+deep inside the run rather than at the end, and it is the one a CI caller is most likely
+to be branching on.
+
+Written by hand rather than generated from a type: the schema is explicitly experimental
+until v1.0, and generating it would imply a stability this release does not offer.
+
 ## 2026-08-10 — CI, green on both platforms, first run
 
 ```

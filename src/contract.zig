@@ -37,6 +37,17 @@ pub const env = struct {
     /// Absolute path of the directory whose contents define the target's state.
     /// Operations outside it are not counted.
     pub const state_dir = "SIDEEYE_STATE_DIR";
+    /// A second spelling of the same directory, when the caller named it through a
+    /// symlink. Operations under either spelling are counted, and both are recorded
+    /// under the canonical one.
+    ///
+    /// macOS resolves `/tmp` to `/private/tmp`. A target told its state is at
+    /// `/tmp/x` passes `/tmp/x/key.json` to `unlink`, while `F_GETPATH` answers
+    /// `/private/tmp/x/key.json` for the same file: one operation, two spellings, and
+    /// a prefix test on either alone counts half of them. The engine hides this during
+    /// exploration by handing the target the resolved path, which is why it surfaced
+    /// only in the `reproduce` line — where the target finds its state its own way.
+    pub const state_dir_alt = "SIDEEYE_STATE_DIR_ALT";
     /// Absolute path the shim appends its trace to.
     pub const trace_path = "SIDEEYE_TRACE_PATH";
     /// 1-based index of the kill-point op to die immediately before.
@@ -191,6 +202,18 @@ pub const UnknownReason = enum {
     /// not testing what it claims to test. Every PASS it would go on to produce would
     /// be a statement about nothing (DESIGN §14-13).
     checker_not_falsified,
+    /// The recording run did not complete normally. Its trace describes a partial
+    /// execution, so the crash points derived from it address an operation sequence the
+    /// target does not actually perform.
+    recording_run_failed,
+    /// The oracle produced no output at all. Reporting agreement between two empty
+    /// views is agreement about nothing.
+    oracle_saw_nothing,
+    /// The baseline world — the one run to completion without a kill — did not end the
+    /// way the recording run did. It is the same command over the same restored state,
+    /// so a different outcome means the restored state is not the state that was
+    /// recorded, and every verdict drawn from the other worlds rests on that state.
+    baseline_run_failed,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);

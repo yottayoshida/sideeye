@@ -18,6 +18,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `--allow-unverified`, for platforms where no oracle is available. PASS then carries `oracle: NOT VERIFIED` in the report; FAIL is unaffected.
 - Continuous integration across both operating systems and both architectures, asserting that the verdict and the crash point match.
 
+### Fixed
+
+- Four paths that could reach PASS on a run that had not been fully observed: a discarded exit status from the recording run, a state directory resolved before it existed (so the engine and the shim filtered on different spellings of it on macOS), a recursive delete that stopped silently at 256 entries and left the previous world's files in place, and an oracle that reported agreement over zero examined lines.
+- `AT_REMOVEDIR` used the Linux constant on both platforms, so macOS recorded a directory removal as a file removal — the parity claim held everywhere except for targets that remove directories.
+- The oracle mapped `unlinkat` by name alone, disagreeing with the shim on architectures where `rmdir(3)` is implemented as `unlinkat(AT_REMOVEDIR)`, and reporting UNKNOWN for a correct target.
+- `restore` returned success after a failed write, so a world could start from a truncated file and produce a counterexample the target never caused.
+- A report longer than the output buffer printed nothing at all while still exiting non-zero.
+- The `reproduce` line omitted the environment the shim needs, so following it exactly did not reproduce anything. It was wrong twice: adding the state directory left the trace path missing, and without that the shim never arms itself. The acceptance suite and the macOS job now run the line as printed.
+- A recursive delete that failed at 256 entries in one directory, which made any realistic state directory unexplorable. Directories are now drained in passes, and the buffer is no longer part of the contract.
+- `corruptState` ignored a failed open and a short write, so a state that had not been corrupted could be reported as one the checker wrongly accepted — the tool blaming the caller's checker for its own failure.
+- The un-killed baseline world's exit status was discarded, the same defect that was fixed for the recording run in the previous release.
+- The machine-readable report could be left half-written, or missing entirely, without saying so. It is now built in full and moved into place, and a failure is reported on stderr.
+- A setup error left any previous report in place, so a second run into the same `--json` path could be read as the first run's verdict.
+- An UNKNOWN reported zero crash points and zero explored worlds regardless of how far the run had got, and its `checker` and `oracle` fields could contradict its own `unknown_reason`.
+- The oracle read `AT_REMOVEDIR` by searching the whole `strace` line, so a file whose *name* contained that text was classified as a directory removal. The flags argument is now parsed, including its numeric spelling.
+- Paths that are not valid UTF-8 — legal on Linux — produced a JSON document strict parsers reject, losing the counterexample entirely.
+- An oracle that could not be started was reported as the operation failing.
+- On macOS, a state directory named through a symlink — `/tmp`, always — made the `reproduce` line silently inert: the engine filters on the resolved spelling, while a target told the unresolved one passes that to `unlink` and `rename`. Operations under either spelling are now counted, and recorded under one.
+
 ### Notes
 
 - Targets that leave the supported boundary — raw syscalls, static linking, a hardened runtime, `fork`/`exec`, threads, or operations outside the modelled set — are reported UNKNOWN. They are never reported as passing.

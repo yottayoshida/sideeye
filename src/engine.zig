@@ -159,57 +159,89 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
     else
         try joinZ(&dir_buf, root, rel_prefix);
 
-    const dirp = posix.opendir(dir_path.ptr) orelse return;
-    var names_buf: [4096]u8 = undefined;
-    var names_len: usize = 0;
-    var offsets: [256]struct { start: usize, len: usize, dtype: u8 } = undefined;
-    var count: usize = 0;
+    // Removed in passes, reopening the directory each time.
+    //
+    // Names must be collected before anything is deleted — removing entries while
+    // iterating a DIR* is not portable — so a fixed buffer bounds how many can be held
+    // at once. The first version stopped quietly at that bound, which left the previous
+    // world's files in place and made an L2 checker report a violation at crash point k
+    // that was really residue from k-1. Turning it into a hard error fixed the silence
+    // and introduced a worse limit: a state directory with more than 256 entries in one
+    // directory became unexplorable, reported as SETUP ERROR with no mention of a buffer.
+    // Neither is a limit worth having. A pass that takes as many as fit and then reopens
+    // drains a directory of any size, and the buffer stops being part of the contract.
+    while (true) {
+        var names_buf: [4096]u8 = undefined;
+        var names_len: usize = 0;
+        var offsets: [256]struct { start: usize, len: usize, dtype: u8 } = undefined;
+        var count: usize = 0;
+        var buffer_full = false;
 
-    // Collect names first: deleting while iterating a DIR* is not portable.
-    // The entry type is collected with them, because it is the only description of the
-    // entry that has not followed a symlink yet.
-    while (posix.readdir(dirp)) |ent| {
-        const name = posix.direntName(ent);
-        if (std.mem.eql(u8, name, ".") or std.mem.eql(u8, name, "..")) continue;
-        if (count >= offsets.len or names_len + name.len > names_buf.len) break;
-        @memcpy(names_buf[names_len..][0..name.len], name);
-        offsets[count] = .{ .start = names_len, .len = name.len, .dtype = ent.type };
-        names_len += name.len;
-        count += 1;
-    }
-    _ = posix.closedir(dirp);
-
-    var i: usize = 0;
-    while (i < count) : (i += 1) {
-        const name = names_buf[offsets[i].start..][0..offsets[i].len];
-        var child_rel_buf: [contract.max_path]u8 = undefined;
-        const child_rel = if (rel_prefix.len == 0)
-            std.fmt.bufPrint(&child_rel_buf, "{s}", .{name}) catch return error.PathTooLong
-        else
-            std.fmt.bufPrint(&child_rel_buf, "{s}/{s}", .{ rel_prefix, name }) catch return error.PathTooLong;
-
-        var full_buf: [contract.max_path]u8 = undefined;
-        const full = try joinZ(&full_buf, root, child_rel);
-
-        // Recurse only into a real directory, never into a symlink that points at one.
-        //
-        // The first version asked `isDirPath`, which calls `opendir` and therefore
-        // follows links: a link inside the state directory pointing outside it would
-        // have redirected this recursive delete out of the tree, once per explored
-        // world. `assertSafeRoot` cannot see that — it only inspects the root string.
-        // Unlinking a symlink removes the link itself, which is what is wanted here.
-        const dt = offsets[i].dtype;
-        const recurse = switch (dt) {
-            posix.DT_DIR => true,
-            posix.DT_UNKNOWN => !posix.isSymlink(full.ptr) and posix.isDirPath(full.ptr),
-            else => false, // DT_REG, DT_LNK and everything else: remove the entry itself
-        };
-        if (recurse) {
-            try deleteTree(root, child_rel, depth + 1);
-            _ = posix.rmdir(full.ptr);
-        } else {
-            _ = posix.unlink(full.ptr);
+        {
+            const dirp = posix.opendir(dir_path.ptr) orelse return;
+            defer _ = posix.closedir(dirp);
+            // The entry type is collected with the name, because it is the only
+            // description of the entry that has not followed a symlink yet.
+            while (posix.readdir(dirp)) |ent| {
+                const name = posix.direntName(ent);
+                if (std.mem.eql(u8, name, ".") or std.mem.eql(u8, name, "..")) continue;
+                if (count >= offsets.len or names_len + name.len > names_buf.len) {
+                    buffer_full = true;
+                    break;
+                }
+                @memcpy(names_buf[names_len..][0..name.len], name);
+                offsets[count] = .{ .start = names_len, .len = name.len, .dtype = ent.type };
+                names_len += name.len;
+                count += 1;
+            }
         }
+
+        if (count == 0) {
+            // Nothing collected. Either the directory is empty — done — or a single name
+            // was too long to hold, which would otherwise loop forever making no progress.
+            if (buffer_full) return error.DeleteFailed;
+            return;
+        }
+
+        var removed: usize = 0;
+        var i: usize = 0;
+        while (i < count) : (i += 1) {
+            const name = names_buf[offsets[i].start..][0..offsets[i].len];
+            var child_rel_buf: [contract.max_path]u8 = undefined;
+            const child_rel = if (rel_prefix.len == 0)
+                std.fmt.bufPrint(&child_rel_buf, "{s}", .{name}) catch return error.PathTooLong
+            else
+                std.fmt.bufPrint(&child_rel_buf, "{s}/{s}", .{ rel_prefix, name }) catch return error.PathTooLong;
+
+            var full_buf: [contract.max_path]u8 = undefined;
+            const full = try joinZ(&full_buf, root, child_rel);
+
+            // Recurse only into a real directory, never into a symlink that points at one.
+            //
+            // The first version asked `isDirPath`, which calls `opendir` and therefore
+            // follows links: a link inside the state directory pointing outside it would
+            // have redirected this recursive delete out of the tree, once per explored
+            // world. `assertSafeRoot` cannot see that — it only inspects the root string.
+            // Unlinking a symlink removes the link itself, which is what is wanted here.
+            const dt = offsets[i].dtype;
+            const recurse = switch (dt) {
+                posix.DT_DIR => true,
+                posix.DT_UNKNOWN => !posix.isSymlink(full.ptr) and posix.isDirPath(full.ptr),
+                else => false, // DT_REG, DT_LNK and everything else: remove the entry itself
+            };
+            if (recurse) {
+                try deleteTree(root, child_rel, depth + 1);
+                if (posix.rmdir(full.ptr) == 0) removed += 1;
+            } else {
+                if (posix.unlink(full.ptr) == 0) removed += 1;
+            }
+        }
+
+        // A pass that removes nothing would be repeated forever by the loop above. It
+        // means the entries cannot be deleted at all — a permission problem, not a
+        // capacity one — and the caller has to hear about it.
+        if (removed == 0) return error.DeleteFailed;
+        if (!buffer_full) return;
     }
 }
 
@@ -232,7 +264,14 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
                 var off: usize = 0;
                 while (off < e.content.len) {
                     const w = posix.write(fd, e.content[off..].ptr, e.content.len - off);
-                    if (w <= 0) break;
+                    // Breaking here and returning success would start the next world from
+                    // a truncated file, and judgeL0 would then report a hybrid — a
+                    // counterexample manufactured by the tool rather than found in the
+                    // target. readWhole distinguishes these cases; this loop did not.
+                    if (w <= 0) {
+                        _ = posix.close(fd);
+                        return error.CreateFailed;
+                    }
                     off += @intCast(w);
                 }
                 _ = posix.close(fd);
@@ -403,8 +442,23 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
         var full_buf: [contract.max_path]u8 = undefined;
         const full = try joinZ(&full_buf, root, e.rel);
         const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
-        if (fd < 0) continue;
-        _ = posix.write(fd, corruption_probe.ptr, corruption_probe.len);
+        // A file that could not be overwritten leaves the state intact, and an intact
+        // state is one the checker is right to accept. The run would then report
+        // `checker_not_falsified` — "the checker accepted a state whose every file had
+        // been overwritten with junk" — about files this function failed to touch,
+        // blaming the caller's checker for the engine's own failed write. The same
+        // silence was fixed in `restore` and `deleteTree`; the scan that found those
+        // looked at the two functions named in the finding and missed this one.
+        if (fd < 0) return error.CreateFailed;
+        var off: usize = 0;
+        while (off < corruption_probe.len) {
+            const w = posix.write(fd, corruption_probe[off..].ptr, corruption_probe.len - off);
+            if (w <= 0) {
+                _ = posix.close(fd);
+                return error.CreateFailed;
+            }
+            off += @intCast(w);
+        }
         _ = posix.close(fd);
     }
 }

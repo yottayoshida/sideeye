@@ -32,10 +32,7 @@ const open_impl = if (builtin.os.tag == .macos) struct {
         defer @cVaEnd(&ap);
         // Reading it when O_CREAT is absent would consume something never pushed.
         const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
-        common.debugHex("open flags=0x", @bitCast(flags));
-        common.debugHex("open  read=0x", mode);
         common.note1(.open, AT_FDCWD, path);
-        common.debugHex("open  fwd =0x", mode);
         return common.callOpen(path, flags, mode);
     }
 } else struct {
@@ -104,8 +101,9 @@ pub fn unlink(path: [*:0]const u8) callconv(.c) c_int {
 }
 
 pub fn unlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) callconv(.c) c_int {
-    // AT_REMOVEDIR (0x200) makes this an rmdir; report it as what it does.
-    const op: contract.OpClass = if (flags & 0x200 != 0) .rmdir else .unlink;
+    // AT_REMOVEDIR makes this an rmdir; report it as what it does. The constant differs
+    // between platforms, which is why it is not spelled inline here.
+    const op: contract.OpClass = if (flags & common.AT_REMOVEDIR != 0) .rmdir else .unlink;
     common.note1(op, dirfd, path);
     return common.callUnlinkat(dirfd, path, flags);
 }
