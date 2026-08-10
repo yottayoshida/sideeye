@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-10 — Narrowing: the work done between the two calls is not the problem either
+
+Second step of walking the probe toward the shim. The shim does something between
+reading `mode` and forwarding it — `note1`, which resolves the path and therefore calls
+`getcwd`. Adding exactly that to the probe:
+
+```
+flags=0x00000601
+ recv=0x000001a4        still 0o644
+                        file lands -rw-r--r--
+```
+
+So a call sitting between `@cVaArg` and the forward does not disturb the argument. Two
+differences remain between the probe and the shim:
+
+- the shim forwards through an inline wrapper (`common.callOpen`) rather than calling
+  the extern directly, and the replacement is reached via a `pub const` alias of a
+  function inside a comptime-selected struct;
+- the shim installs twenty-five interposers, not one.
+
+Both are testable the same way, one at a time. The pattern of this whole investigation
+has been that each measurement removes a plausible explanation, and the plausible ones
+are the dangerous ones: promotion and rebinding were both "fixable", and fixing either
+would have hidden the defect rather than removed it.
+
 ## 2026-08-10 — Variadic passing is not the problem: measured, at last
 
 The probe that earlier panicked before reaching its measurement now runs, because it no
