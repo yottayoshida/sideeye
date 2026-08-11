@@ -27,7 +27,7 @@ may change in any release. See [CHANGELOG.md](CHANGELOG.md) for what this versio
 | [DESIGN.md](DESIGN.md) | What Sideeye is, and what it refuses to be |
 | [PRD.md](PRD.md) | The road from v0.1 to v1.0 |
 | [BUILDLOG.md](BUILDLOG.md) | Decisions as they happen, including the wrong ones |
-| [CHANGELOG.md](CHANGELOG.md) | Releases (none yet) |
+| [CHANGELOG.md](CHANGELOG.md) | Releases |
 
 ### What the target has to do for v0.1
 
@@ -102,8 +102,9 @@ The full version is [`spike/check.sh`](spike/check.sh). Sideeye refuses to trust
 it has not seen fail: before exploring, it overwrites the state with junk and requires the
 check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS.
 
-Configuration is by flags in v0.1. The `sideeye.toml` form described in
-[DESIGN.md](DESIGN.md) §12 — three commands and one directory — arrives in v0.2:
+Configuration is by flags for now. The `sideeye.toml` form described in
+[DESIGN.md](DESIGN.md) §12 — three commands and one directory — arrives in v0.3
+(the slot v0.2 was promised to; process boundaries jumped the queue, see the PRD):
 
 ```toml
 [world]

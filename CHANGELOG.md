@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-11
+
+Process boundaries, judged by what the other processes did. This release was not on the roadmap: v0.2 was promised as the full Define contract (`sideeye.toml`, L1 markers, case storage and `replay`), and that scope moves to v0.3 unchanged. What forced the queue-jump was pointing v0.1.0 at its first real target — the run ended at a categorical refusal (`child_process_detected`) for a shape every shim, wrapper and launcher shares, and one of the fixes below removes a v0.1.0 defect that killed the very targets it observed.
+
 ### Added
 
 - Process boundaries are now judged by what the other processes did, not by their existence. A target that forks or spawns helpers — the shim/wrapper/launcher shape that ended the first real-world run — is explorable when an oracle is present and no process other than the subject touched the state directory. The rule and the numbering are the same condition: a child that stays out of the state directory consumes no crash-point addresses (ADR 0002). Refusals that remain, each with its own detector: a child that touches the state directory (`child_touched_state_dir`, caught independently by the shim for children that load it and by the oracle for children that do not), any boundary without an oracle (`boundary_without_oracle` — the shim only sees processes that load it, and "was not seen" is not "did nothing"), the subject replacing its own image, threads, and processes that leave the containment group (`setsid`/`setpgid` are now interposed and recorded as `.detached`).
@@ -51,4 +55,5 @@ First release. It proves the assumption the whole tool rests on — that a proce
 - The report schema is experimental and may change in any release before 1.0, along with the Define contract and the exit codes.
 - Defects found and fixed before this release are not listed here — no user saw them. They are in [BUILDLOG.md](BUILDLOG.md), including the ones that took several attempts.
 
+[0.2.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.2.0
 [0.1.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.1.0
