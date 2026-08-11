@@ -46,6 +46,25 @@
  *                       prefix of post, so the file stays on pre-or-post and the run
  *                       stays UNKNOWN — pinning that the relaxation for files that only
  *                       grow does not leak to files that are rewritten.
+ *
+ * The five below exist for stdio observation at flush granularity (ADR 0005).
+ *   TOY_STDIO          a plain-"r" read (must consume no address), then the
+ *                      git-COMMIT_EDITMSG shape: fopen "w", three fprintfs, one
+ *                      implicit flush at fclose = [open, write, close].
+ *   TOY_STDIO_FLUSH    fflush after each line — three write addresses — plus one
+ *                      empty fflush, which issues no syscall and must not be recorded.
+ *   TOY_STDIO_FREOPEN  fprintf, then freopen to a second state file while bytes are
+ *                      pending: the wrapper must record [write, close, open] in the
+ *                      order freopen issues the syscalls.
+ *   TOY_STDIO_BIG      3000 lines overflow the buffer inside fprintf; those writes
+ *                      bypass the flush wrappers by construction. Pins that the
+ *                      boundary refuses (UNKNOWN) instead of quietly miscounting.
+ *   TOY_STDIO_NOCLOSE  fprintf and never fclose: the bytes land in libc's exit-time
+ *                      cleanup, internal and invisible. Pins the same boundary.
+ *   TOY_STDIO_SEEK     the taskwarrior shape: an "r+" update stream made dirty and
+ *                      then repositioned — libc flushes inside the fseek, so the seek
+ *                      family are flush points too. init creates the file so it is in
+ *                      the pre snapshot.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -242,6 +261,11 @@ static int cmd_init(void) {
         join_path(nd, sizeof nd, "nondet.txt");
         if (write_file(nd, "seed\n") != 0) return 1;
     }
+    if (getenv("TOY_STDIO_SEEK")) {
+        char sk[4096];
+        join_path(sk, sizeof sk, "stdio-seek.txt");
+        if (write_file(sk, "0123456789\n") != 0) return 1;
+    }
     return 0;
 }
 
@@ -291,6 +315,76 @@ static int cmd_rotate(void) {
         const char *line = "appended\n";
         if (write(fd, line, strlen(line)) != (ssize_t)strlen(line)) { close(fd); return 1; }
         if (close(fd) != 0) return 1;
+    }
+
+    /* The git-COMMIT_EDITMSG shape, with a read control in front. */
+    if (getenv("TOY_STDIO")) {
+        char key[4096], sp[4096];
+        join_path(key, sizeof key, KEY_NAME);
+        join_path(sp, sizeof sp, "stdio.txt");
+        FILE *rf = fopen(key, "r"); /* must not consume a crash-point address */
+        if (!rf) return 1;
+        (void)fgetc(rf);
+        fclose(rf);
+        FILE *f = fopen(sp, "w");
+        if (!f) return 1;
+        for (int i = 0; i < 3; i++) fprintf(f, "line %d\n", i);
+        if (fclose(f) != 0) return 1;
+    }
+
+    if (getenv("TOY_STDIO_FLUSH")) {
+        char sp[4096];
+        join_path(sp, sizeof sp, "stdio.txt");
+        FILE *f = fopen(sp, "w");
+        if (!f) return 1;
+        for (int i = 0; i < 3; i++) {
+            fprintf(f, "line %d\n", i);
+            if (fflush(f) != 0) { fclose(f); return 1; }
+        }
+        /* An empty flush issues no write(2) and must not be recorded as one. */
+        if (fflush(f) != 0) { fclose(f); return 1; }
+        if (fclose(f) != 0) return 1;
+    }
+
+    if (getenv("TOY_STDIO_FREOPEN")) {
+        char a[4096], b[4096];
+        join_path(a, sizeof a, "stdio-a.txt");
+        join_path(b, sizeof b, "stdio-b.txt");
+        FILE *f = fopen(a, "w");
+        if (!f) return 1;
+        fprintf(f, "into a\n"); /* pending at the freopen: [write, close, open] */
+        f = freopen(b, "w", f);
+        if (!f) return 1;
+        fprintf(f, "into b\n");
+        if (fclose(f) != 0) return 1;
+    }
+
+    if (getenv("TOY_STDIO_BIG")) {
+        char sp[4096];
+        join_path(sp, sizeof sp, "stdio.txt");
+        FILE *f = fopen(sp, "w");
+        if (!f) return 1;
+        for (int i = 0; i < 3000; i++) fprintf(f, "0123456789\n");
+        if (fclose(f) != 0) return 1;
+    }
+
+    if (getenv("TOY_STDIO_NOCLOSE")) {
+        char sp[4096];
+        join_path(sp, sizeof sp, "stdio.txt");
+        FILE *f = fopen(sp, "w");
+        if (!f) return 1;
+        fprintf(f, "never closed\n");
+        /* Deliberately no fclose. */
+    }
+
+    if (getenv("TOY_STDIO_SEEK")) {
+        char sk[4096];
+        join_path(sk, sizeof sk, "stdio-seek.txt");
+        FILE *f = fopen(sk, "r+");
+        if (!f) return 1;
+        fprintf(f, "AB"); /* dirty the stream, then reposition: libc flushes here */
+        if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return 1; }
+        if (fclose(f) != 0) return 1; /* nothing pending; a close, not a write */
     }
 
     /* A rewrite that no run repeats — the class the history form must NOT tolerate. */

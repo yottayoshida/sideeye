@@ -42,6 +42,16 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.unlinkat, libc.unlinkat),
     entry(&ops.fsync, libc.fsync),
     entry(&ops.close, libc.close),
+    // stdio, at flush granularity (ADR 0005). No 64-bit variants or fflush_unlocked on
+    // this platform; fdopen needs no wrapper (no syscall happens there).
+    entry(&ops.fopen, libc.fopen),
+    entry(&ops.freopen, libc.freopen),
+    entry(&ops.fflush, libc.fflush),
+    entry(&ops.fclose, libc.fclose),
+    entry(&ops.fseek, libc.fseek),
+    entry(&ops.fseeko, libc.fseeko),
+    entry(&ops.rewind, libc.rewind),
+    entry(&ops.fsetpos, libc.fsetpos),
     entry(&ops.ftruncate, libc.ftruncate),
     entry(&ops.truncate, libc.truncate),
     entry(&ops.mkdir, libc.mkdir),

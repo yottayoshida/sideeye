@@ -35,6 +35,9 @@ pub const c = struct {
     /// (`write`, `fsync`, `close`) was silently dropped from the trace — macOS counted
     /// three operations where Linux counted five, with nothing reporting an error.
     pub extern "c" fn fcntl(fd: c_int, cmd: c_int, ...) c_int;
+    /// Not interposed, so the extern reaches libc directly on both platforms. Used by
+    /// the stdio wrappers to hand a stream's descriptor to `noteFd`.
+    pub extern "c" fn fileno(stream: *FILE) c_int;
 };
 
 const SEEK_END: c_int = 2;
@@ -133,6 +136,154 @@ pub const PthreadCreateFn = *const fn (*anyopaque, ?*const anyopaque, *const any
 pub const SetsidFn = *const fn () callconv(.c) c_int;
 pub const SetpgidFn = *const fn (c_int, c_int) callconv(.c) c_int;
 
+// --- stdio, at flush granularity (ADR 0005) ----------------------------------------
+
+pub const FILE = opaque {};
+pub const FopenFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) ?*FILE;
+pub const FreopenFn = *const fn (?[*:0]const u8, [*:0]const u8, *FILE) callconv(.c) ?*FILE;
+pub const FflushFn = *const fn (?*FILE) callconv(.c) c_int;
+pub const FcloseFn = *const fn (*FILE) callconv(.c) c_int;
+pub const FpendingFn = *const fn (*FILE) callconv(.c) usize;
+pub const FseekFn = *const fn (*FILE, c_long, c_int) callconv(.c) c_int;
+pub const FseekoFn = *const fn (*FILE, i64, c_int) callconv(.c) c_int;
+pub const RewindFn = *const fn (*FILE) callconv(.c) void;
+pub const FsetposFn = *const fn (*FILE, *const anyopaque) callconv(.c) c_int;
+
+/// A stream's write capability, from its fopen mode string (C11 7.21.5.3): the mode
+/// begins 'r', 'w' or 'a', optionally followed by 'b', '+' and platform extensions.
+/// Only a plain 'r' without '+' is read-only. Unknown shapes err toward write-capable —
+/// the unparseable is counted, the same stance as `openIsWriteCapable`. The oracle
+/// needs no matching text predicate: for every *valid* mode it classifies the openat
+/// this fopen issues, whose flags say the same thing ("r" opens O_RDONLY and is
+/// excluded on both sides). An invalid mode is the one shape the two can disagree on —
+/// libc fails it with EINVAL before any syscall, so the recorded `.open` has no
+/// counterpart and the run ends in a divergence UNKNOWN, which is the fail-closed
+/// direction, not a verdict.
+pub fn modeIsWriteCapable(mode: [*:0]const u8) bool {
+    const m = std.mem.span(mode);
+    if (m.len == 0) return true; // unparseable: err toward counting
+    if (m[0] != 'r') return true; // 'w', 'a', and anything unknown
+    for (m[1..]) |ch| {
+        if (ch == '+') return true;
+    }
+    return false;
+}
+
+test "the mode-string predicate, pinned case by case" {
+    try std.testing.expect(!modeIsWriteCapable("r"));
+    try std.testing.expect(!modeIsWriteCapable("rb"));
+    try std.testing.expect(!modeIsWriteCapable("re")); // glibc close-on-exec extension
+    try std.testing.expect(modeIsWriteCapable("r+"));
+    try std.testing.expect(modeIsWriteCapable("rb+"));
+    try std.testing.expect(modeIsWriteCapable("r+b"));
+    try std.testing.expect(modeIsWriteCapable("w"));
+    try std.testing.expect(modeIsWriteCapable("wx"));
+    try std.testing.expect(modeIsWriteCapable("a"));
+    try std.testing.expect(modeIsWriteCapable("w+"));
+    try std.testing.expect(modeIsWriteCapable("")); // unparseable errs toward counting
+    try std.testing.expect(modeIsWriteCapable("z"));
+}
+
+/// `__fpending`, resolved at runtime on both platforms and never guessed. glibc and
+/// musl ship it; macOS may not, and falls back to the SDK-public `__sFILE` fields.
+var fpending: ?FpendingFn = null;
+
+/// The head of Darwin's `struct __sFILE`, as the SDK's <stdio.h> declares it. Only the
+/// fields up to `_bf` are read. The layout has been ABI-stable for decades; the pin
+/// test below writes into a real stream and fails loudly the day that stops being true.
+const DarwinSFile = extern struct {
+    p: ?[*]u8,
+    r: c_int,
+    w: c_int,
+    flags: c_short,
+    file: c_short,
+    bf_base: ?[*]u8,
+    bf_size: c_int,
+};
+/// __SWR: the stream is open for writing. A read stream's `_p` also sits past its
+/// buffer base, so without this check a read position would masquerade as pending
+/// output and every fclose of a read stream would invent a write.
+const darwin_swr: c_short = 0x0008;
+
+fn darwinPending(stream: *FILE) usize {
+    const s: *const DarwinSFile = @ptrCast(@alignCast(stream));
+    if ((s.flags & darwin_swr) == 0) return 0;
+    const p = s.p orelse return 0;
+    const base = s.bf_base orelse return 0;
+    if (@intFromPtr(p) <= @intFromPtr(base)) return 0;
+    return @intFromPtr(p) - @intFromPtr(base);
+}
+
+/// stdio recording is armed only when the pending-bytes question can be answered.
+/// Without `__fpending` (Linux) the shim records nothing stdio-shaped and behaves
+/// exactly as v4 did — the oracle still refuses stdio targets rather than misjudging
+/// them. macOS always has the `__sFILE` fallback.
+pub fn stdioActive() bool {
+    if (is_darwin) return true;
+    return fpending != null;
+}
+
+fn pendingBytes(stream: *FILE) usize {
+    if (fpending) |f| return f(stream);
+    if (is_darwin) return darwinPending(stream);
+    return 0; // unreachable while stdioActive() gates every caller
+}
+
+/// The flush is where buffered bytes become one write(2) (ADR 0005): record `.write`
+/// iff the stream holds pending output. Recording an empty flush would invent an
+/// operation the oracle never sees — the pending check is a correctness requirement,
+/// not an optimisation.
+///
+/// The `active`/`busy` refusal comes first, before any look at the stream's internals:
+/// `noteFd` would refuse the record anyway, but an inactive or re-entered shim must
+/// not so much as read `__sFILE` fields of a stream it was never armed to observe.
+pub fn noteStdioFlush(stream: *FILE) void {
+    if (!active or busy) return;
+    if (!stdioActive()) return;
+    if (pendingBytes(stream) == 0) return;
+    noteFd(.write, c.fileno(stream));
+}
+
+pub fn noteStdioClose(stream: *FILE) void {
+    if (!active or busy) return;
+    if (!stdioActive()) return;
+    noteFd(.close, c.fileno(stream));
+}
+
+/// Whether a flush is due, for the freopen wrapper's explicit pre-flush. Same guards
+/// as noteStdioFlush: an inactive shim answers "no" without touching the stream.
+pub fn stdioHasPending(stream: *FILE) bool {
+    if (!active or busy) return false;
+    if (!stdioActive()) return false;
+    return pendingBytes(stream) != 0;
+}
+
+test "pending bytes are read from a real stream, not assumed" {
+    // The one place the shim depends on stdio internals. On Linux this exercises the
+    // dlsym'd __fpending; on macOS, whichever of __fpending / __sFILE the init chose.
+    // Failing here means the pending source is wrong for this platform — which must be
+    // a loud test failure, never a quiet phantom write in a trace.
+    if (fpending == null and !is_darwin) fpending = lookup(FpendingFn, "__fpending");
+    if (!stdioActive()) return error.SkipZigTest;
+
+    const path = "/tmp/sideeye-fpending-test";
+    const f = std.c.fopen(path, "w") orelse return error.SkipZigTest;
+    const stream: *FILE = @ptrCast(f);
+    try std.testing.expectEqual(@as(usize, 0), pendingBytes(stream));
+    _ = std.c.fwrite("ab", 1, 2, f);
+    try std.testing.expectEqual(@as(usize, 2), pendingBytes(stream));
+    _ = std.c.fclose(f);
+
+    // Control: a read stream never reports pending output, whatever its position.
+    const rf = std.c.fopen(path, "r") orelse return error.SkipZigTest;
+    const rstream: *FILE = @ptrCast(rf);
+    var buf: [1]u8 = undefined;
+    _ = std.c.fread(&buf, 1, 1, rf);
+    try std.testing.expectEqual(@as(usize, 0), pendingBytes(rstream));
+    _ = std.c.fclose(rf);
+    _ = std.c.unlink(path);
+}
+
 pub var real: struct {
     open: ?OpenFn = null,
     openat: ?OpenatFn = null,
@@ -162,6 +313,19 @@ pub var real: struct {
     pthread_create: ?PthreadCreateFn = null,
     setsid: ?SetsidFn = null,
     setpgid: ?SetpgidFn = null,
+    fopen: ?FopenFn = null,
+    fopen64: ?FopenFn = null,
+    freopen: ?FreopenFn = null,
+    freopen64: ?FreopenFn = null,
+    fflush: ?FflushFn = null,
+    fflush_unlocked: ?FflushFn = null,
+    fclose: ?FcloseFn = null,
+    fseek: ?FseekFn = null,
+    fseeko: ?FseekoFn = null,
+    fseeko64: ?FseekoFn = null,
+    rewind: ?RewindFn = null,
+    fsetpos: ?FsetposFn = null,
+    fsetpos64: ?FsetposFn = null,
 } = .{};
 
 var state_dir_buf: [contract.max_path]u8 = undefined;
@@ -228,6 +392,19 @@ fn resolveAll() void {
     real.pthread_create = lookup(PthreadCreateFn, "pthread_create");
     real.setsid = lookup(SetsidFn, "setsid");
     real.setpgid = lookup(SetpgidFn, "setpgid");
+    real.fopen = lookup(FopenFn, "fopen");
+    real.fopen64 = lookup(FopenFn, "fopen64");
+    real.freopen = lookup(FreopenFn, "freopen");
+    real.freopen64 = lookup(FreopenFn, "freopen64");
+    real.fflush = lookup(FflushFn, "fflush");
+    real.fflush_unlocked = lookup(FflushFn, "fflush_unlocked");
+    real.fclose = lookup(FcloseFn, "fclose");
+    real.fseek = lookup(FseekFn, "fseek");
+    real.fseeko = lookup(FseekoFn, "fseeko");
+    real.fseeko64 = lookup(FseekoFn, "fseeko64");
+    real.rewind = lookup(RewindFn, "rewind");
+    real.fsetpos = lookup(FsetposFn, "fsetpos");
+    real.fsetpos64 = lookup(FsetposFn, "fsetpos64");
 }
 
 fn parseU32(s: []const u8) u32 {
@@ -249,6 +426,12 @@ pub fn init() void {
     // macOS fills `real` from extern declarations before this runs (see shim.zig);
     // dlsym is a Linux-only step.
     if (builtin.os.tag != .macos) resolveAll();
+
+    // Both platforms ask for __fpending at runtime rather than assuming it. Recording
+    // paths are gated on `active`, which is only set at the end of this function, so a
+    // constructor-time dlsym is safe even on macOS, where call-through must not depend
+    // on tables like this one (see darwin_libc.zig).
+    fpending = lookup(FpendingFn, "__fpending");
 
     const sd = c.getenv(contract.env.state_dir) orelse return;
     const tp = c.getenv(contract.env.trace_path) orelse return;
@@ -721,6 +904,73 @@ pub inline fn callSetpgid(pid: c_int, pgid: c_int) c_int {
     if (is_darwin) return darwin.setpgid(pid, pgid);
     const f = real.setpgid orelse return -1;
     return f(pid, pgid);
+}
+pub inline fn callFopen(path: [*:0]const u8, mode: [*:0]const u8) ?*FILE {
+    if (is_darwin) return @ptrCast(darwin.fopen(path, mode));
+    const f = real.fopen orelse return null;
+    return f(path, mode);
+}
+pub inline fn callFopen64(path: [*:0]const u8, mode: [*:0]const u8) ?*FILE {
+    // Never installed on macOS (no such symbol there); routed to fopen for the sake of
+    // compiling one ops.zig for both platforms.
+    if (is_darwin) return @ptrCast(darwin.fopen(path, mode));
+    const f = real.fopen64 orelse return null;
+    return f(path, mode);
+}
+pub inline fn callFreopen(path: ?[*:0]const u8, mode: [*:0]const u8, stream: *FILE) ?*FILE {
+    if (is_darwin) return @ptrCast(darwin.freopen(path, mode, @ptrCast(stream)));
+    const f = real.freopen orelse return null;
+    return f(path, mode, stream);
+}
+pub inline fn callFreopen64(path: ?[*:0]const u8, mode: [*:0]const u8, stream: *FILE) ?*FILE {
+    if (is_darwin) return @ptrCast(darwin.freopen(path, mode, @ptrCast(stream)));
+    const f = real.freopen64 orelse return null;
+    return f(path, mode, stream);
+}
+pub inline fn callFflush(stream: ?*FILE) c_int {
+    if (is_darwin) return darwin.fflush(@ptrCast(stream));
+    const f = real.fflush orelse return -1;
+    return f(stream);
+}
+pub inline fn callFflushUnlocked(stream: ?*FILE) c_int {
+    if (is_darwin) return darwin.fflush(@ptrCast(stream));
+    const f = real.fflush_unlocked orelse return -1;
+    return f(stream);
+}
+pub inline fn callFclose(stream: *FILE) c_int {
+    if (is_darwin) return darwin.fclose(@ptrCast(stream));
+    const f = real.fclose orelse return -1;
+    return f(stream);
+}
+pub inline fn callFseek(stream: *FILE, off: c_long, whence: c_int) c_int {
+    if (is_darwin) return darwin.fseek(@ptrCast(stream), off, whence);
+    const f = real.fseek orelse return -1;
+    return f(stream, off, whence);
+}
+pub inline fn callFseeko(stream: *FILE, off: i64, whence: c_int) c_int {
+    if (is_darwin) return darwin.fseeko(@ptrCast(stream), off, whence);
+    const f = real.fseeko orelse return -1;
+    return f(stream, off, whence);
+}
+pub inline fn callFseeko64(stream: *FILE, off: i64, whence: c_int) c_int {
+    if (is_darwin) return darwin.fseeko(@ptrCast(stream), off, whence);
+    const f = real.fseeko64 orelse return -1;
+    return f(stream, off, whence);
+}
+pub inline fn callRewind(stream: *FILE) void {
+    if (is_darwin) return darwin.rewind(@ptrCast(stream));
+    const f = real.rewind orelse return;
+    return f(stream);
+}
+pub inline fn callFsetpos(stream: *FILE, pos: *const anyopaque) c_int {
+    if (is_darwin) return darwin.fsetpos(@ptrCast(stream), pos);
+    const f = real.fsetpos orelse return -1;
+    return f(stream, pos);
+}
+pub inline fn callFsetpos64(stream: *FILE, pos: *const anyopaque) c_int {
+    if (is_darwin) return darwin.fsetpos(@ptrCast(stream), pos);
+    const f = real.fsetpos64 orelse return -1;
+    return f(stream, pos);
 }
 
 /// Boundary detectors carry no path. Since v3 their presence no longer forces UNKNOWN

@@ -2,6 +2,83 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-11 — The shim learns stdio, at flush granularity (#30, in progress)
+
+The calibration sweep put a number on the wall: taskwarrior's writes are invisible above
+its `fdatasync` (the shim recorded 4 of ~20 in-scope operations), and git — which writes
+almost everything through raw syscall wrappers — lost its whole run to the **two** stdio
+operations behind `COMMIT_EDITMSG`. Libc-internal calls never cross the PLT, so
+interposing `write` says nothing about `fprintf`. One stdio call anywhere is enough to
+split the two accounts, and most C programs have at least one.
+
+The design was measured before it was written, and one measurement chose it. glibc's
+buffer cannot hold more than its own size, so **the flush of pending data is normally
+exactly one `write(2)`** — flushes are the one place where stdio granularity and syscall
+granularity coincide. So the shim records `.open` at a write-capable `fopen`, `.write`
+at `fflush`/`fclose` **when and only when the stream has pending bytes** (recording an
+empty flush would invent an operation the oracle never sees), and `.close` at `fclose`.
+Recording happens before the call, so the kill lands *before* the flush — what dies with
+the process is the unflushed buffer, which is exactly what a real crash loses. What
+bypasses the buffer (a large `fwrite` going direct, an overflow flush inside `fprintf`,
+the exit-time cleanup of never-closed streams) is deliberately not modelled: on Linux
+the oracle sees the extra writes and the run refuses, same as today, just from a much
+smaller class. The alternative that would have made everything 1:1 — forcing streams
+unbuffered — was rejected for the best reason this project has: it would explore crash
+states the natural execution cannot produce.
+
+Plan review (two Critical, eight Major) fixed a real bug before any code existed:
+`freopen` with pending data issues **[write, close, open]**, and the draft recorded only
+the last two — an instant `oracle_missed_operation`. It also forced the macOS caveat
+into the open (no oracle there, so the not-modelled classes fall inside
+`--allow-unverified`'s already-weaker claim rather than being caught), added the
+missing glibc symbols (`fopen64`, `freopen64`, `fflush_unlocked`), and demoted
+"one flush = one write" from an assumption to an expectation whose violation is
+detected. Declined once, with reasons recorded: shipping this Linux-only. macOS goes
+from zero stdio visibility to everything inside the boundary, under a claim whose
+wording does not change.
+
+**Implemented — and the first dogfood run found the flush point the plan did not
+know about.** The toys all passed on the first full suite (six new acceptance cases,
+kill-point sequences asserted with the decoder against exact predictions, the fopen64
+alias exercised through an LFS build), the mutations landed red in both directions —
+removing the pending check turned out to be caught by *three* checks, because it also
+records a phantom write for the read-control stream's fclose — and then taskwarrior
+refused again. The diff of the two accounts showed its `pending.data` write reaching
+the disk inside an **fseek**: the file is updated through an `"r+"` stream, and libc
+flushes a dirty stream as a side effect of repositioning it. `fseek`/`fseeko`/
+`rewind`/`fsetpos` are flush points too, now wrapped with the same pending rule and
+pinned by a toy in the taskwarrior shape ("r+", dirty, seek) whose check was shown its
+own red once. The macOS pending fallback earned its keep immediately: the `__sFILE`
+arithmetic passed the two-byte pin test on the first run, and parity came back exact —
+the same six kill-point addresses for the stdio toy on both platforms.
+
+**Review round, re-read as the contract demands.** Four findings, all adopted, one of
+them the best catch of the day: recording freopen's whole [write, close, open] triple
+before its one real call meant a kill aimed at the new `.open` died before *any* of the
+syscalls — a world whose address claims the flush already happened, over a file that is
+still empty. The wrapper now flushes explicitly first (record `.write`, real `fflush`,
+then `.close`/`.open`, then the real freopen, whose own flush is empty), which keeps
+the oracle's sequence identical and makes every address honest — the remaining gap
+between the recorded close and the real one is disk-neutral, which is what ADR 0003's
+close rule is for. The new acceptance pin kills at the open's address and asserts the
+flushed line is durable; mutating the wrapper back to record-all-then-call went red on
+the new pin while the sequence check stayed green — a measured demonstration of the
+reviewer's point that recording order alone cannot see this. Also adopted: inactive/
+re-entered shims no longer touch stream internals before refusing; `freopen(NULL)`
+joined the documented not-modelled list; and the mode-predicate comment stopped
+claiming the two predicates agree on inputs libc rejects before any syscall. taskwarrior: **PASS 12/12 worlds**,
+oracle agreed on 11 operations, all three data files under the history form — and with
+`--check "task list"` the falsification probe rejected the corrupted state
+("Unrecognized Taskwarrior file format") and taskwarrior's own reader judged every
+crash world. The second real target, judged end to end. git: `COMMIT_EDITMSG` no
+longer splits the accounts — the shim now records all 31 in-scope operations — and the
+run refuses one wall later, on #31's class: `mkdirat(AT_FDCWD</g1/repo>,
+".git/objects/cc", …)` has no absolute state-directory spelling anywhere in the line,
+so the oracle cannot see it (the result-fd annotation that saves relative `openat` does
+not exist for calls returning 0). The wall moved from #30 to #31, exactly as scoped.
+omamori: PASS 143/143 twice over, numbers unchanged — a Rust target never enters the
+new wrappers.
+
 ## 2026-08-11 — L0 learns a second per-file form: history preservation (#24, in progress)
 
 The plan was measured before it was written, and the measurement deleted two of the

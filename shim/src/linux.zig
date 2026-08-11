@@ -44,6 +44,23 @@ comptime {
 
     @export(&ops.close, .{ .name = "close" });
 
+    // stdio, at flush granularity (ADR 0005). fdopen needs no wrapper: no syscall
+    // happens there, and the descriptor's open was recorded by the raw wrappers.
+    @export(&ops.fopen, .{ .name = "fopen" });
+    @export(&ops.fopen64, .{ .name = "fopen64" });
+    @export(&ops.freopen, .{ .name = "freopen" });
+    @export(&ops.freopen64, .{ .name = "freopen64" });
+    @export(&ops.fflush, .{ .name = "fflush" });
+    @export(&ops.fflush_unlocked, .{ .name = "fflush_unlocked" });
+    @export(&ops.fclose, .{ .name = "fclose" });
+    // Repositioning flushes a dirty stream; the seek family are flush points too.
+    @export(&ops.fseek, .{ .name = "fseek" });
+    @export(&ops.fseeko, .{ .name = "fseeko" });
+    @export(&ops.fseeko64, .{ .name = "fseeko64" });
+    @export(&ops.rewind, .{ .name = "rewind" });
+    @export(&ops.fsetpos, .{ .name = "fsetpos" });
+    @export(&ops.fsetpos64, .{ .name = "fsetpos64" });
+
     @export(&ops.fork, .{ .name = "fork" });
     // `vfork` is the one replacement that must be frameless at the moment of the call;
     // its wrapper tail-jumps to the real function. See ops.zig for the measurements.
