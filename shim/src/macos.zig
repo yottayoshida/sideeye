@@ -48,6 +48,7 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.mkdirat, libc.mkdirat),
     entry(&ops.rmdir, libc.rmdir),
     entry(&ops.fork, libc.fork),
+    // The vfork replacement is frameless at the call — a guaranteed tail jump. See ops.zig.
     entry(&ops.vfork, libc.vfork),
     entry(&ops.execve, libc.execve),
     entry(&ops.execv, libc.execv),

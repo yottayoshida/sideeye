@@ -36,6 +36,12 @@ pub fn build(b: *std.Build) void {
         const shim = b.addLibrary(.{
             .name = "sideeye_shim",
             .linkage = .dynamic,
+            // The vfork wrapper is a guaranteed tail call (`@call(.always_tail)`), which
+            // Zig's self-hosted x86_64 backend — the default for Debug builds — refuses:
+            // "does not support tail calls on target architecture 'x86_64'". The guarantee
+            // is the point (an ordinary call there corrupts the target's stack, see
+            // shim/src/ops.zig), so the shim pins the backend that can honour it.
+            .use_llvm = true,
             .root_module = b.createModule(.{
                 .root_source_file = b.path("shim/src/shim.zig"),
                 .target = target,

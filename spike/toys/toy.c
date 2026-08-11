@@ -14,6 +14,14 @@
  * Environment:
  *   TOY_STATE      state directory (default ./state)
  *   TOY_FORK       if set, fork a trivial child before rotating (boundary case)
+ *   TOY_VFORK      if set, vfork a child that immediately execs — the only shape POSIX
+ *                  sanctions. The shim once interposed vfork with an ordinary wrapper,
+ *                  whose stack frame spans vfork's double return: the child clobbered it
+ *                  on the shared stack and the parent resumed into the child's branch.
+ *                  Exit 0 without the shim, exit 127 with it, no output either way —
+ *                  silently wrong, not a crash. The wrapper is now a recorded boundary
+ *                  followed by a guaranteed tail jump, and this toy is what pins that:
+ *                  the target has to survive being observed.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -85,6 +93,31 @@ static void maybe_leave_the_supported_region(void) {
     if (getenv("TOY_FORK")) {
         pid_t p = fork();
         if (p == 0) _exit(0);
+        if (p > 0) { int st; waitpid(p, &st, 0); }
+    }
+    /* vfork's child may only _exit or exec; anything else is undefined. Exec is the
+     * whole reason vfork exists, so that is what this does.
+     *
+     * The argv is static and fully initialised at compile time: after vfork the child
+     * may modify nothing but the pid_t holding the return value, and building the array
+     * in the child would write into the very frame the suspended parent resumes from —
+     * the same class of corruption this toy exists to catch in the shim.
+     *
+     * macOS has no /bin/true; only /usr/bin/true. With the wrong path the exec fails,
+     * the child falls through to _exit(127), and the toy still looks fine because the
+     * parent discards the child's status — the test quietly measures less than it says. */
+#ifdef __APPLE__
+#define TOY_TRUE "/usr/bin/true"
+#else
+#define TOY_TRUE "/bin/true"
+#endif
+    if (getenv("TOY_VFORK")) {
+        static char *const av[] = { (char *)TOY_TRUE, NULL };
+        pid_t p = vfork();
+        if (p == 0) {
+            execv(TOY_TRUE, av);
+            _exit(127);
+        }
         if (p > 0) { int st; waitpid(p, &st, 0); }
     }
     if (getenv("TOY_THREAD")) {

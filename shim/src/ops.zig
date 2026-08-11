@@ -169,9 +169,42 @@ pub fn fork() callconv(.c) c_int {
     return common.callFork();
 }
 
+/// The one wrapper that must not have a stack frame at the moment it calls the real
+/// function — enforced by the `.always_tail` below, which is a compile error on any
+/// target where the backend cannot guarantee it.
+///
+/// A `vfork` child runs on the parent's stack while the parent is suspended, and the call
+/// returns twice. An ordinary wrapper's frame spans that double return: the child pops
+/// the frame on its way back to the target, runs, and overwrites the memory it occupied —
+/// including the saved frame pointer and return address the *parent's* return path will
+/// restore. Measured, with the control that settles where the fault is:
+///
+///   vfork+exec of /bin/true, glibc 2.36 aarch64:   exit 0   without the shim
+///                                                  exit 127 with an ordinary wrapper
+///                                                  exit 127 with the shim loaded but
+///                                                           *inactive* (recording nothing)
+///
+/// The inactive case is the proof: no recording happened, so the corruption is the frame
+/// itself. The parent resumed through clobbered saved registers into the child's branch
+/// and exited 127 with no output — silently wrong control flow, not a crash. sideeye then
+/// blamed the corpse: `recording_run_failed`, for a death it caused. glibc's own `vfork`
+/// is hand-written frameless assembly for exactly this reason.
+///
+/// The shim needs nothing *after* vfork returns, so the frame does not need to exist:
+/// record the boundary first (an ordinary call, safely before the fork), then tail-jump.
+/// At the jump the stack is exactly as if the target had called `vfork` directly, and
+/// both returns land in the target without touching this function again.
+///
+/// Why the other process-creating wrappers do not need this: a `fork` child runs on a
+/// *copy* of the stack, and glibc's `posix_spawn` gives its `CLONE_VM|CLONE_VFORK` child
+/// a freshly mmap'd stack — measured as the reason spawn survived an ordinary wrapper
+/// while vfork did not. Only `vfork` shares the parent's.
 pub fn vfork() callconv(.c) c_int {
+    // Recorded before the call, like every boundary: there is no frame afterwards to
+    // record from, and a boundary is worth recording whether or not the call succeeds.
     common.noteBoundary(.fork);
-    return common.callVfork();
+    const real_vfork = common.realVfork() orelse return -1;
+    return @call(.always_tail, real_vfork, .{});
 }
 
 pub fn execve(path: [*:0]const u8, argv: [*]const ?[*:0]const u8, envp: [*]const ?[*:0]const u8) callconv(.c) c_int {
