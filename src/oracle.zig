@@ -55,24 +55,32 @@ const known = [_]Mapping{
     .{ .name = "close", .class = .close },
 };
 
-/// Syscalls that read but never change anything. They are not operations sideeye can
-/// crash between in any meaningful sense, and counting them would make the two views
-/// disagree for no reason.
+/// Syscalls that read but never change anything on disk. They are not operations
+/// sideeye can crash between in any meaningful sense, and counting them would make the
+/// two views disagree for no reason.
+///
+/// `flock` belongs here even though it is not a read: advisory locks live in the kernel
+/// and die with the process, so no crash world can be told apart by one. Found by
+/// measurement — the first real target to clear the boundary gate (omamori) stopped
+/// here instead, on the lock it takes around its audit log.
 const read_only = [_][]const u8{
     "stat",   "lstat",     "fstat",   "newfstatat", "statx",
     "access", "faccessat", "readlink", "readlinkat", "read",
     "pread64", "readv",    "lseek",   "getdents64", "fcntl",
     "fadvise64", "statfs",  "fstatfs", "dup",       "dup2",
     "dup3",   "ioctl",     "mmap",    "munmap",     "mprotect",
+    "flock",
 };
 
-/// Syscalls that leave the single-process, single-thread region v0.1 can reason about.
+/// Syscalls that cross a process boundary.
 ///
 /// The shim interposes the libc wrappers for these, but `clone`, `clone3` and a raw
-/// `syscall(SYS_clone, …)` go straight past it. Without the oracle watching for them,
-/// a target whose *child* touches the state directory while the parent performs
-/// ordinary operations passes every structural detector: something was mutated, so
-/// `state_changed_without_ops` stays quiet, and the parent's own trace looks complete.
+/// `syscall(SYS_clone, …)` go straight past it. The oracle sees them regardless — and
+/// since v3 a boundary is no longer an automatic refusal: what decides is whether any
+/// process other than the subject touched the state directory. The exceptions that stay
+/// hard refusals are the subject replacing its own image (a second `execve` on the
+/// primary pid: the crash-point address space does not survive an image change) and
+/// `unshare` (namespace surgery this tool does not model).
 const process_syscalls = [_][]const u8{
     "clone", "clone3", "fork", "vfork", "execve", "execveat", "unshare",
 };
@@ -96,6 +104,25 @@ fn stripPidPrefix(line: []const u8) []const u8 {
         return std.mem.trimStart(u8, line[i..], " \t");
     }
     return line;
+}
+
+/// The pid the same prefix carries, or null when the line has none.
+///
+/// v0.1 threw this away, which was fine while any second process was an automatic
+/// refusal. Deciding whether a boundary is *tolerable* is a question about who did
+/// what, and the pid is the only "who" the oracle has.
+fn pidOf(line: []const u8) ?u32 {
+    var s = line;
+    if (std.mem.startsWith(u8, s, "[pid")) {
+        s = std.mem.trimStart(u8, s["[pid".len..], " \t");
+    }
+    var i: usize = 0;
+    while (i < s.len and std.ascii.isDigit(s[i])) i += 1;
+    if (i == 0) return null;
+    if (i < s.len and (s[i] == ' ' or s[i] == '\t' or s[i] == ']')) {
+        return std.fmt.parseInt(u32, s[0..i], 10) catch null;
+    }
+    return null;
 }
 
 fn syscallName(raw: []const u8) ?[]const u8 {
@@ -219,12 +246,55 @@ fn isReadOnly(name: []const u8) bool {
     return false;
 }
 
+/// True when the `index`th argument exists and contains `needle`.
+///
+/// The needle is always searched inside one argument, never across the line: a
+/// *filename* is attacker-controlled in the only sense that matters here (the target
+/// chooses it), and a file called `O_CREAT.bak` or `PROT_WRITE.log` must not change how
+/// the syscall around it is classified. Same rule, same reason as `unlinkatRemovesDir`.
+fn argContains(line: []const u8, index: usize, needle: []const u8) bool {
+    const a = syscallArg(line, index) orelse return false;
+    return std.mem.indexOf(u8, a, needle) != null;
+}
+
+/// An open that neither writes nor creates, judged from the flags argument.
+///
+/// Used only for the child-tolerance decision: `open` is classified as a kill-point for
+/// the subject regardless of flags, but a *child* opening a state file read-only is a
+/// read, and refusing it would fail every helper that inspects a config.
+fn isReadOnlyOpen(name: []const u8, line: []const u8) bool {
+    // `creat` is deliberately absent: it implies O_CREAT|O_WRONLY|O_TRUNC without
+    // spelling any of them, so there is no flags argument to consult.
+    const flags_arg: usize = if (std.mem.eql(u8, name, "open"))
+        1
+    else if (std.mem.eql(u8, name, "openat") or std.mem.eql(u8, name, "openat2"))
+        2
+    else
+        return false;
+    for ([_][]const u8{ "O_WRONLY", "O_RDWR", "O_CREAT", "O_TRUNC", "O_APPEND" }) |w| {
+        if (argContains(line, flags_arg, w)) return false;
+    }
+    return true;
+}
+
 pub const Parsed = struct {
+    /// The subject's state-directory operation classes, in order.
     classes: std.ArrayList(contract.OpClass),
+    /// A state-directory syscall by the subject that v0.1 does not model.
     unsupported: ?[]const u8 = null,
-    /// A process- or thread-creating syscall, named. Unlike the shim's boundary
-    /// detectors this also catches the raw forms the shim cannot see.
+    /// A syscall that stays a hard refusal whoever tolerates what: the subject
+    /// replacing its own image, or namespace surgery.
     boundary: ?[]const u8 = null,
+    /// A process other than the subject performed a non-read-only operation on the
+    /// state directory. This is the condition that decides tolerance, and the oracle is
+    /// the only observer that sees it whether or not the child loaded the shim.
+    child_touched: bool = false,
+    /// Distinct pids other than the subject's that appeared at all.
+    children: usize = 0,
+    /// The subject's pid: whoever performed the launch execve. Null when the trace
+    /// carries no pid prefixes, in which case every line is attributed to the subject —
+    /// the v0.1 reading, still right for a trace of one process.
+    primary_pid: ?u32 = null,
     /// How many lines were examined. Reported so that "no mismatches" can be told
     /// apart from "the oracle file was empty and nothing was compared".
     lines_seen: usize = 0,
@@ -233,7 +303,8 @@ pub const Parsed = struct {
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) !Parsed {
     var out: Parsed = .{ .classes = .empty };
-    var execs: usize = 0;
+    var child_pids: std.ArrayList(u32) = .empty;
+    var launched = false;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     while (it.next()) |raw| {
@@ -241,26 +312,92 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
         if (line.len == 0) continue;
         out.lines_seen += 1;
 
+        const pid = pidOf(line);
         const name = syscallName(line) orelse continue;
 
-        // Checked before the state-directory filter: creating a process is out of
-        // bounds regardless of which files it goes on to touch, and the child's own
-        // operations may never mention the directory in the parent's view at all.
-        if (isProcessSyscall(name)) {
-            // The very first execve is strace starting the target. Counting it would
-            // report every single run as having created a child process — the
-            // measuring apparatus flagging its own act of measuring.
+        // The first execve is strace starting the target: it names the subject.
+        // Everything before knowing the subject is the measuring apparatus itself.
+        if (!launched) {
             if (std.mem.eql(u8, name, "execve") or std.mem.eql(u8, name, "execveat")) {
-                execs += 1;
-                if (execs == 1) continue;
+                launched = true;
+                out.primary_pid = pid;
             }
+            continue;
+        }
+
+        const is_primary = pid == null or out.primary_pid == null or pid.? == out.primary_pid.?;
+        if (!is_primary) {
+            var seen = false;
+            for (child_pids.items) |p| {
+                if (p == pid.?) {
+                    seen = true;
+                    break;
+                }
+            }
+            if (!seen) try child_pids.append(arena, pid.?);
+        }
+
+        if (isProcessSyscall(name)) {
+            // A second execve by the *subject* replaces the image the crash points were
+            // read from; a child's execve is just a child becoming what it spawns.
+            // unshare is refused from anyone — this tool does not model namespaces.
+            // And a clone that carries CLONE_THREAD is not a child at all: it is a
+            // thread reached through a raw syscall, past the pthread_create wrapper,
+            // and threads are refused for the determinism of the subject itself.
+            const is_exec = std.mem.eql(u8, name, "execve") or std.mem.eql(u8, name, "execveat");
+            // Whole-line search is fine *here*, unlike the flag checks below: clone's
+            // arguments carry no target-chosen strings for a false CLONE_THREAD to
+            // hide in, and clone3 prints its flags inside a struct at no fixed index.
+            const is_raw_thread = std.mem.startsWith(u8, name, "clone") and
+                std.mem.indexOf(u8, line, "CLONE_THREAD") != null;
+            if ((is_exec and is_primary) or is_raw_thread or std.mem.eql(u8, name, "unshare")) {
+                if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
+            }
+            continue;
+        }
+
+        // A process that leaves the containment group is one the group kill no longer
+        // reaches. The shim records its own view of this, but only for processes that
+        // loaded it; the oracle is the only observer of an unshimmed child detaching.
+        // The subject's own calls are left to the shim, whose wrapper knows whether the
+        // call actually moved anything — the direct child re-electing itself leader is
+        // a no-op that must not be refused.
+        if (!is_primary and (std.mem.eql(u8, name, "setsid") or std.mem.eql(u8, name, "setpgid"))) {
             if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
             continue;
         }
 
         if (!touchesStateDir(line, state_dir)) continue;
+
+        // Dirtying a MAP_SHARED mapping changes the file with no later write syscall
+        // for either observer to see. From the subject that is an unmodelled mutation;
+        // from a child it is the touch condition. Read from mmap's prot and flags
+        // arguments, not from the line — a filename could spell either token.
+        const is_shared_write_map = std.mem.eql(u8, name, "mmap") and
+            argContains(line, 2, "PROT_WRITE") and
+            argContains(line, 3, "MAP_SHARED");
+
+        if (!is_primary) {
+            // The tolerance condition itself. Reads are allowed — they consume no
+            // sequence number and change no state — everything else, including a
+            // syscall nobody recognises, is a child touching what only the subject may.
+            // An open counts as a read when it neither writes nor creates.
+            if (is_shared_write_map) {
+                out.child_touched = true;
+            } else if (isReadOnlyOpen(name, line)) {
+                // tolerated
+            } else if (!isReadOnly(name)) {
+                out.child_touched = true;
+            }
+            continue;
+        }
         out.lines_in_scope += 1;
 
+        if (is_shared_write_map) {
+            if (out.unsupported == null)
+                out.unsupported = try arena.dupe(u8, "mmap(PROT_WRITE|MAP_SHARED)");
+            continue;
+        }
         if (isReadOnly(name)) continue;
         if (classify(name)) |cls| {
             const actual: contract.OpClass = if (cls == .unlink and
@@ -270,6 +407,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
             out.unsupported = try arena.dupe(u8, name);
         }
     }
+    out.children = child_pids.items.len;
     return out;
 }
 
@@ -310,6 +448,7 @@ test "parse extracts the class sequence the shim should have recorded" {
     defer arena_state.deinit();
 
     const text =
+        \\execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\openat(AT_FDCWD</work>, "/tmp/o/state/key.json.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/o/state/key.json.tmp>
         \\write(3</tmp/o/state/key.json.tmp>, "key=2\n", 6) = 6
         \\fsync(3</tmp/o/state/key.json.tmp>)     = 0
@@ -325,6 +464,8 @@ test "parse extracts the class sequence the shim should have recorded" {
     // The loader's own openat is outside the state directory and must not be counted.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    try std.testing.expect(!p.child_touched);
+    try std.testing.expectEqual(@as(usize, 0), p.children);
 }
 
 test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
@@ -334,6 +475,7 @@ test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
     // records .rmdir because it interposes the libc entry point, so a name-only mapping
     // here would disagree and blame a correct target.
     const text =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\unlinkat(AT_FDCWD, "/tmp/s/sub", AT_REMOVEDIR) = 0
         \\unlinkat(AT_FDCWD, "/tmp/s/key.json", 0) = 0
         \\
@@ -371,7 +513,11 @@ test "arguments are split on top-level commas only" {
 test "a syscall v0.1 does not model is reported rather than skipped" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    const text = "copy_file_range(3</tmp/s/a>, NULL, 4</tmp/s/b>, NULL, 6, 0) = 6\n";
+    const text =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\copy_file_range(3</tmp/s/a>, NULL, 4</tmp/s/b>, NULL, 6, 0) = 6
+        \\
+    ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s");
     try std.testing.expectEqualStrings("copy_file_range", p.unsupported.?);
 }
@@ -380,6 +526,7 @@ test "read-only syscalls do not enter the comparison" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const text =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\newfstatat(AT_FDCWD, "/tmp/s/key.json", {st_mode=S_IFREG|0644}, 0) = 0
         \\read(3</tmp/s/key.json>, "key=1\n", 4096) = 6
         \\
@@ -402,21 +549,65 @@ test "both of strace's -f pid prefixes are stripped" {
     try std.testing.expectEqualStrings("write", syscallName("write(3, \"x\", 1) = 1").?);
 }
 
-test "process-creating syscalls are caught even outside the state directory" {
+test "a child that stays out of the state directory is not a refusal" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The child's work never mentions the parent's state directory here, and the parent
-    // performs a perfectly ordinary write. Without the process check this parses as one
-    // clean operation and nothing else.
+    // v0.1 refused on the bare clone. The rule now is about what the child *did*: this
+    // one wrote somewhere else entirely, so the subject's account remains complete and
+    // the crash-point numbering remains unique.
     const text =
-        \\openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
-        \\clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
-        \\[pid  4242] write(5</elsewhere/f>, "x", 1) = 1
+        \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  write(5</elsewhere/f>, "x", 1) = 1
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s");
-    try std.testing.expectEqualStrings("clone", p.boundary.?);
+    try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
+    try std.testing.expect(!p.child_touched);
+    try std.testing.expectEqual(@as(usize, 1), p.children);
+    try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
+}
+
+test "a child that writes into the state directory is the refusal condition" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // Same shape, one difference: where the child's write landed. This is the raw-clone
+    // case the shim cannot see at all — the child never loaded it — and the reason
+    // boundary tolerance exists only where an oracle does.
+    const text =
+        \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  write(5</tmp/s/key.json>, "x", 1) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expect(p.child_touched);
+    try std.testing.expectEqual(@as(usize, 1), p.children);
+}
+
+test "a child reading the state directory is tolerated" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // Reads consume no sequence number and change no state; refusing them would fail
+    // every helper that inspects a config file. The line between read and write is the
+    // read_only list, and an unknown syscall from a child falls on the refusing side.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  read(3</tmp/s/key.json>, "key=1\n", 4096) = 6
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expect(!p.child_touched);
+
+    const unknown_sys =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  frobnicate(3</tmp/s/key.json>) = 0
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), unknown_sys, "/tmp/s");
+    try std.testing.expect(q.child_touched);
 }
 
 test "the launch execve is not mistaken for the target creating a child" {
@@ -433,7 +624,7 @@ test "the launch execve is not mistaken for the target creating a child" {
     try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
 }
 
-test "a second execve is the target replacing itself, and counts" {
+test "a second execve is the target replacing itself, and stays refused" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const text =
@@ -445,11 +636,149 @@ test "a second execve is the target replacing itself, and counts" {
     try std.testing.expectEqualStrings("execve", p.boundary.?);
 }
 
-test "a raw clone3 is caught the same way" {
+test "a child's execve is the child becoming something, not a refusal" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    const p = try parse(arena_state.allocator(), "clone3({flags=0}, 88) = 777\n", "/tmp/s");
-    try std.testing.expectEqualStrings("clone3", p.boundary.?);
+    // posix_spawn appears as exactly this: a clone, then the child's execve. Refusing
+    // the child's exec would refuse every spawn, which is the shape this change exists
+    // to admit.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_VFORK|SIGCHLD) = 4242
+        \\4242  execve("/bin/true", ["true"], 0x7ff) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
+    try std.testing.expectEqual(@as(usize, 1), p.children);
+}
+
+test "a raw clone carrying CLONE_THREAD is a thread, not a child" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // pthread_create is interposed; syscall(SYS_clone, CLONE_THREAD|…) is not. Without
+    // this the raw form would be tolerated as a quiet child, and threads are refused
+    // for the subject's own determinism, not for what they touch.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_THREAD|CLONE_SIGHAND) = 43
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expect(p.boundary != null);
+}
+
+test "an unshimmed child detaching is caught by the oracle" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The group kill no longer reaches a process that setsids away, and a child that
+    // never loaded the shim records nothing. The oracle is the only witness.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  setsid()                          = 4242
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    try std.testing.expect(p.boundary != null);
+
+    // The subject's own setsid/setpgid lines are the shim's to judge — its wrapper
+    // knows whether the call moved anything, and this parser does not.
+    const own =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    setpgid(0, 0)                     = 0
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), own, "/tmp/s");
+    try std.testing.expectEqual(@as(?[]const u8, null), q.boundary);
+}
+
+test "a shared writable mapping of a state file is a mutation nobody models" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // Dirtying MAP_SHARED pages changes the file with no later write syscall for
+    // either observer to see. From the subject: unsupported. From a child: the touch.
+    const subject =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/key.json>, 0) = 0x7f
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), subject, "/tmp/s");
+    try std.testing.expectEqualStrings("mmap(PROT_WRITE|MAP_SHARED)", p.unsupported.?);
+
+    const child =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/key.json>, 0) = 0x7f
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), child, "/tmp/s");
+    try std.testing.expect(q.child_touched);
+
+    // A private or read-only mapping changes nothing on disk and stays tolerated.
+    const private =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE, 3</tmp/s/key.json>, 0) = 0x7f
+        \\
+    ;
+    const r = try parse(arena_state.allocator(), private, "/tmp/s");
+    try std.testing.expect(!r.child_touched);
+}
+
+test "a child's read-only open is a read, and its writing open is the touch" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const reading =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  openat(AT_FDCWD, "/tmp/s/key.json", O_RDONLY|O_CLOEXEC) = 3</tmp/s/key.json>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), reading, "/tmp/s");
+    try std.testing.expect(!p.child_touched);
+
+    const writing =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), writing, "/tmp/s");
+    try std.testing.expect(q.child_touched);
+
+    // creat never spells its flags, and it always creates.
+    const creating =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  creat("/tmp/s/new.json", 0644) = 3</tmp/s/new.json>
+        \\
+    ;
+    const r = try parse(arena_state.allocator(), creating, "/tmp/s");
+    try std.testing.expect(r.child_touched);
+}
+
+test "a filename spelling a flag does not change how the call is classified" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The target chooses its filenames; the classifier must read flags from the flags
+    // argument only. Both cases below are harmless operations wearing dangerous names.
+    const read_with_scary_name =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  openat(AT_FDCWD, "/tmp/s/O_CREAT.bak", O_RDONLY|O_CLOEXEC) = 3</tmp/s/O_CREAT.bak>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), read_with_scary_name, "/tmp/s");
+    try std.testing.expect(!p.child_touched);
+
+    const private_map_of_scary_name =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, 3</tmp/s/PROT_WRITE.MAP_SHARED.log>, 0) = 0x7f
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), private_map_of_scary_name, "/tmp/s");
+    try std.testing.expect(!q.child_touched);
+}
+
+test "pids are read from both prefix spellings" {
+    try std.testing.expectEqual(@as(?u32, 1234), pidOf("[pid  1234] openat(AT_FDCWD, \"x\") = 3"));
+    try std.testing.expectEqual(@as(?u32, 13), pidOf("13    openat(AT_FDCWD, \"x\") = 3"));
+    try std.testing.expectEqual(@as(?u32, 7), pidOf("7\twrite(3, \"x\", 1) = 1"));
+    try std.testing.expectEqual(@as(?u32, null), pidOf("write(3, \"x\", 1) = 1"));
 }
 
 test "compare finds the first divergence and the direction of it" {

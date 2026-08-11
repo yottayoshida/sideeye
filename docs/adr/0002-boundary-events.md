@@ -1,17 +1,18 @@
 # ADR 0002 — Process boundaries: containment, and what makes a child tolerable
 
-- **Status:** Proposed (2026-08-10)
+- **Status:** Accepted (2026-08-11; proposed 2026-08-10)
 - **Supersedes:** none. Narrows the "single-process only" limit stated in ADR 0001's
   interposition table and DESIGN §9
 - **Scope:** the trace contract (v2 → v3), the kill mechanism, and the conditions under
   which a target that creates other processes can be judged at all
 
-> **What is implemented as of this ADR being written: decision 1 only** (containment). It
-> ships without any contract change and without altering a single verdict. Decisions 2–6 —
-> oracle-decided tolerance, the second witnesses, the arming restriction, contract v3 and
-> the oracle's pid attribution — are **proposed and not built**. They are written in the
-> present tense below because that is what an ADR records: the decision, not its progress.
-> Anything a reader might mistake for a current guarantee is called out where it appears.
+> All six decisions are implemented. Decision 1 (containment) shipped first and alone,
+> with no contract change and no verdict change; decisions 2–6 shipped together with
+> contract v3. Two decisions changed shape between proposal and implementation, and the
+> text below records what was built, with the original idea and why it fell noted where
+> it does: the arming mechanism (decision 4 — the proposed environment variable cannot
+> work under an oracle) and the `vfork` row of decision 5 (its stated rationale was
+> disproved by measurement, and the fix that came out of that made vfork+exec tolerable).
 
 ## Context
 
@@ -83,6 +84,11 @@ So a child that stays out of the state directory consumes no sequence numbers, a
 subject's addresses remain unique and complete. **Numbering safety and honest judgement
 turn out to be the same condition.** No cross-process counter is needed.
 
+"Touched" means performed a non-read-only operation, known or unknown. A child reading a
+state file consumes no sequence number and changes no state, and refusing on it would
+fail every helper that inspects a config; an *unrecognised* syscall from a child against
+the state directory falls on the refusing side, because nobody can say which kind it was.
+
 ### 3. The oracle decides, not the child
 
 The first draft had each child announce itself (a marker written by the child) and treated
@@ -109,36 +115,75 @@ subject's pid, checked on the recording run **and on every explored world and th
 baseline**. A child's behaviour can differ between worlds, because the parent dying
 earlier changes which path the child takes.
 
-### 4. Only the subject is armed
+### 4. Only the subject can land the kill
 
-The engine sets `SIDEEYE_PRIMARY_PID` in the child before `execvp`; the shim arms
-`kill_at` only when `getpid()` matches. A forked or spawned child has a different pid and
-is therefore never able to raise the kill.
+The shim arms `kill_at` only when `getpid()` matches the pid captured at its own
+`init()`. A forked child inherits the captured value but answers `getpid()` differently,
+so it can never arm — and the fork is the only case that matters, because it is the only
+child that inherits the parent's `seq` mid-count.
 
-Prevention, not detection. The earlier draft compared against the pid captured at `init`,
-which only covers `fork` — a spawned child runs `init()` in its own pid and would have
-armed itself. The check that `kill_landed` belongs to the subject stays as a second layer.
+The proposed mechanism was an engine-set `SIDEEYE_PRIMARY_PID`, on the grounds that the
+init-pid check "only covers fork" — a spawned child re-runs `init()` and arms itself.
+Both halves of that were wrong in practice. The environment variable cannot work at all
+under an oracle: the engine's direct child is `strace`, the subject is *strace's* child,
+and the engine never knows its pid at `setenv` time. And the spawned child arming itself
+is harmless under decision 2: the kill fires only on a state-directory kill-point, a
+child's state-directory kill-point already makes the engine refuse the run, so the arm
+can only go off in a world that is thrown away. (A trace-file marker — "whoever wrote
+the header is primary" — was also considered and rejected: the engine does not delete
+the `reproduce` line's trace file, so the printed command would silently stop arming on
+its second execution.)
+
+Detection sits behind the prevention, twice: the engine takes the subject to be the
+writer of the first `shim_ready` record, requires `kill_landed` to carry that pid, and
+refuses any run in which a kill-point record carries any other. Under the tolerance rule
+those layers overlap the refusal itself — measured: disabling the landed-pid check alone
+changes no toy's verdict, because the foreign record already refuses the run — and they
+are kept anyway, because the overlap argument depends on the refusal seeing everything,
+which is exactly the kind of structural claim this project has already had fail once.
 
 ### 5. What stays refused, and why
 
 | refused | reason |
 |---|---|
-| `exec` | replaces the image without changing the pid, so `(pid)` cannot say which image to kill; allowing it would push an epoch concept into the kill path |
-| `vfork` | the child shares the parent's address space with the parent suspended; running the shim's recording path there risks breaking the target itself |
-| `thread` | operation order stops being deterministic — the core claim |
-| leaving the process group | `setsid`/`setpgid` escape the containment of decision 1. They are to be interposed and recorded as `.detached`, so the escape becomes visible and refused rather than silent. **Not implemented yet** — until it is, containment reaches only what remains in the child's process group, and a target that deliberately detaches is outside it |
+| `exec` **by the subject** | replaces the image without changing the pid, so `(pid)` cannot say which image to kill; allowing it would push an epoch concept into the kill path. A *child's* exec is not this — it is a spawn doing what spawns do, and refusing it would refuse every `posix_spawn` |
+| `thread` **in the subject** | operation order stops being deterministic — the core claim |
+| leaving the process group | `setsid`/`setpgid` are interposed and recorded as `.detached`, so the escape is visible and refused rather than silently outrun. A `setpgid` that moves nothing — the direct child re-electing itself group leader, which shells do — is not recorded: the wrapper compares the process group before and after. `setsid` needs no such check, because it fails for a process that is already a group leader, and the engine makes the direct child exactly that |
+
+`vfork` was on this list, with the rationale "running the shim's recording path in the
+child risks breaking the target". Measurement disproved the rationale: the target broke
+with the shim *inactive* — the danger was the interposing wrapper's stack frame across
+vfork's double return, not the recording, and glibc's own frameless-assembly `vfork`
+says as much. The wrapper is now a recorded boundary followed by a guaranteed tail call
+(`@call(.always_tail)`, a compile error where the backend cannot honour it), which makes
+vfork+exec just another fork-class boundary: tolerable when the children are accounted
+for. A vfork child that touches the state directory shares the parent's `seq` counter,
+and its records carry its own pid — the same refusal catches it.
+
+One asymmetry is accepted rather than hidden: a target that calls `setpgid(0, 0)` as a
+*non-leader* is refused under an oracle (in that configuration the group leader is
+strace, so the call genuinely moves the target) and explored without one (as the direct
+child it is already the leader and the call moves nothing). The refusal direction is the
+safe one, and the shapes that trip it are job-control programs already outside the
+stated audience.
 
 ### 6. Trace contract v3
 
 - `Record.pid: u32` on every record. Several processes append to one file with `O_APPEND`,
-  so "belongs to the previous segment" does not decide anything.
-- `.spawn = 203`. `posix_spawn`/`posix_spawnp` are currently recorded as `.fork`
-  (`shim/src/ops.zig`), which is wrong in kind: the child is a new process *and* a new
-  image. Fixing the classification is a precondition for relaxing anything.
+  so "belongs to the previous segment" does not decide anything. The pid is read live per
+  record, never cached: a forked child inherits the cache, and the cached value would be
+  the parent's in the one process the field exists to distinguish.
+- `.spawn = 203`. `posix_spawn`/`posix_spawnp` were recorded as `.fork` through v2, which
+  is wrong in kind: the child is a new process *and* a new image. Fixing the
+  classification is a precondition for relaxing anything.
 - `.detached = 204` for the escape above.
-- Boundary records are written **after** the call succeeds. Today they are written before,
-  so a failed `fork` produces a false UNKNOWN. `exec` keeps the pre-call record — there is
-  no "after" in the same image — which is safe because `exec` is refused anyway.
+- Boundary records are written **after** the call succeeds, so a failed `fork` no longer
+  produces a false UNKNOWN. Two exceptions keep the pre-call record, both erring toward
+  refusal: `exec` (there is no "after" in the same image) and `vfork` (there is no frame
+  afterwards to record from — see decision 5).
+- The v0.1 claim that two recording runs produce byte-identical traces becomes "identical
+  after normalising pids to order of first appearance", and the acceptance suite compares
+  exactly that.
 
 ## Alternatives considered
 
@@ -184,6 +229,13 @@ Accepted costs:
   running the oracle on all N+1 worlds instead of one. Filed rather than fixed, with the
   cost written down. A target that branches on `SIDEEYE_KILL_AT` is adversarial and outside
   DESIGN's black-box premise; that premise is now stated explicitly.
+- **A second one, same posture**: an *unshimmed* child that `chdir`s by a relative path and
+  then names state files relatively. The oracle's containment test is textual — quoted
+  arguments and `-y` descriptor annotations — and a relative spelling with no annotated
+  descriptor matches nothing. An absolute `chdir` into the state directory is caught (any
+  non-read-only state-directory line from another pid is), and a *shimmed* child's relative
+  paths are resolved against its cwd by the shim; the residue is the unshimmed-and-relative
+  combination, which sits in the same adversarial corner as the world-divergent target above.
 - **Quiescence is observed, not proven.** `ECHILD` does not establish that no descendant
   remains — a reparented grandchild is not the engine's child to wait for. The engine takes
   the snapshot twice and requires agreement. The report says "observed stable", never

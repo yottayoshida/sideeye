@@ -21,6 +21,12 @@ pub const c = struct {
     pub extern "c" fn raise(sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
+    /// Read live for every record, never cached: a forked child inherits every global
+    /// in this file, and a cached pid would be the parent's — in the one process the
+    /// pid field exists to tell apart.
+    pub extern "c" fn getpid() c_int;
+    pub extern "c" fn getpgrp() c_int;
+    pub extern "c" fn getpgid(pid: c_int) c_int;
     /// macOS only: asks a descriptor for its path.
     ///
     /// Variadic, as C declares it. A fixed third argument was the third instance of the
@@ -94,6 +100,8 @@ pub const ExecveFn = *const fn ([*:0]const u8, [*]const ?[*:0]const u8, [*]const
 pub const ExecvpFn = *const fn ([*:0]const u8, [*]const ?[*:0]const u8) callconv(.c) c_int;
 pub const PosixSpawnFn = *const fn (?*anyopaque, [*:0]const u8, ?*const anyopaque, ?*const anyopaque, [*]const ?[*:0]const u8, [*]const ?[*:0]const u8) callconv(.c) c_int;
 pub const PthreadCreateFn = *const fn (*anyopaque, ?*const anyopaque, *const anyopaque, ?*anyopaque) callconv(.c) c_int;
+pub const SetsidFn = *const fn () callconv(.c) c_int;
+pub const SetpgidFn = *const fn (c_int, c_int) callconv(.c) c_int;
 
 pub var real: struct {
     open: ?OpenFn = null,
@@ -122,6 +130,8 @@ pub var real: struct {
     posix_spawn: ?PosixSpawnFn = null,
     posix_spawnp: ?PosixSpawnFn = null,
     pthread_create: ?PthreadCreateFn = null,
+    setsid: ?SetsidFn = null,
+    setpgid: ?SetpgidFn = null,
 } = .{};
 
 var state_dir_buf: [contract.max_path]u8 = undefined;
@@ -133,6 +143,17 @@ var trace_fd: c_int = -1;
 var kill_at: u32 = 0;
 var seq: u32 = 0;
 var active: bool = false;
+/// The pid this shim instance initialised in. Only that process may raise the kill.
+///
+/// A forked child inherits this value but answers `getpid()` differently, so it can
+/// never arm — which is the point: `SIDEEYE_KILL_AT` names the k-th operation *of the
+/// subject*, and a child that counted its own operations to k would kill the wrong
+/// process at an address that belongs to nobody. A spawned or exec'd child re-runs
+/// `init()` and does arm itself; that is tolerable because the kill only fires on a
+/// state-directory operation, and a child's state-directory operation already makes the
+/// engine refuse the run (`child_touched_state_dir`) — the arm can only go off in a
+/// world that is thrown away.
+var armed_pid: c_int = -1;
 
 /// Guards against observing our own work. The path resolution below calls libc, and
 /// while none of those calls are interposed today, a future addition to the symbol
@@ -175,6 +196,8 @@ fn resolveAll() void {
     real.posix_spawn = lookup(PosixSpawnFn, "posix_spawn");
     real.posix_spawnp = lookup(PosixSpawnFn, "posix_spawnp");
     real.pthread_create = lookup(PthreadCreateFn, "pthread_create");
+    real.setsid = lookup(SetsidFn, "setsid");
+    real.setpgid = lookup(SetpgidFn, "setpgid");
 }
 
 fn parseU32(s: []const u8) u32 {
@@ -221,6 +244,8 @@ pub fn init() void {
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
 
+    armed_pid = c.getpid();
+
     // The shim writes the header, not the engine.
     //
     // If the engine wrote it, the version field would be one the engine had just
@@ -235,7 +260,7 @@ pub fn init() void {
     }
 
     active = true;
-    writeRecord(.{ .op = .shim_ready, .seq = 0, .path = stateDir(), .aux = "" });
+    writeRecord(.shim_ready, 0, stateDir(), "");
 }
 
 pub fn stateDir() []const u8 {
@@ -286,7 +311,16 @@ fn writeAll(bytes: []const u8) bool {
     return true;
 }
 
-fn writeRecord(rec: contract.Record) void {
+/// The pid is taken here, once for every record, rather than accepted from the caller:
+/// there is exactly one correct value and it is whoever is executing this line.
+fn writeRecord(op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
+    const rec: contract.Record = .{
+        .op = op,
+        .seq = s,
+        .pid = @bitCast(c.getpid()),
+        .path = path,
+        .aux = aux,
+    };
     const n = contract.encodeRecord(&record_buf, rec) catch return;
     _ = writeAll(record_buf[0..n]);
 }
@@ -392,7 +426,7 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) 
 /// would then see a trace that is complete as far as it can tell, and PASS is the
 /// honest-looking answer to that. Recorded instead, so the engine can refuse to judge.
 fn noteUnresolved(path: []const u8) void {
-    writeRecord(.{ .op = .unresolved, .seq = 0, .path = path, .aux = "" });
+    writeRecord(.unresolved, 0, path, "");
 }
 
 /// The single place where an operation becomes a counted event, and the single place
@@ -409,11 +443,16 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         if (!contract.isInsideDir(path, stateDir())) return;
         seq += 1;
         s = seq;
-        if (kill_at != 0 and s == kill_at) {
+        // Only the process that initialised this shim instance may die here. A forked
+        // child inherits `kill_at` and its own copy of `seq`, and without this guard it
+        // would count its own operations up to k and kill *itself* — the engine would
+        // then read a kill_landed at the right seq from the wrong process. See
+        // `armed_pid` for why a spawned child arming itself is tolerable and this is not.
+        if (kill_at != 0 and s == kill_at and c.getpid() == armed_pid) {
             // Landing evidence first, then die. Without this record the claim "we died
             // before the k-th operation" would rest on the engine having set a variable,
             // not on anything the target actually did.
-            writeRecord(.{ .op = .kill_landed, .seq = s, .path = path, .aux = aux });
+            writeRecord(.kill_landed, s, path, aux);
             _ = c.raise(SIGKILL);
             // SIGKILL cannot be caught or ignored, so this is unreachable. If it is ever
             // reached, the run is not what it claims to be — refuse to continue quietly.
@@ -425,7 +464,7 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         // same bytes on disk.
         if (!contract.isInsideDir(path, stateDir())) return;
     }
-    writeRecord(.{ .op = op, .seq = s, .path = path, .aux = aux });
+    writeRecord(op, s, path, aux);
 }
 
 pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
@@ -643,13 +682,26 @@ pub inline fn callPthreadCreate(t: *anyopaque, at: ?*const anyopaque, s: *const 
     const f = real.pthread_create orelse return -1;
     return f(t, at, s, arg);
 }
+pub inline fn callSetsid() c_int {
+    if (is_darwin) return darwin.setsid();
+    const f = real.setsid orelse return -1;
+    return f();
+}
+pub inline fn callSetpgid(pid: c_int, pgid: c_int) c_int {
+    if (is_darwin) return darwin.setpgid(pid, pgid);
+    const f = real.setpgid orelse return -1;
+    return f(pid, pgid);
+}
 
-/// Boundary detectors carry no path: their presence alone forces UNKNOWN.
+/// Boundary detectors carry no path. Since v3 their presence no longer forces UNKNOWN
+/// by itself — the engine decides, with the oracle's help, whether the boundary was
+/// tolerable — but they must still all be recorded, because "no boundary seen" is an
+/// input to that decision.
 pub fn noteBoundary(op: contract.OpClass) void {
     if (!active or busy) return;
     busy = true;
     defer busy = false;
-    writeRecord(.{ .op = op, .seq = 0, .path = "", .aux = "" });
+    writeRecord(op, 0, "", "");
 }
 
 // ---------------------------------------------------------------------------------

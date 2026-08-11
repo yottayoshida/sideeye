@@ -28,7 +28,11 @@ const std = @import("std");
 /// path it could not resolve, instead of dropping it. A v1 shim paired with a v2 engine
 /// would look like a target that never had such an operation, which is the difference
 /// between "nothing to report" and "something was not looked at".
-pub const contract_version: u32 = 2;
+/// v3 added `Record.pid` on every record, and split `.spawn` out of `.fork`. Several
+/// processes append to one O_APPEND file, so without the pid "belongs to the previous
+/// segment" decides nothing — and the difference between the subject's operation and a
+/// child's is the difference between a crash point and a refusal.
+pub const contract_version: u32 = 3;
 
 pub const magic = "SIDEEYE1";
 
@@ -84,10 +88,24 @@ pub const OpClass = enum(u16) {
     // --- lifecycle ops: recorded, never a crash point ---
     close = 100,
 
-    // --- boundary detectors: a single occurrence forces UNKNOWN ---
+    // --- boundary detectors ---
+    //
+    // Since v3 these no longer force UNKNOWN by themselves. A fork- or spawn-boundary is
+    // tolerable when an oracle can account for every other process (none of them touched
+    // the state directory); exec, thread and detached stay refusals. The *classification*
+    // still matters even where the verdict is the same: `posix_spawn` was recorded as
+    // `.fork` through v2, which was harmless while both were refused and becomes a hole
+    // the moment one of them is not.
     fork = 200,
     exec = 201,
     thread = 202,
+    /// A new process *and* a new image (`posix_spawn`/`posix_spawnp`).
+    spawn = 203,
+    /// The target (or one of its children) left the process group (`setsid`/`setpgid`).
+    /// The engine's containment is the group kill; a process that escapes the group is
+    /// one the engine can no longer claim to have stopped, so this is recorded to be
+    /// refused rather than silently outrun.
+    detached = 204,
 
     // --- markers written by the shim itself, never by the target ---
     /// Written once when the shim finishes initialising. Its *absence* is how the
@@ -114,7 +132,7 @@ pub const OpClass = enum(u16) {
 
     pub fn isBoundary(self: OpClass) bool {
         return switch (self) {
-            .fork, .exec, .thread => true,
+            .fork, .exec, .thread, .spawn, .detached => true,
             else => false,
         };
     }
@@ -157,6 +175,8 @@ pub const OpClass = enum(u16) {
             .fork => "fork",
             .exec => "exec",
             .thread => "thread",
+            .spawn => "spawn",
+            .detached => "detached",
             .shim_ready => "shim_ready",
             .kill_landed => "kill_landed",
             .unresolved => "unresolved",
@@ -220,6 +240,20 @@ pub const UnknownReason = enum {
     /// so a different outcome means the restored state is not the state that was
     /// recorded, and every verdict drawn from the other worlds rests on that state.
     baseline_run_failed,
+    /// A process other than the subject performed an operation on the state directory.
+    /// Crash points are numbered per process, so such an operation has no unique
+    /// address — and a verdict that silently attributed it to the subject would be a
+    /// statement about a program that does not exist.
+    child_touched_state_dir,
+    /// The target crossed a process boundary and no oracle was available to account for
+    /// what the other processes did. The shim can only see processes that load it;
+    /// tolerating a boundary on that evidence alone would treat "was not seen" as
+    /// "did nothing", which is the confusion this tool exists to refuse.
+    boundary_without_oracle,
+    /// Two snapshots of the state directory, taken back to back after the run was
+    /// contained, disagreed: something was still writing. Whatever the verdict would
+    /// have been, it would have described a moment nobody chose.
+    state_not_quiescent,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);
@@ -233,6 +267,12 @@ pub const Record = struct {
     /// 1-based position among kill-point ops inside the state directory.
     /// Zero for lifecycle ops, boundary detectors and markers.
     seq: u32,
+    /// The process that performed the operation. Several processes append to one
+    /// O_APPEND trace, and which one an operation belongs to is the difference between
+    /// a crash point and a refusal. The value is read live per record — a cached pid
+    /// would be the parent's inside a forked child, which is precisely the case the
+    /// field exists to distinguish.
+    pid: u32,
     path: []const u8,
     /// Second path for two-path operations (`rename`), empty otherwise.
     aux: []const u8,
@@ -243,7 +283,7 @@ pub const header_len = magic.len + 4;
 /// Largest byte length a single record can occupy. The shim builds a record in a
 /// stack buffer of this size and writes it with one `write(2)`, so a trace never
 /// contains a half-written record even if the process dies mid-run.
-pub const max_record_len = 2 + 4 + 4 + max_path + 4 + max_path;
+pub const max_record_len = 2 + 4 + 4 + 4 + max_path + 4 + max_path;
 
 pub const EncodeError = error{ BufferTooSmall, PathTooLong };
 
@@ -256,13 +296,15 @@ pub fn encodeHeader(buf: []u8) EncodeError!usize {
 
 pub fn encodeRecord(buf: []u8, rec: Record) EncodeError!usize {
     if (rec.path.len > max_path or rec.aux.len > max_path) return error.PathTooLong;
-    const needed = 2 + 4 + 4 + rec.path.len + 4 + rec.aux.len;
+    const needed = 2 + 4 + 4 + 4 + rec.path.len + 4 + rec.aux.len;
     if (buf.len < needed) return error.BufferTooSmall;
 
     var i: usize = 0;
     std.mem.writeInt(u16, buf[i..][0..2], @intFromEnum(rec.op), .little);
     i += 2;
     std.mem.writeInt(u32, buf[i..][0..4], rec.seq, .little);
+    i += 4;
+    std.mem.writeInt(u32, buf[i..][0..4], rec.pid, .little);
     i += 4;
     std.mem.writeInt(u32, buf[i..][0..4], @intCast(rec.path.len), .little);
     i += 4;
@@ -292,7 +334,7 @@ pub const Decoded = struct {
 
 /// Borrows from `bytes`; the returned slices stay valid as long as the buffer does.
 pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
-    if (bytes.len < 10) return error.Truncated;
+    if (bytes.len < 14) return error.Truncated;
     var i: usize = 0;
 
     const raw_op = std.mem.readInt(u16, bytes[i..][0..2], .little);
@@ -300,6 +342,9 @@ pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
     const op = OpClass.fromInt(raw_op) orelse return error.BadOpClass;
 
     const seq = std.mem.readInt(u32, bytes[i..][0..4], .little);
+    i += 4;
+
+    const pid = std.mem.readInt(u32, bytes[i..][0..4], .little);
     i += 4;
 
     const path_len = std.mem.readInt(u32, bytes[i..][0..4], .little);
@@ -317,7 +362,7 @@ pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
     i += aux_len;
 
     return .{
-        .rec = .{ .op = op, .seq = seq, .path = path, .aux = aux },
+        .rec = .{ .op = op, .seq = seq, .pid = pid, .path = path, .aux = aux },
         .consumed = i,
     };
 }
@@ -483,6 +528,7 @@ test "record round-trips including the two-path form" {
     const written = try encodeRecord(&buf, .{
         .op = .rename,
         .seq = 7,
+        .pid = 4242,
         .path = "/s/key.json.tmp",
         .aux = "/s/key.json",
     });
@@ -490,6 +536,7 @@ test "record round-trips including the two-path form" {
     try std.testing.expectEqual(written, got.consumed);
     try std.testing.expectEqual(OpClass.rename, got.rec.op);
     try std.testing.expectEqual(@as(u32, 7), got.rec.seq);
+    try std.testing.expectEqual(@as(u32, 4242), got.rec.pid);
     try std.testing.expectEqualStrings("/s/key.json.tmp", got.rec.path);
     try std.testing.expectEqualStrings("/s/key.json", got.rec.aux);
 }
@@ -497,9 +544,9 @@ test "record round-trips including the two-path form" {
 test "records decode back to back" {
     var buf: [512]u8 = undefined;
     var i: usize = 0;
-    i += try encodeRecord(buf[i..], .{ .op = .shim_ready, .seq = 0, .path = "", .aux = "" });
-    i += try encodeRecord(buf[i..], .{ .op = .write, .seq = 1, .path = "/s/a", .aux = "" });
-    i += try encodeRecord(buf[i..], .{ .op = .unlink, .seq = 2, .path = "/s/b", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .shim_ready, .seq = 0, .pid = 10, .path = "", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .write, .seq = 1, .pid = 10, .path = "/s/a", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .unlink, .seq = 2, .pid = 11, .path = "/s/b", .aux = "" });
 
     var off: usize = 0;
     const first = try decodeRecord(buf[off..i]);
@@ -508,29 +555,31 @@ test "records decode back to back" {
     const second = try decodeRecord(buf[off..i]);
     try std.testing.expectEqual(OpClass.write, second.rec.op);
     try std.testing.expectEqualStrings("/s/a", second.rec.path);
+    try std.testing.expectEqual(@as(u32, 10), second.rec.pid);
     off += second.consumed;
     const third = try decodeRecord(buf[off..i]);
     try std.testing.expectEqual(OpClass.unlink, third.rec.op);
+    try std.testing.expectEqual(@as(u32, 11), third.rec.pid);
     off += third.consumed;
     try std.testing.expectEqual(i, off);
 }
 
 test "a truncated record is reported, not silently accepted" {
     var buf: [512]u8 = undefined;
-    const written = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .path = "/s/a", .aux = "" });
+    const written = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .pid = 1, .path = "/s/a", .aux = "" });
     try std.testing.expectError(error.Truncated, decodeRecord(buf[0 .. written - 1]));
 }
 
 test "an unknown op class is rejected rather than guessed" {
     var buf: [64]u8 = undefined;
-    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .path = "", .aux = "" });
+    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .pid = 1, .path = "", .aux = "" });
     std.mem.writeInt(u16, buf[0..2], 4242, .little);
     try std.testing.expectError(error.BadOpClass, decodeRecord(&buf));
 }
 
 test "the encoding is little-endian regardless of host" {
     var buf: [64]u8 = undefined;
-    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 0x01020304, .path = "", .aux = "" });
+    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 0x01020304, .pid = 0x0a0b0c0d, .path = "", .aux = "" });
     // op class 2 = write, as two little-endian bytes
     try std.testing.expectEqual(@as(u8, 2), buf[0]);
     try std.testing.expectEqual(@as(u8, 0), buf[1]);
@@ -539,6 +588,11 @@ test "the encoding is little-endian regardless of host" {
     try std.testing.expectEqual(@as(u8, 0x03), buf[3]);
     try std.testing.expectEqual(@as(u8, 0x02), buf[4]);
     try std.testing.expectEqual(@as(u8, 0x01), buf[5]);
+    // pid, immediately after seq
+    try std.testing.expectEqual(@as(u8, 0x0d), buf[6]);
+    try std.testing.expectEqual(@as(u8, 0x0c), buf[7]);
+    try std.testing.expectEqual(@as(u8, 0x0b), buf[8]);
+    try std.testing.expectEqual(@as(u8, 0x0a), buf[9]);
 }
 
 test "op categories are disjoint and cover every value" {

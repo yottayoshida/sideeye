@@ -72,6 +72,11 @@ var json_path: ?[]const u8 = null;
 var json_arena: ?std.mem.Allocator = null;
 var oracle_note: []const u8 = "not run (no --oracle given)";
 var checker_note: []const u8 = "none configured";
+/// What the run knows about process boundaries. "single process" until evidence says
+/// otherwise; a tolerated boundary replaces it with what was observed and what that
+/// limits — the reader of a FAIL must be able to see that the window is attributed to
+/// the subject only.
+var boundary_note: []const u8 = "single process";
 /// Progress, so an UNKNOWN raised mid-exploration reports what had been explored rather
 /// than zero. A caller aggregating coverage reads these.
 var crash_points: u32 = 0;
@@ -301,8 +306,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // `-f` follows children and `%process` covers clone/fork/execve. Without
             // both, a target that creates a child through a raw clone is invisible to
             // the oracle as well as to the shim, and the child's work on the state
-            // directory never appears anywhere.
-            for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process", "-o", oracle_out }) |a|
+            // directory never appears anywhere. setsid/setpgid are named explicitly
+            // because `%process` does not include them (measured), and an *unshimmed*
+            // child detaching from the containment group is visible nowhere else.
+            for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid", "-o", oracle_out }) |a|
                 list.append(arena, a) catch setupError("out of memory");
             const pairs = [_][2][]const u8{
                 .{ "TOY_STATE", state_abs },
@@ -366,11 +373,41 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.saw_unresolved)
         unknown(.unresolvable_path, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points");
 
-    if (trace.boundary) |b| switch (b) {
-        .fork, .exec => unknown(.child_process_detected, "the target created a child process; v0.1 explores single-process targets"),
+    // The boundaries that stay refusals whatever an oracle says. exec replaces the
+    // image the crash points were read from; a thread makes operation order
+    // non-deterministic; a process that left the containment group is one the engine
+    // cannot claim to have stopped. Read from `hard_boundary`, not `boundary`: the
+    // first boundary in the trace can be a tolerable fork written *before* the record
+    // that must refuse the run, and the refusal must not lose to it.
+    if (trace.hard_boundary) |b| switch (b) {
+        .exec => unknown(.child_process_detected, "the target replaced its own image (exec); the crash-point addresses do not survive an image change"),
         .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic"),
+        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid); the engine cannot claim to have stopped it"),
         else => {},
     };
+
+    // The shim-side second witness, on the recording run. Crash points are numbered per
+    // process; an operation by anyone else has no unique address and cannot be judged.
+    //
+    // Under an oracle this overlaps the oracle's own touch check for children the shim
+    // can see — measured: disabling this line alone changes no toy's verdict — but the
+    // overlap is not subsumption in either direction. The oracle reads paths textually
+    // from strace output and misses a child's *relative* spelling of a state path, which
+    // the shim resolves against the child's cwd; the shim misses any child that never
+    // loaded it, which the oracle sees. Two witnesses with different blind spots, kept
+    // deliberately.
+    if (trace.foreign_kill_point)
+        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the recording run");
+
+    // A fork/spawn boundary — or any record from another pid — is tolerable only when
+    // an oracle can account for what the other processes did. The shim only sees
+    // processes that load it, and "was not seen" must never be read as "did nothing".
+    // Mutable: the oracle can reveal children the shim never saw (a raw clone whose
+    // child loads nothing), and every consequence of having crossed a boundary — the
+    // quiescence sampling above all — must engage for those too.
+    var crossed_boundary = trace.boundary != null or trace.foreign_pid_seen;
+    if (crossed_boundary and args.oracle == null)
+        unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)");
 
     // ---- oracle comparison ---------------------------------------------------------
     // The wording matters: a PASS carrying this line is making a weaker claim than one
@@ -396,12 +433,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name);
 
+        // The tolerance condition, decided by the observer that sees children whether
+        // or not they loaded the shim.
+        if (parsed.child_touched)
+            unknown(.child_touched_state_dir, "a process other than the subject touched the state directory; its operations have no crash-point address");
+
         if (parsed.unsupported) |name|
             unknown(.unsupported_syscall_observed, name);
 
         var shim_classes: std.ArrayList(contract.OpClass) = .empty;
         for (trace.ops.items) |op| {
             if (op.class.isMarker() or op.class.isBoundary()) continue;
+            // Only the subject's account is compared against the oracle's view of the
+            // subject. A tolerated child's records (its own shim_ready arrives when it
+            // execs something dynamically linked) are not operations to reconcile.
+            if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
             shim_classes.append(arena, op.class) catch setupError("out of memory");
         }
 
@@ -416,6 +462,27 @@ pub fn main(init: std.process.Init.Minimal) !void {
             "agreed on {d} operations ({d} syscall lines examined, {d} touching the state directory)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
+
+        if (parsed.children > 0) {
+            crossed_boundary = true;
+            boundary_note = std.fmt.allocPrint(
+                arena,
+                "{d} other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only",
+                .{parsed.children},
+            ) catch "crossed, tolerated";
+        }
+    }
+
+    // Quiescence, observed rather than proven. A tolerated child was killed with the
+    // group, but a grandchild reparented away is nobody's child to wait for — so when a
+    // boundary was crossed, the final state is sampled twice and any disagreement is a
+    // writer still alive. Two equal samples do not prove a future writer cannot exist;
+    // the report says "observed", never "proven".
+    if (crossed_boundary) {
+        var final_again = engine.takeSnapshot(gpa, state_abs) catch setupError("could not re-snapshot the final state");
+        defer final_again.deinit();
+        if (!snapshotsEqual(final, final_again))
+            unknown(.state_not_quiescent, "the state directory changed between two samples taken after the recording run was contained: something is still writing");
     }
 
     if (!snapshotsEqual(initial, final) and trace.mutation_count == 0)
@@ -498,9 +565,25 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var wtrace = engine.readTrace(gpa, world_trace) catch setupError("could not read a world trace");
         defer wtrace.deinit();
 
-        // Landing evidence: the kill must have happened where it was asked for. Without
-        // this check "killed before operation k" would rest on having set a variable.
-        const landed = wtrace.kill_landed_seq != null and wtrace.kill_landed_seq.? == k;
+        // The second witness again, on every explored world and the baseline. A child's
+        // behaviour is allowed to differ between worlds — the parent dying earlier
+        // changes which path the child takes — so clearing the recording run clears
+        // nothing else.
+        if (wtrace.foreign_kill_point)
+            unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation in an explored world");
+        if (wtrace.hard_boundary) |hb| switch (hb) {
+            .detached => unknown(.child_process_detected, "a process left the containment group in an explored world"),
+            .thread => unknown(.multiple_threads_detected, "the target created a thread in an explored world"),
+            .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world"),
+            else => {},
+        };
+
+        // Landing evidence: the kill must have happened where it was asked for, *to the
+        // subject*. seq alone is not enough — a spawned child inherits SIDEEYE_KILL_AT
+        // and counts its own operations, and its k-th is a different address entirely.
+        const landed = wtrace.kill_landed_seq != null and wtrace.kill_landed_seq.? == k and
+            wtrace.kill_landed_pid != null and wtrace.primary_pid != null and
+            wtrace.kill_landed_pid.? == wtrace.primary_pid.?;
         if (k <= n and !landed)
             unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not");
         if (k <= n and !term.isSignal(posix.SIGKILL))
@@ -518,6 +601,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         var crashed = engine.takeSnapshot(gpa, state_abs) catch setupError("could not snapshot a crashed state");
         defer crashed.deinit();
+
+        // Same observation as after the recording run: when a boundary was crossed,
+        // one sample is a moment and two agreeing samples are a state.
+        if (crossed_boundary) {
+            var crashed_again = engine.takeSnapshot(gpa, state_abs) catch setupError("could not re-snapshot a crashed state");
+            defer crashed_again.deinit();
+            if (!snapshotsEqual(crashed, crashed_again))
+                unknown(.state_not_quiescent, "the crashed state changed between two samples: something the subject started is still writing");
+        }
 
         explored += 1;
 
@@ -616,6 +708,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\explored    {d} worlds (crash points {d} + 1 baseline)
             \\oracle      {s}
             \\checker     {s}
+            \\processes   {s}
             \\not tested  power loss, torn writes, concurrent processes
             \\
             \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} <operation>
@@ -631,6 +724,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             explored,   n,
             oracle_note,
             checker_note,
+            boundary_note,
             state_abs,  alt_env,     repro_trace, preload_var, shim, f.k,
         });
         if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
@@ -653,9 +747,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      explored {d} worlds (crash points {d} + 1 baseline)
         \\      oracle: {s}
         \\      checker: {s}
+        \\      processes: {s}
         \\      not tested: power loss, torn writes, concurrent processes
         \\
-    , .{ explored, explored, explored, n, oracle_note, checker_note });
+    , .{ explored, explored, explored, n, oracle_note, checker_note, boundary_note });
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -839,6 +934,8 @@ fn buildJson(
     try jsonString(w, arena, oracle_note);
     try w.appendSlice(arena, ",\n  \"checker\": ");
     try jsonString(w, arena, checker_note);
+    try w.appendSlice(arena, ",\n  \"processes\": ");
+    try jsonString(w, arena, boundary_note);
     // Stated in the report itself, not only in the documentation: a PASS that does not
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": [\"power loss\", \"torn writes\", \"concurrent processes\"]\n}\n");

@@ -157,16 +157,23 @@ pub fn close(fd: c_int) callconv(.c) c_int {
 
 // --- boundary detectors ----------------------------------------------------------
 //
-// These do not make the operation fail; they record that the run left the region
-// v0.1 can reason about. The engine turns a single occurrence into UNKNOWN.
+// These do not make the operation fail; they record that the run crossed a process
+// boundary. Whether that is tolerable is the engine's decision, not this file's.
+//
+// Recorded *after* the call succeeds, except where noted. The old pre-call records
+// meant a failed fork — no child anywhere — read exactly like a real one, and the
+// difference between those is the difference between a refusal and a verdict.
 //
 // `clone`, `clone3` and a raw `syscall(SYS_clone, …)` bypass this file entirely.
 // That gap is why the recording run is compared against an external oracle where one
 // exists, and why the engine carries detectors that do not depend on interposition.
 
 pub fn fork() callconv(.c) c_int {
-    common.noteBoundary(.fork);
-    return common.callFork();
+    const rc = common.callFork();
+    // Parent only. The child's rc is 0 and its operations carry its own pid; recording
+    // the boundary twice would claim two forks happened.
+    if (rc > 0) common.noteBoundary(.fork);
+    return rc;
 }
 
 /// The one wrapper that must not have a stack frame at the moment it calls the real
@@ -200,13 +207,16 @@ pub fn fork() callconv(.c) c_int {
 /// a freshly mmap'd stack — measured as the reason spawn survived an ordinary wrapper
 /// while vfork did not. Only `vfork` shares the parent's.
 pub fn vfork() callconv(.c) c_int {
-    // Recorded before the call, like every boundary: there is no frame afterwards to
-    // record from, and a boundary is worth recording whether or not the call succeeds.
+    // The one boundary still recorded before the call: there is no frame afterwards to
+    // record from. The cost is that a failed vfork leaves a fork record with no child —
+    // the engine reads that as a boundary and refuses, which errs toward UNKNOWN.
     common.noteBoundary(.fork);
     const real_vfork = common.realVfork() orelse return -1;
     return @call(.always_tail, real_vfork, .{});
 }
 
+// Exec keeps the pre-call record: on success there is no "after" in the same image to
+// record from, and on failure the extra record errs toward refusal.
 pub fn execve(path: [*:0]const u8, argv: [*]const ?[*:0]const u8, envp: [*]const ?[*:0]const u8) callconv(.c) c_int {
     common.noteBoundary(.exec);
     return common.callExecve(path, argv, envp);
@@ -222,6 +232,9 @@ pub fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c
     return common.callExecvp(file, argv);
 }
 
+// Through v2 these recorded `.fork`, which is wrong in kind: the child is a new process
+// *and* a new image. The misclassification was harmless while both were refused, and
+// stops being harmless the moment the engine treats them differently.
 pub fn posix_spawn(
     pid: ?*anyopaque,
     path: [*:0]const u8,
@@ -230,8 +243,9 @@ pub fn posix_spawn(
     argv: [*]const ?[*:0]const u8,
     envp: [*]const ?[*:0]const u8,
 ) callconv(.c) c_int {
-    common.noteBoundary(.fork);
-    return common.callPosixSpawn(pid, path, file_actions, attrp, argv, envp);
+    const rc = common.callPosixSpawn(pid, path, file_actions, attrp, argv, envp);
+    if (rc == 0) common.noteBoundary(.spawn);
+    return rc;
 }
 
 pub fn posix_spawnp(
@@ -242,8 +256,9 @@ pub fn posix_spawnp(
     argv: [*]const ?[*:0]const u8,
     envp: [*]const ?[*:0]const u8,
 ) callconv(.c) c_int {
-    common.noteBoundary(.fork);
-    return common.callPosixSpawnp(pid, file, file_actions, attrp, argv, envp);
+    const rc = common.callPosixSpawnp(pid, file, file_actions, attrp, argv, envp);
+    if (rc == 0) common.noteBoundary(.spawn);
+    return rc;
 }
 
 pub fn pthread_create(
@@ -252,6 +267,36 @@ pub fn pthread_create(
     start_routine: *const anyopaque,
     arg: ?*anyopaque,
 ) callconv(.c) c_int {
-    common.noteBoundary(.thread);
-    return common.callPthreadCreate(thread, attr, start_routine, arg);
+    const rc = common.callPthreadCreate(thread, attr, start_routine, arg);
+    if (rc == 0) common.noteBoundary(.thread);
+    return rc;
+}
+
+// --- containment escapes -----------------------------------------------------------
+//
+// The engine confines the target by putting it in its own process group and killing the
+// group. A process that leaves the group is one the engine can no longer claim to have
+// stopped — so the departure itself is recorded, and the engine refuses rather than
+// pretends.
+
+pub fn setsid() callconv(.c) c_int {
+    const rc = common.callSetsid();
+    // setsid fails for a process that is already a group leader, and the engine makes
+    // the direct child exactly that — so a successful setsid can only have come from a
+    // descendant, which is precisely the process that just escaped.
+    if (rc >= 0) common.noteBoundary(.detached);
+    return rc;
+}
+
+pub fn setpgid(pid: c_int, pgid: c_int) callconv(.c) c_int {
+    // A call that changes nothing is not an escape. The direct child is already its
+    // own group leader (the engine made it so), and a target calling setpgid(0, 0) in
+    // that position — shells do — must not be refused for it. The same courtesy goes
+    // to a call aimed at another process: only a group that actually changed counts.
+    const subject = if (pid == 0) common.c.getpid() else pid;
+    const before = common.c.getpgid(subject);
+    const rc = common.callSetpgid(pid, pgid);
+    if (rc == 0 and common.c.getpgid(subject) != before)
+        common.noteBoundary(.detached);
+    return rc;
 }

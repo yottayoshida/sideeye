@@ -54,4 +54,6 @@ comptime {
     @export(&ops.posix_spawn, .{ .name = "posix_spawn" });
     @export(&ops.posix_spawnp, .{ .name = "posix_spawnp" });
     @export(&ops.pthread_create, .{ .name = "pthread_create" });
+    @export(&ops.setsid, .{ .name = "setsid" });
+    @export(&ops.setpgid, .{ .name = "setpgid" });
 }
