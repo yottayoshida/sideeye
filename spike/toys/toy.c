@@ -22,6 +22,11 @@
  *                  silently wrong, not a crash. The wrapper is now a recorded boundary
  *                  followed by a guaranteed tail jump, and this toy is what pins that:
  *                  the target has to survive being observed.
+ *   TOY_READ_FIRST if set, read the current key (a read-only open) before rotating.
+ *                  A write-incapable open is not an address (ADR 0003): this toy must
+ *                  reach the same crash point count as a plain rotate, and the old
+ *                  behaviour — the read consuming crash point 1 — is the red the
+ *                  acceptance check exists to show.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -210,6 +215,13 @@ static int cmd_rotate(void) {
     char key[4096], tmp[4096];
     join_path(key, sizeof key, KEY_NAME);
     join_path(tmp, sizeof tmp, TMP_NAME);
+
+    /* A read-only open of state before any mutation. The result is deliberately unused:
+     * the point is the open itself, which must not consume a crash-point address. */
+    if (getenv("TOY_READ_FIRST")) {
+        char buf[256];
+        (void)read_key(buf, sizeof buf);
+    }
 
     maybe_leave_the_supported_region();
 

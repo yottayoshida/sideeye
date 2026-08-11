@@ -13,9 +13,9 @@ It breaks worlds, not inputs: same input, hostile universe.
 ## Status
 
 **v0.1 — the feasibility milestone, released.** It proves the assumption everything else
-rests on: a process can be killed deterministically immediately before its k-th file
-operation, the resulting worlds can be judged, and the same run produces the same verdict
-on Linux and macOS. What it will not do is guess — a target it cannot fully observe is
+rests on: a process can be killed deterministically immediately before its k-th
+operation that can change state, the resulting worlds can be judged, and the same run
+produces the same verdict on Linux and macOS. What it will not do is guess — a target it cannot fully observe is
 reported UNKNOWN, never as passing.
 
 The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and

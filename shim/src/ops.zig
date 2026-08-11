@@ -26,18 +26,22 @@ const AT_FDCWD = common.AT_FDCWD;
 /// so a fixed-arity declaration reads `mode` from a register the caller never wrote.
 /// On Linux the two agree, and Zig refuses `@cVaStart` for that target outright
 /// ("disabled due to miscompilations") — its own statement about that ABI.
+// A write-incapable open is not observed at all (ADR 0003): it cannot change state, so
+// the world killed immediately before it is byte-identical to the world killed at the
+// next address — the same treatment as a path outside the state directory. The oracle
+// applies the matching predicate textually and skips the same opens.
 const open_impl = if (builtin.os.tag == .macos) struct {
     pub fn f(path: [*:0]const u8, flags: c_int, ...) callconv(.c) c_int {
         var ap = @cVaStart();
         defer @cVaEnd(&ap);
         // Reading it when O_CREAT is absent would consume something never pushed.
         const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
-        common.note1(.open, AT_FDCWD, path);
+        if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, path);
         return common.callOpen(path, flags, mode);
     }
 } else struct {
     pub fn f(path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
-        common.note1(.open, AT_FDCWD, path);
+        if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, path);
         return common.callOpen(path, flags, mode);
     }
 };
@@ -48,18 +52,19 @@ const openat_impl = if (builtin.os.tag == .macos) struct {
         var ap = @cVaStart();
         defer @cVaEnd(&ap);
         const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
-        common.note1(.open, dirfd, path);
+        if (common.openIsWriteCapable(flags)) common.note1(.open, dirfd, path);
         return common.callOpenat(dirfd, path, flags, mode);
     }
 } else struct {
     pub fn f(dirfd: c_int, path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
-        common.note1(.open, dirfd, path);
+        if (common.openIsWriteCapable(flags)) common.note1(.open, dirfd, path);
         return common.callOpenat(dirfd, path, flags, mode);
     }
 };
 pub const openat = openat_impl.f;
 
 pub fn creat(path: [*:0]const u8, mode: c_uint) callconv(.c) c_int {
+    // creat is always write-capable: it implies O_CREAT|O_WRONLY|O_TRUNC.
     common.note1(.open, AT_FDCWD, path);
     return common.callCreat(path, mode);
 }
