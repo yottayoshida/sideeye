@@ -1,6 +1,6 @@
 # ADR 0005 — stdio is observed at flush granularity
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-11)
 - **Supersedes:** nothing. Extends the observation set of ADR 0001 (libc interposition)
   to the stdio layer; the addressing rules of ADR 0003/0004 are unchanged
 - **Scope:** the shim only. The oracle, the engine and the report are untouched;
