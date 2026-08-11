@@ -9,11 +9,21 @@ and it went unwritten for four pull requests once because no routine asked for i
 
 The contract:
 
-- **Write the entry before opening the PR.** Heading format: `## YYYY-MM-DD — <claim>`.
-- State what was decided, what was measured (real numbers, real output), and what went
-  wrong or was reversed — the reversals are the point of the log.
-- CI enforces the mechanical half: a pull request that changes `src/`, `shim/`, `spike/`,
-  `build.zig` or `build.zig.zon` without touching `BUILDLOG.md` fails.
+- **Append at the moment of the decision, not at delivery.** Start the entry when the
+  work starts and let it grow: a design choice, a measurement, a reversal — each gets its
+  paragraph when it happens, in the same working tree as the change it describes.
+  Batch-writing at PR time is the documented failure mode, not a lesser form of
+  compliance: the containment entry was written once at PR-open, its central argument
+  was reversed in review two hours later, and the reversal never made it back in.
+- **Re-read the entry at PR-open and after every review round.** Anything that reversed
+  or moved since a paragraph was written gets recorded before merge. PR-open is when the
+  entry is *re-read*, not when it is written.
+- Heading format: `## YYYY-MM-DD — <claim>`. State what was decided, what was measured
+  (real numbers, real output), and what went wrong — the reversals are the point.
+- CI enforces the mechanical half only — a pull request that changes `src/`, `shim/`,
+  `spike/`, `build.zig` or `build.zig.zon` without touching `BUILDLOG.md` fails. CI sees
+  the final diff and cannot see *when* the entry was written; the timing half of the
+  contract lives in this file and in the habit.
 
 ## Other conventions
 
