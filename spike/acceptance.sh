@@ -265,8 +265,10 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 scanned=$(echo "$o" | grep -o '[0-9]* syscall lines examined' | cut -d' ' -f1)
-if echo "$o" | grep -q "agreed on 6 operations" && [ "${scanned:-0}" -gt 10 ]; then
-    echo "ok   the oracle agreed on 6 operations over $scanned examined lines"
+# 5, not 6: close is recorded but no longer compared (ADR 0003), so the agreed set for
+# the buggy rotate is open, write, fsync, unlink, rename.
+if echo "$o" | grep -q "agreed on 5 operations" && [ "${scanned:-0}" -gt 10 ]; then
+    echo "ok   the oracle agreed on 5 operations over $scanned examined lines"
 else
     echo "FAIL oracle agreement: scanned=${scanned:-0}"
     echo "$o" | sed 's/^/     | /'
@@ -347,7 +349,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "no state-directory operations"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "nothing that can change"; then
     echo "ok   the same run passes once an oracle confirms it"
 else
     echo "FAIL zero-op with oracle: exit $rc"
@@ -418,6 +420,23 @@ if ! command -v python3 >/dev/null 2>&1; then
     echo "FAIL python3 is required to parse the report; refusing to fall back to grep"
     fails=$((fails + 1))
 fi
+
+# How many records of one op class a trace holds, with a real decoder — grep succeeds on
+# garbage, and both callers exist to prove a record is (or is not) present.
+count_op_records() { python3 -c '
+import struct, sys
+try:
+    b = open(sys.argv[1], "rb").read()
+except OSError:
+    print(0); raise SystemExit
+want = int(sys.argv[2])
+i, n = 12, 0
+while i + 14 <= len(b):
+    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
+    if i + 4 > len(b): break
+    (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
+    if op == want: n += 1
+print(n)' "$1" "$2"; }
 
 field() { python3 -c 'import json,sys
 d=json.load(open(sys.argv[1]))
@@ -794,19 +813,7 @@ fi
 # child. Only a fork-class record (op 200) in this trace says the vfork call itself was
 # seen. Counted with a real decoder for the same reason check 2i uses one: grep succeeds
 # on garbage.
-fork_recs=$(python3 -c '
-import struct, sys
-try:
-    b = open(sys.argv[1], "rb").read()
-except OSError:
-    print(0); raise SystemExit
-i, n = 12, 0
-while i + 14 <= len(b):
-    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
-    if i + 4 > len(b): break
-    (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
-    if op == 200: n += 1
-print(n)' /tmp/acc/vfork-trace.bin)
+fork_recs=$(count_op_records /tmp/acc/vfork-trace.bin 200)
 if [ "${fork_recs:-0}" -ge 1 ]; then
     echo "ok   the vfork call itself was recorded ($fork_recs fork-class record)"
 else
@@ -850,6 +857,44 @@ elif ! echo "$syms" | grep -qx "vfork"; then
     fails=$((fails + 1))
 else
     echo "ok   the shim interposes vfork and the target survives it"
+fi
+
+echo ""
+echo "=========== check 2s: a read-only open is not an address ==========="
+# ADR 0003: a write-incapable open cannot change state, so the world killed immediately
+# before it is byte-identical to the world killed at the next address. TOY_READ_FIRST
+# reads the key (one read-only open) before rotating; the crash point count and the
+# verdict must be identical to the plain rotate. Under the old rules the read consumed
+# crash point 1 and this run reported 6 of 6 — that is the red this check replaces.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_READ_FIRST=1 export TOY_READ_FIRST
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_READ_FIRST
+if [ "$rc" = "1" ] && echo "$o" | grep -q "crash point 5 of 5"; then
+    echo "ok   the read-first rotate reaches the same crash point count as the plain one"
+else
+    echo "FAIL read-first rotate: exit $rc (wanted the plain rotate's 5 of 5)"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The close exclusion is from the *comparison*, not from the trace: the recording must
+# survive, or the exclusion has quietly become a removal. Counted with a real decoder.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
+rm -f /tmp/acc/close-trace.bin
+TOY_STATE=/tmp/acc/state LD_PRELOAD="$SHIM" \
+    SIDEEYE_STATE_DIR=/tmp/acc/state SIDEEYE_TRACE_PATH=/tmp/acc/close-trace.bin \
+    "$OUT/toy-bug" rotate >/dev/null 2>&1
+close_recs=$(count_op_records /tmp/acc/close-trace.bin 100)
+if [ "${close_recs:-0}" -ge 1 ]; then
+    echo "ok   close is still recorded in the trace ($close_recs record)"
+else
+    echo "FAIL no close record in the trace: the comparison exclusion became a removal"
+    fails=$((fails + 1))
 fi
 
 echo ""

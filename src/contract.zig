@@ -32,7 +32,11 @@ const std = @import("std");
 /// processes append to one O_APPEND file, so without the pid "belongs to the previous
 /// segment" decides nothing — and the difference between the subject's operation and a
 /// child's is the difference between a crash point and a refusal.
-pub const contract_version: u32 = 3;
+/// v4 changed no bytes and no classes, but changed what the recorded set *means*: a
+/// write-incapable open (ADR 0003) is no longer observed at all. A v3 trace contains
+/// read-only opens that a v4 engine would number as crash points, so the pairing must
+/// refuse loudly rather than drift — which is this field's documented purpose.
+pub const contract_version: u32 = 4;
 
 pub const magic = "SIDEEYE1";
 

@@ -92,7 +92,7 @@ fn usage() void {
         \\
         \\  --state      directory whose contents define the target's state
         \\  --setup      command that produces the initial state (run once)
-        \\  --operation  command to explore; killed before each of its file operations
+        \\  --operation  command to explore; killed before each operation that can change state
         \\  --shim       path to libsideeye_shim.so
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
         \\  --oracle     path to strace; the recording run is compared against it
@@ -444,6 +444,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var shim_classes: std.ArrayList(contract.OpClass) = .empty;
         for (trace.ops.items) |op| {
             if (op.class.isMarker() or op.class.isBoundary()) continue;
+            // close stays in the trace but leaves the comparison (ADR 0003): the oracle
+            // sees descriptors the shim never saw born, and pairing closes across the
+            // two views has no honest fixpoint.
+            if (op.class == .close) continue;
             // Only the subject's account is compared against the oracle's view of the
             // subject. A tolerated child's records (its own shim_ready arrives when it
             // execs something dynamically linked) are not operations to reconcile.
@@ -493,7 +497,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (n == 0) {
         requireCompleteness(args.oracle != null, args.allow_unverified);
         say(
-            \\PASS  the operation performed no state-directory operations
+            \\PASS  the operation performed nothing that can change the state directory
             \\      explored 0 crash points; nothing to kill before
             \\      not tested: power loss, torn writes, concurrent processes
             \\

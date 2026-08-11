@@ -2,6 +2,68 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-11 — Addressing narrows to state-changing operations (#19, in progress)
+
+The plan, before the code: crash-point addressing and the completeness comparison move to
+cover **state-changing operations only**. A write-incapable open — accmode is `O_RDONLY`
+and neither `O_CREAT` nor `O_TRUNC` is set — mutates nothing, so the world killed
+immediately before it is byte-identical to the world killed at the next address; it stops
+being a crash point and stops being compared, on both sides, under one predicate. `close`
+leaves the comparison too (it stays recorded): the simulation over omamori's accounts
+showed read-only-open exclusion alone leaves the close of a raw-opened descriptor
+stranded on the oracle's side, and fd-provenance tracking dies on `dup` and inheritance.
+Simulated result to beat: **142 vs 142, aligned**. Contract bumps to v4 — the recorded
+set changes meaning, and a v3 shim under a v4 engine should refuse loudly, not drift.
+
+Adversarial review of the plan (one Critical, eight Major) reshaped two things before any
+code: the oracle-side predicate is **fail-closed** — a symbolic `O_` token must be
+present before anything is excluded; numeric-only flags (`0x241`), missing arguments and
+unknown shapes are counted as before, so a parse failure ends in UNKNOWN, not a pass. And
+the predicate moved from a flag-list to accmode, which keeps `O_RDONLY|O_CREAT` (creates
+but cannot write) addressable and drops `O_APPEND` from the set (append without write
+access cannot write). Rejected with reasons: recording flags in `aux` and projecting
+later (a type pun that makes `aux` mean different things per op, and a third place the
+predicate must agree), and fd→flags tracking (leaks on dup/inheritance).
+
+**Implemented, with one prediction corrected.** The mutation pair went red in both
+directions, but the plan mislabelled one: disabling the shim-side exclusion was predicted
+to surface as `oracle_saw_phantom`, and it surfaces as `oracle_missed_operation`, because
+`compare()` reports any mid-sequence divergence as "missed" and reserves "phantom" for a
+shim account that is a pure suffix-extension. The discrimination is intact — the
+read-first toy flips from FAIL at 5-of-5 to UNKNOWN under either one-sided mutation — the
+label prediction was just wrong, and the acceptance comments say what actually appears.
+Two count anchors moved exactly as the run-first sweep found them: "agreed on 6
+operations" is 5 (close left the comparison), and the zero-op PASS wording is now "no
+state-changing operations". 55 unit tests, 52 acceptance assertions.
+
+**Review round, re-read as the contract now demands.** Three findings, all adopted. The
+ADR overclaimed `O_RDONLY|O_CREAT` as "a mutation": it keeps its crash-point address, but
+`OpClass.open` has never counted toward `isMutation()` (deliberately — it makes
+`state_changed_without_ops` stricter), so a target whose only state change is creating
+files via open is refused by that detector, before and after this change; the ADR now
+says addressable, not credited. strace spells an *invalid* access mode as `O_ACCMODE`
+(its own xlat says so), which the fail-closed token set did not contain — the one input
+on which the two predicates would have split, now in the write set with a test. And
+"state-changing operations" oversold the set — a write-capable open may change nothing —
+so the public wording is "operations that can change state". The confirmation round then
+caught the ADR still listing the old token set two paragraphs below the sentence that
+described the new one — fixed; a document can contradict itself as easily as two
+documents can.
+
+**The measurement this PR exists for, and the wall behind the wall.** omamori again,
+under the new rules: the oracle **agreed on 142 operations** (615 syscall lines examined,
+183 in scope — the exact number the simulation predicted), one tolerated child, and the
+engine explored **all 143 worlds with every kill landing, in about one second**. The
+verdict is `UNKNOWN baseline_violates_invariant`, with 138 of 142 crash worlds reading as
+violations — and that is the *correct* answer, not a defect: omamori's audit line carries
+a timestamp and an HMAC chain, so re-running the operation writes different bytes, every
+crash world's partial line matches neither the pre nor the post content, and the baseline
+world differs from the recorded final for the same reason. The baseline gate built during
+v0.1 release prep is precisely what stood between this target and a monstrous false
+"FAIL 138 of 142". The next wall is therefore not observation but **operation
+non-determinism versus L0's byte comparison** — filed as its own issue; candidate
+directions include a per-world fresh baseline and an L0 form for append-only files.
+
 ## 2026-08-11 — The guard's own contract had the hole it was built against
 
 Hours after the guard below merged, review of the practice caught its wording: "write the

@@ -64,6 +64,36 @@ const O_WRONLY: c_int = 0o1;
 pub const O_CREAT: c_int = if (is_darwin) 0x200 else 0o100;
 const O_APPEND: c_int = if (is_darwin) 0x8 else 0o2000;
 const O_CLOEXEC: c_int = if (is_darwin) 0x1000000 else 0o2000000;
+/// The access-mode mask and O_TRUNC agree across Linux and Darwin; O_CREAT does not
+/// and is branched above.
+const O_ACCMODE: c_int = 0o3;
+const O_TRUNC: c_int = if (is_darwin) 0x400 else 0o1000;
+
+/// Is this open capable of changing state? (ADR 0003)
+///
+/// True iff the access mode is not read-only, or the call can create or truncate. The
+/// oracle applies the same predicate textually (`isReadOnlyOpen`, src/oracle.zig) —
+/// the two must stay in agreement, and the acceptance suite's mutation pair is the
+/// standing drift detector. Notes pinned by the tests below: `O_RDONLY|O_CREAT`
+/// (creates but cannot write) is write-capable; `O_APPEND` alone is not (append
+/// without write access cannot write); an invalid access mode of 3 lands on the
+/// write-capable side — the unparseable errs toward being counted.
+pub fn openIsWriteCapable(flags: c_int) bool {
+    if ((flags & O_ACCMODE) != 0) return true; // O_RDONLY == 0
+    return (flags & (O_CREAT | O_TRUNC)) != 0;
+}
+
+test "the write-capability predicate, pinned case by case" {
+    try std.testing.expect(!openIsWriteCapable(0)); // O_RDONLY
+    try std.testing.expect(openIsWriteCapable(O_WRONLY));
+    try std.testing.expect(openIsWriteCapable(0o2)); // O_RDWR
+    try std.testing.expect(openIsWriteCapable(O_CREAT)); // creates, cannot write
+    try std.testing.expect(openIsWriteCapable(O_TRUNC));
+    try std.testing.expect(!openIsWriteCapable(O_APPEND)); // append without write access
+    try std.testing.expect(!openIsWriteCapable(O_CLOEXEC));
+    try std.testing.expect(openIsWriteCapable(0o3)); // invalid accmode: err toward counting
+    try std.testing.expect(openIsWriteCapable(O_WRONLY | O_CREAT | O_TRUNC));
+}
 
 // `open` and `openat` are variadic in C, and declaring them with a fixed third
 // argument is wrong in a way that only shows on some ABIs. On arm64 macOS variadic

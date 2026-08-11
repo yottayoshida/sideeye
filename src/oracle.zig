@@ -257,11 +257,17 @@ fn argContains(line: []const u8, index: usize, needle: []const u8) bool {
     return std.mem.indexOf(u8, a, needle) != null;
 }
 
-/// An open that neither writes nor creates, judged from the flags argument.
+/// An open that cannot change state, judged from the flags argument — the textual half
+/// of `openIsWriteCapable` (shim/src/common.zig, ADR 0003). The two must stay in
+/// agreement; the acceptance suite's mutation pair is the standing drift detector.
 ///
-/// Used only for the child-tolerance decision: `open` is classified as a kill-point for
-/// the subject regardless of flags, but a *child* opening a state file read-only is a
-/// read, and refusing it would fail every helper that inspects a config.
+/// **Fail-closed.** An open is called read-only here only when its flags argument was
+/// found, contains at least one symbolic `O_` token, and contains none of the
+/// write-capable set. Numeric-only flags (`0x241`), a missing argument, or a shape this
+/// parser does not recognise are *not* read-only: they are counted as before, and a
+/// miscount ends in UNKNOWN — the direction a parse failure must fall. `O_APPEND` is
+/// deliberately not in the write set: append without write access cannot write, and
+/// append with it is caught by the access-mode tokens.
 fn isReadOnlyOpen(name: []const u8, line: []const u8) bool {
     // `creat` is deliberately absent: it implies O_CREAT|O_WRONLY|O_TRUNC without
     // spelling any of them, so there is no flags argument to consult.
@@ -271,8 +277,13 @@ fn isReadOnlyOpen(name: []const u8, line: []const u8) bool {
         2
     else
         return false;
-    for ([_][]const u8{ "O_WRONLY", "O_RDWR", "O_CREAT", "O_TRUNC", "O_APPEND" }) |w| {
-        if (argContains(line, flags_arg, w)) return false;
+    const a = syscallArg(line, flags_arg) orelse return false;
+    if (std.mem.indexOf(u8, a, "O_") == null) return false;
+    // `O_ACCMODE` is how strace spells an *invalid* access mode (both low bits set) —
+    // see its open_access_modes xlat. The shim counts that (`!= O_RDONLY`), so this
+    // side must too, or the invalid case would be the one place the predicates split.
+    for ([_][]const u8{ "O_WRONLY", "O_RDWR", "O_ACCMODE", "O_CREAT", "O_TRUNC" }) |w| {
+        if (std.mem.indexOf(u8, a, w) != null) return false;
     }
     return true;
 }
@@ -381,10 +392,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
             // The tolerance condition itself. Reads are allowed — they consume no
             // sequence number and change no state — everything else, including a
             // syscall nobody recognises, is a child touching what only the subject may.
-            // An open counts as a read when it neither writes nor creates.
+            // An open counts as a read when it neither writes nor creates, and a close
+            // of an inherited descriptor changes no persistent state (ADR 0003).
             if (is_shared_write_map) {
                 out.child_touched = true;
-            } else if (isReadOnlyOpen(name, line)) {
+            } else if (std.mem.eql(u8, name, "close") or isReadOnlyOpen(name, line)) {
                 // tolerated
             } else if (!isReadOnly(name)) {
                 out.child_touched = true;
@@ -400,6 +412,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
         }
         if (isReadOnly(name)) continue;
         if (classify(name)) |cls| {
+            // Neither of these enters the comparison (ADR 0003). A write-incapable open
+            // is not an observed operation on either side; close stays recorded by the
+            // shim but cannot be paired across views the shim never saw born.
+            if (cls == .close) continue;
+            if (cls == .open and isReadOnlyOpen(name, line)) continue;
             const actual: contract.OpClass = if (cls == .unlink and
                 std.mem.eql(u8, name, "unlinkat") and unlinkatRemovesDir(line)) .rmdir else cls;
             try out.classes.append(arena, actual);
@@ -459,13 +476,80 @@ test "parse extracts the class sequence the shim should have recorded" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/o/state");
-    const expected = [_]contract.OpClass{ .open, .write, .fsync, .close, .unlink, .rename };
+    // close is recorded by the shim but excluded from the comparison (ADR 0003).
+    const expected = [_]contract.OpClass{ .open, .write, .fsync, .unlink, .rename };
     try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
-    // The loader's own openat is outside the state directory and must not be counted.
+    // The loader's own openat is outside the state directory and must not be counted;
+    // the close is still *examined* (in scope), just not compared.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
     try std.testing.expect(!p.child_touched);
     try std.testing.expectEqual(@as(usize, 0), p.children);
+}
+
+test "a write-incapable open by the subject leaves the comparison, fail-closed" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The rustix shape from the first real target: a read-only directory open the shim
+    // cannot see. Excluded here so the two accounts can agree about what matters.
+    const symbolic =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 4</tmp/s>
+        \\42    openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), symbolic, "/tmp/s");
+    const expected = [_]contract.OpClass{.open};
+    try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
+
+    // Fail-closed: numeric flags are not read-only, they are unparsed. Counted as
+    // before — if that miscounts, the run ends UNKNOWN, never PASS.
+    const numeric =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/key.json", 0x241) = 3</tmp/s/key.json>
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), numeric, "/tmp/s");
+    try std.testing.expectEqual(@as(usize, 1), q.classes.items.len);
+
+    // O_RDONLY|O_CREAT creates but cannot write: a mutation, addressable, counted.
+    const creating =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/marker", O_RDONLY|O_CREAT, 0644) = 3</tmp/s/marker>
+        \\
+    ;
+    const r = try parse(arena_state.allocator(), creating, "/tmp/s");
+    try std.testing.expectEqual(@as(usize, 1), r.classes.items.len);
+
+    // creat spells no flags and always creates: counted.
+    const via_creat =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    creat("/tmp/s/new.json", 0644) = 3</tmp/s/new.json>
+        \\
+    ;
+    const s = try parse(arena_state.allocator(), via_creat, "/tmp/s");
+    try std.testing.expectEqual(@as(usize, 1), s.classes.items.len);
+
+    // openat2 carries its flags inside the how struct; the symbolic token is still there.
+    const via_openat2 =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat2(AT_FDCWD, "/tmp/s/key.json", {flags=O_RDONLY|O_CLOEXEC, mode=0, resolve=0}, 24) = 3</tmp/s/key.json>
+        \\
+    ;
+    const t = try parse(arena_state.allocator(), via_openat2, "/tmp/s");
+    try std.testing.expectEqual(@as(usize, 0), t.classes.items.len);
+
+    // An invalid access mode (both low bits set) is spelled `O_ACCMODE` by strace, and
+    // the shim counts it (`!= O_RDONLY`). This side must agree — the invalid case must
+    // not be the one place the two predicates split.
+    const invalid_accmode =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/key.json", O_ACCMODE|O_CLOEXEC) = -1 EINVAL (Invalid argument)
+        \\
+    ;
+    const u = try parse(arena_state.allocator(), invalid_accmode, "/tmp/s");
+    try std.testing.expectEqual(@as(usize, 1), u.classes.items.len);
 }
 
 test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
