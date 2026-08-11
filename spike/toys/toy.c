@@ -27,6 +27,25 @@
  *                  reach the same crash point count as a plain rotate, and the old
  *                  behaviour — the read consuming crash point 1 — is the red the
  *                  acceptance check exists to show.
+ *
+ * The three below exist for the history-preservation form (ADR 0004). init creates the
+ * files they touch, so each is present in the pre snapshot with non-empty content.
+ *   TOY_APPEND          append one line to log.txt whose bytes differ every run (pid +
+ *                       monotonic clock), through several small writes so a kill can
+ *                       land mid-line. The shape of an audit log or journal — and the
+ *                       measured shape of the first real target (#24). Under pre-or-post
+ *                       this is structurally UNKNOWN (the re-run baseline never matches
+ *                       the recorded final); under the history form it passes, judged
+ *                       only on whether the bytes that predate the operation survive.
+ *   TOY_APPEND_REWRITE  produce the same final content the way history dies: read all,
+ *                       ftruncate to zero, write it back, then the new line. The world
+ *                       killed between the truncate and the first write holds an empty
+ *                       file. ftruncate is explicit so the counterexample's address
+ *                       reads "after truncate", not "after open".
+ *   TOY_NONDET_REWRITE  rewrite nondet.txt with different bytes every run. pre is not a
+ *                       prefix of post, so the file stays on pre-or-post and the run
+ *                       stays UNKNOWN — pinning that the relaxation for files that only
+ *                       grow does not leak to files that are rewritten.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -60,6 +79,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 extern char **environ;
@@ -208,7 +228,21 @@ static int cmd_init(void) {
     if (mkdir(state_dir(), 0755) != 0 && errno != EEXIST) return 1;
     char key[4096];
     join_path(key, sizeof key, KEY_NAME);
-    return write_file(key, "key=1\n") == 0 ? 0 : 1;
+    if (write_file(key, "key=1\n") != 0) return 1;
+    /* The history-form toys need their files in the *pre* snapshot with non-empty
+     * content: a file absent from pre is outside L0, and one empty in pre stays on
+     * the standard rule by design (ADR 0004). */
+    if (getenv("TOY_APPEND") || getenv("TOY_APPEND_REWRITE")) {
+        char log[4096];
+        join_path(log, sizeof log, "log.txt");
+        if (write_file(log, "born\n") != 0) return 1;
+    }
+    if (getenv("TOY_NONDET_REWRITE")) {
+        char nd[4096];
+        join_path(nd, sizeof nd, "nondet.txt");
+        if (write_file(nd, "seed\n") != 0) return 1;
+    }
+    return 0;
 }
 
 static int cmd_rotate(void) {
@@ -221,6 +255,54 @@ static int cmd_rotate(void) {
     if (getenv("TOY_READ_FIRST")) {
         char buf[256];
         (void)read_key(buf, sizeof buf);
+    }
+
+    /* Append one line whose bytes no run repeats, in several small writes. */
+    if (getenv("TOY_APPEND")) {
+        char log[4096];
+        join_path(log, sizeof log, "log.txt");
+        int fd = open(log, O_WRONLY | O_APPEND);
+        if (fd < 0) return 1;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        char line[128];
+        int len = snprintf(line, sizeof line, "append pid=%d t=%ld.%09ld\n",
+                           (int)getpid(), (long)ts.tv_sec, (long)ts.tv_nsec);
+        for (int off = 0; off < len; off += 8) {
+            int chunk = len - off < 8 ? len - off : 8;
+            if (write(fd, line + off, (size_t)chunk) != chunk) { close(fd); return 1; }
+        }
+        if (close(fd) != 0) return 1;
+    }
+
+    /* The same final content, produced the way history dies. */
+    if (getenv("TOY_APPEND_REWRITE")) {
+        char log[4096], old[4096];
+        join_path(log, sizeof log, "log.txt");
+        int rfd = open(log, O_RDONLY);
+        if (rfd < 0) return 1;
+        ssize_t oldlen = read(rfd, old, sizeof old);
+        close(rfd);
+        if (oldlen < 0) return 1;
+        int fd = open(log, O_WRONLY);
+        if (fd < 0) return 1;
+        if (ftruncate(fd, 0) != 0) { close(fd); return 1; }
+        if (write(fd, old, (size_t)oldlen) != oldlen) { close(fd); return 1; }
+        const char *line = "appended\n";
+        if (write(fd, line, strlen(line)) != (ssize_t)strlen(line)) { close(fd); return 1; }
+        if (close(fd) != 0) return 1;
+    }
+
+    /* A rewrite that no run repeats — the class the history form must NOT tolerate. */
+    if (getenv("TOY_NONDET_REWRITE")) {
+        char nd[4096];
+        join_path(nd, sizeof nd, "nondet.txt");
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        char content[128];
+        snprintf(content, sizeof content, "run pid=%d t=%ld.%09ld\n",
+                 (int)getpid(), (long)ts.tv_sec, (long)ts.tv_nsec);
+        if (write_file(nd, content) != 0) return 1;
     }
 
     maybe_leave_the_supported_region();

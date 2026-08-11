@@ -72,6 +72,12 @@ var json_path: ?[]const u8 = null;
 var json_arena: ?std.mem.Allocator = null;
 var oracle_note: []const u8 = "not run (no --oracle given)";
 var checker_note: []const u8 = "none configured";
+/// Which L0 form judged which files (ADR 0004). Starts as an explicit "not yet", so
+/// an UNKNOWN raised before the snapshots exist never carries an invented
+/// classification; set from the L0Plan the moment it is built.
+var l0_note: []const u8 = "not classified (the run was refused before L0 classification)";
+/// Non-zero once any file is judged by the history form; widens `not tested`.
+var l0_history_count: u32 = 0;
 /// What the run knows about process boundaries. "single process" until evidence says
 /// otherwise; a tolerated boundary replaces it with what was observed and what that
 /// limits — the reader of a FAIL must be able to see that the window is attributed to
@@ -115,14 +121,20 @@ fn usage() void {
 fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
     if (json_path) |jp| if (json_arena) |ja|
         writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, reason.name(), detail);
+    // The classification lines appear here too: DESIGN §13 demands text and JSON
+    // carry identical content, and the JSON below already does. Before the snapshots
+    // exist this honestly reads "not classified".
     say(
         \\UNKNOWN  {s}
         \\         {s}
         \\
+        \\atomicity   {s}
+        \\not tested  {s}
+        \\
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ reason.name(), detail });
+    , .{ reason.name(), detail, l0_note, notTestedText() });
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -355,6 +367,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var final = engine.takeSnapshot(gpa, state_abs) catch setupError("could not snapshot the final state");
     defer final.deinit();
 
+    // Classified before the structural detectors, so every exit below — including the
+    // UNKNOWNs — reports the classification that actually existed, not a placeholder.
+    // The plan is the single source for both the judgement and the report (ADR 0004).
+    var l0_plan = engine.classify(gpa, initial, final) catch setupError("out of memory");
+    defer l0_plan.deinit();
+    l0_history_count = l0_plan.history_count;
+    l0_note = buildL0Note(arena, l0_plan);
+
     // ---- structural detectors, before exploring anything --------------------------
     //
     // These run first on purpose. Exploring N worlds on top of a recording run that
@@ -499,9 +519,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         say(
             \\PASS  the operation performed nothing that can change the state directory
             \\      explored 0 crash points; nothing to kill before
-            \\      not tested: power loss, torn writes, concurrent processes
+            \\      atomicity: {s}
+            \\      not tested: {s}
             \\
-        , .{});
+        , .{ l0_note, notTestedText() });
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
@@ -632,7 +653,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             };
         }
 
-        const l0 = engine.judgeL0(initial, final, crashed);
+        const l0 = engine.judgeL0(l0_plan, crashed);
 
         // The baseline world was never killed. If the invariant fails there, it fails
         // without any help from sideeye — the checker rejects a state the operation
@@ -640,8 +661,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // crash-consistency counterexample. Reporting it as "N of N crash worlds violated
         // an invariant" blames crashing for something that happens without it.
         //
-        // Only reachable through a checker: for the baseline, `crashed` *is* `final`, and
-        // judgeL0 compares every shared file against pre or post, so post always matches.
+        // Reachable two ways: a checker that rejects the operation's normal output, or
+        // an operation whose re-run writes different bytes than the recorded final —
+        // the baseline is a fresh execution, not the recorded snapshot. (An earlier
+        // comment here claimed only the first path exists; the first real target
+        // arrived through the second.) The history form (ADR 0004) removes the second
+        // path for files that only grow; a non-reproducible *rewrite* still lands
+        // here, and that refusal is the honest one: its crash worlds could not be
+        // judged either.
         if (k > n and (l0 != null or l2_failed))
             unknown(.baseline_violates_invariant, "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first");
 
@@ -654,6 +681,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                     const p = switch (v) {
                         .missing => |p| p,
                         .hybrid => |p| p,
+                        .rewritten => |p| p,
                     };
                     @memcpy(first_failure_path[0..p.len], p);
                     first_failure_path_len = p.len;
@@ -678,6 +706,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const what = if (f.violation) |v| switch (v) {
             .missing => "present before and after the operation, but gone from the crashed state",
             .hybrid => "holding neither the old nor the new content",
+            .rewritten => "present, but its recorded history is no longer a prefix of its content",
         } else "the checker exited non-zero after restart";
         const path_shown = if (first_failure_path_len > 0)
             first_failure_path[0..first_failure_path_len]
@@ -710,10 +739,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\path        {s}
             \\observed    {s}
             \\explored    {d} worlds (crash points {d} + 1 baseline)
+            \\atomicity   {s}
             \\oracle      {s}
             \\checker     {s}
             \\processes   {s}
-            \\not tested  power loss, torn writes, concurrent processes
+            \\not tested  {s}
             \\
             \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} <operation>
             \\
@@ -726,9 +756,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
             path_shown,
             what,
             explored,   n,
+            l0_note,
             oracle_note,
             checker_note,
             boundary_note,
+            notTestedText(),
             state_abs,  alt_env,     repro_trace, preload_var, shim, f.k,
         });
         if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
@@ -749,12 +781,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     say(
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant
         \\      explored {d} worlds (crash points {d} + 1 baseline)
+        \\      atomicity: {s}
         \\      oracle: {s}
         \\      checker: {s}
         \\      processes: {s}
-        \\      not tested: power loss, torn writes, concurrent processes
+        \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, oracle_note, checker_note, boundary_note });
+    , .{ explored, explored, explored, n, l0_note, oracle_note, checker_note, boundary_note, notTestedText() });
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -774,6 +807,63 @@ fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
     var it = std.mem.tokenizeScalar(u8, cmd, ' ');
     while (it.next()) |tok| try list.append(arena, tok);
     return list.items;
+}
+
+/// One sentence naming which form judged which files. Counts and names come from the
+/// same L0Plan the judgement reads (ADR 0004), so the report cannot describe a
+/// different classification than the one that ran. Names are bounded — the point is
+/// "which files got the weaker claim", not an inventory.
+fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
+    const standard = plan.files.items.len - @as(usize, plan.history_count);
+    if (plan.history_count == 0) {
+        return std.fmt.allocPrint(arena, "{d} file(s) judged pre-or-post", .{standard}) catch "classified";
+    }
+    var names: std.ArrayList(u8) = .empty;
+    var listed: u32 = 0;
+    for (plan.files.items) |f| {
+        if (f.form != .history) continue;
+        if (listed == 3) break;
+        if (listed > 0) names.appendSlice(arena, ", ") catch return "classified";
+        appendSanitized(&names, arena, f.rel) catch return "classified";
+        listed += 1;
+    }
+    if (plan.history_count > listed) {
+        const more = std.fmt.allocPrint(arena, " (+{d} more)", .{plan.history_count - listed}) catch return "classified";
+        names.appendSlice(arena, more) catch return "classified";
+    }
+    return std.fmt.allocPrint(
+        arena,
+        "{d} file(s) judged pre-or-post; {d} file(s) judged by the history form (appended tails not judged): {s}",
+        .{ standard, plan.history_count, names.items },
+    ) catch "classified";
+}
+
+/// Target-chosen file names go into the text report verbatim, and a Unix file name may
+/// contain newlines and control bytes — enough to forge whole report lines. The JSON
+/// side is escaped in `jsonString`; this is the text side's equivalent for the l0
+/// note. (The FAIL block's path fields have carried the same exposure since v0.1 and
+/// are tracked as their own issue — this guards the surface this change adds.)
+fn appendSanitized(names: *std.ArrayList(u8), arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}!void {
+    for (s) |ch| {
+        try names.append(arena, if (ch < 0x20 or ch == 0x7f) '?' else ch);
+    }
+}
+
+/// The `not tested` list is not constant: whenever any file was judged by the history
+/// form, its appended tail joined the untested set, and a PASS headline must not
+/// stand without that narrowing beside it.
+fn notTestedText() []const u8 {
+    return if (l0_history_count > 0)
+        "power loss, torn writes, concurrent processes, appended tails (files under the history form)"
+    else
+        "power loss, torn writes, concurrent processes";
+}
+
+fn notTestedJson() []const u8 {
+    return if (l0_history_count > 0)
+        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]"
+    else
+        "[\"power loss\", \"torn writes\", \"concurrent processes\"]";
 }
 
 fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
@@ -934,6 +1024,8 @@ fn buildJson(
         try w.appendSlice(arena, "\n  }");
     }
 
+    try w.appendSlice(arena, ",\n  \"l0\": ");
+    try jsonString(w, arena, l0_note);
     try w.appendSlice(arena, ",\n  \"oracle\": ");
     try jsonString(w, arena, oracle_note);
     try w.appendSlice(arena, ",\n  \"checker\": ");
@@ -942,7 +1034,9 @@ fn buildJson(
     try jsonString(w, arena, boundary_note);
     // Stated in the report itself, not only in the documentation: a PASS that does not
     // say what it did not look at is the kind of reassurance this tool refuses to give.
-    try w.appendSlice(arena, ",\n  \"not_tested\": [\"power loss\", \"torn writes\", \"concurrent processes\"]\n}\n");
+    try w.appendSlice(arena, ",\n  \"not_tested\": ");
+    try w.appendSlice(arena, notTestedJson());
+    try w.appendSlice(arena, "\n}\n");
     return buf.items;
 }
 
@@ -1016,6 +1110,33 @@ fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
         if (!std.mem.eql(u8, ae.content, be.content)) return false;
     }
     return true;
+}
+
+test "the l0 note neutralises control bytes in target-chosen file names" {
+    // A Unix file name may contain a newline; unescaped it would let a target forge
+    // report lines ("log\nnot tested  nothing" reads as two lines of verdict). The
+    // note must carry the name defanged. Control: the printable part survives.
+    const gpa = std.testing.allocator;
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+
+    var plan: engine.L0Plan = .{
+        .arena = std.heap.ArenaAllocator.init(gpa),
+        .files = .empty,
+        .history_count = 1,
+    };
+    defer plan.deinit();
+    try plan.files.append(plan.arena.allocator(), .{
+        .rel = "evil\nname\x1b.log",
+        .form = .history,
+        .pre_content = "a",
+        .post_content = "ab",
+    });
+
+    const note = buildL0Note(arena_state.allocator(), plan);
+    try std.testing.expect(std.mem.indexOfScalar(u8, note, '\n') == null);
+    try std.testing.expect(std.mem.indexOfScalar(u8, note, 0x1b) == null);
+    try std.testing.expect(std.mem.indexOf(u8, note, "evil?name?.log") != null);
 }
 
 test "the version in build.zig.zon and the one the CLI prints are the same string" {

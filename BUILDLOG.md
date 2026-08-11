@@ -2,7 +2,93 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-11 — Addressing narrows to state-changing operations (#19, in progress)
+## 2026-08-11 — L0 learns a second per-file form: history preservation (#24, in progress)
+
+The plan was measured before it was written, and the measurement deleted two of the
+issue's three directions. Re-running `omamori exec -- /bin/true` twice from the same
+restored state, plus one straced run: the only non-reproducible file in the state
+directory is `audit.jsonl`, and its shape is a strict extension — pre is a byte prefix
+of post. The HWM sidecar is rewritten, but through temp+`rename` and with deterministic
+content (`0` → `1`); the secret never changes; the lock and the `.hwm.tmp` exist in only
+one snapshot and are outside L0 anyway. So the class "non-reproducible rewrite" — the
+one that would need a per-world fresh baseline (direction 1) or L2 delegation
+(direction 3) — has no representative in the first real target. Direction 2 alone
+closes #24.
+
+Two more measurements sharpened what the change means. The 142 operations are real: one
+audit line is written through **134 separate `write(2)` calls**, so a kill lands inside
+the line and leaves a torn tail — the "crashed content still begins with the pre
+content" invariant holds there too, and whether a torn tail is acceptable becomes the
+checker's question, not L0's. And `omamori audit verify` already answers it: fed an
+audit log with a half-written last line, it reports "chain intact. (1 torn lines
+skipped)" and exits 0. The dogfood prediction is therefore PASS, and a deviation from
+that prediction would itself be a finding.
+
+Adversarial review of the plan (two Critical, seven Major) forced one rename and one
+reversal before any code. The form is **not** called "append-only": a snapshot proves a
+shape, never a write mechanism, so the name now claims exactly what is checked —
+**history-preservation form**. (The reviewer's "soundness regression" framing was
+declined with a reason worth keeping: to a snapshot judge, the intermediate states of a
+sequential rewrite are byte-identical to those of a true append — mechanism is not
+observable in principle, and rename-rewrites, unlink-recreates and truncate-rewrites
+all still land in violations.) The reversal: a file that is **empty in pre** does not
+enter the form. `startsWith(anything, "")` is vacuously true, so the "history" of an
+empty file constrains nothing; such files keep the standard pre-or-post rule, and a
+non-deterministic fresh log stays an honest UNKNOWN instead of a silent no-check. Also
+adopted: classification happens once (`classify → L0Plan`) and both the judgement and
+the report read from it, so the two cannot drift; the report's `not tested` line grows
+"appended tails" dynamically whenever the form is in play.
+
+**Implemented; the mutation pair landed where the plan said it would.** The engine
+change is `classify(pre, post) → L0Plan` plus a `judgeL0(plan, crashed)` that reads it,
+a third violation (`rewritten`), and a report that carries the classification in text
+and JSON alike. The shim is untouched and the contract stays v4. Disabling
+classification alone sent the append toy back to `baseline_violates_invariant` — the
+measured pre-fix class — and turned the rewrite toy's verdict into a *hybrid*-worded
+FAIL, red on wording. Disabling the violation check alone let the rewrite toy PASS
+with its truncate window open (red), while the non-deterministic rewrite toy **stayed
+refused** — the boundary of the relaxation is held by the classification, not by the
+arm that was just mutated, which is exactly the separation the L0Plan design bought.
+While fixing the baseline gate's surroundings, its comment turned out to already be
+wrong before this change: it claimed the gate is "only reachable through a checker",
+and the first real target reached it with no checker at all — the baseline is a fresh
+execution, not the recorded snapshot. The comment now says what was measured. 60 unit
+tests, 57 acceptance assertions, all green on Linux.
+
+**The wall is down, measured end to end.** The dogfood script now lives in the repo
+(`spike/dogfood-omamori.sh`) and runs two explorations. Without a checker: **PASS
+143/143**, the report naming `audit.jsonl` as the one history-form file and the oracle
+agreeing on 142 operations — the same run that was structurally UNKNOWN yesterday. With
+`--check "omamori audit verify"`: the falsification probe fails loudly on the corrupted
+state ("audit secret must be exactly 64 hex characters"), and then the target's own
+verifier judges all 143 worlds — visibly, one line per world: the early worlds hold one
+entry, roughly 130 hold one entry plus a torn line it skips by design, the last few
+hold two. PASS, as the torn-tail probe predicted. This is the first time a real
+target's own invariant has been cross-examined in every crash world sideeye can
+construct — and the first exploration where the question "is a half-written audit line
+acceptable after a crash?" was actually asked 130 times and answered. One stumble on
+the way: the first dogfood run ended in SETUP ERROR because a fresh HOME has no
+`.local/share` and the engine creates only the final component of `--state` — the
+script now makes the parents, and the error's JSON incidentally showed the `l0` note's
+"not classified" state doing its job in the wild.
+
+**Review round, re-read as the contract demands.** Two findings, both adopted. The
+UNKNOWN text report carried no `atomicity` line while the UNKNOWN JSON did — the exact
+"two forms, one content" rule this codebase keeps citing, broken by the surface that
+was added to honour it; both lines now appear in `unknown()`, the acceptance pins the
+text, and the pin was shown red once via a spelling mutation. And the l0 note embedded
+target-chosen file names into the text report unescaped — a Unix file name may contain
+newlines, enough to forge report lines. The note now defangs control bytes
+(`evil\nname` prints as `evil?name`), with a unit test. The same-class scan found the
+FAIL block's own path fields (`after`/`before`/`path`) have carried that exposure
+since v0.1 — pre-existing, off this change's thesis, filed as its own issue rather
+than widened into this diff. macOS parity: the append toy passes under the history
+form and the rewrite toy fails at **the same logical address as Linux** (crash point 3
+of 8, after truncate, before write). One environmental find that cost an hour of
+suspicion: on this development machine, `DYLD_INSERT_LIBRARIES` is silently ignored
+for binaries produced by `zig cc` (dyld prints nothing, no shim, no trace) while the
+same source compiled by the system `cc` interposes fine — CI's zig-cc path stays
+green, so it is pinned to this host's policy, not to the toolchain in general.
 
 The plan, before the code: crash-point addressing and the completeness comparison move to
 cover **state-changing operations only**. A write-incapable open — accmode is `O_RDONLY`
