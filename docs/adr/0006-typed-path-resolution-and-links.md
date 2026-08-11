@@ -1,6 +1,6 @@
 # ADR 0006 — The oracle resolves paths by type, and links become first-class
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-11)
 - **Supersedes:** nothing. Replaces the whole-line scope scan added in v0.1 with a typed
   resolver; extends the addressed operation set of ADR 0003 with the link family
 - **Scope:** the oracle's scope decision and the shim's two-path `observe`; a new
