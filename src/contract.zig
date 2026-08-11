@@ -36,7 +36,13 @@ const std = @import("std");
 /// write-incapable open (ADR 0003) is no longer observed at all. A v3 trace contains
 /// read-only opens that a v4 engine would number as crash points, so the pairing must
 /// refuse loudly rather than drift — which is this field's documented purpose.
-pub const contract_version: u32 = 4;
+/// v5 widened the recorded set again (ADR 0005): stdio streams are observed at flush
+/// granularity, so `.open`/`.write`/`.close` records now also come from
+/// `fopen`/`fflush`/`fclose`. On Linux every affected run was UNKNOWN under v4, but a
+/// macOS `--allow-unverified` run of a target that mixes stdio and raw writes could
+/// hold a verdict whose reproduce line counts different operations under v5 — the
+/// same class of meaning change that bumped v4.
+pub const contract_version: u32 = 5;
 
 pub const magic = "SIDEEYE1";
 

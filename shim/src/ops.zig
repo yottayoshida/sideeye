@@ -160,6 +160,121 @@ pub fn close(fd: c_int) callconv(.c) c_int {
     return common.callClose(fd);
 }
 
+// --- stdio, at flush granularity (ADR 0005) ----------------------------------------
+//
+// Libc-internal calls never cross the PLT, so interposing `write` says nothing about
+// `fprintf` — measured as the whole of taskwarrior's data writes and the two operations
+// that cost git its run (#30). These wrappers observe the one place where stdio
+// granularity and syscall granularity coincide: the flush of pending bytes, which is
+// normally exactly one write(2), because a buffer cannot hold more than its own size.
+//
+// What bypasses the flush path — a large fwrite going direct, an overflow flush inside
+// fprintf, fflush(NULL), the exit-time cleanup of never-closed streams — is deliberately
+// unrecorded. Where an oracle exists those writes surface as a divergence and the run
+// refuses, exactly as it did before this file knew stdio existed; the class just got
+// much smaller. Recording happens before the call, like every wrapper here, so a kill
+// lands *before* the flush and the crash world loses the unflushed buffer — which is
+// what a real crash loses.
+
+pub fn fopen(path: [*:0]const u8, mode: [*:0]const u8) callconv(.c) ?*common.FILE {
+    if (common.stdioActive() and common.modeIsWriteCapable(mode))
+        common.note1(.open, AT_FDCWD, path);
+    return common.callFopen(path, mode);
+}
+
+pub fn fopen64(path: [*:0]const u8, mode: [*:0]const u8) callconv(.c) ?*common.FILE {
+    if (common.stdioActive() and common.modeIsWriteCapable(mode))
+        common.note1(.open, AT_FDCWD, path);
+    return common.callFopen64(path, mode);
+}
+
+pub fn fflush(stream: ?*common.FILE) callconv(.c) c_int {
+    // fflush(NULL) flushes every open stream and nothing can enumerate them; it stays
+    // unrecorded and lands in the oracle's net (ADR 0005).
+    if (stream) |s| common.noteStdioFlush(s);
+    return common.callFflush(stream);
+}
+
+pub fn fflush_unlocked(stream: ?*common.FILE) callconv(.c) c_int {
+    if (stream) |s| common.noteStdioFlush(s);
+    return common.callFflushUnlocked(stream);
+}
+
+pub fn fclose(stream: *common.FILE) callconv(.c) c_int {
+    // The pending write first, then the close — the order of the syscalls fclose is
+    // about to issue. Both resolved before the call: afterwards the descriptor is gone.
+    common.noteStdioFlush(stream);
+    common.noteStdioClose(stream);
+    return common.callFclose(stream);
+}
+
+// freopen issues [flush-write, close, open]. Recording all three and only then calling
+// the real function would let a kill aimed at the `.open` land before *any* of them —
+// a world whose address claims the write and close already happened (review finding).
+// So the wrapper flushes explicitly first: record `.write`, perform the real fflush,
+// then record `.close` and `.open`, then call freopen — whose own flush is now empty.
+// The oracle's sequence is unchanged, and every address is honest: a kill at `.close`
+// or `.open` lands with the flush durable, and dying before or after the actual
+// close(2) leaves the same bytes on disk (ADR 0003), so the remaining gap is
+// disk-neutral. freopen(NULL, …) reopens the same file through a path this wrapper
+// cannot see; that open stays unrecorded and falls into the oracle's net (ADR 0005).
+fn freopenCommon(comptime call64: bool, path: ?[*:0]const u8, mode: [*:0]const u8, stream: *common.FILE) ?*common.FILE {
+    if (common.stdioHasPending(stream)) {
+        common.noteStdioFlush(stream);
+        _ = common.callFflush(stream);
+    }
+    common.noteStdioClose(stream);
+    if (path) |p| {
+        if (common.stdioActive() and common.modeIsWriteCapable(mode))
+            common.note1(.open, AT_FDCWD, p);
+    }
+    return if (call64) common.callFreopen64(path, mode, stream) else common.callFreopen(path, mode, stream);
+}
+
+pub fn freopen(path: ?[*:0]const u8, mode: [*:0]const u8, stream: *common.FILE) callconv(.c) ?*common.FILE {
+    return freopenCommon(false, path, mode, stream);
+}
+
+pub fn freopen64(path: ?[*:0]const u8, mode: [*:0]const u8, stream: *common.FILE) callconv(.c) ?*common.FILE {
+    return freopenCommon(true, path, mode, stream);
+}
+
+// Repositioning a dirty stream flushes it as a side effect — libc issues the write
+// internally before moving the position. Measured on the second real target:
+// taskwarrior updates pending.data through an "r+" stream and its data write reaches
+// the disk inside an fseek, not inside any fflush. Same rule as everywhere above:
+// record iff bytes are pending, before the call.
+
+pub fn fseek(stream: *common.FILE, off: c_long, whence: c_int) callconv(.c) c_int {
+    common.noteStdioFlush(stream);
+    return common.callFseek(stream, off, whence);
+}
+
+pub fn fseeko(stream: *common.FILE, off: i64, whence: c_int) callconv(.c) c_int {
+    common.noteStdioFlush(stream);
+    return common.callFseeko(stream, off, whence);
+}
+
+pub fn fseeko64(stream: *common.FILE, off: i64, whence: c_int) callconv(.c) c_int {
+    common.noteStdioFlush(stream);
+    return common.callFseeko64(stream, off, whence);
+}
+
+pub fn rewind(stream: *common.FILE) callconv(.c) void {
+    common.noteStdioFlush(stream);
+    return common.callRewind(stream);
+}
+
+pub fn fsetpos(stream: *common.FILE, pos: *const anyopaque) callconv(.c) c_int {
+    common.noteStdioFlush(stream);
+    return common.callFsetpos(stream, pos);
+}
+
+pub fn fsetpos64(stream: *common.FILE, pos: *const anyopaque) callconv(.c) c_int {
+    common.noteStdioFlush(stream);
+    return common.callFsetpos64(stream, pos);
+}
+
 // --- boundary detectors ----------------------------------------------------------
 //
 // These do not make the operation fail; they record that the run crossed a process

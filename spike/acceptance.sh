@@ -982,6 +982,98 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2u: stdio is observed at flush granularity (ADR 0005) ==========="
+# The wall the calibration sweep measured (#30): libc-internal calls never cross the
+# PLT, so a target writing through stdio was invisible to the shim and every such run
+# refused as oracle_missed_operation. The stream wrappers observe the flush — the one
+# place where stdio granularity and syscall granularity coincide. Asserted with the
+# real decoder, not grep: the recorded kill-point sequence must be exactly the
+# syscalls the oracle sees, in order, with the right paths.
+kill_sequence() { python3 -c '
+import struct, sys
+b = open(sys.argv[1], "rb").read()
+names = {1:"open",2:"write",3:"rename",4:"unlink",5:"fsync",6:"truncate",7:"mkdir",8:"rmdir"}
+i, out = 12, []
+while i + 14 <= len(b):
+    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14
+    path = b[i:i+plen].decode("utf-8", "replace"); i += plen
+    if i + 4 > len(b): break
+    (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
+    if op in names:
+        out.append(names[op] + ":" + path.rsplit("/", 1)[-1])
+print(" ".join(out))' "$1"; }
+
+stdio_case() { # $1 label, $2 env var, $3 toy, $4 expected kill sequence
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env "$2=1" "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$3 init" --operation "$3 rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    seq_got=$(kill_sequence /tmp/acc/work/trace-record.bin)
+    if [ "$rc" = "0" ] && [ "$seq_got" = "$4" ]; then
+        echo "ok   $1"
+    else
+        echo "FAIL $1: exit $rc"
+        echo "     | want: $4"
+        echo "     | got:  $seq_got"
+        echo "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+}
+
+rotate_tail="open:key.json.tmp write:key.json.tmp fsync:key.json.tmp rename:key.json.tmp"
+stdio_case "the COMMIT_EDITMSG shape passes ('r' consumes no address)" TOY_STDIO "$OUT/toy-fixed" \
+    "open:stdio.txt write:stdio.txt $rotate_tail"
+stdio_case "  ...and identically through the fopen64 alias (LFS build)" TOY_STDIO "$OUT/toy-lfs" \
+    "open:stdio.txt write:stdio.txt $rotate_tail"
+stdio_case "every fflush with pending bytes is one write address; the empty one is none" TOY_STDIO_FLUSH "$OUT/toy-fixed" \
+    "open:stdio.txt write:stdio.txt write:stdio.txt write:stdio.txt $rotate_tail"
+stdio_case "freopen with pending bytes records [write, close, open] in syscall order" TOY_STDIO_FREOPEN "$OUT/toy-fixed" \
+    "open:stdio-a.txt write:stdio-a.txt open:stdio-b.txt write:stdio-b.txt $rotate_tail"
+# The taskwarrior shape: an "r+" stream made dirty, then fseek — libc flushes inside
+# the seek, so the seek family are flush points. Missing this cost the first dogfood
+# run its verdict.
+stdio_case "repositioning a dirty stream is a write address (the seek-flush)" TOY_STDIO_SEEK "$OUT/toy-fixed" \
+    "open:stdio-seek.txt write:stdio-seek.txt $rotate_tail"
+
+# The freopen kill worlds must be honest, not just its recording sequence: the wrapper
+# flushes explicitly before recording the close/open pair, so a kill aimed at the new
+# open (kill point 3: open-a, write-a, open-b) lands with the pending flush already
+# durable. Without the interleave every record precedes the one real call, the flush
+# never happens, and this world's file is empty while its address claims the write did.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-fixed" init >/dev/null 2>&1
+rm -f /tmp/acc/fr-trace.bin
+env TOY_STDIO_FREOPEN=1 TOY_STATE=/tmp/acc/state LD_PRELOAD="$SHIM" \
+    SIDEEYE_STATE_DIR=/tmp/acc/state SIDEEYE_TRACE_PATH=/tmp/acc/fr-trace.bin \
+    SIDEEYE_KILL_AT=3 "$OUT/toy-fixed" rotate >/dev/null 2>&1
+landed=$(count_op_records /tmp/acc/fr-trace.bin 901)
+if [ "${landed:-0}" = "1" ] && [ "$(cat /tmp/acc/state/stdio-a.txt 2>/dev/null)" = "into a" ]; then
+    echo "ok   a kill at freopen's new open lands after the pending flush is durable"
+else
+    echo "FAIL freopen kill world: landed=$landed content='$(cat /tmp/acc/state/stdio-a.txt 2>/dev/null)'"
+    fails=$((fails + 1))
+fi
+
+# The boundary, pinned from both sides: what bypasses the flush path must refuse, not
+# quietly miscount. An overflow flush happens inside fprintf; an exit-time flush
+# happens inside libc's cleanup. Neither crosses the wrappers.
+for pair in "TOY_STDIO_BIG:a buffer overflow inside fprintf" "TOY_STDIO_NOCLOSE:an exit-time flush of a never-closed stream"; do
+    var=${pair%%:*}; desc=${pair#*:}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env "$var=1" "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "2" ] && echo "$o" | grep -q "oracle_missed_operation"; then
+        echo "ok   $desc still refuses (outside the modelled boundary)"
+    else
+        echo "FAIL $var: exit $rc (wanted UNKNOWN oracle_missed_operation)"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+done
+
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to

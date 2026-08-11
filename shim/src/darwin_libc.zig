@@ -43,3 +43,11 @@ pub const posix_spawnp = @extern(*const fn (?*anyopaque, [*:0]const u8, ?*const 
 pub const pthread_create = @extern(*const fn (*anyopaque, ?*const anyopaque, *const anyopaque, ?*anyopaque) callconv(.c) c_int, .{ .name = "pthread_create" });
 pub const setsid = @extern(*const fn () callconv(.c) c_int, .{ .name = "setsid" });
 pub const setpgid = @extern(*const fn (c_int, c_int) callconv(.c) c_int, .{ .name = "setpgid" });
+pub const fopen = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) ?*anyopaque, .{ .name = "fopen" });
+pub const freopen = @extern(*const fn (?[*:0]const u8, [*:0]const u8, *anyopaque) callconv(.c) ?*anyopaque, .{ .name = "freopen" });
+pub const fflush = @extern(*const fn (?*anyopaque) callconv(.c) c_int, .{ .name = "fflush" });
+pub const fclose = @extern(*const fn (*anyopaque) callconv(.c) c_int, .{ .name = "fclose" });
+pub const fseek = @extern(*const fn (*anyopaque, c_long, c_int) callconv(.c) c_int, .{ .name = "fseek" });
+pub const fseeko = @extern(*const fn (*anyopaque, i64, c_int) callconv(.c) c_int, .{ .name = "fseeko" });
+pub const rewind = @extern(*const fn (*anyopaque) callconv(.c) void, .{ .name = "rewind" });
+pub const fsetpos = @extern(*const fn (*anyopaque, *const anyopaque) callconv(.c) c_int, .{ .name = "fsetpos" });

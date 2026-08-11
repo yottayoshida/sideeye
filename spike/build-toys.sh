@@ -21,6 +21,11 @@ gcc $cc_flags -DBUGGY=1 -o "$out/toy-bug" "$root/spike/toys/toy.c" -lpthread
 echo "building toy-fixed"
 gcc $cc_flags -o "$out/toy-fixed" "$root/spike/toys/toy.c" -lpthread
 
+echo "building toy-lfs"
+# The same correct toy compiled with large-file support, so its fopen resolves to
+# fopen64 — the glibc alias path the stdio wrappers must also cover (ADR 0005).
+gcc $cc_flags -D_FILE_OFFSET_BITS=64 -o "$out/toy-lfs" "$root/spike/toys/toy.c" -lpthread
+
 echo "building toy-raw"
 gcc $cc_flags -o "$out/toy-raw" "$root/spike/toys/toy_raw.c"
 
