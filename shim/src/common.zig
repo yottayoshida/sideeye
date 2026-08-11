@@ -603,10 +603,15 @@ pub inline fn callFork() c_int {
     const f = real.fork orelse return -1;
     return f();
 }
-pub inline fn callVfork() c_int {
-    if (is_darwin) return darwin.vfork();
-    const f = real.vfork orelse return -1;
-    return f();
+/// The real `vfork`, returned rather than called.
+///
+/// Every other wrapper goes through a `call*` function here. `vfork` cannot: any frame
+/// alive across its double return is corrupted by the child running on the shared stack,
+/// so the *exported wrapper itself* must make the call — as a guaranteed tail call, with
+/// this function inlined into it. See `ops.vfork` for the measurements.
+pub inline fn realVfork() ?ForkFn {
+    if (is_darwin) return darwin.vfork;
+    return real.vfork;
 }
 pub inline fn callExecve(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
     if (is_darwin) return darwin.execve(p, a, e);

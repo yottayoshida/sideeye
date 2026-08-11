@@ -692,6 +692,114 @@ else
 fi
 
 echo ""
+echo "=========== check 2p: observing a target must not break it ==========="
+# The shim's vfork wrapper used to be an ordinary function, and that was fatal to any
+# target which called it. Measured, with the control that places the fault: vfork+exec
+# exits 0 on its own and exited 127 under the shim — and it did so with the shim
+# *inactive*, so the cause was never the recording path. It was the wrapper's own stack
+# frame, alive across vfork's double return on the stack the child shares; the child
+# clobbered it and the parent resumed into the child's branch. No output, no signal:
+# silently wrong control flow.
+#
+# What made it worse than a crash is what sideeye then said about it:
+#   UNKNOWN recording_run_failed / "the operation did not exit normally"
+# blaming the target for a death sideeye caused. The wrapper is now a recorded boundary
+# followed by a guaranteed tail jump — no frame exists at the moment of the call. Both
+# halves are asserted below: the target lives, and the refusal names the boundary rather
+# than the corpse. Reverting the tail call to an ordinary call turns 2p red (measured).
+
+# 1. The control. If this ever fails the toy is broken and everything after it is noise.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
+TOY_STATE=/tmp/acc/state TOY_VFORK=1 "$OUT/toy-bug" rotate >/dev/null 2>&1
+rc=$?
+if [ "$rc" = "0" ]; then
+    echo "ok   the vforking toy exits 0 on its own (control)"
+else
+    echo "FAIL the control is broken: the toy exits $rc without sideeye anywhere near it"
+    fails=$((fails + 1))
+fi
+
+# 2. The same target, with the shim loaded and armed exactly as the engine loads it.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
+rm -f /tmp/acc/vfork-trace.bin
+TOY_STATE=/tmp/acc/state TOY_VFORK=1 \
+    LD_PRELOAD="$SHIM" \
+    SIDEEYE_STATE_DIR=/tmp/acc/state \
+    SIDEEYE_TRACE_PATH=/tmp/acc/vfork-trace.bin \
+    "$OUT/toy-bug" rotate >/dev/null 2>&1
+rc=$?
+if [ "$rc" = "0" ]; then
+    echo "ok   it still exits 0 with the shim loaded and recording"
+else
+    echo "FAIL the shim changed the target's outcome: exit $rc, wanted 0"
+    fails=$((fails + 1))
+fi
+
+# ...and the boundary has to be in the shim's own trace. Neither the exit code above nor
+# the verdict below proves that: the run under sideeye carries an oracle, whose clone
+# detection alone produces child_process_detected — and the toy's child execs, so even a
+# shim that lost its vfork wrapper would still record an exec boundary from inside the
+# child. Only a fork-class record (op 200) in this trace says the vfork call itself was
+# seen. Counted with a real decoder for the same reason check 2i uses one: grep succeeds
+# on garbage.
+fork_recs=$(python3 -c '
+import struct, sys
+try:
+    b = open(sys.argv[1], "rb").read()
+except OSError:
+    print(0); raise SystemExit
+i, n = 12, 0
+while i + 10 <= len(b):
+    op, seq, plen = struct.unpack_from("<HII", b, i); i += 10 + plen
+    if i + 4 > len(b): break
+    (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
+    if op == 200: n += 1
+print(n)' /tmp/acc/vfork-trace.bin)
+if [ "${fork_recs:-0}" -ge 1 ]; then
+    echo "ok   the vfork call itself was recorded ($fork_recs fork-class record)"
+else
+    echo "FAIL no fork-class record in the trace: the vfork interposition is not recording"
+    fails=$((fails + 1))
+fi
+
+# 3. And the verdict names the boundary rather than the death.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_VFORK=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "child_process_detected"; then
+    echo "ok   a vforking target is refused for creating a process, not for dying"
+elif echo "$o" | grep -q "recording_run_failed"; then
+    echo "FAIL the target died under observation and was blamed for it (recording_run_failed)"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+else
+    echo "FAIL vfork verdict: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# 4. The boundary must still be *seen*. Dropping the vfork interposition entirely would
+# also make checks 2 and 3 pass — the target lives when nothing is in the way — but it
+# would open a hole on the platform with no oracle: a vfork child that never execs is
+# invisible to everything else. So the export has to exist, and the verdict above has to
+# have come from it. The positive control matters: `readelf` naming the wrong section, or
+# a typo in the field, would otherwise report every symbol as absent.
+syms=$(readelf --dyn-syms "$SHIM" | awk '{print $8}')
+if ! echo "$syms" | grep -qx "fork"; then
+    echo "FAIL the symbol check cannot see the shim's exports at all (fork is missing too)"
+    fails=$((fails + 1))
+elif ! echo "$syms" | grep -qx "vfork"; then
+    echo "FAIL the shim no longer interposes vfork; surviving by not observing is not the fix"
+    fails=$((fails + 1))
+else
+    echo "ok   the shim interposes vfork and the target survives it"
+fi
+
+echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to
 # run in the middle, and a later case appended to $reasons after the count had been

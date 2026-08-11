@@ -45,6 +45,8 @@ comptime {
     @export(&ops.close, .{ .name = "close" });
 
     @export(&ops.fork, .{ .name = "fork" });
+    // `vfork` is the one replacement that must be frameless at the moment of the call;
+    // its wrapper tail-jumps to the real function. See ops.zig for the measurements.
     @export(&ops.vfork, .{ .name = "vfork" });
     @export(&ops.execve, .{ .name = "execve" });
     @export(&ops.execv, .{ .name = "execv" });
