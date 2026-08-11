@@ -897,6 +897,91 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2t: the history-preservation form (ADR 0004) ==========="
+# TOY_APPEND appends one line whose bytes no run repeats (pid + monotonic clock), in
+# several small writes. Under pre-or-post alone the re-run baseline can never match the
+# recorded final, so the run is structurally UNKNOWN — the measured wall of the first
+# real target (#24). Under the history form it passes, judged only on whether the bytes
+# that predate the operation survive. The counts are asserted exactly: the state also
+# holds key.json, whose post *diverges* from its pre, so an implementation that applies
+# the prefix rule to every changed file reports "0 file(s) judged pre-or-post" here and
+# goes red.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_APPEND=1 export TOY_APPEND
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/report.json 2>&1)
+rc=$?
+unset TOY_APPEND
+if [ "$rc" = "0" ] && echo "$o" | grep -qF "1 file(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt"; then
+    echo "ok   a nondeterministic append passes, named and counted under the history form"
+else
+    echo "FAIL append toy: exit $rc (wanted PASS naming exactly log.txt under the history form)"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+# DESIGN §13: the JSON carries the same claim, and the untested set widened with it.
+if python3 -c '
+import json, sys
+d = json.load(open("/tmp/acc/report.json"))
+assert d["l0"] == "1 file(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt", d["l0"]
+assert "appended tails (files under the history form)" in d["not_tested"], d["not_tested"]
+' 2>/dev/null; then
+    echo "ok     ...and the JSON agrees, with appended tails in not_tested"
+else
+    echo "FAIL the JSON l0/not_tested does not match the text claim"
+    fails=$((fails + 1))
+fi
+
+# The same final content produced the way history dies: read all, ftruncate, write
+# back. The world killed between the truncate and the first write holds an empty file —
+# history gone — and the verdict must be a FAIL whose window reads "after truncate".
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_APPEND_REWRITE=1 export TOY_APPEND_REWRITE
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_APPEND_REWRITE
+if [ "$rc" = "1" ] && echo "$o" | grep -q "no longer a prefix" && echo "$o" | grep -q "after  truncate"; then
+    echo "ok   rewriting history FAILs at the truncate window"
+else
+    echo "FAIL rewrite toy: exit $rc (wanted FAIL with 'no longer a prefix' after truncate)"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The boundary of the relaxation: a rewrite that no run repeats is NOT an extension,
+# stays on pre-or-post, and still refuses — the history form must not leak to it.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_NONDET_REWRITE=1 export TOY_NONDET_REWRITE
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/report.json 2>&1)
+rc=$?
+unset TOY_NONDET_REWRITE
+if [ "$rc" = "2" ] && echo "$o" | grep -q "baseline_violates_invariant" \
+        && echo "$o" | grep -qF "atomicity   2 file(s) judged pre-or-post"; then
+    echo "ok   a nondeterministic rewrite still refuses, and the UNKNOWN text says what was classified"
+else
+    echo "FAIL nondet-rewrite toy: exit $rc (wanted UNKNOWN baseline_violates_invariant + the atomicity line)"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+# The UNKNOWN's JSON still says what was classified — and that nothing was history.
+if python3 -c '
+import json, sys
+d = json.load(open("/tmp/acc/report.json"))
+assert d["l0"] == "2 file(s) judged pre-or-post", d["l0"]
+' 2>/dev/null; then
+    echo "ok     ...and its JSON reports the classification (no history files)"
+else
+    echo "FAIL the UNKNOWN JSON l0 note is wrong or missing"
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to

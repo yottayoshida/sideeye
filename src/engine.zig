@@ -438,7 +438,70 @@ pub const Violation = union(enum) {
     missing: []const u8,
     /// Present, but holding neither the old nor the new content.
     hybrid: []const u8,
+    /// A history-form file (ADR 0004) whose crashed content no longer begins with its
+    /// pre-operation content — or whose path no longer holds a file at all.
+    rewritten: []const u8,
 };
+
+/// Which invariant a shared file is judged by, decided once from the snapshots alone.
+pub const FileForm = enum {
+    /// The crashed content must equal the pre or the post content.
+    standard,
+    /// The crashed content must still begin with the pre content (ADR 0004). The
+    /// appended tail is deliberately not judged — whether a torn tail is acceptable
+    /// is the target's recovery semantics, which belongs to an L2 checker.
+    history,
+};
+
+pub const PlannedFile = struct {
+    /// All three slices borrow from the pre/post snapshots handed to `classify`;
+    /// the plan must not outlive them.
+    rel: []const u8,
+    form: FileForm,
+    pre_content: []const u8,
+    post_content: []const u8,
+};
+
+pub const L0Plan = struct {
+    arena: std.heap.ArenaAllocator,
+    files: std.ArrayList(PlannedFile),
+    history_count: u32 = 0,
+
+    pub fn deinit(self: *L0Plan) void {
+        self.arena.deinit();
+    }
+};
+
+/// Decide, once and from the snapshots alone, which invariant each shared file is
+/// judged by. Both the judgement (`judgeL0`) and the report's `l0` note read from the
+/// same plan — there is deliberately no second place where the classification is
+/// computed, because two classifiers would drift.
+///
+/// A file enters the history form iff its pre content is non-empty and its post
+/// content strictly extends it. Non-empty matters: `startsWith(anything, "")` is
+/// vacuously true, so an empty "history" would constrain nothing — such files keep
+/// the standard rule, where the atomic-write check still means something.
+pub fn classify(gpa: Allocator, pre: Snapshot, post: Snapshot) error{OutOfMemory}!L0Plan {
+    var plan: L0Plan = .{ .arena = std.heap.ArenaAllocator.init(gpa), .files = .empty };
+    errdefer plan.arena.deinit();
+    const arena = plan.arena.allocator();
+    for (pre.entries.items) |pe| {
+        if (pe.kind != .file) continue;
+        const po = post.find(pe.rel) orelse continue;
+        if (po.kind != .file) continue;
+        const history = pe.content.len > 0 and
+            !std.mem.eql(u8, po.content, pe.content) and
+            std.mem.startsWith(u8, po.content, pe.content);
+        if (history) plan.history_count += 1;
+        try plan.files.append(arena, .{
+            .rel = pe.rel,
+            .form = if (history) FileForm.history else FileForm.standard,
+            .pre_content = pe.content,
+            .post_content = po.content,
+        });
+    }
+    return plan;
+}
 
 /// L0: the built-in atomicity invariant.
 ///
@@ -451,20 +514,32 @@ pub const Violation = union(enum) {
 /// narrower — it is about the paths the operation is *replacing*:
 ///
 ///   for every path present in both the pre and post snapshots,
-///   the crashed state must contain it, holding either the pre or the post content.
+///   the crashed state must contain it, holding either the pre or the post content —
+///   or, for a file whose clean run only ever extends it (the history form, ADR 0004),
+///   content that still begins with everything the file held before the operation.
 ///
 /// Paths in neither snapshot (temporaries) are ignored. Paths only in pre (deleted by
 /// the operation) or only in post (created by it) may legitimately be absent mid-flight.
-pub fn judgeL0(pre: Snapshot, post: Snapshot, crashed: Snapshot) ?Violation {
-    for (pre.entries.items) |pe| {
-        if (pe.kind != .file) continue;
-        const po = post.find(pe.rel) orelse continue;
-        if (po.kind != .file) continue;
-
-        const ce = crashed.find(pe.rel) orelse return .{ .missing = pe.rel };
-        if (std.mem.eql(u8, ce.content, pe.content)) continue;
-        if (std.mem.eql(u8, ce.content, po.content)) continue;
-        return .{ .hybrid = pe.rel };
+pub fn judgeL0(plan: L0Plan, crashed: Snapshot) ?Violation {
+    for (plan.files.items) |f| {
+        const ce = crashed.find(f.rel) orelse return .{ .missing = f.rel };
+        switch (f.form) {
+            .standard => {
+                if (std.mem.eql(u8, ce.content, f.pre_content)) continue;
+                if (std.mem.eql(u8, ce.content, f.post_content)) continue;
+                return .{ .hybrid = f.rel };
+            },
+            .history => {
+                // The kind is checked here and not in the standard arm: a directory's
+                // content is empty, and an empty prefix test would accept it, where
+                // the standard arm's equality against non-empty pre content already
+                // rejects it. (The standard arm's own blind spot — empty pre or post
+                // content — predates this form and is tracked separately.)
+                if (ce.kind != .file) return .{ .rewritten = f.rel };
+                if (std.mem.startsWith(u8, ce.content, f.pre_content)) continue;
+                return .{ .rewritten = f.rel };
+            },
+        }
     }
     return null;
 }
@@ -551,6 +626,13 @@ fn testSnapshot(gpa: Allocator, pairs: []const [2][]const u8) !Snapshot {
     return snap;
 }
 
+/// classify + judgeL0 in one call, for tests whose interest is the verdict.
+fn testJudge(gpa: Allocator, pre: Snapshot, post: Snapshot, crashed: Snapshot) !?Violation {
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+    return judgeL0(plan, crashed);
+}
+
 test "L0 catches the delete-before-rename window" {
     const gpa = std.testing.allocator;
     var pre = try testSnapshot(gpa, &.{.{ "key.json", "key=1\n" }});
@@ -562,7 +644,7 @@ test "L0 catches the delete-before-rename window" {
     var crashed = try testSnapshot(gpa, &.{.{ "key.json.tmp", "key=2\n" }});
     defer crashed.deinit();
 
-    const v = judgeL0(pre, post, crashed) orelse return error.TestExpectedViolation;
+    const v = (try testJudge(gpa, pre, post, crashed)) orelse return error.TestExpectedViolation;
     try std.testing.expectEqualStrings("key.json", v.missing);
 }
 
@@ -580,11 +662,11 @@ test "L0 accepts a leftover temporary file" {
         .{ "key.json.tmp", "key=2\n" },
     });
     defer mid.deinit();
-    try std.testing.expectEqual(@as(?Violation, null), judgeL0(pre, post, mid));
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, mid));
 
     var done = try testSnapshot(gpa, &.{.{ "key.json", "key=2\n" }});
     defer done.deinit();
-    try std.testing.expectEqual(@as(?Violation, null), judgeL0(pre, post, done));
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, done));
 }
 
 test "L0 catches content that is neither the old nor the new value" {
@@ -596,7 +678,7 @@ test "L0 catches content that is neither the old nor the new value" {
     var torn = try testSnapshot(gpa, &.{.{ "key.json", "key=" }});
     defer torn.deinit();
 
-    const v = judgeL0(pre, post, torn) orelse return error.TestExpectedViolation;
+    const v = (try testJudge(gpa, pre, post, torn)) orelse return error.TestExpectedViolation;
     try std.testing.expectEqualStrings("key.json", v.hybrid);
 }
 
@@ -610,7 +692,137 @@ test "L0 ignores files the operation legitimately creates or deletes" {
     // both snapshots.
     var empty = try testSnapshot(gpa, &.{});
     defer empty.deinit();
-    try std.testing.expectEqual(@as(?Violation, null), judgeL0(pre, post, empty));
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, empty));
+}
+
+test "classify puts only a non-empty strict extension into the history form" {
+    const gpa = std.testing.allocator;
+    var pre = try testSnapshot(gpa, &.{
+        .{ "grew.log", "born\n" }, // non-empty strict extension -> history
+        .{ "key.json", "key=1\n" }, // diverged -> standard
+        .{ "same.txt", "still\n" }, // unchanged -> standard
+        .{ "fresh.log", "" }, // empty pre -> standard, however post grew
+        .{ "shrunk.db", "abc\n" }, // post shorter -> standard
+    });
+    defer pre.deinit();
+    var post = try testSnapshot(gpa, &.{
+        .{ "grew.log", "born\nappended\n" },
+        .{ "key.json", "key=2\n" },
+        .{ "same.txt", "still\n" },
+        .{ "fresh.log", "grown\n" },
+        .{ "shrunk.db", "a" },
+    });
+    defer post.deinit();
+
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+    try std.testing.expectEqual(@as(u32, 1), plan.history_count);
+    for (plan.files.items) |f| {
+        const expected: FileForm = if (std.mem.eql(u8, f.rel, "grew.log")) .history else .standard;
+        try std.testing.expectEqual(expected, f.form);
+    }
+}
+
+test "history form tolerates any tail and the loss of none of the history" {
+    const gpa = std.testing.allocator;
+    var pre = try testSnapshot(gpa, &.{.{ "audit.log", "entry-1\n" }});
+    defer pre.deinit();
+    var post = try testSnapshot(gpa, &.{.{ "audit.log", "entry-1\nentry-2 t=17\n" }});
+    defer post.deinit();
+
+    // Killed before the append: exactly the pre content.
+    var untouched = try testSnapshot(gpa, &.{.{ "audit.log", "entry-1\n" }});
+    defer untouched.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, untouched));
+
+    // Killed mid-append: a torn tail. The bytes after pre are not judged.
+    var torn = try testSnapshot(gpa, &.{.{ "audit.log", "entry-1\nentry-2 t" }});
+    defer torn.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, torn));
+
+    // A re-run's tail differs from the recorded one entirely — still not judged.
+    var other_tail = try testSnapshot(gpa, &.{.{ "audit.log", "entry-1\nentry-2 t=99 and longer than recorded\n" }});
+    defer other_tail.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, other_tail));
+}
+
+test "history form catches history that was rewritten, truncated or replaced" {
+    const gpa = std.testing.allocator;
+    var pre = try testSnapshot(gpa, &.{.{ "audit.log", "entry-1\n" }});
+    defer pre.deinit();
+    var post = try testSnapshot(gpa, &.{.{ "audit.log", "entry-1\nentry-2\n" }});
+    defer post.deinit();
+
+    // Emptied: the truncate-then-rewrite window.
+    var emptied = try testSnapshot(gpa, &.{.{ "audit.log", "" }});
+    defer emptied.deinit();
+    const v1 = (try testJudge(gpa, pre, post, emptied)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("audit.log", v1.rewritten);
+
+    // Cut mid-history: shorter than pre.
+    var cut = try testSnapshot(gpa, &.{.{ "audit.log", "entry" }});
+    defer cut.deinit();
+    const v2 = (try testJudge(gpa, pre, post, cut)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("audit.log", v2.rewritten);
+
+    // Same length, different bytes.
+    var swapped = try testSnapshot(gpa, &.{.{ "audit.log", "Xntry-1\nentry-2\n" }});
+    defer swapped.deinit();
+    const v3 = (try testJudge(gpa, pre, post, swapped)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("audit.log", v3.rewritten);
+
+    // Gone entirely stays `missing`, as for every form.
+    var gone = try testSnapshot(gpa, &.{});
+    defer gone.deinit();
+    const v4 = (try testJudge(gpa, pre, post, gone)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("audit.log", v4.missing);
+
+    // Replaced by a directory: content would be empty, and an empty prefix test
+    // would accept it — the kind check exists for exactly this.
+    var as_dir: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer as_dir.deinit();
+    try as_dir.entries.append(as_dir.arena.allocator(), .{ .rel = "audit.log", .kind = .dir, .content = "" });
+    const v5 = (try testJudge(gpa, pre, post, as_dir)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("audit.log", v5.rewritten);
+}
+
+test "a standard-form file does not inherit the history form's tolerance" {
+    // Control for the classification: key.json's post diverges from its pre, so
+    // crashed content that merely *extends* pre is a hybrid, not preserved history.
+    // An implementation that applies the prefix rule to every changed file passes
+    // the history tests above and fails here.
+    const gpa = std.testing.allocator;
+    var pre = try testSnapshot(gpa, &.{.{ "key.json", "key=1\n" }});
+    defer pre.deinit();
+    var post = try testSnapshot(gpa, &.{.{ "key.json", "key=2\n" }});
+    defer post.deinit();
+    var extended = try testSnapshot(gpa, &.{.{ "key.json", "key=1\ngarbage" }});
+    defer extended.deinit();
+
+    const v = (try testJudge(gpa, pre, post, extended)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("key.json", v.hybrid);
+}
+
+test "an empty-pre file keeps the standard rule instead of a vacuous history" {
+    const gpa = std.testing.allocator;
+    var pre = try testSnapshot(gpa, &.{.{ "fresh.log", "" }});
+    defer pre.deinit();
+    var post = try testSnapshot(gpa, &.{.{ "fresh.log", "first entry\n" }});
+    defer post.deinit();
+
+    // A partial write is caught — under a vacuous history form it would not be.
+    var partial = try testSnapshot(gpa, &.{.{ "fresh.log", "first en" }});
+    defer partial.deinit();
+    const v = (try testJudge(gpa, pre, post, partial)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("fresh.log", v.hybrid);
+
+    // The two legitimate states still pass.
+    var empty = try testSnapshot(gpa, &.{.{ "fresh.log", "" }});
+    defer empty.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, empty));
+    var full = try testSnapshot(gpa, &.{.{ "fresh.log", "first entry\n" }});
+    defer full.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, full));
 }
 
 test "a trace written against another contract version is a mismatch, not a short trace" {
