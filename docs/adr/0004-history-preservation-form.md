@@ -1,6 +1,6 @@
 # ADR 0004 — A second L0 form: history preservation for files that only grow
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-11)
 - **Supersedes:** nothing. Adds a per-file judgement form beside the pre-or-post rule
   that DESIGN §12 and ADR 0003 left untouched
 - **Scope:** the engine's L0 judgement and its report only. The shim, the trace format
