@@ -2,6 +2,81 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-11 — The oracle resolves paths instead of scanning lines (#31, in progress)
+
+With stdio observed (#32), git's account stopped splitting on `COMMIT_EDITMSG` and split
+one wall later, on `mkdirat(AT_FDCWD</g1/repo>, ".git/objects/cc", …) = 0`: a relative
+path with no absolute state-directory spelling anywhere in the line, and a return value
+of 0, so no result-fd annotation either. The oracle's `touchesStateDir` scans the whole
+line for a `"…"` or `<…>` string starting with the state directory, finds none, and
+declares the mkdir out of scope. The shim records it (it resolves against the cwd); the
+accounts diverge; the run refuses. Same mechanism as the `linkat` that todoman surfaced
+(#31), and the more dangerous direction — the tool's whole premise is *refuse what you
+cannot see*, and this silently didn't.
+
+The measurement that shaped the fix: on aarch64 every relative call comes through an
+`*at` syscall and strace's `-y` annotates `AT_FDCWD</current/dir>` per line, following
+relative `chdir` and `fchdir` both (measured). On x86-64 it does not — glibc 2.36's
+`mkdir`/`link`/`unlink`/`rmdir`/`symlink`/`chdir` are generic and issue the legacy
+syscalls (confirmed in the source, since qemu-user can't be ptraced to measure it), so
+the line is `mkdir("state/sub", …)` with no annotation at all and the cwd has to be
+tracked. CI runs on x86-64, which makes CI the measurement: a relative-spelling toy that
+must reach the same verdict as its absolute twin can only pass there if the tracking is
+right.
+
+Adversarial review of the plan (three Critical, five Major) turned "add relative
+resolution" into "replace the scope test". The first Critical is the reason: leaving
+`touchesStateDir`'s whole-line scan in place as `scope = old ∨ resolved` re-lets every
+hole the typed table was meant to close — a `write(1, "/state/path")` buffer string, a
+`symlinkat` whose *link content* names the state dir — because the old scan still says
+yes. The typed table is only authoritative if it is the *only* authority: path syscalls
+resolve their real path arguments, fd syscalls read only their `<fd>` annotation, and
+the whole-line scan survives solely as the conservative net for syscalls in neither
+table (a net that only ever routes to `unsupported`, so a false hit refuses rather than
+passes). Two more Criticals: two-path operations (`rename`, and the new `link`) had no
+scope rule and the shim's `observe` judged only the first path — an `outside → state`
+rename is a real mutation the first-path test drops — so "in scope iff either path is
+inside" goes into both observers, closing a rename blind spot as a side effect. And
+`link`'s record order (`path`=new, `aux`=old) invited a natural-order implementation
+that would silently miss `outside → state`; making scope independent of argument order
+removed the hazard structurally rather than with a careful comment. Adopted too:
+`AT_EMPTY_PATH` refuses, `CLONE_FS` joins the boundary refusals (a child sharing the fs
+context can move the subject's cwd), the oracle finally sees `state_alt`, and the ADR
+states plainly what hard links cost — restore splits them into independent files, and
+inode identity, `nlink` and hardlink topology are outside the model.
+
+**Implemented, and git reached a verdict for the first time.** The mutation pair split
+along the architecture line the design predicted: unclassifying `link` reddened the link
+checks on aarch64 directly, but *disabling the typed resolver* (forcing `pathSpec` to
+miss, so path syscalls fall to the whole-line scan) left every acceptance case green on
+aarch64 — because there strace annotates an absolute path on every relative line, and the
+scan still finds it. Its four unit tests went red, because the legacy-form half of
+"relative paths resolve by annotation and by tracked cwd" has no annotation to lean on —
+it is x86-64 in miniature. So the resolver's scoping value is genuinely CI's to prove;
+what aarch64 pins locally is the direction the scan got *wrong*, the false positives, and
+those are unit-tested (a state path inside a write buffer, a symlink whose content spells
+the state dir). One measured surprise: `TOY_RELATIVE` refused at first with
+`unsupported: getcwd`, because after the toy chdir'd into the state directory `getcwd`
+returned a state-directory string and the conservative net scoped it in — it is a read,
+now listed as one.
+
+git commit, pinned dates, no oracle wall left: **the two accounts agree on 33 operations,
+34 worlds explore, and the verdict is FAIL — one world, at `COMMIT_EDITMSG`, "holding
+neither the old nor the new content".** It is not a git bug. `COMMIT_EDITMSG` is git's
+editor scratch file, opened `O_TRUNC` and then written, so a kill in that window leaves
+it empty; git rewrites it on the next commit and never reads a torn one. Run again with
+`git fsck --connectivity-only` as the L2 checker: the falsification probe rejects a
+corrupted object store, and then fsck passes *every* crash world — the report's invariant
+stays "built-in atomicity (L0)", never "and the checker". So git's real integrity holds
+across all 34 worlds; the loose objects (write-tmp, link-into-place, unlink-tmp), the
+refs (lock + rename), the index and the reflogs (history form) are all crash-consistent,
+and L0's one complaint is about a file whose atomicity does not matter. That is an L0
+precision limitation on scratch files — the thing an ignore-list or an L1 marker is for —
+not a defect, and worth filing as its own note rather than dressing up as a find. Every
+regression held: taskwarrior PASS 12/12 with its own reader as the checker, omamori PASS
+143/143, macOS parity exact (`link` in the same six kill-point addresses for the link
+toy, relative and absolute spellings identical). 83 unit tests, 69 acceptance assertions.
+
 ## 2026-08-11 — The shim learns stdio, at flush granularity (#30, in progress)
 
 The calibration sweep put a number on the wall: taskwarrior's writes are invisible above

@@ -52,8 +52,67 @@ const known = [_]Mapping{
     .{ .name = "mkdir", .class = .mkdir },
     .{ .name = "mkdirat", .class = .mkdir },
     .{ .name = "rmdir", .class = .rmdir },
+    .{ .name = "link", .class = .link },
+    .{ .name = "linkat", .class = .link },
     .{ .name = "close", .class = .close },
 };
+
+/// One path argument of a syscall: the index of its path string, and the index of the
+/// directory descriptor it is resolved against (null for a legacy form, which resolves
+/// against the tracked cwd).
+const PathArg = struct { dirfd: ?usize, path: usize };
+
+/// Which arguments of a path syscall name a filesystem path, so scope is decided from
+/// resolved paths and never from a whole-line scan (ADR 0006). A syscall absent from
+/// this table and from `fd_syscalls` falls to the conservative whole-line net, which
+/// only ever routes to `unsupported`.
+///
+/// The link *content* of `symlink`/`symlinkat` is deliberately not listed: it is a
+/// string the target chose, not a path this run touches, and resolving it would let a
+/// link whose content spells the state directory be mis-scoped.
+const PathSpec = struct { name: []const u8, args: []const PathArg };
+const path_syscalls = [_]PathSpec{
+    // *at single-path
+    .{ .name = "openat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "openat2", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "mkdirat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "unlinkat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "symlinkat", .args = &.{.{ .dirfd = 1, .path = 2 }} },
+    // *at two-path
+    .{ .name = "renameat", .args = &.{ .{ .dirfd = 0, .path = 1 }, .{ .dirfd = 2, .path = 3 } } },
+    .{ .name = "renameat2", .args = &.{ .{ .dirfd = 0, .path = 1 }, .{ .dirfd = 2, .path = 3 } } },
+    .{ .name = "linkat", .args = &.{ .{ .dirfd = 0, .path = 1 }, .{ .dirfd = 2, .path = 3 } } },
+    // legacy single-path
+    .{ .name = "open", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "creat", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "mkdir", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "rmdir", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "unlink", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "truncate", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "symlink", .args = &.{.{ .dirfd = null, .path = 1 }} },
+    // legacy two-path
+    .{ .name = "rename", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
+    .{ .name = "link", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
+};
+
+fn pathSpec(name: []const u8) ?PathSpec {
+    for (path_syscalls) |s| {
+        if (std.mem.eql(u8, s.name, name)) return s;
+    }
+    return null;
+}
+
+/// A syscall whose only filesystem target is a descriptor: scope is read from the `<fd>`
+/// annotation and never from the quoted arguments — a state-directory string inside a
+/// write buffer must not count as touching the state directory (ADR 0006).
+///
+/// Derived rather than listed: a classified syscall with no path argument (write, fsync,
+/// close, ftruncate) is exactly an fd syscall. This makes the "only unknown syscalls
+/// reach the whole-line net" invariant structural — every classified syscall is either a
+/// path syscall or an fd syscall, so nothing the net scopes in can ever be counted.
+fn isFdSyscall(name: []const u8) bool {
+    return classify(name) != null and pathSpec(name) == null;
+}
 
 /// Syscalls that read but never change anything on disk. They are not operations
 /// sideeye can crash between in any meaningful sense, and counting them would make the
@@ -70,6 +129,11 @@ const read_only = [_][]const u8{
     "fadvise64", "statfs",  "fstatfs", "dup",       "dup2",
     "dup3",   "ioctl",     "mmap",    "munmap",     "mprotect",
     "flock",
+    // `getcwd` reads the working directory and changes nothing; it reaches this list
+    // rather than the path table because it has no path *argument* — its result is a
+    // string the conservative net would otherwise scope in once the cwd is inside the
+    // state directory (a relative-spelling target does exactly that).
+    "getcwd",
 };
 
 /// Syscalls that cross a process boundary.
@@ -149,7 +213,7 @@ fn isProcessSyscall(name: []const u8) bool {
 /// annotations like `3</tmp/state/key.json>`. Both are checked with the same
 /// component-boundary containment test the shim uses, so `/tmp/state2` is not mistaken
 /// for something inside `/tmp/state`.
-fn touchesStateDir(line: []const u8, state_dir: []const u8) bool {
+fn touchesStateDir(line: []const u8, state_dir: []const u8, alt: []const u8) bool {
     var i: usize = 0;
     while (i < line.len) : (i += 1) {
         const open_ch = line[i];
@@ -158,8 +222,7 @@ fn touchesStateDir(line: []const u8, state_dir: []const u8) bool {
         const rest = line[i + 1 ..];
         const end = std.mem.indexOfScalar(u8, rest, close_ch) orelse break;
         const candidate = rest[0..end];
-        if (candidate.len > 0 and candidate[0] == '/' and
-            contract.isInsideDir(candidate, state_dir)) return true;
+        if (candidate.len > 0 and candidate[0] == '/' and insideEither(candidate, state_dir, alt)) return true;
         i += end + 1;
     }
     return false;
@@ -288,6 +351,135 @@ fn isReadOnlyOpen(name: []const u8, line: []const u8) bool {
     return true;
 }
 
+/// The quoted-string content of an argument, with strace's C escapes undone into `out`.
+/// Returns null when the argument is not a quoted string (a descriptor, `NULL`, a flag).
+fn argPath(arg: []const u8, out: []u8) ?[]const u8 {
+    const q = std.mem.indexOfScalar(u8, arg, '"') orelse return null;
+    var i = q + 1;
+    var n: usize = 0;
+    while (i < arg.len) : (i += 1) {
+        const ch = arg[i];
+        if (ch == '"') return out[0..n];
+        if (n >= out.len) return null;
+        if (ch == '\\' and i + 1 < arg.len) {
+            i += 1;
+            const e = arg[i];
+            switch (e) {
+                'n' => out[n] = '\n',
+                't' => out[n] = '\t',
+                'r' => out[n] = '\r',
+                '0'...'7' => {
+                    // Up to three octal digits, as strace escapes non-printables.
+                    var v: u16 = e - '0';
+                    var k: usize = 0;
+                    while (k < 2 and i + 1 < arg.len and arg[i + 1] >= '0' and arg[i + 1] <= '7') : (k += 1) {
+                        i += 1;
+                        v = v * 8 + (arg[i] - '0');
+                    }
+                    out[n] = @truncate(v);
+                },
+                else => out[n] = e, // \" \\ and the rest are literal
+            }
+        } else {
+            out[n] = ch;
+        }
+        n += 1;
+    }
+    return null; // unterminated
+}
+
+/// The path a `<…>` descriptor annotation carries (`AT_FDCWD</work>` → `/work`,
+/// `4</tmp/state>` → `/tmp/state`), or null when the argument has none.
+fn argAnnotation(arg: []const u8) ?[]const u8 {
+    const lt = std.mem.indexOfScalar(u8, arg, '<') orelse return null;
+    const gt = std.mem.indexOfScalarPos(u8, arg, lt + 1, '>') orelse return null;
+    const p = arg[lt + 1 .. gt];
+    if (p.len == 0 or p[0] != '/') return null;
+    return p;
+}
+
+const Scope = enum { inside, outside, unresolvable };
+
+fn insideEither(path: []const u8, state: []const u8, alt: []const u8) bool {
+    if (contract.isInsideDir(path, state)) return true;
+    return alt.len != 0 and contract.isInsideDir(path, alt);
+}
+
+/// Resolve one path argument to an absolute, lexically-normalised path in `out`, or null
+/// when it cannot be placed — an empty path (a `linkat` `AT_EMPTY_PATH` source), a
+/// relative path with no annotation and no known cwd, a path that will not normalise.
+/// Absolute paths normalise directly; a relative path resolves against its `dirfd`
+/// annotation when the syscall has one, otherwise against the tracked cwd. Both the
+/// scope decision (`resolveArg`) and the cwd tracker (`chdir`) resolve paths this way.
+fn resolvePath(line: []const u8, arg: PathArg, cwd: ?[]const u8, out: []u8) ?[]const u8 {
+    const path_arg = syscallArg(line, arg.path) orelse return null;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const p = argPath(path_arg, &pbuf) orelse return null;
+    if (p.len == 0) return null;
+    if (p[0] == '/') return contract.normalizePath(out, "/", p) catch null;
+
+    // Relative: prefer the dirfd annotation, fall back to the tracked cwd.
+    var base: ?[]const u8 = null;
+    if (arg.dirfd) |di| {
+        if (syscallArg(line, di)) |da| base = argAnnotation(da);
+    }
+    if (base == null) base = cwd;
+    const b = base orelse return null;
+    return contract.normalizePath(out, b, p) catch null;
+}
+
+/// The scope of one path argument. An argument that cannot be placed is `unresolvable`,
+/// which the caller turns into a refusal rather than a silent drop.
+fn resolveArg(line: []const u8, arg: PathArg, cwd: ?[]const u8, state: []const u8, alt: []const u8) Scope {
+    var obuf: [contract.max_path]u8 = undefined;
+    const r = resolvePath(line, arg, cwd, &obuf) orelse return .unresolvable;
+    return if (insideEither(r, state, alt)) .inside else .outside;
+}
+
+/// Scope of a path syscall: inside if any of its path arguments is inside (a two-path
+/// op touches the state directory when the old or the new path is, ADR 0006);
+/// otherwise unresolvable if any argument could not be placed; otherwise outside.
+fn pathSyscallScope(spec: PathSpec, line: []const u8, cwd: ?[]const u8, state: []const u8, alt: []const u8) Scope {
+    var any_unresolvable = false;
+    for (spec.args) |a| {
+        switch (resolveArg(line, a, cwd, state, alt)) {
+            .inside => return .inside,
+            .unresolvable => any_unresolvable = true,
+            .outside => {},
+        }
+    }
+    return if (any_unresolvable) .unresolvable else .outside;
+}
+
+/// True when the syscall's return value marks success. strace prints `= 0`, `= 3`, etc.
+/// on success and `= -1 ENOENT (...)` on failure; an unfinished call ends in `<... >` or
+/// `?`. Only a successful chdir/fchdir may move the tracked cwd.
+fn syscallSucceeded(line: []const u8) bool {
+    const eq = std.mem.lastIndexOfScalar(u8, line, '=') orelse return false;
+    const rhs = std.mem.trim(u8, line[eq + 1 ..], " \t");
+    return rhs.len > 0 and rhs[0] != '-' and rhs[0] != '?';
+}
+
+/// Does this syscall change persistent state? Used to decide what an *unresolvable*
+/// in-scope operation means: a write we could not place must refuse, a read we could not
+/// place changes nothing and is tolerated. Mirrors the read-only handling below.
+fn changesPersistentState(name: []const u8, line: []const u8) bool {
+    if (isReadOnly(name)) return false;
+    if (std.mem.eql(u8, name, "close")) return false;
+    if ((std.mem.eql(u8, name, "open") or std.mem.eql(u8, name, "openat") or
+        std.mem.eql(u8, name, "openat2")) and isReadOnlyOpen(name, line)) return false;
+    return true;
+}
+
+/// Scope of an fd syscall, read from its descriptor's `<…>` annotation and never from
+/// the quoted arguments — a state-directory string that happens to sit in a write buffer
+/// must not scope it in. Every fd syscall carries its descriptor as argument 0.
+fn fdSyscallInScope(line: []const u8, state: []const u8, alt: []const u8) bool {
+    const arg0 = syscallArg(line, 0) orelse return false;
+    const p = argAnnotation(arg0) orelse return false;
+    return insideEither(p, state, alt);
+}
+
 pub const Parsed = struct {
     /// The subject's state-directory operation classes, in order.
     classes: std.ArrayList(contract.OpClass),
@@ -312,10 +504,22 @@ pub const Parsed = struct {
     lines_in_scope: usize = 0,
 };
 
-pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) !Parsed {
+pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8) !Parsed {
     var out: Parsed = .{ .classes = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
+
+    // The subject's working directory, tracked so a relative path with no dirfd
+    // annotation (every path syscall on x86-64, where glibc issues the legacy forms)
+    // can still be resolved (ADR 0006). Starts at the engine's cwd; the subject's own
+    // successful chdir/fchdir move it. Held in `cwd_buf` (not sliced from the strace
+    // text, which is normalised away) so it survives past the line that set it.
+    var cwd_buf: [contract.max_path]u8 = undefined;
+    var cwd: ?[]const u8 = blk: {
+        if (initial_cwd.len == 0 or initial_cwd.len > cwd_buf.len) break :blk null;
+        @memcpy(cwd_buf[0..initial_cwd.len], initial_cwd);
+        break :blk cwd_buf[0..initial_cwd.len];
+    };
 
     var it = std.mem.splitScalar(u8, text, '\n');
     while (it.next()) |raw| {
@@ -361,7 +565,14 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
             // hide in, and clone3 prints its flags inside a struct at no fixed index.
             const is_raw_thread = std.mem.startsWith(u8, name, "clone") and
                 std.mem.indexOf(u8, line, "CLONE_THREAD") != null;
-            if ((is_exec and is_primary) or is_raw_thread or std.mem.eql(u8, name, "unshare")) {
+            // CLONE_FS shares the working directory: a child holding it can move the
+            // subject's cwd out from under the resolution above, so this tool refuses it
+            // rather than track a shared fs context (ADR 0006). Same whole-line check as
+            // CLONE_THREAD, and safe for the same reason — clone's arguments carry no
+            // target-chosen strings for a false token to hide in.
+            const is_shared_fs = std.mem.startsWith(u8, name, "clone") and
+                std.mem.indexOf(u8, line, "CLONE_FS") != null;
+            if ((is_exec and is_primary) or is_raw_thread or is_shared_fs or std.mem.eql(u8, name, "unshare")) {
                 if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
             }
             continue;
@@ -378,7 +589,44 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
             continue;
         }
 
-        if (!touchesStateDir(line, state_dir)) continue;
+        // The subject's own successful chdir/fchdir moves the cwd used to resolve
+        // relative paths. A child's does not (a fs-sharing child was refused above).
+        if (is_primary and std.mem.eql(u8, name, "chdir")) {
+            if (syscallSucceeded(line)) {
+                // `out` (obuf) is separate from cwd_buf, so resolving a relative chdir
+                // against the current cwd does not read its own output; copy after.
+                var obuf: [contract.max_path]u8 = undefined;
+                if (resolvePath(line, .{ .dirfd = null, .path = 0 }, cwd, &obuf)) |nc| {
+                    @memcpy(cwd_buf[0..nc.len], nc);
+                    cwd = cwd_buf[0..nc.len];
+                } else cwd = null; // could not resolve: relative paths now refuse
+            }
+            continue;
+        }
+        if (is_primary and std.mem.eql(u8, name, "fchdir")) {
+            if (syscallSucceeded(line)) {
+                if (syscallArg(line, 0)) |a| {
+                    if (argAnnotation(a)) |dir| {
+                        @memcpy(cwd_buf[0..dir.len], dir);
+                        cwd = cwd_buf[0..dir.len];
+                    } else cwd = null; // no annotation (a raw fd): cwd is now unknown
+                }
+            }
+            continue;
+        }
+
+        // Scope, decided by type (ADR 0006). A path syscall resolves its real path
+        // arguments; an fd syscall reads only its descriptor annotation; anything else
+        // falls to the conservative whole-line net, which only ever routes to
+        // `unsupported`. `unresolvable` is a refusal, never a silent drop.
+        const scope: Scope = if (pathSpec(name)) |spec|
+            pathSyscallScope(spec, line, cwd, state_dir, state_alt)
+        else if (isFdSyscall(name))
+            (if (fdSyscallInScope(line, state_dir, state_alt)) .inside else .outside)
+        else
+            (if (touchesStateDir(line, state_dir, state_alt)) .inside else .outside);
+
+        if (scope == .outside) continue;
 
         // Dirtying a MAP_SHARED mapping changes the file with no later write syscall
         // for either observer to see. From the subject that is an unmodelled mutation;
@@ -391,16 +639,19 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
         if (!is_primary) {
             // The tolerance condition itself. Reads are allowed — they consume no
             // sequence number and change no state — everything else, including a
-            // syscall nobody recognises, is a child touching what only the subject may.
-            // An open counts as a read when it neither writes nor creates, and a close
-            // of an inherited descriptor changes no persistent state (ADR 0003).
-            if (is_shared_write_map) {
-                out.child_touched = true;
-            } else if (std.mem.eql(u8, name, "close") or isReadOnlyOpen(name, line)) {
-                // tolerated
-            } else if (!isReadOnly(name)) {
-                out.child_touched = true;
-            }
+            // syscall nobody recognises or one whose path could not be placed, is a
+            // child touching what only the subject may. `changesPersistentState` is the
+            // single predicate for "not a read, not a close, not a write-incapable open"
+            // (ADR 0003), so an in-scope and an unresolvable operation are judged alike.
+            if (is_shared_write_map or changesPersistentState(name, line)) out.child_touched = true;
+            continue;
+        }
+
+        // The subject touched the state directory but the operation could not be placed
+        // among the crash points: refuse if it changes state, tolerate if it cannot.
+        if (scope == .unresolvable) {
+            if (changesPersistentState(name, line) and out.unsupported == null)
+                out.unsupported = try arena.dupe(u8, name);
             continue;
         }
         out.lines_in_scope += 1;
@@ -411,6 +662,13 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8) 
             continue;
         }
         if (isReadOnly(name)) continue;
+        // `linkat` with AT_EMPTY_PATH links a descriptor, not a named source; the shim
+        // cannot resolve the empty old path and records `.unresolved`, so the oracle
+        // refuses it here rather than count a `.link` the shim never placed (ADR 0006).
+        if (std.mem.eql(u8, name, "linkat") and argContains(line, 4, "AT_EMPTY_PATH")) {
+            if (out.unsupported == null) out.unsupported = try arena.dupe(u8, "linkat(AT_EMPTY_PATH)");
+            continue;
+        }
         if (classify(name)) |cls| {
             // Neither of these enters the comparison (ADR 0003). A write-incapable open
             // is not an observed operation on either side; close stays recorded by the
@@ -446,11 +704,11 @@ pub fn compare(shim: []const contract.OpClass, oracle: []const contract.OpClass)
 }
 
 test "containment uses component boundaries, not string prefixes" {
-    try std.testing.expect(touchesStateDir("write(3</tmp/state/key.json>, ...) = 6", "/tmp/state"));
-    try std.testing.expect(touchesStateDir("openat(AT_FDCWD</work>, \"/tmp/state/k\", 0) = 3", "/tmp/state"));
+    try std.testing.expect(touchesStateDir("write(3</tmp/state/key.json>, ...) = 6", "/tmp/state", ""));
+    try std.testing.expect(touchesStateDir("openat(AT_FDCWD</work>, \"/tmp/state/k\", 0) = 3", "/tmp/state", ""));
     // the case a naive substring search gets wrong
-    try std.testing.expect(!touchesStateDir("write(3</tmp/state2/key.json>, ...) = 6", "/tmp/state"));
-    try std.testing.expect(!touchesStateDir("openat(AT_FDCWD</work>, \"/etc/passwd\", 0) = 3", "/tmp/state"));
+    try std.testing.expect(!touchesStateDir("write(3</tmp/state2/key.json>, ...) = 6", "/tmp/state", ""));
+    try std.testing.expect(!touchesStateDir("openat(AT_FDCWD</work>, \"/etc/passwd\", 0) = 3", "/tmp/state", ""));
 }
 
 test "syscall names are read from the start of the line" {
@@ -475,7 +733,7 @@ test "parse extracts the class sequence the shim should have recorded" {
         \\openat(AT_FDCWD</work>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/o/state");
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
     // close is recorded by the shim but excluded from the comparison (ADR 0003).
     const expected = [_]contract.OpClass{ .open, .write, .fsync, .unlink, .rename };
     try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
@@ -485,6 +743,169 @@ test "parse extracts the class sequence the shim should have recorded" {
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
     try std.testing.expect(!p.child_touched);
     try std.testing.expectEqual(@as(usize, 0), p.children);
+}
+
+test "relative paths resolve by annotation and by tracked cwd (ADR 0006)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // aarch64: every relative call is an *at with an AT_FDCWD annotation, tracked across
+    // a relative chdir. x86-64: the legacy forms carry no annotation and resolve against
+    // the tracked cwd. Both spellings of the same operations must reach the same classes.
+    const annotated =
+        \\9  execve("/work/git", ["git"], 0x0) = 0
+        \\9  mkdirat(AT_FDCWD</repo>, "state/sub", 0755) = 0
+        \\9  openat(AT_FDCWD</repo>, "state/a", O_WRONLY|O_CREAT, 0644) = 3</repo/state/a>
+        \\9  chdir("state") = 0
+        \\9  mkdirat(AT_FDCWD</repo/state>, "sub2", 0755) = 0
+        \\
+    ;
+    const a = try parse(arena_state.allocator(), annotated, "/repo/state", "", "/repo");
+    const want = [_]contract.OpClass{ .mkdir, .open, .mkdir };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, a.classes.items);
+
+    const legacy =
+        \\9  execve("/work/git", ["git"], 0x0) = 0
+        \\9  mkdir("state/sub", 0755) = 0
+        \\9  open("state/a", O_WRONLY|O_CREAT, 0644) = 3
+        \\9  chdir("state") = 0
+        \\9  mkdir("sub2", 0755) = 0
+        \\
+    ;
+    const l = try parse(arena_state.allocator(), legacy, "/repo/state", "", "/repo");
+    try std.testing.expectEqualSlices(contract.OpClass, &want, l.classes.items);
+}
+
+test "a failed chdir does not move the tracked cwd" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The relative mkdir must still resolve against /repo, not the directory the failed
+    // chdir named — otherwise a failed chdir could push operations out of scope.
+    const text =
+        \\9  execve("/work/git", ["git"], 0x0) = 0
+        \\9  chdir("elsewhere") = -1 ENOENT (No such file or directory)
+        \\9  mkdir("state/sub", 0755) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/repo/state", "", "/repo");
+    const want = [_]contract.OpClass{.mkdir};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+}
+
+test "a state-directory string inside a write buffer is not scope" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The false-positive the whole-line scan had: the write is to fd 1 (a pipe), and the
+    // buffer merely contains the state path. It must not be counted as a state write.
+    const text =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  write(1</dev/pts/0>, "/tmp/s/key.json\n", 16) = 16
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
+    try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    try std.testing.expectEqual(@as(usize, 0), p.lines_in_scope);
+}
+
+test "a symlink whose content spells the state directory is judged by its link path" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // symlinkat(target, dirfd, linkpath): the first argument is the link *content*, not
+    // a path this run touches. A target of "/tmp/s/x" with a linkpath outside the state
+    // directory must not be scoped in.
+    const outside =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  symlinkat("/tmp/s/secret", AT_FDCWD</work>, "/other/link") = 0
+        \\
+    ;
+    const o = try parse(arena_state.allocator(), outside, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(?[]const u8, null), o.unsupported);
+    try std.testing.expectEqual(@as(usize, 0), o.lines_in_scope);
+
+    // But a symlink whose *link path* is inside the state directory is in scope, and
+    // unsupported (the engine cannot restore a symlink, #5) — an honest refusal.
+    const inside =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  symlink("../secret", "/tmp/s/link") = 0
+        \\
+    ;
+    const i = try parse(arena_state.allocator(), inside, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("symlink", i.unsupported.?);
+}
+
+test "link is first-class and counts when either endpoint is inside" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The git loose-object idiom: link a tmp object into place.
+    const in_in =
+        \\9  execve("/work/git", ["git"], 0x0) = 0
+        \\9  linkat(AT_FDCWD</repo>, "state/tmp_obj", AT_FDCWD</repo>, "state/ab/final", 0) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), in_in, "/repo/state", "", "/repo");
+    const want = [_]contract.OpClass{.link};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+
+    // outside -> state: the source is outside, the new name is inside. Still a state
+    // mutation, still counted (the either-endpoint rule).
+    const out_in =
+        \\9  execve("/work/git", ["git"], 0x0) = 0
+        \\9  link("/tmp/scratch/obj", "/repo/state/name") = 0
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), out_in, "/repo/state", "", "/repo");
+    try std.testing.expectEqualSlices(contract.OpClass, &want, q.classes.items);
+
+    // AT_EMPTY_PATH links a descriptor: unplaceable source, refused.
+    const empty =
+        \\9  execve("/work/git", ["git"], 0x0) = 0
+        \\9  linkat(3</tmp/x>, "", AT_FDCWD</repo>, "state/name", AT_EMPTY_PATH) = 0
+        \\
+    ;
+    const r = try parse(arena_state.allocator(), empty, "/repo/state", "", "/repo");
+    try std.testing.expectEqualStrings("linkat(AT_EMPTY_PATH)", r.unsupported.?);
+}
+
+test "an unresolvable relative path refuses instead of dropping" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // A legacy mkdir with no annotation and no known cwd (the engine passed none) cannot
+    // be placed. It must not be silently dropped — a state mutation the tool cannot see.
+    const text =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  mkdir("state/sub", 0755) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/repo/state", "", "");
+    try std.testing.expectEqualStrings("mkdir", p.unsupported.?);
+}
+
+test "the state alt spelling is inside the state directory" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // macOS hands the subject /tmp/x while the engine resolved /private/tmp/x; a path
+    // under either spelling must be in scope.
+    const text =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  openat(AT_FDCWD</work>, "/tmp/x/key", O_WRONLY|O_CREAT, 0644) = 3</tmp/x/key>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/private/tmp/x", "/tmp/x", "/work");
+    const want = [_]contract.OpClass{.open};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+}
+
+test "a fs-sharing clone is refused as a boundary" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const text =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  clone(child_stack=NULL, flags=CLONE_FS|SIGCHLD) = 4242
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("clone", p.boundary.?);
 }
 
 test "a write-incapable open by the subject leaves the comparison, fail-closed" {
@@ -499,7 +920,7 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
         \\42    openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
         \\
     ;
-    const p = try parse(arena_state.allocator(), symbolic, "/tmp/s");
+    const p = try parse(arena_state.allocator(), symbolic, "/tmp/s", "", "/work");
     const expected = [_]contract.OpClass{.open};
     try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
 
@@ -510,7 +931,7 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
         \\42    openat(AT_FDCWD, "/tmp/s/key.json", 0x241) = 3</tmp/s/key.json>
         \\
     ;
-    const q = try parse(arena_state.allocator(), numeric, "/tmp/s");
+    const q = try parse(arena_state.allocator(), numeric, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), q.classes.items.len);
 
     // O_RDONLY|O_CREAT creates but cannot write: a mutation, addressable, counted.
@@ -519,7 +940,7 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
         \\42    openat(AT_FDCWD, "/tmp/s/marker", O_RDONLY|O_CREAT, 0644) = 3</tmp/s/marker>
         \\
     ;
-    const r = try parse(arena_state.allocator(), creating, "/tmp/s");
+    const r = try parse(arena_state.allocator(), creating, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), r.classes.items.len);
 
     // creat spells no flags and always creates: counted.
@@ -528,7 +949,7 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
         \\42    creat("/tmp/s/new.json", 0644) = 3</tmp/s/new.json>
         \\
     ;
-    const s = try parse(arena_state.allocator(), via_creat, "/tmp/s");
+    const s = try parse(arena_state.allocator(), via_creat, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), s.classes.items.len);
 
     // openat2 carries its flags inside the how struct; the symbolic token is still there.
@@ -537,7 +958,7 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
         \\42    openat2(AT_FDCWD, "/tmp/s/key.json", {flags=O_RDONLY|O_CLOEXEC, mode=0, resolve=0}, 24) = 3</tmp/s/key.json>
         \\
     ;
-    const t = try parse(arena_state.allocator(), via_openat2, "/tmp/s");
+    const t = try parse(arena_state.allocator(), via_openat2, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 0), t.classes.items.len);
 
     // An invalid access mode (both low bits set) is spelled `O_ACCMODE` by strace, and
@@ -548,7 +969,7 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
         \\42    openat(AT_FDCWD, "/tmp/s/key.json", O_ACCMODE|O_CLOEXEC) = -1 EINVAL (Invalid argument)
         \\
     ;
-    const u = try parse(arena_state.allocator(), invalid_accmode, "/tmp/s");
+    const u = try parse(arena_state.allocator(), invalid_accmode, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), u.classes.items.len);
 }
 
@@ -564,7 +985,7 @@ test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
         \\unlinkat(AT_FDCWD, "/tmp/s/key.json", 0) = 0
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     const expected = [_]contract.OpClass{ .rmdir, .unlink };
     try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
 }
@@ -602,7 +1023,7 @@ test "a syscall v0.1 does not model is reported rather than skipped" {
         \\copy_file_range(3</tmp/s/a>, NULL, 4</tmp/s/b>, NULL, 6, 0) = 6
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("copy_file_range", p.unsupported.?);
 }
 
@@ -615,7 +1036,7 @@ test "read-only syscalls do not enter the comparison" {
         \\read(3</tmp/s/key.json>, "key=1\n", 4096) = 6
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
     try std.testing.expectEqual(@as(usize, 2), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
@@ -647,7 +1068,7 @@ test "a child that stays out of the state directory is not a refusal" {
         \\4242  write(5</elsewhere/f>, "x", 1) = 1
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
     try std.testing.expect(!p.child_touched);
     try std.testing.expectEqual(@as(usize, 1), p.children);
@@ -666,7 +1087,7 @@ test "a child that writes into the state directory is the refusal condition" {
         \\4242  write(5</tmp/s/key.json>, "x", 1) = 1
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expect(p.child_touched);
     try std.testing.expectEqual(@as(usize, 1), p.children);
 }
@@ -682,7 +1103,7 @@ test "a child reading the state directory is tolerated" {
         \\4242  read(3</tmp/s/key.json>, "key=1\n", 4096) = 6
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expect(!p.child_touched);
 
     const unknown_sys =
@@ -690,7 +1111,7 @@ test "a child reading the state directory is tolerated" {
         \\4242  frobnicate(3</tmp/s/key.json>) = 0
         \\
     ;
-    const q = try parse(arena_state.allocator(), unknown_sys, "/tmp/s");
+    const q = try parse(arena_state.allocator(), unknown_sys, "/tmp/s", "", "/work");
     try std.testing.expect(q.child_touched);
 }
 
@@ -703,7 +1124,7 @@ test "the launch execve is not mistaken for the target creating a child" {
         \\openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
     try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
 }
@@ -716,7 +1137,7 @@ test "a second execve is the target replacing itself, and stays refused" {
         \\execve("/bin/sh", ["sh", "-c", "x"], 0x7ff) = 0
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("execve", p.boundary.?);
 }
 
@@ -732,7 +1153,7 @@ test "a child's execve is the child becoming something, not a refusal" {
         \\4242  execve("/bin/true", ["true"], 0x7ff) = 0
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
     try std.testing.expectEqual(@as(usize, 1), p.children);
 }
@@ -748,7 +1169,7 @@ test "a raw clone carrying CLONE_THREAD is a thread, not a child" {
         \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_THREAD|CLONE_SIGHAND) = 43
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expect(p.boundary != null);
 }
 
@@ -762,7 +1183,7 @@ test "an unshimmed child detaching is caught by the oracle" {
         \\4242  setsid()                          = 4242
         \\
     ;
-    const p = try parse(arena_state.allocator(), text, "/tmp/s");
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expect(p.boundary != null);
 
     // The subject's own setsid/setpgid lines are the shim's to judge — its wrapper
@@ -772,7 +1193,7 @@ test "an unshimmed child detaching is caught by the oracle" {
         \\42    setpgid(0, 0)                     = 0
         \\
     ;
-    const q = try parse(arena_state.allocator(), own, "/tmp/s");
+    const q = try parse(arena_state.allocator(), own, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(?[]const u8, null), q.boundary);
 }
 
@@ -786,7 +1207,7 @@ test "a shared writable mapping of a state file is a mutation nobody models" {
         \\42    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/key.json>, 0) = 0x7f
         \\
     ;
-    const p = try parse(arena_state.allocator(), subject, "/tmp/s");
+    const p = try parse(arena_state.allocator(), subject, "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("mmap(PROT_WRITE|MAP_SHARED)", p.unsupported.?);
 
     const child =
@@ -794,7 +1215,7 @@ test "a shared writable mapping of a state file is a mutation nobody models" {
         \\4242  mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/key.json>, 0) = 0x7f
         \\
     ;
-    const q = try parse(arena_state.allocator(), child, "/tmp/s");
+    const q = try parse(arena_state.allocator(), child, "/tmp/s", "", "/work");
     try std.testing.expect(q.child_touched);
 
     // A private or read-only mapping changes nothing on disk and stays tolerated.
@@ -803,7 +1224,7 @@ test "a shared writable mapping of a state file is a mutation nobody models" {
         \\4242  mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE, 3</tmp/s/key.json>, 0) = 0x7f
         \\
     ;
-    const r = try parse(arena_state.allocator(), private, "/tmp/s");
+    const r = try parse(arena_state.allocator(), private, "/tmp/s", "", "/work");
     try std.testing.expect(!r.child_touched);
 }
 
@@ -815,7 +1236,7 @@ test "a child's read-only open is a read, and its writing open is the touch" {
         \\4242  openat(AT_FDCWD, "/tmp/s/key.json", O_RDONLY|O_CLOEXEC) = 3</tmp/s/key.json>
         \\
     ;
-    const p = try parse(arena_state.allocator(), reading, "/tmp/s");
+    const p = try parse(arena_state.allocator(), reading, "/tmp/s", "", "/work");
     try std.testing.expect(!p.child_touched);
 
     const writing =
@@ -823,7 +1244,7 @@ test "a child's read-only open is a read, and its writing open is the touch" {
         \\4242  openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
         \\
     ;
-    const q = try parse(arena_state.allocator(), writing, "/tmp/s");
+    const q = try parse(arena_state.allocator(), writing, "/tmp/s", "", "/work");
     try std.testing.expect(q.child_touched);
 
     // creat never spells its flags, and it always creates.
@@ -832,7 +1253,7 @@ test "a child's read-only open is a read, and its writing open is the touch" {
         \\4242  creat("/tmp/s/new.json", 0644) = 3</tmp/s/new.json>
         \\
     ;
-    const r = try parse(arena_state.allocator(), creating, "/tmp/s");
+    const r = try parse(arena_state.allocator(), creating, "/tmp/s", "", "/work");
     try std.testing.expect(r.child_touched);
 }
 
@@ -846,7 +1267,7 @@ test "a filename spelling a flag does not change how the call is classified" {
         \\4242  openat(AT_FDCWD, "/tmp/s/O_CREAT.bak", O_RDONLY|O_CLOEXEC) = 3</tmp/s/O_CREAT.bak>
         \\
     ;
-    const p = try parse(arena_state.allocator(), read_with_scary_name, "/tmp/s");
+    const p = try parse(arena_state.allocator(), read_with_scary_name, "/tmp/s", "", "/work");
     try std.testing.expect(!p.child_touched);
 
     const private_map_of_scary_name =
@@ -854,7 +1275,7 @@ test "a filename spelling a flag does not change how the call is classified" {
         \\4242  mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, 3</tmp/s/PROT_WRITE.MAP_SHARED.log>, 0) = 0x7f
         \\
     ;
-    const q = try parse(arena_state.allocator(), private_map_of_scary_name, "/tmp/s");
+    const q = try parse(arena_state.allocator(), private_map_of_scary_name, "/tmp/s", "", "/work");
     try std.testing.expect(!q.child_touched);
 }
 

@@ -26,6 +26,8 @@ pub const rename = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c)
 pub const renameat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int, .{ .name = "renameat" });
 pub const unlink = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "unlink" });
 pub const unlinkat = @extern(*const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int, .{ .name = "unlinkat" });
+pub const link = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int, .{ .name = "link" });
+pub const linkat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_int) callconv(.c) c_int, .{ .name = "linkat" });
 pub const fsync = @extern(*const fn (c_int) callconv(.c) c_int, .{ .name = "fsync" });
 pub const close = @extern(*const fn (c_int) callconv(.c) c_int, .{ .name = "close" });
 pub const ftruncate = @extern(*const fn (c_int, i64) callconv(.c) c_int, .{ .name = "ftruncate" });

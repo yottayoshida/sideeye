@@ -122,6 +122,8 @@ pub const RenameFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int
 pub const RenameatFn = *const fn (c_int, [*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int;
 pub const UnlinkFn = *const fn ([*:0]const u8) callconv(.c) c_int;
 pub const UnlinkatFn = *const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int;
+pub const LinkFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int;
+pub const LinkatFn = *const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_int) callconv(.c) c_int;
 pub const FdFn = *const fn (c_int) callconv(.c) c_int;
 pub const FtruncateFn = *const fn (c_int, i64) callconv(.c) c_int;
 pub const TruncateFn = *const fn ([*:0]const u8, i64) callconv(.c) c_int;
@@ -295,6 +297,8 @@ pub var real: struct {
     renameat: ?RenameatFn = null,
     unlink: ?UnlinkFn = null,
     unlinkat: ?UnlinkatFn = null,
+    link: ?LinkFn = null,
+    linkat: ?LinkatFn = null,
     fsync: ?FdFn = null,
     fdatasync: ?FdFn = null,
     close: ?FdFn = null,
@@ -374,6 +378,8 @@ fn resolveAll() void {
     real.renameat = lookup(RenameatFn, "renameat");
     real.unlink = lookup(UnlinkFn, "unlink");
     real.unlinkat = lookup(UnlinkatFn, "unlinkat");
+    real.link = lookup(LinkFn, "link");
+    real.linkat = lookup(LinkatFn, "linkat");
     real.fsync = lookup(FdFn, "fsync");
     real.fdatasync = lookup(FdFn, "fdatasync");
     real.close = lookup(FdFn, "close");
@@ -653,7 +659,14 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
 
     var s: u32 = 0;
     if (op.isKillPoint()) {
-        if (!contract.isInsideDir(path, stateDir())) return;
+        // A two-path operation touches the state directory when *either* endpoint is
+        // inside it (ADR 0006): a rename or link whose source is inside and whose
+        // destination is outside is a real mutation of the state directory, and judging
+        // only the first path used to drop it. The two-path property is the contract's,
+        // so both observers read the same definition.
+        const in_scope = contract.isInsideDir(path, stateDir()) or
+            (op.isTwoPath() and aux.len > 0 and contract.isInsideDir(aux, stateDir()));
+        if (!in_scope) return;
         seq += 1;
         s = seq;
         // Only the process that initialised this shim instance may die here. A forked
@@ -808,6 +821,16 @@ pub inline fn callUnlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) c_in
     if (is_darwin) return darwin.unlinkat(dirfd, path, flags);
     const f = real.unlinkat orelse return -1;
     return f(dirfd, path, flags);
+}
+pub inline fn callLink(old: [*:0]const u8, new: [*:0]const u8) c_int {
+    if (is_darwin) return darwin.link(old, new);
+    const f = real.link orelse return -1;
+    return f(old, new);
+}
+pub inline fn callLinkat(od: c_int, old: [*:0]const u8, nd: c_int, new: [*:0]const u8, flags: c_int) c_int {
+    if (is_darwin) return darwin.linkat(od, old, nd, new, flags);
+    const f = real.linkat orelse return -1;
+    return f(od, old, nd, new, flags);
 }
 pub inline fn callFsync(fd: c_int) c_int {
     if (is_darwin) return darwin.fsync(fd);
@@ -971,6 +994,17 @@ pub inline fn callFsetpos64(stream: *FILE, pos: *const anyopaque) c_int {
     if (is_darwin) return darwin.fsetpos(@ptrCast(stream), pos);
     const f = real.fsetpos64 orelse return -1;
     return f(stream, pos);
+}
+
+/// Record that a `linkat(…, AT_EMPTY_PATH)` linked a descriptor rather than a named
+/// source: its old path is empty, so there is nothing to resolve or place, and the
+/// engine must refuse rather than judge a link it cannot address (ADR 0006). Recorded
+/// even where an oracle would also catch it, so the platform with no oracle refuses too.
+pub fn noteLinkByDescriptor() void {
+    if (!active or busy) return;
+    busy = true;
+    defer busy = false;
+    noteUnresolved("");
 }
 
 /// Boundary detectors carry no path. Since v3 their presence no longer forces UNKNOWN
