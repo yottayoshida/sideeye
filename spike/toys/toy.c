@@ -65,6 +65,20 @@
  *                      then repositioned — libc flushes inside the fseek, so the seek
  *                      family are flush points too. init creates the file so it is in
  *                      the pre snapshot.
+ *
+ * The four below exist for typed path resolution and first-class links (ADR 0006).
+ *   TOY_LINK           the git loose-object idiom: write a tmp, link it into its final
+ *                      name, unlink the tmp — link is a first-class kill point.
+ *   TOY_RELATIVE       the same idiom after chdir into the state directory, spelled
+ *                      relative. Its resolved paths — and so its kill-point sequence —
+ *                      must equal TOY_LINK's, whether strace annotates the cwd (aarch64)
+ *                      or the legacy syscalls force it to be tracked (x86-64 CI).
+ *   TOY_LINK_IN        link a source OUTSIDE the state directory to a name inside it.
+ *                      A two-path operation touches the state directory when either end
+ *                      is inside, and this pins that the outside->inside direction counts.
+ *   TOY_SYMLINK        create a symlink inside the state directory. The engine cannot
+ *                      restore a symlink (#5), so this must be an honest `unsupported`
+ *                      refusal — the point is that a relative spelling still reaches it.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -127,6 +141,14 @@ static int write_file(const char *path, const char *content) {
     }
     if (fsync(fd) != 0) { close(fd); return -1; }
     if (close(fd) != 0) return -1;
+    return 0;
+}
+
+/* The git loose-object idiom: write a temp, link it into place, drop the temp. */
+static int link_idiom(const char *tmp, const char *dst) {
+    if (write_file(tmp, "object\n") != 0) return -1;
+    if (link(tmp, dst) != 0) return -1;
+    if (unlink(tmp) != 0) return -1;
     return 0;
 }
 
@@ -385,6 +407,38 @@ static int cmd_rotate(void) {
         fprintf(f, "AB"); /* dirty the stream, then reposition: libc flushes here */
         if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return 1; }
         if (fclose(f) != 0) return 1; /* nothing pending; a close, not a write */
+    }
+
+    if (getenv("TOY_LINK")) {
+        char tmp[4096], dst[4096];
+        join_path(tmp, sizeof tmp, "obj.tmp");
+        join_path(dst, sizeof dst, "obj.final");
+        if (link_idiom(tmp, dst) != 0) return 1;
+    }
+
+    if (getenv("TOY_RELATIVE")) {
+        /* The same idiom, spelled relative after entering the state directory. */
+        if (chdir(state_dir()) != 0) return 1;
+        if (link_idiom("obj.tmp", "obj.final") != 0) return 1;
+    }
+
+    if (getenv("TOY_LINK_IN")) {
+        /* Source outside the state directory, new name inside it. */
+        char src[4096] = "/tmp/toy-link-src.XXXXXX";
+        int sfd = mkstemp(src);
+        if (sfd < 0) return 1;
+        if (write(sfd, "x\n", 2) != 2) { close(sfd); return 1; }
+        close(sfd);
+        char dst[4096];
+        join_path(dst, sizeof dst, "linked-in");
+        if (link(src, dst) != 0) { unlink(src); return 1; }
+        unlink(src);
+    }
+
+    if (getenv("TOY_SYMLINK")) {
+        char lnk[4096];
+        join_path(lnk, sizeof lnk, "sym");
+        if (symlink("key.json", lnk) != 0) return 1;
     }
 
     /* A rewrite that no run repeats — the class the history form must NOT tolerate. */

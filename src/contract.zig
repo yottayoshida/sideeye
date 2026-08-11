@@ -42,7 +42,11 @@ const std = @import("std");
 /// macOS `--allow-unverified` run of a target that mixes stdio and raw writes could
 /// hold a verdict whose reproduce line counts different operations under v5 — the
 /// same class of meaning change that bumped v4.
-pub const contract_version: u32 = 5;
+/// v6 added `OpClass.link` (ADR 0006): `link`/`linkat` are now first-class kill points
+/// rather than an unmodelled syscall the oracle refused. A v5 shim paired with a v6
+/// engine would record no link where a link happened, which the version guard turns
+/// into an explicit refusal instead of a positional divergence.
+pub const contract_version: u32 = 6;
 
 pub const magic = "SIDEEYE1";
 
@@ -94,6 +98,11 @@ pub const OpClass = enum(u16) {
     truncate = 6,
     mkdir = 7,
     rmdir = 8,
+    /// A second name for an existing inode (`link`/`linkat`). Creating it changes the
+    /// tree, so it is a kill point and a mutation; the crashed world can lack the new
+    /// name. Restore reproduces the two names as independent files of equal content —
+    /// inode identity and `nlink` are outside the model (ADR 0006).
+    link = 9,
 
     // --- lifecycle ops: recorded, never a crash point ---
     close = 100,
@@ -135,7 +144,7 @@ pub const OpClass = enum(u16) {
 
     pub fn isKillPoint(self: OpClass) bool {
         return switch (self) {
-            .open, .write, .rename, .unlink, .fsync, .truncate, .mkdir, .rmdir => true,
+            .open, .write, .rename, .unlink, .fsync, .truncate, .mkdir, .rmdir, .link => true,
             else => false,
         };
     }
@@ -166,9 +175,17 @@ pub const OpClass = enum(u16) {
     /// is already visible whether or not it was synced.
     pub fn isMutation(self: OpClass) bool {
         return switch (self) {
-            .write, .rename, .unlink, .truncate, .mkdir, .rmdir => true,
+            .write, .rename, .unlink, .truncate, .mkdir, .rmdir, .link => true,
             else => false,
         };
+    }
+
+    /// Operations that name two paths (`rename`, `link`). They touch the state directory
+    /// when *either* endpoint is inside it, and both observers must agree on that — so
+    /// the property lives here, in the shared contract, rather than as a hardcoded list
+    /// on each side (ADR 0006).
+    pub fn isTwoPath(self: OpClass) bool {
+        return self == .rename or self == .link;
     }
 
     pub fn name(self: OpClass) []const u8 {
@@ -181,6 +198,7 @@ pub const OpClass = enum(u16) {
             .truncate => "truncate",
             .mkdir => "mkdir",
             .rmdir => "rmdir",
+            .link => "link",
             .close => "close",
             .fork => "fork",
             .exec => "exec",

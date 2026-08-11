@@ -992,7 +992,7 @@ echo "=========== check 2u: stdio is observed at flush granularity (ADR 0005) ==
 kill_sequence() { python3 -c '
 import struct, sys
 b = open(sys.argv[1], "rb").read()
-names = {1:"open",2:"write",3:"rename",4:"unlink",5:"fsync",6:"truncate",7:"mkdir",8:"rmdir"}
+names = {1:"open",2:"write",3:"rename",4:"unlink",5:"fsync",6:"truncate",7:"mkdir",8:"rmdir",9:"link"}
 i, out = 12, []
 while i + 14 <= len(b):
     op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14
@@ -1073,6 +1073,50 @@ for pair in "TOY_STDIO_BIG:a buffer overflow inside fprintf" "TOY_STDIO_NOCLOSE:
         fails=$((fails + 1))
     fi
 done
+
+echo "=========== check 2v: typed path resolution and first-class links (ADR 0006) ==========="
+# git's last wall (#31): the oracle scoped by scanning the whole line for an absolute
+# state-directory string, so a relative mkdir/link with only a dirfd annotation was
+# dropped — a fail-open of "refuse what you cannot see". Scope is now decided from
+# resolved paths, and link is a first-class kill point.
+link_tail="open:obj.tmp write:obj.tmp fsync:obj.tmp link:obj.tmp unlink:obj.tmp $rotate_tail"
+stdio_case "the loose-object idiom passes, link recorded as a kill point" TOY_LINK "$OUT/toy-fixed" \
+    "$link_tail"
+# Spelling invariance: the same idiom spelled relative (after chdir into the state
+# directory) resolves to the same operations. On aarch64 strace annotates the cwd; on
+# x86-64 (CI) the legacy syscalls carry no annotation and the tracked cwd is what
+# resolves them — so this case is where CI measures the cwd tracking.
+stdio_case "  ...and identically when spelled relative (cwd tracking)" TOY_RELATIVE "$OUT/toy-fixed" \
+    "$link_tail"
+# outside -> state: a two-path operation touches the state directory when either end is
+# inside. The recorded path is the source (outside), so the sequence leads with the link.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(env TOY_LINK_IN=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+link_recs=$(count_op_records /tmp/acc/work/trace-record.bin 9)
+if [ "$rc" = "0" ] && [ "${link_recs:-0}" = "1" ]; then
+    echo "ok   an outside->state link is counted (the either-endpoint rule)"
+else
+    echo "FAIL link-in: exit $rc, link records ${link_recs:-0} (wanted PASS with 1 link)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# A symlink inside the state directory reaches the unsupported net honestly — the engine
+# cannot restore a symlink (#5) — instead of being dropped by a relative spelling.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(env TOY_SYMLINK=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "unsupported_syscall_observed"; then
+    echo "ok   a symlink inside the state directory is an honest unsupported refusal"
+else
+    echo "FAIL symlink: exit $rc (wanted UNKNOWN unsupported_syscall_observed)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
 
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="

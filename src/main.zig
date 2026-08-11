@@ -441,7 +441,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // `unknown_reason: oracle_missed_operation` contradicts itself.
         oracle_note = "ran; the comparison did not complete";
         const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle produced no output");
-        const parsed = oracle.parse(arena, text, state_abs) catch setupError("out of memory");
+        // The oracle resolves relative paths against the subject's cwd (ADR 0006). The
+        // subject inherits the engine's cwd — `runChild` does not chdir — so that is the
+        // starting value; the subject's own chdir/fchdir move it from there. The alt
+        // spelling is passed only when it genuinely differs, so containment accepts both.
+        var oracle_cwd_buf: [contract.max_path]u8 = undefined;
+        const oracle_cwd = if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
+        const parsed = oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError("out of memory");
 
         // An oracle that observed nothing agrees with a shim that observed nothing, and
         // the report says "agreed" either way. The acceptance suite asserts by hand that

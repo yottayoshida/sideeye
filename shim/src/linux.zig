@@ -30,6 +30,9 @@ comptime {
     @export(&ops.unlink, .{ .name = "unlink" });
     @export(&ops.unlinkat, .{ .name = "unlinkat" });
 
+    @export(&ops.link, .{ .name = "link" });
+    @export(&ops.linkat, .{ .name = "linkat" });
+
     @export(&ops.fsync, .{ .name = "fsync" });
     @export(&ops.fdatasync, .{ .name = "fdatasync" });
 

@@ -113,6 +113,30 @@ pub fn unlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) callconv(.c) c_
     return common.callUnlinkat(dirfd, path, flags);
 }
 
+// --- kill-point ops: link --------------------------------------------------------
+//
+// A second name for an inode changes the tree, so link is a kill point and a mutation
+// (ADR 0006). Recorded before the call like every kill point, and with the same old,new
+// orientation as rename (path = old, aux = new); scope is "either endpoint inside the
+// state directory", decided in observe, so the record order carries no correctness
+// weight of its own.
+
+pub fn link(old: [*:0]const u8, new: [*:0]const u8) callconv(.c) c_int {
+    common.note2(.link, AT_FDCWD, old, AT_FDCWD, new);
+    return common.callLink(old, new);
+}
+
+pub fn linkat(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]const u8, flags: c_int) callconv(.c) c_int {
+    // AT_EMPTY_PATH links the descriptor `olddirfd` itself; the old path is empty and
+    // names nothing to resolve, so the operation is recorded as unplaceable.
+    if (old[0] == 0) {
+        common.noteLinkByDescriptor();
+    } else {
+        common.note2(.link, olddirfd, old, newdirfd, new);
+    }
+    return common.callLinkat(olddirfd, old, newdirfd, new, flags);
+}
+
 // --- kill-point ops: sync and truncate -------------------------------------------
 
 pub fn fsync(fd: c_int) callconv(.c) c_int {
