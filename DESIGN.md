@@ -150,6 +150,7 @@ This limitation is a focus, not a weakness. The bugs that surface under the proc
 
 - Targets must keep persistent state in **files or directories Sideeye can snapshot and restore.** State in system keychains or remote services is out of scope.
 - v0 targets **dynamically linked executables.** macOS binaries with hardened runtime + library validation, and statically linked Linux binaries, cannot be observed by the intended mechanism; Sideeye reports them as *unsupported* instead of pretending.
+- A target that **creates other processes** is explorable when an oracle can account for all of them — the rule is that no process other than the subject touched the state directory, and it requires `--oracle`, which exists on Linux only (ADR 0002). A target that `exec`s over itself, creates threads, or leaves the containment group is refused; so is any process boundary on a platform without an oracle.
 - v0 runs **natively on macOS and Linux.** (On macOS, every language is forced through libSystem, which makes userspace interposition a single mechanism covering Rust, Go, Python, and friends; the same approach covers dynamically linked Linux binaries.)
 
 ### Not in v0

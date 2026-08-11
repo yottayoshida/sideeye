@@ -29,12 +29,26 @@
  *                  land: it would arrive while the engine is snapshotting, restoring or
  *                  running the checker, and the verdict would describe a moment nobody
  *                  chose. Used to check that the engine confines the whole process group.
+ *
+ * The four below exist for boundary tolerance: same binary, one variable of difference,
+ * so an engine that decided by anything other than what the child actually did cannot
+ * pass their acceptance checks.
+ *   TOY_FORK_WRITES   fork a child that writes into the state directory and wait for
+ *                     it. The child's operation has no crash-point address; must refuse.
+ *   TOY_SPAWN         posix_spawn a process that touches nothing and wait for it.
+ *                     Tolerable: the subject's account remains complete.
+ *   TOY_SPAWN_WRITES  posix_spawn a shell that writes into the state directory.
+ *                     The child never loads the shim's view of the world it was born
+ *                     into (new image), and only an oracle can account for it; refuse.
+ *   TOY_DETACH        fork a child that calls setsid, escaping the engine's process
+ *                     group, then exits. The engine cannot claim to have stopped it.
  */
 
 #define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,6 +56,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+extern char **environ;
 
 #define KEY_NAME "key.json"
 #define TMP_NAME "key.json.tmp"
@@ -135,6 +151,51 @@ static void maybe_leave_the_supported_region(void) {
             write_file(late, "written after the parent was gone\n");
             _exit(0);
         }
+    }
+    /* The refusal case for a forked child: it writes where only the subject may. */
+    if (getenv("TOY_FORK_WRITES")) {
+        pid_t p = fork();
+        if (p == 0) {
+            char child_file[4096];
+            join_path(child_file, sizeof child_file, "from-child.txt");
+            write_file(child_file, "a child wrote this\n");
+            _exit(0);
+        }
+        if (p > 0) { int st; waitpid(p, &st, 0); }
+    }
+    /* The tolerable spawn: a new process and a new image, touching nothing. */
+    if (getenv("TOY_SPAWN")) {
+        static char *const av[] = { (char *)TOY_TRUE, NULL };
+        pid_t sp;
+        if (posix_spawn(&sp, TOY_TRUE, NULL, NULL, av, environ) == 0) {
+            int st;
+            waitpid(sp, &st, 0);
+        }
+    }
+    /* The refusal case for a spawned child — and deliberately one the shim cannot see.
+     * The environment passed to the child is empty: no LD_PRELOAD, no shim, no records.
+     * TOY_FORK_WRITES pins the shim-side witness (its child inherits the shim); this
+     * one pins the oracle, which is the only observer of a child that never loaded
+     * anything — the reason boundary tolerance requires an oracle at all. */
+    if (getenv("TOY_SPAWN_WRITES")) {
+        char cmd[4200];
+        snprintf(cmd, sizeof cmd, "echo spawned > %s/spawned.txt", state_dir());
+        char *const av[] = { (char *)"sh", (char *)"-c", cmd, NULL };
+        char *const ev[] = { NULL };
+        pid_t sp;
+        if (posix_spawn(&sp, "/bin/sh", NULL, NULL, av, ev) == 0) {
+            int st;
+            waitpid(sp, &st, 0);
+        }
+    }
+    /* The escape: a child that leaves the process group the engine relies on. */
+    if (getenv("TOY_DETACH")) {
+        pid_t p = fork();
+        if (p == 0) {
+            setsid();
+            _exit(0);
+        }
+        if (p > 0) { int st; waitpid(p, &st, 0); }
     }
 }
 

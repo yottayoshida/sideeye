@@ -130,12 +130,62 @@ fi
 # key behind the shim's back. state_changed_without_ops stays quiet here.
 run_case "toy-mixed is UNKNOWN"  "$OUT/toy-mixed"  2 "oracle_missed_operation"
 
-TOY_FORK=1 export TOY_FORK
-run_case "fork is UNKNOWN"       "$OUT/toy-bug"    2 "child_process_detected"
-unset TOY_FORK
 TOY_THREAD=1 export TOY_THREAD
 run_case "thread is UNKNOWN"     "$OUT/toy-bug"    2 "multiple_threads_detected"
 unset TOY_THREAD
+
+echo ""
+echo "=========== check 2q: a boundary is judged by what the child did ==========="
+# One binary, one environment variable of difference per case. An engine that decides by
+# anything other than the child's actual behaviour — always refuse, always tolerate,
+# match on the target's name — cannot pass all six.
+
+# A fork whose child exits quietly: the subject's account is complete, so the planted
+# bug must be found at the same crash point as the boundary-free run.
+TOY_FORK=1 export TOY_FORK
+run_case "fork + quiet child explores"      "$OUT/toy-bug" 1 "crash point 5 of 5"
+unset TOY_FORK
+
+# The same, through posix_spawn: a new process *and* a new image.
+TOY_SPAWN=1 export TOY_SPAWN
+run_case "spawn + quiet child explores"     "$OUT/toy-bug" 1 "crash point 5 of 5"
+unset TOY_SPAWN
+
+# A forked child that writes into the state directory: no crash-point address exists
+# for its operation, whatever else is true.
+TOY_FORK_WRITES=1 export TOY_FORK_WRITES
+run_case "fork + writing child is refused"  "$OUT/toy-bug" 2 "child_touched_state_dir"
+unset TOY_FORK_WRITES
+
+# A spawned shell that writes into the state directory: the child never loaded the shim
+# of the process the engine armed, so only the oracle sees this one.
+TOY_SPAWN_WRITES=1 export TOY_SPAWN_WRITES
+run_case "spawn + writing child is refused" "$OUT/toy-bug" 2 "child_touched_state_dir"
+unset TOY_SPAWN_WRITES
+
+# A child that leaves the process group: the engine cannot claim to have stopped it,
+# oracle or no oracle.
+TOY_DETACH=1 export TOY_DETACH
+run_case "a child that detaches is refused" "$OUT/toy-bug" 2 "left the containment group"
+unset TOY_DETACH
+
+# And without an oracle the whole question is unanswerable: the shim only sees processes
+# that load it, and "was not seen" must never be read as "did nothing".
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_FORK=1 export TOY_FORK
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+unset TOY_FORK
+if [ "$rc" = "2" ] && echo "$o" | grep -q "boundary_without_oracle"; then
+    echo "ok   the same quiet fork is UNKNOWN without an oracle (exit 2)"
+    reasons="$reasons boundary_without_oracle"
+else
+    echo "FAIL boundary without oracle: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
 
 echo ""
 echo "=========== check 1b: the L2 checker judges the same worlds ==========="
@@ -673,10 +723,10 @@ rc=$?
 unset TOY_FORK_LATE
 
 # The absence of a file is only evidence if the thing that would have created it ran.
-# `child_process_detected` is that proof: the shim can only report it after the operation
-# started and forked. Without this, a run that died in setup would leave no late.txt and
-# the check would pass having measured nothing.
-if [ "$rc" != "2" ] || ! echo "$o" | grep -q "child_process_detected"; then
+# `boundary_without_oracle` is that proof: the shim can only record the fork after the
+# operation started and forked, and this run carries no oracle. Without this, a run that
+# died in setup would leave no late.txt and the check would pass having measured nothing.
+if [ "$rc" != "2" ] || ! echo "$o" | grep -q "boundary_without_oracle"; then
     echo "FAIL the operation never reached the fork: exit $rc"
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
@@ -751,8 +801,8 @@ try:
 except OSError:
     print(0); raise SystemExit
 i, n = 12, 0
-while i + 10 <= len(b):
-    op, seq, plen = struct.unpack_from("<HII", b, i); i += 10 + plen
+while i + 14 <= len(b):
+    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
     if op == 200: n += 1
@@ -764,14 +814,17 @@ else
     fails=$((fails + 1))
 fi
 
-# 3. And the verdict names the boundary rather than the death.
+# 3. And the verdict describes the target, not the observation. With boundary tolerance
+# a vfork+exec whose child touches nothing is explorable: the planted bug must surface
+# at the same crash point as the boundary-free run. `recording_run_failed` here would
+# mean the target died under observation and was blamed for it — the original defect.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_VFORK=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "child_process_detected"; then
-    echo "ok   a vforking target is refused for creating a process, not for dying"
+if [ "$rc" = "1" ] && echo "$o" | grep -q "crash point 5 of 5"; then
+    echo "ok   a vfork+exec target is explored, reaching the same crash point"
 elif echo "$o" | grep -q "recording_run_failed"; then
     echo "FAIL the target died under observation and was blamed for it (recording_run_failed)"
     echo "$o" | sed 's/^/     | /'
@@ -810,11 +863,50 @@ total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')
 echo "detectors fired: $reasons"
 echo "distinct: $distinct of $total"
 # A single always-UNKNOWN path would give 1 no matter how many cases ran.
-if [ "$distinct" -lt 10 ]; then
-    echo "FAIL: expected at least ten distinct detectors, got $distinct"
+if [ "$distinct" -lt 12 ]; then
+    echo "FAIL: expected at least twelve distinct detectors, got $distinct"
     fails=$((fails + 1))
 else
     echo "ok   $distinct different detectors fired"
+fi
+
+echo ""
+echo "=========== check 3b: traces are identical up to pid renaming ==========="
+# v0.1 claimed the recording run's trace was byte-identical across runs. v3 puts a pid
+# in every record, and pids differ between runs by nature — so the claim becomes:
+# identical after replacing each pid with its order of first appearance. Decoded with a
+# real parser; the sequence includes op, seq and the normalised pid, so a record moving
+# between processes cannot hide.
+norm_trace() { python3 -c '
+import struct, sys
+b = open(sys.argv[1], "rb").read()
+i, out, pids = 12, [], {}
+while i + 14 <= len(b):
+    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
+    if i + 4 > len(b): break
+    (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
+    out.append("%d:%d:p%d" % (op, seq, pids.setdefault(pid, len(pids))))
+print(" ".join(out))' "$1"; }
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_FORK=1 export TOY_FORK
+"$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace >/dev/null 2>&1
+t1=$(norm_trace /tmp/acc/work/trace-record.bin)
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+"$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace >/dev/null 2>&1
+t2=$(norm_trace /tmp/acc/work/trace-record.bin)
+unset TOY_FORK
+if [ -n "$t1" ] && [ "$t1" = "$t2" ]; then
+    echo "ok   two recording runs agree after pid normalisation ($(echo "$t1" | wc -w | tr -d ' ') records)"
+else
+    echo "FAIL normalised traces differ (or are empty)"
+    echo "     | $t1"
+    echo "     | $t2"
+    fails=$((fails + 1))
 fi
 
 echo ""

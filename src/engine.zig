@@ -286,6 +286,7 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
 pub const Op = struct {
     class: contract.OpClass,
     seq: u32,
+    pid: u32,
     path: []const u8,
     aux: []const u8,
 };
@@ -300,10 +301,34 @@ pub const TraceInfo = struct {
     /// containing one is a verdict about an incomplete picture.
     saw_unresolved: bool = false,
     kill_landed_seq: ?u32 = null,
+    /// Who wrote the kill_landed record. `seq == k` alone is not landing evidence: a
+    /// child inheriting SIDEEYE_KILL_AT counts its own operations, and its k-th is not
+    /// the subject's.
+    kill_landed_pid: ?u32 = null,
     kill_point_count: u32 = 0,
     mutation_count: u32 = 0,
     boundary: ?contract.OpClass = null,
+    /// The boundaries that stay refusals regardless of tolerance, which are not the
+    /// same set for every process: the *subject* replacing its image or creating a
+    /// thread breaks addressing and determinism, while a **child** exec'ing is just a
+    /// spawn doing what spawns do. `detached` is hard from anyone — escape is escape.
+    /// Kept separately from `boundary` because "first boundary" can be a tolerable
+    /// fork that arrives before the record that must refuse the run.
+    hard_boundary: ?contract.OpClass = null,
     truncated: bool = false,
+    /// The subject: whoever wrote the first `shim_ready`. The trace file is created by
+    /// the first process to initialise, which is the process the engine launched —
+    /// children come later, whether forked (init already done) or spawned (their init
+    /// appends behind the subject's).
+    primary_pid: ?u32 = null,
+    /// A kill-point (or kill_landed) record from a process other than the subject.
+    /// Crash points are numbered per process, so such an operation has no unique
+    /// address; any run containing one is refused rather than mis-attributed.
+    foreign_kill_point: bool = false,
+    /// Any record at all from another process — a spawned child announcing itself
+    /// counts. Evidence that the run crossed a process boundary even if no boundary
+    /// record was written (a raw clone, say).
+    foreign_pid_seen: bool = false,
 
     pub fn deinit(self: *TraceInfo) void {
         self.arena.deinit();
@@ -311,12 +336,14 @@ pub const TraceInfo = struct {
 
     /// The logical address of crash point k: the operation it happens before, and the
     /// one it happens after. Reported instead of a bare counter so a saved case can be
-    /// recognised as no longer applying when the code changes.
+    /// recognised as no longer applying when the code changes. Only the subject's
+    /// operations are addresses; a child's seq counts different things.
     pub fn logicalAddress(self: TraceInfo, k: u32) struct { after: ?Op, before: ?Op } {
         var after: ?Op = null;
         var before: ?Op = null;
         for (self.ops.items) |op| {
             if (!op.class.isKillPoint()) continue;
+            if (self.primary_pid != null and op.pid != self.primary_pid.?) continue;
             if (op.seq == k) before = op;
             if (op.seq == k - 1) after = op;
         }
@@ -362,20 +389,43 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
         const op: Op = .{
             .class = dec.rec.op,
             .seq = dec.rec.seq,
+            .pid = dec.rec.pid,
             .path = try arena.dupe(u8, dec.rec.path),
             .aux = try arena.dupe(u8, dec.rec.aux),
         };
         switch (op.class) {
-            .shim_ready => info.saw_shim_ready = true,
-            .kill_landed => info.kill_landed_seq = op.seq,
+            .shim_ready => {
+                info.saw_shim_ready = true;
+                if (info.primary_pid == null) info.primary_pid = op.pid;
+            },
+            .kill_landed => {
+                info.kill_landed_seq = op.seq;
+                info.kill_landed_pid = op.pid;
+            },
             .unresolved => info.saw_unresolved = true,
             else => {},
         }
-        if (op.class.isKillPoint()) {
+        const is_primary = info.primary_pid != null and op.pid == info.primary_pid.?;
+        if (!is_primary) {
+            info.foreign_pid_seen = true;
+            if (op.class.isKillPoint() or op.class == .kill_landed)
+                info.foreign_kill_point = true;
+        }
+        if (op.class.isKillPoint() and is_primary) {
             info.kill_point_count = @max(info.kill_point_count, op.seq);
             if (op.class.isMutation()) info.mutation_count += 1;
         }
-        if (op.class.isBoundary() and info.boundary == null) info.boundary = op.class;
+        if (op.class.isBoundary()) {
+            if (info.boundary == null) info.boundary = op.class;
+            const hard = switch (op.class) {
+                .detached => true,
+                // A record written before the primary announced itself is attributed
+                // to the primary: refusing is the safe misreading.
+                .exec, .thread => is_primary or info.primary_pid == null,
+                else => false,
+            };
+            if (hard and info.hard_boundary == null) info.hard_boundary = op.class;
+        }
         try info.ops.append(arena, op);
     }
     return info;

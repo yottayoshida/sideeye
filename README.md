@@ -37,9 +37,15 @@ never as passing.
 - **Exit zero during the recording run.** The crash points are read off that run, so a
   target that fails partway through would have Sideeye explore a sequence it never
   performs. There is no way yet to declare a different expected status.
-- **Be dynamically linked, single-process and single-threaded**, and reach its files
-  through libc. Raw syscalls, static linking, a hardened runtime, `fork`/`exec` and
-  threads are all detected and refused.
+- **Be dynamically linked and single-threaded**, and reach its files through libc.
+  Raw syscalls, static linking, a hardened runtime and threads are detected and refused.
+- **Keep other processes away from its state.** A target that forks or spawns helpers is
+  explorable when an oracle is present (`--oracle`, Linux) and no process other than the
+  target itself touched the state directory — the common shim/wrapper/launcher shape.
+  A child that writes into the state directory, a target that `exec`s over itself, or a
+  process that leaves Sideeye's containment group is refused. Without an oracle, any
+  process boundary is UNKNOWN: the shim only sees processes that load it, and "was not
+  seen" is not "did nothing".
 - **Keep its state in one directory**, passed with `--state`.
 
 ## What it looks like
