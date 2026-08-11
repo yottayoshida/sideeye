@@ -40,9 +40,23 @@ Acceptance:
 
 Risk retired: interposition works at all; crash points are deterministic and reproducible.
 
-Delivered beyond this scope, because it cost less than deferring it: macOS interposition and OS parity (v0.3), and L2 checkers with falsification (v0.2). Those milestones keep their remaining scope.
+Delivered beyond this scope, because it cost less than deferring it: macOS interposition and OS parity (originally a milestone of its own, below), and L2 checkers with falsification (originally part of the Define-contract milestone). Those milestones keep their remaining scope.
 
-### v0.2 — The full Define contract
+### v0.2 — Process boundaries (delivered 2026-08-11)
+
+**Goal (as shipped):** stop refusing every target that creates a process, without ever guessing about one.
+
+This milestone was not on the original roadmap — the slot was promised to the Define contract, which moves to v0.3 with its scope unchanged. What forced the queue-jump: pointing v0.1.0 at its first real target (the v0.4 dogfood subject) ended at `child_process_detected` for the shape every shim, wrapper and launcher shares, and the attempt surfaced a v0.1.0 defect in which observing a `vfork` killed the target. Roadmaps yield to measurements; that is what they are for.
+
+Shipped:
+
+- Containment: every target runs in its own process group, killed and reaped as one, so nothing a target starts outlives the engine's look at the state.
+- Interposing `vfork` no longer corrupts the target (a recorded boundary, then a guaranteed tail call).
+- Boundary tolerance (trace contract v3, ADR 0002): a fork/spawn boundary is explorable when an oracle is present and no process other than the subject touched the state directory. Everything else refuses with a named detector, and any boundary without an oracle is UNKNOWN.
+
+Acceptance, measured: six acceptance cases over one binary with one environment variable of difference decide tolerance by the child's behaviour alone, and the dogfood target now travels past the boundary gate to fail for its true reason (a rustix-issued raw syscall — #19) instead of the categorical one.
+
+### v0.3 — The full Define contract
 
 **Goal:** the three-commands-and-a-directory contract of DESIGN §12, complete.
 
@@ -59,11 +73,13 @@ Acceptance:
 - The doctor-cross-examination scenario runs end-to-end against a toy target.
 - Conditional-invariant vacuity is covered by tests: a killed run never satisfies the success marker, and the suite asserts that L1 worlds are the strict subset where the marker appeared.
 
-### v0.3 — macOS native
+### macOS native — absorbed into v0.1
 
 **Goal:** the second platform DESIGN §9 committed to, with honest edges.
 
-Scope:
+Delivered in v0.1, ahead of its slot: macOS interposition with an identical CLI and contract, and a parity assertion in CI (identical scenario, identical verdict and crash point on both OSes). What remains of the original scope is one honesty gap, tracked as #10: an Apple platform binary can never be observed, and the report says `no_shim_marker` without naming why. No longer a numbered milestone.
+
+The original scope, for the record:
 
 - macOS interposition; identical CLI and contract.
 - Hardened-runtime / library-validation targets detected and reported as unsupported (exit 2) — never silently mis-tested. Same for statically linked Linux binaries.
