@@ -2,6 +2,22 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-11 — The guard's own contract had the hole it was built against
+
+Hours after the guard below merged, review of the practice caught its wording: "write the
+entry before opening the PR" *permits batch-writing at delivery* — which is not a lesser
+form of compliance but the documented failure mode itself. The containment entry was
+written exactly that way, once, at PR-open; its central argument was reversed in review
+two hours later; and the reversal never made it back in, because the entry was already
+"done". A delivery-time log loses precisely the things that happen after delivery-time.
+
+The contract now says what the journal's own header always said: append at the moment of
+the decision, in the same working tree as the change it describes, and **re-read the
+entry at PR-open and after every review round** — the reversal window is after writing,
+so the re-read is the load-bearing clause. CI cannot see when a line was written, only
+whether the file changed; the timing half of the contract lives in `CLAUDE.md` and in the
+habit, and this entry is the first one written under it.
+
 ## 2026-08-11 — This log stopped being written, and a guard now keeps it written
 
 The last entry written at the time it happened is six entries down, four pull requests ago.
