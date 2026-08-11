@@ -141,3 +141,31 @@ jobs:
           [ "$rc" = "137" ] || { echo "expected SIGKILL (137), got $rc"; echo "$line"; exit 1; }
           [ ! -f /tmp/ci3/state/key.json ] || { echo "key.json survived; the kill did not land"; exit 1; }
           [ -f /tmp/ci3/state/key.json.tmp ] || { echo "key.json.tmp missing; not the reported state"; exit 1; }
+
+  # The development journal is a delivery artifact here, and it went unwritten for four
+  # pull requests once because nothing asked for it. Now something asks: a PR that
+  # changes code without touching BUILDLOG.md does not merge. The decision logic was
+  # shown its red against a synthetic code-only changeset before being trusted.
+  buildlog:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Changed code requires a BUILDLOG entry
+        run: |
+          # Three-dot: diff from the merge-base, so a base branch that moved ahead does
+          # not smuggle its own file list into this PR's changed set.
+          changed=$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")
+          printf 'changed files:\n%s\n' "$changed"
+          if echo "$changed" | grep -qE '^(src/|shim/|spike/|build\.zig$|build\.zig\.zon$)'; then
+            if ! echo "$changed" | grep -qx 'BUILDLOG.md'; then
+              echo '::error::This PR changes code but not BUILDLOG.md.'
+              echo 'BUILDLOG.md is the running decision log (newest first, "## YYYY-MM-DD — claim").'
+              echo 'Write the entry before the PR: what was decided, what was measured, what went wrong.'
+              exit 1
+            fi
+          fi
+          echo 'ok: BUILDLOG requirement satisfied'
