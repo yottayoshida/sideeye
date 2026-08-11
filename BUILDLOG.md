@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-11 — todoman reaches a verdict: a fourth target, and falsification rejects a lenient reader
+
+Re-ran todoman 4.1 (Python) after #34; the calibration sweep had ended in an honest
+refusal (`unsupported_syscall_observed: linkat`, filed as #31). The wall is gone. The
+operation (`todo new` against a seeded list) confirms its entry the atomicwrites way —
+temp created `O_EXCL`, reopened, written (302 bytes), fsynced, link(2)ed to the final
+name, temp unlinked, directory fsynced — seven state-directory operations, and the
+linkat that used to stop the whole run is now a kill point like any other. PASS 8/8
+crash worlds, oracle agreed on 7 operations (6273 syscall lines examined, 38 in scope).
+Fourth real target with a full verdict, the first in Python, and the field confirmation
+that #34 closed the wall it named. No new bug: atomicwrites holds under every crash
+point, so the §17 primary criterion is still open.
+
+The checker leg measured something better. `todo list` as `--check` is rejected by
+falsification: with every state file overwritten with junk it prints a traceback —
+"Failed to read entry …" — and exits 0, answering "nothing wrong" precisely when it
+could not look. Sideeye refuses the checker (`checker_not_falsified`, UNKNOWN) rather
+than let eight crash worlds pass vacuously against a reader that skips what it cannot
+parse. A wrapper that fails on the skip message restores the contract: falsified before
+the run, then PASS 8/8. That is DESIGN §14-13 doing its job against a real target's own
+diagnostic — the first real checker the gate has rejected, as opposed to a synthetic
+`/bin/true`.
+
+The recipe lives in `spike/dogfood-todoman.sh` now; this session had to reconstruct it
+from scratch because the sweep ran it ad hoc. Two environment walls worth keeping: pip
+inside the container needs `--trusted-host` for pypi.org and files.pythonhosted.org
+(the host network intercepts TLS with a self-signed chain — the same wall rustup hit),
+and todoman 4.1 with the current icalendar imports `pytz` at runtime, which neither
+package declares. `TODOMAN_CONFIG` must end in `.py`; todoman loads it with importlib.
+
 ## 2026-08-11 — The oracle resolves paths instead of scanning lines (#31, in progress)
 
 With stdio observed (#32), git's account stopped splitting on `COMMIT_EDITMSG` and split
