@@ -2,6 +2,204 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-11 — This log stopped being written, and a guard now keeps it written
+
+The last entry written at the time it happened is six entries down, four pull requests ago.
+Between it and now: the containment fix merged with its most instructive reversal
+unrecorded, a defect that killed observed targets was found and fixed, boundary tolerance
+shipped with a contract bump, and v0.2.0 went out — none of it logged. The catch-up entries
+below were reconstructed from the session transcripts, the PR bodies, and the git history,
+and each states only what was measured at the time.
+
+Why it happened is worth a line: the delivery routine that produced those PRs carried the
+CHANGELOG, the ADRs and the PR bodies — artifacts every repository has — and this log is an
+artifact only this repository has. Nothing in the routine asked for it, so nothing wrote it.
+The fix is structural, not resolutional: CI now fails any pull request that changes
+`src/`, `shim/`, `spike/` or the build files without touching `BUILDLOG.md`, and the
+repository carries a `CLAUDE.md` stating the contract — the entry is written before the PR
+is opened, failures and reversals included. The guard was shown its red once, against a
+synthetic diff with no log entry, before being trusted.
+
+## 2026-08-11 — The opened boundary reveals the next wall: a dependency that bypasses libc
+
+With #18 merged, omamori was pointed at again. It travelled: `child_process_detected`
+(v0.1.0, nothing explored) → `unsupported_syscall_observed: flock` → after classifying
+`flock` as read-only (advisory locks live in the kernel and die with the process, so no
+crash world can be told apart by one) → `oracle_missed_operation`. The oracle saw a
+state-directory operation the shim did not record.
+
+The missed line is an `openat` of the state directory itself —
+`O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY` — issued between taking the audit lock and
+reading the secret. omamori's dependency tree includes **rustix**, whose Linux backend
+issues raw syscalls; there is no libc entry point for `LD_PRELOAD` to reach. The shim
+recorded the libc-reached operations around it faithfully, the oracle compared the two
+accounts, and the refusal is exactly what the design promises for a target that bypasses
+libc. But it is also categorical in the way the boundary refusal used to be: rustix sits
+under a growing slice of the Rust ecosystem, so "a Rust program whose state handling is
+partly rustix-backed" is a class, and the whole class is UNKNOWN. Filed as #19.
+
+**The way through was measured before being planned.** The operation the shim missed
+cannot change state: a read-only open mutates nothing, so the world killed immediately
+before it is byte-identical to the world killed at the next address — a redundant world.
+Simulating "read-only opens leave the numbering, on both sides" over the recorded accounts
+brought them from divergence at index 3 to within one operation; the residue was the
+**close of the raw-opened descriptor**, which the shim never saw born. Tracking fd
+provenance dies on `dup` and inheritance, so the simulation instead dropped `close` from
+the comparison on both sides — close is neither a kill point nor a mutation, and its only
+role was positional corroboration. Result: **142 vs 142, aligned**.
+
+The plan that came out of this — make addressing and the completeness comparison cover
+state-changing operations only — went through an adversarial review that caught the
+predicate being fail-open: the oracle-side read-only test would have accepted numeric
+flags (`0x241`) as read-only. It now requires a symbolic token before excluding anything;
+what it cannot parse, it counts, and a miscount is an UNKNOWN, not a pass.
+
+## 2026-08-11 — v0.2.0: the version number was already promised to something else
+
+Releasing the boundary work hit a problem no test catches: **the v0.1.0 release notes had
+already promised v0.2 to the Define contract** — `sideeye.toml`, L1 markers, case storage
+and `replay`. Published release notes are history and do not get rewritten. The options
+were to ship as v0.2.0 anyway and say so, to mislabel it a patch, or to sit on a merged
+defect fix (#17 — sideeye was killing the targets it observed) until the promised scope
+existed. Holding a shipped fix hostage to milestone naming lost.
+
+v0.2.0 went out with its own notes opening on the change of plan; the PRD now records the
+queue-jump and the reason ("roadmaps yield to measurements; that is what they are for"),
+moves the Define contract to v0.3 with its scope unchanged, and marks the macOS milestone
+absorbed into v0.1 — its one remaining item is #10, the report's silence about *why* an
+Apple platform binary shows `no_shim_marker`. Ceremony verified from the outside: fresh
+clone of the tag, 53/53 tests, the banner reads `sideeye 0.2.0 (trace contract v3)`, the
+planted bug still FAILs at crash point 5 of 5, and a forking target without an oracle
+answers `boundary_without_oracle`.
+
+## 2026-08-11 — Boundary tolerance ships: a child is judged by what it did
+
+The tolerance rule designed after the first real-target run is now merged (#18, contract
+v3): a fork or spawn boundary is explorable when an oracle is present and **no process
+other than the subject touched the state directory**. A child that stays out of the state
+directory consumes no sequence numbers, so the numbering that refusal was protecting stays
+unique — the safety condition and the honesty condition are the same condition. Everything
+else refuses with its own detector: a child that writes (`child_touched_state_dir`, from
+either witness), any boundary without an oracle (`boundary_without_oracle` — the shim only
+sees processes that load it, and "was not seen" is not "did nothing"), the subject
+exec'ing over itself, threads, and anything that leaves the containment group.
+
+**Two design pieces did not survive contact with the implementation.**
+
+The planned arming mechanism — the engine sets `SIDEEYE_PRIMARY_PID` before exec — cannot
+work at all under an oracle: the engine's direct child is *strace*, the subject is strace's
+child, and the engine never knows its pid at setenv time. A trace-file marker ("whoever
+wrote the header is primary") died in thought for a familiar reason: the engine does not
+delete the reproduce line's trace file, so the printed command would silently stop arming
+on its second run — the exact class of quiet inertness the reproduce line has been fixed
+for twice. What shipped is the pid captured at the shim's own `init()`: a forked child
+inherits the value but answers `getpid()` differently, and the fork is the only child that
+inherits a mid-count `seq`. A spawned child re-inits and arms itself — tolerable, because
+the kill fires only on a state-directory operation and a child's state-directory operation
+already refuses the run. The arm can only go off in a world that is thrown away.
+
+The second was found by the acceptance suite going red: `TOY_DETACH` — fork a child, child
+calls `setsid` — was *explored*. The trace's first boundary record is the tolerable
+`.fork`, and the engine's refusal switch read only the first boundary; the `.detached`
+that must refuse the run arrived later and was masked. `hard_boundary` is now tracked
+separately, pid-aware — a **child's** exec is a spawn doing what spawns do and must not
+refuse, while the subject's exec must.
+
+**The witnesses are independent, and a mutation proved it.** Disabling the oracle-side
+touch check alone let exactly one case through: the spawned child that receives a clean
+environment, never loads the shim, and writes into the state directory — the case only the
+oracle can see. The shim-side check survived its own mutation under these toys (for
+shim-visible children the oracle is a superset) and is kept anyway, with the reason in a
+comment: the oracle reads paths textually and misses a child's *relative* spelling, which
+the shim resolves against the child's cwd. Neither witness subsumes the other. Disabling
+the no-oracle gate produced the most instructive red: the quiet-fork target explored and
+the report printed `processes: single process` — the lie the gate exists to prevent,
+verbatim.
+
+Outside review: five P1, two P2, all adopted — a raw `clone(CLONE_THREAD)` walked past the
+thread refusal; an unshimmed child's `setsid` is invisible to `%process` (measured; both
+are now traced explicitly); oracle-only children skipped the quiescence sampling;
+`mmap(PROT_WRITE|MAP_SHARED)` of a state file is a mutation with no later write syscall —
+a PASS-side hole that predates this PR for the subject itself; a child's read-only open
+was refused against the stated rule. The confirmation round then caught the two remaining
+fixes reading flags **from the whole strace line instead of the flags argument** — the
+same class as v0.1's `AT_REMOVEDIR` fix, which even left behind a test named for the rule.
+Corrected with the argument splitter and pinned by a test in which a file named
+`O_CREAT.bak` changes nothing.
+
+53 unit tests, 50 acceptance assertions, 12 distinct detectors. The six tolerance cases
+run one binary with one environment variable of difference, so an engine that decides by
+anything but the child's behaviour cannot pass them all.
+
+## 2026-08-11 — Observing a vfork killed the target; the fix is a call with no frame
+
+Probing the boundary classifications for the tolerance work found a v0.1.0 defect worse
+than any misclassification: **interposing `vfork` kills the target.** A vfork child runs
+on the parent's stack while the parent is suspended, and the call returns twice. An
+ordinary wrapper's frame spans that double return: the child pops the frame on its way
+back into the target, runs, and overwrites the memory it occupied — including the saved
+frame pointer and return address the parent's resume path will restore. The parent then
+resumed into the *child's* branch and exited 127 with no output and no signal. sideeye
+reported `UNKNOWN recording_run_failed` — blaming the target for a death it caused.
+
+The control that placed the fault: vfork+exec of `/bin/true` exits 0 without the shim,
+127 with it — **and 127 with the shim loaded but inactive**, recording nothing. The
+corruption is the wrapper's stack frame itself, not anything the shim does inside it.
+glibc's own `vfork` is hand-written frameless assembly for exactly this reason.
+
+The first fix was removal: stop interposing `vfork` entirely, and let the child's exec and
+the oracle carry detection. It worked, and it was the wrong trade — counted only after the
+question "can this be broken through?" forced a second look. Removal leaves a
+vfork-then-`_exit` child invisible on the platform with no oracle. What shipped instead:
+record the boundary first (an ordinary call, safely before the fork), then reach the real
+`vfork` through a **guaranteed tail call** — `@call(.always_tail)`, which is a compile
+error on any backend that cannot honour it. At the jump the stack is exactly as if the
+target had called vfork directly; both returns land in the target and the wrapper's frame
+never exists across them. The guarantee promptly fired for real: Zig's self-hosted x86_64
+backend (the Debug default) refused with "does not support tail calls", so the shim pins
+`use_llvm`. Disassembly on both architectures ends in `br x0` / `jmpq *%rax` after a full
+epilogue — a jump, not a call.
+
+Also learned, each the hard way: `posix_spawn` survives an ordinary wrapper because glibc
+hands its `CLONE_VM|CLONE_VFORK` child a freshly mmap'd stack, and `fork`'s child runs on
+a copy — only `vfork` shares. The toy built to pin the fix committed the same class of
+crime it was testing (its argv was constructed *in the vfork child*, on the shared stack;
+now static and fully initialised before the fork — found in review). macOS has no
+`/bin/true`, only `/usr/bin/true`, and the toy looked green anyway because the parent
+discards the child's status — the test was quietly measuring less than it claimed. And one
+measurement round was voided entirely by a 0-byte probe binary: the shell executes an
+empty file as a successful no-op, so every "exit 0" in that round was the measurement of
+nothing. `file(1)` before trusting a binary's exit code.
+
+## 2026-08-11 — The structural argument in the entry below was wrong at the only moment that mattered
+
+The entry below records, with some satisfaction, that the `getpgid` guard was removed
+because "a freshly allocated pid cannot equal the id of a live process group". Review of
+the containment PR (#14) found the flaw: that argument is true at the moment of `fork` and
+**false after the reap**. The first implementation signalled the group *after* `waitpid`;
+reaping releases the pid, an unrelated process can be allocated it and become a group
+leader, and the `SIGKILL` meant for something that no longer exists lands on a stranger.
+
+The fix is ordering, not another guard: `waitid(P_PID, pid, … WEXITED | WNOWAIT)` waits
+for the child to exit while leaving it reapable, so the pid — and with it the group id —
+stays spoken for across the signal. Kill, then reap. `WNOWAIT` differs between platforms
+(`0x01000000` in glibc's headers, `0x00000020` in the macOS SDK) and was read out of both
+rather than recalled; `P_PID` and `WEXITED` agree, and the comment says which is which.
+The same-class scan — a wait-family call whose side effect is trusted without checking the
+call happened — found one more: `waitpid`'s discarded result left `status` zero on
+failure, reading a killed world as a clean exit. Now retried, bounded at 8 because nothing
+in that file can tell an interruption from a permanent failure.
+
+Merged with every pre-existing verdict unchanged and both directions measured: the
+late-writing grandchild's file appears with the group kill disabled and never appears with
+it in place. The suite also grew a guard for its own blind spot — `zig-out` holds one
+platform's build, so a host build silently replaces the Linux cross-build and 36 checks
+fail for one reason that reads like a tool regression; asked directly, the answer is one
+line ("CANNOT RUN … built for this platform?"), confirmed against a wrong-architecture
+binary on purpose. Two residues were filed rather than widened into the PR: a descendant
+that calls `setsid` escapes the group undetected (#15), and quiescence is signalled, not
+observed (#16). Both were closed by the tolerance work later the same day.
+
 ## 2026-08-10 — The first real target, and a hazard that was there all along
 
 Pointed sideeye at omamori, the v0.4 dogfood subject. Two attempts, two UNKNOWNs, for two
@@ -54,6 +252,46 @@ One measurement worth keeping: **the oracle changes the timing of the recording 
 run take 310 ms and its write lands inside the measured window. The recording run and an
 explored world are therefore not timing-equivalent. The containment check deliberately runs
 without an oracle for that reason — otherwise it would be measuring strace.
+
+## 2026-08-10 — v0.1.0: four documentation gaps, one real defect, and a tag verified from the outside
+
+Release preparation was mostly reading the documents as a stranger would, and the stranger
+kept winning. **The PRD contradicted itself**: v0.1 listed `sideeye replay <case>` while
+v0.2 listed the case storage a replay would need — a case that was never stored cannot be
+replayed, so `replay` moved to v0.2 whole. **DESIGN §12's L0 was wrong as written**: "the
+state directory must equal the pre or post snapshot" fails the *corrected* toy, whose
+atomic write leaves `key.json.tmp` behind in every world killed inside the window; the
+text now matches the implementation (per file, over files present in both snapshots) and
+names what the narrower form does not catch. **Two version strings had already drifted**
+(`0.1.0` in the manifest, `0.1.0-dev` printed) — a tag would have disagreed with the
+binary it tagged; a test now embeds the manifest and holds them together. **And the README
+showed a command that does not exist** — the report ended in a mocked
+`sideeye replay 000042`; replaced with real output, and the `check.sh` beside it was
+executed before being pasted.
+
+**The defect was found while generating that README example, not by review.** A checker
+that rejects the operation's normal output produced `FAIL 6 of 6 crash worlds violated an
+invariant` — but one of those six is the baseline world, which was never killed. Nothing
+that fails there is a consequence of crashing, and attributing it to a crash is the exact
+misattribution this tool exists to refuse. It is now `UNKNOWN baseline_violates_invariant`,
+paired in acceptance with a control: the same checker, correctly configured, must still
+find the planted bug at crash point 5, so the gate cannot be satisfied by swallowing every
+L2 finding.
+
+The same-class scan (claims a document makes that the implementation does not support)
+walked the CHANGELOG's feature list and found the third structural detector,
+`contract_version_mismatch`, had no test and had never been seen firing — the precise
+thing PRD says a gate must not be. Unit test with control added, confirmed by making the
+decoder ignore the version field.
+
+Tagged `v0.1.0`, released as "v0.1.0 — Deterministic crash points, and a refusal to
+guess", and verified from the outside: fresh clone of the tag, build, 45/45 tests, the
+buggy toy found at crash point 5 of 5, text and JSON agreeing. The project image landed
+separately (640×640, metadata stripped) after declining both social-preview variants.
+Two claims measured for the release but *not* asserted by the suite are recorded as such:
+ten runs produced an identical crash point and window (the suite compares three), and two
+recording runs' traces were byte-identical at 1129 bytes (the suite does not compare
+traces at all).
 
 ## 2026-08-10 — Second review: the fix that was never run, and the scan that stopped one function short
 
