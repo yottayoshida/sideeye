@@ -1,0 +1,82 @@
+diff --git a/src/AtomicFile.cpp b/src/AtomicFile.cpp
+index 575af95b..49134aea 100644
+--- a/src/AtomicFile.cpp
++++ b/src/AtomicFile.cpp
+@@ -453,11 +453,15 @@ void AtomicFile::finalize_all ()
+   sigset_t old_mask;
+   sigfillset (&new_mask);
+ 
+-  // Step 2: Rename the temp files to the *real* file
++  // Step 2: Rename the temp files to the *real* file. In reverse registration
++  // order, so the undo journal reaches its final name before the data files it
++  // describes: signals can be masked, but SIGKILL, OOM and power loss cannot,
++  // and a crash between renames must never leave the journal behind the data —
++  // undo would aim at the previous transaction and destroy committed work.
+   sigprocmask (SIG_SETMASK, &new_mask, &old_mask);
+-  for (auto& file : impl::atomic_files)
++  for (auto it = impl::atomic_files.rbegin (); it != impl::atomic_files.rend (); ++it)
+   {
+-    file->finalize ();
++    (*it)->finalize ();
+   }
+   sigprocmask (SIG_SETMASK, &old_mask, nullptr);
+ 
+diff --git a/src/Database.cpp b/src/Database.cpp
+index f9c037fd..45c182be 100644
+--- a/src/Database.cpp
++++ b/src/Database.cpp
+@@ -319,6 +319,15 @@ void Database::addInterval (const Interval& interval, bool verbose)
+ ////////////////////////////////////////////////////////////////////////////////
+ void Database::deleteInterval (const Interval& interval)
+ {
++  // Get the index into _files for the appropriate Datafile, which may be
++  // created on demand.
++  auto df = getDatafile (interval.start.year (), interval.start.month ());
++
++  // Delete from the datafile before touching the tag counts: the datafile
++  // throws on an interval that is not there, and that check must run before
++  // anything is mutated, not after the tag counts have already moved.
++  _files[df].deleteInterval (interval);
++
+   auto tags = interval.tags ();
+ 
+   for (auto& tag : tags)
+@@ -326,11 +335,6 @@ void Database::deleteInterval (const Interval& interval)
+     _tagInfoDatabase.decrementTag (tag);
+   }
+ 
+-  // Get the index into _files for the appropriate Datafile, which may be
+-  // created on demand.
+-  auto df = getDatafile (interval.start.year (), interval.start.month ());
+-
+-  _files[df].deleteInterval (interval);
+   _journal->recordIntervalAction (interval.json (), "");
+ }
+ 
+diff --git a/src/commands/CmdUndo.cpp b/src/commands/CmdUndo.cpp
+index e8ba8792..cb0d543a 100644
+--- a/src/commands/CmdUndo.cpp
++++ b/src/commands/CmdUndo.cpp
+@@ -35,7 +35,21 @@ static void undoIntervalAction(UndoAction& action, Database& database)
+   Interval before = IntervalFactory::fromJson (action.getBefore ());
+   Interval after = IntervalFactory::fromJson (action.getAfter ());
+ 
+-  database.modifyInterval (after, before, false);
++  try
++  {
++    database.modifyInterval (after, before, false);
++  }
++  catch (const std::string& error)
++  {
++    // A crash may have cut the transaction in half: the journal reached its
++    // final name but the data file rename did not, so the change this action
++    // describes never landed. Undoing it is then a no-op — popping the intent
++    // from the journal is the whole undo. Anything else is a real error.
++    if (error.find ("failed to find") == std::string::npos)
++    {
++      throw;
++    }
++  }
+ }
+ 
+ static void undoConfigAction (UndoAction& action, Rules& rules, Journal& journal)

@@ -61,11 +61,17 @@ command -v python3 >/dev/null || { echo "python3 not found; the checker needs it
 [ -e "$RUN" ] && { echo "$RUN already exists. Remove it yourself, or pass RUN=<new path>."; exit 1; }
 mkdir -p "$RUN"
 
-# The checker states timewarrior's own undo contract: after any crash, `timew undo`
-# must remove exactly the interval timewarrior itself reports as most recent (id 1 in
-# its own export) — never an older, committed one. The checker mutates the crashed
-# state (undo rewrites the database), which is safe here: the engine snapshots the
-# crashed state before running the checker, and judges L0 on that snapshot.
+# The checker states timewarrior's own undo contract in its non-destruction form:
+# after any crash, `timew undo` must run (no brick), must add nothing, and may remove
+# either nothing or exactly the interval timewarrior itself reports as most recent
+# (id 1 in its own export) — never an older, committed one. "Nothing" is allowed
+# because a correct recovery may find that the most recent *intent* never landed
+# (the crash beat its commit) and discard the intent without touching visible data;
+# the first draft of this checker demanded that undo always remove the newest visible
+# interval, which would condemn that correct behaviour along with the bug. The
+# checker mutates the crashed state (undo rewrites the database), which is safe here:
+# the engine snapshots the crashed state before running the checker, and judges L0 on
+# that snapshot.
 cat > "$RUN/check.sh" <<'CHECK'
 #!/bin/sh
 set -eu
@@ -75,21 +81,25 @@ after=$(timew export) || exit 1
 BEFORE="$before" AFTER="$after" python3 - <<'PY'
 import json, os, sys
 
-def keyset(doc):
-    return sorted((iv["start"], iv.get("end", ""), ",".join(iv.get("tags", [])))
-                  for iv in json.loads(doc))
+def key(iv):
+    return (iv["start"], iv.get("end", ""), ",".join(iv.get("tags", [])))
 
 before = json.loads(os.environ["BEFORE"])
+after = json.loads(os.environ["AFTER"])
 if not before:
     print("export was empty before undo: the seeded interval is gone", file=sys.stderr)
     sys.exit(1)
 newest = min(before, key=lambda iv: iv["id"])  # id 1 is timew's own "most recent"
-expected = keyset(os.environ["BEFORE"])
-expected.remove((newest["start"], newest.get("end", ""), ",".join(newest.get("tags", []))))
-got = keyset(os.environ["AFTER"])
-if got != expected:
-    print("undo removed the wrong change: timew's own export named", newest,
-          "as most recent, but undo left", got, "instead of", expected, file=sys.stderr)
+b = sorted(key(iv) for iv in before)
+a = sorted(key(iv) for iv in after)
+added = [k for k in a if k not in b]
+removed = [k for k in b if k not in a]
+if added:
+    print("undo added intervals:", added, file=sys.stderr)
+    sys.exit(1)
+if removed not in ([], [key(newest)]):
+    print("undo removed the wrong change: timew's own export named", key(newest),
+          "as most recent, but undo removed", removed, file=sys.stderr)
     sys.exit(1)
 PY
 CHECK

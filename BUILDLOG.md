@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — The fix experiment closes: reorder the renames, tolerate the unlanded intent, and the counterexample stops reproducing
+
+The author's verdicts on the morning's finding, recorded before the experiment they
+triggered: the timewarrior counterexample is judged a real bug (an undo that reports
+success while deleting an interval committed the day before is genuinely incorrect
+failure semantics), and §17 keeps omamori as its subject — this finding is recorded as
+proof of the class, and the primary criterion is evaluated for real at the v0.4
+dogfood, not retrofitted onto a different target. Upstream reporting waits until the
+fix leg is measured, which is this entry.
+
+Upstream HEAD reproduces it. timewarrior 1.10.0-dev (db7751cb), built from source in
+the container: FAIL 2 of 25 worlds, earliest at crash point 19 of 24 — the same
+window, after the month-data rename and before the undo rename. HEAD's `finalize_all`
+wraps the rename loop in `sigprocmask` (PR #316, "Mask signals while updating
+database"), which is evidence upstream knows this window must be atomic — and measures
+as no defence here, because SIGKILL cannot be masked. Neither can OOM or power loss.
+
+The checker's contract had to be refined first, and the refinement is a reversal worth
+recording: the first checker demanded that undo always remove the newest *visible*
+interval, but a correct recovery may find that the newest intent never landed (the
+crash beat its data-file rename) and discard the intent without touching visible data
+— the strict form would condemn that correct behaviour along with the bug. The
+non-destruction form — undo runs, adds nothing, removes either nothing or exactly the
+interval timew's own export names most recent — still fails the unpatched build 2/25
+(both faces named: alpha deleted at point 19, the decrement abort at point 20), so the
+red is preserved, and it passes a correct recovery.
+
+The patch (kept as `spike/timew-undo-ordering.patch`, three small changes): finalize
+in reverse registration order, so the undo journal reaches its final name before the
+data files it describes — a crash may now leave the journal *ahead* of the data, never
+behind; `Database::deleteInterval` deletes from the datafile before decrementing tag
+counts, so the not-found check runs before anything mutates; `undoIntervalAction`
+treats "failed to find" as the change never having landed — popping the intent is the
+whole undo. Measured on the patched build: PASS 25/25 in both explorations (the same
+counterexample stops reproducing), and upstream's own suite holds — 37 bash behaviour
+tests, AtomicFileTest 24, data.t 96, Datafile.t 2, TagInfoDatabase.t 8, all green.
+
+Known-issue check before any report, as directed: #772 (open, 2026-08-03) is the
+nearest neighbour and a different mechanism — a missing fsync lets an unclean
+*shutdown* zero-fill undo.data (content durability, power loss, filesystem-dependent);
+this finding is rename *ordering* under process crash (filesystem-independent, and
+untouched by adding fsync). #182 wants a consistency doctor and names mismatched tag
+counts as a symptom without the crash-window cause; #480/#292 are disk-full and an old
+truncation. Nothing covers the ordering mechanism or undo aiming at the wrong
+transaction. The maintainer engaged constructively with #772's explicitly AI-generated
+analysis five days after filing.
+
+Reported upstream as GothenburgBitFactory/timewarrior#778, in the shape the author
+directed: what was found, the two `cp`-only reproductions, the risk, and a request to
+confirm — no fix proposal in the opening post; the tested patch stays here until the
+maintainer engages.
+
 ## 2026-08-12 — A fifth target picked by reading commit tails: timewarrior's undo desyncs from its data across a crash
 
 Four targets in, §17 is still open, so the fifth is chosen for bug likelihood rather
