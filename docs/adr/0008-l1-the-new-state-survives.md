@@ -1,6 +1,6 @@
 # ADR 0008 — L1 judges the whole post snapshot, and an unobservable marker refuses
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-12)
 - **Supersedes:** nothing. Implements DESIGN §4.1's post-success invariant and §12's
   L1 level; extends the report with an `l1` line and `not tested` with the one gap
   the judgement keeps
