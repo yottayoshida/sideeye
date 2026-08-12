@@ -2,6 +2,56 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — The saved case works across the real fix: replay-across-fix, four legs, measured
+
+PRD v0.4's second scope item — regression-case stability *in practice* — had never
+actually been exercised: the replay context gates were pinned by synthetic changes
+(v0.3 acceptance), and the timewarrior fix was verified by a full re-explore, never by
+replaying the saved case across the patch. `spike/dogfood-timew-replay.sh` closes that,
+in the container, one saved case through four legs:
+
+- **A** — timewarrior built at the pinned upstream HEAD `db7751cb` (still upstream HEAD
+  at run time; `git ls-remote` returned the same hash), explored with the undo-contract
+  checker: FAIL at crash point 19 of 24, case saved.
+- **B** — replay against the same build: FAIL, "the case reproduced".
+- **C** — `spike/timew-undo-ordering.patch` applied in a SEPARATE checkout, rebuilt,
+  installed over the same PATH name, same case replayed: **PASS, explored 2, no
+  unknown_reason, crash_points still 24.** The paths-only-warn rule (ADR 0009) did
+  exactly what it was written for: the fix reorders same-class renames, the class
+  prefix hash held, and the case stayed addressable across the real code change.
+- **D** — negative control: the distro 1.4.3 package at the same PATH name: UNKNOWN
+  `case_no_longer_applies`, exit 2. A recording with a different operation count gets
+  a refusal, never a verdict.
+
+The four legs demand three different outcomes from one code path (FAIL / FAIL / PASS /
+refuse), so no constant-answer replay satisfies them — that mutual contrast is the red
+for these checks. Leg C's PASS rests on the checker's contract as written (the
+non-destruction form: undo must not remove an older committed interval; removing
+nothing is allowed, because a crash may have beaten the intent's commit). That form
+deliberately admits a hypothetical "undo that always no-ops" — sound for measuring the
+crash windows, but it means leg C alone does not prove the fix *restores* undo, only
+that the counterexample stops reproducing. The fix's positive behaviour is what leg
+A's FAIL-then-PASS pair and the 25/25 patch measurement (this morning's entry) carry;
+this script measures case portability across the change, not undo's full semantics. Wiring facts the recipe depends on, learned while writing it: the
+case stores the operation as the PATH name `timew`, so a directory at the head of PATH
+is the lever that swaps builds; TIMEWARRIORDB is not part of the case's identity (env
+is not captured) and the recipe must re-export it; the setup is additive, so the state
+directory is MOVED aside between legs, never deleted. For the record: aarch64
+container, g++ 12.2.0, timew 1.10.0-dev vs 1.4.3, patch sha256
+`586040127c56bac45a49595573837438e61e852583bb987e5814cfa32912ec96`. One environment
+wall worth writing down: the corporate network intercepts TLS (Netskope), so the
+container has to trust that CA before the clone can run — the measurement's integrity
+does not rest on the transport, because the pin is the full 40-hex commit hash and the
+recipe enforces it with `git rev-parse HEAD` after checkout (an abbreviated hash would
+be a lookup convenience, not a content address — review caught the first version using
+one while making this exact claim).
+
+What this clears and what it does not: v0.4's regression-stability scope item is now
+measured, not argued. It does **not** make the counterexample CI-resident (the case
+still needs a built timewarrior), so v1.0 entry criterion 1's "kept as a replayed
+regression case" stays open — the same two §17 gaps as this morning, with the replay
+half now demonstrated.
+
 ## 2026-08-12 — The MCP green was partly vacuous: a reused work dir served a stale verdict
 
 A post-merge adversarial re-review of PR #55 (its own PR, re-read cold) found the worst
