@@ -5,6 +5,7 @@ const engine = @import("engine.zig");
 const posix = @import("posix.zig");
 const oracle = @import("oracle.zig");
 const config = @import("config.zig");
+const mcp = @import("mcp.zig");
 
 /// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
 /// same number, and they had already drifted: the package said 0.1.0 while `--help` said
@@ -239,6 +240,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const argv = try init.args.toSlice(arena_state.allocator());
+
+    // `mcp` runs a stateless MCP stdio server and never returns to the explore/replay
+    // pipeline below (that pipeline is entirely explore/replay-specific). It forwards
+    // tool calls by self-exec'ing this same binary's `explore`/`replay`.
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "mcp")) {
+        mcp.runServer(gpa);
+        return;
+    }
 
     const Mode = enum { explore, replay };
     var mode: Mode = .explore;

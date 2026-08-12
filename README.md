@@ -132,6 +132,24 @@ line named — an ignored key would be a declared invariant that silently never 
 Command strings split on spaces — no quoting; anything an argument cannot spell
 belongs in a script file (ADR 0007).
 
+## Driving it from an agent (MCP)
+
+`sideeye mcp` is a stateless MCP server (stdio, protocol 2026-07-28) so a coding agent
+can drive sideeye through the standard tool surface. Two tools, both taking a path
+inside `SIDEEYE_MCP_ROOT`:
+
+- `sideeye_explore_config` `{config_path}` — explore a target defined by a `sideeye.toml`
+- `sideeye_replay_case` `{case_path}` — replay a saved counterexample case
+
+The tools take *paths*, never a raw command: the operation lives in the config file,
+which is a **trust boundary** — its operation is executed, so the config is what you
+vet, and the server confines *which* config (inside the root), not what it may do.
+Operational settings come from the environment, not tool input: `SIDEEYE_MCP_SHIM`
+(required), `SIDEEYE_MCP_ROOT` (required), `SIDEEYE_MCP_ORACLE` and `SIDEEYE_MCP_WORK`
+(optional). The server self-execs the canonical binary, captures the child's output so
+it never touches the MCP transport, and runs it with a minimal environment. v1 is
+synchronous — a long exploration blocks the connection; async is future work.
+
 ## What Sideeye is not
 
 - **Not a property-based testing library.** It varies the world the program runs in, not the input.

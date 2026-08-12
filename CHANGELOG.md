@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `sideeye mcp` (ADR 0010): a stateless MCP 2026-07-28 stdio server, so a coding agent can drive sideeye through the standard tool surface. Two tools, both taking a path inside `SIDEEYE_MCP_ROOT` — `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}` — never a raw command (the operation lives in the config, a trust boundary). The server self-execs the canonical binary (`/proc/self/exe` / `_NSGetExecutablePath`, not argv[0]), captures the child's stdout to a file so the MCP transport stays uncontaminated, and gives the child a minimal environment so a config's operation cannot read the server's credentials. `_meta` (protocol version + client capabilities) is validated on every method; an unsupported version returns `UnsupportedProtocolVersionError`. A crash-consistency PASS/FAIL is `isError:false`; a SETUP ERROR or a retryable UNKNOWN is `isError:true`. The shim, an optional oracle, and the work dir come from the environment (`SIDEEYE_MCP_SHIM` / `SIDEEYE_MCP_ORACLE` / `SIDEEYE_MCP_WORK`). Synchronous in v1 (a long explore blocks the loop; async/cancellation via the Tasks extension is future work).
+
 ## [0.3.0] - 2026-08-12
 
 The full Define contract: what a user writes is a `sideeye.toml`, a checker script, and nothing else — and every level of the contract ships with the refusal that keeps it honest. Measured on a fresh target the same day: watson is driven to a correct, named refusal by the file, one script and one environment variable.
