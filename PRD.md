@@ -100,6 +100,8 @@ Scope:
 
 Acceptance: DESIGN §17's primary criterion evaluated honestly — either a novel, author-confirmed crash-consistency bug, or a written analysis of why none was found. The analysis feeds the kill criteria (DESIGN §18); this step cannot be skipped or softened.
 
+**Status (2026-08-12): partial, and structurally bounded.** The one state-mutating omamori subcommand an agent can drive — `exec`, which appends to the audit chain — was reconnoitred (BUILDLOG, same date): the write pattern confirms the high-water mark *after* the body it confirms, so verify stays conservative in every crash window and no §17-class bug exists on that path — a clean instance of kill criterion 4 (§18), the target hardened correctly. The other stateful subcommands (config-modify, `init --force`, audit key rotate) are guarded against AI-session invocation on purpose (#12) and can only be explored from a human's raw terminal; that part of the evaluation is deferred to a human-driven session and is not something the agent can complete. Meanwhile the live §17-class find is timewarrior — a calibration target (§18, and v0.5's calibration scope) with no hand-written adversarial tests — whose crash-window bug is the mechanical inverse of omamori's safe ordering; v1.0's entry criterion 1 explicitly admits a find "on omamori or the calibration target".
+
 ### v0.5 — The loop closes
 
 **Goal:** prove the counterexample is agent food, and calibrate detection power.
