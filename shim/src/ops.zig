@@ -113,6 +113,24 @@ pub fn unlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) callconv(.c) c_
     return common.callUnlinkat(dirfd, path, flags);
 }
 
+/// remove(3) is unlink-then-rmdir *inside* libc, and neither inner call crosses the
+/// PLT (the timewarrior wall — its AtomicFile cleanup removes every registered temp
+/// name at exit, created or not). Interposing it and forwarding to the real remove
+/// would keep the shim blind, so the wrapper reimplements the documented two-step
+/// through the wrappers above: each attempt is recorded before it runs, which is both
+/// the kill-point convention and the attempt-by-attempt account strace hands the
+/// oracle — a failed attempt counts on both sides or the two accounts desync. The
+/// fall-through errno is each platform's own: glibc retries a directory on EISDIR,
+/// Apple's BSD libc on EPERM — faithful to what the replaced function did, including
+/// the EPERM-on-a-protected-file wart.
+pub fn remove(path: [*:0]const u8) callconv(.c) c_int {
+    const r = unlink(path);
+    if (r == 0) return r;
+    const fall_through: c_int = if (builtin.os.tag == .macos) 1 else 21; // EPERM : EISDIR
+    if (std.c._errno().* != fall_through) return r;
+    return rmdir(path);
+}
+
 // --- kill-point ops: link --------------------------------------------------------
 //
 // A second name for an inode changes the tree, so link is a kill point and a mutation

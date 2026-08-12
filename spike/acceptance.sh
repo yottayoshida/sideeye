@@ -1118,6 +1118,18 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2w: remove(3) is observed, attempt for attempt ==========="
+# The timewarrior wall: libc implements remove(3) as unlink — then rmdir on the
+# directory errno — internally, without crossing the PLT, so a shim that only
+# interposes unlink is blind to every removal made through it while the oracle sees
+# the syscalls; the run refused as oracle_missed_operation. The shim now reimplements
+# remove through its own wrappers, so the recorded sequence matches strace attempt for
+# attempt: the failed remove of a never-created path is an address on both accounts
+# (timewarrior's AtomicFile cleanup does exactly that at every exit), and a directory
+# shows glibc's failed unlink probe before the rmdir lands.
+stdio_case "remove(3) of a file, a missing path, and a directory" TOY_REMOVE "$OUT/toy-fixed" \
+    "open:scratch.txt write:scratch.txt unlink:scratch.txt unlink:never-made.tmp mkdir:subdir unlink:subdir rmdir:subdir $rotate_tail"
+
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to

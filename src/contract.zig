@@ -46,7 +46,13 @@ const std = @import("std");
 /// rather than an unmodelled syscall the oracle refused. A v5 shim paired with a v6
 /// engine would record no link where a link happened, which the version guard turns
 /// into an explicit refusal instead of a positional divergence.
-pub const contract_version: u32 = 6;
+/// v7 changed no bytes and no classes: the shim now observes `remove(3)`, whose
+/// internal unlink/rmdir never cross the PLT, by reimplementing its two-step through
+/// the recorded wrappers. Removals made through it become `.unlink`/`.rmdir` records
+/// (failed attempts included, recorded pre-call like every kill point), so a target
+/// that removes state via remove gains addresses a v6 trace does not have — the same
+/// class of meaning change that bumped v4 and v5.
+pub const contract_version: u32 = 7;
 
 pub const magic = "SIDEEYE1";
 
