@@ -59,6 +59,32 @@ const Args = struct {
     marker: ?[]const u8 = null,
 };
 
+/// A saved counterexample (ADR 0009): the resolved define it was found against, the
+/// crash point, and the landing context that decides whether a later replay still
+/// addresses the same operation. Parsed strictly — an unknown field is a case from a
+/// future schema, not something to skip.
+const ReplayCase = struct {
+    schema: []const u8,
+    case_version: u32,
+    sideeye_version: []const u8,
+    contract_version: u32,
+    define: struct {
+        state: []const u8,
+        setup: ?[]const u8 = null,
+        operation: []const u8,
+        check: ?[]const u8 = null,
+        marker: ?[]const u8 = null,
+    },
+    k: u32,
+    ops_total: u32,
+    prefix_hash: []const u8,
+    after_class: []const u8,
+    after_path: []const u8,
+    before_class: []const u8,
+    before_path: []const u8,
+    violation: []const u8,
+};
+
 /// What the report says so far.
 ///
 /// These are module-level because `unknown()` and `setupError()` exit from deep inside
@@ -88,6 +114,13 @@ var l1_configured: bool = false;
 var l0_note: []const u8 = "not classified (the run was refused before L0 classification)";
 /// Non-zero once any file is judged by the history form; widens `not tested`.
 var l0_history_count: u32 = 0;
+/// The case/replay story (ADR 0009), one variable each read by text and JSON alike
+/// (the checker_note pattern). A FAIL sets them to the saved case and its replay
+/// command; a replay sets the case to what it was asked to re-verify the moment the
+/// file parses, so even a `case_no_longer_applies` refusal names which case it
+/// refused — the JSON consumer is the §17 audience and must not need the text.
+var case_note: []const u8 = "(none)";
+var replay_note: []const u8 = "-";
 /// What the run knows about process boundaries. "single process" until evidence says
 /// otherwise; a tolerated boundary replaces it with what was observed and what that
 /// limits — the reader of a FAIL must be able to see that the window is attributed to
@@ -105,6 +138,13 @@ fn usage() void {
         \\
         \\usage:
         \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--shim <lib>] [--work <dir>]
+        \\  sideeye replay <case.json> --shim <lib> [--oracle <strace>] [--work <dir>] [--json <path>]
+        \\
+        \\replay re-runs one saved counterexample: the same pipeline as explore — the
+        \\oracle comparison, the structural detectors, checker falsification, landing
+        \\evidence — restricted to the case's crash point plus the baseline (ADR 0009).
+        \\When the recording no longer matches the case's landing context, the answer
+        \\is "case no longer applies" (exit 2), never a verdict about a shifted point.
         \\
         \\  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
         \\               mutually exclusive with --state/--setup/--operation/--check.
@@ -147,12 +187,13 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
         \\
         \\atomicity   {s}
         \\l1          {s}
+        \\case        {s}
         \\not tested  {s}
         \\
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ reason.name(), detail, l0_note, l1_note, notTestedText() });
+    , .{ reason.name(), detail, l0_note, l1_note, case_note, notTestedText() });
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -199,7 +240,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     defer arena_state.deinit();
     const argv = try init.args.toSlice(arena_state.allocator());
 
-    if (argv.len < 2 or !std.mem.eql(u8, argv[1], "explore")) {
+    const Mode = enum { explore, replay };
+    var mode: Mode = .explore;
+    var case_arg: ?[]const u8 = null;
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "explore")) {
+        mode = .explore;
+    } else if (argv.len >= 3 and std.mem.eql(u8, argv[1], "replay") and argv[2].len > 0 and argv[2][0] != '-') {
+        mode = .replay;
+        case_arg = argv[2];
+    } else {
         usage();
         std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
     }
@@ -208,7 +257,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // Before the loop, so that a parse error occurring *after* `--json` was read still
     // reaches the report rather than leaving whatever was there before.
     json_arena = arena_state.allocator();
-    var i: usize = 2;
+    var i: usize = if (mode == .replay) 3 else 2;
     while (i < argv.len) {
         // Flags without a value are handled first; everything else consumes a pair.
         if (std.mem.eql(u8, argv[i], "--allow-unverified")) {
@@ -239,6 +288,39 @@ pub fn main(init: std.process.Init.Minimal) !void {
         i += 2;
     }
 
+    // A replay's define comes from the case file itself: the counterexample's
+    // identity includes what was run, not just where it was killed (ADR 0009).
+    var replay_case: ?ReplayCase = null;
+    var only_k: ?u32 = null;
+    if (mode == .replay) {
+        if (args.state != null or args.setup != null or args.operation != null or
+            args.check != null or args.marker != null or args.config != null)
+            setupError("replay takes its define from the case file; the define-surface flags and --config do not apply");
+        const rarena = arena_state.allocator();
+        const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024) orelse setupError(
+            std.fmt.allocPrint(rarena, "the case file could not be read (missing, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
+        );
+        const parsed = std.json.parseFromSlice(ReplayCase, rarena, ctext, .{}) catch
+            setupError("the case file could not be parsed as a sideeye case");
+        const c = parsed.value;
+        if (!std.mem.eql(u8, c.schema, "sideeye/case"))
+            setupError("the file does not declare itself a sideeye case");
+        if (c.case_version != 1)
+            setupError("this binary understands case schema version 1 only");
+        if (c.contract_version != contract.contract_version)
+            unknown(.case_no_longer_applies, "the case was recorded under a different trace contract; the crash-point numbering does not carry over");
+        args.state = c.define.state;
+        args.setup = c.define.setup;
+        args.operation = c.define.operation;
+        args.check = c.define.check;
+        args.marker = c.define.marker;
+        replay_case = c;
+        only_k = c.k;
+        // From here on, every verdict — including a refusal — names the case it is
+        // about, in text and JSON alike.
+        case_note = case_arg.?;
+    }
+
     // The define surface comes from exactly one place (ADR 0007): a config file or
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
@@ -251,7 +333,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
         );
         switch (config.parse(arena, text) catch setupError("out of memory")) {
             .ok => |d| {
-                const dir = std.fs.path.dirname(cfg_path) orelse ".";
+                // The dirname is absolutized before anything resolves against it: the
+                // resolved define is what a saved case stores as the counterexample's
+                // identity, and a relative spelling would make the case mean a
+                // different command from every other cwd.
+                const dir_raw = std.fs.path.dirname(cfg_path) orelse ".";
+                var dir_z: [contract.max_path]u8 = undefined;
+                const dz = std.fmt.bufPrintZ(&dir_z, "{s}", .{dir_raw}) catch setupError("--config path is too long");
+                var dir_real: [contract.max_path]u8 = undefined;
+                const dir_abs = posix.realpath(dz.ptr, &dir_real) orelse setupError("--config's directory could not be resolved");
+                const dir = arena.dupe(u8, std.mem.span(dir_abs)) catch setupError("out of memory");
                 args.state = resolvePathAgainst(arena, dir, d.state);
                 args.setup = if (d.setup) |s| resolveCommandAgainst(arena, dir, s) else null;
                 args.operation = resolveCommandAgainst(arena, dir, d.operation);
@@ -615,6 +706,31 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     const n = trace.kill_point_count;
     crash_points = n;
+
+    // The landing context, before anything is explored — including before the
+    // zero-crash-points PASS below, which would otherwise answer for a case whose
+    // operations have all disappeared. Classes gate; paths only warn (pid-embedded
+    // temp names legitimately differ between runs — the timewarrior shape).
+    if (replay_case) |rc| {
+        if (rc.ops_total != n)
+            unknown(.case_no_longer_applies, std.fmt.allocPrint(arena, "the recording now counts {d} state-changing operation(s); the case was recorded over {d}", .{ n, rc.ops_total }) catch "the operation count changed");
+        if (rc.k < 1 or rc.k > n)
+            unknown(.case_no_longer_applies, "the case's crash point is out of range for this recording");
+        var hh: [16]u8 = undefined;
+        if (!prefixHash(trace, rc.k, &hh))
+            unknown(.case_no_longer_applies, "the recording's operation numbering has a gap before the crash point; nothing can vouch that the recorded index still names the same operation");
+        if (!std.mem.eql(u8, &hh, rc.prefix_hash))
+            unknown(.case_no_longer_applies, "the class sequence leading to the crash point changed; killing at the recorded index would address a different operation");
+        const addr = trace.logicalAddress(rc.k);
+        const after_class = if (addr.after) |a| a.class.name() else "(start)";
+        const before_class = if (addr.before) |b| b.class.name() else "(end)";
+        if (!std.mem.eql(u8, after_class, rc.after_class) or !std.mem.eql(u8, before_class, rc.before_class))
+            unknown(.case_no_longer_applies, "the operations around the crash point changed class; the case names a different window");
+        const after_path = if (addr.after) |a| a.path else "";
+        const before_path = if (addr.before) |b| b.path else "";
+        if (!std.mem.eql(u8, after_path, rc.after_path) or !std.mem.eql(u8, before_path, rc.before_path))
+            say("note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds\n", .{});
+    }
     if (n == 0) {
         requireCompleteness(args.oracle != null, args.allow_unverified);
         say(
@@ -622,9 +738,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\      explored 0 crash points; nothing to kill before
             \\      atomicity: {s}
             \\      l1: {s}
+            \\      case: {s}
             \\      not tested: {s}
             \\
-        , .{ l0_note, l1_note, notTestedText() });
+        , .{ l0_note, l1_note, case_note, notTestedText() });
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
@@ -679,6 +796,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     var k: u32 = 1;
     while (k <= n + 1) : (k += 1) {
+        // A replay explores exactly the case's world plus the baseline; every trust
+        // gate inside this loop still runs (ADR 0009) — a replay that skipped them
+        // would blame the target for whatever the skipped gate existed to catch.
+        if (only_k) |okk| {
+            if (k != okk and k != n + 1) continue;
+        }
         engine.restore(initial, state_abs) catch setupError("could not restore the state directory");
 
         var kbuf: [16]u8 = undefined;
@@ -874,6 +997,24 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 setupError("path too long")
         else
             "";
+        // The counterexample outlives the console (ADR 0009). Saved on explore only:
+        // a replay re-verifies an existing case, it does not mint another.
+        const saved_case: ?[]const u8 = if (only_k == null) blk: {
+            // The stored state is the resolved spelling: a case must mean the same
+            // state directory from any cwd, or the replay silently sets up elsewhere.
+            var case_args = args;
+            case_args.state = state_abs;
+            break :blk writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else "checker");
+        } else null;
+        const case_shown = saved_case orelse (if (mode == .replay) case_arg.? else "(not saved)");
+        const replay_cmd = if (saved_case) |sc|
+            std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}", .{ sc, shim }) catch "-"
+        else if (mode == .replay)
+            "(this run is a replay; the case reproduced)"
+        else
+            "-";
+        case_note = case_shown;
+        replay_note = replay_cmd;
         say(
             \\FAIL  {d} of {d} crash worlds violated an invariant
             \\
@@ -888,6 +1029,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\oracle      {s}
             \\checker     {s}
             \\l1          {s}
+            \\case        {s}
+            \\replay      {s}
             \\processes   {s}
             \\not tested  {s}
             \\
@@ -906,6 +1049,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             oracle_note,
             checker_note,
             l1_note,
+            case_shown,
+            replay_cmd,
             boundary_note,
             notTestedText(),
             state_abs,  alt_env,     repro_trace, preload_var, shim, f.k,
@@ -932,10 +1077,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      oracle: {s}
         \\      checker: {s}
         \\      l1: {s}
+        \\      case: {s}
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, l0_note, oracle_note, checker_note, l1_note, boundary_note, notTestedText() });
+    , .{ explored, explored, explored, n, l0_note, oracle_note, checker_note, l1_note, case_note, boundary_note, notTestedText() });
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -1071,7 +1217,10 @@ test "fileContains finds a marker straddling the chunk boundary" {
     try std.testing.expectError(error.Unreadable, fileContains(".zig-cache/no-such-capture", "X"));
 }
 
-fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
+/// `readFileAlloc` with a ceiling: a case file is caller-supplied input, and reading
+/// until EOF from something that never ends (a device, a fifo) would hang the run
+/// before any refusal could fire. Over the cap answers like unreadable.
+fn readFileAllocCapped(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
     const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
@@ -1081,14 +1230,19 @@ fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     var chunk: [64 * 1024]u8 = undefined;
     while (true) {
         const n = posix.read(fd, &chunk, chunk.len);
-        // A read error is not end of file. Treating them alike turned a truncated oracle
-        // file into a complete one, and the comparison that followed was against however
-        // much happened to arrive before the error.
         if (n < 0) return null;
         if (n == 0) break;
         list.appendSlice(arena, chunk[0..@intCast(n)]) catch return null;
+        if (list.items.len > cap) return null;
     }
     return list.items;
+}
+
+fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
+    // A read error is not end of file (the shared loop returns null for it): treating
+    // them alike once turned a truncated oracle file into a complete one, and the
+    // comparison that followed was against however much happened to arrive.
+    return readFileAllocCapped(arena, path, std.math.maxInt(usize));
 }
 
 /// JSON for the caller, text for the reader, with identical content (DESIGN §13).
@@ -1233,6 +1387,10 @@ fn buildJson(
     try jsonString(w, arena, l0_note);
     try w.appendSlice(arena, ",\n  \"l1\": ");
     try jsonString(w, arena, l1_note);
+    try w.appendSlice(arena, ",\n  \"case\": ");
+    try jsonString(w, arena, case_note);
+    try w.appendSlice(arena, ",\n  \"replay\": ");
+    try jsonString(w, arena, replay_note);
     try w.appendSlice(arena, ",\n  \"oracle\": ");
     try jsonString(w, arena, oracle_note);
     try w.appendSlice(arena, ",\n  \"checker\": ");
@@ -1346,6 +1504,128 @@ test "toml paths resolve against the toml's directory, commands only when they n
     // argv[0] is found the way the executor finds it: leading spaces must not let a
     // place-naming command slip past resolution and run cwd-relative.
     try std.testing.expectEqualStrings("/cfg/./check.sh", resolveCommandAgainst(a, "/cfg", " ./check.sh"));
+}
+
+/// FNV-1a over the class names of the subject's counted operations 1..k, hex-encoded.
+/// Classes only, deliberately: paths may legitimately differ between runs
+/// (pid-embedded temp names), and the replay treats a path difference as a warning,
+/// never as identity (ADR 0009).
+/// Returns false when any of seq 1..k is missing from the trace: a numbering gap
+/// means the recording itself is not a sequence this hash can vouch for, and hashing
+/// only what happens to be present would let two differently-broken traces agree.
+fn prefixHash(trace: engine.TraceInfo, k: u32, out: *[16]u8) bool {
+    var h: u64 = 0xcbf29ce484222325;
+    var seq: u32 = 1;
+    while (seq <= k) : (seq += 1) {
+        var found = false;
+        for (trace.ops.items) |op| {
+            if (!op.class.isKillPoint()) continue;
+            if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
+            if (op.seq != seq) continue;
+            for (op.class.name()) |ch| {
+                h ^= ch;
+                h *%= 0x100000001b3;
+            }
+            h ^= 0x1f; // separator, so ["ab","c"] and ["a","bc"] hash apart
+            h *%= 0x100000001b3;
+            found = true;
+            break;
+        }
+        if (!found) return false;
+    }
+    _ = std.fmt.bufPrint(out, "{x:0>16}", .{h}) catch unreachable;
+    return true;
+}
+
+/// Write the counterexample to `<work>/cases/NNNNNN.json` and return its path. The id
+/// is claimed with O_EXCL, so two runs over one work directory cannot silently share a
+/// case file. Returns null when nothing could be written — the FAIL report is the
+/// product and must not die for the sake of its attachment.
+fn writeCase(
+    arena: std.mem.Allocator,
+    work: []const u8,
+    args: Args,
+    k: u32,
+    ops_total: u32,
+    trace: engine.TraceInfo,
+    violation_name: []const u8,
+) ?[]const u8 {
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dz = std.fmt.bufPrintZ(&dbuf, "{s}/cases", .{work}) catch return null;
+    _ = posix.mkdir(dz.ptr, 0o755); // EEXIST is fine; open below decides
+    const addr = trace.logicalAddress(k);
+    var hh: [16]u8 = undefined;
+    if (!prefixHash(trace, k, &hh)) return null;
+
+    var doc: std.ArrayList(u8) = .empty;
+    const w = &doc;
+    var nb: [16]u8 = undefined;
+    w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": 1,\n  \"sideeye_version\": ") catch return null;
+    jsonString(w, arena, version) catch return null;
+    w.appendSlice(arena, ",\n  \"contract_version\": ") catch return null;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}) catch return null) catch return null;
+    w.appendSlice(arena, ",\n  \"define\": {\n    \"state\": ") catch return null;
+    jsonString(w, arena, args.state.?) catch return null;
+    if (args.setup) |s| {
+        w.appendSlice(arena, ",\n    \"setup\": ") catch return null;
+        jsonString(w, arena, s) catch return null;
+    }
+    w.appendSlice(arena, ",\n    \"operation\": ") catch return null;
+    jsonString(w, arena, args.operation.?) catch return null;
+    if (args.check) |c| {
+        w.appendSlice(arena, ",\n    \"check\": ") catch return null;
+        jsonString(w, arena, c) catch return null;
+    }
+    if (args.marker) |m| {
+        w.appendSlice(arena, ",\n    \"marker\": ") catch return null;
+        jsonString(w, arena, m) catch return null;
+    }
+    w.appendSlice(arena, "\n  },\n  \"k\": ") catch return null;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{k}) catch return null) catch return null;
+    w.appendSlice(arena, ",\n  \"ops_total\": ") catch return null;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{ops_total}) catch return null) catch return null;
+    w.appendSlice(arena, ",\n  \"prefix_hash\": ") catch return null;
+    jsonString(w, arena, &hh) catch return null;
+    w.appendSlice(arena, ",\n  \"after_class\": ") catch return null;
+    jsonString(w, arena, if (addr.after) |a| a.class.name() else "(start)") catch return null;
+    w.appendSlice(arena, ",\n  \"after_path\": ") catch return null;
+    jsonString(w, arena, if (addr.after) |a| a.path else "") catch return null;
+    w.appendSlice(arena, ",\n  \"before_class\": ") catch return null;
+    jsonString(w, arena, if (addr.before) |b| b.class.name() else "(end)") catch return null;
+    w.appendSlice(arena, ",\n  \"before_path\": ") catch return null;
+    jsonString(w, arena, if (addr.before) |b| b.path else "") catch return null;
+    w.appendSlice(arena, ",\n  \"violation\": ") catch return null;
+    jsonString(w, arena, violation_name) catch return null;
+    w.appendSlice(arena, "\n}\n") catch return null;
+
+    const EEXIST: c_int = 17; // same value on Linux and Darwin
+    var id: u32 = 1;
+    while (id <= 999999) : (id += 1) {
+        var pbuf: [contract.max_path]u8 = undefined;
+        const pz = std.fmt.bufPrintZ(&pbuf, "{s}/cases/{d:0>6}.json", .{ work, id }) catch return null;
+        const fd = posix.open(pz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o644));
+        if (fd < 0) {
+            // Only a taken id is worth trying past. An unwritable directory would
+            // otherwise spin through a million opens on its way to "(not saved)".
+            if (std.c._errno().* == EEXIST) continue;
+            return null;
+        }
+        var off: usize = 0;
+        while (off < doc.items.len) {
+            const wn = posix.write(fd, doc.items[off..].ptr, doc.items.len - off);
+            if (wn <= 0) {
+                // A half-written case must not survive: it would both mislead a later
+                // replay and permanently consume this id.
+                _ = posix.close(fd);
+                _ = posix.unlink(pz.ptr);
+                return null;
+            }
+            off += @intCast(wn);
+        }
+        _ = posix.close(fd);
+        return arena.dupe(u8, std.mem.span(pz.ptr)) catch null;
+    }
+    return null;
 }
 
 /// Name the point where the two accounts split: the divergence index (1-based), the
