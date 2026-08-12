@@ -2,6 +2,49 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — The MCP green was partly vacuous: a reused work dir served a stale verdict
+
+A post-merge adversarial re-review of PR #55 (its own PR, re-read cold) found the worst
+defect a truth-telling tool can have: the wrong answer delivered confidently. Two
+`sideeye mcp` processes sharing `SIDEEYE_MCP_WORK` collide on `report-N.json` /
+`child-N.out` — the artifact counter is per-process — so the second server's `O_EXCL`
+capture aborts its child at 126, and the parent then reads the *previous* server's
+report back as *this* call's verdict, `isError:false`. Measured twice: natively (run 2
+answered while neither work-dir file was rewritten — mtimes identical to the
+nanosecond) and in the container (a call for `env.toml` answered with toy-bug's FAIL
+report, a stale verdict about a different target).
+
+Worse, the acceptance suite itself reused `/tmp/mcp-work` across checks, so its own
+green was carrying two checks that could not look — a correction to the entry below,
+which claims "env isolation, canonical self-exec" among the green: check 4's child
+never ran (its "file absent → ok" soft branch is exactly what fired) and check 5's
+"real report proves self-exec" assert was satisfied by check 1's leftover file. The
+suite also ran in no CI job at all.
+
+Fixes, each seen red first against the pre-fix binary: stale artifact names are
+unlinked before the child runs (whatever exists there afterwards was written by this
+call's child or by nobody — the work dir is operator-owned by ADR 0010's precondition),
+the fork stub's own exits (126 capture / 127 exec) become tool errors instead of a
+report read, check 4 fails when the env file is absent, and a new check 6 pins the
+cross-server reuse case (server A explores toy-bug → FAIL; server B, same work dir,
+explores toy-fixed and must answer PASS — the pre-fix binary answers A's stale FAIL).
+The suite now runs in CI.
+
+Same review, same class — the check and the code sharing an assumption: `isError` was
+decided by substring-matching six `unknown_reason` strings, while the acceptance
+asserts `isError ⟺ verdict ∉ {PASS, FAIL}`; the two agreed only on the one path the
+suite exercised. `UnknownReason` has ~20 values, and the first from outside the list to
+show up live (`no_shim_marker`, a macOS hardened binary) returned `isError:false` —
+which an agent reads as a settled verdict. Replaced with the structural property (the
+report's `verdict` field), fail-closed for unparseable reports, unit test seen killing
+a mutation. And the spec half, verified against schema.ts raw rather than any summary:
+`DiscoverResult` and `ListToolsResult` both extend `CacheableResult`, whose `ttlMs` and
+`cacheScope` are *required* — both responses omitted them (and discover omitted
+`resultType`), so a schema-validating client would have rejected the handshake before
+anything worked. Smaller tightenings while in there: the `jsonrpc` tag is validated,
+`clientCapabilities` must be an object, a transport write failure exits instead of
+leaving a half line on fd 1, and `sideeye mcp` refuses extra argv.
+
 ## 2026-08-12 — `sideeye mcp`: a stateless MCP server, over paths not commands (ADR 0010, v0.5)
 
 The agent-facing surface DESIGN §3 promised, and the first half of §17's second

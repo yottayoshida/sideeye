@@ -22,6 +22,13 @@ fi
 # A workspace root the server confines tool paths to. The toy configs live here.
 WS=/tmp/mcp-ws
 rm -rf "$WS"; mkdir -p "$WS/state"
+# The work dir starts fresh too — but NOT because the checks depend on it: check 6
+# exists precisely to pin that a reused work dir is safe. The first suite version did
+# not clean it, and stale report-1.json/child-1.out from check 1 made checks 4 and 5
+# pass without their child ever running (the O_EXCL collision aborted it at 126 and
+# the server answered from the previous run's report).
+WORK=/tmp/mcp-work
+rm -rf "$WORK"
 cat > "$WS/sideeye.toml" <<TOML
 [world]
 state = "./state"
@@ -39,7 +46,7 @@ TOML
 
 export SIDEEYE_MCP_SHIM=$SHIM
 export SIDEEYE_MCP_ROOT=$WS
-export SIDEEYE_MCP_WORK=/tmp/mcp-work
+export SIDEEYE_MCP_WORK=$WORK
 # An oracle so explore reaches a real FAIL (and saves a case) rather than the
 # oracle-less UNKNOWN completeness_not_verified.
 export SIDEEYE_MCP_ORACLE=/usr/bin/strace
@@ -76,6 +83,14 @@ assert d1["result"]["supportedVersions"]==["2026-07-28"], d1
 assert "tools" in d1["result"]["capabilities"], d1
 names=[t["name"] for t in d2["result"]["tools"]]
 assert names==["sideeye_explore_config","sideeye_replay_case"], names
+# DiscoverResult and ListToolsResult both extend CacheableResult (schema.ts), which
+# REQUIRES ttlMs and cacheScope; resultType is required on every Result a 2026-07-28
+# server emits. A strict client validates these before anything else works.
+for r in (d1["result"], d2["result"], d3["result"]):
+    assert r.get("resultType")=="complete", r
+for r in (d1["result"], d2["result"]):
+    assert isinstance(r.get("ttlMs"), int) and r["ttlMs"]>=0, r
+    assert r.get("cacheScope") in ("public","private"), r
 sc=d3["result"]["structuredContent"]
 # This check verifies transport + wiring, not toy-bug's specific verdict (that is the
 # explore suite's job): a real verdict, isError consistent with it, echoed in content.
@@ -132,9 +147,11 @@ if [ -f /tmp/mcp-childenv.txt ] && grep -q "supersecret123" /tmp/mcp-childenv.tx
 elif [ -f /tmp/mcp-childenv.txt ]; then
     pass "the child's environment is minimal; the server's secret did not leak"
 else
-    # The operation ran under the shim; if the file is absent the run was refused —
-    # still no leak, but note it.
-    echo "ok   (child env file absent; no leak, run may have refused — check /tmp/mcp.out)"
+    # No env file means the operation never ran, so the isolation claim was never
+    # exercised. The first suite version printed a soft "ok" here — and that branch
+    # is exactly what fired when a stale child-1.out aborted the child at 126. A
+    # check that cannot look must not say "no leak".
+    fail "the operation never ran (no /tmp/mcp-childenv.txt) — env isolation was not exercised"
 fi
 
 echo "=========== mcp 5: canonical self-exec ignores a PATH-hijacking fake ==========="
@@ -150,11 +167,29 @@ chmod +x "$FAKEDIR/sideeye"
 PATH="$FAKEDIR:$PATH" SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WORK=/tmp/mcp-work \
   sh -c "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye-fixed.toml\"}}}' | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
 # The fake sideeye exits 42 and writes no report; the real one produces a valid
-# sideeye report (whatever the verdict — here UNKNOWN completeness_not_verified, since
-# the MCP path runs without an oracle). A real report proves canonical self-exec ran
-# the real binary, not the PATH fake.
+# sideeye report (whatever the verdict — the exported SIDEEYE_MCP_ORACLE is inherited
+# by this subshell, so the run is a real oracled explore). A real report proves
+# canonical self-exec ran the real binary, not the PATH fake — which is only evidence
+# now that stale reports are unlinked before the child runs (check 6): the first
+# suite version could satisfy this assert from a previous call's report file.
 python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));sc=d["result"].get("structuredContent",{});assert sc.get("schema")=="sideeye/report" and "verdict" in sc,d' \
   && pass "self-exec ran the real binary (a real sideeye report), not the PATH fake" || fail "self-exec used argv[0]/PATH, not the canonical path"
+
+echo "=========== mcp 6: a reused work dir must not serve a stale verdict ==========="
+# Two SEPARATE server processes share SIDEEYE_MCP_WORK. Each process starts its
+# artifact counter at 1, so their report-1.json / child-1.out names collide. Server A
+# explores toy-bug (a real FAIL, the oracle is exported). Server B then explores
+# toy-FIXED: if the collision aborts B's child (the capture opens O_EXCL) and the
+# server reads A's leftover report, B answers FAIL — a stale verdict about the wrong
+# target, delivered as this call's result. Measured live on 2026-08-12: run 2 returned
+# a full report while neither work-dir file had been rewritten.
+drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
+python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));assert d["result"]["structuredContent"]["verdict"]=="FAIL",d' \
+  || fail "precondition: server A did not reach toy-bug's FAIL"
+drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye-fixed.toml\"}}}"
+python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));v=d["result"]["structuredContent"]["verdict"];assert v=="PASS",("stale or wrong verdict for toy-fixed: %s"%v,d)' \
+  && pass "server B answered about ITS target (toy-fixed PASS), not server A's stale FAIL" \
+  || fail "a reused work dir served a stale verdict (or toy-fixed did not PASS)"
 
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

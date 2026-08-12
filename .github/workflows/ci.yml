@@ -43,6 +43,15 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
 
+      # The MCP adapter has its own suite. It was not wired in here when the adapter
+      # merged, which left the whole surface without CI coverage — and two of its
+      # checks turned out to be satisfiable by stale artifacts nobody re-ran it to see
+      # (BUILDLOG 2026-08-12).
+      - name: MCP acceptance suite
+        run: sh spike/mcp-acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
   macos:
     runs-on: macos-latest
     steps:

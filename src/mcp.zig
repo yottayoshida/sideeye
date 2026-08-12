@@ -1,22 +1,15 @@
 //! `sideeye mcp` — a stateless MCP 2026-07-28 stdio server (ADR 0010).
 //!
-//! PoC scope (implementation step 1): prove the shape works and, above all, that a
-//! self-exec'd `explore` — which prints a full report to *its* stdout — cannot leak a
-//! byte onto the MCP transport (fd 1). The server owns fd 1; every child's stdout goes
-//! to a work-dir file via `runChildCapture`, and only one-line JSON-RPC responses are
-//! written to fd 1 here.
+//! The server owns fd 1: a self-exec'd `explore`/`replay` — which prints a full report
+//! to *its* stdout — cannot leak a byte onto the MCP transport. Every child's stdout
+//! goes to a work-dir file via `runChildCaptureMinimalEnv`, and only one-line JSON-RPC
+//! responses are written to fd 1 here.
 //!
 //! Deliberately thin (ADR 0001 / #40): the server holds no state and no judgement. A
-//! tool call becomes `<self> explore --config <path> --json <temp>`; the verdict is the
-//! child's exit code plus the `--json` file, read back as the tool payload. The one
-//! in-process shortcut considered (calling the engine directly) is rejected because
-//! every verdict path in main.zig ends in `std.process.exit` — there is nothing to
-//! return.
-//!
-//! Not in this PoC (later steps): full `_meta` validation on every method, isError
-//! table per unknown_reason, content summary, workspace-prefix check on the path,
-//! minimal-env exec, macOS `_NSGetExecutablePath`, string-id echo. The PoC uses
-//! `/proc/self/exe`, integer ids, and a single tool.
+//! tool call becomes `<self> explore --config <path> --json <temp>` (or `replay`); the
+//! verdict is read back from the `--json` file as the tool payload. The one in-process
+//! shortcut considered (calling the engine directly) is rejected because every verdict
+//! path in main.zig ends in `std.process.exit` — there is nothing to return.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -51,10 +44,19 @@ fn emit(s: []const u8) void {
     var off: usize = 0;
     while (off < s.len) {
         const w = posix.write(1, s[off..].ptr, s.len - off);
-        if (w <= 0) return;
+        if (w <= 0) transportDead();
         off += @intCast(w);
     }
-    _ = posix.write(1, "\n", 1);
+    if (posix.write(1, "\n", 1) <= 0) transportDead();
+}
+
+/// A failed transport write cannot be skipped over: returning mid-message leaves a
+/// partial line on fd 1, and every response after it would be glued to the fragment —
+/// framing corruption the client cannot recover from. Dying is the honest move.
+fn transportDead() noreturn {
+    const msg = "sideeye mcp: cannot write to the transport (fd 1); exiting\n";
+    _ = posix.write(2, msg.ptr, msg.len);
+    std.process.exit(1);
 }
 
 pub fn runServer(gpa: std.mem.Allocator) void {
@@ -124,6 +126,16 @@ fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
     }
     const obj = parsed.object;
     const id = obj.get("id"); // ?Value; absent => notification
+    // JSON-RPC 2.0 requires the version tag on every message; a missing or wrong tag
+    // is an Invalid Request, not something to guess past.
+    const jsonrpc_ok = switch (obj.get("jsonrpc") orelse std.json.Value{ .null = {} }) {
+        .string => |v| std.mem.eql(u8, v, "2.0"),
+        else => false,
+    };
+    if (!jsonrpc_ok) {
+        if (id != null) emitError(arena, id.?, -32600, "Invalid Request: not JSON-RPC 2.0");
+        return;
+    }
     const method = switch (obj.get("method") orelse std.json.Value{ .null = {} }) {
         .string => |m| m,
         else => {
@@ -149,9 +161,14 @@ fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
     }
 
     if (std.mem.eql(u8, method, "server/discover")) {
-        // DiscoverResult: supportedVersions[] + capabilities (schema.ts). A tools-only
-        // server advertises the tools capability, or clients won't call tools.
-        emitResult(arena, id.?, "\"supportedVersions\":[\"2026-07-28\"],\"capabilities\":{\"tools\":{\"listChanged\":false}}");
+        // DiscoverResult: supportedVersions[] + capabilities — and, because it extends
+        // CacheableResult (schema.ts), ttlMs and cacheScope are REQUIRED, as is
+        // resultType on every result a 2026-07-28 server emits. The first version
+        // omitted all three; a schema-validating client would have rejected discover
+        // before anything else could work. The catalogue is static for the server's
+        // lifetime: a 1h TTL, private (stdio is a single-user pipe).
+        emitResult(arena, id.?, "\"resultType\":\"complete\",\"ttlMs\":3600000,\"cacheScope\":\"private\"," ++
+            "\"supportedVersions\":[\"2026-07-28\"],\"capabilities\":{\"tools\":{\"listChanged\":false}}");
     } else if (std.mem.eql(u8, method, "tools/list")) {
         emitResult(arena, id.?, toolsListBody());
     } else if (std.mem.eql(u8, method, "tools/call")) {
@@ -176,16 +193,19 @@ fn checkMeta(params: ?std.json.ObjectMap) MetaCheck {
         .string => |s| s,
         else => return .{ .missing = "missing _meta protocolVersion" },
     };
-    if (meta.get("io.modelcontextprotocol/clientCapabilities") == null)
-        return .{ .missing = "missing _meta clientCapabilities" };
+    switch (meta.get("io.modelcontextprotocol/clientCapabilities") orelse std.json.Value{ .null = {} }) {
+        .object => {},
+        else => return .{ .missing = "missing _meta clientCapabilities (must be an object)" },
+    }
     if (!std.mem.eql(u8, ver, protocol_version)) return .{ .unsupported = ver };
     return .ok;
 }
 
 /// The tool catalogue: two tools, both taking a single path (no raw command — R1
 /// Critical). Deterministic order (spec: caching / prompt-cache friendliness).
+/// ListToolsResult also extends CacheableResult, so ttlMs + cacheScope are required.
 fn toolsListBody() []const u8 {
-    return "\"resultType\":\"complete\",\"tools\":[" ++
+    return "\"resultType\":\"complete\",\"ttlMs\":3600000,\"cacheScope\":\"private\",\"tools\":[" ++
         "{\"name\":\"sideeye_explore_config\"," ++
         "\"description\":\"Explore crash-consistency for a target defined by a sideeye.toml (its path must be inside SIDEEYE_MCP_ROOT). Returns the verdict report. NOTE: the operation in the config is executed; the config is a trust boundary.\"," ++
         "\"inputSchema\":{\"type\":\"object\",\"properties\":{\"config_path\":{\"type\":\"string\",\"description\":\"Path to a sideeye.toml inside the server root\"}},\"required\":[\"config_path\"],\"additionalProperties\":false}}," ++
@@ -243,6 +263,17 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     const temp_json = std.fmt.allocPrint(arena, "{s}/report-{d}.json", .{ work, counter }) catch return emitToolError(arena, id, "oom");
     const child_out = std.fmt.allocPrint(arena, "{s}/child-{d}.out", .{ work, counter }) catch return emitToolError(arena, id, "oom");
 
+    // A previous server process may have left report-N / child-N behind — the counter
+    // is per-process, so two servers sharing a work dir collide on the same names. The
+    // capture opens O_EXCL, the collision aborts the child at 126, and the parent then
+    // reads the PREVIOUS run's report-N.json back as THIS call's verdict (measured
+    // 2026-08-12: a second server answered with the first server's report, about a
+    // different target). Unlink both names first: whatever exists at them afterwards
+    // was written by this call's child or by nobody. The work dir is user-owned by
+    // contract (ADR 0010), so these are our own leftovers, not someone else's files.
+    unlinkPath(temp_json);
+    unlinkPath(child_out);
+
     // The vetted absolute path (realpath'd, confirmed inside the root) is handed to the
     // child as-is. A copy-into-work-dir would close the check→open TOCTOU window, but it
     // breaks a config's own relative resolution (state = "./state" is relative to the
@@ -292,6 +323,12 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         .exited => |c| c,
         else => -1,
     };
+    // 126/127 are the fork stub's own exit codes (capture could not open / exec
+    // failed) — sideeye itself exits 0..3. Neither leaves a report for this call, so
+    // anything found at the report path would be somebody else's file; say what broke
+    // instead of reading it.
+    if (exit_code == 126) return emitToolError(arena, id, "the child could not open its stdout capture in the work directory");
+    if (exit_code == 127) return emitToolError(arena, id, "self-exec failed: the canonical sideeye binary could not be executed");
 
     const report = readFile(arena, temp_json, 4 * 1024 * 1024) orelse
         return emitToolError(arena, id, "sideeye produced no report (or a report over 4 MiB)");
@@ -300,9 +337,8 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
 
     // isError distinguishes "the tool ran and reported a verdict" from "fix your input
     // or environment and retry" (spec). A crash-consistency FAIL/PASS is a real verdict
-    // (isError:false); a setup/completeness/recording/marker/case failure is actionable
-    // (isError:true), decided from the report's verdict + unknown_reason.
-    const is_error = isRetryable(report_min, exit_code);
+    // (isError:false); everything else asks the caller to act (isError:true).
+    const is_error = isActionable(arena, report_min);
     const summary = summarize(arena, report_min) orelse report_min;
 
     var out: std.ArrayList(u8) = .empty;
@@ -422,23 +458,41 @@ fn resolveInsideRoot(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     return arena.dupe(u8, r) catch null;
 }
 
-/// Whether the run's result is an actionable "fix and retry" (isError:true) rather than
-/// a real verdict. Read from the report's verdict + unknown_reason: PASS/FAIL are
-/// verdicts; the listed UNKNOWN reasons (and SETUP ERROR) are things the caller can fix.
-fn isRetryable(report_min: []const u8, exit_code: i64) bool {
-    if (exit_code == 3) return true; // SETUP ERROR
-    // Cheap substring checks on the minified report; the reasons are stable tokens.
-    const retry_reasons = [_][]const u8{
-        "\"unknown_reason\":\"completeness_not_verified\"",
-        "\"unknown_reason\":\"recording_run_failed\"",
-        "\"unknown_reason\":\"marker_never_observed\"",
-        "\"unknown_reason\":\"case_no_longer_applies\"",
-        "\"unknown_reason\":\"oracle_saw_nothing\"",
-        "\"unknown_reason\":\"contract_version_mismatch\"",
-    };
-    for (retry_reasons) |needle|
-        if (std.mem.indexOf(u8, report_min, needle) != null) return true;
-    return false;
+/// Whether the result asks the caller to act (isError:true) rather than reporting a
+/// real verdict. Read structurally from the report's `verdict` field: PASS and FAIL
+/// are verdicts; everything else (every UNKNOWN, SETUP_ERROR) needs the caller to fix
+/// the input, the environment, or the expectation. The first version matched a fixed
+/// list of unknown_reason substrings instead, and every reason missing from the list
+/// rode through as isError:false — measured live with no_shim_marker, which an agent
+/// would have read as a settled verdict. A fixed-string guard is silently void the
+/// day the string is absent; the verdict field is the structural property. Reports
+/// that cannot be parsed or carry no verdict are actionable (fail closed).
+fn isActionable(arena: std.mem.Allocator, report_min: []const u8) bool {
+    const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, report_min, .{}) catch return true;
+    if (parsed != .object) return true;
+    const verdict = strField(parsed.object, "verdict") orelse return true;
+    return !(std.mem.eql(u8, verdict, "PASS") or std.mem.eql(u8, verdict, "FAIL"));
+}
+
+test "isError derives from the verdict field, not a reason list" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // The live repro: an UNKNOWN whose reason no fixed list mentioned must still be
+    // actionable — this is the case the substring version answered isError:false to.
+    try std.testing.expect(isActionable(a, "{\"verdict\":\"UNKNOWN\",\"unknown_reason\":\"no_shim_marker\"}"));
+    try std.testing.expect(isActionable(a, "{\"verdict\":\"SETUP_ERROR\"}"));
+    try std.testing.expect(!isActionable(a, "{\"verdict\":\"PASS\"}"));
+    try std.testing.expect(!isActionable(a, "{\"verdict\":\"FAIL\"}"));
+    try std.testing.expect(isActionable(a, "not json")); // fail closed
+    try std.testing.expect(isActionable(a, "{\"schema\":\"sideeye/report\"}")); // no verdict: fail closed
+}
+
+/// Best-effort unlink for a work-dir artifact this server is about to recreate.
+fn unlinkPath(path: []const u8) void {
+    var zb: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return;
+    _ = posix.unlink(z.ptr);
 }
 
 /// A human-readable content summary for the agent (spec recommends a text block beside

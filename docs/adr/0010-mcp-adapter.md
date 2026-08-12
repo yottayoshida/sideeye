@@ -58,13 +58,21 @@ language, and made a hand-written Zig server small.
    copy-into-work-dir defence was rejected because it breaks a config's own relative
    resolution), and the predictable work-dir filenames (`report-N` / `child-N`; the
    captures open `O_NOFOLLOW|O_EXCL` 0600 in a 0700 dir, so a pre-planted symlink fails
-   closed, but the dir's own contents are not owner/mode-verified on `EEXIST`).
+   closed, but the dir's own contents are not owner/mode-verified on `EEXIST`). The
+   names are also unlinked before each child runs: the counter is per-process, so two
+   servers sharing a work dir collide on the same names — measured (2026-08-12) serving
+   the previous server's report as the current call's verdict. Under the precondition
+   those stale files are the operator's own leftovers, and after the unlink whatever
+   exists at the names was written by this call's child or by nobody.
 5. **isError distinguishes verdict from actionable failure.** A crash-consistency
-   PASS/FAIL is a real verdict (`isError:false`); a SETUP ERROR or an UNKNOWN the caller
-   can fix (`completeness_not_verified`, `recording_run_failed`, `marker_never_observed`,
-   `case_no_longer_applies`, …) is `isError:true`, so the model self-corrects. The
-   report is minified into `structuredContent` and summarized (verdict + reason + replay
-   handle) into a text `content` block for the agent.
+   PASS/FAIL is a real verdict (`isError:false`); every other outcome — SETUP_ERROR and
+   every UNKNOWN — is `isError:true`, read structurally from the report's `verdict`
+   field, so the model self-corrects. (The first implementation matched a fixed list of
+   six `unknown_reason` substrings; the first reason from outside the list to appear
+   live — `no_shim_marker`, 2026-08-12 — rode through as `isError:false`. A fixed-string
+   guard is void the day the string is absent.) The report is minified into
+   `structuredContent` and summarized (verdict + reason + replay handle) into a text
+   `content` block for the agent.
 
 ## Alternatives considered
 
