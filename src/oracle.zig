@@ -483,6 +483,12 @@ fn fdSyscallInScope(line: []const u8, state: []const u8, alt: []const u8) bool {
 pub const Parsed = struct {
     /// The subject's state-directory operation classes, in order.
     classes: std.ArrayList(contract.OpClass),
+    /// The raw strace line behind each entry of `classes`, index-aligned. Kept so a
+    /// refusal can name the operation it refused on instead of handing the reader a
+    /// binary trace to decode by hand (#41). These borrow from the `text` given to
+    /// `parse` — no copy, no new allocation-failure path — so the caller keeps that
+    /// buffer alive for as long as it reads them (main does: same arena, same scope).
+    lines: std.ArrayList([]const u8),
     /// A state-directory syscall by the subject that v0.1 does not model.
     unsupported: ?[]const u8 = null,
     /// A syscall that stays a hard refusal whoever tolerates what: the subject
@@ -505,7 +511,7 @@ pub const Parsed = struct {
 };
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8) !Parsed {
-    var out: Parsed = .{ .classes = .empty };
+    var out: Parsed = .{ .classes = .empty, .lines = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
 
@@ -678,6 +684,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             const actual: contract.OpClass = if (cls == .unlink and
                 std.mem.eql(u8, name, "unlinkat") and unlinkatRemovesDir(line)) .rmdir else cls;
             try out.classes.append(arena, actual);
+            try out.lines.append(arena, line);
         } else if (out.unsupported == null) {
             out.unsupported = try arena.dupe(u8, name);
         }
@@ -737,6 +744,11 @@ test "parse extracts the class sequence the shim should have recorded" {
     // close is recorded by the shim but excluded from the comparison (ADR 0003).
     const expected = [_]contract.OpClass{ .open, .write, .fsync, .unlink, .rename };
     try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
+    // Each class keeps the raw line it came from, index-aligned, so a refusal can
+    // name the operation it refused on (#41).
+    try std.testing.expectEqual(p.classes.items.len, p.lines.items.len);
+    try std.testing.expect(std.mem.indexOf(u8, p.lines.items[3], "unlinkat") != null);
+    try std.testing.expect(std.mem.indexOf(u8, p.lines.items[4], "renameat") != null);
     // The loader's own openat is outside the state directory and must not be counted;
     // the close is still *examined* (in scope), just not compared.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);

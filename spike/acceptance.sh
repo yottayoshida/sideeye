@@ -130,6 +130,40 @@ fi
 # key behind the shim's back. state_changed_without_ops stays quiet here.
 run_case "toy-mixed is UNKNOWN"  "$OUT/toy-mixed"  2 "oracle_missed_operation"
 
+# The refusal names what it refused on (#41): the divergence index, the raw strace
+# line the oracle saw there, and where the shim's account stood — in the text and in
+# the JSON, with identical content (DESIGN §13). Decoding a binary trace by hand to
+# learn which operation split the accounts was the single largest avoidable cost in
+# the timewarrior session; an agent driving the define loop cannot do even that.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-mixed init" --operation "$OUT/toy-mixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --json /tmp/acc/report.json \
+    --oracle /usr/bin/strace 2>&1)
+rc=$?
+# The text detail (the line after UNKNOWN) and the JSON message must be byte-equal —
+# "identical content" is the claim, and two independent substring probes would let the
+# two forms drift apart (or let a control byte through on the text side) unnoticed.
+text_detail=$(echo "$o" | sed -n '/^UNKNOWN/{n;s/^ *//;p;}' | head -1)
+match=$(TEXT_DETAIL="$text_detail" python3 -c '
+import json, os
+try:
+    m = json.load(open("/tmp/acc/report.json")).get("message", "")
+except Exception:
+    m = None
+t = os.environ["TEXT_DETAIL"]
+ok = m is not None and m == t and "divergence at operation 3" in m and "key.json" in m
+print(1 if ok else 0)')
+if [ "$rc" = "2" ] && [ "${match:-0}" = "1" ]; then
+    echo "ok   the refusal names the divergent operation, byte-equal in text and JSON"
+else
+    echo "FAIL named refusal: exit $rc match=${match:-0}"
+    echo "     | text: $text_detail"
+    python3 -c "import json; print(\"     | json:\", json.load(open(\"/tmp/acc/report.json\")).get(\"message\",\"(none)\"))" 2>/dev/null
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
 TOY_THREAD=1 export TOY_THREAD
 run_case "thread is UNKNOWN"     "$OUT/toy-bug"    2 "multiple_threads_detected"
 unset TOY_THREAD

@@ -2,6 +2,32 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — v0.3 begins: a refusal names the operation it refused on (#41)
+
+First PR of the v0.3 plan. The account comparison already computed the divergence
+index (`oracle.compare` returns it); everything after that index was thrown away on
+the way to a one-line refusal, and the reader — twice now a whole dogfood session —
+had to decode `trace-record.bin` with a copy of the acceptance suite's struct reader
+and grep `oracle.txt` to learn which operation split the accounts. Now the oracle's
+`parse` keeps the raw strace line behind each class entry (index-aligned), the shim
+side keeps its records alongside the filtered class list, and both refusals
+(`oracle_missed_operation`, `oracle_saw_phantom`) say: the 1-based divergence index,
+the raw line the oracle holds there, and what the shim's account holds at the same
+position — or that either account simply ends. The detail travels through the
+existing `message` plumbing, so text and JSON carry it identically (DESIGN §13) with
+no schema change and no trace-contract change (v7 stays).
+
+One deliberate asymmetry: on allocation failure the naming is dropped and the bare
+lead sentence survives — the refusal is the point, the naming is the courtesy, and
+the courtesy must never cost the refusal.
+
+Measured on toy-mixed (the mixed-visibility target): red first on the pre-change
+binary (generic message in both forms), then
+`divergence at operation 3: the oracle saw: openat(… "/tmp/acc/state/key.json",
+O_WRONLY|O_CREAT|O_TRUNC …); the shim's account ends after 2 operation(s)` in text
+and JSON alike. The timewarrior wall would have named its four ENOENT unlinkats on
+the first run. Full acceptance green; the parse test now pins line/class alignment.
+
 ## 2026-08-12 — The fix experiment closes: reorder the renames, tolerate the unlanded intent, and the counterexample stops reproducing
 
 The author's verdicts on the morning's finding, recorded before the experiment they
