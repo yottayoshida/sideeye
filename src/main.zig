@@ -468,6 +468,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
             unknown(.unsupported_syscall_observed, name);
 
         var shim_classes: std.ArrayList(contract.OpClass) = .empty;
+        // Index-aligned with shim_classes, so a refusal can say what the shim's
+        // account holds at the divergence instead of only that one exists (#41).
+        var shim_ops: std.ArrayList(engine.Op) = .empty;
         for (trace.ops.items) |op| {
             if (op.class.isMarker() or op.class.isBoundary()) continue;
             // close stays in the trace but leaves the comparison (ADR 0003): the oracle
@@ -479,11 +482,24 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // execs something dynamically linked) are not operations to reconcile.
             if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
             shim_classes.append(arena, op.class) catch setupError("out of memory");
+            shim_ops.append(arena, op) catch setupError("out of memory");
         }
 
         if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
-            .missed => unknown(.oracle_missed_operation, "the oracle saw a state-directory operation the shim did not record"),
-            .phantom => unknown(.oracle_saw_phantom, "the shim recorded an operation the oracle did not see"),
+            .missed => |m| unknown(.oracle_missed_operation, divergenceDetail(
+                arena,
+                "the oracle saw a state-directory operation the shim did not record",
+                m.index,
+                shim_ops.items,
+                parsed.lines.items,
+            )),
+            .phantom => |p| unknown(.oracle_saw_phantom, divergenceDetail(
+                arena,
+                "the shim recorded an operation the oracle did not see",
+                p.index,
+                shim_ops.items,
+                parsed.lines.items,
+            )),
             .unsupported => |name| unknown(.unsupported_syscall_observed, name),
         };
 
@@ -1106,6 +1122,84 @@ fn removeFile(path: []const u8) void {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return;
     _ = posix.unlink(z.ptr);
+}
+
+/// Name the point where the two accounts split: the divergence index (1-based), the
+/// raw strace line the oracle holds there, and what the shim's account holds at the
+/// same position — or that either account simply ends. The detail travels through
+/// `unknown` into the text and the JSON alike (DESIGN §13), so nobody has to decode
+/// a binary trace by hand to learn which operation a refusal refused on (#41). On
+/// allocation failure the lead sentence alone is returned: the refusal is the point,
+/// the naming is the courtesy, and the courtesy must never cost the refusal.
+fn divergenceDetail(
+    arena: std.mem.Allocator,
+    lead: []const u8,
+    index: usize,
+    shim_ops: []const engine.Op,
+    oracle_lines: []const []const u8,
+) []const u8 {
+    const oracle_part = if (index < oracle_lines.len)
+        std.fmt.allocPrint(arena, "the oracle saw: {s}", .{oracle_lines[index]}) catch return lead
+    else
+        std.fmt.allocPrint(arena, "the oracle's account ends after {d} operation(s)", .{index}) catch return lead;
+    const shim_part = if (index < shim_ops.len) blk: {
+        const op = shim_ops[index];
+        break :blk if (op.aux.len > 0)
+            std.fmt.allocPrint(arena, "the shim recorded: {s}(\"{s}\" -> \"{s}\")", .{ @tagName(op.class), op.path, op.aux }) catch return lead
+        else
+            std.fmt.allocPrint(arena, "the shim recorded: {s}(\"{s}\")", .{ @tagName(op.class), op.path }) catch return lead;
+    } else std.fmt.allocPrint(arena, "the shim's account ends after {d} operation(s)", .{index}) catch return lead;
+    const composed = std.fmt.allocPrint(arena, "{s}; divergence at operation {d}: {s}; {s}", .{
+        lead, index + 1, oracle_part, shim_part,
+    }) catch return lead;
+    // Shim paths are raw bytes the target chose, and even strace's own escaping is
+    // not a contract this report should lean on: a filename carrying a newline or an
+    // escape sequence must not be able to forge report lines (the class of #26). One
+    // choke point, applied to the whole composed detail, keeps the text and the JSON
+    // carrying the same bytes.
+    return sanitizeForReport(arena, composed) catch lead;
+}
+
+/// Replace bytes below 0x20 (and 0x7f) with a visible `\xNN` spelling. The JSON side
+/// escapes controls already; the text side printed them raw, which let target-chosen
+/// names inject report lines. Printable bytes pass through untouched.
+fn sanitizeForReport(arena: std.mem.Allocator, s: []const u8) ![]const u8 {
+    var clean = true;
+    for (s) |ch| {
+        if (ch < 0x20 or ch == 0x7f) {
+            clean = false;
+            break;
+        }
+    }
+    if (clean) return s;
+    var out: std.ArrayList(u8) = .empty;
+    for (s) |ch| {
+        if (ch < 0x20 or ch == 0x7f) {
+            var nb: [4]u8 = undefined;
+            try out.appendSlice(arena, std.fmt.bufPrint(&nb, "\\x{x:0>2}", .{ch}) catch unreachable);
+        } else {
+            try out.append(arena, ch);
+        }
+    }
+    return out.items;
+}
+
+test "divergence detail escapes a control byte a target put in a path" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const ops = [_]engine.Op{.{
+        .class = .open,
+        .seq = 1,
+        .pid = 1,
+        .path = "/tmp/s/evil\nUNKNOWN  forged_reason",
+        .aux = "",
+    }};
+    const lines = [_][]const u8{"openat(AT_FDCWD, \"/tmp/s/a\", O_RDWR) = 3"};
+    const detail = divergenceDetail(arena_state.allocator(), "lead", 0, &ops, &lines);
+    // The newline must arrive spelled out, never as a line break the report obeys.
+    try std.testing.expect(std.mem.indexOf(u8, detail, "\n") == null);
+    try std.testing.expect(std.mem.indexOf(u8, detail, "\\x0a") != null);
+    try std.testing.expect(std.mem.indexOf(u8, detail, "divergence at operation 1") != null);
 }
 
 fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
