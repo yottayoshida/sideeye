@@ -2,6 +2,89 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — Every omamori surface, counted twice: the enumeration closes, three probes hit the same named wall
+
+PRD v0.4's status has carried an honest parenthesis since this morning — "other
+state-changing surfaces beyond `exec` were not enumerated exhaustively". Closed now,
+by counting from two directions and requiring the counts to meet.
+
+**From the command side** — every dispatch arm in `run()`, nested subcommands
+included, plus the two non-command entrypoints: test, exec, install, uninstall, init
+(plain and `--force`), config list/validate/add/disable/enable, override
+disable/enable, audit verify/show/key-rotate/hash-cwd/unknown, break-glass
+activate/`--status`/`--clear`, doctor (and its fix arms), setup, explain, report,
+status (and `--refresh`), cursor-hook, hook-check, version/help — and the argv0 shim
+mode plus the shim-routed hook-check.
+
+**From the write side** — a sweep for write primitives (fs::write / OpenOptions /
+rename / remove_file / create_dir / atomic_write / set_permissions / append) over the
+non-test sources hits 12 files, and every hit maps to a command above: quarantine
+moves (actions.rs ← exec/shim), the audit-chain append and the hwm
+temp-create_new-rename (audit/mod.rs ← the whole append family), the retention prune
+(below), key rotation (audit/secret.rs ← guarded), the warn-throttle and hook-verify
+markers (← shim/hook), installer writes and the integrity baseline (← install,
+doctor's fix arms, status `--refresh`), config writes (← the guarded config family),
+break-glass state (← activate / guarded clear) and its denial-path audit append, the
+shell-profile append (← setup), and doctor's transient writability probe. The
+util.rs / context.rs hits are `#[cfg(test)]` code.
+
+**Classification.** Read-only: test, explain, report, audit show/hash-cwd/unknown,
+config list/validate, break-glass `--status`, version/help. Guarded — and the guard
+refuses a human at a terminal exactly as it refuses an agent (#12), so driving one
+would remove the defence under test: uninstall, init `--force`, config
+add/disable/enable, override, audit key rotate, break-glass `--clear`. One asymmetry
+worth naming: break-glass activation's *denial* path appends an audit event with no
+guard in the way — but it exits non-zero, which is #3's wall, so it is recorded
+rather than driven. Unguarded writers: **install, setup, plain init, and audit
+verify** (plain init because creating a config where none exists is deliberately not
+"modification"; audit verify because a missing or unusable high-water mark makes it
+re-create the mark — a bootstrap write the first draft of this enumeration missed,
+caught in review: the write site was mapped to "the append family" by file, and the
+same `write_hwm` serves a second caller. Mapping files to commands is not mapping
+call graphs to commands).
+
+**The probes** (`spike/dogfood-omamori-surface.sh`: container, L0 + strace oracle,
+disposable HOME inside the state directory, each expected outcome pinned):
+
+- **install** and **setup**: UNKNOWN `unsupported_syscall_observed` — `symlinkat`.
+  The installer creates the PATH shims as symlinks, which is outside the trace
+  contract; the oracle sees an operation the shim cannot record and the account
+  refuses (the #39/#5 wall family, named).
+- **init**: the same refusal one step earlier, on `fchmodat` (the config directory
+  and file permissions).
+- **audit verify**: **PASS — 6 crash points, 7 worlds explored, 0 violations.** The
+  bootstrap re-write of the mark is a single atomic publish (temp, `create_new`,
+  rename), and every crash world keeps a database that is pre or post, never torn.
+  This is the first omamori surface sideeye has fully explored to a verdict rather
+  than met at a wall — a real §17-side data point, and it holds.
+
+The probes' first version measured something else entirely, and the correction is
+the part worth keeping: every probe initially answered `child_process_detected`
+("the target replaced its own image") — which was about to be documented as
+omamori's structure, until the pinned PASS prediction for audit verify failed and
+forced a second look. The image being replaced was the harness's own: the operation
+was wrapped in a shell script whose `exec "$OMAMORI"` is exactly an execve inside
+the recorded process. The wrapper is gone (HOME/SHELL reach the child by inheritance,
+the same wiring the timewarrior recipe uses for TIMEWARRIORDB), and the outcomes
+above are the target's, not the recipe's. A measurement harness lies quietly; a
+pinned expectation is what made this one speak up. One recipe detail that survives:
+setup's own safety guard refuses a cargo build artifact as the hook source, so the
+probe passes `--source` explicitly — without it the recording run exits non-zero
+before hooks are touched, which is that install-time defence doing its job (measured
+both ways).
+
+**The one non-atomic write the sweep surfaced — recorded, not driven.**
+`audit/retention.rs`'s `try_prune` rewrites the audit log **in place** (seek(0),
+write_all, set_len, flush; no temp file, no fsync), and it sits on the append path,
+firing every PRUNE_CHECK_INTERVAL appends once retention is configured. Everything
+else in omamori goes through `atomic_file`; this is the exception. A crash inside
+that rewrite leaves a mixed old/new log, which `verify_chain` would read as
+tampering-shaped corruption — a false alarm on an honest log. Driving it under
+sideeye needs entries older than the retention cutoff, and entries are hash-chained
+with real timestamps, so it takes clock control this measurement does not have.
+Recorded as the enumeration's one open finding, for the author to take to the
+omamori side.
+
 ## 2026-08-12 — The saved case works across the real fix: replay-across-fix, four legs, measured
 
 PRD v0.4's second scope item — regression-case stability *in practice* — had never
