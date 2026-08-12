@@ -2,6 +2,29 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — v0.3 closes: the worked example runs from the toml, and the budget holds on a fresh target
+
+Fifth and last PR of the plan. Two acceptance runs carry the milestone's claims.
+The DESIGN §12 worked example — doctor cross-examined against reality — now runs end
+to end with the define coming entirely from a `sideeye.toml` (check 2aa: FAIL, the
+checker falsified first, the case saved). Seen red by synthetic input: the same check
+aimed at the fixed toy exits 0 and the check demands 1.
+
+The define budget (PRD kill criteria 3) got its measurement on a fresh target.
+Watson (td-watson, a Python time tracker sideeye had never touched) is driven by
+`spike/dogfood-watson/sideeye.toml`, one checker script and one environment variable
+(`WATSON_DIR`) — and is refused honestly: every frame carries a fresh uuid4 and an
+updated-at stamp, so the operation is not byte-reproducible and the un-crashed
+baseline cannot match the recorded final (`baseline_violates_invariant`, the class
+the first omamori run surfaced). The falsification probe fired loudly on the way in
+("Invalid JSON file … frames"), which is watson's own reader earning the checker
+seat. A refusal that names the right reason is the budget working, not failing — the
+define fit the file, and nothing needed a recipe script's worth of glue.
+
+PRD's v0.3 section flips to delivered with one deliberate narrowing recorded:
+shrinking means the earliest failing crash point; "simplest" and measured
+reproducibility counts stay future work and the report claims neither.
+
 ## 2026-08-12 — Replay: the same pipeline, one world, and a case that knows when it no longer applies (ADR 0009)
 
 Fourth PR of v0.3, the last functional piece. A FAIL now saves its counterexample —

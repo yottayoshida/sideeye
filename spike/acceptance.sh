@@ -1323,6 +1323,35 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2aa: the DESIGN §12 worked example, driven by the toml alone ==========="
+# The doctor cross-examination — the flagship L2 scenario — end to end with the define
+# coming entirely from a sideeye.toml: the file, one checker script, nothing else. The
+# PRD's v0.3 acceptance names exactly this run.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+cat > /tmp/acc/sideeye.toml <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = "$OUT/toy-bug rotate"
+check     = "$ROOT/spike/check.sh"
+TOML
+o=$(TOY="$OUT/toy-bug" "$SIDEEYE" explore --config /tmp/acc/sideeye.toml \
+    --shim "$SHIM" --work /tmp/acc/work --json /tmp/acc/report.json --oracle /usr/bin/strace 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "1" ] || ok=0
+echo "$o" | grep -q "checker" || ok=0
+echo "$o" | grep -q "falsified before the run" || ok=0
+[ -s /tmp/acc/work/cases/000001.json ] || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   the doctor scenario runs end-to-end from a toml define (FAIL, falsified checker, case saved)"
+else
+    echo "FAIL toml-driven doctor scenario: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to
