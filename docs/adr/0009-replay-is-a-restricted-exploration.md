@@ -1,6 +1,6 @@
 # ADR 0009 — Replay is a restricted exploration, and a case gates on its landing context
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-12)
 - **Supersedes:** nothing. Implements DESIGN §13's case storage and `sideeye replay`;
   moves the promise "case no longer applies — never a different point, silently"
   from prose into a detector (`case_no_longer_applies`)
