@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-12
+
+The v0.4 milestone — dogfood: omamori — delivered: DESIGN §17's primary criterion evaluated honestly across omamori's full surface, and regression-case stability measured across a real fix. This release also ships the MCP adapter ahead of its milestone: v0.5's agent-facing surface landed on main before v0.4 was cut, so it rides here — the v0.5 milestone itself (the loop-closure test) remains open and will cut 0.5.0.
+
 ### Added
+
+- Regression-case stability, measured across a real fix (`spike/dogfood-timew-replay.sh`): one saved timewarrior counterexample driven through four legs — FAIL with the case saved on the pinned upstream build (full 40-hex pin, enforced with `git rev-parse` after checkout), FAIL again on replay against the same build ("the case reproduced"), **PASS** across the fix patch rebuilt in a separate checkout under the same command name (explored 2, landing context intact — ADR 0009's paths-only-warn carrying a same-class rename reorder, exactly what it was written for), and a refusal (`case_no_longer_applies`, naming the operation-count mismatch) against a build whose recording differs. Judgments read the JSON reports with explicit checks, not `assert` — `assert` vanishes under PYTHONOPTIMIZE (#58 tracks the older suites).
+
+- The omamori surface enumeration (`spike/dogfood-omamori-surface.sh`), closing v0.4's last self-admitted gap: every subcommand including nested arms, the argv0 shim mode and the hook entrypoints, cross-checked from the write-primitive side. Of the four unguarded writers, install/setup refuse at `symlinkat` and init at `fchmodat` (named trace-contract walls), and audit verify's high-water-mark bootstrap write explores fully and holds (PASS over 6 crash points — the first omamori surface explored to a verdict rather than met at a wall). The probes pin their outcomes, which is what caught the recipe's own wrapper exec masquerading as target structure; the one non-atomic write found — retention's in-place prune rewrite on the append path — is recorded in the buildlog as an open finding.
 
 - `sideeye mcp` (ADR 0010): a stateless MCP 2026-07-28 stdio server, so a coding agent can drive sideeye through the standard tool surface. Two tools, both taking a path inside `SIDEEYE_MCP_ROOT` — `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}` — never a raw command (the operation lives in the config, a trust boundary). The server self-execs the canonical binary (`/proc/self/exe` / `_NSGetExecutablePath`, not argv[0]), captures the child's stdout to a file so the MCP transport stays uncontaminated, and gives the child a minimal environment so a config's operation cannot read the server's credentials. `_meta` (protocol version + client capabilities) is validated on every method; an unsupported version returns `UnsupportedProtocolVersionError`. A crash-consistency PASS/FAIL is `isError:false`; every other outcome (SETUP_ERROR, every UNKNOWN) is `isError:true`, read from the report's `verdict` field. The shim, an optional oracle, and the work dir come from the environment (`SIDEEYE_MCP_SHIM` / `SIDEEYE_MCP_ORACLE` / `SIDEEYE_MCP_WORK`). Synchronous in v1 (a long explore blocks the loop; async/cancellation via the Tasks extension is future work).
 
@@ -97,5 +105,7 @@ First release. It proves the assumption the whole tool rests on — that a proce
 - The report schema is experimental and may change in any release before 1.0, along with the Define contract and the exit codes.
 - Defects found and fixed before this release are not listed here — no user saw them. They are in [BUILDLOG.md](BUILDLOG.md), including the ones that took several attempts.
 
+[0.4.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.4.0
+[0.3.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.3.0
 [0.2.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.2.0
 [0.1.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.1.0
