@@ -245,6 +245,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // pipeline below (that pipeline is entirely explore/replay-specific). It forwards
     // tool calls by self-exec'ing this same binary's `explore`/`replay`.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "mcp")) {
+        // No further arguments: everything operational comes from SIDEEYE_MCP_*.
+        // Silently ignoring extras would start a stdin-reading server where the user
+        // expected a flag to have meant something.
+        if (argv.len != 2) {
+            const msg = "sideeye mcp takes no arguments; operational settings come from SIDEEYE_MCP_* environment variables\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        }
         mcp.runServer(gpa);
         return;
     }
