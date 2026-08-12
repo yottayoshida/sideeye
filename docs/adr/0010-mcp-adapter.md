@@ -1,6 +1,6 @@
 # ADR 0010 — The MCP adapter is a `sideeye mcp` subcommand that self-execs, over paths, not commands
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-12)
 - **Supersedes:** nothing. Implements #40 (v0.5's "sideeye is agent food") and the
   first half of DESIGN §17's second criterion (the agent-facing surface)
 - **Scope:** a new `src/mcp.zig`, a `mcp` dispatch arm in `main.zig`, a minimal-env
