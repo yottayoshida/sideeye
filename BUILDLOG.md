@@ -2,6 +2,86 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — A fifth target picked by reading commit tails: timewarrior's undo desyncs from its data across a crash
+
+Four targets in, §17 is still open, so the fifth is chosen for bug likelihood rather
+than coverage: strace the candidates' write patterns bare, before sideeye enters the
+picture, and only aim at a commit shape that actually has a window. Two candidates,
+one survivor:
+
+- **jrnl 4.6 (Python): rejected.** Guessed to rewrite its journal in place; measured
+  otherwise — whole journal into a random-named temp (`O_EXCL`), one write, rename.
+  No fsync anywhere, which is invisible under a process-crash model. Predicted PASS,
+  so not a §17 candidate.
+- **timewarrior 1.4.3 (C++): selected.** One `timew track` rewrites three files —
+  month data, `undo.data`, `tags.data` — each atomically via pid-named temp + rename,
+  but the three renames run in sequence at the very tail: data, undo, tags. Every
+  crash between them leaves files that are individually pre-or-post (L0 passes by
+  construction) and mutually inconsistent.
+
+The window that matters was then measured by hand, with file surgery and no sideeye:
+restore the state to "month data has the new interval, undo.data still ends at the
+previous transaction" and run `timew undo`. It deletes the OLD interval — committed
+long before the crash — and keeps the one whose commit crashed. The documented
+contract is "The undo command will undo the most recent change"; after this crash it
+destroys data it was never asked to touch. The other window is stale `tags.data`, and
+it is deliberately not part of the checker: `timew tags` recomputes from the interval
+database (measured — hand-staling `tags.data` changed nothing), so that staleness has
+no reader to lie to.
+
+The checker (`spike/dogfood-timew.sh`) states the undo contract and nothing else:
+undo must remove exactly the interval timew's own export names as most recent. Two
+measured facts make it workable: `timew export` dies loudly on garbage (exit 255,
+"Unrecognizable line …"), so falsification passes with no strict wrapper — the
+opposite of todoman's `todo list`; and the engine snapshots the crashed state before
+the checker runs, so a checker that mutates state (undo rewrites the database) cannot
+contaminate the L0 judgement (main.zig takes the snapshot at the top of the world
+loop, judges that snapshot after the checker).
+
+For the record, since §17 asks what was discovered *automatically*: the window was
+first spotted by reading a plain strace and confirmed by hand; sideeye's part is to
+find it blind from the declared contract and hand back a minimal reproducible
+counterexample. The claim under test is "point the declared invariant at the tool and
+the exploration lands on the bug", not "nobody looked at a trace first".
+
+The first run refused — and surfaced a sixth-through-tenth cousin of #30. Both
+explorations came back `oracle_missed_operation`: timewarrior's AtomicFile cleanup
+removes every registered temp name at exit through `remove(3)` — including
+`timewarrior.cfg.<pid>-1.tmp`, which this run never created — and libc implements
+remove as unlink-then-rmdir *internally*, behind the PLT. Four failed unlinkat
+attempts (all ENOENT, the renames had already consumed the temps) were visible to
+strace and invisible to the shim. The account conventions are symmetric on purpose —
+the shim records before the call, outcome-blind, and `syscallSucceeded` in the oracle
+only gates cwd tracking — so the honest fix is to interpose remove and reimplement
+its documented two-step through the shim's own unlink/rmdir wrappers: every attempt
+recorded pre-call, matching strace attempt for attempt, EISDIR probe included (glibc
+falls through on EISDIR; Apple's BSD libc on EPERM — each platform's wart kept). On
+macOS this is not ergonomics but soundness: there is no oracle there, and a
+mixed-visibility target (some ops seen, removals not) keeps `mutation_count != 0`, so
+`state_changed_without_ops` stays silent — the same mixed-case PASS hole R1 closed
+for raw syscalls in v0.1. TOY_REMOVE pins it (check 2w): refused as
+`oracle_missed_operation` before the interpose (seen red), PASS 12/12 with the exact
+kill sequence — the never-created path's failed attempt an address on both accounts —
+after.
+
+The re-run landed where the hand measurement said it would, and one window deeper.
+(a) L0 alone: PASS 20/20, oracle agreed on 19 operations — no single file is ever
+torn; the bug is not in any file, it is between them. (b) undo contract: **FAIL, 2 of
+20 worlds**, earliest at crash point 14 of 19 — after `rename(2020-01.data.tmp)`,
+before `rename(undo.data.tmp)` — where `timew undo` prints "Undo", exits 0, and
+deletes the alpha interval committed the day before, keeping beta whose commit
+crashed. Replayed end-to-end from the reproduce line: kill 137 at point 14, export
+shows both intervals, undo, alpha is gone. Crash point 15 (before the tags rename) is
+the reversal this file exists to record: the claim two paragraphs up that stale
+`tags.data` "has no reader to lie to" was measured against `timew tags` and was wrong
+by one command — `timew undo` reads it to decrement the cached counts, errors with
+"Trying to decrement non-existent tag 'beta'", exits 255 and undoes nothing. It
+undoes nothing *atomically* (both intervals and the txn survive — the good half), but
+undo stays unusable until tags.data is repaired by hand. One declared contract, two
+distinct failure semantics: an undo that succeeds and removes the wrong thing, and an
+undo that cannot run at all. Falsification passed bare — `timew export` on garbage
+exits 255 — the opposite of todoman's lenient reader.
+
 ## 2026-08-11 — todoman reaches a verdict: a fourth target, and falsification rejects a lenient reader
 
 Re-ran todoman 4.1 (Python) after #34; the calibration sweep had ended in an honest

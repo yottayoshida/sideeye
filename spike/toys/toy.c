@@ -79,6 +79,13 @@
  *   TOY_SYMLINK        create a symlink inside the state directory. The engine cannot
  *                      restore a symlink (#5), so this must be an honest `unsupported`
  *                      refusal — the point is that a relative spelling still reaches it.
+ *   TOY_REMOVE         delete state through remove(3) — a file, a path that was never
+ *                      created, and a directory. libc implements remove as unlink (then
+ *                      rmdir on the directory errno) internally, without crossing the
+ *                      PLT, so a shim that only interposes unlink is blind to all three
+ *                      while the oracle sees every attempt. The timewarrior shape: its
+ *                      AtomicFile cleanup removes each registered temp name at exit,
+ *                      including names it never created.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -439,6 +446,25 @@ static int cmd_rotate(void) {
         char lnk[4096];
         join_path(lnk, sizeof lnk, "sym");
         if (symlink("key.json", lnk) != 0) return 1;
+    }
+
+    /* Delete through remove(3): the syscalls happen inside libc, behind the PLT. */
+    if (getenv("TOY_REMOVE")) {
+        char scratch[4096], gone[4096], dir[4096];
+        join_path(scratch, sizeof scratch, "scratch.txt");
+        int fd = open(scratch, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "x\n", 2) != 2) { close(fd); return 1; }
+        if (close(fd) != 0) return 1;
+        if (remove(scratch) != 0) return 1;
+        /* A remove of a path that was never created: the attempt must still be an
+         * address on both accounts, or they desync right here. */
+        join_path(gone, sizeof gone, "never-made.tmp");
+        if (remove(gone) == 0 || errno != ENOENT) return 1;
+        /* A directory: glibc probes with unlink, takes EISDIR, then rmdir. */
+        join_path(dir, sizeof dir, "subdir");
+        if (mkdir(dir, 0755) != 0) return 1;
+        if (remove(dir) != 0) return 1;
     }
 
     /* A rewrite that no run repeats — the class the history form must NOT tolerate. */

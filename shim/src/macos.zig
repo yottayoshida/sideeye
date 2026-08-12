@@ -40,6 +40,7 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.renameat, libc.renameat),
     entry(&ops.unlink, libc.unlink),
     entry(&ops.unlinkat, libc.unlinkat),
+    entry(&ops.remove, libc.remove),
     entry(&ops.link, libc.link),
     entry(&ops.linkat, libc.linkat),
     entry(&ops.fsync, libc.fsync),

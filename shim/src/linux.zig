@@ -29,6 +29,7 @@ comptime {
 
     @export(&ops.unlink, .{ .name = "unlink" });
     @export(&ops.unlinkat, .{ .name = "unlinkat" });
+    @export(&ops.remove, .{ .name = "remove" });
 
     @export(&ops.link, .{ .name = "link" });
     @export(&ops.linkat, .{ .name = "linkat" });
