@@ -102,19 +102,26 @@ The full version is [`spike/check.sh`](spike/check.sh). Sideeye refuses to trust
 it has not seen fail: before exploring, it overwrites the state with junk and requires the
 check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS.
 
-Configuration is by flags for now. The `sideeye.toml` form described in
-[DESIGN.md](DESIGN.md) §12 — three commands and one directory — arrives in v0.3
-(the slot v0.2 was promised to; process boundaries jumped the queue, see the PRD):
+The define surface — three commands and one directory ([DESIGN.md](DESIGN.md) §12) —
+can be a `sideeye.toml`, passed with `--config`:
 
 ```toml
 [world]
-state = "./state"
+state = "./state"               # resolves against this file's directory
 
 [define]
 setup     = "mytool init"
 operation = "mytool rotate-key"
 check     = "./check.sh"        # exit 0 = invariant holds, run after crash + restart
 ```
+
+The parser accepts exactly this shape and refuses everything else with the offending
+line named — an ignored key would be a declared invariant that silently never fires.
+`--config` is mutually exclusive with the define-surface flags
+(`--state`/`--setup`/`--operation`/`--check`); operational flags (`--shim`,
+`--oracle`, `--work`, `--json`, `--allow-unverified`) stay flags and combine with it.
+Command strings split on spaces — no quoting; anything an argument cannot spell
+belongs in a script file (ADR 0007).
 
 ## What Sideeye is not
 
