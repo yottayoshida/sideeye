@@ -33,6 +33,10 @@ pub extern "c" fn open(path: [*:0]const u8, flags: c_int, ...) c_int;
 pub extern "c" fn read(fd: c_int, buf: [*]u8, n: usize) isize;
 pub extern "c" fn write(fd: c_int, buf: [*]const u8, n: usize) isize;
 pub extern "c" fn close(fd: c_int) c_int;
+pub extern "c" fn dup2(old_fd: c_int, new_fd: c_int) c_int;
+
+/// Same value on Linux and Darwin.
+pub const EINTR: c_int = 4;
 pub extern "c" fn mkdir(path: [*:0]const u8, mode: c_uint) c_int;
 pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
@@ -210,6 +214,27 @@ pub fn runChild(
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
 ) SpawnError!Term {
+    return runChildImpl(gpa, argv, env_pairs, null);
+}
+
+/// `runChild`, with the child's stdout sent to a file. What a target says on stdout
+/// is evidence — the L1 success marker is read from it (ADR 0008) — and evidence
+/// belongs in the work directory, not interleaved with the engine's own report.
+pub fn runChildCapture(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    stdout_path: []const u8,
+) SpawnError!Term {
+    return runChildImpl(gpa, argv, env_pairs, stdout_path);
+}
+
+fn runChildImpl(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    stdout_path: ?[]const u8,
+) SpawnError!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
@@ -223,12 +248,27 @@ pub fn runChild(
         env_z[i][0] = (try arena.dupeZ(u8, kv[0])).ptr;
         env_z[i][1] = (try arena.dupeZ(u8, kv[1])).ptr;
     }
+    const stdout_z: ?[*:0]const u8 = if (stdout_path) |sp| (try arena.dupeZ(u8, sp)).ptr else null;
 
     const pid = fork();
     if (pid < 0) return error.ForkFailed;
     if (pid == 0) {
         // Before exec, so the target never runs in the engine's group.
         _ = setpgid(0, 0);
+        if (stdout_z) |sz| {
+            // A capture that cannot be opened must not fall back to the engine's own
+            // stdout: a world whose evidence went to the wrong stream would read as
+            // "marker never appeared". 126 is distinct from exec's 127 on purpose.
+            const cfd = open(sz, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+            if (cfd < 0) _exit(126);
+            // When fd 1 was closed at launch, open() itself returns 1 and the fd is
+            // already in place — dup2(1, 1) would be a no-op but the close below
+            // would destroy the capture.
+            if (cfd != 1) {
+                if (dup2(cfd, 1) < 0) _exit(126);
+                _ = close(cfd);
+            }
+        }
         for (env_z) |kv| _ = setenv(kv[0], kv[1], 1);
         _ = execvp(argv_z[0].?, argv_z.ptr);
         // Only reached when exec failed; 127 is the shell's convention for that.

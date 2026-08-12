@@ -256,6 +256,13 @@ pub const UnknownReason = enum {
     /// not testing what it claims to test. Every PASS it would go on to produce would
     /// be a statement about nothing (DESIGN §14-13).
     checker_not_falsified,
+    /// A success marker was declared but never appeared in the recording run's own
+    /// stdout — the run that completes normally. A marker the clean run cannot produce
+    /// is a misconfiguration or an unobservable claim, and letting it stand would turn
+    /// every L1 obligation vacuous while the report still said PASS (ADR 0008). A
+    /// crash world killed before the marker is not this: there the conditional simply
+    /// does not apply, which is the normal shape of a post-success invariant.
+    marker_never_observed,
     /// The recording run did not complete normally. Its trace describes a partial
     /// execution, so the crash points derived from it address an operation sequence the
     /// target does not actually perform.

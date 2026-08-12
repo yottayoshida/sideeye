@@ -441,6 +441,10 @@ pub const Violation = union(enum) {
     /// A history-form file (ADR 0004) whose crashed content no longer begins with its
     /// pre-operation content — or whose path no longer holds a file at all.
     rewritten: []const u8,
+    /// The operation claimed success before the kill, and part of the new state did
+    /// not survive (ADR 0008): a shared file still holds old content, a history file
+    /// gained nothing, a created file is absent, or a deleted file is back.
+    not_durable: []const u8,
 };
 
 /// Which invariant a shared file is judged by, decided once from the snapshots alone.
@@ -540,6 +544,48 @@ pub fn judgeL0(plan: L0Plan, crashed: Snapshot) ?Violation {
                 return .{ .rewritten = f.rel };
             },
         }
+    }
+    return null;
+}
+
+/// The post-success invariant (ADR 0008), judged only in worlds where the operation's
+/// own success marker reached stdout before the kill: the *new* state must survive.
+/// Judged against the whole post snapshot, not just the files both snapshots share —
+/// a created file that vanished or a deleted file that returned is exactly the loss a
+/// success claim promised away. The one deliberate gap: a post-only file is required
+/// to exist but its content is not judged (it may legitimately differ between runs),
+/// and the report's `not tested` says so.
+pub fn judgeL1(plan: L0Plan, pre: Snapshot, post: Snapshot, crashed: Snapshot) ?Violation {
+    for (plan.files.items) |f| {
+        const ce = crashed.find(f.rel) orelse return .{ .not_durable = f.rel };
+        // Content alone is not identity: a directory's content is the empty string,
+        // so an empty post file replaced by a same-named directory would compare
+        // equal. The post entry's kind is part of what the success claim promised.
+        if (post.find(f.rel)) |pe| {
+            if (ce.kind != pe.kind) return .{ .not_durable = f.rel };
+        }
+        switch (f.form) {
+            .standard => if (!std.mem.eql(u8, ce.content, f.post_content))
+                return .{ .not_durable = f.rel },
+            .history => {
+                if (ce.kind != .file) return .{ .not_durable = f.rel };
+                if (!std.mem.startsWith(u8, ce.content, f.pre_content))
+                    return .{ .not_durable = f.rel };
+                // Success claimed an append happened; a file exactly equal to its pre
+                // content kept its history and lost the change.
+                if (ce.content.len <= f.pre_content.len)
+                    return .{ .not_durable = f.rel };
+            },
+        }
+    }
+    for (post.entries.items) |e| {
+        if (pre.find(e.rel) != null) continue;
+        const ce = crashed.find(e.rel) orelse return .{ .not_durable = e.rel };
+        if (ce.kind != e.kind) return .{ .not_durable = e.rel };
+    }
+    for (pre.entries.items) |e| {
+        if (post.find(e.rel) != null) continue;
+        if (crashed.find(e.rel) != null) return .{ .not_durable = e.rel };
     }
     return null;
 }
@@ -721,6 +767,79 @@ test "classify puts only a non-empty strict extension into the history form" {
         const expected: FileForm = if (std.mem.eql(u8, f.rel, "grew.log")) .history else .standard;
         try std.testing.expectEqual(expected, f.form);
     }
+}
+
+test "the post-success invariant judges the whole post snapshot (ADR 0008)" {
+    const gpa = std.testing.allocator;
+    var pre = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=1\n" }, // standard: must equal post in a marker world
+        .{ "audit.log", "e1\n" }, // history: must have gained something
+        .{ "old.tmp", "x\n" }, // pre-only: the operation deletes it
+    });
+    defer pre.deinit();
+    var post = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=2\n" },
+        .{ "audit.log", "e1\ne2\n" },
+        .{ "receipt.txt", "ok\n" }, // post-only: the operation creates it
+    });
+    defer post.deinit();
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+
+    // The full new state survives: no violation.
+    var durable = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=2\n" },
+        .{ "audit.log", "e1\ne2 different-tail\n" },
+        .{ "receipt.txt", "different-content\n" }, // existence only; content not judged
+    });
+    defer durable.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), judgeL1(plan, pre, post, durable));
+
+    // A shared file still on its old content is not durable.
+    var stale = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=1\n" },
+        .{ "audit.log", "e1\ne2\n" },
+        .{ "receipt.txt", "ok\n" },
+    });
+    defer stale.deinit();
+    try std.testing.expectEqualStrings("key.json", judgeL1(plan, pre, post, stale).?.not_durable);
+
+    // A history file that gained nothing lost the claimed change.
+    var ungrown = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=2\n" },
+        .{ "audit.log", "e1\n" },
+        .{ "receipt.txt", "ok\n" },
+    });
+    defer ungrown.deinit();
+    try std.testing.expectEqualStrings("audit.log", judgeL1(plan, pre, post, ungrown).?.not_durable);
+
+    // A created file that vanished, and a deleted file that returned.
+    var uncreated = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=2\n" },
+        .{ "audit.log", "e1\ne2\n" },
+    });
+    defer uncreated.deinit();
+    try std.testing.expectEqualStrings("receipt.txt", judgeL1(plan, pre, post, uncreated).?.not_durable);
+    var undeleted = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=2\n" },
+        .{ "audit.log", "e1\ne2\n" },
+        .{ "receipt.txt", "ok\n" },
+        .{ "old.tmp", "x\n" },
+    });
+    defer undeleted.deinit();
+    try std.testing.expectEqualStrings("old.tmp", judgeL1(plan, pre, post, undeleted).?.not_durable);
+
+    // Kind is identity too: a created file that came back as a same-named directory
+    // is not the promised state, even where content comparison would pass (a
+    // directory's content is the empty string).
+    var kind_swap = try testSnapshot(gpa, &.{
+        .{ "key.json", "key=2\n" },
+        .{ "audit.log", "e1\ne2\n" },
+        .{ "receipt.txt", "" },
+    });
+    defer kind_swap.deinit();
+    kind_swap.entries.items[2].kind = .dir;
+    try std.testing.expectEqualStrings("receipt.txt", judgeL1(plan, pre, post, kind_swap).?.not_durable);
 }
 
 test "history form tolerates any tail and the loss of none of the history" {

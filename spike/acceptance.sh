@@ -1208,12 +1208,12 @@ toml_refusal() { # $1 label, $2 toml body, $3 expected fragment
         fails=$((fails + 1))
     fi
 }
-toml_refusal "an unknown key refuses with its line (marker, until L1 enforces it)" \
+toml_refusal "an unknown key refuses with its line" \
 '[world]
 state = "./state"
 [define]
 operation = "x"
-marker = "done"' "line 5: unknown key"
+budget = "x"' "line 5: unknown key"
 toml_refusal "a bare value refuses" \
 '[world]
 state = ./state' "line 2"
@@ -1226,6 +1226,49 @@ else
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
+
+echo "=========== check 2y: the L1 success marker is a strict subset, never a leak (ADR 0008) ==========="
+# The post-success invariant fires only in worlds where the operation's own claim
+# reached stdout before the kill: some worlds but never all (anti-vacuity, both ways),
+# the whole post snapshot is judged there (a created file that vanished is a FAIL),
+# and a marker the clean run cannot produce is UNKNOWN — not a silent vacuous PASS.
+l1_case() { # $1 label, $2 env, $3 marker, $4 want_exit, $5.. want_text fragments
+    lbl=$1; envv=$2; mkr=$3; want=$4; shift 4
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env "$envv=1" "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --marker "$mkr" --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    ok=1
+    [ "$rc" = "$want" ] || ok=0
+    for frag in "$@"; do echo "$o" | grep -q "$frag" || ok=0; done
+    if [ "$ok" = "1" ]; then
+        echo "ok   $lbl"
+    else
+        echo "FAIL $lbl: exit $rc (wanted $want)"
+        echo "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+}
+l1_case "the correct shape passes, marker observed in some but not all crash worlds" \
+    TOY_MARKER COMMITTED 0 "marker observed in"
+# Anti-vacuity, numerically: 0 < observed < crash points, read from the report itself.
+mw=$(echo "$o" | sed -n 's/.*marker observed in \([0-9]*\) of \([0-9]*\) crash worlds.*/\1 \2/p' | head -1)
+mn=${mw% *}; mt=${mw#* }
+if [ -n "$mw" ] && [ "$mn" -gt 0 ] && [ "$mn" -lt "$mt" ]; then
+    echo "ok   ...and 0 < $mn < $mt"
+else
+    echo "FAIL l1 anti-vacuity bounds: got '$mw'"
+    fails=$((fails + 1))
+fi
+l1_case "the claim-before-commit shape fails as not durable" \
+    TOY_MARKER_EARLY COMMITTED 1 "post-success invariant" "did not survive"
+l1_case "a created file missing from a marker world fails (the whole post snapshot is judged)" \
+    TOY_MARKER_CREATES COMMITTED 1 "post-success invariant" "receipt.txt"
+l1_case "a marker the clean run cannot produce is UNKNOWN, not a vacuous PASS" \
+    TOY_MARKER NEVER_SAID 2 "marker_never_observed"
+l1_case "an unflushed marker is honestly vacuous: observed in 0 crash worlds, still PASS" \
+    TOY_MARKER_NOFLUSH COMMITTED 0 "marker observed in 0 of"
 
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
