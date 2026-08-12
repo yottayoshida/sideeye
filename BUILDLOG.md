@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — Why omamori's audit survives every crash window: hwm is confirmed *after* the body
+
+Reconnaissance for v0.4, done the timewarrior way: read the write pattern with plain
+strace before pointing sideeye at it, looking for a window before hunting a bug. The
+question is whether omamori's `exec` audit append has a multi-file window like the one
+that broke timewarrior this morning. It does not, and the reason is the exact inverse
+of timewarrior's bug.
+
+Measured (omamori 1.0.2 Linux, one `exec -- /bin/true`, isolated HOME): the audit
+record is written to `audit.jsonl` first — 134 one-byte writes, no O_APPEND, no fsync
+on the body — and only *then* is `audit.jsonl.hwm` (a high-water mark, contents "3"
+for the third entry) advanced through the durable temp+fsync+rename+dir-fsync dance.
+Body at trace lines 102–235, hwm confirmation at 245–249: the confirmation strictly
+follows the content it confirms.
+
+That ordering is what makes every crash window safe, and it is precisely the ordering
+timewarrior got backwards. timewarrior renamed its journal (its hwm equivalent) *before*
+the data, and `undo` trusted the journal — so a crash between the two renames left the
+journal ahead of the data and undo destroyed committed work. omamori confirms after, so
+whatever the crash leaves, verify stays conservative:
+
+- body torn, hwm at the old value → verify trusts up to the hwm and drops the torn tail
+- body complete, hwm still old → the last entry is treated as unconfirmed and dropped
+  (data lost, but never inconsistent — the conservative direction)
+- body complete, hwm advanced → all confirmed
+
+This is why the run has been PASS 143/143 since #25 and stays there through contract
+v5/v6/v7. **On the `exec` operation, no §17-class window exists — not for want of
+looking, but by construction.** It is a clean instance of DESIGN §18's kill criterion 4
+(the target may be too hardened to yield a novel bug): the same discipline sideeye
+exists to check, applied correctly by the target.
+
+The §17 primary criterion is not thereby closed. `exec` is the one state-mutating
+omamori subcommand an agent can invoke (#12: config-modify / init --force / key rotate
+are all guarded, and the guard is intended); pointing sideeye at those needs a human at
+a raw terminal. What this session *can* conclude is the "written analysis of why none
+was found" that v0.4's acceptance explicitly allows for — for the append path, and with
+the mechanism named. And it strengthens the standing note that timewarrior — a
+calibration target with no hand-written adversarial tests (DESIGN §18, PRD v0.5) — is
+the live §17-class find, now with a mechanical contrast to omamori: confirm-after-body
+holds, confirm-before-body breaks.
+
 ## 2026-08-12 — v0.3.0 ships
 
 Version bump to 0.3.0 in both hand-written places (the drift test held them
