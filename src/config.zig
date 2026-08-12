@@ -18,6 +18,11 @@ pub const Define = struct {
     setup: ?[]const u8 = null,
     operation: []const u8,
     check: ?[]const u8 = null,
+    /// The L1 success marker (ADR 0008): a byte string the operation prints on stdout
+    /// when it has committed. Joined the schema in the same change that made the
+    /// engine enforce it — a key that parses before it acts would accept a declared
+    /// invariant and quietly not enforce it.
+    marker: ?[]const u8 = null,
 };
 
 pub const Fault = struct {
@@ -42,6 +47,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var setup: ?[]const u8 = null;
     var operation: ?[]const u8 = null;
     var check: ?[]const u8 = null;
+    var marker: ?[]const u8 = null;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     var line_no: usize = 0;
@@ -84,8 +90,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 &operation
             else if (std.mem.eql(u8, key, "check"))
                 &check
+            else if (std.mem.eql(u8, key, "marker"))
+                &marker
             else
-                return fault(line_no, "unknown key in [define]: only `setup`, `operation` and `check` exist"),
+                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check` and `marker` exist"),
         };
         if (slot.* != null) return fault(line_no, "duplicate key");
         if (value.len == 0) return fault(line_no, "the value is empty");
@@ -93,7 +101,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker } };
 }
 
 /// The value grammar: one double-quoted string, optionally followed by whitespace
@@ -127,11 +135,13 @@ test "the DESIGN §12 example parses, inline comments and all" {
         \\setup     = "mytool init"         # produce the initial state
         \\operation = "mytool rotate-key"   # what Sideeye kills partway through
         \\check     = "./check.sh"          # runs after crash + restart
+        \\marker    = "Recorded"            # the operation's own success claim (L1)
     );
     try t.expectEqualStrings("./state", r.ok.state);
     try t.expectEqualStrings("mytool init", r.ok.setup.?);
     try t.expectEqualStrings("mytool rotate-key", r.ok.operation);
     try t.expectEqualStrings("./check.sh", r.ok.check.?);
+    try t.expectEqualStrings("Recorded", r.ok.marker.?);
 }
 
 test "setup and check are optional; state and operation are not" {
@@ -146,10 +156,10 @@ test "setup and check are optional; state and operation are not" {
     try t.expectEqualStrings("[define] operation is required", no_op.fault.what);
 }
 
-test "an unknown key refuses with its line — marker included, until L1 enforces it" {
+test "an unknown key refuses with its line" {
     var as = std.heap.ArenaAllocator.init(t.allocator);
     defer as.deinit();
-    const r = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\nmarker = \"done\"\n");
+    const r = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\nbudget = \"x\"\n");
     try t.expectEqual(@as(usize, 5), r.fault.line);
     try t.expect(std.mem.indexOf(u8, r.fault.what, "unknown key") != null);
 }

@@ -56,6 +56,7 @@ const Args = struct {
     allow_unverified: bool = false,
     json: ?[]const u8 = null,
     config: ?[]const u8 = null,
+    marker: ?[]const u8 = null,
 };
 
 /// What the report says so far.
@@ -74,6 +75,13 @@ var json_path: ?[]const u8 = null;
 var json_arena: ?std.mem.Allocator = null;
 var oracle_note: []const u8 = "not run (no --oracle given)";
 var checker_note: []const u8 = "none configured";
+/// The L1 story (ADR 0008): whether a success marker was declared, and in how many
+/// crash worlds it was observed — the worlds where the post-success invariant was
+/// enforced. Mirrors `checker_note`: one variable, read by text and JSON alike.
+var l1_note: []const u8 = "no marker configured";
+/// Whether a marker was configured at all; widens `not tested` (post-only file
+/// contents are checked for existence, not content).
+var l1_configured: bool = false;
 /// Which L0 form judged which files (ADR 0004). Starts as an explicit "not yet", so
 /// an UNKNOWN raised before the snapshots exist never carries an invented
 /// classification; set from the L0Plan the moment it is built.
@@ -108,6 +116,10 @@ fn usage() void {
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
         \\  --oracle     path to strace; the recording run is compared against it
         \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
+        \\  --marker     success marker: a byte string the operation prints on stdout when
+        \\               it has committed. In worlds where it appeared before the kill,
+        \\               the post-success invariant is enforced: the new state must
+        \\               survive (ADR 0008)
         \\  --json       write the machine-readable report to this path
         \\  --allow-unverified
         \\               accept PASS with no completeness check. Needed on macOS, which
@@ -134,12 +146,13 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
         \\         {s}
         \\
         \\atomicity   {s}
+        \\l1          {s}
         \\not tested  {s}
         \\
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ reason.name(), detail, l0_note, notTestedText() });
+    , .{ reason.name(), detail, l0_note, l1_note, notTestedText() });
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -212,6 +225,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
         else if (std.mem.eql(u8, argv[i], "--check")) args.check = v
+        else if (std.mem.eql(u8, argv[i], "--marker")) args.marker = v
         else if (std.mem.eql(u8, argv[i], "--config")) args.config = v
         else if (std.mem.eql(u8, argv[i], "--json")) {
             args.json = v;
@@ -229,8 +243,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
     if (args.config) |cfg_path| {
-        if (args.state != null or args.setup != null or args.operation != null or args.check != null)
-            setupError("--config and the define-surface flags (--state, --setup, --operation, --check) are mutually exclusive: the define lives in one place or the other");
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null)
+            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         const text = readFileAlloc(arena, cfg_path) orelse setupError(
             std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
@@ -242,6 +256,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 args.setup = if (d.setup) |s| resolveCommandAgainst(arena, dir, s) else null;
                 args.operation = resolveCommandAgainst(arena, dir, d.operation);
                 args.check = if (d.check) |c| resolveCommandAgainst(arena, dir, c) else null;
+                args.marker = d.marker;
             },
             .fault => |f| {
                 const msg = if (f.line == 0)
@@ -256,6 +271,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const state = args.state orelse setupError("--state is required");
     const operation = args.operation orelse setupError("--operation is required");
     const shim = args.shim orelse setupError("--shim is required in v0.1");
+    if (args.marker) |m| {
+        if (m.len == 0) setupError("the marker is empty");
+        if (m.len >= 4096) setupError("the marker is unreasonably long (>= 4 KiB)");
+        l1_configured = true;
+        l1_note = "marker configured; the recording run has not been scanned yet";
+    }
 
     // Resolve the state directory once, so every later comparison is against one
     // spelling of the path. The shim resolves what it sees the same way.
@@ -327,6 +348,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const oracle_out = std.fmt.bufPrint(&oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError("path too long");
     removeFile(oracle_out);
 
+    // The operation's stdout is evidence — the L1 marker is read from it (ADR 0008) —
+    // so every operation run (recording, worlds, baseline) writes it to the work
+    // directory. Every run gets the same shape whether or not a marker is configured:
+    // an isatty branch in the target must not differ between the recording run and
+    // the worlds, or the recorded operation sequence describes a different execution.
+    var rec_stdout_buf: [contract.max_path]u8 = undefined;
+    const rec_stdout = std.fmt.bufPrint(&rec_stdout_buf, "{s}/stdout-record.txt", .{args.work}) catch setupError("path too long");
+    removeFile(rec_stdout);
+
     const arena = arena_state.allocator();
 
     // Checked before the run, so that "the operation failed" and "the oracle could not be
@@ -370,15 +400,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 list.append(arena, joined) catch setupError("out of memory");
             }
             for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
-            break :blk posix.runChild(gpa, list.items, &.{}) catch setupError("could not run --operation under the oracle");
+            break :blk posix.runChildCapture(gpa, list.items, &.{}, rec_stdout) catch setupError("could not run --operation under the oracle");
         }
-        break :blk posix.runChild(gpa, op_argv, &.{
+        break :blk posix.runChildCapture(gpa, op_argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, rec_trace },
             .{ preload_var, shim },
-        }) catch setupError("could not run --operation");
+        }, rec_stdout) catch setupError("could not run --operation");
     };
     // The recording run's outcome decides whether its trace means anything.
     //
@@ -393,6 +423,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
         .exited => |code| if (code != 0)
             unknown(.recording_run_failed, "the operation exited non-zero during the recording run, so the crash points derived from it describe an execution that did not happen"),
         else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run"),
+    }
+
+    // A marker the clean run cannot produce would make every post-success obligation
+    // vacuous while the report still said PASS (ADR 0008). Checked against the
+    // recording run — the run that completes normally, where even an unflushed stdio
+    // buffer reaches the capture through the exit-time flush. A crash world killed
+    // before the marker is not this: there the conditional simply does not apply.
+    if (args.marker) |m| {
+        const seen = fileContains(rec_stdout, m) catch
+            setupError("the recording run's stdout capture could not be read back");
+        if (!seen) {
+            l1_note = "marker configured; never observed, even in the recording run";
+            unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all");
+        }
+        l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
 
     var trace = engine.readTrace(gpa, rec_trace) catch setupError("could not read the trace");
@@ -576,9 +621,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\PASS  the operation performed nothing that can change the state directory
             \\      explored 0 crash points; nothing to kill before
             \\      atomicity: {s}
+            \\      l1: {s}
             \\      not tested: {s}
             \\
-        , .{ l0_note, notTestedText() });
+        , .{ l0_note, l1_note, notTestedText() });
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
@@ -620,9 +666,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     // ---- exploration --------------------------------------------------------------
     var first_failure: ?engine.WorldResult = null;
+    var first_failure_l0 = false;
+    var first_failure_l1 = false;
     var first_failure_l2 = false;
     var first_failure_path: [contract.max_path]u8 = undefined;
     var first_failure_path_len: usize = 0;
+    var marker_worlds: u32 = 0;
+    var checks_run: u32 = 0;
+
+    var world_stdout_buf: [contract.max_path]u8 = undefined;
+    const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError("path too long");
 
     var k: u32 = 1;
     while (k <= n + 1) : (k += 1) {
@@ -633,15 +686,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var wt_buf: [contract.max_path]u8 = undefined;
         const world_trace = std.fmt.bufPrint(&wt_buf, "{s}/trace-{d}.bin", .{ args.work, k }) catch setupError("path too long");
         removeFile(world_trace);
+        removeFile(world_stdout);
 
-        const term = posix.runChild(gpa, op_argv, &.{
+        const term = posix.runChildCapture(gpa, op_argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, world_trace },
             .{ contract.env.kill_at, kstr },
             .{ preload_var, shim },
-        }) catch setupError("could not run --operation");
+        }, world_stdout) catch setupError("could not run --operation");
 
         var wtrace = engine.readTrace(gpa, world_trace) catch setupError("could not read a world trace");
         defer wtrace.deinit();
@@ -703,6 +757,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 .{ "TOY_STATE", state_abs },
                 .{ contract.env.state_dir, state_abs },
             }) catch setupError("could not run --check");
+            checks_run += 1;
             l2_failed = switch (ct) {
                 .exited => |code| code != 0,
                 else => true,
@@ -710,6 +765,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
 
         const l0 = engine.judgeL0(l0_plan, crashed);
+
+        // The post-success invariant (ADR 0008), only in worlds where the operation's
+        // own success claim reached stdout before the kill. In every other world the
+        // conditional does not apply — which is the normal shape of a post-success
+        // invariant, not a gap: L0 and the checker judged every world above.
+        var marker_seen = false;
+        if (args.marker) |m| marker_seen = fileContains(world_stdout, m) catch
+            setupError("a world's stdout capture could not be read back");
+        if (marker_seen and k <= n) marker_worlds += 1;
+        const l1 = if (marker_seen) engine.judgeL1(l0_plan, initial, final, crashed) else null;
 
         // The baseline world was never killed. If the invariant fails there, it fails
         // without any help from sideeye — the checker rejects a state the operation
@@ -725,25 +790,44 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // path for files that only grow; a non-reproducible *rewrite* still lands
         // here, and that refusal is the honest one: its crash worlds could not be
         // judged either.
-        if (k > n and (l0 != null or l2_failed))
+        if (k > n and (l0 != null or l2_failed or l1 != null))
             unknown(.baseline_violates_invariant, "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first");
 
-        if (l0 != null or l2_failed) {
+        if (l0 != null or l2_failed or l1 != null) {
             violations += 1;
             if (first_failure == null) {
-                first_failure = .{ .k = k, .term = term, .landed = landed, .violation = l0 };
+                const v = l0 orelse l1;
+                first_failure = .{ .k = k, .term = term, .landed = landed, .violation = v };
+                first_failure_l0 = l0 != null;
+                first_failure_l1 = l1 != null;
                 first_failure_l2 = l2_failed;
-                if (l0) |v| {
-                    const p = switch (v) {
+                if (v) |vv| {
+                    const p = switch (vv) {
                         .missing => |p| p,
                         .hybrid => |p| p,
                         .rewritten => |p| p,
+                        .not_durable => |p| p,
                     };
                     @memcpy(first_failure_path[0..p.len], p);
                     first_failure_path_len = p.len;
                 }
             }
         }
+    }
+
+    if (l1_configured) {
+        l1_note = std.fmt.allocPrint(
+            arena,
+            "marker observed in {d} of {d} crash worlds; the post-success invariant was enforced there",
+            .{ marker_worlds, n },
+        ) catch "marker configured";
+    }
+    if (check_argv != null) {
+        checker_note = std.fmt.allocPrint(
+            arena,
+            "{s}; ran in {d} world(s)",
+            .{ checker_note, checks_run },
+        ) catch checker_note;
     }
 
     // ---- report --------------------------------------------------------------------
@@ -753,16 +837,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const after_path = if (addr.after) |a| a.path else "";
         const before = if (addr.before) |b| b.class.name() else "(end)";
         const before_path = if (addr.before) |b| b.path else "";
-        const invariant = if (f.violation != null and first_failure_l2)
+        const invariant = if (first_failure_l0 and first_failure_l2)
             "built-in atomicity, and the checker"
-        else if (f.violation != null)
+        else if (first_failure_l0)
             "built-in atomicity (L0)"
+        else if (first_failure_l1 and first_failure_l2)
+            "the post-success invariant, and the checker"
+        else if (first_failure_l1)
+            "the post-success invariant (L1)"
         else
             "the checker (L2)";
         const what = if (f.violation) |v| switch (v) {
             .missing => "present before and after the operation, but gone from the crashed state",
             .hybrid => "holding neither the old nor the new content",
             .rewritten => "present, but its recorded history is no longer a prefix of its content",
+            .not_durable => "the operation claimed success before the kill, and this part of the new state did not survive",
         } else "the checker exited non-zero after restart";
         const path_shown = if (first_failure_path_len > 0)
             first_failure_path[0..first_failure_path_len]
@@ -798,6 +887,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\atomicity   {s}
             \\oracle      {s}
             \\checker     {s}
+            \\l1          {s}
             \\processes   {s}
             \\not tested  {s}
             \\
@@ -815,6 +905,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             l0_note,
             oracle_note,
             checker_note,
+            l1_note,
             boundary_note,
             notTestedText(),
             state_abs,  alt_env,     repro_trace, preload_var, shim, f.k,
@@ -840,10 +931,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      atomicity: {s}
         \\      oracle: {s}
         \\      checker: {s}
+        \\      l1: {s}
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, l0_note, oracle_note, checker_note, boundary_note, notTestedText() });
+    , .{ explored, explored, explored, n, l0_note, oracle_note, checker_note, l1_note, boundary_note, notTestedText() });
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -909,17 +1001,74 @@ fn appendSanitized(names: *std.ArrayList(u8), arena: std.mem.Allocator, s: []con
 /// form, its appended tail joined the untested set, and a PASS headline must not
 /// stand without that narrowing beside it.
 fn notTestedText() []const u8 {
-    return if (l0_history_count > 0)
-        "power loss, torn writes, concurrent processes, appended tails (files under the history form)"
-    else
-        "power loss, torn writes, concurrent processes";
+    const history = l0_history_count > 0;
+    if (history and l1_configured)
+        return "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only)";
+    if (history)
+        return "power loss, torn writes, concurrent processes, appended tails (files under the history form)";
+    if (l1_configured)
+        return "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only)";
+    return "power loss, torn writes, concurrent processes";
 }
 
 fn notTestedJson() []const u8 {
-    return if (l0_history_count > 0)
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]"
-    else
-        "[\"power loss\", \"torn writes\", \"concurrent processes\"]";
+    const history = l0_history_count > 0;
+    if (history and l1_configured)
+        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only)\"]";
+    if (history)
+        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]";
+    if (l1_configured)
+        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only)\"]";
+    return "[\"power loss\", \"torn writes\", \"concurrent processes\"]";
+}
+
+/// Whether the file at `path` contains `needle`, read in chunks with an overlap so a
+/// marker straddling a chunk boundary is still found — without holding a chatty
+/// target's whole stdout in memory across a few hundred worlds. An unreadable capture
+/// is an error, never "absent": absence decides whether L1 applies to a world, and an
+/// I/O failure silently read as absence would skip the invariant on the PASS side.
+fn fileContains(path: []const u8, needle: []const u8) error{Unreadable}!bool {
+    if (needle.len == 0) return false;
+    var zb: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return error.Unreadable;
+    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    if (fd < 0) return error.Unreadable;
+    defer _ = posix.close(fd);
+    var buf: [64 * 1024]u8 = undefined;
+    if (needle.len >= buf.len) return error.Unreadable;
+    var kept: usize = 0;
+    while (true) {
+        const nr = posix.read(fd, buf[kept..].ptr, buf.len - kept);
+        if (nr < 0) {
+            if (std.c._errno().* == posix.EINTR) continue;
+            return error.Unreadable;
+        }
+        if (nr == 0) return false;
+        const have = kept + @as(usize, @intCast(nr));
+        if (std.mem.indexOf(u8, buf[0..have], needle) != null) return true;
+        kept = @min(needle.len - 1, have);
+        std.mem.copyForwards(u8, buf[0..kept], buf[have - kept .. have]);
+    }
+}
+
+test "fileContains finds a marker straddling the chunk boundary" {
+    // posix directly, like the engine itself: the std file API wants an `Io` instance
+    // threaded through every call, and this test needs one file, not a runtime.
+    const path = ".zig-cache/tmp-filecontains-test.txt";
+    var zb: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch unreachable;
+    const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    // 64 KiB of padding minus half the marker, so MARKER spans the read boundary.
+    var pad: [64 * 1024 - 3]u8 = undefined;
+    @memset(&pad, 'x');
+    try std.testing.expect(posix.write(fd, &pad, pad.len) == pad.len);
+    try std.testing.expect(posix.write(fd, "MARKER", 6) == 6);
+    _ = posix.close(fd);
+    defer removeFile(path);
+    try std.testing.expect(try fileContains(path, "MARKER"));
+    try std.testing.expect(!try fileContains(path, "ABSENT"));
+    try std.testing.expectError(error.Unreadable, fileContains(".zig-cache/no-such-capture", "X"));
 }
 
 fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
@@ -1082,6 +1231,8 @@ fn buildJson(
 
     try w.appendSlice(arena, ",\n  \"l0\": ");
     try jsonString(w, arena, l0_note);
+    try w.appendSlice(arena, ",\n  \"l1\": ");
+    try jsonString(w, arena, l1_note);
     try w.appendSlice(arena, ",\n  \"oracle\": ");
     try jsonString(w, arena, oracle_note);
     try w.appendSlice(arena, ",\n  \"checker\": ");

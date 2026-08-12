@@ -86,6 +86,22 @@
  *                      while the oracle sees every attempt. The timewarrior shape: its
  *                      AtomicFile cleanup removes each registered temp name at exit,
  *                      including names it never created.
+ *
+ * The four below exist for the L1 success marker (ADR 0008).
+ *   TOY_MARKER          the correct shape: commit everything, print COMMITTED with an
+ *                       explicit flush, then do benign trailing work (a scratch file in
+ *                       neither the pre nor the post snapshot) so crash points exist on
+ *                       the far side of the claim. Marker worlds must PASS.
+ *   TOY_MARKER_EARLY    the bug shape: the claim precedes the commit. Worlds killed
+ *                       between the flush and the rename hold old content while the
+ *                       marker was already spoken — not_durable.
+ *   TOY_MARKER_CREATES  claims success, then creates receipt.txt (a post-only file the
+ *                       claim covers). The world killed before the create has the
+ *                       marker and no receipt — not_durable pins the existence rule.
+ *   TOY_MARKER_NOFLUSH  prints the marker with no flush. Every killed world loses the
+ *                       buffer with the process, so zero crash worlds observe it — an
+ *                       honestly vacuous L1 — while the recording run's exit-time flush
+ *                       still delivers it, so the run is not marker_never_observed.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -479,6 +495,19 @@ static int cmd_rotate(void) {
         if (write_file(nd, content) != 0) return 1;
     }
 
+    /* The L1 bug shapes: the success claim precedes the commit (ADR 0008). */
+    if (getenv("TOY_MARKER_EARLY")) {
+        printf("COMMITTED\n");
+        fflush(stdout);
+    }
+    if (getenv("TOY_MARKER_CREATES")) {
+        printf("COMMITTED\n");
+        fflush(stdout);
+        char rc[4096];
+        join_path(rc, sizeof rc, "receipt.txt");
+        if (write_file(rc, "ok\n") != 0) return 1;
+    }
+
     maybe_leave_the_supported_region();
 
     if (write_file(tmp, "key=2\n") != 0) return 1;
@@ -489,6 +518,19 @@ static int cmd_rotate(void) {
 #endif
 
     if (rename(tmp, key) != 0) return 1;
+
+    /* The correct L1 shape: claim success only after the commit, then do benign
+     * trailing work so crash points exist on the far side of the claim. The scratch
+     * file is in neither the pre nor the post snapshot, so only the marker windows
+     * make these addresses interesting. */
+    if (getenv("TOY_MARKER") || getenv("TOY_MARKER_NOFLUSH")) {
+        printf("COMMITTED\n");
+        if (getenv("TOY_MARKER")) fflush(stdout);
+        char scr[4096];
+        join_path(scr, sizeof scr, "post-marker.tmp");
+        if (write_file(scr, "x\n") != 0) return 1;
+        if (unlink(scr) != 0) return 1;
+    }
     return 0;
 }
 

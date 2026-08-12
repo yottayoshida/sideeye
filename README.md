@@ -113,6 +113,9 @@ state = "./state"               # resolves against this file's directory
 setup     = "mytool init"
 operation = "mytool rotate-key"
 check     = "./check.sh"        # exit 0 = invariant holds, run after crash + restart
+marker    = "Recorded"          # optional: the operation's own success claim (L1) —
+                                # in worlds where it reached stdout before the kill,
+                                # the new state must survive
 ```
 
 The parser accepts exactly this shape and refuses everything else with the offending

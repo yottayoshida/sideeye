@@ -2,6 +2,38 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — L1: the program is held to its own words, across the whole post snapshot (ADR 0008)
+
+Third PR of v0.3. A success marker (`marker` in the toml, `--marker` as a flag) makes
+the post-success invariant real: in worlds where the marker's bytes reached stdout
+before the kill, the *new* state must survive — shared files on post content, history
+files longer than their pre, created files present, deleted files gone (`not_durable`).
+Judging the whole post snapshot is the point: the plan's own adversarial review
+(Critical 1) caught that a strengthened L0 over shared files would miss a created file
+vanishing — exactly what a success claim covers.
+
+Two honesty edges did the design work. **"Not applicable" and "not observable" are
+different absences**: a crash world killed before the marker is the normal shape of a
+conditional invariant (L0 and the checker judged it anyway), but a marker the clean
+recording run cannot produce refuses as `marker_never_observed` — a misspelled marker
+must not make every L1 obligation silently vacuous behind a PASS. **The plan was wrong
+about one case and the measurement fixed it**: the no-flush variant was slated to be
+`marker_never_observed`, but a recording run completes normally, so libc's exit-time
+flush delivers even an unflushed buffer to the capture — the honest verdict is a PASS
+with `marker observed in 0 of N crash worlds`, and that is what ships (the buffer dies
+with the process in every killed world, which is true of the real program too).
+
+Mechanics: every operation run — recording, worlds, baseline — writes stdout to the
+work directory through the same redirection (`runChildCapture`), so an isatty branch
+cannot make the recording describe a different execution than the worlds; stdout
+writes consume no crash-point address, so addressing is untouched. A rolling-window
+`fileContains` scans the capture without holding a chatty target's output in memory
+(the boundary-straddling marker is pinned by a unit test). The toy grew four L1
+shapes; measured: the correct shape passes with the marker observed in 4 of 8 crash
+worlds (the anti-vacuity bounds hold on both sides), claim-before-commit and
+claim-before-create both FAIL as `not_durable`, and the misconfigured marker refuses.
+Target stdout no longer leaks into the engine's console — the dogfood noise is gone.
+
 ## 2026-08-12 — sideeye.toml: the parser's width is the contract's width (ADR 0007)
 
 Second PR of v0.3. The define surface gets its file form: `[world] state`,
