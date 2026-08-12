@@ -2,6 +2,61 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — `sideeye mcp`: a stateless MCP server, over paths not commands (ADR 0010, v0.5)
+
+The agent-facing surface DESIGN §3 promised, and the first half of §17's second
+criterion. `sideeye mcp` is a single-binary subcommand — a stateless loop over
+`server/discover` / `tools/list` / `tools/call` (MCP 2026-07-28 dropped the
+`initialize` handshake and exempts stdio from OAuth, which made a hand-written Zig
+server small and killed the case for an SDK wrapper).
+
+The plan's adversarial review (three Criticals) reshaped it before a line was written,
+and building it caught two more failures that only a real run surfaces:
+
+- **Design (review):** raw `operation`/`shim` as tool input is confused-deputy RCE, so
+  the tools take *paths* (`config_path`/`case_path`), confined inside
+  `SIDEEYE_MCP_ROOT`; the operation lives in the config, a human-inspectable file. The
+  child is self-exec'd through the canonical binary (`/proc/self/exe`, not argv[0] —
+  PATH hijack), with its stdout captured to a file (fd 1 stays the pure MCP transport)
+  and a minimal environment (execve, PATH only — the server's credentials do not reach
+  a config's operation). Acceptance pins all three: a PATH-planted fake `sideeye` is
+  ignored, a secret env var does not reach the child, a path outside the root is
+  refused before any exec.
+- **Build (measured):** the PoC's first real `explore` call returned no response.
+  Cause: the report is pretty-printed (newlines), and embedding it raw in
+  `structuredContent` split the single-line JSON-RPC frame — the transport invariant
+  the PoC exists to prove, broken by my own serializer. Fix: minify the report before
+  embedding. Then a second real-run bug: the stdin loop dropped a final message not
+  terminated by a newline (many writers omit the trailing `\n`), so a single unframed
+  request produced silence. Fix: flush the buffer at EOF. Both are the class that
+  passes unit tests and dies on first contact — which is why the plan raised the PoC's
+  bar to "a real explore, self-exec'd, with fd 1 uncontaminated".
+
+Measured end-to-end (Linux container): MCP `explore` with an oracle returns FAIL and
+saves a case under the server root; MCP `replay` of that case reproduces the FAIL —
+the loop-closes surface (§17 second criterion) works over the wire. Full MCP
+acceptance green (transport framing, `_meta` validation on every method, version
+negotiation, path confinement, env isolation, canonical self-exec). isError separates
+a real verdict (PASS/FAIL) from an actionable one (SETUP ERROR / retryable UNKNOWN) so
+the model can self-correct. Cancellation of a long explore is deferred (the sync loop
+blocks; **parent-death cleanup of the self-exec'd group is not implemented** — a server
+killed mid-explore can leave the target group behind, tracked honestly as a limitation,
+not claimed as done) — the Tasks extension is future work.
+
+Review R1 (Codex) then caught what the design draft got wrong about the *spec itself*,
+which is the part I had read only in summary: `_meta` lives under `params`, not at the
+top level, and `server/discover` returns `supportedVersions` + `capabilities`, not a
+bare `supported` — as written, the server would have refused every spec-compliant
+client (P0×2, fixed against schema.ts). And it found real hardening gaps: the child
+still inherited fd 0/2 (a config's operation could read the MCP transport) and other
+fds — now stdin→/dev/null, stderr→capture, higher fds closed, capture opened
+`O_NOFOLLOW|O_EXCL` in a 0700 work dir; the report read is capped (4 MiB) and an
+oversized stdin line is drained rather than mis-parsed. One review point (a
+copy-into-work-dir TOCTOU defence) was tried and reverted: it breaks a config's own
+relative resolution, and the residual window needs an attacker-writable root, which
+SIDEEYE_MCP_ROOT is not by contract — stated in ADR 0010 rather than papered over with
+a fix that breaks the common case.
+
 ## 2026-08-12 — §17 substantially met on the calibration target (two gaps), and why omamori was the wrong place to demand it
 
 A wrong turn corrected first. The plan had "omamori §17 evaluation, human-driven at a

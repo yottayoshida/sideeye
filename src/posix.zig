@@ -43,6 +43,11 @@ pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
 pub extern "c" fn fork() c_int;
 pub extern "c" fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) c_int;
+/// Exec with an explicit environment, so a child can be given a *minimal* env rather
+/// than inheriting the parent's (the MCP server must not hand its credentials to a
+/// config's operation). Requires an absolute path — no PATH search — which pairs with
+/// the canonical self-path the MCP adapter resolves.
+pub extern "c" fn execve(path: [*:0]const u8, argv: [*]const ?[*:0]const u8, envp: [*]const ?[*:0]const u8) c_int;
 pub extern "c" fn waitpid(pid: c_int, status: ?*c_int, options: c_int) c_int;
 pub extern "c" fn setpgid(pid: c_int, pgid: c_int) c_int;
 pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
@@ -53,8 +58,12 @@ pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
 /// nothing in this file needs a field of it.
 pub extern "c" fn waitid(idtype: c_int, id: c_int, infop: *anyopaque, options: c_int) c_int;
 pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
+pub extern "c" fn getenv(name: [*:0]const u8) ?[*:0]u8;
 pub extern "c" fn _exit(status: c_int) noreturn;
 pub extern "c" fn realpath(path: [*:0]const u8, resolved: [*]u8) ?[*:0]u8;
+/// macOS: fills `buf` with the executable's path (may be non-canonical; realpath it).
+/// Returns 0 on success; on too-small buffer returns -1 and writes the needed size.
+pub extern "c" fn _NSGetExecutablePath(buf: [*]u8, bufsize: *u32) c_int;
 pub extern "c" fn getcwd(buf: [*]u8, size: usize) ?[*:0]u8;
 pub extern "c" fn rename(old: [*:0]const u8, new: [*:0]const u8) c_int;
 pub extern "c" fn access(path: [*:0]const u8, mode: c_int) c_int;
@@ -85,6 +94,7 @@ pub const O_WRONLY: c_int = 1;
 pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
+pub const O_NOFOLLOW: c_int = if (builtin.os.tag == .linux) 0o400000 else 0x100;
 
 // Values of `dirent.type`, identical on Linux and the BSDs.
 pub const DT_UNKNOWN: u8 = 0;
@@ -215,7 +225,7 @@ pub fn runChild(
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, null);
+    return runChildImpl(gpa, argv, env_pairs, null, false);
 }
 
 /// `runChild`, with the child's stdout sent to a file. What a target says on stdout
@@ -227,7 +237,20 @@ pub fn runChildCapture(
     env_pairs: []const [2][]const u8,
     stdout_path: []const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path);
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, false);
+}
+
+/// Like `runChildCapture`, but the child receives *only* `env_pairs` as its whole
+/// environment (via `execve`, argv[0] an absolute path — no inheritance, no PATH
+/// search). The MCP adapter uses this so a config's operation cannot read the server's
+/// credentials, and so a canonical self-path is what actually runs (ADR 0010).
+pub fn runChildCaptureMinimalEnv(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    stdout_path: []const u8,
+) SpawnError!Term {
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, true);
 }
 
 fn runChildImpl(
@@ -235,6 +258,7 @@ fn runChildImpl(
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
     stdout_path: ?[]const u8,
+    minimal_env: bool,
 ) SpawnError!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -249,6 +273,14 @@ fn runChildImpl(
         env_z[i][0] = (try arena.dupeZ(u8, kv[0])).ptr;
         env_z[i][1] = (try arena.dupeZ(u8, kv[1])).ptr;
     }
+    // For minimal-env exec: a NULL-terminated `NAME=VALUE` array to hand execve.
+    const envp: ?[*]const ?[*:0]const u8 = if (minimal_env) blk: {
+        const list = try arena.alloc(?[*:0]const u8, env_pairs.len + 1);
+        for (env_pairs, 0..) |kv, i|
+            list[i] = (try std.fmt.allocPrintSentinel(arena, "{s}={s}", .{ kv[0], kv[1] }, 0)).ptr;
+        list[env_pairs.len] = null;
+        break :blk list.ptr;
+    } else null;
     const stdout_z: ?[*:0]const u8 = if (stdout_path) |sp| (try arena.dupeZ(u8, sp)).ptr else null;
 
     const pid = fork();
@@ -260,18 +292,43 @@ fn runChildImpl(
             // A capture that cannot be opened must not fall back to the engine's own
             // stdout: a world whose evidence went to the wrong stream would read as
             // "marker never appeared". 126 is distinct from exec's 127 on purpose.
-            const cfd = open(sz, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+            // Under minimal_env (the MCP path) the capture is opened O_NOFOLLOW|O_EXCL:
+            // the work dir is attacker-visible in the general case, and a pre-planted
+            // symlink must not turn the capture into an arbitrary-file truncation or a
+            // read of the child's stdout by someone else.
+            const flags: c_int = if (minimal_env)
+                O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_EXCL
+            else
+                O_WRONLY | O_CREAT | O_TRUNC;
+            const cfd = open(sz, flags, @as(c_uint, 0o600));
             if (cfd < 0) _exit(126);
-            // When fd 1 was closed at launch, open() itself returns 1 and the fd is
-            // already in place — dup2(1, 1) would be a no-op but the close below
-            // would destroy the capture.
             if (cfd != 1) {
                 if (dup2(cfd, 1) < 0) _exit(126);
                 _ = close(cfd);
             }
+            if (minimal_env) {
+                // The child (a config's operation, untrusted) must not read the MCP
+                // transport on fd 0, nor write to it on fd 2. stdin → /dev/null,
+                // stderr → the same capture file. Higher fds are closed so no inherited
+                // descriptor (the JSON-RPC stdin among them) survives into the child.
+                const nfd = open("/dev/null", O_RDONLY, @as(c_uint, 0));
+                if (nfd >= 0 and nfd != 0) {
+                    _ = dup2(nfd, 0);
+                    _ = close(nfd);
+                }
+                _ = dup2(1, 2); // stderr → capture
+                var fd: c_int = 3;
+                while (fd < 256) : (fd += 1) _ = close(fd);
+            }
         }
-        for (env_z) |kv| _ = setenv(kv[0], kv[1], 1);
-        _ = execvp(argv_z[0].?, argv_z.ptr);
+        if (envp) |ep| {
+            // execve replaces the whole environment: no inheritance. argv[0] must be an
+            // absolute path (the adapter passes the canonical self-path).
+            _ = execve(argv_z[0].?, argv_z.ptr, ep);
+        } else {
+            for (env_z) |kv| _ = setenv(kv[0], kv[1], 1);
+            _ = execvp(argv_z[0].?, argv_z.ptr);
+        }
         // Only reached when exec failed; 127 is the shell's convention for that.
         _exit(127);
     }

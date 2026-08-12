@@ -114,6 +114,8 @@ Scope:
 
 Acceptance: loop closure demonstrated end-to-end at least once; calibration results published in the buildlog, whatever they are.
 
+**Status (2026-08-12): the agent-facing surface is built.** `sideeye mcp` (ADR 0010) gives an agent the standard MCP tool surface — explore a `sideeye.toml` and replay a saved case, both measured end-to-end over the wire (explore → case → replay reproduces). The calibration target is already met (timewarrior, §18/§17 status). What remains for the milestone is the loop-closure *test* itself: hand an agent only the report and the repository through this surface and see whether it fixes the finding without human translation — the surface is ready to run it.
+
 ### v1.0 — Contract freeze
 
 Entry criteria — all must hold, none may be argued around:
