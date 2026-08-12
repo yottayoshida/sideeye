@@ -352,6 +352,14 @@ The success metric for v0 is not feature count, fault-type count, or GitHub star
 
 If the primary criterion holds, Sideeye has partially mechanized a human's way of doubting — not merely re-run existing tests.
 
+**Status (2026-08-12).** The primary criterion is *not* met on omamori and is *substantially but not fully* met on the calibration target §18 requires. This is the survivable pattern §18 describes ("zero findings on omamori is survivable"), not a claim that omamori's criterion was transferred. On timewarrior — a stateful CLI with no hand-written adversarial tests — Sideeye found that a crash between the three commit renames leaves `timew undo` deleting an interval committed before the crash. Scored against the six conditions honestly, four hold cleanly and two carry real gaps:
+
+- **reproducible / small / judged a real bug / stops after the fix** — clean. From the `reproduce` line and by hand with `cp`; one operation, a two-file window at crash point 14; judged real by this project's author (not yet confirmed by timewarrior's maintainers) and filed upstream as GothenburgBitFactory/timewarrior#778; a three-part patch reaches PASS 25/25 (measured).
+- **"discovered automatically" — partial.** Manual trace triage seeded the target and the window: a human read the plain strace, confirmed by hand (with `cp` file surgery) that `undo` destroys committed data, and *then* wrote the checker. What Sideeye automated was the crash-world search — finding and minimizing the two violating worlds of nineteen from the human-declared invariant (§4.1, "ask for invariants, invent the failures"). The mechanized half is the search, not the hypothesis.
+- **"kept as a regression" — a recipe, not a replayed case.** The recipe (`spike/dogfood-timew.sh`) and the fix (`spike/timew-undo-ordering.patch`) live in the repo and reproduce the finding, but it needs a built timewarrior, so it is not a CI-resident `sideeye replay` case. v1.0's entry criterion 1 ("kept as a replayed regression case") is therefore not yet satisfied by this.
+
+On omamori itself the criterion is not met; on `exec`, the operation this evaluation drove, it cannot be (the audit path is crash-safe by construction), and the guarded self-modification commands are not measurable under Sideeye's operation contract without break-glass — see §18.
+
 ## 18. Kill Criteria
 
 Sideeye carries explicit failure conditions for itself.
@@ -368,6 +376,8 @@ If, after a defined dogfood period, Sideeye finds nothing beyond existing hand-w
 - **UNKNOWN dominates:** if a large share of runs on supported targets end UNKNOWN, Sideeye cannot function as a gate, whatever its detection power.
 
 **Calibration.** Judging Sideeye on omamori alone conflates "Sideeye is weak" with "omamori is hardened." The dogfood period must include at least one deliberately average target: a stateful CLI with no hand-written adversarial tests. Zero findings on omamori is survivable; zero findings on an average target is evidence for a kill.
+
+**Calibration result (2026-08-12).** Both branches accounted for. On omamori, zero findings on the `exec` audit path — and the reconnaissance found *why*: the high-water mark is confirmed after the body it confirms, so verify stays conservative in every crash window (the "too hardened" reason, the survivable side). The guarded self-modification commands (config-modify, `init --force`, key rotate — omamori issue #12) refuse to run whether an agent or a human invokes them, so making one a Sideeye `operation` would require break-glass — disabling the very defence under test — and is out of scope on discipline, not measured either way; other state-changing surfaces beyond `exec` were not enumerated exhaustively. On the average target — timewarrior, no hand-written adversarial tests — a real crash-consistency bug (§17 above, four of six conditions clean, two with gaps). So: hardened on the path we can drive, and a genuine find on the deliberately-average target. That is the pattern §18 says distinguishes "the tool is weak" from "the target is strong", landing on the strong-target side — which clears the calibration kill condition, not the full v1.0 entry criterion.
 
 "We built an interesting piece of technology" is not a reason to continue.
 

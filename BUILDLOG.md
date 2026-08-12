@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — §17 substantially met on the calibration target (two gaps), and why omamori was the wrong place to demand it
+
+A wrong turn corrected first. The plan had "omamori §17 evaluation, human-driven at a
+raw terminal" as remaining work. That is not real work — it cannot be done. omamori's
+guard on config-modify / `init --force` / key rotate (#12) fires for a human at a
+terminal exactly as it does for an agent; the guard is not a session check, it is
+omamori refusing to modify its own defence, whoever asks. Making one of those a
+Sideeye `operation` means the operation exits non-zero when not killed, which Sideeye
+refuses to explore. Break-glass would "work" and would mean disabling the defence to
+measure the defended operation's crash-consistency — self-defeating, and against the
+discipline. So omamori's guarded surface is not evaluable by this tool at all, and the
+plan item was struck.
+
+That reframes what "§17 on omamori" could ever have been. The state mutation this
+session actually drove is `exec`'s audit append, and yesterday's recon showed it
+crash-safe by construction; the guarded self-modification commands are walled off by
+design, and other state-changing surfaces beyond `exec` were not enumerated
+exhaustively. Zero findings on the path we drove is exactly what §18 calls survivable
+— and now with a mechanism, not a shrug.
+
+Where §17 is *substantially but not fully* met is the calibration target §18 required
+all along: timewarrior, a stateful CLI with no hand-written adversarial tests. Scored
+honestly rather than generously, four conditions hold and two have real gaps — not
+cosmetic qualifications — and the DESIGN/PRD text now says so instead of leading with
+"met". **Reproducible / small / judged real by this project's author / stops-after-fix**:
+clean (reproduce line + `cp`; one op, two-file window; filed as timewarrior#778, not
+yet maintainer-confirmed; PASS 25/25 on the patch). **"Discovered automatically" —
+partial**: this is the honest one. A human read the plain strace, confirmed by hand
+with `cp` file surgery that `undo` destroys committed data, and *then* wrote the
+checker; Sideeye automated the crash-world search, not the hypothesis (§4.1). Writing
+this as "met" would have been the over-claim the first draft made and review caught.
+**"Kept as a regression" — a recipe, not a replayed case**: the recipe and patch are
+in the repo and reproduce it, but it needs a built timewarrior, so it is not a
+CI-resident `sideeye replay` case — which means v1.0 entry criterion 1 is not yet
+satisfied by it either.
+
+§18's calibration test — does "no findings" mean the tool is weak or the target strong
+— resolves to strong-target: hardened where we can drive omamori, a real find on the
+deliberately-average target. That clears the calibration *kill* condition and lets the
+project continue; it is not the same as clearing the v1.0 entry criterion, and the two
+gaps above are what stand between them.
+
 ## 2026-08-12 — Why omamori's audit survives every crash window: hwm is confirmed *after* the body
 
 Reconnaissance for v0.4, done the timewarrior way: read the write pattern with plain
