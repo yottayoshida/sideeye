@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-12
+
+The full Define contract: what a user writes is a `sideeye.toml`, a checker script, and nothing else — and every level of the contract ships with the refusal that keeps it honest. Measured on a fresh target the same day: watson is driven to a correct, named refusal by the file, one script and one environment variable.
+
 ### Added
 
 - Case storage and `sideeye replay` (ADR 0009). A FAIL saves its counterexample to `<work>/cases/NNNNNN.json` — the resolved define, the crash point, and a landing context (operation count, a hash of the class sequence up to the crash point, the classes and paths around it) — and prints the ready-to-paste `sideeye replay` line in text and JSON. Replay is `explore` restricted to the case's crash point plus the baseline: every trust gate (oracle comparison, structural detectors, checker falsification, landing evidence, quiescence) still runs. When the recording no longer matches the landing context — the count, the class prefix, or the adjacent classes changed, or the case came from a different trace contract — the answer is UNKNOWN `case_no_longer_applies`, never a verdict about a shifted address; path differences only warn (pid-embedded temp names differ between runs while naming the same operation).

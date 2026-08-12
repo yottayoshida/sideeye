@@ -2,6 +2,14 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — v0.3.0 ships
+
+Version bump to 0.3.0 in both hand-written places (the drift test held them
+together, as designed), `[Unreleased]` confirmed into `[0.3.0]`, tag and GitHub
+Release (`v0.3.0 — The full Define contract`) to follow on the merge commit. No
+workflow fires on tags here and nothing publishes to an external registry; the
+release is the record.
+
 ## 2026-08-12 — v0.3 closes: the worked example runs from the toml, and the budget holds on a fresh target
 
 Fifth and last PR of the plan. Two acceptance runs carry the milestone's claims.
