@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — Replay: the same pipeline, one world, and a case that knows when it no longer applies (ADR 0009)
+
+Fourth PR of v0.3, the last functional piece. A FAIL now saves its counterexample —
+schema/versions, the resolved define, k, and a landing context of three parts: the
+operation count, an FNV-1a hash over the class sequence 1..k, and the classes+paths
+adjacent to k. `sideeye replay <case.json>` is `explore` with the kill set restricted
+to {k, baseline}; the restriction is a `continue` in the world loop and nothing else,
+so the oracle comparison, structural detectors, checker falsification, landing
+evidence and quiescence all run — the acceptance pins that with a case whose stored
+checker is `/bin/true`, which must die at falsification inside the replay exactly as
+it would in an explore.
+
+The plan's two review Criticals shaped the context design: adjacent-only matching is
+aliased by one same-class insertion earlier in the sequence (every later index shifts
+by one), so the prefix hash gates; and paths only warn, because pid-embedded temp
+names differ between runs while naming the same operation — and because a fix that
+*reorders* same-class operations (the timewarrior patch, measured this morning) keeps
+classes while moving paths, which is precisely the replay-after-fix this exists for.
+A case from a different trace contract refuses outright: v4 and v5 both changed what
+`SIDEEYE_KILL_AT` counts, and a hash cannot vouch for a counting rule it was not
+computed under. The context check sits before the zero-crash-points early PASS, so a
+case whose operations all vanished cannot be answered with a green.
+
+Measured: toy-bug's FAIL saves `cases/000001.json` and prints the replay line;
+replaying unchanged reproduces (FAIL, "the case reproduced"); `TOY_EXTRA_FIRST=1` —
+one extra write at the head of the sequence — answers `case_no_longer_applies` with
+no verdict; the gated-checker case refuses `checker_not_falsified` inside the replay.
+
 ## 2026-08-12 — L1: the program is held to its own words, across the whole post snapshot (ADR 0008)
 
 Third PR of v0.3. A success marker (`marker` in the toml, `--marker` as a flag) makes

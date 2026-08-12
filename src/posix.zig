@@ -84,6 +84,7 @@ pub const O_RDONLY: c_int = 0;
 pub const O_WRONLY: c_int = 1;
 pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
+pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 
 // Values of `dirent.type`, identical on Linux and the BSDs.
 pub const DT_UNKNOWN: u8 = 0;

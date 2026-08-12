@@ -118,6 +118,12 @@ marker    = "Recorded"          # optional: the operation's own success claim (L
                                 # the new state must survive
 ```
 
+A FAIL saves its counterexample to `<work>/cases/NNNNNN.json` and prints the
+ready-to-paste `sideeye replay <case.json>` line. Replay re-runs the same pipeline —
+every trust gate included — restricted to that crash point; when the code changed
+underneath the case, the answer is `case no longer applies`, never a verdict about a
+shifted address.
+
 The parser accepts exactly this shape and refuses everything else with the offending
 line named — an ignored key would be a declared invariant that silently never fires.
 `--config` is mutually exclusive with the define-surface flags

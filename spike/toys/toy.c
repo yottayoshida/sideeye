@@ -102,6 +102,10 @@
  *                       buffer with the process, so zero crash worlds observe it — an
  *                       honestly vacuous L1 — while the recording run's exit-time flush
  *                       still delivers it, so the run is not marker_never_observed.
+ *   TOY_EXTRA_FIRST     one extra state operation before everything else: the
+ *                       prefix-insertion that must make a saved case refuse as
+ *                       "case no longer applies" instead of silently verifying a
+ *                       shifted address (ADR 0009).
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -321,6 +325,13 @@ static int cmd_rotate(void) {
 
     /* A read-only open of state before any mutation. The result is deliberately unused:
      * the point is the open itself, which must not consume a crash-point address. */
+    /* Before everything else, so a saved case's whole prefix shifts by one. */
+    if (getenv("TOY_EXTRA_FIRST")) {
+        char ex[4096];
+        join_path(ex, sizeof ex, "extra.txt");
+        if (write_file(ex, "extra\n") != 0) return 1;
+    }
+
     if (getenv("TOY_READ_FIRST")) {
         char buf[256];
         (void)read_key(buf, sizeof buf);

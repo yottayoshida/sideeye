@@ -1270,6 +1270,59 @@ l1_case "a marker the clean run cannot produce is UNKNOWN, not a vacuous PASS" \
 l1_case "an unflushed marker is honestly vacuous: observed in 0 crash worlds, still PASS" \
     TOY_MARKER_NOFLUSH COMMITTED 0 "marker observed in 0 of"
 
+echo "=========== check 2z: a saved case replays honestly (ADR 0009) ==========="
+# A FAIL saves its counterexample; replaying it re-runs the same pipeline restricted
+# to that crash point plus the baseline — the trust gates included. A recording whose
+# landing context changed answers "case no longer applies", never a verdict about a
+# shifted address; and a replayed define whose checker cannot be falsified refuses
+# exactly like an explore would (the gate-preservation probe).
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+case_file=/tmp/acc/work/cases/000001.json
+if [ -s "$case_file" ] && echo "$o" | grep -q "replay      sideeye replay"; then
+    echo "ok   a FAIL saves its case and prints the replay command"
+else
+    echo "FAIL case saving: file or replay line missing"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+o=$("$SIDEEYE" replay "$case_file" --shim "$SHIM" --work /tmp/acc/work-r --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "crash worlds violated" && echo "$o" | grep -q "the case reproduced"; then
+    echo "ok   an unchanged target reproduces the case (FAIL)"
+else
+    echo "FAIL replay reproduction: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+o=$(env TOY_EXTRA_FIRST=1 "$SIDEEYE" replay "$case_file" --shim "$SHIM" --work /tmp/acc/work-r2 --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "case_no_longer_applies" && ! echo "$o" | grep -qE "^(PASS|FAIL)"; then
+    echo "ok   a prefix insertion refuses as 'case no longer applies', with no verdict"
+else
+    echo "FAIL replay context guard: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+python3 - "$case_file" /tmp/acc/gated-case.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["check"] = "/bin/true"   # a checker falsification can never pass
+json.dump(c, open(sys.argv[2], "w"))
+PY
+o=$("$SIDEEYE" replay /tmp/acc/gated-case.json --shim "$SHIM" --work /tmp/acc/work-r3 --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "checker_not_falsified"; then
+    echo "ok   the trust gates run inside a replay (an unfalsifiable checker refuses)"
+    reasons="$reasons case_no_longer_applies"
+else
+    echo "FAIL replay gate preservation: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to

@@ -263,6 +263,12 @@ pub const UnknownReason = enum {
     /// crash world killed before the marker is not this: there the conditional simply
     /// does not apply, which is the normal shape of a post-success invariant.
     marker_never_observed,
+    /// A saved case was replayed against code whose recording no longer matches the
+    /// case's landing context — the operation count, the class sequence up to the
+    /// crash point, or the classes around it changed. Killing at the recorded index
+    /// would verify a different point than the counterexample named, so the replay
+    /// refuses rather than answer about the wrong world (ADR 0009, DESIGN §13).
+    case_no_longer_applies,
     /// The recording run did not complete normally. Its trace describes a partial
     /// execution, so the crash points derived from it address an operation sequence the
     /// target does not actually perform.
