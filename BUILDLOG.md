@@ -2,6 +2,21 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — v0.4.0: the milestone is the measurements; the tag carries a passenger
+
+Version 0.3.0 → 0.4.0, both hand-written strings at once (the unit test holds the
+manifest and the CLI banner together — that is why the bump cannot be forgotten in
+one place). What the release claims is the v0.4 milestone: §17 evaluated honestly
+across omamori's full surface (the enumeration entry above) and regression-case
+stability measured across the real timewarrior fix (the four-legs entry). What the
+tag *carries* besides that claim is the MCP adapter and its post-merge fixes — v0.5's
+surface landed on main before v0.4 was cut, and a tag cannot pick its passengers, so
+the CHANGELOG and PRD both say so rather than letting the numbering imply v0.5
+happened. The 0.5.0 tag waits for the loop-closure test, which is v0.5's own
+acceptance. Repaired in passing, because the release links now exist to be checked:
+the CHANGELOG's bottom link references had never gained `[0.3.0]` — the release that
+introduced the section forgot the pointer to itself.
+
 ## 2026-08-12 — Every omamori surface, counted twice: the enumeration closes, three probes hit the same named wall
 
 PRD v0.4's status has carried an honest parenthesis since this morning — "other
