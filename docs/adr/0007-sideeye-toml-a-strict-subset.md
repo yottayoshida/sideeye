@@ -1,6 +1,6 @@
 # ADR 0007 — sideeye.toml is a strict subset, hand-parsed, and owns only the define surface
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-12)
 - **Supersedes:** nothing. Gives DESIGN §12's "three commands and one directory" its
   file form; flags remain valid
 - **Scope:** a new `src/config.zig`, the `--config` flag, and the exclusivity rule
