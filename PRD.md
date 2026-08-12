@@ -56,22 +56,24 @@ Shipped:
 
 Acceptance, measured: six acceptance cases over one binary with one environment variable of difference decide tolerance by the child's behaviour alone, and the dogfood target now travels past the boundary gate to fail for its true reason (a rustix-issued raw syscall — #19) instead of the categorical one.
 
-### v0.3 — The full Define contract
+### v0.3 — The full Define contract (delivered 2026-08-12)
 
 **Goal:** the three-commands-and-a-directory contract of DESIGN §12, complete.
 
-Scope:
+Shipped, one PR per piece (#43, #44/ADR 0007, #47/ADR 0008, #49/ADR 0009, plus the acceptance):
 
-- L1 success markers and post-success invariants (the program's stdout claims, held against it).
-- L2 checker scripts (fresh process, after restart, exit code = verdict).
-- Checker falsification before every run (corrupted state must FAIL the check, else UNKNOWN — DESIGN §14-13).
-- Shrinking: earliest/simplest failing crash point selected and reported.
-- Case storage with landing context (DESIGN §14-14), and `sideeye replay <case>` on top of it.
+- Refusals name the operation they refused on (#41): the divergence index, the raw strace line, the shim's account — in text and JSON alike.
+- `sideeye.toml` (ADR 0007): a hand-parsed strict subset owning the define surface only; unknown keys refuse with their line, and a key joins the schema only in the change that enforces it.
+- L1 success markers and post-success invariants (ADR 0008): judged against the whole post snapshot in worlds where the marker reached stdout before the kill; a marker the clean run cannot produce refuses (`marker_never_observed`) instead of going silently vacuous.
+- L2 checker scripts and checker falsification before every run — both shipped early, in v0.1, and exercised by every dogfood since.
+- Case storage with landing context and `sideeye replay` (ADR 0009): replay is the explore pipeline restricted to the case's crash point plus the baseline, every trust gate intact; a changed recording answers `case_no_longer_applies`, never a verdict about a shifted address.
+- **Scope narrowed, deliberately:** shrinking in v0.3 means the *earliest* failing crash point, reported with its logical address. "Simplest" and measured reproducibility counts remain future work, and the report claims neither.
 
-Acceptance:
+Acceptance (measured, in `spike/acceptance.sh`):
 
-- The doctor-cross-examination scenario runs end-to-end against a toy target.
-- Conditional-invariant vacuity is covered by tests: a killed run never satisfies the success marker, and the suite asserts that L1 worlds are the strict subset where the marker appeared.
+- The doctor-cross-examination scenario runs end-to-end against a toy target, driven by the toml alone (check 2aa).
+- Conditional-invariant vacuity both ways (check 2y): the marker-observed worlds are a strict subset of the crash worlds (`0 < 4 < 8` measured on the marker toy), an unflushed marker yields an honestly vacuous zero, and a marker the clean run cannot produce is UNKNOWN.
+- The define budget, measured on a fresh target (`spike/dogfood-watson/`): watson is driven to a correct, named refusal — `baseline_violates_invariant`, its frames carry a fresh uuid per run — by a `sideeye.toml`, one checker script, and one environment variable. The budget held; the refusal did its job.
 
 ### macOS native — absorbed into v0.1
 

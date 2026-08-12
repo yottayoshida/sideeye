@@ -1,0 +1,19 @@
+# Watson (td-watson, PyPI), a Python time tracker: a fresh target defined entirely by
+# this file — the PRD kill criteria 3 measurement (the define budget: three commands
+# and one directory). The runner provides the environment: WATSON_DIR must point at
+# the resolved [world] state directory, and `watson` must be on PATH
+# (pip install td-watson; this network needs --trusted-host pypi.org
+# --trusted-host files.pythonhosted.org).
+#
+# Measured 2026-08-12 (watson 2.1.0, aarch64 container): the run is refused honestly —
+# watson stamps every frame with a fresh uuid4 and an updated-at timestamp, so the
+# operation is not byte-reproducible and the un-crashed baseline world cannot match
+# the recorded final state (`baseline_violates_invariant`, the same class the first
+# omamori run surfaced). The define fits this file; the refusal names the reason.
+[world]
+state = "./state"
+
+[define]
+setup     = "watson add --from 2020-01-01T08:00:00 --to 2020-01-01T09:00:00 seeded"
+operation = "watson add --from 2020-01-01T10:00:00 --to 2020-01-01T11:00:00 alpha"
+check     = "./check.sh"
