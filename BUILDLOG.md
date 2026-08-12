@@ -2,6 +2,35 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-12 — sideeye.toml: the parser's width is the contract's width (ADR 0007)
+
+Second PR of v0.3. The define surface gets its file form: `[world] state`,
+`[define] setup / operation / check`, parsed by a hand-written strict subset
+(~100 lines, `src/config.zig`) that refuses everything else with the offending line
+named — unknown sections, unknown keys, bare values, duplicates, empty values,
+escape sequences, trailing junk. The refusals are the design: a full TOML dependency
+would accept arrays and dotted keys whether the contract wants them or not, and an
+ignored key is a declared invariant that silently never fires, which is this tool's
+worst shape wearing config clothes.
+
+Three decisions worth their ink. **Keys exist only once they are enforced** —
+`marker` is deliberately not in the schema until the PR that makes L1 judge
+something; today it refuses as an unknown key, and the acceptance suite pins exactly
+that, so the L1 PR will have to flip a red check rather than un-forget a parser.
+**The file owns the define surface only** — `--shim`/`--oracle`/`--work`/`--json`/
+`--allow-unverified` stay flags and combine with `--config`; the define-surface
+flags are mutually exclusive with it, because a precedence merge would make the file
+unreadable on its own (which line is in effect becomes invisible). **Relative paths
+resolve against the toml's directory**, and command argv[0] resolves only when it
+names a place (`./check.sh`), never a program (`mytool` stays a PATH lookup) — the
+same file has to mean the same thing from anywhere, or a replayed define points at a
+different state.
+
+Measured: red first (the pre-change binary answers `--config` with "unknown
+option"), then the DESIGN §12 example parses inline comments and all, a toml-driven
+toy-fixed run reaches the byte-identical PASS verdict line the flags reach, and the
+three refusal classes name their lines. Full acceptance green.
+
 ## 2026-08-12 — v0.3 begins: a refusal names the operation it refused on (#41)
 
 First PR of the v0.3 plan. The account comparison already computed the divergence

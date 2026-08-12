@@ -1164,6 +1164,69 @@ echo "=========== check 2w: remove(3) is observed, attempt for attempt =========
 stdio_case "remove(3) of a file, a missing path, and a directory" TOY_REMOVE "$OUT/toy-fixed" \
     "open:scratch.txt write:scratch.txt unlink:scratch.txt unlink:never-made.tmp mkdir:subdir unlink:subdir rmdir:subdir $rotate_tail"
 
+echo "=========== check 2x: sideeye.toml is the define surface, and it fails closed ==========="
+# ADR 0007: the file owns state/setup/operation/check; what the parser accepts is the
+# width of the contract, so unknown keys, bare values and flag/file mixing refuse with
+# the offending line named. `marker` doubles as the unknown-key probe on purpose — it
+# must refuse until the change that makes L1 enforce it lands, because a key that
+# parses before it acts is a declared invariant that silently never fires.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+flags_out=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+flags_verdict=$(echo "$flags_out" | grep "^PASS" | head -1)
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+cat > /tmp/acc/sideeye.toml <<TOML
+[world]
+state = "./state"                       # resolves against this file's directory
+[define]
+setup     = "$OUT/toy-fixed init"
+operation = "$OUT/toy-fixed rotate"
+TOML
+toml_out=$("$SIDEEYE" explore --config /tmp/acc/sideeye.toml \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+toml_verdict=$(echo "$toml_out" | grep "^PASS" | head -1)
+if [ -n "$toml_verdict" ] && [ "$toml_verdict" = "$flags_verdict" ]; then
+    echo "ok   a toml-driven run reaches the very verdict the flags reach"
+else
+    echo "FAIL toml equivalence:"
+    echo "     | flags: $flags_verdict"
+    echo "     | toml:  $toml_verdict"
+    echo "$toml_out" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+toml_refusal() { # $1 label, $2 toml body, $3 expected fragment
+    printf '%s\n' "$2" > /tmp/acc/bad.toml
+    o=$("$SIDEEYE" explore --config /tmp/acc/bad.toml --shim "$SHIM" --work /tmp/acc/work 2>&1)
+    rc=$?
+    if [ "$rc" = "3" ] && echo "$o" | grep -q "$3"; then
+        echo "ok   $1"
+    else
+        echo "FAIL $1: exit $rc (wanted SETUP ERROR containing '$3')"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+}
+toml_refusal "an unknown key refuses with its line (marker, until L1 enforces it)" \
+'[world]
+state = "./state"
+[define]
+operation = "x"
+marker = "done"' "line 5: unknown key"
+toml_refusal "a bare value refuses" \
+'[world]
+state = ./state' "line 2"
+o=$("$SIDEEYE" explore --config /tmp/acc/sideeye.toml --operation "x" --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "mutually exclusive"; then
+    echo "ok   --config and a define-surface flag refuse together"
+else
+    echo "FAIL config/flag exclusivity: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to

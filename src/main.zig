@@ -4,6 +4,7 @@ const contract = @import("contract");
 const engine = @import("engine.zig");
 const posix = @import("posix.zig");
 const oracle = @import("oracle.zig");
+const config = @import("config.zig");
 
 /// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
 /// same number, and they had already drifted: the package said 0.1.0 while `--help` said
@@ -54,6 +55,7 @@ const Args = struct {
     check: ?[]const u8 = null,
     allow_unverified: bool = false,
     json: ?[]const u8 = null,
+    config: ?[]const u8 = null,
 };
 
 /// What the report says so far.
@@ -96,6 +98,9 @@ fn usage() void {
         \\usage:
         \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--shim <lib>] [--work <dir>]
         \\
+        \\  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
+        \\               mutually exclusive with --state/--setup/--operation/--check.
+        \\               Relative paths in the file resolve against its own directory
         \\  --state      directory whose contents define the target's state
         \\  --setup      command that produces the initial state (run once)
         \\  --operation  command to explore; killed before each operation that can change state
@@ -207,6 +212,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
         else if (std.mem.eql(u8, argv[i], "--check")) args.check = v
+        else if (std.mem.eql(u8, argv[i], "--config")) args.config = v
         else if (std.mem.eql(u8, argv[i], "--json")) {
             args.json = v;
             json_path = v;
@@ -217,6 +223,34 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         else setupError("unknown option");
         i += 2;
+    }
+
+    // The define surface comes from exactly one place (ADR 0007): a config file or
+    // the flags, never a merge — a precedence table would make the file unreadable
+    // on its own, and which line was in effect would be invisible.
+    if (args.config) |cfg_path| {
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null)
+            setupError("--config and the define-surface flags (--state, --setup, --operation, --check) are mutually exclusive: the define lives in one place or the other");
+        const arena = arena_state.allocator();
+        const text = readFileAlloc(arena, cfg_path) orelse setupError(
+            std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
+        );
+        switch (config.parse(arena, text) catch setupError("out of memory")) {
+            .ok => |d| {
+                const dir = std.fs.path.dirname(cfg_path) orelse ".";
+                args.state = resolvePathAgainst(arena, dir, d.state);
+                args.setup = if (d.setup) |s| resolveCommandAgainst(arena, dir, s) else null;
+                args.operation = resolveCommandAgainst(arena, dir, d.operation);
+                args.check = if (d.check) |c| resolveCommandAgainst(arena, dir, c) else null;
+            },
+            .fault => |f| {
+                const msg = if (f.line == 0)
+                    std.fmt.allocPrint(arena, "{s}: {s}", .{ cfg_path, f.what }) catch f.what
+                else
+                    std.fmt.allocPrint(arena, "{s} line {d}: {s}", .{ cfg_path, f.line, f.what }) catch f.what;
+                setupError(msg);
+            },
+        }
     }
 
     const state = args.state orelse setupError("--state is required");
@@ -1122,6 +1156,45 @@ fn removeFile(path: []const u8) void {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return;
     _ = posix.unlink(z.ptr);
+}
+
+/// A relative path in a sideeye.toml means "relative to the toml", not to wherever
+/// the process happens to run (ADR 0007) — the same file has to mean the same thing
+/// from anywhere, or a replayed define quietly points at a different state.
+fn resolvePathAgainst(arena: std.mem.Allocator, dir: []const u8, path: []const u8) []const u8 {
+    if (path.len == 0 or path[0] == '/') return path;
+    return std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, path }) catch setupError("out of memory");
+}
+
+/// Commands resolve their argv[0] only when it names a place (`./check.sh`), never a
+/// program (`mytool` stays a PATH lookup). The rest of the string is untouched — the
+/// split-on-spaces rule is the flags' rule, written into ADR 0007. argv[0] is found
+/// the way the executor finds it — after skipping leading spaces — or a value like
+/// `" ./check.sh"` would slip past resolution and run cwd-relative, quietly breaking
+/// the "same file means the same thing from anywhere" rule.
+fn resolveCommandAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const u8) []const u8 {
+    var start: usize = 0;
+    while (start < cmd.len and cmd[start] == ' ') start += 1;
+    const rest = cmd[start..];
+    const sp = std.mem.indexOfScalar(u8, rest, ' ');
+    const head = if (sp) |p| rest[0..p] else rest;
+    const tail = if (sp) |p| rest[p..] else "";
+    if (head.len == 0 or head[0] == '/' or std.mem.indexOfScalar(u8, head, '/') == null) return cmd;
+    return std.fmt.allocPrint(arena, "{s}/{s}{s}", .{ dir, head, tail }) catch setupError("out of memory");
+}
+
+test "toml paths resolve against the toml's directory, commands only when they name a place" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    try std.testing.expectEqualStrings("/cfg/./state", resolvePathAgainst(a, "/cfg", "./state"));
+    try std.testing.expectEqualStrings("/abs", resolvePathAgainst(a, "/cfg", "/abs"));
+    try std.testing.expectEqualStrings("/cfg/./check.sh --strict", resolveCommandAgainst(a, "/cfg", "./check.sh --strict"));
+    try std.testing.expectEqualStrings("mytool rotate-key", resolveCommandAgainst(a, "/cfg", "mytool rotate-key"));
+    try std.testing.expectEqualStrings("/usr/bin/tool x", resolveCommandAgainst(a, "/cfg", "/usr/bin/tool x"));
+    // argv[0] is found the way the executor finds it: leading spaces must not let a
+    // place-naming command slip past resolution and run cwd-relative.
+    try std.testing.expectEqualStrings("/cfg/./check.sh", resolveCommandAgainst(a, "/cfg", " ./check.sh"));
 }
 
 /// Name the point where the two accounts split: the divergence index (1-based), the
