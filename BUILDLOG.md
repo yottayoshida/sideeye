@@ -2,6 +2,109 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — The entrance gets paved by shrinking a claim, not growing the tool (#75 #76 #77)
+
+Three entrance features in one branch — release tarballs, `sideeye demo`,
+`sideeye preflight` — because v1.0's criterion 6 (a fresh machine reaches its
+first exploration in under ten minutes from the README) currently dies at the
+first cliff: install a pre-1.0 compiler to see anything at all.
+
+**The plan-review reversal worth recording: preflight's claim was wrong before a
+line was written.** The draft said preflight answers "explorable, or refused for
+reason X". The adversarial plan review pointed at what the cut point cannot see:
+`kill_did_not_land`, world-side boundary refusals, `baseline_run_failed`,
+`baseline_violates_invariant` and checker falsification all live in or after the
+exploration loop, which preflight never enters. "Explorable" was therefore a
+claim the command does not earn — the same overclaim shape §17's scoring polices.
+The fix was to shrink the claim: preflight says **"recording accepted"**, and a
+fixed-vocabulary `not checked` block names the four exploration-only classes
+every time. Acceptance check 6 pins the wording both ways: a target that is
+recording-clean but exploration-refused (`TOY_NONDET_REWRITE` on the fixed toy —
+recording gates all pass, the baseline world refuses) must be *accepted* by
+preflight with baseline behavior named as unchecked, while `explore` on the same
+define exits 2 with `baseline_violates_invariant`. A preflight that mirrored
+explore's verdict fails the first half; one that claims everything fails the
+second. Measured: the vocabulary mutation (dropping "baseline behavior" from the
+block) went red in the container before the wording was trusted.
+
+**Preflight's mechanics**: a third mode sharing the explore pipeline, cut at one
+place — after `n = kill_point_count` is known, before the zero-op PASS branch —
+with an unconditional exit. No detector is duplicated; a refusal exits through
+the same `unknown()` with the same name a real run prints. The define-shaped
+flags (`--check`, `--marker`, `--config`, `--json`, `--allow-unverified`) are
+refused by name, not ignored — an accepted-but-inert flag would be a declared
+intention that silently never fires, the shape the toml parser already refuses.
+`--json`'s rejection sits *before* the `removeFile` in its parse branch: a
+refusal that had already deleted the caller's previous report would be a refusal
+with a side effect.
+
+**The demo compiles its toy on the visitor's machine and self-execs explore.**
+The embedded assets are `spike/toys/toy.c` and `spike/check.sh` — the same files
+the acceptance suite drives, so the demo cannot drift from what CI proves (both
+now listed in build.zig.zon's `.paths`, or a fetched package would not build).
+Choices that review corrected before they became bugs: the checker is invoked as
+`/bin/sh <path>` (a Written file has no execute bit and posix.zig has no chmod),
+and `TOY` is baked into the script's first line rather than passed through the
+environment (the checker runs a fresh process several layers down; a baked value
+cannot be lost to an exec-model change). The self-exec is plain `execvp` with
+the inherited environment — the MCP minimal-env helper exists to withhold
+credentials from an untrusted config's operation, and the demo's operation is
+our own toy. Compile ladder: cc → gcc → clang, each with `-lpthread` then
+without; no compiler at all refuses by name with the install hint. Measured on
+this Mac first try: exit 1, crash point 5 of 5, same numbers as the README
+showcase — and the first run's output opened with a screenful of clang's vfork
+deprecation warnings, so the compile now carries `-w` (the toy's warnings are
+addressed to this repo's developers, not a demo viewer's terminal). The
+checker's own stderr ("doctor says 'healthy' but the key is unloadable") stays:
+that is the instrument speaking, twice — once at falsification, once in the
+violating world.
+
+**The release workflow builds on three native runners** (`ubuntu-latest`,
+`ubuntu-24.04-arm`, `macos-latest`) rather than cross-compiling from one: a
+cross-built artifact cannot be *run* where it was built, and the per-artifact
+smoke test is the demo itself — exit 1 on the runner, through the shim the
+binary just found beside itself, exercising the ReleaseSafe build the acceptance
+suite (Debug) never touches. Trigger is `release: published` so the manual
+ceremony stays the origin; the failure mode that leaves a published release
+without assets gets two answers: `workflow_dispatch` with a tag re-uploads, and
+the ceremony gains a step — after publishing, verify this workflow went green
+and `gh release view` shows the assets, before announcing anything. The upload
+job carries `permissions: contents: write` explicitly. `sideeye version` (one
+line, exit 0) exists because the workflow must hold each artifact's binary
+against its tag, and the usage banner — the only place the version appeared —
+exits 3. The tarball inventory is diffed against an expected list before upload:
+a tarball without the shim is half the product, silently. The
+`ubuntu-24.04-arm` runner is an assumption until the PR's build-only trigger
+runs; if it is unavailable, the fallback recorded in the plan is a cross-build
+with the smoke honestly marked absent, not a silent drop of the architecture.
+
+Container measurements for the whole batch: acceptance checks 5 and 6 (six legs)
+green; both source mutations KILLED (`-DBUGGY` removed → demo exits 2 with no
+window named; vocabulary dropped → wording assert red); four synthetic reds
+(refuse leg fed an in-bounds toy → 0, compiler-absent leg with a normal PATH →
+1, fallback leg with cc and gcc both failing → 3, honesty pair's explore side
+without the rewrite → 0). mcp-acceptance untouched and green — the only mcp.zig
+change is `canonicalSelf` going pub for the demo's self-exec.
+
+Code review (R1) found three real ones, all fixed and confirmed in R2:
+
+- The release workflow's repair path (`workflow_dispatch` with a tag) checked
+  out the default branch, so a "repair" would have rebuilt current main and
+  uploaded it under the old tag's name — an artifact whose content is not the
+  tag's, with `--clobber`. The checkout now takes the dispatch tag as its ref,
+  and the version-against-tag assert runs on tag-named dispatches too, not
+  only on release events.
+- The preflight graduation hint dropped `--setup`: the define it suggested was
+  silently different from the define it had just accepted. The hint now
+  carries it, and acceptance check 6 greps for it — seen red against the
+  unfixed binary before the fix was written.
+- The demo baked `TOY=<path>` into the checker unquoted; a `$TMPDIR` carrying
+  shell metacharacters would have handed them to `/bin/sh`. Now single-quoted
+  through a complete POSIX escape (`'` → `'\''`), unit-tested, and the space
+  guard on `$TMPDIR` stays for the separate splitArgs constraint. Same-class
+  scans for all three classes found no further instances (the FAIL report's
+  replay line is structurally immune — the define travels inside the case).
+
 ## 2026-08-13 — v0.5.0: the README stops introducing the tool as v0.1
 
 Version 0.4.0 → 0.5.0, both hand-written strings at once (the unit test holds

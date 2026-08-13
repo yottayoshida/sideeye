@@ -23,7 +23,7 @@ const protocol_version = "2026-07-28";
 /// `/proc/self/exe`; macOS reads `_NSGetExecutablePath` then realpaths it. Returns null
 /// if it cannot be resolved — the adapter then refuses to start rather than self-exec a
 /// binary it cannot name.
-fn canonicalSelf() ?[]const u8 {
+pub fn canonicalSelf() ?[]const u8 {
     if (builtin.os.tag == .linux) {
         const n = posix.readlink("/proc/self/exe", &self_buf, self_buf.len - 1);
         if (n <= 0 or n >= self_buf.len - 1) return null;
