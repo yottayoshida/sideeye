@@ -284,9 +284,35 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
 
     // The child's whole environment: a minimal set (execve, no inheritance) so a
     // config's operation cannot read the server's credentials. PATH is needed to find
-    // the target's argv[0] and strace-free helpers; nothing else is passed.
+    // the target's argv[0] and strace-free helpers. Beyond PATH, exactly the names the
+    // operator listed in SIDEEYE_MCP_CHILD_ENV (comma-separated) pass through, each
+    // resolved from the server's own environment (#68: a TIMEWARRIORDB-class target
+    // locates its state through a variable the minimal env used to drop). Values never
+    // come from the request — the operator who starts the server owns this boundary.
+    // A listed name absent from the server environment is a loud error: a typo must
+    // not reproduce the silent zero-operations failure this exists to fix.
     const min_path = if (posix.getenv("PATH")) |p| std.mem.span(p) else "/usr/bin:/bin";
-    const env = [_][2][]const u8{.{ "PATH", min_path }};
+    var env_buf: [17][2][]const u8 = undefined;
+    var env_n: usize = 0;
+    env_buf[env_n] = .{ "PATH", min_path };
+    env_n += 1;
+    if (posix.getenv("SIDEEYE_MCP_CHILD_ENV")) |list_z| {
+        var names = std.mem.splitScalar(u8, std.mem.span(list_z), ',');
+        while (names.next()) |raw| {
+            const name = std.mem.trim(u8, raw, " \t");
+            if (name.len == 0) continue;
+            if (env_n >= env_buf.len)
+                return emitToolError(arena, id, "SIDEEYE_MCP_CHILD_ENV lists more than 16 variables; refusing rather than passing a truncated set");
+            var name_z: [256]u8 = undefined;
+            const nz = std.fmt.bufPrintZ(&name_z, "{s}", .{name}) catch
+                return emitToolError(arena, id, "a SIDEEYE_MCP_CHILD_ENV name is longer than 255 bytes");
+            const val = posix.getenv(nz.ptr) orelse
+                return emitToolError(arena, id, std.fmt.allocPrint(arena, "SIDEEYE_MCP_CHILD_ENV names {s}, but the server environment does not have it", .{name}) catch "SIDEEYE_MCP_CHILD_ENV names a variable the server environment does not have");
+            env_buf[env_n] = .{ name, std.mem.span(val) };
+            env_n += 1;
+        }
+    }
+    const env = env_buf[0..env_n];
 
     // The oracle path is operational config (a trusted strace path), not model input —
     // it comes from the environment like the shim, and completes the account so a real
@@ -296,7 +322,10 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     var argc: usize = 0;
     const base: []const []const u8 = switch (kind) {
         .explore => &.{ self, "explore", "--config", path },
-        .replay => &.{ self, "replay", path },
+        // --fresh-state (#69): this server lives for the whole client session, and
+        // nobody else is positioned to provide the pristine state dir every CLI
+        // caller provided by hand — without it the second replay dies in setup.
+        .replay => &.{ self, "replay", path, "--fresh-state" },
     };
     for (base) |a| {
         argv_buf[argc] = a;
@@ -317,7 +346,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     const argv = argv_buf[0..argc];
     // Minimal-env self-exec with the child's stdout captured to a file — fd 1 (the MCP
     // transport) stays clean.
-    const term = posix.runChildCaptureMinimalEnv(gpa, argv, &env, child_out) catch
+    const term = posix.runChildCaptureMinimalEnv(gpa, argv, env, child_out) catch
         return emitToolError(arena, id, "could not run sideeye");
     const exit_code: i64 = switch (term) {
         .exited => |c| c,

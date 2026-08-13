@@ -55,6 +55,7 @@ const Args = struct {
     oracle: ?[]const u8 = null,
     check: ?[]const u8 = null,
     allow_unverified: bool = false,
+    fresh_state: bool = false,
     json: ?[]const u8 = null,
     config: ?[]const u8 = null,
     marker: ?[]const u8 = null,
@@ -139,7 +140,7 @@ fn usage() void {
         \\
         \\usage:
         \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--shim <lib>] [--work <dir>]
-        \\  sideeye replay <case.json> --shim <lib> [--oracle <strace>] [--work <dir>] [--json <path>]
+        \\  sideeye replay <case.json> --shim <lib> [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>]
         \\
         \\replay re-runs one saved counterexample: the same pipeline as explore — the
         \\oracle comparison, the structural detectors, checker falsification, landing
@@ -162,6 +163,12 @@ fn usage() void {
         \\               the post-success invariant is enforced: the new state must
         \\               survive (ADR 0008)
         \\  --json       write the machine-readable report to this path
+        \\  --fresh-state
+        \\               (replay only) empty and recreate the case's state directory
+        \\               before setup runs — for callers that cannot hand over a
+        \\               pristine directory themselves. The MCP server passes it on
+        \\               every replay: it lives for the whole client session, and the
+        \\               second replay used to die in the leftovers of the first
         \\  --allow-unverified
         \\               accept PASS with no completeness check. Needed on macOS, which
         \\               has no usable oracle: dtruss is blocked by SIP. The report says
@@ -282,6 +289,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
             i += 1;
             continue;
         }
+        if (std.mem.eql(u8, argv[i], "--fresh-state")) {
+            if (mode != .replay) setupError("--fresh-state applies to replay only (explore's state may be legitimately pre-populated)");
+            args.fresh_state = true;
+            i += 1;
+            continue;
+        }
         if (i + 1 >= argv.len) setupError("an option is missing its value");
         const v = argv[i + 1];
         if (std.mem.eql(u8, argv[i], "--state")) args.state = v
@@ -336,6 +349,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // From here on, every verdict — including a refusal — names the case it is
         // about, in text and JSON alike.
         case_note = case_arg.?;
+        // --fresh-state (#69) is honoured further down, on state_abs — the guard in
+        // front of the deletion is lexical, and only the realpath'd spelling makes
+        // it mean anything. Nothing destructive happens in this block.
     }
 
     // The define surface comes from exactly one place (ADR 0007): a config file or
@@ -406,6 +422,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (posix.realpath(state_z.ptr, &real_buf)) |p| break :blk std.mem.span(p);
         setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
     };
+
+    // --fresh-state (#69): empty the case's state dir before setup runs. The dir is
+    // sacrificial by contract — exploration kills processes mid-write into it — and
+    // the deletion rides the engine's guarded path (assertSafeRoot + the same
+    // deleteTree the restore path uses). It runs on state_abs, never the case's raw
+    // spelling: the guard is lexical, and "/tmp/../etc" spells safe while resolving
+    // unsafe — the realpath above is the guard's other half. Sitting here also keeps
+    // every earlier setup validation ahead of the one destructive step, and the
+    // mkdir-then-resolve above already covers a state dir that does not exist yet.
+    if (args.fresh_state)
+        engine.freshDir(state_abs) catch setupError("--fresh-state could not empty the case's state directory");
 
     // The spelling the caller used, absolute but with symlinks left alone.
     //

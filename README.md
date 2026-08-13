@@ -145,10 +145,20 @@ The tools take *paths*, never a raw command: the operation lives in the config f
 which is a **trust boundary** — its operation is executed, so the config is what you
 vet, and the server confines *which* config (inside the root), not what it may do.
 Operational settings come from the environment, not tool input: `SIDEEYE_MCP_SHIM`
-(required), `SIDEEYE_MCP_ROOT` (required), `SIDEEYE_MCP_ORACLE` and `SIDEEYE_MCP_WORK`
-(optional). The server self-execs the canonical binary, captures the child's output so
-it never touches the MCP transport, and runs it with a minimal environment. v1 is
-synchronous — a long exploration blocks the connection; async is future work.
+(required), `SIDEEYE_MCP_ROOT` (required), `SIDEEYE_MCP_ORACLE`, `SIDEEYE_MCP_WORK`
+and `SIDEEYE_MCP_CHILD_ENV` (optional). The server self-execs the canonical binary,
+captures the child's output so it never touches the MCP transport, and runs it with a
+near-minimal environment: PATH, plus exactly the variable names the operator lists in
+`SIDEEYE_MCP_CHILD_ENV` (comma-separated), each resolved from the server's own
+environment — for targets that locate their state through a variable, like
+timewarrior's `TIMEWARRIORDB` (ADR 0011). A listed name absent from the server
+environment is a loud tool error. The list is the operator's trust decision: names
+like `LD_PRELOAD` or `DYLD_INSERT_LIBRARIES` would load code into the child, so list
+only what the target reads. Replays through this surface always run with
+`--fresh-state` — the server lives for the whole client session, and the case's state
+directory is emptied before each setup so the second replay does not die in the
+leftovers of the first. v1 is synchronous — a long exploration blocks the connection;
+async is future work.
 
 ## What Sideeye is not
 

@@ -191,5 +191,88 @@ python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));v=d["result"]["structu
   && pass "server B answered about ITS target (toy-fixed PASS), not server A's stale FAIL" \
   || fail "a reused work dir served a stale verdict (or toy-fixed did not PASS)"
 
+echo "=========== mcp 7: SIDEEYE_MCP_CHILD_ENV passes named vars through — and only those ==========="
+# #68: a target that locates its state through an environment variable (TIMEWARRIORDB,
+# WATSON_DIR) never learns where it is, because the child env is PATH only. The fix is
+# an operator-side allowlist of NAMES, values resolved from the server's own env. The
+# check drives one call with the allowlist active and asserts three things at once:
+# the allowlisted var reached the child, the server's secret still did not, and PATH
+# is still there (the pass-through must extend the minimal env, not replace it).
+mkdir -p "$WS/envstate2"
+cat > "$WS/printenv2.sh" <<'SH'
+#!/bin/sh
+env > /tmp/mcp-childenv2.txt
+SH
+chmod +x "$WS/printenv2.sh"
+cat > "$WS/env2.toml" <<TOML
+[world]
+state = "./envstate2"
+[define]
+operation = "$WS/printenv2.sh"
+TOML
+rm -f /tmp/mcp-childenv2.txt
+CANARY_VAR=canary-value MCP_SECRET_TOKEN=supersecret123 SIDEEYE_MCP_CHILD_ENV=CANARY_VAR \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WORK=/tmp/mcp-work \
+  sh -c "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/env2.toml\"}}}' | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+if [ ! -f /tmp/mcp-childenv2.txt ]; then
+    fail "the operation never ran — the pass-through was not exercised"
+elif ! grep -q "^CANARY_VAR=canary-value$" /tmp/mcp-childenv2.txt; then
+    fail "the allowlisted var did not reach the child"
+elif grep -q "supersecret123" /tmp/mcp-childenv2.txt; then
+    fail "an UNLISTED server secret leaked alongside the pass-through"
+elif ! grep -q "^PATH=" /tmp/mcp-childenv2.txt; then
+    fail "PATH vanished — the pass-through replaced the minimal env instead of extending it"
+else
+    pass "the named var reached the child; the unlisted secret and nothing else did"
+fi
+# A name listed but absent from the server environment is a LOUD tool error: a typo in
+# the allowlist must not reproduce the silent 0-state-changing-operations failure that
+# motivated the feature.
+unset SIDEEYE_NOT_SET_VAR 2>/dev/null || true
+SIDEEYE_MCP_CHILD_ENV=SIDEEYE_NOT_SET_VAR \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WORK=/tmp/mcp-work \
+  sh -c "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/env2.toml\"}}}' | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));r=d["result"];assert r["isError"] is True and "SIDEEYE_NOT_SET_VAR" in r["content"][0]["text"],d' \
+  && pass "a listed-but-absent name is a loud tool error naming the variable" \
+  || fail "a listed-but-absent name was not refused loudly"
+
+echo "=========== mcp 8: two replays in ONE server session return the same verdict ==========="
+# #69: sideeye replay re-runs the case's setup onto whatever the state dir holds; every
+# CLI caller provided a pristine dir, so the precondition was invisible. An MCP server
+# persists for the whole client session, so the second replay used to die in setup.
+# The target's setup is deliberately non-idempotent (mkdir of a fixed name — the same
+# shape as timew's "You cannot overlap intervals"), and the work dir sits INSIDE the
+# root so the saved case is replayable through the same server.
+WS2=/tmp/mcp-ws2
+rm -rf "$WS2"; mkdir -p "$WS2/state" "$WS2/work"
+cat > "$WS2/init-once.sh" <<SH
+#!/bin/sh
+set -e
+mkdir "$WS2/state/once"
+$OUT/toy-bug init
+SH
+chmod +x "$WS2/init-once.sh"
+cat > "$WS2/once.toml" <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$WS2/init-once.sh"
+operation = "$OUT/toy-bug rotate"
+TOML
+req="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS2/once.toml\"}}}
+{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/work/cases/000001.json\"}}}
+{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/work/cases/000001.json\"}}}"
+REQ="$req" SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
+  sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+python3 - <<'PY' && pass "explore FAIL, then replay FAIL twice — the second call did not die on leftovers" || fail "the second replay in one session diverged (state freshness missing)"
+import json
+lines=[l for l in open("/tmp/mcp.out") if l.strip()]
+assert len(lines)==3, "wanted 3 responses, got %d"%len(lines)
+r1,r2,r3=[json.loads(l)["result"] for l in lines]
+v1=r1["structuredContent"]["verdict"]; assert v1=="FAIL", "explore: %s"%v1
+v2=r2["structuredContent"]["verdict"]; assert v2=="FAIL", "first replay: %s"%v2
+v3=r3["structuredContent"]["verdict"]; assert v3=="FAIL", "second replay: %s"%v3
+PY
+
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

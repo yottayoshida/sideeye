@@ -245,6 +245,25 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
     }
 }
 
+/// Empty a state directory, creating it if missing (`replay --fresh-state`, #69).
+/// The call site passes the realpath'd spelling: `assertSafeRoot` is lexical, and
+/// "/tmp/../etc" spells safe while resolving unsafe — resolution is the guard's
+/// other half. Failing loudly is the point: a fresh-state that could not do its
+/// job and said nothing would be the exact silent no-op the flag exists to remove.
+pub fn freshDir(root: []const u8) RestoreError!void {
+    try assertSafeRoot(root);
+    var root_buf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
+    if (posix.mkdir(root_z.ptr, 0o755) == 0) return; // did not exist: created empty
+    // mkdir failed, so the path holds something. It must be an openable directory:
+    // deleteTree's own opendir returns silently when it cannot look, and a missing
+    // parent, a regular file, or a permission wall must all be loud here.
+    const probe = posix.opendir(root_z.ptr) orelse return error.DeleteFailed;
+    _ = posix.closedir(probe);
+    // Empties the children; the root directory itself stays in place.
+    try deleteTree(root, "", 0);
+}
+
 pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     try deleteTree(root, "", 0);
@@ -648,6 +667,22 @@ pub const WorldResult = struct {
     landed: bool,
     violation: ?Violation,
 };
+
+test "freshDir refuses a root a mistake would produce, before any I/O" {
+    // The behavioral half — an existing root comes back empty, a missing one is
+    // created — is pinned at the call site by mcp-acceptance check 8 (explore, then
+    // replay twice in one server session), which was seen red before the feature.
+    // What must hold here is that the guard is wired in FRONT of the deletion.
+    try std.testing.expectError(error.UnsafeRoot, freshDir("/tmp"));
+    try std.testing.expectError(error.UnsafeRoot, freshDir("/"));
+    try std.testing.expectError(error.UnsafeRoot, freshDir("relative/state"));
+    try std.testing.expectError(error.UnsafeRoot, freshDir("/tmp/x/"));
+    // The guard is LEXICAL: this spelling passes it and resolves to /tmp. That is
+    // why the call site hands freshDir the realpath'd state, never the case's raw
+    // string — a refactor that undoes the resolution re-opens the hole this line
+    // documents. (assertSafeRoot only; calling freshDir here would empty /tmp.)
+    try assertSafeRoot("/tmp/../tmp");
+}
 
 test "assertSafeRoot rejects roots a mistake would produce" {
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/"));

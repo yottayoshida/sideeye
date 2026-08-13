@@ -2,6 +2,104 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — The MCP-mediated confirmation run found two product gaps before it could start
+
+The optional follow-up to the loop-closure measurement — drive the same sealed
+experiment through `sideeye mcp` instead of the replay.sh plumbing — was
+attempted the same day. It did not reach an agent. Probing the wiring against
+the recorded loop-1 stage (read-only) surfaced two product gaps, which is the
+kind of result the confirmation run exists to produce:
+
+- **#68 — the minimal-env child cannot serve env-located-state targets.** The
+  server hands its child PATH only (deliberate, ADR 0010: a config's operation
+  must not read the server's credentials). But timewarrior finds its state
+  through `TIMEWARRIORDB`; the sealed case replayed as `UNKNOWN
+  (case_no_longer_applies): the recording now counts 0 state-changing
+  operation(s)` — setup and operation ran against timew's env-free fallback,
+  not the case's state dir. The 08-12 over-the-wire measurement used the toy
+  scenario, whose operation takes its path as an argument; the gap was
+  invisible from there.
+- **#69 — no per-call state freshness.** `sideeye replay` re-runs setup onto
+  whatever the state dir holds; every CLI caller so far provided a pristine
+  dir (fresh container per replay), so the precondition was never written
+  down. An MCP server is started once per client session: the second replay in
+  the same session died in setup (`timew: You cannot overlap intervals`) —
+  measured over the CLI with correct env, so it is not a symptom of #68. An
+  agent's edit → rebuild → re-check loop through this surface dies on its
+  second check.
+
+**Decision (approved): fix the product before running the experiment**, rather
+than scaffolding around the gaps (an env-free state location plus an
+out-of-band state reset would have carried the run, but three more moving
+parts to prove, and the honest conclusion would still have been "the surface
+alone is not ready"). The fix directions, fixed before implementation:
+`SIDEEYE_MCP_CHILD_ENV` — a comma-separated allowlist of variable NAMES,
+values resolved from the server's own environment, so the operator who already
+owns the trust boundary decides what the target needs and the agent never
+touches it; a name listed but absent from the server environment is a loud
+tool error, not a silent skip (a typo must not reproduce the silent 0-ops
+failure). And `sideeye replay --fresh-state` — the state dir is already
+sacrificial by contract (exploration kills processes mid-write into it), so
+the flag empties and recreates it through the engine's existing guarded
+deletion (`assertSafeRoot` + the same deleteTree the restore path uses); the
+MCP server always passes it for replay children, the CLI default is unchanged.
+Both changes get their acceptance checks red first.
+
+**Harness facts measured on the way, for whoever wires an agent to MCP next:**
+`--safe-mode` never starts `--mcp-config` servers (zero traffic on the snoop —
+the config is not even read). The working seal replacement, measured:
+`--disable-slash-commands` + `--settings '{"disableAllHooks":true,
+"enabledPlugins":{...off}}'` + `--strict-mcp-config` from a foreign cwd gives
+plugins [], skills 0, zero hook events across a real Write, OAuth intact, MCP
+connected — residue: user agent names stay visible in the init event, inert
+once Task is denied. Claude Code 2.1.229 speaks the 2026-07-28 stateless
+protocol natively (first client frame is `tools/list` with `_meta`, snooped
+verbatim — the missing-`initialize` worry was empirically unfounded). `--bare`
+is not usable here: it skips keychain reads, so OAuth dies — same wall as the
+scratch config dir. And a `:ro` DIRECTORY bind mount silently mounted nothing
+on this docker/virtiofs stack — the container saw an empty path where the
+stage should be; the same run's plain rw mount of the same directory worked,
+and judge.sh's `:ro` FILE mount (the pos control's patch) demonstrably works,
+so the failure is narrower than ":ro is broken" — measured for the directory
+case only, cause not isolated. The stage mounts stay rw.
+
+**Implemented and measured the same day (ADR 0011).** Three new acceptance
+asserts were seen red against the pre-fix binary first: the allowlisted var
+did not reach the child (check 7), a listed-but-absent name was not refused
+(check 7), and the replay triple came back FAIL / SETUP_ERROR / SETUP_ERROR —
+the toy's deliberately non-idempotent setup (mkdir of a fixed name) reproduced
+the timew overlap shape exactly (check 8). After the fix: all 8 mcp-acceptance
+checks green in the container, including check 4's isolation claim unchanged —
+the unlisted secret still does not reach the child, now asserted in the same
+run as the pass-through. Unit side: `freshDir` sits behind `assertSafeRoot`
+(pinned with I/O-free guard tests; the behavioral half is pinned at the call
+site by check 8, which is where the workspace discipline wants it). The
+real-target contrast then held through the MCP channel against the recorded
+loop-1 stage with `SIDEEYE_MCP_CHILD_ENV=TIMEWARRIORDB`: the reverted
+(unpatched) tree replays **FAIL, crash point 19, twice in one server
+session**; the agent's fixed tree replays **PASS, explored 2, twice** — same
+code path, opposite answers, repeatable. One reading trap for whoever repeats
+this: the loop-1 stage's `repo/` is the agent's FIXED tree, so PASS there is
+the expected answer, not a broken probe.
+
+**The first-look review reversed one piece of the design; recorded here per
+the contract.** The first implementation handed `freshDir` the case's raw
+`define.state`. Review showed `assertSafeRoot` is lexical — "/tmp/../etc"
+counts three slashes and passes, then the kernel resolves it to /etc; a
+symlinked root walks past the same way — while every other destructive engine
+call receives the realpath'd `state_abs`. The call moved to sit after the
+existing mkdir-then-resolve and now receives `state_abs`, which also put every
+setup validation ahead of the one destructive step and closed the symlinked
+root that `deleteTree`'s child-level symlink refusal could not see. In the
+same round `freshDir` stopped returning success when it could not do its job:
+a regular file or a missing parent at the state path is a loud
+`DeleteFailed` now — the silent no-op was the exact shape this flag exists to
+remove. ADR 0011 Decision 2 carries the resolved-path requirement as part of
+the decision, and the unit test pins the fact that makes it load-bearing
+(`assertSafeRoot("/tmp/../tmp")` passes — the guard alone is not the
+protection). The mutual contrast and the acceptance suite were re-measured
+after the relocation: identical results.
+
 ## 2026-08-13 — Loop closure: the protocol is fixed before the run
 
 The v0.5 milestone's remaining item is the loop-closure test itself (DESIGN §17,
