@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-13
+
 ### Added
 
 - `sideeye demo` (#76): a sixty-second first success that needs nothing written. The embedded planted-bug toy — the same `spike/toys/toy.c` the acceptance suite drives — is compiled on the spot with this machine's C compiler (cc → gcc → clang, refusing by name with an install hint when none works) and explored through a self-exec'd `explore`; the expected exit is 1, the planted bug found, which makes the demo double as a smoke test of the binary + shim pair. The shim is discovered next to the binary (release-tarball layout) or in `../lib` (zig-out layout); `--shim` overrides.
@@ -128,6 +130,7 @@ First release. It proves the assumption the whole tool rests on — that a proce
 - The report schema is experimental and may change in any release before 1.0, along with the Define contract and the exit codes.
 - Defects found and fixed before this release are not listed here — no user saw them. They are in [BUILDLOG.md](BUILDLOG.md), including the ones that took several attempts.
 
+[0.6.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.6.0
 [0.5.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.5.0
 [0.4.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.4.0
 [0.3.0]: https://github.com/yottayoshida/sideeye/releases/tag/v0.3.0
