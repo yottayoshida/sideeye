@@ -28,6 +28,8 @@ may change in any release. See [CHANGELOG.md](CHANGELOG.md) for what this versio
 | [PRD.md](PRD.md) | The road from v0.1 to v1.0 |
 | [BUILDLOG.md](BUILDLOG.md) | Decisions as they happen, including the wrong ones |
 | [CHANGELOG.md](CHANGELOG.md) | Releases |
+| [docs/report-schema.md](docs/report-schema.md) | Every field the JSON report carries, held to the code by CI |
+| [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
 
 ### What the target has to do for v0.1
 

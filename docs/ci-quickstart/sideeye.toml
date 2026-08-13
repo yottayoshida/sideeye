@@ -1,0 +1,18 @@
+# The CI quickstart's define — the exact file .github/workflows/quickstart.yml
+# runs on every push to main and every pull request, against this repo's demo
+# target (a toy with a planted delete-before-rename bug). Swap the lines under
+# [define] for your own target and keep the workflow; docs/ci-quickstart.md
+# walks through it.
+#
+# Relative commands resolve against this file's directory (ADR 0007), so the
+# demo target is named from here. The demo toy finds its state through the
+# TOY_STATE environment variable, which sideeye itself supplies to its
+# children pointed at the resolved [world] state — your target finds its
+# state its own way; [world] state declares where sideeye should watch.
+
+[world]
+state = "/tmp/quickstart-state"
+
+[define]
+setup     = "../../spike/out/toy-bug init"
+operation = "../../spike/out/toy-bug rotate"

@@ -1,0 +1,62 @@
+name: quickstart
+
+# This workflow IS the CI quickstart: docs/ci-quickstart.md documents this exact
+# file, and this file runs on every push to main and every pull request, so the
+# example can never quietly rot into fiction (the same discipline as the
+# README's generated examples). It explores this repo's demo target — a toy
+# with a planted delete-before-rename bug — so the job passes exactly when
+# sideeye FINDS the counterexample (exit 1). In your project the gate inverts:
+# a clean target must exit 0.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  crash-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Build sideeye
+        run: zig build
+
+      - name: Install the completeness oracle
+        run: sudo apt-get update && sudo apt-get install -y strace
+
+      - name: Build the demo target
+        run: sh spike/build-toys.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
+      # No extra env: sideeye itself exports TOY_STATE to its children, pointed
+      # at the resolved [world] state — a real target inherits this job's
+      # environment and finds its state its own way.
+      - name: Explore crash consistency
+        run: |
+          rc=0
+          zig-out/bin/sideeye explore --config docs/ci-quickstart/sideeye.toml \
+            --shim zig-out/lib/libsideeye_shim.so \
+            --oracle /usr/bin/strace \
+            --json /tmp/report.json || rc=$?
+          echo "sideeye exited $rc (0 clean / 1 counterexample / 2 refused / 3 setup error)"
+          # The demo target has a planted bug: this job passes iff sideeye finds it.
+          # Gating YOUR target: test "$rc" = 0
+          test "$rc" = 1
+
+      - name: Read the counterexample from the report
+        run: |
+          python3 - <<'PY'
+          import json
+          d = json.load(open("/tmp/report.json"))
+          assert d["schema"] == "sideeye/report", d
+          e = d["earliest"]
+          print("verdict:", d["verdict"], "— crash point", e["crash_point"])
+          print("window: after", e["after"], "before", e["before"])
+          print("replay:", d["replay"])
+          PY
