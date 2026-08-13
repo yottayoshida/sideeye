@@ -2,6 +2,21 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — A sweep dropping walked into the release commit
+
+Caught right after merging the 0.6.0 bump, before the tag: the bump commit
+carried `spike/blind-hunt/configs/.latest.hledger-in.journal` — one line, a
+date. It is hledger's import-dedup sidecar, written **next to its input
+file**, and during the sweep the input file lives inside this repository; the
+sidecar sat untracked in the working tree across a branch switch and a
+`git add -A` swept it into a commit about something else entirely. Content
+harmless (the date of our own committed test transaction), no sealed path
+touched — but a release tag should not carry runtime droppings, so it is
+removed here and the pattern is ignored before the tag lands. The general
+shape is worth the entry: **a target that writes beside its inputs turns the
+repo into its scratch space the moment the inputs are committed files**, and
+`git add -A` does not ask whose file that is.
+
 ## 2026-08-13 — v0.6.0: the first release that ships binaries
 
 Version 0.5.0 → 0.6.0, both hand-written strings at once (the unit test holds

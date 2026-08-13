@@ -11,3 +11,8 @@ spike/runs/
 # Blind-hunt sealed sweep output (ADR 0012): the full preflight reports stay local and
 # unread until Seal B; only their hashes travel in the committed manifest
 spike/blind-hunt/artifacts/
+
+# hledger writes an import-dedup sidecar NEXT TO ITS INPUT file — which during a sweep
+# is inside this repo. One slipped into a release commit through `git add -A` before
+# this pattern existed (BUILDLOG 2026-08-13).
+spike/blind-hunt/configs/.latest.*
