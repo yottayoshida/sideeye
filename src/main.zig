@@ -10,7 +10,7 @@ const mcp = @import("mcp.zig");
 /// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
 /// same number, and they had already drifted: the package said 0.1.0 while `--help` said
 /// 0.1.0-dev. A test below holds them together.
-pub const version = "0.4.0";
+pub const version = "0.5.0";
 
 /// How the loader is told to inject the shim. Same idea, different spelling.
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";

@@ -12,15 +12,32 @@ It breaks worlds, not inputs: same input, hostile universe.
 
 ## Status
 
-**v0.1 — the feasibility milestone, released.** It proves the assumption everything else
-rests on: a process can be killed deterministically immediately before its k-th
-operation that can change state, the resulting worlds can be judged, and the same run
-produces the same verdict on Linux and macOS. What it will not do is guess — a target it cannot fully observe is
-reported UNKNOWN, never as passing.
+**v0.5 — the loop closes.** The milestones so far, each measured rather than argued
+(details in [PRD.md](PRD.md) and the [CHANGELOG](CHANGELOG.md)):
+
+- **Deterministic crash points** (v0.1): a process is killed immediately before its
+  k-th state-changing operation, every world is judged, and the same scenario gives
+  the same verdict on Linux and macOS. What it will not do is guess — a target it
+  cannot fully observe is UNKNOWN, never passing.
+- **Process boundaries without guessing** (v0.2): shim/wrapper/launcher shapes are
+  explorable when an oracle confirms nobody else touched the state.
+- **The full Define contract** (v0.3): `sideeye.toml`, success markers (L1), and
+  saved counterexamples with `sideeye replay` — a changed recording answers
+  "case no longer applies", never a verdict about a shifted address.
+- **A real bug in real software** (v0.4): timewarrior's undo deletes the wrong
+  interval after a crash between its commit renames — the crash-world search
+  minimized it from a human-declared invariant (the mechanized half is the
+  search, not the hypothesis — DESIGN §17 keeps that score honest), reported
+  upstream, and replayed across the fix in the dogfood harness (not yet a
+  CI-resident case).
+- **The report is agent food, proven** (v0.5): a context-free coding agent was
+  handed the counterexample and what it names, plus bug-blind replay plumbing
+  and the pinned repository — and it fixed that bug. Twice: through the CLI
+  plumbing and through the `sideeye mcp` surface, two different models, no
+  human translation (DESIGN §17).
 
 The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and
-may change in any release. See [CHANGELOG.md](CHANGELOG.md) for what this version does and
-[PRD.md](PRD.md) for what comes next.
+may change in any release.
 
 | Document | What it is |
 |----------|------------|
@@ -31,16 +48,19 @@ may change in any release. See [CHANGELOG.md](CHANGELOG.md) for what this versio
 | [docs/report-schema.md](docs/report-schema.md) | Every field the JSON report carries, held to the code by CI |
 | [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
 
-### What the target has to do for v0.1
+### What the target has to do
 
 Sideeye refuses to guess. A target outside these limits is reported UNKNOWN (exit 2),
-never as passing.
+never as passing — and the refusal names its detector.
 
 - **Exit zero during the recording run.** The crash points are read off that run, so a
   target that fails partway through would have Sideeye explore a sequence it never
   performs. There is no way yet to declare a different expected status.
-- **Be dynamically linked and single-threaded**, and reach its files through libc.
-  Raw syscalls, static linking, a hardened runtime and threads are detected and refused.
+- **Be dynamically linked and single-threaded**, and reach its files through libc —
+  which includes buffered stdio (observed at flush granularity) and the hard-link
+  family (`link`/`linkat`). Raw syscalls (a Rust target pulling in `rustix`, say),
+  static linking, a hardened runtime, threads, and symlinks inside the state
+  directory are detected and refused.
 - **Keep other processes away from its state.** A target that forks or spawns helpers is
   explorable when an oracle is present (`--oracle`, Linux) and no process other than the
   target itself touched the state directory — the common shim/wrapper/launcher shape.
@@ -48,17 +68,19 @@ never as passing.
   process that leaves Sideeye's containment group is refused. Without an oracle, any
   process boundary is UNKNOWN: the shim only sees processes that load it, and "was not
   seen" is not "did nothing".
-- **Keep its state in one directory**, passed with `--state`.
+- **Keep its state in one directory**, declared with `--state` or the toml's
+  `[world] state`.
 
 ## What it looks like
 
-Against a tool with a delete-before-rename bug — real output, not a mock-up:
+Against a tool with a delete-before-rename bug — real output, regenerated for this
+version, not a mock-up:
 
 ```
-$ sideeye explore --state /tmp/se/state \
-    --setup "mytool init" --operation "mytool rotate" \
-    --check ./check.sh --shim ./zig-out/lib/libsideeye_shim.dylib \
-    --work /tmp/se/work --allow-unverified
+$ TOY=./mytool sideeye explore --state /tmp/se/state \
+    --setup "./mytool init" --operation "./mytool rotate" \
+    --check ./check.sh --shim ./libsideeye_shim.so \
+    --work /tmp/se/work --oracle /usr/bin/strace
 
 FAIL  1 of 6 crash worlds violated an invariant
 
@@ -69,17 +91,25 @@ earliest    crash point 5 of 5
 path        key.json
 observed    present before and after the operation, but gone from the crashed state
 explored    6 worlds (crash points 5 + 1 baseline)
-oracle      NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
-checker     falsified before the run (corrupted state -> check failed)
+atomicity   1 file(s) judged pre-or-post
+oracle      agreed on 5 operations (63 syscall lines examined, 9 touching the state directory)
+checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
+l1          no marker configured
+case        /tmp/se/work/cases/000001.json
+replay      sideeye replay /tmp/se/work/cases/000001.json --shim ./libsideeye_shim.so
+processes   single process
 not tested  power loss, torn writes, concurrent processes
 
-reproduce   SIDEEYE_STATE_DIR=/tmp/se/state SIDEEYE_TRACE_PATH=/tmp/se/work/trace-repro.bin DYLD_INSERT_LIBRARIES=./zig-out/lib/libsideeye_shim.dylib SIDEEYE_KILL_AT=5 <operation>
+reproduce   SIDEEYE_STATE_DIR=/tmp/se/state SIDEEYE_TRACE_PATH=/tmp/se/work/trace-repro.bin LD_PRELOAD=./libsideeye_shim.so SIDEEYE_KILL_AT=5 <operation>
 ```
 
-Read the last four lines first. `explored` says how much was looked at, `oracle` says
-whether anything checked that account, `checker` says the invariant was shown to be
-capable of failing before the run began, and `not tested` says what this verdict is
-silent about. A report that only said FAIL would be asking to be believed.
+Read the account block first, not the verdict. `explored` says how much was looked
+at, `oracle` says a second witness checked that account against the kernel's,
+`checker` says the invariant was shown to be capable of failing before the run
+began, and `not tested` says what this verdict is silent about. `case` and `replay`
+are the counterexample made portable — the saved case replays through every trust
+gate, and hands to a coding agent as-is. A report that only said FAIL would be
+asking to be believed.
 
 `--json` writes the same content for a caller to branch on. Exit codes are 0 PASS,
 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR — and UNKNOWN is never 0.

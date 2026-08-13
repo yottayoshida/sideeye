@@ -2,6 +2,25 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — v0.5.0: the README stops introducing the tool as v0.1
+
+Version 0.4.0 → 0.5.0, both hand-written strings at once (the unit test holds
+the pair). The release carries the docs catch-up (#67), on the discipline the
+repo already owes its examples to: the README's showcase FAIL was regenerated
+with the 0.5.0 binary rather than trusted — and the regeneration itself proved
+the point, because the stale example was missing five lines the report has
+grown since v0.1 (atomicity, l1, case, replay, processes) and showed old
+prose in two it rewrote (oracle now records a real agreement where
+`--allow-unverified` used to apologize; checker now counts its worlds). The Status
+section now tells the five-milestone story instead of the feasibility spike's;
+the target-constraints section drops "for v0.1" and folds in what the
+observation surface learned since (stdio at flush granularity, the hard-link
+family, rustix-class raw syscalls as the canonical refusal example); the toml
+gains equal billing with `--state`. The CHANGELOG's `[Unreleased]` became
+`[0.5.0]` with the milestone summary; the PRD's v0.5 heading carries
+"delivered". Everything else in this release rode earlier PRs the same day —
+this one is the ceremony.
+
 ## 2026-08-13 — v0.5's last two items: the report as a schema, the quickstart as a workflow
 
 The milestone's remaining scope line — "the report JSON documented as a
