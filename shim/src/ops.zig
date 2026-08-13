@@ -199,6 +199,9 @@ pub fn rmdir(path: [*:0]const u8) callconv(.c) c_int {
 pub fn close(fd: c_int) callconv(.c) c_int {
     // Recorded before the call: afterwards the descriptor no longer resolves to a path.
     common.noteFd(.close, fd);
+    // The target may be retiring the shim's own trace descriptor; that has to be
+    // noticed while the descriptor still works (see noteTraceClose).
+    common.noteTraceClose(fd);
     return common.callClose(fd);
 }
 
@@ -247,6 +250,9 @@ pub fn fclose(stream: *common.FILE) callconv(.c) c_int {
     // about to issue. Both resolved before the call: afterwards the descriptor is gone.
     common.noteStdioFlush(stream);
     common.noteStdioClose(stream);
+    // Unconditional, unlike the stdio notes above: fdopen(N) + fclose retires the
+    // descriptor whether or not stdio observation is armed.
+    common.noteTraceClose(common.c.fileno(stream));
     return common.callFclose(stream);
 }
 
@@ -266,6 +272,7 @@ fn freopenCommon(comptime call64: bool, path: ?[*:0]const u8, mode: [*:0]const u
         _ = common.callFflush(stream);
     }
     common.noteStdioClose(stream);
+    common.noteTraceClose(common.c.fileno(stream));
     if (path) |p| {
         if (common.stdioActive() and common.modeIsWriteCapable(mode))
             common.note1(.open, AT_FDCWD, p);

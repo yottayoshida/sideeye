@@ -3,12 +3,13 @@
 
 Usage: check-report-schema.py <schema.md> <contract.zig> <report.json>...
 
-Three claims, each enforced:
+Four claims, each enforced:
   1. every field present in any given report is documented (a table row whose
      first cell backticks the field name);
   2. every documented field appears in at least one given report — a row that
      nothing generates is a claim nobody measured;
-  3. the doc's closed unknown_reason set equals the contract's enum, exactly.
+  3. the doc's closed unknown_reason set equals the contract's enum, exactly;
+  4. the contract version the doc names is the one the code speaks.
 
 The verdict coverage itself is asserted too: the given reports must include all
 four verdicts, or the reverse direction would go vacuously green for the
@@ -77,6 +78,22 @@ def main():
             problems.append("unknown_reason drift — doc-only: %s; enum-only: %s"
                             % (sorted(doc_values - enum_values) or "-",
                                sorted(enum_values - doc_values) or "-"))
+
+    # Claim 4. This drifted for real — v8 shipped while the page still said "v7
+    # today" — and claims 1-3 stayed green because none of them read the version
+    # prose. Both anchors are required matches: a check keyed on prose that has
+    # been reworded would otherwise die silently along with the prose.
+    code_v = re.search(r"^pub const contract_version: u32 = (\d+);", zig, re.M)
+    if not code_v:
+        sys.exit("could not find contract_version in %s" % zig_path)
+    for anchor in (r"\(v(\d+) today\)", r"closed set, contract v(\d+)"):
+        m = re.search(anchor, md)
+        if not m:
+            problems.append("version anchor /%s/ missing from the doc" % anchor)
+        elif m.group(1) != code_v.group(1):
+            problems.append("contract version drift: doc says v%s where the code "
+                            "speaks v%s (anchor /%s/)"
+                            % (m.group(1), code_v.group(1), anchor))
 
     if problems:
         sys.exit("; ".join(problems))

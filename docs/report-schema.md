@@ -25,7 +25,7 @@ is removed at startup, so a report at the path always describes *this* run.
 |---|---|---|---|
 | `schema` | string | yes | The literal `"sideeye/report"`. Reject anything else before reading further. |
 | `schema_status` | string | yes | `"experimental"` until the v1.0 freeze. |
-| `contract_version` | int | yes | The trace contract the binary speaks (v7 today). Crash-point numbering does not carry across contract versions; a saved case from another version replays as `case_no_longer_applies`, never as a verdict. |
+| `contract_version` | int | yes | The trace contract the binary speaks (v8 today). Crash-point numbering does not carry across contract versions; a saved case from another version replays as `case_no_longer_applies`, never as a verdict. |
 | `verdict` | string | yes | `"PASS"`, `"FAIL"`, `"UNKNOWN"`, or `"SETUP_ERROR"`. The one field everything else hangs off. |
 | `exit_code` | int | yes | Mirrors the verdict: 0 PASS / 1 FAIL / 2 UNKNOWN / 3 SETUP_ERROR. The process exits with the same value. |
 
@@ -66,7 +66,7 @@ the case file — nothing else in the report was load-bearing for them.
 | `unknown_reason` | string | UNKNOWN | Machine-readable reason, one of the closed set below. |
 | `message` | string | UNKNOWN and SETUP_ERROR | Human-readable detail: what was observed, and often which operation it happened at. |
 
-`unknown_reason` values (closed set, contract v7): `no_shim_marker`,
+`unknown_reason` values (closed set, contract v8): `no_shim_marker`,
 `state_changed_without_ops`, `contract_version_mismatch`,
 `unsupported_syscall_observed`, `oracle_missed_operation`,
 `oracle_saw_phantom`, `oracle_saw_nothing`, `child_process_detected`,
