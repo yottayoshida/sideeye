@@ -1,0 +1,11 @@
+# The seven things Seal A fixes (ADR 0012). The verifier reads THIS list out of the
+# Seal A commit and requires every path in it to exist there — so the list of what was
+# sealed cannot be edited after the fact without moving the seal itself.
+docs/adr/0012-blind-declaration-protocol.md
+spike/blind-hunt/candidates.md
+spike/blind-hunt/priority.txt
+spike/blind-hunt/sweep.sh
+spike/blind-hunt/select.sh
+spike/blind-hunt/verify-seals.sh
+spike/blind-hunt/wrapper-template.sh
+spike/blind-hunt/ledger.md

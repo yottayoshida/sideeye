@@ -2,6 +2,108 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — Seal A: everything about the blind hunt is decided before a target runs (#83)
+
+§17's first condition — "Sideeye discovered it automatically" — is the one part of
+the primary criterion the timewarrior finding could not honestly claim, and the one
+piece of remaining v1.0 work with no guaranteed outcome. This entry seals the
+procedure for measuring it (ADR 0012): the campaign that will try to find a real bug
+from an invariant declared before anyone knew the bug existed.
+
+**The design died twice in review before it was right, and both deaths are worth
+recording.** Draft one swept candidates with preflight and picked the promising one —
+but preflight's operation counts and refusal reasons correlate with how breakable a
+target looks, so choosing after seeing them is choosing informed; the same direction
+of leak as reading traces, only politer. Draft two sealed the *information sources* —
+and the reviewer pointed out that source rules alone let the declarer run the tool,
+watch what happens, and then pick, from those same permitted sources, exactly the
+invariants that fit. Hence two seals: the procedure (candidates, priority, a
+discretion-free selection predicate, reference rules, wrapper template, audit
+tooling) frozen before any candidate is installed; the declaration (invariants with
+per-line provenance, operation inventory with a fixed exclusion vocabulary, concrete
+checkers) frozen after the permitted contract reading and before the first crash
+measurement. Exploration runs only at the second seal's commit, from a clean tree.
+
+Choices made here, and the shape of their honesty:
+
+- **The selection predicate takes the first exactly-one candidate** (preflight exit 0
+  ∧ commands resolve to absolute paths inside the image). Not "one or two" — a count
+  with slack is a stopping decision made after seeing how the first target went. The
+  in-image leg is the structural proxy for "a saved case will replay here without
+  external builds" (the timewarrior regression case is still recipe-bound; #82 —
+  that hole does not get re-dug on a new target).
+- **The sweep shows exit codes only.** Full reports go unread into a hashed local
+  artifact. Unread is a working rule, not a proof; the hash makes a later swap
+  detectable while the reports are retained, nothing more. Said so in the ADR,
+  said so in §17.
+- **The criterion was widened before the campaign, not after.** PRD criterion 1
+  named "omamori or the calibration target"; a blind-protocol target now counts,
+  and the sentence itself records the date and the reason. Author-confirmed is
+  fixed to the timewarrior reading (project author judges; upstream sought, not
+  required) — the same answer #82 needs, decided once.
+- **These are high-risk blind targets, not average ones.** topydo, khard, abook,
+  khal, hledger — file-backed state chosen on purpose from web docs alone, several
+  spanning multiple files, two single-file counterweights. The §18 average-target
+  calibration already stands on timewarrior; this campaign does not claim it twice.
+- **The taint ledger names what cannot be blind anymore** (timewarrior, taskwarrior,
+  git, todoman, watson, jrnl, omamori) and admits what carries over anyway: class
+  knowledge, and a language model's training data. The seals make the *recorded*
+  consultations and the commit order auditable — the ledger is self-reported, and
+  an unrecorded consultation is exactly what it cannot detect. They cannot make
+  the experimenter forget. §17 carries the claim at exactly that strength.
+- **Reviewer covenant with breach handling**: a reviewer who names target internals
+  or known issues burns that target; so does an experimenter who touches a
+  forbidden source. The ledger records it and the campaign moves down the sealed
+  order. No cure — blind is once per target.
+
+Also recorded, from the review mechanics themselves: the first adversarial-review
+call on this plan came back as a 258 KB transcript that quoted engine source at
+length and then died on the reviewer platform's safety filter — zero findings,
+reported as success. A long response is not evidence a review happened; the verdict
+was at the tail, and the tail was an error. The re-run, phrased neutrally and told
+not to quote source in its reply, went through on the same model.
+
+Code review on the seal itself found eight P1s — all protocol holes or
+document-vs-tooling gaps, all fixed before the seal merged, which is the one
+moment they were still fixable:
+
+- The sweep's *inputs* were the unguarded loop: nothing stopped tuning
+  invocations against exit codes and committing only the final spelling. Now
+  the manifest embeds the SHA-256 of the invocations it ran against, the
+  committed file must match (verifier B3), the sweep runs once, and a re-run
+  after a broken invocation keeps both manifests committed with a ledger entry.
+- The verifier audited endpoints, not history: it never checked that Seal A is
+  an ancestor of Seal B (A0, new), compared only the two trees so a
+  change-and-revert inside the range hid (A2 now walks `git log A..B` over the
+  sealed paths), accepted a declaration for *any* candidate (B4 now recomputes
+  the selection from the committed manifest + priority + burned list, using the
+  committed selector, and requires the single declaration directory to match),
+  and could print an unqualified pass with the run manifest simply not supplied
+  (the verdict line now says PARTIAL unless R1 was audited).
+- The seal was narrower than the ADR said: PRD/DESIGN — the criterion wording
+  the campaign is scored against — now ride the A2 no-touch set, and the ledger
+  gets an append-only check (A3: Seal A's ledger must be a byte prefix of
+  Seal B's; entries cannot be deleted en route).
+- The implemented predicate was weaker than the declared one: the oracle is now
+  mandatory in the harness, and resolution covers the binary, the setup's and
+  operation's first words, and the shim (loaded, not executed — checked as
+  absolute-and-readable, since `command -v` would demand an execute bit a
+  shared object need not carry).
+- Breach handling contradicted the one-target rule. Resolved by phase: a
+  pre-Seal-B burn appends to a committed `burned.txt` and selection re-runs
+  with it as an explicit selector input; a post-Seal-B burn ends the campaign.
+- Two claims were stronger than their machinery: the report hash "proves"
+  became "makes later substitution detectable while the reports are retained"
+  (with an R2 verifier leg that actually recomputes when they are supplied),
+  and "what was consulted is checkable" became "recorded consultations and
+  commit order are auditable; the ledger is self-reported". The criterion's
+  "no hand-written adversarial crash tests" became "documentation does not
+  advertise crash-injection testing" — verifying the stronger phrasing would
+  require reading the target's test suite, which the source rule forbids.
+
+Next: merge = Seal A. Then install the candidates into the container, read only what
+the rules allow, assemble invocations, sweep, and let the predicate pick.
+
 ## 2026-08-13 — The entrance gets paved by shrinking a claim, not growing the tool (#75 #76 #77)
 
 Three entrance features in one branch — release tarballs, `sideeye demo`,

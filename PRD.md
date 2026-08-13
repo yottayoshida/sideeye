@@ -143,7 +143,7 @@ check 4), and the CI quickstart is a real workflow this repo runs
 
 Entry criteria — all must hold, none may be argued around:
 
-1. Primary success criterion met: a real, novel, author-confirmed crash-consistency bug found by Sideeye (on omamori or the calibration target), fixed, and kept as a replayed regression case.
+1. Primary success criterion met: a real, novel, author-confirmed crash-consistency bug found by Sideeye — on omamori, on the calibration target, or on a blind-protocol target (a stateful CLI whose documentation does not advertise crash-injection testing — an eligibility read from its docs, since reading its test suite would itself breach ADR 0012's source rule — selected and declared under the two-seal protocol) — fixed, and kept as a replayed regression case. "Author-confirmed" reads as §17 scored it for timewarrior: this project's author judges the bug real; upstream confirmation is sought, not required. This sentence was widened on 2026-08-13, *before* any blind campaign ran — widening it after a find would be moving the goalposts.
 2. Loop-closure criterion met: an agent fixed a finding from the report alone.
 3. Kill criteria (DESIGN §18) reviewed against collected data; none triggered.
 4. UNKNOWN rate on supported targets measured and published; a target threshold is set from that data (not invented in advance) and met.
