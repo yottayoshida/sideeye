@@ -383,7 +383,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "nothing that can change"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "nothing that can change" \
+    && echo "$o" | grep -q "expected status: 0"; then
     echo "ok   the same run passes once an oracle confirms it"
 else
     echo "FAIL zero-op with oracle: exit $rc"
@@ -1741,6 +1742,212 @@ if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1
 else
     echo "FAIL anon-inode descriptors moved the verdict: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 8: a declared success status governs every un-killed run (#3, ADR 0014) ==========="
+# The three states of the declaration, driven by a toy that completes all of its
+# state work and then exits 3 (the git-convention shape). Undeclared: refused with
+# both statuses named. Declared right: explored in full. Declared wrong: refused
+# with both statuses named — "matches the run" and "was declared" are different
+# facts and the diagnostics must keep them apart.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "exited 3 during the recording run where 0 was expected" \
+    && echo "$o" | grep -q "expected    exit 0"; then
+    echo "ok   undeclared: a non-zero convention refuses, naming expected and actual"
+else
+    echo "FAIL undeclared non-zero handling: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 3 \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+    && echo "$o" | grep -q "expected status: 3"; then
+    echo "ok   declared right: explores in full, and the text report names the status"
+else
+    echo "FAIL declared-right exploration: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 2 \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "exited 3 during the recording run where 2 was expected"; then
+    echo "ok   declared wrong: refused, naming expected and actual"
+else
+    echo "FAIL declared-wrong handling: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+# The config spelling of the same declaration, plus its JSON report field. One value
+# must ride from the toml through the run into the report — a caller auditing a PASS
+# needs to see which status it was allowed to require.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+cat > /tmp/acc/def.toml <<TOML
+[world]
+state = "/tmp/acc/state"
+[define]
+setup = "$OUT/toy-fixed init"
+operation = "$OUT/toy-fixed rotate"
+expected_status = "3"
+TOML
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --config /tmp/acc/def.toml \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/es.json 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+    && python3 -c "import json,sys; sys.exit(0 if json.load(open('/tmp/acc/es.json'))['expected_status'] == 3 else 1)"; then
+    echo "ok   the toml spelling explores too, and the report carries expected_status"
+else
+    echo "FAIL toml expected_status: exit $rc, report field: $(python3 -c "import json; print(json.load(open('/tmp/acc/es.json')).get('expected_status'))" 2>/dev/null)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+# Both spellings share one grammar: out-of-range and non-numeric refuse by name,
+# in the flag and in the file alike.
+bad=0
+for v in 256 -1 abc; do
+    "$SIDEEYE" explore --state /tmp/acc/state --operation true --expect-status "$v" \
+        --shim "$SHIM" >/dev/null 2>&1
+    [ "$?" = "3" ] || bad=1
+done
+printf '[world]\nstate = "/tmp/acc/state"\n[define]\noperation = "true"\nexpected_status = "abc"\n' > /tmp/acc/bad.toml
+o=$("$SIDEEYE" explore --config /tmp/acc/bad.toml --shim "$SHIM" 2>&1)
+rc=$?
+if [ "$bad" = "0" ] && [ "$rc" = "3" ] && echo "$o" | grep -q "must be an integer in 0..255"; then
+    echo "ok   256, -1 and abc refuse in both spellings"
+else
+    echo "FAIL boundary rejection: flag ok=$bad, toml exit $rc"
+    fails=$((fails + 1))
+fi
+
+# Preflight accepts the declaration and the graduation hint carries it — a hint
+# without the status would hand explore a define that refuses the very recording
+# preflight just accepted (the hint-drops-part-of-the-define defect class).
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" preflight --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 3 \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+o2=$(TOY_EXIT_STATUS=3 "$SIDEEYE" preflight --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc2=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q -- "--expect-status 3" \
+    && [ "$rc2" = "2" ]; then
+    echo "ok   preflight accepts the declaration, carries it in the hint, refuses without it"
+else
+    echo "FAIL preflight wiring: with=$rc (hint: $(echo "$o" | grep -c -- '--expect-status 3')), without=$rc2"
+    fails=$((fails + 1))
+fi
+
+# The saved case freezes the declaration (case_version 2) and a replay runs under
+# it; a case_version 1 file — no expected_status — replays as "exit 0 was the
+# contract", which is what every v1 case was recorded under.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --expect-status 3 \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+rc=$?
+case_ok=0
+grep -q '"case_version": 2' /tmp/acc/work/cases/000001.json 2>/dev/null \
+    && grep -q '"expected_status": 3' /tmp/acc/work/cases/000001.json 2>/dev/null && case_ok=1
+o2=$(TOY_EXIT_STATUS=3 "$SIDEEYE" replay /tmp/acc/work/cases/000001.json \
+    --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
+rc2=$?
+if [ "$rc" = "1" ] && [ "$case_ok" = "1" ] && [ "$rc2" = "1" ] \
+    && echo "$o" | grep -q "expected    exit 3"; then
+    echo "ok   the case freezes the declaration (v2) and the replay runs under it"
+else
+    echo "FAIL case round-trip: explore=$rc case_fields=$case_ok replay=$rc2"
+    fails=$((fails + 1))
+fi
+
+# The version and the field travel together: a v1 file carrying the field and a v2
+# file missing it are both malformed — read under a guessed contract, a hand-edited
+# case would replay as something it never was (R1 finding). And a refusal that
+# happens *after* the declaration is read must report the declaration, not the
+# default: the contract gate on a status-3 case says expected_status 3 (R1 finding).
+python3 - /tmp/acc/work/cases/000001.json /tmp/acc/v1-with-field.json /tmp/acc/v2-without-field.json /tmp/acc/v2-old-contract.json /tmp/acc/v2-null-field.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+a = json.loads(json.dumps(c)); a["case_version"] = 1
+json.dump(a, open(sys.argv[2], "w"))
+b = json.loads(json.dumps(c)); del b["define"]["expected_status"]
+json.dump(b, open(sys.argv[3], "w"))
+d = json.loads(json.dumps(c)); d["contract_version"] = 7
+json.dump(d, open(sys.argv[4], "w"))
+e = json.loads(json.dumps(c)); e["define"]["expected_status"] = None
+json.dump(e, open(sys.argv[5], "w"))
+PY
+"$SIDEEYE" replay /tmp/acc/v1-with-field.json --shim "$SHIM" --work /tmp/acc/work-r2 >/dev/null 2>&1
+r1=$?
+"$SIDEEYE" replay /tmp/acc/v2-without-field.json --shim "$SHIM" --work /tmp/acc/work-r3 >/dev/null 2>&1
+r2=$?
+"$SIDEEYE" replay /tmp/acc/v2-old-contract.json --shim "$SHIM" --work /tmp/acc/work-r4 \
+    --json /tmp/acc/oldc.json >/dev/null 2>&1
+r3=$?
+r3f=$(python3 -c "import json; print(json.load(open('/tmp/acc/oldc.json'))['expected_status'])" 2>/dev/null)
+"$SIDEEYE" replay /tmp/acc/v2-null-field.json --shim "$SHIM" --work /tmp/acc/work-r5 >/dev/null 2>&1
+r4=$?
+if [ "$r1" = "3" ] && [ "$r2" = "3" ] && [ "$r3" = "2" ] && [ "$r3f" = "3" ] && [ "$r4" = "3" ]; then
+    echo "ok   version and declaration travel together, and a late refusal reports the declaration"
+else
+    echo "FAIL case shape gates: v1+field=$r1 v2-field=$r2 old-contract=$r3 reported=$r3f v2-null=$r4"
+    fails=$((fails + 1))
+fi
+
+# v1 compatibility, on a real case: strip the field, mark it v1, and the replay
+# must still reproduce (the plain toy's contract was exit 0 all along).
+rm -rf /tmp/acc2 && mkdir -p /tmp/acc2/state
+"$SIDEEYE" explore --state /tmp/acc2/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc2/work --allow-unverified >/dev/null 2>&1
+python3 - /tmp/acc2/work/cases/000001.json /tmp/acc2/v1-case.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["case_version"] = 1
+del c["define"]["expected_status"]
+json.dump(c, open(sys.argv[2], "w"))
+PY
+o=$("$SIDEEYE" replay /tmp/acc2/v1-case.json --shim "$SHIM" --work /tmp/acc2/work-r 2>&1)
+rc=$?
+if [ "$rc" = "1" ]; then
+    echo "ok   a v1 case (no expected_status) still replays; absent means 0"
+else
+    echo "FAIL v1 case compatibility: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+# An exit status of 137 is an exit status, not a signal: declared, it explores in
+# full — while every killed world still has to die by the kill signal itself. A
+# conflation of the two (128+9 == 137) would break one side or the other here.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_EXIT_STATUS=137 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 137 \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+    echo "ok   exit(137) is an exit status, not a SIGKILL: declared, it explores"
+else
+    echo "FAIL 137/SIGKILL separation: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 

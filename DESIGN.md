@@ -210,6 +210,8 @@ check     = "./check.sh"          # runs after crash + restart, in a fresh proce
 
 If Define ever needs more than this, that is movement toward the kill criteria in §18, and we should notice.
 
+Noticed twice, deliberately, and recorded both times: `marker` joined with the L1 layer (ADR 0008), and `expected_status` joined for targets whose success convention is a non-zero exit — git-style tools were unjudgeable without it (ADR 0014). Neither is a new verb: one is the operation's own success claim, the other the fact of what that claim's exit status is. A sixth key should face this sentence again.
+
 Define has three levels; the lower ones are zero-effort:
 
 - **L0 — built-in invariants, zero config.** Sideeye ships general invariants it can judge without any checker. The first is **atomicity**, stated per file rather than per directory: for every file present in *both* the pre-operation snapshot and the post-operation result, the state after restart must still contain it, holding either the old content or the new one — never a mixture of the two. An agent can point `sideeye` at an operation and get value with no configuration at all.

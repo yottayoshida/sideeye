@@ -124,6 +124,10 @@
  *                  and epoll on Linux (fstat type bits zero — the kernel's
  *                  anon-inode spelling), kqueue on macOS (stats as a FIFO). Must be
  *                  invisible to the verdict: none can be state-directory content.
+ *   TOY_EXIT_STATUS=N  rotate exits N after completing all of its state work — the
+ *                  git-convention shape (#3). Without --expect-status N the run must
+ *                  refuse as recording_run_failed naming both statuses; with it, the
+ *                  same run explores normally and the baseline is held to N too.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -625,6 +629,9 @@ static int cmd_rotate(void) {
         if (write_file(scr, "x\n") != 0) return 1;
         if (unlink(scr) != 0) return 1;
     }
+    /* Last, after every state operation: the git-convention shape, where a run that
+     * did all its work still reports a non-zero status by design. */
+    if (getenv("TOY_EXIT_STATUS")) return atoi(getenv("TOY_EXIT_STATUS"));
     return 0;
 }
 

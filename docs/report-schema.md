@@ -40,6 +40,7 @@ records zero for a run that ended early.
 | `crash_points` | int | yes | State-changing operations counted in the recording — one deterministic kill point in front of each. On a replay this equals the case's operation total when the recording still matches. |
 | `explored` | int | yes | Worlds actually run, **including the baseline** (no-kill) world. A full exploration reports `crash_points + 1`; a replay reports 2 (the case's point plus the baseline). One exception: an operation that performs nothing state-changing PASSes with both counters 0 — do not assert `explored == crash_points + 1` unconditionally. |
 | `violations` | int | yes | Crash worlds whose invariant did not hold. `0` on PASS; `>= 1` on FAIL. |
+| `expected_status` | int | yes | The exit status that counted as the operation completing (`--expect-status` / `expected_status`, default 0). Always present so a PASS over a non-zero convention is machine-distinguishable from one that required 0. Governs the recording run and the un-killed baseline world; killed worlds require the kill signal itself, never an exit status. |
 
 ## The counterexample (`FAIL` only)
 

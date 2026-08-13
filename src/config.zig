@@ -23,6 +23,11 @@ pub const Define = struct {
     /// engine enforce it — a key that parses before it acts would accept a declared
     /// invariant and quietly not enforce it.
     marker: ?[]const u8 = null,
+    /// The exit status that means the operation completed (ADR 0014). Carried as the
+    /// string between the quotes — this parser knows one value shape, and the digits
+    /// are validated by the same routine that validates the flag spelling, so the two
+    /// cannot drift into accepting different grammars.
+    expected_status: ?[]const u8 = null,
 };
 
 pub const Fault = struct {
@@ -48,6 +53,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var operation: ?[]const u8 = null;
     var check: ?[]const u8 = null;
     var marker: ?[]const u8 = null;
+    var expected_status: ?[]const u8 = null;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     var line_no: usize = 0;
@@ -92,8 +98,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 &check
             else if (std.mem.eql(u8, key, "marker"))
                 &marker
+            else if (std.mem.eql(u8, key, "expected_status"))
+                &expected_status
             else
-                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check` and `marker` exist"),
+                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker` and `expected_status` exist"),
         };
         if (slot.* != null) return fault(line_no, "duplicate key");
         if (value.len == 0) return fault(line_no, "the value is empty");
@@ -101,7 +109,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status } };
 }
 
 /// The value grammar: one double-quoted string, optionally followed by whitespace
@@ -154,6 +162,21 @@ test "setup and check are optional; state and operation are not" {
     try t.expectEqual(@as(usize, 0), no_state.fault.line);
     const no_op = parseFor(as.allocator(), "[world]\nstate = \"s\"\n");
     try t.expectEqualStrings("[define] operation is required", no_op.fault.what);
+}
+
+test "expected_status parses as a string value and stays optional" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const r = parseFor(as.allocator(),
+        \\[world]
+        \\state = "s"
+        \\[define]
+        \\operation = "op"
+        \\expected_status = "3"   # digits validated where the flag is validated
+    );
+    try t.expectEqualStrings("3", r.ok.expected_status.?);
+    const absent = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\n");
+    try t.expect(absent.ok.expected_status == null);
 }
 
 test "an unknown key refuses with its line" {
