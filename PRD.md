@@ -102,7 +102,7 @@ Acceptance: DESIGN §17's primary criterion evaluated honestly — either a nove
 
 **Status (2026-08-12, updated same day): calibration kill condition cleared; regression-case stability measured in practice; the full §17 primary criterion is not yet met.** The second scope item is now measured rather than argued (`spike/dogfood-timew-replay.sh`, BUILDLOG same date): the saved timewarrior case replays FAIL on the unpatched pinned build, replays **PASS** across the applied fix rebuilt under the same command name (explored 2, landing context intact), and answers `case_no_longer_applies` — a refusal, not a verdict — against a build whose recording differs (distro 1.4.3, 19 ops vs 24). The state-mutating omamori subcommand this evaluation drove — `exec` — was reconnoitred (BUILDLOG, same date): the write pattern confirms the high-water mark *after* the body, so verify stays conservative in every crash window and no §17-class bug exists on that path — a clean instance of "too hardened" (§18), the survivable side. The guarded self-modification commands (config-modify, `init --force`, audit key rotate) refuse for a human at a terminal exactly as for an agent (#12); measuring one as a Sideeye `operation` would require break-glass, which removes the defence under test, so it is out of scope on discipline (the full surface was enumerated the same day — BUILDLOG: every subcommand including nested arms, the argv0 shim mode and the hook entrypoints, cross-checked from the write-primitive side; of the four unguarded writers beyond exec, install/setup/init refuse at named trace-contract walls — `symlinkat`, `fchmodat` — and audit verify's high-water-mark bootstrap write **explores fully and holds**, PASS over 6 crash points; the one non-atomic write found, retention's in-place prune rewrite on the append path, is recorded there as an open finding that needs clock control to drive). The find is on the calibration target §18 required: timewarrior, no hand-written adversarial tests, whose crash-window bug (`timew undo` destroying committed data, timewarrior#778) is the mechanical inverse of omamori's safe ordering. That clears §18's calibration kill condition. It does **not** yet satisfy v1.0's entry criterion 1: of §17's six conditions, four are clean and two have gaps — "discovered automatically" holds only for the crash-world search (manual trace triage seeded the target and window; DESIGN §17 status note), and the finding is kept as a reproducible recipe, not a `sideeye replay` regression case (it needs a built timewarrior). Closing those two gaps is remaining v1.0 work.
 
-### v0.5 — The loop closes
+### v0.5 — The loop closes (delivered 2026-08-13)
 
 **Goal:** prove the counterexample is agent food, and calibrate detection power.
 
@@ -114,7 +114,7 @@ Scope:
 
 Acceptance: loop closure demonstrated end-to-end at least once; calibration results published in the buildlog, whatever they are.
 
-**Status (2026-08-12): the agent-facing surface is built — and shipped early, in v0.4.0** (the adapter landed on main before v0.4 was cut, so the 0.4.0 tag carries it; this milestone stays open and cuts 0.5.0 when its own acceptance is met). `sideeye mcp` (ADR 0010) gives an agent the standard MCP tool surface — explore a `sideeye.toml` and replay a saved case, both measured end-to-end over the wire (explore → case → replay reproduces). The calibration target is already met (timewarrior, §18/§17 status). What remains for the milestone is the loop-closure *test* itself: hand an agent only the report and the repository through this surface and see whether it fixes the finding without human translation — the surface is ready to run it.
+**Status (2026-08-12, superseded the next day — see below): the agent-facing surface is built — and shipped early, in v0.4.0** (the adapter landed on main before v0.4 was cut, so the 0.4.0 tag carries it; this milestone stays open and cuts 0.5.0 when its own acceptance is met). `sideeye mcp` (ADR 0010) gives an agent the standard MCP tool surface — explore a `sideeye.toml` and replay a saved case, both measured end-to-end over the wire (explore → case → replay reproduces). The calibration target is already met (timewarrior, §18/§17 status). What remains for the milestone is the loop-closure *test* itself: hand an agent only the report and the repository through this surface and see whether it fixes the finding without human translation — the surface is ready to run it.
 
 **Status (2026-08-13): loop closure demonstrated end-to-end — the milestone's
 acceptance sentence is met.** A context-free coding agent, handed only the
@@ -136,8 +136,8 @@ exact set is declared in the BUILDLOG protocol). The milestone's remaining
 scope closed the same day: the report is documented as a schema
 (`docs/report-schema.md`, held to the generated reports by acceptance
 check 4), and the CI quickstart is a real workflow this repo runs
-(`docs/ci-quickstart.md`). Nothing of v0.5's scope remains; 0.5.0 is a
-release ceremony away.
+(`docs/ci-quickstart.md`). Nothing of v0.5's scope remains; 0.5.0 released
+2026-08-13.
 
 ### v1.0 — Contract freeze
 
