@@ -229,8 +229,25 @@ What the permitted sources decided, without touching a trace:
 - **hledger** appends via `import`; its journal is seeded by `/bin/cp` in
   setup, where any tool is allowed.
 
-The sweep itself (exit codes only, full reports sealed unread) runs next; its
-result lands in this file when it exists.
+The sweep ran once, with the oracle, and this is everything the experimenter
+has seen of it:
+
+    topydo exit=0 resolved=yes
+    khard exit=0 resolved=yes
+    abook exit=0 resolved=yes
+    khal exit=0 resolved=yes
+    hledger exit=2 resolved=yes
+
+Four recordings accepted; hledger refused — **why is sealed**. The refusal
+detail sits unread in the hashed artifact until Seal B, exactly because a
+refusal reason is knowledge about how a target behaves under observation.
+
+`select.sh` applied the sealed predicate to the committed manifest:
+**topydo** — first in the sealed priority order with exit 0 and in-image
+resolution. Nobody chose it; the choice was merged five hours before the
+sweep existed. Next (a fresh phase, deliberately not tonight): the
+declaration — invariants with per-line provenance, the operation inventory,
+the concrete checkers — then Seal B, and only then the first crash world.
 
 ## 2026-08-13 — Seal A: everything about the blind hunt is decided before a target runs (#83)
 
