@@ -2,6 +2,94 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — Contract v8: no descriptor number is exempt, and "could not tell" stops passing as "not ours" (#4)
+
+Measured first, on the pre-fix binary, with the new `TOY_DUP2` toy (state writes
+through fd 1, fd 2, fd 0, and a stdio leg on rebound stdout):
+
+    no oracle, --allow-unverified:  PASS 9/9   ← the false PASS, real
+    with oracle:                    UNKNOWN oracle_missed_operation
+                                    (divergence at operation 2: the oracle saw
+                                    write(1</tmp/.../dup-fd1.txt>); the shim
+                                    recorded open of the *next* file)
+
+Both halves of the hypothesis held: on Linux with the oracle the second witness
+already refuses — fail-closed doing its job — and the genuinely wrong verdict
+lives on the oracle-less side (macOS, `--allow-unverified`), where four state
+files were written through standard descriptors and the report said PASS.
+
+The fix that review shaped (two Criticals deep, past the original one-line
+plan): `noteFd`'s early returns shrink to `fd < 0` only — both the `fd <= 2`
+skip and the `trace_fd` comparison go, because each was a *number*-based
+exemption and a target can rebind any number (the shim's own trace writes never
+pass through the wrappers, so the trace_fd check defended nothing). And fd
+resolution becomes three-valued: a descriptor **proven** to be a socket, pipe
+or character device is evidence the operation is elsewhere; a regular file or
+directory whose path cannot be read is **unresolvable** and gets recorded, so
+the engine refuses instead of passing; and `st_nlink == 0` now marks unlinked
+files on both platforms — closing the macOS gap F_GETPATH left, which this
+file previously documented as known-but-open. The harness also refuses
+`--work` inside the state directory before running: with the exemptions gone,
+the engine's own stdout captures would otherwise become countable state
+operations. Trace contract v7 → v8 — the countable set changed, the same
+class as v5 (stdio) and v7 (remove) — and saved v7 cases refuse honestly.
+
+Post-fix, same toy, first run: the four descriptor-borne writes are counted
+(crash points 8 → 12), and **the oracle agrees on all 12 operations** — the
+worry that the shim's own per-operation `statx` would trip the oracle's
+unknown-syscall net was measured away, absorbed like the readlink calls before
+it. The plain toys' sequences are unchanged (toy-bug still FAILs at crash
+point 5 of 5), and `--work` inside state refuses before anything runs.
+
+One toolchain find worth its line: Zig 0.16's std.c deliberately exports **no
+libc fstat on Linux** (`.linux => {}` in std/c.zig — the __fxstat legacy), so
+the shim asks via the raw `statx` syscall there and libc `fstat` only on
+Darwin, where std.c handles the $INODE64 decoration. The local std source
+answered in one grep what the compile error alone did not.
+
+The blind review round then broke this entry's own sentence "the trace_fd
+check defended nothing" — true for protecting the trace, false as a conclusion.
+The *number* is the channel's identity, and with the check gone nothing
+defended the channel at all. Measured with a daemonize-style `close(3..255)`
+sweep: the shim's trace fd sat at 3, the sweep closed it, the toy's next open
+took the number, and `key.json` came back with the shim's binary trace records
+spliced between its own bytes — the harness corrupting the data it judges,
+refused only by the accident of `state_changed_without_ops`. The channel now
+defends its identity itself: relocated at init (`F_DUPFD` ≥ 900, fallback
+≥ 200 under macOS's 256 rlimit), and every descriptor-retiring wrapper (close,
+fclose, freopen) treats closing it as the channel dying — one final
+`unresolved` record while the fd still works, then trace_fd = -1 and silence.
+Sweep below the floor: verdict untouched, 5 worlds. Sweep at 1023: refused
+`unresolvable_path` with `key.json` byte-identical to what the toy wrote.
+
+The same round found three more, all measured red first: `fdKind` sent
+anon-inode descriptors (type bits zero — eventfd, epoll; the kernel's own
+spelling, while macOS kqueue stats as a FIFO and never hurt) to
+`unresolvable_path`, so one eventfd close refused an innocent run — every
+epoll-based target was unjudgeable until type 0 and `S_IFLNK` joined the
+proven-non-path class. The `--work` vet destroyed evidence before refusing:
+`replay --fresh-state` emptied the state directory and *then* noticed --work
+sat inside it (sentinel file: gone), and plain explore planted `<state>/work`
+before refusing — the vet now runs before the deletion and removes the one
+directory its own resolution creates. And the vet's hand-rolled prefix test
+answered "outside" for a state directory of `/` (the byte after `/` in `/tmp`
+is `t`); it now uses `isInsideDir`, whose root case the acceptance leg runs
+for real — the mutant with the old expression sailed past the containment
+message and died on a snapshot error instead, which is exactly why the leg
+asserts the message and not the exit code. The same-class scan for the
+null-conflation found a second instance in `resolveAt`'s dirfd base — the
+`*at()` family answered "not ours" where it could not measure — fixed with the
+same three-way split, though no toy can drive that branch (a live directory
+whose path query fails is not constructible on demand; recorded as the one
+unmeasured edge). The first version of that fix shared one `deleted` flag
+between `fdKind` and `fdPath` — and `fdPath` resets its out-param on entry, so
+fdKind's nlink==0 finding (the macOS deleted-directory carrier) was erased on
+the successful-path branch; caught in the simplify pass by reading `noteFd`,
+which had kept the two flags separate all along. The schema page said "v7 today" over a v8 binary; claims 1-3
+stayed green because none of them read the version prose, so check 4 now pins
+the doc's version words to `contract_version` — seen red against the v7
+wording, red again with the anchor prose deleted, green on the real page.
+
 ## 2026-08-13 — A sweep dropping walked into the release commit
 
 Caught right after merging the 0.6.0 bump, before the tag: the bump commit

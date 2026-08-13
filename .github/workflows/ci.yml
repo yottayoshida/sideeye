@@ -107,6 +107,75 @@ jobs:
           echo "$out" | grep -q "before rename" || { echo "next operation not named"; exit 1; }
           echo "$out" | grep -q "NOT VERIFIED" || { echo "weaker claim not labelled"; exit 1; }
 
+      # Contract v8 parity: state writes through re-bound standard descriptors must be
+      # counted identically on both platforms (exact numbers, not just the verdict —
+      # F_GETPATH is a different resolution mechanism than /proc/self/fd, and the count
+      # is where a platform-specific miss would show).
+      - name: State writes through dup2'd standard descriptors are counted (v8)
+        run: |
+          set -eu
+          rm -rf /tmp/ci-dup && mkdir -p /tmp/ci-dup/state
+          zig cc -o /tmp/ci-dup/toy-fixed spike/toys/toy.c
+
+          set +e
+          out=$(TOY_DUP2=1 ./zig-out/bin/sideeye explore \
+            --state /tmp/ci-dup/state \
+            --setup "/tmp/ci-dup/toy-fixed init" \
+            --operation "/tmp/ci-dup/toy-fixed rotate" \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci-dup/work \
+            --allow-unverified 2>&1)
+          rc=$?
+          set -e
+
+          [ "$rc" = "0" ] || { echo "expected PASS, got $rc"; echo "$out" | head -6; exit 1; }
+          echo "$out" | grep -q "explored 13 worlds (crash points 12 + 1 baseline)" \
+            || { echo "descriptor-borne writes not counted (want 12 + 1, matching Linux)"; echo "$out" | head -4; exit 1; }
+
+      # The shim's own trace descriptor is a number a target can legally close.
+      # Below the relocation floor a daemonize-style close sweep must not move the
+      # verdict (this also pins that the relocation happened — an unrelocated trace
+      # fd sits at 3 and would be swept); a sweep that does reach the channel must
+      # end in refusal with the state file holding exactly what the target wrote,
+      # never the shim's own trace records (measured on Linux before the guard).
+      # kqueue stats as a FIFO on this platform, so TOY_ANONFD also runs here.
+      - name: Descriptor hygiene sweeps and anon descriptors (v8)
+        run: |
+          set -eu
+          rm -rf /tmp/ci-fd && mkdir -p /tmp/ci-fd/state
+          zig cc -o /tmp/ci-fd/toy-fixed spike/toys/toy.c
+
+          run_toy() {
+            set +e
+            out=$(env "$1" ./zig-out/bin/sideeye explore \
+              --state /tmp/ci-fd/state \
+              --setup "/tmp/ci-fd/toy-fixed init" \
+              --operation "/tmp/ci-fd/toy-fixed rotate" \
+              --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+              --work /tmp/ci-fd/work \
+              --allow-unverified 2>&1)
+            rc=$?
+            set -e
+          }
+
+          run_toy TOY_CLOSE_SWEEP=150
+          [ "$rc" = "0" ] || { echo "sweep below the floor moved the verdict: $rc"; echo "$out" | head -4; exit 1; }
+          echo "$out" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+            || { echo "sweep below the floor changed the count"; echo "$out" | head -4; exit 1; }
+
+          rm -rf /tmp/ci-fd/state /tmp/ci-fd/work && mkdir -p /tmp/ci-fd/state
+          run_toy TOY_CLOSE_SWEEP=1023
+          [ "$rc" = "2" ] || { echo "sweep at the trace fd should refuse, got $rc"; echo "$out" | head -4; exit 1; }
+          echo "$out" | grep -q "unresolvable_path" || { echo "refusal did not name the channel"; echo "$out" | head -4; exit 1; }
+          printf 'key=2\n' | cmp -s - /tmp/ci-fd/state/key.json \
+            || { echo "state file corrupted by the harness:"; od -c /tmp/ci-fd/state/key.json | head -3; exit 1; }
+
+          rm -rf /tmp/ci-fd/state /tmp/ci-fd/work && mkdir -p /tmp/ci-fd/state
+          run_toy TOY_ANONFD=1
+          [ "$rc" = "0" ] || { echo "a kqueue descriptor moved the verdict: $rc"; echo "$out" | head -4; exit 1; }
+          echo "$out" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+            || { echo "kqueue changed the count"; echo "$out" | head -4; exit 1; }
+
       # The parity claim, asserted rather than described: both platforms must reach the
       # same logical crash point out of the same number of operations.
       - name: Same crash point as Linux

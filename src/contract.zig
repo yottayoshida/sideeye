@@ -52,7 +52,16 @@ const std = @import("std");
 /// (failed attempts included, recorded pre-call like every kill point), so a target
 /// that removes state via remove gains addresses a v6 trace does not have — the same
 /// class of meaning change that bumped v4 and v5.
-pub const contract_version: u32 = 7;
+/// v8: no descriptor number is exempt from observation. The shim's fd-addressed
+/// wrappers previously skipped fd 0/1/2 (and the trace fd) unconditionally; a target
+/// that dup2'd a state file onto a standard descriptor wrote invisibly — measured as
+/// a false PASS on the oracle-less path. fd resolution is also three-valued now: a
+/// proven socket/pipe/device is out of scope, but a path query that *fails* on a
+/// regular file records `unresolved` instead of silently passing, and `st_nlink == 0`
+/// marks unlinked files on macOS too. The countable operation set changed for
+/// affected targets, which is what a version bump means here (same class as v5's
+/// stdio and v7's remove).
+pub const contract_version: u32 = 8;
 
 pub const magic = "SIDEEYE1";
 
@@ -680,4 +689,9 @@ test "directory containment compares whole components" {
     // a trailing slash on the directory must not change the answer
     try std.testing.expect(isInsideDir("/tmp/state/key.json", "/tmp/state/"));
     try std.testing.expect(!isInsideDir("/tmp/state2/key.json", "/tmp/state/"));
+    // a root directory contains every absolute path — the case a hand-rolled
+    // `path[dir.len] == '/'` test gets wrong, because the character after "/" in
+    // "/tmp" is 't' (review finding against the --work containment vet)
+    try std.testing.expect(isInsideDir("/tmp/anything", "/"));
+    try std.testing.expect(isInsideDir("/", "/"));
 }

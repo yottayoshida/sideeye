@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Trace contract v8 (#4): no descriptor number is exempt from observation. The shim previously skipped fd 0/1/2 (and its own trace fd) unconditionally — a target that `dup2`'d a state file onto a standard descriptor wrote invisibly, measured as a false PASS on the oracle-less path (with the oracle, the second witness already refused). Every fd-addressed operation now resolves the descriptor's actual location, fd resolution is three-valued (a proven socket/pipe/device is out of scope; a path query that fails on a real file records `unresolved` and the run refuses; `st_nlink == 0` finally marks open-but-unlinked files on macOS), and saved v7 cases refuse honestly as a contract mismatch. (ADR 0013)
+- The shim's trace descriptor defends its own identity: relocated at init above the range daemonize-style `close(3..255)` hygiene sweeps reach, and a target closing it is answered with one final `unresolved` record and silence, so the run refuses as `unresolvable_path`. Measured before the guard: the swept number was re-used by the target's own state file, which came back with the shim's binary trace records spliced between its bytes — the harness corrupting the data it judges.
+
+### Fixed
+
+- `--work` inside the state directory is refused before anything runs: with the descriptor exemptions gone, the engine's own stdout captures there would have been observed as the target's state operations. The vet runs before `--fresh-state`'s deletion (the first version emptied the state directory and then refused, destroying the caller's data on an invalid setup), cleans up the one directory its resolution creates, and treats a state directory of `/` as containing every `--work` (the hand-rolled prefix test it replaced did not).
+- Anon-inode descriptors — eventfd, epoll, timerfd, io_uring, whose fstat type bits are zero by design — no longer send the run to `unresolvable_path` on close; every epoll-based target was unjudgeable. `O_PATH` symlink descriptors are likewise proven non-state; kqueue on macOS stats as a FIFO and was never affected.
+- The `*at()` family's base-descriptor resolution had the same proof/failure conflation `noteFd` was reviewed for: a real directory whose path query failed was answered "not ours". Found by the same-class scan; same three-valued fix.
+- `docs/report-schema.md` said "v7 today" over a v8 binary; the schema check now pins the doc's version words to `contract_version`, so this class of drift goes red in CI.
+
 ## [0.6.0] - 2026-08-13
 
 ### Added

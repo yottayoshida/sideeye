@@ -44,6 +44,10 @@ const SEEK_END: c_int = 2;
 /// Darwin's F_GETPATH. The buffer must hold at least PATH_MAX (1024) bytes.
 const F_GETPATH: c_int = 50;
 const darwin_path_max: usize = 1024;
+/// These three predate the Linux/BSD split and share values everywhere.
+const F_DUPFD: c_int = 0;
+const F_SETFD: c_int = 2;
+const FD_CLOEXEC: c_int = 1;
 
 /// `RTLD_NEXT` is `((void *) -1)`: resolve the symbol in the search order *after* us,
 /// which is how we reach the real libc function we just replaced.
@@ -461,6 +465,27 @@ pub fn init() void {
     trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0o644);
     if (trace_fd < 0) return;
 
+    // The channel's one weakness is its number: the shim holds trace_fd as an integer,
+    // and a target that closes that number — daemonize loops sweep 3..255 as ordinary
+    // hygiene — leaves later trace writes landing in whatever file inherits it.
+    // Measured before this guard existed: a state file with trace records spliced
+    // between its own bytes. Two moves shrink that surface. The descriptor is
+    // relocated above the range hygiene sweeps reach, and a close() of the relocated
+    // number is treated as the channel dying (noteTraceClose) rather than ignored.
+    // The fallback floor exists because a 256-descriptor rlimit — the macOS default —
+    // rejects F_DUPFD at 900; if both floors fail the low number is kept, and a sweep
+    // that reaches it still ends in refusal, never in a silent half-account.
+    relocate: {
+        for ([_]c_int{ 900, 200 }) |floor| {
+            const high = c.fcntl(trace_fd, F_DUPFD, floor);
+            if (high < 0) continue;
+            _ = c.fcntl(high, F_SETFD, FD_CLOEXEC);
+            _ = callClose(trace_fd);
+            trace_fd = high;
+            break :relocate;
+        }
+    }
+
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
 
     armed_pid = c.getpid();
@@ -544,24 +569,37 @@ fn writeRecord(op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) 
     _ = writeAll(record_buf[0..n]);
 }
 
-/// Absolute path of an open descriptor, via `/proc/self/fd/N`.
+/// The target is closing the shim's own trace descriptor.
 ///
-/// Returns null when the link cannot be read — an unlinked file, an `O_TMPFILE`
-/// descriptor, a socket. The caller turns that into UNKNOWN rather than guessing,
-/// because a descriptor we cannot name is one we cannot decide is in scope.
+/// That is legal behaviour — descriptor-hygiene sweeps close numbers they never
+/// opened — but it ends observation, and the cost of ignoring it is measured: the
+/// number gets re-used for a target file, and the shim's later trace writes land
+/// inside it. So the channel announces its death while the descriptor still works
+/// (`unresolved`, which the engine refuses on) and then goes silent: with trace_fd
+/// at -1, `writeAll` drops everything, and nothing is ever written through a number
+/// the target now owns. Called from every wrapper that retires a descriptor —
+/// close, fclose, freopen — before the real call retires it.
+pub fn noteTraceClose(fd: c_int) void {
+    if (!active or fd < 0 or fd != trace_fd) return;
+    writeRecord(.unresolved, 0, "trace:closed-by-target", "");
+    trace_fd = -1;
+}
+
 const deleted_suffix = " (deleted)";
 
-/// Absolute path of an open descriptor, via `/proc/self/fd/N`.
+/// Absolute path of an open descriptor — `/proc/self/fd/N` on Linux, `F_GETPATH` on
+/// macOS.
 ///
-/// Returns null only when the descriptor cannot name a filesystem path at all — the
-/// link failed to read, or it resolves to something like `socket:[12345]`, which is
-/// proof the descriptor is *not* in the state directory rather than uncertainty about
-/// it. Those must not become UNKNOWN: a target that writes to a socket would otherwise
-/// be unjudgeable, and there would be nothing wrong with it.
+/// Callers ask `fdKind` first (contract v8), so the descriptors that reach this
+/// function are the ones fstat proved to be regular files or directories. A null
+/// here is therefore always a failed measurement on something real — never proof of
+/// innocence — and both callers record it as `unresolved` so the engine refuses.
 ///
-/// A descriptor whose file has been unlinked reads back as `/path/to/file (deleted)`.
-/// That case sets `deleted` and still returns the path, because the caller needs to
-/// know whether it was inside the state directory before deciding what it means.
+/// A descriptor whose file has been unlinked reads back as `/path/to/file (deleted)`
+/// on Linux. That case sets `deleted` and still returns the path, because the caller
+/// needs to know whether it was inside the state directory before deciding what it
+/// means. F_GETPATH has no such spelling; on macOS the deleted case is carried by
+/// `st_nlink == 0` out of `fdKind` instead.
 fn fdPath(out: []u8, fd: c_int, deleted: *bool) ?[]const u8 {
     deleted.* = false;
 
@@ -625,8 +663,29 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) 
             return null;
         };
     } else blk: {
-        const b = fdPath(&base_buf, dirfd, &base_deleted) orelse return null;
-        if (base_deleted) {
+        // The same three-way split as noteFd (contract v8). A proven non-directory
+        // base — a socket, a pipe, a dead number — makes the *at() call itself fail
+        // without touching anything, so there is nothing to place. A real directory
+        // whose path cannot be read back is a failed measurement instead; the first
+        // version of this branch answered "not ours" for both (same conflation the
+        // review caught in noteFd, found here by the same-class scan).
+        switch (fdKind(dirfd, &base_deleted)) {
+            .non_path => return null,
+            .unresolvable => {
+                unresolvable.* = true;
+                return null;
+            },
+            .path_backed => {},
+        }
+        // A separate flag for fdPath's own answer: it resets its out-param on entry,
+        // and letting it share `base_deleted` would erase fdKind's nlink==0 finding —
+        // exactly the macOS deleted-directory case that flag exists to carry.
+        var base_link_deleted = false;
+        const b = fdPath(&base_buf, dirfd, &base_link_deleted) orelse {
+            unresolvable.* = true;
+            return null;
+        };
+        if (base_deleted or base_link_deleted) {
             unresolvable.* = isInState(b);
             return null;
         }
@@ -735,21 +794,140 @@ pub fn note2(
     observe(op, resolved, aresolved);
 }
 
+/// What stands behind a descriptor, asked of fstat before any path query.
+///
+/// Three answers, and the difference is the contract (v8): a socket, pipe or device
+/// is *proof* the operation is not in the state directory — nothing to record. A
+/// regular file or directory is path-backed and must go on to name its path. Anything
+/// else — including a failed fstat on a descriptor the wrapper was actually handed —
+/// is `unresolvable`: an operation that was seen but cannot be placed, which must be
+/// recorded so the engine refuses, never silently dropped. (The first version of
+/// `noteFd` treated every resolution failure as "not ours"; review caught that a
+/// query failure and a proven non-file are different answers wearing one null.)
+///
+/// `deleted` is set when `st_nlink == 0` — an open, unlinked file. This is what
+/// finally closes the macOS gap: F_GETPATH has no "(deleted)" spelling, so nlink is
+/// the cross-platform witness that a descriptor's bytes have no snapshot address.
+const FdKind = enum { path_backed, non_path, unresolvable };
+
+/// The type and link count behind a descriptor, reached differently per platform:
+/// std.c maps Darwin's fstat symbol decoration ($INODE64 on x86_64), but deliberately
+/// exports no libc fstat on Linux (`.linux => {}` in std/c.zig — the historical
+/// __fxstat indirection), so there the raw statx syscall is the stable spelling. The
+/// shim already speaks raw resolution syscalls per operation (the /proc/self/fd
+/// readlink below); the oracle's read-only classification absorbs them.
+const FdStatResult = union(enum) { ok: struct { mode: u32, nlink: u32 }, bad_fd: void, failed: void };
+
+const EBADF: c_int = 9; // same value on Linux and Darwin
+
+fn fdStat(fd: c_int) FdStatResult {
+    if (is_darwin) {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstat(fd, &st) != 0) {
+            if (std.c._errno().* == EBADF) return .bad_fd;
+            return .failed;
+        }
+        return .{ .ok = .{ .mode = @intCast(st.mode), .nlink = @intCast(st.nlink) } };
+    }
+    var stx: std.os.linux.Statx = undefined;
+    // 0x1000 is AT_EMPTY_PATH: statx the descriptor itself, no path walk.
+    const rc = std.os.linux.statx(@intCast(fd), "", 0x1000, .{ .TYPE = true, .NLINK = true }, &stx);
+    switch (std.os.linux.errno(rc)) {
+        .SUCCESS => {},
+        .BADF => return .bad_fd,
+        else => return .failed,
+    }
+    // The kernel reports which fields it actually filled; a TYPE it did not vouch for
+    // is a measurement that did not happen, not a zero to read.
+    if (!stx.mask.TYPE) return .failed;
+    return .{ .ok = .{ .mode = stx.mode, .nlink = if (stx.mask.NLINK) stx.nlink else 1 } };
+}
+
+// The file-type mask and its values agree between Linux and Darwin.
+const S_IFMT: u32 = 0o170000;
+const S_IFSOCK: u32 = 0o140000;
+const S_IFLNK: u32 = 0o120000;
+const S_IFREG: u32 = 0o100000;
+const S_IFBLK: u32 = 0o060000;
+const S_IFDIR: u32 = 0o040000;
+const S_IFCHR: u32 = 0o020000;
+const S_IFIFO: u32 = 0o010000;
+
+fn fdKind(fd: c_int, deleted: *bool) FdKind {
+    switch (fdStat(fd)) {
+        // EBADF: there is nothing real behind this number; the operation the wrapper
+        // is about to attempt will fail without touching anything.
+        .bad_fd => return .non_path,
+        // The stat itself failed on a live descriptor: a measurement that could not
+        // be taken, never evidence of innocence.
+        .failed => return .unresolvable,
+        .ok => |st| {
+            const m = st.mode & S_IFMT;
+            if (m == S_IFSOCK or m == S_IFIFO or m == S_IFCHR or m == S_IFBLK)
+                return .non_path;
+            // Type bits of zero are the kernel's anon-inode spelling — eventfd,
+            // epoll, timerfd, io_uring have no file format on Linux, and nothing
+            // that can live in a state directory stats that way (kqueue on macOS
+            // reports a FIFO; measured). A symlink descriptor (O_PATH|O_NOFOLLOW)
+            // cannot carry a write, truncate or sync. Both are proof of innocence,
+            // not failed measurements — before this branch existed, one close() of
+            // an eventfd sent the whole run to `unresolvable_path` (measured).
+            if (m == 0 or m == S_IFLNK) return .non_path;
+            if (m == S_IFREG or m == S_IFDIR) {
+                if (st.nlink == 0) deleted.* = true;
+                return .path_backed;
+            }
+            return .unresolvable;
+        },
+    }
+}
+
+/// An fd-addressed operation that was seen but could not be placed. The label names
+/// the descriptor because there is no path to name — the point of recording it is
+/// that the engine refuses instead of passing.
+fn noteUnresolvedFd(fd: c_int) void {
+    var b: [16]u8 = undefined;
+    const s = std.fmt.bufPrint(&b, "fd:{d}", .{fd}) catch "fd:?";
+    noteUnresolved(s);
+}
+
 pub fn noteFd(op: contract.OpClass, fd: c_int) void {
     if (!active or busy) return;
-    if (fd == trace_fd) return; // never observe the trace we are writing
-    if (fd <= 2) return; // stdin/stdout/stderr are not state
+    // The ONLY early return keyed on the descriptor itself. Contract v8: no descriptor
+    // number is exempt from observation — not 0/1/2 (a target can dup2 a state file
+    // onto any of them; measured as a false PASS before this change), and not the
+    // trace fd, whose number a target can close and re-use for a state file. The
+    // trace channel protects itself instead of asking for an exemption here: its
+    // descriptor is relocated above the hygiene-sweep range at init, and a close()
+    // of it announces the channel's death (noteTraceClose) so the engine refuses.
+    // Where a descriptor points is decided by asking the kernel, below, every time.
+    if (fd < 0) return;
     busy = true;
     defer busy = false;
 
-    var buf: [contract.max_path]u8 = undefined;
     var deleted = false;
-    // A null here means the descriptor cannot name a path at all (a socket, a pipe, a
-    // failed link read). That is evidence it is outside the state directory, not
-    // uncertainty about it, so there is nothing to report.
-    const resolved = fdPath(&buf, fd, &deleted) orelse return;
+    switch (fdKind(fd, &deleted)) {
+        // Proof, not uncertainty: sockets, pipes and devices are not state-directory
+        // entries, so an operation through one is legitimately none of our business.
+        .non_path => return,
+        .unresolvable => {
+            noteUnresolvedFd(fd);
+            return;
+        },
+        .path_backed => {},
+    }
+
+    var buf: [contract.max_path]u8 = undefined;
+    var link_deleted = false;
+    const resolved = fdPath(&buf, fd, &link_deleted) orelse {
+        // A regular file or directory whose path could not be read back. That is a
+        // failed measurement, not evidence of innocence — recorded, so the engine
+        // refuses to judge a run whose operations it cannot place.
+        noteUnresolvedFd(fd);
+        return;
+    };
     if (!isInState(resolved)) return;
-    if (deleted) {
+    if (deleted or link_deleted) {
         // The file was inside the state directory and has since been unlinked. Writing
         // through such a descriptor still changes bytes the engine cannot see in any
         // snapshot, so the operation exists but has no address.

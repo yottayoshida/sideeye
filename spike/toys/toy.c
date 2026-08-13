@@ -106,6 +106,24 @@
  *                       prefix-insertion that must make a saved case refuse as
  *                       "case no longer applies" instead of silently verifying a
  *                       shifted address (ADR 0009).
+ *   TOY_DUP2       state writes through the standard descriptors, in a fixed order:
+ *                  a state file dup2'd onto fd 1 and written through write(1), the
+ *                  same through fd 2, the same through fd 0, and finally a stdio leg
+ *                  (stdout rebound to a state file, fprintf + fflush). A descriptor's
+ *                  number must not exempt it from observation: before contract v8 the
+ *                  shim skipped fd <= 2 unconditionally, and every one of these writes
+ *                  was invisible — the acceptance table pins each leg separately so a
+ *                  fix for fd 1 alone cannot pass.
+ *   TOY_CLOSE_SWEEP=N  daemonize-style descriptor hygiene: close(3..N) before any
+ *                  state work. A bound below the shim's trace-fd relocation floor
+ *                  must leave the run's verdict untouched; a bound at or above it
+ *                  closes the shim's own trace channel, and the run must refuse —
+ *                  never keep writing trace records into whatever file inherits
+ *                  the number.
+ *   TOY_ANONFD     open and close descriptors that are provably not files: eventfd
+ *                  and epoll on Linux (fstat type bits zero — the kernel's
+ *                  anon-inode spelling), kqueue on macOS (stats as a FIFO). Must be
+ *                  invisible to the verdict: none can be state-directory content.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
@@ -131,6 +149,13 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
+#ifdef __linux__
+#include <sys/epoll.h>
+#include <sys/eventfd.h>
+#endif
+#ifdef __APPLE__
+#include <sys/event.h>
+#endif
 #include <pthread.h>
 #include <spawn.h>
 #include <stdio.h>
@@ -335,6 +360,64 @@ static int cmd_rotate(void) {
     if (getenv("TOY_READ_FIRST")) {
         char buf[256];
         (void)read_key(buf, sizeof buf);
+    }
+
+    /* Daemonize-style descriptor hygiene, first thing, the way a service would. */
+    if (getenv("TOY_CLOSE_SWEEP")) {
+        int hi = atoi(getenv("TOY_CLOSE_SWEEP"));
+        for (int fd = 3; fd <= hi; fd++) close(fd);
+    }
+
+    /* Descriptors that are provably not files; opening and closing them must not
+     * move the verdict. */
+    if (getenv("TOY_ANONFD")) {
+#ifdef __linux__
+        int efd = eventfd(0, 0);
+        int epfd = epoll_create1(0);
+        if (efd < 0 || epfd < 0) return 1;
+        close(efd);
+        close(epfd);
+#else
+        int kq = kqueue();
+        if (kq < 0) return 1;
+        close(kq);
+#endif
+    }
+
+    /* State writes through the standard descriptors. Each leg saves the original
+     * descriptor with dup, rebinds the number to a state file, writes through the
+     * bare number, and restores — so the engine's stdout capture keeps working
+     * between legs and the toy stays honest about where its output goes. */
+    if (getenv("TOY_DUP2")) {
+        static const int std_fds[] = { 1, 2, 0 };
+        static const char *const names[] = { "dup-fd1.txt", "dup-fd2.txt", "dup-fd0.txt" };
+        for (int i = 0; i < 3; i++) {
+            char p[4096];
+            join_path(p, sizeof p, names[i]);
+            int saved = dup(std_fds[i]);
+            int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (saved < 0 || fd < 0) return 1;
+            if (dup2(fd, std_fds[i]) < 0) return 1;
+            close(fd);
+            if (write(std_fds[i], "via std fd\n", 11) != 11) return 1;
+            if (dup2(saved, std_fds[i]) < 0) return 1;
+            close(saved);
+        }
+        /* The stdio leg: the same rebinding, driven through the FILE* layer the shim
+         * observes at flush granularity (ADR 0005). fileno(stdout) is 1 here. */
+        {
+            char p[4096];
+            join_path(p, sizeof p, "dup-stdio.txt");
+            int saved = dup(1);
+            int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (saved < 0 || fd < 0) return 1;
+            if (dup2(fd, 1) < 0) return 1;
+            close(fd);
+            fprintf(stdout, "via stdio on rebound stdout\n");
+            if (fflush(stdout) != 0) return 1;
+            if (dup2(saved, 1) < 0) return 1;
+            close(saved);
+        }
     }
 
     /* Append one line whose bytes no run repeats, in several small writes. */

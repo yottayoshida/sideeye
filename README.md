@@ -65,7 +65,12 @@ never as passing — and the refusal names its detector.
   which includes buffered stdio (observed at flush granularity) and the hard-link
   family (`link`/`linkat`). Raw syscalls (a Rust target pulling in `rustix`, say),
   static linking, a hardened runtime, threads, and symlinks inside the state
-  directory are detected and refused.
+  directory are detected and refused. A descriptor's *location* decides observation,
+  never its number: a state file rebound onto stdout with `dup2` is still observed,
+  and a descriptor whose backing cannot be identified makes the run UNKNOWN rather
+  than passing. Descriptor-hygiene sweeps (`close(3..255)` at startup) are tolerated
+  — the shim keeps its trace descriptor above them — and a target that does close
+  the trace descriptor makes the run UNKNOWN rather than half-observed.
 - **Keep other processes away from its state.** A target that forks or spawns helpers is
   explorable when an oracle is present (`--oracle`, Linux) and no process other than the
   target itself touched the state directory — the common shim/wrapper/launcher shape.

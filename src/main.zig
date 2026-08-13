@@ -475,14 +475,49 @@ pub fn main(init: std.process.Init.Minimal) !void {
         setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
     };
 
+    // With no descriptor number exempt from observation (contract v8), the engine's
+    // own artifacts under --work — every operation's stdout capture rides the target's
+    // fd 1, and the shim's trace rides a descriptor it opens from the environment —
+    // would be observed as the target's state operations if the work directory sat
+    // inside the state directory. That would poison the snapshots, the operation
+    // count, and every saved case address, so it is refused before anything runs.
+    // The other nesting (state inside work) is fine: captures land at the work root,
+    // outside the state subtree.
+    //
+    // This vet sits *before* --fresh-state's deletion below, and cleans up the one
+    // side effect its own resolution needs (mkdir before realpath): a refusal must
+    // leave the state directory exactly as it found it, and the first version of the
+    // check emptied the state dir — or planted <state>/work — before refusing
+    // (review finding). `isInsideDir` holds --work equal to the state directory, and
+    // any --work under a root state directory, inside; the hand-rolled prefix test it
+    // replaced answered "outside" for state `/`.
+    var work_buf: [contract.max_path]u8 = undefined;
+    const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch setupError("--work is too long");
+    const work_created = posix.mkdir(work_z.ptr, 0o755) == 0;
+    {
+        var work_real_buf: [contract.max_path]u8 = undefined;
+        const work_abs = blk: {
+            if (posix.realpath(work_z.ptr, &work_real_buf)) |p| break :blk std.mem.span(p);
+            setupError("--work could not be resolved to an absolute path");
+        };
+        if (contract.isInsideDir(work_abs, state_abs)) {
+            // Remove only what this invocation just created: refusing while leaving
+            // a fresh <state>/work behind would itself be the contamination the
+            // check exists to prevent.
+            if (work_created) _ = posix.rmdir(work_z.ptr);
+            setupError("--work must not be the state directory or inside it: the engine's own captures and traces there would be observed as the target's state operations");
+        }
+    }
+
     // --fresh-state (#69): empty the case's state dir before setup runs. The dir is
     // sacrificial by contract — exploration kills processes mid-write into it — and
     // the deletion rides the engine's guarded path (assertSafeRoot + the same
     // deleteTree the restore path uses). It runs on state_abs, never the case's raw
     // spelling: the guard is lexical, and "/tmp/../etc" spells safe while resolving
     // unsafe — the realpath above is the guard's other half. Sitting here also keeps
-    // every earlier setup validation ahead of the one destructive step, and the
-    // mkdir-then-resolve above already covers a state dir that does not exist yet.
+    // every earlier setup validation — the --work containment vet included — ahead of
+    // the one destructive step, and the mkdir-then-resolve above already covers a
+    // state dir that does not exist yet.
     if (args.fresh_state)
         engine.freshDir(state_abs) catch setupError("--fresh-state could not empty the case's state directory");
 
@@ -502,10 +537,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
         break :blk n;
     };
     const alt_differs = !std.mem.eql(u8, state_alt, state_abs);
-
-    var work_buf: [contract.max_path]u8 = undefined;
-    const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch setupError("--work is too long");
-    _ = posix.mkdir(work_z.ptr, 0o755);
 
     // ---- setup -------------------------------------------------------------------
     if (args.setup) |cmd| {
