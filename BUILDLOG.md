@@ -2,6 +2,25 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — v0.6.0: the first release that ships binaries
+
+Version 0.5.0 → 0.6.0, both hand-written strings at once (the unit test holds
+the pair). Minor, not patch: the release carries four new user-facing pieces —
+`sideeye demo`, `sideeye preflight`, `sideeye version`, and the release
+workflow itself. The version number was an explicit decision, not an
+assumption (the owner flagged it for consideration; minor won because the
+content is features, and a patch number would under-report it).
+
+This is the release where `release.yml`'s upload leg runs for the first time:
+until tonight, the prebuilt tarballs existed only as CI artifacts on a pull
+request. The ceremony therefore grows its recorded new step — after
+publishing, verify the workflow went green and `gh release view` actually
+lists the assets, because the failure mode this trigger design accepts is a
+published release standing empty. Also new to this ceremony: the shipped
+artifact itself gets exercised — download a tarball, unpack, run the demo,
+expect exit 1 — because "the workflow uploaded something" and "a visitor can
+run what was uploaded" are different claims.
+
 ## 2026-08-13 — Seal A: everything about the blind hunt is decided before a target runs (#83)
 
 §17's first condition — "Sideeye discovered it automatically" — is the one part of
