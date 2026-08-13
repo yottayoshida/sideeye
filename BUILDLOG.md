@@ -207,6 +207,30 @@ published release standing empty. Also new to this ceremony: the shipped
 artifact itself gets exercised — download a tarball, unpack, run the demo,
 expect exit 1 — because "the workflow uploaded something" and "a visitor can
 run what was uploaded" are different claims.
+## 2026-08-13 — Between the seals: five invocations from permitted sources, committed before the sweep (#83)
+
+Seal A merged this evening (PR #89); this entry is the between-seals phase it
+authorizes. All five candidates installed pinned (`spike/Dockerfile`), their
+invocations assembled from `--help`, two official-docs pages, and normal-run
+observation only — the ledger itemizes every consultation — and committed
+*before* the sweep runs, so the manifest's invocations hash has something to
+bind to (ADR 0012).
+
+What the permitted sources decided, without touching a trace:
+
+- **topydo** drives its two files (`-t` todo, `-d` archive) into one state
+  directory; `do 1` completes-and-archives — assembled exactly as hoped.
+- **khard** and **khal** both name their state through a config file (formats
+  from their readthedocs pages) and mint randomly named files per entry —
+  observed from the filenames alone, which normal runs are allowed to show.
+- **abook**'s only stdin-free writer is `--convert`; the interactive book
+  editor and `--add-email` both need what the exploration engine does not
+  provide (a terminal, stdin).
+- **hledger** appends via `import`; its journal is seeded by `/bin/cp` in
+  setup, where any tool is allowed.
+
+The sweep itself (exit codes only, full reports sealed unread) runs next; its
+result lands in this file when it exists.
 
 ## 2026-08-13 — Seal A: everything about the blind hunt is decided before a target runs (#83)
 

@@ -1,0 +1,5 @@
+topydo	/usr/local/bin/topydo	/tmp/blind/topydo/state	/usr/local/bin/topydo -t /tmp/blind/topydo/state/todo.txt -d /tmp/blind/topydo/state/done.txt add water-plants	/usr/local/bin/topydo -t /tmp/blind/topydo/state/todo.txt -d /tmp/blind/topydo/state/done.txt do 1
+khard	/usr/local/bin/khard	/tmp/blind/khard/state	-	/usr/local/bin/khard -c /work/spike/blind-hunt/configs/khard.conf new -a main -i /work/spike/blind-hunt/configs/khard-contact.yaml
+abook	/usr/bin/abook	/tmp/blind/abook/state	-	/usr/bin/abook --convert --informat vcard --infile /work/spike/blind-hunt/configs/abook-in.vcf --outformat abook --outfile /tmp/blind/abook/state/addressbook
+khal	/usr/local/bin/khal	/tmp/blind/khal/state	-	/usr/local/bin/khal -c /work/spike/blind-hunt/configs/khal.conf new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
+hledger	/usr/bin/hledger	/tmp/blind/hledger/state	/bin/cp /work/spike/blind-hunt/configs/hledger-seed.journal /tmp/blind/hledger/state/main.journal	/usr/bin/hledger -f /tmp/blind/hledger/state/main.journal import /work/spike/blind-hunt/configs/hledger-in.journal
