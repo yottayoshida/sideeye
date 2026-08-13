@@ -24,6 +24,13 @@ pub fn build(b: *std.Build) void {
             .imports = &.{.{ .name = "contract", .module = contract }},
         }),
     });
+    // `sideeye demo` carries its own target: the planted-bug toy and its checker are
+    // embedded at compile time and materialized on the visitor's machine. These are the
+    // same files the acceptance suite drives, so the demo cannot drift from what CI
+    // proves — and both are listed in build.zig.zon's `.paths`, or a fetched package
+    // would fail to build.
+    exe.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
+    exe.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
     b.installArtifact(exe);
 
     // The shim is only built for targets whose interposition mechanism exists.
@@ -90,6 +97,10 @@ pub fn build(b: *std.Build) void {
         // The package manifest, so a test can hold the version it declares against the
         // one the binary prints. They are two hand-written strings for one number.
         t.root_module.addAnonymousImport("build_zon", .{ .root_source_file = b.path("build.zig.zon") });
+        // The demo's embedded assets: main.zig references them at module scope, so the
+        // test build of main.zig must resolve them too.
+        t.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
+        t.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
         test_step.dependOn(&b.addRunArtifact(t).step);
     }
 

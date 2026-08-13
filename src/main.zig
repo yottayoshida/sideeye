@@ -139,8 +139,23 @@ fn usage() void {
         \\sideeye {s} (trace contract v{d})
         \\
         \\usage:
+        \\  sideeye demo [--shim <lib>]
+        \\  sideeye preflight --state <dir> --operation <cmd> --shim <lib> [--setup <cmd>] [--oracle <strace>] [--work <dir>]
         \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--shim <lib>] [--work <dir>]
         \\  sideeye replay <case.json> --shim <lib> [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>]
+        \\  sideeye version
+        \\
+        \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
+        \\and explores it, printing the same FAIL report a real finding produces. The
+        \\expected exit code is 1 — the planted bug found — so the demo doubles as a
+        \\smoke test of this binary and its shim.
+        \\
+        \\preflight answers "does the recording phase accept this target?" before a
+        \\define exists: it runs the operation once under observation and either accepts
+        \\the recording (exit 0) or refuses with the same named detector a real run
+        \\would use (exit 2). What only a real exploration can check — kill landing,
+        \\world-side process boundaries, baseline behavior, checker falsification — is
+        \\listed as not checked, never silently claimed.
         \\
         \\replay re-runs one saved counterexample: the same pipeline as explore — the
         \\oracle comparison, the structural detectors, checker falsification, landing
@@ -264,11 +279,34 @@ pub fn main(init: std.process.Init.Minimal) !void {
         return;
     }
 
-    const Mode = enum { explore, replay };
+    // `version` prints the one line a release workflow needs to hold a tag against the
+    // binary it is about to ship, and exits 0. The usage banner carries the same string
+    // but exits 3 — an assert built on that would have to treat failure as success.
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "version")) {
+        if (argv.len != 2) {
+            const msg = "sideeye version takes no arguments\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        }
+        say("sideeye {s} (trace contract v{d})\n", .{ version, contract.contract_version });
+        std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    }
+
+    // `demo` compiles the embedded planted-bug toy on this machine and self-execs
+    // `explore` against it — it never returns. Exit codes are explore's own: the
+    // expected outcome is 1 (FAIL, the planted bug found), which makes the demo double
+    // as a smoke test of the installed binary + shim pair.
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "demo")) {
+        runDemo(gpa, arena_state.allocator(), argv[2..]);
+    }
+
+    const Mode = enum { explore, replay, preflight };
     var mode: Mode = .explore;
     var case_arg: ?[]const u8 = null;
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "explore")) {
         mode = .explore;
+    } else if (argv.len >= 2 and std.mem.eql(u8, argv[1], "preflight")) {
+        mode = .preflight;
     } else if (argv.len >= 3 and std.mem.eql(u8, argv[1], "replay") and argv[2].len > 0 and argv[2][0] != '-') {
         mode = .replay;
         case_arg = argv[2];
@@ -307,6 +345,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--marker")) args.marker = v
         else if (std.mem.eql(u8, argv[i], "--config")) args.config = v
         else if (std.mem.eql(u8, argv[i], "--json")) {
+            // Rejected before the removeFile below: a rejection that had already deleted
+            // the caller's previous report would be a refusal with a side effect.
+            if (mode == .preflight) setupError("preflight has no machine-readable form yet; it arrives with the UNKNOWN-rate measurement (issue #84)");
             args.json = v;
             json_path = v;
             // Any document at this path describes some earlier run. Removing it now means
@@ -316,6 +357,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         else setupError("unknown option");
         i += 2;
+    }
+
+    // preflight answers one question — "does the recording phase accept this target?" —
+    // before a define exists. The define-shaped flags are refused by name rather than
+    // ignored: an accepted-but-inert flag would be a declared intention that silently
+    // never fires, the exact shape the config parser refuses too (ADR 0007).
+    if (mode == .preflight) {
+        if (args.check != null) setupError("preflight runs before an invariant exists; --check belongs to explore, which also falsifies it before trusting it");
+        if (args.marker != null) setupError("--marker belongs to explore; preflight makes no claim a marker could strengthen");
+        if (args.config != null) setupError("preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more");
+        if (args.allow_unverified) setupError("preflight never claims PASS, so there is nothing --allow-unverified could weaken");
     }
 
     // A replay's define comes from the case file itself: the counterexample's
@@ -775,6 +827,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (!std.mem.eql(u8, after_path, rc.after_path) or !std.mem.eql(u8, before_path, rc.before_path))
             say("note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds\n", .{});
     }
+    // ---- preflight cut ------------------------------------------------------------
+    //
+    // Deliberately *before* the zero-op PASS branch and the exploration loop: preflight
+    // makes no PASS claim (so the completeness gate does not apply), and everything a
+    // preflight can honestly say is known once the recording-phase gates above have all
+    // held their fire. The exploration-only refusals — kill landing, world-side process
+    // boundaries, baseline behavior, checker falsification — have not run, and the
+    // report says so by name. This exit is unconditional; no explore/replay code below
+    // is reachable in preflight mode.
+    if (mode == .preflight)
+        preflightReport(arena, n, state, args.setup, operation, shim, args.oracle);
+
     if (n == 0) {
         requireCompleteness(args.oracle != null, args.allow_unverified);
         say(
@@ -1145,6 +1209,257 @@ fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
     var it = std.mem.tokenizeScalar(u8, cmd, ' ');
     while (it.next()) |tok| try list.append(arena, tok);
     return list.items;
+}
+
+// ---- preflight ---------------------------------------------------------------------
+
+/// The preflight verdict, on the accepted side. Refusals never reach here — they exit
+/// through `unknown()` upstream with the same detector names a real run uses.
+///
+/// The claim is deliberately "recording accepted", not "explorable": the refusals only
+/// a real exploration can raise (kill landing, world-side process boundaries, baseline
+/// behavior, checker falsification) have not run, and the fixed `not checked` list
+/// names them. The acceptance suite pins this wording — the claim cannot quietly grow
+/// back into one this command does not earn.
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8) noreturn {
+    if (n == 0) {
+        say("PREFLIGHT  recording accepted, but nothing to explore — 0 state-changing operations observed\n\n", .{});
+    } else {
+        say("PREFLIGHT  recording accepted — {d} state-changing operation(s) observed\n\n", .{n});
+    }
+    say(
+        \\atomicity    {s}
+        \\oracle       {s}
+        \\processes    {s}
+        \\
+        \\not checked  kill landing, world-side process boundaries, baseline behavior,
+        \\             checker falsification — only a real exploration runs these
+        \\
+        \\
+    , .{ l0_note, oracle_note, boundary_note });
+    if (oracle_path == null)
+        say(
+            \\note         no oracle checked the shim's account against a second witness;
+            \\             explore's PASS will require --oracle <strace> (Linux) or
+            \\             --allow-unverified (macOS)
+            \\
+            \\
+        , .{});
+    const oracle_part = if (oracle_path) |o|
+        std.fmt.allocPrint(arena, " --oracle {s}", .{o}) catch " --oracle <strace>"
+    else
+        " --oracle <strace>";
+    // The hint carries the define that was actually accepted — dropping --setup here
+    // would hand the reader a silently different define than the one preflight ran
+    // (R1 finding; acceptance check 6 pins its presence).
+    const setup_part = if (setup) |s|
+        std.fmt.allocPrint(arena, " --setup \"{s}\"", .{s}) catch " --setup <cmd>"
+    else
+        "";
+    say(
+        \\next         sideeye explore --state {s}{s} --operation "{s}" \
+        \\               --check <your-invariant.sh> --shim {s}{s}
+        \\
+    , .{ state, setup_part, operation, shim, oracle_part });
+    std.process.exit(@intFromEnum(contract.ExitCode.pass));
+}
+
+// ---- demo --------------------------------------------------------------------------
+
+/// The demo's target and checker, embedded at build time (see build.zig): the same
+/// files the acceptance suite drives, so the demo cannot drift from what CI proves.
+const demo_toy_c = @embedFile("toy_c");
+const demo_check_sh = @embedFile("check_sh");
+
+const shim_basename = if (builtin.os.tag == .macos) "libsideeye_shim.dylib" else "libsideeye_shim.so";
+
+/// Where the demo looks for the shim when --shim is not given: next to the binary
+/// (the release-tarball layout) first, then ../lib relative to it (the zig-out
+/// layout). Demo-only by design — defaulting --shim for explore/preflight is issue
+/// #78's decision to make, with its own acceptance checks.
+fn demoShimCandidates(arena: std.mem.Allocator, self: []const u8) [2][]const u8 {
+    const dir = std.fs.path.dirname(self) orelse "/";
+    return .{
+        std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, shim_basename }) catch setupError("out of memory"),
+        std.fmt.allocPrint(arena, "{s}/../lib/{s}", .{ dir, shim_basename }) catch setupError("out of memory"),
+    };
+}
+
+test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const c = demoShimCandidates(arena, "/opt/sideeye/bin/sideeye");
+    const first = std.fmt.allocPrint(arena, "/opt/sideeye/bin/{s}", .{shim_basename}) catch unreachable;
+    const second = std.fmt.allocPrint(arena, "/opt/sideeye/bin/../lib/{s}", .{shim_basename}) catch unreachable;
+    try std.testing.expectEqualStrings(first, c[0]);
+    try std.testing.expectEqualStrings(second, c[1]);
+}
+
+/// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete
+/// for POSIX sh — inside single quotes nothing else is special, so this is the whole
+/// escape, not a denylist.
+fn shellSingleQuote(arena: std.mem.Allocator, s: []const u8) []const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    out.append(arena, '\'') catch setupError("out of memory");
+    for (s) |ch| {
+        if (ch == '\'')
+            out.appendSlice(arena, "'\\''") catch setupError("out of memory")
+        else
+            out.append(arena, ch) catch setupError("out of memory");
+    }
+    out.append(arena, '\'') catch setupError("out of memory");
+    return out.items;
+}
+
+test "shellSingleQuote neutralizes metacharacters and embedded quotes" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    try std.testing.expectEqualStrings("'plain'", shellSingleQuote(arena, "plain"));
+    try std.testing.expectEqualStrings("'a'\\''b; $(x) `y`'", shellSingleQuote(arena, "a'b; $(x) `y`"));
+}
+
+/// Create-or-truncate `path` and write `parts` in order. False on any failure —
+/// the demo treats a half-written asset as a setup error, never as material.
+fn writeWholeFile(path: []const u8, parts: []const []const u8) bool {
+    var zb: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return false;
+    const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    if (fd < 0) return false;
+    defer _ = posix.close(fd);
+    for (parts) |p| {
+        var off: usize = 0;
+        while (off < p.len) {
+            const w = posix.write(fd, p[off..].ptr, p.len - off);
+            if (w <= 0) return false;
+            off += @intCast(w);
+        }
+    }
+    return true;
+}
+
+/// `sideeye demo`: materialize the embedded planted-bug toy and checker in a scratch
+/// directory, compile the toy with whatever C compiler this machine has, and self-exec
+/// `explore` against it. Never returns; the exit code is explore's own (1 expected —
+/// the planted bug found).
+///
+/// Self-exec rather than an in-process call for the same reason the MCP adapter
+/// self-execs (ADR 0010): every verdict path in this file ends in `std.process.exit`.
+/// Plain `execvp` with the inherited environment — not the MCP minimal-env path, which
+/// exists to *withhold* credentials from an untrusted operation; the demo's operation
+/// is our own toy, and the report belongs on this same stdout.
+fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []const u8) noreturn {
+    var shim_flag: ?[]const u8 = null;
+    var i: usize = 0;
+    while (i < rest.len) {
+        if (std.mem.eql(u8, rest[i], "--shim")) {
+            if (i + 1 >= rest.len) setupError("--shim is missing its value");
+            shim_flag = rest[i + 1];
+            i += 2;
+            continue;
+        }
+        setupError("demo takes only --shim <lib>; everything else it arranges itself");
+    }
+
+    const self = mcp.canonicalSelf() orelse setupError("could not resolve the canonical path of this binary; refusing to guess what to self-exec");
+    // canonicalSelf answers from a static buffer; copy before anything else reuses it.
+    const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
+
+    const shim = shim_flag orelse blk: {
+        const cands = demoShimCandidates(arena, self_owned);
+        for (cands) |c| {
+            var zb: [contract.max_path]u8 = undefined;
+            const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
+            if (posix.access(z.ptr, 0) == 0) break :blk c;
+        }
+        setupError(std.fmt.allocPrint(arena, "the shim is half the product, and the demo could not find it; looked at {s} and {s} — pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found; pass --shim");
+    };
+
+    // Scratch space: $TMPDIR when usable. explore splits command strings on spaces
+    // (ADR 0007), so a TMPDIR containing one would shear "<tool> init" apart — /tmp then.
+    const troot: []const u8 = blk: {
+        if (posix.getenv("TMPDIR")) |t| {
+            const s = std.mem.span(t);
+            if (s.len > 0 and std.mem.indexOfScalar(u8, s, ' ') == null)
+                break :blk if (s[s.len - 1] == '/') s[0 .. s.len - 1] else s;
+        }
+        break :blk "/tmp";
+    };
+    var templ_buf: [contract.max_path]u8 = undefined;
+    const templ = std.fmt.bufPrintZ(&templ_buf, "{s}/sideeye-demo-XXXXXX", .{troot}) catch setupError("TMPDIR is unreasonably long");
+    const tmp_raw = posix.mkdtemp(templ.ptr) orelse setupError("could not create the demo's scratch directory");
+    const tmp = arena.dupe(u8, std.mem.span(tmp_raw)) catch setupError("out of memory");
+
+    const toy_src = std.fmt.allocPrint(arena, "{s}/toy.c", .{tmp}) catch setupError("out of memory");
+    const tool = std.fmt.allocPrint(arena, "{s}/demo-tool", .{tmp}) catch setupError("out of memory");
+    const check_path = std.fmt.allocPrint(arena, "{s}/check.sh", .{tmp}) catch setupError("out of memory");
+    if (!writeWholeFile(toy_src, &.{demo_toy_c}))
+        setupError("could not write the demo's toy source into the scratch directory");
+    // TOY is baked into the script rather than passed through the environment: the
+    // checker runs in a fresh process several layers down, and a baked value cannot be
+    // lost to a change in how those layers pass environments around. Single-quoted —
+    // the path contains whatever $TMPDIR contained, and an unquoted value would hand
+    // its metacharacters to the shell (R1 finding). The embedded script's shebang
+    // becomes a comment mid-file, which /bin/sh does not mind.
+    if (!writeWholeFile(check_path, &.{ "TOY=", shellSingleQuote(arena, tool), "\nexport TOY\n", demo_check_sh }))
+        setupError("could not write the demo's checker into the scratch directory");
+
+    // Compile on the spot. cc first — every toolchain installs the alias — then the
+    // real names. Each is tried with -lpthread first (older glibc needs it spelled)
+    // and then without (newer glibc and macOS accept either; macOS clang warns on
+    // unused -l only with -Werror, which this is not).
+    const compilers = [_][]const u8{ "cc", "gcc", "clang" };
+    var chosen: ?[]const u8 = null;
+    outer: for (compilers) |cc| {
+        for ([_]bool{ true, false }) |with_pthread| {
+            var argv_l: std.ArrayList([]const u8) = .empty;
+            // -w: the toy's warnings (vfork deprecation on macOS, say) are addressed
+            // to this repo's developers, not to a demo viewer's terminal. Errors
+            // still print — they are how a broken compile diagnoses itself.
+            for ([_][]const u8{ cc, "-O0", "-w", "-DBUGGY=1", "-o", tool, toy_src }) |a|
+                argv_l.append(arena, a) catch setupError("out of memory");
+            if (with_pthread) argv_l.append(arena, "-lpthread") catch setupError("out of memory");
+            const term = posix.runChild(gpa, argv_l.items, &.{}) catch continue;
+            switch (term) {
+                .exited => |code| if (code == 0) {
+                    chosen = cc;
+                    break :outer;
+                },
+                else => {},
+            }
+        }
+    }
+    const cc_used = chosen orelse setupError("the demo compiles its planted-bug tool on this machine and needs a C compiler; none of cc, gcc, clang worked (Debian/Ubuntu: apt install gcc; macOS: xcode-select --install)");
+
+    say(
+        \\demo  compiled the planted-bug tool with {s} into {s}
+        \\demo  the tool deletes its key before renaming the replacement in; a crash
+        \\demo  between those two operations leaves no key at all. exploring:
+        \\
+        \\
+    , .{ cc_used, tmp });
+
+    const state_dir = std.fmt.allocPrint(arena, "{s}/state", .{tmp}) catch setupError("out of memory");
+    const work_dir = std.fmt.allocPrint(arena, "{s}/work", .{tmp}) catch setupError("out of memory");
+    const setup_cmd = std.fmt.allocPrint(arena, "{s} init", .{tool}) catch setupError("out of memory");
+    const op_cmd = std.fmt.allocPrint(arena, "{s} rotate", .{tool}) catch setupError("out of memory");
+    const check_cmd = std.fmt.allocPrint(arena, "/bin/sh {s}", .{check_path}) catch setupError("out of memory");
+
+    const exec_argv = [_][]const u8{
+        self_owned,    "explore",
+        "--state",     state_dir,
+        "--setup",     setup_cmd,
+        "--operation", op_cmd,
+        "--check",     check_cmd,
+        "--shim",      shim,
+        "--work",      work_dir,
+    };
+    var argv_z: [exec_argv.len + 1]?[*:0]const u8 = undefined;
+    for (exec_argv, 0..) |a, j| argv_z[j] = (arena.dupeZ(u8, a) catch setupError("out of memory")).ptr;
+    argv_z[exec_argv.len] = null;
+    _ = posix.execvp(argv_z[0].?, &argv_z);
+    setupError("could not self-exec the exploration");
 }
 
 /// One sentence naming which form judged which files. Counts and names come from the

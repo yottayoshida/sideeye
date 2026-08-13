@@ -1457,6 +1457,125 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 5: sideeye demo — a first success that needs nothing written ==========="
+# The demo compiles its embedded planted-bug toy with this machine's C compiler and
+# self-execs an exploration. Expected exit is 1 — the planted bug found — which is what
+# makes it a smoke test of the binary + shim pair. The window has to be named: a demo
+# that "failed" without the counterexample would be smoke-testing nothing. No --shim:
+# the sibling/../lib discovery is part of what this check pins.
+o=$("$SIDEEYE" demo 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "1" ] || ok=0
+echo "$o" | grep -q "after  unlink(" || ok=0
+echo "$o" | grep -q "before rename(" || ok=0
+echo "$o" | grep -q "falsified before the run" || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   the demo finds the planted bug (exit 1, window named, checker falsified)"
+else
+    echo "FAIL demo: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+# The compiler ladder, exercised rather than claimed: a stub `cc` that always fails
+# must make the demo fall back to gcc — and the preamble names the compiler that won.
+STUB=/tmp/acc-ccstub
+rm -rf "$STUB" && mkdir -p "$STUB"
+printf '#!/bin/sh\nexit 1\n' > "$STUB/cc" && chmod +x "$STUB/cc"
+o=$(PATH="$STUB:$PATH" "$SIDEEYE" demo 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "compiled the planted-bug tool with gcc"; then
+    echo "ok   a failing cc falls back to gcc, and the preamble says so"
+else
+    echo "FAIL compiler fallback: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# No compiler at all: the refusal names what to install, before any exploration starts.
+o=$(PATH=/nonexistent "$SIDEEYE" demo 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "needs a C compiler"; then
+    echo "ok   with no compiler the demo refuses by name (exit 3)"
+else
+    echo "FAIL compiler-absent refusal: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 6: preflight answers before the define exists ==========="
+# Three legs. Accepted: the recording-phase gates all hold on the buggy toy, and the
+# claim is exactly "recording accepted" — with the exploration-only refusals named as
+# not checked, and no PASS/FAIL verdict anywhere. Refused: the static toy cannot be
+# observed, and the refusal carries the same detector name a real run uses (a constant
+# answer cannot satisfy both legs). Honesty: a target whose recording is clean but
+# whose exploration refuses (a nondeterministic rewrite dies at the baseline) must be
+# accepted by preflight WITH baseline behavior named as unchecked, while explore on
+# the same define refuses — the pair that keeps preflight's claim scoped to what ran.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" preflight --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "0" ] || ok=0
+echo "$o" | grep -q "recording accepted — 5 state-changing operation(s) observed" || ok=0
+echo "$o" | grep -q "not checked" || ok=0
+echo "$o" | grep -q "kill landing" || ok=0
+echo "$o" | grep -q "world-side process boundaries" || ok=0
+echo "$o" | grep -q "baseline behavior" || ok=0
+echo "$o" | grep -q "checker falsification" || ok=0
+# The graduation hint must carry the define that was actually accepted — a hint
+# that dropped --setup would run a silently different define (R1 finding).
+echo "$o" | grep -q -- "--setup" || ok=0
+echo "$o" | grep -qE "^(PASS|FAIL)" && ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   preflight accepts the buggy toy's recording and names what it did not check"
+else
+    echo "FAIL preflight accept leg: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -10
+    fails=$((fails + 1))
+fi
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" preflight --state /tmp/acc/state \
+    --setup "$OUT/toy-static init" --operation "$OUT/toy-static rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "no_shim_marker"; then
+    echo "ok   preflight refuses the static toy with the real detector's name"
+else
+    echo "FAIL preflight refuse leg: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+pf_ok=0
+if [ "$rc" = "0" ] && echo "$o" | grep -q "recording accepted" && echo "$o" | grep -q "baseline behavior"; then
+    pf_ok=1
+fi
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+o2=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc2=$?
+if [ "$pf_ok" = "1" ] && [ "$rc2" = "2" ] && echo "$o2" | grep -q "baseline_violates_invariant"; then
+    echo "ok   a recording-clean, exploration-refused target splits the claims: accepted + named unchecked vs refused"
+else
+    echo "FAIL preflight honesty pair: preflight=$rc explore=$rc2"
+    echo "$o" | sed 's/^/     | /' | head -4
+    echo "$o2" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

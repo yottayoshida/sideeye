@@ -71,6 +71,37 @@ never as passing — and the refusal names its detector.
 - **Keep its state in one directory**, declared with `--state` or the toml's
   `[world] state`.
 
+## Getting it
+
+Releases newer than v0.5.0 attach prebuilt tarballs for x86_64-linux, aarch64-linux
+and aarch64-macos: `sideeye` plus `libsideeye_shim` — the shim travels with the
+binary, it is half the product. Download from
+[Releases](https://github.com/yottayoshida/sideeye/releases), unpack, done.
+(v0.5.0 and earlier predate the artifacts; build those from source: Zig 0.16.0,
+`zig build`, binaries in `zig-out/bin` and `zig-out/lib`.)
+
+Two commands answer the first two questions before you write anything:
+
+```
+$ sideeye demo
+```
+
+Sixty seconds to a real FAIL report on your own machine: the demo compiles a small
+planted-bug tool (it needs a C compiler — `cc`, `gcc` or `clang`) and explores it,
+printing the same report shown below. **Exit 1 — the planted bug found — is
+success**, which makes the demo double as a smoke test of the binary + shim pair.
+
+```
+$ sideeye preflight --state <dir> --operation "<cmd>" --shim ./libsideeye_shim.so
+```
+
+Does the recording phase accept your tool? One observed run, then either
+`recording accepted` (exit 0, with the observed operation count and the `explore`
+command to graduate to) or a refusal naming the same detector a real run would
+use (exit 2). What only a real exploration can check — kill landing, world-side
+process boundaries, baseline behavior, checker falsification — is listed as
+`not checked`, never silently claimed.
+
 ## What it looks like
 
 Against a tool with a delete-before-rename bug — real output, regenerated for this

@@ -67,6 +67,19 @@ jobs:
       - name: Build engine and shim
         run: zig build
 
+      # The demo is also the release workflow's smoke test; macOS is where its
+      # no-oracle path lives (a FAIL stands on its own evidence, so the demo needs
+      # neither strace nor --allow-unverified). The Linux side is covered by
+      # acceptance check 5 in the container.
+      - name: sideeye demo finds the planted bug
+        run: |
+          set +e
+          out=$(./zig-out/bin/sideeye demo 2>&1)
+          rc=$?
+          set -e
+          echo "$out" | tail -25
+          [ "$rc" = "1" ] || { echo "expected exit 1 from the demo, got $rc"; exit 1; }
+
       # No oracle here: dtruss is DTrace-based and System Integrity Protection refuses
       # it. That is why this job asserts FAIL rather than PASS — a counterexample is
       # real whether or not the account of the run was complete, while "no counter-

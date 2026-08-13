@@ -12,6 +12,10 @@
         "build.zig.zon",
         "src",
         "shim",
+        // `sideeye demo` embeds these two at compile time (@embedFile via anonymous
+        // imports in build.zig). A package that omitted them would not build.
+        "spike/toys/toy.c",
+        "spike/check.sh",
         "LICENSE-MIT",
         "LICENSE-APACHE",
         "README.md",

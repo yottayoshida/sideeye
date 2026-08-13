@@ -1,0 +1,139 @@
+name: release
+
+# Attaches prebuilt binaries + shim to every GitHub Release (#75). Three native
+# runners rather than one cross-compiling machine: a cross-built artifact cannot be
+# run where it was built, and the smoke test below — `sideeye demo` must find the
+# planted bug, exit 1 — is the point of building natively. The shim travels in every
+# tarball; it is half the product, and the inventory check refuses to ship without it.
+#
+# Triggers:
+#   release published  — the manual ceremony (tag -> gh release create) is the origin;
+#                        assets attach to the release that was just published. The
+#                        ceremony then verifies this workflow went green and the assets
+#                        exist (gh release view) before announcing anything.
+#   workflow_dispatch  — the recovery path: re-builds, and uploads when a tag is named,
+#                        so a published release that lost its assets can be repaired.
+#   pull_request       — build-only proof of the matrix, for PRs touching this file.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to upload assets to (empty = build only)"
+        required: false
+        default: ""
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.artifact }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            artifact: x86_64-linux
+            shim: libsideeye_shim.so
+          - runner: ubuntu-24.04-arm
+            artifact: aarch64-linux
+            shim: libsideeye_shim.so
+          - runner: macos-latest
+            artifact: aarch64-macos
+            shim: libsideeye_shim.dylib
+    runs-on: ${{ matrix.runner }}
+    steps:
+      # A dispatch that names a tag builds *that tag*, not the default branch: a repair
+      # run that rebuilt current main and uploaded it under the old tag's name would
+      # attach an artifact whose content is not the tag's (R1 finding). On a release
+      # event the default checkout is already the tag; on a PR it is the merge ref.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || '' }}
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Build (ReleaseSafe)
+        run: zig build -Doptimize=ReleaseSafe
+
+      # The tag and the binary are two spellings of one version, and they have drifted
+      # before (0.1.0 vs 0.1.0-dev). A tarball whose binary disagrees with its own
+      # name must not ship. Runs whenever a tag is in play — release events and
+      # tag-named dispatches alike; a PR build has no tag to hold the binary against.
+      - name: Version matches the tag
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
+        env:
+          REL_TAG: ${{ github.event_name == 'release' && github.ref_name || inputs.tag }}
+        run: |
+          got=$(./zig-out/bin/sideeye version)
+          case "$got" in
+            "sideeye ${REL_TAG#v} "*) echo "ok: $got" ;;
+            *) echo "::error::binary says '$got', tag says '$REL_TAG'"; exit 1 ;;
+          esac
+
+      # The packaged pair has to work on the OS it ships for. The demo compiles the
+      # embedded toy with the runner's C compiler and explores it through the shim it
+      # just found next to the binary: exit 1 — the planted bug — is the only success.
+      # This is also the one place the ReleaseSafe build is exercised rather than
+      # only compiled; the acceptance suite runs Debug.
+      - name: Smoke test the artifact pair (sideeye demo)
+        run: |
+          set +e
+          out=$(./zig-out/bin/sideeye demo 2>&1)
+          rc=$?
+          set -e
+          echo "$out" | tail -30
+          [ "$rc" = "1" ] || { echo "::error::expected exit 1 (FAIL, planted bug found), got $rc"; exit 1; }
+
+      - name: Package
+        env:
+          REL_TAG: ${{ github.event_name == 'release' && github.ref_name || inputs.tag }}
+        run: |
+          set -eu
+          tagv="${REL_TAG:-dev}"
+          name="sideeye-$tagv-${{ matrix.artifact }}"
+          mkdir -p "dist/$name"
+          cp zig-out/bin/sideeye "dist/$name/"
+          cp "zig-out/lib/${{ matrix.shim }}" "dist/$name/"
+          cp LICENSE-MIT LICENSE-APACHE "dist/$name/"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+          # Checked against an expected inventory before anything is uploaded: a
+          # tarball without the shim is half the product, silently.
+          tar -tzf "dist/$name.tar.gz" | sed "s|^$name/||" | grep -v '^$' | sort > got.txt
+          printf '%s\n' "LICENSE-APACHE" "LICENSE-MIT" "${{ matrix.shim }}" "sideeye" | sort > want.txt
+          diff -u want.txt got.txt || { echo "::error::tarball contents differ from the expected inventory"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sideeye-${{ matrix.artifact }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  upload:
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'release' && github.ref_name || inputs.tag }}
+        run: |
+          set -eu
+          ls -la dist
+          gh release upload "$TAG" dist/*.tar.gz --clobber --repo "$GITHUB_REPOSITORY"
