@@ -116,6 +116,22 @@ Acceptance: loop closure demonstrated end-to-end at least once; calibration resu
 
 **Status (2026-08-12): the agent-facing surface is built — and shipped early, in v0.4.0** (the adapter landed on main before v0.4 was cut, so the 0.4.0 tag carries it; this milestone stays open and cuts 0.5.0 when its own acceptance is met). `sideeye mcp` (ADR 0010) gives an agent the standard MCP tool surface — explore a `sideeye.toml` and replay a saved case, both measured end-to-end over the wire (explore → case → replay reproduces). The calibration target is already met (timewarrior, §18/§17 status). What remains for the milestone is the loop-closure *test* itself: hand an agent only the report and the repository through this surface and see whether it fixes the finding without human translation — the surface is ready to run it.
 
+**Status (2026-08-13): loop closure demonstrated end-to-end — the milestone's
+acceptance sentence is met.** A context-free coding agent, handed only the
+counterexample (the report JSON, the case it names, the declared invariant it
+points at, bug-blind replay plumbing) and the pinned timewarrior checkout,
+re-derived the fix and the judge's own replay passed, with the feature intact
+and the audit clean (`spike/loop-closure-timew/`, BUILDLOG 2026-08-13,
+`spike/runs/sideeye-loop-1/manifest.json`). v1.0 entry criterion 2 is met by
+this measurement. Two honesty notes: the run drove the CLI replay surface
+through the plumbing script, not the MCP adapter — the MCP-mediated variant
+(already measured end-to-end over the wire on 2026-08-12) remains an optional
+confirmation, not a gap in the criterion, which is transport-agnostic; and the
+input set is the report *and what it transitively names*, not "the report
+alone" (the exact set is declared in the BUILDLOG protocol). Remaining v0.5
+scope before 0.5.0: the report JSON documented as a schema, and the CI
+quickstart.
+
 ### v1.0 — Contract freeze
 
 Entry criteria — all must hold, none may be argued around:

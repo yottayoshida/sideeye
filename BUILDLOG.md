@@ -2,6 +2,191 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — Loop closure: the protocol is fixed before the run
+
+The v0.5 milestone's remaining item is the loop-closure test itself (DESIGN §17,
+second criterion; PRD v0.5). The protocol is written down here BEFORE any agent
+runs, so that no gate moves after the measurement starts.
+
+**The input set, declared.** §17 says "the counterexample report (JSON + replay
+command) and the repository". As run, the set is: the report JSON, the case file
+the report names, the define's `setup.sh` / `check.sh` (the declared invariant —
+the case points at them and the replay cannot run without them), the timewarrior
+checkout at the pinned commit `db7751cb`, and `replay.sh` — bug-blind plumbing
+that rebuilds `./repo` and replays the sealed case in a `--network none`
+container. The result will be reported with this set as its subject, not as
+"the report alone". The stage carries the sideeye binary and shim as `.harness/`
+(the plumbing has to run something); they contain no knowledge of the finding.
+
+**Primary judgement, three conditions AND, fixed now:** (1) *originality* — the
+judge trusts only `repo/` as the agent's work; every other staged file is
+verified against a seal (sha256 manifest + pristine copies taken at stage time)
+and restored from the seal before judging, so doctoring the checker or the
+plumbing cannot reach the verdict; (2) *replay* — the judge's own fresh replay of
+the sealed case must satisfy the leg-C predicate (PASS, explored 2, no
+unknown_reason, crash_points == the case's ops_total); (3) *non-degeneracy* — in
+a normal crash-free world, seed → track → undo must remove exactly the newest
+interval. The checker's non-destruction form deliberately admits an undo that
+always no-ops (2026-08-12 entry); a "fix" that silences the checker by
+lobotomizing the feature fails gate 3 and is declared a failure up front. The
+agent's prompt warns about this in general words only ("a change that disables
+or degrades a feature does not count") — the checker already shows the agent
+that undo is being exercised, so nothing about the finding leaks.
+
+**Controls before the agent.** The judge must produce opposite answers on the
+same code path before any agent runs: the unpatched tree must reproduce the
+failure (gate 2 red, gate 3 green), the known patch must pass all three gates.
+A constant-answer apparatus cannot satisfy both; the mutual contrast is the red
+for these checks.
+
+**Seal is soft, void is hard.** The agent host is a fresh headless Claude Code
+session: `--safe-mode` (no user memory, no MCP, no hooks — the plan said scratch
+config dir; that reversed, the dead-ends below carry the measurement), cwd = the
+stage, a six-tool allowlist (Bash/Read/Edit/Write/Glob/Grep). An allowlist is
+not a menu: the harness still presents its full tool set, web tools included, so
+what a clean run proves is recorded non-use, not inability — all tool calls land
+in a stream-json transcript and the audit reads every one of them. This is not a network namespace — Bash could reach the network — so
+the invalidation condition is declared instead: the audit enumerates every call,
+and one network reach or one read into this workspace voids the run. If a void
+actually happens, the next run moves into a container with an egress allowlist;
+building that fortress first was rejected as cost without a demonstrated need.
+The upstream issue (timewarrior#778, filed 2026-08-12) postdates the model
+cutoffs, so with the web closed it is unreachable; the model id is recorded in
+the manifest either way.
+
+**One deviation from the plan as approved:** the plan put the explore's work dir
+container-local; as built, `work/` lives in the stage (mounted at the identical
+absolute path in host and container) so that the report's `case` and `replay`
+fields name paths that are real in the agent's world — the report telling the
+truth about where things are IS the thing under test. The state dir stays
+container-local (`/tmp/loop-state`): it is the directory under observation and
+its syscall semantics must not ride a virtiofs mount. After the explore, the
+work dir's traces and captures are moved out to `spike/runs/` — the input set is
+the report, not the trace — and only the case file survives in place.
+
+**The run (same day): the loop closed.** `manifest.json` in
+`spike/runs/sideeye-loop-1/`; every number below is from the judge's own
+measurements, not the agent's claims.
+
+- **Stage**: fresh explore at the pin reproduced the finding exactly as in v0.4
+  — FAIL, case k=19 of 24, two violating worlds. Seven files sealed.
+- **Controls held**: unpatched tree → replay `fail_reproduced` + functional gate
+  pass; known patch → all three gates pass. Opposite answers from one code path.
+- **The agent**: claude-opus-5[1m] (CLI 2.1.229), headless `--safe-mode`, cwd =
+  the stage, a six-tool allowlist (Bash/Read/Edit/Write/Glob/Grep), no MCP, no
+  memory. The transcript's init event shows the full tool set was still
+  presented — web tools included, no denial ever recorded — so the claim is
+  non-use, with two independent witnesses: every one of the 74 tool calls is on
+  the six (Bash 37 / Read 17 / Edit 19 / Grep 1), and the server-side counters
+  read `web_search_requests: 0, web_fetch_requests: 0`. 75 turns, 16.6 minutes,
+  $5.97. Audit: clean — zero network reaches, zero reads into this workspace,
+  zero edits outside `repo/` within the stage (the only extra file was its own
+  `replay-latest.json`; it did write two scratch logs under the host's `/tmp`,
+  against the prompt's letter, and read them back itself only).
+- **Judgement**: replay gate **pass** (PASS, explored 2, crash_points 24 ==
+  ops_total, fresh state, rebuilt from the agent's tree with everything else
+  restored from the seal); non-degeneracy gate **pass** (normal-world undo still
+  removes exactly the newest interval). **loop_closed: true.**
+- **Secondary observations**: judge-side full explore of the agent's tree —
+  **PASS 25/25 worlds** (24 crash + 1 baseline; both violating worlds gone).
+  Upstream suites on the agent's tree: AtomicFileTest 18 pass / 0 fail /
+  6 skipped — the six are the fault-injection cases (`FIU_ENABLE` is compiled
+  out without libfiu, which the image lacks), and they cover exactly the error
+  paths the agent's change touches, so that 0-fail is lighter than it reads —
+  data.t 96/96, Datafile.t 2/2, TagInfoDatabase.t 8/8 (`test/AtomicFile.t`, a
+  bash launcher for the same binary, errored on a path it hardcodes; ignored as
+  a duplicate of the directly-run binary, not counted as a pass). The agent's own broader
+  before/after comparison (undo.t 29/29, track.t 15/15, config.t 22/22, ~1055
+  C++ asserts, pre-existing chart.t/help.t failures identical on both sides) is
+  recorded in the transcript but is its claim, not the judge's.
+- **The fix itself**: the agent independently re-derived the same three-part
+  mechanism as `spike/timew-undo-ordering.patch` — journal renamed before the
+  data it describes (write-ahead), tags.data ordered ahead too, and an undo of
+  an intent that never landed becomes a no-op — implemented differently
+  (a `commit_first` flag + `stable_partition` in `finalize_all`, and a
+  `hasInterval` probe in CmdUndo). Its final message names the root cause
+  precisely: the rename order was first-touch order, so data files (touched by
+  load) renamed before the journal. Nothing in its world named undo except the
+  declared invariant (`check.sh`), the report's crash-window paths — and,
+  because the stage carries a full clone, the upstream branch name
+  `issue/772-undo-command-documentation`, which its `git branch -a` did print
+  (a documentation issue, different mechanism; harmless here, but a full clone
+  also means an older pin would ship upstream's own later fixes inside the
+  stage — a shallow-fetch stage is filed as follow-up).
+- **Apparatus checks that had not fired were fired deliberately** (on a copy of
+  the root, so the real run's records stay untouched): a doctored all-pass
+  `check.sh` was detected, restored from the seal, and re-verified by hash. The
+  copy's replay then refused with SETUP_ERROR — a case pins absolute paths and a
+  relocated root is not the recorded world (the identical-path mount invariant,
+  demonstrated rather than argued) — which also means the end-to-end
+  proposition "a doctored checker still cannot reach a *completed* replay
+  verdict" was not carried through on the copy: what is measured is detect →
+  restore → re-verify, plus the refusal. `finalize` on a results dir missing
+  the controls exits nonzero — the record's completeness rides the exit code.
+- **Two apparatus dead-ends, measured**: a scratch `CLAUDE_CONFIG_DIR` cannot
+  authenticate (the keychain credential is keyed to the config dir; seeding the
+  account keys from `~/.claude.json` does not help), and running under the
+  default config would have loaded this workspace's own SessionStart hooks into
+  the agent — `--safe-mode` disables every customization while auth works. The
+  isolation evidence is the transcript's init event, an artifact: `mcp_servers:
+  []`, default output style, built-in agents only. The committed canary proves
+  auth and nothing more (its one-word reply was not kept; the next staging
+  saves it). One leak, path not identified: the agent answered in Japanese to
+  an English prompt — some user-level preference survives safe mode; nothing
+  about the finding rides on it.
+
+What this does and does not claim: the loop closed once, on this finding, for
+this input set (report + case + declared invariant + repo + bug-blind plumbing
+— not "the report alone"), under a soft seal with a declared void condition
+that did not fire. v1.0 entry criterion 2 is met by this measurement; the
+remaining v0.5 scope (report schema doc, CI quickstart) is untouched by it.
+
+**The first-sight review corrected this entry** (a fresh-context proxy — Codex
+was out of credits). The one finding that mattered: "tools limited to" was
+false — `--allowedTools` is an allowlist, not a menu, and the transcript's init
+event shows the full tool set presented, web tools included — and the audit
+that should have caught a web call only examined Bash commands. The reviewer
+proved the fail-open with a synthetic transcript (WebFetch, WebSearch, a Task
+delegation, a home-dir bind mount: `audit: clean`), and proved the real run
+clean by independent means (server-side web counters 0/0, every one of the 74
+calls on the six allowed tools). The audit now judges every call, per escape
+channel: network/delegation tools void by name, Bash text by the network
+markers, any tool input by the repo and user-config paths, docker by absolute
+mount sources outside the stage — while variable mount sources ("$PWD") are
+recorded as unresolved rather than voided, because a transcript holds shell
+text, not resolved paths, and the real clean run mounts "$PWD:$PWD" from inside
+the stage. An empty transcript is now unauditable, not clean. Seen red on the
+synthetic transcript and green (verdict unchanged, 74 calls) on the real one.
+The negative control now also pins the reproduced crash point to the case's k
+(crash_point 19 == case_k: green; mutated k: red) — a checker broken for an
+unrelated reason no longer opens the agent gate. The recorded run's artifacts
+in `spike/runs/sideeye-loop-1/` are NOT rewritten: `audit.json` there is the
+pre-review auditor's output (old field names), kept as the record of what
+judged the run at the time; the rewritten auditor applied to the same
+transcript returns the same verdict — clean, 74 calls — measured independently
+twice (this session and the R2 reviewer). Smaller corrections riding the
+same round: the stale scratch-config-dir sentence in the protocol paragraph,
+the canary's quoted evidence (no artifact existed — the isolation evidence is
+the init event; the canary now saves its reply), the full clone printing
+`issue/772-undo-command-documentation` under `git branch -a`, "25/25 crash
+worlds" (24 crash + 1 baseline), the unexplained AtomicFileTest skips, and the
+host-/tmp scratch logs the prompt's letter forbade. Apparatus work that needs a
+fresh staging to verify honestly — shallow-fetch stage (#62), a canary that
+probes the seal red (#63), a committed generator for the secondary
+observations (#64) — is filed as issues rather than silently absorbed.
+
+A cleanup pass after the review tightened three things (each seen red against
+the recorded artifacts, none touching a judgement): the define's operation is
+written once and rides `protocol.json` to the functional gate instead of a
+second hand-written copy; the seal now pins the exact expected inventory, not
+its size (a one-in-one-out swap passed the count check and fails the list
+check); and the judge's usage text is derived from the header structurally
+instead of a line-number constant. The class it declined to fix in this PR —
+the declared invariant existing as three byte-identical copies across the
+dogfood scripts and this experiment, and the leg-C predicate implemented twice
+— is #65, because the fix direction runs through shipped measurement scripts
+this plan pledged not to touch.
+
 ## 2026-08-12 — v0.4.0: the milestone is the measurements; the tag carries a passenger
 
 Version 0.3.0 → 0.4.0, both hand-written strings at once (the unit test holds the
