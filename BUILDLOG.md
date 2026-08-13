@@ -2,6 +2,19 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — v0.7.0: minor, because the number must predict the case refusals
+
+Version 0.6.0 → 0.7.0, both hand-written strings at once (the unit test holds
+the pair). 0.6.1 was proposed and rejected: a patch number reads as a safe
+drop-in, and this release changes what saved cases do — every v7 case now
+refuses as a contract mismatch and must be re-recorded, and the countable
+operation set itself moved (contract v8). A new user-facing define key
+(`--expect-status`, case schema v2) rides along; the 0.6.0 precedent already
+chose minor for less. README reconciliation (checklist step 3.5): the tar
+example moved to v0.7.0 and the Status list gained the release's claim; the
+two other v0.6.0 mentions are historical ("entrance paved at", "releases from
+v0.6.0 on ship binaries") and stay.
+
 ## 2026-08-13 — expected_status: the fifth define key, spent against §12's budget sentence (#3)
 
 The recording run and the baseline world both demanded exit 0, which made every

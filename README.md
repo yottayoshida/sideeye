@@ -40,6 +40,12 @@ It breaks worlds, not inputs: same input, hostile universe.
   a minute with nothing written, and `sideeye preflight` answers "does the
   recording accept my tool?" before a define exists — see
   [Getting it](#getting-it).
+- **The PASS side tightened** (v0.7.0): observation is decided by where a
+  descriptor points, never by its number — a state file rebound onto stdout is
+  seen, the shim's trace channel defends its own identity, and a failed
+  measurement refuses instead of passing — and a target whose success
+  convention is a non-zero exit status is declarable (`--expect-status`), so
+  git-style tools are judgeable at all.
 
 The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and
 may change in any release.
@@ -93,7 +99,7 @@ the product. Download from
 [Releases](https://github.com/yottayoshida/sideeye/releases), unpack, done:
 
 ```
-$ tar xzf sideeye-v0.6.0-aarch64-macos.tar.gz && cd sideeye-v0.6.0-aarch64-macos
+$ tar xzf sideeye-v0.7.0-aarch64-macos.tar.gz && cd sideeye-v0.7.0-aarch64-macos
 ```
 
 (v0.5.0 and earlier predate the artifacts; build those from source: Zig 0.16.0,
