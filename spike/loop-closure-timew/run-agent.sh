@@ -64,7 +64,9 @@ ALLOWED="Bash,Read,Edit,Write,Glob,Grep"
 # Deny the network-by-construction and delegation tools by name. This flag's
 # enforcement has not been seen red yet — before trusting it, the next staging
 # must probe the seal once (a WebFetch attempt that must come back denied).
-DISALLOWED="WebFetch,WebSearch,Task,Agent,Workflow"
+# The outbound and delegation surface, denied by name — kept in step with
+# run-agent-mcp.sh and the judge's UNSEALED set by hand.
+DISALLOWED="WebFetch,WebSearch,Task,Agent,Workflow,SendMessage,PushNotification,RemoteTrigger,ScheduleWakeup,CronCreate,CronDelete"
 
 echo "=== the run: one agent, the sealed stage, the transcript records everything ==="
 agent_rc=0
@@ -77,11 +79,11 @@ agent_rc=0
 echo "agent exited: $agent_rc"
 
 python3 - "$RESULTS/transcript.jsonl" "$RESULTS/agent-meta.json" \
-    "$CLI_VERSION" "$ALLOWED" "$PROMPT_SHA" "$agent_rc" <<'PY'
+    "$CLI_VERSION" "$ALLOWED" "$PROMPT_SHA" "$agent_rc" "$DISALLOWED" <<'PY'
 import json, sys
 
-transcript, out, cli_version, allowed, prompt_sha, agent_rc = sys.argv[1:7]
-model, model_usage = None, None
+transcript, out, cli_version, allowed, prompt_sha, agent_rc, disallowed = sys.argv[1:8]
+model, model_usage, result = None, None, {}
 with open(transcript) as f:
     for line in f:
         try:
@@ -94,14 +96,22 @@ with open(transcript) as f:
             model = ev["model"]  # the init event: the model the run was asked to use
         if isinstance(ev.get("modelUsage"), dict):
             model_usage = sorted(ev["modelUsage"])  # the result event: every model that billed
+        if ev.get("type") == "result":
+            result = ev
 meta = {
     "model": model,
     "models_billed": model_usage,
     "cli_version": cli_version,
     "allowed_tools": allowed,
+    "disallowed_tools": disallowed,
     "prompt_sha256": prompt_sha,
     "agent_rc": int(agent_rc),
     "safe_mode": True,
+    # The headline numbers, into an artifact — the run dir is gitignored and a
+    # hand-read result event is not a record.
+    "num_turns": result.get("num_turns"),
+    "duration_ms": result.get("duration_ms"),
+    "total_cost_usd": result.get("total_cost_usd"),
 }
 json.dump(meta, open(out, "w"), indent=1)
 print("agent-meta: model=%s cli=%s" % (model, cli_version))

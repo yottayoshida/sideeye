@@ -1,6 +1,6 @@
 # ADR 0011 — The MCP child gets named env vars back, and replay gets `--fresh-state`
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-08-13)
 - **Supersedes:** nothing. Amends two consequences of ADR 0010 (the minimal-env
   child) and ADR 0009 (replay's implicit pristine-state precondition), found by
   attempting the MCP-mediated loop-closure run (#68, #69)

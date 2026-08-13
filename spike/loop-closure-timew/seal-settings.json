@@ -1,0 +1,4 @@
+{
+  "disableAllHooks": true,
+  "enabledPlugins": { "codex@openai-codex": false }
+}

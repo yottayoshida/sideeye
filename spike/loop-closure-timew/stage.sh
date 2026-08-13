@@ -9,7 +9,10 @@
 #   work/cases/000001.json      the saved case the report names (its real path)
 #   define/setup.sh, check.sh   the declared invariant the case's define points at
 #   repo/                       timewarrior at the pinned commit, unpatched
-#   replay.sh                   bug-blind plumbing: rebuild ./repo, replay the case
+#   replay.sh | build.sh        the re-check button, by VARIANT: cli bakes
+#                               replay.sh (rebuild + replay in one script), mcp
+#                               bakes build.sh (rebuild + install; the replay is
+#                               the sideeye_replay_case tool)
 #   .harness/                   the sideeye binary and shim the plumbing runs
 #
 # What the agent does not receive: this repository (the buildlog, the known patch,
@@ -37,6 +40,12 @@ IMAGE=${IMAGE:-sideeye-loop-timew:latest}
 # and protocol.json carries it to the judge so the functional gate drives the
 # same command (space-separated words only — sideeye's own operation parsing).
 OPERATION="timew track 2020-01-02T10:00 - 2020-01-02T11:00 beta :yes"
+# VARIANT selects the agent's re-check button. cli (default): a baked replay.sh.
+# mcp: a baked build.sh plus an mcp.json at the root — the agent rebuilds with
+# the script and replays through the sideeye MCP server (ADR 0011). The seal
+# stays seven files either way; only the button swaps.
+VARIANT=${VARIANT:-cli}
+case "$VARIANT" in cli|mcp) ;; *) echo "VARIANT must be cli or mcp" >&2; exit 1 ;; esac
 
 ROOT=${1:?usage: stage.sh <new absolute root dir, e.g. \$HOME/sideeye-loop-1>}
 case "$ROOT" in /*) ;; *) echo "root must be an absolute path" >&2; exit 1 ;; esac
@@ -138,15 +147,40 @@ mv "$STAGE/work" "$RESULTS/explore-work"
 mkdir -p "$STAGE/work/cases"
 cp "$RESULTS/explore-work/cases/000001.json" "$CASE"
 
-echo "=== bake replay.sh and seal the stage ==="
-sed -e "s|@STAGE@|$STAGE|g" -e "s|@IMAGE@|$IMAGE|g" "$SCRIPT_DIR/replay.sh.in" > "$STAGE/replay.sh"
-chmod +x "$STAGE/replay.sh"
-# The plumbing must stay bug-blind. Scanned: replay.sh, the one generated file
-# (the checker legitimately names undo — it IS the declared invariant). Not
-# scanned: prompt.md, which is committed and reviewed as text, and whose word
-# "order" (as in "in order to") would false-positive here.
-if grep -qiE 'undo|rename|order' "$STAGE/replay.sh"; then
-    echo "replay.sh contains finding vocabulary; refusing to stage it" >&2
+echo "=== bake the re-check button ($VARIANT) and seal the stage ==="
+if [ "$VARIANT" = "mcp" ]; then
+    BUTTON="$STAGE/build.sh"
+    sed -e "s|@STAGE@|$STAGE|g" -e "s|@IMAGE@|$IMAGE|g" "$SCRIPT_DIR/build.sh.in" > "$BUTTON"
+    # The client-side server config lives at the ROOT, outside the stage: the agent
+    # never needs to read it, and it is not part of the sealed input set.
+    python3 - "$STAGE" "$IMAGE" "$ROOT/mcp.json" <<'PY'
+import json, sys
+stage, image, out = sys.argv[1], sys.argv[2], sys.argv[3]
+cfg = {"mcpServers": {"sideeye": {"command": "docker", "args": [
+    "run", "-i", "--rm", "--network", "none",
+    "-v", "%s:%s" % (stage, stage),
+    "-e", "SIDEEYE_MCP_ROOT=%s" % stage,
+    "-e", "SIDEEYE_MCP_SHIM=%s/.harness/libsideeye_shim.so" % stage,
+    "-e", "SIDEEYE_MCP_ORACLE=/usr/bin/strace",
+    "-e", "SIDEEYE_MCP_WORK=/tmp/mcp-work",
+    "-e", "SIDEEYE_MCP_CHILD_ENV=TIMEWARRIORDB",
+    "-e", "TIMEWARRIORDB=/tmp/loop-state",
+    "-e", "PATH=%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" % stage,
+    image, "%s/.harness/sideeye" % stage, "mcp"]}}}
+json.dump(cfg, open(out, "w"), indent=1)
+PY
+else
+    BUTTON="$STAGE/replay.sh"
+    sed -e "s|@STAGE@|$STAGE|g" -e "s|@IMAGE@|$IMAGE|g" "$SCRIPT_DIR/replay.sh.in" > "$BUTTON"
+fi
+chmod +x "$BUTTON"
+# The plumbing must stay bug-blind. Scanned: the generated button script (the
+# checker legitimately names undo — it IS the declared invariant; mcp.json is
+# generated too but lives outside the stage and carries only wiring). Not
+# scanned: the prompt files, which are committed and reviewed as text, and whose
+# word "order" (as in "in order to") would false-positive here.
+if grep -qiE 'undo|rename|order' "$BUTTON"; then
+    echo "$BUTTON contains finding vocabulary; refusing to stage it" >&2
     exit 1
 fi
 
@@ -164,6 +198,15 @@ json.dump({"pin": sys.argv[1], "image": sys.argv[2], "case_k": int(sys.argv[3]),
 (cd "$STAGE" && xargs shasum -a 256 < "$SEAL/filelist") > "$SEAL/manifest.sha256"
 # A seal over nothing would verify anything — and a count alone admits a
 # one-in-one-out swap. Pin the exact expected inventory, not its size.
+if [ "$VARIANT" = "mcp" ]; then
+expected_filelist='./.harness/libsideeye_shim.so
+./.harness/sideeye
+./build.sh
+./define/check.sh
+./define/setup.sh
+./report.json
+./work/cases/000001.json'
+else
 expected_filelist='./.harness/libsideeye_shim.so
 ./.harness/sideeye
 ./define/check.sh
@@ -171,6 +214,7 @@ expected_filelist='./.harness/libsideeye_shim.so
 ./replay.sh
 ./report.json
 ./work/cases/000001.json'
+fi
 if [ "$(cat "$SEAL/filelist")" != "$expected_filelist" ]; then
     echo "sealed inventory drifted from the expected seven files:" >&2
     printf '%s\n' "$expected_filelist" | diff - "$SEAL/filelist" >&2 || true
@@ -179,9 +223,16 @@ fi
 n_sealed=$(grep -c . "$SEAL/manifest.sha256")
 
 echo ""
-echo "staged: $STAGE"
+echo "staged: $STAGE ($VARIANT variant)"
 echo "sealed: $n_sealed files -> $SEAL/manifest.sha256"
 echo "results will land in: $RESULTS"
-echo "next: judge.sh eval --root $ROOT --mode neg   (control: unfixed must FAIL)"
-echo "      judge.sh eval --root $ROOT --mode pos   (control: known patch must PASS)"
-echo "      run-agent.sh $ROOT                      (only after both controls hold)"
+if [ "$VARIANT" = "mcp" ]; then
+    echo "next: judge.sh eval --root $ROOT --mode neg   (control: unfixed must FAIL)"
+    echo "      judge.sh eval --root $ROOT --mode pos   (control: known patch must PASS)"
+    echo "      contrast-mcp.sh $ROOT                   (control: the MCP channel itself)"
+    echo "      run-agent-mcp.sh $ROOT                  (only after all three hold)"
+else
+    echo "next: judge.sh eval --root $ROOT --mode neg   (control: unfixed must FAIL)"
+    echo "      judge.sh eval --root $ROOT --mode pos   (control: known patch must PASS)"
+    echo "      run-agent.sh $ROOT                      (only after both controls hold)"
+fi

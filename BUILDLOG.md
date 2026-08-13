@@ -2,7 +2,7 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-13 — The MCP-mediated confirmation run found two product gaps before it could start
+## 2026-08-13 — The MCP-mediated run: two product gaps first, then the loop closed through the surface
 
 The optional follow-up to the loop-closure measurement — drive the same sealed
 experiment through `sideeye mcp` instead of the replay.sh plumbing — was
@@ -81,6 +81,99 @@ session**; the agent's fixed tree replays **PASS, explored 2, twice** — same
 code path, opposite answers, repeatable. One reading trap for whoever repeats
 this: the loop-1 stage's `repo/` is the agent's FIXED tree, so PASS there is
 the expected answer, not a broken probe.
+
+**The confirmation run's protocol, fixed before the run (VARIANT=mcp).** Same
+judgement, same seal discipline, same primary three-condition AND as the first
+run — nothing about how the verdict is reached changes. What changes is the
+agent's re-check button and its wiring, declared here before any agent runs:
+
+- **Input set**: report JSON + the case it names + the define's setup/check +
+  the pinned repo + `build.sh` (bug-blind rebuild-and-install plumbing) + the
+  `sideeye_replay_case` tool served by `sideeye mcp` — started by the client
+  from `mcp.json` at the root (outside the stage; the agent never reads it),
+  with `SIDEEYE_MCP_CHILD_ENV=TIMEWARRIORDB` and PATH carrying `$STAGE/bin`,
+  where build.sh installs the rebuilt binary. The seal stays seven files;
+  replay.sh is simply replaced by build.sh.
+- **Controls**: the judge's neg/pos pair as before, plus a third — the MCP
+  channel itself must give opposite answers on this stage (unpatched: FAIL at
+  the case's k, twice in one server session, because per-call freshness is
+  part of what is proven; patched: PASS) before any agent runs. `finalize`
+  refuses an mcp-variant record without it.
+- **Seal recipe**: `--safe-mode` never starts `--mcp-config` servers, so the
+  measured replacement is `--strict-mcp-config` + `--disable-slash-commands` +
+  settings (hooks off, plugins off by name) + foreign-cwd project namespace.
+  Residue stated: user agent names remain visible in the init event, inert
+  with Task/Agent denied. Canary 1 asserts the measurable parts from the init
+  event; canary 2 observes the enforcement once before the stage is burned
+  (half of #63). **Canary 2 fired on its first form and was recalibrated** —
+  the "nothing may fetch the page" assertion conflated two channels with
+  different owners. What the probe actually showed: **in this configuration**
+  the disallowed tools are ABSENT from the presented set (init carries no
+  WebFetch — stronger than the allowlist, which leaves tools visible). Scoped
+  deliberately: run 1's init, same CLI and the same five `--disallowedTools`
+  but under `--safe-mode`, still presented all five — the removal was not
+  isolated to the flag alone. The page arrived through allowed Bash + host
+  network instead (`curl`), which is the declared soft-seal residual the
+  AUDIT owns in the sealed run. The
+  canary now asserts absence-from-init for the launcher's whole deny list plus
+  no WebFetch attempt, and records the Bash residual instead of failing on it.
+  The miscalibrated form did its one job correctly — it refused to burn the
+  stage until the failure was understood. After the run, review widened the
+  deny list to eleven names (the outbound/delegation surface: SendMessage,
+  PushNotification, RemoteTrigger, ScheduleWakeup, CronCreate, CronDelete
+  join the five) — and because removal is the configuration's behaviour, not
+  the flag's, the widened list was MEASURED in a throwaway session before
+  being trusted: all eleven absent from init, core tools intact. The recorded
+  run itself used the five-name list; its six new names were merely
+  void-by-audit then, denied-at-launch now.
+
+**The run (same day): the loop closed through the MCP surface.**
+`spike/runs/sideeye-loop-2/manifest.json`; numbers below are from the
+manifest or the transcript's result event (the launcher now records
+num_turns / duration / cost into agent-meta so the next run's headline is in
+an artifact, not hand-read). Fresh stage at the pin reproduced the finding
+(FAIL, k=19 of 24); all three controls held (judge neg with the crash-point
+pin, judge pos, and the MCP channel contrast: unpatched FAIL@19 twice in one
+server session, patched PASS). The agent: **claude-fable-5** (CLI 2.1.229) —
+a different model than run 1's claude-opus-5, both Claude 5 family;
+`models_billed` also carries a $0.0009 haiku sliver (CLI internals). **38
+turns, 8.9 minutes, $4.43** (run 1, same num_turns metric: 75 turns, 16.6
+min, $5.97). Tool ledger: Bash 19 / Edit 10 / Read 5 / Grep 1 /
+**`sideeye_replay_case` 1** / ToolSearch 1 — the ToolSearch loaded the MCP
+tool's schema (recorded `off_allowlist`, a local tool, not a void; it sits on
+the path to the surface, so it is named here). Audit: clean — zero network
+reaches, zero context reads, `server_tool_use` 0/0. The stage's only extra
+file was `bin/timew` — present since the channel contrast installed the
+agent's starting world, rewritten by the agent's one `build.sh` run; the diff
+cannot and need not distinguish the two, the judge builds from `repo/` alone.
+Judgement: replay gate **pass**, non-degeneracy gate **pass**, **loop_closed:
+true**. **What the ledger actually shows — no iteration happened**: calls
+1–33 read the tree and made 11 edits, call 34 was the first and only build,
+call 36 the first and only replay — **PASS on the first attempt**; the MCP
+call was the agent's only verification (plus one normal-world sanity check
+after). The honest limit riding that: the edit→rebuild→re-check loop that
+`--fresh-state` (#69) exists to support was exercised by the channel contrast
+(two calls, one session), not by this agent. The fix is the third independent
+derivation of the same three targets as the human patch, each part
+implemented differently — journal-before-data via a `finalize_first` mark
+and a two-pass `finalize_all` (vs opus's `commit_first` + `stable_partition`,
+vs the human patch's reversed rename order); a stale-`tags.data` tolerance in
+`Database::deleteInterval` (a tag absent from the index already has a zero
+count — the human patch and opus both reordered instead, opus via
+`commitTagDatabase`); and a no-op undo for an intent
+that never landed (a `hasInterval` probe like opus's, arrived at
+independently). Its final message names the rename-order root cause and both
+violation windows precisely. The same cosmetic leak as run 1: the agent
+answered in Japanese to an English prompt (path still not identified).
+- **Audit**: `--allow-mcp sideeye` admits exactly the one trusted server's
+  tools; every other `mcp__*` stays a void by name; all other void conditions
+  unchanged (seen red/green against synthetic transcripts and re-run green on
+  the recorded loop-1 transcript).
+- **Acknowledged wrinkle**: `$STAGE/bin/timew` is executed from the virtiofs
+  mount. The syscall-fidelity invariant covers the OBSERVED state dir, which
+  stays container-local (`/tmp/loop-state`); executing a binary from the mount
+  is not observation, and the channel contrast measures this wiring end to end
+  before the agent does.
 
 **The first-look review reversed one piece of the design; recorded here per
 the contract.** The first implementation handed `freshDir` the case's raw
