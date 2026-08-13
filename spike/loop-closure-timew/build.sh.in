@@ -1,0 +1,23 @@
+#!/bin/sh
+# Rebuild the software from ./repo and install the result where the checker's world
+# can see it. This script is plumbing only: it does not know what the failure is,
+# and editing it does not change the final judgement (the judge rebuilds from ./repo
+# with its own copy of these steps against a sealed manifest).
+#
+# Run it after every edit to ./repo, then re-check with the sideeye_replay_case tool.
+#
+# Template tokens (@STAGE@, @IMAGE@) are substituted by stage.sh when the stage is
+# assembled; the committed .in file is not runnable as-is.
+set -eu
+STAGE="@STAGE@"
+mkdir -p "$STAGE/bin"
+exec docker run --rm --network none \
+    -v "$STAGE:$STAGE" \
+    -e STAGE="$STAGE" \
+    "@IMAGE@" sh -eu -c '
+        cp -r "$STAGE/repo" /tmp/src
+        cmake -S /tmp/src -B /tmp/build -DCMAKE_BUILD_TYPE=Release >/dev/null
+        cmake --build /tmp/build -j"$(nproc)" >/dev/null
+        cp /tmp/build/src/timew "$STAGE/bin/timew"
+        echo "installed: $STAGE/bin/timew"
+    '

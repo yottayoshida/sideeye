@@ -123,14 +123,17 @@ points at, bug-blind replay plumbing) and the pinned timewarrior checkout,
 re-derived the fix and the judge's own replay passed, with the feature intact
 and the audit clean (`spike/loop-closure-timew/`, BUILDLOG 2026-08-13,
 `spike/runs/sideeye-loop-1/manifest.json`). v1.0 entry criterion 2 is met by
-this measurement. Two honesty notes: the run drove the CLI replay surface
-through the plumbing script, not the MCP adapter — the MCP-mediated variant
-(already measured end-to-end over the wire on 2026-08-12) remains an optional
-confirmation, not a gap in the criterion, which is transport-agnostic; and the
-input set is the report *and what it transitively names*, not "the report
-alone" (the exact set is declared in the BUILDLOG protocol). Remaining v0.5
-scope before 0.5.0: the report JSON documented as a schema, and the CI
-quickstart.
+this measurement. Two honesty notes: the first run drove the CLI replay
+surface through the plumbing script, not the MCP adapter — **resolved the same
+day**: attempting the MCP-mediated variant first surfaced and fixed two real
+surface gaps (ADR 0011 — the child env dropped `TIMEWARRIORDB`-class
+variables, and a persistent server had no per-call state freshness), and the
+confirmation run then closed the loop **through this surface** with a second
+model (claude-fable-5, `spike/runs/sideeye-loop-2/manifest.json` —
+loop_closed true, all three controls held, audit clean); and the input set is
+the report *and what it transitively names*, not "the report alone" (the
+exact set is declared in the BUILDLOG protocol). Remaining v0.5 scope before
+0.5.0: the report JSON documented as a schema, and the CI quickstart.
 
 ### v1.0 — Contract freeze
 

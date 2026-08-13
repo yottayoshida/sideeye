@@ -15,10 +15,13 @@
 #         pos  known patch     -> replay must PASS (leg-C predicate), functional must pass
 #         run  the agent's tree -> no expectation; the verdict is the measurement
 #
-#   judge.sh audit --root <root> --transcript <stream-json file>
+#   judge.sh audit --root <root> --transcript <stream-json file> [--allow-mcp <server>]
 #       Enumerate every tool call the agent made. Network reach or a read into
 #       this workspace voids the run (soft seal, hard void — the limitation is
-#       documented in the BUILDLOG). Emits audit.json; exits nonzero on void.
+#       documented in the BUILDLOG). --allow-mcp names ONE trusted MCP server
+#       (the mcp variant's sideeye server); its mcp__<server>__* tools are the
+#       agent's legitimate re-check surface, every other mcp__* stays a void.
+#       Emits audit.json; exits nonzero on void.
 #
 #   judge.sh finalize --root <root>
 #       Assemble manifest.json from both control verdicts, the run verdict, the
@@ -36,12 +39,13 @@ usage() { awk 'NR==1{next} /^#/{print;next} {exit}' "$0" >&2; exit 2; }
 
 [ $# -gt 0 ] || usage
 CMD=$1; shift
-ROOT=""; MODE=""; TRANSCRIPT=""
+ROOT=""; MODE=""; TRANSCRIPT=""; ALLOW_MCP=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --root) ROOT=$2; shift 2 ;;
         --mode) MODE=$2; shift 2 ;;
         --transcript) TRANSCRIPT=$2; shift 2 ;;
+        --allow-mcp) ALLOW_MCP=$2; shift 2 ;;
         *) echo "unknown argument: $1" >&2; usage ;;
     esac
 done
@@ -254,10 +258,13 @@ PY
 cmd_audit() {
     [ -n "$TRANSCRIPT" ] || usage
     [ -f "$TRANSCRIPT" ] || { echo "transcript not found: $TRANSCRIPT" >&2; exit 1; }
-    python3 - "$TRANSCRIPT" "$RESULTS/audit.json" "$STAGE" "$SIDEEYE_REPO" <<'PY'
+    python3 - "$TRANSCRIPT" "$RESULTS/audit.json" "$STAGE" "$SIDEEYE_REPO" "$ALLOW_MCP" <<'PY'
 import json, re, sys
 
 transcript, out_path, stage, repo = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+# The mcp variant's one trusted server: its tools are the agent's legitimate
+# re-check surface. Everything else under mcp__ stays a void by name.
+allow_prefix = ("mcp__%s__" % sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5] else None
 
 # The declared void condition — one network reach, or one read into this
 # repository's world (the repo holds the answers: buildlog, known patch) — is
@@ -272,10 +279,13 @@ transcript, out_path, stage, repo = sys.argv[1], sys.argv[2], sys.argv[3], sys.a
 #             (Read/Grep/Glob are the read-leak channel)
 #   by MOUNT  docker invocations that drop --network none or bind a source
 #             outside the stage (a mount makes the filesystem seal moot)
-# These sets deliberately duplicate run-agent.sh's ALLOWED / DISALLOWED: the
-# judge does not read what the launcher wrote. Keep them in step by hand.
+# These sets deliberately duplicate the launchers' ALLOWED / DISALLOWED
+# (run-agent.sh and run-agent-mcp.sh): the judge does not read what a launcher
+# wrote. Keep them in step by hand.
 ALLOWED = {"Bash", "Read", "Edit", "Write", "Glob", "Grep"}
-UNSEALED = {"WebFetch", "WebSearch", "Task", "Agent", "Workflow"}
+UNSEALED = {"WebFetch", "WebSearch", "Task", "Agent", "Workflow",
+            "SendMessage", "PushNotification", "RemoteTrigger",
+            "ScheduleWakeup", "CronCreate", "CronDelete"}
 NETWORK = re.compile(
     r"\b(curl|wget|nc|ncat|netcat|ssh|scp|sftp|telnet|dig|nslookup|gh)\b"
     r"|\bgit\s+(?:-[^\s]+\s+)*(fetch|pull|push|clone|ls-remote)\b"
@@ -311,10 +321,16 @@ if not tool_calls:
 
 network_hits, context_hits, docker_hits, unsealed_hits = [], [], [], []
 off_allowlist, unresolved_mounts = [], []
+mcp_calls = 0
 for call in tool_calls:
     name = call["name"] or ""
     text = json.dumps(call["input"], ensure_ascii=False)
-    if name in UNSEALED or name.startswith("mcp__"):
+    if name.startswith("mcp__"):
+        if allow_prefix and name.startswith(allow_prefix):
+            mcp_calls += 1  # the trusted server; its inputs still pass the path checks below
+        else:
+            unsealed_hits.append({"tool": name, "input": call["input"]})
+    elif name in UNSEALED:
         unsealed_hits.append({"tool": name, "input": call["input"]})
     elif name not in ALLOWED:
         off_allowlist.append(name)  # local-only tool outside the allowlist: recorded, not void
@@ -353,6 +369,7 @@ audit = {
     "unsealed_tool_hits": unsealed_hits,
     "off_allowlist": sorted(set(off_allowlist)),
     "unresolved_mounts": sorted(set(unresolved_mounts)),
+    "allowed_mcp_calls": mcp_calls,
 }
 json.dump(audit, open(out_path, "w"), indent=1)
 print("audit: %s (%d tool calls, %d bash)" % (verdict, audit["tool_calls"], audit["bash_calls"]))
@@ -362,10 +379,10 @@ PY
 }
 
 cmd_finalize() {
-    python3 - "$RESULTS" "$SEAL/protocol.json" <<'PY'
+    python3 - "$RESULTS" "$SEAL/protocol.json" "$ROOT" <<'PY'
 import json, os, sys
 
-results, proto_path = sys.argv[1], sys.argv[2]
+results, proto_path, root = sys.argv[1], sys.argv[2], sys.argv[3]
 
 def need(name):
     p = os.path.join(results, name)
@@ -382,12 +399,27 @@ manifest = {
     "audit": need("audit.json"),
     "agent": need("agent-meta.json"),
 }
+# An mcp-variant root (it carries mcp.json) has a third control: the channel
+# itself. Its absence — or a contrast that did not hold — is an incomplete record.
+if os.path.exists(os.path.join(root, "mcp.json")):
+    manifest["controls"]["mcp_channel"] = need("mcp-contrast.json")
 
 missing = []
 if manifest["controls"]["neg"].get("expectation_met") is not True:
     missing.append("neg control did not hold")
 if manifest["controls"]["pos"].get("expectation_met") is not True:
     missing.append("pos control did not hold")
+if "mcp_channel" in manifest["controls"]:
+    if manifest["controls"]["mcp_channel"].get("expectation_met") is not True:
+        missing.append("mcp channel contrast did not hold")
+    # "Through this surface" must be in the record, not assumed: an mcp-variant
+    # run whose agent never called the trusted server would still pass the three
+    # gates, and nothing else reads allowed_mcp_calls. Cross-check the variant
+    # signals too — the root's mcp.json and the agent-meta must agree.
+    if not manifest["audit"].get("allowed_mcp_calls"):
+        missing.append("the agent never called the trusted MCP server (allowed_mcp_calls is 0/absent) — the surface did not carry this run")
+    if manifest["agent"].get("variant") != "mcp":
+        missing.append("root has mcp.json but agent-meta.variant is %r — the two variant signals disagree" % manifest["agent"].get("variant"))
 for field in ("model", "cli_version", "prompt_sha256"):
     if not manifest["agent"].get(field):
         missing.append("agent.%s" % field)
