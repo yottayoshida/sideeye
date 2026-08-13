@@ -1,0 +1,30 @@
+#!/bin/sh
+# Rebuild the software from ./repo and re-check the saved failure, in an isolated
+# Linux container with no network. This script is plumbing only: it does not know
+# what the failure is, and editing it does not change the final judgement (the
+# judge runs its own copy of these steps against a sealed manifest).
+#
+# Exit code: 0 = PASS, 1 = the saved failure reproduced, 2 = the tool refused to
+# judge (the output names the reason).
+#
+# Template tokens (@STAGE@, @IMAGE@) are substituted by stage.sh when the stage is
+# assembled; the committed .in file is not runnable as-is.
+set -eu
+STAGE="@STAGE@"
+exec docker run --rm --network none \
+    -v "$STAGE:$STAGE" \
+    -e STAGE="$STAGE" \
+    -e TIMEWARRIORDB=/tmp/loop-state \
+    "@IMAGE@" sh -eu -c '
+        cp -r "$STAGE/repo" /tmp/src
+        cmake -S /tmp/src -B /tmp/build -DCMAKE_BUILD_TYPE=Release >/dev/null
+        cmake --build /tmp/build -j"$(nproc)" >/dev/null
+        mkdir -p /tmp/loop-bin /tmp/loop-state
+        cp /tmp/build/src/timew /tmp/loop-bin/timew
+        export PATH="/tmp/loop-bin:$PATH"
+        exec "$STAGE/.harness/sideeye" replay "$STAGE/work/cases/000001.json" \
+            --shim "$STAGE/.harness/libsideeye_shim.so" \
+            --work /tmp/replay-work \
+            --oracle /usr/bin/strace \
+            --json "$STAGE/replay-latest.json"
+    '

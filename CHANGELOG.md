@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The loop-closure experiment (`spike/loop-closure-timew/`), and its result: DESIGN §17's second criterion is met, once, on the timewarrior finding. A context-free coding agent — fresh headless session, no memory, every tool call audited, web tools presented but never invoked (the transcript's server-side web counters read zero) — received a sealed stage holding only the counterexample (report JSON, the case it names, the declared invariant the case points at, bug-blind replay plumbing) and the pinned repository, and produced a real fix: the judge's own fresh replay passed (explored 2, all 24 crash points still addressed), a normal-world functional gate confirmed undo still works (a fix that lobotomizes the feature to silence the checker is declared a failure up front), and a full re-exploration of the fixed tree passed 25/25. The apparatus was proven first by mutual-contrast controls (the unpatched tree must reproduce the failure, the known patch must pass), the judge trusts nothing the agent can edit (sha256 seal + restore before judging — a doctored all-pass checker was planted once, detected, and restored), and the audit's void condition (any network reach, any read into the home workspace) did not fire. Protocol and honest limits in the BUILDLOG (2026-08-13); v1.0 entry criterion 2 is met by this measurement.
+
 ## [0.4.0] - 2026-08-12
 
 The v0.4 milestone — dogfood: omamori — delivered: DESIGN §17's primary criterion evaluated honestly across omamori's full surface, and regression-case stability measured across a real fix. This release also ships the MCP adapter ahead of its milestone: v0.5's agent-facing surface landed on main before v0.4 was cut, so it rides here — the v0.5 milestone itself (the loop-closure test) remains open and will cut 0.5.0.
