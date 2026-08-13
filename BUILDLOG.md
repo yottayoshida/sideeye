@@ -2,6 +2,65 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — v0.5's last two items: the report as a schema, the quickstart as a workflow
+
+The milestone's remaining scope line — "the report JSON documented as a
+schema; a quickstart for CI (GitHub Actions example)" — closed with the same
+discipline the README learned in v0.1: a document nothing executes is a claim
+nobody measured.
+
+**`docs/report-schema.md`** documents every field the report carries, per
+verdict, plus the closed `unknown_reason` set — and acceptance check 4 holds
+the page to reality in both directions: four fresh reports covering all four
+verdicts (their union of fields must all be documented, every documented field
+must appear in one of them), and the doc's `unknown_reason` list must equal
+the contract's enum exactly. The comparison lives in
+`spike/check-report-schema.py` taking paths, so the doc side falsifies in
+isolation; three mutations seen red (a deleted field row, a deleted enum
+value, a phantom field nothing generates) and green on the real page.
+
+**The check caught two real drifts before it was even trusted.** First, its
+own field regex `[a-z_.]` silently dropped `l0` and `l1` — a digit in a field
+name — and reported them undocumented while they sat in the table (the
+checker's first red was against itself). Second, the doc's `unknown_reason`
+list was **seven values short**: the sed extraction used to WRITE the page
+(`sed -n 'X,+40p'`) truncated the enum at forty lines and the page inherited
+the truncation — the doc-writing pipeline was fail-open, and only the check
+comparing against the enum itself exposed it. Also learned en route:
+"toy-bug without an oracle" is NOT an UNKNOWN recipe — a FAIL stands on its
+own evidence without completeness; the oracle gates only the would-be PASS
+(the check's verdict-coverage guard fired on this, correctly, before the
+comparison could go vacuous).
+
+**`docs/ci-quickstart.md`** documents `.github/workflows/quickstart.yml` — a
+REAL workflow that runs on every push to main and every pull request, against
+a committed `docs/ci-quickstart/sideeye.toml` and this repo's planted-bug toy,
+so the quickstart example is executed by CI rather than trusted. The demo job passes
+iff sideeye finds the counterexample (exit 1, the gate a reader inverts for a
+clean target); measured in the container before the workflow existed: FAIL at
+crash point 5, the unlink→rename window — re-measured with no extra
+environment after review showed the workflow's `TOY_STATE` was dead weight
+(sideeye itself exports it to its children, pointed at the resolved state).
+The doc carries the exit-code table and the honest default for UNKNOWN in CI:
+fail the job — treating a refusal as green is how a target quietly leaves the
+tested set.
+
+**Review corrected the corrector.** The first-look pass found the digit bug
+this entry brags about catching still alive in the enum regex fourteen lines
+below the field-regex fix — a `[a-z_]` that would let a future digit-bearing
+refusal (`l2_*`) slip out of the closed-set claim, and whose failure message
+pointed the wrong way ("doc-only" reads as "delete it from the doc"). Fixed by
+scoping the extraction to the whole enum block (values declared after a
+`pub fn` count now) with strict member indentation, and falsified against a
+mutated contract carrying `l9_added_after_fn` after the fn — red, in the
+right direction. Smaller corrections in the same round: `explored ==
+crash_points + 1` does not hold for a zero-operation PASS (both counters 0 —
+now stated); `earliest.invariant` has five values, not three (the two
+combined-layer forms are now listed, literals verified against main.zig); the
+quickstart's short replay command was missing the required `--shim`; and
+"every push" was the kind of rounding-up this repo dislikes — it runs on
+pushes to main and pull requests.
+
 ## 2026-08-13 — The MCP-mediated run: two product gaps first, then the loop closed through the surface
 
 The optional follow-up to the loop-closure measurement — drive the same sealed

@@ -132,8 +132,12 @@ confirmation run then closed the loop **through this surface** with a second
 model (claude-fable-5, `spike/runs/sideeye-loop-2/manifest.json` —
 loop_closed true, all three controls held, audit clean); and the input set is
 the report *and what it transitively names*, not "the report alone" (the
-exact set is declared in the BUILDLOG protocol). Remaining v0.5 scope before
-0.5.0: the report JSON documented as a schema, and the CI quickstart.
+exact set is declared in the BUILDLOG protocol). The milestone's remaining
+scope closed the same day: the report is documented as a schema
+(`docs/report-schema.md`, held to the generated reports by acceptance
+check 4), and the CI quickstart is a real workflow this repo runs
+(`docs/ci-quickstart.md`). Nothing of v0.5's scope remains; 0.5.0 is a
+release ceremony away.
 
 ### v1.0 — Contract freeze
 

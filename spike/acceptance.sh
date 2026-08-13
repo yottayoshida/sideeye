@@ -1427,6 +1427,36 @@ done
 echo "$same/3 runs produced identical reports"
 [ "$same" = "3" ] || { echo "FAIL: reports differed between runs"; fails=$((fails + 1)); }
 
+echo "=========== check 4: the report schema page is held to the generated reports ==========="
+# docs/report-schema.md promises three things this check enforces: every field a
+# generated report carries is documented, every documented field is generatable,
+# and the unknown_reason list matches the contract's enum. Four fresh reports
+# cover all four verdicts; the comparison is a script taking paths, so the doc
+# side can be falsified in isolation (mutate a copy, watch it go red).
+SD=/tmp/acc-schema
+rm -rf "$SD" && mkdir -p "$SD/s1" "$SD/s2" "$SD/s3" "$SD/s4"
+TOY_STATE=$SD/s1 "$SIDEEYE" explore --state "$SD/s1" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work "$SD/w1" --oracle /usr/bin/strace --json "$SD/pass.json" >/dev/null 2>&1
+TOY_STATE=$SD/s2 "$SIDEEYE" explore --state "$SD/s2" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$SD/w2" --oracle /usr/bin/strace --json "$SD/fail.json" >/dev/null 2>&1
+# UNKNOWN needs the would-be-PASS path: a FAIL stands without the oracle, but a
+# PASS without completeness refuses — so the fixed toy, oracle-less, is the recipe.
+TOY_STATE=$SD/s3 "$SIDEEYE" explore --state "$SD/s3" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work "$SD/w3" --json "$SD/unknown.json" >/dev/null 2>&1
+TOY_STATE=$SD/s4 "$SIDEEYE" explore --state "$SD/s4" \
+    --setup "/bin/false" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$SD/w4" --json "$SD/setup.json" >/dev/null 2>&1
+if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json"; then
+    echo "ok   the schema page, the generated reports, and the contract enum agree"
+else
+    echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

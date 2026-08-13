@@ -1,0 +1,64 @@
+# CI quickstart (GitHub Actions)
+
+The example here is not a listing — it is [`.github/workflows/quickstart.yml`](../.github/workflows/quickstart.yml),
+a real workflow that runs on every push to main and every pull request in this
+repository, against [`docs/ci-quickstart/sideeye.toml`](ci-quickstart/sideeye.toml).
+A quickstart that CI itself executes cannot quietly rot into fiction. To adopt
+it: copy the workflow, swap the define, invert one gate.
+
+## The three pieces
+
+**1. A `sideeye.toml` next to your project** — the define: where the state
+lives, how to produce it, and the one operation to explore.
+
+```toml
+[world]
+state = "/var/lib/myapp"          # the directory sideeye watches
+
+[define]
+setup     = "./ci/seed-state.sh"  # produces the initial state, runs once
+operation = "myapp commit"        # explored: killed before each state-changing op
+# check   = "./ci/verify.sh"      # optional L2: your own invariant, run after each crash
+```
+
+Relative paths and place-naming commands (`./x`, `../x`) resolve against the
+toml's own directory, so the file means the same thing from any cwd (ADR 0007).
+Commands split on spaces — no quoting; anything an argument cannot spell
+belongs in a script.
+
+**2. The workflow steps** — build sideeye (zig 0.16 via `mlugg/setup-zig`),
+install `strace` (the completeness oracle; without it a would-be PASS refuses
+as `completeness_not_verified` — sideeye does not certify what it could not
+fully observe), then:
+
+```sh
+zig-out/bin/sideeye explore --config sideeye.toml \
+  --shim zig-out/lib/libsideeye_shim.so \
+  --oracle /usr/bin/strace \
+  --json report.json
+```
+
+**3. The gate** — the exit code is the whole integration:
+
+| Exit | Verdict | In CI |
+|---|---|---|
+| 0 | PASS | Green. Read `not_tested` in the report before celebrating — it lists what this run does not claim. |
+| 1 | FAIL | Fail the job. The report's `earliest` object is the counterexample; `replay` is the exact command that reproduces it (shim path included), and the saved case replays with `sideeye replay <case> --shim <lib> [--fresh-state]`. Hand the report to an agent — that loop has been closed end to end, twice (DESIGN §17). |
+| 2 | UNKNOWN | **Fail the job by default.** Sideeye refused to judge and `unknown_reason` says why (see [report-schema.md](report-schema.md)). Treating UNKNOWN as green is how a target quietly leaves the tested set. |
+| 3 | SETUP_ERROR | Fail the job; the define itself did not run. |
+
+The demo workflow inverts the gate (`test "$rc" = 1`) because its target has a
+planted bug — the job proves detection. Your target gates on `= 0`.
+
+## Notes
+
+- The demo toy finds its state through `TOY_STATE`, which sideeye itself
+  exports to its children pointed at the resolved `[world] state` — the
+  workflow supplies nothing extra. Your target locates its state its own way
+  (env, config, hardcoded path); the toml only tells *sideeye* where to watch,
+  and sideeye's children inherit your CI environment.
+- One operation per explore, by design: the report must name one command's
+  crash window, not an average over several.
+- Every field the report carries is documented in
+  [report-schema.md](report-schema.md), and CI holds that page to the
+  generated reports.
