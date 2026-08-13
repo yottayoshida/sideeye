@@ -35,6 +35,11 @@ It breaks worlds, not inputs: same input, hostile universe.
   and the pinned repository — and it fixed that bug. Twice: through the CLI
   plumbing and through the `sideeye mcp` surface, two different models, no
   human translation (DESIGN §17).
+- **The entrance is paved** (v0.6.0): every release now ships prebuilt
+  binaries with the shim, `sideeye demo` reaches a real FAIL report in about
+  a minute with nothing written, and `sideeye preflight` answers "does the
+  recording accept my tool?" before a define exists — see
+  [Getting it](#getting-it).
 
 The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and
 may change in any release.
@@ -73,10 +78,16 @@ never as passing — and the refusal names its detector.
 
 ## Getting it
 
-Releases newer than v0.5.0 attach prebuilt tarballs for x86_64-linux, aarch64-linux
-and aarch64-macos: `sideeye` plus `libsideeye_shim` — the shim travels with the
-binary, it is half the product. Download from
-[Releases](https://github.com/yottayoshida/sideeye/releases), unpack, done.
+Every release from [v0.6.0](https://github.com/yottayoshida/sideeye/releases/tag/v0.6.0)
+on ships prebuilt tarballs for x86_64-linux, aarch64-linux and aarch64-macos:
+`sideeye` plus `libsideeye_shim` — the shim travels with the binary, it is half
+the product. Download from
+[Releases](https://github.com/yottayoshida/sideeye/releases), unpack, done:
+
+```
+$ tar xzf sideeye-v0.6.0-aarch64-macos.tar.gz && cd sideeye-v0.6.0-aarch64-macos
+```
+
 (v0.5.0 and earlier predate the artifacts; build those from source: Zig 0.16.0,
 `zig build`, binaries in `zig-out/bin` and `zig-out/lib`.)
 
