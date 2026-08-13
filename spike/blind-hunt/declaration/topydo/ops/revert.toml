@@ -1,0 +1,14 @@
+# Seal B artifact (ADR 0012): the declared define for topydo `revert`.
+# Invocation shape and exit status observed in a normal run:
+# ../transcripts/normal-runs.txt (and config-verification.txt for the
+# nobackup config). Invariants and their provenance: ../declaration.md.
+# Editing this file after Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind/hunt/revert/state"
+
+[define]
+setup           = "./setup.sh revert"
+operation       = "/usr/local/bin/topydo -t /tmp/blind/hunt/revert/state/todo.txt -d /tmp/blind/hunt/revert/state/done.txt revert"
+check           = "./check.sh revert"
+expected_status = "0"
+marker          = "Reverted to state before:"

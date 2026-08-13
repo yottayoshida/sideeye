@@ -2,6 +2,51 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The topydo declaration, written blind (#83, toward Seal B)
+
+The declaration phase ADR 0012 authorizes: everything the exploration will be
+judged by — invariants, operation inventory, checkers, setups, tomls, the
+runner — written from permitted sources only and frozen in
+`spike/blind-hunt/declaration/topydo/`. The consultations are itemized in the
+ledger; the raw material (help output, doc tiddlers, the todo.txt spec, one
+normal run per subcommand) is committed under `transcripts/` so every
+`source:` line points at something a reader can open.
+
+Shape of the declaration: eleven of the fifteen help-listed subcommands are
+declared (excluded: `edit` interactive; `ls`/`listcon`/`listprojects`
+not-stateful). Six invariants — query survives (I-Q), conservation across the
+file pair (I-C), no duplication for the two cross-file operations (I-D2),
+archive holds only `x `-marked lines (I-F), the backup listing answers after a
+crash (I-B, revert only), and claimed durability via L1 markers where the
+operation prints a past-tense success line (I-M). Severity is pre-registered
+(loss over duplication) so a finding cannot be inflated afterwards.
+
+Decisions worth recording, made while still blind:
+
+- **Backups off for ten operations, on for revert.** The docs say the backup
+  store is rewritten on every modification, and `revert ls` shows its times at
+  second precision — that alone would make the un-killed baseline world
+  irreproducible and refuse every run (`baseline_violates_invariant`, the
+  watson shape) before topydo's behavior was ever measured. The documented
+  `backup_count = 0` switch is the declared config for the ten; revert keeps
+  backups because they are its input. The cost — the backup subsystem's crash
+  surface rides on revert alone — is stated in the declaration instead of
+  being discovered in the report.
+- **Conservation greps the files, not the listing.** A normal run showed
+  `ls -x` omitting a task that had just acquired a dependency; the todo.txt
+  carve-out (the format is normative public documentation) makes the files
+  the honest inventory.
+- **No preflight on the declared defines.** The temptation was real — eleven
+  tomls, why not check they will be accepted? Because acceptance-checking is
+  observation, and tuning the declared set against it is the exact leak Seal B
+  exists to close. The sweep stays the only sideeye↔topydo contact; a refusal
+  at exploration time is #84 data, not a defect. What did get verified without
+  touching the target: all eleven tomls parse (host binary, nonexistent shim,
+  stops at state resolution), and the green side — setup, the verbatim
+  operation string, checker — exits 0 on normal state for all eleven. The
+  checker has still never seen a failure: its red side belongs to sideeye's
+  falsification gate, after the seal.
+
 ## 2026-08-13 — v0.7.0: minor, because the number must predict the case refusals
 
 Version 0.6.0 → 0.7.0, both hand-written strings at once (the unit test holds

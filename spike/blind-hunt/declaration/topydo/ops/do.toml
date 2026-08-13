@@ -1,0 +1,14 @@
+# Seal B artifact (ADR 0012): the declared define for topydo `do`.
+# Invocation shape and exit status observed in a normal run:
+# ../transcripts/normal-runs.txt (and config-verification.txt for the
+# nobackup config). Invariants and their provenance: ../declaration.md.
+# Editing this file after Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind/hunt/do/state"
+
+[define]
+setup           = "./setup.sh do"
+operation       = "/usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/do/state/todo.txt -d /tmp/blind/hunt/do/state/done.txt do 1"
+check           = "./check.sh do"
+expected_status = "0"
+marker          = "Completed:"

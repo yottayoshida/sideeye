@@ -56,3 +56,43 @@ What belongs here:
   `HOME=/tmp/blind/home` exported in the container shell that runs the sweep, so
   no candidate writes into the image's real home. Recorded here because the
   invocations file cannot carry environment.
+
+- **2026-08-14 — declaration-phase consultations (all permitted sources; no traces,
+  no crash experiments, no source, no bug trackers):**
+  - topydo 0.14 README (`raw.githubusercontent.com/topydo/topydo/0.14/README.md`):
+    the "fully todo.txt compliant" claim; the pointer to the TiddlyWiki docs.
+  - topydo 0.14 documentation (`.../0.14/docs/index.html`, TiddlyWiki): tiddlers
+    extracted into `declaration/topydo/transcripts/docs-tiddlers.txt` — Backups
+    (`.todo.bak` beside todo.txt, holds both files, written after each modification),
+    ConfigBackupCount (default 5, "Set to 0 to disable backups"), Archiving
+    ("the completed item is *moved* to done.txt"), revert (backup-matching refusal
+    rule), Configuration (config search order incl. cwd files), per-subcommand
+    pages. **Changelog tiddlers deliberately not extracted** — fixed-bug listings
+    are known-issue reports.
+  - todo.txt format specification (`todotxt/todo.txt` README, followed from the
+    docs' Format tiddler): Complete Tasks rules 1–2. Saved as
+    `transcripts/todotxt-spec.md` (the ADR 0012 todo.txt carve-out's cited spec).
+  - `topydo help`, `topydo -v`, and all fifteen per-subcommand helps, inside the
+    pinned container: `transcripts/help.txt`, `transcripts/help-subcommands.txt`.
+  - One normal (non-crash) run of each of the eleven declared write subcommands:
+    `transcripts/normal-runs.txt`. Facts taken: every declared shape exits 0
+    without interaction; numbering is insertion order; `do` writes
+    `x <date> <date> <text>` into done.txt; `revert ls` prints times at second
+    precision; `ls -x` does not list a task that acquired a dependency (so the
+    declared checkers grep the files, not the listing); a post-subcommand `-C`
+    is not recognized (not used anywhere declared).
+- **2026-08-14 — config choice (declared, one deviation from defaults):**
+  `backup_count = 0` for the ten non-revert operations (`ops/nobackup.conf`).
+  Reason: the backup store's second-precision times would make sideeye's
+  un-killed baseline world irreproducible byte-for-byte, refusing every run as
+  `baseline_violates_invariant` for the timestamp alone (the watson precedent).
+  revert keeps backups — they are its input. Cost stated in `declaration.md`:
+  the backup subsystem's crash surface is probed only through revert.
+- **2026-08-14 — green-side validation (normal state only, wrapper never saw a
+  failure):** for each declared operation — `setup.sh`, the toml's operation
+  string verbatim, then `check.sh` — all eleven exit 0, `.todo.bak` absent for
+  the ten configured ops and present for revert: `transcripts/config-verification.txt`.
+  Toml parse validation ran on the host sideeye binary with a nonexistent shim:
+  all eleven parse and stop at state resolution (exit 3) — **no topydo execution**.
+  The sweep remains the only sideeye↔topydo contact before Seal B; `sideeye
+  preflight` was not run on any declared define.
