@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-13
+
+The PASS-side soundness release: no descriptor number is exempt from observation (trace contract v8), and a target whose success convention is a non-zero exit status is declarable (`--expect-status`, case schema v2). Saved v7 cases refuse honestly as a contract mismatch and must be re-recorded.
+
 ### Added
 
 - `--expect-status <n>` / `expected_status = "<n>"` (#3, ADR 0014): declare the exit status that means the operation completed, for targets with git-style status conventions — previously refused on every invocation with no way to opt out. One declared value governs every un-killed run of the operation (the recording run and the baseline world; a status mismatch names both the expected and the actual status, and a signal death is reported as such — it has no exit status to name), killed worlds still require the kill signal itself (`_exit(137)` is an exit, never a SIGKILL), preflight accepts the declaration and carries it in its graduation hint, and the report gains an always-present `expected_status` field so a PASS over a non-zero convention is machine-distinguishable. Saved cases freeze the declaration as case schema v2; v1 cases keep replaying (absent means 0).
