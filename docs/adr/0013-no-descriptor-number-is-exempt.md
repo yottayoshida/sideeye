@@ -1,6 +1,6 @@
 # ADR 0013 — No descriptor number is exempt, and "could not tell" is not "not ours"
 
-- **Status:** Proposed (flips to Accepted when the implementing PR merges)
+- **Status:** Accepted (2026-08-13; the implementing pull request merged as contract v8)
 - **Supersedes:** the fd-number exemptions that shipped with v0.1's shim (`fd <= 2`
   and the trace-fd comparison in `noteFd`); tightens ADR 0003's fd-addressed
   observation

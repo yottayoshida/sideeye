@@ -59,6 +59,10 @@ const Args = struct {
     json: ?[]const u8 = null,
     config: ?[]const u8 = null,
     marker: ?[]const u8 = null,
+    /// The exit status that means the operation completed (ADR 0014). Null means
+    /// "not declared", which behaves as 0 — kept apart from an explicit 0 so the
+    /// preflight hint and the saved case can carry exactly what the caller said.
+    expect_status: ?u8 = null,
 };
 
 /// A saved counterexample (ADR 0009): the resolved define it was found against, the
@@ -76,6 +80,9 @@ const ReplayCase = struct {
         operation: []const u8,
         check: ?[]const u8 = null,
         marker: ?[]const u8 = null,
+        // Absent in a case_version 1 file; absent means "exit 0 was the contract",
+        // which is exactly what every v1 case was recorded under (ADR 0014).
+        expected_status: ?u8 = null,
     },
     k: u32,
     ops_total: u32,
@@ -133,6 +140,9 @@ var boundary_note: []const u8 = "single process";
 var crash_points: u32 = 0;
 var explored: u32 = 0;
 var violations: u32 = 0;
+/// The declared success status in effect (default 0), mirrored into every report so a
+/// PASS over a non-zero convention is machine-auditable (ADR 0014).
+var expected_status_val: u8 = 0;
 
 fn usage() void {
     say(
@@ -140,8 +150,8 @@ fn usage() void {
         \\
         \\usage:
         \\  sideeye demo [--shim <lib>]
-        \\  sideeye preflight --state <dir> --operation <cmd> --shim <lib> [--setup <cmd>] [--oracle <strace>] [--work <dir>]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--shim <lib>] [--work <dir>]
+        \\  sideeye preflight --state <dir> --operation <cmd> --shim <lib> [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--expect-status <n>] [--shim <lib>] [--work <dir>]
         \\  sideeye replay <case.json> --shim <lib> [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>]
         \\  sideeye version
         \\
@@ -169,6 +179,9 @@ fn usage() void {
         \\  --state      directory whose contents define the target's state
         \\  --setup      command that produces the initial state (run once)
         \\  --operation  command to explore; killed before each operation that can change state
+        \\  --expect-status  the exit status that means the operation completed (0..255,
+        \\               default 0). Governs the recording run and the un-killed baseline
+        \\               world alike; killed worlds still require the kill signal itself
         \\  --shim       path to libsideeye_shim.so
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
         \\  --oracle     path to strace; the recording run is compared against it
@@ -191,9 +204,10 @@ fn usage() void {
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\
-        \\--operation must exit 0 when it is not being killed. The crash points are read
-        \\off that run, so a target that fails partway through would be explored against
-        \\a sequence it never performs; v0.1 reports UNKNOWN rather than guess.
+        \\--operation must exit its declared success status when it is not being killed
+        \\(--expect-status, default 0). The crash points are read off the recording run,
+        \\so a target that fails partway through would be explored against a sequence it
+        \\never performs; v0.1 reports UNKNOWN rather than guess.
         \\
     , .{ version, contract.contract_version });
 }
@@ -211,12 +225,13 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
         \\atomicity   {s}
         \\l1          {s}
         \\case        {s}
+        \\expected    exit {d}
         \\not tested  {s}
         \\
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ reason.name(), detail, l0_note, l1_note, case_note, notTestedText() });
+    , .{ reason.name(), detail, l0_note, l1_note, case_note, expected_status_val, notTestedText() });
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -343,6 +358,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
         else if (std.mem.eql(u8, argv[i], "--check")) args.check = v
         else if (std.mem.eql(u8, argv[i], "--marker")) args.marker = v
+        else if (std.mem.eql(u8, argv[i], "--expect-status")) {
+            args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
+            // Mirrored immediately: a refusal between here and the canonical binding
+            // below must not report the declaration as 0 (R1 finding).
+            expected_status_val = args.expect_status.?;
+        }
         else if (std.mem.eql(u8, argv[i], "--config")) args.config = v
         else if (std.mem.eql(u8, argv[i], "--json")) {
             // Rejected before the removeFile below: a rejection that had already deleted
@@ -376,7 +397,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var only_k: ?u32 = null;
     if (mode == .replay) {
         if (args.state != null or args.setup != null or args.operation != null or
-            args.check != null or args.marker != null or args.config != null)
+            args.check != null or args.marker != null or args.expect_status != null or
+            args.config != null)
             setupError("replay takes its define from the case file; the define-surface flags and --config do not apply");
         const rarena = arena_state.allocator();
         const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024) orelse setupError(
@@ -387,20 +409,37 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const c = parsed.value;
         if (!std.mem.eql(u8, c.schema, "sideeye/case"))
             setupError("the file does not declare itself a sideeye case");
-        if (c.case_version != 1)
-            setupError("this binary understands case schema version 1 only");
-        if (c.contract_version != contract.contract_version)
-            unknown(.case_no_longer_applies, "the case was recorded under a different trace contract; the crash-point numbering does not carry over");
+        if (c.case_version != 1 and c.case_version != 2)
+            setupError("this binary understands case schema versions 1 and 2 only");
+        // The version and the declaration travel together (ADR 0014): a v1 file
+        // carrying a declaration is not a v1 file, and a v2 file without one has
+        // lost the very fact the version exists to freeze. Both are refused as
+        // malformed rather than read under a guessed contract (R1 finding). One
+        // deliberate softness: a JSON `null` is indistinguishable from an absent
+        // field after parsing, so a v1 file spelling `"expected_status": null`
+        // passes — null is not a declaration, and the meaning ("0 was the
+        // contract") is the same either way. A v2 `null` refuses like an absence.
+        if (c.case_version == 1 and c.define.expected_status != null)
+            setupError("a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
+        if (c.case_version == 2 and c.define.expected_status == null)
+            setupError("a case_version 2 file must carry define.expected_status; the case freezes the declaration");
         args.state = c.define.state;
         args.setup = c.define.setup;
         args.operation = c.define.operation;
         args.check = c.define.check;
         args.marker = c.define.marker;
+        args.expect_status = c.define.expected_status;
+        // Mirrored into the report before any refusal below can fire: a contract
+        // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
+        expected_status_val = c.define.expected_status orelse 0;
         replay_case = c;
         only_k = c.k;
         // From here on, every verdict — including a refusal — names the case it is
-        // about, in text and JSON alike.
+        // about, in text and JSON alike. Set before the contract gate so the one
+        // refusal this block raises names it too.
         case_note = case_arg.?;
+        if (c.contract_version != contract.contract_version)
+            unknown(.case_no_longer_applies, "the case was recorded under a different trace contract; the crash-point numbering does not carry over");
         // --fresh-state (#69) is honoured further down, on state_abs — the guard in
         // front of the deletion is lexical, and only the realpath'd spelling makes
         // it mean anything. Nothing destructive happens in this block.
@@ -410,8 +449,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
     if (args.config) |cfg_path| {
-        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null)
-            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker) are mutually exclusive: the define lives in one place or the other");
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null)
+            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         const text = readFileAlloc(arena, cfg_path) orelse setupError(
             std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
@@ -433,6 +472,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 args.operation = resolveCommandAgainst(arena, dir, d.operation);
                 args.check = if (d.check) |c| resolveCommandAgainst(arena, dir, c) else null;
                 args.marker = d.marker;
+                if (d.expected_status) |es| {
+                    args.expect_status = parseExpectStatus(es, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
+                    // Same mirror as the flag: refusals between here and the
+                    // canonical binding must report the declaration that was read.
+                    expected_status_val = args.expect_status.?;
+                }
             },
             .fault => |f| {
                 const msg = if (f.line == 0)
@@ -447,6 +492,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const state = args.state orelse setupError("--state is required");
     const operation = args.operation orelse setupError("--operation is required");
     const shim = args.shim orelse setupError("--shim is required in v0.1");
+    // One declared value, resolved once, governs every un-killed run of the operation:
+    // the recording run and the baseline world are the same command over the same
+    // state, so they answer to the same success status (ADR 0014). Killed worlds are
+    // untouched — a SIGKILL death is a signal, not an exit status, and the two never
+    // substitute for each other.
+    const expect_status: u8 = args.expect_status orelse 0;
+    expected_status_val = expect_status;
     if (args.marker) |m| {
         if (m.len == 0) setupError("the marker is empty");
         if (m.len >= 4096) setupError("the marker is unreasonably long (>= 4 KiB)");
@@ -638,8 +690,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // never finishes. `--setup` was already checked here; the operation is the one whose
     // result the entire trace depends on.
     switch (rec_term) {
-        .exited => |code| if (code != 0)
-            unknown(.recording_run_failed, "the operation exited non-zero during the recording run, so the crash points derived from it describe an execution that did not happen"),
+        .exited => |code| if (code != expect_status)
+            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run"),
         else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run"),
     }
 
@@ -868,19 +920,20 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // report says so by name. This exit is unconditional; no explore/replay code below
     // is reachable in preflight mode.
     if (mode == .preflight)
-        preflightReport(arena, n, state, args.setup, operation, shim, args.oracle);
+        preflightReport(arena, n, state, args.setup, operation, shim, args.oracle, args.expect_status);
 
     if (n == 0) {
         requireCompleteness(args.oracle != null, args.allow_unverified);
         say(
             \\PASS  the operation performed nothing that can change the state directory
             \\      explored 0 crash points; nothing to kill before
+            \\      expected status: {d}
             \\      atomicity: {s}
             \\      l1: {s}
             \\      case: {s}
             \\      not tested: {s}
             \\
-        , .{ l0_note, l1_note, case_note, notTestedText() });
+        , .{ expected_status_val, l0_note, l1_note, case_note, notTestedText() });
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
@@ -988,11 +1041,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // The baseline world is not killed, so nothing above inspects it — which is
         // exactly the discarded-exit-status defect that was just fixed for the recording
         // run. It is the same command over the same state, and the recording run was
-        // required to exit 0; a different outcome here means the restored state is not
-        // the state that was recorded, and every other world started from it too.
+        // required to exit the declared success status; a different outcome here means
+        // the restored state is not the state that was recorded, and every other world
+        // started from it too.
         if (k > n) switch (term) {
-            .exited => |code| if (code != 0)
-                unknown(.baseline_run_failed, "the un-killed baseline world exited non-zero although the recording run of the same command succeeded: the restored state differs from the recorded one"),
+            .exited => |code| if (code != expect_status)
+                unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status"),
             else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally"),
         };
 
@@ -1164,6 +1218,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\path        {s}
             \\observed    {s}
             \\explored    {d} worlds (crash points {d} + 1 baseline)
+            \\expected    exit {d}
             \\atomicity   {s}
             \\oracle      {s}
             \\checker     {s}
@@ -1184,6 +1239,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             path_shown,
             what,
             explored,   n,
+            expected_status_val,
             l0_note,
             oracle_note,
             checker_note,
@@ -1212,6 +1268,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     say(
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant
         \\      explored {d} worlds (crash points {d} + 1 baseline)
+        \\      expected status: {d}
         \\      atomicity: {s}
         \\      oracle: {s}
         \\      checker: {s}
@@ -1220,7 +1277,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, l0_note, oracle_note, checker_note, l1_note, case_note, boundary_note, notTestedText() });
+    , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, checker_note, l1_note, case_note, boundary_note, notTestedText() });
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -1235,6 +1292,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
 ///
 /// The cost is that arguments cannot contain spaces. v0.1 accepts that limit rather
 /// than growing a quoting parser; a proper argv-taking interface is the real fix.
+/// "0".."255", nothing else. One parser serves the flag and the config key, so the
+/// two spellings of the same declaration cannot drift into accepting different
+/// grammars — the value they produce governs the recording check, the baseline
+/// world, the saved case, and the report alike (ADR 0014).
+fn parseExpectStatus(s: []const u8, msg: []const u8) u8 {
+    if (s.len == 0 or s.len > 3) setupError(msg);
+    var v: u32 = 0;
+    for (s) |ch| {
+        if (ch < '0' or ch > '9') setupError(msg);
+        v = v * 10 + (ch - '0');
+    }
+    if (v > 255) setupError(msg);
+    return @intCast(v);
+}
+
 fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
     var list: std.ArrayList([]const u8) = .empty;
     var it = std.mem.tokenizeScalar(u8, cmd, ' ');
@@ -1252,7 +1324,7 @@ fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
 /// behavior, checker falsification) have not run, and the fixed `not checked` list
 /// names them. The acceptance suite pins this wording — the claim cannot quietly grow
 /// back into one this command does not earn.
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8) noreturn {
     if (n == 0) {
         say("PREFLIGHT  recording accepted, but nothing to explore — 0 state-changing operations observed\n\n", .{});
     } else {
@@ -1282,16 +1354,23 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         " --oracle <strace>";
     // The hint carries the define that was actually accepted — dropping --setup here
     // would hand the reader a silently different define than the one preflight ran
-    // (R1 finding; acceptance check 6 pins its presence).
+    // (R1 finding; acceptance check 6 pins its presence). --expect-status rides the
+    // same rule: preflight accepted the recording *under that status*, and a hint
+    // without it would hand explore a define that refuses the very run preflight
+    // just blessed (the known defect class where a hint carries a different define).
     const setup_part = if (setup) |s|
         std.fmt.allocPrint(arena, " --setup \"{s}\"", .{s}) catch " --setup <cmd>"
     else
         "";
+    const expect_part = if (expect_status) |es|
+        std.fmt.allocPrint(arena, " --expect-status {d}", .{es}) catch " --expect-status <n>"
+    else
+        "";
     say(
-        \\next         sideeye explore --state {s}{s} --operation "{s}" \
+        \\next         sideeye explore --state {s}{s} --operation "{s}"{s} \
         \\               --check <your-invariant.sh> --shim {s}{s}
         \\
-    , .{ state, setup_part, operation, shim, oracle_part });
+    , .{ state, setup_part, operation, expect_part, shim, oracle_part });
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -1743,6 +1822,10 @@ fn buildJson(
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{explored}));
     try w.appendSlice(arena, ",\n  \"violations\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{violations}));
+    // Always present, even at the default: a PASS over a target whose success status
+    // is 3 must be distinguishable, by machine, from a PASS that required 0.
+    try w.appendSlice(arena, ",\n  \"expected_status\": ");
+    try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{expected_status_val}));
 
     if (unknown_reason) |r| {
         try w.appendSlice(arena, ",\n  \"unknown_reason\": ");
@@ -1950,7 +2033,7 @@ fn writeCase(
     var doc: std.ArrayList(u8) = .empty;
     const w = &doc;
     var nb: [16]u8 = undefined;
-    w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": 1,\n  \"sideeye_version\": ") catch return null;
+    w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": 2,\n  \"sideeye_version\": ") catch return null;
     jsonString(w, arena, version) catch return null;
     w.appendSlice(arena, ",\n  \"contract_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}) catch return null) catch return null;
@@ -1970,6 +2053,11 @@ fn writeCase(
         w.appendSlice(arena, ",\n    \"marker\": ") catch return null;
         jsonString(w, arena, m) catch return null;
     }
+    // Written even at the default (case_version 2): a case is a frozen contract, and
+    // "0 because nothing was declared" and "0 by declaration" must replay identically
+    // years later without consulting anything outside the file.
+    w.appendSlice(arena, ",\n    \"expected_status\": ") catch return null;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{args.expect_status orelse 0}) catch return null) catch return null;
     w.appendSlice(arena, "\n  },\n  \"k\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{k}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"ops_total\": ") catch return null;

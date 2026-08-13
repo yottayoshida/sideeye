@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `--expect-status <n>` / `expected_status = "<n>"` (#3, ADR 0014): declare the exit status that means the operation completed, for targets with git-style status conventions — previously refused on every invocation with no way to opt out. One declared value governs every un-killed run of the operation (the recording run and the baseline world; a status mismatch names both the expected and the actual status, and a signal death is reported as such — it has no exit status to name), killed worlds still require the kill signal itself (`_exit(137)` is an exit, never a SIGKILL), preflight accepts the declaration and carries it in its graduation hint, and the report gains an always-present `expected_status` field so a PASS over a non-zero convention is machine-distinguishable. Saved cases freeze the declaration as case schema v2; v1 cases keep replaying (absent means 0).
+
 ### Changed
 
 - Trace contract v8 (#4): no descriptor number is exempt from observation. The shim previously skipped fd 0/1/2 (and its own trace fd) unconditionally — a target that `dup2`'d a state file onto a standard descriptor wrote invisibly, measured as a false PASS on the oracle-less path (with the oracle, the second witness already refused). Every fd-addressed operation now resolves the descriptor's actual location, fd resolution is three-valued (a proven socket/pipe/device is out of scope; a path query that fails on a real file records `unresolved` and the run refuses; `st_nlink == 0` finally marks open-but-unlinked files on macOS), and saved v7 cases refuse honestly as a contract mismatch. (ADR 0013)

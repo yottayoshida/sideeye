@@ -58,9 +58,12 @@ may change in any release.
 Sideeye refuses to guess. A target outside these limits is reported UNKNOWN (exit 2),
 never as passing — and the refusal names its detector.
 
-- **Exit zero during the recording run.** The crash points are read off that run, so a
-  target that fails partway through would have Sideeye explore a sequence it never
-  performs. There is no way yet to declare a different expected status.
+- **Exit its declared success status during the recording run** — 0 unless
+  `--expect-status <n>` (or `expected_status = "<n>"` in the toml) says otherwise, for
+  targets with git-style status conventions. The crash points are read off that run, so
+  a target that fails partway through would have Sideeye explore a sequence it never
+  performs; the un-killed baseline world is held to the same status, and the report
+  records which status a PASS was allowed to require.
 - **Be dynamically linked and single-threaded**, and reach its files through libc —
   which includes buffered stdio (observed at flush granularity) and the hard-link
   family (`link`/`linkat`). Raw syscalls (a Rust target pulling in `rustix`, say),
@@ -195,6 +198,8 @@ check     = "./check.sh"        # exit 0 = invariant holds, run after crash + re
 marker    = "Recorded"          # optional: the operation's own success claim (L1) —
                                 # in worlds where it reached stdout before the kill,
                                 # the new state must survive
+expected_status = "3"           # optional: the exit status that means the operation
+                                # completed (default "0") — git-style conventions
 ```
 
 A FAIL saves its counterexample to `<work>/cases/NNNNNN.json` and prints the
@@ -206,7 +211,7 @@ shifted address.
 The parser accepts exactly this shape and refuses everything else with the offending
 line named — an ignored key would be a declared invariant that silently never fires.
 `--config` is mutually exclusive with the define-surface flags
-(`--state`/`--setup`/`--operation`/`--check`); operational flags (`--shim`,
+(`--state`/`--setup`/`--operation`/`--check`/`--marker`/`--expect-status`); operational flags (`--shim`,
 `--oracle`, `--work`, `--json`, `--allow-unverified`) stay flags and combine with it.
 Command strings split on spaces — no quoting; anything an argument cannot spell
 belongs in a script file (ADR 0007).

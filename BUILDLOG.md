@@ -2,6 +2,77 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-13 — expected_status: the fifth define key, spent against §12's budget sentence (#3)
+
+The recording run and the baseline world both demanded exit 0, which made every
+git-convention target unjudgeable — refused on sight, no opt-out
+(`--allow-unverified` weakens completeness, not the success convention). The fix
+is one declared value with two spellings (`--expect-status 3` /
+`expected_status = "3"`), one shared digit parser so the spellings cannot drift,
+and one meaning: *un-killed runs of the operation must exit N.* That sentence is
+the answer to #3's own worry ("one flag governing two checks with different
+meanings") — the recording run and the baseline are the same command over the
+same state, so they were always one check wearing two names.
+
+The wiring is the work, not the comparison: the flag, the toml key, the
+`--config` exclusivity list, replay's define-surface rejection list, the saved
+case (schema v2 — the declaration is written even at the default, because a case
+must replay identically years later without consulting anything outside the
+file; v1 cases read as "0 was the contract"), preflight (accepts it, and the
+graduation hint carries it — a hint without it would hand explore a define that
+refuses the recording preflight just blessed, the known hint-drops-the-define
+class), MCP (rides for free: the server self-execs through `--config` and the
+case file), and the report (`expected_status`, always present, so a PASS over a
+non-zero convention is machine-distinguishable from one that required 0).
+
+Measured on macOS first, then pinned in the container as acceptance check 8
+(nine legs): undeclared exit-3 refuses naming both statuses; declared-3 explores
+5 worlds with the baseline held to 3; declared-2 refuses naming 3 and 2; the
+toml spelling explores and the JSON report carries the field; 256/-1/abc refuse
+in both spellings; preflight accepts, carries, and refuses without; the case
+round-trips at v2 with the field frozen; a real case stripped to v1 replays
+(absent means 0); and `_exit(137)` under `--expect-status 137` explores in full
+— an exit status is not a SIGKILL, and every killed world still dies by the
+signal. The baseline-forgot-the-declaration mutant (comparing against 0 again)
+died loudly in three legs at once, with a diagnostic that read "exited 137 where
+137 was expected" — the mutant's own fingerprint, since the message printed the
+declared value while the comparison ignored it.
+
+DESIGN §12's sentence — "If Define ever needs more than this, that is movement
+toward the kill criteria in §18, and we should notice" — is quoted and answered
+in ADR 0014 rather than silently outgrown: `expected_status` is a fact about the
+operation, not a new verb, and the sentence now records that it has been faced
+twice (marker, ADR 0008; this, ADR 0014).
+
+The blind review round returned three real holes and four loose claims, all
+taken. The version and the field did not travel together — a v1 case carrying
+`expected_status` and a v2 case missing it were both read under a guessed
+contract; both now refuse as malformed. The report mirror was set too late: a
+refusal *after* the declaration was read (a status-3 case dying at the contract
+gate) said `expected_status: 0` — the mirror now sets at each source the moment
+it resolves, and reordering the replay block also fixed a pre-existing wart
+where a contract-mismatch refusal did not name its case. And the field lived in
+the JSON only, against DESIGN §13's text/JSON parity — the three verdict text
+forms now carry it (`expected status: 3` / `expected    exit 3`), pinned by
+grep in three legs. The loose claims: the help tail still demanded exit 0 two
+paragraphs under the flag that says otherwise; the README's "exactly this
+shape" toml omitted the new key and the exclusivity list omitted the new flag;
+"diagnostics always name both statuses" overclaimed what a signal death can
+name; and the mismatch message blamed `--expect-status` even when the value
+came from the toml or the default.
+
+R2 held five of the seven closed and sent two back for a second pass, both
+finished here: the zero-operation PASS — a fourth verdict emitter the parity
+fix had missed — now carries the status line (and its acceptance leg greps for
+it), and the shape gates' claim was honest only for numbers, because a JSON
+`null` is indistinguishable from an absent field after parsing. A v2 `null`
+refuses like an absence (pinned in the leg); a v1 `"expected_status": null`
+passes deliberately — null is not a declaration and the meaning is the same —
+and the gate's message now says "declaration", not "field". One R2 remark is
+left as-is on purpose: SETUP_ERROR's text form is a single line by original
+design and carries none of the classification fields the JSON does; adding
+this one there would be inventing a parity the form never had.
+
 ## 2026-08-13 — Contract v8: no descriptor number is exempt, and "could not tell" stops passing as "not ours" (#4)
 
 Measured first, on the pre-fix binary, with the new `TOY_DUP2` toy (state writes
