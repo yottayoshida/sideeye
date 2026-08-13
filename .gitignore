@@ -7,3 +7,7 @@ zig-out/
 # Spike artifacts: toys are rebuilt inside the container, runs are throwaway
 spike/out/
 spike/runs/
+
+# Blind-hunt sealed sweep output (ADR 0012): the full preflight reports stay local and
+# unread until Seal B; only their hashes travel in the committed manifest
+spike/blind-hunt/artifacts/

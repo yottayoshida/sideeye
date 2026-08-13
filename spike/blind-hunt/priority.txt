@@ -1,0 +1,7 @@
+# Sealed priority order (ADR 0012, Seal A). select.sh walks this file top to bottom.
+# Appending, reordering, or deleting after Seal A voids the campaign.
+topydo
+khard
+abook
+khal
+hledger
