@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 8,
+  "verdict": "UNKNOWN",
+  "exit_code": 2,
+  "crash_points": 0,
+  "explored": 0,
+  "violations": 0,
+  "expected_status": 0,
+  "unknown_reason": "child_process_detected",
+  "message": "the target replaced its own image (exec); the crash-point addresses do not survive an image change",
+  "l0": "5 file(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "not run (no --oracle given)",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

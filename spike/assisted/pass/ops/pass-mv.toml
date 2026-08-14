@@ -1,0 +1,11 @@
+# Assisted run (#118), pass P1: move an entry into a subdirectory (same
+# gpg-id, no git). Property and provenance: ../proposals.md. Determinism over
+# the same pre-state: measured tree-byte-identical (scout probe).
+[world]
+state = "/tmp/assisted/pass/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "/usr/bin/pass mv ada moved/ada"
+check           = "./check.sh"
+expected_status = "0"
