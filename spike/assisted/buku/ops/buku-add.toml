@@ -1,0 +1,11 @@
+# Assisted run (#118), buku P1: add a bookmark over a store holding one
+# bystander. Property and provenance: ../proposals.md. Determinism over the
+# same pre-state: measured byte-identical (scout probe).
+[world]
+state = "/tmp/assisted/buku/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "/usr/bin/buku --nostdin --np --tacit --add https://example.com/x ada --title AdaMark"
+check           = "./check.sh"
+expected_status = "0"
