@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The misfire went upstream (topydo#341), and a red check got merged over (#83)
+
+Two things to record, one good and one not.
+
+The recovery misfire was filed upstream as `topydo/topydo#341`, with the text
+approved verbatim beforehand: observation, a plain-printf reproduction (verified
+in the container before the text was shown for approval), conditions, risk, a
+confirmation request. No fix proposal, no tooling named, #318 referenced as
+related context. The crash-window destruction itself was deliberately not
+re-reported — #318 already covers that phenomenon, and a duplicate adds noise,
+not information.
+
+The process slip: the ledger entry recording that filing went in as PR #103,
+and PR #103's `buildlog` check **failed — correctly** (it changes `spike/`
+without touching this file; that is exactly the contract in CLAUDE.md) — yet
+the PR got merged anyway. The merge command was chained after the check
+*display* in one invocation, and a display exits 0 whether the checks passed
+or not. This is the third occurrence of the same fused-chain class (#51: watch
+exits 0 before checks register; #61: rollup query and merge in one command;
+now #103: an until-loop that waited for "not pending" but gated nothing on
+pass/fail). The structural fix this repo's discipline demands: **merge is its
+own invocation, issued only after reading the pass/fail column** — never
+appended to the command that prints it. This entry is also the BUILDLOG entry
+PR #103 should have carried.
+
 ## 2026-08-14 — The novelty check: the phenomenon was known, the recovery misfire was not (#83)
 
 The bug-tracker restriction was lifted as its own recorded step (ledger: fourteen
