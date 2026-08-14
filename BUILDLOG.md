@@ -56,12 +56,21 @@ R1 (external review, covenant-instructed; it complied — no burn) then bent
 the declaration in four places, all recorded in the ledger:
 
 - **The parse validation had measured the wrong binary.** "All tomls parse"
-  was run against the host's v0.7.0 sideeye — but this branch bases on the
+  was run against the host's v0.7.0 sideeye — but this branch based on the
   Seal A merge, which predates `expected_status`. The sealed revision would
   reject every toml. The green run that was supposed to protect the seal was
   itself the measured-a-different-path shape this workspace keeps meeting.
-  How the base resolves (rebase onto v0.7.0 vs dropping the key) is a
-  campaign-evidence decision, taken to the PR, not made silently here.
+  **Resolved, with the decision on record**: the branch was rebased onto the
+  v0.7.0 merge (`a21b093`) — every Seal A artifact is byte-identical between
+  the two anchors and the criterion wording did not move (PRD untouched;
+  DESIGN's two new lines are the §12 define-key note), so verify-seals runs
+  with A=`a21b093` and every leg stays mechanical. The alternative — keeping
+  the old base and dropping the key — would have sent the exploration out on
+  an engine whose PASS-side soundness bugs v8 had just fixed, and recorded a
+  case the current contract refuses (#82's hole, re-dug). Because the engine
+  moved, the sweep was re-run once, recorded (ledger): identical invocations
+  by hash, identical verdicts, topydo again — and the superseded manifest
+  stays committed beside the new one.
 - **The backup-refusal certainty was an overclaim.** Normal runs only show
   that `revert ls` prints second-precision times; whether backups-on would
   actually refuse the baseline is deliberately unmeasured. Downgraded to a

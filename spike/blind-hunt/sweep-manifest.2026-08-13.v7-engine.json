@@ -1,0 +1,11 @@
+{
+  "schema": "sideeye/blind-hunt-sweep",
+  "invocations_sha256": "89f8f3253758e2f71af8d8d65153180a59f28a930b8e4a84a824fa0258307759",
+  "candidates": [
+    {"name": "topydo", "exit": 0, "resolved": "yes", "report_sha256": "8000b269be9175abde285215ea360ecde613c3eeda24d0ac82c51322007d41a1"},
+    {"name": "khard", "exit": 0, "resolved": "yes", "report_sha256": "a482e12f7bdea91cd3887a457f87286096131ea51870dc9480d0c1145fed89b6"},
+    {"name": "abook", "exit": 0, "resolved": "yes", "report_sha256": "a3a25491aa3cb0988c760eaf187b0928844cc58ee64e2cd6e97c1b8e6f6f2e03"},
+    {"name": "khal", "exit": 0, "resolved": "yes", "report_sha256": "bd0060ad2133bb3299dd9b274e1331a5c02c812fec2a4d21ec5c21a41728af10"},
+    {"name": "hledger", "exit": 2, "resolved": "yes", "report_sha256": "4e3c75473b8710948d24d8bde0290401a4a1472b432cd1935c9e4366f8c30d12"}
+  ]
+}

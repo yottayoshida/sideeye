@@ -151,3 +151,25 @@ What belongs here:
     the target's own docs treat as a normal scenario.
   - The topydo 0.14 README consulted at declaration time is now committed as
     `transcripts/topydo-readme.md` (it was cited but not reproduced).
+- **2026-08-14 — base resolution and the recorded re-sweep (the R1 base finding
+  above, resolved).** The campaign branch was rebased from the Seal A merge
+  (`217ec4f`, 16:51) onto the v0.7.0 merge (`a21b093`, 20:39 the same day), so the
+  sealed revision carries the engine the exploration must run — contract v8, whose
+  changes over v7 are PASS-side soundness fixes — and the `expected_status` schema
+  the declaration uses. Verifiable basis: every Seal A artifact is byte-identical
+  between the two anchors (`git diff 217ec4f a21b093 -- spike/blind-hunt/` is
+  empty), PRD.md is untouched, and DESIGN.md differs by two lines in the §12
+  define-key note — the §17/§18 criterion wording the campaign is scored against
+  did not move. verify-seals is run with A=`a21b093`; the true chronology stays
+  this ledger's: procedure sealed and pushed at `217ec4f`, first sweep 17:05–17:06
+  on the v7-era engine, rebase and everything after on 2026-08-14.
+  **Because the engine moved, the sweep was re-run once, recorded**: same
+  committed `invocations.tsv` (the manifest's hash is unchanged —
+  `89f8f325…`), fresh container, engine `sideeye 0.7.0 (trace contract v8)`.
+  Verdicts were identical to the first sweep: topydo/khard/abook/khal exit 0,
+  hledger exit 2 (reason still sealed, still unread). `select.sh` recomputed:
+  **topydo**. The first sweep's manifest stays committed beside the new one
+  (`sweep-manifest.2026-08-13.v7-engine.json`); both sets of sealed reports are
+  retained under `artifacts/` (`sealed-reports/` and `resweep-v8/sealed-reports/`),
+  none read. This is the ADR 0012 recorded re-run shape: nothing tuned, nothing
+  selected by exit codes — the same spelling, a newer engine, the same answer.
