@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The novelty check: the phenomenon was known, the recovery misfire was not (#83)
+
+The bug-tracker restriction was lifted as its own recorded step (ledger: fourteen
+search terms over title+body, comments-inclusive passes for the revert terms, a
+positive control proving the instrument can see what it looks for, full bodies
+read for the three candidates). The answer split the campaign's result in half:
+
+- `topydo/topydo#318` — open since 2023-10, zero comments — already reports the
+  active list being destroyed by an interrupted write (disk full there, SIGKILL
+  here; same failure surface). The reporter had not read the code; there is no
+  mechanism and no reproducer. So the blind search's headline finding is real but
+  **not novel as a phenomenon** — what this campaign adds is the deterministic
+  window and a case that replays in a pinned container.
+- The recovery misfire — plain `revert` after a crash undoing an *older* command
+  and deleting data the crash left intact, on documentation that contradicts
+  itself about the matching rule — appears **nowhere in the tracker**. Novel as
+  far as the recorded search sees; also the one finding that came from post-seal
+  human analysis rather than the blind search.
+
+The uncomfortable consequence, written into the PRD status rather than smoothed
+over: **no single finding currently holds "found by Sideeye" and "novel" at
+once.** The automated find is known upstream; the novel find is human analysis.
+Whether the recovery misfire still counts as "found by Sideeye" (its FAILs are
+what pointed the analysis there) is the author's judgement, not this file's.
+
 ## 2026-08-14 — The blind hunt ran: twelve of thirteen operations produced a counterexample (#83)
 
 Seal B merged as `5a034aff`, and the exploration ran from that commit in a clean
