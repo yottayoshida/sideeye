@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Campaign 2 between the seals: khard, by the sealed predicate (#83)
+
+The sweep ran once against the re-sealed apparatus (Seal A = the #107 merge,
+`8878df82`), through the phase driver, and displayed what the harness contract
+allows: **khard 0 / abook 0 / khal 0 / hledger 2** — the refusal reason sealed
+and unread, as it has been since campaign 1. `select.sh` over the committed
+manifest recomputed **khard**: first in the sealed order, accepted, in-image.
+With the config/invocation contradiction fixed, khard's verdict returned to
+campaign 1's public value — consistent with the voided sweep's refusal having
+been our apparatus, and nothing stronger than consistency is claimed.
+
+The attempt also bought one more driver fix, live: with the docker daemon
+stopped, `image_id`'s die was swallowed by the command substitution and an
+**empty image name reached `docker run`**. Both call sites now stop the driver
+(`|| exit 2`), red-measured against an unreachable DOCKER_HOST — the driver
+dies naming the image, runs no container, creates no outdir. The rehearsal
+cannot unplug docker, so this red lives in the PR record, not a drill; said
+here rather than implied. (And this entry itself exists because the buildlog
+CI check went red on the sweep PR — the same check that PR #103 was merged
+over; this time it was read before the merge.)
+
+Next, deliberately in its own session: the khard declaration — inventory,
+invariants with provenance, the recovery-path rule's full form enumeration,
+and Seal B. The pre-registered risk stands: per-entry random filenames may
+refuse the byte-reproducible baseline, and a full-refusal exploration is a
+recorded result, not a failure of the campaign.
+
 ## 2026-08-14 — #28: the version-mismatch test stops sharing its path, measured at 82% (#28)
 
 The contract-version unit test wrote to a fixed `/tmp/sideeye-version-test/` and
