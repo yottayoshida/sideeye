@@ -54,7 +54,12 @@ first.
 Observation, recorded not asserted: in ~12 further worlds a non-empty
 journal file survives buku's own recovery-open while the data stays intact.
 
-## Human judgement (yotta, post-run)
+## Human judgement (scored by the owner, 2026-08-15)
 
-- P1 meaningful question? ☐
-- Finding worth pursuing (after the fchown fix)? ☐
+- P1 meaningful question? **Yes** (contract-grade: existing bookmarks
+  surviving an add is what a bookmark keeper is for).
+- Finding worth pursuing? **Judgment suspended** — harsher than "yes after
+  the fchown fix": the strict run's fchown refusal means the shim's record
+  may be incomplete in exactly the way that could FABRICATE this torn-db
+  world. After fchown support, re-pose the question; do not treat the
+  unverified FAIL as a finding awaiting confirmation.

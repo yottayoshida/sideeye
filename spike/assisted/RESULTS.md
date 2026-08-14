@@ -19,18 +19,46 @@ Three clocks, stated separately (R1: the first version mixed them):
 | stow | 1m29s | 1m30s | — | UNKNOWN `symlinkat` |
 | devtodo | 1m39s | 2m00s | — | UNKNOWN `fchmodat` (not dodgeable from the define) |
 
-## Against #118's success signal — NOT yet cleared, by design
+## Human judgement — SCORED (owner, 2026-08-15; two axes)
+
+The ☐ boxes are filled in each RUNLOG. The scoring uses two axes, because
+the boxes' single axis turned out to be the lenient one:
+
+- **Question quality (what the boxes ask): 5/5 meaningful.** Every
+  proposal represents a contract-grade property (unnamed data surviving an
+  operation); none is the "the JSON parses" trap the metadata bar was
+  built against.
+- **Drivable-slice discovery value (the harsher axis the product decision
+  needs)**: calcurse **high — found**; stow high — blocked by symlinkat;
+  buku medium — **judgment suspended** (the strict run's fchown refusal
+  means the shim's record may be incomplete in exactly the way that could
+  fabricate the torn-db world; re-pose after fchown support); devtodo
+  medium-low (the lightness is target selection, not question quality);
+  pass **low** — the engine-drivable slice of a meaningful contract is the
+  near-trivially-atomic rename, the dangerous slice being excluded as
+  nondeterministic.
+
+On that axis the number that feeds #118's product decision is **1.5 of 5
+drivable slices with discovery value today** (calcurse found; buku
+suspended), not "5/5 meaningful".
+
+**The failure-mode inversion, recorded**: the metadata gate was designed
+against an agent posing vacuous questions. None appeared. The binding
+constraint was the JUDGE's reach — engine coverage — which the gate was
+never aimed at. That inversion is itself a scoring result.
+
+## Against #118's success signal — NOT yet cleared as designed; the human half is now in
 
 - **Setup time (T0 → define)**: 1m25s–5m02s across all five — inside the
   1–10 minute bar.
-- **Meaningful explorations**: the signal requires a HUMAN to judge
-  meaningfulness against the proposal metadata, and that scoring
-  (the ☐ boxes in every RUNLOG) is deliberately unfilled — so this cohort
-  does **not** claim the signal cleared. What the agent can claim: 2 of 5
-  funnels reached exploration and produced counterexamples of their
-  declared, metadata-carried properties; the other 3 stopped at engine
-  boundaries, with their questions posed (metadata attached) in under two
-  minutes each.
+- **Meaningful explorations**: the human scoring is now in (section
+  above): question quality 5/5, drivable discovery value 1.5/5 today. Read
+  strictly, the signal's first half (setup time) cleared and its second
+  half splits — the funnel *reliably poses meaningful questions*, but
+  "reliably reaches meaningful explorations" is bounded by engine
+  coverage, not by the loop. The honest verdict: the signal is cleared
+  for the scout side and blocked on the judge side, and the blockers are
+  enumerated, issueable engine work.
 - **Context, not a ratio claim** (R1: the first version drew an
   order-of-magnitude comparison across unlike scopes): this branch's whole
   apparatus-to-results arc — image build, five windows, re-runs — spans

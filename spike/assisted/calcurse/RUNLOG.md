@@ -38,7 +38,12 @@ assisted loop in under two minutes, with the strict oracle on.
   the process touches. The declared property concerns the data files by
   design; the caveat is about how far "verified" reaches.
 
-## Human judgement (yotta, post-run)
+## Human judgement (scored by the owner, 2026-08-15)
 
-- P1 meaningful question? ☐
-- Upstream-worthy finding? (novelty unchecked — no tracker search yet) ☐
+- P1 meaningful question? **Yes — the cohort's strongest**: destroying
+  calendar entries the operation never named is data loss of exactly the
+  kind the tool exists to prevent, and the crash is reachable by an
+  ordinary interrupt.
+- Upstream-worthy finding? **Pending, deliberately** — novelty is
+  unchecked (no tracker search yet; that is its own step with its own
+  rules), so this stays open rather than scored.
