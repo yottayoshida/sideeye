@@ -2,6 +2,21 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Campaign 3 swept: khal accepted, hledger refused again (#83)
+
+One sweep, through the driver, from Seal A `2239fba`, displayed per the
+harness contract as exit codes only: **khal 0 / hledger 2** — the same
+public values as both prior sweeps, hledger's refusal reason still sealed
+and unread. Full reports sealed locally; their hashes travel in the
+committed manifest, whose engine and shim SHA-256 are byte-equal to
+campaign 2's sweep (same pinned image, same binaries). The sealed selector
+over this manifest picks **khal**, which triggers the pre-registered
+disclosure duty: khal shares the vdir/iCalendar storage class with todoman,
+which this project has explored — the campaign report must say so. Process
+note, disclosed in the PR too: the sweep-record commit was first created on
+the local main by mistake, caught before any push, and moved to its branch;
+origin/main was never touched.
+
 ## 2026-08-14 — Campaign 3 opens: khal then hledger, the lessons as requirements (#83)
 
 The apparatus for the third campaign (ADR 0016): `spike/blind-hunt3/` is

@@ -1,0 +1,12 @@
+{
+  "schema": "sideeye/blind-hunt-sweep",
+  "invocations_sha256": "9c1178bc0ccf33ba8a043ff7c1de68cc6e4134a0a0126ae13508d54596403554",
+  "engine": "sideeye 0.7.0 (trace contract v8)",
+  "engine_sha256": "3ada341a61ade6c268100d28f32e67df7ad93ae641d83fa00a26b1c2d53bc329",
+  "shim_sha256": "3346c0a8762e104ff81429f0711c0006b15b85f123bc712b6b14e1e2d65e9129",
+  "image": "sideeye-blindhunt@sha256:d3d28e791276983484e28dc9d83cb3434cb4885c71bb60e767b7379c5d231d9e",
+  "candidates": [
+    {"name": "khal", "exit": 0, "resolved": "yes", "report_sha256": "f53769d296dd7974afdbef2653bfe647795358f515ce67a7afd51e9abb91d7ea"},
+    {"name": "hledger", "exit": 2, "resolved": "yes", "report_sha256": "630a096af543fdcdc13adb8712d7516d38194042bee59f0afa8959e53362ebb7"}
+  ]
+}
