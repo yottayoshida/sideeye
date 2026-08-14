@@ -50,6 +50,23 @@ ok() { echo "ok   $1"; }
 
 git rev-parse --verify "$A^{commit}" >/dev/null 2>&1 || { echo "verify: $A is not a commit" >&2; exit 2; }
 git rev-parse --verify "$B^{commit}" >/dev/null 2>&1 || { echo "verify: $B is not a commit" >&2; exit 2; }
+
+# A voided Seal A must not be auditable as if it still stood. A2 already refuses one
+# (the re-seal edits sealed paths, and A2 walks the whole range), but that is a
+# consequence, not a statement: this makes the refusal say why. The list is read from
+# the *working tree* on purpose — a seal is voided after it was committed, so the
+# record of the voiding necessarily postdates the commit it names.
+voidfile=$(dirname "$0")/voided-seals.txt
+if [ -r "$voidfile" ]; then
+    A_full=$(git rev-parse "$A^{commit}")
+    while read -r voided; do
+        case "$voided" in ('' | '#'*) continue ;; esac
+        if [ "$(git rev-parse "$voided^{commit}" 2>/dev/null)" = "$A_full" ]; then
+            echo "verify: $A is a VOIDED Seal A (spike/blind-hunt2/voided-seals.txt); the campaign re-sealed — audit against the re-seal's merge commit" >&2
+            exit 2
+        fi
+    done < "$voidfile"
+fi
 command -v python3 >/dev/null 2>&1 || { echo "verify: python3 is required" >&2; exit 2; }
 
 # The A2 no-touch set is DERIVED from seal-a-contents.txt as committed at Seal A —

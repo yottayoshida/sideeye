@@ -1,0 +1,12 @@
+# Voided Seal A anchors for campaign 2 — machine-readable, one SHA per line.
+#
+# A seal listed here MUST NOT be used as the Seal A argument to verify-seals.sh.
+# The ledger carries the narrative; this file exists so the fact is greppable and
+# so a future reader who finds the merge commit in the history has something
+# authoritative to land on.
+#
+# Note what does NOT depend on this file: the verifier already refuses a voided
+# anchor on its own, because the re-seal necessarily edits sealed paths and A2
+# walks the whole A..B range for exactly that (measured: A2 FAILs when this
+# campaign's voided anchor is passed). This list is the label, not the lock.
+459615a86d3670efdb123f6c098ee311e00b262d

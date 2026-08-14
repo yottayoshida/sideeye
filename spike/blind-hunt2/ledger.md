@@ -64,3 +64,13 @@ entry must record the **image identity** (`docker image inspect` ID of
   both staged for commit and had to be un-staged by hand. Verified with
   `git check-ignore` that the new globs cover campaigns 1, 2 and a hypothetical 3
   while leaving sealed configs and manifests tracked.
+- **2026-08-14 — the void is machine-readable, and the verifier says so itself.**
+  Measured first: passing the voided anchor `459615a8` to `verify-seals.sh` already
+  failed (A2 walks the whole A..B range, and the re-seal necessarily edits sealed
+  paths). That refusal was a consequence, not a statement, so the re-seal adds
+  `voided-seals.txt` (one SHA per line, sealed in the inventory) and a verifier
+  preamble that refuses a listed anchor with exit 2 and names the reason. Falsified
+  both ways: the voided anchor now exits 2 with the explanation, and a non-voided
+  anchor still runs the full battery unchanged (checked that the new guard does not
+  swallow the existing checks — the ADR 0012 lesson that a new guard can blind older
+  ones). The list is the label; A2 remains the lock.

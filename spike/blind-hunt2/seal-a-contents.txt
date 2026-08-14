@@ -14,6 +14,7 @@ spike/blind-hunt2/sweep.sh
 spike/blind-hunt2/select.sh
 spike/blind-hunt2/verify-seals.sh
 spike/blind-hunt2/check-config-paths.sh
+spike/blind-hunt2/voided-seals.txt
 spike/blind-hunt2/wrapper-template.sh
 spike/blind-hunt2/ledger.md
 spike/blind-hunt2/configs/khard.conf

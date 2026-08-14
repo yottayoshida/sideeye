@@ -46,6 +46,15 @@ campaigns 1, 2 and a hypothetical 3 while leaving sealed configs and manifests
 tracked. A guard written against one instance of a hazard does not cover the
 hazard.
 
+One more, from asking what actually invalidates a voided seal. Measured before
+writing anything: passing the voided anchor to `verify-seals.sh` already failed,
+because the re-seal edits sealed paths and A2 walks the whole range — the lock
+was there, it just said the wrong thing. So the re-seal adds `voided-seals.txt`
+plus a verifier preamble that refuses a listed anchor by name, and both
+directions were falsified: voided anchor exits 2 with the reason, a live anchor
+still runs the full battery (a new guard that swallowed the old checks would be
+the exact ADR-0012-era failure this repo has already paid for once).
+
 ## 2026-08-14 — Campaign 2's Seal A: an inherited selection, and the recovery-path rule (#83)
 
 The strict ruling made the second campaign the designated criterion-1 path, so it
