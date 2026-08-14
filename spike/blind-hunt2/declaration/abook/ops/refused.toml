@@ -1,0 +1,15 @@
+# Campaign-2 Seal B artifact: the declared define for abook `import-refused`
+# (convert onto an EXISTING outfile — observed refusing with "cannot write
+# file", exit 1, store byte-identical: ../transcripts/normal-runs.txt §4).
+# expected_status "1" is that observation verbatim; an interrupted refusal is
+# where a harmless path could still damage the store it refused to replace.
+# Invariants and provenance: ../declaration.md. Editing this file after
+# Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind2/hunt/refused/state"
+
+[define]
+setup           = "./setup.sh refused"
+operation       = "/usr/bin/abook --convert --informat vcard --infile /work/spike/blind-hunt2/declaration/abook/ops/next.vcf --outformat abook --outfile /tmp/blind2/hunt/refused/state/book/addressbook"
+check           = "./check.sh refused"
+expected_status = "1"

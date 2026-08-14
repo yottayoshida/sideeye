@@ -2,6 +2,44 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The abook declaration: refusal as an operation, and a red suite the burn can no longer reach (#83)
+
+Campaign 2's second declaration, written after the khard burn and carrying its
+structural fixes as design, not as review patches. Three things decided here:
+
+**The commit order is the audit trail.** Sources (help/formats/man pages from
+the pinned deb, normal runs) were committed before a word of declaration
+existed; the declaration before the apparatus. The khard round's single batch
+commit made "observed then declared" unprovable; this branch makes the
+ordering readable from history — local reordering remains possible (ADR
+0012's honesty bounds), but the default story is now in the commits.
+
+**Refusal is an operation.** abook's only non-interactive writer is
+`--convert`; converting onto an existing outfile refuses ("cannot write
+file", exit 1, store byte-identical — normal-runs §4). That observation
+became a declared operation with `expected_status = "1"` (the v8 field
+shipped for exactly this): an interrupted refusal is where a "harmless" path
+could still damage the store it refused to replace. The other two ops are
+import (fresh outfile; bystander store conserved byte-for-byte) and export
+(the cross-file window: a reader must not scribble what it reads). No
+refusal pre-registered — both writers observed byte-deterministic, twice.
+
+**The red suite cannot re-create the burn.** The checker runs file legs
+first and the target last, so a red fixture that fails a file leg provably
+never reaches an abook invocation (each failure message names its leg — the
+pin doubles as the no-execution proof). Real abook runs in the red suite
+only as a query over abook-written stores (the impostor anchoring probe:
+`Grace Hopperson`'s real match line is rejected because the anchor demands
+the full name bounded by both tabs). Every branch that needs an ill-behaved
+binary — wrong exit codes, duplicate match lines, byte-writing queries,
+hangs, outfile creation — runs through a stub via the checker's documented
+CHECK_ABOOK seam: those branches are exercised and the target never runs.
+14 red cases, message-pinned, green first try; the khard R1's other gaps
+(green-run without setup/parse/binary evidence, missing engine version in
+the run manifest) are answered in green-run.txt and run.sh respectively.
+Engine and shim SHA-256 already equal the committed sweep manifest's values,
+so the R3 leg's comparison is pre-verified at declaration time.
+
 ## 2026-08-14 — khard is burned: the red suite let the checker query a malformed store (#83)
 
 The declaration below shipped with a red suite whose header argued its own

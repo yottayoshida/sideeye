@@ -1,0 +1,13 @@
+# Campaign-2 Seal B artifact: the declared define for abook `import` (convert
+# vcard->abook into a fresh outfile). Invocation shape and exit status observed
+# in a normal run: ../transcripts/normal-runs.txt §1. Invariants and
+# provenance: ../declaration.md. Editing this file after Seal B marks the
+# declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind2/hunt/import/state"
+
+[define]
+setup           = "./setup.sh import"
+operation       = "/usr/bin/abook --convert --informat vcard --infile /work/spike/blind-hunt2/declaration/abook/ops/ada.vcf --outformat abook --outfile /tmp/blind2/hunt/import/state/book/addressbook"
+check           = "./check.sh import"
+expected_status = "0"

@@ -273,3 +273,25 @@ entry must record the **image identity** (`docker image inspect` ID of
     --add-email(-quiet) / --formats plus the interactive TUI; abookrc is
     optional with documented defaults (abookrc(5)); no recovery, undo, or
     repair command appears anywhere in these pages.
+- **2026-08-14 — abook apparatus-phase target contacts (all documented-normal;
+  no crash experiments, no traces, no mis-shaped store ever offered):**
+  - `make-goldens.sh` ran three vcard→abook converts to mint the committed
+    golden stores (grace / pair / impostor) — abook's own bytes as fixtures,
+    resting on the observed byte-determinism (normal-runs §2).
+  - The checker red suite (`checker-red-test.sh` → `transcripts/
+    checker-red.txt`, 14 cases green) runs REAL abook only as `--mutt-query`
+    over abook-written golden stores (the impostor anchoring probe and its
+    golden positive control); every ill-behaved-binary branch (exit codes,
+    match-line counts, byte-writing queries, hangs, outfile creation) is
+    exercised through the checker's CHECK_ABOOK stub seam — the target does
+    not run in those cases at all.
+  - The green run (`transcripts/green-run.sh` → `green-run.txt`, fails=0)
+    executed each declared operation once, verbatim from its sealed toml,
+    over setup states cp'd from the goldens: import rc 0, export rc 0,
+    refused rc 1 — each equal to its toml's expected_status — followed by a
+    green checker. The three tomls were each also fed to this tree's engine
+    with no state root: all stop at state resolution (rc 3) with zero side
+    effects, abook not executed.
+  - Engine identity on the transcript: `sideeye 0.7.0 (trace contract v8)`,
+    engine and shim SHA-256 equal to the committed sweep manifest's values
+    (the R3 leg's comparison, pre-verified at declaration time).

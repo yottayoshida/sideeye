@@ -1,0 +1,6 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Ada Lovelace
+N:Lovelace;Ada;;;
+EMAIL:ada@example.com
+END:VCARD
