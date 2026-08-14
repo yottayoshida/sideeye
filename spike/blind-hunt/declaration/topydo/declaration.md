@@ -51,7 +51,7 @@ vocabulary (`interactive` / `network` / `destructive-by-design` /
 | dep | `dep add 1 to 2` **and** `dep rm 1 to 2` | `dep clean` (a third write form); `dep ls`/`dep dot` are query forms |
 | depri | `depri 1` | `-e`/`-x` expression forms |
 | do | `do 1` (no dependencies, no recurrence — the documented question never triggers; observed non-interactive) | `--date`/`--force`/`--strict`, `-e`/`-x`, the recurrence and dependency branches |
-| ls | `ls` (text output; a read-only recording — expected to record zero state-changing operations, which is a verdict, not a failure) | `-f ical` (documented as writing — never invoked anywhere in this campaign), `-f dot`/`-f json`, sort/group/format flags |
+| ls | `ls` (text output; a read-only recording — expected to record zero state-changing operations, which is a verdict, not a failure) | `-f ical` (documented as writing — never invoked anywhere in this campaign), `-f dot`/`-f json`, `-x`, `-i`, `-n`/`-N`, filter EXPRESSION arguments, sort/group/format flags (`-s`/`-g`/`-F`) |
 | postpone | `postpone 1 1w` | `-s`, `-e`/`-x` |
 | pri | `pri 1 A` | `-e`/`-x` |
 | revert | `revert` (no-argument form) | `revert <NUM>`; `revert ls` is the query form, used by the checker |
