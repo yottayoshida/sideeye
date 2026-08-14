@@ -1,0 +1,23 @@
+# The things campaign 3's Seal A fixes (ADR 0016, extending ADR 0015/0012). The
+# verifier reads THIS list out of the Seal A commit and requires every path in it
+# to exist there — so the list of what was sealed cannot be edited after the fact
+# without moving the seal itself. The list includes itself, and it includes the
+# governing ADRs: the protocol must not be weakened between the seals any more
+# than this campaign's own artifacts.
+docs/adr/0012-blind-declaration-protocol.md
+docs/adr/0015-the-second-campaign-inherits-the-selection-seal.md
+docs/adr/0016-the-third-campaign-carries-the-lessons-as-requirements.md
+spike/blind-hunt3/seal-a-contents.txt
+spike/blind-hunt3/candidates.md
+spike/blind-hunt3/priority.txt
+spike/blind-hunt3/invocations.tsv
+spike/blind-hunt3/sweep.sh
+spike/blind-hunt3/select.sh
+spike/blind-hunt3/verify-seals.sh
+spike/blind-hunt3/check-config-paths.sh
+spike/blind-hunt3/voided-seals.txt
+spike/blind-hunt3/wrapper-template.sh
+spike/blind-hunt3/ledger.md
+spike/blind-hunt3/configs/khal.conf
+spike/blind-hunt3/configs/hledger-in.journal
+spike/blind-hunt3/configs/hledger-seed.journal

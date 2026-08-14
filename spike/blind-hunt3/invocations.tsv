@@ -1,0 +1,2 @@
+khal	/usr/local/bin/khal	/tmp/blind3/khal/state	-	/usr/local/bin/khal -c /work/spike/blind-hunt3/configs/khal.conf new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
+hledger	/usr/bin/hledger	/tmp/blind3/hledger/state	/bin/cp /work/spike/blind-hunt3/configs/hledger-seed.journal /tmp/blind3/hledger/state/main.journal	/usr/bin/hledger -f /tmp/blind3/hledger/state/main.journal import /work/spike/blind-hunt3/configs/hledger-in.journal
