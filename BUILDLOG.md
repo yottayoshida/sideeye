@@ -2,6 +2,28 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Ruled: the misfire does not count as "found by Sideeye" (#83)
+
+The open fork in the PRD's criterion-1 status was closed today, on the strict
+side. The recovery misfire (novel, upstream as topydo#341) was reached by a
+human following the automated FAILs into the recovery path; counting that as
+"discovered automatically" would read the same scale two ways — timewarrior's
+find was scored *partial* because a human formed the specific hypothesis, and
+the arrows being reversed here (tool search first, human hypothesis second)
+does not change who formed it. The sealed declaration also pre-committed to
+calling recovery measurements analysis; promoting them to findings after the
+fact is the goalpost-shaped move this campaign built two seals to prevent.
+
+Consequence: criterion 1 stays open. The designated path is a second blind
+campaign under fresh seals, whose declaration includes recovery-path
+invariants — declarable from documentation alone, and exactly the coverage
+this campaign's declaration listed under "what this does not check". The
+remaining candidates (khard, abook, khal, hledger) are still blind-eligible:
+permitted-source contact only, hledger's refusal reason still sealed unread,
+no bug tracker opened for any of them. Keeping them that way is a standing
+discipline until the next campaign picks one up. Timing deliberately not
+fixed.
+
 ## 2026-08-14 — The misfire went upstream (topydo#341), and a red check got merged over (#83)
 
 Two things to record, one good and one not.
