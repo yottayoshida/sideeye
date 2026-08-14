@@ -28,7 +28,11 @@ to the ones that swept (SHA-256, R3).
 Raw artifacts: `run-manifest.json` and `reports/` beside this file (copies of
 the run's outputs; the uncommitted originals sit under
 `../artifacts/explore-eb51c483/`). The oracle agreed on every operation
-(95/95/87 syscall lines examined; 10/10/3 touching the state directory).
+(95/96/87 syscall lines examined; 10/18/3 touching the state directory).
+The full-verifier invocation is committed beside this file as
+`verify-seals.txt` — "ALL SEAL CHECKS PASSED (R1 audited)" is that
+transcript's last line, not a prose claim; its R2 leg re-hashed the sealed
+sweep reports, which stay local by design (only their hashes travel).
 
 **The checker's red side ran post-seal, as designed.** The declaration
 deferred "the checker against real crash states" to the engine's
@@ -48,8 +52,9 @@ proved the checker live afterwards.
   bystander query, or query totality on the partial outfile. The refusal
   path, explored under `expected_status = "1"`, never damaged the store it
   refused to replace. The few crash points are the surface being small: the
-  writer touches the state directory in 10 (import), 10 (export as read+write),
-  and 3 (refused) syscall lines of ~90 examined.
+  operations touch the state directory in 10 (import), 18 (export, which
+  both reads and writes inside the store) and 3 (refused) syscall lines of
+  the ~90–96 examined per run.
 - **Does not mean**: abook is crash-safe. The engine itself lists what it
   did not test (power loss, torn writes, concurrent processes); the TUI and
   the stdin-fed `--add-email` pair were excluded by the inventory and are
@@ -59,7 +64,8 @@ proved the checker live afterwards.
 ## Campaign accounting
 
 - khard: burned before Seal B (blind breach in its red suite; ledger and
-  PR #110). Consumed.
+  PR #110). A burn is not consumption — ADR 0015 keeps the two distinct —
+  but both remove the name from the next campaign's order.
 - abook: explored, null result. Consumed (ADR 0015: every selected target is
   consumed regardless of outcome).
 - Remaining unconsumed in the sealed order: **khal**; hledger refused at

@@ -9,8 +9,10 @@ crash points + baseline, export 2 + baseline, refused 1 + baseline —
 **every world PASS, violations 0**. The refusal path ran as a declared
 `expected_status = "1"` operation and never damaged the store it refused to
 replace. The full verifier over Seal A, Seal B, the run manifest and the
-sealed sweep reports says ALL SEAL CHECKS PASSED (R1 audited) — declaration
-before exploration, clean tree at the seal, sweep and exploration on
+sealed sweep reports says ALL SEAL CHECKS PASSED (R1 audited) — the
+invocation transcript is committed as `analysis/verify-seals.txt`, so the
+claim is checkable from the repo, not prose — declaration before
+exploration, clean tree at the seal, sweep and exploration on
 byte-identical engine and shim. The engine's falsification gate fired in
 all three runs (corrupted state → the checker's I-C leg failed), closing
 post-seal the red side the declaration deliberately deferred.
