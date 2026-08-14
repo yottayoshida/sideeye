@@ -173,3 +173,8 @@ What belongs here:
   retained under `artifacts/` (`sealed-reports/` and `resweep-v8/sealed-reports/`),
   none read. This is the ADR 0012 recorded re-run shape: nothing tuned, nothing
   selected by exit codes — the same spelling, a newer engine, the same answer.
+- **2026-08-14 — parse validation redone on the right binary.** All thirteen tomls
+  re-validated against the binary built from the rebased branch itself, inside the
+  pinned container (`sideeye 0.7.0 (trace contract v8)`, nonexistent shim): every
+  one parses and stops at state resolution (exit 3). No topydo execution. This
+  replaces the host-binary measurement the R1 entry above corrected.
