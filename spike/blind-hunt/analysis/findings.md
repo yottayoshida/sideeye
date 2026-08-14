@@ -94,11 +94,19 @@ and the outcome is data the crash had left alone.
 - **Found by the search, not by a human hypothesis:** yes for the crash windows
   above. The recovery behavior in *Analysis* was reached by a human reading the
   findings afterwards; it is reported as analysis, not as an automated find.
-- **Novelty is not claimed here.** Whether the recovery behavior is known
-  upstream has not been checked — the campaign's reference rules forbade
-  reading the target's bug tracker, and that restriction is only lifted for a
-  deliberate check before any report is filed. Until that check happens, this
-  file claims a *finding*, not a *novel* one.
+- **Novelty — checked on 2026-08-14, after everything above was merged**
+  (the ledger records the search terms, the positive control, and the bodies
+  read). Split verdict: the crash-window destruction of the active list is
+  **not novel as a phenomenon** — `topydo/topydo#318` (open since 2023-10,
+  no comments) reports the same failure surface driven by a disk-full write;
+  what this campaign adds there is the mechanism and a replayable
+  counterexample, not the discovery. The recovery misfire — plain `revert`
+  after a crash undoing an *older* command and deleting data the crash left
+  intact, with the two documentation sources contradicting each other on the
+  matching rule — **was not found anywhere in the tracker** and is novel as
+  far as that search can see; it is also the finding that came from post-seal
+  human analysis rather than the blind search, and both halves of that
+  sentence belong in any claim built on it.
 - **These were high-risk blind targets, not the §18 average-target
   calibration** (candidates.md) — that calibration stands on timewarrior and is
   not re-claimed.

@@ -362,7 +362,7 @@ The success metric for v0 is not feature count, fault-type count, or GitHub star
 - **reproducible / small / kept as a regression — clean, and stronger than timewarrior's.** Each FAIL saved a case that replays in the pinned container with nothing else installed (`exit 1`, `the case reproduced`) — no target build, so these are CI-resident cases rather than a recipe (the gap `#82` names).
 - **"the author judges it a real bug" — open.** Not asserted here. The sharpest observed behavior sits in the documented recovery path and is *analysis performed after the seal*, not automated discovery; `spike/blind-hunt/analysis/findings.md` separates the two halves explicitly.
 - **"after the fix, the same counterexample stops reproducing" — not attempted.**
-- **Novelty — deliberately unchecked.** The reference rules forbade the target's bug tracker; lifting that restriction is a separate, deliberate step before any upstream report. Until it happens this is a *finding*, not a *novel* one.
+- **Novelty — checked 2026-08-14, split verdict.** The crash-window destruction is not novel as a phenomenon (`topydo/topydo#318`, the same failure surface under a disk-full write; this campaign adds the mechanism and a replayable case). The post-crash recovery misfire was not found in the tracker — novel as far as the recorded search sees, but it is the post-seal analysis finding, not the blind search's. No single finding holds "found by Sideeye" and "novel" at once; the PRD criterion-1 status carries the consequence.
 
 These were high-risk blind targets, not a second average-target calibration; §18's calibration still stands on timewarrior alone.
 

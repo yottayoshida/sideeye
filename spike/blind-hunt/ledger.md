@@ -197,3 +197,30 @@ What belongs here:
   documented forced form (`revert <NUMBER>`, one sentence further down in the same
   help text) showed full recovery in every case tried. Nothing wrong was published;
   the entry exists because the near-miss is the reportable part.
+- **2026-08-14 — the bug-tracker restriction is lifted, deliberately, and this is the
+  record of that step.** First contact with topydo's issue tracker since the campaign
+  began (the exploration and the write-up are already merged; nothing sealed remains).
+  Method: GitHub issue search over `topydo/topydo` (191 issues), title+body across
+  fourteen terms (crash, atomic, corrupt, truncate, data loss, empty file, interrupt,
+  overwrite, revert, backup, todo.bak, undo, restore, lost/lose/wipe/blank/wrong
+  task/deleted), plus comments-inclusive passes for the revert terms, plus a positive
+  control (the search finds #318 by its own words — the instrument can see what it is
+  looking for). Full bodies read for #318, #132, #204.
+  **Verdict, two findings scored separately:**
+  - **The crash-window destruction of the active list: the symptom is already
+    reported.** `topydo/topydo#318` (open, 2023-10, zero comments): a disk-full
+    write destroyed the entire list — same failure surface (in-place rewrite whose
+    interrupted write destroys the file), different fault (ENOSPC there, SIGKILL
+    here). The reporter states they had not read the code; no mechanism, no window,
+    no reproducer. Our addition is the deterministic mechanism and a replayable
+    counterexample — but the *phenomenon* is not novel, and the §17 scoring must
+    say so.
+  - **The recovery misfire (plain `revert` after a crash undoing an *older*
+    command, deleting data the crash left intact; help text and documentation
+    tiddler contradicting each other on the matching rule): no report found.**
+    Nothing in title, body or comments describes reverting to the wrong command or
+    the state-matching hazard. #204 (recovering archived tasks) and #132 (a
+    traceback in backup.save under `-a`) are adjacent but different. As far as this
+    search can see, this one is novel — with the standing caveat that it was
+    reached by post-seal human analysis following the automated FAILs, not by the
+    blind search itself.
