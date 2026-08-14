@@ -6,7 +6,7 @@ Development journal, newest first. Decisions are recorded when they are made —
 
 Exploration from Seal B `9028b04b` completed: import 10 crash points +
 baseline, update 21 + baseline, new 10 + baseline — **every world PASS,
-violations 0** across 43 crash worlds and 3 baselines. The full verifier
+violations 0** across 41 crash worlds (10+21+10) and 3 baselines. The full verifier
 over Seal A, Seal B, the run manifest and the sealed sweep reports says ALL
 SEAL CHECKS PASSED (R1 audited) — transcript committed as
 `spike/blind-hunt3/analysis/verify-seals.txt`. The engine's falsification

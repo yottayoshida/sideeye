@@ -55,8 +55,8 @@ khard burn opened, for the second campaign in a row.
   process, the engine's crash model — khal's writes never left a state that
   violated byte-conservation of the bystander event file, the anchored
   liveness of the bystander through khal's own search, query byte-neutrality
-  over the existing vdir (I-W), or subject-query totality. 43 crash worlds
-  and 3 baselines, zero violations.
+  over the existing vdir (I-W), or subject-query totality. 41 crash worlds
+  (10+21+10) and 3 baselines, zero violations.
 - **Does not mean**: khal is crash-safe. The engine lists what it did not
   test (power loss, torn writes, concurrent processes); the TUI, `edit`,
   `configure`, the ask-first and stdin import forms are excluded by the
