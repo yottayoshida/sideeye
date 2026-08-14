@@ -21,6 +21,8 @@
 #       list if any) and must equal the single declaration/<name> directory
 #       (R1 finding: without recomputation, a declaration for any candidate passed)
 #   R1  the exploration run manifest records head == Seal B and a clean worktree
+#   R3  (when a run manifest is supplied) the run's engine and shim SHA-256 equal
+#       the committed sweep manifest's — the two phases ran the same binaries
 #   R2  (only when a reports directory is supplied) each sealed report re-hashes to
 #       the manifest's value — the "not swapped" claim, actually recomputed
 #
@@ -50,6 +52,23 @@ ok() { echo "ok   $1"; }
 
 git rev-parse --verify "$A^{commit}" >/dev/null 2>&1 || { echo "verify: $A is not a commit" >&2; exit 2; }
 git rev-parse --verify "$B^{commit}" >/dev/null 2>&1 || { echo "verify: $B is not a commit" >&2; exit 2; }
+
+# A voided Seal A must not be auditable as if it still stood. A2 already refuses one
+# (the re-seal edits sealed paths, and A2 walks the whole range), but that is a
+# consequence, not a statement: this makes the refusal say why. The list is read from
+# the *working tree* on purpose — a seal is voided after it was committed, so the
+# record of the voiding necessarily postdates the commit it names.
+voidfile=$(dirname "$0")/voided-seals.txt
+if [ -r "$voidfile" ]; then
+    A_full=$(git rev-parse "$A^{commit}")
+    while read -r voided; do
+        case "$voided" in ('' | '#'*) continue ;; esac
+        if [ "$(git rev-parse "$voided^{commit}" 2>/dev/null)" = "$A_full" ]; then
+            echo "verify: $A is a VOIDED Seal A (spike/blind-hunt2/voided-seals.txt); the campaign re-sealed — audit against the re-seal's merge commit" >&2
+            exit 2
+        fi
+    done < "$voidfile"
+fi
 command -v python3 >/dev/null 2>&1 || { echo "verify: python3 is required" >&2; exit 2; }
 
 # The A2 no-touch set is DERIVED from seal-a-contents.txt as committed at Seal A —
@@ -200,6 +219,55 @@ PY
         fi
     else
         bad "R1: run manifest unreadable (a check that cannot look must not pass)"
+    fi
+fi
+
+# R3 — the exploration ran on the same engine and shim the sweep ran on, compared
+# from the two committed-or-supplied manifests (campaign 2 addition, per ADR 0015:
+# the phases are bound to each other, not to a source tree). This is the machine
+# half of the "measured on the thing being shipped" discipline — the class where
+# a toml-parse claim was once measured on a host binary the seal never saw.
+# Both fields must exist on both sides: a manifest that omits them is a
+# cannot-look, not a pass.
+if [ -n "$runmanifest" ] && [ -r "$runmanifest" ]; then
+    if git cat-file -e "$B:spike/blind-hunt2/sweep-manifest.json" 2>/dev/null; then
+        r3m=$(mktemp "${TMPDIR:-/tmp}/verify-r3-XXXXXX") || exit 2
+        git show "$B:spike/blind-hunt2/sweep-manifest.json" > "$r3m"
+        if python3 - "$r3m" "$runmanifest" <<'PY'
+import json, re, sys
+try:
+    sweep = json.load(open(sys.argv[1]))
+    run = json.load(open(sys.argv[2]))
+except (OSError, ValueError) as e:
+    print(f"R3: a manifest does not parse: {e}", file=sys.stderr)
+    sys.exit(1)
+bad = 0
+DIGEST = re.compile(r"^[0-9a-f]{64}$")
+for field in ("engine_sha256", "shim_sha256"):
+    s, r = sweep.get(field), run.get(field)
+    if not s or not r:
+        print(f"R3: {field} missing from a manifest (sweep: {bool(s)}, run: {bool(r)})",
+              file=sys.stderr)
+        bad += 1
+    elif not (isinstance(s, str) and DIGEST.match(s) and isinstance(r, str) and DIGEST.match(r)):
+        # Two matching non-digests ("true" == "true") would satisfy a bare
+        # equality; the field's claim is an SHA-256, so anything else is a
+        # cannot-look, not a pass (delta-review finding).
+        print(f"R3: {field} is not a SHA-256 hex digest on both sides", file=sys.stderr)
+        bad += 1
+    elif s != r:
+        print(f"R3: {field} differs between sweep and run", file=sys.stderr)
+        bad += 1
+sys.exit(1 if bad else 0)
+PY
+        then
+            ok "R3: the sweep and the exploration ran the same engine and shim (by SHA-256)"
+        else
+            bad "R3: engine/shim identity differs between sweep and run, or is unrecorded (details above)"
+        fi
+        rm -f "$r3m"
+    else
+        bad "R3: committed sweep manifest unavailable (a check that cannot look must not pass)"
     fi
 fi
 

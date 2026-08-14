@@ -9,10 +9,15 @@ spike/out/
 spike/runs/
 
 # Blind-hunt sealed sweep output (ADR 0012): the full preflight reports stay local and
-# unread until Seal B; only their hashes travel in the committed manifest
+# unread until Seal B; only their hashes travel in the committed manifest.
+# Campaign-numbered on purpose — campaign 2 re-created both hazards under a new
+# directory the campaign-1-specific patterns did not cover, and a bare `*` would also
+# swallow unrelated siblings like blind-hunter/ (BUILDLOG 2026-08-14).
 spike/blind-hunt/artifacts/
+spike/blind-hunt[0-9]*/artifacts/
 
 # hledger writes an import-dedup sidecar NEXT TO ITS INPUT file — which during a sweep
 # is inside this repo. One slipped into a release commit through `git add -A` before
-# this pattern existed (BUILDLOG 2026-08-13).
+# this pattern existed (BUILDLOG 2026-08-13); campaign 2 produced another.
 spike/blind-hunt/configs/.latest.*
+spike/blind-hunt[0-9]*/configs/.latest.*

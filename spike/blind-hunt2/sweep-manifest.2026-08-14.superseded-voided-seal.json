@@ -1,0 +1,14 @@
+{
+  "schema": "sideeye/blind-hunt-sweep",
+  "invocations_sha256": "b01f1f5047845334367ac30bfc39a881d54a4a31eeb0036acf9ce75c489bde6d",
+  "engine": "sideeye 0.7.0 (trace contract v8)",
+  "engine_sha256": "22f0cce77f37972a3fd97577298ca9d8faa2443a92dbb8c1e9a14a3745e84d43",
+  "shim_sha256": "3346c0a8762e104ff81429f0711c0006b15b85f123bc712b6b14e1e2d65e9129",
+  "image": "sideeye-blindhunt@",
+  "candidates": [
+    {"name": "khard", "exit": 2, "resolved": "yes", "report_sha256": "4214911ae48097da7ade850cc9d6d3eadb6baed8588c1af5f643a305dd8e544d"},
+    {"name": "abook", "exit": 0, "resolved": "yes", "report_sha256": "5d8c34967cbc83339b15455bff1c92f81f28024750ba47bdafc8e73c79357ced"},
+    {"name": "khal", "exit": 0, "resolved": "yes", "report_sha256": "45a30e9fc0c78ab3ef88973e84be254dbcaa97e1acbedb784067b30a8c1d2b35"},
+    {"name": "hledger", "exit": 2, "resolved": "yes", "report_sha256": "630a096af543fdcdc13adb8712d7516d38194042bee59f0afa8959e53362ebb7"}
+  ]
+}

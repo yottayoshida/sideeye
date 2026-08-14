@@ -19,6 +19,181 @@ same test binary, in phase over the same sequence (its `rmdir` is also the only
 thing that can make `open(O_CREAT)` fail, explaining the `fd2 >= 0` variant).
 Two old binaries racing: **66 of 80 runs failed**. Two fixed binaries racing:
 0 of 80. The flake was never rare — CI was just rolling one die per push.
+## 2026-08-14 — The campaign becomes a program: rehearsal, driver, R3, and a ledger pen (#83)
+
+The re-verification question was blunt: what would let a blind hunt run without
+the mistakes this session kept making? The answer that survived scrutiny is not
+another checking layer — it is moving every apparatus error to before the seal,
+where errors cost nothing, and removing the hand-typed procedure where the
+sequencing errors lived. Four pieces, shipped together on the re-seal branch:
+
+- **`spike/rehearse-campaign.sh`** — the whole pipeline against synthetic
+  targets in a scratch git repository that mimics the real layout, so the REAL
+  sealed tooling runs byte-for-byte unmodified. Defects planted one at a time
+  (a sealed path edited between seals, a rewritten ledger, a tampered manifest
+  hash, a wrong declaration, a wrong-head run manifest, a wrong-engine run
+  manifest, a voided anchor, a cross-row config, a dropped checker, a vandalized
+  ledger under the append tool, three driver refusals), each required to turn
+  its guard red — with the guard identified by its MESSAGE, not just the exit
+  code — then the real pipeline through the driver: container sweep, selection,
+  a Seal B carrying a real runner, a real exploration, and the full battery's
+  ALL SEAL CHECKS PASSED (R1 audited) over artifacts the shipped code produced.
+  Forty-one drills. The first two versions each failed honestly: run one caught
+  real behavior (this host's docker answers `image inspect <name>` flakily —
+  both resolvers now accepted — and bookworm's /bin/cp is *correctly* refused
+  by preflight because it copies via copy_file_range; the toy now writes
+  through dd); the delta review then caught the rehearsal itself lying twice —
+  two driver drills passing on the dirty-tree guard while claiming to test two
+  other guards, and an "entire pipeline" whose exploration was a fabricated
+  manifest. Both are the same shape as everything else today, inside the tool
+  built to stop it. The current suite pins every red to its guard's message
+  and runs the exploration for real.
+- **`spike/campaign-driver.sh`** — every phase behind preconditions that refuse:
+  dirty tree, uncommitted inputs, existing output directories, a manifest that
+  already exists, a HEAD that is not the seal being explored. Unsealed by
+  design: it carries no verdict logic, only the sequencing that was previously
+  typed by hand — which is exactly where the fused-chain failures lived. It
+  never merges and never commits.
+- **verify-seals R3** (sealed, amended pre-merge on this branch): the run
+  manifest's engine/shim SHA-256 must equal the committed sweep manifest's.
+  The machine half of "measure the thing you ship" — the class that started
+  today's chain.
+- **`spike/ledger-append.sh`** — appends and proves the prefix against HEAD,
+  restoring on refusal. The append-only discipline has now been broken twice by
+  well-meant edits; the pen replaces the discipline.
+
+CLAUDE.md gained the operating rules, including the two review axes external
+review has repeatedly out-detected self-checks on (claims vs. what the
+measurement looked at; guards falsified against their own predicate). What
+stays honest: the rehearsal covers the apparatus, not the declaration's
+completeness, and prose outside Verified sections still depends on review.
+
+## 2026-08-14 — The same mistake three times in one session, and where the stop now lives (#83)
+
+Three failures today share one shape, and naming it matters more than any of them
+individually:
+
+1. "All thirteen tomls parse" — measured with the host binary, not the revision
+   being sealed.
+2. "The configs carry no campaign-1 dependency" — measured by resolving
+   references and checking files exist, never by opening the files, where
+   `/tmp/blind` sat in two of them the whole time.
+3. "The new guard is falsified" — measured against the defect that produced it,
+   never against its own predicate. External review then found seven holes in it.
+
+The common shape: **when I say "verified", I do not check what the verification
+did not look at.** Each time the net was finer than the thing I claimed to have
+caught, and nothing came up, so I reported safety. A rule against this already
+existed ("measure before trusting a check"), and existing prose did not stop the
+third repeat — which is the measurement that decides where the fix belongs.
+
+So the stop moved out of prose in two places:
+
+- **CI**: `spike/check-sealed-campaigns.sh` walks *every* campaign directory
+  present, requires each one that seals invocations to carry an executable
+  consistency checker, runs it, and **fails when no campaign is found at all**
+  (a path typo would otherwise pass over an empty set). Campaign 1 is exempt by
+  literal name — its seals are closed and adding files there would mark its
+  checkers sighted — and the exemption cannot be inherited, which is one of the
+  cases the suite proves. Falsified across seven cases, and deliberately not
+  only against the accident that motivated it: a campaign that drops the
+  checker, one whose checker is not executable, an empty tree, a *new* campaign
+  trying to inherit the exemption, and a pre-sweep campaign that must be skipped
+  rather than failed.
+- **The PR template** (`git-delivery` skill): the Verified section now asks for
+  the claim, the command that measured it, and what that command did not look
+  at. All three failures above were written into a Verified section; that is
+  where the discrepancy would have had to be spelled out.
+
+What this does not fix, stated because the honest scope is the point: CI covers
+the config/invocation class only. Classes 1 and 3 are caught by the template, or
+not at all — the template is a prompt to notice, not a machine check, and its
+effect is unmeasured until the next time I claim something.
+
+## 2026-08-14 — Campaign 2's first seal was void within the hour, by its own sweep (#83)
+
+The between-seals sweep ran once against the sealed rows and displayed its four
+exit codes: khard 2, abook 0, khal 0, hledger 2. khard's flip against campaign 1's
+public verdict (0 there) sent me to our own committed artifacts — the sealed
+reports stayed unread — and the contradiction was inside the seal:
+`configs/khard.conf` and `configs/khal.conf` still hardcoded campaign 1's
+`/tmp/blind/...` state roots while the sealed invocations watch `/tmp/blind2/...`.
+That does not prove the mismatch produced the refusal — the reports stayed unread
+and no controlled re-run was made — but it does mean the verdict is
+uninterpretable, which is the only property the decision needed.
+
+Voided, not proceeded with. The machine had selected abook, and following it
+would have been indefensible: the khard refusal risk was pre-registered, so an
+apparatus bug that knocks khard out is — to any skeptical reader —
+indistinguishable from steering. And the seal design itself forbids the quiet
+fix: configs ride the A2 no-touch set. So the exit is the loud one — void before
+any declaration exists (blindness cost: four displayable exit codes), fix the
+two paths, re-seal, and give khard its fair shot.
+
+The part worth keeping: **my own R1 fix created this trap and certified it
+safe.** Sealing the invocations at Seal A was finding 5's remedy; I "verified"
+the rows resolvable and wrote that the freeze "does not risk a spelling-error
+dead end"; R2 confirmed the configs "contain no campaign-1 workspace
+dependency". `/tmp/blind` sat in two of them the whole time. The verification
+checked command resolution and file existence — not the paths inside the
+configs, the one place a path could still disagree. Falsified within the hour
+by the first real run. The re-seal adds the mechanical consistency check
+(config `/tmp` paths ⊆ invocation state roots, green on the fixed tree), and
+the ADR now says what a frozen apparatus actually guarantees: not that it
+cannot dead-end, but that its dead end is public and the exit is a recorded
+re-seal rather than a quiet tune.
+
+Two more things the void surfaced, both about checks that could not see what they
+claimed to cover. `check-config-paths.sh` is the new Seal A artifact — every
+absolute `/tmp` path in every sealed config must sit under a state root named in
+the sealed invocations — and it was falsified before being trusted: red on the
+voiding defect itself, red on a sibling-but-wrong root, and **exit 2 rather than
+success when it cannot look** (no roots, or no configs), with a green control on
+the fixed tree. And `.gitignore` was campaign-1-specific, so campaign 2's sealed
+sweep reports and hledger's import sidecar both walked into the staging area; the
+patterns are now `spike/blind-hunt*/`, verified with `git check-ignore` to cover
+campaigns 1, 2 and a hypothetical 3 while leaving sealed configs and manifests
+tracked. A guard written against one instance of a hazard does not cover the
+hazard.
+
+One more, from asking what actually invalidates a voided seal. Measured before
+writing anything: passing the voided anchor to `verify-seals.sh` already failed,
+because the re-seal edits sealed paths and A2 walks the whole range — the lock
+was there, it just said the wrong thing. So the re-seal adds `voided-seals.txt`
+plus a verifier preamble that refuses a listed anchor by name, and both
+directions were falsified: voided anchor exits 2 with the reason, a live anchor
+still runs the full battery (a new guard that swallowed the old checks would be
+the exact ADR-0012-era failure this repo has already paid for once).
+
+R1 on the re-seal then found eight more, seven of them in the guard I had just
+written and falsified — a guard tested against the defect it was born from, and
+not against its own predicate. It compared each config path against *any*
+invocation root (so a config could agree with a different row's state and pass);
+its containment accepted any *ancestor* of a state root and never considered
+`..`; and its cannot-look contract leaked four ways (extra args ignored,
+unreadable files and malformed rows exiting 1 through Python, the bare path
+`/tmp` unmatched by the regex). Rewritten per-row with strict normalized
+containment, and re-falsified across twelve cases — one red per hole, a green for
+a deeper path inside the row's own root, four cannot-look refusals.
+
+Two findings were about the void rather than the guard, and both mattered more.
+The sweep harness accepted an existing output directory and truncated it, so
+re-sweeping would have destroyed the voided run's evidence — the very artifacts
+the ledger promises are retained. It now refuses, as it already refused existing
+state roots, and the voided run was moved aside and re-verified against the
+superseded manifest (four hashes, still matching, still unread). And my account
+overclaimed: with the reports unread and no controlled re-run, the path mismatch
+does not prove it produced the refusal. What it proves is that the apparatus
+contradicted itself, so the verdict is uninterpretable — which is all the void
+decision ever needed, and the weaker claim is the one now in the ADR, the ledger
+and this entry.
+
+The last one is small and my favourite. Fixing the ledger's stale "none yet"
+placeholder into a self-aware annotation *broke the append-only prefix* — the
+exact property the annotation was bragging about. The pre-commit self-check
+caught it, the sealed bytes went back verbatim, and the explanation moved into an
+appended entry where it belongs. A rule you are describing is still a rule you
+can break in the sentence describing it.
 
 ## 2026-08-14 — Campaign 2's Seal A: an inherited selection, and the recovery-path rule (#83)
 
