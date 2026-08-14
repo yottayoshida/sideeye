@@ -2,6 +2,68 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Campaign 2's Seal A: an inherited selection, and the recovery-path rule (#83)
+
+The strict ruling made the second campaign the designated criterion-1 path, so it
+starts now. ADR 0015 records the two ways it differs from a naive re-run of
+ADR 0012, both forced by honesty rather than convenience:
+
+- **The selection seal is inherited, not re-performed.** The four remaining
+  candidates have been installed, normally run, and swept once — publicly, under
+  campaign 1's rules. Claiming a fresh "nothing has run yet" seal would be theater.
+  Instead the candidate list, order, and predicate come byte-inherited from
+  campaign 1's Seal A (merged before anything ran), minus the consumed target; the
+  only knowledge gained since is ledger-recorded permitted-source contact and the
+  public sweep exit codes. The khard random-filename observation is deliberately
+  NOT allowed to touch the predicate — dodging a known refusal shape with observed
+  behavior is the leak the seals exist to close. The risk is pre-registered
+  instead: a full-refusal exploration is a recorded result, and campaign 3
+  inherits the same way.
+- **The recovery-path rule.** Campaign 1's sharpest behavior lived in the path its
+  declaration scoped out. Campaign 2's declaration MUST declare, where the docs
+  name a recovery/undo/repair command, that running it once after a crash
+  preserves the tasks the crash left intact — declarable from docs alone, so the
+  misfire class moves inside the blind checker's reach.
+
+Mechanics: `spike/blind-hunt2/` is self-contained (fresh candidates/priority/
+ledger/configs, tooling copied and re-sealed — each campaign freezes its own
+verdict logic; campaign 1's directory stays untouched so its checkers stay
+unsighted). The adapted tooling was falsified before being trusted: select.sh
+green (picks khard from a 4-candidate manifest) and red twice (all-refused exits
+3, missing-candidate exits 2); verify-seals2 pointed at campaign 1's seals fails
+on every blind-hunt2 path — the proof it audits the new namespace, with the FAIL
+lines as the evidence (the pipeline's displayed rc was head's, worthless, the
+same trap as ever).
+
+R1 (external, covenant-instructed; no breach) found eight holes — seven P1, one
+P2 — and every one was the inherited apparatus trusted a step too far:
+
+- The recovery-path rule allowed choosing the convenient command form; campaign 1
+  itself proved two documented forms behave differently. Now: enumerate every
+  documented form with citations, freeze exact argv per checker, per-form
+  invariants, fixed-vocabulary exclusions, and an honest note that coverage is
+  review-enforced, not machine-checked.
+- Nothing consumed a selected target after a null/refusal campaign — the
+  inherited selector could pick the same name twice. Consumption is now a
+  normative rule, distinct from burns.
+- ADR 0012 governed the campaign but sat outside the A2 no-touch set; the
+  inventory now lists it — and itself (the P2).
+- The environment that decides selection was unpinned prose. The sweep manifest
+  now records the engine version and binary/shim SHA-256 (stub-tested: valid
+  JSON, fields present), the run manifest must mirror them, the ledger records
+  the image ID at sweep time, and the ADR states exactly what that does and does
+  not prove.
+- The inherited invocation rows were prose-bound. They are now sealed at Seal A
+  itself (public since campaign 1; resolution-verified in the image with no
+  target executed — the freeze cannot dead-end on a typo), and select.sh rejects
+  manifest names outside the sealed order (red-tested, exit 2).
+- sweep.sh's header still instructed copying the manifest into campaign 1's
+  directory — following it would have touched the closed campaign — and claimed
+  a freshness ("before any candidate has been installed") that ADR 0015 exists
+  to deny. Both rewritten.
+- "Knows ... exhaustively" overclaimed a self-reported ledger; now "the
+  repository records", with the ADR 0012 bounds restated beside it.
+
 ## 2026-08-14 — Ruled: the misfire does not count as "found by Sideeye" (#83)
 
 The open fork in the PRD's criterion-1 status was closed today, on the strict

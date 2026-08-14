@@ -1,0 +1,4 @@
+khard	/usr/local/bin/khard	/tmp/blind2/khard/state	-	/usr/local/bin/khard -c /work/spike/blind-hunt2/configs/khard.conf new -a main -i /work/spike/blind-hunt2/configs/khard-contact.yaml
+abook	/usr/bin/abook	/tmp/blind2/abook/state	-	/usr/bin/abook --convert --informat vcard --infile /work/spike/blind-hunt2/configs/abook-in.vcf --outformat abook --outfile /tmp/blind2/abook/state/addressbook
+khal	/usr/local/bin/khal	/tmp/blind2/khal/state	-	/usr/local/bin/khal -c /work/spike/blind-hunt2/configs/khal.conf new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
+hledger	/usr/bin/hledger	/tmp/blind2/hledger/state	/bin/cp /work/spike/blind-hunt2/configs/hledger-seed.journal /tmp/blind2/hledger/state/main.journal	/usr/bin/hledger -f /tmp/blind2/hledger/state/main.journal import /work/spike/blind-hunt2/configs/hledger-in.journal
