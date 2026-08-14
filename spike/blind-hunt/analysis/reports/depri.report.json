@@ -1,0 +1,27 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 8,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "crash_points": 2,
+  "explored": 3,
+  "violations": 1,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 2,
+    "invariant": "built-in atomicity, and the checker",
+    "after": {"op": "open", "path": "/tmp/blind/hunt/depri/state/todo.txt"},
+    "before": {"op": "write", "path": "/tmp/blind/hunt/depri/state/todo.txt"},
+    "subject": "todo.txt",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "1 file(s) judged pre-or-post",
+  "l1": "marker observed in 0 of 2 crash worlds; the post-success invariant was enforced there",
+  "case": "/tmp/blind/hunt/depri/work/cases/000001.json",
+  "replay": "sideeye replay /tmp/blind/hunt/depri/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 2 operations (2019 syscall lines examined, 25 touching the state directory)",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 3 world(s)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes", "post-only file contents (L1 checks existence only)"]
+}

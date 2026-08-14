@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.7.0",
+  "contract_version": 8,
+  "define": {
+    "state": "/tmp/blind/hunt/dep-add/state",
+    "setup": "/work/spike/blind-hunt/declaration/topydo/ops/./setup.sh dep-add",
+    "operation": "/usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/dep-add/state/todo.txt -d /tmp/blind/hunt/dep-add/state/done.txt dep add 1 to 2",
+    "check": "/work/spike/blind-hunt/declaration/topydo/ops/./check.sh dep-add",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/tmp/blind/hunt/dep-add/state/todo.txt",
+  "before_class": "write",
+  "before_path": "/tmp/blind/hunt/dep-add/state/todo.txt",
+  "violation": "hybrid"
+}

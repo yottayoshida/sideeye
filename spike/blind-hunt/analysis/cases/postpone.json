@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.7.0",
+  "contract_version": 8,
+  "define": {
+    "state": "/tmp/blind/hunt/postpone/state",
+    "setup": "/work/spike/blind-hunt/declaration/topydo/ops/./setup.sh postpone",
+    "operation": "/usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/postpone/state/todo.txt -d /tmp/blind/hunt/postpone/state/done.txt postpone 1 1w",
+    "check": "/work/spike/blind-hunt/declaration/topydo/ops/./check.sh postpone",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/tmp/blind/hunt/postpone/state/todo.txt",
+  "before_class": "write",
+  "before_path": "/tmp/blind/hunt/postpone/state/todo.txt",
+  "violation": "hybrid"
+}

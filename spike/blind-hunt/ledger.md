@@ -178,3 +178,22 @@ What belongs here:
   pinned container (`sideeye 0.7.0 (trace contract v8)`, nonexistent shim): every
   one parses and stops at state resolution (exit 3). No topydo execution. This
   replaces the host-binary measurement the R1 entry above corrected.
+- **2026-08-14 — the exploration ran; the campaign's blind phase is over.** Seal B is
+  the merge commit `5a034aff`; `run.sh` explored all thirteen declared operation
+  forms from it, in a clean tree, in the pinned container. `verify-seals a21b0933
+  5a034aff <run-manifest> <sealed-reports>` returns ALL SEAL CHECKS PASSED (R1
+  audited). Results: 12 FAIL, 1 PASS (`ls`, the declared read-only form, recorded
+  zero state-changing operations as expected). Raw reports, saved cases and the
+  post-seal analysis live in `spike/blind-hunt/analysis/`.
+  **From this entry on, the blind restrictions no longer bind** — the declaration is
+  frozen and the measurement it was written for has happened, so reading traces or
+  behavior of topydo is now ordinary analysis. **Two things stay restricted by
+  choice**: the target's bug tracker is still unread (novelty is unclaimed until a
+  deliberate check), and `spike/blind-hunt/declaration/` is not edited (an edit
+  would retroactively mark the checkers sighted, ADR 0012).
+- **2026-08-14 — correction recorded before it could become a claim.** The first
+  reading of the recovery measurements was "the data is unrecoverable": plain
+  `revert` both refused and, in other worlds, undid an older command. Measuring the
+  documented forced form (`revert <NUMBER>`, one sentence further down in the same
+  help text) showed full recovery in every case tried. Nothing wrong was published;
+  the entry exists because the near-miss is the reportable part.

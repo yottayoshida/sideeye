@@ -1,0 +1,50 @@
+===== setup (plain topydo, default config, backups on) =====
+|  1| 2026-08-14 water-plants
+Completed: x 2026-08-14 2026-08-14 water-plants
+--- todo.txt ---
+
+--- done.txt ---
+x 2026-08-14 2026-08-14 water-plants
+--- filenames ---
+.todo.bak
+done.txt
+todo.txt
+
+===== the crash: kill at point 3 (after open(done.txt), before write) =====
+operation rc=137 (137 = SIGKILL)
+
+===== state after the crash =====
+--- todo.txt ---
+Killed
+
+[end]
+--- done.txt ---
+[end]
+--- filenames ---
+.todo.bak
+done.txt
+todo.txt
+--- byte sizes ---
+1 /tmp/repro/revert/todo.txt
+0 /tmp/repro/revert/done.txt
+1 total
+
+===== can the user get the task back? =====
+$ topydo ls -x
+rc=0
+$ topydo revert ls
+  1| 2026-08-14 00:57:51 | do 1
+  2| 2026-08-14 00:57:51 | add water-plants
+rc=0
+$ topydo revert   (the documented recovery)
+Reverted to state before: do 1
+rc=0
+--- todo.txt after recovery attempt ---
+2026-08-14 water-plants
+[end]
+--- done.txt after recovery attempt ---
+
+[end]
+$ topydo ls -x
+|1| 2026-08-14 water-plants
+rc=0

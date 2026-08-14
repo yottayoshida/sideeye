@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.7.0",
+  "contract_version": 8,
+  "define": {
+    "state": "/tmp/blind/hunt/revert/state",
+    "setup": "/work/spike/blind-hunt/declaration/topydo/ops/./setup.sh revert",
+    "operation": "/usr/local/bin/topydo -t /tmp/blind/hunt/revert/state/todo.txt -d /tmp/blind/hunt/revert/state/done.txt revert",
+    "check": "/work/spike/blind-hunt/declaration/topydo/ops/./check.sh revert",
+    "marker": "Reverted to state before:",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 7,
+  "prefix_hash": "ecdde2900e148f37",
+  "after_class": "open",
+  "after_path": "/tmp/blind/hunt/revert/state/done.txt",
+  "before_class": "write",
+  "before_path": "/tmp/blind/hunt/revert/state/done.txt",
+  "violation": "hybrid"
+}

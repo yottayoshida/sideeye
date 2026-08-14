@@ -1,0 +1,28 @@
+|  1| 2026-08-14 water-plants
+Completed: x 2026-08-14 2026-08-14 water-plants
+checker(revert): task 'water-plants' is in neither todo.txt nor done.txt — lost
+checker(revert): task 'water-plants' is in neither todo.txt nor done.txt — lost
+checker(revert): task 'water-plants' is in neither todo.txt nor done.txt — lost
+checker(revert): task 'water-plants' is in neither todo.txt nor done.txt — lost
+checker(revert): task 'water-plants' is in neither todo.txt nor done.txt — lost
+checker(revert): task 'water-plants' is in neither todo.txt nor done.txt — lost
+FAIL  5 of 8 crash worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 3 of 7
+            after  open(/tmp/blind/hunt/revert/state/done.txt)
+            before write(/tmp/blind/hunt/revert/state/done.txt)
+path        done.txt
+observed    holding neither the old nor the new content
+explored    8 worlds (crash points 7 + 1 baseline)
+expected    exit 0
+atomicity   3 file(s) judged pre-or-post
+oracle      agreed on 7 operations (2143 syscall lines examined, 87 touching the state directory)
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+l1          marker observed in 0 of 7 crash worlds; the post-success invariant was enforced there
+case        /tmp/blind/hunt/revert/work/cases/000001.json
+replay      sideeye replay /tmp/blind/hunt/revert/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only)
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/blind/hunt/revert/state SIDEEYE_TRACE_PATH=/tmp/blind/hunt/revert/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=3 <operation>

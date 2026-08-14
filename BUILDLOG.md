@@ -2,6 +2,62 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The blind hunt ran: twelve of thirteen operations produced a counterexample (#83)
+
+Seal B merged as `5a034aff`, and the exploration ran from that commit in a clean
+tree, in the pinned container. `verify-seals a21b0933 5a034aff <run-manifest>
+<sealed-reports>` prints **ALL SEAL CHECKS PASSED (R1 audited)** — the first time
+the verdict line has come back without PARTIAL, because the run manifest finally
+exists to audit. The declaration order is now a checked fact rather than a claim.
+
+**Result: twelve FAIL, one PASS.** The ten single-file operations each violated
+the declared conservation invariant in the window between opening the active list
+and writing it; `do` and `revert` failed across the file pair (2 of 5 and **5 of
+8** worlds). `ls`, declared read-only, recorded zero state-changing operations and
+passed — the one declared operation whose expected result was "nothing to explore"
+delivered exactly that, which is the honest control this run needed.
+
+**The saved cases replay in a fresh container with nothing else installed** —
+exit 1, `the case reproduced`, for every case tried. That is the property the
+timewarrior finding never had (`#82`: a recipe bound to a built binary). The
+in-image resolution leg of the sealed predicate was a structural proxy for this,
+and the proxy held.
+
+Then the part that matters more than the truncation window, and the part that is
+**analysis, not automated discovery** — I followed the FAILs into the documented
+recovery path, after the seal, and `analysis/findings.md` keeps the two halves
+apart on purpose:
+
+- The data is recoverable, but through the *numbered* form: `revert 1` restored
+  the intact pre-crash state every time, including worlds where the active list
+  had been emptied. My first reading of the measurements was "unrecoverable" —
+  the forced form is documented one sentence below the one I had leaned on, and
+  measuring it before writing is the only reason this entry does not contain a
+  false claim.
+- The no-argument form — the one the docs lead with — does something else. For
+  `add`, in **3 of its 5 crash worlds**, the crash left the pre-existing task
+  intact and plain `revert` then deleted it, exiting 0 with `Reverted to state
+  before: add seed-task`: a command the user never pointed at. In 2 worlds it
+  refused. The cause is legible from the outside: after the interrupted write
+  the file is byte-identical to an *older* snapshot, so the search for "a backup
+  corresponding to the current state" matches the older entry and rolls past
+  work the crash never touched.
+- The target's own two documentation sources disagree about this case — the help
+  text promises refusal when the latest backup does not match; the documentation
+  tiddler describes searching for any backup that corresponds to the current
+  state. The behavior follows the second; under the first it should have refused.
+  Whether upstream knows is **not checked** — the reference rules forbade the bug
+  tracker, and lifting that is a deliberate step before any report, not a thing
+  to do while writing up.
+
+**What the campaign may and may not claim.** Declared-before-known: yes, and
+machine-checked. Found by the search: yes for the crash windows. Novel: unknown,
+and the file says so. Real bug: yotta's judgement, not asserted here. And ten of
+the twelve ran with `backup_count = 0` — our own declared config, safety net off
+by our choice — so their weight is bounded by exactly the thing the declaration
+said it would not check. `do` and `revert` ran at the default and did not need
+that caveat.
+
 ## 2026-08-14 — The topydo declaration, written blind (#83, toward Seal B)
 
 The declaration phase ADR 0012 authorizes: everything the exploration will be

@@ -1,0 +1,8 @@
+|  1| 2026-08-14 water-plants
+PASS  the operation performed nothing that can change the state directory
+      explored 0 crash points; nothing to kill before
+      expected status: 0
+      atomicity: 1 file(s) judged pre-or-post
+      l1: no marker configured
+      case: (none)
+      not tested: power loss, torn writes, concurrent processes

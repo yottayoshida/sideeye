@@ -152,6 +152,16 @@ Entry criteria — all must hold, none may be argued around:
 
 If criterion 1 cannot be met, v1.0 does not ship — the kill analysis ships instead.
 
+**Criterion 1 status (2026-08-14, after the blind campaign on topydo 0.14).** Three of its legs are now closed and three remain, and the split is deliberate rather than rhetorical:
+
+- **found by Sideeye — closed, blind.** Twelve of thirteen declared operation forms produced a counterexample from an invariant committed before any crash world of that target existed. `verify-seals` returns ALL SEAL CHECKS PASSED (R1 audited) against Seal B `5a034aff`, so the ordering is machine-checked, not asserted (DESIGN §17, and the three honesty bounds it carries).
+- **kept as a replayed regression case — closed.** Each saved case replays inside the pinned image with no target build (`exit 1`, `the case reproduced`). This is the shape `#82` asks for; the timewarrior recipe could not provide it.
+- **novel — open, and deliberately unmeasured so far.** The campaign's reference rules forbade the target's bug tracker. Lifting that restriction is a separate, explicit step, and it must happen before any upstream report or any claim of novelty.
+- **real / author-confirmed — open.** Not asserted by the run. The sharpest observed behavior lives in the documented recovery path and is *post-seal analysis*, not automated discovery; `spike/blind-hunt/analysis/findings.md` keeps the halves apart.
+- **fixed — open.** Not attempted.
+
+A null result was budgeted for and did not happen; what remains is judgement and verification work, not another search.
+
 ## Sequencing rationale
 
 - **Linux before macOS:** retire engine risk before platform risk.
