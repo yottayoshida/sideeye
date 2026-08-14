@@ -224,3 +224,10 @@ What belongs here:
     search can see, this one is novel — with the standing caveat that it was
     reached by post-seal human analysis following the automated FAILs, not by the
     blind search itself.
+- **2026-08-14 — the recovery misfire was reported upstream: `topydo/topydo#341`.**
+  New issue, filed after the novelty check above and with the text approved verbatim
+  (observation / plain-printf reproduction / conditions / risk / confirmation
+  request; no fix proposal, no tooling named; #318 referenced as related context).
+  The crash-window destruction itself was NOT reported: #318 already covers that
+  phenomenon, and re-reporting it would add a duplicate, not information. Filed
+  from the project author's account. Next contact point: maintainer response on #341.
