@@ -2,6 +2,24 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — #28: the version-mismatch test stops sharing its path, measured at 82% (#28)
+
+The contract-version unit test wrote to a fixed `/tmp/sideeye-version-test/` and
+`zig build test` runs the engine's tests in more than one concurrent binary. It
+cost three CI round trips today alone — different assert lines each time, which
+is what losing a race at different points looks like. The fix is the issue's own
+prescription: a pid-suffixed directory (`posix.getpid()`, one new extern).
+
+The measurement is the part worth recording. The first reproduction harness — an
+external loop deleting the shared path — never landed in the microsecond windows:
+its positive control stayed green at 0/15, which means it measured nothing, and
+a "0 failures" from the fixed binary under that harness would have been the
+day's fourth verified-nothing claim. The real adversary is another copy of the
+same test binary, in phase over the same sequence (its `rmdir` is also the only
+thing that can make `open(O_CREAT)` fail, explaining the `fd2 >= 0` variant).
+Two old binaries racing: **66 of 80 runs failed**. Two fixed binaries racing:
+0 of 80. The flake was never rare — CI was just rolling one die per push.
+
 ## 2026-08-14 — Campaign 2's Seal A: an inherited selection, and the recovery-path rule (#83)
 
 The strict ruling made the second campaign the designated criterion-1 path, so it
