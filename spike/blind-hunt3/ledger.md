@@ -44,3 +44,13 @@ and voids land in `voided-seals.txt` with their narrative here.
   ledger narrative itself names campaign 2 legitimately, so a whole-tree
   grep does hit; and the verifier's header summary now states B1 as the code
   checks it (invocations sealed at A; only the manifest first appears at B).
+- **2026-08-14 — the campaign-3 sweep ran once, through the driver, from
+  Seal A `2239fba`.** Image `sideeye-blindhunt@sha256:d3d28e791276…` (recorded
+  in the manifest via SWEEP_IMAGE), engine `sideeye 0.7.0 (trace contract
+  v8)`, engine and shim SHA-256 in the manifest, invocations hash matching
+  the sealed rows. Verdicts, displayed per the harness contract as exit
+  codes only: **khal 0 / hledger 2** — the same public values as both prior
+  sweeps; hledger's refusal reason remains sealed and unread. The full
+  reports went unread into `artifacts/sweep-2239fba/sealed-reports/` (local;
+  only their hashes travel in the manifest). The manifest is committed
+  beside the sealed rows in the same commit as this entry.
