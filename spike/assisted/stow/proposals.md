@@ -22,12 +22,14 @@ behavior probes. No external service needed.
 
 ## P2 — `stow -D` unstow (recorded, not implemented first)
 
-- **why/what**: unstow removes links and re-folds; interrupting it must not
-  damage the surviving package. Deferred: P1's unfold is the sharper
+- **why**: unstow removes links and re-folds. **what property**:
+  interrupting it must not damage the surviving package. **where from**:
+  the help text (`-D, --delete`). Deferred: P1's unfold is the sharper
   multi-step window.
 
 ## P3 — `stow -R` restow (recorded, not implemented)
 
-- **why/what**: documented as "-D followed by -S" — the phrasing itself
-  admits a window where the package is absent; the meaningful conserved
-  entity is again the OTHER package. Deferred as a variant of P1/P2.
+- **why**: documented as "-D followed by -S" — the phrasing itself admits
+  a window where the package is absent. **what property**: the OTHER
+  package survives. **where from**: the help text (`-R, --restow`).
+  Deferred as a variant of P1/P2.

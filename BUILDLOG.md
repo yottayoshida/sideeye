@@ -2,9 +2,12 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-14 — The assisted-discovery cohort: five targets, 23 minutes, the wall moved (#118)
+## 2026-08-14 — The assisted-discovery cohort: five targets, five verdicts, the human half still owed (#118)
 
-The #118 experiment ran end to end: five fresh apt-installable targets
+The #118 experiment's measured half ran end to end (the human
+meaningful-question scoring — part of the success signal by the protocol's
+own definition — is still owed to yotta, so the signal is NOT claimed
+cleared): five fresh apt-installable targets
 (buku, pass, calcurse, stow, devtodo — todo-txt verified installable and
 excluded because the scout already knows the todo.txt format's crash shapes
 from campaign 1), one measured window each, the SCOUT.md loop as the only
@@ -20,23 +23,39 @@ itself), replay-confirmed but resting on --allow-unverified.
 
 The equally important half: three of five funnels stopped at the ENGINE,
 not at the scout. fchown (buku/sqlite), symlinkat (stow/perl), fchmodat
-(devtodo) — the `*at` metadata family is missing from the trace contract,
-each absence eliminating a target family; and pass is multi-process by
-construction (a shell script execing coreutils/gpg), outside the
-single-process crash model entirely. Every one of those questions was
+(devtodo) — three measured absences from the trace contract, no common
+family claimed (the first draft's "*at family" was technically false and
+R1 said so); and pass's measured refusal is exec image replacement —
+that shell-script CLIs hit it as a class is inference, labeled as such. Every one of those questions was
 posed, with why/what-property/where-from metadata, in under two minutes —
-the judge just could not execute them. Against #118's success signal:
-every window landed in 1m30s–11m29s versus the campaign-measured ~1.5h
-blind arc; the wall this experiment was built to measure is down an order
-of magnitude, and what remains standing is engine coverage, which is
-issueable, buildable work rather than a skill wall.
+the judge just could not execute them. Against #118's success signal: T0→define landed in 1m25s–5m02s on all
+five. The blind-arc comparison sits in RESULTS as context, not a ratio —
+the scopes differ in almost every dimension (this branch's own
+apparatus-to-results arc was ~25 minutes for five targets; campaign 3's
+sealed arc ~1.5h for one). What remains standing after the scout is engine
+coverage — issueable, buildable work rather than a skill wall — plus the
+human meaningfulness verdict.
 
 Also on the record: DeepWiki was wrong once about the pinned build (buku's
-env var — re-measured, corrected); the calcurse proposal artifact was
-formalized after its define (admitted in the artifact); a grep pipe ate one
-exit code before the raw-rc habit caught it; and SCOUT.md gained a
-measured-lessons section (engine env inheritance, sleep-2 determinism
-probes, proposal-artifact-first, preflight's flag surface).
+env var — re-measured, corrected); the proposal-artifact-first rule was
+broken on THREE of five targets (calcurse, stow, devtodo — the first
+summary admitted only calcurse; R1 caught the other two by file birth
+times); a grep pipe ate one exit code before the raw-rc habit caught it;
+and SCOUT.md gained a measured-lessons section.
+
+R1 of this branch: sixteen findings, all adopted. The load-bearing ones
+beyond the above: the committed saved cases embedded gitignored paths and
+could not replay from a fresh checkout — every target was RE-RUN from the
+committed ops dirs (identical verdicts), committed launcher scripts now
+carry the exact environment (the buku/pass defines were irreproducible
+without it), and the buku claim chain gained its committed artifacts
+(strict report, replay transcript, the target's own error line). The
+calcurse "verified" is scoped: the oracle's account covers the declared
+data subtree, with the config dir deliberately ambient. The devtodo
+checker counted lines, not occurrences; stow's dangling-link scan piped
+find into head (fail-open); both hardened, both still unexercised by any
+exploration. The Dockerfile's "pinned" claim is corrected to pinned-by-
+build with the actually-run versions recorded.
 
 ## 2026-08-14 — Campaign 3 explored: khal, three ops, zero violations (#83)
 

@@ -1,69 +1,106 @@
 # Assisted discovery — first cohort results (#118)
 
 Five targets, one agent scout (with DeepWiki available), one measured
-window each, 2026-08-14 13:54–14:17 UTC. Per-target logs, proposals with
-their why/what-property/where-from metadata, defines, reports and saved
-cases live beside this file under `<target>/`.
+window each, 2026-08-14 13:54–14:17 UTC. Per-target logs, proposals,
+defines, committed reports, saved cases and replay transcripts live beside
+this file under `<target>/`. Every artifact cited below is committed; the
+saved cases embed tracked paths and replay from a fresh checkout (verified
+after R1 caught the first versions embedding gitignored paths).
 
 ## The table
 
-| Target | Window (T0 → verdict) | Outcome | Where the funnel stopped |
-|--------|----------------------|---------|--------------------------|
-| buku | 11m29s (incl. 2 checker narrowings; replay-confirmed) | strict: UNKNOWN `fchown` · unverified oracle: **FAIL 2/22** — mid-write crash leaves bookmarks.db neither-old-nor-new; buku's own open says "file is not a database"; replay-confirmed | engine (fchown) |
-| pass | 2m06s | UNKNOWN `child_process_detected` — shell script execing coreutils/gpg | engine (multi-process) |
-| calcurse | **1m49s** (replay-confirmed) | **VERIFIED FAIL 1/11** — an interrupted `-P --purge` truncates `apts` and destroys the bystander event it never named; strict oracle agreed 10/10 | — (clean finding) |
-| stow | 1m30s | UNKNOWN `symlinkat` | engine (symlinkat) |
-| devtodo | 2m00s | UNKNOWN `fchmodat` (not dodgeable from the define) | engine (fchmodat) |
+Three clocks, stated separately (R1: the first version mixed them):
 
-## Against #118's success signal
+| Target | T0 → define | T0 → first verdict | T0 → replay-confirmed | Outcome |
+|--------|------------|--------------------|-----------------------|---------|
+| buku | 5m02s | 10m26s (after 2 checker narrowings) | 11m29s | strict: UNKNOWN `fchown` · `--allow-unverified`: **FAIL 2/22** (L0: mid-write crash leaves bookmarks.db neither-old-nor-new; buku's own recovery-open printed "file is not a database" — `target-error-line.txt`) |
+| pass | 2m05s | 2m06s | — | UNKNOWN `child_process_detected` — the report's own words: "the target replaced its own image (exec)" |
+| calcurse | 1m25s | 1m25s | 1m49s | **FAIL 1/11, strict oracle agreeing on all 10 operations** — an interrupted `-P --purge` truncates `apts` and destroys the bystander event it never named |
+| stow | 1m29s | 1m30s | — | UNKNOWN `symlinkat` |
+| devtodo | 1m39s | 2m00s | — | UNKNOWN `fchmodat` (not dodgeable from the define) |
 
-- **Setup time**: every window landed between 1m30s and 11m29s — inside
-  (buku marginally over) the 1–10 minute bar, against a campaign-measured
-  baseline of ~1.5 hours for a full blind arc. The wall the experiment was
-  built to measure is down by an order of magnitude.
-- **Meaningful explorations**: 2 of 5 funnels reached exploration; both
-  produced counterexamples of their declared, metadata-carried property
-  (one verified, one unverified-oracle). The other 3 stopped at the
-  ENGINE, not at the scout: the questions were posed with metadata in
-  under two minutes each, and the judge could not execute them.
-- **Human judgement (yotta)**: the meaningful-question scoring column in
-  each RUNLOG is deliberately unfilled — that call is not the agent's.
+## Against #118's success signal — NOT yet cleared, by design
+
+- **Setup time (T0 → define)**: 1m25s–5m02s across all five — inside the
+  1–10 minute bar.
+- **Meaningful explorations**: the signal requires a HUMAN to judge
+  meaningfulness against the proposal metadata, and that scoring
+  (the ☐ boxes in every RUNLOG) is deliberately unfilled — so this cohort
+  does **not** claim the signal cleared. What the agent can claim: 2 of 5
+  funnels reached exploration and produced counterexamples of their
+  declared, metadata-carried properties; the other 3 stopped at engine
+  boundaries, with their questions posed (metadata attached) in under two
+  minutes each.
+- **Context, not a ratio claim** (R1: the first version drew an
+  order-of-magnitude comparison across unlike scopes): this branch's whole
+  apparatus-to-results arc — image build, five windows, re-runs — spans
+  roughly 25 minutes of wall clock for five targets; campaign 3's full
+  blind arc (seals, covenant reviews, exploration) measured ~1.5 hours for
+  one target. The scopes differ in almost every dimension (blindness,
+  review discipline, artifact rigor), so the numbers sit here as context.
+  The like-for-like cell is declaration work: hours of skilled reading in
+  the campaigns versus minutes of scouted define here — with the human
+  meaningfulness verdict still owed.
 
 ## What the cohort actually found
 
-1. **calcurse (verified)**: `-P --purge` — "Read items and write them
-   back", per its own help — rewrites `apts` in place through truncation;
-   a crash between `open` and `write` destroys events the purge never
-   named. The topydo class from campaign 1, reached in 109 seconds.
-   Novelty deliberately unchecked (no tracker search; that is a separate
-   step with its own rules).
-2. **buku (unverified oracle)**: a mid-write crash leaves the sqlite db
-   unreadable to buku itself in 2/22 worlds. Needs the fchown gap closed
-   before it can be a verified claim.
-3. **Three engine coverage gaps forming one class**: the `*at` metadata
-   family — `fchown` (buku/sqlite), `symlinkat` (stow/perl), `fchmodat`
-   (devtodo) — is outside the trace contract, and each absence turns a
-   whole target family into UNKNOWN. Multi-process targets (pass, and
-   every shell-script CLI by construction) are a fourth, separate gap.
-4. **Determinism cartography comes free**: the scout measured, per target,
-   which operations are byte-reproducible (buku add over same pre-state;
-   pass same-id mv; calcurse purge; devtodo remove) and which are
-   refusal-shaped and why (gpg session keys; random UIDs; epoch stamps —
-   devtodo's being per-second flaky, the worst kind). This is exactly the
-   input #84's UNKNOWN-rate work wants.
+1. **calcurse**: `-P --purge` — "Read items and write them back", per its
+   own help — rewrites `apts` in place through truncation; a crash between
+   `open` and `write` destroys events the purge never named. FAIL 1/11,
+   oracle agreeing on all 10 operations, case replay-confirmed
+   (`replay-transcript.txt`). **Scope caveat (R1)**: "verified" covers the
+   declared state root (the data dir); the config dir was deliberately
+   ambient outside it and the target writes there too, so the oracle's
+   account is of the data subtree, not of every byte the process touches.
+   Novelty deliberately unchecked (no tracker search; separate step).
+2. **buku (weaker claim, stated)**: a mid-write crash leaves the sqlite db
+   unreadable to buku itself in 2/22 worlds; replay-confirmed
+   (`replay-transcript.txt`) but resting on `--allow-unverified` — the
+   strict run is UNKNOWN (`report-strict.json`: fchown), so nothing checked
+   the shim's completeness. A verified version needs that gap closed.
+3. **Three unsupported syscalls, one per target** — `fchown`
+   (buku/sqlite), `symlinkat` (stow/perl), `fchmodat` (devtodo) — are
+   outside the trace contract. (R1: the first version dressed these as a
+   "`*at` metadata family", which is technically false — fchown is not an
+   *at name and symlinkat creates entries rather than changing metadata.
+   Three measured absences, no invented class.) Each absence blocked one
+   target here; how wide each gap reaches is untested.
+4. **pass**: the measured refusal is **exec image replacement** — the
+   report says "single process" and "the target replaced its own image".
+   That a shell-script CLI class (pass, todo.txt-cli, nb, …) would hit the
+   same wall is a reasonable expectation, but it is inference, not a
+   measurement of this cohort.
+5. **Determinism seams, measured where stated**: buku's add over the same
+   pre-state is byte-identical; pass's same-id mv is tree-identical;
+   calcurse's purge is byte-identical; devtodo's remove is byte-identical
+   across a deliberate 2-second gap while its add/done stamp epoch seconds
+   and differ across that gap — the per-second-flaky shape. Refusal-shaped
+   paths and their measured/cited reasons: gpg session keys and lock
+   salt/IV (pass, buku's lock — cited from scout sources), epoch stamps
+   (devtodo — measured). This feeds #84's UNKNOWN-rate work.
 
-## Honest limits
+## Honest limits and process slips
 
 - One cohort, one scout, five apt-installable targets — no claim beyond
-  them. The scout carried general crash-shape class knowledge (declared,
-  as everywhere in this repo); the 15-minute budget was never binding.
+  them. The scout carries general crash-shape class knowledge (declared,
+  as everywhere in this repo); the 15-minute budget never bound.
+- **The proposal-artifact-first rule was broken on three of five targets**
+  (calcurse, stow, devtodo): their `proposals.md` files were written after
+  their explorations, with the metadata living in toml/checker comments at
+  define time. The first version of this file admitted only calcurse; R1
+  caught the other two by file birth times. The RUNLOG timing rows for
+  stow and devtodo are corrected accordingly.
 - DeepWiki was consulted for two targets and was WRONG once about the
-  pinned version's behavior (buku's env var) — external
-  repo-understanding output must be re-measured against the pinned build,
-  which the loop did.
-- buku's FAIL rests on `--allow-unverified`; the report says so and so
-  does this file.
-- Process slips, recorded: the calcurse proposal artifact was formalized
-  after its define (metadata existed in comments; the protocol wants the
-  artifact first), and one rc was read through a grep pipe before the
-  raw-rc habit caught it.
+  pinned build (buku's env var) — external repo-understanding output must
+  be re-measured against the pinned version, which the loop did.
+- The image is pinned by build, not by manifest: the Dockerfile uses a
+  mutable base tag and unversioned apt installs (R1). What actually ran:
+  buku 4.7+ds-1, pass 1.7.4, calcurse 4.7.1, stow 2.3.1, devtodo
+  0.1.20+git20200830, on bookworm-slim as of 2026-08-14.
+- Pre-window contact (install + `--version` only) is recorded in
+  PROTOCOL.md's target table and the apparatus commit, not per-RUNLOG; the
+  rule is therefore auditable only at cohort level.
+- stow's and devtodo's checkers were never exercised by an exploration
+  (their runs went UNKNOWN before the falsification gate); their red sides
+  are unmeasured, and two of their legs were hardened post-R1 (an
+  occurrence count and a pipeline-free dangling-link scan).

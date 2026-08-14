@@ -5,9 +5,9 @@
   "contract_version": 8,
   "define": {
     "state": "/tmp/assisted/buku/state",
-    "setup": "/work/spike/assisted/runs/buku/ops/./setup.sh",
+    "setup": "/work/spike/assisted/buku/ops/./setup.sh",
     "operation": "/usr/bin/buku --nostdin --np --tacit --add https://example.com/x ada --title AdaMark",
-    "check": "/work/spike/assisted/runs/buku/ops/./check.sh",
+    "check": "/work/spike/assisted/buku/ops/./check.sh",
     "expected_status": 0
   },
   "k": 18,

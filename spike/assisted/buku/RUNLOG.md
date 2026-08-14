@@ -41,9 +41,12 @@
 invariant (L0), not the hand-written checker**: a crash between two
 `write(bookmarks.db)` calls leaves the db holding neither the old nor the
 new content, and in at least one world buku's own recovery-open reports
-`initdb(): file is not a database`. Case `cases-v3/000001.json`
-**replay-confirmed in a fresh container** (same crash point 18, same L0
-violation, no target build). Claim strength: weaker by construction —
+`initdb(): file is not a database` (committed: `target-error-line.txt`).
+Case `cases/000001.json` — re-run from the committed ops dir after R1
+found the first case embedding gitignored paths — **replay-confirmed in a
+fresh container** (same crash point 18, same L0 violation, no target
+build; transcript committed as `replay-transcript.txt`; the strict UNKNOWN
+as `report-strict.json`). Claim strength: weaker by construction —
 `--allow-unverified` means nothing checked the shim's completeness; a
 verified version of this finding needs the engine's fchown gap closed
 first.

@@ -24,11 +24,13 @@ requires; the runlog and this admission are the correction.
 
 ## P2 — `-i <file>` import (recorded, not implemented first)
 
-- **why/what**: iCal import appends events into `apts`; conservation of
-  existing entries through the import write. Deferred: P1 covers the same
+- **why**: import appends into `apts`. **what property**: conservation of
+  existing entries through the import write. **where from**: the help text
+  (`-i, --import <file>`). Deferred: P1 covers the same
   files with the sharper (rewrite) window.
 
 ## P3 — `-g --gc` garbage collector (recorded, not implemented)
 
-- **why/what**: "Run the garbage collector" — a cleanup writer; interrupting
-  cleanup must not damage live data. Deferred for the same reason.
+- **why**: a cleanup writer. **what property**: interrupting cleanup must
+  not damage live data. **where from**: the help text (`-g, --gc: Run the
+  garbage collector`). Deferred for the same reason.

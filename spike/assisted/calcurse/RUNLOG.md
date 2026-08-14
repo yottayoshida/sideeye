@@ -9,7 +9,7 @@
 | T3 | 14:11:12 | 1m25s | exploration verdict: FAIL, strict oracle agreed |
 | T4 | 14:11:36 | **1m49s** | saved case replay-confirmed |
 
-## Result (VERIFIED — full oracle agreement, 10/10 operations)
+## Result (oracle agreed on all 10 operations — scope caveat below)
 
 **FAIL 1 of 11 crash worlds, violating both the engine's built-in atomicity
 AND the declared checker**: `-P --purge` ("Read items and write them back",
@@ -32,8 +32,11 @@ assisted loop in under two minutes, with the strict oracle on.
   "Read items and write them back").
 - `-D`/`-C` flags meant no environment plumbing at all (the buku lesson did
   not recur).
-- The config dir is ambient (outside state): its write-back determinism is
-  unmeasured and the declared property concerns the data files.
+- **Scope caveat (R1 finding 6)**: the config dir is ambient (outside the
+  state root) and the target writes there too — the oracle's account and
+  any "verified" wording cover the declared data subtree, not every byte
+  the process touches. The declared property concerns the data files by
+  design; the caveat is about how far "verified" reaches.
 
 ## Human judgement (yotta, post-run)
 

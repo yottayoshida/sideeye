@@ -26,5 +26,6 @@ probes. No external service needed.
 
 ## P3 — `--reparent` (recorded, not implemented)
 
-- tree surgery over the same XML; deferred as a variant of P1's rewrite
-  window.
+- **why**: tree surgery over the same XML rewrite. **what property**:
+  notes not named by the reparent survive. **where from**: the help text
+  (`-R, --reparent ARG`). Deferred as a variant of P1's window.

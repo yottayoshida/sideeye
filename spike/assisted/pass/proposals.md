@@ -23,8 +23,9 @@ on zx2c4/password-store, behavior probes.
 
 ## P2 — `pass rm -f <entry>` (recorded, not implemented first)
 
-- **why/what**: rm + rmdir -p of emptied parents; deleting one entry must
-  not damage the others. Deferred — P1 covers the same store with the
+- **why**: rm + rmdir -p of emptied parents. **what property**: deleting
+  one entry must not damage the others. **where from**: the help text
+  (`pass rm`) and the DeepWiki-cited cmd_delete flow. Deferred — P1 covers the same store with the
   richer window.
 
 ## P3 — cross-gpg-id move / generate / insert (recorded: refusal-shaped)

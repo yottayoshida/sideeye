@@ -5,9 +5,9 @@
   "contract_version": 8,
   "define": {
     "state": "/tmp/assisted/calcurse/state",
-    "setup": "/work/spike/assisted/runs/calcurse/ops/./setup.sh",
+    "setup": "/work/spike/assisted/calcurse/ops/./setup.sh",
     "operation": "/usr/bin/calcurse -D /tmp/assisted/calcurse/state/d -C /tmp/assisted/calcurse/conf -P --filter-pattern AdaMeeting",
-    "check": "/work/spike/assisted/runs/calcurse/ops/./check.sh",
+    "check": "/work/spike/assisted/calcurse/ops/./check.sh",
     "expected_status": 0
   },
   "k": 10,

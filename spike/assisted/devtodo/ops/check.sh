@@ -14,7 +14,9 @@ fail() { echo "checker(devtodo-remove): $*"; exit 1; }
 [ -f "$DB" ] || fail "the .todo database is missing (it existed before the operation)"
 
 # ---- file legs ----
-g=$(grep -c "GraceNote" "$DB")
+# grep -o | wc -l counts OCCURRENCES; grep -c counts lines and would call
+# two GraceNotes on one line "1" (R1 finding 9).
+g=$(grep -o "GraceNote" "$DB" | wc -l | tr -d ' ')
 [ "$g" -eq 1 ] || fail "I-C: expected exactly one GraceNote in the XML, got $g"
 python3 -c "import xml.etree.ElementTree as ET; ET.parse('$DB')" 2>/dev/null \
     || fail "I-F: the database is not well-formed XML"

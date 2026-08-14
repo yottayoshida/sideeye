@@ -35,8 +35,11 @@ touch.
 
 - **Pre-window contact is install + `--version` only.** Reading a target's
   source or docs outside its measured window would smuggle knowledge into
-  the clock. The installability probe (recorded in the run log) did exactly
-  install + version and nothing else.
+  the clock. The installability probe did exactly install + version and
+  nothing else; its record lives at COHORT level (this file's target table
+  and the apparatus commit), not per-RUNLOG — so the rule is auditable for
+  the cohort, and per-target only on trust (R1 finding 15, stated rather
+  than papered over).
 - **The window opens at the scout's first repo/docs contact** for that
   target and every phase boundary is timestamped (`date -u`).
 - **The window closes at first meaningful exploration**: the engine

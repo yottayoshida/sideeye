@@ -21,7 +21,11 @@ got=$(cat "$S/target/sub/grace.txt" 2>/dev/null)
 [ "$(cat "$S/stowdir/B/sub/ada.txt" 2>/dev/null)" = "ada-content" ] || fail "package B's source file changed or vanished"
 
 # ---- no dangling links anywhere in the target ----
-bad=$(find "$S/target" -type l ! -exec test -e {} \; -print | head -3)
+# No pipe: a find error must fail the leg, not vanish into a pipeline's
+# exit code (R1 finding 16).
+bad=$(find "$S/target" -type l ! -exec test -e {} \; -print)
+frc=$?
+[ "$frc" -eq 0 ] || fail "the dangling-link scan itself failed (find rc $frc)"
 [ -z "$bad" ] || fail "dangling symlink(s) in the target: $bad"
 
 exit 0

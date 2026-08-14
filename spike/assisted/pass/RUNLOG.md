@@ -10,10 +10,11 @@
 
 ## Result
 
-**UNKNOWN `child_process_detected`** — pass is a shell script that execs
-`mv`/`mkdir`/`rmdir`/`gpg` as child processes; the engine's crash-point
-addresses do not survive an image change, so the run is honestly refused
-(exit 2, "not a pass"). Atomicity pre-judged 5 files before the refusal.
+**UNKNOWN `child_process_detected`** — the report's own words: the target
+"replaced its own image (exec)", and crash-point addresses do not survive
+an image change; the run is honestly refused (exit 2, "not a pass").
+Atomicity pre-judged 5 files before the refusal. The measured gap is exec
+image replacement, precisely (R1 finding 5).
 
 Funnel stall point: explore. The define itself is sound (probes: same-id
 `pass mv` over the same pre-state is tree-byte-identical; fixed secrets
@@ -21,9 +22,10 @@ round-trip through `insert -e`/`show` exactly).
 
 ## What this datum means for #118
 
-An entire target class — shell-script CLIs driving coreutils (pass, and by
-the same construction todo.txt-cli, nb, …) — is outside the engine's
-current single-process crash model. The scout can produce a meaningful,
+The measured refusal is exec image replacement. That shell-script CLIs as
+a class (pass, todo.txt-cli, nb, …) hit the same wall is a reasonable
+expectation — a shell must exec what it drives — but it is inference, not
+a measurement of this run (R1 finding 5). The scout can produce a
 metadata-carrying question in two minutes; the judge cannot yet execute it
 hostilely. That is a product-surface gap on the SIDEEYE side, found by the
 assisted loop, and precisely the kind of thing this experiment exists to
