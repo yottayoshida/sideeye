@@ -1,0 +1,13 @@
+ok   A0: Seal A is an ancestor of Seal B
+ok   A1: every sealed path exists in Seal A
+ok   A2: no commit between the seals touched the sealed procedure (or the criterion wording)
+ok   A3: Seal A's ledger is a byte prefix of Seal B's (append-only held)
+ok   B1: invocations.tsv is sealed at Seal A (frozen by A2 from there)
+ok   B1: spike/blind-hunt3/sweep-manifest.json first appears at Seal B
+ok   B3: the manifest's invocations hash matches the committed invocations.tsv
+ok   B4: the declaration is for 'khal', the target the sealed predicate selects
+ok   R1: the run manifest records head == Seal B with a clean worktree
+ok   R3: the sweep and the exploration ran the same engine and shim (by SHA-256)
+ok   R2: every sealed report re-hashes to the committed manifest
+
+ALL SEAL CHECKS PASSED (R1 audited)

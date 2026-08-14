@@ -146,3 +146,19 @@ and voids land in `voided-seals.txt` with their narrative here.
   - Green-run stages now GATE (a failed stage aborts that op's remaining
     stages), and the parse probe's untouched-paths claim matches its
     predicate (state root, work path, $HOME/.cache — each asserted).
+- **2026-08-14 — campaign 3 explored: khal, zero violations; the campaign's
+  result is null.** From Seal B `9028b04b`, driver, pinned container, engine
+  `sideeye 0.7.0 (trace contract v8)`: import PASS (10 crash points +
+  baseline), update PASS (21 + baseline), new PASS (10 + baseline) —
+  violations 0 across all worlds. Both pre-registered refusal expectations
+  did not fire: the recordings were accepted and explored in full (the
+  mechanism of acceptance was not measured and is not claimed). The
+  engine's falsification gate corrupted state before each run and the
+  checker's I-C leg failed on it. Full verification over (Seal A `2239fba`,
+  Seal B `9028b04b`, run manifest, sealed sweep reports): **ALL SEAL CHECKS
+  PASSED (R1 audited)** — transcript committed under `analysis/`. Committed
+  copies of the run manifest, reports and engine output live in
+  `analysis/`; the originals stay local under `artifacts/explore-9028b04b/`.
+  khal is consumed. hledger is the only unconsumed name and is unselectable
+  while its sweep refusal stands; its refusal reason remains sealed and
+  unread. Criterion 1 stays open (PRD status updated in the same commit).

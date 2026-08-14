@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Campaign 3 explored: khal, three ops, zero violations (#83)
+
+Exploration from Seal B `9028b04b` completed: import 10 crash points +
+baseline, update 21 + baseline, new 10 + baseline — **every world PASS,
+violations 0** across 41 crash worlds (10+21+10) and 3 baselines. The full verifier
+over Seal A, Seal B, the run manifest and the sealed sweep reports says ALL
+SEAL CHECKS PASSED (R1 audited) — transcript committed as
+`spike/blind-hunt3/analysis/verify-seals.txt`. The engine's falsification
+gate fired in all three runs (corrupted state → the checker's I-C leg
+failed), closing post-seal the red side the declaration deferred.
+
+The surprise is what did NOT happen: both pre-registered refusal
+expectations (update's random-suffixed leftovers, new's random
+UID-as-filename) did not fire — the recordings were accepted and explored
+in full, wider coverage than the declaration promised itself. The findings
+record the acceptance and deliberately not a mechanism: the mechanism was
+not measured, and asserting one would be the claim-exceeds-measurement
+shape this campaign kept meeting. Update's oracle numbers (170
+state-directory syscall lines vs import's 81) are quoted as consistent
+with the normal-run temp-file observation, nothing stronger.
+
+A null result, recorded at counterexample precision
+(`spike/blind-hunt3/analysis/findings.md`). Campaign accounting: khal
+consumed; hledger is the only name left in the order and is unselectable
+while its sweep refusal stands (understanding it means unsealing the
+refusal reason — deliberately not done). PRD criterion 1: **two
+designated-path campaigns have now returned null**; the remaining path —
+more campaigns, a different target class, or §18's kill analysis — is
+recorded in PRD as an open decision.
+
 ## 2026-08-14 — The khal declaration: one live search, two pre-registered refusals (#83)
 
 Campaign 3's declaration phase, from permitted sources only: the full help
