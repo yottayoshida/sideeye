@@ -1,0 +1,11 @@
+# Targets removed from the blind set by breach handling (ADR 0012). Append-only.
+# select.sh takes this file as an explicit input and skips these names — the
+# exclusion is machine-checkable, not a judgment call.
+#
+# khard — burned 2026-08-14, before Seal B. The declaration's red suite ran the
+# checker (whose first step queries `khard list`) over stores holding
+# deliberately mis-shaped vCards; khard's failure response to an unparsable
+# .vcf was observed and committed in a transcript. The ledger entry of the same
+# date records what leaked. The declaration leaves the tree in the burn commit;
+# history keeps it.
+khard

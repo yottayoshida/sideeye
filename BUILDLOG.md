@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — khard is burned: the red suite let the checker query a malformed store (#83)
+
+The declaration below shipped with a red suite whose header argued its own
+safety: "khard itself only ever runs `list` over these stores." R1 read the
+transcripts instead of the header: `checker-red.txt` line 13 ends with khard's
+own error message for an unparsable .vcf ("Use --debug for more information or
+--skip-unparsable to proceed"). The checker's first step is the `khard list`
+liveness query, so the I-F red fixtures — vCards deliberately written
+mis-shaped — put khard's failure behavior on record before Seal B. ADR 0012
+has no cure for that: blind is once per target. Campaign 1's red suite was
+accidentally safe (topydo only ever saw well-formed stores); the checker's
+structure changed — query first — and the red suite's design did not change
+with it. The safety claim named what the script runs, not what the run
+touches: the recurring shape where a verification is trusted without asking
+what it does not look at.
+
+Burn handling per ADR 0012, before Seal B, so the campaign survives:
+`burned.txt` now carries khard, the ledger records what leaked, the khard
+declaration leaves the tree (history keeps it at a459995), and selection
+re-runs with the burned name skipped — abook by the sealed order, if the
+selector agrees. The structural fix rides the next declaration, not a review
+round: file inspection first, the target query last, and red fixtures that
+are well-formed only (an empty store — documented-normal — is the one
+permitted refusal shape). The next declaration also inherits R1's independent
+P0/P1s: pin every red case to the message of the guard that fired, exercise
+the counting branches, complete the unexercised-form inventory, and keep
+every claim inside what its transcript actually shows.
+
 ## 2026-08-14 — The khard declaration, written blind, with two refusals pre-registered (#83)
 
 Campaign 2's declaration phase, from permitted sources only: the sixteen-command

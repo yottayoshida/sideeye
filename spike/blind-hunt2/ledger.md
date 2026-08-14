@@ -226,3 +226,23 @@ entry must record the **image identity** (`docker image inspect` ID of
   this tree inside the pinned container (stop at state resolution; khard not
   executed). `sideeye preflight` was deliberately NOT run on any declared
   define; the sweep remains the only sideeye↔khard contact.
+- **2026-08-14 — khard is burned (breach before Seal B; ADR 0012).** The
+  declaration's red suite (`checker-red-test.sh`, committed at a459995)
+  fabricated stores holding deliberately mis-shaped vCards and ran `check.sh`
+  over them; the checker's first step is the `khard -c ... list` liveness
+  query, so khard ran over a malformed store and its failure response was
+  recorded in the committed transcript (`checker-red.txt` line 13 ends with
+  khard's own message on an unparsable .vcf: "Use --debug for more information
+  or --skip-unparsable to proceed"). That is pre-Seal-B observation of target
+  failure behavior. The red suite's header argued it was safe ("khard itself
+  only ever runs `list` over these stores") — the claim did not cover what the
+  measurement actually touched. The declaration and its transcripts were
+  committed as one batch, so "the observation did not shape the declaration"
+  is not provable from history; there is no cure (blind is once per target).
+  Ruled a burn 2026-08-14. Handling per ADR 0012, before Seal B: khard is
+  appended to `burned.txt`, the declaration leaves the tree in this commit
+  (history keeps it at a459995), and selection re-runs over the sealed order
+  with the burned name skipped. Structural change carried to the next
+  declaration: the checker inspects files first and queries the target last,
+  and red fixtures are well-formed only (an empty store — documented-normal —
+  is the one permitted refusal shape).
