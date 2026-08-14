@@ -66,9 +66,13 @@ def norm(p):
     return n
 
 try:
-    with open(inv_path, encoding="utf-8") as f:
+    with open(inv_path, encoding="utf-8", errors="strict") as f:
         raw = f.readlines()
-except OSError as e:
+except (OSError, UnicodeDecodeError) as e:
+    # UnicodeDecodeError is a ValueError, not an OSError: catching only OSError
+    # let an undecodable invocations file exit 1 through the traceback, i.e. a
+    # check that could not look reporting something other than "could not look"
+    # (campaign-2 R2 finding).
     die(f"cannot read {inv_path}: {e}")
 
 rows = []

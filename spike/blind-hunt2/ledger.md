@@ -116,3 +116,19 @@ entry must record the **image identity** (`docker image inspect` ID of
   assumed** — rewriting it as an annotation broke the prefix, and the self-check run
   before committing caught it; the sealed bytes were restored and the explanation
   moved here, where appending is the sanctioned move.
+- **2026-08-14 — correction to the void entry above (R2).** That entry says "the cause
+  is a contradiction inside the seal itself" and then, two sentences later, that the
+  evidence does not establish causation. The first clause is the overclaim this
+  campaign keeps having to unlearn, and it cannot be edited out — the ledger is
+  append-only — so it is corrected here: **what is established is the contradiction
+  and therefore the uninterpretability of that verdict**, not that the contradiction
+  produced it. Nothing in the void decision rests on the stronger reading.
+- **2026-08-14 — R2 (external, confirm-only): 6 of 8 resolved, 2 sent back, both fixed.**
+  (a) The guard's cannot-look contract still leaked one way: `UnicodeDecodeError` is a
+  `ValueError`, not an `OSError`, so an undecodable invocations file exited 1 through
+  the traceback instead of exiting 2 as "could not look". Caught both files' decode
+  errors; the red suite now runs **14 cases**, adding an undecodable invocations file
+  and an undecodable config. (b) The causal overclaim was only half-corrected — the
+  void entry still opens with "the cause is", contradicting its own caveat two
+  sentences later. Corrected in an appended entry above rather than edited, since the
+  ledger is append-only.
