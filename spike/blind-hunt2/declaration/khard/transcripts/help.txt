@@ -1,0 +1,36 @@
+Khard version 0.21.0
+
+usage: khard [-h] [-c CONFIG] [--debug] [--skip-unparsable] [-v]
+             SUBCOMMAND ...
+
+positional arguments:
+  SUBCOMMAND
+    list (ls)           list all (selected) contacts
+    show (details)      display detailed information about one contact
+    template            print an empty yaml template
+    birthdays (bdays)   list birthdays (sorted by month and day)
+    email               list email addresses
+    phone               list phone numbers
+    postaddress (post, postaddr)
+                        list postal addresses
+    new (add)           create a new contact
+    add-email           Extract email address from the "From:" field of an
+                        email header and add to an existing contact or create
+                        a new one
+    merge               merge two contacts
+    edit (modify, ed)   edit the data of a contact
+    copy (cp)           copy a contact to a different addressbook
+    move (mv)           move a contact to a different addressbook
+    remove (delete, del, rm)
+                        remove a contact
+    addressbooks (abooks)
+                        list addressbooks
+    filename (file)     list filenames of all matching contacts
+
+options:
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        config file to use
+  --debug               enable debug output
+  --skip-unparsable     skip unparsable vcard files
+  -v, --version         show program's version number and exit

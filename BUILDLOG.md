@@ -2,6 +2,44 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The khard declaration, written blind, with two refusals pre-registered (#83)
+
+Campaign 2's declaration phase, from permitted sources only: the sixteen-command
+help, three man pages, two docs pages, RFC 6350 through the carve-out, and one
+normal run per declared form. Four operations declared — `new`, `remove
+--force`, `move`, `copy` — with `move` as the cross-file window (one contact,
+two addressbooks: after a crash it must be in exactly one place). Three
+subcommands excluded as interactive on hard evidence: `edit` waits for
+confirmation even with `-i` and no stdin; `add-email`'s prompt loops unbounded
+on EOF (~200MB of `Select?` in five seconds); `merge` is documented as needing
+an interactive merge editor and errors without one.
+
+The two honesty-first moves:
+
+- **The recovery-path rule discharges vacuously, and the enumeration proves
+  it**: no recovery, undo, restore or repair command form exists anywhere in
+  the sealed documentation transcripts. The consequence is stated in the
+  declaration instead of implied — a crash-damaged khard store has no
+  documented in-tool recovery at all, which cuts both ways and the report will
+  have to weigh it.
+- **Two of the four declared operations carry pre-registered refusal
+  expectations.** Measured in normal runs: `new` mints a random UID (filename
+  and content) plus a second-precision REV, `copy` re-mints both, and
+  khard.conf(5) offers no setting to fix either. The byte-reproducible
+  baseline should refuse them — the watson shape — and that refusal is #84
+  data the campaign wants, not a failure. `remove` and `move` measured
+  deterministic (identical stores end byte-identical; move preserves filename
+  and bytes), so they are the live searches.
+
+Verification stayed inside the blind rules: the checker's red side is twelve
+committed cases over hand-fabricated vCard files (khard only ever ran `list`,
+and an empty book exiting 1 is documented-normal — it is also why every
+declared state keeps a conserved bystander); the green side runs
+setup → verbatim toml operation → checker for all four; the tomls parse on
+the binary built from this very tree, inside the pinned container — not on a
+host binary, which is the exact mistake campaign 1's declaration phase had to
+correct after review. No preflight touched any declared define.
+
 ## 2026-08-14 — Campaign 2 between the seals: khard, by the sealed predicate (#83)
 
 The sweep ran once against the re-sealed apparatus (Seal A = the #107 merge,

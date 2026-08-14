@@ -188,3 +188,41 @@ entry must record the **image identity** (`docker image inspect` ID of
   campaign 1's public value — consistent with the voided sweep's refusal having
   been our apparatus, though nothing stronger than consistency is claimed. The
   sealed reports stay local under `artifacts/sweep-8878df82/`; only hashes travel.
+- **2026-08-14 — declaration-phase consultations for khard (all permitted sources;
+  no traces, no crash experiments, no source, no bug trackers):**
+  - `khard --version`/`--help` and all sixteen per-subcommand helps, inside the
+    pinned container (`transcripts/help.txt`, `help-subcommands.txt`; the
+    subcommand help machinery requires a config — the sealed sweep config was
+    passed, read-only).
+  - The v0.21.0 documentation: man pages khard(1), khard-subcommands(1),
+    khard.conf(5), plus the command-line and scripting pages
+    (`transcripts/man-*.txt`, `docs-*.txt`). Facts taken: config syntax and the
+    four config sections (no filename/UID setting exists); "vCard files hold one
+    VCARD record each, .vcf extension" (the carve-out sentence); merge_editor is
+    documented as interactive; no recovery/undo/repair command anywhere.
+  - RFC 6350 as the vCard normative spec (BEGIN/END delimiters, FN required),
+    via ADR 0012's carve-out — cited in the checker, not transcribed.
+  - One normal (non-crash) run per declared form plus determinism and
+    interactivity probes (`transcripts/normal-runs.sh` → `normal-runs.txt`):
+    new mints a random UID as filename and content plus second-precision REV;
+    copy re-mints both; remove --force is non-interactive and byte-deterministic
+    across identical stores; move preserves filename and bytes; edit waits for
+    confirmation even with -i (10s timeout); add-email's Select? prompt repeats
+    unbounded on EOF (~200MB in 5s, capped); merge errors without a merge
+    editor; `list` on an empty addressbook exits 1 — the observation that put a
+    conserved bystander in every declared state.
+- **2026-08-14 — the khard declaration, written blind.** Four operations declared
+  (new / remove --force / move / copy — move is the cross-file window), three
+  subcommands excluded as interactive with evidence, nine as not-stateful.
+  **Recovery-path rule: vacuous discharge** — the enumeration over all sealed
+  doc transcripts finds no recovery/undo/repair command form; stated in the
+  declaration with its consequence (a damaged store has no documented in-tool
+  recovery). **Two pre-registered refusal expectations** (new, copy: random
+  UID/REV vs the byte-reproducible baseline — the watson shape); remove and move
+  are the live searches. Verification, blind-preserving: checker red-suite 12
+  cases committed with fixtures (`checker-red-test.sh` → `transcripts/
+  checker-red.txt`), green side 4/4 (setup → verbatim toml operation → checker;
+  `transcripts/green-run.txt`), all four tomls parse on the binary built from
+  this tree inside the pinned container (stop at state resolution; khard not
+  executed). `sideeye preflight` was deliberately NOT run on any declared
+  define; the sweep remains the only sideeye↔khard contact.

@@ -1,0 +1,13 @@
+# Campaign-2 Seal B artifact: the declared define for khard `copy`.
+# Invocation shape and exit status observed in a normal run:
+# ../transcripts/normal-runs.txt. Invariants and provenance: ../declaration.md.
+# Editing this file after Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind2/hunt/copy/state"
+
+[define]
+setup           = "./setup.sh copy"
+operation       = "khard -c /work/spike/blind-hunt2/declaration/khard/ops/khard-copy.conf copy -a main -A second Ada"
+check           = "./check.sh copy"
+expected_status = "0"
+marker          = "Copied contact"
