@@ -2,6 +2,82 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — khard is burned: the red suite let the checker query a malformed store (#83)
+
+The declaration below shipped with a red suite whose header argued its own
+safety: "khard itself only ever runs `list` over these stores." R1 read the
+transcripts instead of the header: `checker-red.txt` line 13 ends with khard's
+own error message for an unparsable .vcf ("Use --debug for more information or
+--skip-unparsable to proceed"). The checker's first step is the `khard list`
+liveness query, so the I-F red fixtures — vCards deliberately written
+mis-shaped — put khard's failure behavior on record before Seal B. ADR 0012
+has no cure for that: blind is once per target. The safety claim named what
+the script runs, not what the run touches: the recurring shape where a
+verification is trusted without asking what it does not look at.
+
+Corrected after this burn PR's own R1 (the first version of this entry said
+campaign 1 was safe "by structure"): campaign 1 ran the same design risk.
+Its checker was also query-first — `check.sh` runs the I-Q `ls` before the
+I-F file checks — and its red suite also fabricated stores violating its own
+I-F predicate (`not-a-completed-task`, `x other-task` in done.txt). The
+committed transcript shows the I-F messages firing, which means the I-Q leg
+had already passed: topydo's query returned documented-normal output over
+those out-of-contract stores, and no failure behavior was committed. Campaign
+1 escaped by outcome, not by structure; campaign 2 collected the consequence
+of the same red-suite design. (The uncorrected version of this entry was
+itself the recurring shape — it asserted a mechanism, "only well-formed
+stores, query-first was new", that no committed artifact supports.)
+
+Burn handling per ADR 0012, before Seal B, so the campaign survives:
+`burned.txt` now carries khard, the ledger records what leaked, the khard
+declaration leaves the tree (history keeps it at a459995), and selection
+re-runs with the burned name skipped — abook by the sealed order, if the
+selector agrees. The structural fix rides the next declaration, not a review
+round: file inspection first, the target query last, and red fixtures that
+are well-formed only (an empty store — documented-normal — is the one
+permitted refusal shape). The next declaration also inherits R1's independent
+P0/P1s: pin every red case to the message of the guard that fired, exercise
+the counting branches, complete the unexercised-form inventory, and keep
+every claim inside what its transcript actually shows.
+
+## 2026-08-14 — The khard declaration, written blind, with two refusals pre-registered (#83)
+
+Campaign 2's declaration phase, from permitted sources only: the sixteen-command
+help, three man pages, two docs pages, RFC 6350 through the carve-out, and one
+normal run per declared form. Four operations declared — `new`, `remove
+--force`, `move`, `copy` — with `move` as the cross-file window (one contact,
+two addressbooks: after a crash it must be in exactly one place). Three
+subcommands excluded as interactive on hard evidence: `edit` waits for
+confirmation even with `-i` and no stdin; `add-email`'s prompt loops unbounded
+on EOF (~200MB of `Select?` in five seconds); `merge` is documented as needing
+an interactive merge editor and errors without one.
+
+The two honesty-first moves:
+
+- **The recovery-path rule discharges vacuously, and the enumeration proves
+  it**: no recovery, undo, restore or repair command form exists anywhere in
+  the sealed documentation transcripts. The consequence is stated in the
+  declaration instead of implied — a crash-damaged khard store has no
+  documented in-tool recovery at all, which cuts both ways and the report will
+  have to weigh it.
+- **Two of the four declared operations carry pre-registered refusal
+  expectations.** Measured in normal runs: `new` mints a random UID (filename
+  and content) plus a second-precision REV, `copy` re-mints both, and
+  khard.conf(5) offers no setting to fix either. The byte-reproducible
+  baseline should refuse them — the watson shape — and that refusal is #84
+  data the campaign wants, not a failure. `remove` and `move` measured
+  deterministic (identical stores end byte-identical; move preserves filename
+  and bytes), so they are the live searches.
+
+Verification stayed inside the blind rules: the checker's red side is twelve
+committed cases over hand-fabricated vCard files (khard only ever ran `list`,
+and an empty book exiting 1 is documented-normal — it is also why every
+declared state keeps a conserved bystander); the green side runs
+setup → verbatim toml operation → checker for all four; the tomls parse on
+the binary built from this very tree, inside the pinned container — not on a
+host binary, which is the exact mistake campaign 1's declaration phase had to
+correct after review. No preflight touched any declared define.
+
 ## 2026-08-14 — Campaign 2 between the seals: khard, by the sealed predicate (#83)
 
 The sweep ran once against the re-sealed apparatus (Seal A = the #107 merge,
