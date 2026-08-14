@@ -1,0 +1,13 @@
+# Seal B artifact (ADR 0012): the declared define for topydo `dep-rm`.
+# Invocation shape and exit status observed in a normal run:
+# ../transcripts/normal-runs.txt (and config-verification.txt for the
+# nobackup config). Invariants and their provenance: ../declaration.md.
+# Editing this file after Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind/hunt/dep-rm/state"
+
+[define]
+setup           = "./setup.sh dep-rm"
+operation       = "/usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/dep-rm/state/todo.txt -d /tmp/blind/hunt/dep-rm/state/done.txt dep rm 1 to 2"
+check           = "./check.sh dep-rm"
+expected_status = "0"

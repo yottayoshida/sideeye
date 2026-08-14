@@ -1,0 +1,14 @@
+# Seal B artifact (ADR 0012): the declared define for topydo `depri`.
+# Invocation shape and exit status observed in a normal run:
+# ../transcripts/normal-runs.txt (and config-verification.txt for the
+# nobackup config). Invariants and their provenance: ../declaration.md.
+# Editing this file after Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind/hunt/depri/state"
+
+[define]
+setup           = "./setup.sh depri"
+operation       = "/usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/depri/state/todo.txt -d /tmp/blind/hunt/depri/state/done.txt depri 1"
+check           = "./check.sh depri"
+expected_status = "0"
+marker          = "Priority removed."

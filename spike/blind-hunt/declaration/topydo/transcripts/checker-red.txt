@@ -1,0 +1,48 @@
+===== 1. I-C loss: the declared task is in neither file =====
+--- fixture: todo.txt ---
+2026-08-13 unrelated-task
+--- fixture: done.txt ---
+x 2026-08-13 2026-08-13 other-done
+$ (cd /work/spike/blind-hunt/declaration/topydo/ops && sh ./check.sh do)
+ok   I-C loss: checker exited 1 — checker(do): task 'water-plants' is in neither todo.txt nor done.txt — lost
+
+===== 2. I-C anchoring: the task text only inside a longer token =====
+--- fixture: todo.txt ---
+2026-08-13 rewater-plantsed
+--- fixture: done.txt ---
+(absent)
+$ (cd /work/spike/blind-hunt/declaration/topydo/ops && sh ./check.sh do)
+ok   I-C anchored: checker exited 1 — checker(do): task 'water-plants' is in neither todo.txt nor done.txt — lost
+
+===== 3. I-D2 duplication: the task in both files =====
+--- fixture: todo.txt ---
+2026-08-13 water-plants
+--- fixture: done.txt ---
+x 2026-08-13 2026-08-13 water-plants
+$ (cd /work/spike/blind-hunt/declaration/topydo/ops && sh ./check.sh do)
+ok   I-D2 duplication: checker exited 1 — checker(do): task 'water-plants' is in both todo.txt and done.txt — duplicated
+
+===== 4. I-F: a done.txt line with no completed-task mark =====
+--- fixture: todo.txt ---
+2026-08-13 water-plants
+--- fixture: done.txt ---
+not-a-completed-task
+$ (cd /work/spike/blind-hunt/declaration/topydo/ops && sh ./check.sh do)
+ok   I-F non-x line: checker exited 1 — checker(do): done.txt contains a line that is not an 'x <YYYY-MM-DD> ...' completed task
+
+===== 5. I-F: an x line missing the completion date =====
+--- fixture: todo.txt ---
+2026-08-13 water-plants
+--- fixture: done.txt ---
+x other-task
+$ (cd /work/spike/blind-hunt/declaration/topydo/ops && sh ./check.sh do)
+ok   I-F missing date: checker exited 1 — checker(do): done.txt contains a line that is not an 'x <YYYY-MM-DD> ...' completed task
+
+===== 6. Green control: task active, archive absent =====
+--- fixture: todo.txt ---
+2026-08-13 water-plants
+--- fixture: done.txt ---
+(absent)
+ok   green control: checker exits 0
+
+red-run fails=0

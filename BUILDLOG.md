@@ -2,6 +2,91 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The topydo declaration, written blind (#83, toward Seal B)
+
+The declaration phase ADR 0012 authorizes: everything the exploration will be
+judged by — invariants, operation inventory, checkers, setups, tomls, the
+runner — written from permitted sources only and frozen in
+`spike/blind-hunt/declaration/topydo/`. The consultations are itemized in the
+ledger; the raw material (help output, doc tiddlers, the todo.txt spec, one
+normal run per subcommand) is committed under `transcripts/` so every
+`source:` line points at something a reader can open.
+
+Shape of the declaration (after R1, below): thirteen operation forms across
+twelve of the fifteen help-listed subcommands are declared (excluded whole:
+`edit` interactive; `listcon`/`listprojects` not-stateful — and every
+unexercised form of a declared subcommand is listed, not silently dropped).
+Six invariants — query survives (I-Q), conservation across the
+file pair (I-C), no duplication for the two cross-file operations (I-D2),
+archive holds only `x `-marked lines (I-F), the backup listing answers after a
+crash (I-B, revert only), and claimed durability via L1 markers where the
+operation prints a past-tense success line (I-M). Severity is pre-registered
+(loss over duplication) so a finding cannot be inflated afterwards.
+
+Decisions worth recording, made while still blind:
+
+- **Backups off for ten operations, on for revert.** The docs say the backup
+  store is rewritten on every modification, and `revert ls` shows its times at
+  second precision — that alone would make the un-killed baseline world
+  irreproducible and refuse every run (`baseline_violates_invariant`, the
+  watson shape) before topydo's behavior was ever measured. The documented
+  `backup_count = 0` switch is the declared config for the ten; revert keeps
+  backups because they are its input. The cost — the backup subsystem's crash
+  surface rides on revert alone — is stated in the declaration instead of
+  being discovered in the report.
+- **Conservation greps the files, not the listing.** A normal run showed
+  `ls -x` omitting a task that had just acquired a dependency; the todo.txt
+  carve-out (the format is normative public documentation) makes the files
+  the honest inventory.
+- **No preflight on the declared defines.** The temptation was real — eleven
+  tomls, why not check they will be accepted? Because acceptance-checking is
+  observation, and tuning the declared set against it is the exact leak Seal B
+  exists to close. The sweep stays the only sideeye↔topydo contact; a refusal
+  at exploration time is #84 data, not a defect. What did get verified without
+  touching the target: all eleven tomls parse (host binary, nonexistent shim,
+  stops at state resolution), and the green side — setup, the verbatim
+  operation string, checker — exits 0 on normal state for all thirteen.
+  (An earlier draft of this entry said the checker had never been seen to
+  fail; that was superseded the same session: its red side is now proven on
+  hand-fabricated, user-authored states — `checker-red-test.sh`, committed
+  with its fixtures — while the red side against real *crash* states still
+  belongs to sideeye's falsification gate, after the seal.)
+
+R1 (external review, covenant-instructed; it complied — no burn) then bent
+the declaration in four places, all recorded in the ledger:
+
+- **The parse validation had measured the wrong binary.** "All tomls parse"
+  was run against the host's v0.7.0 sideeye — but this branch based on the
+  Seal A merge, which predates `expected_status`. The sealed revision would
+  reject every toml. The green run that was supposed to protect the seal was
+  itself the measured-a-different-path shape this workspace keeps meeting.
+  **Resolved, with the decision on record**: the branch was rebased onto the
+  v0.7.0 merge (`a21b093`) — every Seal A artifact is byte-identical between
+  the two anchors and the criterion wording did not move (PRD untouched;
+  DESIGN's two new lines are the §12 define-key note), so verify-seals runs
+  with A=`a21b093` and every leg stays mechanical. The alternative — keeping
+  the old base and dropping the key — would have sent the exploration out on
+  an engine whose PASS-side soundness bugs v8 had just fixed, and recorded a
+  case the current contract refuses (#82's hole, re-dug). Because the engine
+  moved, the sweep was re-run once, recorded (ledger): identical invocations
+  by hash, identical verdicts, topydo again — and the superseded manifest
+  stays committed beside the new one.
+- **The backup-refusal certainty was an overclaim.** Normal runs only show
+  that `revert ls` prints second-precision times; whether backups-on would
+  actually refuse the baseline is deliberately unmeasured. Downgraded to a
+  pre-registered risk everywhere it was stated.
+- **The inventory was neither complete nor honestly granular** — `ls` was
+  excluded as not-stateful while a documented form writes, and `dep rm`/
+  `dep clean` were unmentioned. Now: `ls` and `dep rm` are declared (the
+  former with its zero-op expectation stated), `dep clean` and every other
+  unexercised form is named per subcommand, and the lscon/lsprj tiddlers
+  were pulled so the two remaining not-stateful verdicts are doc-backed.
+- **The checker was hardened without unsealing anything**: padded list
+  numbers accepted (the docs' own example pads), conservation demands a
+  whitespace-delimited token (an embedded substring is not survival), and
+  I-F now enforces the completion date the spec's rule 2 requires. Red
+  cases for each new tooth ran before they were trusted.
+
 ## 2026-08-13 — v0.7.0: minor, because the number must predict the case refusals
 
 Version 0.6.0 → 0.7.0, both hand-written strings at once (the unit test holds
@@ -207,6 +292,47 @@ published release standing empty. Also new to this ceremony: the shipped
 artifact itself gets exercised — download a tarball, unpack, run the demo,
 expect exit 1 — because "the workflow uploaded something" and "a visitor can
 run what was uploaded" are different claims.
+## 2026-08-13 — Between the seals: five invocations from permitted sources, committed before the sweep (#83)
+
+Seal A merged this evening (PR #89); this entry is the between-seals phase it
+authorizes. All five candidates installed pinned (`spike/Dockerfile`), their
+invocations assembled from `--help`, two official-docs pages, and normal-run
+observation only — the ledger itemizes every consultation — and committed
+*before* the sweep runs, so the manifest's invocations hash has something to
+bind to (ADR 0012).
+
+What the permitted sources decided, without touching a trace:
+
+- **topydo** drives its two files (`-t` todo, `-d` archive) into one state
+  directory; `do 1` completes-and-archives — assembled exactly as hoped.
+- **khard** and **khal** both name their state through a config file (formats
+  from their readthedocs pages) and mint randomly named files per entry —
+  observed from the filenames alone, which normal runs are allowed to show.
+- **abook**'s only stdin-free writer is `--convert`; the interactive book
+  editor and `--add-email` both need what the exploration engine does not
+  provide (a terminal, stdin).
+- **hledger** appends via `import`; its journal is seeded by `/bin/cp` in
+  setup, where any tool is allowed.
+
+The sweep ran once, with the oracle, and this is everything the experimenter
+has seen of it:
+
+    topydo exit=0 resolved=yes
+    khard exit=0 resolved=yes
+    abook exit=0 resolved=yes
+    khal exit=0 resolved=yes
+    hledger exit=2 resolved=yes
+
+Four recordings accepted; hledger refused — **why is sealed**. The refusal
+detail sits unread in the hashed artifact until Seal B, exactly because a
+refusal reason is knowledge about how a target behaves under observation.
+
+`select.sh` applied the sealed predicate to the committed manifest:
+**topydo** — first in the sealed priority order with exit 0 and in-image
+resolution. Nobody chose it; the choice was merged five hours before the
+sweep existed. Next (a fresh phase, deliberately not tonight): the
+declaration — invariants with per-line provenance, the operation inventory,
+the concrete checkers — then Seal B, and only then the first crash world.
 
 ## 2026-08-13 — Seal A: everything about the blind hunt is decided before a target runs (#83)
 

@@ -1,0 +1,13 @@
+# Seal B artifact (ADR 0012): the declared define for topydo `tag`.
+# Invocation shape and exit status observed in a normal run:
+# ../transcripts/normal-runs.txt (and config-verification.txt for the
+# nobackup config). Invariants and their provenance: ../declaration.md.
+# Editing this file after Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind/hunt/tag/state"
+
+[define]
+setup           = "./setup.sh tag"
+operation       = "/usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/tag/state/todo.txt -d /tmp/blind/hunt/tag/state/done.txt tag 1 due 2026-09-01"
+check           = "./check.sh tag"
+expected_status = "0"

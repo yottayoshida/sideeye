@@ -1,0 +1,32 @@
+Synopsis: topydo [-a] [-c <config>] [-C <colormode>] [-d <archive>] [-t <todo.txt>] subcommand [help|args]
+          topydo -h
+          topydo -v
+
+-a : Do not archive todo items on completion.
+-c : Specify an alternative configuration file.
+-C : Specify color mode (0 = disable, 1 = enable 16 colors,
+     16 = enable 16 colors, 256 = enable 256 colors, auto (default))
+-d : Specify an alternative archive file (done.txt)
+-h : This help text
+-t : Specify an alternative todo file
+-v : Print version and exit
+
+Available commands:
+
+* add
+* append (app)
+* del (rm)
+* dep
+* depri
+* do
+* edit
+* ls
+* listcon (lscon)
+* listprojects (lsprj)
+* postpone
+* pri
+* revert
+* sort
+* tag
+
+Run `topydo help <subcommand>` for command-specific help.

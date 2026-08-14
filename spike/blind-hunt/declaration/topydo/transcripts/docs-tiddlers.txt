@@ -1,0 +1,455 @@
+# topydo 0.14 documentation (docs/index.html TiddlyWiki, tag 0.14) — extracted tiddlers
+# Source: https://raw.githubusercontent.com/topydo/topydo/0.14/docs/index.html
+# Changelog tiddlers deliberately NOT extracted (fixed-bug listings = known-issue reports).
+
+===== tiddler: Backups =====
+After each modification of the <<path todo.txt>> file using topydo, a backup of the old todo file and the [[archive|Archiving]] file is stored along with the <<path todo.txt>> file (typically it is located at <<path .todo.bak>> in the same directory).
+
+One can revert the last command(s) by executing the <<cmd revert>> subcommand. The configuration option [[backup_count|ConfigBackupCount]] sets the number of snapshots that should be stored (defaulting to {{ConfigBackupCount!!config-default}}).
+
+You can not revert to a previous state when the <<path todo.txt>> file was modified with other editors / applications than topydo in the meantime.
+
+===== tiddler: ConfigBackupCount =====
+<<config>>
+
+Sets the number of [[backups|Backups]] to store in the backup file. Set to 0 to disable backups.
+
+===== tiddler: Archiving =====
+When completing a todo item, the completed item is moved to a separate text file, typically called <<path done.txt>> located in the same directory as the <<path todo.txt>> file. This is called archiving.
+
+The name and location of the archive file can be [[configured|ConfigArchiveFilename]]. It can also be overridden with the `-d` flag when [[invoking topydo|CommandlineParameters]].
+
+You can disable archiving by passing the `-a` flag to the topydo command as a [[parameter|CommandlineParameters]]. If you'd like to disable archiving, leave the path in the [[configuration|ConfigArchiveFilename]] empty.
+
+To trigger a manual archive action, use the <<cmd archive>> subcommand. When no archive path is configured in the configuration file, the file <<path done.txt>> is used in the current working directory.
+
+===== tiddler: ConfigArchiveFilename =====
+<<config>>
+
+Similar to the [[filename|ConfigFilename]] configuration option. This is the location of the <<path done.txt>> file, where completed items will go.
+
+===== tiddler: archive =====
+Trigger a manual [[archiving|Archiving]] action.
+
+===== tiddler: Configuration =====
+\define ini-group()
+
+@@font-family: courier;
+!! [$(group)$]
+@@
+\end
+
+topydo can be configured with one or more ini-style configuration files. topydo looks for the following configuration files in this order:
+
+* <<path /etc/topydo.conf>>
+* <<path $HOME/.config/topydo/config>>
+* <<path $HOME/.topydo>>
+* <<path .topydo>> (in current working directory)
+* <<path topydo.conf>> (in current working directory)
+* <<path topydo.ini>> (in current working directory) (for improved Windows support)
+* A configuration file passed with the `-c` flag
+
+Values in later configuration files override values configured higher in this list.
+
+! Configuration items
+
+<$list filter="[tag[Configuration]each[config-group]get[config-group]sort[]]" variable="group">
+
+<<ini-group>>
+
+<<configTable>>
+</$list>
+
+<$set name="group" value="aliases">
+
+<<ini-group>>
+</$set>
+
+See [[Aliases]].
+
+<$set name="group" value="column_keymap">
+
+<<ini-group>>
+</$set>
+
+See [[column key map|ColumnKeyMap]].
+
+===== tiddler: ConfigFilename =====
+<<config>>
+
+By default, topydo will look for a <<path todo.txt>> file in the current working directory. Set an absolute path in case you wish to use the same <<path todo.txt>> file from any location.
+
+===== tiddler: ConfigKeepSorted =====
+<<config>>
+
+Automatically sort the file after an operation, such as setting the priority or completing a todo item
+
+===== tiddler: ConfigAutoCreation =====
+<<config>>
+
+Automatically add the creation date to a todo item that is added with the <<cmd add>> command.
+
+The creation date is used to determine the length of a todo item, in case the [[start date|TagStart]] is missing.
+
+===== tiddler: Format =====
+The todo.txt format is [[documented|https://github.com/todotxt/todotxt/blob/master/README.md]] at [[the todo.txt specification repository on Github|https://github.com/todotxt/todotxt/blob/master/README.md]].
+
+===== tiddler: GettingStarted =====
+! First steps
+
+# [[Install|Installation]] topydo.
+# [[Add|add]] your first todo items:<div>
+
+```
+$ topydo add "(C) My first item"
+$ topydo add "(B) My second item is more important"
+```
+</div>
+# [[List|ls]] items with the <<cmd ls>> subcommand:<div>
+
+```
+$ topydo ls
+|  2| (B) 2016-06-27 My second item is more important
+|  1| (C) 2016-06-27 My first item
+```
+
+The number in front of the item is the todo [[identifier|ConfigIdentifiers]], which you can use in other [[commands|Command]].
+</div>
+
+# [[Complete|do]] an item with the <<cmd do>> subcommand:<div>
+
+```
+$ topydo do 2
+Completed: x 2016-06-27 2016-06-27 My second item is more important
+
+```
+
+This item will be moved to the <<path done.txt>> file.
+</div>
+
+# Change the [[priority|pri]] of todo item 1 to A:<div>
+
+```
+$ topydo pri 1 A
+```
+</div>
+
+# Set a due date for todo item 1:<div>
+
+```
+$ topydo tag 1 due 2016-12-25
+```
+</div>
+
+! Further steps
+
+* Learn about the [[commands|Command]] to manage your todos;
+* Get familiar with the [[UIs|UI]] offered by topydo;
+* Learn how to [[configure|Configuration]] topydo.
+
+===== tiddler: Escaping =====
+When using the [[CLI]] in a shell (which is typically the case), please note that `!`, `<` and `>` in some [[filter expressions|FilterExpressions]] have a special meaning (history expansion and redirections). Therefore you should put the arguments between single quotes (as shown above), or escape them: `\!`, `\<` and `\>`. Escaping/quoting is not required in [[prompt mode|PromptMode]] or [[column mode|ColumnUI]].
+
+===== tiddler: TodoLength =====
+A todo item has a length if it has a [[due date|TagDue]] and it either has a [[start date|TagStart]] or a creation date. When there is not enough information available to calculate the length, it is assumed to be 0 days.
+
+===== tiddler: revert =====
+You can revert commands with this subcommand.
+
+```
+revert
+revert ls
+revert <NUM>
+```
+
+When no argument is given, `revert` will revert the last command that performed a write operation.
+
+You can retrieve a numbered list of all commands when running `revert ls`. To actually revert a command, replace `NUM` with the number of the command.
+
+topydo searches for a proper [[backup|Backups]] in the backup file relative to the <<path todo.txt>> file (typically <<path .todo.bak>> in the same directory as <<path todo.txt>>). It won't do anything if no backups were saved or it couldn't a find backup that corresponds to the current state of the <<path todo.txt>> file.
+
+The number of revisions can be configured with the [[backup_count|ConfigBackupCount]] configuration option.
+
+===== tiddler: do =====
+The `do` subcommand marks one or more todo items as complete.
+
+Synopsis:
+
+```
+do [--date=<DATE>] [--force] [--strict] <NUMBER1> [<NUMBER2>...]
+do [-x] -e <EXPRESSION>
+```
+
+It is also possible to mark todo items as complete with an [[expression|FilterExpressions]] using the `-e` flag. Use `-x` to also process todo items that are normally invisible (with
+the <<cmd ls>> subcommand).
+
+In case a todo has [[dependencies|Dependencies]], a question is asked whether the subitems should
+be marked as completed as well. When `--force` is given, no interaction is
+required and the subitems are not marked completed.
+
+In case a completed todo is [[recurring|Recurrence]], a new todo will be added to the list,
+while the corresponding todo item is marked as complete. By default, the new date is calculated
+based on the completion date. If the [[due date|TagDue]] is in the past, today's date
+is used to calculate the new recurrence date. Using `--strict` prevents this,
+then the actual due date of the todo item is used to calculate the new
+recurrence date. Note that a future due date is always used as such to
+calculate the new due date.
+
+Use `--date` to set a custom completion date, which can be a [[relative|RelativeDates]] or absolute date (e.g. `topydo do -d yesterday 1`)
+
+===== tiddler: add =====
+The `add` subcommand adds a new todo item to your list.
+
+This subcommand does the following things:
+
+* [[Relative dates|RelativeDates]] for the [[due|TagDue]] and [[start|TagStart]] tags are automatically converted to absolute dates.<div>
+
+```
+topydo add "(B) Feed the giraffes t:tomorrow due:5d"
+```
+</div>
+
+* It automatically adds the creation date to the item (unless [[configured otherwise|ConfigAutoCreation]]).
+
+* A priority notation mid-sentence is recognized and the priority is set:<div>
+
+```
+topydo add "Oops, forgot the priority! (A)"
+```
+
+  results in an item with priority A.
+</div>
+
+* [[Dependencies]] are recorded. The same [[operators|DependencyOperator]] as supported by the <<cmd dep>> subcommand, except they need to be written as a [[tag|Tag]]. These dependency tags are removed and replaced with the appropriate `id` or `p` tag.<div>
+
+```
+topydo add "This item needs to be completed first! before:3"
+```
+
+So use the actual todo number, not the (internal) values in other `id` or `p` tags to refer to a particular todo item.
+</div>
+
+!! Importing todo items from a file
+
+With the `-f` flag you can import todo items into your main todo.txt file:
+
+```
+> cat import.txt
+Water the flowers due:fri (C)
+> topydo add -f import.txt
+> cat todo.txt
+(C) 2015-05-31 This item was already in todo.txt
+(C) 2015-06-02 Water the flowers due:2015-06-05
+```
+
+As you can see, you can enter the items exactly in your imported todo file as you normally would do with `topydo add`. When importing, all tags, priorities and creation dates will be properly set.
+
+You can also use `-` as a filename which will read the items line by line from the standard input. Doing so, you can enter multiple items at once:
+
+```
+> topydo add -f - <<END
+Water the flowers due:fri (C)
+Book tickets for concert due:tomorrow (B)
+END
+```
+
+===== tiddler: del =====
+Deletes the todo item(s) with the given number(s) from the list.
+
+```
+del [-f] <NUMBER1> [<NUMBER2> ...]
+del [-x] -e <EXPRESSION>
+```
+
+Use `-f` to force deletion (e.g. no user interaction).
+
+It is also possible to delete items with an [[expression|FilterExpressions]] using the `-e` flag. Use `-x` to also process todo items that are normally invisible (with the <<cmd ls>> subcommand).
+
+===== tiddler: append =====
+Appends a text to the given todo item.
+
+```
+append <NUMBER> <TEXT>
+```
+
+`<TEXT>` may contain special [[tags|Tag]] that are interpreted in the same way as the <<cmd add>> subcommand does.
+
+```sh
+# Set a due date to item 1
+topydo append 1 due:tomorrow
+```
+
+===== tiddler: pri =====
+Sets the priority of todo(s) the given number(s) to the given priority.
+
+```
+pri <NUMBER1> [<NUMBER2> ...] <PRIORITY>
+pri [-x] -e <EXPRESSION>
+```
+
+A priority can be given as a single character (case insensitive), where //A// is the highest priority. Use the <<cmd depri>> subcommand to remove a priority from an item.
+
+It is also possible to prioritize items with an [[expression|FilterExpressions]] using the `-e` flag. Use `-x` to also process todo items that are normally invisible
+(with the <<cmd ls>> subcommand).
+
+===== tiddler: depri =====
+Removes the priority of the given todo item(s).
+
+!! Synopsis
+
+```
+depri <NUMBER1> [<NUMBER2> ...]
+depri [-x] -e <EXPRESSION>
+```
+
+It is also possible to deprioritize items as complete with an [[expression|FilterExpressions]] using
+the `-e` flag. Use `-x` to also process todo items that are normally invisible
+(with the <<cmd ls>> subcommand).
+
+===== tiddler: postpone =====
+Postpone the todo item(s) with the given number(s) and the given pattern.
+
+```
+postpone [-s] <NUMBER> [<NUMBER2> ...] <PATTERN>"
+postpone [-x] -e <EXPRESSION>
+```
+
+Postponing is done by adjusting the [[due date(s)|TagDue]] of the todo(s), and if the `-s`
+flag is given, the [[start date|TagStart]] accordingly.
+
+It is also possible to postpone items with an expression using
+the `-e` flag. Use `-x` to also process todo items that are normally invisible
+(with the 'ls' subcommand).
+
+The pattern is a [[relative date|RelativeDates]], but only written in the format `<COUNT><PERIOD>` where `<COUNT>` is a number and `<PERIOD>` is either `d`, `w`, `m` or `y`, which stands for days, weeks, months and years respectively.
+
+!! Example
+
+```sh
+# Postpone for one week
+topydo postpone 1 1w
+```
+
+===== tiddler: tag =====
+With `tag` you can add or remove [[tags|Tag]] from items.
+
+Synopsis:
+
+```
+tag [-a] [-f] [-r] <NUMBER> <tag> [<value>]
+```
+
+Sets the given tag to the given todo number with the given value. If the value is omitted, the tag is removed from the todo item.
+
+By default, when the given tag name already exists, its value will be overwritten by the new value, unless `-a` is given (which will force adding the tag).
+
+Use `-f` to force setting/removing all values of a tag, without user interaction.
+
+With `-r`, the value is interpreted as a relative date. When it is a valid [[relative date|RelativeDates]], it will be converted to an absolute date. For the [[due date tags|TagDue]] and [[start date tags|TagStart]], a relative date is always converted.
+
+===== tiddler: sort =====
+Sorts the <<path todo.txt>> file according to the given [[sort expression|SortExpression]].
+
+```
+sort [sort-expression]
+```
+
+If no expression is given, then the relevant expression is chosen from the [[configuration|ConfigSortExpression]].
+
+===== tiddler: dep =====
+The `dep` subcommand handles [[dependencies|Dependencies]] between todo items.
+
+!! Synopsis
+
+```
+dep <add|rm> <NUMBER> [to] <NUMBER>
+dep add <NUMBER> <before|partof|after|parentsof|childrenof> <NUMBER>
+dep ls <NUMBER> to
+dep ls to <NUMBER>
+dep ls after <NUMBER>
+dep ls before <NUMBER>
+dep dot <NUMBER>
+dep clean
+```
+
+!! Subsubcommands
+
+`dep` has the following subsubcommands:
+
+* `add`: Adds a dependency between two todo items. You can use a number of [[operators|DependencyOperator]] to make dependencies.
+* `rm`: Removes a dependency between two todo items. Stale dependency tags will be cleaned.
+* `ls`: Lists all dependencies from or to a todo item (or before/after some item).
+* `dot`: Prints all parents and children of the given todo item in [[Dot|DotOutput]] format.
+* `clean`: Removes stale dependency tags from the todo items.
+
+!! Examples
+
+```sh
+# Add a dependency
+topydo dep add 1 to 2
+
+# List all dependencies of 1
+topydo dep ls 1 to
+
+# Equivalently:
+topydo dep ls before 1
+
+# List all dependent items of 2
+topydo dep ls to 2
+
+# Equivalently:
+topydo dep ls after 2
+
+# Generate a chart with all parents and children of item 2:
+topydo dep dot 2 | dot -Tsvg -o todo.svg
+```
+
+===== tiddler: ls =====
+Lists all ([[relevant|Relevancy]]) todo items.
+
+```
+ls [-x] [-s <sort_expression>] [-g <group_expression>]
+[-f <output format>] [-F <format string>]
+[-i <item numbers>] [-N | -n <integer>] [expression]
+```
+
+When an [[expression|FilterExpressions]] is given, only the todos matching that expression are shown in the order given by the given [[sort expression|SortExpression]] using the `-s` flag. If no sort expression is given, the [[configured|ConfigSortExpression]] sort expression will be used.
+
+Use `-x` to show //all// todo items, i.e. all relevant and irrelevant todo items.
+
+!! Formatting ouptut
+
+Output can be customized by passing a [[format string|FormatStrings]] to the `-F` flag.
+
+!! Limiting output
+
+There are several ways to filter the todo list such that only those items you're interested in will appear.
+
+* [[Filter expressions|FilterExpressions]]
+* `-n <count>` flag: limit the output to the given amount
+* `-N` flag: like `-n`, but the number is determined automatically based on your terminal size. For a correct display, please make sure that the `PS1` environment variable is exported.
+* `-i <id>` flag: limit the output to one particar item with the given [[identifier|ConfigIdentifiers]].
+
+!! Grouping output
+
+The list of todo items can be [[grouped|Group]] with the `-g` flag, followed by a [[group expression|GroupExpression]]:
+
+```
+Project: A
+==========
+(C) Todo item +A
+
+Project: B
+==========
+(C) Item in another project +B
+```
+
+!! Output formats
+
+{{OutputFormat}}
+
+===== tiddler: lscon =====
+Prints a sorted list of all contexts in the <<path todo.txt>> file.
+
+===== tiddler: lsprj =====
+Prints a sorted list of all projects in the <<path todo.txt>> file.
