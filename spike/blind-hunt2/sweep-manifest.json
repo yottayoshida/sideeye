@@ -1,0 +1,14 @@
+{
+  "schema": "sideeye/blind-hunt-sweep",
+  "invocations_sha256": "b01f1f5047845334367ac30bfc39a881d54a4a31eeb0036acf9ce75c489bde6d",
+  "engine": "sideeye 0.7.0 (trace contract v8)",
+  "engine_sha256": "3ada341a61ade6c268100d28f32e67df7ad93ae641d83fa00a26b1c2d53bc329",
+  "shim_sha256": "3346c0a8762e104ff81429f0711c0006b15b85f123bc712b6b14e1e2d65e9129",
+  "image": "sideeye-blindhunt@sha256:d3d28e791276983484e28dc9d83cb3434cb4885c71bb60e767b7379c5d231d9e",
+  "candidates": [
+    {"name": "khard", "exit": 0, "resolved": "yes", "report_sha256": "5396e90c23c6921656e8747b77470e87dcdf6f3d03dbad902d60b276feb77798"},
+    {"name": "abook", "exit": 0, "resolved": "yes", "report_sha256": "5d8c34967cbc83339b15455bff1c92f81f28024750ba47bdafc8e73c79357ced"},
+    {"name": "khal", "exit": 0, "resolved": "yes", "report_sha256": "ae43fd04ddb2ba7ba433a01e38092a3d6fb59fa234e1967c30c7a981fd315d6d"},
+    {"name": "hledger", "exit": 2, "resolved": "yes", "report_sha256": "5a7322e449a502e63d4e2f91c69fcf04f9beb1296d62bbc5d41dcdc4df0fcb3a"}
+  ]
+}
