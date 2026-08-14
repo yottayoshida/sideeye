@@ -23,7 +23,9 @@ falsification gate, so the checker's red side has never been exercised
 re-point A → add B) with a pure file-inspection checker — the target never
 even runs in the checker, because the filesystem IS the state.
 
-## Human judgement (yotta, post-run)
+## Human judgement (scored by the owner, 2026-08-15)
 
-- P1 meaningful question? ☐
-- symlinkat support worth an engine issue? ☐
+- P1 meaningful question? **Yes** — and on the second axis, high drivable
+  value once the engine can reach it: the unfold is genuinely multi-step
+  (delete link, mkdir, N re-links), not an atomic rename.
+- symlinkat support worth an engine issue? **Yes**.

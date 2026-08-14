@@ -35,7 +35,12 @@ P3 note (also engine-relevant): the richest window (cross-gpg-id move's
 decrypt/re-encrypt temp dance) is refusal-shaped for a second reason —
 randomized encryption defeats the byte-reproducible baseline.
 
-## Human judgement (yotta, post-run)
+## Human judgement (scored by the owner, 2026-08-15)
 
-- P1 meaningful question? ☐
-- Multi-process support worth an engine issue? ☐
+- P1 meaningful question? **Yes** — with the second-axis caveat that made
+  the first self-assessment too kind: the ENGINE-DRIVABLE slice of the
+  contract (same-gpg-id `mv` ≈ one atomic rename) is the near-trivially
+  safe part; the dangerous slice (the re-encrypt temp dance) was excluded
+  as nondeterministic. Question quality high, drivable discovery value low.
+- exec-image-replacement support worth an engine issue? **Yes** (its own
+  issue — a design-heavy one, separate from the syscall gaps).

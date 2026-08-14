@@ -2,6 +2,27 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — The #118 scoring lands, on two axes; the gate was aimed at the wrong failure mode (#118)
+
+The owner scored the cohort — and rejected the one-axis form as too kind
+before signing. Question quality: 5/5 meaningful (no vacuous-checker trap
+appeared anywhere in the funnel). Drivable-slice discovery value, the
+harsher axis the product decision actually needs: **1.5 of 5** — calcurse
+found (verified), buku *suspended* rather than pending (the strict run's
+fchown refusal means the shim's record may be incomplete in exactly the
+way that could fabricate the torn-db world — after fchown support the
+question gets re-posed, the unverified FAIL is not "a finding awaiting
+confirmation"), stow high-but-blocked, devtodo real-but-light (a target-
+selection critique, not a question critique), and pass low — its
+meaningful contract's engine-drivable slice is the near-trivially-atomic
+rename, which the first self-assessment glossed.
+
+The inversion is the finding about the experiment itself: the metadata
+gate was built against an agent posing vacuous questions, and that failure
+mode never appeared; the binding constraint was the judge's reach. Scoring
+recorded in each RUNLOG and RESULTS; next is the engine-gap issues and
+then #118's product decision on 1.5/5-today plus minutes-not-hours.
+
 ## 2026-08-14 — The assisted-discovery cohort: five targets, five verdicts, the human half still owed (#118)
 
 The #118 experiment's measured half ran end to end (the human

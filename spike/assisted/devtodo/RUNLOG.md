@@ -27,7 +27,10 @@ map: `--remove` is byte-deterministic
 (epoch stamps — measured), which is exactly the kind of determinism
 cartography the scout can hand the engine for free.
 
-## Human judgement (yotta, post-run)
+## Human judgement (scored by the owner, 2026-08-15)
 
-- P1 meaningful question? ☐
-- fchmodat support worth an engine issue? ☐
+- P1 meaningful question? **Yes** — the earlier "low stakes" note belongs
+  to TARGET SELECTION (an apparatus-time choice), not to the question's
+  quality; conservation through a rewrite is the certified-meaningful
+  class.
+- fchmodat support worth an engine issue? **Yes**.
