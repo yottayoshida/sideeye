@@ -132,3 +132,23 @@ entry must record the **image identity** (`docker image inspect` ID of
   void entry still opens with "the cause is", contradicting its own caveat two
   sentences later. Corrected in an appended entry above rather than edited, since the
   ledger is append-only.
+- **2026-08-14 — the apparatus, made rehearsable before this seal merges.** Four
+  additions, all outside the sealed set except one:
+  - **verify-seals gains R3** (sealed tooling, amended on the open re-seal branch):
+    when a run manifest is supplied, its `engine_sha256`/`shim_sha256` must equal the
+    committed sweep manifest's — the exploration provably ran the binaries the sweep
+    ran. The declaration phase's `run.sh` must therefore record both fields.
+  - `spike/rehearse-campaign.sh`: the full pipeline against synthetic targets in a
+    scratch repository — real tooling byte-for-byte, defects planted one at a time
+    (A2/A3/B3/B4/R1/R3/void-anchor/config-guard/walker/ledger-tool/driver refusals),
+    then a real container sweep through the driver ending ALL SEAL CHECKS PASSED
+    (R1 audited). 26 drills, all green after two real catches on the first run:
+    this host's docker resolves image names flakily (both resolvers now accepted),
+    and /bin/cp is refused by preflight (copy_file_range, outside the trace
+    contract) — the toy now writes through dd. Rule: rehearse green before any
+    Seal A PR and after any tooling change.
+  - `spike/campaign-driver.sh` (unsealed by design — it carries no verdict logic):
+    phases refuse out-of-order execution; merges and commits stay human.
+  - `spike/ledger-append.sh`: the only sanctioned ledger writer — appends, then
+    proves the result still extends HEAD, restoring on failure. This entry is its
+    first production use.

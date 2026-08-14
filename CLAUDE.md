@@ -33,3 +33,31 @@ The contract:
 - Acceptance (`spike/acceptance.sh`) runs in the Linux container; every new check must be
   seen red once (mutation or synthetic input) before it is trusted.
 - English for everything committed.
+
+## Blind-hunt campaigns: the apparatus rules
+
+The campaign protocol is ADR 0012 (+ per-campaign ADRs). Four operating rules,
+each purchased with a specific failure:
+
+- **Rehearse before sealing.** `spike/rehearse-campaign.sh` runs the entire
+  pipeline — real tooling, synthetic targets, planted defects, then a clean
+  end-to-end pass — in a scratch repository. Run it green before opening any
+  Seal A PR and after any change to campaign tooling. Blindness is the only
+  non-renewable resource; the rehearsal is where apparatus errors are free.
+- **Phases go through the driver.** `spike/campaign-driver.sh` (status / sweep /
+  select / verify / explore) checks each phase's preconditions and refuses
+  otherwise. No hand-typed docker/git chains for campaign phases. The driver
+  never merges and never commits: irreversible steps stay human, and a merge is
+  its own invocation issued only after reading the checks' pass/fail column.
+- **Ledgers are written through `spike/ledger-append.sh`** — it appends and then
+  proves the file still extends HEAD's copy, restoring it if not. Hand edits
+  broke the append-only prefix twice; the tool makes that unmakeable.
+- **Campaign PR reviews carry two fixed axes** in addition to the reviewer
+  covenant (never name target internals or known issues — a breach burns the
+  candidate): (1) verify every "Verified"/"measured" claim against the committed
+  transcripts and flag any claim whose measurement did not look at what the
+  claim covers — measured on something other than the shipped thing must say so
+  in the claim; (2) for any new guard, require falsification against the
+  guard's own predicate, not only against the accident that motivated it.
+  These two axes are where external review has repeatedly out-detected
+  self-checks; prompts for R1/R2 must include them verbatim.

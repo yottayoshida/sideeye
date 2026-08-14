@@ -2,6 +2,50 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The campaign becomes a program: rehearsal, driver, R3, and a ledger pen (#83)
+
+The re-verification question was blunt: what would let a blind hunt run without
+the mistakes this session kept making? The answer that survived scrutiny is not
+another checking layer — it is moving every apparatus error to before the seal,
+where errors cost nothing, and removing the hand-typed procedure where the
+sequencing errors lived. Four pieces, shipped together on the re-seal branch:
+
+- **`spike/rehearse-campaign.sh`** — the whole pipeline against synthetic
+  targets in a scratch git repository that mimics the real layout, so the REAL
+  sealed tooling runs byte-for-byte unmodified. Defects planted one at a time
+  (a sealed path edited between seals, a rewritten ledger, a tampered manifest
+  hash, a wrong declaration, a wrong-head run manifest, a wrong-engine run
+  manifest, a voided anchor, a cross-row config, a dropped checker, a vandalized
+  ledger under the append tool, three driver refusals), each required to turn
+  its guard red; then a real container sweep through the driver, ending in the
+  full battery's ALL SEAL CHECKS PASSED (R1 audited). Twenty-six drills. The
+  first run failed four of them and both causes were real: this host's docker
+  answers `image inspect <name>` flakily (measured: success and "No such image"
+  for the same name in one session — both resolvers now accepted), and
+  bookworm's /bin/cp is *correctly* refused by preflight because it copies via
+  copy_file_range, which the trace contract does not cover. The toy now writes
+  through dd. An apparatus test that finds real behavior on its first run is
+  the strongest evidence yet that the rehearsal was missing.
+- **`spike/campaign-driver.sh`** — every phase behind preconditions that refuse:
+  dirty tree, uncommitted inputs, existing output directories, a manifest that
+  already exists, a HEAD that is not the seal being explored. Unsealed by
+  design: it carries no verdict logic, only the sequencing that was previously
+  typed by hand — which is exactly where the fused-chain failures lived. It
+  never merges and never commits.
+- **verify-seals R3** (sealed, amended pre-merge on this branch): the run
+  manifest's engine/shim SHA-256 must equal the committed sweep manifest's.
+  The machine half of "measure the thing you ship" — the class that started
+  today's chain.
+- **`spike/ledger-append.sh`** — appends and proves the prefix against HEAD,
+  restoring on refusal. The append-only discipline has now been broken twice by
+  well-meant edits; the pen replaces the discipline.
+
+CLAUDE.md gained the operating rules, including the two review axes external
+review has repeatedly out-detected self-checks on (claims vs. what the
+measurement looked at; guards falsified against their own predicate). What
+stays honest: the rehearsal covers the apparatus, not the declaration's
+completeness, and prose outside Verified sections still depends on review.
+
 ## 2026-08-14 — The same mistake three times in one session, and where the stop now lives (#83)
 
 Three failures today share one shape, and naming it matters more than any of them
