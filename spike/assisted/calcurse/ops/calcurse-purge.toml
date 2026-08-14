@@ -1,0 +1,13 @@
+# Assisted run (#118), calcurse P1: purge one event by pattern while the
+# bystander must survive the write-back ("-P: Read items and write them
+# back" — the help text's own words for the window). Property and
+# provenance: ../proposals.md. Determinism over the same pre-state:
+# measured byte-identical (scout probe).
+[world]
+state = "/tmp/assisted/calcurse/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "/usr/bin/calcurse -D /tmp/assisted/calcurse/state/d -C /tmp/assisted/calcurse/conf -P --filter-pattern AdaMeeting"
+check           = "./check.sh"
+expected_status = "0"
