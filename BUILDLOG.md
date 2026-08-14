@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Campaign 2 explored: abook, three ops, zero violations (#83)
+
+The exploration from the re-sealed Seal B `eb51c483` completed: import 2
+crash points + baseline, export 2 + baseline, refused 1 + baseline —
+**every world PASS, violations 0**. The refusal path ran as a declared
+`expected_status = "1"` operation and never damaged the store it refused to
+replace. The full verifier over Seal A, Seal B, the run manifest and the
+sealed sweep reports says ALL SEAL CHECKS PASSED (R1 audited) — the
+invocation transcript is committed as
+`spike/blind-hunt2/analysis/verify-seals.txt`, so the
+claim is checkable from the repo, not prose — declaration before
+exploration, clean tree at the seal, sweep and exploration on
+byte-identical engine and shim. The engine's falsification gate fired in
+all three runs (corrupted state → the checker's I-C leg failed), closing
+post-seal the red side the declaration deliberately deferred.
+
+A null result, recorded at counterexample precision
+(`spike/blind-hunt2/analysis/findings.md`): what PASS bounds (the declared
+invariants, single process, the engine's crash model — its own not-tested
+list rides in every report) and what it does not (abook's crash safety in
+general; the TUI and stdin surfaces are undriven). Campaign accounting:
+khard burned, abook consumed by exploration, khal the only unconsumed
+candidate, hledger's sweep refusal still sealed unread. PRD criterion 1
+stays open; a third campaign is a resourcing decision.
+
 ## 2026-08-14 — Seal B's first exploration attempt: Permission denied before anything ran (#83)
 
 Exploration from Seal B `84d0f2e1` returned SETUP ERROR for all three abook

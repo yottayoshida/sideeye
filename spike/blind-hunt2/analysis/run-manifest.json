@@ -1,0 +1,12 @@
+{
+  "head": "eb51c483d772c4ec681166fae4e16e5d46e92957",
+  "worktree_clean": true,
+  "engine_version": "sideeye 0.7.0 (trace contract v8)",
+  "engine_sha256": "3ada341a61ade6c268100d28f32e67df7ad93ae641d83fa00a26b1c2d53bc329",
+  "shim_sha256": "3346c0a8762e104ff81429f0711c0006b15b85f123bc712b6b14e1e2d65e9129",
+  "ops": [
+    {"op": "import", "exit": 0, "report_parses": true},
+    {"op": "export", "exit": 0, "report_parses": true},
+    {"op": "refused", "exit": 0, "report_parses": true}
+  ]
+}

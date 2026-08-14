@@ -1,0 +1,13 @@
+cannot write file /tmp/blind2/hunt/refused/state/book/addressbook
+checker(refused): I-C: conserved store /tmp/blind2/hunt/refused/state/book/addressbook differs from its sealed golden
+cannot write file /tmp/blind2/hunt/refused/state/book/addressbook
+PASS  2/2 crash worlds satisfied the built-in atomicity invariant
+      explored 2 worlds (crash points 1 + 1 baseline)
+      expected status: 1
+      atomicity: 1 file(s) judged pre-or-post
+      oracle: agreed on 1 operations (87 syscall lines examined, 3 touching the state directory)
+      checker: falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes

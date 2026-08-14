@@ -339,3 +339,20 @@ entry must record the **image identity** (`docker image inspect` ID of
   becomes the Seal B the exploration runs from, and the R1 leg audits
   against it. The failed run's artifacts stay local under
   `artifacts/explore-84d0f2e1/`.
+- **2026-08-14 — campaign 2 explored: abook, zero violations; the campaign's
+  result is null.** From Seal B `eb51c483`, driver, pinned container, engine
+  `sideeye 0.7.0 (trace contract v8)`: import PASS (2 crash points +
+  baseline), export PASS (2 + baseline), refused PASS (1 + baseline,
+  expected status 1) — violations 0 across all worlds. The engine's
+  falsification gate corrupted state before each run and the checker's I-C
+  leg failed on it — the post-seal red side the declaration deferred, now
+  measured. Full verification over (Seal A `8878df82`, Seal B `eb51c483`,
+  run manifest, sealed sweep reports): **ALL SEAL CHECKS PASSED (R1
+  audited)** — R1 head==Seal B clean tree, R3 sweep and exploration on
+  byte-identical engine and shim, R2 sealed reports re-hash to the
+  manifest. Committed copies of the run manifest, reports and engine output
+  live in `analysis/`; the working originals stay local under
+  `artifacts/explore-eb51c483/`. abook is consumed. khal is the only
+  unconsumed candidate in the sealed order; hledger's sweep refusal reason
+  remains sealed and unread. Criterion 1 stays open (PRD status updated in
+  the same commit).
