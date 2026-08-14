@@ -52,6 +52,14 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
 
+      # A sealed campaign whose own artifacts disagree produces verdicts that mean
+      # nothing — campaign 2 sealed exactly that and had to be voided (BUILDLOG
+      # 2026-08-14). The per-campaign checker existed only inside the campaign that
+      # wrote it; this walks every campaign present, requires one, and fails when a
+      # campaign seals invocations without carrying it forward.
+      - name: Sealed campaigns are internally consistent
+        run: sh spike/check-sealed-campaigns.sh
+
   macos:
     runs-on: macos-latest
     steps:

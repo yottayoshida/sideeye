@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The same mistake three times in one session, and where the stop now lives (#83)
+
+Three failures today share one shape, and naming it matters more than any of them
+individually:
+
+1. "All thirteen tomls parse" — measured with the host binary, not the revision
+   being sealed.
+2. "The configs carry no campaign-1 dependency" — measured by resolving
+   references and checking files exist, never by opening the files, where
+   `/tmp/blind` sat in two of them the whole time.
+3. "The new guard is falsified" — measured against the defect that produced it,
+   never against its own predicate. External review then found seven holes in it.
+
+The common shape: **when I say "verified", I do not check what the verification
+did not look at.** Each time the net was finer than the thing I claimed to have
+caught, and nothing came up, so I reported safety. A rule against this already
+existed ("measure before trusting a check"), and existing prose did not stop the
+third repeat — which is the measurement that decides where the fix belongs.
+
+So the stop moved out of prose in two places:
+
+- **CI**: `spike/check-sealed-campaigns.sh` walks *every* campaign directory
+  present, requires each one that seals invocations to carry an executable
+  consistency checker, runs it, and **fails when no campaign is found at all**
+  (a path typo would otherwise pass over an empty set). Campaign 1 is exempt by
+  literal name — its seals are closed and adding files there would mark its
+  checkers sighted — and the exemption cannot be inherited, which is one of the
+  cases the suite proves. Falsified across seven cases, and deliberately not
+  only against the accident that motivated it: a campaign that drops the
+  checker, one whose checker is not executable, an empty tree, a *new* campaign
+  trying to inherit the exemption, and a pre-sweep campaign that must be skipped
+  rather than failed.
+- **The PR template** (`git-delivery` skill): the Verified section now asks for
+  the claim, the command that measured it, and what that command did not look
+  at. All three failures above were written into a Verified section; that is
+  where the discrepancy would have had to be spelled out.
+
+What this does not fix, stated because the honest scope is the point: CI covers
+the config/invocation class only. Classes 1 and 3 are caught by the template, or
+not at all — the template is a prompt to notice, not a machine check, and its
+effect is unmeasured until the next time I claim something.
+
 ## 2026-08-14 — Campaign 2's first seal was void within the hour, by its own sweep (#83)
 
 The between-seals sweep ran once against the sealed rows and displayed its four
