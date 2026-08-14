@@ -68,7 +68,7 @@ if [ "$op" = import ]; then
     trc=$?
     case $trc in
         0|1) : ;;
-        *) fail "I-T: outfile query exited $trc, outside the documented {0,1}: $tout" ;;
+        *) fail "I-T: outfile query exited $trc, outside the observed-normal {0,1}: $tout" ;;
     esac
     if [ "$had" -eq 1 ]; then
         cmp -s "$T/b.before" "$book" || fail "I-T: the query changed the outfile's bytes"

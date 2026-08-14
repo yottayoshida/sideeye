@@ -94,10 +94,16 @@ fi
 
 say "4. convert onto an EXISTING outfile (the overwrite shape: next.vcf over base store)"
 cp "$N/a/addressbook" "$N/c/addressbook"
+cp "$N/c/addressbook" "$N/c/addressbook.before"
 printf -- '--- store before (base: Ada+Grace) ---\n'; cat "$N/c/addressbook"
 run convert-overwrite -- abook --convert --informat vcard --infile "$N/next.vcf" \
     --outformat abook --outfile "$N/c/addressbook"
 printf -- '--- store after ---\n'; cat "$N/c/addressbook"
+if cmp -s "$N/c/addressbook.before" "$N/c/addressbook"; then
+    echo "store byte-identical across the refusal: yes (cmp)"
+else
+    echo "store byte-identical across the refusal: NO"; cmp "$N/c/addressbook.before" "$N/c/addressbook" || true
+fi
 
 say "5. mutt-query probes (--datafile BEFORE --mutt-query, per abook(1))"
 run query-match     -- abook --datafile "$N/a/addressbook" --mutt-query Grace

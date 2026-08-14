@@ -1,11 +1,14 @@
 #!/bin/sh
 # Campaign-2 Seal B artifact (abook): red-side sanity of the declared checker
 # WITHOUT observing any abook failure. The khard burn's structural rule,
-# applied twice over:
+# applied twice over (stated precisely — R1 of this declaration caught the
+# blanket form overclaiming):
 #
-#   * every store a REAL abook invocation meets here is abook-written (a
-#     sealed golden or a store the green side just produced), empty, or
-#     absent — never mis-shaped;
+#   * every NATIVE STORE a REAL abook invocation reads here is abook-written
+#     (a sealed golden), empty, or absent — never mis-shaped. The vCard
+#     INPUTS the provenance case feeds --convert are the committed
+#     hand-authored well-formed files, the same documented-normal input class
+#     the normal runs recorded (vcard is a documented informat);
 #   * checker branches that would need an ill-behaved target (bad exit codes,
 #     extra/missing match lines, byte-writing queries, hangs) are exercised
 #     with a STUB binary via the checker's documented CHECK_ABOOK seam — the
@@ -114,9 +117,9 @@ echo "== I-T branches (stub target; conserved leg answered correctly) =="
 reset import
 mkdir -p /tmp/blind2/hunt/import/state/keep /tmp/blind2/hunt/import/state/book
 cp "$ops/golden-grace.addressbook" /tmp/blind2/hunt/import/state/keep/addressbook
-expect 1 "I-T: outfile query exited 7, outside the documented {0,1}" "red: outfile query exit outside {0,1}" -- \
+expect 1 "I-T: outfile query exited 7, outside the observed-normal {0,1}" "red: outfile query exit outside {0,1}" -- \
     CHECK_ABOOK="$stub" STUB_MODE=it-rc7
-expect 1 "outside the documented {0,1}" "red: a hanging outfile query times out (rc 124)" -- \
+expect 1 "outside the observed-normal {0,1}" "red: a hanging outfile query times out (rc 124)" -- \
     CHECK_ABOOK="$stub" STUB_MODE=it-hang CHECK_TIMEOUT=2
 expect 1 "I-T: the query created the outfile" "red: a query that creates the outfile is caught" -- \
     CHECK_ABOOK="$stub" STUB_MODE=it-create
@@ -139,6 +142,26 @@ else
     fails=$((fails + 1))
 fi
 rm -rf "$copydir"
+
+echo "== golden provenance (the drift gate R1 asked for) =="
+# The committed goldens must BE what abook writes from the committed inputs —
+# regenerated here into scratch and byte-compared, so a changed input or a
+# changed generator output cannot silently re-baseline the fixtures.
+gp=$(mktemp -d)
+for pair in "grace.vcf golden-grace.addressbook" "pair.vcf golden-pair.addressbook" "impostor.vcf golden-impostor.addressbook"; do
+    in=${pair% *}; gold=${pair#* }
+    n=$((n + 1))
+    rm -f "$gp/g"
+    /usr/bin/abook --convert --informat vcard --infile "$ops/$in" \
+        --outformat abook --outfile "$gp/g" < /dev/null >/dev/null 2>&1
+    if [ $? -eq 0 ] && cmp -s "$gp/g" "$ops/$gold"; then
+        echo "ok   provenance: $gold is byte-what abook writes from $in"
+    else
+        echo "FAIL provenance: $gold drifted from what abook writes from $in"
+        fails=$((fails + 1))
+    fi
+done
+rm -rf "$gp"
 
 echo "== the anchoring pattern against REAL abook output (both directions) =="
 # The impostor store is abook-written and well-formed; querying it is

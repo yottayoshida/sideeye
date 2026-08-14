@@ -3,7 +3,10 @@
 # each abook operation. Pre-states are cp'd from the sealed goldens — stores
 # abook itself wrote at fixture-generation time (make-goldens.sh; byte-
 # deterministic per normal-runs §2), so setup runs no target binary and every
-# store the operation meets is abook-written by construction.
+# NATIVE STORE the operation reads is abook-written by construction. The
+# vCard INPUTS import/refused name in their argv are the committed
+# hand-authored well-formed files (ada.vcf, next.vcf) — the documented-normal
+# input class the normal runs recorded, not stores.
 #
 # Grace is the conserved bystander in every operation. Ada is import's
 # subject and, with Grace, the content of the export/refused source store.

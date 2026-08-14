@@ -13,8 +13,16 @@
 set -eu
 out=/work/spike/blind-hunt2/declaration/abook/transcripts
 
+# Provenance goes to a COMMITTED transcript, not just this script's stdout
+# (R1: an asserted provenance that only ever lived on a terminal cannot be
+# verified from the repository).
+prov=$out/sources-provenance.txt
+: > "$prov"
+note() { printf '%s\n' "$*" | tee -a "$prov"; }
+
 installed=$(dpkg-query -W -f='${Version}' abook)
-printf 'package: abook %s (dpkg-query -W)\n' "$installed"
+note "package: abook $installed (dpkg-query -W)"
+note "binary: $(command -v abook) (what bare 'abook' resolves to in this image; the sealed operations name /usr/bin/abook)"
 
 abook --help > "$out/help.txt" 2>&1
 printf 'help.txt: rc=%s\n' "$?"
@@ -28,7 +36,8 @@ apt-get download "abook=$installed" >/dev/null 2>&1
 deb=$(ls abook_*.deb)
 got=$(dpkg-deb -f "$deb" Version)
 [ "$got" = "$installed" ] || { echo "FATAL: downloaded $got, installed $installed" >&2; exit 1; }
-printf 'deb: %s sha256=%s\n' "$deb" "$(sha256sum "$deb" | cut -d' ' -f1)"
+note "deb version check: downloaded $got == installed $installed"
+note "deb: $deb sha256=$(sha256sum "$deb" | cut -d' ' -f1)"
 dpkg-deb -x "$deb" x
 
 render() { # render <groff-file.gz> <out.txt>
@@ -39,12 +48,12 @@ render() { # render <groff-file.gz> <out.txt>
     fi
 }
 render x/usr/share/man/man1/abook.1.gz   "$out/man-abook.txt"
-printf 'man-abook.txt: %s lines\n' "$(wc -l < "$out/man-abook.txt" | tr -d ' ')"
+note "man-abook.txt: $(wc -l < "$out/man-abook.txt" | tr -d ' ') lines"
 render x/usr/share/man/man5/abookrc.5.gz "$out/man-abookrc.txt"
-printf 'man-abookrc.txt: %s lines\n' "$(wc -l < "$out/man-abookrc.txt" | tr -d ' ')"
+note "man-abookrc.txt: $(wc -l < "$out/man-abookrc.txt" | tr -d ' ') lines"
 
 # A transcript with zero lines is a renderer failure, not an empty document.
 for f in "$out/help.txt" "$out/formats.txt" "$out/man-abook.txt" "$out/man-abookrc.txt"; do
     [ -s "$f" ] || { echo "FATAL: $f is empty" >&2; exit 1; }
 done
-echo "sources: all transcripts non-empty"
+note "sources: all transcripts non-empty"

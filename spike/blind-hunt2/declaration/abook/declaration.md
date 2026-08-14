@@ -6,9 +6,12 @@ below is declared from permitted sources only — the target's own --help and
 --formats output, the abook(1) and abookrc(5) man pages shipped in the pinned
 package, and one normal (non-crash) run per candidate form — before any
 crash-world exploration. No traces, no source, no bug tracker, no damaged
-store was ever given to the target (the khard burn's structural rule, applied
-from observation time onward: every store a probe or a red fixture offers the
-target is abook-written, empty, or absent).
+store was ever given to the target — the khard burn's structural rule,
+stated precisely: every NATIVE STORE a probe, a red fixture, or a green run
+lets the target read is abook-written, empty, or absent; the vCard INPUT
+files fed to `--convert` are hand-authored well-formed files, the
+documented-normal input class (vcard is a documented informat) that the
+normal runs recorded.
 
 **Entities.** An *entry*: a name with its email address, as one numbered `[N]`
 section of the native store (observed shape, normal-runs §1) and as one line
@@ -37,7 +40,9 @@ whole CLI surface is seven forms; exclusions use only the sealed vocabulary
 the evidence named.
 
 **Declared — three forms, all of them `--convert` (the only documented
-non-interactive writer):**
+writer whose input channel the engine can supply — files and argv; the
+`--add-email` pair's only documented input channel is stdin, which the
+engine never provides):**
 
 | Form | Exercised argv shape | Forms not exercised |
 |------|----------------------|---------------------|
@@ -56,9 +61,9 @@ path could still damage the store it refused to replace.
 | Form | Verdict | Evidence |
 |------|---------|----------|
 | `abook` (bare, the ncurses program) | `interactive` | abook(1) "text-based address book program", "COMMANDS DURING USE Press '?'"; without a terminal: "Error opening terminal: unknown.", exit 1 (normal-runs §6) |
-| `--add-email` | `interactive` | abook(1): "Read an e-mail message from stdin"; on stdin EOF prints "Valid sender address not found", exits 0, writes no datafile (normal-runs §6) |
-| `--add-email-quiet` | `interactive` | same stdin dependency and same EOF observation (normal-runs §6) |
-| `--mutt-query <string>` | `not-stateful` | abook(1): "Make a query for mutt (search the addressbook for <string>)" — the checker's query leg, not an operation; its exit codes are observed in normal-runs §5 |
+| `--add-email` | `interactive` | abook(1): "Read an e-mail message from stdin and add the sender"; help.txt shows the quiet variant exists because this one "require[s] to confirm adding". On stdin EOF: "Valid sender address not found", exit 0, no datafile (normal-runs §6) |
+| `--add-email-quiet` | `interactive` | **a documented stateful form** ("Same as --add-email but doesn't confirm adding" — it would add the sender). Its ONLY documented input channel is stdin; the engine gives the child no stdin, and on EOF it adds nothing and exits 0 (normal-runs §6) — the stateful path is unreachable under the engine and no file-input alternative is documented. Excluded for the input channel, not for a prompt; the inventory names it so the exclusion is visible, not buried |
+| `--mutt-query <string>` | `not-stateful` | abook(1): "Make a query for mutt (search the addressbook for <string>)" — the checker's query leg, not an operation; exit codes observed in normal-runs §5. Forms not exercised: `--outformat` variants (abook(1) allows "mutt (default), vcard and custom"; `--formats` lists query-compatible outputs as `vcard`/`muttq`/`custom` — the two transcripts disagree on the alias's name, a discrepancy this declaration records rather than resolves) and `--outformatstr` |
 | `--formats` | `not-stateful` | prints the format lists, exit 0 (transcripts/formats.txt) |
 | `--help` | `not-stateful` | prints usage, exit 0 (transcripts/help.txt) |
 

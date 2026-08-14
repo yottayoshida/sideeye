@@ -27,18 +27,44 @@ refusal pre-registered — both writers observed byte-deterministic, twice.
 **The red suite cannot re-create the burn.** The checker runs file legs
 first and the target last, so a red fixture that fails a file leg provably
 never reaches an abook invocation (each failure message names its leg — the
-pin doubles as the no-execution proof). Real abook runs in the red suite
-only as a query over abook-written stores (the impostor anchoring probe:
-`Grace Hopperson`'s real match line is rejected because the anchor demands
-the full name bounded by both tabs). Every branch that needs an ill-behaved
-binary — wrong exit codes, duplicate match lines, byte-writing queries,
-hangs, outfile creation — runs through a stub via the checker's documented
-CHECK_ABOOK seam: those branches are exercised and the target never runs.
-14 red cases, message-pinned, green first try; the khard R1's other gaps
-(green-run without setup/parse/binary evidence, missing engine version in
-the run manifest) are answered in green-run.txt and run.sh respectively.
+pin doubles as the no-execution proof). Real abook touches only
+abook-written, empty, or absent NATIVE stores (queries over goldens — the
+impostor anchoring probe: `Grace Hopperson`'s real match line is rejected
+because the anchor demands the full name bounded by both tabs — and the
+provenance case's converts, whose vCard inputs are the committed
+hand-authored well-formed files, the documented-normal input class). Every
+branch that needs an ill-behaved binary — wrong exit codes, duplicate match
+lines, byte-writing queries, hangs, outfile creation — runs through a stub
+via the checker's documented CHECK_ABOOK seam: those branches are exercised
+and the target never runs. 17 red cases, message-pinned; the khard R1's
+other gaps (green-run without setup/parse/binary evidence, missing engine
+version in the run manifest) are answered in green-run.txt and run.sh.
 Engine and shim SHA-256 already equal the committed sweep manifest's values,
 so the R3 leg's comparison is pre-verified at declaration time.
+
+**R1 of this declaration: ten findings, all adopted.** The two fixed review
+axes cut into the new work exactly as they did last round. The ones that
+mattered: normal-runs §4 had *printed* the store before and after the
+refusal but never ran `cmp` — "store byte-identical" exceeded its
+measurement (the same claim-vs-measurement shape, caught a third time
+today; §4 now measures, and the probe was re-run). The "every store the
+target meets is abook-written" rule as first written was false — green
+feeds hand-authored vCard *inputs* to `--convert`; the rule now
+distinguishes native stores from documented-normal input files. The
+committed goldens had no drift gate (make-goldens silently re-baselines; a
+red provenance case now regenerates into scratch and byte-compares on every
+run). The green harness could pass without its operations doing anything
+(setup rc ungated, effects unasserted, an empty extracted command exits 0
+via `sh -c ""`) — setup is gated, extraction asserted non-empty, and each
+op's documented effect is asserted. run.sh swallowed exploration failures —
+it now requires each op's report to exist and parse, records per-op
+exit/report state in the manifest, and exits nonzero on a missing report.
+Sources provenance (deb version assert + sha256, bare-`abook` resolution)
+now lands in a committed transcript instead of a terminal. `--add-email-
+quiet` is kept excluded but for the honest reason — a documented stateful
+form whose only input channel (stdin) the engine never supplies — and the
+inventory says so instead of calling it a prompt. The mutt/muttq
+outformat-name discrepancy between abook(1) and --formats is recorded.
 
 ## 2026-08-14 — khard is burned: the red suite let the checker query a malformed store (#83)
 

@@ -295,3 +295,29 @@ entry must record the **image identity** (`docker image inspect` ID of
   - Engine identity on the transcript: `sideeye 0.7.0 (trace contract v8)`,
     engine and shim SHA-256 equal to the committed sweep manifest's values
     (the R3 leg's comparison, pre-verified at declaration time).
+- **2026-08-14 — R1 of the abook declaration: corrections to earlier entries
+  of this ledger (append-only, so corrected here rather than edited):**
+  - The consultation entry's "convert onto an EXISTING outfile … leaves the
+    store byte-identical" was, at the time it was written, backed by a
+    printed before/after and no `cmp` — the claim exceeded its measurement.
+    normal-runs §4 now runs `cmp` and the re-run measured: byte-identical
+    (the probe re-run is a normal-run contact of the same class).
+  - The apparatus entry's "zero side effects" for the toml parse probes
+    claimed more than the probe inspected. The probed paths are the state
+    root, the work path, and $HOME/.abook; the claim is now stated at that
+    width in green-run.sh and here.
+  - The apparatus entry implied the sources provenance (deb version assert,
+    sha256) was on the record; it was only ever on a terminal. It now lands
+    in the committed `transcripts/sources-provenance.txt`, which also ties
+    bare `abook` to /usr/bin/abook in the pinned image.
+  - The goldens' "written by abook itself" now has a standing gate: the red
+    suite regenerates all three from the committed inputs into scratch and
+    byte-compares against the committed goldens on every run (17 cases
+    total, transcript committed). Green additionally asserts each
+    operation's documented effect, and run.sh fails closed on a missing or
+    unparsable report.
+  - Real-abook contact during the red suite, restated precisely: queries
+    over abook-written goldens, plus the provenance case's converts whose
+    vCard inputs are the committed hand-authored well-formed files — the
+    documented-normal input class. No mis-shaped native store reaches the
+    target anywhere in the apparatus.

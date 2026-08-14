@@ -13,6 +13,7 @@ setup rc=0
 $ /usr/bin/abook --convert --informat vcard --infile /work/spike/blind-hunt2/declaration/abook/ops/ada.vcf --outformat abook --outfile /tmp/blind2/hunt/import/state/book/addressbook
 operation rc=0 (toml expected_status=0)
 check rc=0
+effect: the imported subject answers its query (anchored)
 ./book/addressbook
 ./keep/addressbook
 
@@ -21,6 +22,7 @@ setup rc=0
 $ /usr/bin/abook --convert --informat abook --infile /tmp/blind2/hunt/export/state/book/addressbook --outformat vcard --outfile /tmp/blind2/hunt/export/state/book/export.vcf
 operation rc=0 (toml expected_status=0)
 check rc=0
+effect: export.vcf exists with both FN lines
 ./book/addressbook
 ./book/export.vcf
 
@@ -30,6 +32,7 @@ $ /usr/bin/abook --convert --informat vcard --infile /work/spike/blind-hunt2/dec
 cannot write file /tmp/blind2/hunt/refused/state/book/addressbook
 operation rc=1 (toml expected_status=1)
 check rc=0
+effect: store byte-identical to its golden and the refusal message printed
 ./book/addressbook
 
 green-run fails=0
