@@ -1,0 +1,9 @@
+Usage: khal printics [OPTIONS] [ICS]
+
+  Print an ics file (or read from stdin) without importing it.
+
+  Just print the ics file, do nothing else.
+
+Options:
+  -f, --format TEXT  The format to print the event.
+  --help             Show this message and exit.

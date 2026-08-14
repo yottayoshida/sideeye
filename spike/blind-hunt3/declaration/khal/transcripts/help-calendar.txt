@@ -1,0 +1,15 @@
+Usage: khal calendar [OPTIONS] [DATERANGE]...
+
+  Print calendar with agenda.
+
+Options:
+  -d, --exclude-calendar CAL  Exclude the given calendar. Can be specified
+                              multiple times.
+  -a, --include-calendar CAL  Include the given calendar. Can be specified
+                              multiple times.
+  -f, --format TEXT           The format of the events.
+  -df, --day-format TEXT      The format of the day line.
+  -o, --once                  Print each event only once (even if it is
+                              repeated or spans multiple days).
+  --notstarted                Print only events that have not started.
+  --help                      Show this message and exit.

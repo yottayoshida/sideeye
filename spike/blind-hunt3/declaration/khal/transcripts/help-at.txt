@@ -1,0 +1,14 @@
+Usage: khal at [OPTIONS] [[START DATE] TIME | now]
+
+  Print all events at a specific datetime (defaults to now).
+
+Options:
+  -d, --exclude-calendar CAL  Exclude the given calendar. Can be specified
+                              multiple times.
+  -a, --include-calendar CAL  Include the given calendar. Can be specified
+                              multiple times.
+  -f, --format TEXT           The format of the events.
+  -df, --day-format TEXT      The format of the day line.
+  --notstarted                Print only events that have not started
+  --json TEXT                 Fields to output in json
+  --help                      Show this message and exit.

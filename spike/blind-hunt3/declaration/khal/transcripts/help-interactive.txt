@@ -1,0 +1,11 @@
+Usage: khal interactive [OPTIONS]
+
+  Interactive UI. Also launchable via `ikhal`.
+
+Options:
+  -d, --exclude-calendar CAL  Exclude the given calendar. Can be specified
+                              multiple times.
+  -a, --include-calendar CAL  Include the given calendar. Can be specified
+                              multiple times.
+  --mouse / --no-mouse        Disable mouse in interactive UI
+  --help                      Show this message and exit.

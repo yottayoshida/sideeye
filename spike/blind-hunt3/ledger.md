@@ -54,3 +54,39 @@ and voids land in `voided-seals.txt` with their narrative here.
   reports went unread into `artifacts/sweep-2239fba/sealed-reports/` (local;
   only their hashes travel in the manifest). The manifest is committed
   beside the sealed rows in the same commit as this entry.
+- **2026-08-14 — declaration-phase consultations for khal (all permitted
+  sources; no traces, no crash experiments, no source, no bug trackers):**
+  - `khal --help`, all twelve listed commands' `--help`, `--version`, and
+    `pip3 show` identity, inside the pinned container
+    (`declaration/khal/transcripts/help*.txt`, `sources-provenance.txt`;
+    khal 0.14.0, bare `khal` resolves to /usr/local/bin/khal).
+  - The version-pinned official usage page,
+    khal.readthedocs.io/en/v0.14.0/usage.html, transcribed with tags
+    stripped (`transcripts/docs-usage.txt`, 586 lines; fetched via curl —
+    khal ships no man pages in the pinned image). Facts taken: import
+    syntax and same-UID update semantics ("--batch ... always update");
+    `edit` is "an interactive command for editing and deleting events";
+    `configure` refuses if a config exists; ikhal deletes marked events
+    "when khal exits"; the recovery-vocabulary grep over the whole page
+    returns zero hits.
+  - One normal (non-crash) run per candidate form plus determinism and
+    interactivity probes (`transcripts/normal-runs.sh` → `normal-runs.txt`),
+    all in scratch with HOME inside scratch. Measured: import --batch of a
+    fixed-UID .ics into a fresh vdir names the file `<UID>.ics` and is
+    byte-deterministic across two runs (tree-level diff -r); the same-UID
+    --batch update rewrites that file AND leaves extra files with random
+    suffixes in the vdir (`.ics2mtnp400`-shaped; names differ across runs —
+    a NORMAL-run observation, no crash involved), so import-update is
+    baseline-irreproducible and carries a pre-registered refusal
+    expectation; `new` mints a random UID-named .ics with DTSTAMP=now
+    (two fresh runs differ — the campaign-1 observation, now measured
+    precisely); queries (list/search) exit 0 even on no match, change no
+    byte of an existing vdir, keep khal's cache under $HOME (outside the
+    state root) — and `list` CREATES a missing configured vdir (observed),
+    a directory-level write the checker will avoid by querying only
+    existing vdirs; interactivity probes: import without --batch prompts
+    and aborts on EOF (rc 1), import from stdin errors on EOF (rc 1),
+    edit prompts and aborts (rc 1), interactive needs a terminal,
+    configure prompts and aborts (rc 1). Every vdir a probe touched was
+    khal-written, empty, or absent; the .ics inputs are hand-written
+    well-formed iCalendar (the documented input class).
