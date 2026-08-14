@@ -174,3 +174,17 @@ entry must record the **image identity** (`docker image inspect` ID of
   slips the textual under-repo test while escaping the repository. Refused now
   (never resolved), matching the sealed config check's treatment of `..`; a red
   drill covers the escape shape. Rehearsal: 42 drills, all green.
+- **2026-08-14 — the campaign-2 sweep, run once against the re-sealed apparatus.**
+  Seal A is the PR #107 merge `8878df82`. The sweep ran through the phase driver
+  (which found one more apparatus bug on the way and refused to proceed until it
+  was fixed: `image_id` failures were swallowed by the command substitution, so a
+  stopped docker daemon produced an EMPTY image name that reached `docker run` —
+  the fix stops the driver, red-measured against an unreachable DOCKER_HOST).
+  Environment: image `sideeye-blindhunt:latest` ID `sha256:d3d28e791276…`
+  (recorded in the manifest via SWEEP_IMAGE), engine and shim SHA-256 in the
+  manifest, engine built from the Seal A merge. **Verdicts, exit codes only:
+  khard 0 / abook 0 / khal 0 / hledger 2** (reason sealed, unread, as ever).
+  With the config/invocation contradiction fixed, khard's verdict returned to
+  campaign 1's public value — consistent with the voided sweep's refusal having
+  been our apparatus, though nothing stronger than consistency is claimed. The
+  sealed reports stay local under `artifacts/sweep-8878df82/`; only hashes travel.
