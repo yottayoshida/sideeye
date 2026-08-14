@@ -23,6 +23,7 @@ checker, setup, config or toml here marks the declaration sighted
 | `transcripts/todotxt-spec.md` | the todo.txt format specification the docs point at |
 | `transcripts/normal-runs.txt` | one normal run of each declared operation: invocation shape, exit status, output form, file contents, state-dir filenames |
 | `transcripts/config-verification.txt` | the nobackup config observed working (no `.todo.bak`, exits unchanged) |
+| `transcripts/checker-red.txt` | the checker's red side proven on hand-fabricated *well-formed* states — topydo never ran over anything but well-formed files, so no failure behavior was observed |
 
 The `.todo.bak` backup file is never read anywhere in this campaign — its
 format is not documented. Only its existence (a filename) is observed.

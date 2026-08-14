@@ -1,0 +1,5 @@
+ok   I-C loss: checker exited 1 — checker(do): task 'water-plants' is in neither todo.txt nor done.txt — lost
+ok   I-D2 duplication: checker exited 1 — checker(do): task 'water-plants' is in both todo.txt and done.txt — duplicated
+ok   I-F non-x line: checker exited 1 — checker(do): done.txt contains a line that is not a completed task
+ok   green control: checker exits 0
+red-run fails=0

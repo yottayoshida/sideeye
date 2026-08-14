@@ -106,3 +106,11 @@ What belongs here:
   not the prose order, carry the append-only property, so the stale "none yet" line
   now sits above real entries and that is the honest shape of the repair. Nothing
   else was altered.
+- **2026-08-14 — checker red-side sanity, blind-preserving:** `check.sh` was shown
+  to fail (exit 1, correct message) on three hand-fabricated *well-formed* states —
+  declared task in neither file, in both files, a non-`x` line in done.txt — plus a
+  green control. The states were written by the test script, not produced by topydo;
+  topydo itself only ran `ls` over well-formed files (normal behavior). No topydo
+  failure mode was observed; the checker's red side against real crash states
+  belongs to sideeye's falsification gate after Seal B.
+  `declaration/topydo/transcripts/checker-red.txt`.
