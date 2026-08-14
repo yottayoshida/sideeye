@@ -59,6 +59,16 @@ done
 }
 [ -r "$inv" ] || { echo "sweep: cannot read $inv" >&2; exit 2; }
 
+# Refuse an existing output directory, exactly as the state roots below are refused.
+# A re-sweep into a retained one would truncate the manifest and every report in
+# place — and this campaign has already voided a seal whose evidence lives in such a
+# directory. Destroying the record of a voided run while producing its replacement is
+# the one outcome that must not be reachable by re-running a command
+# (campaign-2 R1 finding).
+if [ -e "$out" ]; then
+    echo "sweep: output dir already exists: $out — give each sweep a fresh path (a re-sweep must not overwrite a retained one)" >&2
+    exit 2
+fi
 sealed=$out/sealed-reports
 mkdir -p "$sealed" || exit 2
 manifest=$out/sweep-manifest.json

@@ -125,8 +125,9 @@ verified resolvable in the pinned image before sealing (resolution only — no
 target executed) — **and the first seal proved that check insufficient**: it
 looked at command resolution and file existence but not at the paths *inside*
 the config files, two of which still carried campaign 1's state roots. The
-resulting sweep mis-verdicted khard (our bug, not its answer), the seal was
-voided before any declaration existed, and this re-seal adds the missing
+resulting sweep produced a khard verdict that cannot be interpreted — the
+apparatus disagreed with itself, and with the reports unread nothing establishes
+which half spoke — so the seal was voided before any declaration existed, and this re-seal adds the missing
 mechanical check: every `/tmp/...` path in every sealed config must sit under
 an invocation state root (run green before sealing; the void itself, the
 displayed exit codes, and the superseded manifest are in the ledger). A frozen

@@ -31,8 +31,10 @@ entry must record the **image identity** (`docker image inspect` ID of
   unread — and the cause is a **contradiction inside the seal itself**:
   `configs/khard.conf` and `configs/khal.conf` still hardcode campaign 1's state
   roots (`/tmp/blind/...`) while the sealed `invocations.tsv` watches
-  `/tmp/blind2/...`. khard's refusal is our configuration bug, not the target's
-  answer.
+  `/tmp/blind2/...`. With the sealed reports unread and no controlled re-run, this
+  does not prove the mismatch *caused* the refusal — what it establishes is that the
+  apparatus contradicted itself, so **that verdict is uninterpretable**, whatever
+  produced it.
   **Why void instead of proceeding with the machine-selected abook**: the
   pre-registered khard refusal risk (candidates.md) makes an apparatus bug that
   knocks khard out of selection indistinguishable, to a skeptical reader, from
@@ -74,3 +76,43 @@ entry must record the **image identity** (`docker image inspect` ID of
   anchor still runs the full battery unchanged (checked that the new guard does not
   swallow the existing checks — the ADR 0012 lesson that a new guard can blind older
   ones). The list is the label; A2 remains the lock.
+- **2026-08-14 — R1 on the re-seal (external, covenant-instructed; no breach): eight
+  findings, all applied.** The guard added at the re-seal was itself the main target,
+  which is the right outcome for a guard written in a hurry:
+  - **It compared each config path against *any* invocation root** — a config
+    belonging to one row could agree with a different row's state and pass. Now the
+    check is per row: config files are discovered from the row's own setup/operation
+    arguments, and compared only against that row's state root.
+  - **Containment was lexically unsound**: the reverse branch accepted any *ancestor*
+    of a state root (a parent directory watching unobserved state passed), and `..`
+    was never considered. Now strictly under-or-equal, on normalized paths, with `..`
+    rejected outright rather than resolved.
+  - **"Exit 2 when it cannot look" was incomplete**: extra arguments were ignored,
+    unreadable files and malformed rows exited 1 through Python, and the bare path
+    `/tmp` never matched the regex. All four closed.
+  - Re-falsified after the rewrite: **12 cases**, including one red per hole above
+    (cross-row root, parent root, `..` escape, bare `/tmp`), a green for a deeper path
+    inside the row's own root, and four cannot-look refusals.
+  - **The sweep harness would have destroyed the voided evidence**: `mkdir -p`
+    accepted an existing output directory and truncated the manifest and reports in
+    place — and the retained voided run sits in exactly such a directory. The harness
+    now refuses an existing output dir, as it already refused existing state roots.
+    The voided run was moved to `artifacts/sweep-voided-459615a8/` first, and its
+    reports were re-verified against the superseded manifest (all four hashes match)
+    **without reading them**.
+  - **The account overclaimed causation**: with the reports unread and no controlled
+    re-run, the path mismatch does not prove it produced khard's refusal. Reworded in
+    the ledger, the ADR and the BUILDLOG to what is established — the apparatus
+    contradicted itself, so that verdict is uninterpretable, which is all the void
+    decision needed.
+  - `.gitignore` narrowed from `blind-hunt*` to `blind-hunt[0-9]*` (plus the campaign-1
+    literal): the wildcard also swallowed unrelated siblings. Verified both directions.
+  - The stale "none yet" placeholder is kept but annotated — the ledger's bytes are an
+    append-only prefix the verifier checks, so it cannot be deleted, only explained.
+- **2026-08-14 — a note about the line above the entries.** The placeholder "none yet
+  — the campaign has not passed Seal A" is false from the first entry onward and is
+  kept verbatim anyway: the ledger's bytes are an append-only prefix the verifier
+  checks (A3), so a stale line can be explained but not edited. **Measured, not
+  assumed** — rewriting it as an annotation broke the prefix, and the self-check run
+  before committing caught it; the sealed bytes were restored and the explanation
+  moved here, where appending is the sanctioned move.

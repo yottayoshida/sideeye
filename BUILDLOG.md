@@ -10,7 +10,9 @@ public verdict (0 there) sent me to our own committed artifacts — the sealed
 reports stayed unread — and the contradiction was inside the seal:
 `configs/khard.conf` and `configs/khal.conf` still hardcoded campaign 1's
 `/tmp/blind/...` state roots while the sealed invocations watch `/tmp/blind2/...`.
-The refusal was our configuration bug wearing a target verdict's clothes.
+That does not prove the mismatch produced the refusal — the reports stayed unread
+and no controlled re-run was made — but it does mean the verdict is
+uninterpretable, which is the only property the decision needed.
 
 Voided, not proceeded with. The machine had selected abook, and following it
 would have been indefensible: the khard refusal risk was pre-registered, so an
@@ -54,6 +56,36 @@ plus a verifier preamble that refuses a listed anchor by name, and both
 directions were falsified: voided anchor exits 2 with the reason, a live anchor
 still runs the full battery (a new guard that swallowed the old checks would be
 the exact ADR-0012-era failure this repo has already paid for once).
+
+R1 on the re-seal then found eight more, seven of them in the guard I had just
+written and falsified — a guard tested against the defect it was born from, and
+not against its own predicate. It compared each config path against *any*
+invocation root (so a config could agree with a different row's state and pass);
+its containment accepted any *ancestor* of a state root and never considered
+`..`; and its cannot-look contract leaked four ways (extra args ignored,
+unreadable files and malformed rows exiting 1 through Python, the bare path
+`/tmp` unmatched by the regex). Rewritten per-row with strict normalized
+containment, and re-falsified across twelve cases — one red per hole, a green for
+a deeper path inside the row's own root, four cannot-look refusals.
+
+Two findings were about the void rather than the guard, and both mattered more.
+The sweep harness accepted an existing output directory and truncated it, so
+re-sweeping would have destroyed the voided run's evidence — the very artifacts
+the ledger promises are retained. It now refuses, as it already refused existing
+state roots, and the voided run was moved aside and re-verified against the
+superseded manifest (four hashes, still matching, still unread). And my account
+overclaimed: with the reports unread and no controlled re-run, the path mismatch
+does not prove it produced the refusal. What it proves is that the apparatus
+contradicted itself, so the verdict is uninterpretable — which is all the void
+decision ever needed, and the weaker claim is the one now in the ADR, the ledger
+and this entry.
+
+The last one is small and my favourite. Fixing the ledger's stale "none yet"
+placeholder into a self-aware annotation *broke the append-only prefix* — the
+exact property the annotation was bragging about. The pre-commit self-check
+caught it, the sealed bytes went back verbatim, and the explanation moved into an
+appended entry where it belongs. A rule you are describing is still a rule you
+can break in the sentence describing it.
 
 ## 2026-08-14 — Campaign 2's Seal A: an inherited selection, and the recovery-path rule (#83)
 
