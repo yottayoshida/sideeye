@@ -114,3 +114,40 @@ What belongs here:
   failure mode was observed; the checker's red side against real crash states
   belongs to sideeye's falsification gate after Seal B.
   `declaration/topydo/transcripts/checker-red.txt`.
+- **2026-08-14 — R1 review of the declaration (external, covenant-instructed), and
+  what it changed.** The reviewer was bound by the ADR 0012 covenant (told not to
+  name target internals or known issues; it complied — no burn). Recorded here
+  because several findings correct entries above:
+  - **Correction to the parse-validation claim above**: "all eleven parse" was
+    measured with the *host* binary (v0.7.0), which is not the revision this
+    branch seals — the branch bases on the Seal A merge, which predates the
+    `expected_status` key the tomls use. The claim holds for the v0.7.0 schema
+    only; how the campaign base resolves this is recorded in the BUILDLOG and the
+    PR discussion, not silently.
+  - **Correction to the config-choice entry above**: "would be refused for the
+    timestamp alone" overstated the permitted evidence. What normal runs showed is
+    only that `revert ls` *prints* second-precision times; whether the watched
+    backup bytes actually vary between baseline runs is deliberately unmeasured
+    (measuring it would be engine-over-target observation). The choice stands, now
+    stated as a pre-registered refusal risk — wording fixed in `declaration.md`
+    and `ops/nobackup.conf`.
+  - **Inventory made complete and form-honest**: `ls` and `dep rm` are now
+    *declared* (thirteen operation forms across twelve subcommands) instead of
+    half-classified; every unexercised documented form is listed per subcommand
+    with no vocabulary claim attached. New permitted-source observations for this:
+    one normal run each of `dep rm 1 to 2` and `ls` (regenerated
+    `transcripts/normal-runs.txt`), and the lscon/lsprj doc tiddlers appended to
+    `transcripts/docs-tiddlers.txt` ("Prints a sorted list ..." — the
+    not-stateful verdicts are now doc-backed).
+  - **Checker hardened, still blind**: I-Q accepts the documentation's padded
+    numbers; I-C requires the task as a whitespace-delimited token (an embedded
+    substring is not survival); I-F enforces the completion date after the `x`
+    (spec rule 2). Green side re-proven for all thirteen ops
+    (`transcripts/config-verification.txt`); red side re-proven with the
+    fixtures and commands committed (`checker-red-test.sh`,
+    `transcripts/checker-red.txt` — five red cases + green control). The
+    fabricated states remain user-authored text files; the only topydo
+    invocation over them is `ls`, a query over externally-edited files, which
+    the target's own docs treat as a normal scenario.
+  - The topydo 0.14 README consulted at declaration time is now committed as
+    `transcripts/topydo-readme.md` (it was cited but not reproduced).

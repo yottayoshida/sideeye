@@ -23,6 +23,11 @@ D=$S/done.txt
 
 fail() { echo "checker($op): $1" >&2; exit 1; }
 
+# A task "appears" in a file only as a whitespace-delimited token on some line
+# — an unanchored substring inside other text would not be the declared task
+# (todo.txt spec: one task per line, fields whitespace-separated).
+present() { [ -r "$1" ] && grep -Eq '(^|[[:space:]])'"$2"'([[:space:]]|$)' "$1"; }
+
 # Per-operation declaration: which task texts must be conserved, and which
 # optional legs apply. Conservation lists only tasks whose survival the
 # documentation promises — del's target task 1 is deliberately absent from
@@ -34,9 +39,11 @@ case $op in
     add)      conserve="seed-task" ;;
     append)   conserve="water-plants" ;;
     del)      conserve="keep-me" ;;
-    dep)      conserve="parent-task child-task" ;;
+    dep-add)  conserve="parent-task child-task" ;;
+    dep-rm)   conserve="parent-task child-task" ;;
     depri)    conserve="water-plants" ;;
     do)       conserve="water-plants"; leg_dup=water-plants ;;
+    ls)       conserve="water-plants" ;;
     postpone) conserve="water-plants" ;;
     pri)      conserve="water-plants" ;;
     revert)   conserve="water-plants"; leg_dup=water-plants; leg_backup=yes ;;
@@ -46,7 +53,9 @@ case $op in
 esac
 
 # I-Q — the target's own query succeeds after a crash + restart, and every
-# line it prints keeps the documented list shape.
+# line it prints keeps the documented list shape. The number may be padded
+# (the documentation's example pads to width; the observed non-tty runs do
+# not) — both are the documented shape.
 # source: doc — `ls` tiddler ("Lists all (relevant) todo items"), GettingStarted
 # list example (`|  1| (C) 2016-06-27 My first item`); observed non-tty shape
 # `|1| 2026-08-13 seed-task` (transcripts/normal-runs.txt). Positive property,
@@ -55,7 +64,7 @@ out=$("$BIN" -t "$T" -d "$D" ls 2>&1)
 rc=$?
 [ "$rc" -eq 0 ] || fail "ls exited $rc after the crash: $out"
 if printf '%s\n' "$out" | grep -q .; then
-    if printf '%s\n' "$out" | grep -v '^|[0-9][0-9]*| ' | grep -q .; then
+    if printf '%s\n' "$out" | grep -v '^| *[0-9][0-9]*| ' | grep -q .; then
         fail "ls printed a line outside the documented '|<number>| <text>' shape: $out"
     fi
 fi
@@ -67,11 +76,9 @@ fi
 # documented effect touches only the named task. The crash-consistency reading:
 # interrupted or not, the operation has no documented license to destroy a task.
 for want in $conserve; do
-    in_t=no; in_d=no
-    [ -r "$T" ] && grep -qF -- "$want" "$T" && in_t=yes
-    [ -r "$D" ] && grep -qF -- "$want" "$D" && in_d=yes
-    [ "$in_t" = no ] && [ "$in_d" = no ] && \
+    if ! present "$T" "$want" && ! present "$D" "$want"; then
         fail "task '$want' is in neither todo.txt nor done.txt — lost"
+    fi
 done
 
 # I-D2 — no duplication: after `do` ("moved to done.txt") or `revert` ("revert
@@ -79,20 +86,21 @@ done
 # one of the two files. Declared at lower severity than loss (declaration.md).
 # source: doc — Archiving tiddler ("moved"), revert help text.
 if [ -n "$leg_dup" ]; then
-    if [ -r "$T" ] && grep -qF -- "$leg_dup" "$T" && \
-       [ -r "$D" ] && grep -qF -- "$leg_dup" "$D"; then
+    if present "$T" "$leg_dup" && present "$D" "$leg_dup"; then
         fail "task '$leg_dup' is in both todo.txt and done.txt — duplicated"
     fi
 fi
 
-# I-F — every non-blank line of the archive is a completed task: it starts
-# with lowercase x and a space.
+# I-F — every non-blank line of the archive is a completed task: lowercase x,
+# a space, and the completion date directly after (YYYY-MM-DD, the spec's own
+# date format).
 # source: doc — todo.txt spec, Complete Tasks rule 1 ("A completed task starts
-# with a lowercase x character") and rule 2 (completion date follows); README
-# ("topydo is fully todo.txt compliant").
+# with a lowercase x character") and rule 2 ("The date of completion appears
+# directly after the x, separated by a space"); README ("topydo is fully
+# todo.txt compliant").
 if [ -r "$D" ]; then
-    if grep -v '^x ' "$D" | grep -q .; then
-        fail "done.txt contains a line that is not a completed task"
+    if grep -v '^x [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] ' "$D" | grep -q .; then
+        fail "done.txt contains a line that is not an 'x <YYYY-MM-DD> ...' completed task"
     fi
 fi
 

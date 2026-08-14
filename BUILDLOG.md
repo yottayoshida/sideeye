@@ -12,9 +12,11 @@ ledger; the raw material (help output, doc tiddlers, the todo.txt spec, one
 normal run per subcommand) is committed under `transcripts/` so every
 `source:` line points at something a reader can open.
 
-Shape of the declaration: eleven of the fifteen help-listed subcommands are
-declared (excluded: `edit` interactive; `ls`/`listcon`/`listprojects`
-not-stateful). Six invariants — query survives (I-Q), conservation across the
+Shape of the declaration (after R1, below): thirteen operation forms across
+twelve of the fifteen help-listed subcommands are declared (excluded whole:
+`edit` interactive; `listcon`/`listprojects` not-stateful — and every
+unexercised form of a declared subcommand is listed, not silently dropped).
+Six invariants — query survives (I-Q), conservation across the
 file pair (I-C), no duplication for the two cross-file operations (I-D2),
 archive holds only `x `-marked lines (I-F), the backup listing answers after a
 crash (I-B, revert only), and claimed durability via L1 markers where the
@@ -43,9 +45,38 @@ Decisions worth recording, made while still blind:
   at exploration time is #84 data, not a defect. What did get verified without
   touching the target: all eleven tomls parse (host binary, nonexistent shim,
   stops at state resolution), and the green side — setup, the verbatim
-  operation string, checker — exits 0 on normal state for all eleven. The
-  checker has still never seen a failure: its red side belongs to sideeye's
-  falsification gate, after the seal.
+  operation string, checker — exits 0 on normal state for all thirteen.
+  (An earlier draft of this entry said the checker had never been seen to
+  fail; that was superseded the same session: its red side is now proven on
+  hand-fabricated, user-authored states — `checker-red-test.sh`, committed
+  with its fixtures — while the red side against real *crash* states still
+  belongs to sideeye's falsification gate, after the seal.)
+
+R1 (external review, covenant-instructed; it complied — no burn) then bent
+the declaration in four places, all recorded in the ledger:
+
+- **The parse validation had measured the wrong binary.** "All tomls parse"
+  was run against the host's v0.7.0 sideeye — but this branch bases on the
+  Seal A merge, which predates `expected_status`. The sealed revision would
+  reject every toml. The green run that was supposed to protect the seal was
+  itself the measured-a-different-path shape this workspace keeps meeting.
+  How the base resolves (rebase onto v0.7.0 vs dropping the key) is a
+  campaign-evidence decision, taken to the PR, not made silently here.
+- **The backup-refusal certainty was an overclaim.** Normal runs only show
+  that `revert ls` prints second-precision times; whether backups-on would
+  actually refuse the baseline is deliberately unmeasured. Downgraded to a
+  pre-registered risk everywhere it was stated.
+- **The inventory was neither complete nor honestly granular** — `ls` was
+  excluded as not-stateful while a documented form writes, and `dep rm`/
+  `dep clean` were unmentioned. Now: `ls` and `dep rm` are declared (the
+  former with its zero-op expectation stated), `dep clean` and every other
+  unexercised form is named per subcommand, and the lscon/lsprj tiddlers
+  were pulled so the two remaining not-stateful verdicts are doc-backed.
+- **The checker was hardened without unsealing anything**: padded list
+  numbers accepted (the docs' own example pads), conservation demands a
+  whitespace-delimited token (an embedded substring is not survival), and
+  I-F now enforces the completion date the spec's rule 2 requires. Red
+  cases for each new tooth ran before they were trusted.
 
 ## 2026-08-13 — v0.7.0: minor, because the number must predict the case refusals
 

@@ -1,6 +1,6 @@
 ===== add =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/add/state/todo.txt -d /tmp/blind/hunt/add/state/done.txt add water-plants
-|  2| 2026-08-13 water-plants
+|  2| 2026-08-14 water-plants
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
@@ -8,7 +8,7 @@ state dir filenames:
 todo.txt
 ===== append =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/append/state/todo.txt -d /tmp/blind/hunt/append/state/done.txt append 1 urgently
-|  1| 2026-08-13 water-plants urgently
+|  1| 2026-08-14 water-plants urgently
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
@@ -16,14 +16,21 @@ state dir filenames:
 todo.txt
 ===== del =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/del/state/todo.txt -d /tmp/blind/hunt/del/state/done.txt del -f 1
-Removed: 2026-08-13 water-plants
+Removed: 2026-08-14 water-plants
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
 state dir filenames:
 todo.txt
-===== dep =====
-$ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/dep/state/todo.txt -d /tmp/blind/hunt/dep/state/done.txt dep add 1 to 2
+===== dep-add =====
+$ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/dep-add/state/todo.txt -d /tmp/blind/hunt/dep-add/state/done.txt dep add 1 to 2
+operation rc=0
+check rc=0
+backup file: absent (nobackup.conf in effect)
+state dir filenames:
+todo.txt
+===== dep-rm =====
+$ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/dep-rm/state/todo.txt -d /tmp/blind/hunt/dep-rm/state/done.txt dep rm 1 to 2
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
@@ -32,7 +39,7 @@ todo.txt
 ===== depri =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/depri/state/todo.txt -d /tmp/blind/hunt/depri/state/done.txt depri 1
 Priority removed.
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
@@ -40,16 +47,24 @@ state dir filenames:
 todo.txt
 ===== do =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/do/state/todo.txt -d /tmp/blind/hunt/do/state/done.txt do 1
-Completed: x 2026-08-13 2026-08-13 water-plants
+Completed: x 2026-08-14 2026-08-14 water-plants
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
 state dir filenames:
 done.txt
 todo.txt
+===== ls =====
+$ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/ls/state/todo.txt -d /tmp/blind/hunt/ls/state/done.txt ls
+|1| 2026-08-14 water-plants
+operation rc=0
+check rc=0
+backup file: absent (nobackup.conf in effect)
+state dir filenames:
+todo.txt
 ===== postpone =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/postpone/state/todo.txt -d /tmp/blind/hunt/postpone/state/done.txt postpone 1 1w
-|  1| 2026-08-13 water-plants due:2026-09-08
+|  1| 2026-08-14 water-plants due:2026-09-08
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
@@ -58,7 +73,7 @@ todo.txt
 ===== pri =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/pri/state/todo.txt -d /tmp/blind/hunt/pri/state/done.txt pri 1 A
 Priority set to A.
-|  1| (A) 2026-08-13 water-plants
+|  1| (A) 2026-08-14 water-plants
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)
@@ -83,7 +98,7 @@ state dir filenames:
 todo.txt
 ===== tag =====
 $ /usr/local/bin/topydo -c /work/spike/blind-hunt/declaration/topydo/ops/nobackup.conf -t /tmp/blind/hunt/tag/state/todo.txt -d /tmp/blind/hunt/tag/state/done.txt tag 1 due 2026-09-01
-|  1| 2026-08-13 water-plants due:2026-09-01
+|  1| 2026-08-14 water-plants due:2026-09-01
 operation rc=0
 check rc=0
 backup file: absent (nobackup.conf in effect)

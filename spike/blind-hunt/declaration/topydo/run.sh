@@ -30,11 +30,20 @@ HEAD=${HEAD:?pass HEAD=$(git rev-parse HEAD) from the host}
 CLEAN=${CLEAN:?pass CLEAN=true|false from the host}
 
 export HOME=/tmp/blind/home
-mkdir -p "$HOME" "$OUT" || exit 2
+mkdir -p "$HOME" || exit 2
+
+# Refuse a pre-existing output directory, exactly like the state roots below:
+# reusing OUT could mix reports and saved cases from different executions under
+# one manifest, and a harness that silently overwrites is deciding what to keep.
+if [ -e "$OUT" ]; then
+    echo "run: output dir already exists: $OUT — give each run a fresh OUT" >&2
+    exit 2
+fi
+mkdir -p "$OUT" || exit 2
 
 here=/work/spike/blind-hunt/declaration/topydo
 
-OPS="add append del dep depri do postpone pri revert sort tag"
+OPS="add append del dep-add dep-rm depri do ls postpone pri revert sort tag"
 
 for op in $OPS; do
     root=/tmp/blind/hunt/$op

@@ -1,21 +1,21 @@
 
 ################ operation: add ################
 $ topydo -t $S/todo.txt -d $S/done.txt add seed-task
-|  1| 2026-08-13 seed-task
+|  1| 2026-08-14 seed-task
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  2| 2026-08-13 water-plants
+|  2| 2026-08-14 water-plants
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 seed-task
-|2| 2026-08-13 water-plants
+|1| 2026-08-14 seed-task
+|2| 2026-08-14 water-plants
 rc=0
 --- todo.txt ---
-2026-08-13 seed-task
-2026-08-13 water-plants
+2026-08-14 seed-task
+2026-08-14 water-plants
 --- done.txt ---
 (absent)
 --- state dir filenames ---
@@ -24,19 +24,19 @@ todo.txt
 
 ################ operation: append ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt append 1 urgently
-|  1| 2026-08-13 water-plants urgently
+|  1| 2026-08-14 water-plants urgently
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 water-plants urgently
+|1| 2026-08-14 water-plants urgently
 rc=0
 --- todo.txt ---
-2026-08-13 water-plants urgently
+2026-08-14 water-plants urgently
 --- done.txt ---
 (absent)
 --- state dir filenames ---
@@ -45,40 +45,40 @@ todo.txt
 
 ################ operation: del ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 $ topydo -t $S/todo.txt -d $S/done.txt add keep-me
-|  2| 2026-08-13 keep-me
+|  2| 2026-08-14 keep-me
 rc=0
 (numbering check)
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 water-plants
-|2| 2026-08-13 keep-me
+|1| 2026-08-14 water-plants
+|2| 2026-08-14 keep-me
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt del -f 1
-Removed: 2026-08-13 water-plants
+Removed: 2026-08-14 water-plants
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 keep-me
+|1| 2026-08-14 keep-me
 rc=0
 --- todo.txt ---
-2026-08-13 keep-me
+2026-08-14 keep-me
 --- done.txt ---
 (absent)
 --- state dir filenames ---
 .todo.bak
 todo.txt
 
-################ operation: dep ################
+################ operation: dep-add ################
 $ topydo -t $S/todo.txt -d $S/done.txt add parent-task
-|  1| 2026-08-13 parent-task
+|  1| 2026-08-14 parent-task
 rc=0
 $ topydo -t $S/todo.txt -d $S/done.txt add child-task
-|  2| 2026-08-13 child-task
+|  2| 2026-08-14 child-task
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt dep add 1 to 2
@@ -86,11 +86,38 @@ rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|2| 2026-08-13 child-task
+|2| 2026-08-14 child-task
 rc=0
 --- todo.txt ---
-2026-08-13 parent-task id:1
-2026-08-13 child-task p:1
+2026-08-14 parent-task id:1
+2026-08-14 child-task p:1
+--- done.txt ---
+(absent)
+--- state dir filenames ---
+.todo.bak
+todo.txt
+
+################ operation: dep-rm ################
+$ topydo -t $S/todo.txt -d $S/done.txt add parent-task
+|  1| 2026-08-14 parent-task
+rc=0
+$ topydo -t $S/todo.txt -d $S/done.txt add child-task
+|  2| 2026-08-14 child-task
+rc=0
+$ topydo -t $S/todo.txt -d $S/done.txt dep add 1 to 2
+rc=0
+== operation ==
+$ topydo -t $S/todo.txt -d $S/done.txt dep rm 1 to 2
+rc=0
+--- ls -x -C 0 ---
+$ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
+option -C not recognized
+|1| 2026-08-14 parent-task
+|2| 2026-08-14 child-task
+rc=0
+--- todo.txt ---
+2026-08-14 parent-task
+2026-08-14 child-task
 --- done.txt ---
 (absent)
 --- state dir filenames ---
@@ -99,24 +126,24 @@ todo.txt
 
 ################ operation: depri ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 $ topydo -t $S/todo.txt -d $S/done.txt pri 1 A
 Priority set to A.
-|  1| (A) 2026-08-13 water-plants
+|  1| (A) 2026-08-14 water-plants
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt depri 1
 Priority removed.
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 water-plants
+|1| 2026-08-14 water-plants
 rc=0
 --- todo.txt ---
-2026-08-13 water-plants
+2026-08-14 water-plants
 --- done.txt ---
 (absent)
 --- state dir filenames ---
@@ -125,11 +152,11 @@ todo.txt
 
 ################ operation: do ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt do 1
-Completed: x 2026-08-13 2026-08-13 water-plants
+Completed: x 2026-08-14 2026-08-14 water-plants
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
@@ -138,30 +165,51 @@ rc=0
 --- todo.txt ---
 
 --- done.txt ---
-x 2026-08-13 2026-08-13 water-plants
+x 2026-08-14 2026-08-14 water-plants
 --- state dir filenames ---
 .todo.bak
 done.txt
 todo.txt
 
-################ operation: postpone ################
+################ operation: ls ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
-rc=0
-$ topydo -t $S/todo.txt -d $S/done.txt tag 1 due 2026-09-01
-|  1| 2026-08-13 water-plants due:2026-09-01
+|  1| 2026-08-14 water-plants
 rc=0
 == operation ==
-$ topydo -t $S/todo.txt -d $S/done.txt postpone 1 1w
-|  1| 2026-08-13 water-plants due:2026-09-08
+$ topydo -t $S/todo.txt -d $S/done.txt ls
+|1| 2026-08-14 water-plants
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 water-plants due:2026-09-08
+|1| 2026-08-14 water-plants
 rc=0
 --- todo.txt ---
-2026-08-13 water-plants due:2026-09-08
+2026-08-14 water-plants
+--- done.txt ---
+(absent)
+--- state dir filenames ---
+.todo.bak
+todo.txt
+
+################ operation: postpone ################
+$ topydo -t $S/todo.txt -d $S/done.txt add water-plants
+|  1| 2026-08-14 water-plants
+rc=0
+$ topydo -t $S/todo.txt -d $S/done.txt tag 1 due 2026-09-01
+|  1| 2026-08-14 water-plants due:2026-09-01
+rc=0
+== operation ==
+$ topydo -t $S/todo.txt -d $S/done.txt postpone 1 1w
+|  1| 2026-08-14 water-plants due:2026-09-08
+rc=0
+--- ls -x -C 0 ---
+$ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
+option -C not recognized
+|1| 2026-08-14 water-plants due:2026-09-08
+rc=0
+--- todo.txt ---
+2026-08-14 water-plants due:2026-09-08
 --- done.txt ---
 (absent)
 --- state dir filenames ---
@@ -170,20 +218,20 @@ todo.txt
 
 ################ operation: pri ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt pri 1 A
 Priority set to A.
-|  1| (A) 2026-08-13 water-plants
+|  1| (A) 2026-08-14 water-plants
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| (A) 2026-08-13 water-plants
+|1| (A) 2026-08-14 water-plants
 rc=0
 --- todo.txt ---
-(A) 2026-08-13 water-plants
+(A) 2026-08-14 water-plants
 --- done.txt ---
 (absent)
 --- state dir filenames ---
@@ -192,10 +240,10 @@ todo.txt
 
 ################ operation: revert ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 $ topydo -t $S/todo.txt -d $S/done.txt do 1
-Completed: x 2026-08-13 2026-08-13 water-plants
+Completed: x 2026-08-14 2026-08-14 water-plants
 rc=0
 (pre-revert)
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
@@ -207,15 +255,15 @@ Reverted to state before: do 1
 rc=0
 == revert ls (query) ==
 $ topydo -t $S/todo.txt -d $S/done.txt revert ls
-  1| 2026-08-13 23:47:35 | add water-plants
+  1| 2026-08-14 00:23:27 | add water-plants
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 water-plants
+|1| 2026-08-14 water-plants
 rc=0
 --- todo.txt ---
-2026-08-13 water-plants
+2026-08-14 water-plants
 --- done.txt ---
 
 --- state dir filenames ---
@@ -225,10 +273,10 @@ todo.txt
 
 ################ operation: sort ################
 $ topydo -t $S/todo.txt -d $S/done.txt add zebra-task
-|  1| 2026-08-13 zebra-task
+|  1| 2026-08-14 zebra-task
 rc=0
 $ topydo -t $S/todo.txt -d $S/done.txt add alpha-task
-|  2| 2026-08-13 alpha-task
+|  2| 2026-08-14 alpha-task
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt sort text
@@ -236,12 +284,12 @@ rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 alpha-task
-|2| 2026-08-13 zebra-task
+|1| 2026-08-14 alpha-task
+|2| 2026-08-14 zebra-task
 rc=0
 --- todo.txt ---
-2026-08-13 alpha-task
-2026-08-13 zebra-task
+2026-08-14 alpha-task
+2026-08-14 zebra-task
 --- done.txt ---
 (absent)
 --- state dir filenames ---
@@ -250,19 +298,19 @@ todo.txt
 
 ################ operation: tag ################
 $ topydo -t $S/todo.txt -d $S/done.txt add water-plants
-|  1| 2026-08-13 water-plants
+|  1| 2026-08-14 water-plants
 rc=0
 == operation ==
 $ topydo -t $S/todo.txt -d $S/done.txt tag 1 due 2026-09-01
-|  1| 2026-08-13 water-plants due:2026-09-01
+|  1| 2026-08-14 water-plants due:2026-09-01
 rc=0
 --- ls -x -C 0 ---
 $ topydo -t $S/todo.txt -d $S/done.txt ls -x -C 0
 option -C not recognized
-|1| 2026-08-13 water-plants due:2026-09-01
+|1| 2026-08-14 water-plants due:2026-09-01
 rc=0
 --- todo.txt ---
-2026-08-13 water-plants due:2026-09-01
+2026-08-14 water-plants due:2026-09-01
 --- done.txt ---
 (absent)
 --- state dir filenames ---

@@ -28,11 +28,15 @@ case $op in
     append)   t add water-plants ;;
     del)      t add water-plants
               t add keep-me ;;
-    dep)      t add parent-task
+    dep-add)  t add parent-task
               t add child-task ;;
+    dep-rm)   t add parent-task
+              t add child-task
+              t dep add 1 to 2 ;;
     depri)    t add water-plants
               t pri 1 A ;;
     do)       t add water-plants ;;
+    ls)       t add water-plants ;;
     postpone) t add water-plants
               t tag 1 due 2026-09-01 ;;
     pri)      t add water-plants ;;

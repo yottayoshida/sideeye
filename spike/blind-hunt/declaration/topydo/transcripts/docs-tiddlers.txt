@@ -447,3 +447,9 @@ Project: B
 !! Output formats
 
 {{OutputFormat}}
+
+===== tiddler: lscon =====
+Prints a sorted list of all contexts in the <<path todo.txt>> file.
+
+===== tiddler: lsprj =====
+Prints a sorted list of all projects in the <<path todo.txt>> file.
