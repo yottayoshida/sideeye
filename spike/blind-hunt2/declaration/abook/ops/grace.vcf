@@ -1,0 +1,6 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Grace Hopper
+N:Hopper;Grace;;;
+EMAIL:grace@example.com
+END:VCARD

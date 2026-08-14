@@ -1,0 +1,7 @@
+package: abook 0.6.1-2+b1 (dpkg-query -W)
+binary: /usr/bin/abook (what bare 'abook' resolves to in this image; the sealed operations name /usr/bin/abook)
+deb version check: downloaded 0.6.1-2+b1 == installed 0.6.1-2+b1
+deb: abook_0.6.1-2+b1_arm64.deb sha256=2b5709715eec0f28cb2d6cfd51978228a2ce0886ea920816dbd9600938a5d1b9
+man-abook.txt: 99 lines
+man-abookrc.txt: 260 lines
+sources: all transcripts non-empty

@@ -246,3 +246,78 @@ entry must record the **image identity** (`docker image inspect` ID of
   declaration: the checker inspects files first and queries the target last,
   and red fixtures are well-formed only (an empty store — documented-normal —
   is the one permitted refusal shape).
+- **2026-08-14 — declaration-phase consultations for abook (all permitted
+  sources; no traces, no crash experiments, no source, no bug trackers):**
+  - `abook --help` and `abook --formats` inside the pinned container
+    (`declaration/abook/transcripts/help.txt`, `formats.txt`).
+  - abook(1) and abookrc(5) man pages, taken from the pinned package itself:
+    the slim image strips /usr/share/man, so `sources.sh` apt-downloads the
+    EXACT installed version (0.6.1-2+b1, asserted equal before unpacking) and
+    unpacks it with dpkg-deb into scratch — nothing is installed, the sealed
+    image is unaltered, and the deb's sha256 is printed by the sources run.
+  - One normal (non-crash) run per candidate form plus determinism and
+    interactivity probes (`transcripts/normal-runs.sh` → `normal-runs.txt`):
+    convert vcard→abook is byte-deterministic across two runs, as is
+    abook→vcard export; convert onto an EXISTING outfile refuses ("cannot
+    write file", exit 1) and leaves the store byte-identical; --mutt-query
+    exits 0 on a match, 1 "Not found" on no match, 1 "Cannot open database"
+    on an empty or absent datafile; bare `abook` needs a terminal (exit 1
+    without one); --add-email and --add-email-quiet on stdin EOF print "Valid
+    sender address not found", exit 0, and write no datafile. The native
+    store shape was observed once (leading `# abook addressbook file`
+    comment, a `[format]` block, numbered `[N]` sections with `name=` /
+    `email=` lines). Every probe store was written by abook itself in the
+    same script, empty, or absent — no mis-shaped store was ever given to the
+    target (the khard burn's structural rule, applied at observation time).
+  - Facts taken: the CLI surface is --convert / --mutt-query /
+    --add-email(-quiet) / --formats plus the interactive TUI; abookrc is
+    optional with documented defaults (abookrc(5)); no recovery, undo, or
+    repair command appears anywhere in these pages.
+- **2026-08-14 — abook apparatus-phase target contacts (all documented-normal;
+  no crash experiments, no traces, no mis-shaped store ever offered):**
+  - `make-goldens.sh` ran three vcard→abook converts to mint the committed
+    golden stores (grace / pair / impostor) — abook's own bytes as fixtures,
+    resting on the observed byte-determinism (normal-runs §2).
+  - The checker red suite (`checker-red-test.sh` → `transcripts/
+    checker-red.txt`, 14 cases green) runs REAL abook only as `--mutt-query`
+    over abook-written golden stores (the impostor anchoring probe and its
+    golden positive control); every ill-behaved-binary branch (exit codes,
+    match-line counts, byte-writing queries, hangs, outfile creation) is
+    exercised through the checker's CHECK_ABOOK stub seam — the target does
+    not run in those cases at all.
+  - The green run (`transcripts/green-run.sh` → `green-run.txt`, fails=0)
+    executed each declared operation once, verbatim from its sealed toml,
+    over setup states cp'd from the goldens: import rc 0, export rc 0,
+    refused rc 1 — each equal to its toml's expected_status — followed by a
+    green checker. The three tomls were each also fed to this tree's engine
+    with no state root: all stop at state resolution (rc 3) with zero side
+    effects, abook not executed.
+  - Engine identity on the transcript: `sideeye 0.7.0 (trace contract v8)`,
+    engine and shim SHA-256 equal to the committed sweep manifest's values
+    (the R3 leg's comparison, pre-verified at declaration time).
+- **2026-08-14 — R1 of the abook declaration: corrections to earlier entries
+  of this ledger (append-only, so corrected here rather than edited):**
+  - The consultation entry's "convert onto an EXISTING outfile … leaves the
+    store byte-identical" was, at the time it was written, backed by a
+    printed before/after and no `cmp` — the claim exceeded its measurement.
+    normal-runs §4 now runs `cmp` and the re-run measured: byte-identical
+    (the probe re-run is a normal-run contact of the same class).
+  - The apparatus entry's "zero side effects" for the toml parse probes
+    claimed more than the probe inspected. The probed paths are the state
+    root, the work path, and $HOME/.abook; the claim is now stated at that
+    width in green-run.sh and here.
+  - The apparatus entry implied the sources provenance (deb version assert,
+    sha256) was on the record; it was only ever on a terminal. It now lands
+    in the committed `transcripts/sources-provenance.txt`, which also ties
+    bare `abook` to /usr/bin/abook in the pinned image.
+  - The goldens' "written by abook itself" now has a standing gate: the red
+    suite regenerates all three from the committed inputs into scratch and
+    byte-compares against the committed goldens on every run (17 cases
+    total, transcript committed). Green additionally asserts each
+    operation's documented effect, and run.sh fails closed on a missing or
+    unparsable report.
+  - Real-abook contact during the red suite, restated precisely: queries
+    over abook-written goldens, plus the provenance case's converts whose
+    vCard inputs are the committed hand-authored well-formed files — the
+    documented-normal input class. No mis-shaped native store reaches the
+    target anywhere in the apparatus.

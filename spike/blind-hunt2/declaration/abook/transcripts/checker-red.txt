@@ -1,0 +1,25 @@
+== dispatch and file legs (no target runs — the pinned message proves the leg) ==
+ok   red: undeclared operation refused (rc=1)
+ok   red: missing conserved store fails closed (rc=1) — checker(import): I-C: conserved store /tmp/blind2/hunt/import/state/keep/addressbook is mi
+ok   red: conserved store with different abook-written bytes (rc=1) — checker(import): I-C: conserved store /tmp/blind2/hunt/import/state/keep/addressbook diffe
+== I-Q branches (stub target — abook does not run) ==
+ok   red: query exit code surfaces (rc=1) — checker(export): I-Q: bystander query exited 3: 
+ok   red: unanchored line does not count (rc=1) —  grace@example.com	Grace Hopper	 
+ok   red: duplicate match lines counted (rc=1) — grace@example.com	Grace Hopper	 
+ok   red: a writing query is caught (rc=1) — checker(export): I-Q: the query changed the conserved store's bytes
+== I-T branches (stub target; conserved leg answered correctly) ==
+ok   red: outfile query exit outside {0,1} (rc=1) — checker(import): I-T: outfile query exited 7, outside the observed-normal {0,1}: 
+ok   red: a hanging outfile query times out (rc 124) (rc=1) — checker(import): I-T: outfile query exited 124, outside the observed-normal {0,1}: 
+ok   red: a query that creates the outfile is caught (rc=1) — checker(import): I-T: the query created the outfile
+ok   red: a query that writes the outfile is caught (rc=1) — checker(import): I-T: the query changed the outfile's bytes
+== environment branch (a copied ops dir with the golden removed) ==
+ok   red: missing sealed golden is environment (rc=2), not a verdict
+== golden provenance (the drift gate R1 asked for) ==
+ok   provenance: golden-grace.addressbook is byte-what abook writes from grace.vcf
+ok   provenance: golden-pair.addressbook is byte-what abook writes from pair.vcf
+ok   provenance: golden-impostor.addressbook is byte-what abook writes from impostor.vcf
+== the anchoring pattern against REAL abook output (both directions) ==
+ok   red: the anchor rejects the impostor's real match line (grace@example.com	Grace Hopperson	 )
+ok   green control: the anchor accepts the golden's real match line
+
+red-suite: 17 cases, 0 failure(s)

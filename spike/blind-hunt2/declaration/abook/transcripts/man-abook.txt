@@ -1,0 +1,99 @@
+ABOOK(1)                    General Commands Manual                   ABOOK(1)
+
+NAME
+       abook - text-based address book program
+
+SYNOPSIS
+       abook [ OPTION ]
+
+DESCRIPTION
+       This manual page documents briefly the abook program.  This manual page
+       was written for the Debian GNU/Linux distribution because the  original
+       program does not have a manual page.
+
+       abook  is  a  text-based address book program. It contains Name, Email,
+       Address and various Phone fields. It is designed for use with mutt, but
+       can be equally useful on its own.
+
+OPTIONS
+       -h --help
+              Show usage.
+
+       -C --config <filename>
+              Use    an    alternative    configuration   file   (default   is
+              $HOME/.abook/abookrc).
+
+       --datafile <filename>
+              Use   an    alternative    addressbook    file    (default    is
+              $HOME/.abook/addressbook).
+
+       --mutt-query <string> [ --outformat <outputformat> ]
+              Make a query for mutt (search the addressbook for <string>).
+              The  --datafile  option, as documented above, may be used BEFORE
+              this option to search a different addressbook file.
+              Only a subset of the  below  <outputformat>  are  allowed:  mutt
+              (default), vcard and custom
+
+       --convert  [  --informat  <inputformat>  ]  [  --infile <inputfile> ] [
+       --outformat <outputformat> ] [ --outfile <outputfile> ]
+              Converts  <inputfile>  in  <inputformat>  to   <outputfile>   in
+              <outputformat> (defaults are abook, stdin, text and stdout).
+
+              The following inputformats are supported:
+              - abook abook native format
+              - ldif ldif / Netscape addressbook
+              - mutt mutt alias
+              - pine pine addressbook
+              - csv comma separated values
+              - palmcsv Palm comma separated values
+              - vcard VCard addressbook
+
+              The following outputformats are supported:
+              - abook abook native format
+              - ldif ldif / Netscape addressbook (.4ld)
+              - mutt mutt alias
+              - html html document
+              - pine pine addressbook
+              - vcard VCard addressbook
+              - csv comma separated values
+              - palmcsv Palm comma separated values
+              - elm elm alias
+              - text plain text
+              - spruce Spruce address book
+              - wl Wanderlust address book
+              - bsdcal BSD calendar
+              - custom Custom output format, see below
+
+       --outformatstr <string>
+              Only   used  if  --mutt-query  or  --convert  is  specified  and
+              --outformat=custom.  <string>  is  a  format   string   allowing
+              placeholders.
+              A  placeholder  can  be  any  of  the standard fields names (see
+              abookrc(5)) and must be encapsulated by curly brackets.
+              The default value is "{nick} ({name}): {mobile}"
+              If <string> starts with ! only entries  whose  all  fields  from
+              <string> are non-NULL are included.
+
+       --add-email
+              Read  an  e-mail  message  from  stdin and add the sender to the
+              addressbook.
+
+       --add-email-quiet
+              Same as --add-email but doesn't confirm adding.
+
+       --formats
+              List available formats.
+
+COMMANDS DURING USE
+       Press '?' during use to get a list of commands.
+
+SEE ALSO
+       mutt(1), abookrc(5)
+
+AUTHOR
+       This manual page was written by Alan  Ford  <alan@whirlnet.co.uk>,  for
+       the Debian GNU/Linux system (but may be used by others).
+
+       abook was written by Jaakko Heinonen <jheinonen@users.sourceforge.net>
+
+                                  2006-09-06                          ABOOK(1)

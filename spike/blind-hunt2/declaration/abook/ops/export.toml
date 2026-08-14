@@ -1,0 +1,14 @@
+# Campaign-2 Seal B artifact: the declared define for abook `export` (convert
+# abook->vcard beside the store — the cross-file window: the reader must not
+# scribble what it reads). Invocation shape and exit status observed in a
+# normal run: ../transcripts/normal-runs.txt §3. Invariants and provenance:
+# ../declaration.md. Editing this file after Seal B marks the declaration
+# sighted (ADR 0012).
+[world]
+state = "/tmp/blind2/hunt/export/state"
+
+[define]
+setup           = "./setup.sh export"
+operation       = "/usr/bin/abook --convert --informat abook --infile /tmp/blind2/hunt/export/state/book/addressbook --outformat vcard --outfile /tmp/blind2/hunt/export/state/book/export.vcf"
+check           = "./check.sh export"
+expected_status = "0"
