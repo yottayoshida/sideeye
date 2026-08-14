@@ -1,0 +1,6 @@
+# Campaign 3 sealed priority order (ADR 0016: campaign 2's order minus khard
+# (burned) and abook (consumed by exploration)).
+# select.sh walks this file top to bottom. Appending, reordering, or deleting
+# after this campaign's Seal A voids the campaign.
+khal
+hledger

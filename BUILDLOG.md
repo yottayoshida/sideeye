@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Campaign 3 opens: khal then hledger, the lessons as requirements (#83)
+
+The apparatus for the third campaign (ADR 0016): `spike/blind-hunt3/` is
+campaign 2's sealed tooling copied with paths adapted, plus the content that
+changes per campaign — the order is khal → hledger (khard burned, abook
+consumed), the khal random-`.ics` refusal risk and the todoman storage-class
+disclosure duty carry restated, and campaign 2's six paid-for lessons ride as
+declaration requirements rather than advice (file-first checker, no
+out-of-contract store ever shown to the target, 755 + engine-path green,
+audit-order commits, refusal as an `expected_status` operation, fail-closed
+runner with engine identity). The adaptation was swept for leftover
+`blind2`/`blind-hunt2` strings — zero hits — and `check-config-paths.sh` is
+green, because a config still naming another campaign's state root is exactly
+the class that voided campaign 2's first seal.
+
+The rehearsal caught the first real defect before the seal, as designed —
+and it was in the rehearsal itself: two walker drills fabricate a "new
+campaign" to test the checker walk, and they had fabricated it under the
+name `blind-hunt3`. With the live campaign now bearing that name, walker3
+copied its planted defect onto the real campaign copy (which HAS an
+executable checker) and walker4's "pre-sweep" dir already had invocations —
+both drills went green-for-the-wrong-reason and the suite failed 2/42. The
+fabricated name is now `blind-hunt9`, one that is never live. A harness note
+on the way: the first rehearsal run was piped through `tail -15`, which both
+truncated the failures out of view and replaced the suite's exit 1 with the
+pipe's exit 0 — the raw-rc re-run is what surfaced the red. 42/42 green
+before the Seal A PR opened.
+
 ## 2026-08-14 — Campaign 2 explored: abook, three ops, zero violations (#83)
 
 The exploration from the re-sealed Seal B `eb51c483` completed: import 2

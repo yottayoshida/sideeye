@@ -25,7 +25,7 @@
 set -u
 
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-CAMP=spike/blind-hunt2
+CAMP=spike/blind-hunt3
 
 for tool in git python3 docker; do
     command -v "$tool" >/dev/null 2>&1 || { echo "rehearse: $tool is required" >&2; exit 2; }
@@ -226,13 +226,17 @@ r=$(copy walker2)
 chmod -x "$r/$CAMP/check-config-paths.sh"
 expect_msg 1 "no executable check-config-paths" "red: a checker present but not executable" sh "$r/spike/check-sealed-campaigns.sh" "$r"
 
+# The fabricated campaign is blind-hunt9 — a number that is never a live
+# campaign here — so these drills keep working when CAMP advances (measured:
+# with the fabricated name equal to CAMP, walker3 copied onto the real
+# campaign and both drills went green for the wrong reason).
 r=$(copy walker3)
-mkdir -p "$r/spike/blind-hunt3/configs"
-cp "$r/$CAMP/invocations.tsv" "$r/spike/blind-hunt3/"
-expect_msg 1 "blind-hunt3" "red: a new campaign cannot inherit the campaign-1 exemption" sh "$r/spike/check-sealed-campaigns.sh" "$r"
+mkdir -p "$r/spike/blind-hunt9/configs"
+cp "$r/$CAMP/invocations.tsv" "$r/spike/blind-hunt9/"
+expect_msg 1 "blind-hunt9" "red: a new campaign cannot inherit the campaign-1 exemption" sh "$r/spike/check-sealed-campaigns.sh" "$r"
 
 r=$(copy walker4)
-mkdir -p "$r/spike/blind-hunt3"
+mkdir -p "$r/spike/blind-hunt9"
 out=$(sh "$r/spike/check-sealed-campaigns.sh" "$r"); rc=$?
 if [ "$rc" = 0 ] && echo "$out" | grep -q "pre-sweep"; then pass "green: a pre-sweep campaign is skipped, loudly"; else fail "green: pre-sweep skip (rc=$rc)"; fi
 
@@ -337,7 +341,7 @@ set -u
 S=/tmp/rehearsal/explore/state
 mkdir -p "$S" "$OUT" || exit 2
 "$SIDEEYE" explore --state "$S" \
-    --operation "/bin/dd if=/work/spike/blind-hunt2/configs/toy-seed.txt of=$S/data.txt" \
+    --operation "/bin/dd if=/work/spike/blind-hunt3/configs/toy-seed.txt of=$S/data.txt" \
     --shim "$SHIM" --oracle /usr/bin/strace \
     --work /tmp/rehearsal/explore/work --json "$OUT/toy-ok.report.json" \
     > "$OUT/toy-ok.out" 2>&1
