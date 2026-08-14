@@ -301,6 +301,10 @@ r=$(copy drv7)
 expect_msg 2 "must live under the repository" "red: driver refuses an outdir outside the repository" \
     sh "$r/spike/campaign-driver.sh" sweep "$r/$CAMP" /tmp/rehearsal-escape
 
+r=$(copy drv8)
+expect_msg 2 "contains '..'" "red: driver refuses an outdir that escapes through dot-dot" \
+    sh "$r/spike/campaign-driver.sh" sweep "$r/$CAMP" "$r/$CAMP/../../../tmp/escape"
+
 echo "== E. the real pipeline through the driver: sweep, select, seal, explore, audit =="
 
 r=$(copy live)

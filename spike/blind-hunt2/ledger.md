@@ -169,3 +169,8 @@ entry must record the **image identity** (`docker image inspect` ID of
   campaign walker's remaining predicates (non-executable checker, exemption
   non-inheritance, pre-sweep skip, empty-tree refusal) moved from a scratchpad
   suite into the committed rehearsal. 41 drills, all green, rerun after the fixes.
+- **2026-08-14 — confirm round: 6 of 7 resolved, the seventh fixed.** `canon_out`
+  still accepted `..` segments — the charset guard allows `.`, so `/repo/a/../../x`
+  slips the textual under-repo test while escaping the repository. Refused now
+  (never resolved), matching the sealed config check's treatment of `..`; a red
+  drill covers the escape shape. Rehearsal: 42 drills, all green.

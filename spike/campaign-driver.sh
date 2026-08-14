@@ -41,6 +41,10 @@ esac
 # command).
 canon_out() {
     case "$1" in /*) _o=$1 ;; *) _o=$PWD/$1 ;; esac
+    # A `..` segment defeats the textual under-repo test below (/repo/a/../../x
+    # passes it while escaping the repository). Refused rather than resolved,
+    # exactly as the sealed config check refuses it (delta-review confirm round).
+    case "/$_o/" in */../*) die "outdir path '$_o' contains '..'; name the directory plainly" ;; esac
     _rel=${_o#"$repo"/}
     [ "$_rel" != "$_o" ] || die "outdir $_o must live under the repository ($repo)"
     case "$_rel" in *[!A-Za-z0-9/._-]*) die "outdir path '$_rel' contains characters a container command cannot carry safely" ;; esac
