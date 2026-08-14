@@ -1,0 +1,22 @@
+== dispatch and file legs (no target runs — the pinned message proves the leg) ==
+ok   red: undeclared operation refused (rc=1)
+ok   red: missing conserved event file fails closed (rc=1) — checker(import): I-C: conserved event file /tmp/blind3/hunt/import/state/cal/grace-fixed-u
+ok   red: conserved file with different khal-written bytes (rc=1) — checker(import): I-C: conserved event file /tmp/blind3/hunt/import/state/cal/grace-fixed-u
+== I-Q / I-W / I-T branches (stub target — khal does not run) ==
+ok   red: query exit code surfaces (rc=1) — checker(import): I-Q: bystander query exited 3: 
+ok   red: a leading-space line does not count (rc=1) — checker(import): I-Q: expected exactly one anchored match line, got 0:  02.09. 10:00-02.09
+ok   red: a suffixed line does not count (grep -Fx) (rc=1) — checker(import): I-Q: expected exactly one anchored match line, got 0: 02.09. 10:00-02.09.
+ok   red: duplicate match lines counted (rc=1) — 02.09. 10:00-02.09. 11:00 GraceStandup
+ok   red: a vdir-writing query is caught (rc=1) — checker(import): I-W: a query changed the vdir's bytes
+ok   red: a hanging subject query times out (rc=1) — checker(import): I-T: subject query did not terminate within 2s
+== environment branch (a copied ops dir with the golden removed) ==
+ok   red: missing sealed golden is environment (rc=2), not a verdict
+== golden provenance (the drift gate) ==
+ok   provenance: golden-grace-event.ics is byte-what khal writes from grace.ics
+ok   provenance: golden-ada-event.ics is byte-what khal writes from ada.ics
+ok   provenance: golden-impostor-event.ics is byte-what khal writes from impostor.ics
+== the anchoring pattern against REAL khal output (both directions) ==
+ok   red: the anchor rejects the impostor store's real output (line: 02.09. 10:00-02.09. 11:00 GraceStandupX)
+ok   green control: the anchor accepts the golden store's real output
+
+red-suite: 15 cases, 0 failure(s)

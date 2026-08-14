@@ -2,6 +2,44 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The khal declaration: one live search, two pre-registered refusals (#83)
+
+Campaign 3's declaration phase, from permitted sources only: the full help
+set, the version-pinned usage page (khal ships no man pages in the image),
+and one normal run per candidate form. Three operations declared, all
+reaching the vdir through documented non-interactive argv: **import of a
+fixed-UID .ics** — the live search, byte-deterministic in observation, the
+event file named `<UID>.ics`; **import-update of the same UID** — declared
+with a pre-registered refusal expectation, because the NORMAL update was
+measured leaving random-suffixed leftover files in the vdir (names differ
+across runs: baseline-irreproducible, the khard/watson shape — and the
+observation is quoted in the declaration so nobody later mistakes it for a
+crash finding); **new** — pre-registered refusal, random UID-as-filename
+plus DTSTAMP=now, measured. `edit` is excluded on the documentation's own
+word ("an interactive command"), `configure` and the TUI on observed
+prompts, the ask-first and stdin import forms on channel. The recovery-path
+rule discharges vacuously over the widest readable base (help set + usage
+page: zero recovery-vocabulary hits). The todoman storage-class disclosure
+duty is discharged in the declaration itself.
+
+Two khal-specific checker decisions, both measured before being relied on:
+khal's search exits 0 even on no match, so I-Q anchors the exact observed
+output line (`grep -Fx`) instead of the exit code — and the red suite's
+impostor probe measured khal's search as substring-matching, exactly the
+tolerance the exact-line anchor exists to reject; and khal CREATES a
+missing configured vdir on query (measured), so the checker only ever
+queries a vdir its file legs proved populated, with a fresh scratch HOME
+per query so the ambient cache is rebuilt cold every time. I-W (queries
+write nothing into an existing vdir) is promoted to a declared invariant —
+a crash-world query that "cleans" what it reads would violate it. Red: 15
+cases, message-pinned, green first try, real khal touching only
+khal-written/empty/absent stores, misbehavior through the CHECK_KHAL stub
+seam, plus the golden drift-gate. Green: exec-bit spawns throughout (ADR
+0016 requirement 3 — the exec bits were set before anything ran), verbatim
+toml operations matching expected_status, effects asserted, parse probes
+stopping at state resolution with probed paths untouched. Engine and shim
+SHA-256 equal the sweep manifest's: R3 pre-verified.
+
 ## 2026-08-14 — Campaign 3 swept: khal accepted, hledger refused again (#83)
 
 One sweep, through the driver, from Seal A `2239fba`, displayed per the

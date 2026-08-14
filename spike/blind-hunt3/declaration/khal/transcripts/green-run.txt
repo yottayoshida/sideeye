@@ -1,0 +1,41 @@
+===== engine identity =====
+sideeye 0.7.0 (trace contract v8)
+3ada341a61ade6c268100d28f32e67df7ad93ae641d83fa00a26b1c2d53bc329  /work/zig-out/bin/sideeye
+3346c0a8762e104ff81429f0711c0006b15b85f123bc712b6b14e1e2d65e9129  /work/zig-out/lib/libsideeye_shim.so
+
+===== toml parse (state unresolved => rc 3, before setup; probed paths untouched) =====
+import: rc=3: SETUP ERROR  --state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it
+update: rc=3: SETUP ERROR  --state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it
+new: rc=3: SETUP ERROR  --state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it
+
+===== import =====
+setup rc=0 (exec-bit spawn)
+$ /usr/local/bin/khal -c /work/spike/blind-hunt3/declaration/khal/ops/khal-import.conf import --batch -a main /work/spike/blind-hunt3/declaration/khal/ops/ada.ics
+operation rc=0 (toml expected_status=0)
+check rc=0 (exec-bit spawn)
+effect: the imported subject exists as <UID>.ics and answers its query (anchored)
+./cal/ada-fixed-uid-001.ics
+./cal/grace-fixed-uid-001.ics
+
+===== update =====
+setup rc=0 (exec-bit spawn)
+$ /usr/local/bin/khal -c /work/spike/blind-hunt3/declaration/khal/ops/khal-update.conf import --batch -a main /work/spike/blind-hunt3/declaration/khal/ops/ada-v2.ics
+operation rc=0 (toml expected_status=0)
+check rc=0 (exec-bit spawn)
+effect: the subject file carries the new SUMMARY and answers its query (anchored)
+observed (not asserted): 2 non-.ics leftover file(s) after the normal update
+./cal/ada-fixed-uid-001.ics
+./cal/ada-fixed-uid-001.ics8iaxfg25
+./cal/ada-fixed-uid-001.icsjnu9xfpo
+./cal/grace-fixed-uid-001.ics
+
+===== new =====
+setup rc=0 (exec-bit spawn)
+$ /usr/local/bin/khal -c /work/spike/blind-hunt3/declaration/khal/ops/khal-new.conf new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
+operation rc=0 (toml expected_status=0)
+check rc=0 (exec-bit spawn)
+effect: exactly one new event file beside the bystander
+./cal/OJS3861ZWRVLCQ58IWICC0IHG904GIB7WGKN.ics
+./cal/grace-fixed-uid-001.ics
+
+green-run fails=0

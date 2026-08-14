@@ -1,0 +1,15 @@
+# Campaign-3 Seal B artifact: the declared define for khal `new` (the sealed
+# sweep row's shape). Carries a PRE-REGISTERED refusal expectation: `new`
+# mints a random UID that is also the filename and stamps DTSTAMP with the
+# current time — two fresh runs differ in both name and bytes
+# (../transcripts/normal-runs.txt §3); a refusal is the recorded result
+# (#84). Invariants: ../declaration.md. Editing this file after Seal B marks
+# the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind3/hunt/new/state"
+
+[define]
+setup           = "./setup.sh new"
+operation       = "/usr/local/bin/khal -c /work/spike/blind-hunt3/declaration/khal/ops/khal-new.conf new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting"
+check           = "./check.sh new"
+expected_status = "0"

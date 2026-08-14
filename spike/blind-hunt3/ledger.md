@@ -90,3 +90,31 @@ and voids land in `voided-seals.txt` with their narrative here.
     configure prompts and aborts (rc 1). Every vdir a probe touched was
     khal-written, empty, or absent; the .ics inputs are hand-written
     well-formed iCalendar (the documented input class).
+- **2026-08-14 — khal apparatus-phase target contacts (all documented-normal;
+  no crash experiments, no traces, no mis-shaped store ever offered):**
+  - `make-goldens.sh` ran three fixed-UID imports to mint the committed
+    golden EVENT files (grace / ada / impostor) — khal's own serialization
+    as fixtures, resting on the observed byte-determinism (normal-runs §1).
+  - The checker red suite (`checker-red-test.sh` → `transcripts/
+    checker-red.txt`, 15 cases green) runs REAL khal only as `search` over
+    khal-written golden stores: the provenance drift-gate (regenerate all
+    three goldens into scratch, byte-compare against the committed files)
+    and the anchoring probes — which also MEASURED that khal's search is
+    substring-matching (the impostor store's `GraceStandupX` line came back
+    for the query `GraceStandup`) and that the checker's exact-line
+    `grep -Fx` anchor rejects it while accepting the golden's line. Every
+    ill-behaved-binary branch (exit codes, unanchored/suffixed/duplicate
+    lines, vdir-writing queries, hangs) runs through the CHECK_KHAL stub
+    seam — the target does not run in those cases.
+  - The green run (`transcripts/green-run.sh` → `green-run.txt`, fails=0)
+    spawned setup and check THROUGH THEIR EXEC BITS (ADR 0016 requirement
+    3), executed each declared operation verbatim from its sealed toml
+    (all rc 0 == expected_status), ran the checker green, and asserted each
+    documented effect (import: `<UID>.ics` exists and answers its anchored
+    query; update: the subject carries the new SUMMARY — with 2 non-.ics
+    leftover files observed, not asserted; new: exactly one new event file
+    beside the bystander). The three tomls each stop at state resolution
+    (rc 3) with the probed paths untouched; khal not executed there.
+  - Engine identity on the transcript: `sideeye 0.7.0 (trace contract
+    v8)`, engine and shim SHA-256 equal to the committed sweep manifest's
+    values — the R3 comparison pre-verified at declaration time.

@@ -1,0 +1,13 @@
+# Campaign-3 Seal B artifact: the declared define for khal `import` (fresh
+# UID into a vdir holding the bystander). The live search: byte-deterministic
+# in observation (../transcripts/normal-runs.txt §1). Invariants and
+# provenance: ../declaration.md. Editing this file after Seal B marks the
+# declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind3/hunt/import/state"
+
+[define]
+setup           = "./setup.sh import"
+operation       = "/usr/local/bin/khal -c /work/spike/blind-hunt3/declaration/khal/ops/khal-import.conf import --batch -a main /work/spike/blind-hunt3/declaration/khal/ops/ada.ics"
+check           = "./check.sh import"
+expected_status = "0"
