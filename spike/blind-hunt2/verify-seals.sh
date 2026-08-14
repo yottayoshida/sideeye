@@ -234,15 +234,26 @@ if [ -n "$runmanifest" ] && [ -r "$runmanifest" ]; then
         r3m=$(mktemp "${TMPDIR:-/tmp}/verify-r3-XXXXXX") || exit 2
         git show "$B:spike/blind-hunt2/sweep-manifest.json" > "$r3m"
         if python3 - "$r3m" "$runmanifest" <<'PY'
-import json, sys
-sweep = json.load(open(sys.argv[1]))
-run = json.load(open(sys.argv[2]))
+import json, re, sys
+try:
+    sweep = json.load(open(sys.argv[1]))
+    run = json.load(open(sys.argv[2]))
+except (OSError, ValueError) as e:
+    print(f"R3: a manifest does not parse: {e}", file=sys.stderr)
+    sys.exit(1)
 bad = 0
+DIGEST = re.compile(r"^[0-9a-f]{64}$")
 for field in ("engine_sha256", "shim_sha256"):
     s, r = sweep.get(field), run.get(field)
     if not s or not r:
         print(f"R3: {field} missing from a manifest (sweep: {bool(s)}, run: {bool(r)})",
               file=sys.stderr)
+        bad += 1
+    elif not (isinstance(s, str) and DIGEST.match(s) and isinstance(r, str) and DIGEST.match(r)):
+        # Two matching non-digests ("true" == "true") would satisfy a bare
+        # equality; the field's claim is an SHA-256, so anything else is a
+        # cannot-look, not a pass (delta-review finding).
+        print(f"R3: {field} is not a SHA-256 hex digest on both sides", file=sys.stderr)
         bad += 1
     elif s != r:
         print(f"R3: {field} differs between sweep and run", file=sys.stderr)

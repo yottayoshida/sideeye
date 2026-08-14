@@ -30,6 +30,22 @@ dir=${2%/}
 [ -d "$dir" ] || die "no campaign directory at $dir"
 repo=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || die "$dir is not in a git repository"
 name=$(basename "$dir")
+case "$name" in
+    *[!A-Za-z0-9._-]*) die "campaign directory name '$name' is not plain enough to carry through a container command" ;;
+esac
+
+# Canonicalize an output-dir argument: absolute, under the repository (the
+# container mounts only /work), and shaped so its repo-relative form survives
+# interpolation into a container command line (delta-review finding: /tmp/out
+# silently became /work//tmp/out, and metacharacters would have altered the
+# command).
+canon_out() {
+    case "$1" in /*) _o=$1 ;; *) _o=$PWD/$1 ;; esac
+    _rel=${_o#"$repo"/}
+    [ "$_rel" != "$_o" ] || die "outdir $_o must live under the repository ($repo)"
+    case "$_rel" in *[!A-Za-z0-9/._-]*) die "outdir path '$_rel' contains characters a container command cannot carry safely" ;; esac
+    echo "$_o"
+}
 
 # Shared preconditions ------------------------------------------------------
 
@@ -88,7 +104,7 @@ status)
     ;;
 
 sweep)
-    out=${3:?usage: sweep <dir> <outdir-on-host>}
+    out=$(canon_out "${3:?usage: sweep <dir> <outdir-on-host>}") || exit 2
     require_clean_tree
     require_committed "$(rel invocations.tsv)" "campaign 2+ seals the rows at Seal A"
     [ -e "$out" ] && die "outdir $out already exists — a re-sweep must not overwrite a retained one"
@@ -106,6 +122,10 @@ sweep)
     ;;
 
 select)
+    # Clean tree, or the selector reads worktree files the sealed verifier's
+    # B3/B4 never sees (delta-review finding: B3 was checked against HEAD while
+    # select.sh ran on the worktree — the two could disagree).
+    require_clean_tree
     require_committed "$(rel invocations.tsv)" "selection reads committed inputs only"
     require_committed "$(rel sweep-manifest.json)" "selection reads committed inputs only"
     # B3 locally, against HEAD's copies, before trusting the selector's answer.
@@ -127,7 +147,7 @@ verify)
 
 explore)
     sealb=${3:?usage: explore <dir> <seal-b-sha> <outdir-on-host>}
-    out=${4:?usage: explore <dir> <seal-b-sha> <outdir-on-host>}
+    out=$(canon_out "${4:?usage: explore <dir> <seal-b-sha> <outdir-on-host>}") || exit 2
     require_clean_tree
     head_sha=$(git -C "$repo" rev-parse HEAD)
     want_sha=$(git -C "$repo" rev-parse "$sealb^{commit}") || die "$sealb is not a commit"

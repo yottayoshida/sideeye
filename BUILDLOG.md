@@ -17,15 +17,20 @@ sequencing errors lived. Four pieces, shipped together on the re-seal branch:
   hash, a wrong declaration, a wrong-head run manifest, a wrong-engine run
   manifest, a voided anchor, a cross-row config, a dropped checker, a vandalized
   ledger under the append tool, three driver refusals), each required to turn
-  its guard red; then a real container sweep through the driver, ending in the
-  full battery's ALL SEAL CHECKS PASSED (R1 audited). Twenty-six drills. The
-  first run failed four of them and both causes were real: this host's docker
-  answers `image inspect <name>` flakily (measured: success and "No such image"
-  for the same name in one session — both resolvers now accepted), and
-  bookworm's /bin/cp is *correctly* refused by preflight because it copies via
-  copy_file_range, which the trace contract does not cover. The toy now writes
-  through dd. An apparatus test that finds real behavior on its first run is
-  the strongest evidence yet that the rehearsal was missing.
+  its guard red — with the guard identified by its MESSAGE, not just the exit
+  code — then the real pipeline through the driver: container sweep, selection,
+  a Seal B carrying a real runner, a real exploration, and the full battery's
+  ALL SEAL CHECKS PASSED (R1 audited) over artifacts the shipped code produced.
+  Forty-one drills. The first two versions each failed honestly: run one caught
+  real behavior (this host's docker answers `image inspect <name>` flakily —
+  both resolvers now accepted — and bookworm's /bin/cp is *correctly* refused
+  by preflight because it copies via copy_file_range; the toy now writes
+  through dd); the delta review then caught the rehearsal itself lying twice —
+  two driver drills passing on the dirty-tree guard while claiming to test two
+  other guards, and an "entire pipeline" whose exploration was a fabricated
+  manifest. Both are the same shape as everything else today, inside the tool
+  built to stop it. The current suite pins every red to its guard's message
+  and runs the exploration for real.
 - **`spike/campaign-driver.sh`** — every phase behind preconditions that refuse:
   dirty tree, uncommitted inputs, existing output directories, a manifest that
   already exists, a HEAD that is not the seal being explored. Unsealed by

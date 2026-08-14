@@ -152,3 +152,20 @@ entry must record the **image identity** (`docker image inspect` ID of
   - `spike/ledger-append.sh`: the only sanctioned ledger writer — appends, then
     proves the result still extends HEAD, restoring on failure. This entry is its
     first production use.
+- **2026-08-14 — delta review on the apparatus (external, fixed axes applied to their
+  own delta): seven findings, all applied.** The two fixed review axes did exactly
+  what they were installed to do — they caught the apparatus entry's own claims:
+  the rehearsal's "entire pipeline" had a fabricated exploration (now real: the
+  Seal B carries a runner, the driver runs it, R1/R3 audit the manifest it wrote),
+  and two driver drills passed on the wrong guard (every red now asserts the
+  firing guard's message). Also fixed: driver `select` now requires a clean tree
+  (it read worktree files while B3 checked HEAD); outdir arguments are
+  canonicalized, confined to the repository, and charset-guarded before container
+  interpolation; `ledger-append.sh` canonicalizes its directory argument (a
+  relative path used to bypass the HEAD baseline — red-tested now in both
+  directions); verify-seals R3 requires both identity fields to be real SHA-256
+  digests on both sides and handles unparseable manifests as failures (shim
+  mismatch, missing field, and matching non-digests each have a red drill); the
+  campaign walker's remaining predicates (non-executable checker, exemption
+  non-inheritance, pre-sweep skip, empty-tree refusal) moved from a scratchpad
+  suite into the committed rehearsal. 41 drills, all green, rerun after the fixes.

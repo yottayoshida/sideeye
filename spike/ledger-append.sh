@@ -19,7 +19,12 @@
 set -u
 
 [ $# -eq 1 ] || { echo "usage: ledger-append.sh <campaign-dir>  < text" >&2; exit 2; }
-ledger=$1/ledger.md
+# Canonicalize FIRST: a relative campaign dir ("." from inside the campaign) used
+# to reach `git ls-files` as a path relative to the wrong root, which silently
+# took the "untracked, no baseline" branch — the exact bypass this tool exists
+# to prevent (delta-review finding).
+dir=$(cd "$1" 2>/dev/null && pwd) || { echo "ledger-append: cannot resolve $1" >&2; exit 2; }
+ledger=$dir/ledger.md
 [ -f "$ledger" ] || { echo "ledger-append: no ledger at $ledger" >&2; exit 2; }
 
 repo_root=$(git -C "$(dirname "$ledger")" rev-parse --show-toplevel 2>/dev/null) || {
