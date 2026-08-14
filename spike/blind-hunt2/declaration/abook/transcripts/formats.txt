@@ -1,0 +1,33 @@
+input formats:
+	abook	abook native format
+	ldif	ldif / Netscape addressbook
+	mutt	mutt alias
+	pine	pine addressbook
+	csv	comma separated values
+	allcsv	comma separated values (all fields)
+	palmcsv	Palm comma separated values
+	vcard	vCard file
+
+output formats:
+	abook	abook native format
+	ldif	ldif / Netscape addressbook (.4ld)
+	vcard	vCard 2 file
+	mutt	mutt alias
+	muttq	mutt query format (internal use)
+	html	html document
+	pine	pine addressbook
+	csv	comma separated values
+	allcsv	comma separated values (all fields)
+	palmcsv	Palm comma separated values
+	elm	elm alias
+	text	plain text
+	wl	Wanderlust address book
+	spruce	Spruce address book
+	bsdcal	BSD calendar
+	custom	Custom format
+
+query-compatible output formats:
+	vcard	vCard 2 file
+	muttq	mutt alias
+	custom	Custom format
+

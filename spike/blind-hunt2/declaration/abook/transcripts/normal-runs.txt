@@ -1,0 +1,144 @@
+
+===== 0. inputs =====
+--- base.vcf ---
+BEGIN:VCARD
+VERSION:3.0
+FN:Ada Lovelace
+N:Lovelace;Ada;;;
+EMAIL:ada@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Grace Hopper
+N:Hopper;Grace;;;
+EMAIL:grace@example.com
+END:VCARD
+--- next.vcf ---
+BEGIN:VCARD
+VERSION:3.0
+FN:Grace Hopper
+N:Hopper;Grace;;;
+EMAIL:grace@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Carol Shaw
+N:Shaw;Carol;;;
+EMAIL:carol@example.com
+END:VCARD
+
+===== 1. convert vcard->abook into a fresh file (two entries) =====
+$ abook --convert --informat vcard --infile /tmp/blind2/normal/base.vcf --outformat abook --outfile /tmp/blind2/normal/a/addressbook
+[convert-fresh rc=0]
+--- resulting native store (157 bytes) ---
+# abook addressbook file
+
+[format]
+program=abook
+version=0.6.1
+
+
+[0]
+name=Ada Lovelace
+email=ada@example.com
+
+[1]
+name=Grace Hopper
+email=grace@example.com
+
+
+===== 2. determinism: the same convert twice, byte-compared =====
+$ abook --convert --informat vcard --infile /tmp/blind2/normal/base.vcf --outformat abook --outfile /tmp/blind2/normal/b/addressbook
+[convert-again rc=0]
+byte-identical: yes
+
+===== 3. convert abook->vcard (export beside the store), twice, byte-compared =====
+$ abook --convert --informat abook --infile /tmp/blind2/normal/a/addressbook --outformat vcard --outfile /tmp/blind2/normal/a/export.vcf
+[export-1 rc=0]
+--- export.vcf ---
+BEGIN:VCARD
+FN:Ada Lovelace
+N:Lovelace;Ada
+EMAIL;PREF;INTERNET:ada@example.com
+END:VCARD
+
+BEGIN:VCARD
+FN:Grace Hopper
+N:Hopper;Grace
+EMAIL;PREF;INTERNET:grace@example.com
+END:VCARD
+
+$ abook --convert --informat abook --infile /tmp/blind2/normal/a/addressbook --outformat vcard --outfile /tmp/blind2/normal/a/export2.vcf
+[export-2 rc=0]
+byte-identical: yes
+
+===== 4. convert onto an EXISTING outfile (the overwrite shape: next.vcf over base store) =====
+--- store before (base: Ada+Grace) ---
+# abook addressbook file
+
+[format]
+program=abook
+version=0.6.1
+
+
+[0]
+name=Ada Lovelace
+email=ada@example.com
+
+[1]
+name=Grace Hopper
+email=grace@example.com
+
+$ abook --convert --informat vcard --infile /tmp/blind2/normal/next.vcf --outformat abook --outfile /tmp/blind2/normal/c/addressbook
+cannot write file /tmp/blind2/normal/c/addressbook
+[convert-overwrite rc=1]
+--- store after ---
+# abook addressbook file
+
+[format]
+program=abook
+version=0.6.1
+
+
+[0]
+name=Ada Lovelace
+email=ada@example.com
+
+[1]
+name=Grace Hopper
+email=grace@example.com
+
+
+===== 5. mutt-query probes (--datafile BEFORE --mutt-query, per abook(1)) =====
+$ abook --datafile /tmp/blind2/normal/a/addressbook --mutt-query Grace
+
+grace@example.com	Grace Hopper	 
+[query-match rc=0]
+$ abook --datafile /tmp/blind2/normal/a/addressbook --mutt-query Zebra
+Not found
+[query-nomatch rc=1]
+$ abook --datafile /tmp/blind2/normal/a/empty --mutt-query Grace
+Cannot open database
+[query-emptyfile rc=1]
+$ abook --datafile /tmp/blind2/normal/a/no-such-file --mutt-query Grace
+Cannot open database
+[query-nofile rc=1]
+
+===== 6. interactivity probes (EOF stdin, 10s timeout; the engine gives no stdin) =====
+$ timeout 10 abook --datafile /tmp/blind2/normal/a/addressbook
+Error opening terminal: unknown.
+[tui rc=1]
+$ timeout 10 abook --add-email
+Valid sender address not found
+[add-email rc=0]
+$ timeout 10 abook --add-email-quiet
+Valid sender address not found
+[add-quiet rc=0]
+--- default datafile after add probes: ---
+total 8
+drwx------ 2 root root 4096 Aug 14 06:44 .
+drwxr-xr-x 3 root root 4096 Aug 14 06:44 ..
+
+===== 7. package identity =====
+abook	0.6.1-2+b1
+normal-runs: done

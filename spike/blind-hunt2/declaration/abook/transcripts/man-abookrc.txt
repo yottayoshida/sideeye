@@ -1,0 +1,260 @@
+ABOOKRC(5)                    File Formats Manual                   ABOOKRC(5)
+
+NAME
+       $HOME/.abook/abookrc  -  configuration  file  for  abook  address  book
+       program
+
+DESCRIPTION
+       This manual page documents briefly the abookrc file.
+       abookrc is the (optional) configuration file for use with the  abook(1)
+       address book program.
+
+       abookrc  is  stored  in  a  user's $HOME/.abook directory. It follows a
+       format of "set option=value".  The following information lists each  of
+       these options and the values they may take.
+
+       If  a  variable  is  not set in abookrc , a sensible default, as listed
+       with the description below, will be used.
+
+       Comments in abookrc are on lines beginning with '#'.
+
+COMMANDS
+       set option = value
+
+       field identifier = human_readable_name [ , type ]
+              Defines a  new  custom  field.  type  can  be  one  of  'string'
+              (default) , 'emails', 'list', or 'date'.
+
+       view view name = field1 [ , field2, ... ]
+              Defines  a view/tab, with fieldN being the identifier of a field
+              declared with the field command, or the identifier of a standard
+              field.
+
+              Standard fields:
+                   name, email,
+                   address, address2, city, state, zip, country,
+                   phone, workphone, fax, mobile,
+                   nick, url, notes, anniversary
+
+              Note:  if  you  don't  define any view, abook will use a default
+              display based on the above standard fields.
+
+VARIABLES
+       autosave=[true|false]
+              Defines whether the addressbook is automatically saved on  exit.
+              Default is true.
+
+       preserve_fields=[all|standard|none]
+              Specifies  how fields not declared with the field command nor in
+              a view should be preserved while loading an abook database.
+
+              all    preserve any completely unknown field.
+
+              standard
+                     only preserve the standard fields (see a list in the
+                       description of the view command) and the legacy
+                       'custom[1-5]' fields.
+
+              none   discards any unknown field.
+
+              Default is standard.
+
+       index_format=format_string
+              Defines the way entries are displayed in the main list. This  is
+              a string containing field names enclosed between braces, with an
+              optional width limit specified by a number (right  alignment  if
+              negative)  after  the  field  name and a colon, and an arbitrary
+              number of alternative fields (first with non empty content is to
+              be displayed) separated by vertical bars. For instance:
+
+              {name:22}
+                     displays  the  name  field  with  a  maximal  width of 22
+                     characters.
+
+              {phone:-12|workphone|mobile}
+                     displays (right aligned within a width of 13 characters),
+                     either  the  phone,  workphone or mobile field, whichever
+                     being the first to be non-empty.
+
+              Default is " {name:22} {email:40} {phone:12|workphone|mobile}"
+
+       show_all_emails=[true|false]
+              Defines whether all email addresses for a contact are  shown  in
+              the main list view. Default is true.
+
+       emailpos
+       extra_column
+       extra_alternative
+       extrapos
+              Obsoleted by index_format.
+
+       mutt_return_all_emails=[true|false]
+              Defines  whether  to  return  all  email  addresses matching the
+              search criteria to a mutt query. Default is true.
+
+       print_command=command
+              Defines the command  to  used  when  printing  the  addressbook.
+              Default is "lpr".
+
+       www_command=command
+              Defines  the  command  used  to  start the web browser to view a
+              contact's URL. Default is "lynx".
+
+       address_style=[eu|uk|us]
+              Defines  the  style  of  address  formatting  to  be  used  when
+              exporting  as  text  /  printing  the database (European, UK, or
+              USA). Default is European ("eu").
+
+       use_ascii_only=[true|false]
+              This option allows you to force Abook use only ASCII characters.
+              This option is useful if your terminal doesn't support non-ASCII
+              characters. Default is false.
+
+       add_email_prevent_duplicates=[true|false]
+              Defines whether to  avoid  adding  addresses  already  in  data.
+              Default is false.
+
+       sort_field=field
+              Defines  the  field  to  be used by the "sort by field" command.
+              Default is "nick" (Nickname/Alias).
+
+       show_cursor=[true|false]
+              Defines if the cursor is visible in  main  display.  Default  is
+              false.
+
+       use_mouse=[true|false]
+              Defines  if  navigation  via  the mouse is activated. Default is
+              false. Most terminals can also inhibit ncurses mouse  events  at
+              runtime  by  holding  the  Shift  key (restoring mouse-selection
+              behavior).
+
+       scroll_speed=lines
+              Defines the number of lines the address list is scrolled by on a
+              mouse  wheel  action. This option only takes effect if use_mouse
+              is enabled. Default is 2.
+
+       use_colors=[true|false]
+              Defines if the output of abook is colorized. Default is false.
+
+       Color settings:
+              color_header_fg=color Foreground color for header bar
+
+              color_header_bg=color Background color for header bar
+
+              color_footer_fg=color Foreground color for footer bar
+
+              color_footer_bg=color Background color for footer bar
+
+              color_list_even_fg=color  Foreground  color  for   normal   list
+              entries with even index in the list (starting with index 0)
+
+              color_list_even_bg=color   Background   color  for  normal  list
+              entries with even index in the list (starting with index 0)
+
+              color_list_odd_fg=color Foreground color for normal list entries
+              with odd index in the list (starting with index 0)
+
+              color_list_odd_bg=color Background color for normal list entries
+              with odd index in the list (starting with index 0)
+
+              color_list_header_fg=color Foreground color for the list header
+
+              color_list_header_bg=color Background color for the list header
+
+              color_list_highlight_fg=color Foreground color  for  highlighted
+              list entries
+
+              color_list_highlight_bg=color  Background  color for highlighted
+              list entries
+
+              color_tab_border_fg=color Foreground color for  tab  borders  on
+              details page
+
+              color_tab_border_bg=color  Background  color  for tab borders on
+              details page
+
+              color_tab_label_fg=color  Foreground  color  for  tab  labes  on
+              details page
+
+              color_tab_label_bg=color  Background  color  for  tab  labes  on
+              details page
+
+              color_field_name_fg=color Foreground color for  field  names  on
+              details page
+
+              color_field_name_bg=color  Background  color  for field names on
+              details page
+
+              color_field_value_fg=color Foreground color for field values  on
+              details page
+
+              color_field_value_bg=color  Background color for field values on
+              details page
+
+              Where color can be: default, black, red,  green,  yellow,  blue,
+              magenta, cyan, white
+
+SAMPLE CONFIGURATION FILE
+       # sample abook configuration file
+       #
+
+       # Declare a few custom fields
+       field pager = Pager
+       field address_lines = Address, list
+       field birthday = Birthday, date
+
+       # Define how fields should be displayed in tabs
+       view CONTACT = name, email
+       view ADDRESS = address_lines, city, state, zip, country
+       view PHONE = phone, workphone, pager, mobile, fax
+       view OTHER = url, birthday
+
+       # Preserve any unknown field while loading an abook database
+       set preserve_fields=all
+
+       # Automatically save database on exit
+       set autosave=true
+
+       # Format of entries lines in list
+       set index_format=" {name:22} {email:40} {phone:12|workphone|mobile}"
+
+       # Show all email addresses in list
+       set show_all_emails=true
+
+       # Command used to start mutt
+       set mutt_command=mutt
+
+       # Return all email addresses to a mutt query
+       set mutt_return_all_emails=true
+
+       # Command used to print
+       set print_command=lpr
+
+       # Command used to start the web browser
+       set www_command=lynx
+
+       # Address style [eu|us|uk]
+       set address_style=eu
+
+       # Use ASCII characters only
+       set use_ascii_only=false
+
+       # Prevent double entry
+       set add_email_prevent_duplicates=false
+
+       # Field to be used with "sort by field" command
+       set sort_field=nick
+
+       # Show cursor in main display
+       set show_cursor=false
+
+SEE ALSO
+       abook(1).
+
+AUTHORS
+       This  manual  page  was  written by Alan Ford <alan@whirlnet.co.uk> and
+       expanded by Cedric Duval <cedricduval@free.fr>.
+
+       abook was written by Jaakko Heinonen <jheinonen@users.sourceforge.net>
+
+                                 Oct 25, 2005                       ABOOKRC(5)

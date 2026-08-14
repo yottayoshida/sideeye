@@ -246,3 +246,30 @@ entry must record the **image identity** (`docker image inspect` ID of
   declaration: the checker inspects files first and queries the target last,
   and red fixtures are well-formed only (an empty store — documented-normal —
   is the one permitted refusal shape).
+- **2026-08-14 — declaration-phase consultations for abook (all permitted
+  sources; no traces, no crash experiments, no source, no bug trackers):**
+  - `abook --help` and `abook --formats` inside the pinned container
+    (`declaration/abook/transcripts/help.txt`, `formats.txt`).
+  - abook(1) and abookrc(5) man pages, taken from the pinned package itself:
+    the slim image strips /usr/share/man, so `sources.sh` apt-downloads the
+    EXACT installed version (0.6.1-2+b1, asserted equal before unpacking) and
+    unpacks it with dpkg-deb into scratch — nothing is installed, the sealed
+    image is unaltered, and the deb's sha256 is printed by the sources run.
+  - One normal (non-crash) run per candidate form plus determinism and
+    interactivity probes (`transcripts/normal-runs.sh` → `normal-runs.txt`):
+    convert vcard→abook is byte-deterministic across two runs, as is
+    abook→vcard export; convert onto an EXISTING outfile refuses ("cannot
+    write file", exit 1) and leaves the store byte-identical; --mutt-query
+    exits 0 on a match, 1 "Not found" on no match, 1 "Cannot open database"
+    on an empty or absent datafile; bare `abook` needs a terminal (exit 1
+    without one); --add-email and --add-email-quiet on stdin EOF print "Valid
+    sender address not found", exit 0, and write no datafile. The native
+    store shape was observed once (leading `# abook addressbook file`
+    comment, a `[format]` block, numbered `[N]` sections with `name=` /
+    `email=` lines). Every probe store was written by abook itself in the
+    same script, empty, or absent — no mis-shaped store was ever given to the
+    target (the khard burn's structural rule, applied at observation time).
+  - Facts taken: the CLI surface is --convert / --mutt-query /
+    --add-email(-quiet) / --formats plus the interactive TUI; abookrc is
+    optional with documented defaults (abookrc(5)); no recovery, undo, or
+    repair command appears anywhere in these pages.

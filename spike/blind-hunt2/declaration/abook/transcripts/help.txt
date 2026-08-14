@@ -1,0 +1,24 @@
+abook v0.6.1
+
+     -h	--help				show usage
+     -C	--config	<file>		use an alternative configuration file
+     -f	--datafile	<file>		use an alternative addressbook file
+	--mutt-query	<string>	make a query for mutt
+	--add-email			read an e-mail message from stdin and
+					add the sender to the addressbook
+	--add-email-quiet		same as --add-email but doesn't
+					require to confirm adding
+
+	--convert			convert address book files
+	options to use with --convert:
+	--informat	<format>	format for input file
+					(default: abook)
+	--infile	<file>		source file
+					(default: stdin)
+	--outformat	<format>	format for output file
+					(default: text)
+	--outfile	<file>		destination file
+					(default: stdout)
+	--outformatstr	<str>   	format to use for "custom" --outformat
+					(default: "{nick} ({name}): {mobile}")
+	--formats			list available formats
