@@ -117,7 +117,7 @@ sweep)
     fi
     require_consistency
     engine_ready
-    img=$(image_id)
+    img=$(image_id) || exit 2
     echo "driver: sweeping $name (image $img)"
     docker run --rm -v "$repo:/work" -e SWEEP_IMAGE="sideeye-blindhunt@$img" sideeye-blindhunt sh -c \
         "export HOME=/tmp/${name}/home; mkdir -p \$HOME; SIDEEYE=/work/zig-out/bin/sideeye sh /work/spike/$name/sweep.sh -i /work/spike/$name/invocations.tsv -o /work/${out#"$repo"/} -s /work/zig-out/lib/libsideeye_shim.so -r /usr/bin/strace" \
@@ -161,7 +161,7 @@ explore)
     engine_ready
     runsh=$(ls "$dir"/declaration/*/run.sh 2>/dev/null | head -1)
     [ -n "$runsh" ] || die "no declaration/*/run.sh — the declaration phase has not produced a sealed runner"
-    img=$(image_id)
+    img=$(image_id) || exit 2
     echo "driver: exploring from $head_sha (image $img)"
     docker run --rm -v "$repo:/work" \
         -e HEAD="$head_sha" -e CLEAN=true \
