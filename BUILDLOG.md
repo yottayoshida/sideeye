@@ -2,6 +2,28 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Seal B's first exploration attempt: Permission denied before anything ran (#83)
+
+Exploration from Seal B `84d0f2e1` returned SETUP ERROR for all three abook
+ops. Root cause: the engine execs `./setup.sh` and `./check.sh` directly —
+no shell — and both were committed mode 100644 (the Write path that created
+them does not set exec bits; campaign 1's scripts were 100755). Permission
+denied, exit 126, before a single instruction of setup ran. The green run
+had proven setup through `sh ./setup.sh` — a shell spawn the engine never
+performs. The measured path did not reach what the seal shipped: the same
+lesson as the hook-run-by-hand class, now in the one place the campaign
+cannot simply patch, because the declaration is sealed.
+
+What makes this recoverable with blindness intact: the run observed nothing.
+All three `.out` files hold exactly the engine's SETUP ERROR line; all three
+reports parse with `verdict: SETUP_ERROR, crash_points: 0`; abook never
+executed. The fix commit changes the two files' git modes and nothing else —
+0 insertions, 0 deletions, every blob SHA unchanged, which the PR diff
+proves mechanically. The fix PR's merge is the Seal B the exploration
+actually runs from. Rule extracted (CLAUDE.md): declaration scripts the
+engine execs are committed 755, and a green run must spawn them the way the
+engine does — through the exec bit, not through `sh`.
+
 ## 2026-08-14 — The abook declaration: refusal as an operation, and a red suite the burn can no longer reach (#83)
 
 Campaign 2's second declaration, written after the khard burn and carrying its

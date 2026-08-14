@@ -321,3 +321,21 @@ entry must record the **image identity** (`docker image inspect` ID of
     vCard inputs are the committed hand-authored well-formed files — the
     documented-normal input class. No mis-shaped native store reaches the
     target anywhere in the apparatus.
+- **2026-08-14 — the first Seal B's exploration attempt refused at setup
+  spawn; mode-bit fix; re-seal.** Exploration from Seal B `84d0f2e1` (driver,
+  pinned container, engine/shim SHA equal to the sweep manifest) returned
+  SETUP ERROR for all three ops: the engine execs `./setup.sh` directly (no
+  shell) and the declaration's setup.sh/check.sh were committed mode 100644 —
+  Permission denied before a single instruction of setup ran. **Target
+  contact: zero.** Evidence: all three `<op>.out` files hold exactly
+  "SETUP ERROR  --setup exited non-zero"; all three reports parse with
+  `verdict: SETUP_ERROR, crash_points: 0`; abook appears nowhere in the run.
+  The green run had validated setup through `sh ./setup.sh` — a shell path
+  the engine does not take; the by-hand path took another branch (the
+  measured-path lesson, again). The fix commit changes the two files' git
+  mode to 100755 and NOTHING else — 0 insertions, 0 deletions, blob SHAs
+  unchanged, checkable from the diff. Because the failed run observed no
+  target behavior, blindness is intact; the re-seal (the fix PR's merge)
+  becomes the Seal B the exploration runs from, and the R1 leg audits
+  against it. The failed run's artifacts stay local under
+  `artifacts/explore-84d0f2e1/`.

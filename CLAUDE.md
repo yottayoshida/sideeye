@@ -59,6 +59,11 @@ each purchased with a specific failure:
 - **Ledgers are written through `spike/ledger-append.sh`** — it appends and then
   proves the file still extends HEAD's copy, restoring it if not. Hand edits
   broke the append-only prefix twice; the tool makes that unmakeable.
+- **Declaration scripts the engine execs (setup/check) are committed mode 755,
+  and a green run must spawn them the way the engine does** — through the
+  file's own exec bit, never via `sh file`. A 644 script proven green under
+  `sh` failed with Permission denied at the first sealed exploration
+  (campaign 2, abook), because the engine spawns argv directly.
 - **Campaign PR reviews carry two fixed axes** in addition to the reviewer
   covenant (never name target internals or known issues — a breach burns the
   candidate): (1) verify every "Verified"/"measured" claim against the committed
