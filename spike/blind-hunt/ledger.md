@@ -25,6 +25,7 @@ What belongs here:
 
 ## Entries
 
+(none yet — the campaign has not passed Seal A)
 - **2026-08-13 (between the seals) — candidate installation.** All five candidates
   pinned into the container image (`spike/Dockerfile`): apt `abook` 0.6.1-2,
   `hledger` 1.25-2 (bookworm); pip `topydo==0.14`, `khard==0.21.0`, `khal==0.14.0`.
@@ -96,3 +97,12 @@ What belongs here:
   all eleven parse and stop at state resolution (exit 3) — **no topydo execution**.
   The sweep remains the only sideeye↔topydo contact before Seal B; `sideeye
   preflight` was not run on any declared define.
+- **2026-08-14 — deviation, caught and repaired: the ledger briefly broke its own
+  append-only rule.** The between-the-seals commit (`6a28ae0`) *replaced* the sealed
+  placeholder line "(none yet — the campaign has not passed Seal A)" instead of
+  appending below it, which verify-seals A3 (byte-prefix) correctly failed in this
+  session's pre-PR check — the verifier's first real catch. The placeholder is
+  restored above so Seal A's ledger is again a byte prefix of this file; the bytes,
+  not the prose order, carry the append-only property, so the stale "none yet" line
+  now sits above real entries and that is the honest shape of the repair. Nothing
+  else was altered.
