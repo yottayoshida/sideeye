@@ -1,0 +1,18 @@
+# The things campaign 2's Seal A fixes (ADR 0015, extending ADR 0012). The verifier
+# reads THIS list out of the Seal A commit and requires every path in it to exist
+# there — so the list of what was sealed cannot be edited after the fact without
+# moving the seal itself.
+docs/adr/0015-the-second-campaign-inherits-the-selection-seal.md
+spike/blind-hunt2/candidates.md
+spike/blind-hunt2/priority.txt
+spike/blind-hunt2/sweep.sh
+spike/blind-hunt2/select.sh
+spike/blind-hunt2/verify-seals.sh
+spike/blind-hunt2/wrapper-template.sh
+spike/blind-hunt2/ledger.md
+spike/blind-hunt2/configs/khard.conf
+spike/blind-hunt2/configs/khard-contact.yaml
+spike/blind-hunt2/configs/abook-in.vcf
+spike/blind-hunt2/configs/khal.conf
+spike/blind-hunt2/configs/hledger-in.journal
+spike/blind-hunt2/configs/hledger-seed.journal

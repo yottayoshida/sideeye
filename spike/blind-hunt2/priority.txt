@@ -1,0 +1,7 @@
+# Campaign 2 sealed priority order (ADR 0015: campaign 1's order minus topydo).
+# select.sh walks this file top to bottom. Appending, reordering, or deleting
+# after this campaign's Seal A voids the campaign.
+khard
+abook
+khal
+hledger
