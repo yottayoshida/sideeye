@@ -103,20 +103,33 @@ else
     echo "import+update NOT byte-identical across vdirs:"; diff -rq "$N/a/state" "$N/c/state" 2>&1 | head -5
 fi
 
-say "3. new (campaign-1 observed a randomly named .ics): two fresh runs compared"
+say "3. new (campaign-1 observed a randomly named .ics): two fresh runs, both files shown, clock referenced"
+printf -- 'reference clock before: %s\n' "$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$N/d/state"; mkcfg "$N/d.conf" "$N/d/state"
 run new-d -- khal -c "$N/d.conf" new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
-printf -- '--- vdir tree ---\n'; tree "$N/d/state"
 mkdir -p "$N/e/state"; mkcfg "$N/e.conf" "$N/e/state"
 run new-e -- khal -c "$N/e.conf" new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
-printf -- '--- vdir tree ---\n'; tree "$N/e/state"
-if diff -r "$N/d/state" "$N/e/state" >/dev/null 2>&1; then
-    echo "two fresh 'new' runs byte-identical: yes"
+printf -- 'reference clock after: %s\n' "$(date -u +%Y%m%dT%H%M%SZ)"
+printf -- '--- vdir tree d ---\n'; tree "$N/d/state"
+printf -- '--- vdir tree e ---\n'; tree "$N/e/state"
+printf -- '--- file from run d ---\n'
+for f in "$N/d/state"/*; do [ -f "$f" ] && cat "$f"; done
+printf -- '--- file from run e ---\n'
+for f in "$N/e/state"/*; do [ -f "$f" ] && cat "$f"; done
+df_=$(ls "$N/d/state"); ef_=$(ls "$N/e/state")
+[ "$df_" = "$ef_" ] && echo "filenames identical across runs: yes" || echo "filenames identical across runs: NO ($df_ vs $ef_)"
+if cmp -s "$N/d/state/$df_" "$N/e/state/$ef_"; then
+    echo "file BYTES identical across runs (names aside): yes"
 else
-    echo "two fresh 'new' runs byte-identical: NO (differing names and/or bytes)"
+    echo "file BYTES identical across runs (names aside): NO"
 fi
-printf -- '--- one created file, UID/content shape ---\n'
-for f in "$N/d/state"/*; do [ -f "$f" ] && cat "$f" && break; done
+for pair in "d $df_" "e $ef_"; do
+    v=${pair% *}; fn=${pair#* }
+    uid=$(sed -n 's/^UID://p' "$N/$v/state/$fn" | tr -d '\r')
+    base=${fn%.ics}
+    [ "$uid" = "$base" ] && echo "run $v: UID equals filename stem: yes ($uid)" \
+                         || echo "run $v: UID equals filename stem: NO (uid=$uid file=$fn)"
+done
 
 say "4. query probes over the imported vdir (a: Ada updated + Grace below)"
 run import-grace -- khal -c "$N/a.conf" import --batch -a main "$N/grace.ics"
@@ -136,7 +149,13 @@ say "5. queries over empty and absent vdirs"
 mkdir -p "$N/f/state"; mkcfg "$N/f.conf" "$N/f/state"
 run list-empty -- khal -c "$N/f.conf" list 01.09.2026 03.09.2026
 mkcfg "$N/g.conf" "$N/g/state-never-created"
+[ -e "$N/g/state-never-created" ] && echo "PRE-CHECK FAILED: the absent vdir already exists" || echo "pre-check: the configured vdir does not exist"
 run list-absent -- khal -c "$N/g.conf" list 01.09.2026 03.09.2026
+if [ -d "$N/g/state-never-created" ]; then
+    echo "filesystem check: the vdir NOW EXISTS (list created it); contents: $(ls -A "$N/g/state-never-created" | wc -l | tr -d ' ') entries"
+else
+    echo "filesystem check: the vdir still does not exist"
+fi
 
 say "6. interactivity probes (EOF stdin, 10s timeout; the engine gives no stdin)"
 run import-ask -- timeout 10 khal -c "$N/a.conf" import -a main "$N/ada.ics"

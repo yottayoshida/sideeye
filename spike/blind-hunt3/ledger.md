@@ -118,3 +118,31 @@ and voids land in `voided-seals.txt` with their narrative here.
   - Engine identity on the transcript: `sideeye 0.7.0 (trace contract
     v8)`, engine and shim SHA-256 equal to the committed sweep manifest's
     values — the R3 comparison pre-verified at declaration time.
+- **2026-08-14 — Seal B R1 (khal): nine findings, all adopted; corrections to
+  earlier entries of this ledger (append-only, so corrected here):**
+  - The consultation entry's `new` claims (differ "in both name and bytes",
+    UID-as-filename, DTSTAMP=now) exceeded §3's measurement at the time —
+    §3 had shown two filenames and one file's content. §3 was re-measured:
+    both runs' files are printed, byte-inequality is checked by `cmp` with
+    names aside, UID==filename-stem is checked for BOTH runs, and a
+    reference clock brackets the run. The claims now hold as measured. The
+    re-run is a normal-run contact of the same class.
+  - The consultation entry's "list CREATES a missing configured vdir" rested
+    on khal's own diagnostic line; §5 now verifies it on the filesystem
+    (the directory exists afterwards, 0 entries). The claim is scoped to
+    `list` — no other query was measured doing this.
+  - The consultation entry said "khal ships no man pages in the image" —
+    asserted, not probed. `sources-provenance.txt` now records the probe:
+    0 files matching khal* under the man trees, `man khal` => no entry.
+    The usage transcript's line count is 588 (physical), not 586.
+  - The apparatus entry said the red suite runs REAL khal "only as
+    `search`" — false as accounting: the provenance drift-gate runs real
+    `import` three times (over empty scratch vdirs, from the committed
+    hand-authored .ics inputs — inside the structural rule, wrongly
+    described). The red suite now also exercises the update/new dispatch
+    paths, update's I-T branch, the missing-sealed-conf environment branch,
+    and a parameterized scribble target: 19 cases, all message-pinned,
+    transcript recommitted.
+  - Green-run stages now GATE (a failed stage aborts that op's remaining
+    stages), and the parse probe's untouched-paths claim matches its
+    predicate (state root, work path, $HOME/.cache — each asserted).

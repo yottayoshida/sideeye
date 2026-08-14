@@ -19,6 +19,9 @@ note() { printf '%s\n' "$*" | tee -a "$prov"; }
 note "package: khal $(pip3 show khal 2>/dev/null | sed -n 's/^Version: //p') (pip3 show)"
 note "binary: $(command -v khal) (what bare 'khal' resolves to; the sealed invocation names /usr/local/bin/khal)"
 note "khal --version: $(khal --version 2>&1)"
+# "ships no man pages" is a probe result, not an assumption (campaign-3 R1):
+manhits=$(find /usr/share/man /usr/local/share/man -name 'khal*' 2>/dev/null | wc -l | tr -d ' ')
+note "man-page probe: $manhits file(s) matching khal* under /usr/share/man and /usr/local/share/man; man khal => $(man khal 2>&1 | head -1)"
 
 khal --help > "$out/help.txt" 2>&1
 note "help.txt: rc=$? ($(wc -l < "$out/help.txt" | tr -d ' ') lines)"

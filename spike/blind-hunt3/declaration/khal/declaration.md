@@ -28,7 +28,7 @@ matched through khal's own `search` by its SUMMARY (observed line shape,
 | Transcript | What it is |
 |------------|------------|
 | `transcripts/help.txt` + `help-<cmd>.txt` ×12 | `khal --help` and every listed command's help, in the pinned container |
-| `transcripts/docs-usage.txt` | khal.readthedocs.io/en/**v0.14.0**/usage.html, tags stripped (khal ships no man pages in the image; 586 lines) |
+| `transcripts/docs-usage.txt` | khal.readthedocs.io/en/**v0.14.0**/usage.html, tags stripped (588 lines; the image ships no khal man page — probed, not assumed: the man-page probe in `sources-provenance.txt`) |
 | `transcripts/normal-runs.txt` | one normal run per candidate form + determinism and interactivity probes (`normal-runs.sh`) |
 | `transcripts/sources-provenance.txt` | package identity (khal 0.14.0), binary resolution, per-transcript line counts |
 
@@ -41,7 +41,14 @@ a form whose only documented input channel is a terminal or stdin, which the
 exploration engine never supplies.
 
 **Declared — three forms, all reaching the store through documented
-non-interactive argv:**
+non-interactive argv.** A declared row's "forms not exercised" column lists
+variants of that DECLARED operation left undriven — inventory disclosure,
+not exclusions in ADR 0012's sense (excluded OPERATIONS carry the sealed
+vocabulary, below). Each undriven variant carries its reason: `--random-uid`
+mints a random UID (the refusal shape measured for `new`, §3 — undriven for
+determinism); stdin-default input and the ask-first form are channel/
+interactive (measured, §6); `new`'s option flags and keyword dates are
+plain undriven argv variants of an already-declared operation.
 
 | Form | Exercised argv shape | Forms not exercised |
 |------|----------------------|---------------------|
@@ -56,7 +63,7 @@ non-interactive argv:**
 | `interactive` (ikhal) | `interactive` | docs-usage: the TUI, keyboard-driven; deletion applies "when khal exits". Without a terminal: urwid PermissionError, exit 1 (§6) |
 | `edit` | `interactive` | docs-usage: "an interactive command for editing and deleting events"; observed: prompts `Edit? [n]o [q]uit … [D]elete`, aborts on EOF, exit 1 (§6) |
 | `configure` | `interactive` | observed: prompts for date ordering, aborts on EOF, exit 1 (§6); docs-usage: "will refuse to run if there already is a configuration file" |
-| `at`, `calendar`, `list`, `search`, `printcalendars`, `printformats`, `printics` | `not-stateful` | documented printers (docs-usage). Observed honestly: over an EXISTING vdir they change no byte (§4, tree-level cmp); but `list` **created a missing configured vdir** (§5) — a directory-level write. The checker therefore queries only vdirs whose files its file legs have already required to exist |
+| `at`, `calendar`, `list`, `search`, `printcalendars`, `printformats`, `printics` | `not-stateful` | documented printers (docs-usage). Measured for the two the checker relies on: one `list` and two `search` invocations over an existing vdir changed no byte (§4, one aggregate tree-level cmp after the three); the other five are grouped here on the documentation's word, not on measurement. And `list` **created a missing configured vdir** (§5, filesystem-verified) — a directory-level write. The checker therefore queries only vdirs whose files its file legs have already required to exist |
 
 `-c/-a/-d/-v/-l/--color/--format` are modifiers, not operations. No abookrc
 equivalent is consulted beyond the sealed config format (khal.conf, sealed

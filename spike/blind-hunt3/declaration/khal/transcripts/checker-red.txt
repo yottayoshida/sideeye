@@ -9,8 +9,13 @@ ok   red: a suffixed line does not count (grep -Fx) (rc=1) — checker(import): 
 ok   red: duplicate match lines counted (rc=1) — 02.09. 10:00-02.09. 11:00 GraceStandup
 ok   red: a vdir-writing query is caught (rc=1) — checker(import): I-W: a query changed the vdir's bytes
 ok   red: a hanging subject query times out (rc=1) — checker(import): I-T: subject query did not terminate within 2s
-== environment branch (a copied ops dir with the golden removed) ==
+== the other dispatch paths (update / new — campaign-3 R1 finding 4) ==
+ok   red: the update path fails closed on a missing bystander (rc=1) — checker(update): I-C: conserved event file /tmp/blind3/hunt/update/state/cal/grace-fixed-u
+ok   red: update's I-T branch fires (rc=1) — checker(update): I-T: subject query did not terminate within 2s
+ok   red: the new path fails closed on a missing bystander (rc=1) — checker(new): I-C: conserved event file /tmp/blind3/hunt/new/state/cal/grace-fixed-uid-001
+== environment branches (copied ops dirs with one sealed input removed each) ==
 ok   red: missing sealed golden is environment (rc=2), not a verdict
+ok   red: missing sealed conf is environment (rc=2), not a verdict
 == golden provenance (the drift gate) ==
 ok   provenance: golden-grace-event.ics is byte-what khal writes from grace.ics
 ok   provenance: golden-ada-event.ics is byte-what khal writes from ada.ics
@@ -19,4 +24,4 @@ ok   provenance: golden-impostor-event.ics is byte-what khal writes from imposto
 ok   red: the anchor rejects the impostor store's real output (line: 02.09. 10:00-02.09. 11:00 GraceStandupX)
 ok   green control: the anchor accepts the golden store's real output
 
-red-suite: 15 cases, 0 failure(s)
+red-suite: 19 cases, 0 failure(s)

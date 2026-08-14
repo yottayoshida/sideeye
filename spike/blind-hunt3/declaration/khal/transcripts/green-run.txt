@@ -25,8 +25,8 @@ check rc=0 (exec-bit spawn)
 effect: the subject file carries the new SUMMARY and answers its query (anchored)
 observed (not asserted): 2 non-.ics leftover file(s) after the normal update
 ./cal/ada-fixed-uid-001.ics
-./cal/ada-fixed-uid-001.ics8iaxfg25
-./cal/ada-fixed-uid-001.icsjnu9xfpo
+./cal/ada-fixed-uid-001.ics0f1k6_8m
+./cal/ada-fixed-uid-001.icsyptunxru
 ./cal/grace-fixed-uid-001.ics
 
 ===== new =====
@@ -35,7 +35,7 @@ $ /usr/local/bin/khal -c /work/spike/blind-hunt3/declaration/khal/ops/khal-new.c
 operation rc=0 (toml expected_status=0)
 check rc=0 (exec-bit spawn)
 effect: exactly one new event file beside the bystander
-./cal/OJS3861ZWRVLCQ58IWICC0IHG904GIB7WGKN.ics
+./cal/16LRGK11BDQ5AJ3PEMIQUF2850PY2X6HHJQM.ics
 ./cal/grace-fixed-uid-001.ics
 
 green-run fails=0

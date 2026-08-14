@@ -5,8 +5,9 @@ Development journal, newest first. Decisions are recorded when they are made —
 ## 2026-08-14 — The khal declaration: one live search, two pre-registered refusals (#83)
 
 Campaign 3's declaration phase, from permitted sources only: the full help
-set, the version-pinned usage page (khal ships no man pages in the image),
-and one normal run per candidate form. Three operations declared, all
+set, the version-pinned usage page (the image ships no khal man page —
+probed, 0 hits under the man trees, recorded in sources-provenance), and
+one normal run per candidate form. Three operations declared, all
 reaching the vdir through documented non-interactive argv: **import of a
 fixed-UID .ics** — the live search, byte-deterministic in observation, the
 event file named `<UID>.ics`; **import-update of the same UID** — declared
@@ -26,8 +27,9 @@ Two khal-specific checker decisions, both measured before being relied on:
 khal's search exits 0 even on no match, so I-Q anchors the exact observed
 output line (`grep -Fx`) instead of the exit code — and the red suite's
 impostor probe measured khal's search as substring-matching, exactly the
-tolerance the exact-line anchor exists to reject; and khal CREATES a
-missing configured vdir on query (measured), so the checker only ever
+tolerance the exact-line anchor exists to reject; and khal's `list` CREATES
+a missing configured vdir (measured, filesystem-verified; no other query
+was measured doing this), so the checker only ever
 queries a vdir its file legs proved populated, with a fresh scratch HOME
 per query so the ambient cache is rebuilt cold every time. I-W (queries
 write nothing into an existing vdir) is promoted to a declared invariant —
@@ -39,6 +41,26 @@ seam, plus the golden drift-gate. Green: exec-bit spawns throughout (ADR
 toml operations matching expected_status, effects asserted, parse probes
 stopping at state resolution with probed paths untouched. Engine and shim
 SHA-256 equal the sweep manifest's: R3 pre-verified.
+
+R1 of this declaration: nine findings, all adopted. The claim-exceeds-
+measurement class again (the sixth and seventh instances today): the `new`
+paragraph asserted byte-difference, UID-as-filename and DTSTAMP=now when §3
+had shown two filenames and one file — §3 now prints both files, cmp's
+their bytes with names aside, checks UID==stem for both, and brackets the
+run with a reference clock, so the claims stand as measurements; the
+create-missing-vdir observation is now filesystem-verified and scoped to
+`list`; "ships no man pages" became a recorded probe; the transcript line
+count is corrected (588). The apparatus-accounting error — the ledger said
+the red suite runs real khal "only as search" while the drift-gate runs
+real import three times — is corrected in an appended ledger entry. The
+red suite gained the branches R1 found unexercised (update/new dispatch,
+update's I-T, the missing-sealed-conf environment branch, a parameterized
+scribble target): 19 cases, still all message-pinned and green. The green
+run now GATES its stages (a failed prerequisite aborts that op's remaining
+stages) and its parse-probe claim matches its predicate ($HOME/.cache is
+asserted, not just named). The unexercised-variant column is explicitly
+inventory disclosure with per-variant reasons — --random-uid is undriven
+for the same determinism reason `new` carries a refusal, not silently.
 
 ## 2026-08-14 — Campaign 3 swept: khal accepted, hledger refused again (#83)
 

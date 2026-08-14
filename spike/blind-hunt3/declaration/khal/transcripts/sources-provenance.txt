@@ -1,6 +1,7 @@
 package: khal 0.14.0 (pip3 show)
 binary: /usr/local/bin/khal (what bare 'khal' resolves to; the sealed invocation names /usr/local/bin/khal)
 khal --version: khal, version 0.14.0
+man-page probe: 0 file(s) matching khal* under /usr/share/man and /usr/local/share/man; man khal => No manual entry for khal
 help.txt: rc=0 (24 lines)
 help-at.txt: rc=0 (14 lines)
 help-calendar.txt: rc=0 (15 lines)

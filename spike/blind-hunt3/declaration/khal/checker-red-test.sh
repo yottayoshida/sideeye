@@ -61,7 +61,7 @@ case ${STUB_MODE:?} in
     unanchored) printf ' 02.09. 10:00-02.09. 11:00 GraceStandup\n'; exit 0 ;;
     suffixed)   printf '02.09. 10:00-02.09. 11:00 GraceStandup extra\n'; exit 0 ;;
     twice)      good_line; good_line; exit 0 ;;
-    scribble)   printf 'X' >> /tmp/blind3/hunt/import/state/cal/grace-fixed-uid-001.ics
+    scribble)   printf 'X' >> "${STUB_SCRIBBLE:?}"
                 good_line; exit 0 ;;
     it-hang)    case $needle in Grace*) good_line; exit 0 ;; *) sleep 30 ;; esac ;;
     *) echo "stub: unknown STUB_MODE" >&2; exit 99 ;;
@@ -99,12 +99,27 @@ expect 1 "expected exactly one anchored match line, got 0" "red: a suffixed line
 expect 1 "expected exactly one anchored match line, got 2" "red: duplicate match lines counted" -- \
     CHECK_KHAL="$stub" STUB_MODE=twice
 expect 1 "I-W: a query changed the vdir's bytes" "red: a vdir-writing query is caught" -- \
-    CHECK_KHAL="$stub" STUB_MODE=scribble
+    CHECK_KHAL="$stub" STUB_MODE=scribble STUB_SCRIBBLE=/tmp/blind3/hunt/import/state/cal/grace-fixed-uid-001.ics
 cp "$ops/golden-grace-event.ics" /tmp/blind3/hunt/import/state/cal/grace-fixed-uid-001.ics
 expect 1 "I-T: subject query did not terminate" "red: a hanging subject query times out" -- \
     CHECK_KHAL="$stub" STUB_MODE=it-hang CHECK_TIMEOUT=2
 
-echo "== environment branch (a copied ops dir with the golden removed) =="
+echo "== the other dispatch paths (update / new — campaign-3 R1 finding 4) =="
+reset update   # update dispatch reaches its own I-C (message pins the update path)
+expect 1 "checker(update): I-C: conserved event file /tmp/blind3/hunt/update/state/cal/grace-fixed-uid-001.ics is missing" \
+    "red: the update path fails closed on a missing bystander" --
+
+reset update   # update's own I-T branch (stub answers Grace, hangs on Ada*)
+cp "$ops/golden-grace-event.ics" /tmp/blind3/hunt/update/state/cal/grace-fixed-uid-001.ics
+cp "$ops/golden-ada-event.ics"   /tmp/blind3/hunt/update/state/cal/ada-fixed-uid-001.ics
+expect 1 "checker(update): I-T: subject query did not terminate" "red: update's I-T branch fires" -- \
+    CHECK_KHAL="$stub" STUB_MODE=it-hang CHECK_TIMEOUT=2
+
+reset new      # new dispatch reaches its own I-C
+expect 1 "checker(new): I-C: conserved event file /tmp/blind3/hunt/new/state/cal/grace-fixed-uid-001.ics is missing" \
+    "red: the new path fails closed on a missing bystander" --
+
+echo "== environment branches (copied ops dirs with one sealed input removed each) =="
 copydir=$(mktemp -d)
 cp -R "$ops/." "$copydir/"
 rm "$copydir/golden-grace-event.ics"
@@ -115,6 +130,21 @@ if [ "$rc" = 2 ] && grep -qF "environment: sealed golden" /tmp/red.out; then
     echo "ok   red: missing sealed golden is environment (rc=2), not a verdict"
 else
     echo "FAIL missing-golden branch (rc=$rc)"; head -3 /tmp/red.out | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+rm -rf "$copydir"
+
+copydir=$(mktemp -d)
+cp -R "$ops/." "$copydir/"
+rm "$copydir/khal-import.conf"
+reset import
+cp "$ops/golden-grace-event.ics" /tmp/blind3/hunt/import/state/cal/grace-fixed-uid-001.ics
+( cd "$copydir" && ./check.sh import ) >/tmp/red.out 2>&1
+rc=$?; n=$((n + 1))
+if [ "$rc" = 2 ] && grep -qF "environment: sealed conf" /tmp/red.out; then
+    echo "ok   red: missing sealed conf is environment (rc=2), not a verdict"
+else
+    echo "FAIL missing-conf branch (rc=$rc)"; head -3 /tmp/red.out | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
 rm -rf "$copydir"
