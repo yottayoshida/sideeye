@@ -1,0 +1,19 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 8,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "crash_points": 10,
+  "explored": 11,
+  "violations": 0,
+  "expected_status": 0,
+  "l0": "1 file(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "agreed on 10 operations (13713 syscall lines examined, 81 touching the state directory)",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 11 world(s)",
+  "processes": "1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

@@ -1,0 +1,11 @@
+checker(import): I-C: conserved event file /tmp/blind3/hunt/import/state/cal/grace-fixed-uid-001.ics differs from its sealed golden
+PASS  11/11 crash worlds satisfied the built-in atomicity invariant
+      explored 11 worlds (crash points 10 + 1 baseline)
+      expected status: 0
+      atomicity: 1 file(s) judged pre-or-post
+      oracle: agreed on 10 operations (9338 syscall lines examined, 81 touching the state directory)
+      checker: falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: 1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+      not tested: power loss, torn writes, concurrent processes
