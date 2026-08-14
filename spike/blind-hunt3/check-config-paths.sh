@@ -1,5 +1,5 @@
 #!/bin/sh
-# Campaign 3 Seal A artifact (ADR 0015 §3), added at the re-seal.
+# Campaign 3 Seal A artifact (ADR 0015 §3) — born at campaign 2's re-seal, carried.
 #
 # Why it exists: the first Seal A froze invocations.tsv and two config files that
 # disagreed with it — the configs still named campaign 1's state roots. The sweep's
@@ -9,7 +9,7 @@
 # a path INSIDE a config.
 #
 # What it checks, per invocation row (not globally — a config belonging to one row
-# must not be allowed to agree with a different row's state root; campaign-3 R1):
+# must not be allowed to agree with a different row's state root; campaign-2 R1):
 #
 #   every absolute /tmp path appearing in a config file that ROW references must lie
 #   under (or be) that row's state root, comparing normalized paths, with `..`
@@ -72,7 +72,7 @@ except (OSError, UnicodeDecodeError) as e:
     # UnicodeDecodeError is a ValueError, not an OSError: catching only OSError
     # let an undecodable invocations file exit 1 through the traceback, i.e. a
     # check that could not look reporting something other than "could not look"
-    # (campaign-3 R2 finding).
+    # (campaign-2 R2 finding, carried).
     die(f"cannot read {inv_path}: {e}")
 
 rows = []
@@ -93,19 +93,30 @@ if not rows:
 
 cfg_dir_abs = norm(os.path.abspath(cfg_dir))
 
-def configs_of(setup, operation):
-    """Config files this row references: arguments that resolve to a readable
-    regular file inside the campaign's configs/ directory."""
+# The rows address the repo as mounted in the container: /work/spike/<campaign>/
+# configs/... — and the campaign is the directory this check was pointed at.
+camp_name = os.path.basename(os.path.dirname(cfg_dir_abs))
+camp_mount = f"/work/spike/{camp_name}/configs/"
+
+def configs_of(name, setup, operation):
+    """Config files this row references. A word containing /configs/ MUST name
+    THIS campaign's configs dir as mounted in the container, and the named file
+    must exist — a foreign campaign's configs/ is exactly the class that voided
+    campaign 2's first seal, and the earlier basename remap here would have
+    checked such a stale reference against this campaign's file and passed it
+    (campaign-3 Seal A R1). Refuse loudly, never remap."""
     found = []
     for word in (setup.split() + operation.split()):
         if word == "-" or not word.startswith("/"):
             continue
-        # The rows address the repo as mounted in the container (/work/...); match
-        # on the trailing path so the check works from a checkout too.
-        base = os.path.basename(word)
-        cand = os.path.join(cfg_dir, base)
-        if os.path.isfile(cand) and "/configs/" in word:
-            found.append(cand)
+        if "/configs/" not in word:
+            continue
+        if not word.startswith(camp_mount):
+            die(f"row {name!r} references a config outside this campaign's mount {camp_mount!r}: {word}")
+        cand = os.path.join(cfg_dir, word[len(camp_mount):])
+        if not os.path.isfile(cand):
+            die(f"row {name!r} references a config that does not exist in the tree: {word}")
+        found.append(cand)
     return found
 
 def under(path, root):
@@ -117,7 +128,7 @@ checked_files = 0
 rows_with_configs = 0
 
 for lineno, name, state, setup, operation in rows:
-    files = configs_of(setup, operation)
+    files = configs_of(name, setup, operation)
     if not files:
         print(f"check-config-paths: {name}: no config file referenced (vacuously consistent)")
         continue

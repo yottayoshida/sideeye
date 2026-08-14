@@ -84,7 +84,7 @@ for name, code, resolved in rows:
 # No candidate outside the sealed order may appear in the manifest. An appended name
 # is a candidate added after the seal — the walk below would never pick it, but its
 # presence in a committed manifest would lend it a legitimacy the seal never granted
-# (campaign-3 R1 finding: the original accepted extras silently).
+# (campaign-2 R1 finding, carried: the original accepted extras silently).
 unknown = sorted(n for n in seen if n not in order)
 if unknown:
     print("select: manifest lists candidates outside the sealed order: " + ", ".join(unknown),

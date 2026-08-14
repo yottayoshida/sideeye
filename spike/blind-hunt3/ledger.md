@@ -26,3 +26,21 @@ and voids land in `voided-seals.txt` with their narrative here.
   random-`.ics` refusal risk and the todoman storage-class disclosure duty
   carry from the prior seals, restated in `candidates.md`. No target was
   executed during this construction.
+- **2026-08-14 — Seal A R1: five findings, all adopted before the seal.**
+  The P1 sat in the void-class gate itself: `check-config-paths.sh` resolved
+  config references by basename, so a stale reference to another campaign's
+  configs would have been checked against THIS campaign's file and passed —
+  the contradiction the gate exists to refuse, reachable through the gate.
+  Discovery now requires the reference to name this campaign's mounted
+  configs dir (`/work/spike/blind-hunt3/configs/`) and the file to exist;
+  falsified both ways in scratch before this entry (foreign reference →
+  refused, pinned message; missing config → refused; real rows → green).
+  Also adopted: eleven tool-comment sites had rewritten campaign-2 history
+  as campaign-3 findings during the mechanical adaptation — restored to
+  honest attribution ("carried" where inherited); the rehearsal's fabricated
+  campaign name is guarded at run time (must not exist in the repo, must not
+  equal CAMP) instead of hoped unique; the earlier "zero hits" scan claim in
+  this ledger is hereby scoped to the operational apparatus files — the
+  ledger narrative itself names campaign 2 legitimately, so a whole-tree
+  grep does hit; and the verifier's header summary now states B1 as the code
+  checks it (invocations sealed at A; only the manifest first appears at B).

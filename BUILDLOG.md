@@ -13,9 +13,12 @@ declaration requirements rather than advice (file-first checker, no
 out-of-contract store ever shown to the target, 755 + engine-path green,
 audit-order commits, refusal as an `expected_status` operation, fail-closed
 runner with engine identity). The adaptation was swept for leftover
-`blind2`/`blind-hunt2` strings — zero hits — and `check-config-paths.sh` is
-green, because a config still naming another campaign's state root is exactly
-the class that voided campaign 2's first seal.
+`blind2`/`blind-hunt2` strings — zero hits **in the operational apparatus**
+(tools, configs, invocations; the ledger's own narrative names campaign 2
+legitimately, so a whole-tree grep does hit and the claim is scoped to what
+the sweep actually covered) — and `check-config-paths.sh` is green, because
+a config still naming another campaign's state root is exactly the class
+that voided campaign 2's first seal.
 
 The rehearsal caught the first real defect before the seal, as designed —
 and it was in the rehearsal itself: two walker drills fabricate a "new
@@ -24,11 +27,33 @@ name `blind-hunt3`. With the live campaign now bearing that name, walker3
 copied its planted defect onto the real campaign copy (which HAS an
 executable checker) and walker4's "pre-sweep" dir already had invocations —
 both drills went green-for-the-wrong-reason and the suite failed 2/42. The
-fabricated name is now `blind-hunt9`, one that is never live. A harness note
+fabricated name is now `blind-hunt9`, and "never live" is a run-time guard
+rather than a hope: the rehearsal refuses to start if the fabricated name
+exists in the real repo or equals CAMP (R1 of this seal pointed out that a
+bare rename repeats the same collision one campaign later). A harness note
 on the way: the first rehearsal run was piped through `tail -15`, which both
 truncated the failures out of view and replaced the suite's exit 1 with the
 pipe's exit 0 — the raw-rc re-run is what surfaced the red. 42/42 green
 before the Seal A PR opened.
+
+R1 of this seal: five findings, all adopted. The P1 was in the void-class
+gate itself — `check-config-paths.sh` resolved config references by
+BASENAME, so a stale `/work/spike/blind-hunt2/configs/khal.conf` in a row
+would have been checked against campaign 3's file and passed while the sweep
+read campaign 2's config: the exact contradiction the gate exists to refuse,
+reachable through the gate. The discovery rule now requires the reference to
+name THIS campaign's mounted configs dir and the file to exist — refuse
+loudly, never remap — and the new predicate was falsified both ways before
+this entry was written (stale cross-campaign reference → refused with the
+pinned message; missing config → refused; the real rows → green). The P2s:
+the mechanical `s/campaign 2/campaign 3/` comment adaptation had rewritten
+history (this campaign's tool copies claimed campaign 3 "already voided a
+seal" and re-attributed campaign-2 R1/R2 findings — eleven comment sites
+restored to honest attribution, "carried" where inherited); the fabricated
+rehearsal campaign gained the run-time guard above; the zero-hit scan claim
+is scoped; and the verifier's header summary contradicted its own B1 leg
+(invocations are sealed at A, only the manifest first appears at B — the
+summary now says what the code checks).
 
 ## 2026-08-14 — Campaign 2 explored: abook, three ops, zero violations (#83)
 

@@ -12,7 +12,8 @@
 #       the criterion wording the campaign is scored against must not move either
 #   A3  the ledger only grew: Seal A's ledger is a byte prefix of Seal B's — entries
 #       (consultations, breaches) cannot be deleted on the way to Seal B
-#   B1  the sweep record (invocations + manifest) first appears at Seal B
+#   B1  invocations.tsv is sealed at Seal A (ADR 0015); the sweep manifest
+#       first appears at Seal B
 #   B3  the committed manifest's invocations_sha256 matches the committed
 #       invocations.tsv — the sweep ran against the spelling that was committed,
 #       not a tuned variant that was swapped afterwards (R1 finding)
@@ -140,7 +141,7 @@ else
     bad "A3: ledger.md is not in the Seal A commit"
 fi
 
-# B1 — campaign 3 splits the two sweep records (ADR 0015 §3). The invocation rows
+# B1 — the two sweep records are split (campaign 2's ADR 0015 §3, carried). The invocation rows
 # were public since campaign 1, so they are sealed AT Seal A (and the A2 no-touch
 # set keeps them frozen between the seals — stronger than campaign 1's
 # first-appears-at-B). The sweep manifest is the between-seals product and must
@@ -223,7 +224,7 @@ PY
 fi
 
 # R3 — the exploration ran on the same engine and shim the sweep ran on, compared
-# from the two committed-or-supplied manifests (campaign 3 addition, per ADR 0015:
+# from the two committed-or-supplied manifests (a campaign-2 addition per ADR 0015, carried:
 # the phases are bound to each other, not to a source tree). This is the machine
 # half of the "measured on the thing being shipped" discipline — the class where
 # a toml-parse claim was once measured on a host binary the seal never saw.

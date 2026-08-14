@@ -1,5 +1,6 @@
 #!/bin/sh
-# Campaign 3 Seal A artifact (ADR 0012 via ADR 0015). The sweep harness, re-sealed:
+# Campaign 3 Seal A artifact (ADR 0012 via ADR 0015/0016). The sweep harness, carried
+# from campaign 2's re-sealed copy:
 # the candidates were installed during campaign 1 — ADR 0015 records that inheritance
 # honestly — so what stays frozen here is the verdict logic and what it refuses to show.
 #
@@ -61,10 +62,10 @@ done
 
 # Refuse an existing output directory, exactly as the state roots below are refused.
 # A re-sweep into a retained one would truncate the manifest and every report in
-# place — and this campaign has already voided a seal whose evidence lives in such a
+# place — and campaign 2 voided a seal whose evidence lived in such a
 # directory. Destroying the record of a voided run while producing its replacement is
 # the one outcome that must not be reachable by re-running a command
-# (campaign-3 R1 finding).
+# (campaign-2 R1 finding, carried).
 if [ -e "$out" ]; then
     echo "sweep: output dir already exists: $out — give each sweep a fresh path (a re-sweep must not overwrite a retained one)" >&2
     exit 2
@@ -87,8 +88,8 @@ fi
 # The manifest records the hash of the invocations it ran against (campaign-1 R1:
 # without this, invocations could be tuned against exit codes between runs and only
 # the final spelling committed). verify-seals.sh requires the committed
-# invocations.tsv to match. Campaign 3 adds the execution identity (campaign-3 R1
-# finding 4): the engine's version string and the SHA-256 of the binary and shim
+# invocations.tsv to match. Campaign 2 added the execution identity (its R1
+# finding 4), carried here: the engine's version string and the SHA-256 of the binary and shim
 # that actually swept, plus the operator-supplied image name (SWEEP_IMAGE env,
 # self-reported). The exploration's run manifest records the same fields, so the
 # two phases are comparable from committed artifacts — this binds them to each

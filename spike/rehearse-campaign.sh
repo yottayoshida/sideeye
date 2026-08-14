@@ -226,17 +226,23 @@ r=$(copy walker2)
 chmod -x "$r/$CAMP/check-config-paths.sh"
 expect_msg 1 "no executable check-config-paths" "red: a checker present but not executable" sh "$r/spike/check-sealed-campaigns.sh" "$r"
 
-# The fabricated campaign is blind-hunt9 — a number that is never a live
-# campaign here — so these drills keep working when CAMP advances (measured:
-# with the fabricated name equal to CAMP, walker3 copied onto the real
-# campaign and both drills went green for the wrong reason).
+# The fabricated campaign the walker drills plant. "Never live" is not a hope
+# but a guard: the name must not exist in the real repo and must not be CAMP —
+# checked here, loudly, every run (campaign-3 Seal A R1: the first fabricated
+# name, blind-hunt3, later BECAME the live campaign; walker3 then copied its
+# planted defect onto the real campaign copy and both drills went green for
+# the wrong reason).
+FABNAME=blind-hunt9
+[ -e "$REPO/spike/$FABNAME" ] && { echo "rehearse: fabricated campaign spike/$FABNAME exists in the real repo — rename FABNAME" >&2; exit 2; }
+[ "spike/$FABNAME" = "$CAMP" ] && { echo "rehearse: fabricated campaign equals CAMP — rename FABNAME" >&2; exit 2; }
+
 r=$(copy walker3)
-mkdir -p "$r/spike/blind-hunt9/configs"
-cp "$r/$CAMP/invocations.tsv" "$r/spike/blind-hunt9/"
-expect_msg 1 "blind-hunt9" "red: a new campaign cannot inherit the campaign-1 exemption" sh "$r/spike/check-sealed-campaigns.sh" "$r"
+mkdir -p "$r/spike/$FABNAME/configs"
+cp "$r/$CAMP/invocations.tsv" "$r/spike/$FABNAME/"
+expect_msg 1 "$FABNAME" "red: a new campaign cannot inherit the campaign-1 exemption" sh "$r/spike/check-sealed-campaigns.sh" "$r"
 
 r=$(copy walker4)
-mkdir -p "$r/spike/blind-hunt9"
+mkdir -p "$r/spike/$FABNAME"
 out=$(sh "$r/spike/check-sealed-campaigns.sh" "$r"); rc=$?
 if [ "$rc" = 0 ] && echo "$out" | grep -q "pre-sweep"; then pass "green: a pre-sweep campaign is skipped, loudly"; else fail "green: pre-sweep skip (rc=$rc)"; fi
 
