@@ -56,13 +56,18 @@ declared as an operation *because* v8's `expected_status` makes a refusing
 run recordable, and an interrupted refusal is exactly where a "harmless"
 path could still damage the store it refused to replace.
 
-**Excluded forms:**
+**Excluded forms.** The vocabulary is ADR 0012's fixed four and carries no
+per-word definition there, so this table states its use once: `interactive`
+marks a form whose only documented input channel is an interactive one — a
+terminal or stdin — which the exploration engine never supplies. That is the
+sense in which a prompting TUI and a stdin-fed batch flag land in the same
+row: both are unreachable for the same reason.
 
 | Form | Verdict | Evidence |
 |------|---------|----------|
 | `abook` (bare, the ncurses program) | `interactive` | abook(1) "text-based address book program", "COMMANDS DURING USE Press '?'"; without a terminal: "Error opening terminal: unknown.", exit 1 (normal-runs §6) |
 | `--add-email` | `interactive` | abook(1): "Read an e-mail message from stdin and add the sender"; help.txt shows the quiet variant exists because this one "require[s] to confirm adding". On stdin EOF: "Valid sender address not found", exit 0, no datafile (normal-runs §6) |
-| `--add-email-quiet` | `interactive` | **a documented stateful form** ("Same as --add-email but doesn't confirm adding" — it would add the sender). Its ONLY documented input channel is stdin; the engine gives the child no stdin, and on EOF it adds nothing and exits 0 (normal-runs §6) — the stateful path is unreachable under the engine and no file-input alternative is documented. Excluded for the input channel, not for a prompt; the inventory names it so the exclusion is visible, not buried |
+| `--add-email-quiet` | `interactive` | **a documented stateful form** ("Same as --add-email but doesn't confirm adding" — it would add the sender). Its ONLY documented input channel is stdin — `interactive` in this table's stated sense: the engine gives the child no stdin, on EOF it adds nothing and exits 0 (normal-runs §6), and no file-input alternative is documented, so the stateful path is unreachable under the engine. The inventory names it so the exclusion is visible, not buried |
 | `--mutt-query <string>` | `not-stateful` | abook(1): "Make a query for mutt (search the addressbook for <string>)" — the checker's query leg, not an operation; exit codes observed in normal-runs §5. Forms not exercised: `--outformat` variants (abook(1) allows "mutt (default), vcard and custom"; `--formats` lists query-compatible outputs as `vcard`/`muttq`/`custom` — the two transcripts disagree on the alias's name, a discrepancy this declaration records rather than resolves) and `--outformatstr` |
 | `--formats` | `not-stateful` | prints the format lists, exit 0 (transcripts/formats.txt) |
 | `--help` | `not-stateful` | prints usage, exit 0 (transcripts/help.txt) |

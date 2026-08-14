@@ -36,7 +36,7 @@ echo "===== engine identity ====="
 sha256sum "$SIDEEYE" "$SHIM"
 
 echo ""
-echo "===== toml parse (state unresolved => rc 3, before setup; no side effects) ====="
+echo "===== toml parse (state unresolved => rc 3, before setup; probed paths untouched) ====="
 for op in import export refused; do
     rm -rf "/tmp/blind2/hunt/$op"
     out=$("$SIDEEYE" explore --config "$ops/$op.toml" --shim "$SHIM" \

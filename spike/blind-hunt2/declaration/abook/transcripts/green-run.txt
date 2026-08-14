@@ -3,7 +3,7 @@ sideeye 0.7.0 (trace contract v8)
 3ada341a61ade6c268100d28f32e67df7ad93ae641d83fa00a26b1c2d53bc329  /work/zig-out/bin/sideeye
 3346c0a8762e104ff81429f0711c0006b15b85f123bc712b6b14e1e2d65e9129  /work/zig-out/lib/libsideeye_shim.so
 
-===== toml parse (state unresolved => rc 3, before setup; no side effects) =====
+===== toml parse (state unresolved => rc 3, before setup; probed paths untouched) =====
 import: rc=3: SETUP ERROR  --state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it
 export: rc=3: SETUP ERROR  --state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it
 refused: rc=3: SETUP ERROR  --state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it
