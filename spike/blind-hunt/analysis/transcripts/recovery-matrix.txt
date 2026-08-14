@@ -1,0 +1,17 @@
+======== operation: add (default config, backups on) ========
+pt=1  kill_rc=137 seed_before_recovery=1 seed_after=0  UNDID-AN-OLDER-COMMAND     "Reverted to state before: add seed-task"  <-- recovery DESTROYED an intact task
+pt=2  kill_rc=137 seed_before_recovery=1 seed_after=0  UNDID-AN-OLDER-COMMAND     "Reverted to state before: add seed-task"  <-- recovery DESTROYED an intact task
+pt=3  kill_rc=137 seed_before_recovery=1 seed_after=1  REFUSED                    "No backup was found for the current state of /tmp/m/add-3/todo.txt"
+pt=4  kill_rc=137 seed_before_recovery=1 seed_after=0  UNDID-AN-OLDER-COMMAND     "Reverted to state before: add seed-task"  <-- recovery DESTROYED an intact task
+pt=5  kill_rc=137 seed_before_recovery=0 seed_after=0  REFUSED                    "No backup was found for the current state of /tmp/m/add-5/todo.txt"
+pt=6  kill_rc=0   seed_before_recovery=1 seed_after=1  undid-the-crashed-command  "Reverted to state before: add water-plants"
+
+======== operation: do (default config, backups on) ========
+pt=1  kill_rc=137 seed_before_recovery=1 seed_after=1  undid-the-crashed-command  "Reverted to state before: add water-plants"
+pt=2  kill_rc=137 seed_before_recovery=1 seed_after=1  undid-the-crashed-command  "Reverted to state before: add water-plants"
+pt=3  kill_rc=137 seed_before_recovery=1 seed_after=1  undid-the-crashed-command  "Reverted to state before: add water-plants"
+pt=4  kill_rc=137 seed_before_recovery=1 seed_after=1  undid-the-crashed-command  "Reverted to state before: add water-plants"
+pt=5  kill_rc=137 seed_before_recovery=1 seed_after=1  REFUSED                    "No backup was found for the current state of /tmp/m/do-5/todo.txt"
+pt=6  kill_rc=137 seed_before_recovery=1 seed_after=1  undid-the-crashed-command  "Reverted to state before: add water-plants"
+pt=7  kill_rc=137 seed_before_recovery=0 seed_after=0  REFUSED                    "No backup was found for the current state of /tmp/m/do-7/todo.txt"
+pt=8  kill_rc=0   seed_before_recovery=0 seed_after=1  undid-the-crashed-command  "Reverted to state before: do 1"

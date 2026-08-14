@@ -1,0 +1,19 @@
+--- crash point 5, then: topydo revert 1 ---
+state after crash: 0 bytes, seed visible: 0
+revert 1 -> rc=0 :: Reverted to state before: add water-plants
+todo.txt now: [2026-08-14 seed-task/] ; seed visible: 1
+
+--- crash point 5, then: topydo revert 2 ---
+state after crash: 0 bytes, seed visible: 0
+revert 2 -> rc=0 :: Reverted to state before: add seed-task
+todo.txt now: [/] ; seed visible: 0
+
+--- crash point 4, then: topydo revert 1 ---
+state after crash: 21 bytes, seed visible: 1
+revert 1 -> rc=0 :: Reverted to state before: add water-plants
+todo.txt now: [2026-08-14 seed-task/] ; seed visible: 1
+
+--- crash point 4, then: topydo revert 2 ---
+state after crash: 21 bytes, seed visible: 1
+revert 2 -> rc=0 :: Reverted to state before: add seed-task
+todo.txt now: [/] ; seed visible: 0
