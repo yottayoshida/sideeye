@@ -1,0 +1,13 @@
+Usage: khal edit [OPTIONS] [SEARCH_STRING]...
+
+  Interactively edit (or delete) events matching the search string.
+
+Options:
+  -d, --exclude-calendar CAL  Exclude the given calendar. Can be specified
+                              multiple times.
+  -a, --include-calendar CAL  Include the given calendar. Can be specified
+                              multiple times.
+  -f, --format TEXT           The format of the events.
+  --show-past                 Show events that have already occurred as
+                              options
+  --help                      Show this message and exit.

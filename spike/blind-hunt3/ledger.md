@@ -54,3 +54,95 @@ and voids land in `voided-seals.txt` with their narrative here.
   reports went unread into `artifacts/sweep-2239fba/sealed-reports/` (local;
   only their hashes travel in the manifest). The manifest is committed
   beside the sealed rows in the same commit as this entry.
+- **2026-08-14 — declaration-phase consultations for khal (all permitted
+  sources; no traces, no crash experiments, no source, no bug trackers):**
+  - `khal --help`, all twelve listed commands' `--help`, `--version`, and
+    `pip3 show` identity, inside the pinned container
+    (`declaration/khal/transcripts/help*.txt`, `sources-provenance.txt`;
+    khal 0.14.0, bare `khal` resolves to /usr/local/bin/khal).
+  - The version-pinned official usage page,
+    khal.readthedocs.io/en/v0.14.0/usage.html, transcribed with tags
+    stripped (`transcripts/docs-usage.txt`, 586 lines; fetched via curl —
+    khal ships no man pages in the pinned image). Facts taken: import
+    syntax and same-UID update semantics ("--batch ... always update");
+    `edit` is "an interactive command for editing and deleting events";
+    `configure` refuses if a config exists; ikhal deletes marked events
+    "when khal exits"; the recovery-vocabulary grep over the whole page
+    returns zero hits.
+  - One normal (non-crash) run per candidate form plus determinism and
+    interactivity probes (`transcripts/normal-runs.sh` → `normal-runs.txt`),
+    all in scratch with HOME inside scratch. Measured: import --batch of a
+    fixed-UID .ics into a fresh vdir names the file `<UID>.ics` and is
+    byte-deterministic across two runs (tree-level diff -r); the same-UID
+    --batch update rewrites that file AND leaves extra files with random
+    suffixes in the vdir (`.ics2mtnp400`-shaped; names differ across runs —
+    a NORMAL-run observation, no crash involved), so import-update is
+    baseline-irreproducible and carries a pre-registered refusal
+    expectation; `new` mints a random UID-named .ics with DTSTAMP=now
+    (two fresh runs differ — the campaign-1 observation, now measured
+    precisely); queries (list/search) exit 0 even on no match, change no
+    byte of an existing vdir, keep khal's cache under $HOME (outside the
+    state root) — and `list` CREATES a missing configured vdir (observed),
+    a directory-level write the checker will avoid by querying only
+    existing vdirs; interactivity probes: import without --batch prompts
+    and aborts on EOF (rc 1), import from stdin errors on EOF (rc 1),
+    edit prompts and aborts (rc 1), interactive needs a terminal,
+    configure prompts and aborts (rc 1). Every vdir a probe touched was
+    khal-written, empty, or absent; the .ics inputs are hand-written
+    well-formed iCalendar (the documented input class).
+- **2026-08-14 — khal apparatus-phase target contacts (all documented-normal;
+  no crash experiments, no traces, no mis-shaped store ever offered):**
+  - `make-goldens.sh` ran three fixed-UID imports to mint the committed
+    golden EVENT files (grace / ada / impostor) — khal's own serialization
+    as fixtures, resting on the observed byte-determinism (normal-runs §1).
+  - The checker red suite (`checker-red-test.sh` → `transcripts/
+    checker-red.txt`, 15 cases green) runs REAL khal only as `search` over
+    khal-written golden stores: the provenance drift-gate (regenerate all
+    three goldens into scratch, byte-compare against the committed files)
+    and the anchoring probes — which also MEASURED that khal's search is
+    substring-matching (the impostor store's `GraceStandupX` line came back
+    for the query `GraceStandup`) and that the checker's exact-line
+    `grep -Fx` anchor rejects it while accepting the golden's line. Every
+    ill-behaved-binary branch (exit codes, unanchored/suffixed/duplicate
+    lines, vdir-writing queries, hangs) runs through the CHECK_KHAL stub
+    seam — the target does not run in those cases.
+  - The green run (`transcripts/green-run.sh` → `green-run.txt`, fails=0)
+    spawned setup and check THROUGH THEIR EXEC BITS (ADR 0016 requirement
+    3), executed each declared operation verbatim from its sealed toml
+    (all rc 0 == expected_status), ran the checker green, and asserted each
+    documented effect (import: `<UID>.ics` exists and answers its anchored
+    query; update: the subject carries the new SUMMARY — with 2 non-.ics
+    leftover files observed, not asserted; new: exactly one new event file
+    beside the bystander). The three tomls each stop at state resolution
+    (rc 3) with the probed paths untouched; khal not executed there.
+  - Engine identity on the transcript: `sideeye 0.7.0 (trace contract
+    v8)`, engine and shim SHA-256 equal to the committed sweep manifest's
+    values — the R3 comparison pre-verified at declaration time.
+- **2026-08-14 — Seal B R1 (khal): nine findings, all adopted; corrections to
+  earlier entries of this ledger (append-only, so corrected here):**
+  - The consultation entry's `new` claims (differ "in both name and bytes",
+    UID-as-filename, DTSTAMP=now) exceeded §3's measurement at the time —
+    §3 had shown two filenames and one file's content. §3 was re-measured:
+    both runs' files are printed, byte-inequality is checked by `cmp` with
+    names aside, UID==filename-stem is checked for BOTH runs, and a
+    reference clock brackets the run. The claims now hold as measured. The
+    re-run is a normal-run contact of the same class.
+  - The consultation entry's "list CREATES a missing configured vdir" rested
+    on khal's own diagnostic line; §5 now verifies it on the filesystem
+    (the directory exists afterwards, 0 entries). The claim is scoped to
+    `list` — no other query was measured doing this.
+  - The consultation entry said "khal ships no man pages in the image" —
+    asserted, not probed. `sources-provenance.txt` now records the probe:
+    0 files matching khal* under the man trees, `man khal` => no entry.
+    The usage transcript's line count is 588 (physical), not 586.
+  - The apparatus entry said the red suite runs REAL khal "only as
+    `search`" — false as accounting: the provenance drift-gate runs real
+    `import` three times (over empty scratch vdirs, from the committed
+    hand-authored .ics inputs — inside the structural rule, wrongly
+    described). The red suite now also exercises the update/new dispatch
+    paths, update's I-T branch, the missing-sealed-conf environment branch,
+    and a parameterized scribble target: 19 cases, all message-pinned,
+    transcript recommitted.
+  - Green-run stages now GATE (a failed stage aborts that op's remaining
+    stages), and the parse probe's untouched-paths claim matches its
+    predicate (state root, work path, $HOME/.cache — each asserted).

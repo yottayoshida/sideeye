@@ -1,0 +1,193 @@
+
+===== 0. inputs =====
+--- ada.ics ---
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//blind-hunt3//normal-runs//EN
+BEGIN:VEVENT
+UID:ada-fixed-uid-001
+DTSTAMP:20260810T000000Z
+DTSTART:20260901T100000Z
+DTEND:20260901T110000Z
+SUMMARY:AdaMeeting
+END:VEVENT
+END:VCALENDAR
+--- ada-v2.ics (same UID, new SUMMARY) ---
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//blind-hunt3//normal-runs//EN
+BEGIN:VEVENT
+UID:ada-fixed-uid-001
+DTSTAMP:20260811T000000Z
+DTSTART:20260901T100000Z
+DTEND:20260901T110000Z
+SUMMARY:AdaMeetingMoved
+END:VEVENT
+END:VCALENDAR
+--- grace.ics ---
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//blind-hunt3//normal-runs//EN
+BEGIN:VEVENT
+UID:grace-fixed-uid-001
+DTSTAMP:20260810T000000Z
+DTSTART:20260902T100000Z
+DTEND:20260902T110000Z
+SUMMARY:GraceStandup
+END:VEVENT
+END:VCALENDAR
+
+===== 1. import --batch into a fresh vdir (fixed UID): filenames and determinism =====
+$ khal -c /tmp/blind3/normal/a.conf import --batch -a main /tmp/blind3/normal/ada.ics
+[import-a rc=0]
+--- vdir tree after ---
+245 ./ada-fixed-uid-001.ics
+$ khal -c /tmp/blind3/normal/b.conf import --batch -a main /tmp/blind3/normal/ada.ics
+[import-b rc=0]
+two fresh imports byte-identical (diff -r): yes
+--- event file content ---
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PIMUTILS.ORG//NONSGML khal / icalendar //EN
+BEGIN:VEVENT
+SUMMARY:AdaMeeting
+DTSTART:20260901T100000Z
+DTEND:20260901T110000Z
+DTSTAMP:20260810T000000Z
+UID:ada-fixed-uid-001
+END:VEVENT
+END:VCALENDAR
+
+===== 2. import --batch of the SAME UID with a new SUMMARY (the documented update): which file changes, and determinism =====
+$ khal -c /tmp/blind3/normal/a.conf import --batch -a main /tmp/blind3/normal/ada-v2.ics
+[import-update rc=0]
+--- vdir tree after update ---
+250 ./ada-fixed-uid-001.ics
+250 ./ada-fixed-uid-001.ics0cq3ri9d
+250 ./ada-fixed-uid-001.icsd3j7qd6i
+750 total
+update changed the store; differing files:
+Files /tmp/blind3/normal/a/state.before/ada-fixed-uid-001.ics and /tmp/blind3/normal/a/state/ada-fixed-uid-001.ics differ
+Only in /tmp/blind3/normal/a/state: ada-fixed-uid-001.ics0cq3ri9d
+Only in /tmp/blind3/normal/a/state: ada-fixed-uid-001.icsd3j7qd6i
+$ khal -c /tmp/blind3/normal/c.conf import --batch -a main /tmp/blind3/normal/ada.ics
+[import-c1 rc=0]
+$ khal -c /tmp/blind3/normal/c.conf import --batch -a main /tmp/blind3/normal/ada-v2.ics
+[import-c2 rc=0]
+import+update NOT byte-identical across vdirs:
+Only in /tmp/blind3/normal/a/state: ada-fixed-uid-001.ics0cq3ri9d
+Only in /tmp/blind3/normal/a/state: ada-fixed-uid-001.icsd3j7qd6i
+Only in /tmp/blind3/normal/c/state: ada-fixed-uid-001.icsn7fjpmrm
+Only in /tmp/blind3/normal/c/state: ada-fixed-uid-001.icsyjzeo4oy
+
+===== 3. new (campaign-1 observed a randomly named .ics): two fresh runs, both files shown, clock referenced =====
+reference clock before: 20260814T122615Z
+$ khal -c /tmp/blind3/normal/d.conf new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
+[new-d rc=0]
+$ khal -c /tmp/blind3/normal/e.conf new -a main 01.09.2026 10:00 01.09.2026 11:00 TeamMeeting
+[new-e rc=0]
+reference clock after: 20260814T122615Z
+--- vdir tree d ---
+265 ./JICOJK7WRMPJQQM9QK3MB6S4OXQ3283VBCHN.ics
+--- vdir tree e ---
+265 ./WQKT4ZCGGD0PBAJ4GBU0R75VCUKXVUM8112T.ics
+--- file from run d ---
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PIMUTILS.ORG//NONSGML khal / icalendar //EN
+BEGIN:VEVENT
+SUMMARY:TeamMeeting
+DTSTART:20260901T100000Z
+DTEND:20260901T110000Z
+DTSTAMP:20260814T122615Z
+UID:JICOJK7WRMPJQQM9QK3MB6S4OXQ3283VBCHN
+END:VEVENT
+END:VCALENDAR
+--- file from run e ---
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PIMUTILS.ORG//NONSGML khal / icalendar //EN
+BEGIN:VEVENT
+SUMMARY:TeamMeeting
+DTSTART:20260901T100000Z
+DTEND:20260901T110000Z
+DTSTAMP:20260814T122615Z
+UID:WQKT4ZCGGD0PBAJ4GBU0R75VCUKXVUM8112T
+END:VEVENT
+END:VCALENDAR
+filenames identical across runs: NO (JICOJK7WRMPJQQM9QK3MB6S4OXQ3283VBCHN.ics vs WQKT4ZCGGD0PBAJ4GBU0R75VCUKXVUM8112T.ics)
+file BYTES identical across runs (names aside): NO
+run d: UID equals filename stem: yes (JICOJK7WRMPJQQM9QK3MB6S4OXQ3283VBCHN)
+run e: UID equals filename stem: yes (WQKT4ZCGGD0PBAJ4GBU0R75VCUKXVUM8112T)
+
+===== 4. query probes over the imported vdir (a: Ada updated + Grace below) =====
+$ khal -c /tmp/blind3/normal/a.conf import --batch -a main /tmp/blind3/normal/grace.ics
+[import-grace rc=0]
+$ khal -c /tmp/blind3/normal/a.conf list 01.09.2026 03.09.2026
+Tuesday, 01.09.2026
+10:00-11:00 AdaMeetingMoved
+Wednesday, 02.09.2026
+10:00-11:00 GraceStandup
+[list-range rc=0]
+$ khal -c /tmp/blind3/normal/a.conf search GraceStandup
+02.09. 10:00-02.09. 11:00 GraceStandup
+[search-hit rc=0]
+$ khal -c /tmp/blind3/normal/a.conf search NoSuchEvent
+[search-miss rc=0]
+queries changed no byte of the vdir: confirmed (diff -r)
+--- where khal keeps its ambient cache (under scratch HOME) ---
+./.cache/khal/khal.db
+
+===== 5. queries over empty and absent vdirs =====
+$ khal -c /tmp/blind3/normal/f.conf list 01.09.2026 03.09.2026
+[list-empty rc=0]
+pre-check: the configured vdir does not exist
+$ khal -c /tmp/blind3/normal/g.conf list 01.09.2026 03.09.2026
+created non-existing vdir /tmp/blind3/normal/g/state-never-created
+[list-absent rc=0]
+filesystem check: the vdir NOW EXISTS (list created it); contents: 0 entries
+
+===== 6. interactivity probes (EOF stdin, 10s timeout; the engine gives no stdin) =====
+$ timeout 10 khal -c /tmp/blind3/normal/a.conf import -a main /tmp/blind3/normal/ada.ics
+01.09. 10:00-01.09. 11:00 AdaMeeting
+Do you want to import this event into `main`? [y/N]: Aborted!
+[import-ask rc=1]
+$ timeout 10 khal -c /tmp/blind3/normal/a.conf import --batch -a main
+critical: An error occurred when trying to import the file from stdin
+critical: Events from it will not be available in khal
+[import-stdin rc=1]
+$ timeout 10 khal -c /tmp/blind3/normal/a.conf edit GraceStandup
+02.09. 10:00-02.09. 11:00 GraceStandup
+Edit?  [n]o  [q]uit  [s]ummary  [d]escription  da[t]etime range  re[p]eat
+[l]ocation  [c]ategories  [a]larm  [D]elete  [u]rl: Aborted!
+[edit-probe rc=1]
+$ timeout 10 khal -c /tmp/blind3/normal/a.conf interactive
+[?1049h[?1006l[?1002l[?1000l[?1000h[?1002h[?1006h[?1006l[?1002l[?1000l[0;39;49m[?1049l[?25hTraceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/khal/ui/__init__.py", line 1563, in start_pane
+    loop.run()
+  File "/usr/local/lib/python3.11/dist-packages/urwid/event_loop/main_loop.py", line 362, in run
+    self._run()
+  File "/usr/local/lib/python3.11/dist-packages/urwid/event_loop/main_loop.py", line 465, in _run
+    self.event_loop.run()
+  File "/usr/local/lib/python3.11/dist-packages/urwid/event_loop/select_loop.py", line 182, in run
+    self._loop()
+  File "/usr/local/lib/python3.11/dist-packages/urwid/event_loop/select_loop.py", line 192, in _loop
+    selector.register(fd, selectors.EVENT_READ, callback)
+  File "/usr/lib/python3.11/selectors.py", line 359, in register
+    self._selector.register(key.fd, poller_events)
+PermissionError: [Errno 1] Operation not permitted
+
+[interactive-probe rc=1]
+$ timeout 10 khal configure
+What ordering of year, month, date do you want to use?
+[0] year-month-day (today: 2026-08-14)
+[1] day/month/year (today: 14/08/2026)
+[2] month/day/year (today: 08/14/2026)
+[3] Custom
+Please choose one of the above options: Aborted!
+[configure-probe rc=1]
+
+===== 7. package identity =====
+Name: khal
+Version: 0.14.0
+normal-runs: done

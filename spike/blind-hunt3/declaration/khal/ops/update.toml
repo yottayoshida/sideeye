@@ -1,0 +1,16 @@
+# Campaign-3 Seal B artifact: the declared define for khal `import-update`
+# (same UID over an existing event file — docs: "--batch ... always update
+# (i.e. overwriting)"). Carries a PRE-REGISTERED refusal expectation: the
+# normal-run update left random-suffixed leftover files in the vdir, names
+# differing across runs (../transcripts/normal-runs.txt §2), so a
+# byte-reproducible baseline is not expected to exist; a refusal is the
+# recorded result (#84). Invariants: ../declaration.md. Editing this file
+# after Seal B marks the declaration sighted (ADR 0012).
+[world]
+state = "/tmp/blind3/hunt/update/state"
+
+[define]
+setup           = "./setup.sh update"
+operation       = "/usr/local/bin/khal -c /work/spike/blind-hunt3/declaration/khal/ops/khal-update.conf import --batch -a main /work/spike/blind-hunt3/declaration/khal/ops/ada-v2.ics"
+check           = "./check.sh update"
+expected_status = "0"

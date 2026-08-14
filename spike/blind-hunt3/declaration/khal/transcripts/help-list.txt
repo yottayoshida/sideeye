@@ -1,0 +1,17 @@
+Usage: khal list [OPTIONS] [DATETIME [DATETIME | RANGE]]
+
+  List all events between a start (default: today) and (optional) end
+  datetime.
+
+Options:
+  -d, --exclude-calendar CAL  Exclude the given calendar. Can be specified
+                              multiple times.
+  -a, --include-calendar CAL  Include the given calendar. Can be specified
+                              multiple times.
+  -f, --format TEXT           The format of the events.
+  -df, --day-format TEXT      The format of the day line.
+  -o, --once                  Print each event only once (even if it is
+                              repeated or spans multiple days).
+  --notstarted                Print only events that have not started.
+  --json TEXT                 Fields to output in json
+  --help                      Show this message and exit.
