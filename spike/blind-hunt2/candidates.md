@@ -22,12 +22,14 @@ advertises crash-injection testing in its documentation.
 | 3 | **khal** | pip `khal==0.14.0` | vdir directories of iCalendar files |
 | 4 | **hledger** | apt 1.25-2 (bookworm) | a plain-text journal, appended to |
 
-What the experimenter knows about these four beyond web docs, exhaustively
-(everything ledger-recorded under campaign 1's rules): their `--help` output,
-minimal-config formats from their readthedocs pages, one normal (non-crash) run
-each, and the campaign-1 sweep verdicts — **exit codes only** (khard/abook/khal
-accepted; hledger refused, its refusal reason sealed and unread to this day).
-No traces, no crash behavior, no source, no bug trackers.
+What the repository records as consulted or observed for these four beyond web
+docs (everything ledger-recorded under campaign 1's rules): their `--help`
+output, minimal-config formats from their readthedocs pages, one normal
+(non-crash) run each, and the campaign-1 sweep verdicts — **exit codes only**
+(khard/abook/khal accepted; hledger refused, its refusal reason sealed and
+unread to this day). No *recorded* contact involves traces, crash behavior,
+source, or bug trackers; the record is self-reported, and ADR 0012's honesty
+bounds carry unchanged.
 
 **Pre-registered risk, not a predicate change** (ADR 0015 §1): campaign 1's normal
 runs showed khard minting randomly named files per contact. If that shape defeats

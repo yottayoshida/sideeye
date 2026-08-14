@@ -34,15 +34,18 @@ of the remaining four (khard → abook → khal → hledger) and the predicate (
 exactly-one with preflight-with-oracle exit 0 ∧ in-image resolution) are byte-level
 inherited; no reordering, no predicate change, no additions.
 
-What the experimenter knows about these candidates since that seal, exhaustively:
-the permitted-source consultations in campaign 1's ledger (`--help`, docs pages,
-normal-run observation), and the campaign-1 sweep verdicts (exit codes only —
-khard/abook/khal accepted, hledger refused with its **reason still sealed and
-unread**). None of this is trace, crash, source or bug-tracker knowledge; the
-declaration-side blindness of all four candidates is intact. The selection-side
-guarantee ("the order was fixed before anything ran") is carried by campaign 1's
-merge date, not re-created — and this ADR says so instead of claiming a freshness
-that no longer exists.
+What the repository records the experimenter consulting or observing about these
+candidates since that seal: the permitted-source consultations in campaign 1's
+ledger (`--help`, docs pages, normal-run observation), and the campaign-1 sweep
+verdicts (exit codes only — khard/abook/khal accepted, hledger refused with its
+**reason still sealed and unread**). The record is self-reported, and ADR 0012's
+honesty bounds — an unrecorded consultation is undetectable, and a language
+model's training data cannot be un-known — carry unchanged (see "What this
+honestly cannot claim"). None of the *recorded* contact is trace, crash, source
+or bug-tracker knowledge; the declaration-side blindness of all four candidates
+is intact at that recorded strength. The selection-side guarantee ("the order was
+fixed before anything ran") is carried by campaign 1's merge date, not re-created
+— and this ADR says so instead of claiming a freshness that no longer exists.
 
 The predicate is deliberately **not** amended to dodge known refusal shapes.
 Campaign 1's normal runs showed khard minting randomly named files per contact;
@@ -55,23 +58,51 @@ recorded result**, it feeds #84, and the next attempt is campaign 3 with the nex
 candidate. No within-campaign reselection (ADR 0012 breach rules unchanged: burns
 before Seal B skip via `burned.txt`; after Seal B the campaign ends).
 
+**Every selected target is consumed by its campaign** — whatever the outcome: a
+finding, a null exploration, or a full-refusal exploration. A consumed target
+never re-enters a candidate list; its blind shot was taken. Consumption is
+distinct from a covenant burn (a burn is a breach event; consumption is the
+normal end of a campaign) and both remove the name the same way: campaign N+1's
+Seal A inherits the order with all consumed and burned names removed — exactly as
+this campaign removes topydo. Without this rule, re-running the inherited
+selector over an unchanged order could select the same target twice
+(campaign-2 R1 finding).
+
 ### 2. The recovery-path rule (the lesson campaign 1 paid for)
 
 Campaign 1's sharpest behavior sat in the documented recovery path, which its
 declaration had explicitly scoped out ("recoverability after a crash ... is not
 asserted either way"). Campaign 2 closes that hole **as a declaration requirement**:
 
-> Where the selected target's documentation names a recovery, undo, or repair
-> command, the declaration MUST include, for each declared operation, an invariant
-> of the form: *after a crash at any point and one invocation of the documented
-> recovery command, tasks the crash left intact still satisfy the conservation
-> invariant.* If the documentation names no such command, the declaration states
-> that explicitly and the rule discharges vacuously.
+> The Seal B declaration MUST: **(1) enumerate every recovery, undo, or repair
+> command form the selected target's documentation names** — command plus
+> argument shape, each with its citation — as a table in the declaration;
+> **(2) for each declared operation and each enumerated form** the documentation
+> presents as applicable to a damaged or interrupted store, **declare the
+> invariant** *after a crash at any point and one invocation of that form (exact
+> argv frozen in the checker), the entities the conservation invariant protects
+> still satisfy it*; **(3) justify any excluded form** only from the fixed
+> vocabulary — `interactive` / `network` / `destructive-by-design` /
+> `not-applicable-per-docs`, the last quoting the documentation sentence that
+> says so; and **(4) if the documentation names no such command, state that
+> explicitly** — the rule then discharges vacuously. "Entities" means whatever
+> the declaration's conservation invariant protects (tasks, entries, contacts,
+> records); the declaration names them once and both invariants share the
+> definition.
 
-This is declarable from documentation alone — no traces, no crash observation —
-so it costs nothing in blindness. It means the checkers run the recovery command
-inside the crash worlds, and a misfire of campaign 1's class would be found **by
-the search, from a blind checker**, not by post-seal analysis.
+The enumeration duty is the load-bearing half: campaign 1's two documented
+recovery forms behaved materially differently after a crash
+(`spike/blind-hunt/analysis/findings.md`), so a rule that let the declarer pick
+one convenient form would test the safe half and call it coverage. Coverage is
+enforced by the Seal B review against the enumeration table — the verifier
+checks that the declaration exists and names the selected target, not that the
+table is complete, and this ADR says so rather than implying a machine check.
+
+All of it is declarable from documentation alone — no traces, no crash
+observation — so it costs nothing in blindness. It means the checkers run the
+recovery forms inside the crash worlds, and a misfire of campaign 1's class
+would be found **by the search, from a blind checker**, not by post-seal
+analysis.
 
 ### 3. Campaign directory and re-sealed tooling
 
@@ -84,11 +115,28 @@ seals and never mutate a closed campaign's frozen artifacts. `spike/blind-hunt/`
 (campaign 1) stays untouched; editing its declaration would mark those checkers
 sighted retroactively.
 
-The sweep re-runs for campaign 2 (fresh container, current engine), against a
-campaign-2 `invocations.tsv` committed before the sweep, exactly as ADR 0012
-requires. The invocation rows are the campaign-1 rows for the four candidates with
-paths moved into `blind-hunt2/` — their content is already public, so committing
-them pre-sweep binds the sweep to a spelling, which is the property that matters.
+The sweep re-runs for campaign 2 against a campaign-2 `invocations.tsv` that is
+**sealed at Seal A itself** — stronger than ADR 0012's committed-before-the-sweep,
+and possible only because the rows have been public since campaign 1 (the
+campaign-1 rows for the four candidates, with config paths moved into
+`blind-hunt2/` and state roots into `/tmp/blind2/`). The file rides the A2
+no-touch set, so it cannot be tuned between the seals at all; every row was
+verified resolvable in the pinned image before this seal (resolution only — no
+target executed), so freezing it does not risk a spelling-error dead end. The
+campaign-2 `select.sh` additionally rejects manifest names outside the sealed
+order (the inherited version accepted appended extras silently).
+
+**The execution environment is identified at the strength actually available.**
+Campaign 2 runs in the already-built `sideeye-blindhunt` image (built 2026-08-13
+for campaign 1; not rebuilt during this campaign — the ledger records the image
+ID at sweep time, self-reported, and the base tag and apt installs beneath it
+are mutable, which this sentence admits rather than hides). The engine identity
+is recorded where committed artifacts can be compared: the sweep manifest
+carries the engine's version string and the SHA-256 of the binary and shim that
+swept (`sweep.sh`), and the exploration's run manifest must record the same
+fields, so what ran at each phase is readable from the history. This binds the
+phases to each other, not to a source tree — a hash does not prove which commit
+built the binary, and the campaign claims only what it records.
 
 ### 4. The taint ledger grows
 

@@ -121,8 +121,17 @@ else
     bad "A3: ledger.md is not in the Seal A commit"
 fi
 
-# B1 — the sweep record postdates the procedure seal.
-for path in spike/blind-hunt2/invocations.tsv spike/blind-hunt2/sweep-manifest.json; do
+# B1 — campaign 2 splits the two sweep records (ADR 0015 §3). The invocation rows
+# were public since campaign 1, so they are sealed AT Seal A (and the A2 no-touch
+# set keeps them frozen between the seals — stronger than campaign 1's
+# first-appears-at-B). The sweep manifest is the between-seals product and must
+# still first appear at Seal B.
+if git cat-file -e "$A:spike/blind-hunt2/invocations.tsv" 2>/dev/null; then
+    ok "B1: invocations.tsv is sealed at Seal A (frozen by A2 from there)"
+else
+    bad "B1: invocations.tsv is absent from Seal A — campaign 2 seals it there (ADR 0015)"
+fi
+for path in spike/blind-hunt2/sweep-manifest.json; do
     if git cat-file -e "$A:$path" 2>/dev/null; then
         bad "B1: $path already exists at Seal A"
     elif git cat-file -e "$B:$path" 2>/dev/null; then

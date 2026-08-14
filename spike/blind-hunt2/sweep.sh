@@ -1,6 +1,7 @@
 #!/bin/sh
-# Seal A artifact (ADR 0012). The sweep harness: what it decides, and what it refuses
-# to show, are both frozen here — before any candidate has been installed.
+# Campaign 2 Seal A artifact (ADR 0012 via ADR 0015). The sweep harness, re-sealed:
+# the candidates were installed during campaign 1 — ADR 0015 records that inheritance
+# honestly — so what stays frozen here is the verdict logic and what it refuses to show.
 #
 # It prints ONE line per candidate:
 #
@@ -20,13 +21,14 @@
 #   sweep.sh -i <invocations.tsv> -o <outdir> -s <shim> [-r <oracle>]
 #
 # The manifest is written under <outdir>; before Seal B it is COPIED to
-# spike/blind-hunt/sweep-manifest.json and committed (verify-seals.sh B1 expects it
-# there, next to the committed invocations.tsv). The sealed reports never move and
+# spike/blind-hunt2/sweep-manifest.json and committed (verify-seals.sh B1 expects it
+# there, next to the SEALED invocations.tsv). The sealed reports never move and
 # never get committed — only their hashes travel.
 #
-# invocations.tsv is assembled AFTER Seal A from `--help` and normal-run output — it
-# cannot exist before the tools are installed. Its diffs are recorded in the ledger;
-# the verdict logic in this file is what Seal A froze.
+# Campaign 2's invocations.tsv is sealed at Seal A (its rows have been public since
+# campaign 1; ADR 0015 §3) and the A2 no-touch set keeps it frozen between the seals.
+# The rows were verified resolvable in the pinned image before the seal — no target
+# was executed for that check.
 #
 # Columns (tab-separated, one candidate per line, in the sealed priority order):
 #   name <TAB> binary <TAB> state_dir <TAB> setup_cmd <TAB> operation_cmd
@@ -72,10 +74,19 @@ else
     exit 2
 fi
 
-# The manifest records the hash of the invocations it ran against (R1 finding: without
-# this, invocations could be tuned against exit codes between runs and only the final
-# spelling committed). verify-seals.sh requires the committed invocations.tsv to match.
-printf '{\n  "schema": "sideeye/blind-hunt-sweep",\n  "invocations_sha256": "%s",\n  "candidates": [\n' "$(digest "$inv")" > "$manifest"
+# The manifest records the hash of the invocations it ran against (campaign-1 R1:
+# without this, invocations could be tuned against exit codes between runs and only
+# the final spelling committed). verify-seals.sh requires the committed
+# invocations.tsv to match. Campaign 2 adds the execution identity (campaign-2 R1
+# finding 4): the engine's version string and the SHA-256 of the binary and shim
+# that actually swept, plus the operator-supplied image name (SWEEP_IMAGE env,
+# self-reported). The exploration's run manifest records the same fields, so the
+# two phases are comparable from committed artifacts — this binds them to each
+# other, not to a source tree, and ADR 0015 says exactly that.
+engine_version=$("$SIDEEYE" version 2>/dev/null | head -1)
+[ -n "$engine_version" ] || engine_version="unknown"
+printf '{\n  "schema": "sideeye/blind-hunt-sweep",\n  "invocations_sha256": "%s",\n  "engine": "%s",\n  "engine_sha256": "%s",\n  "shim_sha256": "%s",\n  "image": "%s",\n  "candidates": [\n' \
+    "$(digest "$inv")" "$engine_version" "$(digest "$SIDEEYE")" "$(digest "$shim")" "${SWEEP_IMAGE:-unrecorded}" > "$manifest"
 first=1
 lineno=0
 

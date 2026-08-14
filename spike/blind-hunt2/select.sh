@@ -81,6 +81,16 @@ for name, code, resolved in rows:
         sys.exit(2)
     seen[name] = (code, resolved)
 
+# No candidate outside the sealed order may appear in the manifest. An appended name
+# is a candidate added after the seal — the walk below would never pick it, but its
+# presence in a committed manifest would lend it a legitimacy the seal never granted
+# (campaign-2 R1 finding: the original accepted extras silently).
+unknown = sorted(n for n in seen if n not in order)
+if unknown:
+    print("select: manifest lists candidates outside the sealed order: " + ", ".join(unknown),
+          file=sys.stderr)
+    sys.exit(2)
+
 # Every non-burned candidate in the sealed order must appear in the manifest. A sweep
 # that skipped one silently would let the walk fall through to a lower-priority target —
 # the selection being made by an omission rather than by the predicate.
