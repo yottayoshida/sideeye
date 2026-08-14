@@ -2,6 +2,50 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — Campaign 2's first seal was void within the hour, by its own sweep (#83)
+
+The between-seals sweep ran once against the sealed rows and displayed its four
+exit codes: khard 2, abook 0, khal 0, hledger 2. khard's flip against campaign 1's
+public verdict (0 there) sent me to our own committed artifacts — the sealed
+reports stayed unread — and the contradiction was inside the seal:
+`configs/khard.conf` and `configs/khal.conf` still hardcoded campaign 1's
+`/tmp/blind/...` state roots while the sealed invocations watch `/tmp/blind2/...`.
+The refusal was our configuration bug wearing a target verdict's clothes.
+
+Voided, not proceeded with. The machine had selected abook, and following it
+would have been indefensible: the khard refusal risk was pre-registered, so an
+apparatus bug that knocks khard out is — to any skeptical reader —
+indistinguishable from steering. And the seal design itself forbids the quiet
+fix: configs ride the A2 no-touch set. So the exit is the loud one — void before
+any declaration exists (blindness cost: four displayable exit codes), fix the
+two paths, re-seal, and give khard its fair shot.
+
+The part worth keeping: **my own R1 fix created this trap and certified it
+safe.** Sealing the invocations at Seal A was finding 5's remedy; I "verified"
+the rows resolvable and wrote that the freeze "does not risk a spelling-error
+dead end"; R2 confirmed the configs "contain no campaign-1 workspace
+dependency". `/tmp/blind` sat in two of them the whole time. The verification
+checked command resolution and file existence — not the paths inside the
+configs, the one place a path could still disagree. Falsified within the hour
+by the first real run. The re-seal adds the mechanical consistency check
+(config `/tmp` paths ⊆ invocation state roots, green on the fixed tree), and
+the ADR now says what a frozen apparatus actually guarantees: not that it
+cannot dead-end, but that its dead end is public and the exit is a recorded
+re-seal rather than a quiet tune.
+
+Two more things the void surfaced, both about checks that could not see what they
+claimed to cover. `check-config-paths.sh` is the new Seal A artifact — every
+absolute `/tmp` path in every sealed config must sit under a state root named in
+the sealed invocations — and it was falsified before being trusted: red on the
+voiding defect itself, red on a sibling-but-wrong root, and **exit 2 rather than
+success when it cannot look** (no roots, or no configs), with a green control on
+the fixed tree. And `.gitignore` was campaign-1-specific, so campaign 2's sealed
+sweep reports and hledger's import sidecar both walked into the staging area; the
+patterns are now `spike/blind-hunt*/`, verified with `git check-ignore` to cover
+campaigns 1, 2 and a hypothetical 3 while leaving sealed configs and manifests
+tracked. A guard written against one instance of a hazard does not cover the
+hazard.
+
 ## 2026-08-14 — Campaign 2's Seal A: an inherited selection, and the recovery-path rule (#83)
 
 The strict ruling made the second campaign the designated criterion-1 path, so it

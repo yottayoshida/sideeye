@@ -120,11 +120,21 @@ The sweep re-runs for campaign 2 against a campaign-2 `invocations.tsv` that is
 and possible only because the rows have been public since campaign 1 (the
 campaign-1 rows for the four candidates, with config paths moved into
 `blind-hunt2/` and state roots into `/tmp/blind2/`). The file rides the A2
-no-touch set, so it cannot be tuned between the seals at all; every row was
-verified resolvable in the pinned image before this seal (resolution only — no
-target executed), so freezing it does not risk a spelling-error dead end. The
-campaign-2 `select.sh` additionally rejects manifest names outside the sealed
-order (the inherited version accepted appended extras silently).
+no-touch set, so it cannot be tuned between the seals at all. Every row was
+verified resolvable in the pinned image before sealing (resolution only — no
+target executed) — **and the first seal proved that check insufficient**: it
+looked at command resolution and file existence but not at the paths *inside*
+the config files, two of which still carried campaign 1's state roots. The
+resulting sweep mis-verdicted khard (our bug, not its answer), the seal was
+voided before any declaration existed, and this re-seal adds the missing
+mechanical check: every `/tmp/...` path in every sealed config must sit under
+an invocation state root (run green before sealing; the void itself, the
+displayed exit codes, and the superseded manifest are in the ledger). A frozen
+apparatus can still dead-end on its own internal contradiction — the freeze
+only guarantees the dead end is public and the exit is a recorded re-seal, not
+a quiet tune. The campaign-2 `select.sh` additionally rejects manifest names
+outside the sealed order (the inherited version accepted appended extras
+silently).
 
 **The execution environment is identified at the strength actually available.**
 Campaign 2 runs in the already-built `sideeye-blindhunt` image (built 2026-08-13
