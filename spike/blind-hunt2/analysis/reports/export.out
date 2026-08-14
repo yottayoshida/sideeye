@@ -1,0 +1,11 @@
+checker(export): I-C: conserved store /tmp/blind2/hunt/export/state/book/addressbook differs from its sealed golden
+PASS  3/3 crash worlds satisfied the built-in atomicity invariant
+      explored 3 worlds (crash points 2 + 1 baseline)
+      expected status: 0
+      atomicity: 1 file(s) judged pre-or-post
+      oracle: agreed on 2 operations (96 syscall lines examined, 18 touching the state directory)
+      checker: falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
