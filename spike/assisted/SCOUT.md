@@ -52,6 +52,25 @@ does not consult you.
    UNKNOWN, or null — record it with the proposal metadata. A null is a
    result, not a failure of yours.
 
+## Measured lessons from the first cohort (2026-08-14)
+
+- `sideeye preflight` takes define-surface flags, not `--config`; once a
+  toml exists, go straight to `explore` — it answers strictly more.
+- The operation child inherits the ENGINE's environment, not your setup
+  script's exports. If the target resolves its store through an
+  environment variable, export it where you launch the engine (a zero-op
+  PASS with "nothing changed the state directory" is the tell).
+- Prefer targets/forms with explicit path FLAGS over environment plumbing.
+- Probe determinism with a `sleep 2` between the two runs — epoch-stamping
+  targets are byte-identical within a second and flaky across one, the
+  worst refusal shape.
+- Write the proposal artifact BEFORE the define, not as comments in the
+  toml. A proposal without its own metadata artifact does not count.
+- Capture the engine's exit code before piping its output through
+  grep/head — the pipe's exit code is not the engine's.
+- mkdir the state root (and the report's directory) before `explore`; the
+  engine stops at state resolution otherwise.
+
 ## What you must not do
 
 - Call any of this "blind". It is assisted; the word blind belongs to
