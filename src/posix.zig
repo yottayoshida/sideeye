@@ -43,6 +43,7 @@ pub extern "c" fn mkdtemp(template: [*:0]u8) ?[*:0]u8;
 pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
+pub extern "c" fn getpid() c_int;
 pub extern "c" fn fork() c_int;
 pub extern "c" fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) c_int;
 /// Exec with an explicit environment, so a child can be given a *minimal* env rather
