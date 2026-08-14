@@ -1,0 +1,12 @@
+# Assisted run (#118), devtodo P1: remove one note; the other must survive
+# the XML rewrite. --remove writes no new timestamp (measured 2s apart,
+# byte-identical), unlike --add/--done whose epoch stamps make them
+# per-second flaky — the worst refusal shape, recorded in ../proposals.md.
+[world]
+state = "/tmp/assisted/devtodo/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "/usr/bin/devtodo --database /tmp/assisted/devtodo/state/.todo --remove 1"
+check           = "./check.sh"
+expected_status = "0"
