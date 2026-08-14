@@ -988,7 +988,12 @@ test "a trace written against another contract version is a mismatch, not a shor
     _ = try contract.encodeHeader(&buf);
     std.mem.writeInt(u32, buf[contract.magic.len..][0..4], contract.contract_version + 1, .little);
 
-    const dir = "/tmp/sideeye-version-test";
+    // Pid-unique path: engine tests run in more than one test binary, and
+    // `zig build test` runs those binaries concurrently — a fixed name raced
+    // between the write, the read and the unlink, failing a different assert
+    // each time it lost (#28: measured at three distinct lines in one day).
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-version-test-{d}", .{posix.getpid()}) catch unreachable;
     var pbuf: [contract.max_path]u8 = undefined;
     const dz = std.fmt.bufPrintZ(&pbuf, "{s}", .{dir}) catch unreachable;
     _ = posix.mkdir(dz.ptr, 0o755);

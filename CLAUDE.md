@@ -32,6 +32,13 @@ The contract:
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
 - Acceptance (`spike/acceptance.sh`) runs in the Linux container; every new check must be
   seen red once (mutation or synthetic input) before it is trusted.
+- Unit tests never write to a fixed shared path: `zig build test` runs the same test in
+  several concurrent binaries, and seen-red-once validates assertions, not races — a
+  fixed `/tmp` name passed every single run and then failed 66 of 80 paired runs (#28).
+  Use a pid-unique directory or `std.testing.tmpDir`.
+- A test that has flaked CI twice gets fixed before anything else merges. Flaky tests
+  are self-detecting — the gap #28 exposed was response, not detection: filed within a
+  day, then left rolling a die on every push for three days.
 - English for everything committed.
 
 ## Blind-hunt campaigns: the apparatus rules
