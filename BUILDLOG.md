@@ -11,12 +11,22 @@ own error message for an unparsable .vcf ("Use --debug for more information or
 --skip-unparsable to proceed"). The checker's first step is the `khard list`
 liveness query, so the I-F red fixtures — vCards deliberately written
 mis-shaped — put khard's failure behavior on record before Seal B. ADR 0012
-has no cure for that: blind is once per target. Campaign 1's red suite was
-accidentally safe (topydo only ever saw well-formed stores); the checker's
-structure changed — query first — and the red suite's design did not change
-with it. The safety claim named what the script runs, not what the run
-touches: the recurring shape where a verification is trusted without asking
-what it does not look at.
+has no cure for that: blind is once per target. The safety claim named what
+the script runs, not what the run touches: the recurring shape where a
+verification is trusted without asking what it does not look at.
+
+Corrected after this burn PR's own R1 (the first version of this entry said
+campaign 1 was safe "by structure"): campaign 1 ran the same design risk.
+Its checker was also query-first — `check.sh` runs the I-Q `ls` before the
+I-F file checks — and its red suite also fabricated stores violating its own
+I-F predicate (`not-a-completed-task`, `x other-task` in done.txt). The
+committed transcript shows the I-F messages firing, which means the I-Q leg
+had already passed: topydo's query returned documented-normal output over
+those out-of-contract stores, and no failure behavior was committed. Campaign
+1 escaped by outcome, not by structure; campaign 2 collected the consequence
+of the same red-suite design. (The uncorrected version of this entry was
+itself the recurring shape — it asserted a mechanism, "only well-formed
+stores, query-first was new", that no committed artifact supports.)
 
 Burn handling per ADR 0012, before Seal B, so the campaign survives:
 `burned.txt` now carries khard, the ledger records what leaked, the khard
