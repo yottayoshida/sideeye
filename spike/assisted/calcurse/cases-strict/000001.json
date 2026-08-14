@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.7.0",
+  "contract_version": 8,
+  "define": {
+    "state": "/tmp/assisted/calcurse/state",
+    "setup": "/work/spike/assisted/calcurse/ops/./setup.sh",
+    "operation": "/usr/bin/calcurse -D /tmp/assisted/calcurse/state/d -C /tmp/assisted/calcurse/conf -P --filter-pattern AdaMeeting",
+    "check": "/work/spike/assisted/calcurse/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 10,
+  "ops_total": 10,
+  "prefix_hash": "94c20d20905eb6d7",
+  "after_class": "open",
+  "after_path": "/tmp/assisted/calcurse/state/d/apts",
+  "before_class": "write",
+  "before_path": "/tmp/assisted/calcurse/state/d/apts",
+  "violation": "hybrid"
+}

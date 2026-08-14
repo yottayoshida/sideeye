@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 8,
+  "verdict": "UNKNOWN",
+  "exit_code": 2,
+  "crash_points": 0,
+  "explored": 0,
+  "violations": 0,
+  "expected_status": 0,
+  "unknown_reason": "unsupported_syscall_observed",
+  "message": "fchown",
+  "l0": "1 file(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "ran; the comparison did not complete",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

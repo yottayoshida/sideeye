@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.7.0",
+  "contract_version": 8,
+  "define": {
+    "state": "/tmp/assisted/buku/state",
+    "setup": "/work/spike/assisted/buku/ops/./setup.sh",
+    "operation": "/usr/bin/buku --nostdin --np --tacit --add https://example.com/x ada --title AdaMark",
+    "check": "/work/spike/assisted/buku/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 18,
+  "ops_total": 21,
+  "prefix_hash": "f463071719a47e91",
+  "after_class": "write",
+  "after_path": "/tmp/assisted/buku/state/buku/bookmarks.db",
+  "before_class": "write",
+  "before_path": "/tmp/assisted/buku/state/buku/bookmarks.db",
+  "violation": "hybrid"
+}

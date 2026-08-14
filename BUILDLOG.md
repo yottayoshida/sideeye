@@ -2,6 +2,61 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-14 — The assisted-discovery cohort: five targets, five verdicts, the human half still owed (#118)
+
+The #118 experiment's measured half ran end to end (the human
+meaningful-question scoring — part of the success signal by the protocol's
+own definition — is still owed to yotta, so the signal is NOT claimed
+cleared): five fresh apt-installable targets
+(buku, pass, calcurse, stow, devtodo — todo-txt verified installable and
+excluded because the scout already knows the todo.txt format's crash shapes
+from campaign 1), one measured window each, the SCOUT.md loop as the only
+instructions. Full record: `spike/assisted/RESULTS.md`.
+
+The headline: **calcurse gave a VERIFIED, replay-confirmed counterexample
+109 seconds after first contact** — `-P --purge` ("Read items and write
+them back", the help text naming its own window) truncates `apts` in place,
+and the crash between open and write destroys the bystander event the purge
+never named. The topydo class, strict oracle agreeing 10/10. buku added an
+unverified-oracle FAIL (mid-write crash leaves the db unreadable to buku
+itself), replay-confirmed but resting on --allow-unverified.
+
+The equally important half: three of five funnels stopped at the ENGINE,
+not at the scout. fchown (buku/sqlite), symlinkat (stow/perl), fchmodat
+(devtodo) — three measured absences from the trace contract, no common
+family claimed (the first draft's "*at family" was technically false and
+R1 said so); and pass's measured refusal is exec image replacement —
+that shell-script CLIs hit it as a class is inference, labeled as such. Every one of those questions was
+posed, with why/what-property/where-from metadata, in under two minutes —
+the judge just could not execute them. Against #118's success signal: T0→define landed in 1m25s–5m02s on all
+five. The blind-arc comparison sits in RESULTS as context, not a ratio —
+the scopes differ in almost every dimension (this branch's own
+apparatus-to-results arc was ~25 minutes for five targets; campaign 3's
+sealed arc ~1.5h for one). What remains standing after the scout is engine
+coverage — issueable, buildable work rather than a skill wall — plus the
+human meaningfulness verdict.
+
+Also on the record: DeepWiki was wrong once about the pinned build (buku's
+env var — re-measured, corrected); the proposal-artifact-first rule was
+broken on THREE of five targets (calcurse, stow, devtodo — the first
+summary admitted only calcurse; R1 caught the other two by file birth
+times); a grep pipe ate one exit code before the raw-rc habit caught it;
+and SCOUT.md gained a measured-lessons section.
+
+R1 of this branch: sixteen findings, all adopted. The load-bearing ones
+beyond the above: the committed saved cases embedded gitignored paths and
+could not replay from a fresh checkout — every target was RE-RUN from the
+committed ops dirs (identical verdicts), committed launcher scripts now
+carry the exact environment (the buku/pass defines were irreproducible
+without it), and the buku claim chain gained its committed artifacts
+(strict report, replay transcript, the target's own error line). The
+calcurse "verified" is scoped: the oracle's account covers the declared
+data subtree, with the config dir deliberately ambient. The devtodo
+checker counted lines, not occurrences; stow's dangling-link scan piped
+find into head (fail-open); both hardened, both still unexercised by any
+exploration. The Dockerfile's "pinned" claim is corrected to pinned-by-
+build with the actually-run versions recorded.
+
 ## 2026-08-14 — Campaign 3 explored: khal, three ops, zero violations (#83)
 
 Exploration from Seal B `9028b04b` completed: import 10 crash points +

@@ -1,0 +1,13 @@
+# Assisted run (#118), stow P1: stow package B into a target whose shared
+# subdirectory is currently FOLDED onto package A — the unfold (delete
+# symlink, make real dir, re-point A's files, add B's) is the window.
+# Property and provenance: ../proposals.md. Determinism over the same
+# pre-state: measured identical at whole-tree and symlink-topology level.
+[world]
+state = "/tmp/assisted/stow/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "/usr/bin/stow -d /tmp/assisted/stow/state/stowdir -t /tmp/assisted/stow/state/target -S B"
+check           = "./check.sh"
+expected_status = "0"

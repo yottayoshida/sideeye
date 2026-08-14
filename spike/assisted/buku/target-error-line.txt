@@ -1,0 +1,1 @@
+[31m[ERROR][0m initdb(): file is not a database

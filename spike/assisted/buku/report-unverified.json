@@ -1,0 +1,27 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 8,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "crash_points": 21,
+  "explored": 22,
+  "violations": 2,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 18,
+    "invariant": "built-in atomicity (L0)",
+    "after": {"op": "write", "path": "/tmp/assisted/buku/state/buku/bookmarks.db"},
+    "before": {"op": "write", "path": "/tmp/assisted/buku/state/buku/bookmarks.db"},
+    "subject": "buku/bookmarks.db",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "1 file(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/tmp/assisted/buku/wU/cases/000001.json",
+  "replay": "sideeye replay /tmp/assisted/buku/wU/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 22 world(s)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}
