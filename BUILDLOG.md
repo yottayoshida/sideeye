@@ -66,6 +66,15 @@ form whose only input channel (stdin) the engine never supplies — and the
 inventory says so instead of calling it a prompt. The mutt/muttq
 outformat-name discrepancy between abook(1) and --formats is recorded.
 
+R2 confirmed eight of ten and returned two as incomplete: the `interactive`
+verdict still contradicted its own evidence text (resolved by stating the
+label's sense once — ADR 0012 seals the four words without defining them —
+and rewording the row under it), and the parse-probe section heading still
+said "no side effects" while the probe inspects three paths (heading now
+says "probed paths untouched"; transcript regenerated). R2 also verified
+the ledger's append-only property byte-for-byte against the parent commit
+and ran `sh -n` over the eight touched scripts.
+
 ## 2026-08-14 — khard is burned: the red suite let the checker query a malformed store (#83)
 
 The declaration below shipped with a red suite whose header argued its own
