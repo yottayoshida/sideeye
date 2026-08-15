@@ -954,8 +954,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // with itself about whether a checker was given.
         checker_note = "configured; falsification did not complete";
 
-        if (engine.countFiles(initial) == 0)
-            unknown(.checker_not_falsified, "the state directory holds no files, so there was nothing to corrupt and the checker could not be tested");
+        if (engine.countCorruptible(initial) == 0)
+            unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested");
 
         engine.restore(initial, state_abs) catch setupError("could not restore before falsifying the checker");
         engine.corruptState(initial, state_abs) catch setupError("could not corrupt the state for the falsification probe");
@@ -2210,6 +2210,7 @@ test "the l0 note neutralises control bytes in target-chosen file names" {
     defer plan.deinit();
     try plan.files.append(plan.arena.allocator(), .{
         .rel = "evil\nname\x1b.log",
+        .kind = .file,
         .form = .history,
         .pre_content = "a",
         .post_content = "ab",

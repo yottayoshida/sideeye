@@ -155,6 +155,25 @@ pub fn linkat(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]co
     return common.callLinkat(olddirfd, old, newdirfd, new, flags);
 }
 
+// --- kill-point ops: symlink -------------------------------------------------------
+//
+// Creating a symbolic link writes a directory entry, so it is a kill point and a
+// mutation — the same nature as link (#122, contract v9). Only the LINK PATH is
+// resolved and recorded; the target string is content the subject chose, not a path
+// this run touches, and resolving it would let a link whose content spells the state
+// directory be mis-scoped. The oracle applies the same exclusion textually
+// (src/oracle.zig's path table lists only the link-path argument for both forms).
+
+pub fn symlink(target: [*:0]const u8, linkpath: [*:0]const u8) callconv(.c) c_int {
+    common.note1(.symlink, AT_FDCWD, linkpath);
+    return common.callSymlink(target, linkpath);
+}
+
+pub fn symlinkat(target: [*:0]const u8, newdirfd: c_int, linkpath: [*:0]const u8) callconv(.c) c_int {
+    common.note1(.symlink, newdirfd, linkpath);
+    return common.callSymlinkat(target, newdirfd, linkpath);
+}
+
 // --- kill-point ops: sync and truncate -------------------------------------------
 
 pub fn fsync(fd: c_int) callconv(.c) c_int {

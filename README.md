@@ -71,10 +71,12 @@ never as passing — and the refusal names its detector.
   performs; the un-killed baseline world is held to the same status, and the report
   records which status a PASS was allowed to require.
 - **Be dynamically linked and single-threaded**, and reach its files through libc —
-  which includes buffered stdio (observed at flush granularity) and the hard-link
-  family (`link`/`linkat`). Raw syscalls (a Rust target pulling in `rustix`, say),
-  static linking, a hardened runtime, threads, and symlinks inside the state
-  directory are detected and refused. A descriptor's *location* decides observation,
+  which includes buffered stdio (observed at flush granularity), the hard-link
+  family (`link`/`linkat`), and symlink creation (`symlink`/`symlinkat` — the link
+  path is the operation; the target string is never resolved). Symlinks inside the
+  state directory are snapshotted and restored as links, target verbatim. Raw
+  syscalls (a Rust target pulling in `rustix`, say), static linking, a hardened
+  runtime, and threads are detected and refused. A descriptor's *location* decides observation,
   never its number: a state file rebound onto stdout with `dup2` is still observed,
   and a descriptor whose backing cannot be identified makes the run UNKNOWN rather
   than passing. Descriptor-hygiene sweeps (`close(3..255)` at startup) are tolerated

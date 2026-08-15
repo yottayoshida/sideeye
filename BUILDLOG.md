@@ -2,6 +2,59 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — Symlinks become a first-class operation; the real gap was restore, not the oracle (#122, contract v9)
+
+The owner's ruling on #118's product decision: close the judge's measured
+gaps first (#122, then #121 option b), re-run the blocked committed
+defines, and only then decide §18 with a re-measured number. This entry is
+the first half.
+
+The oracle table was the visible absence, but the engine was the real
+work: snapshot recorded a symlink as "present but opaque" (kind `.other`,
+no target) and **restore did not recreate it at all** — a state directory
+with links would have started every crash world with the links missing.
+That was tolerable only because the oracle refused symlink-touching
+targets before any world ran; making the class supported without fixing
+restore would have shipped fabricated worlds. So: snapshot content is now
+the readlink target (fail-closed on a result that fills the buffer —
+truncation cannot be told from an exact fit), restore recreates links
+verbatim (a dangling link is restored dangling), and judgeL0 checks kind
+before content — a regular file holding the pre-target as *bytes* would
+otherwise satisfy the content comparison while being a different thing.
+That kind check also closes part of the standard arm's documented
+empty-content blind spot (an empty pre file replaced by a directory used
+to compare equal).
+
+Decisions made here, with their reasons:
+
+- **Contract v8 → v9.** The v6 precedent (link/linkat) decides it: adding
+  a class changes what a trace means, and a v8 shim beside a v9 engine
+  must refuse loudly, not diverge positionally. Cost accepted: every
+  saved v8 case replays as `case_no_longer_applies` — the assisted
+  cohort's two committed cases need re-recording, and #82's pending
+  re-record stays pending.
+- **`aux` stays empty for symlink.** The target string is content the
+  subject chose, not a path this run touches — the oracle already
+  excludes it from scoping (its path table lists only the link-path
+  argument), and recording it would hand every later consumer a
+  plausible-looking "path" that must never be resolved. Symmetry beats
+  convenience: nothing that needs the target exists today (restore reads
+  it from snapshots, not traces).
+- **corruptState retargets links** at a probe name that exists nowhere,
+  and the falsification gate counts corruptible entries (files + links)
+  instead of files — a stow-shaped state (directories and links, zero
+  regular files) used to read as "nothing to corrupt", which would have
+  refused exactly the target class this change exists to reach.
+
+Mutation record: four guards, each killed by the test written for it —
+judgeL0's kind check, restore's symlink arm, corruptState's retarget, the
+oracle's class entries. The first corruptState mutation was invalid (it
+left an unused local and died as a compile error — a red for the wrong
+reason); re-shot as a compiling no-op branch and killed by the fs test.
+The shim wrappers have no unit-test harness (nothing loads the .so in
+`zig build test`); their end-to-end proof is the container re-run of the
+stow define, which is the next step's acceptance criterion.
+
 ## 2026-08-15 — spike/ gets a map; the cleanup that was NOT done is the point
 
 Three campaigns plus the assisted cohort left spike/ dense enough that the

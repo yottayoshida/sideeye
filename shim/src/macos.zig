@@ -43,6 +43,8 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.remove, libc.remove),
     entry(&ops.link, libc.link),
     entry(&ops.linkat, libc.linkat),
+    entry(&ops.symlink, libc.symlink),
+    entry(&ops.symlinkat, libc.symlinkat),
     entry(&ops.fsync, libc.fsync),
     entry(&ops.close, libc.close),
     // stdio, at flush granularity (ADR 0005). No 64-bit variants or fflush_unlocked on
