@@ -46,6 +46,34 @@ assertion. The report-note aggregation in main.zig is deliberately not
 mutation-tested at unit level; 2w-b is its proof, against real strace
 output on CI.
 
+**R1 (same day) found the same pattern #122's review found — removing a
+refusal exposes what the refusal was hiding — three more times.** (1) A
+chmod-only operation lands in the zero-op PASS branch, whose headline
+("performed nothing that can change the state directory") R1 measured to
+be plainly false over a changed mode, and which printed no metadata line;
+the headline now says "the judged state" and the branch prints the note.
+(2) restore() flattens ownership/permission to the engine's defaults —
+crash worlds do not run under the recorded modes, which is both the
+likeliest way the cohort re-runs could stumble and, correctly read, just
+option b's declaration showing up at world level; the metadata note now
+says so per run rather than leaving the next investigator to rediscover
+it. (3) deleteTree accepted a PARTIAL failure — an unreadable 0000-mode
+directory is skipped silently by opendir, its rmdir fails, and a
+deletable sibling made the pass count as success, leaving residue for
+the next world to be judged against (the function's own history entry,
+survived by its own fix). The pass now requires every collected entry
+removed; a non-root test pins it with a locked directory beside a
+deletable file. R1 also demanded the exclusion's own predicate be pinned
+rather than inferred: a new engine test asserts a chmod leaves the
+snapshot byte-identical — if Entry ever grows a mode field, that test
+goes red and the report wording has to change with it. Table hygiene from
+the same round: fchmodat2 (glibc 2.39 spells flags!=0 fchmodat with it)
+joins the table — built from the syscall family, not from what the
+cohort happened to hit — and the timestamp family is documented as
+deliberately absent (widening the exclusion is its own ruling, not a
+side effect). Fix-round mutation: the deleteTree guard reverted to
+`removed == 0` is killed by the partial-failure test.
+
 ## 2026-08-15 — Symlinks become a first-class operation; the real gap was restore, not the oracle (#122, contract v9)
 
 The owner's ruling on #118's product decision: close the judge's measured

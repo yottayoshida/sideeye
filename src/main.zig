@@ -831,7 +831,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             }
             break :blk std.fmt.allocPrint(
                 arena,
-                "{d} ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): {s}",
+                "{d} ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): {s}. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
                 .{ items.len, names.items },
             ) catch "observed (detail unavailable)";
         };
@@ -892,7 +892,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         oracle_note = std.fmt.allocPrint(
             arena,
-            "agreed on {d} operations ({d} syscall lines examined, {d} touching the state directory)",
+            "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
 
@@ -962,16 +962,22 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     if (n == 0) {
         requireCompleteness(args.oracle != null, args.allow_unverified);
+        // "judged state", not "state directory": a run whose only writes are
+        // ownership/permission metadata lands exactly here with zero kill points,
+        // and those writes DO change the directory — just nothing the verdict
+        // judges. The metadata line below is the disclosure; without it this
+        // headline reads as a plain falsehood over a chmod-only operation (R1 #121).
         say(
-            \\PASS  the operation performed nothing that can change the state directory
+            \\PASS  the operation performed nothing that can change the judged state
             \\      explored 0 crash points; nothing to kill before
             \\      expected status: {d}
             \\      atomicity: {s}
+            \\      metadata: {s}
             \\      l1: {s}
             \\      case: {s}
             \\      not tested: {s}
             \\
-        , .{ expected_status_val, l0_note, l1_note, case_note, notTestedText() });
+        , .{ expected_status_val, l0_note, metadata_note, l1_note, case_note, notTestedText() });
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }

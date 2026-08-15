@@ -1208,10 +1208,13 @@ o=$(env TOY_MKNOD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "unsupported_syscall_observed"; then
-    echo "ok   the conservative net is still alive beside the exclusion (mknod refuses)"
+if [ "$rc" = "2" ] && echo "$o" | grep -q "unsupported_syscall_observed" && echo "$o" | grep -q "mknod"; then
+    # The name is asserted too ("mknod" is a substring of "mknodat", so glibc's
+    # spelling choice cannot flake it): a refusal for some OTHER reason must not
+    # count as the net being alive.
+    echo "ok   the conservative net is still alive beside the exclusion (mknod refuses, by name)"
 else
-    echo "FAIL mknod control: exit $rc (wanted UNKNOWN unsupported_syscall_observed)"
+    echo "FAIL mknod control: exit $rc (wanted UNKNOWN unsupported_syscall_observed naming mknod)"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi

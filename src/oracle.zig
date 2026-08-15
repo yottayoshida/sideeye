@@ -118,6 +118,16 @@ const metadata_path_syscalls = [_]PathSpec{
     .{ .name = "chmod", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "fchownat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "fchmodat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    // Linux 6.6+: glibc 2.39 issues fchmodat2 for fchmodat(3) with flags != 0.
+    // Same signature shape (dirfd, path, mode, flags). Listed from the syscall
+    // family, not from what a cohort happened to hit — leaving it out would
+    // re-block the exact class #121 unblocks on any newer runner (R1).
+    .{ .name = "fchmodat2", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    // Deliberately absent: the timestamp family (utimensat/utimes/futimens).
+    // Timestamps are also outside the judged state by this file's own definition,
+    // but #121's ruling covered ownership/permission only; widening the excluded
+    // list is its own decision, not a side effect. They still refuse via the
+    // conservative net — blocked-but-loud, the safe side.
 };
 /// The fd-addressed forms, scoped from the descriptor annotation like every fd
 /// syscall (a state path inside some other argument must not scope them in).
@@ -922,6 +932,7 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
         \\9  fchown(3</tmp/s/db>, 0, 0) = 0
         \\9  write(3</tmp/s/db>, "x", 1) = 1
         \\9  fchmodat(AT_FDCWD</work>, "/tmp/s/db", 0600, 0) = 0
+        \\9  fchmodat2(AT_FDCWD</work>, "/tmp/s/db", 0600, AT_SYMLINK_NOFOLLOW) = 0
         \\9  chmod("/tmp/s/db", 0644) = 0
         \\
     ;
@@ -929,10 +940,11 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
     const want = [_]contract.OpClass{ .open, .write };
     try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
-    try std.testing.expectEqual(@as(usize, 3), p.metadata_observed.items.len);
+    try std.testing.expectEqual(@as(usize, 4), p.metadata_observed.items.len);
     try std.testing.expectEqualStrings("fchown", p.metadata_observed.items[0]);
     try std.testing.expectEqualStrings("fchmodat", p.metadata_observed.items[1]);
-    try std.testing.expectEqualStrings("chmod", p.metadata_observed.items[2]);
+    try std.testing.expectEqualStrings("fchmodat2", p.metadata_observed.items[2]);
+    try std.testing.expectEqualStrings("chmod", p.metadata_observed.items[3]);
 
     // A CHILD's metadata write bypasses the touch condition for the same reason it
     // bypasses `unsupported`: it changes nothing the verdict judges.
