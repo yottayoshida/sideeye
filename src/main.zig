@@ -1011,14 +1011,49 @@ pub fn main(init: std.process.Init.Minimal) !void {
         engine.restore(initial, state_abs) catch setupError("could not restore before falsifying the checker");
         engine.corruptState(initial, state_abs) catch setupError("could not corrupt the state for the falsification probe");
 
-        const probe = posix.runChild(gpa, cargv, &.{
+        // The gate's child output is captured and re-emitted with a per-line
+        // `falsify: ` marker (#134). By design this step produces exactly the output
+        // a real finding would produce — a target failing over a broken store — and
+        // a single line harvested from an unlabeled transcript once became "world
+        // evidence" (the buku correction, PR #133). A fence would not travel with an
+        // excerpt; a per-line prefix does.
+        var fal_buf: [contract.max_path]u8 = undefined;
+        const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError("path too long");
+        removeFile(fal_out);
+        const probe = posix.runChildCaptureAll(gpa, cargv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
-        }) catch setupError("could not run --check");
+        }, fal_out) catch setupError("could not run --check");
+
+        // Re-emitted before the verdict on the probe: unknown() exits the process,
+        // and the gate's output is evidence in the refusal case too. Blank lines are
+        // dropped — an empty line carries nothing harvestable and a bare marker is
+        // noise. A capture that cannot be read back is said out loud rather than
+        // silently swallowed.
+        if (readFileAllocCapped(arena, fal_out, 1024 * 1024)) |fal_text| {
+            var lines = std.mem.splitScalar(u8, fal_text, '\n');
+            while (lines.next()) |line| {
+                if (line.len == 0) continue;
+                say("falsify: {s}\n", .{line});
+            }
+        } else {
+            say("falsify: (the gate's child output could not be read back from {s} — missing, unreadable, or over the 1 MiB re-emission cap; the capture file, if present, still holds it)\n", .{fal_out});
+        }
 
         switch (probe) {
-            .exited => |code| if (code == 0)
-                unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name"),
+            .exited => |code| {
+                // 126 is the capture stub's own exit code for a capture it could not
+                // open (runChildImpl). Read as "the checker went red", it let
+                // /bin/true pass the gate whenever the capture path was blocked — a
+                // directory squatting on the default /tmp work dir did it (R1 of
+                // #134). The MCP adapter already discriminates this same stub exit;
+                // a checker that genuinely exits 126 is indistinguishable and gets
+                // the fail-closed reading.
+                if (code == 126)
+                    unknown(.checker_not_falsified, "the checker probe exited 126: either the capture stub could not open its stdout capture in the work directory, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red");
+                if (code == 0)
+                    unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name");
+            },
             else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state"),
         }
         checker_note = "falsified before the run (corrupted state -> check failed)";
