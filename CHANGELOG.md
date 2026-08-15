@@ -6,8 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Single-pid execve chains are judged (#123, trace contract v10, ADR 0018): the shim's exec wrappers carry the operation count across the image change (`SIDEEYE_SEQ_BASE`; subject-only, vfork-safe, never truncating the target's environment), the re-run init continues numbering, and `shim_ready` re-announces the base as its seq. The engine tolerates a subject exec only when that continuation evidence arrives; wrong base, a second exec inside the window, or end of trace refuses with the escape named (execl family and fexecve are not interposed, a static image loads no shim, a stripped environment carries nothing). Measured: the planted-bug toy is FOUND across a self-exec with the oracle agreeing on all 8 operations; fork+exec children stay refused precisely. pass advances past the exec refusal to the child refusal — its verdict needs the multi-process slice, and #123 stays open for it.
+- A numbering-integrity refusal, `sequence_numbering_broken`: the subject's kill-point record count and its highest sequence number must agree, in the recording and in every world. A restarted counter after an unobserved exec is a duplicate number that `prefixHash` provably cannot see; measured live, an execl-based self-exec is caught by exactly this check, and with it disabled the same run produced a confident false PASS.
+
 ### Changed
 
+- The oracle no longer refuses a second execve by the subject: whether the chain of observation survived the image change is the shim's evidence to give, and the engine holds it structurally — a second same-pid `shim_ready` with no exec record before it is itself an image change and refuses, as does a window that never closes; the oracle's completeness comparison additionally refuses when a post-exec in-scope operation escaped the shim. Raw threads, shared-fs clones, unshare and the child-touch witness are unchanged.
+- Saved v9 cases refuse honestly as a contract mismatch and must be re-recorded; the four assisted cohort cases were (identical verdicts, fresh-container replays reproduced — `spike/assisted/REMEASURE.md`).
 - The falsification gate's child output (the checker's message and the target's own stderr while the gate proves the checker can go red) is captured and re-emitted with a per-line `falsify: ` prefix (#134). By design that step produces exactly the output a real finding would, and an unlabeled gate line was once harvested from a transcript as world evidence; a line copied out of the gate segment now carries its speaker with it. World, recording and setup output are unchanged.
 
 ## [0.8.0] - 2026-08-15

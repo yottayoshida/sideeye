@@ -2,6 +2,101 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — #123: the judge follows a single pid across execve (contract v10)
+
+Third PR of the b_cd3b31e80b91 batch; the design is ADR 0018 and the
+plan carried two adversarial review rounds before a line was written.
+The shape that shipped: the shim's exec wrappers carry the operation
+count (`SIDEEYE_SEQ_BASE` — subject-only via the armed-pid gate, which
+excludes vfork children structurally; execve rebuilds envp in a stack
+frame; overflow carries nothing rather than truncating the target's
+environment), the re-run init continues numbering, `shim_ready`
+re-announces the base as its seq, and the engine tolerates a subject
+exec only when exactly that evidence follows. The oracle's own
+primary-exec refusal is gone — chain integrity is the shim's evidence,
+divergence is the oracle's net. `sequence_numbering_broken` is the new
+refusal for the shape prefixHash provably cannot see (it probes 1..k
+and stops at the first match; a restarted counter is a duplicate).
+
+First-try measurements in the container, all four exactly as the plan
+predicted: TOY_SELFEXEC judged end to end (the planted bug FOUND at
+crash point 8 of 8, oracle agreeing on all 8 operations spanning two
+images), TOY_FORKEXEC still refused as child_touched, TOY_EXECL (an
+uninterposed exec — no record, no carry) caught as
+sequence_numbering_broken, and ONE trace header across the image change
+(the lseek guard promoted from convenience to load-bearing, now pinned).
+
+The mutant sweep earned its keep twice over. Mutant A (disable the
+continuation) failed to COMPILE, the container ran the stale binary,
+and the suite came back all green — a textbook "unmeasured green"
+caught only because the build's raw exit code was read; the harness now
+gates on it and the mutant was rebuilt as a base-off-by-one (killed:
+the self-exec check went red at exit 2). Mutants B and C SURVIVED their
+single-line forms and both survivals were the two-witness design
+working: the fork+exec refusal is held by the shim's foreign-kill-point
+AND the oracle's child-touch (disabling both produced a false PASS at
+exit 0 — killed), and the numbering refusal is held at the recording
+AND in every world (disabling both likewise false-PASSed — killed). The
+header mutant broke six checks at once, as a mid-file header should.
+
+The v9→v10 re-record of the four assisted cases went verdict-identical
+(2/22, 1/11, 6/8, 2/5; fresh-container replays all `the case
+reproduced`) after two instructive trips: replay refuses before setup
+when the state root does not exist to resolve, and buku's replay needs
+the launcher's XDG environment — the cohort R1's "the toml does not
+carry the environment" lesson, now measured on the replay side.
+The buku inspection case (#133) stays v9 deliberately: its claim rides
+its transcript and worlds log, not replayability.
+
+R1 (fresh subagent) then broke the slice where the oracle's old refusal
+used to stand and nothing had replaced it: an execl with ZERO in-scope
+operations before it — no exec record, no window, and the numbering
+check's two sides trivially equal — reached a **FAIL verdict** with the
+second `shim_ready` sitting ignored in the trace (the reviewer decoded
+it and pasted the record). The evidence was self-contained all along:
+the constructor runs once per image, so a second same-pid announcement
+IS an image change. The parse now refuses on exactly that, which also
+made TOY_EXECL's refusal structural (the acceptance anchor moved to the
+double-announcement message, seen red against the unfixed engine first;
+the numbering assert stays as the second net, unit-pinned). The ADR and
+CHANGELOG sentence claiming the oracle's completeness comparison covers
+broken chains was wider than the code — narrowed to what is actually
+computed. Also adopted: the report now DISCLOSES an unbroken chain
+("the subject's image replaced N time(s), chain unbroken" in the
+processes note — `exec_continuations` had been write-only outside its
+own unit test, and the reviewer noted every other note in the report
+names what the judgement covered while this one was silent);
+`SIDEEYE_SEQ_BASE` is pinned empty in all three spawn env lists so an
+ambient value in the operator's shell cannot become the first image's
+base (measured: it turned a PASS run into a mis-attributed
+sequence_numbering_broken); errno is saved across the failure-path
+unsetenv in execv/execvp (glibc measured harmless, musl/darwin not —
+the `remove` wrapper's discipline); README/DESIGN's "execs over itself
+is refused" and README's v9 badge updated; the world-phase exec message
+no longer claims more than its branch checks; TOY_EXECL gets its own
+stage variable; the colliding `check 2x` label renamed `check 2ex`.
+Not changed: the header-count check's dependence on the preceding run's
+work dir — the block rm -rf's it first, so a stale file cannot survive
+into the read.
+
+R2 CONFIRMED all ten with its own re-measurements (the zero-op probe
+now refuses; ambient SEQ_BASE runs PASS again; the disclosure appears
+in text and JSON). Two of its notes acted on: the printed `reproduce`
+line now pins `SIDEEYE_SEQ_BASE=` (the acceptance executes that line,
+so an ambient value would have made it diverge from the engine's own
+runs — the same class as the spawn-env pin), and the image-change
+disclosure moved to right after the trace is trusted so the JSON
+`processes` field is honest on oracle-refusal paths too, with the
+children note now composing around it in either order. One note
+recorded rather than fixed, so a stale mutant result is never cited as
+current: **the numbering-assert wiring in main.zig no longer has live
+acceptance coverage** — the structural double-announcement rule catches
+the execl shape first, and R2 measured the both-asserts-off mutant
+SURVIVING the current suite. The wiring stays as the second net, its
+computation unit-pinned; a live shape that reaches it would need a shim
+that renumbers without re-announcing, which no interposed path
+produces.
+
 ## 2026-08-15 — #130: the assisted funnel gets its verify-seals — and building it hit both failure modes it exists to catch
 
 Second PR of the b_cd3b31e80b91 batch. `spike/assisted/verify-assisted.sh`

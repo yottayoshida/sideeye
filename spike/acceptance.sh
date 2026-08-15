@@ -312,6 +312,68 @@ fi
 unset TOY
 
 echo ""
+echo "=========== check 2ex: a self-exec chain is judged; its escapes are refused (#123) ==========="
+# The v10 slice, both sides at once. The planted bug must be FOUND across the image
+# change (a verdict, not a refusal, and exit 1 exactly — a different-reason UNKNOWN
+# must not satisfy this), the child-exec shape must stay refused, and the chain that
+# escapes interposition (execl carries no count) must be caught as renumbering.
+TOY=$OUT/toy-bug
+export TOY
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_SELFEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "oracle      agreed" && echo "$o" | grep -q "^FAIL" && echo "$o" | grep -q "image replaced"; then
+    echo "ok   the planted bug is found across a self-exec, oracle agreeing, image change disclosed (exit 1)"
+else
+    echo "FAIL self-exec judged run: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+# The second image appended to the same trace; the header guard must have kept it
+# to ONE header (a second header would be a mid-file version stamp nothing parses).
+hdrs=$(python3 -c "print(open('/tmp/acc/work/trace-record.bin','rb').read().count(b'SIDEEYE1'))" 2>/dev/null || echo 0)
+if [ "$hdrs" = "1" ]; then
+    echo "ok   one trace header across the image change"
+else
+    echo "FAIL trace header count across self-exec: $hdrs"
+    fails=$((fails + 1))
+fi
+
+TOY=$OUT/toy-fixed
+export TOY
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_FORKEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "child_touched_state_dir"; then
+    echo "ok   a child that execs and writes stays refused (exit 2)"
+else
+    echo "FAIL fork+exec refusal: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_EXECL=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "announced itself again without an exec record"; then
+    echo "ok   an uninterposed exec is caught structurally by the double announcement (exit 2)"
+else
+    echo "FAIL execl uninterposed: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+unset TOY
+
+echo ""
 echo "=========== check 2c: the oracle fires on its own ==========="
 # toy-raw is caught by the structural detector even without an oracle, so running it
 # *with* one is how the oracle path itself gets shown to work rather than assumed to.

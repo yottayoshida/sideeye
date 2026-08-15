@@ -90,3 +90,26 @@ the work.
   The committed control transcript's refusal text can be compared with
   the cohort's `report-strict.json` message directly — both name the
   image replacement.
+
+## v10 re-record (2026-08-15, #123)
+
+Contract v10 (self-exec chains judged; `shim_ready` seq now carries the
+continuation base) makes the v9 saved cases refuse as
+`case_no_longer_applies` — the #82-class cost the bump priced in. The four
+committed defines were re-run unmodified in the cohort image with the
+strict oracle, engine 0.8.0/v10 built from this branch: **identical
+verdicts and oracle agreement to the v9 remeasure** (buku FAIL 2/22
+agreed-21, calcurse FAIL 1/11 agreed-10, devtodo FAIL 6/8 agreed-7, stow
+FAIL 2/5 agreed-4). Artifacts: `<target>/explore-v10-transcript.txt`,
+`<target>/cases-v10/000001.json`, `<target>/replay-v10-transcript.txt` —
+each replay ran in a fresh container and printed `the case reproduced`
+(exit 1). The v9 artifacts stay in place as records, the same arrangement
+v8 got when v9 superseded it.
+
+Two replay trips worth recording for the next fresh checkout: the state
+root must exist before `replay` (path resolution refuses otherwise), and
+buku's replay needs the launcher's environment (`XDG_DATA_HOME` pointing
+into the state root) — the cohort's own R1 lesson that the toml does not
+carry the environment, now measured on the replay side too: without it
+the fresh recording counts zero in-scope operations and the case refuses
+honestly as `case_no_longer_applies`.

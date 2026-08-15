@@ -1,0 +1,30 @@
+todo: warning, created database (/tmp/assisted/devtodo/state/.todo) has group or world permissions
+falsify: checker(devtodo-remove): I-C: expected exactly one GraceNote in the XML, got 0
+checker(devtodo-remove): I-C: expected exactly one GraceNote in the XML, got 0
+checker(devtodo-remove): I-C: expected exactly one GraceNote in the XML, got 0
+checker(devtodo-remove): I-C: expected exactly one GraceNote in the XML, got 0
+checker(devtodo-remove): I-C: expected exactly one GraceNote in the XML, got 0
+checker(devtodo-remove): I-F: the database is not well-formed XML
+checker(devtodo-remove): I-F: the database is not well-formed XML
+FAIL  6 of 8 crash worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 7
+            after  open(/tmp/assisted/devtodo/state/.todo)
+            before write(/tmp/assisted/devtodo/state/.todo)
+path        .todo
+observed    holding neither the old nor the new content
+explored    8 worlds (crash points 7 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 7 operations (183 syscall lines examined, 33 in scope of the judged state)
+metadata    2 ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): fchmodat x1, fchownat x1. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+l1          no marker configured
+case        /tmp/sideeye-work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/assisted/devtodo/state SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 <operation>
+explore exit code: 1

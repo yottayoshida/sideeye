@@ -384,6 +384,22 @@ pub const TraceInfo = struct {
     /// counts. Evidence that the run crossed a process boundary even if no boundary
     /// record was written (a raw clone, say).
     foreign_pid_seen: bool = false,
+    /// Subject execs whose chain was proven unbroken (#123): the exec record was
+    /// followed by a `shim_ready` from the same pid carrying exactly the operation
+    /// count the chain left off at. Such an exec is a continuation, not a boundary.
+    exec_continuations: u32 = 0,
+    /// A subject exec whose continuation evidence never arrived, arrived with the
+    /// wrong count, or was pre-empted by another exec. `hard_boundary` is set to
+    /// `.exec` alongside this; the flag exists so the refusal can say WHICH way the
+    /// image change escaped observation.
+    exec_chain_broken: bool = false,
+    /// How many kill-point records the subject wrote. `kill_point_count` is the
+    /// MAXIMUM seq; if the two disagree the numbering has gaps or duplicates — a
+    /// restarted counter after an unobserved exec is exactly a duplicate — and any
+    /// address computed from the trace may name a different operation than the one
+    /// that ran (#123, R1 C7: prefixHash misses duplicates, logicalAddress takes
+    /// the last match; a verdict over renumbered ops is a verdict about nothing).
+    primary_kill_records: u32 = 0,
 
     pub fn deinit(self: *TraceInfo) void {
         self.arena.deinit();
@@ -435,6 +451,12 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
     };
     info.saw_header = true;
 
+    // The continuation window (#123): a subject exec is judged, not refused, when
+    // the very next same-pid shim_ready carries exactly the operation count the
+    // chain left off at. The window is open between those two records.
+    var pending_exec = false;
+    var pending_base: u32 = 0;
+
     while (off < bytes.len) {
         const dec = contract.decodeRecord(bytes[off..]) catch {
             info.truncated = true;
@@ -451,7 +473,30 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
         switch (op.class) {
             .shim_ready => {
                 info.saw_shim_ready = true;
-                if (info.primary_pid == null) info.primary_pid = op.pid;
+                if (info.primary_pid == null) {
+                    info.primary_pid = op.pid;
+                } else if (pending_exec and op.pid == info.primary_pid.?) {
+                    // The new image announcing itself. Its seq is the carried base
+                    // (v10); anything else — a fresh 0 from a stripped environment
+                    // or a non-interposed exec path — is a chain that broke.
+                    if (op.seq == pending_base) {
+                        info.exec_continuations += 1;
+                    } else {
+                        info.exec_chain_broken = true;
+                        if (info.hard_boundary == null) info.hard_boundary = .exec;
+                    }
+                    pending_exec = false;
+                } else if (op.pid == info.primary_pid.?) {
+                    // No window is open, and the subject announced itself AGAIN. The
+                    // constructor runs once per image, so a second announcement IS an
+                    // image change — one that escaped interposition entirely (execl
+                    // family, fexecve: no exec record, no carried count). Structural,
+                    // and it needs no prior operations to fire: R1 measured an execl
+                    // with zero in-scope ops before it slipping to a verdict because
+                    // the numbering check's two sides were trivially equal.
+                    info.exec_chain_broken = true;
+                    if (info.hard_boundary == null) info.hard_boundary = .exec;
+                }
             },
             .kill_landed => {
                 info.kill_landed_seq = op.seq;
@@ -468,6 +513,7 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
         }
         if (op.class.isKillPoint() and is_primary) {
             info.kill_point_count = @max(info.kill_point_count, op.seq);
+            info.primary_kill_records += 1;
             if (op.class.isMutation()) info.mutation_count += 1;
         }
         if (op.class.isBoundary()) {
@@ -476,12 +522,33 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
                 .detached => true,
                 // A record written before the primary announced itself is attributed
                 // to the primary: refusing is the safe misreading.
-                .exec, .thread => is_primary or info.primary_pid == null,
+                .thread => is_primary or info.primary_pid == null,
+                .exec => blk: {
+                    // A subject exec opens the continuation window instead of
+                    // refusing outright (#123). Before the subject is known, v9's
+                    // safe misreading stands; a second exec while a window is
+                    // still open means the intermediate image was never observed.
+                    if (info.primary_pid == null) break :blk true;
+                    if (!is_primary) break :blk false;
+                    if (pending_exec) {
+                        info.exec_chain_broken = true;
+                        break :blk true;
+                    }
+                    pending_exec = true;
+                    pending_base = info.kill_point_count;
+                    break :blk false;
+                },
                 else => false,
             };
             if (hard and info.hard_boundary == null) info.hard_boundary = op.class;
         }
         try info.ops.append(arena, op);
+    }
+    // A window still open at the end of the trace is a chain that broke: the image
+    // changed and nothing observed the far side.
+    if (pending_exec) {
+        info.exec_chain_broken = true;
+        if (info.hard_boundary == null) info.hard_boundary = .exec;
     }
     return info;
 }
@@ -1430,4 +1497,123 @@ test "a trace written against another contract version is a mismatch, not a shor
 
     _ = posix.unlink(fz.ptr);
     _ = posix.rmdir(dz.ptr);
+}
+
+fn writeTraceForTest(dir_tag: []const u8, records: []const contract.Record, fbuf: *[contract.max_path]u8) ![*:0]const u8 {
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-{s}-{d}", .{ dir_tag, posix.getpid() }) catch unreachable;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const dz = std.fmt.bufPrintZ(&pbuf, "{s}", .{dir}) catch unreachable;
+    _ = posix.mkdir(dz.ptr, 0o755);
+    const fz = try joinZ(fbuf, dir, "trace.bin");
+    const fd = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    var hbuf: [contract.header_len]u8 = undefined;
+    const hn = try contract.encodeHeader(&hbuf);
+    try std.testing.expectEqual(@as(isize, @intCast(hn)), posix.write(fd, &hbuf, hn));
+    for (records) |rec| {
+        var rbuf: [2 * contract.max_path]u8 = undefined;
+        const rn = try contract.encodeRecord(&rbuf, rec);
+        try std.testing.expectEqual(@as(isize, @intCast(rn)), posix.write(fd, &rbuf, rn));
+    }
+    _ = posix.close(fd);
+    return fz.ptr;
+}
+
+test "a subject exec followed by a shim_ready carrying the count is a continuation (#123)" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-cont", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 2, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+    }, &fbuf);
+    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.hard_boundary == null);
+    try std.testing.expect(!info.exec_chain_broken);
+    try std.testing.expectEqual(@as(u32, 1), info.exec_continuations);
+    try std.testing.expectEqual(@as(u32, 3), info.kill_point_count);
+    try std.testing.expectEqual(@as(u32, 3), info.primary_kill_records);
+    _ = posix.unlink(fz);
+}
+
+test "a subject exec whose shim_ready restarts at zero is a broken chain, and the renumbering is caught (#123)" {
+    // The stale-shim shape contract v10 exists for: numbering restarted after the
+    // image change. Two independent detectors must both see it — the continuation
+    // predicate (wrong base) and the records-vs-max disagreement.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-restart", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+    }, &fbuf);
+    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.exec_chain_broken);
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    // records = 3, max = 2: the duplicate seq 1 collapses under @max.
+    try std.testing.expectEqual(@as(u32, 3), info.primary_kill_records);
+    try std.testing.expectEqual(@as(u32, 2), info.kill_point_count);
+    _ = posix.unlink(fz);
+}
+
+test "a subject exec with no shim_ready after it is a broken chain (#123)" {
+    // The static-image / stripped-environment / execl-family shape: the far side of
+    // the image change was never observed at all.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-dark", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+    }, &fbuf);
+    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.exec_chain_broken);
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    _ = posix.unlink(fz);
+}
+
+test "a second announcement with no exec record is itself an image change (#123)" {
+    // The execl-family shape with nothing recorded before it: no exec record, so
+    // no window — but the constructor runs once per image, and a second same-pid
+    // shim_ready is self-contained evidence the image changed. R1 measured this
+    // slipping to a verdict when only the numbering check stood behind it (zero
+    // prior ops make records == max trivially).
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("dup-announce", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.exec_chain_broken);
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    _ = posix.unlink(fz);
+}
+
+test "a child's exec never opens a continuation window and stays tolerable (#123)" {
+    // The pass shape: children exec and the subject keeps going. The exec itself is
+    // not hard; the child's state-directory write is what refuses the run, through
+    // foreign_kill_point — the boundary stays a spawn doing what spawns do.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-child", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 9, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 9, .path = "/tmp/s/c", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.hard_boundary == null);
+    try std.testing.expect(!info.exec_chain_broken);
+    try std.testing.expect(info.foreign_kill_point);
+    _ = posix.unlink(fz);
 }

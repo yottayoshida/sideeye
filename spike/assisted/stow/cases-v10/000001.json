@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.8.0",
+  "contract_version": 10,
+  "define": {
+    "state": "/tmp/assisted/stow/state",
+    "setup": "/work/spike/assisted/stow/ops/./setup.sh",
+    "operation": "/usr/bin/stow -d /tmp/assisted/stow/state/stowdir -t /tmp/assisted/stow/state/target -S B",
+    "check": "/work/spike/assisted/stow/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 4,
+  "prefix_hash": "af449b63405ac573",
+  "after_class": "unlink",
+  "after_path": "/tmp/assisted/stow/state/target/sub",
+  "before_class": "mkdir",
+  "before_path": "/tmp/assisted/stow/state/target/sub",
+  "violation": "missing"
+}

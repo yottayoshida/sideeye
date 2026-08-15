@@ -10,7 +10,7 @@ Sideeye finds out what your program leaves on disk when it dies at the worst pos
 
 It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, buku, calcurse, devtodo — with two upstream reports so far (timewarrior's crash-window bug; a topydo recovery misfire found in follow-up analysis of its campaign); the rest are recorded in this repository with novelty deliberately unchecked. Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
 
-**Status: v0.8.0**, trace contract v9. The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and may change in any release. Release history: [CHANGELOG.md](CHANGELOG.md); the road to 1.0: [PRD.md](PRD.md).
+**Status: v0.8.0**, trace contract v10. The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and may change in any release. Release history: [CHANGELOG.md](CHANGELOG.md); the road to 1.0: [PRD.md](PRD.md).
 
 ## Installation
 
@@ -122,7 +122,7 @@ Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2) with
 - **Dynamically linked and single-threaded**, reaching its files through libc — buffered stdio, the hard-link family and symlink creation included. Raw syscalls (a Rust target pulling in `rustix`, say), static linking, hardened runtimes and threads are refused. A descriptor's *location* decides observation, never its number: a state file rebound onto stdout with `dup2` is still seen, and startup descriptor-hygiene sweeps are tolerated (ADR 0013).
 - **State in one directory**, declared with `--state` or the toml's `[world] state`. Symlinks inside it are first-class (snapshotted and restored as links, target verbatim); ownership/permission changes are observed but outside the judged state, and every report says so.
 - **A clean run exits its declared success status** (`--expect-status`, default 0) — the crash points are read off that run.
-- **Other processes stay away from the state.** Forked helpers are fine when the oracle (`--oracle`, Linux) confirms nobody else touched it; a target that `exec`s over itself, or a process that escapes Sideeye's containment group, is refused. Without an oracle any process boundary is UNKNOWN, full stop — the shim only sees processes that load it, and "was not seen" is not "did nothing". For single-process targets with no oracle, a PASS requires `--allow-unverified`, and the report says the weaker claim out loud.
+- **Other processes stay away from the state.** Forked helpers are fine when the oracle (`--oracle`, Linux) confirms nobody else touched it; a target that `exec`s over itself is judged when the chain of observation survives the image change (contract v10 carries the operation count across it) and refused when it does not, and a process that escapes Sideeye's containment group is refused. Without an oracle any process boundary is UNKNOWN, full stop — the shim only sees processes that load it, and "was not seen" is not "did nothing". For single-process targets with no oracle, a PASS requires `--allow-unverified`, and the report says the weaker claim out loud.
 
 The full contract, and the reason behind each refusal: [DESIGN.md](DESIGN.md).
 

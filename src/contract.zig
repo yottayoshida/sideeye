@@ -68,7 +68,17 @@ const std = @import("std");
 /// into an explicit refusal instead of a positional divergence. Measured motivation:
 /// the #118 assisted cohort's stow run refused on `symlinkat` (perl's symlink()
 /// reaches the kernel as symlinkat), blocking symlink-farm targets as a class.
-pub const contract_version: u32 = 9;
+/// v10 makes a single-pid execve chain judgeable (#123): the shim's exec wrappers
+/// carry the operation count across the image change (`env.seq_base`), the re-run
+/// `init()` continues numbering from it, and `shim_ready`'s seq field — always 0
+/// through v9 — now carries that base as the continuation evidence the engine
+/// requires. No record class or byte shape changed, but the shim↔engine protocol
+/// did: a v9 shim paired with a v10 engine would restart numbering after an exec
+/// and the engine would read colliding sequence numbers as a judged world. The
+/// version guard turns that pairing into an explicit refusal. Measured motivation:
+/// the #118 cohort's pass run — a shell CLI whose first act is replacing itself
+/// with its interpreter — was refused at that first exec.
+pub const contract_version: u32 = 10;
 
 pub const magic = "SIDEEYE1";
 
@@ -93,6 +103,12 @@ pub const env = struct {
     /// 1-based index of the kill-point op to die immediately before.
     /// Absent or 0 means the recording run: observe everything, kill nothing.
     pub const kill_at = "SIDEEYE_KILL_AT";
+    /// Operation count carried across a self-exec (#123): the shim's exec wrappers
+    /// set it for the subject only (never for a forked or vfork'd child), the
+    /// re-run `init()` continues numbering from it, and `shim_ready` re-announces
+    /// it as its seq. Absent means a fresh start — which after an exec record is
+    /// exactly the broken-chain evidence the engine refuses on.
+    pub const seq_base = "SIDEEYE_SEQ_BASE";
 };
 
 /// The exit-code contract from DESIGN.md §13. UNKNOWN is never 0: a caller that
@@ -269,6 +285,12 @@ pub const UnknownReason = enum {
     multiple_threads_detected,
     unresolvable_path,
     kill_did_not_land,
+    /// The subject's kill-point records and its highest sequence number disagree —
+    /// the numbering has gaps or duplicates. A restarted counter after an
+    /// unobserved image change is exactly a duplicate (#123), and every address
+    /// computed from such a trace may name a different operation than the one that
+    /// ran. prefixHash catches gaps but not duplicates; this catches both.
+    sequence_numbering_broken,
     /// No oracle was available, so the shim's account of what happened could not be
     /// checked against anything. Without it, a target that bypasses libc looks exactly
     /// like one that touched no files — and the structural detectors only catch that

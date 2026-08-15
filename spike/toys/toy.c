@@ -14,6 +14,14 @@
  * Environment:
  *   TOY_STATE      state directory (default ./state)
  *   TOY_FORK       if set, fork a trivial child before rotating (boundary case)
+ *   TOY_SELFEXEC   write one state file, then exec this same binary; the rotate runs
+ *                  in the second image (#123's judged shape: a tail-exec chain)
+ *   TOY_FORKEXEC   fork a child that execs /bin/sh and writes into the state
+ *                  directory (#123's still-refused shape: pass's mkdir/mv children)
+ *   TOY_EXECL      like TOY_SELFEXEC but through execl, which the shim does not
+ *                  interpose: no exec record, no carried count — the second image
+ *                  announces itself again, which the engine must catch structurally
+ *                  (the numbering-integrity check is the second net behind it)
  *   TOY_VFORK      if set, vfork a child that immediately execs — the only shape POSIX
  *                  sanctions. The shim once interposed vfork with an ordinary wrapper,
  *                  whose stack frame spans vfork's double return: the child clobbered it
@@ -685,6 +693,47 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
+    /* TOY_SELFEXEC: the tail-exec CLI shape #123 judges. Stage 1 writes one state
+     * file (so the carried operation count is non-trivial), then replaces this
+     * image with itself; the whole rotate runs in the SECOND image. Stage 2 is
+     * marked through the environment so the chain has exactly two links. A failed
+     * exec exits loudly instead of falling through to a single-image rotate that
+     * would fake the chain. */
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_SELFEXEC") && !getenv("TOY_SELFEXEC_STAGE2")) {
+        char staged[4096];
+        join_path(staged, sizeof staged, "staged.txt");
+        if (write_file(staged, "stage one was here\n") != 0) return 1;
+        setenv("TOY_SELFEXEC_STAGE2", "1", 1);
+        execv(argv[0], argv);
+        _exit(127);
+    }
+    /* TOY_EXECL: the same chain through execl, which the shim does NOT interpose —
+     * no exec record, no carried count. The second image restarts numbering at 1,
+     * and the engine's records-vs-max check must refuse rather than address a
+     * world by a duplicated number. */
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_EXECL") && !getenv("TOY_EXECL_STAGE2")) {
+        char staged[4096];
+        join_path(staged, sizeof staged, "staged.txt");
+        if (write_file(staged, "stage one was here\n") != 0) return 1;
+        setenv("TOY_EXECL_STAGE2", "1", 1);
+        execl(argv[0], argv[0], "rotate", (char *)NULL);
+        _exit(127);
+    }
+    /* TOY_FORKEXEC: the shape the slice still refuses — a CHILD execs and mutates
+     * the judged state (pass's mkdir/mv children, measured in #123). The child
+     * inherits the full environment, shim included: the refusal must come from
+     * the judge seeing it, not from the child being invisible. The parent then
+     * rotates normally, so the run holds both a subject mutation and a child's. */
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_FORKEXEC")) {
+        char cmd[4200];
+        snprintf(cmd, sizeof cmd, "echo forked > %s/forked.txt", state_dir());
+        pid_t p = fork();
+        if (p == 0) {
+            execl("/bin/sh", "sh", "-c", cmd, (char *)NULL);
+            _exit(127);
+        }
+        if (p > 0) { int st; waitpid(p, &st, 0); }
+    }
     if (strcmp(argv[1], "rotate") == 0) return cmd_rotate();
     if (strcmp(argv[1], "doctor") == 0) return cmd_doctor();
     if (strcmp(argv[1], "load-key") == 0) return cmd_load_key();
