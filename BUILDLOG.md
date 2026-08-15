@@ -55,6 +55,53 @@ The shim wrappers have no unit-test harness (nothing loads the .so in
 `zig build test`); their end-to-end proof is the container re-run of the
 stow define, which is the next step's acceptance criterion.
 
+**R1 (same day) reshaped the change in two ways worth recording.** First,
+the certain CI red: acceptance check 2v still demanded the refusal this
+change removes — R1 also measured, on macOS, that the TOY_SYMLINK run now
+PASSes with the symlink counted (crash points 4 → 5), which is the first
+live evidence of the macOS interposer working. The check is flipped to
+assert the v9 contract (PASS + exactly one class-10 record) and becomes
+the Linux end-to-end pin. Second, and central: removing the oracle's
+refusal EXPOSED a pre-existing silent skip — a shared path whose kind
+changes between the clean runs (stow's unfold: fold symlink → real
+directory) was outside both built-in invariants and outside the report's
+disclosure. The owner ruled to judge it in full rather than disclose-only
+or refuse: the identity on each side is the (kind, content) pair, killed
+mid-swap the path matches neither, and the file world's delete-then-
+recreate window was already judged `missing` — the kind change was an
+escape hatch, not a policy. L1's standard arm now promises the post
+(kind, content) pair from the plan, and a post-only symlink is judged by
+target (the existence-only rationale — content may differ between runs —
+does not transfer to a link, whose target is its whole identity).
+
+R1 also caught this entry over- and under-claiming. Over: the readlink
+fill-the-buffer guard could never fire on a real platform (`max_path` ==
+PATH_MAX), so "fail-closed" was a claim nobody could falsify — the guard
+moved into `readLinkTarget(buf)` and the boundary is now hit for real by
+a test with an 8-byte buffer. Under: two silent-wrongness fixes this
+change makes were never claimed — `snapshotsEqual` now distinguishes two
+links with different targets (both read as `.other` + empty content
+before), and `kindOfPath` no longer reports a symlink-to-file as a
+regular file on DT_UNKNOWN filesystems (it used to read the POINTED-AT
+bytes into the snapshot). Both are real fail-open closures that came
+along with making the kind first-class. The judgeL0 kind strengthening
+also reaches beyond symlinks: an empty pre file replaced by a directory
+used to compare equal and no longer does.
+
+Fix-round mutation record: the classify skip-revert, judgeL0's pre-kind
+half, L1's post-only target check, and the readLinkTarget `>=`→`>`
+boundary — each killed by exactly its own test. One process slip during
+the round, recorded because it will happen again if unrecorded:
+`git checkout -- src/engine.zig` after a mutation run reverted the file
+to the last COMMIT, which silently discarded the not-yet-committed R1
+fixes and made the next mutation a no-op against old code (rc=1 for the
+wrong reason — a compile error in a neighbouring file). The fixes were
+re-applied and committed BEFORE re-running the mutations; the rule is
+"commit first, then mutate", and the redo killed all four legitimately.
+Left alone on purpose: `spike/assisted/RESULTS.md` still says stow is
+blocked — it is the first cohort's sealed record, and the re-measurement
+writes its own.
+
 ## 2026-08-15 — spike/ gets a map; the cleanup that was NOT done is the point
 
 Three campaigns plus the assisted cohort left spike/ dense enough that the
