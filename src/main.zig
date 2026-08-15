@@ -668,6 +668,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 .{ contract.env.state_dir, state_abs },
                 .{ contract.env.state_dir_alt, state_alt },
                 .{ contract.env.trace_path, rec_trace },
+                // Pinned empty so an ambient value in the operator's shell cannot
+                // become the first image's numbering base (R1; parseU32("") is 0).
+                .{ contract.env.seq_base, "" },
                 .{ preload_var, shim },
             };
             for (pairs) |kv| {
@@ -683,6 +686,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, rec_trace },
+            // Pinned empty: see the oracle-path pairs above.
+            .{ contract.env.seq_base, "" },
             .{ preload_var, shim },
         }, rec_stdout) catch setupError("could not run --operation");
     };
@@ -759,7 +764,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // self-exec chain — exec record, then a same-pid shim_ready carrying the
         // operation count — is a continuation and never reaches here.
         .exec => if (trace.exec_chain_broken)
-            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed (an execl-family call, a static image, or a stripped environment cannot carry it). An unbroken self-exec chain is judged; a separate process is not (#123)")
+            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)")
         else
             unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading"),
         .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic"),
@@ -921,6 +926,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 .{parsed.children},
             ) catch "crossed, tolerated";
         }
+    }
+
+    // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid
+    // count reads "single process" while the crash points span more than one image,
+    // and every other note in this report says what the judgement covered — this
+    // one must too. Appended so it composes with the children note when both apply.
+    if (trace.exec_continuations > 0) {
+        boundary_note = std.fmt.allocPrint(
+            arena,
+            "{s}; the subject's image replaced {d} time(s), chain unbroken (#123)",
+            .{ boundary_note, trace.exec_continuations },
+        ) catch "single process; image replaced, chain unbroken";
     }
 
     // Quiescence, observed rather than proven. A tolerated child was killed with the
@@ -1107,6 +1124,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, world_trace },
             .{ contract.env.kill_at, kstr },
+            // Pinned empty: see the recording pairs.
+            .{ contract.env.seq_base, "" },
             .{ preload_var, shim },
         }, world_stdout) catch setupError("could not run --operation");
 
@@ -1122,7 +1141,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (wtrace.hard_boundary) |hb| switch (hb) {
             .detached => unknown(.child_process_detected, "a process left the containment group in an explored world"),
             .thread => unknown(.multiple_threads_detected, "the target created a thread in an explored world"),
-            .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world and the chain of observation broke there"),
+            .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world without an unbroken chain of observation"),
             else => {},
         };
         if (wtrace.primary_kill_records != wtrace.kill_point_count)

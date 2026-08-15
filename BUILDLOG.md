@@ -48,6 +48,37 @@ carry the environment" lesson, now measured on the replay side.
 The buku inspection case (#133) stays v9 deliberately: its claim rides
 its transcript and worlds log, not replayability.
 
+R1 (fresh subagent) then broke the slice where the oracle's old refusal
+used to stand and nothing had replaced it: an execl with ZERO in-scope
+operations before it — no exec record, no window, and the numbering
+check's two sides trivially equal — reached a **FAIL verdict** with the
+second `shim_ready` sitting ignored in the trace (the reviewer decoded
+it and pasted the record). The evidence was self-contained all along:
+the constructor runs once per image, so a second same-pid announcement
+IS an image change. The parse now refuses on exactly that, which also
+made TOY_EXECL's refusal structural (the acceptance anchor moved to the
+double-announcement message, seen red against the unfixed engine first;
+the numbering assert stays as the second net, unit-pinned). The ADR and
+CHANGELOG sentence claiming the oracle's completeness comparison covers
+broken chains was wider than the code — narrowed to what is actually
+computed. Also adopted: the report now DISCLOSES an unbroken chain
+("the subject's image replaced N time(s), chain unbroken" in the
+processes note — `exec_continuations` had been write-only outside its
+own unit test, and the reviewer noted every other note in the report
+names what the judgement covered while this one was silent);
+`SIDEEYE_SEQ_BASE` is pinned empty in all three spawn env lists so an
+ambient value in the operator's shell cannot become the first image's
+base (measured: it turned a PASS run into a mis-attributed
+sequence_numbering_broken); errno is saved across the failure-path
+unsetenv in execv/execvp (glibc measured harmless, musl/darwin not —
+the `remove` wrapper's discipline); README/DESIGN's "execs over itself
+is refused" and README's v9 badge updated; the world-phase exec message
+no longer claims more than its branch checks; TOY_EXECL gets its own
+stage variable; the colliding `check 2x` label renamed `check 2ex`.
+Not changed: the header-count check's dependence on the preceding run's
+work dir — the block rm -rf's it first, so a stale file cannot survive
+into the read.
+
 ## 2026-08-15 — #130: the assisted funnel gets its verify-seals — and building it hit both failure modes it exists to catch
 
 Second PR of the b_cd3b31e80b91 batch. `spike/assisted/verify-assisted.sh`

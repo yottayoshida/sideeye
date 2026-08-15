@@ -47,14 +47,22 @@ provably survived the image change (trace contract v10):
   recording and in every world. A restarted counter is a duplicate number, and
   `prefixHash` provably cannot see duplicates (it probes 1..k and stops at the
   first match) while `logicalAddress` takes the last match — renumbering could
-  produce a confident verdict about the wrong operation. Measured live:
-  TOY_EXECL (an uninterposed exec) is caught by exactly this check, and with
-  both its instances disabled the same run exits 0 — a false PASS.
+  produce a confident verdict about the wrong operation. TOY_EXECL (an
+  uninterposed exec) is refused structurally by the double-announcement rule
+  before this check runs; the numbering refusal is the second net behind it,
+  and R1 measured why the second net alone was not enough: with zero in-scope
+  operations before the exec its two sides are trivially equal, and the run
+  reached a verdict until the structural rule existed. With both numbering
+  instances disabled AND the structural rule absent, the renumbered run exits
+  0 — a false PASS (the mutant that saw the check red).
 - The oracle's own primary-exec refusal is REMOVED. Chain integrity is the
-  shim's evidence to give; a chain that broke leaves the shim's records short
-  of the oracle's syscalls and the completeness comparison refuses on the
-  divergence. (The oracle keeps refusing raw threads, shared-fs clones and
-  unshare, and keeps its child-touch witness.)
+  shim's evidence to give, and the engine holds it structurally: a second
+  same-pid `shim_ready` with no exec record before it IS an image change (the
+  constructor runs once per image), and an open window that never closes is a
+  broken chain — both refuse without needing the oracle. The oracle's
+  completeness comparison additionally refuses when a post-exec in-scope
+  operation escaped the shim. (The oracle keeps refusing raw threads,
+  shared-fs clones and unshare, and keeps its child-touch witness.)
 
 ## Alternatives considered
 

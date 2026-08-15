@@ -312,7 +312,7 @@ fi
 unset TOY
 
 echo ""
-echo "=========== check 2x: a self-exec chain is judged; its escapes are refused (#123) ==========="
+echo "=========== check 2ex: a self-exec chain is judged; its escapes are refused (#123) ==========="
 # The v10 slice, both sides at once. The planted bug must be FOUND across the image
 # change (a verdict, not a refusal, and exit 1 exactly — a different-reason UNKNOWN
 # must not satisfy this), the child-exec shape must stay refused, and the chain that
@@ -325,8 +325,8 @@ o=$(TOY_SELFEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "1" ] && echo "$o" | grep -q "oracle      agreed" && echo "$o" | grep -q "^FAIL"; then
-    echo "ok   the planted bug is found across a self-exec, oracle agreeing (exit 1)"
+if [ "$rc" = "1" ] && echo "$o" | grep -q "oracle      agreed" && echo "$o" | grep -q "^FAIL" && echo "$o" | grep -q "image replaced"; then
+    echo "ok   the planted bug is found across a self-exec, oracle agreeing, image change disclosed (exit 1)"
 else
     echo "FAIL self-exec judged run: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -364,11 +364,10 @@ o=$(TOY_EXECL=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "sequence_numbering_broken"; then
-    echo "ok   an uninterposed exec restarts numbering and is caught as duplicates (exit 2)"
-    reasons="$reasons sequence_numbering_broken"
+if [ "$rc" = "2" ] && echo "$o" | grep -q "announced itself again without an exec record"; then
+    echo "ok   an uninterposed exec is caught structurally by the double announcement (exit 2)"
 else
-    echo "FAIL execl renumbering: exit $rc"
+    echo "FAIL execl uninterposed: exit $rc"
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
 fi

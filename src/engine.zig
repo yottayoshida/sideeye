@@ -486,6 +486,16 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
                         if (info.hard_boundary == null) info.hard_boundary = .exec;
                     }
                     pending_exec = false;
+                } else if (op.pid == info.primary_pid.?) {
+                    // No window is open, and the subject announced itself AGAIN. The
+                    // constructor runs once per image, so a second announcement IS an
+                    // image change — one that escaped interposition entirely (execl
+                    // family, fexecve: no exec record, no carried count). Structural,
+                    // and it needs no prior operations to fire: R1 measured an execl
+                    // with zero in-scope ops before it slipping to a verdict because
+                    // the numbering check's two sides were trivially equal.
+                    info.exec_chain_broken = true;
+                    if (info.hard_boundary == null) info.hard_boundary = .exec;
                 }
             },
             .kill_landed => {
@@ -1561,6 +1571,25 @@ test "a subject exec with no shim_ready after it is a broken chain (#123)" {
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
         .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+    }, &fbuf);
+    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.exec_chain_broken);
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    _ = posix.unlink(fz);
+}
+
+test "a second announcement with no exec record is itself an image change (#123)" {
+    // The execl-family shape with nothing recorded before it: no exec record, so
+    // no window — but the constructor runs once per image, and a second same-pid
+    // shim_ready is self-contained evidence the image changed. R1 measured this
+    // slipping to a verdict when only the numbering check stood behind it (zero
+    // prior ops make records == max trivially).
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("dup-announce", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
     }, &fbuf);
     var info = try readTrace(std.testing.allocator, std.mem.span(fz));
     defer info.deinit();

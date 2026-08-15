@@ -416,7 +416,15 @@ pub fn execv(path: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_
     common.noteBoundary(.exec);
     const carried = common.execSeqCarrySet();
     const rc = common.callExecv(path, argv);
-    if (carried) common.execSeqCarryUnset();
+    if (carried) {
+        // Faithful errno, same discipline as `remove`: the unset between the failed
+        // exec and the return must not overwrite what exec set (POSIX allows
+        // unsetenv to touch errno; glibc/aarch64 measured not to, musl and darwin
+        // unmeasured — so it is saved rather than assumed).
+        const saved = std.c._errno().*;
+        common.execSeqCarryUnset();
+        std.c._errno().* = saved;
+    }
     return rc;
 }
 
@@ -424,7 +432,11 @@ pub fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c
     common.noteBoundary(.exec);
     const carried = common.execSeqCarrySet();
     const rc = common.callExecvp(file, argv);
-    if (carried) common.execSeqCarryUnset();
+    if (carried) {
+        const saved = std.c._errno().*;
+        common.execSeqCarryUnset();
+        std.c._errno().* = saved;
+    }
     return rc;
 }
 

@@ -20,7 +20,8 @@
  *                  directory (#123's still-refused shape: pass's mkdir/mv children)
  *   TOY_EXECL      like TOY_SELFEXEC but through execl, which the shim does not
  *                  interpose: no exec record, no carried count — the second image
- *                  restarts numbering, which the engine must catch as duplicates
+ *                  announces itself again, which the engine must catch structurally
+ *                  (the numbering-integrity check is the second net behind it)
  *   TOY_VFORK      if set, vfork a child that immediately execs — the only shape POSIX
  *                  sanctions. The shim once interposed vfork with an ordinary wrapper,
  *                  whose stack frame spans vfork's double return: the child clobbered it
@@ -710,11 +711,11 @@ int main(int argc, char **argv) {
      * no exec record, no carried count. The second image restarts numbering at 1,
      * and the engine's records-vs-max check must refuse rather than address a
      * world by a duplicated number. */
-    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_EXECL") && !getenv("TOY_SELFEXEC_STAGE2")) {
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_EXECL") && !getenv("TOY_EXECL_STAGE2")) {
         char staged[4096];
         join_path(staged, sizeof staged, "staged.txt");
         if (write_file(staged, "stage one was here\n") != 0) return 1;
-        setenv("TOY_SELFEXEC_STAGE2", "1", 1);
+        setenv("TOY_EXECL_STAGE2", "1", 1);
         execl(argv[0], argv[0], "rotate", (char *)NULL);
         _exit(127);
     }
