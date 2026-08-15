@@ -235,7 +235,7 @@ pub fn runChild(
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, null, false);
+    return runChildImpl(gpa, argv, env_pairs, null, false, false);
 }
 
 /// `runChild`, with the child's stdout sent to a file. What a target says on stdout
@@ -247,7 +247,21 @@ pub fn runChildCapture(
     env_pairs: []const [2][]const u8,
     stdout_path: []const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, false);
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, false);
+}
+
+/// `runChildCapture`, with the child's stderr sent to the same file. The
+/// falsification gate uses this (#134): its child's output must not reach the
+/// transcript unlabeled, and a checker reports through both streams — the target's
+/// own stderr passes through the checker's — so capturing stdout alone would still
+/// leak the exact line class that was once harvested as world evidence.
+pub fn runChildCaptureAll(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    stdout_path: []const u8,
+) SpawnError!Term {
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, true);
 }
 
 /// Like `runChildCapture`, but the child receives *only* `env_pairs` as its whole
@@ -260,7 +274,7 @@ pub fn runChildCaptureMinimalEnv(
     env_pairs: []const [2][]const u8,
     stdout_path: []const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, true);
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, true, false);
 }
 
 fn runChildImpl(
@@ -269,6 +283,7 @@ fn runChildImpl(
     env_pairs: []const [2][]const u8,
     stdout_path: ?[]const u8,
     minimal_env: bool,
+    capture_stderr: bool,
 ) SpawnError!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -315,6 +330,12 @@ fn runChildImpl(
             if (cfd != 1) {
                 if (dup2(cfd, 1) < 0) _exit(126);
                 _ = close(cfd);
+            }
+            if (capture_stderr) {
+                // Both streams into the capture: a partial capture would leak the
+                // other stream to the inherited fds — the exact failure this variant
+                // exists to prevent. 126 for the same reason as the open above.
+                if (dup2(1, 2) < 0) _exit(126);
             }
             if (minimal_env) {
                 // The child (a config's operation, untrusted) must not read the MCP

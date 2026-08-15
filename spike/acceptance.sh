@@ -242,6 +242,24 @@ else
     fails=$((fails + 1))
 fi
 
+# ---- #134: the falsification gate's child output is labeled per line ----
+# The gate produces, by design, exactly the output a real finding would — a target
+# failing over a broken store — and one unlabeled gate line was harvested as world
+# evidence (the buku correction, PR #133). The buggy run above has the checker
+# speaking in BOTH places: over the gate's corruption probe (must carry the
+# `falsify: ` prefix on every line) and in a failing world (must stay unlabeled).
+# Both sides are counted, not just grepped: a silent checker would make a
+# presence-only check pass vacuously.
+gate_n=$(printf '%s\n' "$o" | grep -c "^falsify: doctor says" || true)
+world_n=$(printf '%s\n' "$o" | grep -c "^doctor says" || true)
+if [ "${gate_n:-0}" -ge 1 ] && [ "${world_n:-0}" -ge 1 ]; then
+    echo "ok   gate output labeled (falsify: x$gate_n), world checker output unlabeled (x$world_n)"
+else
+    echo "FAIL #134 labeling: gate falsify-lines=$gate_n world unlabeled-lines=$world_n"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
 TOY=$OUT/toy-fixed
 export TOY
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state

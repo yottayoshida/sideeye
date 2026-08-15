@@ -1011,10 +1011,34 @@ pub fn main(init: std.process.Init.Minimal) !void {
         engine.restore(initial, state_abs) catch setupError("could not restore before falsifying the checker");
         engine.corruptState(initial, state_abs) catch setupError("could not corrupt the state for the falsification probe");
 
-        const probe = posix.runChild(gpa, cargv, &.{
+        // The gate's child output is captured and re-emitted with a per-line
+        // `falsify: ` marker (#134). By design this step produces exactly the output
+        // a real finding would produce — a target failing over a broken store — and
+        // a single line harvested from an unlabeled transcript once became "world
+        // evidence" (the buku correction, PR #133). A fence would not travel with an
+        // excerpt; a per-line prefix does.
+        var fal_buf: [contract.max_path]u8 = undefined;
+        const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError("path too long");
+        removeFile(fal_out);
+        const probe = posix.runChildCaptureAll(gpa, cargv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
-        }) catch setupError("could not run --check");
+        }, fal_out) catch setupError("could not run --check");
+
+        // Re-emitted before the verdict on the probe: unknown() exits the process,
+        // and the gate's output is evidence in the refusal case too. Blank lines are
+        // dropped — an empty line carries nothing harvestable and a bare marker is
+        // noise. A capture that cannot be read back is said out loud rather than
+        // silently swallowed.
+        if (readFileAllocCapped(arena, fal_out, 1024 * 1024)) |fal_text| {
+            var lines = std.mem.splitScalar(u8, fal_text, '\n');
+            while (lines.next()) |line| {
+                if (line.len == 0) continue;
+                say("falsify: {s}\n", .{line});
+            }
+        } else {
+            say("falsify: (the gate's child output could not be read back from {s})\n", .{fal_out});
+        }
 
         switch (probe) {
             .exited => |code| if (code == 0)
