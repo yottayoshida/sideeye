@@ -1042,13 +1042,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         switch (probe) {
             .exited => |code| {
-                // 126 is the capture stub's own exit (runChildImpl could not open the
-                // capture file), not the checker's answer. Read as "the checker went
-                // red", it let /bin/true pass the gate whenever the capture path was
-                // blocked — a directory squatting on the default /tmp work dir did it
-                // (R1 of #134). The MCP adapter already discriminates this same stub
-                // exit; a checker that genuinely exits 126 is indistinguishable and
-                // gets the fail-closed reading.
+                // 126 is the capture stub's own exit code for a capture it could not
+                // open (runChildImpl). Read as "the checker went red", it let
+                // /bin/true pass the gate whenever the capture path was blocked — a
+                // directory squatting on the default /tmp work dir did it (R1 of
+                // #134). The MCP adapter already discriminates this same stub exit;
+                // a checker that genuinely exits 126 is indistinguishable and gets
+                // the fail-closed reading.
                 if (code == 126)
                     unknown(.checker_not_falsified, "the checker probe exited 126: either the capture stub could not open its stdout capture in the work directory, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red");
                 if (code == 0)
