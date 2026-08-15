@@ -1,0 +1,7 @@
+ok   drill 1: clean order is green
+ok   drill 2: same-commit introduction is D1 red
+ok   drill 3: artifact-before-define is D1 red
+ok   drill 4: post-hoc define tuning is D2 red
+ok   drill 5: an unresolvable artifact refuses (exit 2) instead of narrowing the set
+
+ALL DRILLS PASSED

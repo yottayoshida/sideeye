@@ -2,6 +2,43 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — #130: the assisted funnel gets its verify-seals — and building it hit both failure modes it exists to catch
+
+Second PR of the b_cd3b31e80b91 batch. `spike/assisted/verify-assisted.sh`
+machine-checks that an assisted claim's question preceded its answer: D1
+(the define's introducing commit strictly precedes the first
+report/case/transcript artifact's, on the FIRST-PARENT order of main —
+squash and merge read the same, and local commit-splitting cannot
+reorder a pushed history), D2 (define blobs byte-identical at both
+points; the launcher is D2-held when it exists but never moves the
+define point), D3 (every scanned file listed with its introducing
+commit). PROTOCOL.md gains the claim rule ("Claiming criterion 1"):
+push the define, then explore, then push the artifacts, and a claim
+commits the verifier's transcript. Exploration stays ungated.
+
+Building the checker produced two textbook instances of its own subject
+matter. First, the D1 comparison shipped inverted (rev-list is
+newest-first; "precedes" is a LARGER position) — drill 1, the clean-
+order green case, caught it on the first run. Second, on the real
+history the walker returned an introduction a day older than the cohort
+itself: git's similarity matching recorded fresh cohort reports as
+**C071 copies of an unrelated blind-hunt JSON**, my rename handling knew
+R but not C, the file silently fell out of the anchor set — and the
+narrowed set produced a **false green D1 on devtodo**. Both fixed:
+rename/copy hops are honored only inside the target directory (a hop
+from outside IS the introduction), and an unresolvable file now stops
+the run at exit 2 — a narrowed anchor set is not an answer. Drill 5
+pins that. All five drills seen red/green for their own reasons
+(`verify-assisted-drills-run-2026-08-15.txt`).
+
+The cohort run
+(`verify-assisted-run-2026-08-15.txt`): all five targets red, uniformly
+"define and first artifact were introduced by the same commit
+(daa6a93)" — the single PR #119 merge, exactly what the plan's reviewer
+measured at commit granularity and ADR 0017 admitted in prose while the
+check did not exist. A record, not a certification; the rule binds
+claims from today.
+
 ## 2026-08-15 — #134: the gate's child output now carries falsify: on every line
 
 First PR of the b_cd3b31e80b91 batch (plan reviewed adversarially twice;
