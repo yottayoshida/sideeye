@@ -9,7 +9,7 @@
 
 ## 1. Overview
 
-Sideeye deliberately removes software from the well-behaved world it was written for, and searches for the smallest counterexample that breaks a property its developer declared must hold. It is a mean-spirited reviewer.
+Sideeye deliberately removes software from the well-behaved world it was written for, and searches for a replayable counterexample that breaks a property its developer declared must hold. It is a mean-spirited reviewer.
 
 Ordinary tests define inputs and expected outputs. Property-based testing defines properties instead of examples and generates many inputs. Sideeye is closer to the latter, but what it varies is not primarily the input — it is the world the program runs in.
 
@@ -122,7 +122,7 @@ Three differences are the point; none of them is a new primitive.
 
 1. **Ordinary software.** Adversarial testing for CLIs, local developer tools, and small daemons — not only for databases and distributed systems.
 2. **Invariants first.** Users write "if the operation succeeded, this property holds after restart" — never "SIGKILL here, then fail this write."
-3. **Minimal counterexamples as the deliverable.** Evidence a developer (or an agent) can paste into an issue, a regression test, and a fix verification, unchanged.
+3. **Replayable counterexamples as the deliverable.** Evidence a developer (or an agent) can paste into an issue, a regression test, and a fix verification, unchanged.
 
 Whether Sideeye deserves to exist is decided by whether these three can be made *easy* for ordinary developers.
 
@@ -436,7 +436,7 @@ The long-term vision is not a fault-type count. It is a habit: a developer write
 
 ## 22. One-Sentence Definition
 
-Sideeye is the deterministic skeptic in the coding loop: it finds the places where your software assumes a well-behaved world, breaks that assumption for real, and brings back the smallest reproducible counterexample.
+Sideeye is the deterministic skeptic in the coding loop: it finds the places where your software assumes a well-behaved world, breaks that assumption for real, and brings back the earliest failing crash point, saved as a replayable case.
 
 ## 23. The v0 Product Question
 

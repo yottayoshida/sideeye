@@ -99,7 +99,9 @@ language, and made a hand-written Zig server small.
 - The security posture is "the config is the trust boundary": raw command execution is
   off the tool surface, paths are confined, the child env is minimal, and the real
   binary is what runs. What remains is that a confined config's operation still runs —
-  stated, not hidden.
+  stated, not hidden. The root confines *which* config may be named, never what its
+  operation may do: it is not an execution sandbox, and agent-driven deployments supply
+  their own containment (a container or otherwise restricted workspace).
 - Long real-target explores block the single-threaded loop; small targets are the v1
   assumption, with async deferred to the Tasks extension. A server killed mid-explore
   can leave the target process group behind (parent-death cleanup unimplemented) — a

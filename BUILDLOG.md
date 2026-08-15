@@ -2,6 +2,24 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — v0.9.0: the release rides a truth-up of the front page
+
+The bump (0.8.0 → 0.9.0, minor by the contract-bump precedent — v8 rode
+0.7.0, v9 rode 0.8.0) ships the v10 batch merged earlier today. The
+release checklist's README-against-release step turned into real work
+rather than a check: the findings paragraph still listed buku (withdrawn
+this same morning), counted "two upstream reports" (four are filed — the
+stow and calcurse reports went out 2026-08-15), and said novelty was
+"deliberately unchecked" (the novelty round ran). Fixing #93 here
+surfaced the same-class hits beyond the front page — DESIGN's overview,
+its one-sentence definition, and the report schema's `earliest`
+description all promised "smallest"/"minimal"; every one now says what
+ships: the earliest failing crash point, saved as a replayable case.
+#96's sandbox sentence landed in README's MCP section and ADR 0010's
+consequences. One piece of bookkeeping: #134 had to be closed by hand —
+PR #135 shipped it but referenced the issue without a closing keyword,
+so the merge never closed it.
+
 ## 2026-08-15 — #123: the judge follows a single pid across execve (contract v10)
 
 Third PR of the b_cd3b31e80b91 batch; the design is ADR 0018 and the
