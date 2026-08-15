@@ -46,7 +46,7 @@ records zero for a run that ended early.
 
 | Field | Type | Meaning |
 |---|---|---|
-| `earliest` | object | The earliest failing crash point — the minimal counterexample the verdict rests on. |
+| `earliest` | object | The earliest failing crash point — the counterexample the verdict rests on. |
 | `earliest.crash_point` | int | The logical address: the kill landed immediately before operation *k*. Deterministic; the same recording yields the same number. |
 | `earliest.after` | object | `{op, path}` — the last state-changing operation that **completed** in this world (`"(start)"` when the kill precedes the first). |
 | `earliest.before` | object | `{op, path}` — the operation the kill landed in front of, which **never ran** (`"(end)"` when past the last). The failure window is the gap between `after` and `before`. |

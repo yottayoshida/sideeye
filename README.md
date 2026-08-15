@@ -6,18 +6,18 @@
 
 > *Sideeye doesn't believe it.*
 
-Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process immediately before each of its state-changing operations, one crash world per operation, then brings back the **smallest reproducible counterexample**. It breaks worlds, not inputs: same input, hostile universe.
+Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process immediately before each of its state-changing operations, one crash world per operation, then brings back the **earliest failing crash point**, saved as a replayable case. It breaks worlds, not inputs: same input, hostile universe.
 
-It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, buku, calcurse, devtodo — with two upstream reports so far (timewarrior's crash-window bug; a topydo recovery misfire found in follow-up analysis of its campaign); the rest are recorded in this repository with novelty deliberately unchecked. Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
+It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo — with four upstream reports so far: timewarrior's crash-window bug, a topydo recovery misfire found in follow-up analysis of its campaign, and reports to GNU Stow and calcurse that await a maintainer response. The devtodo finding stands in this repository, deliberately unreported upstream; one further claim, against buku, was withdrawn on re-derivation — the recorded evidence was Sideeye's own falsification gate, and buku recovers in every measured world (`spike/assisted/buku/RUNLOG.md`). Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
 
-**Status: v0.8.0**, trace contract v10. The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and may change in any release. Release history: [CHANGELOG.md](CHANGELOG.md); the road to 1.0: [PRD.md](PRD.md).
+**Status: v0.9.0**, trace contract v10. The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and may change in any release. Release history: [CHANGELOG.md](CHANGELOG.md); the road to 1.0: [PRD.md](PRD.md).
 
 ## Installation
 
 Every release from v0.6.0 on ships prebuilt tarballs for x86_64-linux, aarch64-linux and aarch64-macos (earlier tags predate the artifacts): `sideeye`, `libsideeye_shim` — the shim travels with the binary, it is half the product — and both license files. Download the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases), then:
 
 ```
-$ tar xzf sideeye-v0.8.0-aarch64-macos.tar.gz && cd sideeye-v0.8.0-aarch64-macos
+$ tar xzf sideeye-v0.9.0-aarch64-macos.tar.gz && cd sideeye-v0.9.0-aarch64-macos
 ```
 
 Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`.
@@ -129,6 +129,8 @@ The full contract, and the reason behind each refusal: [DESIGN.md](DESIGN.md).
 ## Driving it from an agent (MCP)
 
 `sideeye mcp` is a stateless MCP server (stdio) with two tools: `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}`. The tools take *paths* inside `SIDEEYE_MCP_ROOT`, never raw commands — the config file is the trust boundary you vet. Operational settings come from `SIDEEYE_MCP_*` environment variables (shim, root, oracle, work dir, and an explicit allowlist of variable names the target may read); the child runs with a near-minimal environment and its output never touches the MCP transport. Details: ADR 0010 and 0011.
+
+The root confines *which* config may be named — it is not a sandbox for what that config's operation does: a vetted config's operation can still read `$HOME`, reach the network, or write outside the workspace. For agent-driven use, run the server inside a container or an otherwise restricted workspace, network-off where the target allows it; the loop-closure runs are the worked example (sealed container, mount discipline).
 
 ## What Sideeye is not
 
