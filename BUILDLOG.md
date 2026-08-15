@@ -74,6 +74,22 @@ deliberately absent (widening the exclusion is its own ruling, not a
 side effect). Fix-round mutation: the deleteTree guard reverted to
 `removed == 0` is killed by the partial-failure test.
 
+R2 caught the fix under-covering its own finding: the restore-flattening
+sentence rode only the writes-observed branch, while flattening is a
+property of RESTORE, not of the target's syscalls — a setup-created 0600
+file runs its worlds at 0644 whether or not the target ever chmods,
+which is precisely the buku shape (sqlite fchowns only as root). The
+sentence now rides both branches. R2 also measured that the zero-op
+disclosure works end to end, verified the deleteTree strictness has no
+false-fail path (an unreadable-but-EMPTY directory still rmdirs on the
+parent's permission alone), and noted one behavioural edge worth naming:
+a name vanishing between readdir and unlink — a still-writing straggler —
+used to pass silently and is now a loud SETUP ERROR, consistent with the
+quiescence refusals. And the README's sample report block missed the new
+report lines for the SECOND consecutive PR (the string sweeps keep
+stopping at acceptance pins); fixed again, and the recurrence is flagged
+to the owner as a structure question, not another instance fix.
+
 ## 2026-08-15 — Symlinks become a first-class operation; the real gap was restore, not the oracle (#122, contract v9)
 
 The owner's ruling on #118's product decision: close the judge's measured

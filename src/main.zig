@@ -808,7 +808,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // block must still carry what the oracle saw being excluded (#121).
         metadata_note = blk: {
             const items = parsed.metadata_observed.items;
-            if (items.len == 0) break :blk "none observed";
+            // The restore sentence rides BOTH branches: flattening is a property of
+            // restore, not of the target's syscalls — a setup-created 0600 file runs
+            // its crash worlds at 0644 whether or not the target ever chmods (R2,
+            // the buku shape: sqlite fchowns only as root, so the note would
+            // otherwise vanish exactly where the flattening bites hardest).
+            if (items.len == 0) break :blk "none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes";
             var names: std.ArrayList(u8) = .empty;
             var listed: std.ArrayList([]const u8) = .empty;
             for (items) |n| {
@@ -967,17 +972,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // and those writes DO change the directory — just nothing the verdict
         // judges. The metadata line below is the disclosure; without it this
         // headline reads as a plain falsehood over a chmod-only operation (R1 #121).
+        // The oracle line rides along because it is the metadata note's provenance.
         say(
             \\PASS  the operation performed nothing that can change the judged state
             \\      explored 0 crash points; nothing to kill before
             \\      expected status: {d}
             \\      atomicity: {s}
+            \\      oracle: {s}
             \\      metadata: {s}
             \\      l1: {s}
             \\      case: {s}
             \\      not tested: {s}
             \\
-        , .{ expected_status_val, l0_note, metadata_note, l1_note, case_note, notTestedText() });
+        , .{ expected_status_val, l0_note, oracle_note, metadata_note, l1_note, case_note, notTestedText() });
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
