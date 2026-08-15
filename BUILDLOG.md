@@ -2,6 +2,45 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — Three reports filed, one finding held: the report step is a harder gate than novelty
+
+Owner instruction for this round: plain bug reports, no mention of this
+project or its experiments, and no AI-slop prose. That constraint turned
+out to be a technical gate, not a stylistic one. A report nobody can
+reproduce without our shim is not a report, so every finding had to be
+re-derived from scratch with tooling a maintainer already has — strace's
+`-e inject=` fault injection — before a word was written.
+
+Three survived that and are filed: calcurse #529 (interrupted `-P`
+leaves apts at zero bytes; the syscall log shows `open(O_TRUNC)` then the
+kill), devtodo #9 (same shape on .todo, and the next run says "database
+corrupt" in the target's own words), stow #139 (the unfold sequence
+`unlinkat(sub)` → `mkdirat(sub)` → `symlinkat` ×2, killed anywhere inside
+it, leaves the already-stowed package unreachable). Each carries a
+measured reproduction rate — 5/5 with injection, 2/2 clean without — and
+each names what was not checked. The stow report says outright that no
+atomic symlink-to-directory swap exists and asks whether documenting or
+detecting the window is preferable, because pretending not to know that
+would waste the maintainer's time.
+
+**buku did not survive, and that is the entry worth keeping.** Thirty
+eight plain kill points — eight on db writes, ten on journal writes,
+twenty on the two interleaved — all end with sqlite rolling back and buku
+reading its store normally. Zero reproductions. The engine's recorded
+world is not withdrawn (the checker failure with buku's own `initdb():
+file is not a database` is committed), but two things follow. A finding
+that only our harness can produce cannot be reported, full stop. And the
+earliest violation in that run was L0, a BYTE comparison — for a
+journaled database, a mid-transaction byte state is precisely what the
+journal recovers from, so L0 is stricter there than sqlite's own
+contract. That is a limitation of judging a journaled store by file
+bytes, not a defect in buku, and it means the finding rests on the single
+checker failure alone until someone reproduces that world plainly.
+
+The general lesson, recorded because it will apply to every future
+finding: novelty asks "has anyone reported this", and the report step
+asks the harder question first, "can anyone else see it". Today the
+second question killed one of four findings that had passed the first.
 ## 2026-08-15 — The novelty round: four searches, four not-founds, and the boundaries say so
 
 The step the criterion-1 redesign designated ran the same day: recorded

@@ -158,3 +158,38 @@ per the workspace's upstream-report style), and author confirmation, fixes and
 replayed cases all remain open. The searches above are re-runnable from the
 recorded terms; anyone re-running them should expect the hit COUNTS to drift as
 trackers move, and the verdicts to stand or fall on what the new hits say.
+
+## Upstream round (2026-08-15, same day)
+
+Reports filed, each written as a plain bug report with a reproduction the
+maintainer can run using only strace's fault injection (no tooling from this
+project is named or needed):
+
+- calcurse: https://github.com/lfos/calcurse/issues/529
+- devtodo: https://github.com/alecthomas/devtodo/issues/9
+- stow: https://github.com/aspiers/stow/issues/139
+
+**buku is HELD, and the reason is a correction to this project's own record.**
+Before writing its report, the finding was re-derived with plain tooling: kill
+the process at write N of the transaction and see whether buku can still read
+its store. Measured, in the same pinned container: injections on bookmarks.db
+writes (8 points), on journal writes (10 points), and on the two files
+interleaved (20 points) all end with sqlite rolling the transaction back and
+buku reading its store normally. **Zero of 38 plain attempts reproduce it.**
+
+What the engine recorded is not withdrawn: the checker did fail in one world
+with buku's own `initdb(): file is not a database`, and that transcript is
+committed. But two things follow. First, no upstream report can be written on
+evidence a maintainer cannot reproduce, so buku waits until the world is
+reachable by ordinary means. Second, the earliest violation in that run was
+`built-in atomicity (L0)`, a BYTE comparison, and for a journaled database a
+mid-transaction byte state is exactly what the journal exists to recover from
+— L0 is stricter than sqlite's contract here, which is a limitation of judging
+a journaled store by file bytes, not a defect in buku. The finding's strength
+therefore rests on the one checker failure alone, and reproducing that world
+with plain tooling is the open work.
+
+This is the "measured with the defect I was describing" class caught before it
+left the repository: the novelty search above asked whether the finding was
+already reported, and answered honestly, but the report step asked the harder
+question first — can anyone else see it — and the answer for buku today is no.
