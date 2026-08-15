@@ -121,20 +121,29 @@ the answer:
 3. **The claim runs `verify-assisted.sh <target>` and commits its transcript.**
    The check anchors on the FIRST-PARENT order of main — squash merges and merge
    commits read the same way, and locally splitting commits cannot reorder a
-   pushed history — with rename/copy tracking confined to the target directory
-   (git's similarity matching links small JSONs to unrelated files across the
-   repo; measured). Its legs: D1 the define's introduction strictly precedes the
-   first artifact's and is a different commit; D2 the define blobs are
-   byte-identical at both points; D3 every scanned file is listed with its
-   introducing commit, and a file whose introduction cannot be resolved stops
-   the run (exit 2) rather than narrowing the anchor set.
+   pushed history. Commits that travel in ONE push are still ordered by that
+   line, not by push events: the ordering the rule buys is between pushes,
+   which is why steps 1 and 2 are separate pushes. The file sets come from the
+   anchor tree (`git ls-tree`), never the working tree; an artifact anchors at
+   its OLDEST in-target existence event with rename hops followed in both
+   directions (delete-and-re-add and move-out-and-back cannot launder its age,
+   and git's cross-repo similarity noise — a fresh report once linked C071 to
+   an unrelated JSON — stops counting on its own). Its legs: D1 the define's
+   introduction strictly precedes the first artifact's and is a different
+   commit; D2 the define blobs are byte-identical at both points (not
+   evaluated when D1 already failed — a same-commit comparison is vacuously
+   true); D3 every scanned file is listed with its introducing commit, and a
+   file whose introduction cannot be resolved stops the run (exit 2) rather
+   than narrowing the anchor set.
 
 Like verify-seals, this audits the history as pushed — it cannot prove what
 happened on a private disk first. The first cohort predates this rule: its five
 targets run red (define and first artifact in one merge), recorded in
 `verify-assisted-run-2026-08-15.txt` as a record, not a certification, exactly
-as ADR 0017 said while the check did not yet exist. Every drill of the checker
-has been seen red once (`verify-assisted-drills.sh`).
+as ADR 0017 said while the check did not yet exist. Every leg AND every walker
+mechanism of the checker has been seen red once: twelve drills
+(`verify-assisted-drills.sh`), one per mechanism, after the first review round
+showed the original five drills killed none of the rename/copy machinery.
 
 ## Apparatus
 

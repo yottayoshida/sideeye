@@ -6,19 +6,17 @@ define    spike/assisted/buku/ops/buku-add.toml  introduced @ daa6a93 (position 
 define    spike/assisted/buku/ops/check.sh  introduced @ daa6a93 (position 12)
 define    spike/assisted/buku/ops/setup.sh  introduced @ daa6a93 (position 12)
 define    spike/assisted/buku/ops/explore.sh  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/buku/report-remeasure.json  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/buku/report-strict.json  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/buku/report-unverified.json  introduced @ daa6a93 (position 12)
+artifact  spike/assisted/buku/cases-remeasure/000001.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/buku/cases/000001.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
 artifact  spike/assisted/buku/explore-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/buku/replay-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/buku/replay-transcript.txt  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/buku/cases/000001.json  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/buku/cases-remeasure/000001.json  introduced @ 1559c2f (position 7)
+artifact  spike/assisted/buku/inspection/explore-transcript.txt  introduced @ 1559c2f (position 7)
+artifact  spike/assisted/buku/replay-remeasure-transcript.txt  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/buku/replay-transcript.txt  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/buku/report-remeasure.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/buku/report-strict.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/buku/report-unverified.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
 FAIL D1: define and first artifact were introduced by the same commit (daa6a93) — the history cannot show the question preceding the answer
-ok   D2: spike/assisted/buku/ops/buku-add.toml byte-identical at both points
-ok   D2: spike/assisted/buku/ops/check.sh byte-identical at both points
-ok   D2: spike/assisted/buku/ops/setup.sh byte-identical at both points
-ok   D2: spike/assisted/buku/ops/explore.sh byte-identical at both points
+D2: not evaluated — D1 failed, so there is no question-then-answer interval to hold the define constant over
 
 1 ORDER CHECK(S) FAILED for spike/assisted/buku
 exit: 1
@@ -31,18 +29,15 @@ define    spike/assisted/calcurse/ops/calcurse-purge.toml  introduced @ daa6a93 
 define    spike/assisted/calcurse/ops/check.sh  introduced @ daa6a93 (position 12)
 define    spike/assisted/calcurse/ops/setup.sh  introduced @ daa6a93 (position 12)
 define    spike/assisted/calcurse/ops/explore.sh  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/calcurse/report-remeasure.json  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/calcurse/report-strict.json  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/calcurse/explore-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/calcurse/replay-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/calcurse/replay-transcript.txt  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/calcurse/cases-remeasure/000001.json  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/calcurse/cases-strict/000001.json  introduced @ daa6a93 (position 12)
+artifact  spike/assisted/calcurse/cases-remeasure/000001.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/calcurse/cases-strict/000001.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/calcurse/explore-remeasure-transcript.txt  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/calcurse/replay-remeasure-transcript.txt  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/calcurse/replay-transcript.txt  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/calcurse/report-remeasure.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
+artifact  spike/assisted/calcurse/report-strict.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
 FAIL D1: define and first artifact were introduced by the same commit (daa6a93) — the history cannot show the question preceding the answer
-ok   D2: spike/assisted/calcurse/ops/calcurse-purge.toml byte-identical at both points
-ok   D2: spike/assisted/calcurse/ops/check.sh byte-identical at both points
-ok   D2: spike/assisted/calcurse/ops/setup.sh byte-identical at both points
-ok   D2: spike/assisted/calcurse/ops/explore.sh byte-identical at both points
+D2: not evaluated — D1 failed, so there is no question-then-answer interval to hold the define constant over
 
 1 ORDER CHECK(S) FAILED for spike/assisted/calcurse
 exit: 1
@@ -51,20 +46,17 @@ exit: 1
 verify-assisted: spike/assisted/devtodo
 anchor: main (352550d) — first-parent order, history as pushed
 disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
-define    spike/assisted/devtodo/ops/devtodo-remove.toml  introduced @ daa6a93 (position 12)
 define    spike/assisted/devtodo/ops/check.sh  introduced @ daa6a93 (position 12)
+define    spike/assisted/devtodo/ops/devtodo-remove.toml  introduced @ daa6a93 (position 12)
 define    spike/assisted/devtodo/ops/setup.sh  introduced @ daa6a93 (position 12)
 define    spike/assisted/devtodo/ops/explore.sh  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/devtodo/report-remeasure.json  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/devtodo/report-strict.json  introduced @ daa6a93 (position 12)
+artifact  spike/assisted/devtodo/cases-remeasure/000001.json  introduced @ 1559c2f (position 7)
 artifact  spike/assisted/devtodo/explore-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
 artifact  spike/assisted/devtodo/replay-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/devtodo/cases-remeasure/000001.json  introduced @ 1559c2f (position 7)
+artifact  spike/assisted/devtodo/report-remeasure.json  introduced @ 1559c2f (position 7)
+artifact  spike/assisted/devtodo/report-strict.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
 FAIL D1: define and first artifact were introduced by the same commit (daa6a93) — the history cannot show the question preceding the answer
-ok   D2: spike/assisted/devtodo/ops/devtodo-remove.toml byte-identical at both points
-ok   D2: spike/assisted/devtodo/ops/check.sh byte-identical at both points
-ok   D2: spike/assisted/devtodo/ops/setup.sh byte-identical at both points
-ok   D2: spike/assisted/devtodo/ops/explore.sh byte-identical at both points
+D2: not evaluated — D1 failed, so there is no question-then-answer interval to hold the define constant over
 
 1 ORDER CHECK(S) FAILED for spike/assisted/devtodo
 exit: 1
@@ -73,17 +65,14 @@ exit: 1
 verify-assisted: spike/assisted/pass
 anchor: main (352550d) — first-parent order, history as pushed
 disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
-define    spike/assisted/pass/ops/pass-mv.toml  introduced @ daa6a93 (position 12)
 define    spike/assisted/pass/ops/check.sh  introduced @ daa6a93 (position 12)
+define    spike/assisted/pass/ops/pass-mv.toml  introduced @ daa6a93 (position 12)
 define    spike/assisted/pass/ops/setup.sh  introduced @ daa6a93 (position 12)
 define    spike/assisted/pass/ops/explore.sh  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/pass/report-strict.json  introduced @ daa6a93 (position 12)
 artifact  spike/assisted/pass/control-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
+artifact  spike/assisted/pass/report-strict.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
 FAIL D1: define and first artifact were introduced by the same commit (daa6a93) — the history cannot show the question preceding the answer
-ok   D2: spike/assisted/pass/ops/pass-mv.toml byte-identical at both points
-ok   D2: spike/assisted/pass/ops/check.sh byte-identical at both points
-ok   D2: spike/assisted/pass/ops/setup.sh byte-identical at both points
-ok   D2: spike/assisted/pass/ops/explore.sh byte-identical at both points
+D2: not evaluated — D1 failed, so there is no question-then-answer interval to hold the define constant over
 
 1 ORDER CHECK(S) FAILED for spike/assisted/pass
 exit: 1
@@ -92,20 +81,17 @@ exit: 1
 verify-assisted: spike/assisted/stow
 anchor: main (352550d) — first-parent order, history as pushed
 disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
-define    spike/assisted/stow/ops/stow-unfold.toml  introduced @ daa6a93 (position 12)
 define    spike/assisted/stow/ops/check.sh  introduced @ daa6a93 (position 12)
 define    spike/assisted/stow/ops/setup.sh  introduced @ daa6a93 (position 12)
+define    spike/assisted/stow/ops/stow-unfold.toml  introduced @ daa6a93 (position 12)
 define    spike/assisted/stow/ops/explore.sh  introduced @ daa6a93 (position 12)
-artifact  spike/assisted/stow/report-remeasure.json  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/stow/report-strict.json  introduced @ daa6a93 (position 12)
+artifact  spike/assisted/stow/cases-remeasure/000001.json  introduced @ 1559c2f (position 7)
 artifact  spike/assisted/stow/explore-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
 artifact  spike/assisted/stow/replay-remeasure-transcript.txt  introduced @ 1559c2f (position 7)
-artifact  spike/assisted/stow/cases-remeasure/000001.json  introduced @ 1559c2f (position 7)
+artifact  spike/assisted/stow/report-remeasure.json  introduced @ 1559c2f (position 7)
+artifact  spike/assisted/stow/report-strict.json  introduced @ daa6a93 (position 12) (entered via a merge commit; side-branch author dates precede it)
 FAIL D1: define and first artifact were introduced by the same commit (daa6a93) — the history cannot show the question preceding the answer
-ok   D2: spike/assisted/stow/ops/stow-unfold.toml byte-identical at both points
-ok   D2: spike/assisted/stow/ops/check.sh byte-identical at both points
-ok   D2: spike/assisted/stow/ops/setup.sh byte-identical at both points
-ok   D2: spike/assisted/stow/ops/explore.sh byte-identical at both points
+D2: not evaluated — D1 failed, so there is no question-then-answer interval to hold the define constant over
 
 1 ORDER CHECK(S) FAILED for spike/assisted/stow
 exit: 1

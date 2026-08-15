@@ -39,6 +39,27 @@ measured at commit granularity and ADR 0017 admitted in prose while the
 check did not exist. A record, not a certification; the rule binds
 claims from today.
 
+R1 (fresh reviewer) then broke the first version four more ways, every
+one a variation of the class this checker polices. P0: the file sets
+came from filesystem globs, so an UNCOMMITTED `rm` of two define files
+flipped a red target green — the sets now come from `git ls-tree` of
+the anchor ref, and a working-tree difference is noted and ignored.
+P1s: the walker took the NEWEST introduction for artifacts, so
+delete-and-re-add laundered an artifact's age (an artifact now anchors
+at its OLDEST in-target existence event); the out-of-target
+rename-terminate rule doubled as an out-and-back laundering path
+(rename hops are now followed in both directions, and only in-target
+events count — which also lets git's cross-repo similarity noise stop
+counting on its own); the five drills killed none of the rename/copy
+machinery (six named mutants all survived); and the committed cohort
+transcript carried twenty vacuously-true "D2 ok" lines — a same-commit
+comparison measures nothing and now says "not evaluated". Drills grew
+to twelve, one per mechanism, and all six of R1's surviving mutants
+were re-run against them: 6/6 KILLED. Artifacts also match at any
+depth below the target now (the answer can sit in inspection/ or
+evidence/), and a merge-commit introduction is annotated in D3 since
+first-parent order deliberately ignores side-branch author dates.
+
 ## 2026-08-15 — #134: the gate's child output now carries falsify: on every line
 
 First PR of the b_cd3b31e80b91 batch (plan reviewed adversarially twice;

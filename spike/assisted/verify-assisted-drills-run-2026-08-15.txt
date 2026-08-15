@@ -2,6 +2,13 @@ ok   drill 1: clean order is green
 ok   drill 2: same-commit introduction is D1 red
 ok   drill 3: artifact-before-define is D1 red
 ok   drill 4: post-hoc define tuning is D2 red
-ok   drill 5: an unresolvable artifact refuses (exit 2) instead of narrowing the set
+ok   drill 5: an untracked file is outside the anchor tree (noted, ignored)
+ok   drill 6: an in-target rename still anchors the artifact at its pre-define add
+ok   drill 7: the OLDEST existence event anchors a deleted-and-re-added artifact
+ok   drill 8: out-and-back keeps the artifact anchored at its original in-target add
+ok   drill 9: an uncommitted rm changes nothing (the set is the anchor tree's)
+ok   drill 10: the real buku history resolves every anchor through the copy rule
+ok   drill 11: a define completed after the artifact is D1 red on its latest part
+ok   drill 12: a launcher tuned between question and answer is D2 red
 
 ALL DRILLS PASSED
