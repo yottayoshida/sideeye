@@ -1,11 +1,13 @@
 # Novelty round — the four assisted findings against their upstream trackers
 
 2026-08-15. The next step ADR 0017 and the criterion 1 status trail designated:
-a recorded tracker search with a positive control, per finding — the same method
+a recorded tracker search with a positive control, per finding — the shape
 campaign 1 used for topydo (search terms + positive control + bodies read,
-recorded in that campaign's ledger). "Novel as far as this search sees" is the
-strongest claim this file makes anywhere; each section names what its search did
-NOT cover. Reading these trackers is scouting, permitted for assisted findings —
+recorded in that campaign's ledger), at 9–10 terms per target where campaign 1
+ran fourteen; the review round then added ~25 more probes of its own, none of
+which changed a verdict. "Novel as far as this search sees" is the strongest
+claim this file makes anywhere; each section names what its search did NOT
+cover. Reading these trackers is scouting, permitted for assisted findings —
 and none of it touches the findings' provenance, whose defines were committed
 before these searches ran (`REMEASURE.md`).
 
@@ -41,12 +43,22 @@ the sweep is re-runnable.
 
 - Tracker: `lfos/calcurse` (canonical; active, 173 open).
 - Sweep: purge 4, truncate 3, crash 8, corrupt 6, "data loss" 1, atomic 0,
-  interrupted 2, apts 20, "lost events" 0, "empty file" 0.
+  interrupted 2, apts 34, "lost events" 0, "empty file" 0. (The first pass
+  recorded apts as 20 — a `--limit 20` ceiling transcribed as a count; review
+  caught it. The 14 hits beyond the window were read; two pass the
+  plausible-title bar and are disposed below.)
 - Bodies read (nearest two): #306 (periodic save vs caldav merge — concurrency,
   not crash), #143 (io_mutex between threads/hooks — interference, not
   crash-window atomicity; no mention of in-place rewrites tearing). The
   crash-titled hits are segfaults/import crashes, none about what a crash leaves
   in apts.
+- From the apts tail (review's probes): #490 (open) — a PERSISTENT bad line in
+  apts that returns after removal, caldav-suspected; no crash involved. #249 —
+  imported appointments deterministically not saved, apts zero-length on every
+  run of that path; a save-path failure, not a crash window (and a live
+  demonstration that a zero-length apts exists in the wild while our
+  "empty file" term returned 0 — zero hits for a phrase never means the
+  concept is absent).
 - Positive control: "corrupt" surfaces #6 — a real, existing
   apts-file-corruption issue (iCal import escaping) — so apts-corruption
   discussions are reachable by this vocabulary.
@@ -64,6 +76,12 @@ the sweep is re-runnable.
   not about the unfold's crash window; notably it arrived from the help-stow
   mailing list, evidence that list traffic funnels into this tracker). The
   fold/unfold hits are behavior/feature discussions.
+- Disposed for future re-runners (review's probe): **#69 "Restow does not
+  actually write between removing and creating"** — the title reads exactly
+  like our window and the body is its INVERSE: a complaint that `-R` does NOT
+  remove-and-recreate (symlink mtimes never change), plus doc-wording
+  discussion. Anyone re-running natural stow vocabulary will hit it; it is not
+  a prior report of the finding.
 - Positive control: "fold" surfaces 12 real tree-folding discussions (#120,
   #131, #29 …) — the finding's own domain vocabulary demonstrably reaches this
   tracker.
@@ -73,19 +91,42 @@ the sweep is re-runnable.
   exists, so the window is inherent") may await the report — that is an
   attribution conversation, not a prior report of the finding.
 
-## devtodo — in-place XML rewrite tears .todo in 6/8 crash worlds: NOT FOUND (both trackers fully enumerated)
+## devtodo — in-place XML rewrite tears .todo in 6/8 crash worlds: NOT FOUND (both trackers enumerated — the second one twice)
 
 - Trackers: `alecthomas/devtodo` (upstream, legacy line — the Debian package's
   source) and the Debian BTS (the distribution actually shipped).
-- Coverage by ENUMERATION, not sampling: GitHub has 8 issues total, all read as
-  titles + the two Debian-patches threads (#2, #3) as bodies; Debian BTS lists 4
-  bugs (#794015 documentation, #401476 + #239578 + #294472 wishlist features).
-  None concerns data integrity, saving, or file writes.
-- Positive control: not applicable in vocabulary form — full enumeration IS the
-  coverage on trackers this small.
-- Counterparty caveat, carried from the scoring: upstream describes itself as
-  unmaintained since ~2010 (#2's own words), so the author-confirmed leg of
-  criterion 1 has a real "confirmed by whom" problem here whatever the novelty.
+- GitHub, by enumeration: 8 items total — 4 issues + 4 pull requests — all
+  titles read, the Debian-patches threads (#2, #3) read as bodies. None
+  concerns data integrity, saving, or file writes.
+- **Debian BTS: the first pass enumerated the OPEN view (4 bugs) and called it
+  the tracker — review caught the wrong denominator.** The combined
+  open+archived view enumerates ~70 bugs (70 titles in this fetch; the BTS's
+  merged-bug display makes the exact count view-dependent, which is precisely
+  how the open-only view misled). All titles read; the data-adjacent set,
+  disposed one by one:
+  - **#511342 (grave, "does not check for file creation errors") is the nearest
+    prior report and it is a different mechanism**: `open(".todo",
+    O_WRONLY|O_CREAT|O_TRUNC)` FAILS with EACCES and devtodo exits 0 having
+    written nothing — ignored error returns on the very same in-place-rewrite
+    path our finding kills midway through. No crash, no interruption, no torn
+    file (the reporter notes no write() ever happened); fixed in 0.1.20-4. The
+    same code path's failure, from the other side of the syscall boundary.
+  - #93641 (grave, .todo world-readable) — permissions, and visibly the
+    ancestor of the per-rewrite chmod our #121 run observes and excludes.
+  - #173904 / #108791 / #91820 / #307226 — segfaults on display/EOF/arch
+    paths, not the save path. #308706 / #516604 — `--purge` hangs, no data
+    loss. #175730 — display formatting. #239581 ("race condition") —
+    concurrency, not crash.
+- Positive control: enumeration is the coverage — and the review's independent
+  probe confirmed `gh search issues` reaches comment text too (a comment-only
+  word on GitHub #2 is findable), so nothing in the small trackers hid below
+  the title layer.
+- Counterparty, corrected by review: the "unmaintained since ~2010" line in the
+  scoring materials came from #2's OPENER (Debian QA), and the upstream
+  maintainer replied in the same thread: "It is maintained, it's just stable"
+  — commits into 2021, a 2026 issue closed within the hour. The
+  author-confirmed leg has a live counterparty after all; slow-moving, not
+  absent.
 
 ## What this round does and does not establish
 

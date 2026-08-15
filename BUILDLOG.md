@@ -5,29 +5,43 @@ Development journal, newest first. Decisions are recorded when they are made —
 ## 2026-08-15 — The novelty round: four searches, four not-founds, and the boundaries say so
 
 The step the criterion-1 redesign designated ran the same day: recorded
-tracker searches with positive controls, campaign-1 method, for all four
-assisted findings. Verdict on every one: **not found — novel as far as
-each search sees** (`spike/assisted/NOVELTY.md`, terms and hit counts
+tracker searches with positive controls, the campaign-1 shape, for all
+four assisted findings. Verdict on every one: **not found — novel as far
+as each search sees** (`spike/assisted/NOVELTY.md`, terms and hit counts
 recorded for re-running). The controls did their job in three different
 shapes: buku's proved the vocabulary reaches issue BODIES (a body-only
 "corrupt" match), calcurse's found a real existing apts-corruption issue
 by the same word that would have found ours, and stow's used the domain's
-own vocabulary (twelve live fold/unfold threads) while every
+own vocabulary (twelve fold/unfold threads, ten open) while every
 crash/interrupt/atomic term returned zero — the failure class is absent
-from that tracker's language entirely. devtodo needed no vocabulary at
-all: both its trackers (GitHub upstream, Debian BTS) are small enough
-that enumeration is coverage — 8 + 4 items, all read, none about data.
+from that tracker's language entirely.
 
-Two honesty notes carried into the record rather than smoothed over:
-stow's GNU mailing-list archives were not searched (the one adjacent
-thread that exists, #29, ARRIVED from the list — suggestive of funneling,
-not proof), and buku's mechanism attribution (buku's sqlite usage vs an
-unavoidable tear) is deliberately left for the upstream conversation —
-novelty asked whether the finding was already reported, not whose fault
-it is. Upstream contact is the next step and needs per-report owner
-approval; devtodo's counterparty problem (upstream self-describes as
-unmaintained since ~2010) is on the record before anyone drafts that
-report.
+**The review round earned its keep on the denominator.** The first pass
+enumerated devtodo's Debian BTS from the OPEN view — 4 bugs — and called
+it the tracker; the combined open+archived view holds ~70, including
+grave #511342, which sits on the exact code path our finding kills:
+`open(".todo", O_TRUNC)` on the in-place rewrite — reported for IGNORED
+ERROR RETURNS (EACCES, exit 0, nothing written, no crash anywhere in it;
+fixed in 0.1.20-4). Same path, other side of the syscall boundary; the
+not-found verdict survives, and the disposal is now written down instead
+of lucky. The same round corrected the counterparty claim (the
+"unmaintained since 2010" line was the Debian QA opener's — the upstream
+maintainer replied "It is maintained, it's just stable" in the same
+thread), caught a `--limit 20` ceiling transcribed as a hit count
+(calcurse's apts term: 34, and the 14 hits beyond the window contained
+two plausible titles, both read, both disposed), and left ~25 extra
+probes across the four trackers with no verdict changed. A results
+document whose defining property is re-runnable coverage got exactly the
+review such a document deserves: the reviewer re-ran it.
+
+Standing notes: stow's GNU mailing-list archives were not searched (the
+one adjacent thread, #29, ARRIVED from the list — suggestive of
+funneling, not proof), and buku's mechanism attribution (buku's sqlite
+usage vs an unavoidable tear) is deliberately left for the upstream
+conversation — novelty asked whether the finding was already reported,
+not whose fault it is. Upstream contact is the next step and needs
+per-report owner approval.
+
 ## 2026-08-15 — Criterion 1 is redesigned around provenance (ADR 0017), on the owner's ruling
 
 The §18-class decision #118 reserved for the owner is made: option A of
