@@ -14,7 +14,7 @@ It has produced replay-confirmed counterexamples against real tools — timewarr
 
 ## Installation
 
-Every release ships prebuilt tarballs for x86_64-linux, aarch64-linux and aarch64-macos: `sideeye` plus `libsideeye_shim` — the shim travels with the binary, it is half the product. Download the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases), then:
+Every release from v0.6.0 on ships prebuilt tarballs for x86_64-linux, aarch64-linux and aarch64-macos (earlier tags predate the artifacts): `sideeye`, `libsideeye_shim` — the shim travels with the binary, it is half the product — and both license files. Download the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases), then:
 
 ```
 $ tar xzf sideeye-v0.8.0-aarch64-macos.tar.gz && cd sideeye-v0.8.0-aarch64-macos
@@ -67,9 +67,14 @@ A FAIL saves its counterexample to `<work>/cases/NNNNNN.json` and prints the rea
 
 ## Example
 
-Real output, regenerated for this release — `sideeye explore` with a checker and the strace oracle, against the demo's planted delete-before-rename bug (paths as run):
+Real output, regenerated for this release: the same planted delete-before-rename bug the demo uses (`spike/toys/toy.c`), explored with a checker and the strace oracle — which is why this block carries three lines a bare `sideeye demo` run does not (`oracle`, `metadata`, and container paths). The command and its output, verbatim as run:
 
 ```
+$ TOY=/tmp/se/toy-bug /work/zig-out/bin/sideeye explore --state /tmp/se/state \
+    --setup "/tmp/se/toy-bug init" --operation "/tmp/se/toy-bug rotate" \
+    --check /work/spike/check.sh --shim /work/zig-out/lib/libsideeye_shim.so \
+    --work /tmp/se/work --oracle /usr/bin/strace
+
 FAIL  1 of 6 crash worlds violated an invariant
 
 invariant   built-in atomicity, and the checker
@@ -114,10 +119,10 @@ The full version is [`spike/check.sh`](spike/check.sh). Sideeye refuses to trust
 
 Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2) with the refusing detector named:
 
-- **Dynamically linked and single-threaded**, reaching its files through libc — buffered stdio, the hard-link family and symlink creation included. Raw syscalls (a Rust target pulling in `rustix`, say), static linking, hardened runtimes and threads are refused.
+- **Dynamically linked and single-threaded**, reaching its files through libc — buffered stdio, the hard-link family and symlink creation included. Raw syscalls (a Rust target pulling in `rustix`, say), static linking, hardened runtimes and threads are refused. A descriptor's *location* decides observation, never its number: a state file rebound onto stdout with `dup2` is still seen, and startup descriptor-hygiene sweeps are tolerated (ADR 0013).
 - **State in one directory**, declared with `--state` or the toml's `[world] state`. Symlinks inside it are first-class (snapshotted and restored as links, target verbatim); ownership/permission changes are observed but outside the judged state, and every report says so.
 - **A clean run exits its declared success status** (`--expect-status`, default 0) — the crash points are read off that run.
-- **Other processes stay away from the state.** Forked helpers are fine when the oracle (`--oracle`, Linux) confirms nobody else touched it; a target that `exec`s over itself is refused. Without an oracle a PASS requires `--allow-unverified`, and the report says the weaker claim out loud.
+- **Other processes stay away from the state.** Forked helpers are fine when the oracle (`--oracle`, Linux) confirms nobody else touched it; a target that `exec`s over itself, or a process that escapes Sideeye's containment group, is refused. Without an oracle any process boundary is UNKNOWN — the shim only sees processes that load it, and "was not seen" is not "did nothing" — and a PASS requires `--allow-unverified`, which the report says out loud.
 
 The full contract, and the reason behind each refusal: [DESIGN.md](DESIGN.md).
 
@@ -142,6 +147,7 @@ The full contract, and the reason behind each refusal: [DESIGN.md](DESIGN.md).
 | [BUILDLOG.md](BUILDLOG.md) | Decisions as they happen, including the wrong ones |
 | [docs/report-schema.md](docs/report-schema.md) | Every field the JSON report carries, held to the code by CI |
 | [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
+| [docs/adr/](docs/adr/) | One record per irreversible decision — the descriptor contract (0013), links and symlinks (0006, #122), the MCP surface (0010, 0011), the blind protocol (0012) among them |
 
 ## License
 
