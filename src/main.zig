@@ -755,11 +755,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // first boundary in the trace can be a tolerable fork written *before* the record
     // that must refuse the run, and the refusal must not lose to it.
     if (trace.hard_boundary) |b| switch (b) {
-        .exec => unknown(.child_process_detected, "the target replaced its own image (exec); the crash-point addresses do not survive an image change"),
+        // A subject exec is hard only when its chain broke (#123): an unbroken
+        // self-exec chain — exec record, then a same-pid shim_ready carrying the
+        // operation count — is a continuation and never reaches here.
+        .exec => if (trace.exec_chain_broken)
+            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed (an execl-family call, a static image, or a stripped environment cannot carry it). An unbroken self-exec chain is judged; a separate process is not (#123)")
+        else
+            unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading"),
         .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic"),
         .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid); the engine cannot claim to have stopped it"),
         else => {},
     };
+
+    // Numbering integrity (#123): records vs highest number. A gap or a duplicate —
+    // a restarted counter after an unobserved exec is a duplicate — means any
+    // crash-point address may name a different operation than the one that ran.
+    if (trace.primary_kill_records != trace.kill_point_count)
+        unknown(.sequence_numbering_broken, "the subject's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted");
 
     // The shim-side second witness, on the recording run. Crash points are numbered per
     // process; an operation by anyone else has no unique address and cannot be judged.
@@ -1110,9 +1122,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (wtrace.hard_boundary) |hb| switch (hb) {
             .detached => unknown(.child_process_detected, "a process left the containment group in an explored world"),
             .thread => unknown(.multiple_threads_detected, "the target created a thread in an explored world"),
-            .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world"),
+            .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world and the chain of observation broke there"),
             else => {},
         };
+        if (wtrace.primary_kill_records != wtrace.kill_point_count)
+            unknown(.sequence_numbering_broken, "the subject's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted");
 
         // Landing evidence: the kill must have happened where it was asked for, *to the
         // subject*. seq alone is not enough — a spawned child inherits SIDEEYE_KILL_AT

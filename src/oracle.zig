@@ -609,13 +609,16 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         }
 
         if (isProcessSyscall(name)) {
-            // A second execve by the *subject* replaces the image the crash points were
-            // read from; a child's execve is just a child becoming what it spawns.
+            // A second execve by the *subject* is no longer a refusal here (#123,
+            // contract v10): whether the chain of observation survived the image
+            // change is the SHIM's evidence to give (the carried count in the next
+            // shim_ready), and a chain that broke leaves the shim's records short of
+            // these syscalls — the completeness comparison below refuses on that
+            // divergence. A child's execve is just a child becoming what it spawns.
             // unshare is refused from anyone — this tool does not model namespaces.
             // And a clone that carries CLONE_THREAD is not a child at all: it is a
             // thread reached through a raw syscall, past the pthread_create wrapper,
             // and threads are refused for the determinism of the subject itself.
-            const is_exec = std.mem.eql(u8, name, "execve") or std.mem.eql(u8, name, "execveat");
             // Whole-line search is fine *here*, unlike the flag checks below: clone's
             // arguments carry no target-chosen strings for a false CLONE_THREAD to
             // hide in, and clone3 prints its flags inside a struct at no fixed index.
@@ -628,7 +631,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // target-chosen strings for a false token to hide in.
             const is_shared_fs = std.mem.startsWith(u8, name, "clone") and
                 std.mem.indexOf(u8, line, "CLONE_FS") != null;
-            if ((is_exec and is_primary) or is_raw_thread or is_shared_fs or std.mem.eql(u8, name, "unshare")) {
+            if (is_raw_thread or is_shared_fs or std.mem.eql(u8, name, "unshare")) {
                 if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
             }
             continue;
@@ -1289,7 +1292,12 @@ test "the launch execve is not mistaken for the target creating a child" {
     try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
 }
 
-test "a second execve is the target replacing itself, and stays refused" {
+test "a second execve by the subject is no longer the oracle's refusal (#123)" {
+    // Whether the chain of observation survived the image change is the shim's
+    // evidence to give; a chain that broke leaves the shim's records short of the
+    // oracle's syscalls, and the completeness comparison refuses on that. The
+    // oracle itself stays quiet here — asserted so a reintroduced exec refusal
+    // cannot come back silently.
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const text =
@@ -1298,7 +1306,7 @@ test "a second execve is the target replacing itself, and stays refused" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
-    try std.testing.expectEqualStrings("execve", p.boundary.?);
+    try std.testing.expect(p.boundary == null);
 }
 
 test "a child's execve is the child becoming something, not a refusal" {

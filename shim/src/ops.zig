@@ -404,20 +404,28 @@ pub fn vfork() callconv(.c) c_int {
 }
 
 // Exec keeps the pre-call record: on success there is no "after" in the same image to
-// record from, and on failure the extra record errs toward refusal.
+// record from, and on failure the extra record errs toward refusal. The subject also
+// carries its operation count into the new image (#123) — see callExecveSeqCarry and
+// execSeqCarrySet for who may carry and why the storage is what it is.
 pub fn execve(path: [*:0]const u8, argv: [*]const ?[*:0]const u8, envp: [*]const ?[*:0]const u8) callconv(.c) c_int {
     common.noteBoundary(.exec);
-    return common.callExecve(path, argv, envp);
+    return common.callExecveSeqCarry(path, argv, envp);
 }
 
 pub fn execv(path: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_int {
     common.noteBoundary(.exec);
-    return common.callExecv(path, argv);
+    const carried = common.execSeqCarrySet();
+    const rc = common.callExecv(path, argv);
+    if (carried) common.execSeqCarryUnset();
+    return rc;
 }
 
 pub fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_int {
     common.noteBoundary(.exec);
-    return common.callExecvp(file, argv);
+    const carried = common.execSeqCarrySet();
+    const rc = common.callExecvp(file, argv);
+    if (carried) common.execSeqCarryUnset();
+    return rc;
 }
 
 // Through v2 these recorded `.fork`, which is wrong in kind: the child is a new process

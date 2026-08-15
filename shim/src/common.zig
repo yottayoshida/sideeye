@@ -25,6 +25,10 @@ pub const c = struct {
     /// in this file, and a cached pid would be the parent's — in the one process the
     /// pid field exists to tell apart.
     pub extern "c" fn getpid() c_int;
+    /// Only the subject calls these (execSeqCarrySet guards on getpid == armed_pid),
+    /// so the heap they may touch is never a vfork parent's shared one.
+    pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
+    pub extern "c" fn unsetenv(name: [*:0]const u8) c_int;
     pub extern "c" fn getpgrp() c_int;
     pub extern "c" fn getpgid(pid: c_int) c_int;
     /// macOS only: asks a descriptor for its path.
@@ -494,6 +498,13 @@ pub fn init() void {
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
 
+    // A self-exec'd image continues the subject's numbering (#123): the exec wrapper
+    // of the previous image carried the count here. Absent means a fresh start —
+    // for the first image that is correct, and for an image that arrived through a
+    // non-interposed exec path (execl family, fexecve, a stripped environment) the
+    // fresh start is what the engine's continuation predicate refuses on.
+    if (c.getenv(contract.env.seq_base)) |b| seq = parseU32(std.mem.span(b));
+
     armed_pid = c.getpid();
 
     // The shim writes the header, not the engine.
@@ -510,7 +521,12 @@ pub fn init() void {
     }
 
     active = true;
-    writeRecord(.shim_ready, 0, stateDir(), "");
+    // shim_ready re-announces the continuation base as its seq (#123). Through v9
+    // this field was always 0; a fresh start still writes 0, so a plain single-image
+    // trace is unchanged. After a primary exec record, the engine requires the next
+    // shim_ready from the same pid to carry the count the chain left off at — the
+    // one piece of evidence a broken chain cannot fake.
+    writeRecord(.shim_ready, seq, stateDir(), "");
 }
 
 pub fn stateDir() []const u8 {
@@ -1086,6 +1102,61 @@ pub inline fn callExecve(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]con
     if (is_darwin) return darwin.execve(p, a, e);
     const f = real.execve orelse return -1;
     return f(p, a, e);
+}
+
+/// The subject — and only the subject — may carry its operation count across an
+/// exec (#123). A forked or vfork'd child answers `getpid()` differently and is
+/// excluded structurally, which is also the vfork-safety argument: the child that
+/// POSIX restricts to `_exit` and exec never reaches the environment mutation.
+pub fn execCarryAllowed() bool {
+    return active and c.getpid() == armed_pid;
+}
+
+/// Cap on the envp rebuild for `callExecveSeqCarry`. Entries beyond it mean the
+/// carry is DROPPED, never that the target's environment is truncated: a missing
+/// SEQ_BASE breaks the chain and refuses downstream, a truncated environment
+/// silently changes the target.
+const max_env_entries = 1024;
+
+/// execve with the current operation count appended to the environment. The
+/// rebuilt array and the entry's bytes live on THIS stack frame: heap is forbidden
+/// in a vfork child, a global would be written into memory a suspended vfork
+/// parent shares, and a frame below the vfork point is dead space to that parent —
+/// on success the image (and the frame) is replaced, on failure the frame unwinds
+/// normally. A stale SEQ_BASE already in the caller's envp (a previous failed
+/// exec's leftover) is dropped rather than duplicated.
+pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
+    if (!execCarryAllowed()) return callExecve(p, a, e);
+    var entry_buf: [64]u8 = undefined;
+    const entry = std.fmt.bufPrintZ(&entry_buf, "{s}={d}", .{ contract.env.seq_base, seq }) catch return callExecve(p, a, e);
+    const prefix = contract.env.seq_base ++ "=";
+    var new_env: [max_env_entries + 1]?[*:0]const u8 = undefined;
+    var n: usize = 0;
+    var i: usize = 0;
+    while (e[i]) |kv| : (i += 1) {
+        if (std.mem.startsWith(u8, std.mem.span(kv), prefix)) continue;
+        if (n >= max_env_entries) return callExecve(p, a, e);
+        new_env[n] = kv;
+        n += 1;
+    }
+    if (n >= max_env_entries) return callExecve(p, a, e);
+    new_env[n] = entry.ptr;
+    new_env[n + 1] = null;
+    return callExecve(p, a, @ptrCast(&new_env));
+}
+
+/// setenv-based carry for `execv`/`execvp`, which use the ambient environment.
+/// Returns whether the variable was set — the caller unsets it when the exec
+/// returns (failure), so a later fork's child does not inherit a stale count.
+pub fn execSeqCarrySet() bool {
+    if (!execCarryAllowed()) return false;
+    var val_buf: [16]u8 = undefined;
+    const v = std.fmt.bufPrintZ(&val_buf, "{d}", .{seq}) catch return false;
+    return c.setenv(contract.env.seq_base, v.ptr, 1) == 0;
+}
+
+pub fn execSeqCarryUnset() void {
+    _ = c.unsetenv(contract.env.seq_base);
 }
 pub inline fn callExecv(p: [*:0]const u8, a: [*]const ?[*:0]const u8) c_int {
     if (is_darwin) return darwin.execv(p, a);
