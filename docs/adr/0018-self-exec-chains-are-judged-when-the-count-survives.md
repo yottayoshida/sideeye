@@ -1,6 +1,6 @@
 # 0018 — Self-exec chains are judged when the count survives the image change
 
-Status: Proposed
+Status: Accepted (with the implementing PR; the slice was ruled at plan approval, 2026-08-15)
 Date: 2026-08-15
 Issue: #123
 

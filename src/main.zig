@@ -778,6 +778,20 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.primary_kill_records != trace.kill_point_count)
         unknown(.sequence_numbering_broken, "the subject's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted");
 
+    // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid
+    // count reads "single process" while the crash points span more than one image,
+    // and every other note in this report says what the judgement covered — this
+    // one must too. Placed here, right after the trace is trusted, so the JSON's
+    // processes field is already honest on the oracle-refusal paths below (R2);
+    // the children note later appends around it when both apply.
+    if (trace.exec_continuations > 0) {
+        boundary_note = std.fmt.allocPrint(
+            arena,
+            "{s}; the subject's image replaced {d} time(s), chain unbroken (#123)",
+            .{ boundary_note, trace.exec_continuations },
+        ) catch "single process; image replaced, chain unbroken";
+    }
+
     // The shim-side second witness, on the recording run. Crash points are numbered per
     // process; an operation by anyone else has no unique address and cannot be judged.
     //
@@ -920,25 +934,25 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         if (parsed.children > 0) {
             crossed_boundary = true;
-            boundary_note = std.fmt.allocPrint(
+            const children_note = std.fmt.allocPrint(
                 arena,
                 "{d} other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only",
                 .{parsed.children},
             ) catch "crossed, tolerated";
+            // This assignment replaces the note wholesale, so the image-change
+            // disclosure set earlier must ride along or a run with both children
+            // and a self-exec would lose it.
+            boundary_note = if (trace.exec_continuations > 0)
+                std.fmt.allocPrint(
+                    arena,
+                    "{s}; the subject's image replaced {d} time(s), chain unbroken (#123)",
+                    .{ children_note, trace.exec_continuations },
+                ) catch children_note
+            else
+                children_note;
         }
     }
 
-    // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid
-    // count reads "single process" while the crash points span more than one image,
-    // and every other note in this report says what the judgement covered — this
-    // one must too. Appended so it composes with the children note when both apply.
-    if (trace.exec_continuations > 0) {
-        boundary_note = std.fmt.allocPrint(
-            arena,
-            "{s}; the subject's image replaced {d} time(s), chain unbroken (#123)",
-            .{ boundary_note, trace.exec_continuations },
-        ) catch "single process; image replaced, chain unbroken";
-    }
 
     // Quiescence, observed rather than proven. A tolerated child was killed with the
     // group, but a grandchild reparented away is nobody's child to wait for — so when a
@@ -1348,7 +1362,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\processes   {s}
             \\not tested  {s}
             \\
-            \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} <operation>
+            \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} SIDEEYE_SEQ_BASE= <operation>
             \\
         , .{
             violations, explored,

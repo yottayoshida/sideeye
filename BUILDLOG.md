@@ -79,6 +79,24 @@ Not changed: the header-count check's dependence on the preceding run's
 work dir — the block rm -rf's it first, so a stale file cannot survive
 into the read.
 
+R2 CONFIRMED all ten with its own re-measurements (the zero-op probe
+now refuses; ambient SEQ_BASE runs PASS again; the disclosure appears
+in text and JSON). Two of its notes acted on: the printed `reproduce`
+line now pins `SIDEEYE_SEQ_BASE=` (the acceptance executes that line,
+so an ambient value would have made it diverge from the engine's own
+runs — the same class as the spawn-env pin), and the image-change
+disclosure moved to right after the trace is trusted so the JSON
+`processes` field is honest on oracle-refusal paths too, with the
+children note now composing around it in either order. One note
+recorded rather than fixed, so a stale mutant result is never cited as
+current: **the numbering-assert wiring in main.zig no longer has live
+acceptance coverage** — the structural double-announcement rule catches
+the execl shape first, and R2 measured the both-asserts-off mutant
+SURVIVING the current suite. The wiring stays as the second net, its
+computation unit-pinned; a live shape that reaches it would need a shim
+that renumbers without re-announcing, which no interposed path
+produces.
+
 ## 2026-08-15 — #130: the assisted funnel gets its verify-seals — and building it hit both failure modes it exists to catch
 
 Second PR of the b_cd3b31e80b91 batch. `spike/assisted/verify-assisted.sh`
