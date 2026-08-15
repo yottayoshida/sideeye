@@ -2,6 +2,26 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — Criterion 1 is redesigned around provenance (ADR 0017), on the owner's ruling
+
+The §18-class decision #118 reserved for the owner is made: option A of
+three presented (redesign / add an OR-route / keep and re-arm blind).
+The criterion's gate moves from "the question was posed blind" to "the
+question's provenance is recorded and labeled"; novel, author-confirmed,
+fixed and replayed stay exactly as they were, and an assisted finding
+still may never wear the blind label. The full argument for why this is
+a redesign and not a moved goalpost — the order of evidence, the
+pre-committed rule in #118, the falsified hypothesis — is ADR 0017; the
+PRD's criterion text and status trail now carry it.
+
+Alongside, three bookkeeping debts flagged by review: ADR 0012, 0015 and
+0016 still said Proposed after their Seal A PRs merged (the repo's own
+convention flips them at merge); flipped now with the flip's lateness
+recorded in the status line itself. What this unlocks next is mechanical
+and deliberate: tracker searches with positive controls for the four
+assisted findings — stow's unfold, devtodo's in-place rewrite, buku's
+torn db, calcurse's purge — then upstream contact for whichever survive.
+
 ## 2026-08-15 — v0.8.0, and the README stops being a changelog
 
 The bump rides the owner's earlier ruling (next engine change ships a
