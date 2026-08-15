@@ -2,6 +2,52 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — #123: the judge follows a single pid across execve (contract v10)
+
+Third PR of the b_cd3b31e80b91 batch; the design is ADR 0018 and the
+plan carried two adversarial review rounds before a line was written.
+The shape that shipped: the shim's exec wrappers carry the operation
+count (`SIDEEYE_SEQ_BASE` — subject-only via the armed-pid gate, which
+excludes vfork children structurally; execve rebuilds envp in a stack
+frame; overflow carries nothing rather than truncating the target's
+environment), the re-run init continues numbering, `shim_ready`
+re-announces the base as its seq, and the engine tolerates a subject
+exec only when exactly that evidence follows. The oracle's own
+primary-exec refusal is gone — chain integrity is the shim's evidence,
+divergence is the oracle's net. `sequence_numbering_broken` is the new
+refusal for the shape prefixHash provably cannot see (it probes 1..k
+and stops at the first match; a restarted counter is a duplicate).
+
+First-try measurements in the container, all four exactly as the plan
+predicted: TOY_SELFEXEC judged end to end (the planted bug FOUND at
+crash point 8 of 8, oracle agreeing on all 8 operations spanning two
+images), TOY_FORKEXEC still refused as child_touched, TOY_EXECL (an
+uninterposed exec — no record, no carry) caught as
+sequence_numbering_broken, and ONE trace header across the image change
+(the lseek guard promoted from convenience to load-bearing, now pinned).
+
+The mutant sweep earned its keep twice over. Mutant A (disable the
+continuation) failed to COMPILE, the container ran the stale binary,
+and the suite came back all green — a textbook "unmeasured green"
+caught only because the build's raw exit code was read; the harness now
+gates on it and the mutant was rebuilt as a base-off-by-one (killed:
+the self-exec check went red at exit 2). Mutants B and C SURVIVED their
+single-line forms and both survivals were the two-witness design
+working: the fork+exec refusal is held by the shim's foreign-kill-point
+AND the oracle's child-touch (disabling both produced a false PASS at
+exit 0 — killed), and the numbering refusal is held at the recording
+AND in every world (disabling both likewise false-PASSed — killed). The
+header mutant broke six checks at once, as a mid-file header should.
+
+The v9→v10 re-record of the four assisted cases went verdict-identical
+(2/22, 1/11, 6/8, 2/5; fresh-container replays all `the case
+reproduced`) after two instructive trips: replay refuses before setup
+when the state root does not exist to resolve, and buku's replay needs
+the launcher's XDG environment — the cohort R1's "the toml does not
+carry the environment" lesson, now measured on the replay side.
+The buku inspection case (#133) stays v9 deliberately: its claim rides
+its transcript and worlds log, not replayability.
+
 ## 2026-08-15 — #130: the assisted funnel gets its verify-seals — and building it hit both failure modes it exists to catch
 
 Second PR of the b_cd3b31e80b91 batch. `spike/assisted/verify-assisted.sh`

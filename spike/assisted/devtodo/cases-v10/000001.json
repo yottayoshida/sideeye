@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.8.0",
+  "contract_version": 10,
+  "define": {
+    "state": "/tmp/assisted/devtodo/state",
+    "setup": "/work/spike/assisted/devtodo/ops/./setup.sh",
+    "operation": "/usr/bin/devtodo --database /tmp/assisted/devtodo/state/.todo --remove 1",
+    "check": "/work/spike/assisted/devtodo/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 7,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/tmp/assisted/devtodo/state/.todo",
+  "before_class": "write",
+  "before_path": "/tmp/assisted/devtodo/state/.todo",
+  "violation": "hybrid"
+}

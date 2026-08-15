@@ -1,0 +1,31 @@
+todo: warning, created database (/tmp/assisted/devtodo/state/.todo) has group or world permissions
+can't get terminal type, defaulting to vt100.
+please set the TERM env variable.
+falsify: checker(devtodo-remove): I-C: expected exactly one GraceNote in the XML, got 0
+can't get terminal type, defaulting to vt100.
+please set the TERM env variable.
+checker(devtodo-remove): I-C: expected exactly one GraceNote in the XML, got 0
+can't get terminal type, defaulting to vt100.
+please set the TERM env variable.
+FAIL  1 of 2 crash worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 7
+            after  open(/tmp/assisted/devtodo/state/.todo)
+            before write(/tmp/assisted/devtodo/state/.todo)
+path        .todo
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 7 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      not run (no --oracle given)
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission calls)
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /work/spike/assisted/devtodo/cases-v10/000001.json
+replay      (this run is a replay; the case reproduced)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/assisted/devtodo/state SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 <operation>
+replay exit code: 1
