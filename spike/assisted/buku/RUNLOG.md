@@ -63,3 +63,60 @@ journal file survives buku's own recovery-open while the data stays intact.
   may be incomplete in exactly the way that could FABRICATE this torn-db
   world. After fchown support, re-pose the question; do not treat the
   unverified FAIL as a finding awaiting confirmation.
+
+## Correction (2026-08-15): the initdb() line was the falsification gate's, and buku recovers in every world
+
+The Result section above claims "in at least one world buku's own
+recovery-open reports `initdb(): file is not a database`". **That claim is
+withdrawn.** The line is real and committed (`target-error-line.txt`), but
+it was harvested from the wrong speaker: it is the **falsification gate's
+output** — the pre-run step that deliberately corrupts the state and
+requires the checker to go red — not any crash world's. Three measurements
+close it:
+
+1. **The transcripts themselves.** `checker(buku-add):` appears exactly
+   once in `explore-remeasure-transcript.txt`, at the falsification-gate
+   position: line 7, directly after the recording run's `url: /x` network
+   line (line 6); the 21 `url: /x` lines that follow (lines 14–74) are
+   the worlds', and none is accompanied by a checker failure. Both replay
+   transcripts show the same shape: one gate line, no world-checker
+   failure. The report field beside
+   every one of these lines already said it plainly: "falsified before the
+   run (corrupted state -> check failed)".
+2. **The case's `violation: hybrid` is an L0 kind** (engine.zig `judgeL0`:
+   content "holding neither the old nor the new content"), not a statement
+   that the hand-written checker fired. Reading it as "L0 and the checker
+   both failed" was the misreading that let the gate line stand as world
+   evidence.
+3. **An instrumented re-run** (`inspection/`, 2026-08-15): the committed
+   define re-run with a checker that first dumps each visited world's file
+   list, db header bytes, journal bytes and buku's raw answer to a log
+   outside the state root, then applies the committed checker's logic
+   verbatim. Engine 0.8.0/v9, same verdict (`FAIL`, earliest crash point
+   18 of 21, 2 violations). The dump (`inspection/worlds.log`) shows: in
+   **both** L0-violating worlds the torn `bookmarks.db` sits beside a
+   fully-synced hot journal (magic `d9 d5 05 f9 20 a1 63 d7`), buku's own
+   recovery-open answers the bystander query with rc=0, the bystander line
+   is intact, and the journal is cleaned up — **the checker passed in all
+   22 worlds**. `inspection/syscall-sequence.txt` (plain strace of the same
+   add over the same pre-state) shows why this is structural, not lucky:
+   sqlite's only neither-old-nor-new windows lie between the three db page
+   writes, and every one of them is bracketed by the journal it just
+   fdatasync'd. Harness: `inspection/inv.toml` + `inspection/check.sh`,
+   run in the cohort image with this directory mounted at `/inv` and the
+   repo at `/work`.
+
+What remains of this target's result: the L0 hybrid in 2/22 worlds is a
+correct byte-level observation, and it is exactly the state sqlite's
+journal contract exists to recover — recovery now measured inside the
+engine's own worlds, not only under plain `strace` kills (38/38 recoveries,
+recorded in the upstream round). **buku yields no finding**: not "held
+pending reproduction" but withdrawn, because the one leg it rested on was
+never measured. The suspended judgment above resolves accordingly.
+
+The mechanism that produced the error deserves naming: the falsification
+gate's target output is interleaved unlabeled with world output in the
+transcript, and a later reader harvested it as world evidence
+(`target-error-line.txt` is that harvest). The claim then inflated
+downstream — "at least one world" here became "2/22 worlds" in NOVELTY.md
+and RESULTS.md by merging with L0's count.

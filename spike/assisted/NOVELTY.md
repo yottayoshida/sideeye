@@ -38,6 +38,14 @@ the sweep is re-runnable.
   conversation; the finding as measured (buku's own recovery-open says "file is
   not a database" in 2/22 worlds, oracle agreeing on all 21 operations) is what
   the search looked for and did not find.
+- **Corrected 2026-08-15 (after this search ran): the claim in the previous
+  bullet overstates what was measured.** The "file is not a database" line is
+  the falsification gate's output over a deliberately corrupted db, not any
+  crash world's; the 2/22 count is the engine's L0 byte invariant, and an
+  instrumented re-run shows buku's recovery-open succeeding in all 22 worlds
+  (hot journal present in both torn ones). The finding is withdrawn entirely,
+  which moots its report step; the sweep above stands as a search record. Full
+  measurement: `buku/RUNLOG.md`, Correction section, and `buku/inspection/`.
 
 ## calcurse — interrupted `-P --purge` truncates apts, destroying an unnamed bystander: NOT FOUND (novel as searched)
 

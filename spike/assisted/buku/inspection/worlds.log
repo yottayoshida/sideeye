@@ -1,0 +1,274 @@
+===== visit 1 =====
+total 12
+drwxr-xr-x 2 root root 4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root 4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root   25 Aug 15 06:12 bookmarks.db
+bookmarks.db size=25 head16= 73 69 64 65 65 79 65 2d 63 6f 72 72 75 70 74 69 bytes24-27=0a
+bookmarks.db-journal MISSING
+query rc=1
+[31m[ERROR][0m initdb(): file is not a database
+after-query dir: bookmarks.db 
+VERDICT visit 1: FAIL bystander query exited 1: /usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m initdb(): file is not a database
+===== visit 2 =====
+total 20
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal MISSING
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 2: PASS
+===== visit 3 =====
+total 20
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal MISSING
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 3: PASS
+===== visit 4 =====
+total 20
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root     0 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=0 head16= bytes24-27=
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 4: PASS
+===== visit 5 =====
+total 24
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root   512 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=512 head16= 00 00 00 00 00 00 00 00 00 00 00 00 d6 3b 38 5c bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 5: PASS
+===== visit 6 =====
+total 24
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root   516 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=516 head16= 00 00 00 00 00 00 00 00 00 00 00 00 b3 21 72 b4 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 6: PASS
+===== visit 7 =====
+total 28
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root  4612 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=4612 head16= 00 00 00 00 00 00 00 00 00 00 00 00 70 e9 b0 58 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 7: PASS
+===== visit 8 =====
+total 28
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root  4616 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=4616 head16= 00 00 00 00 00 00 00 00 00 00 00 00 88 ce 6b fb bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 8: PASS
+===== visit 9 =====
+total 28
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root  4620 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=4620 head16= 00 00 00 00 00 00 00 00 00 00 00 00 0b ee 4c c9 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 9: PASS
+===== visit 10 =====
+total 32
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root  8716 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=8716 head16= 00 00 00 00 00 00 00 00 00 00 00 00 50 a8 04 b0 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 10: PASS
+===== visit 11 =====
+total 32
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root  8720 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=8720 head16= 00 00 00 00 00 00 00 00 00 00 00 00 cd 5f 72 f1 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 11: PASS
+===== visit 12 =====
+total 32
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root  8724 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=8724 head16= 00 00 00 00 00 00 00 00 00 00 00 00 e8 c3 ff d2 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 12: PASS
+===== visit 13 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12820 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=12820 head16= 00 00 00 00 00 00 00 00 00 00 00 00 85 21 ff 56 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 13: PASS
+===== visit 14 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=12824 head16= 00 00 00 00 00 00 00 00 00 00 00 00 3f f1 c3 3b bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 14: PASS
+===== visit 15 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=12824 head16= 00 00 00 00 00 00 00 00 00 00 00 00 9b 4c 52 1a bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 15: PASS
+===== visit 16 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=12824 head16= 00 00 00 00 00 00 00 00 00 00 00 00 61 3d 20 f7 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db bookmarks.db-journal 
+VERDICT visit 16: PASS
+===== visit 17 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=12824 head16= d9 d5 05 f9 20 a1 63 d7 00 00 00 03 62 00 34 c8 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 17: PASS
+===== visit 18 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000002
+bookmarks.db-journal size=12824 head16= d9 d5 05 f9 20 a1 63 d7 00 00 00 03 9d b9 b1 ad bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 18: PASS
+===== visit 19 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000003
+bookmarks.db-journal size=12824 head16= d9 d5 05 f9 20 a1 63 d7 00 00 00 03 2a 9c 32 96 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 19: PASS
+===== visit 20 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000003
+bookmarks.db-journal size=12824 head16= d9 d5 05 f9 20 a1 63 d7 00 00 00 03 9d 52 81 d1 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 20: PASS
+===== visit 21 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000003
+bookmarks.db-journal size=12824 head16= d9 d5 05 f9 20 a1 63 d7 00 00 00 03 5f ea af 95 bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 21: PASS
+===== visit 22 =====
+total 36
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+-rw-r--r-- 1 root root 12824 Aug 15 06:12 bookmarks.db-journal
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000003
+bookmarks.db-journal size=12824 head16= d9 d5 05 f9 20 a1 63 d7 00 00 00 03 12 a8 08 be bytes24-27=00001000
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 22: PASS
+===== visit 23 =====
+total 20
+drwxr-xr-x 2 root root  4096 Aug 15 06:12 .
+drwxr-xr-x 3 root root  4096 Aug 15 06:12 ..
+-rw-r--r-- 1 root root 12288 Aug 15 06:12 bookmarks.db
+bookmarks.db size=12288 head16= 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00 bytes24-27=00000003
+bookmarks.db-journal MISSING
+query rc=0
+1	https://example.com/g	GraceMark	grace
+after-query dir: bookmarks.db 
+VERDICT visit 23: PASS

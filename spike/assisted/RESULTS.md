@@ -13,7 +13,7 @@ Three clocks, stated separately (R1: the first version mixed them):
 
 | Target | T0 → define | T0 → first verdict | T0 → replay-confirmed | Outcome |
 |--------|------------|--------------------|-----------------------|---------|
-| buku | 5m02s | 10m26s (after 2 checker narrowings) | 11m29s | strict: UNKNOWN `fchown` · `--allow-unverified`: **FAIL 2/22** (L0: mid-write crash leaves bookmarks.db neither-old-nor-new; buku's own recovery-open printed "file is not a database" — `target-error-line.txt`) |
+| buku | 5m02s | 10m26s (after 2 checker narrowings) | 11m29s | strict: UNKNOWN `fchown` · `--allow-unverified`: **FAIL 2/22** (L0: mid-write crash leaves bookmarks.db neither-old-nor-new; ~~buku's own recovery-open printed "file is not a database" — `target-error-line.txt`~~ withdrawn 2026-08-15: that line was the falsification gate's, see `buku/RUNLOG.md` Correction) |
 | pass | 2m05s | 2m06s | — | UNKNOWN `child_process_detected` — the report's own words: "the target replaced its own image (exec)" |
 | calcurse | 1m25s | 1m25s | 1m49s | **FAIL 1/11, strict oracle agreeing on all 10 operations** — an interrupted `-P --purge` truncates `apts` and destroys the bystander event it never named |
 | stow | 1m29s | 1m30s | — | UNKNOWN `symlinkat` |
@@ -81,11 +81,15 @@ never aimed at. That inversion is itself a scoring result.
    ambient outside it and the target writes there too, so the oracle's
    account is of the data subtree, not of every byte the process touches.
    Novelty deliberately unchecked (no tracker search; separate step).
-2. **buku (weaker claim, stated)**: a mid-write crash leaves the sqlite db
-   unreadable to buku itself in 2/22 worlds; replay-confirmed
-   (`replay-transcript.txt`) but resting on `--allow-unverified` — the
-   strict run is UNKNOWN (`report-strict.json`: fchown), so nothing checked
-   the shim's completeness. A verified version needs that gap closed.
+2. **buku (corrected 2026-08-15 — no finding)**: the original entry here
+   claimed the db was "unreadable to buku itself in 2/22 worlds". That was
+   never measured: the 2/22 is the L0 byte invariant, the unreadable-to-buku
+   line was the falsification gate's output over a deliberately corrupted
+   db, and an instrumented re-run of the committed define shows buku's own
+   recovery-open succeeding in all 22 worlds — both torn worlds carry a
+   fully-synced hot journal. The L0 hybrid stands as a byte observation;
+   as a contract claim against buku it is withdrawn. Measurement:
+   `buku/RUNLOG.md` Correction section and `buku/inspection/`.
 3. **Three unsupported syscalls, one per target** — `fchown`
    (buku/sqlite), `symlinkat` (stow/perl), `fchmodat` (devtodo) — are
    outside the trace contract. (R1: the first version dressed these as a
