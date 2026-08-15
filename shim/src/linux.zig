@@ -34,6 +34,9 @@ comptime {
     @export(&ops.link, .{ .name = "link" });
     @export(&ops.linkat, .{ .name = "linkat" });
 
+    @export(&ops.symlink, .{ .name = "symlink" });
+    @export(&ops.symlinkat, .{ .name = "symlinkat" });
+
     @export(&ops.fsync, .{ .name = "fsync" });
     @export(&ops.fdatasync, .{ .name = "fdatasync" });
 

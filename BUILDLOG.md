@@ -2,6 +2,106 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — Symlinks become a first-class operation; the real gap was restore, not the oracle (#122, contract v9)
+
+The owner's ruling on #118's product decision: close the judge's measured
+gaps first (#122, then #121 option b), re-run the blocked committed
+defines, and only then decide §18 with a re-measured number. This entry is
+the first half.
+
+The oracle table was the visible absence, but the engine was the real
+work: snapshot recorded a symlink as "present but opaque" (kind `.other`,
+no target) and **restore did not recreate it at all** — a state directory
+with links would have started every crash world with the links missing.
+That was tolerable only because the oracle refused symlink-touching
+targets before any world ran; making the class supported without fixing
+restore would have shipped fabricated worlds. So: snapshot content is now
+the readlink target (fail-closed on a result that fills the buffer —
+truncation cannot be told from an exact fit), restore recreates links
+verbatim (a dangling link is restored dangling), and judgeL0 checks kind
+before content — a regular file holding the pre-target as *bytes* would
+otherwise satisfy the content comparison while being a different thing.
+That kind check also closes part of the standard arm's documented
+empty-content blind spot (an empty pre file replaced by a directory used
+to compare equal).
+
+Decisions made here, with their reasons:
+
+- **Contract v8 → v9.** The v6 precedent (link/linkat) decides it: adding
+  a class changes what a trace means, and a v8 shim beside a v9 engine
+  must refuse loudly, not diverge positionally. Cost accepted: every
+  saved v8 case replays as `case_no_longer_applies` — the assisted
+  cohort's two committed cases need re-recording, and #82's pending
+  re-record stays pending.
+- **`aux` stays empty for symlink.** The target string is content the
+  subject chose, not a path this run touches — the oracle already
+  excludes it from scoping (its path table lists only the link-path
+  argument), and recording it would hand every later consumer a
+  plausible-looking "path" that must never be resolved. Symmetry beats
+  convenience: nothing that needs the target exists today (restore reads
+  it from snapshots, not traces).
+- **corruptState retargets links** at a probe name that exists nowhere,
+  and the falsification gate counts corruptible entries (files + links)
+  instead of files — a stow-shaped state (directories and links, zero
+  regular files) used to read as "nothing to corrupt", which would have
+  refused exactly the target class this change exists to reach.
+
+Mutation record: four guards, each killed by the test written for it —
+judgeL0's kind check, restore's symlink arm, corruptState's retarget, the
+oracle's class entries. The first corruptState mutation was invalid (it
+left an unused local and died as a compile error — a red for the wrong
+reason); re-shot as a compiling no-op branch and killed by the fs test.
+The shim wrappers have no unit-test harness (nothing loads the .so in
+`zig build test`); their end-to-end proof is the container re-run of the
+stow define, which is the next step's acceptance criterion.
+
+**R1 (same day) reshaped the change in two ways worth recording.** First,
+the certain CI red: acceptance check 2v still demanded the refusal this
+change removes — R1 also measured, on macOS, that the TOY_SYMLINK run now
+PASSes with the symlink counted (crash points 4 → 5), which is the first
+live evidence of the macOS interposer working. The check is flipped to
+assert the v9 contract (PASS + exactly one class-10 record) and becomes
+the Linux end-to-end pin. Second, and central: removing the oracle's
+refusal EXPOSED a pre-existing silent skip — a shared path whose kind
+changes between the clean runs (stow's unfold: fold symlink → real
+directory) was outside both built-in invariants and outside the report's
+disclosure. The owner ruled to judge it in full rather than disclose-only
+or refuse: the identity on each side is the (kind, content) pair, killed
+mid-swap the path matches neither, and the file world's delete-then-
+recreate window was already judged `missing` — the kind change was an
+escape hatch, not a policy. L1's standard arm now promises the post
+(kind, content) pair from the plan, and a post-only symlink is judged by
+target (the existence-only rationale — content may differ between runs —
+does not transfer to a link, whose target is its whole identity).
+
+R1 also caught this entry over- and under-claiming. Over: the readlink
+fill-the-buffer guard could never fire on a real platform (`max_path` ==
+PATH_MAX), so "fail-closed" was a claim nobody could falsify — the guard
+moved into `readLinkTarget(buf)` and the boundary is now hit for real by
+a test with an 8-byte buffer. Under: two silent-wrongness fixes this
+change makes were never claimed — `snapshotsEqual` now distinguishes two
+links with different targets (both read as `.other` + empty content
+before), and `kindOfPath` no longer reports a symlink-to-file as a
+regular file on DT_UNKNOWN filesystems (it used to read the POINTED-AT
+bytes into the snapshot). Both are real fail-open closures that came
+along with making the kind first-class. The judgeL0 kind strengthening
+also reaches beyond symlinks: an empty pre file replaced by a directory
+used to compare equal and no longer does.
+
+Fix-round mutation record: the classify skip-revert, judgeL0's pre-kind
+half, L1's post-only target check, and the readLinkTarget `>=`→`>`
+boundary — each killed by exactly its own test. One process slip during
+the round, recorded because it will happen again if unrecorded:
+`git checkout -- src/engine.zig` after a mutation run reverted the file
+to the last COMMIT, which silently discarded the not-yet-committed R1
+fixes and made the next mutation a no-op against old code (rc=1 for the
+wrong reason — a compile error in a neighbouring file). The fixes were
+re-applied and committed BEFORE re-running the mutations; the rule is
+"commit first, then mutate", and the redo killed all four legitimately.
+Left alone on purpose: `spike/assisted/RESULTS.md` still says stow is
+blocked — it is the first cohort's sealed record, and the re-measurement
+writes its own.
+
 ## 2026-08-15 — spike/ gets a map; the cleanup that was NOT done is the point
 
 Three campaigns plus the assisted cohort left spike/ dense enough that the

@@ -43,6 +43,7 @@ pub extern "c" fn mkdtemp(template: [*:0]u8) ?[*:0]u8;
 pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
+pub extern "c" fn symlink(target: [*:0]const u8, linkpath: [*:0]const u8) c_int;
 pub extern "c" fn getpid() c_int;
 pub extern "c" fn fork() c_int;
 pub extern "c" fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) c_int;
@@ -116,7 +117,7 @@ pub fn isSymlink(path: [*:0]const u8) bool {
     return readlink(path, &buf, buf.len) >= 0;
 }
 
-pub const Kind = enum { file, dir, other, missing };
+pub const Kind = enum { file, dir, symlink, other, missing };
 
 /// Entry kind taken from the directory entry itself.
 ///
@@ -130,6 +131,7 @@ pub fn kindFromDirent(e: *Dirent) Kind {
     return switch (e.type) {
         DT_DIR => .dir,
         DT_REG => .file,
+        DT_LNK => .symlink,
         DT_UNKNOWN => .missing, // "ask again a different way"
         else => .other,
     };
@@ -144,6 +146,11 @@ pub fn isDirPath(path: [*:0]const u8) bool {
 }
 
 pub fn kindOfPath(path: [*:0]const u8) Kind {
+    // The link question comes first, because everything after it follows links:
+    // `opendir` on a symlink-to-directory answers "directory" and `open` on a
+    // symlink-to-file answers "file" — either would silently reclassify the entry
+    // as the thing it points at.
+    if (isSymlink(path)) return .symlink;
     if (isDirPath(path)) return .dir;
     const fd = open(path, O_RDONLY, @as(c_uint, 0));
     if (fd < 0) return .missing;

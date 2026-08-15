@@ -31,6 +31,8 @@ pub const unlinkat = @extern(*const fn (c_int, [*:0]const u8, c_int) callconv(.c
 pub const remove = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "remove" });
 pub const link = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int, .{ .name = "link" });
 pub const linkat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_int) callconv(.c) c_int, .{ .name = "linkat" });
+pub const symlink = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int, .{ .name = "symlink" });
+pub const symlinkat = @extern(*const fn ([*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int, .{ .name = "symlinkat" });
 pub const fsync = @extern(*const fn (c_int) callconv(.c) c_int, .{ .name = "fsync" });
 pub const close = @extern(*const fn (c_int) callconv(.c) c_int, .{ .name = "close" });
 pub const ftruncate = @extern(*const fn (c_int, i64) callconv(.c) c_int, .{ .name = "ftruncate" });

@@ -61,7 +61,14 @@ const std = @import("std");
 /// marks unlinked files on macOS too. The countable operation set changed for
 /// affected targets, which is what a version bump means here (same class as v5's
 /// stdio and v7's remove).
-pub const contract_version: u32 = 8;
+/// v9 added `OpClass.symlink` (#122): `symlink`/`symlinkat` are now first-class kill
+/// points rather than an unmodelled syscall the oracle refused — the same class of
+/// change as v6's link, and the same reason to bump: a v8 shim paired with a v9
+/// engine would record no symlink where one happened, which the version guard turns
+/// into an explicit refusal instead of a positional divergence. Measured motivation:
+/// the #118 assisted cohort's stow run refused on `symlinkat` (perl's symlink()
+/// reaches the kernel as symlinkat), blocking symlink-farm targets as a class.
+pub const contract_version: u32 = 9;
 
 pub const magic = "SIDEEYE1";
 
@@ -118,6 +125,14 @@ pub const OpClass = enum(u16) {
     /// name. Restore reproduces the two names as independent files of equal content —
     /// inode identity and `nlink` are outside the model (ADR 0006).
     link = 9,
+    /// A symbolic link (`symlink`/`symlinkat`). Creating one writes a directory entry,
+    /// so it is a kill point and a mutation — the same nature as `link` (#122). Only
+    /// the LINK PATH is the operation's address; the target string is content the
+    /// subject chose, not a path this run touches, and it is deliberately not carried
+    /// in `aux` — resolving or recording it would let a link whose content spells the
+    /// state directory be mis-scoped (the oracle applies the same exclusion). This is
+    /// therefore NOT a two-path operation: scope is decided from the link path alone.
+    symlink = 10,
 
     // --- lifecycle ops: recorded, never a crash point ---
     close = 100,
@@ -159,7 +174,7 @@ pub const OpClass = enum(u16) {
 
     pub fn isKillPoint(self: OpClass) bool {
         return switch (self) {
-            .open, .write, .rename, .unlink, .fsync, .truncate, .mkdir, .rmdir, .link => true,
+            .open, .write, .rename, .unlink, .fsync, .truncate, .mkdir, .rmdir, .link, .symlink => true,
             else => false,
         };
     }
@@ -190,7 +205,7 @@ pub const OpClass = enum(u16) {
     /// is already visible whether or not it was synced.
     pub fn isMutation(self: OpClass) bool {
         return switch (self) {
-            .write, .rename, .unlink, .truncate, .mkdir, .rmdir, .link => true,
+            .write, .rename, .unlink, .truncate, .mkdir, .rmdir, .link, .symlink => true,
             else => false,
         };
     }
@@ -214,6 +229,7 @@ pub const OpClass = enum(u16) {
             .mkdir => "mkdir",
             .rmdir => "rmdir",
             .link => "link",
+            .symlink => "symlink",
             .close => "close",
             .fork => "fork",
             .exec => "exec",

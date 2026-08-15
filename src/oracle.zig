@@ -54,6 +54,8 @@ const known = [_]Mapping{
     .{ .name = "rmdir", .class = .rmdir },
     .{ .name = "link", .class = .link },
     .{ .name = "linkat", .class = .link },
+    .{ .name = "symlink", .class = .symlink },
+    .{ .name = "symlinkat", .class = .symlink },
     .{ .name = "close", .class = .close },
 };
 
@@ -835,15 +837,35 @@ test "a symlink whose content spells the state directory is judged by its link p
     try std.testing.expectEqual(@as(?[]const u8, null), o.unsupported);
     try std.testing.expectEqual(@as(usize, 0), o.lines_in_scope);
 
-    // But a symlink whose *link path* is inside the state directory is in scope, and
-    // unsupported (the engine cannot restore a symlink, #5) — an honest refusal.
+    // A symlink whose *link path* is inside the state directory is in scope and, since
+    // contract v9 (#122), a first-class operation — both spellings reach the same class
+    // the shim records.
     const inside =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  symlink("../secret", "/tmp/s/link") = 0
+        \\9  symlinkat("../secret2", AT_FDCWD</work>, "/tmp/s/link2") = 0
         \\
     ;
     const i = try parse(arena_state.allocator(), inside, "/tmp/s", "", "/work");
-    try std.testing.expectEqualStrings("symlink", i.unsupported.?);
+    const want = [_]contract.OpClass{ .symlink, .symlink };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, i.classes.items);
+    try std.testing.expectEqual(@as(?[]const u8, null), i.unsupported);
+}
+
+test "the conservative net is still alive after the symlink class landed" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The falsification #122 demands for its own change: adding symlink to the class
+    // table must not have widened what silently passes. mknod is the next-nearest
+    // state-touching syscall with no class — it must still route to `unsupported`
+    // through the whole-line net, exactly as symlink itself did before v9.
+    const text =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  mknod("/tmp/s/fifo", S_IFIFO|0644, 0) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("mknod", p.unsupported.?);
 }
 
 test "link is first-class and counts when either endpoint is inside" {

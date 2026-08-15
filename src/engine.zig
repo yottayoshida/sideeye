@@ -17,7 +17,9 @@ pub const Entry = struct {
     /// Path relative to the state directory root, always using '/'.
     rel: []const u8,
     kind: posix.Kind,
-    /// File contents; empty for directories.
+    /// File contents; the link target for a symlink; empty for directories.
+    /// A symlink's target is its whole judged identity — the link is never followed,
+    /// so what it points AT is outside the snapshot and outside the judgement (#122).
     content: []const u8,
 };
 
@@ -104,13 +106,33 @@ fn walk(
                 const content = try readWhole(arena, full.ptr);
                 try entries.append(arena, .{ .rel = rel, .kind = .file, .content = content });
             },
-            // Symlinks, sockets and devices are recorded as present but opaque. v0.1
-            // does not claim to restore them faithfully, which is why the plan lists
-            // snapshot fidelity as out of scope rather than pretending otherwise.
+            .symlink => {
+                // The link itself, never what it points at: readlink, no following.
+                var tbuf: [contract.max_path]u8 = undefined;
+                const target = readLinkTarget(full.ptr, &tbuf) orelse return error.ReadFailed;
+                try entries.append(arena, .{ .rel = rel, .kind = .symlink, .content = try arena.dupe(u8, target) });
+            },
+            // Sockets and devices are recorded as present but opaque. v0.1 does not
+            // claim to restore them faithfully, which is why the plan lists snapshot
+            // fidelity as out of scope rather than pretending otherwise. (Symlinks
+            // left this bucket in #122: they are first-class above.)
             .other => try entries.append(arena, .{ .rel = rel, .kind = .other, .content = "" }),
             .missing => {},
         }
     }
+}
+
+/// Read a symlink's target into `buf`, fail-closed: null on error AND on a result
+/// that fills the buffer, because readlink reports no truncation — an exact fit and
+/// a cut-off target return the same length, and a truncated target restored later
+/// would be a different link. The buffer is a parameter so the boundary is testable:
+/// against `max_path` (== PATH_MAX) no real platform can make readlink fill it, so a
+/// guard buried in `walk` would be a claim nobody can falsify (R1); against a small
+/// buffer the test below fires it for real.
+fn readLinkTarget(path_z: [*:0]const u8, buf: []u8) ?[]const u8 {
+    const n = posix.readlink(path_z, buf.ptr, buf.len);
+    if (n < 0 or @as(usize, @intCast(n)) >= buf.len) return null;
+    return buf[0..@intCast(n)];
 }
 
 fn lessThanRel(_: void, a: Entry, b: Entry) bool {
@@ -277,6 +299,14 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
         const full = try joinZ(&full_buf, root, e.rel);
         switch (e.kind) {
             .dir => _ = posix.mkdir(full.ptr, 0o755),
+            .symlink => {
+                // Recreate the link with the recorded target, verbatim. The target is
+                // a string, not a path this function resolves — a dangling link is
+                // restored dangling, which is what the snapshot recorded.
+                var tz_buf: [contract.max_path]u8 = undefined;
+                const tz = std.fmt.bufPrintZ(&tz_buf, "{s}", .{e.content}) catch return error.PathTooLong;
+                if (posix.symlink(tz.ptr, full.ptr) != 0) return error.CreateFailed;
+            },
             .file => {
                 const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
                 if (fd < 0) return error.CreateFailed;
@@ -480,6 +510,14 @@ pub const PlannedFile = struct {
     /// All three slices borrow from the pre/post snapshots handed to `classify`;
     /// the plan must not outlive them.
     rel: []const u8,
+    /// The judged identity is (kind, content) on EACH side, and the two sides may
+    /// differ: stow's unfold turns a fold symlink into a real directory, and that
+    /// pair is judged like any other — killed mid-swap, the path holds neither
+    /// identity (#122, owner ruling). A symlink's "content" is its target string,
+    /// so without the kind a same-named regular file holding those bytes would
+    /// satisfy the content comparison while being a different thing.
+    pre_kind: posix.Kind,
+    post_kind: posix.Kind,
     form: FileForm,
     pre_content: []const u8,
     post_content: []const u8,
@@ -495,6 +533,13 @@ pub const L0Plan = struct {
     }
 };
 
+/// The kinds the built-in invariants can compare: a (kind, content) pair is a whole
+/// identity for each of these. Sockets and devices stay outside — their content is
+/// unreadable here, and a comparison of nothing would be agreement about nothing.
+fn isJudgedKind(k: posix.Kind) bool {
+    return k == .file or k == .symlink or k == .dir;
+}
+
 /// Decide, once and from the snapshots alone, which invariant each shared file is
 /// judged by. Both the judgement (`judgeL0`) and the report's `l0` note read from the
 /// same plan — there is deliberately no second place where the classification is
@@ -509,15 +554,29 @@ pub fn classify(gpa: Allocator, pre: Snapshot, post: Snapshot) error{OutOfMemory
     errdefer plan.arena.deinit();
     const arena = plan.arena.allocator();
     for (pre.entries.items) |pe| {
-        if (pe.kind != .file) continue;
+        if (!isJudgedKind(pe.kind)) continue;
         const po = post.find(pe.rel) orelse continue;
-        if (po.kind != .file) continue;
-        const history = pe.content.len > 0 and
+        if (!isJudgedKind(po.kind)) continue;
+        // A directory that stays a directory carries nothing to compare — its content
+        // is empty on both sides. Every other combination enters, kind changes
+        // included: the previous code silently skipped a pair whose kind changed
+        // between the clean runs, which was invisible while the oracle refused every
+        // symlink-touching target before a world ran, and became an undisclosed hole
+        // the moment #122 removed that refusal — stow's unfold (fold symlink → real
+        // directory) is exactly such a pair, and it is the window that define exists
+        // to explore (R1; judged-in-full by owner ruling).
+        if (pe.kind == .dir and po.kind == .dir) continue;
+        // The history form is a statement about appendable byte streams; a symlink's
+        // target string is replaced whole or not at all, so only file→file pairs
+        // qualify and everything else stays standard.
+        const history = pe.kind == .file and po.kind == .file and pe.content.len > 0 and
             !std.mem.eql(u8, po.content, pe.content) and
             std.mem.startsWith(u8, po.content, pe.content);
         if (history) plan.history_count += 1;
         try plan.files.append(arena, .{
             .rel = pe.rel,
+            .pre_kind = pe.kind,
+            .post_kind = po.kind,
             .form = if (history) FileForm.history else FileForm.standard,
             .pre_content = pe.content,
             .post_content = po.content,
@@ -537,7 +596,8 @@ pub fn classify(gpa: Allocator, pre: Snapshot, post: Snapshot) error{OutOfMemory
 /// narrower — it is about the paths the operation is *replacing*:
 ///
 ///   for every path present in both the pre and post snapshots,
-///   the crashed state must contain it, holding either the pre or the post content —
+///   the crashed state must contain it, holding either the pre or the post identity
+///   (kind and content as a pair, #122) —
 ///   or, for a file whose clean run only ever extends it (the history form, ADR 0004),
 ///   content that still begins with everything the file held before the operation.
 ///
@@ -548,16 +608,21 @@ pub fn judgeL0(plan: L0Plan, crashed: Snapshot) ?Violation {
         const ce = crashed.find(f.rel) orelse return .{ .missing = f.rel };
         switch (f.form) {
             .standard => {
-                if (std.mem.eql(u8, ce.content, f.pre_content)) continue;
-                if (std.mem.eql(u8, ce.content, f.post_content)) continue;
+                // The identity on each side is (kind, content) as a pair: a symlink's
+                // content is its target string, so a same-named regular file holding
+                // those bytes — or a directory beside an empty pre content — must not
+                // read as preserved state (#122). A pair whose kind changed between
+                // the clean runs (stow's unfold: symlink → directory) is judged by
+                // the same two-sided rule; killed mid-swap, the path matches neither
+                // side, and that is the violation.
+                if (ce.kind == f.pre_kind and std.mem.eql(u8, ce.content, f.pre_content)) continue;
+                if (ce.kind == f.post_kind and std.mem.eql(u8, ce.content, f.post_content)) continue;
                 return .{ .hybrid = f.rel };
             },
             .history => {
-                // The kind is checked here and not in the standard arm: a directory's
-                // content is empty, and an empty prefix test would accept it, where
-                // the standard arm's equality against non-empty pre content already
-                // rejects it. (The standard arm's own blind spot — empty pre or post
-                // content — predates this form and is tracked separately.)
+                // Both arms check kind now (#122); this one keeps its own because its
+                // violation is `rewritten`, not `hybrid`, and because an empty prefix
+                // test would otherwise accept a directory's empty content.
                 if (ce.kind != .file) return .{ .rewritten = f.rel };
                 if (std.mem.startsWith(u8, ce.content, f.pre_content)) continue;
                 return .{ .rewritten = f.rel };
@@ -577,14 +642,12 @@ pub fn judgeL0(plan: L0Plan, crashed: Snapshot) ?Violation {
 pub fn judgeL1(plan: L0Plan, pre: Snapshot, post: Snapshot, crashed: Snapshot) ?Violation {
     for (plan.files.items) |f| {
         const ce = crashed.find(f.rel) orelse return .{ .not_durable = f.rel };
-        // Content alone is not identity: a directory's content is the empty string,
-        // so an empty post file replaced by a same-named directory would compare
-        // equal. The post entry's kind is part of what the success claim promised.
-        if (post.find(f.rel)) |pe| {
-            if (ce.kind != pe.kind) return .{ .not_durable = f.rel };
-        }
         switch (f.form) {
-            .standard => if (!std.mem.eql(u8, ce.content, f.post_content))
+            // The success claim promised the post state, kind and content both:
+            // a directory's content is the empty string, so an empty post file
+            // replaced by a same-named directory would compare equal on content
+            // alone. The plan carries the post kind, so no second lookup (#122).
+            .standard => if (ce.kind != f.post_kind or !std.mem.eql(u8, ce.content, f.post_content))
                 return .{ .not_durable = f.rel },
             .history => {
                 if (ce.kind != .file) return .{ .not_durable = f.rel };
@@ -601,6 +664,13 @@ pub fn judgeL1(plan: L0Plan, pre: Snapshot, post: Snapshot, crashed: Snapshot) ?
         if (pre.find(e.rel) != null) continue;
         const ce = crashed.find(e.rel) orelse return .{ .not_durable = e.rel };
         if (ce.kind != e.kind) return .{ .not_durable = e.rel };
+        // A post-only FILE's content may legitimately differ between runs, which is
+        // the deliberate gap the report's `not tested` names. That reasoning does not
+        // transfer to a symlink: its target string is its whole identity and it is
+        // written whole — a farm's new link pointing anywhere else is exactly the
+        // loss a success claim promised away (#122, R1).
+        if (e.kind == .symlink and !std.mem.eql(u8, ce.content, e.content))
+            return .{ .not_durable = e.rel };
     }
     for (pre.entries.items) |e| {
         if (post.find(e.rel) != null) continue;
@@ -614,7 +684,15 @@ pub fn judgeL1(plan: L0Plan, pre: Snapshot, post: Snapshot, crashed: Snapshot) ?
 /// anything a target is likely to store.
 pub const corruption_probe = "sideeye-corruption-probe\n";
 
-/// Overwrite every file in the state directory, leaving the structure intact.
+/// Where every symlink is pointed during the falsification probe: a name that exists
+/// nowhere, distinctive enough to recognise in a checker's error output. A symlink's
+/// judged identity is its target string, so retargeting is the corruption that
+/// preserves the structure — the link stays a link, the farm shape stays intact, and
+/// only the thing a link-aware checker must verify has changed (#122).
+pub const corruption_probe_target = "sideeye-corruption-probe-target";
+
+/// Overwrite every file in the state directory — and retarget every symlink —
+/// leaving the structure intact.
 ///
 /// This exists for DESIGN §14-13: before exploring, a deliberately corrupted state must
 /// make the checker fail, otherwise the checker is not testing what it claims and every
@@ -628,6 +706,18 @@ pub const corruption_probe = "sideeye-corruption-probe\n";
 pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     for (snap.entries.items) |e| {
+        if (e.kind == .symlink) {
+            // Replace, not follow: opening the link would corrupt whatever it points
+            // at, which may be outside the state directory entirely. A checker that
+            // never notices every link in the state pointing at a nonexistent probe
+            // name is not checking the links — the same argument as overwriting file
+            // contents, applied to the only content a symlink has.
+            var full_buf: [contract.max_path]u8 = undefined;
+            const full = try joinZ(&full_buf, root, e.rel);
+            if (posix.unlink(full.ptr) != 0) return error.CreateFailed;
+            if (posix.symlink(corruption_probe_target, full.ptr) != 0) return error.CreateFailed;
+            continue;
+        }
         if (e.kind != .file) continue;
         var full_buf: [contract.max_path]u8 = undefined;
         const full = try joinZ(&full_buf, root, e.rel);
@@ -653,10 +743,14 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
     }
 }
 
-pub fn countFiles(snap: Snapshot) usize {
+/// How many entries `corruptState` can actually corrupt. The falsification gate asks
+/// this before trusting a checker; counting only files would send a symlink-farm state
+/// (entries: directories and links, zero regular files) into "nothing to corrupt"
+/// while corruptState has a real probe for its links (#122).
+pub fn countCorruptible(snap: Snapshot) usize {
     var n: usize = 0;
     for (snap.entries.items) |e| {
-        if (e.kind == .file) n += 1;
+        if (e.kind == .file or e.kind == .symlink) n += 1;
     }
     return n;
 }
@@ -977,6 +1071,236 @@ test "an empty-pre file keeps the standard rule instead of a vacuous history" {
     var full = try testSnapshot(gpa, &.{.{ "fresh.log", "first entry\n" }});
     defer full.deinit();
     try std.testing.expectEqual(@as(?Violation, null), try testJudge(gpa, pre, post, full));
+}
+
+test "a symlink pair is judged by kind and by target (#122)" {
+    const gpa = std.testing.allocator;
+    var pre: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer pre.deinit();
+    try pre.entries.append(pre.arena.allocator(), .{ .rel = "current", .kind = .symlink, .content = "versions/v1" });
+    var post: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer post.deinit();
+    try post.entries.append(post.arena.allocator(), .{ .rel = "current", .kind = .symlink, .content = "versions/v2" });
+
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+    try std.testing.expectEqual(@as(usize, 1), plan.files.items.len);
+    try std.testing.expectEqual(posix.Kind.symlink, plan.files.items[0].pre_kind);
+    try std.testing.expectEqual(posix.Kind.symlink, plan.files.items[0].post_kind);
+    // A symlink is never the history form: its target is replaced whole.
+    try std.testing.expectEqual(@as(u32, 0), plan.history_count);
+
+    // Killed before or after the retarget: either target is a legitimate state.
+    var old_t: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer old_t.deinit();
+    try old_t.entries.append(old_t.arena.allocator(), .{ .rel = "current", .kind = .symlink, .content = "versions/v1" });
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan, old_t));
+
+    // A third target is neither: the retarget was not atomic.
+    var third: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer third.deinit();
+    try third.entries.append(third.arena.allocator(), .{ .rel = "current", .kind = .symlink, .content = "versions" });
+    try std.testing.expectEqualStrings("current", judgeL0(plan, third).?.hybrid);
+
+    // The kind check's own falsification: a regular FILE holding the pre target as
+    // bytes satisfies the content comparison and is still a violation — without the
+    // kind guard this case reads as preserved state.
+    var as_file: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer as_file.deinit();
+    try as_file.entries.append(as_file.arena.allocator(), .{ .rel = "current", .kind = .file, .content = "versions/v1" });
+    try std.testing.expectEqualStrings("current", judgeL0(plan, as_file).?.hybrid);
+
+    // Gone entirely stays missing, as for every judged pair.
+    var gone: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer gone.deinit();
+    try std.testing.expectEqualStrings("current", judgeL0(plan, gone).?.missing);
+}
+
+test "a pair whose kind changes between the clean runs is judged, not skipped (#122)" {
+    // The stow unfold shape: pre has a fold SYMLINK, post has a real DIRECTORY at the
+    // same path. The owner's ruling: judge it by the same two-sided rule instead of
+    // silently skipping — the skip was invisible while the oracle refused every
+    // symlink-touching target, and became an undisclosed hole once #122 removed that
+    // refusal.
+    const gpa = std.testing.allocator;
+    var pre: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer pre.deinit();
+    try pre.entries.append(pre.arena.allocator(), .{ .rel = "target/sub", .kind = .symlink, .content = "../stow/A/sub" });
+    var post: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer post.deinit();
+    try post.entries.append(post.arena.allocator(), .{ .rel = "target/sub", .kind = .dir, .content = "" });
+
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+    try std.testing.expectEqual(@as(usize, 1), plan.files.items.len);
+    try std.testing.expectEqual(posix.Kind.symlink, plan.files.items[0].pre_kind);
+    try std.testing.expectEqual(posix.Kind.dir, plan.files.items[0].post_kind);
+
+    // Killed before the swap: still the fold link. Legitimate.
+    var before: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer before.deinit();
+    try before.entries.append(before.arena.allocator(), .{ .rel = "target/sub", .kind = .symlink, .content = "../stow/A/sub" });
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan, before));
+
+    // Killed after: the real directory. Legitimate.
+    var after: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer after.deinit();
+    try after.entries.append(after.arena.allocator(), .{ .rel = "target/sub", .kind = .dir, .content = "" });
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan, after));
+
+    // Killed mid-swap (link deleted, directory not yet made): the path is gone —
+    // the non-atomic window this pair exists to expose.
+    var mid: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer mid.deinit();
+    try std.testing.expectEqualStrings("target/sub", judgeL0(plan, mid).?.missing);
+
+    // A link retargeted to neither side matches neither identity.
+    var wrong: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer wrong.deinit();
+    try wrong.entries.append(wrong.arena.allocator(), .{ .rel = "target/sub", .kind = .symlink, .content = "/elsewhere" });
+    try std.testing.expectEqualStrings("target/sub", judgeL0(plan, wrong).?.hybrid);
+
+    // Control: an unchanged directory pair carries nothing to compare and stays out.
+    var pre2: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer pre2.deinit();
+    try pre2.entries.append(pre2.arena.allocator(), .{ .rel = "d", .kind = .dir, .content = "" });
+    var post2: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer post2.deinit();
+    try post2.entries.append(post2.arena.allocator(), .{ .rel = "d", .kind = .dir, .content = "" });
+    var plan2 = try classify(gpa, pre2, post2);
+    defer plan2.deinit();
+    try std.testing.expectEqual(@as(usize, 0), plan2.files.items.len);
+}
+
+test "L1 judges a post-only symlink by its target, not existence alone (#122)" {
+    const gpa = std.testing.allocator;
+    var pre: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer pre.deinit();
+    var post: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer post.deinit();
+    try post.entries.append(post.arena.allocator(), .{ .rel = "farm/link", .kind = .symlink, .content = "../pkg/real" });
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+
+    // The promised link, target and all: durable.
+    var ok: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer ok.deinit();
+    try ok.entries.append(ok.arena.allocator(), .{ .rel = "farm/link", .kind = .symlink, .content = "../pkg/real" });
+    try std.testing.expectEqual(@as(?Violation, null), judgeL1(plan, pre, post, ok));
+
+    // Present but pointing anywhere else: the loss the success claim promised away.
+    var retargeted: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer retargeted.deinit();
+    try retargeted.entries.append(retargeted.arena.allocator(), .{ .rel = "farm/link", .kind = .symlink, .content = "/elsewhere" });
+    try std.testing.expectEqualStrings("farm/link", judgeL1(plan, pre, post, retargeted).?.not_durable);
+}
+
+test "readLinkTarget is fail-closed at its own boundary (#122)" {
+    // A real link with a 10-byte target; the guard's own predicate is "a result that
+    // fills the buffer is refused", so an 8-byte and an exactly-10-byte buffer must
+    // both answer null, and only a roomier buffer answers the target.
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir_z = std.fmt.bufPrintZ(&dbuf, "/tmp/sideeye-readlink-test-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(dir_z.ptr, 0o755);
+    var lbuf: [contract.max_path]u8 = undefined;
+    const link_z = std.fmt.bufPrintZ(&lbuf, "{s}/l", .{dir_z}) catch unreachable;
+    _ = posix.unlink(link_z.ptr);
+    try std.testing.expectEqual(@as(c_int, 0), posix.symlink("0123456789", link_z.ptr));
+    defer {
+        _ = posix.unlink(link_z.ptr);
+        _ = posix.rmdir(dir_z.ptr);
+    }
+
+    var small: [8]u8 = undefined;
+    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &small));
+    var exact: [10]u8 = undefined;
+    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &exact));
+    var roomy: [11]u8 = undefined;
+    try std.testing.expectEqualStrings("0123456789", readLinkTarget(link_z.ptr, &roomy).?);
+    // n < 0: not a link at all.
+    var missing_buf: [contract.max_path]u8 = undefined;
+    const missing_z = std.fmt.bufPrintZ(&missing_buf, "{s}/absent", .{dir_z}) catch unreachable;
+    var big: [64]u8 = undefined;
+    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(missing_z.ptr, &big));
+}
+
+test "snapshot, restore and corruptState carry symlinks as links (#122)" {
+    const gpa = std.testing.allocator;
+
+    // Pid-unique root (#28: zig build test runs test binaries concurrently).
+    var dbuf: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-symlink-test-{d}/state", .{posix.getpid()}) catch unreachable;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-symlink-test-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var rbuf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rbuf, "{s}", .{root}) catch unreachable;
+    _ = posix.mkdir(root_z.ptr, 0o755);
+    defer {
+        deleteTree(root, "", 0) catch {};
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    var fbuf: [contract.max_path]u8 = undefined;
+    const file_z = try joinZ(&fbuf, root, "key.json");
+    const fd = posix.open(file_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    try std.testing.expectEqual(@as(isize, 4), posix.write(fd, "k=1\n", 4));
+    _ = posix.close(fd);
+    var lbuf: [contract.max_path]u8 = undefined;
+    const rel_link_z = try joinZ(&lbuf, root, "rel-link");
+    try std.testing.expectEqual(@as(c_int, 0), posix.symlink("key.json", rel_link_z.ptr));
+    var gbuf: [contract.max_path]u8 = undefined;
+    const dangling_z = try joinZ(&gbuf, root, "dangling");
+    // A dangling link is a legitimate snapshot citizen: readlink works, follow fails.
+    try std.testing.expectEqual(@as(c_int, 0), posix.symlink("/nowhere/dangling", dangling_z.ptr));
+
+    var snap = try takeSnapshot(gpa, root);
+    defer snap.deinit();
+    try std.testing.expectEqual(@as(usize, 3), snap.entries.items.len);
+    const rl = snap.find("rel-link") orelse return error.MissingEntry;
+    try std.testing.expectEqual(posix.Kind.symlink, rl.kind);
+    try std.testing.expectEqualStrings("key.json", rl.content);
+    const dg = snap.find("dangling") orelse return error.MissingEntry;
+    try std.testing.expectEqual(posix.Kind.symlink, dg.kind);
+    try std.testing.expectEqualStrings("/nowhere/dangling", dg.content);
+    try std.testing.expectEqual(@as(usize, 3), countCorruptible(snap));
+
+    // Retarget one link and delete the other, then restore: both come back verbatim,
+    // the dangling one restored dangling.
+    try std.testing.expectEqual(@as(c_int, 0), posix.unlink(rel_link_z.ptr));
+    try std.testing.expectEqual(@as(c_int, 0), posix.symlink("elsewhere", rel_link_z.ptr));
+    try std.testing.expectEqual(@as(c_int, 0), posix.unlink(dangling_z.ptr));
+    try restore(snap, root);
+    var tbuf: [contract.max_path]u8 = undefined;
+    var n = posix.readlink(rel_link_z.ptr, &tbuf, tbuf.len);
+    try std.testing.expect(n > 0);
+    try std.testing.expectEqualStrings("key.json", tbuf[0..@intCast(n)]);
+    n = posix.readlink(dangling_z.ptr, &tbuf, tbuf.len);
+    try std.testing.expect(n > 0);
+    try std.testing.expectEqualStrings("/nowhere/dangling", tbuf[0..@intCast(n)]);
+
+    // corruptState retargets every link at the probe name — a checker that resolves
+    // or compares link targets has something it must fail on.
+    try corruptState(snap, root);
+    n = posix.readlink(rel_link_z.ptr, &tbuf, tbuf.len);
+    try std.testing.expect(n > 0);
+    try std.testing.expectEqualStrings(corruption_probe_target, tbuf[0..@intCast(n)]);
+    n = posix.readlink(dangling_z.ptr, &tbuf, tbuf.len);
+    try std.testing.expect(n > 0);
+    try std.testing.expectEqualStrings(corruption_probe_target, tbuf[0..@intCast(n)]);
+}
+
+test "a links-only state is corruptible, so the falsification gate keeps meaning (#122)" {
+    // The stow shape: a state directory of directories and symlinks, zero regular
+    // files. countCorruptible must not send it into "nothing to corrupt".
+    const gpa = std.testing.allocator;
+    var snap: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer snap.deinit();
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "pkg", .kind = .dir, .content = "" });
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "pkg/bin", .kind = .symlink, .content = "../stow/pkg/bin" });
+    try std.testing.expectEqual(@as(usize, 1), countCorruptible(snap));
 }
 
 test "a trace written against another contract version is a mismatch, not a short trace" {

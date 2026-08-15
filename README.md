@@ -71,10 +71,12 @@ never as passing — and the refusal names its detector.
   performs; the un-killed baseline world is held to the same status, and the report
   records which status a PASS was allowed to require.
 - **Be dynamically linked and single-threaded**, and reach its files through libc —
-  which includes buffered stdio (observed at flush granularity) and the hard-link
-  family (`link`/`linkat`). Raw syscalls (a Rust target pulling in `rustix`, say),
-  static linking, a hardened runtime, threads, and symlinks inside the state
-  directory are detected and refused. A descriptor's *location* decides observation,
+  which includes buffered stdio (observed at flush granularity), the hard-link
+  family (`link`/`linkat`), and symlink creation (`symlink`/`symlinkat` — the link
+  path is the operation; the target string is never resolved). Symlinks inside the
+  state directory are snapshotted and restored as links, target verbatim. Raw
+  syscalls (a Rust target pulling in `rustix`, say), static linking, a hardened
+  runtime, and threads are detected and refused. A descriptor's *location* decides observation,
   never its number: a state file rebound onto stdout with `dup2` is still observed,
   and a descriptor whose backing cannot be identified makes the run UNKNOWN rather
   than passing. Descriptor-hygiene sweeps (`close(3..255)` at startup) are tolerated
@@ -147,7 +149,7 @@ earliest    crash point 5 of 5
 path        key.json
 observed    present before and after the operation, but gone from the crashed state
 explored    6 worlds (crash points 5 + 1 baseline)
-atomicity   1 file(s) judged pre-or-post
+atomicity   1 path(s) judged pre-or-post
 oracle      agreed on 5 operations (63 syscall lines examined, 9 touching the state directory)
 checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
 l1          no marker configured

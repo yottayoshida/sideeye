@@ -128,6 +128,8 @@ pub const UnlinkFn = *const fn ([*:0]const u8) callconv(.c) c_int;
 pub const UnlinkatFn = *const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int;
 pub const LinkFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int;
 pub const LinkatFn = *const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_int) callconv(.c) c_int;
+pub const SymlinkFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int;
+pub const SymlinkatFn = *const fn ([*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int;
 pub const FdFn = *const fn (c_int) callconv(.c) c_int;
 pub const FtruncateFn = *const fn (c_int, i64) callconv(.c) c_int;
 pub const TruncateFn = *const fn ([*:0]const u8, i64) callconv(.c) c_int;
@@ -303,6 +305,8 @@ pub var real: struct {
     unlinkat: ?UnlinkatFn = null,
     link: ?LinkFn = null,
     linkat: ?LinkatFn = null,
+    symlink: ?SymlinkFn = null,
+    symlinkat: ?SymlinkatFn = null,
     fsync: ?FdFn = null,
     fdatasync: ?FdFn = null,
     close: ?FdFn = null,
@@ -384,6 +388,8 @@ fn resolveAll() void {
     real.unlinkat = lookup(UnlinkatFn, "unlinkat");
     real.link = lookup(LinkFn, "link");
     real.linkat = lookup(LinkatFn, "linkat");
+    real.symlink = lookup(SymlinkFn, "symlink");
+    real.symlinkat = lookup(SymlinkatFn, "symlinkat");
     real.fsync = lookup(FdFn, "fsync");
     real.fdatasync = lookup(FdFn, "fdatasync");
     real.close = lookup(FdFn, "close");
@@ -1009,6 +1015,16 @@ pub inline fn callLinkat(od: c_int, old: [*:0]const u8, nd: c_int, new: [*:0]con
     if (is_darwin) return darwin.linkat(od, old, nd, new, flags);
     const f = real.linkat orelse return -1;
     return f(od, old, nd, new, flags);
+}
+pub inline fn callSymlink(target: [*:0]const u8, linkpath: [*:0]const u8) c_int {
+    if (is_darwin) return darwin.symlink(target, linkpath);
+    const f = real.symlink orelse return -1;
+    return f(target, linkpath);
+}
+pub inline fn callSymlinkat(target: [*:0]const u8, newdirfd: c_int, linkpath: [*:0]const u8) c_int {
+    if (is_darwin) return darwin.symlinkat(target, newdirfd, linkpath);
+    const f = real.symlinkat orelse return -1;
+    return f(target, newdirfd, linkpath);
 }
 pub inline fn callFsync(fd: c_int) c_int {
     if (is_darwin) return darwin.fsync(fd);
