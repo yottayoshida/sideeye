@@ -2,6 +2,32 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — The novelty round: four searches, four not-founds, and the boundaries say so
+
+The step the criterion-1 redesign designated ran the same day: recorded
+tracker searches with positive controls, campaign-1 method, for all four
+assisted findings. Verdict on every one: **not found — novel as far as
+each search sees** (`spike/assisted/NOVELTY.md`, terms and hit counts
+recorded for re-running). The controls did their job in three different
+shapes: buku's proved the vocabulary reaches issue BODIES (a body-only
+"corrupt" match), calcurse's found a real existing apts-corruption issue
+by the same word that would have found ours, and stow's used the domain's
+own vocabulary (twelve live fold/unfold threads) while every
+crash/interrupt/atomic term returned zero — the failure class is absent
+from that tracker's language entirely. devtodo needed no vocabulary at
+all: both its trackers (GitHub upstream, Debian BTS) are small enough
+that enumeration is coverage — 8 + 4 items, all read, none about data.
+
+Two honesty notes carried into the record rather than smoothed over:
+stow's GNU mailing-list archives were not searched (the one adjacent
+thread that exists, #29, ARRIVED from the list — suggestive of funneling,
+not proof), and buku's mechanism attribution (buku's sqlite usage vs an
+unavoidable tear) is deliberately left for the upstream conversation —
+novelty asked whether the finding was already reported, not whose fault
+it is. Upstream contact is the next step and needs per-report owner
+approval; devtodo's counterparty problem (upstream self-describes as
+unmaintained since ~2010) is on the record before anyone drafts that
+report.
 ## 2026-08-15 — Criterion 1 is redesigned around provenance (ADR 0017), on the owner's ruling
 
 The §18-class decision #118 reserved for the owner is made: option A of
