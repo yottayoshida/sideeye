@@ -1,7 +1,8 @@
 # Investigation copy of the committed buku-add define (spike/assisted/buku/ops/
 # buku-add.toml): same state, same setup, same operation, but the checker is
-# an instrumented copy that dumps each visited world's on-disk state to
-# /inv/worlds.log before applying the committed checker's own logic.
+# an instrumented copy carrying the committed checker's verdict legs in the
+# committed order, plus two read-only additions (a world dump and a query-answer
+# log) appended to /inv/worlds.log. Launcher: ./run.sh.
 [world]
 state = "/tmp/assisted/buku/state"
 

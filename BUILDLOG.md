@@ -46,6 +46,34 @@ transcript. Candidate engine fix, not yet filed: label
 falsification-gate target output in the transcript (a `falsify:` prefix
 or a begin/end fence) so it cannot be quoted as a world's.
 
+R1 on the correction (fresh reviewer, same day) returned one P0, three
+P1 and six P2 — all adopted, and two deserve their own record. First,
+the P0: my same-class sweep for carriers of the withdrawn claim used
+`grep ... | grep -v transcript` to exclude transcript FILES and thereby
+dropped every LINE containing the word "transcript" — including
+NOVELTY.md's strongest form of the very claim being withdrawn ("the
+checker did fail in one world ... and that transcript is committed").
+The exclusion excluded a known hit; the filter unit (line) differed
+from the intended unit (file). Second, R1 strengthened the correction's
+own footing: the committed remeasure transcript alone proves no world
+checker failed — check.sh prints only through `fail()`, the line
+appears exactly once, the gate must fail or the run ends UNKNOWN
+`checker_not_falsified`, and `checks_run` counts exploration-phase runs
+only — so the instrumented re-run is corroboration, not the load-bearing
+leg, and the RUNLOG now says so in that order. The re-run itself was
+redone through a committed launcher (`inspection/run.sh`, environment
+as `ops/explore.sh` — the lesson this repo already paid for in
+campaign 2) with the verdict transcript and case committed beside the
+world dumps, the instrumented checker's leg order restored to the
+committed checker's, and the visit-to-world mapping derived in the
+RUNLOG rather than assumed. Residue closed across NOVELTY.md (the HELD
+section now reads WITHDRAWN), RESULTS.md (a dated note under the
+owner's scoring — the numbers stand as scored; re-scoring is the
+owner's), PRD.md (a new dated status paragraph: novelty four-for-four,
+two reports standing, buku withdrawn, three live assisted findings) and
+ADR 0017 (two dated inline notes marking buku's later resolution;
+engine-level statements stand).
+
 ## 2026-08-15 — Three reports filed, one finding held: the report step is a harder gate than novelty
 
 Owner instruction for this round: plain bug reports, no mention of this

@@ -63,7 +63,12 @@ is settled here rather than left to drift:
 - **The four assisted findings** (stow, devtodo, buku, calcurse) gain nothing but
   eligibility: their questions preceded their answers (committed defines, measured
   windows), their provenance is labeled assisted, and every remaining leg — novelty
-  first — is open.
+  first — is open. *(2026-08-15, later the same day: the novelty searches ran,
+  four-for-four not previously reported; buku's finding was then withdrawn as a
+  contract-level claim — its remaining leg was a misread of the falsification
+  gate's output, and buku recovers in every crash world
+  (`spike/assisted/buku/RUNLOG.md`, Correction). Three assisted findings carry a
+  live claim.)*
 
 ## Why this is a redesign and not a moved goalpost
 
@@ -96,7 +101,10 @@ widened the gate." The defence is the recorded order of events, stated precisely
    it. The same committed defines then reached verified, replay-confirmed
    counterexamples on stow, devtodo and buku, and re-recorded calcurse's — which was
    verified before the gaps closed and is the control showing the funnel, not the
-   gap-closing, produced the question (`spike/assisted/REMEASURE.md`).
+   gap-closing, produced the question (`spike/assisted/REMEASURE.md`). *(buku's
+   counterexample later resolved to an engine-level byte observation inside
+   sqlite's recovery contract and was withdrawn as a finding on 2026-08-15; the
+   verified/replay-confirmed statement here is engine-level and stands.)*
 
 What this evidence does NOT do is falsify the value of blind provenance, and this
 ADR does not claim it does. topydo reached verified counterexamples blind and still

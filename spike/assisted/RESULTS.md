@@ -42,6 +42,15 @@ On that axis the number that feeds #118's product decision is **1.5 of 5
 drivable slices with discovery value today** (calcurse found; buku
 suspended), not "5/5 meaningful".
 
+*Note, 2026-08-15 (after the scoring): both premises of buku's suspension
+have since resolved, in opposite directions. The fchown gap closed and the
+strict re-run verified the recording (`REMEASURE.md`); the finding itself
+was then withdrawn — the "unreadable to buku" leg was the falsification
+gate's output, and buku recovers in every world (`buku/RUNLOG.md`,
+Correction). The scores above are the owner's and stand as scored;
+re-scoring, if any, is the owner's call with `REMEASURE.md` and the
+correction as inputs.*
+
 **The failure-mode inversion, recorded**: the metadata gate was designed
 against an agent posing vacuous questions. None appeared. The binding
 constraint was the JUDGE's reach — engine coverage — which the gate was
