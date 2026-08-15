@@ -37,7 +37,7 @@ The demo compiles a small planted-bug tool, explores it, and prints a real FAIL 
 **2. Ask whether Sideeye can watch your tool** — before writing any config:
 
 ```
-$ ./sideeye preflight --state <dir> --operation "<cmd>" --shim ./libsideeye_shim.so
+$ ./sideeye preflight --state <dir> --operation "<cmd>"
 ```
 
 One observed run: either `recording accepted` (exit 0, with the `explore` command to graduate to) or a refusal naming the same detector a real run would use (exit 2). What only a real exploration can check is listed as `not checked`, never silently claimed.
@@ -45,7 +45,7 @@ One observed run: either `recording accepted` (exit 0, with the `explore` comman
 **3. Explore** — the real thing, with the whole define in one file:
 
 ```
-$ ./sideeye explore --config sideeye.toml --shim ./libsideeye_shim.so --oracle /usr/bin/strace
+$ ./sideeye explore --config sideeye.toml --oracle /usr/bin/strace
 ```
 
 ```toml
@@ -113,16 +113,18 @@ case "$claim:$reality" in
 esac
 ```
 
-The full version is [`spike/check.sh`](spike/check.sh). Sideeye refuses to trust a checker it has not seen fail: before exploring, it corrupts the state — every file overwritten, every symlink retargeted — and requires the check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS.
+The full version is [`spike/check.sh`](spike/check.sh). Sideeye refuses to trust a checker it has not seen fail: before exploring, it corrupts the state — every file overwritten, every symlink retargeted — and requires the check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS. More worked checkers, and the failure patterns that taught them: [docs/checker-cookbook.md](docs/checker-cookbook.md).
 
 ## What the target has to be
 
 Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2) with the refusing detector named:
 
-- **Dynamically linked and single-threaded**, reaching its files through libc — buffered stdio, the hard-link family and symlink creation included. Raw syscalls (a Rust target pulling in `rustix`, say), static linking, hardened runtimes and threads are refused. A descriptor's *location* decides observation, never its number: a state file rebound onto stdout with `dup2` is still seen, and startup descriptor-hygiene sweeps are tolerated (ADR 0013).
+- **Dynamically linked and single-threaded**, reaching its files through libc — buffered stdio, the hard-link family and symlink creation included. State-changing raw syscalls (writes that bypass libc), static linking, hardened runtimes and threads are refused; read-only raw opens are tolerated, which is what let a `rustix`-carrying Rust target clear a full run (#19). A descriptor's *location* decides observation, never its number: a state file rebound onto stdout with `dup2` is still seen, and startup descriptor-hygiene sweeps are tolerated (ADR 0013).
 - **State in one directory**, declared with `--state` or the toml's `[world] state`. Symlinks inside it are first-class (snapshotted and restored as links, target verbatim); ownership/permission changes are observed but outside the judged state, and every report says so.
 - **A clean run exits its declared success status** (`--expect-status`, default 0) — the crash points are read off that run.
 - **Other processes stay away from the state.** Forked helpers are fine when the oracle (`--oracle`, Linux) confirms nobody else touched it; a target that `exec`s over itself is judged when the chain of observation survives the image change (contract v10 carries the operation count across it) and refused when it does not, and a process that escapes Sideeye's containment group is refused. Without an oracle any process boundary is UNKNOWN, full stop — the shim only sees processes that load it, and "was not seen" is not "did nothing". For single-process targets with no oracle, a PASS requires `--allow-unverified`, and the report says the weaker claim out loud.
+
+How real tool classes have fared against these limits — verdicts and named walls, each backed by a recorded run: [docs/target-classes.md](docs/target-classes.md).
 
 The full contract, and the reason behind each refusal: [DESIGN.md](DESIGN.md).
 
@@ -149,6 +151,8 @@ The root confines *which* config may be named — it is not a sandbox for what t
 | [BUILDLOG.md](BUILDLOG.md) | Decisions as they happen, including the wrong ones |
 | [docs/report-schema.md](docs/report-schema.md) | Every field the JSON report carries, held to the code by CI |
 | [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
+| [docs/target-classes.md](docs/target-classes.md) | Real tool classes against the constraint list — verdicts and named walls, each row backed by a recorded run |
+| [docs/checker-cookbook.md](docs/checker-cookbook.md) | Annotated real checkers, and the failure patterns that taught them |
 | [docs/adr/](docs/adr/) | One record per irreversible decision — the descriptor contract (0013), links and symlinks (0006, #122), the MCP surface (0010, 0011), the blind protocol (0012) among them |
 
 ## License

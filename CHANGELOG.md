@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `--shim` has a default (#78): when omitted, the shim is looked for beside the canonical binary — its sibling first (the tarball layout), then `../lib` beside it (the zig-out layout) — realpath-normalized so reports and reproduce lines name the real file. Absence stays a loud error naming both looked-at paths; explicit `--shim` is unchanged. The demo's resolver became everyone's resolver.
+- The no-oracle refusal names the strace it found (#78): on Linux, `completeness_not_verified` and preflight's next-command hint carry the absolute path of the first executable `strace` on PATH — named, never attached. Attaching a second witness by default was rejected after review measured what it would silently change: the claim strength of every flagless invocation, the acceptance suite's no-oracle pins, MCP tool verdicts, and the meaning of `--allow-unverified` without `--oracle`. Verdicts are byte-identical with and without a discoverable strace.
+- Two docs pages whose every line names a recorded run: `docs/target-classes.md` (#79 — how real tool classes fared: verdicts, correct refusals, toy-measured walls, and one not-yet-measured row labeled as such) and `docs/checker-cookbook.md` (#80 — four annotated committed checkers and the failure patterns that taught them). The acceptance suite now checks that every repository-relative slashed backtick reference the two pages carry still resolves in the repository — path rot, deliberately not claim drift — and asserts the sweep saw a minimum number of references per page, so an empty scan cannot read as green.
+
+### Changed
+
+- README's constraint list no longer claims rustix-carrying Rust targets are refused as a class (stale since #19 closed): state-changing raw syscalls still refuse, read-only raw opens are tolerated, and the measured outcome behind the correction is omamori's PASS 143/143.
+
 ## [0.9.0] - 2026-08-15
 
 The exec-boundary release: a subject that execve-replaces itself stays judged (trace contract v10), a restarted operation counter is a named refusal instead of a wrong-address verdict, the falsification gate's output carries its speaker on every line, and the front page's claims are trued against what actually stands. Saved v9 cases refuse honestly as a contract mismatch and must be re-recorded.
