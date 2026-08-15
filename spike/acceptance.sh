@@ -1170,6 +1170,56 @@ echo "=========== check 2w: remove(3) is observed, attempt for attempt =========
 stdio_case "remove(3) of a file, a missing path, and a directory" TOY_REMOVE "$OUT/toy-fixed" \
     "open:scratch.txt write:scratch.txt unlink:scratch.txt unlink:never-made.tmp mkdir:subdir unlink:subdir rmdir:subdir $rotate_tail"
 
+echo "=========== check 2w-b: ownership/permission writes are recorded-only (#121) ==========="
+# The devtodo shape from the #118 cohort: one chmod on a state file sent the whole
+# run to unsupported_syscall_observed. Option b: the oracle observes it, the verdict
+# excludes it, and the report says so — text and JSON alike. Seen red: this exact
+# run answered UNKNOWN unsupported_syscall_observed under the pre-#121 binary (the
+# refusal this check replaces). The name is asserted as a substring so glibc's
+# chmod-vs-fchmodat spelling choice cannot flake it — both contain "chmod".
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(env TOY_CHMOD=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/meta.json 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "ownership/permission write(s) observed and excluded"; then
+    echo "ok   a chmod on state is excluded from judgement and named in the text report"
+else
+    echo "FAIL chmod: exit $rc (wanted PASS with the metadata note)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+if python3 - <<'PYEOF'
+import json
+d = json.load(open('/tmp/acc/meta.json'))
+assert 'observed and excluded' in d['metadata_writes'], d['metadata_writes']
+assert 'chmod' in d['metadata_writes'], d['metadata_writes']
+PYEOF
+then
+    echo "ok   the JSON carries the same exclusion, syscall named"
+else
+    echo "FAIL the JSON metadata_writes field disagrees with the text"
+    fails=$((fails + 1))
+fi
+# Control, same binary: an UNSUPPORTED state-touching syscall must still refuse —
+# the exclusion is a defined list, not a loosened net. mknod is the nearest neighbour.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(env TOY_MKNOD=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "unsupported_syscall_observed" && echo "$o" | grep -q "mknod"; then
+    # The name is asserted too ("mknod" is a substring of "mknodat", so glibc's
+    # spelling choice cannot flake it): a refusal for some OTHER reason must not
+    # count as the net being alive.
+    echo "ok   the conservative net is still alive beside the exclusion (mknod refuses, by name)"
+else
+    echo "FAIL mknod control: exit $rc (wanted UNKNOWN unsupported_syscall_observed naming mknod)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2x: sideeye.toml is the define surface, and it fails closed ==========="
 # ADR 0007: the file owns state/setup/operation/check; what the parser accepts is the
 # width of the contract, so unknown keys, bare values and flag/file mixing refuse with

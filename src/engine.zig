@@ -259,10 +259,16 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
             }
         }
 
-        // A pass that removes nothing would be repeated forever by the loop above. It
-        // means the entries cannot be deleted at all — a permission problem, not a
-        // capacity one — and the caller has to hear about it.
-        if (removed == 0) return error.DeleteFailed;
+        // Every collected entry must actually have been removed. The first version
+        // required only `removed > 0`, which let a PARTIAL failure — three siblings
+        // gone, one held by permissions — return as success and leave residue for the
+        // next world to be judged against: the exact "violation at crash point k that
+        // was really residue from k-1" this function's own history records. The path
+        // became reachable when #121 stopped refusing chmod-capable targets (R1); an
+        // unreadable 0000-mode directory, for instance, is skipped silently by
+        // opendir above and its rmdir then fails here. Failing loudly turns that
+        // into SETUP ERROR instead of a fabricated counterexample.
+        if (removed < count) return error.DeleteFailed;
         if (!buffer_full) return;
     }
 }
@@ -1301,6 +1307,82 @@ test "a links-only state is corruptible, so the falsification gate keeps meaning
     try snap.entries.append(snap.arena.allocator(), .{ .rel = "pkg", .kind = .dir, .content = "" });
     try snap.entries.append(snap.arena.allocator(), .{ .rel = "pkg/bin", .kind = .symlink, .content = "../stow/pkg/bin" });
     try std.testing.expectEqual(@as(usize, 1), countCorruptible(snap));
+}
+
+test "ownership/permission writes change nothing a snapshot judges (#121's own predicate)" {
+    // The exclusion's predicate, pinned directly instead of resting on inference
+    // (R1): chmod on a state file must leave the snapshot byte-identical, because
+    // the judged state is names, bytes and link targets. If Entry ever grows a mode
+    // field, this test goes red and #121's report wording has to change with it.
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-chmod-inv-{d}", .{posix.getpid()}) catch unreachable;
+    var dz_buf: [contract.max_path]u8 = undefined;
+    const dz = std.fmt.bufPrintZ(&dz_buf, "{s}", .{dir}) catch unreachable;
+    _ = posix.mkdir(dz.ptr, 0o755);
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try joinZ(&fbuf, dir, "f.txt");
+    const fd = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    try std.testing.expectEqual(@as(isize, 2), posix.write(fd, "x\n", 2));
+    _ = posix.close(fd);
+    defer {
+        _ = posix.unlink(fz.ptr);
+        _ = posix.rmdir(dz.ptr);
+    }
+
+    const gpa = std.testing.allocator;
+    var before = try takeSnapshot(gpa, dir);
+    defer before.deinit();
+    try std.testing.expectEqual(@as(c_int, 0), std.c.chmod(fz.ptr, 0o600));
+    var after = try takeSnapshot(gpa, dir);
+    defer after.deinit();
+
+    try std.testing.expectEqual(before.entries.items.len, after.entries.items.len);
+    for (before.entries.items, after.entries.items) |b, a| {
+        try std.testing.expectEqualStrings(b.rel, a.rel);
+        try std.testing.expectEqual(b.kind, a.kind);
+        try std.testing.expectEqualStrings(b.content, a.content);
+    }
+}
+
+test "deleteTree refuses a PARTIAL failure instead of leaving residue (#121, R1)" {
+    // An unreadable directory is skipped silently by opendir, its rmdir then fails —
+    // and a sibling that deletes fine used to make the pass count as success. The
+    // residue would be judged as the next world's state.
+    if (std.c.geteuid() == 0) return error.SkipZigTest; // root ignores modes
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-deltree-{d}/state", .{posix.getpid()}) catch unreachable;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-deltree-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var rz_buf: [contract.max_path]u8 = undefined;
+    const rz = std.fmt.bufPrintZ(&rz_buf, "{s}", .{dir}) catch unreachable;
+    _ = posix.mkdir(rz.ptr, 0o755);
+    var sb: [contract.max_path]u8 = undefined;
+    const sub_z = try joinZ(&sb, dir, "locked");
+    _ = posix.mkdir(sub_z.ptr, 0o755);
+    var ib: [contract.max_path]u8 = undefined;
+    const inner_z = try joinZ(&ib, dir, "locked/held.txt");
+    const fd = posix.open(inner_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    _ = posix.close(fd);
+    var gb: [contract.max_path]u8 = undefined;
+    const gone_z = try joinZ(&gb, dir, "goes.txt");
+    const fd2 = posix.open(gone_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd2 >= 0);
+    _ = posix.close(fd2);
+    try std.testing.expectEqual(@as(c_int, 0), std.c.chmod(sub_z.ptr, 0o000));
+    defer {
+        _ = std.c.chmod(sub_z.ptr, 0o755);
+        _ = posix.unlink(inner_z.ptr);
+        _ = posix.rmdir(sub_z.ptr);
+        _ = posix.unlink(gone_z.ptr);
+        _ = posix.rmdir(rz.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    // The sibling deletes, the locked directory cannot — the pass must refuse.
+    try std.testing.expectError(error.DeleteFailed, deleteTree(dir, "", 0));
 }
 
 test "a trace written against another contract version is a mismatch, not a short trace" {

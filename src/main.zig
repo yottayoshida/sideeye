@@ -109,6 +109,12 @@ const ReplayCase = struct {
 var json_path: ?[]const u8 = null;
 var json_arena: ?std.mem.Allocator = null;
 var oracle_note: []const u8 = "not run (no --oracle given)";
+/// Ownership/permission writes on the state directory (#121, option b): observed by
+/// the oracle alone — the shim does not interpose them — and excluded from every
+/// verdict input. The default says why absence of a note is not absence of writes:
+/// without an oracle nothing can see a chown, and "was not seen" must not read as
+/// "did not happen" here any more than anywhere else in this tool.
+var metadata_note: []const u8 = "not observable (no oracle ran; the shim does not interpose ownership/permission calls)";
 var checker_note: []const u8 = "none configured";
 /// The L1 story (ADR 0008): whether a success marker was declared, and in how many
 /// crash worlds it was observed — the worlds where the post-success invariant was
@@ -798,6 +804,43 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const oracle_cwd = if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
         const parsed = oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError("out of memory");
 
+        // Set before any exit below, like oracle_note: an UNKNOWN raised by this
+        // block must still carry what the oracle saw being excluded (#121).
+        metadata_note = blk: {
+            const items = parsed.metadata_observed.items;
+            // The restore sentence rides BOTH branches: flattening is a property of
+            // restore, not of the target's syscalls — a setup-created 0600 file runs
+            // its crash worlds at 0644 whether or not the target ever chmods (R2,
+            // the buku shape: sqlite fchowns only as root, so the note would
+            // otherwise vanish exactly where the flattening bites hardest).
+            if (items.len == 0) break :blk "none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes";
+            var names: std.ArrayList(u8) = .empty;
+            var listed: std.ArrayList([]const u8) = .empty;
+            for (items) |n| {
+                var dup = false;
+                for (listed.items) |s| {
+                    if (std.mem.eql(u8, s, n)) {
+                        dup = true;
+                        break;
+                    }
+                }
+                if (dup) continue;
+                listed.append(arena, n) catch break :blk "observed (detail unavailable)";
+                var count: usize = 0;
+                for (items) |m| {
+                    if (std.mem.eql(u8, m, n)) count += 1;
+                }
+                if (names.items.len > 0) names.appendSlice(arena, ", ") catch break :blk "observed (detail unavailable)";
+                const piece = std.fmt.allocPrint(arena, "{s} x{d}", .{ n, count }) catch break :blk "observed (detail unavailable)";
+                names.appendSlice(arena, piece) catch break :blk "observed (detail unavailable)";
+            }
+            break :blk std.fmt.allocPrint(
+                arena,
+                "{d} ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): {s}. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+                .{ items.len, names.items },
+            ) catch "observed (detail unavailable)";
+        };
+
         // An oracle that observed nothing agrees with a shim that observed nothing, and
         // the report says "agreed" either way. The acceptance suite asserts by hand that
         // more than ten lines were examined; the tool itself shipped without the check
@@ -854,7 +897,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         oracle_note = std.fmt.allocPrint(
             arena,
-            "agreed on {d} operations ({d} syscall lines examined, {d} touching the state directory)",
+            "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
 
@@ -924,16 +967,24 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     if (n == 0) {
         requireCompleteness(args.oracle != null, args.allow_unverified);
+        // "judged state", not "state directory": a run whose only writes are
+        // ownership/permission metadata lands exactly here with zero kill points,
+        // and those writes DO change the directory — just nothing the verdict
+        // judges. The metadata line below is the disclosure; without it this
+        // headline reads as a plain falsehood over a chmod-only operation (R1 #121).
+        // The oracle line rides along because it is the metadata note's provenance.
         say(
-            \\PASS  the operation performed nothing that can change the state directory
+            \\PASS  the operation performed nothing that can change the judged state
             \\      explored 0 crash points; nothing to kill before
             \\      expected status: {d}
             \\      atomicity: {s}
+            \\      oracle: {s}
+            \\      metadata: {s}
             \\      l1: {s}
             \\      case: {s}
             \\      not tested: {s}
             \\
-        , .{ expected_status_val, l0_note, l1_note, case_note, notTestedText() });
+        , .{ expected_status_val, l0_note, oracle_note, metadata_note, l1_note, case_note, notTestedText() });
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
@@ -1221,6 +1272,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\expected    exit {d}
             \\atomicity   {s}
             \\oracle      {s}
+            \\metadata    {s}
             \\checker     {s}
             \\l1          {s}
             \\case        {s}
@@ -1242,6 +1294,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             expected_status_val,
             l0_note,
             oracle_note,
+            metadata_note,
             checker_note,
             l1_note,
             case_shown,
@@ -1271,13 +1324,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      expected status: {d}
         \\      atomicity: {s}
         \\      oracle: {s}
+        \\      metadata: {s}
         \\      checker: {s}
         \\      l1: {s}
         \\      case: {s}
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, checker_note, l1_note, case_note, boundary_note, notTestedText() });
+    , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundary_note, notTestedText() });
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -1869,6 +1923,8 @@ fn buildJson(
     try jsonString(w, arena, replay_note);
     try w.appendSlice(arena, ",\n  \"oracle\": ");
     try jsonString(w, arena, oracle_note);
+    try w.appendSlice(arena, ",\n  \"metadata_writes\": ");
+    try jsonString(w, arena, metadata_note);
     try w.appendSlice(arena, ",\n  \"checker\": ");
     try jsonString(w, arena, checker_note);
     try w.appendSlice(arena, ",\n  \"processes\": ");

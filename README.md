@@ -150,7 +150,8 @@ path        key.json
 observed    present before and after the operation, but gone from the crashed state
 explored    6 worlds (crash points 5 + 1 baseline)
 atomicity   1 path(s) judged pre-or-post
-oracle      agreed on 5 operations (63 syscall lines examined, 9 touching the state directory)
+oracle      agreed on 5 operations (63 syscall lines examined, 9 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
 checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
 l1          no marker configured
 case        /tmp/se/work/cases/000001.json

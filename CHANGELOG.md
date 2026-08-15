@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `symlink`/`symlinkat` are first-class operations (#122, trace contract v9): recorded as kill points on the LINK PATH (the target string is content the subject chose — never resolved, never recorded), snapshotted as (kind, readlink-target), restored verbatim (a dangling link is restored dangling), and retargeted by the checker-falsification probe so link-farm checkers stay falsifiable. Saved v8 cases refuse honestly as a contract mismatch and must be re-recorded. Measured motivation: the #118 assisted cohort's stow run refused on `symlinkat`.
+- Ownership/permission writes are recorded-only (#121, option b): the chown/chmod families change none of the judged state (names, bytes, link targets), so the oracle observes them, the verdict excludes them — from kill points, from `unsupported`, from the child-touch condition — and the report declares the exclusion per run in a new always-present `metadata_writes` field (text and JSON). Without an oracle the field says these writes are not observable at all; absence of a note is never absence of writes. Measured motivation: sqlite's journal fchown (buku) and devtodo's per-rewrite fchmodat each sent a whole #118 cohort target to UNKNOWN.
+
+### Changed
+
+- The built-in invariants judge each shared path by its (kind, content) pair on BOTH sides, including pairs whose kind changes between the clean runs (stow's unfold: fold symlink → real directory) — previously such pairs were silently skipped, which was invisible while the oracle refused every symlink-touching target and became an undisclosed hole the moment v9 removed that refusal. A world killed mid-swap matches neither identity and is a violation, the same rule the file world's delete-then-recreate window already lived under. L1 judges a post-only symlink by its target (its whole identity — the existence-only gap's rationale does not transfer to links). The `l0` report note now counts "path(s)", not "file(s)".
+
 ## [0.7.0] - 2026-08-13
 
 The PASS-side soundness release: no descriptor number is exempt from observation (trace contract v8), and a target whose success convention is a non-zero exit status is declarable (`--expect-status`, case schema v2). Saved v7 cases refuse honestly as a contract mismatch and must be re-recorded.
