@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The falsification gate's child output (the checker's message and the target's own stderr while the gate proves the checker can go red) is captured and re-emitted with a per-line `falsify: ` prefix (#134). By design that step produces exactly the output a real finding would, and an unlabeled gate line was once harvested from a transcript as world evidence; a line copied out of the gate segment now carries its speaker with it. World, recording and setup output are unchanged.
+
 ## [0.8.0] - 2026-08-15
 
 The judge's-reach release: symlinks become first-class kill points (trace contract v9) and ownership/permission writes are recorded-only — together these took four blocked real-tool defines to verified, replay-confirmed counterexamples the same day (`spike/assisted/REMEASURE.md`). Saved v8 cases refuse honestly as a contract mismatch and must be re-recorded.

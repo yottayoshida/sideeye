@@ -2,6 +2,40 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — #134: the gate's child output now carries falsify: on every line
+
+First PR of the b_cd3b31e80b91 batch (plan reviewed adversarially twice;
+Codex was out of credits, so a fresh subagent carried both rounds — same
+fallback as the novelty round). The mechanism this closes is the buku
+misread: the falsification gate produces, by design, exactly the output
+a real finding would, and a single unlabeled line harvested from the
+transcript became "world evidence" that survived four review rounds.
+
+The shape: the gate's checker child now runs through
+`posix.runChildCaptureAll` (a new variant that sends both streams to one
+file — `runChildCapture` redirects stdout only, and the `dup2(1,2)` that
+looked reusable turned out to live inside the minimal-env branch), and
+the capture is read back and re-emitted line by line on stdout with a
+`falsify: ` prefix, before the probe's verdict is judged so the refusal
+path keeps its evidence. A per-line prefix rather than a fence because
+the harvested artifact was a single line, and a fence does not travel
+with an excerpt. World, recording and setup output are unchanged — the
+plan's reviewer wanted the world-phase checker labeled too, and that was
+declined with reasons recorded in the plan: the failure class is
+gate-vs-world confusion, and labeling the gate side alone makes an
+unlabeled checker line unambiguous.
+
+Measured: unit tests green; the container acceptance suite green (121
+ok) including the new two-sided count — the buggy-toy run has the
+checker speaking in both places, so the check asserts gate lines labeled
+(x1) AND world lines unlabeled (x1), neither side empty (a silent
+checker would satisfy a presence-only grep vacuously). Seen red once:
+committing first, then mutating the re-emission loop away, the check
+failed with `gate falsify-lines=0` — killed, restored. One compile slip
+worth keeping: `zig build test` stayed green while the cross-build
+failed on an un-updated `runChild` wrapper — Zig's lazy analysis means a
+green test step does not prove every call site compiles.
+
 ## 2026-08-15 — buku downgraded to no finding: the "buku could not read it" line was the falsification gate talking
 
 The buku disposition below ("held pending a plain reproduction") ended
