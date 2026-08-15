@@ -35,6 +35,10 @@
 #      define is not complete until its LATEST part (kills an oldest-part walker)
 #  12  launcher (ops/explore.sh) tuned in the artifact commit   -> D2 red on the
 #      launcher (kills a walker that stops collecting it)
+#  13  pre-define artifact deleted by a COMMIT, dissimilar replacement added -> still
+#      D1 red: the denominator is the tree united with the history, so a committed
+#      deletion cannot shrink it (kills a tree-only set; R2 measured it as the
+#      surviving half of the working-tree false green)
 #
 # Scratch trees live under $HOME (macOS temp_dir is a blocked prefix in this
 # workspace) and are removed on exit.
@@ -204,6 +208,20 @@ if [ "$rc" = "1" ] && echo "$o" | grep -q "D1: the first artifact .* precedes th
     ok "drill 11: a define completed after the artifact is D1 red on its latest part"
 else
     bad "drill 11: expected D1 red anchored on the late checker, got exit $rc"; echo "$o" | sed 's/^/     | /'
+fi
+
+# ---- drill 13: a committed deletion cannot shrink the denominator ---------------
+r=$(mkrepo 13)
+artifact_files "$r"; commit "$r" "artifact first"
+define_files "$r"; commit "$r" "define"
+git -C "$r" rm -q spike/assisted/t/report.json
+printf 'completely different content, nothing like the old report\n' > "$r/spike/assisted/t/report-final.json"
+commit "$r" "drop the early report, add a dissimilar one"
+o=$("$VA" -C "$r" t 2>&1); rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "D1: the first artifact .* precedes the define" && echo "$o" | grep -q "no longer in the tree"; then
+    ok "drill 13: a committed deletion leaves the old answer in the denominator, annotated"
+else
+    bad "drill 13: expected D1 red anchored on the deleted report, got exit $rc"; echo "$o" | sed 's/^/     | /'
 fi
 
 # ---- drill 12: a tuned launcher is D2 red ---------------------------------------

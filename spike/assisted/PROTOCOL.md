@@ -123,12 +123,15 @@ the answer:
    commits read the same way, and locally splitting commits cannot reorder a
    pushed history. Commits that travel in ONE push are still ordered by that
    line, not by push events: the ordering the rule buys is between pushes,
-   which is why steps 1 and 2 are separate pushes. The file sets come from the
-   anchor tree (`git ls-tree`), never the working tree; an artifact anchors at
-   its OLDEST in-target existence event with rename hops followed in both
-   directions (delete-and-re-add and move-out-and-back cannot launder its age,
-   and git's cross-repo similarity noise — a fresh report once linked C071 to
-   an unrelated JSON — stops counting on its own). Its legs: D1 the define's
+   which is why steps 1 and 2 are separate pushes. The file sets are the
+   anchor tree UNITED with every path the first-parent history ever introduced
+   under the target — never the working tree, and never the tree alone: an
+   answer that existed and was then deleted by a commit is still an answer
+   that existed. An artifact anchors at its OLDEST in-target existence event
+   with rename hops followed in both directions (delete-and-re-add,
+   move-out-and-back and committed deletion cannot launder its age, and git's
+   cross-repo similarity noise — a fresh report once linked C071 to an
+   unrelated JSON — stops counting on its own). Its legs: D1 the define's
    introduction strictly precedes the first artifact's and is a different
    commit; D2 the define blobs are byte-identical at both points (not
    evaluated when D1 already failed — a same-commit comparison is vacuously
@@ -141,9 +144,10 @@ happened on a private disk first. The first cohort predates this rule: its five
 targets run red (define and first artifact in one merge), recorded in
 `verify-assisted-run-2026-08-15.txt` as a record, not a certification, exactly
 as ADR 0017 said while the check did not yet exist. Every leg AND every walker
-mechanism of the checker has been seen red once: twelve drills
+mechanism of the checker has been seen red once: thirteen drills
 (`verify-assisted-drills.sh`), one per mechanism, after the first review round
-showed the original five drills killed none of the rename/copy machinery.
+showed the original five drills killed none of the rename/copy machinery and
+the second caught a committed deletion shrinking the tree-only denominator.
 
 ## Apparatus
 

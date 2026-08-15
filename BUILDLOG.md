@@ -60,6 +60,24 @@ depth below the target now (the answer can sit in inspection/ or
 evidence/), and a merge-commit introduction is annotated in D3 since
 first-parent order deliberately ignores side-branch author dates.
 
+R2 confirmed seven of eight and caught the eighth half-closed: the
+tree-sourced set fixed only the UNCOMMITTED deletion — a committed
+deletion removes the path from ls-tree too, and R2 reproduced the same
+false green against the fixed HEAD (delete the early report in a
+commit, add a dissimilar one). The denominator is now the anchor tree
+united with every path the first-parent history introduced under the
+target; paths no longer in the tree are annotated in D3. Drill 13 pins
+it. R2's independent mutant re-measurement (in-clone, with a no-op
+control that correctly SURVIVED) also confirmed 6/6 — and flagged that
+an out-of-repo copy of the script makes every mutant look killed
+because drill 10 fails for the wrong reason; its in-clone method is
+the one to reuse. Verified after the fix: the five-target cohort
+transcript is byte-identical (the real histories contain no deleted
+artifact-shaped paths — R2's measurement, reconfirmed here). Its one
+remaining nit — four mechanisms hang on a single drill each, and
+confinement's only kill depends on the C071 record staying in this
+repo's history — rides the PR as a recorded follow-up.
+
 ## 2026-08-15 — #134: the gate's child output now carries falsify: on every line
 
 First PR of the b_cd3b31e80b91 batch (plan reviewed adversarially twice;

@@ -18,10 +18,12 @@
 #       held to D2 like the rest. When D1 already failed, D2 against the same or an
 #       earlier commit would measure nothing and says so instead of printing ok.
 #   D3  every file the scan looked at is listed with its introducing commit — and
-#       the file SET comes from `git ls-tree` of the anchor ref, never from the
-#       working tree: deleting a file from the tree without committing must not be
-#       able to move an anchor (it could, in the first version; R1 measured a red
-#       target turning green on an uncommitted `rm`).
+#       the file SET is the anchor tree UNITED with every path the first-parent
+#       history ever introduced under the target, never the working tree. An
+#       uncommitted `rm` flipped a red target green in the first version (R1);
+#       a COMMITTED deletion did the same against the tree-only set (R2) — an
+#       answer that existed and was deleted is still an answer that existed.
+#       Paths no longer in the tree are annotated.
 #
 # Introduction semantics (R1 hardened all three):
 #   - The walker follows the file's history newest-first through rename hops in
@@ -120,10 +122,20 @@ pos_of() {
     grep -n "^$1\$" "$order_file" | cut -d: -f1
 }
 
-# ---- collect the file sets from the ANCHOR TREE ---------------------------------
+# ---- collect the file sets: the ANCHOR TREE united with the HISTORY -------------
+# The tree alone is not the denominator: a COMMITTED deletion removes a path from
+# ls-tree, so an answer that existed before the define and was then deleted would
+# silently leave the anchor set — R2 measured that as a false green (delete the
+# early report, add a dissimilar one). Every path the first-parent history ever
+# introduced under the target stays in the denominator; a path no longer in the
+# tree is annotated in D3 so the reader sees it.
 tree_file=$(mktemp "${TMPDIR:-/tmp}/va-tree-XXXXXX") || exit 2
 trap 'rm -f "$order_file" "$tree_file"' EXIT
-git -C "$repo" ls-tree -r --name-only "$ref" -- "$target/" > "$tree_file" || exit 2
+{
+    git -C "$repo" ls-tree -r --name-only "$ref" -- "$target/" || exit 2
+    git -C "$repo" log --first-parent -M --diff-filter=ACR --format= --name-status "$ref" -- "$target/" |
+        awk -F'\t' '$1 == "A" { print $2 } $1 ~ /^[RC]/ { print $3 }'
+} | sort -u > "$tree_file"
 
 defines=""
 launcher=""
@@ -158,7 +170,9 @@ for p in $defines $launcher; do
     [ -n "$c" ] || { bad "D3: $p has no resolvable introduction on the first-parent line of $ref"; unresolved=$((unresolved + 1)); continue; }
     n=$(pos_of "$c")
     [ -n "$n" ] || { bad "D3: introducing commit of $p is off the first-parent line"; unresolved=$((unresolved + 1)); continue; }
-    echo "define    $p  introduced @ $(git -C "$repo" rev-parse --short "$c") (position $n)"
+    gone=""
+    git -C "$repo" rev-parse -q --verify "$ref:$p" >/dev/null 2>&1 || gone=" (no longer in the tree)"
+    echo "define    $p  introduced @ $(git -C "$repo" rev-parse --short "$c") (position $n)$gone"
     # The define is not complete until its LATEST part exists (smallest position).
     # The launcher is listed but does not move the define point (D1 exempts it).
     case " $defines " in *" $p "*)
@@ -173,6 +187,7 @@ for p in $artifacts; do
     [ -n "$n" ] || { bad "D3: introducing commit of $p is off the first-parent line"; unresolved=$((unresolved + 1)); continue; }
     merge_note=""
     [ "$(git -C "$repo" rev-list --no-walk --count --merges "$c")" = "1" ] && merge_note=" (entered via a merge commit; side-branch author dates precede it)"
+    git -C "$repo" rev-parse -q --verify "$ref:$p" >/dev/null 2>&1 || merge_note="$merge_note (no longer in the tree)"
     echo "artifact  $p  introduced @ $(git -C "$repo" rev-parse --short "$c") (position $n)$merge_note"
     # The FIRST artifact is the earliest introduction (largest position).
     if [ "$n" -gt "$art_pos" ]; then art_pos=$n; art_commit=$c; art_carrier=$p; fi
