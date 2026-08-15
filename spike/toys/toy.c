@@ -76,9 +76,10 @@
  *   TOY_LINK_IN        link a source OUTSIDE the state directory to a name inside it.
  *                      A two-path operation touches the state directory when either end
  *                      is inside, and this pins that the outside->inside direction counts.
- *   TOY_SYMLINK        create a symlink inside the state directory. The engine cannot
- *                      restore a symlink (#5), so this must be an honest `unsupported`
- *                      refusal — the point is that a relative spelling still reaches it.
+ *   TOY_SYMLINK        create a symlink inside the state directory. First-class since
+ *                      contract v9 (#122): recorded as a kill point on the LINK PATH
+ *                      (the target string is never resolved), restored as a link —
+ *                      and a relative spelling still reaches the same class.
  *   TOY_REMOVE         delete state through remove(3) — a file, a path that was never
  *                      created, and a directory. libc implements remove as unlink (then
  *                      rmdir on the directory errno) internally, without crossing the

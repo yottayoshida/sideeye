@@ -939,7 +939,7 @@ echo "=========== check 2t: the history-preservation form (ADR 0004) ===========
 # real target (#24). Under the history form it passes, judged only on whether the bytes
 # that predate the operation survive. The counts are asserted exactly: the state also
 # holds key.json, whose post *diverges* from its pre, so an implementation that applies
-# the prefix rule to every changed file reports "0 file(s) judged pre-or-post" here and
+# the prefix rule to every changed file reports "0 path(s) judged pre-or-post" here and
 # goes red.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 TOY_APPEND=1 export TOY_APPEND
@@ -949,7 +949,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --json /tmp/acc/report.json 2>&1)
 rc=$?
 unset TOY_APPEND
-if [ "$rc" = "0" ] && echo "$o" | grep -qF "1 file(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -qF "1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt"; then
     echo "ok   a nondeterministic append passes, named and counted under the history form"
 else
     echo "FAIL append toy: exit $rc (wanted PASS naming exactly log.txt under the history form)"
@@ -960,7 +960,7 @@ fi
 if python3 -c '
 import json, sys
 d = json.load(open("/tmp/acc/report.json"))
-assert d["l0"] == "1 file(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt", d["l0"]
+assert d["l0"] == "1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt", d["l0"]
 assert "appended tails (files under the history form)" in d["not_tested"], d["not_tested"]
 ' 2>/dev/null; then
     echo "ok     ...and the JSON agrees, with appended tails in not_tested"
@@ -998,7 +998,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
 rc=$?
 unset TOY_NONDET_REWRITE
 if [ "$rc" = "2" ] && echo "$o" | grep -q "baseline_violates_invariant" \
-        && echo "$o" | grep -qF "atomicity   2 file(s) judged pre-or-post"; then
+        && echo "$o" | grep -qF "atomicity   2 path(s) judged pre-or-post"; then
     echo "ok   a nondeterministic rewrite still refuses, and the UNKNOWN text says what was classified"
 else
     echo "FAIL nondet-rewrite toy: exit $rc (wanted UNKNOWN baseline_violates_invariant + the atomicity line)"
@@ -1009,7 +1009,7 @@ fi
 if python3 -c '
 import json, sys
 d = json.load(open("/tmp/acc/report.json"))
-assert d["l0"] == "2 file(s) judged pre-or-post", d["l0"]
+assert d["l0"] == "2 path(s) judged pre-or-post", d["l0"]
 ' 2>/dev/null; then
     echo "ok     ...and its JSON reports the classification (no history files)"
 else
@@ -1138,17 +1138,22 @@ else
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
-# A symlink inside the state directory reaches the unsupported net honestly — the engine
-# cannot restore a symlink (#5) — instead of being dropped by a relative spelling.
+# A symlink inside the state directory is a first-class operation since contract v9
+# (#122): the shim records the link path as a kill point (class 10), the engine
+# restores links between worlds, and the run reaches a verdict. This is the one place
+# CI proves the Linux shim wrapper end-to-end. Seen red: this exact run answered
+# UNKNOWN unsupported_syscall_observed under the pre-v9 binary — the assertion this
+# block replaced.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(env TOY_SYMLINK=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "unsupported_syscall_observed"; then
-    echo "ok   a symlink inside the state directory is an honest unsupported refusal"
+sym_recs=$(count_op_records /tmp/acc/work/trace-record.bin 10)
+if [ "$rc" = "0" ] && [ "${sym_recs:-0}" = "1" ]; then
+    echo "ok   a symlink inside the state directory is a recorded kill point (v9)"
 else
-    echo "FAIL symlink: exit $rc (wanted UNKNOWN unsupported_syscall_observed)"
+    echo "FAIL symlink: exit $rc, symlink records ${sym_recs:-0} (wanted PASS with 1 symlink record)"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi

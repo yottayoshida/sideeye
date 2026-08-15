@@ -1,6 +1,11 @@
 # ADR 0006 — The oracle resolves paths by type, and links become first-class
 
-- **Status:** Accepted (2026-08-11)
+- **Status:** Accepted (2026-08-11). Superseded in part by #122 (contract v9,
+  2026-08-15): the paragraph below declining to make `symlink`/`symlinkat`
+  first-class no longer holds — the restore gap it cites was closed and the pair
+  became `OpClass.symlink`. The typed-resolution design and the link family are
+  unchanged, and this ADR's argument-position table for `symlinkat` is what #122's
+  implementation follows.
 - **Supersedes:** nothing. Replaces the whole-line scope scan added in v0.1 with a typed
   resolver; extends the addressed operation set of ADR 0003 with the link family
 - **Scope:** the oracle's scope decision and the shim's two-path `observe`; a new

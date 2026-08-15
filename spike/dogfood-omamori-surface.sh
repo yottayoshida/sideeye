@@ -116,6 +116,12 @@ print("%s  crash_points=%s explored=%s" % (got, r.get("crash_points"), r.get("ex
 # SYMLINKS, and symlinkat is outside the trace contract — the oracle sees an
 # operation the shim cannot record, and the account refuses (the #39/#5 wall family,
 # named). init dies one step earlier on fchmodat (the config dir/file permissions).
+#
+# MEASURED UNDER CONTRACT v8. #122 (v9) made symlink/symlinkat first-class and #121
+# will decide fchmodat's fate, so these pinned outcomes are expected to MOVE on the
+# next run — which is the pin doing its job: rerun, remeasure, and update both this
+# script and the DESIGN.md §18 paragraph that cites "refuse at named trace-contract
+# walls" before citing either again.
 surface install UNKNOWN unsupported_syscall_observed symlinkat 0 "$OMAMORI install"
 # --source: without it, setup's own safety guard refuses a cargo build artifact as
 # the hook source and the recording run exits non-zero before hooks are touched

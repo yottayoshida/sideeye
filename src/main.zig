@@ -967,7 +967,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         switch (probe) {
             .exited => |code| if (code == 0)
-                unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk"),
+                unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name"),
             else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state"),
         }
         checker_note = "falsified before the run (corrupted state -> check failed)";
@@ -1579,7 +1579,10 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
 fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
     const standard = plan.files.items.len - @as(usize, plan.history_count);
     if (plan.history_count == 0) {
-        return std.fmt.allocPrint(arena, "{d} file(s) judged pre-or-post", .{standard}) catch "classified";
+        // "path(s)", not "file(s)": since #122 the judged pairs include symlinks and
+        // kind-changed pairs, and a stow-shaped PASS would otherwise claim to have
+        // judged N files over a directory holding none.
+        return std.fmt.allocPrint(arena, "{d} path(s) judged pre-or-post", .{standard}) catch "classified";
     }
     var names: std.ArrayList(u8) = .empty;
     var listed: u32 = 0;
@@ -1596,7 +1599,7 @@ fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
     }
     return std.fmt.allocPrint(
         arena,
-        "{d} file(s) judged pre-or-post; {d} file(s) judged by the history form (appended tails not judged): {s}",
+        "{d} path(s) judged pre-or-post; {d} file(s) judged by the history form (appended tails not judged): {s}",
         .{ standard, plan.history_count, names.items },
     ) catch "classified";
 }
@@ -1618,22 +1621,22 @@ fn appendSanitized(names: *std.ArrayList(u8), arena: std.mem.Allocator, s: []con
 fn notTestedText() []const u8 {
     const history = l0_history_count > 0;
     if (history and l1_configured)
-        return "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only)";
+        return "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)";
     if (history)
         return "power loss, torn writes, concurrent processes, appended tails (files under the history form)";
     if (l1_configured)
-        return "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only)";
+        return "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)";
     return "power loss, torn writes, concurrent processes";
 }
 
 fn notTestedJson() []const u8 {
     const history = l0_history_count > 0;
     if (history and l1_configured)
-        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only)\"]";
+        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]";
     if (history)
         return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]";
     if (l1_configured)
-        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only)\"]";
+        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]";
     return "[\"power loss\", \"torn writes\", \"concurrent processes\"]";
 }
 
@@ -2210,7 +2213,8 @@ test "the l0 note neutralises control bytes in target-chosen file names" {
     defer plan.deinit();
     try plan.files.append(plan.arena.allocator(), .{
         .rel = "evil\nname\x1b.log",
-        .kind = .file,
+        .pre_kind = .file,
+        .post_kind = .file,
         .form = .history,
         .pre_content = "a",
         .post_content = "ab",
