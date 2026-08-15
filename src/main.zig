@@ -1037,12 +1037,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 say("falsify: {s}\n", .{line});
             }
         } else {
-            say("falsify: (the gate's child output could not be read back from {s})\n", .{fal_out});
+            say("falsify: (the gate's child output could not be read back from {s} — missing, unreadable, or over the 1 MiB re-emission cap; the capture file, if present, still holds it)\n", .{fal_out});
         }
 
         switch (probe) {
-            .exited => |code| if (code == 0)
-                unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name"),
+            .exited => |code| {
+                // 126 is the capture stub's own exit (runChildImpl could not open the
+                // capture file), not the checker's answer. Read as "the checker went
+                // red", it let /bin/true pass the gate whenever the capture path was
+                // blocked — a directory squatting on the default /tmp work dir did it
+                // (R1 of #134). The MCP adapter already discriminates this same stub
+                // exit; a checker that genuinely exits 126 is indistinguishable and
+                // gets the fail-closed reading.
+                if (code == 126)
+                    unknown(.checker_not_falsified, "the checker probe could not open its stdout capture in the work directory (exit 126 is the capture stub's, not the checker's); the checker was never tested");
+                if (code == 0)
+                    unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name");
+            },
             else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state"),
         }
         checker_note = "falsified before the run (corrupted state -> check failed)";

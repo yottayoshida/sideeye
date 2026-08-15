@@ -291,6 +291,24 @@ else
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
+
+# A blocked capture must not read as a red checker. The capture stub _exit(126)s
+# when it cannot open the capture file; before this was discriminated, a directory
+# squatting on the capture path made /bin/true — a checker that can never fail —
+# pass the gate (R1 of #134, measured on the default world-writable /tmp work dir).
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/work/falsify-check.txt
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /bin/true \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "could not open its stdout capture"; then
+    echo "ok   a blocked falsify capture refuses loudly instead of reading as a red checker (exit 2)"
+else
+    echo "FAIL blocked falsify capture: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
 unset TOY
 
 echo ""
