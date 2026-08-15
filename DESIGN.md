@@ -341,7 +341,7 @@ What that lineage proved: systematically exploring worlds the developer did not 
 
 The success metric for v0 is not feature count, fault-type count, or GitHub stars.
 
-**Primary criterion.** Sideeye finds a crash-consistency bug that the target's own hand-written tests do not catch — on omamori (starting from a state where all of its existing tests pass), on the calibration target (§18), or on a blind-protocol target (ADR 0012: a stateful CLI whose documentation does not advertise crash-injection testing, selected and declared under the two-seal protocol; this family was added 2026-08-13, before any blind campaign ran, in step with PRD criterion 1). For that bug, all of the following must hold:
+**Primary criterion.** Sideeye finds a crash-consistency bug that the target's own hand-written tests do not catch — discovered by its deterministic judge from an invariant declared and committed before this project observed any failure of the target in execution (reading a report of a failure while scouting is not observing one), with the question's provenance recorded and labeled: blind (ADR 0012's two-seal protocol) or assisted (a scout read the target; the scout and its sources named). (Redesigned 2026-08-15 in step with PRD criterion 1, ADR 0017; the prior form limited the venue to omamori, the calibration target, or a blind-protocol target — that family itself added 2026-08-13, before any blind campaign ran. Blind remains the stronger provenance; nothing assisted may borrow it, and the ordering requirement keeps timewarrior's "partial" scoring below exactly where it is.) For that bug, all of the following must hold:
 
 - Sideeye discovered it automatically.
 - The counterexample is reproducible.

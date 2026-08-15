@@ -1,6 +1,6 @@
 # ADR 0015 — The second campaign: an inherited selection seal, and the recovery-path rule
 
-- **Status:** Proposed (flips to Accepted when the campaign-2 Seal A pull request merges)
+- **Status:** Accepted (campaign-2 Seal A first merged as PR #106, voided, and re-sealed as PR #107 on 2026-08-14 — #107 is the standing seal; status flipped 2026-08-15, the flip was owed at merge and went unrecorded)
 - **Extends:** ADR 0012 (the two-seal blind declaration protocol). Everything 0012
   fixes still holds; this ADR records only what campaign 2 does differently and why
 - **Scope:** procedure only — `spike/blind-hunt2/`, no product code

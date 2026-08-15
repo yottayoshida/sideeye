@@ -1,6 +1,6 @@
 # ADR 0012 — The blind declaration protocol: two seals, and everything decided before it is observed
 
-- **Status:** Proposed (flips to Accepted when the Seal A pull request merges)
+- **Status:** Accepted (Seal A merged 2026-08-13, PR #89; status flipped 2026-08-15 — the flip was owed at merge and went unrecorded)
 - **Supersedes:** nothing. Implements the declaration boundary that issue #83
   (and its 2026-08-13 amendment) defines for DESIGN §17's first condition
 - **Scope:** procedure only — `spike/blind-hunt/`, PRD/DESIGN wording. No
