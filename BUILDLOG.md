@@ -2,6 +2,82 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — #130: the assisted funnel gets its verify-seals — and building it hit both failure modes it exists to catch
+
+Second PR of the b_cd3b31e80b91 batch. `spike/assisted/verify-assisted.sh`
+machine-checks that an assisted claim's question preceded its answer: D1
+(the define's introducing commit strictly precedes the first
+report/case/transcript artifact's, on the FIRST-PARENT order of main —
+squash and merge read the same, and local commit-splitting cannot
+reorder a pushed history), D2 (define blobs byte-identical at both
+points; the launcher is D2-held when it exists but never moves the
+define point), D3 (every scanned file listed with its introducing
+commit). PROTOCOL.md gains the claim rule ("Claiming criterion 1"):
+push the define, then explore, then push the artifacts, and a claim
+commits the verifier's transcript. Exploration stays ungated.
+
+Building the checker produced two textbook instances of its own subject
+matter. First, the D1 comparison shipped inverted (rev-list is
+newest-first; "precedes" is a LARGER position) — drill 1, the clean-
+order green case, caught it on the first run. Second, on the real
+history the walker returned an introduction a day older than the cohort
+itself: git's similarity matching recorded fresh cohort reports as
+**C071 copies of an unrelated blind-hunt JSON**, my rename handling knew
+R but not C, the file silently fell out of the anchor set — and the
+narrowed set produced a **false green D1 on devtodo**. Both fixed:
+rename/copy hops are honored only inside the target directory (a hop
+from outside IS the introduction), and an unresolvable file now stops
+the run at exit 2 — a narrowed anchor set is not an answer. Drill 5
+pins that. All five drills seen red/green for their own reasons
+(`verify-assisted-drills-run-2026-08-15.txt`).
+
+The cohort run
+(`verify-assisted-run-2026-08-15.txt`): all five targets red, uniformly
+"define and first artifact were introduced by the same commit
+(daa6a93)" — the single PR #119 merge, exactly what the plan's reviewer
+measured at commit granularity and ADR 0017 admitted in prose while the
+check did not exist. A record, not a certification; the rule binds
+claims from today.
+
+R1 (fresh reviewer) then broke the first version four more ways, every
+one a variation of the class this checker polices. P0: the file sets
+came from filesystem globs, so an UNCOMMITTED `rm` of two define files
+flipped a red target green — the sets now come from `git ls-tree` of
+the anchor ref, and a working-tree difference is noted and ignored.
+P1s: the walker took the NEWEST introduction for artifacts, so
+delete-and-re-add laundered an artifact's age (an artifact now anchors
+at its OLDEST in-target existence event); the out-of-target
+rename-terminate rule doubled as an out-and-back laundering path
+(rename hops are now followed in both directions, and only in-target
+events count — which also lets git's cross-repo similarity noise stop
+counting on its own); the five drills killed none of the rename/copy
+machinery (six named mutants all survived); and the committed cohort
+transcript carried twenty vacuously-true "D2 ok" lines — a same-commit
+comparison measures nothing and now says "not evaluated". Drills grew
+to twelve, one per mechanism, and all six of R1's surviving mutants
+were re-run against them: 6/6 KILLED. Artifacts also match at any
+depth below the target now (the answer can sit in inspection/ or
+evidence/), and a merge-commit introduction is annotated in D3 since
+first-parent order deliberately ignores side-branch author dates.
+
+R2 confirmed seven of eight and caught the eighth half-closed: the
+tree-sourced set fixed only the UNCOMMITTED deletion — a committed
+deletion removes the path from ls-tree too, and R2 reproduced the same
+false green against the fixed HEAD (delete the early report in a
+commit, add a dissimilar one). The denominator is now the anchor tree
+united with every path the first-parent history introduced under the
+target; paths no longer in the tree are annotated in D3. Drill 13 pins
+it. R2's independent mutant re-measurement (in-clone, with a no-op
+control that correctly SURVIVED) also confirmed 6/6 — and flagged that
+an out-of-repo copy of the script makes every mutant look killed
+because drill 10 fails for the wrong reason; its in-clone method is
+the one to reuse. Verified after the fix: the five-target cohort
+transcript is byte-identical (the real histories contain no deleted
+artifact-shaped paths — R2's measurement, reconfirmed here). Its one
+remaining nit — four mechanisms hang on a single drill each, and
+confinement's only kill depends on the C071 record staying in this
+repo's history — rides the PR as a recorded follow-up.
+
 ## 2026-08-15 — #134: the gate's child output now carries falsify: on every line
 
 First PR of the b_cd3b31e80b91 batch (plan reviewed adversarially twice;

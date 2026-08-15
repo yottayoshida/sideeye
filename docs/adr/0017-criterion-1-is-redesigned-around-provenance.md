@@ -41,7 +41,12 @@ targets (caught by review via file birth times, recorded in RESULTS.md), and no
 verify-seals equivalent exists for the assisted funnel. Machine-checking the
 define-precedes-report ordering for assisted runs is open work; until it exists,
 an assisted claim against this criterion leans on file history and review rather
-than on a seal.
+than on a seal. *(2026-08-15, #130: the machine check now exists —
+`spike/assisted/verify-assisted.sh`, anchored on first-parent order of main with
+in-target rename/copy tracking; the claim rule it enforces is PROTOCOL.md's
+"Claiming criterion 1" section. Run against the first cohort it reports what this
+paragraph already admitted: all five targets red, define and first artifact in
+the same merge — a record, not a certification.)*
 
 ("§18-class" throughout means a decision of the weight §18 governs — stopping or
 redesigning the current direction. No §18 kill criterion has triggered; PRD entry
