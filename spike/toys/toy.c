@@ -80,6 +80,12 @@
  *                      contract v9 (#122): recorded as a kill point on the LINK PATH
  *                      (the target string is never resolved), restored as a link —
  *                      and a relative spelling still reaches the same class.
+ *   TOY_CHMOD          chmod a state file during rotate. Recorded-only (#121): the
+ *                      oracle observes it, the verdict excludes it, the report names
+ *                      it — never `unsupported`, never a kill point.
+ *   TOY_MKNOD          mknod a fifo inside the state directory: the control beside
+ *                      TOY_CHMOD — an unmodelled syscall must still refuse, because
+ *                      #121's exclusion is a defined list, not a loosened net.
  *   TOY_REMOVE         delete state through remove(3) — a file, a path that was never
  *                      created, and a directory. libc implements remove as unlink (then
  *                      rmdir on the directory errno) internally, without crossing the
@@ -580,6 +586,24 @@ static int cmd_rotate(void) {
         join_path(dir, sizeof dir, "subdir");
         if (mkdir(dir, 0755) != 0) return 1;
         if (remove(dir) != 0) return 1;
+    }
+
+    /* An ownership/permission write on state: recorded-only since #121 (option b) —
+     * the oracle observes it, excludes it from judgement, and the report says so.
+     * Before #121 this single call sent the whole run to unsupported_syscall_observed
+     * (the devtodo shape from the #118 cohort). */
+    if (getenv("TOY_CHMOD")) {
+        char p[4096];
+        join_path(p, sizeof p, "key.json");
+        if (chmod(p, 0600) != 0) return 1;
+    }
+
+    /* An unmodelled state-touching syscall: must stay an unsupported refusal — #121's
+     * exclusion is a defined list, not a loosened net. */
+    if (getenv("TOY_MKNOD")) {
+        char f[4096];
+        join_path(f, sizeof f, "fifo");
+        if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
     }
 
     /* A rewrite that no run repeats — the class the history form must NOT tolerate. */

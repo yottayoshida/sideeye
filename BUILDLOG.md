@@ -2,6 +2,50 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — Ownership and permission writes become recorded-only (#121, option b)
+
+The second half of the owner's judge-first ruling. Option b was chosen in
+the issue's own terms: the cheap unblocking that declares, in the
+contract's terms, that ownership/permission bits are outside the judged
+state. The oracle gains a metadata table (chown/lchown/chmod path forms,
+fchownat/fchmodat *at forms, fchown/fchmod fd forms — the last scoped from
+the descriptor annotation like every fd syscall), and an occurrence on the
+state directory is appended to a per-run list instead of routing anywhere
+that refuses. Three exclusions travel together, deliberately: not
+`unsupported` (the subject's branch), not a touch (the child branch — a
+child's chmod changes nothing the verdict judges either), never a kill
+point. An UNRESOLVABLE metadata write is counted too: over-reporting an
+exclusion is the honest direction, because the report says "excluded",
+never "did not happen".
+
+The report grows a constant `metadata_writes` field (text + JSON, §13).
+Its no-oracle default is the point of the design: "not observable (no
+oracle ran; the shim does not interpose ownership/permission calls)" —
+the buku scoring suspended a finding precisely because nothing could see
+the fchowns behind an --allow-unverified run, and a field that read "none
+observed" there would repeat that lie structurally.
+
+No contract bump: the trace format and every class's meaning are
+untouched — the shim records exactly what it recorded before. What
+changed is what the ORACLE does with syscalls the shim never saw, and
+the report schema (documented, schema-checked in CI by check 4's
+field-parity claims).
+
+CI carries the end-to-end pin: acceptance 2w-b drives a toy chmod on
+state under strace — PASS with the note in both report forms, where the
+pre-#121 binary answered UNKNOWN unsupported_syscall_observed (the
+seen-red inversion, same argument as 2v) — plus the control that keeps
+the net honest: a toy mknod must still refuse, because the exclusion is
+a defined list, not a loosened net.
+
+Mutation record, against the committed code (commit first, then mutate):
+chmod removed from the path table, the path form gated to the primary
+only, fchown removed from the fd table, and the unresolvable arm demoted
+to inside-only — each killed by the #121 unit test's corresponding
+assertion. The report-note aggregation in main.zig is deliberately not
+mutation-tested at unit level; 2w-b is its proof, against real strace
+output on CI.
+
 ## 2026-08-15 — Symlinks become a first-class operation; the real gap was restore, not the oracle (#122, contract v9)
 
 The owner's ruling on #118's product decision: close the judge's measured

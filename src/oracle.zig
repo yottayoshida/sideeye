@@ -104,6 +104,39 @@ fn pathSpec(name: []const u8) ?PathSpec {
     return null;
 }
 
+/// Ownership and permission writes (#121, option b): METADATA the contract
+/// deliberately does not judge. The judged state is names, bytes and link targets;
+/// these syscalls change none of them, so they are observed and EXCLUDED — from the
+/// class comparison (the shim does not interpose them), from kill points, from
+/// `unsupported`, and from the child-touch condition. The exclusion is declared per
+/// run in the report rather than silently: sqlite fchowns its rollback journal on
+/// every write when running as root, and devtodo fchmodats every database rewrite —
+/// both measured as whole-target refusals in the #118 cohort before this landed.
+const metadata_path_syscalls = [_]PathSpec{
+    .{ .name = "chown", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "lchown", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "chmod", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "fchownat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "fchmodat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+};
+/// The fd-addressed forms, scoped from the descriptor annotation like every fd
+/// syscall (a state path inside some other argument must not scope them in).
+const metadata_fd_syscalls = [_][]const u8{ "fchown", "fchmod" };
+
+fn metadataPathSpec(name: []const u8) ?PathSpec {
+    for (metadata_path_syscalls) |s| {
+        if (std.mem.eql(u8, s.name, name)) return s;
+    }
+    return null;
+}
+
+fn isMetadataFd(name: []const u8) bool {
+    for (metadata_fd_syscalls) |m| {
+        if (std.mem.eql(u8, m, name)) return true;
+    }
+    return false;
+}
+
 /// A syscall whose only filesystem target is a descriptor: scope is read from the `<fd>`
 /// annotation and never from the quoted arguments — a state-directory string inside a
 /// write buffer must not count as touching the state directory (ADR 0006).
@@ -510,10 +543,15 @@ pub const Parsed = struct {
     /// apart from "the oracle file was empty and nothing was compared".
     lines_seen: usize = 0,
     lines_in_scope: usize = 0,
+    /// Ownership/permission writes on the state directory, one entry per occurrence
+    /// (the syscall name). Observed by this oracle only — the shim does not interpose
+    /// them — and excluded from every verdict input (#121, option b); the report
+    /// carries them so the exclusion is visible per run.
+    metadata_observed: std.ArrayList([]const u8),
 };
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8) !Parsed {
-    var out: Parsed = .{ .classes = .empty, .lines = .empty };
+    var out: Parsed = .{ .classes = .empty, .lines = .empty, .metadata_observed = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
 
@@ -620,6 +658,25 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                     } else cwd = null; // no annotation (a raw fd): cwd is now unknown
                 }
             }
+            continue;
+        }
+
+        // Ownership/permission metadata (#121, option b), decided BEFORE the generic
+        // scope block because it must bypass both refusal routes below: the subject's
+        // branch would call it `unsupported`, and the child branch would call it a
+        // touch — while the verdict judges names, bytes and link targets, none of
+        // which these change, from anyone. Scope uses the same typed rules; an
+        // unresolvable metadata write is counted too — over-reporting an exclusion
+        // is the honest direction (the report says "excluded", never "did not
+        // happen").
+        if (metadataPathSpec(name)) |mspec| {
+            if (pathSyscallScope(mspec, line, cwd, state_dir, state_alt) != .outside)
+                try out.metadata_observed.append(arena, try arena.dupe(u8, name));
+            continue;
+        }
+        if (isMetadataFd(name)) {
+            if (fdSyscallInScope(line, state_dir, state_alt))
+                try out.metadata_observed.append(arena, try arena.dupe(u8, name));
             continue;
         }
 
@@ -850,6 +907,63 @@ test "a symlink whose content spells the state directory is judged by its link p
     const want = [_]contract.OpClass{ .symlink, .symlink };
     try std.testing.expectEqualSlices(contract.OpClass, &want, i.classes.items);
     try std.testing.expectEqual(@as(?[]const u8, null), i.unsupported);
+}
+
+test "ownership and permission writes are recorded-only, from anyone (#121)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The two measured shapes from the #118 cohort — sqlite's journal fchown (fd
+    // form) and devtodo's fchmodat (path form) — plus a legacy chmod, all on the
+    // state directory, interleaved with a real write. The write must still be the
+    // only counted class; the metadata must be observed, not `unsupported`.
+    const subject =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  openat(AT_FDCWD</work>, "/tmp/s/db", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/db>
+        \\9  fchown(3</tmp/s/db>, 0, 0) = 0
+        \\9  write(3</tmp/s/db>, "x", 1) = 1
+        \\9  fchmodat(AT_FDCWD</work>, "/tmp/s/db", 0600, 0) = 0
+        \\9  chmod("/tmp/s/db", 0644) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), subject, "/tmp/s", "", "/work");
+    const want = [_]contract.OpClass{ .open, .write };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    try std.testing.expectEqual(@as(usize, 3), p.metadata_observed.items.len);
+    try std.testing.expectEqualStrings("fchown", p.metadata_observed.items[0]);
+    try std.testing.expectEqualStrings("fchmodat", p.metadata_observed.items[1]);
+    try std.testing.expectEqualStrings("chmod", p.metadata_observed.items[2]);
+
+    // A CHILD's metadata write bypasses the touch condition for the same reason it
+    // bypasses `unsupported`: it changes nothing the verdict judges.
+    const child =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\12  fchmodat(AT_FDCWD</work>, "/tmp/s/db", 0600, 0) = 0
+        \\
+    ;
+    const c = try parse(arena_state.allocator(), child, "/tmp/s", "", "/work");
+    try std.testing.expect(!c.child_touched);
+    try std.testing.expectEqual(@as(usize, 1), c.metadata_observed.items.len);
+
+    // Outside the state directory: none of our business, not even as a note.
+    const outside =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  chmod("/etc/passwd", 0644) = -1 EPERM (Operation not permitted)
+        \\
+    ;
+    const o = try parse(arena_state.allocator(), outside, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 0), o.metadata_observed.items.len);
+
+    // Unresolvable (a relative chmod with no cwd): counted as observed —
+    // over-reporting an exclusion is the honest direction — and never `unsupported`.
+    const unresolvable =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  chmod("state/db", 0644) = 0
+        \\
+    ;
+    const u = try parse(arena_state.allocator(), unresolvable, "/tmp/s", "", "");
+    try std.testing.expectEqual(@as(?[]const u8, null), u.unsupported);
+    try std.testing.expectEqual(@as(usize, 1), u.metadata_observed.items.len);
 }
 
 test "the conservative net is still alive after the symlink class landed" {
