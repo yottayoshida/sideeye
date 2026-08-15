@@ -514,14 +514,16 @@ echo "=========== check 2h: the remaining verdict paths fire ==========="
 # failure paths were never seen firing is not a gate". UNKNOWN is covered above by seven
 # detectors; SETUP ERROR and the recording-run check were not, until now.
 
+# The trigger used to be a missing --shim; #78 turned that into a default (the shim
+# is found beside the binary — check 9), so a missing --state carries the torch.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-"$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-bug rotate" \
+"$SIDEEYE" explore --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
     --work /tmp/acc/work --oracle /usr/bin/strace >/dev/null 2>&1
 rc=$?
 if [ "$rc" = "3" ]; then
-    echo "ok   a missing --shim is SETUP ERROR (exit 3)"
+    echo "ok   a missing --state is SETUP ERROR (exit 3)"
 else
-    echo "FAIL missing --shim: exit $rc, wanted 3"
+    echo "FAIL missing --state: exit $rc, wanted 3"
     fails=$((fails + 1))
 fi
 
@@ -2101,6 +2103,129 @@ if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1
 else
     echo "FAIL 137/SIGKILL separation: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 9: the shim is found, not plumbed (#78) ==========="
+# Tarball layout: binary and shim as siblings. With --shim omitted the default must
+# find the sibling and reach the same verdict the plumbed run reaches; with the shim
+# gone the refusal must name both looked-at paths — never fall back to some other
+# library silently.
+rm -rf /tmp/acc9 && mkdir -p /tmp/acc9/pack /tmp/acc9/state
+cp "$SIDEEYE" /tmp/acc9/pack/sideeye
+cp "$SHIM" /tmp/acc9/pack/libsideeye_shim.so
+o=$(/tmp/acc9/pack/sideeye explore --state /tmp/acc9/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --work /tmp/acc9/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "FAIL"; then
+    echo "ok   --shim omitted: the sibling shim is found and the verdict is the plumbed one"
+else
+    echo "FAIL shim default (tarball layout): exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+# The other shipped layout: zig-out/bin + zig-out/lib, reached via the ../lib candidate.
+rm -rf /tmp/acc9/state2 && mkdir -p /tmp/acc9/state2
+o=$("$SIDEEYE" explore --state /tmp/acc9/state2 \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --work /tmp/acc9/work2 --oracle /usr/bin/strace 2>&1)
+rc=$?
+# The report must name the realpath-resolved file, not a bin/../lib spelling —
+# which also proves it was the ../lib candidate that resolved, not a stray sibling.
+if [ "$rc" = "1" ] && echo "$o" | grep -q "FAIL" \
+    && echo "$o" | grep -q "zig-out/lib/libsideeye_shim.so" \
+    && ! echo "$o" | grep -q 'bin/\.\./lib'; then
+    echo "ok   the zig-out layout (../lib beside the binary) is found, and named realpathed"
+else
+    echo "FAIL shim default (zig-out layout): exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+rm -f /tmp/acc9/pack/libsideeye_shim.so
+rm -rf /tmp/acc9/state && mkdir -p /tmp/acc9/state
+o=$(/tmp/acc9/pack/sideeye explore --state /tmp/acc9/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --work /tmp/acc9/work 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "looked at /tmp/acc9/pack/libsideeye_shim.so" && echo "$o" | grep -q "pass --shim"; then
+    echo "ok   no shim beside the binary: a loud error names both candidates"
+else
+    echo "FAIL shim absence: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 10: strace is named, never attached (#78) ==========="
+# The refusal a would-be PASS gets without an oracle now NAMES the strace found on
+# PATH — and still refuses. Attaching it silently would flip this exit to 0, so the
+# rc pin here is also the not-attached proof.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "strace is on this machine: pass --oracle /"; then
+    echo "ok   the no-oracle refusal names the discovered strace, and stays a refusal"
+else
+    echo "FAIL oracle hint: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+# With no strace reachable the hint must vanish and the message is yesterday's.
+rm -rf /tmp/acc/state /tmp/acc/hintless && mkdir -p /tmp/acc/state /tmp/acc/hintless
+o=$(env PATH=/tmp/acc/hintless "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified" && ! echo "$o" | grep -q "strace is on this machine"; then
+    echo "ok   a strace-less PATH drops the hint, nothing else changes"
+else
+    echo "FAIL oracle hint absence: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 11: the docs pages' repo paths exist (#79/#80) ==========="
+# Guards path rot, not claim drift: every backticked token containing a slash in the
+# two evidence-first pages must exist in the repo, so a moved transcript or a renamed
+# checker cannot leave a page pointing at nothing. Claim-vs-transcript verification
+# stays a review-time axis. Sunset: never fired by the v1.0 freeze -> removal list.
+doc_fails=0
+for page in "$ROOT/docs/target-classes.md" "$ROOT/docs/checker-cookbook.md"; do
+    if [ ! -f "$page" ]; then
+        echo "     missing page: $page"
+        doc_fails=$((doc_fails + 1))
+        continue
+    fi
+    refs=$(grep -o '`[^`]*`' "$page" | tr -d '`' | grep / | grep -v '[ <#]' || true)
+    # The denominator is asserted: an extraction that finds almost nothing (say, the
+    # pages moved to markdown links) must go red here, not pass over an empty loop.
+    ref_count=$(printf '%s\n' "$refs" | grep -c . || true)
+    if [ "$ref_count" -lt 5 ]; then
+        echo "     only $ref_count slashed references extracted from ${page##*/} — the sweep is not seeing the page"
+        doc_fails=$((doc_fails + 1))
+    fi
+    set -f
+    for r in $refs; do
+        case "$r" in -*|/*) continue ;; esac
+        if [ ! -e "$ROOT/$r" ]; then
+            echo "     missing: $r (in ${page##*/})"
+            doc_fails=$((doc_fails + 1))
+        fi
+    done
+    set +f
+done
+if [ "$doc_fails" = "0" ]; then
+    echo "ok   every slashed backtick reference in both pages resolves in the repo"
+else
+    echo "FAIL docs reference existence: $doc_fails missing"
     fails=$((fails + 1))
 fi
 

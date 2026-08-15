@@ -1,0 +1,47 @@
+# Which tools Sideeye can judge
+
+The README's constraint list says what a target must do; this page says how real tools have fared against it — every row backed by a run recorded in this repository, with the artifact named. Nothing here is a projection: a class with no recorded run says so. This page is also where the v1.0 UNKNOWN-rate criterion gets its word "supported" (`PRD.md`): supported means a class listed here as reaching verdicts.
+
+Two vocabulary notes. A **verdict** is PASS or FAIL; everything else is a named refusal (UNKNOWN), never a silent pass. And a FAIL is a crash-consistency counterexample — a state the tool itself can be left in — not automatically an upstream bug: one recorded FAIL below stands withdrawn as a bug claim because the store's own recovery contract covers it.
+
+## Measured, with verdicts
+
+| Class | Tool | What happened | Recorded in |
+|---|---|---|---|
+| C/C++ CLI | timewarrior | **FAIL** — `timew undo` can destroy committed data across a crash window; reported upstream as GothenburgBitFactory/timewarrior#778, and the patched build passes 25/25 | recipe `spike/dogfood-timew.sh`, replay legs `spike/dogfood-timew-replay.sh`, patch `spike/timew-undo-ordering.patch`, apparatus `spike/loop-closure-timew/`, the 25/25 patched-build measurement in `BUILDLOG.md` |
+| C/C++ CLI | taskwarrior | **PASS** 12/12 crash worlds, oracle agreed on 11 operations; the falsification probe rejected deliberately corrupted state | `BUILDLOG.md`, the taskwarrior entry (2026-08-13) |
+| C CLI | calcurse | **FAIL** 1/11, replay-confirmed; reported upstream as lfos/calcurse#529 | `spike/assisted/RESULTS.md`, artifacts under `spike/assisted/calcurse/` |
+| C++ CLI | devtodo | **FAIL** 6/8 once ownership/permission writes became recorded-only (v0.8.0); the finding is kept here, deliberately unreported upstream | `spike/assisted/REMEASURE.md`, artifacts under `spike/assisted/devtodo/`; the report-then-withdrawal record and its selection rule are in `spike/assisted/NOVELTY.md` and `spike/assisted/PROTOCOL.md` |
+| C CLI | abook | **null** — three declared operations, zero violations in the declared window (blind campaign 2) | `spike/blind-hunt2/`, `BUILDLOG.md` |
+| Python CLI | todoman | **PASS** 8/8 crash worlds, oracle agreed on 7 operations — the first Python target with a full verdict | `spike/dogfood-todoman.sh`, `BUILDLOG.md` |
+| Python CLI | topydo | 12 of 13 crash points yielded **counterexamples** (blind campaign 1); reported upstream as topydo/topydo#341 | `spike/README.md`, artifacts under `spike/blind-hunt/` |
+| Python CLI | khal | **null** — 41 crash worlds + 3 baselines, all PASS (blind campaign 3) | `spike/blind-hunt3/analysis/` |
+| Python + sqlite | buku | strict **FAIL** 2/22 under the built-in byte comparison — and withdrawn as a bug claim: a journaled database's mid-transaction byte state is exactly what its journal recovers from, and buku recovers in every measured world. The class lesson: judging a journaled store by file bytes is stricter than its contract | `spike/assisted/REMEASURE.md`, `spike/assisted/buku/RUNLOG.md` (Correction section) |
+| Perl CLI | GNU Stow | **FAIL** 2/5 once symlinks became first-class kill points (v0.8.0); reported upstream as aspiers/stow#139 | `spike/assisted/REMEASURE.md`, artifacts under `spike/assisted/stow/` |
+
+## Refusals that are the correct answer
+
+| Class | Tool | The named wall | Recorded in |
+|---|---|---|---|
+| Nondeterministic writers | watson | `baseline_violates_invariant` — every run rewrites fresh uuids, so no invariant survives even a clean run; refusing is the honest verdict | `spike/dogfood-watson/`, `BUILDLOG.md` |
+| Shell CLIs over helper processes | pass | `child_touched_state_dir` — the dangerous slice runs in fork+exec children; judging it needs the multi-process slice (#123, open) | `spike/assisted/pass/explore-v10-transcript.txt` |
+| Tools with non-durable scratch files | git | the built-in atomicity form flags `COMMIT_EDITMSG`, a scratch file — a recorded precision limit (#35, open) | `BUILDLOG.md` |
+
+## Walls, measured on toys
+
+- **State-changing raw syscalls** (writes bypassing libc): UNKNOWN `oracle_missed_operation` with an oracle, `state_changed_without_ops` without one — pinned by `spike/toys/toy_raw.c` in `spike/acceptance.sh`. Read-only raw opens are tolerated: they never join the crash-point numbering, which is what let a rustix-carrying Rust target through (next section).
+- **Static binaries**: no shim can load — `no_shim_marker`, measured on a statically linked C toy (`spike/build-toys.sh`). Go's default static linking lands here; that is a statement about linking, not a measured Go run.
+- **Threads**: a clone carrying CLONE_THREAD refuses (`multiple_threads_detected`) — there is no per-thread order the kill can address deterministically. Pinned on the threaded toy in `spike/acceptance.sh`.
+- **macOS platform binaries**: SIP strips the injected library, so Apple-signed tools can never be observed — the measured record (an Apple platform binary showing `no_shim_marker`) is in `BUILDLOG.md`, and the report does not yet say "macOS" out loud (#10, open).
+
+## The Rust story, in order
+
+The first Rust target (omamori) surfaced three walls in sequence: `child_process_detected`, an unsupported `flock`, then `oracle_missed_operation` on a read-only `openat` issued by the rustix crate — the whole class looked UNKNOWN and was filed as #19. The fix scoped crash-point numbering to state-changing operations (`docs/adr/0003-what-counts-as-a-crash-point.md`); one wall remained — `baseline_violates_invariant` over the target's nondeterministic audit lines — until the L0 history form (#24, #25 — both closed) produced **PASS 143/143**. As of the 2026-08-12 record its guarded self-modification surfaces refused at `symlinkat`/`fchmodat` — two walls v0.8.0 has since removed for other targets; omamori has not been re-measured since. A Rust tool whose *writes* bypass libc still refuses (the raw-syscall wall above).
+
+## Not yet measured
+
+- **Node/libuv tools**: no recorded run. The expected wall is the thread refusal (libuv starts a worker pool), which is measured on toys — but no real Node target run exists in this repository, so this row is a prediction, labeled as one.
+
+---
+
+The artifacts this page names are load-bearing references: `spike/README.md` explains why the dogfood scripts stay in-tree, and the acceptance suite checks that every slashed backtick reference on this page still resolves in the repository (bare file names like the buildlog are outside that sweep).

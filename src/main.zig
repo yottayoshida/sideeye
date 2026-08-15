@@ -156,9 +156,9 @@ fn usage() void {
         \\
         \\usage:
         \\  sideeye demo [--shim <lib>]
-        \\  sideeye preflight --state <dir> --operation <cmd> --shim <lib> [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
+        \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
         \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--expect-status <n>] [--shim <lib>] [--work <dir>]
-        \\  sideeye replay <case.json> --shim <lib> [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>]
         \\  sideeye version
         \\
         \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
@@ -188,7 +188,10 @@ fn usage() void {
         \\  --expect-status  the exit status that means the operation completed (0..255,
         \\               default 0). Governs the recording run and the un-killed baseline
         \\               world alike; killed worlds still require the kill signal itself
-        \\  --shim       path to libsideeye_shim.so
+        \\  --shim       path to libsideeye_shim.so; when omitted it is looked for
+        \\               beside this binary (its sibling, then ../lib — the tarball
+        \\               and zig-out layouts), and absence is a loud error naming
+        \\               both looked-at paths
         \\  --work       scratch directory for traces (default /tmp/sideeye-work)
         \\  --oracle     path to strace; the recording run is compared against it
         \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
@@ -255,9 +258,35 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
 /// Rather than branch on the platform — which would break the claim that both operating
 /// systems produce the same verdict for the same scenario — the caller states the
 /// weaker claim deliberately, and the report says which claim was made.
-fn requireCompleteness(has_oracle: bool, allow_unverified: bool) void {
+fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool) void {
     if (has_oracle or allow_unverified) return;
-    unknown(.completeness_not_verified, "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim");
+    const base = "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim";
+    // A discovered strace is only ever NAMED here, never attached: a second witness
+    // joining on its own would silently strengthen what a flagless verdict claims —
+    // and flip every caller that measured the no-oracle behavior (#78).
+    const msg = if (findStraceForHint(arena)) |s|
+        std.fmt.allocPrint(arena, "{s} (strace is on this machine: pass --oracle {s})", .{ base, s }) catch base
+    else
+        base;
+    unknown(.completeness_not_verified, msg);
+}
+
+/// Linux-only PATH discovery used by refusal hints: the first absolute PATH entry
+/// holding an executable `strace`, or null. Relative and empty PATH entries are
+/// skipped — the hint must name a path that means the same thing wherever the
+/// user pastes it (#78).
+fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
+    if (builtin.os.tag != .linux) return null;
+    const path_env = posix.getenv("PATH") orelse return null;
+    var it = std.mem.splitScalar(u8, std.mem.span(path_env), ':');
+    while (it.next()) |dir| {
+        if (dir.len == 0 or dir[0] != '/') continue;
+        var zb: [contract.max_path]u8 = undefined;
+        const z = std.fmt.bufPrintZ(&zb, "{s}/strace", .{dir}) catch continue;
+        if (posix.access(z.ptr, posix.X_OK) == 0)
+            return arena.dupe(u8, z) catch null;
+    }
+    return null;
 }
 
 /// A setup error is a verdict too, and it has to reach the JSON.
@@ -497,7 +526,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     const state = args.state orelse setupError("--state is required");
     const operation = args.operation orelse setupError("--operation is required");
-    const shim = args.shim orelse setupError("--shim is required in v0.1");
+    const shim = args.shim orelse findShim(arena_state.allocator());
     // One declared value, resolved once, governs every un-killed run of the operation:
     // the recording run and the baseline world are the same command over the same
     // state, so they answer to the same success status (ADR 0014). Killed worlds are
@@ -1009,7 +1038,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         preflightReport(arena, n, state, args.setup, operation, shim, args.oracle, args.expect_status);
 
     if (n == 0) {
-        requireCompleteness(args.oracle != null, args.allow_unverified);
+        requireCompleteness(arena, args.oracle != null, args.allow_unverified);
         // "judged state", not "state directory": a run whose only writes are
         // ownership/permission metadata lands exactly here with zero kill points,
         // and those writes DO change the directory — just nothing the verdict
@@ -1398,7 +1427,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
-    requireCompleteness(args.oracle != null, args.allow_unverified);
+    requireCompleteness(arena, args.oracle != null, args.allow_unverified);
 
     say(
         \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant
@@ -1484,8 +1513,12 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             \\
             \\
         , .{});
+    // When no oracle was given but strace is discoverable, the hint names the real
+    // path so the next command is pasteable — named, never attached (#78).
     const oracle_part = if (oracle_path) |o|
         std.fmt.allocPrint(arena, " --oracle {s}", .{o}) catch " --oracle <strace>"
+    else if (findStraceForHint(arena)) |s|
+        std.fmt.allocPrint(arena, " --oracle {s}", .{s}) catch " --oracle <strace>"
     else
         " --oracle <strace>";
     // The hint carries the define that was actually accepted — dropping --setup here
@@ -1519,11 +1552,11 @@ const demo_check_sh = @embedFile("check_sh");
 
 const shim_basename = if (builtin.os.tag == .macos) "libsideeye_shim.dylib" else "libsideeye_shim.so";
 
-/// Where the demo looks for the shim when --shim is not given: next to the binary
+/// Where the shim is looked for when --shim is not given: next to the binary
 /// (the release-tarball layout) first, then ../lib relative to it (the zig-out
-/// layout). Demo-only by design — defaulting --shim for explore/preflight is issue
-/// #78's decision to make, with its own acceptance checks.
-fn demoShimCandidates(arena: std.mem.Allocator, self: []const u8) [2][]const u8 {
+/// layout). One list serves demo, preflight, explore and replay (#78) — the demo
+/// proved the order before the flag learned to default.
+fn shimCandidates(arena: std.mem.Allocator, self: []const u8) [2][]const u8 {
     const dir = std.fs.path.dirname(self) orelse "/";
     return .{
         std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, shim_basename }) catch setupError("out of memory"),
@@ -1535,11 +1568,32 @@ test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
-    const c = demoShimCandidates(arena, "/opt/sideeye/bin/sideeye");
+    const c = shimCandidates(arena, "/opt/sideeye/bin/sideeye");
     const first = std.fmt.allocPrint(arena, "/opt/sideeye/bin/{s}", .{shim_basename}) catch unreachable;
     const second = std.fmt.allocPrint(arena, "/opt/sideeye/bin/../lib/{s}", .{shim_basename}) catch unreachable;
     try std.testing.expectEqualStrings(first, c[0]);
     try std.testing.expectEqualStrings(second, c[1]);
+}
+
+/// Resolve the shim when --shim was not given (#78): the canonical binary's
+/// neighbors per shimCandidates, realpath-normalized so the report and the
+/// reproduce line name the real file rather than a bin/../lib spelling.
+/// Absence stays loud, both looked-at paths named; argv[0] is never consulted
+/// (a PATH name or a wrapper must not decide which library gets injected).
+fn findShim(arena: std.mem.Allocator) []const u8 {
+    const self = mcp.canonicalSelf() orelse setupError("could not resolve the canonical path of this binary to look beside it for the shim; pass --shim <path>");
+    const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
+    const cands = shimCandidates(arena, self_owned);
+    for (cands) |c| {
+        var zb: [contract.max_path]u8 = undefined;
+        const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
+        if (posix.access(z.ptr, 0) != 0) continue;
+        var rb: [contract.max_path]u8 = undefined;
+        if (posix.realpath(z.ptr, &rb)) |p|
+            return arena.dupe(u8, std.mem.span(p)) catch setupError("out of memory");
+        return c;
+    }
+    setupError(std.fmt.allocPrint(arena, "the shim is half the product, and none was found beside this binary; looked at {s} and {s} — pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found beside this binary; pass --shim");
 }
 
 /// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete
@@ -1612,15 +1666,7 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
     // canonicalSelf answers from a static buffer; copy before anything else reuses it.
     const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
 
-    const shim = shim_flag orelse blk: {
-        const cands = demoShimCandidates(arena, self_owned);
-        for (cands) |c| {
-            var zb: [contract.max_path]u8 = undefined;
-            const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
-            if (posix.access(z.ptr, 0) == 0) break :blk c;
-        }
-        setupError(std.fmt.allocPrint(arena, "the shim is half the product, and the demo could not find it; looked at {s} and {s} — pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found; pass --shim");
-    };
+    const shim = shim_flag orelse findShim(arena);
 
     // Scratch space: $TMPDIR when usable. explore splits command strings on spaces
     // (ADR 0007), so a TMPDIR containing one would shear "<tool> init" apart — /tmp then.

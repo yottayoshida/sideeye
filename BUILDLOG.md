@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — #78/#79/#80: found not plumbed, and two evidence-first pages
+
+Batch b_309cfe196cf1. The shim default is the demo's resolver generalized —
+the doc comment on `demoShimCandidates` had already deferred exactly this
+move to #78 — plus realpath, so a reproduce line names the real file rather
+than a `bin/../lib` spelling. One resolution point (the shared
+`args.shim orelse`) covers explore, preflight and replay at once.
+
+The oracle half shipped as a HINT, not a default. The plan-stage adversarial
+review measured what silent attach would change: six acceptance checks pin
+no-oracle behavior and the container carries strace, so they would all flip;
+the MCP child would grow an oracle the server never configured; and
+`--allow-unverified` without `--oracle` — an invocation that does pass a
+flag — would change meaning, falsifying the "flagged invocations unchanged"
+thesis as written. Named-never-attached keeps every verdict byte-identical
+and still deletes the plumbing friction: the refusal now hands the user the
+exact `--oracle /path` to paste. The deviation from the issue's letter is
+recorded in the PR and in #78's close.
+
+The target-classes page dropped the issue's Node/libuv claim — no committed
+evidence exists anywhere in this repo — down to a labeled not-yet-measured
+row, and the review reversed my own draft's omamori arc against the record:
+the nondeterminism refusal came first, the L0 history form (#24/#25)
+produced the PASS 143/143, and the 08-12 walls (symlinkat/fchmodat) have
+since been removed for other targets without re-measuring omamori. Writing
+the evidence table was itself the audit the covenant asks for.
+
+New acceptance: shim found/absent (both sides pinned), hint present/absent
+(the rc pin doubles as the not-attached proof), and a path-existence sweep
+over the two pages — guarding path rot only; claim drift stays a
+review-time axis. Sunset on the sweep: never fired by the freeze → removal
+list. Running the suite caught one thing the plan review had predicted for
+the oracle and I still missed for the shim: check 2h used a missing --shim
+as its SETUP ERROR falsification, and the default turned that run into a
+PASS — the trigger moved to a missing --state, and the zig-out layout the
+incident exposed became check 9's third leg.
+
+R1 (fresh reviewer, whole diff): no P0. The P1 was this batch's own
+covenant applied back at it — two rows stated claims their named artifacts
+do not contain (timewarrior's 25/25 lives in the buildlog, not the four
+named spike paths; devtodo's "deliberately unreported" lives in NOVELTY /
+PROTOCOL) — both fixed by naming the right artifact, plus two Walls
+bullets that carried no artifact at all. P2s: the page and the changelog
+claimed the sweep covers "every repository path" while the check's own
+echo says "slashed backtick references" — the prose narrowed to what is
+measured; the sweep's denominator is now asserted (a page whose extraction
+yields under five references goes red instead of passing over an empty
+loop, seen red on a synthetic page); the omamori arc gained its middle
+wall (baseline_violates_invariant) so the page and this entry tell the
+same story. The reviewer also ran the extractor for real: 35 tokens, all
+resolving, none dropped, none foreign.
+
 ## 2026-08-15 — v0.9.0: the release rides a truth-up of the front page
 
 The bump (0.8.0 → 0.9.0, minor by the contract-bump precedent — v8 rode
