@@ -31,6 +31,29 @@ forever once the scout reads their internals. None of them is hledger (the
 one remaining blind-eligible candidate), which this experiment must not
 touch.
 
+**A cost NOT accounted for at selection, added 2026-08-15 after it came
+due.** Selection weighed installability and state-shape diversity. It did
+not ask who bears the cost if a finding is reported. That asymmetry is
+real: a target chosen for our convenience gets a data-loss report from
+someone who does not use it, and the work lands on a maintainer who never
+asked for the attention while the evidence value accrues here. devtodo was
+the case that made it visible — a legacy project whose author describes it
+as stable, whose weakness already has adjacent reports in Debian's tracker,
+picked because apt had it. Its report was filed and then withdrawn.
+
+The rule for any future cohort, applied AT SELECTION rather than at report
+time:
+
+- Report-eligible: the project is active (issues moving, more than one
+  contributor), has real users, and a report would actually help someone.
+- Not report-eligible: we do not use it AND it is small, effectively
+  dormant, or its sole maintainer has said it is in maintenance mode.
+  Adjacent known reports lower the value further.
+- A target may still be EXPLORED when it is not report-eligible — the
+  measurement is legitimate. What changes is that its finding stays in this
+  repository and is never filed upstream, and the selection record says so
+  before the exploration runs, not after.
+
 ## Honest-measurement rules
 
 - **Pre-window contact is install + `--version` only.** Reading a target's

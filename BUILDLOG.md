@@ -11,10 +11,12 @@ reproduce without our shim is not a report, so every finding had to be
 re-derived from scratch with tooling a maintainer already has — strace's
 `-e inject=` fault injection — before a word was written.
 
-Three survived that and are filed: calcurse #529 (interrupted `-P`
-leaves apts at zero bytes; the syscall log shows `open(O_TRUNC)` then the
-kill), devtodo #9 (same shape on .todo, and the next run says "database
-corrupt" in the target's own words), stow #139 (the unfold sequence
+Three survived that and were filed; one of the three was then withdrawn
+on a fairness call the owner made and I should have raised before filing
+(below). calcurse #529 (interrupted `-P` leaves apts at zero bytes; the
+syscall log shows `open(O_TRUNC)` then the kill), devtodo #9 (same shape
+on .todo, and the next run says "database corrupt" in the target's own
+words — withdrawn), stow #139 (the unfold sequence
 `unlinkat(sub)` → `mkdirat(sub)` → `symlinkat` ×2, killed anywhere inside
 it, leaves the already-stowed package unreachable). Each carries a
 measured reproduction rate — 5/5 with injection, 2/2 clean without — and
@@ -37,10 +39,26 @@ contract. That is a limitation of judging a journaled store by file
 bytes, not a defect in buku, and it means the finding rests on the single
 checker failure alone until someone reproduces that world plainly.
 
+**And a third question, which the owner asked after the filing and which
+belonged before it: should this project be on the receiving end at all?**
+devtodo is a legacy project its author calls stable, star count in single
+digits, chosen for the cohort because apt had it — not because anyone
+here uses it, and not because its users needed the news (Debian's tracker
+already carries adjacent reports on the same code path). A data-loss
+report from a stranger who does not use your software is work you did not
+ask for, and the evidence value of filing it accrued here, not there.
+The issue was withdrawn with two sentences (a long apology is more of the
+same imposition), the finding stays in this repository, and the rule now
+sits in `spike/assisted/PROTOCOL.md` at TARGET SELECTION, where the cost
+is actually incurred: explore anything, but decide before running whether
+a finding would be reportable, and record that decision with the target.
+
 The general lesson, recorded because it will apply to every future
-finding: novelty asks "has anyone reported this", and the report step
-asks the harder question first, "can anyone else see it". Today the
-second question killed one of four findings that had passed the first.
+finding: novelty asks "has anyone reported this", the report step asks
+"can anyone else see it", and the step before both asks "is it fair to
+send this here". Today the second question killed one of four findings
+and the third question killed another — both after they had passed the
+first.
 ## 2026-08-15 — The novelty round: four searches, four not-founds, and the boundaries say so
 
 The step the criterion-1 redesign designated ran the same day: recorded

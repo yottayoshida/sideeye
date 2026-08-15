@@ -166,8 +166,14 @@ maintainer can run using only strace's fault injection (no tooling from this
 project is named or needed):
 
 - calcurse: https://github.com/lfos/calcurse/issues/529
-- devtodo: https://github.com/alecthomas/devtodo/issues/9
 - stow: https://github.com/aspiers/stow/issues/139
+- devtodo: filed as https://github.com/alecthomas/devtodo/issues/9 and then
+  WITHDRAWN the same day, on the owner's judgement that reporting into a small
+  dormant project we do not use is not fair play: the evidence value accrues
+  here while the work lands on a maintainer who never asked for it. The finding
+  itself stands and stays in this repository. The selection rule this produced
+  is written into PROTOCOL.md, applied at target selection rather than at report
+  time, because that is where the cost is actually incurred.
 
 **buku is HELD, and the reason is a correction to this project's own record.**
 Before writing its report, the finding was re-derived with plain tooling: kill
