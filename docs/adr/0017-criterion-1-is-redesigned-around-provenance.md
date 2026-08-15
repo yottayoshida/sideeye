@@ -1,78 +1,116 @@
 # ADR 0017 — Criterion 1 is redesigned around provenance, not blindness
 
-- **Status:** Proposed (flips to Accepted when the implementing PR merges)
-- **Supersedes:** the blind-only reading of v1.0 entry criterion 1 (PRD). ADR 0012's
-  two-seal protocol, the campaign records, and the assisted/blind labeling rules are
-  all unchanged — this decides what the v1.0 gate MEASURES, not how either funnel runs.
-- **Scope:** PRD (v1.0 entry criterion 1 and its status trail); no code.
+- **Status:** Accepted (2026-08-15 — the PR introducing this ADR is its implementing
+  PR, so the status is set at birth rather than left as a flip debt; ADRs 0012/0015/
+  0016 accumulated exactly that debt and are settled in the same commit)
+- **Supersedes:** the venue-and-provenance gate of v1.0 entry criterion 1 (PRD) and
+  the matching sentence of DESIGN §17. ADR 0012's two-seal protocol, the campaign
+  records, and the assisted/blind labeling rules are all unchanged — this decides
+  what the v1.0 gate MEASURES, not how either funnel runs.
+- **Scope:** PRD (v1.0 entry criterion 1 and its status trail) and DESIGN §17's
+  primary-criterion sentence — ADR 0012 names both as the criterion's home, and the
+  2026-08-13 precedent changed both in step. No code.
 
 ## The decision
 
-v1.0 entry criterion 1 required the qualifying bug to be found on omamori, the
-calibration target, or a blind-protocol target. It now requires:
+v1.0 entry criterion 1 required the qualifying bug to be found on one of three
+venues: omamori, the calibration target, or a blind-protocol target. It now requires:
 
 > A real, novel, author-confirmed crash-consistency bug, **discovered by Sideeye's
-> deterministic judge from a declared invariant — with the question's provenance
-> recorded and labeled (blind, or assisted with the scout named)** — fixed, and kept
-> as a replayed regression case.
+> deterministic judge from an invariant declared and committed before any failure of
+> the target was observed — with the question's provenance recorded and labeled
+> (blind, or assisted with the scout and its sources named)** — fixed, and kept as a
+> replayed regression case.
 
-What is unchanged, deliberately: **novel** (a tracker search with a positive control,
-recorded), **author-confirmed**, **fixed**, **replayed regression case**, and the rule
-that an assisted finding is never presented as blind. What changed is one thing: the
-gate no longer requires the question itself to have been posed blind.
+Two things changed, counted honestly: the gate no longer requires the question to
+have been posed blind, and the three-venue restriction is gone — any target
+qualifies, because the assisted funnel's targets are by design arbitrary ordinary
+software. What is unchanged, deliberately: **novel** (a recorded tracker search with
+a positive control, as campaign 1 actually scored it), **author-confirmed**,
+**fixed**, **replayed regression case**, the rule that an assisted finding is never
+presented as blind — and, made explicit rather than implied, **the question must
+precede the answer**: the define is committed before any failure of the target is
+observed. Blind campaigns prove that ordering with seals; assisted runs prove it
+with committed proposal artifacts and file history (#118's proposal-artifact-first
+rule, enforced by review in the first cohort).
+
+("§18-class" throughout means a decision of the weight §18 governs — stopping or
+redesigning the current direction. No §18 kill criterion has triggered; PRD entry
+criterion 3 is untouched.)
+
+## What this does to past scorings
+
+A criterion change re-scores everything previously scored against it, so the record
+is settled here rather than left to drift:
+
+- **timewarrior** stays exactly where §17 put it: "discovered automatically —
+  partial." Under the new text it does not slip through the assisted door, because
+  the ordering requirement blocks it: the human scout observed the failure in a
+  strace first and wrote the checker afterwards (DESIGN §17's own account). The
+  question did not precede the answer, and no relabeling changes that.
+- **topydo** stays where the 2026-08-14 ruling put it: found-by-Sideeye blind, not
+  novel; the recovery misfire is analysis, not discovery. Nothing in this redesign
+  revisits either half.
+- **The four assisted findings** (stow, devtodo, buku, calcurse) gain nothing but
+  eligibility: their questions preceded their answers (committed defines, measured
+  windows), their provenance is labeled assisted, and every remaining leg — novelty
+  first — is open.
 
 ## Why this is a redesign and not a moved goalpost
 
-The distinction was pre-committed in #118, before any of the evidence below existed:
-loosening a bar because results are thin is goalpost-moving; replacing a bar because
-an experiment falsified the hypothesis the bar was testing is a redesign. The order
-of events is the argument:
+Steelmanned, the accusation reads: "two blind campaigns returned null, so you
+widened the gate." The defence is the recorded order of events, stated precisely:
 
-1. **The blind path was run to exhaustion first.** Campaign 1 (topydo) found 12/13
-   counterexamples under machine-verified seals — and the find was not novel
-   (upstream already knew). Campaigns 2 and 3 (abook, khal) returned null under the
-   same seals. The remaining candidate (hledger) is unselectable while its sweep
-   refusal stands. Each campaign cost roughly 1.5 hours of sealed declaration work
-   plus review; the pool the seals inherited is spent.
-2. **The assisted experiment was run under its own pre-registered rules** (#118:
-   measured windows, mandatory proposal metadata, assisted-never-blind, and — written
-   into the issue by the owner before the first run — "assisted success NEVER
-   satisfies criterion 1; the only path is an explicit §18-class redesign").
-3. **The experiment's scoring recorded an inversion** (#120): the metadata gate was
-   built against an agent posing vacuous questions, and that failure mode never
-   appeared — question quality scored 5/5. The binding constraint was the judge's
-   reach: three enumerated engine gaps.
-4. **The gaps were closed and the re-measurement ran** (#121, #122, contract v9,
-   `spike/assisted/REMEASURE.md`): four of the five committed defines reach
-   replay-confirmed counterexamples; the fifth is blocked by the one gap deferred as
-   too heavy (#123).
+1. **The sealed candidate pool was run to exhaustion first.** Campaign 1 (topydo)
+   found 12/13 counterexamples under machine-verified seals — and the find was not
+   novel. Campaigns 2 and 3 (abook, khal) returned null under the same seals. The
+   remaining sealed candidate (hledger) is unselectable while its sweep refusal
+   stands. What is spent is the pool those seals inherited: ADR 0012 permits a
+   fourth campaign under fresh seals over a fresh pool, and declining to run one is
+   a resourcing judgement, made with eyes open — campaign 3, the one campaign
+   measured end to end, took about 1.5 hours of wall clock including seals, reviews
+   and exploration (#118 records the measurement and its scope).
+2. **The redesign path was pre-committed after the nulls were known and before any
+   assisted evidence existed.** #118 was filed 2026-08-14 13:32 UTC — citing the
+   nulls as its motivation, openly — and its 13:36 UTC revision added the rule, in
+   substance: an assisted success is never scored as satisfying criterion 1; the
+   only path it opens is an explicit entry-criteria redesign in PRD, decided
+   deliberately. The first assisted run began 13:54 UTC. Eighteen minutes is a thin
+   margin, and it is the true one; the commitment preceded every byte of assisted
+   evidence, and the edit history that shows this is public.
+3. **The experiment then measured where the constraint actually was.** Its scoring
+   (#120) recorded an inversion: question quality 5/5 — the vacuous-question failure
+   mode the metadata gate was built against never appeared — while the binding
+   constraint on reaching any verdict was the judge's reach. The three measured
+   syscall gaps closed the next day (#121, #122); the fourth gap, exec image
+   replacement (#123), was deliberately deferred, and only pass still stands behind
+   it. The same committed defines then reached verified, replay-confirmed
+   counterexamples on stow, devtodo and buku, and re-recorded calcurse's — which was
+   verified before the gaps closed and is the control showing the funnel, not the
+   gap-closing, produced the question (`spike/assisted/REMEASURE.md`).
 
-The hypothesis criterion 1 was actually testing — "the value proof requires the
-question to be posed unassisted" — is the only thing this evidence falsified. The
-judge's half ("Sideeye finds real counterexamples in ordinary software from declared
-invariants") is now measured three independent ways: blind (topydo), calibration
-(timewarrior), assisted (four targets, verified). The product's own thesis line,
-written at #118 filing time, already drew this boundary: *"AI may propose the
-question. Sideeye answers whether it survives hostile execution."* The gate now
-measures the product that sentence describes.
-
-## What this does not do
-
-- It does not close criterion 1. The novel/confirmed/fixed/replayed legs are all
-  still open for the assisted findings — novelty is deliberately unchecked for all
-  four, and the next step is exactly those tracker searches (with positive controls,
-  recorded), then upstream contact, then a fix and a replayed case.
-- It does not retire the blind protocol. The seals, the campaign records and ADR 0012
-  stand; blind remains the stronger provenance a finding can carry, and nothing
-  assisted may borrow it.
-- It does not touch criteria 2–6.
+What this evidence does NOT do is falsify the value of blind provenance, and this
+ADR does not claim it does. topydo reached verified counterexamples blind and still
+failed criterion 1 on novelty; the assisted four stand today at exactly that same
+station, novelty unchecked. What the evidence measured is narrower and sufficient:
+the binding constraint on reaching a verdict is the judge's reach, not the
+question's provenance — so a gate keyed on provenance was gating on the wrong axis,
+while the legs that actually carry the value claim (novel, confirmed, fixed,
+replayed) never depended on provenance at all. The product's own thesis line, in
+#118 from filing: *"AI may propose the question. Sideeye answers whether the
+proposed question survives hostile execution."* The gate now measures the product
+that sentence describes, and blind remains the stronger provenance a finding can
+carry — nothing assisted may borrow it.
 
 ## The cost, stated
 
-A future reader can still say "you widened the gate after nulls." The defence is not
-rhetoric but order: the experiment preceded the criterion change, the change was
-pre-committed as the only legitimate path, the un-widened legs are the ones that
-carry the honesty (novel, confirmed, replayed), and the widening's own precedent —
-the 2026-08-13 sentence-widening to include blind targets, done explicitly BEFORE any
-campaign ran so it could not be goalpost-moving — is the same discipline applied in
-the same repository.
+A future reader can still say "you widened the gate after nulls" — and the dates
+agree with them up to a point: the nulls were known when the redesign path was
+written down. What the record then shows is the discipline around that fact: the
+commitment preceded the assisted evidence; the widening's precedent (2026-08-13,
+before any campaign ran, changing PRD and DESIGN in step) is the same rule applied
+earlier; the legs that carry honesty were left untouched; and the one scoring the
+new text could have quietly improved (timewarrior's) is explicitly held where it
+was. The remaining exposure is real and accepted: this is the second widening of
+the same criterion in three days, and a third would be evidence about the process,
+not the products.

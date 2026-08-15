@@ -1,6 +1,6 @@
 # ADR 0016 — The third campaign: the lessons ride as declaration requirements
 
-- **Status:** Accepted (campaign-3 Seal A merged 2026-08-14, PR #114; status flipped 2026-08-15 — the flip was owed at merge and went unrecorded)
+- **Status:** Accepted (campaign-3 Seal A merged 2026-08-14, PR #114; status flipped 2026-08-15 — this ADR's original status line named no flip rule, so the at-merge convention is inherited from 0012/0015)
 - **Date:** 2026-08-14
 - **Extends:** ADR 0012 (the two-seal blind declaration protocol) and ADR 0015
   (the inherited selection seal and the recovery-path rule). Everything they

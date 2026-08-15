@@ -22,6 +22,30 @@ and deliberate: tracker searches with positive controls for the four
 assisted findings — stow's unfold, devtodo's in-place rewrite, buku's
 torn db, calcurse's purge — then upstream contact for whichever survive.
 
+**The adversarial R1 reshaped the ADR more than any review today reshaped
+code.** Its charge was to refute the redesign-not-goalpost argument, and
+it could — against the draft as written, not against the decision. Three
+sentences claimed more than the record: "run to exhaustion" (only the
+sealed pool is spent; ADR 0012 leaves the fresh-seals door open),
+"before any of the evidence existed" (the nulls WERE known when #118
+pre-committed the redesign path — the true margin is eighteen minutes
+before the first assisted run, found in the issue's public edit history,
+now disclosed rather than discoverable), and "falsified the hypothesis"
+(the experiment measured where the constraint was; topydo reached
+verified counterexamples blind and still failed on novelty, so reaching
+a verdict was never the value claim). Each was rewritten to the measured
+statement, which is stronger, not weaker. The review also found the two
+structural misses: DESIGN §17 still carried the old criterion (ADR 0012
+names PRD/DESIGN as its joint home — the same-class sweep stopped at
+PRD), and the new text had a hole the old one covered implicitly — no
+requirement that the question precede the answer, through which
+timewarrior's "partial" would have silently become a pass. The criterion
+now requires the invariant committed before any observed failure, and
+the ADR re-scores all three past findings explicitly. The owner's ruling
+(option A of three) is posted to #118 with this merge — the review
+rightly noted a decision whose defence rests on pre-commitment cannot
+live only in a session transcript.
+
 ## 2026-08-15 — v0.8.0, and the README stops being a changelog
 
 The bump rides the owner's earlier ruling (next engine change ships a
