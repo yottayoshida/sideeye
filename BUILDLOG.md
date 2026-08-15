@@ -2,6 +2,22 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — spike/ gets a map; the cleanup that was NOT done is the point
+
+Three campaigns plus the assisted cohort left spike/ dense enough that the
+owner asked for a tidy-up. The honest finding: most of what looks like
+mess is sealed design. The per-campaign tool copies are the forward-carry
+rule (check-sealed-campaigns.sh fails a campaign that dropped its
+checker); sealed directories take no new files (ADR 0012 would mark
+campaign 1's checkers sighted); and the assisted `ops/explore.sh` paths
+are named by #121–#123 as acceptance tests. So the tidy-up is a README
+that says which rules protect what — plus ~37MB of gitignored local run
+outputs (`spike/out`, `spike/runs`, `assisted/runs`) sent to the trash,
+every committed report and transcript being on the tracked side already.
+The dogfood-era scripts stay in place: BUILDLOG and ADR prose cite them by
+path, and a stale citation costs more than the directory listing it
+saves.
+
 ## 2026-08-15 — The #118 scoring lands, on two axes; the gate was aimed at the wrong failure mode (#118)
 
 The owner scored the cohort — and rejected the one-axis form as too kind
