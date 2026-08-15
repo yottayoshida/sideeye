@@ -149,7 +149,7 @@ earliest    crash point 5 of 5
 path        key.json
 observed    present before and after the operation, but gone from the crashed state
 explored    6 worlds (crash points 5 + 1 baseline)
-atomicity   1 file(s) judged pre-or-post
+atomicity   1 path(s) judged pre-or-post
 oracle      agreed on 5 operations (63 syscall lines examined, 9 touching the state directory)
 checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
 l1          no marker configured

@@ -596,7 +596,8 @@ pub fn classify(gpa: Allocator, pre: Snapshot, post: Snapshot) error{OutOfMemory
 /// narrower — it is about the paths the operation is *replacing*:
 ///
 ///   for every path present in both the pre and post snapshots,
-///   the crashed state must contain it, holding either the pre or the post content —
+///   the crashed state must contain it, holding either the pre or the post identity
+///   (kind and content as a pair, #122) —
 ///   or, for a file whose clean run only ever extends it (the history form, ADR 0004),
 ///   content that still begins with everything the file held before the operation.
 ///
