@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-08-15
+
+The judge's-reach release: symlinks become first-class kill points (trace contract v9) and ownership/permission writes are recorded-only — together these took four blocked real-tool defines to verified, replay-confirmed counterexamples the same day (`spike/assisted/REMEASURE.md`). Saved v8 cases refuse honestly as a contract mismatch and must be re-recorded.
+
 ### Added
 
 - `symlink`/`symlinkat` are first-class operations (#122, trace contract v9): recorded as kill points on the LINK PATH (the target string is content the subject chose — never resolved, never recorded), snapshotted as (kind, readlink-target), restored verbatim (a dangling link is restored dangling), and retargeted by the checker-falsification probe so link-farm checkers stay falsifiable. Saved v8 cases refuse honestly as a contract mismatch and must be re-recorded. Measured motivation: the #118 assisted cohort's stow run refused on `symlinkat`.

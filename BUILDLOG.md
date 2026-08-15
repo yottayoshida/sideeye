@@ -2,7 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-15 — The re-measurement: four verdicts, four counterexamples, one honest control (#118, #121, #122)
+## 2026-08-15 — v0.8.0, and the README stops being a changelog
+
+The bump rides the owner's earlier ruling (next engine change ships a
+release; contract v9 is that and more). With it, an owner instruction:
+the README had gone stale — its Status headline still said "v0.5 — the
+loop closes" two minor versions later — and it should be SIMPLE, per the
+Utrecht reproducibility workshop's README guidance (title/description →
+installation → usage → example → license; plain language; copy-paste
+commands; short scannable sections; link out for depth).
+
+The rewrite's structural decision: **the per-version milestone list is
+gone.** It was the README's main rot engine — a hand-maintained shadow
+changelog that had to be extended every release and wasn't (the v0.5
+headline), on top of the sample-report block that missed new report
+lines two PRs running. Version-relative narrative now lives where it is
+already maintained (CHANGELOG, PRD); the README keeps one Status line.
+The sample FAIL report is now REAL regenerated output from this release
+(toy-bug cross-compiled, explored in the container with checker +
+oracle) — which immediately caught a third drift instance: the old
+hand-patched sample was missing the `expected  exit 0` line that reports
+have carried since #98. Real output wins arguments that careful editing
+keeps losing. The real-tools sentence names the six targets with
+replay-confirmed counterexamples and says plainly that only two are
+upstream-reported and the rest are novelty-unchecked — the same honesty
+budget the reports themselves spend.
 
 The judge-first ruling paid out the same day. The committed defines from
 the #118 cohort, re-run unmodified against main `647acbf` (v9 engine +
