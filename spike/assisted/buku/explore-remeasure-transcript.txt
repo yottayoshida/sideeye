@@ -1,0 +1,95 @@
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /g (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+checker(buku-add): bystander query exited 1: /usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m initdb(): file is not a database
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+/usr/bin/buku:22: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+[31m[ERROR][0m network_handler(): HTTPSConnectionPool(host='example.com', port=443): Max retries exceeded with url: /x (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:992)')))
+FAIL  2 of 22 crash worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 18 of 21
+            after  write(/tmp/assisted/buku/state/buku/bookmarks.db)
+            before write(/tmp/assisted/buku/state/buku/bookmarks.db)
+path        buku/bookmarks.db
+observed    holding neither the old nor the new content
+explored    22 worlds (crash points 21 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 21 operations (4560 syscall lines examined, 123 in scope of the judged state)
+metadata    1 ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): fchown x1. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+checker     falsified before the run (corrupted state -> check failed); ran in 22 world(s)
+l1          no marker configured
+case        /tmp/sideeye-work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/assisted/buku/state SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=18 <operation>

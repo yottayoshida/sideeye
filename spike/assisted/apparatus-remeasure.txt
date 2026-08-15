@@ -1,0 +1,16 @@
+== engine identity ==
+sideeye 0.7.0 (trace contract v9)
+== target versions ==
+buku	4.7+ds-1
+calcurse	4.7.1-1
+devtodo	0.1.20+git20200830.0ad52b0-2
+pass	1.7.4-6
+stow	2.3.1-1
+== oracle ==
+-rwxr-xr-x 1 root root 1640712 Jan 30  2023 /usr/bin/strace
+== pass control explore rc=2 ==
+UNKNOWN  child_process_detected
+         the target replaced its own image (exec); the crash-point addresses do not survive an image change
+
+atomicity   5 path(s) judged pre-or-post
+sideeye-assisted:latest d27e30513847

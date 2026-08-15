@@ -2,6 +2,28 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — The re-measurement: four verdicts, four counterexamples, one honest control (#118, #121, #122)
+
+The judge-first ruling paid out the same day. The committed defines from
+the #118 cohort, re-run unmodified against main `647acbf` (v9 engine +
+option b) in the cohort's own container: **stow FAIL 2/5** at the unfold
+window (`unlink(target/sub)` → `mkdir(target/sub)` — the fold symlink is
+destroyed before the real directory exists, exactly the L0 `missing` R2
+forecast, with the L2 checker agreeing), **devtodo FAIL 6/8** (the XML
+database rewritten in place through truncation — crashed content neither
+old nor new), **buku strict FAIL 2/22 with the oracle agreeing on all 21
+operations** (the #120 suspension resolved the way R1's analysis said it
+would: the question re-posed fresh, the torn-db answer came back
+verified, `fchown x1` observed-and-excluded in the report), and
+**calcurse FAIL 1/11 re-recorded under v9** (its cohort case was v8,
+dead by contract mismatch — the cost the CHANGELOG named, paid). pass
+stayed UNKNOWN on exec detection — the control confirming #123 is real
+remaining work, not noise. All four cases replay from committed files in
+a fresh container (rc=1, reproduced). One slip recorded: the first stow
+run's `--rm` container discarded the saved case; repeated in one session,
+identical verdict both times. Full record: `spike/assisted/REMEASURE.md`.
+Novelty of all four findings deliberately unchecked (separate step).
+
 ## 2026-08-15 — Ownership and permission writes become recorded-only (#121, option b)
 
 The second half of the owner's judge-first ruling. Option b was chosen in
