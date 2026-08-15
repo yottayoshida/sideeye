@@ -46,6 +46,26 @@ the ADR re-scores all three past findings explicitly. The owner's ruling
 rightly noted a decision whose defence rests on pre-commitment cannot
 live only in a session transcript.
 
+R2 confirmed all sixteen R1 findings closed and then found the guard's
+own hole, in this workspace's most familiar shape: the sentence added to
+close H5 was itself unlimited — "before any failure of the target was
+observed" names no observer and no mode, so read literally it
+contradicted the ADR's own re-scorings (topydo's failure surface was on
+a public tracker since 2023; every mature assisted target likely has
+failure reports somewhere). The wording now says whose observation
+counts: "before THIS PROJECT observed any failure of the target IN
+EXECUTION (reading a report of a failure while scouting is not observing
+one)" — timewarrior still blocked (its strace triage WAS this project
+executing and observing), scouting still legal by text rather than by
+charity. R2 also caught the ADR naming the wrong proof mechanism for
+assisted ordering: the proposal-artifact-first rule it cited was broken
+on three of five first-cohort targets (RESULTS.md's own record), and no
+verify-seals equivalent exists for the assisted funnel — the ADR now
+says the honest weaker thing (committed define + measured windows +
+review, not a seal) and names the machine-check as open work. One digit
+rounded the wrong way (eighteen → seventeen minutes) — in the sentence
+that says "it is the true one", of all places.
+
 ## 2026-08-15 — v0.8.0, and the README stops being a changelog
 
 The bump rides the owner's earlier ruling (next engine change ships a

@@ -17,10 +17,11 @@ v1.0 entry criterion 1 required the qualifying bug to be found on one of three
 venues: omamori, the calibration target, or a blind-protocol target. It now requires:
 
 > A real, novel, author-confirmed crash-consistency bug, **discovered by Sideeye's
-> deterministic judge from an invariant declared and committed before any failure of
-> the target was observed — with the question's provenance recorded and labeled
-> (blind, or assisted with the scout and its sources named)** — fixed, and kept as a
-> replayed regression case.
+> deterministic judge from an invariant declared and committed before this project
+> observed any failure of the target in execution (reading a report of a failure
+> while scouting is not observing one) — with the question's provenance recorded and
+> labeled (blind, or assisted with the scout and its sources named)** — fixed, and
+> kept as a replayed regression case.
 
 Two things changed, counted honestly: the gate no longer requires the question to
 have been posed blind, and the three-venue restriction is gone — any target
@@ -29,10 +30,18 @@ software. What is unchanged, deliberately: **novel** (a recorded tracker search 
 a positive control, as campaign 1 actually scored it), **author-confirmed**,
 **fixed**, **replayed regression case**, the rule that an assisted finding is never
 presented as blind — and, made explicit rather than implied, **the question must
-precede the answer**: the define is committed before any failure of the target is
-observed. Blind campaigns prove that ordering with seals; assisted runs prove it
-with committed proposal artifacts and file history (#118's proposal-artifact-first
-rule, enforced by review in the first cohort).
+precede the answer**: the define is committed before this project observes any
+failure of the target in execution. A scout READING about failures is not this
+project OBSERVING one — scouting stays legal by text, not by charity. Blind
+campaigns prove that ordering with machine-checked seals. Assisted runs prove it
+more weakly today: the committed define (toml + checker) fixes the question before
+the first exploration and the measured windows date it — but the first cohort's
+human-readable proposal files were written AFTER exploration on three of five
+targets (caught by review via file birth times, recorded in RESULTS.md), and no
+verify-seals equivalent exists for the assisted funnel. Machine-checking the
+define-precedes-report ordering for assisted runs is open work; until it exists,
+an assisted claim against this criterion leans on file history and review rather
+than on a seal.
 
 ("§18-class" throughout means a decision of the weight §18 governs — stopping or
 redesigning the current direction. No §18 kill criterion has triggered; PRD entry
@@ -75,7 +84,7 @@ widened the gate." The defence is the recorded order of events, stated precisely
    nulls as its motivation, openly — and its 13:36 UTC revision added the rule, in
    substance: an assisted success is never scored as satisfying criterion 1; the
    only path it opens is an explicit entry-criteria redesign in PRD, decided
-   deliberately. The first assisted run began 13:54 UTC. Eighteen minutes is a thin
+   deliberately. The first assisted run began 13:54 UTC. Seventeen minutes is a thin
    margin, and it is the true one; the commitment preceded every byte of assisted
    evidence, and the edit history that shows this is public.
 3. **The experiment then measured where the constraint actually was.** Its scoring
@@ -92,9 +101,11 @@ widened the gate." The defence is the recorded order of events, stated precisely
 What this evidence does NOT do is falsify the value of blind provenance, and this
 ADR does not claim it does. topydo reached verified counterexamples blind and still
 failed criterion 1 on novelty; the assisted four stand today at exactly that same
-station, novelty unchecked. What the evidence measured is narrower and sufficient:
-the binding constraint on reaching a verdict is the judge's reach, not the
-question's provenance — so a gate keyed on provenance was gating on the wrong axis,
+station, novelty unchecked. What the evidence measured is narrower, and sufficient
+to justify dropping the provenance gate: the binding constraint on reaching a
+verdict is the judge's reach, not the question's provenance. Provenance was a proxy
+for the property that actually matters — that the question preceded the answer —
+and the new text gates on that property directly instead of through the proxy,
 while the legs that actually carry the value claim (novel, confirmed, fixed,
 replayed) never depended on provenance at all. The product's own thesis line, in
 #118 from filing: *"AI may propose the question. Sideeye answers whether the
