@@ -1050,7 +1050,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 // exit; a checker that genuinely exits 126 is indistinguishable and
                 // gets the fail-closed reading.
                 if (code == 126)
-                    unknown(.checker_not_falsified, "the checker probe could not open its stdout capture in the work directory (exit 126 is the capture stub's, not the checker's); the checker was never tested");
+                    unknown(.checker_not_falsified, "the checker probe exited 126: either the capture stub could not open its stdout capture in the work directory, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red");
                 if (code == 0)
                     unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name");
             },
