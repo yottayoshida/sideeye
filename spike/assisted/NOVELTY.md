@@ -100,23 +100,44 @@ the sweep is re-runnable.
   concerns data integrity, saving, or file writes.
 - **Debian BTS: the first pass enumerated the OPEN view (4 bugs) and called it
   the tracker — review caught the wrong denominator.** The combined
-  open+archived view enumerates ~70 bugs (70 titles in this fetch; the BTS's
-  merged-bug display makes the exact count view-dependent, which is precisely
-  how the open-only view misled). All titles read; the data-adjacent set,
+  open+archived view holds exactly **72 bugs** (pinned by counting the bug
+  links in the raw page — a first re-fetch summarizer silently dropped two,
+  #117364 manpage typo and #173566 package filename conflict, both since read
+  and both data-unrelated). All 72 titles read; the data-adjacent set,
   disposed one by one:
-  - **#511342 (grave, "does not check for file creation errors") is the nearest
-    prior report and it is a different mechanism**: `open(".todo",
-    O_WRONLY|O_CREAT|O_TRUNC)` FAILS with EACCES and devtodo exits 0 having
-    written nothing — ignored error returns on the very same in-place-rewrite
-    path our finding kills midway through. No crash, no interruption, no torn
-    file (the reporter notes no write() ever happened); fixed in 0.1.20-4. The
-    same code path's failure, from the other side of the syscall boundary.
-  - #93641 (grave, .todo world-readable) — permissions, and visibly the
-    ancestor of the per-rewrite chmod our #121 run observes and excludes.
+  - **#511342 (grave, "does not check for file creation errors") is the
+    nearest prior report on mechanism and it is a different one**:
+    `open(".todo", O_WRONLY|O_CREAT|O_TRUNC)` FAILS with EACCES and devtodo
+    exits 0 having written nothing — ignored error returns on the very same
+    in-place-rewrite path our finding kills midway through. No crash, no
+    interruption, no torn file (the reporter notes no write() ever happened);
+    fixed in 0.1.20-4. The reporter's forward-looking sentence is the closest
+    thing in the whole BTS to a partial-write concern — "it would be good to
+    check if the program correctly detects write(), flush() and close()
+    failures (e.g. when filesystem runs out of space)" — a wish for error
+    checking, still not a crash window. The same code path's failure, from the
+    other side of the syscall boundary.
+  - **#239581 ("race condition") is the only bug in the BTS reporting OBSERVED
+    .todo corruption, and it carries the maintainer's own account of the write
+    path**: eleven parallel `tda` processes against one database left 2 of 11
+    items alive and the loader saying "no database loaders for database format
+    or database corrupt"; Alec Thomas replied "This is not surprising; there
+    is no locking of any form in devtodo." The mechanism is concurrent
+    unserialized read-modify-write — no kill, no interruption anywhere in it —
+    so it is not our finding; but any upstream conversation about this write
+    path starts from that quote, and the corruption CLASS (an unreadable
+    .todo) is the same one our crash worlds produce by a different route.
+  - #93641 (grave, .todo world-readable) — permissions, and plausibly the
+    ancestor of the per-rewrite chmod our #121 run observes and excludes (the
+    fix era introduced permission-restricting behavior; the link is inference,
+    not stated in the bug).
   - #173904 / #108791 / #91820 / #307226 — segfaults on display/EOF/arch
-    paths, not the save path. #308706 / #516604 — `--purge` hangs, no data
-    loss. #175730 — display formatting. #239581 ("race condition") —
-    concurrency, not crash.
+    paths, not the save path (though #307226-adjacent #308706 has a segfault
+    MODE too, below). #516604 — `--purge` endless loop, data integrity
+    verified by the reporter (identical .todo MD5 before/after). #308706 —
+    `--purge` freeze AND a segfault on complex nested-note files; nobody
+    reported file damage, and nobody verified its absence either. #175730 —
+    display formatting.
 - Positive control: enumeration is the coverage — and the review's independent
   probe confirmed `gh search issues` reaches comment text too (a comment-only
   word on GitHub #2 is findable), so nothing in the small trackers hid below

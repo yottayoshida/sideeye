@@ -19,7 +19,7 @@ from that tracker's language entirely.
 **The review round earned its keep on the denominator.** The first pass
 enumerated devtodo's Debian BTS from the OPEN view — 4 bugs — and called
 it the tracker; the combined open+archived view holds ~70, including
-grave #511342, which sits on the exact code path our finding kills:
+grave #511342 among 72 bugs, which sits on the exact code path our finding kills:
 `open(".todo", O_TRUNC)` on the in-place rewrite — reported for IGNORED
 ERROR RETURNS (EACCES, exit 0, nothing written, no crash anywhere in it;
 fixed in 0.1.20-4). Same path, other side of the syscall boundary; the
