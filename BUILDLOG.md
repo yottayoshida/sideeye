@@ -2,6 +2,88 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-15 — buku downgraded to no finding: the "buku could not read it" line was the falsification gate talking
+
+The buku disposition below ("held pending a plain reproduction") ended
+today, and not the way either branch anticipated. The open question was
+why 38 plain strace kills all recovered while "the engine's recorded
+world" showed buku's own `initdb(): file is not a database`. The answer:
+**that world never existed.** The committed transcripts contain the
+initdb line exactly once each — at the falsification-gate position, where
+the engine deliberately corrupts the state and requires the checker to go
+red before the run. Every report beside it even says so ("falsified
+before the run: corrupted state -> check failed"). The case's
+`violation: hybrid` is an L0 content kind (neither-old-nor-new), not "the
+checker also fired"; I read it as the latter, and with that reading the
+gate's line became a crash world's evidence. The cohort RUNLOG wrote "in
+at least one world", NOVELTY.md and RESULTS.md inflated it to "2/22
+worlds" by merging it with L0's violation count, and yesterday's entry
+below repeated it as the reason the finding was held rather than
+withdrawn.
+
+Measured today (committed under `spike/assisted/buku/inspection/`): the
+committed define re-run with an instrumented checker that dumps every
+visited world before applying the committed logic verbatim. Same verdict
+(FAIL, earliest 18 of 21, 2 violations) — and the checker **passed in
+all 22 worlds**. Both torn worlds hold a fully-synced hot journal beside
+the torn db; buku's recovery-open rolls back, answers the bystander
+query, and cleans the journal up. A plain strace of the same add shows
+why that is structural: the only neither-old-nor-new windows lie between
+sqlite's three db page writes, each bracketed by the journal it just
+fdatasync'd. So the L0 hybrid is a true byte observation that sits
+entirely inside sqlite's documented recovery contract, buku holds no
+finding at all, and the two-day hunt for a plain reproduction was
+chasing a transcript misread, not a fragile bug.
+
+The general shape is worth keeping: **a guard that proves the checker
+can fail produces, by design, exactly the failure output a finding would
+produce — and the transcript interleaves it unlabeled with world
+output.** `target-error-line.txt` is a one-line harvest of gate output
+promoted to target evidence, and it survived the cohort reviews, the
+remeasure reviews, the novelty round and the upstream round, because
+every layer read the prose, not the position of the line in the
+transcript. Candidate engine fix, not yet filed: label
+falsification-gate target output in the transcript (a `falsify:` prefix
+or a begin/end fence) so it cannot be quoted as a world's.
+
+R1 on the correction (fresh reviewer, same day) returned one P0, three
+P1 and six P2 — all adopted, and two deserve their own record. First,
+the P0: my same-class sweep for carriers of the withdrawn claim used
+`grep ... | grep -v transcript` to exclude transcript FILES and thereby
+dropped every LINE containing the word "transcript" — including
+NOVELTY.md's strongest form of the very claim being withdrawn ("the
+checker did fail in one world ... and that transcript is committed").
+The exclusion excluded a known hit; the filter unit (line) differed
+from the intended unit (file). Second, R1 strengthened the correction's
+own footing: the committed remeasure transcript alone proves no world
+checker failed — check.sh prints only through `fail()`, the line
+appears exactly once, the gate must fail or the run ends UNKNOWN
+`checker_not_falsified`, and `checks_run` counts exploration-phase runs
+only — so the instrumented re-run is corroboration, not the load-bearing
+leg, and the RUNLOG now says so in that order. The re-run itself was
+redone through a committed launcher (`inspection/run.sh`, environment
+as `ops/explore.sh` — the lesson this repo already paid for in
+campaign 2) with the verdict transcript and case committed beside the
+world dumps, the instrumented checker's leg order restored to the
+committed checker's, and the visit-to-world mapping derived in the
+RUNLOG rather than assumed. Residue closed across NOVELTY.md (the HELD
+section now reads WITHDRAWN), RESULTS.md (a dated note under the
+owner's scoring — the numbers stand as scored; re-scoring is the
+owner's), PRD.md (a new dated status paragraph: novelty four-for-four,
+two reports standing, buku withdrawn, three live assisted findings) and
+ADR 0017 (two dated inline notes marking buku's later resolution;
+engine-level statements stand).
+
+R2 CONFIRMED all ten and added one strengthening observation adopted
+into the RUNLOG: the instrumented case's `prefix_hash` is byte-identical
+to the committed remeasure case's — the two runs share the same recorded
+trace prefix, a mechanical bridge tighter than matching summary numbers.
+Its two non-blocking nits (a dead report.json harvest in run.sh — the
+engine writes that file only under `--json` — and the oracle-less
+re-run's report wording) were fixed and the inspection re-run through
+the updated launcher; the artifacts are identical in structure, gate at
+line 7, 22 world PASSes, same prefix hash.
+
 ## 2026-08-15 — Three reports filed, one finding held: the report step is a harder gate than novelty
 
 Owner instruction for this round: plain bug reports, no mention of this

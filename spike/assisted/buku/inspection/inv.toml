@@ -1,0 +1,13 @@
+# Investigation copy of the committed buku-add define (spike/assisted/buku/ops/
+# buku-add.toml): same state, same setup, same operation, but the checker is
+# an instrumented copy carrying the committed checker's verdict legs in the
+# committed order, plus two read-only additions (a world dump and a query-answer
+# log) appended to /inv/worlds.log. Launcher: ./run.sh.
+[world]
+state = "/tmp/assisted/buku/state"
+
+[define]
+setup           = "/work/spike/assisted/buku/ops/setup.sh"
+operation       = "/usr/bin/buku --nostdin --np --tacit --add https://example.com/x ada --title AdaMark"
+check           = "/inv/check.sh"
+expected_status = "0"

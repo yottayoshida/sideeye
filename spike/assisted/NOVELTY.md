@@ -38,6 +38,14 @@ the sweep is re-runnable.
   conversation; the finding as measured (buku's own recovery-open says "file is
   not a database" in 2/22 worlds, oracle agreeing on all 21 operations) is what
   the search looked for and did not find.
+- **Corrected 2026-08-15 (after this search ran): the claim in the previous
+  bullet overstates what was measured.** The "file is not a database" line is
+  the falsification gate's output over a deliberately corrupted db, not any
+  crash world's; the 2/22 count is the engine's L0 byte invariant, and an
+  instrumented re-run shows buku's recovery-open succeeding in all 22 worlds
+  (hot journal present in both torn ones). The finding is withdrawn entirely,
+  which moots its report step; the sweep above stands as a search record. Full
+  measurement: `buku/RUNLOG.md`, Correction section, and `buku/inspection/`.
 
 ## calcurse — interrupted `-P --purge` truncates apts, destroying an unnamed bystander: NOT FOUND (novel as searched)
 
@@ -175,7 +183,7 @@ project is named or needed):
   is written into PROTOCOL.md, applied at target selection rather than at report
   time, because that is where the cost is actually incurred.
 
-**buku is HELD, and the reason is a correction to this project's own record.**
+**buku is WITHDRAWN — corrected 2026-08-15 from HELD, later the same day.**
 Before writing its report, the finding was re-derived with plain tooling: kill
 the process at write N of the transaction and see whether buku can still read
 its store. Measured, in the same pinned container: injections on bookmarks.db
@@ -183,19 +191,24 @@ writes (8 points), on journal writes (10 points), and on the two files
 interleaved (20 points) all end with sqlite rolling the transaction back and
 buku reading its store normally. **Zero of 38 plain attempts reproduce it.**
 
-What the engine recorded is not withdrawn: the checker did fail in one world
-with buku's own `initdb(): file is not a database`, and that transcript is
-committed. But two things follow. First, no upstream report can be written on
-evidence a maintainer cannot reproduce, so buku waits until the world is
-reachable by ordinary means. Second, the earliest violation in that run was
-`built-in atomicity (L0)`, a BYTE comparison, and for a journaled database a
+The HELD disposition rested on one remaining leg: "the checker did fail in one
+world with buku's own `initdb(): file is not a database`". That leg was never
+measured. The line is the **falsification gate's** output over a deliberately
+corrupted db — the pre-run step proving the checker can go red — and the
+committed remeasure transcript itself rules out any world-checker failure (the
+checker's single print path fired exactly once, at the gate position; the full
+argument and an instrumented re-run showing buku's recovery-open succeeding in
+all 22 worlds, hot journal beside both torn dbs, are in `buku/RUNLOG.md`,
+Correction section, with artifacts under `buku/inspection/`). What stands is
+the second half, now the whole story: the earliest violation was `built-in
+atomicity (L0)`, a BYTE comparison, and for a journaled database a
 mid-transaction byte state is exactly what the journal exists to recover from
-— L0 is stricter than sqlite's contract here, which is a limitation of judging
-a journaled store by file bytes, not a defect in buku. The finding's strength
-therefore rests on the one checker failure alone, and reproducing that world
-with plain tooling is the open work.
+— L0 is stricter than sqlite's contract here, a limitation of judging a
+journaled store by file bytes, not a defect in buku. There is no open work:
+nothing exists to reproduce, and nothing is reportable.
 
-This is the "measured with the defect I was describing" class caught before it
-left the repository: the novelty search above asked whether the finding was
-already reported, and answered honestly, but the report step asked the harder
-question first — can anyone else see it — and the answer for buku today is no.
+The report step still did its job — it asked "can anyone else see it" and the
+answer was no — but the honest accounting is that the plain-reproduction
+failure was pointing at a misread record, not at a fragile bug: the 38/38
+recoveries were the true behavior, and the "one world where buku could not
+read its store" never happened.
