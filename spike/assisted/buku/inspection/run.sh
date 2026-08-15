@@ -20,6 +20,7 @@ rc=0
     --shim /work/zig-out/lib/libsideeye_shim.so > /inv/explore-transcript.txt 2>&1 || rc=$?
 echo "explore exit code: $rc" >> /inv/explore-transcript.txt
 ls -R /tmp/sideeye-work > /inv/workdir-listing.txt 2>&1
-[ -f /tmp/sideeye-work/report.json ] && cp /tmp/sideeye-work/report.json /inv/report.json
+# The engine prints its report to stdout (a report.json exists only under
+# --json, deliberately not passed): the transcript above carries the verdict.
 [ -f /tmp/sideeye-work/cases/000001.json ] && cp /tmp/sideeye-work/cases/000001.json /inv/case-000001.json
 exit 0

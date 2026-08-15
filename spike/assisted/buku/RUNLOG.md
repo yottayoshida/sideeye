@@ -109,6 +109,14 @@ alone; an instrumented re-run corroborates it.
    report to stdout, so the transcript is the report —
    `workdir-listing.txt` records that no report file exists to harvest)
    and `inspection/case-000001.json` (k=18, `violation: hybrid`, v9).
+   The re-run passes no `--oracle`, so its report reads "oracle not
+   run" where the remeasure's read "agreed on 21 operations" — the
+   recording's completeness was the remeasure's question, already
+   verified there, not this run's. The bridge between the two runs is
+   mechanical, not just the matching summary: the saved case's
+   `prefix_hash` is byte-identical to `cases-remeasure/000001.json`'s
+   (`f463071719a47e91`), the same recorded trace prefix (R2's
+   observation).
    The dump (`inspection/worlds.log`): visit 1 is the gate over the
    engine's 25-byte corruption probe — a positive control producing
    exactly the disputed line — and visits 2–23 are 22 consecutive

@@ -74,6 +74,16 @@ two reports standing, buku withdrawn, three live assisted findings) and
 ADR 0017 (two dated inline notes marking buku's later resolution;
 engine-level statements stand).
 
+R2 CONFIRMED all ten and added one strengthening observation adopted
+into the RUNLOG: the instrumented case's `prefix_hash` is byte-identical
+to the committed remeasure case's — the two runs share the same recorded
+trace prefix, a mechanical bridge tighter than matching summary numbers.
+Its two non-blocking nits (a dead report.json harvest in run.sh — the
+engine writes that file only under `--json` — and the oracle-less
+re-run's report wording) were fixed and the inspection re-run through
+the updated launcher; the artifacts are identical in structure, gate at
+line 7, 22 world PASSes, same prefix hash.
+
 ## 2026-08-15 — Three reports filed, one finding held: the report step is a harder gate than novelty
 
 Owner instruction for this round: plain bug reports, no mention of this
