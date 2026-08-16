@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "crash_points": 16,
+  "explored": 17,
+  "violations": 0,
+  "expected_status": 0,
+  "l0": "0 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "agreed on 16 operations (208 syscall lines examined, 67 in scope of the judged state)",
+  "metadata_writes": "1 ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): fchmodat x1. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

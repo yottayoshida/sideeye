@@ -112,22 +112,31 @@ print("%s  crash_points=%s explored=%s" % (got, r.get("crash_points"), r.get("ex
     fi
 }
 
-# install and setup die on the same wall: the installer creates the PATH shims as
-# SYMLINKS, and symlinkat is outside the trace contract — the oracle sees an
-# operation the shim cannot record, and the account refuses (the #39/#5 wall family,
-# named). init dies one step earlier on fchmodat (the config dir/file permissions).
+# RE-MEASURED UNDER CONTRACT v10 (2026-08-16, omamori 1.0.4, #141). The v8 walls
+# are gone, exactly as the old pins predicted they would move: #122 (v9) made
+# symlink/symlinkat first-class kill points, and #121 made the fchmodat family
+# recorded-only — three of the four reports' metadata lines now say "fchmodat x1
+# observed and excluded from judgement" (verify observed none). All four
+# unguarded writers explore fully and PASS.
 #
-# MEASURED UNDER CONTRACT v8. #122 (v9) made symlink/symlinkat first-class and #121
-# will decide fchmodat's fate, so these pinned outcomes are expected to MOVE on the
-# next run — which is the pin doing its job: rerun, remeasure, and update both this
-# script and the DESIGN.md §18 paragraph that cites "refuse at named trace-contract
-# walls" before citing either again.
-surface install UNKNOWN unsupported_syscall_observed symlinkat 0 "$OMAMORI install"
+# The crash-point counts are image-sensitive (assisted image: install 16 /
+# setup 28 / init 6 / verify 4 — reports committed under
+# spike/followup-141/artifacts/; the spike-image family measured higher counts
+# the same day), and they also move with the contract — #121 removed the
+# chmod/chown family from kill points, the likely cause of verify's 6 -> 4
+# since the v8 record. So the min_cp floors below sit under both measurements:
+# they are vacuity guards — a 0-crash-point PASS is not a measurement — while
+# the verdict and reason pins carry the actual claims. The floors catch
+# vacuity, not shrinkage: a surface that quietly halves still passes. A
+# future run that hits a NEW wall still fails its pin loudly, which is the
+# pin doing its job: rerun, remeasure, and update this script and the
+# DESIGN.md §18 calibration paragraph together.
+surface install PASS - - 8 "$OMAMORI install"
 # --source: without it, setup's own safety guard refuses a cargo build artifact as
 # the hook source and the recording run exits non-zero before hooks are touched
 # (measured both ways; that refusal is an install-time defence doing its job).
-surface setup UNKNOWN unsupported_syscall_observed symlinkat 0 "$OMAMORI setup --non-interactive --source $OMAMORI"
-surface init UNKNOWN unsupported_syscall_observed fchmodat 0 "$OMAMORI init"
+surface setup PASS - - 14 "$OMAMORI setup --non-interactive --source $OMAMORI"
+surface init PASS - - 3 "$OMAMORI init"
 # audit verify's bootstrap hwm re-write is the one unguarded surface sideeye can
 # fully explore — and it holds: the mark is published by temp + create_new + rename,
 # and every crash world keeps a database that is pre or post, never torn.
