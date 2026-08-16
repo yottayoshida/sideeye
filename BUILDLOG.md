@@ -54,6 +54,26 @@ re-runs all three every CI run, so the red proof cannot rot. Pre-data, the
 live check asserts the explicit placeholder line: an empty table can never
 read as a measured zero.
 
+**The smoke run found what two review rounds did not.** The first uniform
+B-group protocol wrapped every operation in an `op.sh` (for `$TOY_STATE`
+expansion) — and the very first real trial (2vcard) came back
+`child_process_detected`: a script that performs nothing state-changing
+before its `exec` is an image change whose observation chain carries no
+operation count, exactly the shape #137's structural rule refuses. The same
+define spelled as a direct operation string explores and PASSes (3 worlds,
+2 crash points, measured back to back). So the protocol now prefers
+`op.txt` — a static command line with `$TOY_STATE` as a launcher-expanded
+token — and keeps `op.sh` only where the engine's space-split contract
+cannot spell the invocation (hnb's space-carrying command argument, lbdb's
+stdin redirect), with the consequence written into those NOTES: a
+chain-rule refusal there is the trial's honest verdict, because it is what
+any user driving that target through the current contract would get. Also
+measured on the way: the stale local `sideeye-spike` image silently lacked
+khal at the toml's pinned path (`recording_run_failed`), while the image
+rebuilt from the committed Dockerfile explores khal `import` to the same
+PASS 10+1 the campaign recorded — the sweep builds its images fresh for
+exactly this reason.
+
 ## 2026-08-15 — #78/#79/#80: found not plumbed, and two evidence-first pages
 
 Batch b_309cfe196cf1. The shim default is the demo's resolver generalized —

@@ -135,9 +135,20 @@ precisely so this measurement cannot spend the one remaining blind
 candidate.
 
 Each B-group target that passes the walls gets one uniform minimal define
-(`defines-b/<t>/`): `setup.sh` seeds the state, `op.sh` is the one
-representative state-changing operation named by the target's own
+(`defines-b/<t>/`): `setup.sh` seeds the state, the operation is the one
+representative state-changing command named by the target's own
 documentation, judge configuration `l0` (no checker), strict oracle. The
+operation has two committed spellings, and the difference was measured
+while authoring (BUILDLOG 2026-08-16): `op.txt` — one static command line
+(with the literal `$TOY_STATE` standing for the state directory, expanded
+by the launcher) that the engine spawns directly — is used wherever the
+documented invocation fits the engine's space-split contract; `op.sh` is
+the ADR 0007 fallback for invocations that cannot be spelled that way (an
+argument carrying a space — hnb; a stdin redirect — lbdb). A script
+wrapper that performs nothing state-changing before its `exec` is an image
+change the v10 observation rules refuse structurally, so for the two
+`op.sh` targets that refusal, if it comes, is the trial's honest verdict:
+the define budget could not spell the target inside the contract. The
 `sideeye preflight` answer (#77) is recorded beside each verdict as the
 funnel instrument — in text + exit code, since preflight has no
 machine-readable form yet (still open; `src/main.zig` names this issue for
