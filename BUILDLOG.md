@@ -2,6 +2,54 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — the release binaries only ran on the machines that built them
+
+The onboarding clock's rehearsal — the step that exists to prove the
+apparatus before blindness is spent — found the apparatus broken in the
+product's favor of nobody: the v0.10.0 aarch64-linux tarball's binary dies
+with Illegal instruction on the fresh box, before printing its banner.
+Isolation: the same tarball dies in the spike container too (so not the new
+image), a local cross-build runs fine in both (so not the environment), and
+v0.9.0's tarball dies the same way (so not this release). Cause: the release
+workflow built with a bare `zig build -Doptimize=ReleaseSafe` — no target —
+which compiles for the *builder's* CPU. The aarch64-linux artifacts inherited
+the Graviton runner's extensions; Apple-Silicon Docker lacks them; SIGILL.
+The workflow even smoke-tests the artifact (`sideeye demo`) — on the same
+runner that built it, so the claim "the packaged pair works on the OS it
+ships for" was measured on the builder's CPU only, and stayed green for
+every broken release since the tarballs began. The x86_64-linux artifact has
+the same construction and no hardware here to test it on: presumed affected,
+unverified. Fix: the matrix now spells `-Dtarget` per artifact, which pins
+the architecture's baseline CPU; v0.10.0's assets are rebuilt and replaced
+through the workflow's own tag-dispatch repair path (built from the tag's
+code, uploaded with --clobber), with the owner's approval recorded in this
+batch. The onboarding clock waits for the repaired artifact — measuring a
+broken tarball would time the bug, not the docs.
+
+## 2026-08-16 — the onboarding clock: the protocol is committed before the stopwatch starts
+
+Criterion 6 has had its instrument for weeks and no measurement; #87's own
+rule is protocol-before-clock, so the protocol went down first
+(`spike/onboarding-clock/PROTOCOL.md`) and this entry records its decisions
+as they were made, before the first run. The fresh machine is a network-off
+Linux container; three deviations are declared rather than hidden — the
+release tarball is pre-staged (no network means no download, and the download
+would measure a CDN, not the docs), the target arrives installed and
+configured (a user measures a tool they already run), and the README is a
+staged file (its opening is the session start). The driver is the
+loop-closure isolation form — `--safe-mode` headless, allowlist plus denied
+network/delegation tools, stream-json transcript as the audit surface — with
+one new rule: the driver is not told it is being timed, because a driver
+racing a clock skims and the criterion is about the documentation. The
+target is jrnl, the owner's pick under the standing selection bar (7,291
+stars, pushed 2026-08-14, contributors above the bar — measured, not
+recalled, same day). The clock stops only at a real verdict — exit 0 or 1 —
+because refusals are what the README teaches you to fix; a refusal loop that
+eats the ten minutes is itself the measurement. Rehearsal boundary written
+before rehearsing: the apparatus may prove that jrnl accepts an entry and the
+tarball's binary runs, but nothing rehearses sideeye against jrnl — the
+first exploration of the target happens on the clock or not at all.
+
 ## 2026-08-16 — oracle_verified: the report says, as a value, whether a second witness checked
 
 Issue #94's gap, measured before anything was written: a verified PASS and an
