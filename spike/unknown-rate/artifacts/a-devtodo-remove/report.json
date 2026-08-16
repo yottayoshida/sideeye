@@ -1,0 +1,28 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "crash_points": 7,
+  "explored": 8,
+  "violations": 6,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 2,
+    "invariant": "built-in atomicity, and the checker",
+    "after": {"op": "open", "path": "/tmp/assisted/devtodo/state/.todo"},
+    "before": {"op": "write", "path": "/tmp/assisted/devtodo/state/.todo"},
+    "subject": ".todo",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/tmp/sideeye-work/cases/000001.json",
+  "replay": "sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 7 operations (183 syscall lines examined, 33 in scope of the judged state)",
+  "metadata_writes": "2 ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): fchmodat x1, fchownat x1. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 8 world(s)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

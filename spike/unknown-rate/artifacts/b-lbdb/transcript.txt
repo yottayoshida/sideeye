@@ -1,0 +1,11 @@
+UNKNOWN  child_process_detected
+         the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)
+
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

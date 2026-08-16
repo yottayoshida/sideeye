@@ -1,0 +1,28 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "crash_points": 25,
+  "explored": 26,
+  "violations": 3,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 21,
+    "invariant": "built-in atomicity (L0)",
+    "after": {"op": "write", "path": "/tmp/bgroup/bogofilter-sqlite/state/wordlist.db"},
+    "before": {"op": "write", "path": "/tmp/bgroup/bogofilter-sqlite/state/wordlist.db"},
+    "subject": "wordlist.db",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "3 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/tmp/bgroup/bogofilter-sqlite/work/cases/000001.json",
+  "replay": "sideeye replay /tmp/bgroup/bogofilter-sqlite/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 25 operations (305 syscall lines examined, 116 in scope of the judged state)",
+  "metadata_writes": "1 ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): fchown x1. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

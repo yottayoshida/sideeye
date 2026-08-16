@@ -1,0 +1,12 @@
+falsify: checker(new): I-C: conserved event file /tmp/blind3/hunt/new/state/cal/grace-fixed-uid-001.ics differs from its sealed golden
+PASS  11/11 crash worlds satisfied the built-in atomicity invariant
+      explored 11 worlds (crash points 10 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 10 operations (14120 syscall lines examined, 81 in scope of the judged state)
+      metadata: none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+      checker: falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: 1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+      not tested: power loss, torn writes, concurrent processes

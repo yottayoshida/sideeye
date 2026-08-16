@@ -2,6 +2,44 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — #84 sweep: the numbers land, and the composition is the finding
+
+The sweep ran from the apparatus PR's merge (`b5b23fd`, engine 0.9.0 /
+contract v10), all 49 corpus trials, one fresh container each, repo mounted
+read-only, no SETUP_ERROR anywhere — `count.py check` closes green over the
+full with-data path (49 digests, docs in sync).
+
+**A-group: 1/28 UNKNOWN (3.6%).** The one is watson's recorded
+nondeterministic-writer refusal, reproduced exactly. Everything else
+reproduced its committed record too: topydo 12 FAIL + `ls` PASS with 0
+crash points, abook and khal null, the four assisted counterexamples,
+timewarrior a-PASS/b-FAIL, todoman both PASS. An engine that drifted from
+any of those records would have shown up here; it did not.
+
+**B-group: 13 walls, then 3/7 UNKNOWN (42.9%) — and all three are
+define-budget refusals, none target-origin.** hnb and lbdb died on the
+exec-chain rule their NOTES predicted before the sweep; cookietool's
+recording was refused over its exit convention (10 — apparently the count
+of deleted cookies — where the uniform protocol fixed 0). Every target
+whose documented invocation fit the operation contract reached a verdict,
+4/4. The striking row is **bogofilter-sqlite: FAIL 3/26, oracle agreed on
+25 operations** — a fresh counterexample from a never-run target, in
+exactly the buku shape (a sqlite store judged by file bytes is judged more
+strictly than its journal contract). No checker ran, so no recovery was
+measured, and the disposition stays new-this-sweep; its case file was not
+preserved (the sweep keeps reports and transcripts, not replay cases — a
+labeled follow-up run can re-derive it if triage wants one).
+
+**Threshold (owner, 2026-08-16, set from the B data after seeing it):**
+two-part — target-origin UNKNOWNs ≤ 1/7 (measured 0) and overall ≤ 50%
+(measured 42.9%). Both hold; **criterion 4 is met**. The two-part shape
+was chosen over a single rate precisely because the composition carries
+the information: a contract that cannot spell an invocation is an issue
+backlog, a tool the engine cannot watch is a product wall, and a single
+number reads the two identically. The macOS column derives to 11/28 and
+6/7 by the completeness formula — printed by count.py, never typed — which
+is the per-platform honesty the #84 amendment asked for.
+
 ## 2026-08-16 — #84 apparatus: the corpus is fixed before the sweep, and the first draft could not fail
 
 The UNKNOWN-rate measurement (v1.0 criterion 4) starts with the PR that must

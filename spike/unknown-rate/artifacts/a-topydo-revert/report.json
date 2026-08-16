@@ -1,0 +1,28 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "crash_points": 7,
+  "explored": 8,
+  "violations": 5,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 3,
+    "invariant": "built-in atomicity, and the checker",
+    "after": {"op": "open", "path": "/tmp/blind/hunt/revert/state/done.txt"},
+    "before": {"op": "write", "path": "/tmp/blind/hunt/revert/state/done.txt"},
+    "subject": "done.txt",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "3 path(s) judged pre-or-post",
+  "l1": "marker observed in 0 of 7 crash worlds; the post-success invariant was enforced there",
+  "case": "/tmp/blind/hunt/revert/work/cases/000001.json",
+  "replay": "sideeye replay /tmp/blind/hunt/revert/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 7 operations (2143 syscall lines examined, 87 in scope of the judged state)",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 8 world(s)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes", "post-only file contents (L1 checks existence only; post-only link targets are judged)"]
+}

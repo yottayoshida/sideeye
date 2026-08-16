@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "UNKNOWN",
+  "exit_code": 2,
+  "crash_points": 0,
+  "explored": 0,
+  "violations": 0,
+  "expected_status": 0,
+  "unknown_reason": "child_touched_state_dir",
+  "message": "a process other than the subject performed a state-directory operation during the recording run",
+  "l0": "5 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "not run (no --oracle given)",
+  "metadata_writes": "not observable (no oracle ran; the shim does not interpose ownership/permission calls)",
+  "checker": "none configured",
+  "processes": "single process; the subject's image replaced 1 time(s), chain unbroken (#123)",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

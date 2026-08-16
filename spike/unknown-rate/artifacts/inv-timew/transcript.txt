@@ -1,0 +1,45 @@
+timewarrior: 1.4.3
+
+=== (a) timew track <fixed interval> beta, killed before each state-changing operation ===
+PASS  15/15 crash worlds satisfied the built-in atomicity invariant
+      explored 15 worlds (crash points 14 + 1 baseline)
+      expected status: 0
+      atomicity: 2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): data/2020-01.data, data/undo.data
+      oracle: agreed on 14 operations (277 syscall lines examined, 95 in scope of the judged state)
+      metadata: none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes, appended tails (files under the history form)
+(a) exit=0  (0 PASS / 1 FAIL / 2 UNKNOWN / 3 SETUP ERROR)
+
+=== (b) timew track <fixed interval> beta, killed before each state-changing operation ===
+falsify: Error parsing tags database: Error: expected '{' or '[' at position 0
+falsify: Unrecognizable line 'sideeye-corruption-probe'.
+undo removed the wrong change: timew's own export named ('20200102T100000Z', '20200102T110000Z', 'beta') as most recent, but undo removed [('20200101T100000Z', '20200101T110000Z', 'alpha')]
+Trying to decrement non-existent tag 'beta'
+FAIL  2 of 15 crash worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 9 of 14
+            after  rename(/work/spike/unknown-rate/artifacts/inv-timew/run/b/state/data/2020-01.data.47-2.tmp)
+            before rename(/work/spike/unknown-rate/artifacts/inv-timew/run/b/state/data/undo.data.47-3.tmp)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+explored    15 worlds (crash points 14 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): data/2020-01.data, data/undo.data
+oracle      agreed on 14 operations (277 syscall lines examined, 95 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+checker     falsified before the run (corrupted state -> check failed); ran in 15 world(s)
+l1          no marker configured
+case        /work/spike/unknown-rate/artifacts/inv-timew/run/b/work/cases/000001.json
+replay      sideeye replay /work/spike/unknown-rate/artifacts/inv-timew/run/b/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   SIDEEYE_STATE_DIR=/work/spike/unknown-rate/artifacts/inv-timew/run/b/state SIDEEYE_TRACE_PATH=/work/spike/unknown-rate/artifacts/inv-timew/run/b/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=9 SIDEEYE_SEQ_BASE= <operation>
+(b) exit=1  (0 PASS / 1 FAIL / 2 UNKNOWN / 3 SETUP ERROR)
+
+reports: /work/spike/unknown-rate/artifacts/inv-timew/run/a/report.json /work/spike/unknown-rate/artifacts/inv-timew/run/b/report.json

@@ -1,0 +1,11 @@
+PASS  8/8 crash worlds satisfied the built-in atomicity invariant
+      explored 8 worlds (crash points 7 + 1 baseline)
+      expected status: 0
+      atomicity: 3 path(s) judged pre-or-post
+      oracle: agreed on 7 operations (198 syscall lines examined, 54 in scope of the judged state)
+      metadata: none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
