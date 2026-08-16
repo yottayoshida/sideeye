@@ -41,6 +41,10 @@ docker build -q -t sideeye-ur-campaign -f "$ROOT/spike/Dockerfile" "$ROOT/spike"
 docker build -q -t sideeye-ur-assisted -f "$ROOT/spike/assisted/Dockerfile" "$ROOT/spike/assisted" || exit 2
 docker build -q -t sideeye-ur-extra -f "$here/Dockerfile" "$here" || exit 2
 
+# This mkdir is load-bearing for the ro mounts below: the artifacts dir is
+# the nested rw mountpoint inside the read-only /work bind, and docker
+# cannot create a missing mountpoint on a read-only rootfs (measured — the
+# smoke without this dir failed with EROFS at container create).
 mkdir -p "$ARTS"
 
 # Apparatus identity, recorded from inside a container (the binary is a
