@@ -44,15 +44,26 @@ picked because apt had it. Its report was filed and then withdrawn.
 The rule for any future cohort, applied AT SELECTION rather than at report
 time:
 
-- Report-eligible: the project is active (issues moving, more than one
-  contributor), has real users, and a report would actually help someone.
-- Not report-eligible: we do not use it AND it is small, effectively
-  dormant, or its sole maintainer has said it is in maintenance mode.
-  Adjacent known reports lower the value further.
-- A target may still be EXPLORED when it is not report-eligible — the
-  measurement is legitimate. What changes is that its finding stays in this
-  repository and is never filed upstream, and the selection record says so
-  before the exploration runs, not after.
+- **Eligible (owner rule, 2026-08-16, quantified): ≥500 stars, more than
+  one contributor, and some activity within the last month** (a merged PR,
+  a release or version bump, or similar). All three, not any.
+- **Selection requires the owner's sign-off before any measured contact.**
+  The candidate list — with each target's stars, contributor count and
+  latest activity — goes to the owner for approval; nothing is installed,
+  read or measured before it. This is a hard gate, not a review-time check.
+- Not eligible: anything below that bar — small, effectively dormant, a
+  sole maintainer, or in declared maintenance mode. Adjacent known reports
+  lower the value further.
+- **Tightened 2026-08-16 (owner): a target that is not report-eligible is
+  not a legitimate measurement target either.** Do not select it, do not
+  explore it, and do not let any score lean on a run against one. The
+  earlier form of this rule ("a target may still be EXPLORED when it is not
+  report-eligible; the finding stays in-repo") stood from 2026-08-15 to
+  2026-08-16; hnb — measured under that allowance in `spike/followup-95/`
+  as the contract check for #95 — is what showed the allowance's cost: even
+  an unreported finding puts a dormant project's name in this repository's
+  public records. The owner closed the allowance and struck the half point
+  a score had briefly taken from that run (`RESULTS.md`, Correction).
 
 ## Honest-measurement rules
 

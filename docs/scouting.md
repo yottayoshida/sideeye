@@ -102,6 +102,13 @@ the recorded one has its answer.
 
 ## What a scout must never do
 
+- **Pick a dormant target.** When the target is a third-party project (not
+  the tool you maintain yourself), it must be demonstrably alive — this
+  repository's bar is ≥500 stars, more than one contributor, and activity
+  within the last month (a merged PR, a release, or similar), all three —
+  and the selection itself goes to a human for sign-off before any measured
+  contact. A small, effectively dormant project is not a legitimate target
+  at all, not merely one to avoid reporting to.
 - **Call any of this "blind".** The word belongs to the sealed campaign
   protocol (ADR 0012); assisted runs read the target, and no run that read
   the target may wear the label.

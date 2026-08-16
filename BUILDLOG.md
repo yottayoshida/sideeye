@@ -18,10 +18,19 @@ the guide: measured results live in the records (`spike/assisted/`,
 SCOUT.md keeps a pointer forward so the experiment's record and the product
 door cannot drift apart silently.
 
-Same PR, on the owner's direction to sweep the README for contradictions:
-hnb joins the front page's counterexample list and the target-classes
-Measured table (replay-confirmed, deliberately unreported — the devtodo
-call), now that followup-95 made it a verdict instead of a refusal.
+Same PR, a reversal recorded as it happened: on the owner's direction to
+sweep the README for contradictions, hnb was first PROMOTED — into the
+front page's counterexample list and the target-classes Measured table —
+and the owner rejected the promotion within the hour, on a stronger ground
+than the reporting rule: **a small, effectively dormant project is not a
+legitimate measurement target at all**, and putting one on the product's
+front page is wrong even unreported. Both promotions are reverted; the
+re-scoring that had briefly taken a half point from the hnb run is
+corrected 3.5 → **3 of 5** (RESULTS.md carries the correction, the
+selection rule in PROTOCOL.md is tightened from "explorable but
+unreportable" to "not a target", and the scouting guide now says so as its
+first never-do). The followup-95 record itself stands — it was and remains
+the #95 contract measurement — it just names no score and no front page.
 
 ## 2026-08-16 — #118 re-scored by the owner, #123 held on measured demand
 
