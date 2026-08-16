@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — #85: the §18 review is written, and criterion 3 flips on it
+
+The kill-criteria review (`docs/kill-criteria-review.md`) scores all eight
+§18 conditions against the collected data — none triggered — and PRD
+criterion 3 is checked on it. Three decisions worth recording at the moment
+they were made:
+
+**The preamble was checked, not skipped.** §18's own gate ("if Sideeye finds
+nothing beyond existing hand-written adversarial tests") never opened — the
+record contradicts its antecedent. The review runs anyway because criterion
+3 asks for the review unconditionally; the page says so first, so a reader
+knows the antecedent was examined rather than quietly bypassed — the class
+of failure where a check's precondition quietly becomes false and nobody
+re-reads it.
+
+**Row 7 went to the owner, and the adjudication is recorded as one.** The
+UX-difference condition is the only row whose wording makes
+failure-to-demonstrate itself the trigger — no-data is not neutral there, so
+no measurement could score it. Adjudicated 2026-08-16: not triggered, on the
+measured in-repo differences (minutes-scale onboarding, agent-driven define
+and fix, named refusals) plus the structural arena difference; the missing
+head-to-head is disclosed on the page, and a real one supersedes the
+adjudication in either direction.
+
+**The wiring honored R2's backticked-ratio trap, and the dry-run lied once
+first.** Check 11 now sweeps the new page; before wiring, the extractor was
+run over the draft exactly as the plan required (18 tokens, all resolving)
+and proven red with one deliberately broken reference. The first dry-run
+attempt reported a false MISSING — the interactive shell here is zsh, which
+does not word-split an unquoted variable, so the whole 18-line list arrived
+in the loop as one "path"; the valid dry-run is the POSIX-sh replica of the
+gate's own loop, which is also what CI runs. The one-off measuring
+instrument was the broken part — the recurring class where the path you
+measured is not the path that runs. Check 11's comment now warns that a
+backticked ratio reads as a path — the page keeps every ratio in prose.
+
+**Review round 1 reversed two evidence claims (recorded, per the contract).**
+The reviewer verified every number against the primary artifacts and caught
+the draft over-counting on both of the rows it was written to strengthen:
+row 5 said "all four blocked assisted defines reached verified" where
+REMEASURE records three of four (pass stayed refused — the control that is
+*supposed* not to move), and row 3 attributed "topydo filings" with
+replayable counterexamples where the record shows exactly one filing
+(topydo#341, a plain-printf reproduction rewritten for reporting etiquette)
+and a deliberate decision *not* to re-file the destruction class
+(topydo#318 is a third-party report). Both corrections make the rows
+stronger, not weaker — an unmoved negative control is reproducibility
+evidence, and the un-filed counterexample is a reporting-policy fact, not a
+complexity one. Same lesson as ever: the claims that exceed their artifacts
+are the ones written from memory of the result rather than from the
+artifact.
+
 ## 2026-08-16 — #141 + #144: two follow-up measurements, and both came back the good kind of boring
 
 **#141 — the omamori surface probes, re-measured under v10.** DESIGN §18 had
