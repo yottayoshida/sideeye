@@ -8,7 +8,7 @@
 
 Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process immediately before each of its state-changing operations, one crash world per operation, then brings back the **earliest failing crash point**, saved as a replayable case. It breaks worlds, not inputs: same input, hostile universe.
 
-It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo — with four upstream reports so far: timewarrior's crash-window bug, a topydo recovery misfire found in follow-up analysis of its campaign, and reports to GNU Stow and calcurse that await a maintainer response. The devtodo finding stands in this repository, deliberately unreported upstream; one further claim, against buku, was withdrawn on re-derivation — the recorded evidence was Sideeye's own falsification gate, and buku recovers in every measured world (`spike/assisted/buku/RUNLOG.md`). Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
+It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo, hnb — with four upstream reports so far: timewarrior's crash-window bug, a topydo recovery misfire found in follow-up analysis of its campaign, and reports to GNU Stow and calcurse that await a maintainer response. The devtodo and hnb findings stand in this repository, deliberately unreported upstream; one further claim, against buku, was withdrawn on re-derivation — the recorded evidence was Sideeye's own falsification gate, and buku recovers in every measured world (`spike/assisted/buku/RUNLOG.md`). Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
 
 **Status: v0.9.0**, trace contract v10. The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and may change in any release. Release history: [CHANGELOG.md](CHANGELOG.md); the road to 1.0: [PRD.md](PRD.md).
 
@@ -141,7 +141,7 @@ Two agent workflows are recorded facts in this repository, not aspirations:
 - **Writing the fix from the report.** A context-free coding agent, handed only the counterexample — the report JSON, the case it names, the invariant it points at, bug-blind replay plumbing — and the target's pinned checkout, produced the fix and the judge's own replay passed, feature intact. Measured twice: once through the CLI plumbing, once through this MCP server (`spike/loop-closure-timew/`).
 - **Writing the define.** An LLM scout, working under a fixed scouting protocol (assisted, never blind — it may read source, docs, tests, anything, and its contacts are recorded), authored the committed defines for five real targets in 1m25s–5m02s each; re-run unmodified, four of the five reached verified, replay-confirmed counterexamples, and the fifth is a named refusal on a deliberate contract gap (`spike/assisted/`).
 
-What is *not* measured: an agent — or anyone — setting Sideeye up from this README alone; that path has no recorded run yet. The doors an agent needs are the report schema ([docs/report-schema.md](docs/report-schema.md)), the CI quickstart ([docs/ci-quickstart.md](docs/ci-quickstart.md)), and the MCP surface above.
+What is *not* measured: an agent — or anyone — setting Sideeye up from this README alone; that path has no recorded run yet. The doors an agent needs are the scouting guide ([docs/scouting.md](docs/scouting.md) — the working method behind the second measurement above), the report schema ([docs/report-schema.md](docs/report-schema.md)), the CI quickstart ([docs/ci-quickstart.md](docs/ci-quickstart.md)), and the MCP surface above.
 
 ## What Sideeye is not
 
@@ -160,6 +160,7 @@ What is *not* measured: an agent — or anyone — setting Sideeye up from this 
 | [BUILDLOG.md](BUILDLOG.md) | Decisions as they happen, including the wrong ones |
 | [docs/report-schema.md](docs/report-schema.md) | Every field the JSON report carries, held to the code by CI |
 | [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
+| [docs/scouting.md](docs/scouting.md) | Handing the repo-reading to an agent — the promoted form of the measured assisted-discovery method |
 | [docs/target-classes.md](docs/target-classes.md) | Real tool classes against the constraint list — verdicts and named walls, each row backed by a recorded run |
 | [docs/checker-cookbook.md](docs/checker-cookbook.md) | Annotated real checkers, and the failure patterns that taught them |
 | [docs/adr/](docs/adr/) | One record per irreversible decision — the descriptor contract (0013), links and symlinks (0006, #122), the MCP surface (0010, 0011), the blind protocol (0012) among them |

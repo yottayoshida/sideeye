@@ -2,6 +2,27 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — the scouting guide ships: SCOUT.md grows its product form
+
+The batch's last PR promotes the assisted-discovery method to
+`docs/scouting.md`. The promotion is a rewrite, not a copy: the experiment's
+measurement framing (start timestamps, the 15-minute budget, cohort rules)
+stays behind in `spike/assisted/`, and what crosses over is the method — the
+five things a scout reads for, propose-before-define metadata, fail-closed
+checkers, treat-UNKNOWN-as-a-define-bug — plus every lesson the cohort paid
+for and two things this batch added: the argv form for the argument a
+space-split string cannot spell, and the routing note that an argv define
+skips preflight for `explore --config`. Numbers are deliberately absent from
+the guide: measured results live in the records (`spike/assisted/`,
+`spike/followup-95/`), which do not go stale when the next cohort runs.
+SCOUT.md keeps a pointer forward so the experiment's record and the product
+door cannot drift apart silently.
+
+Same PR, on the owner's direction to sweep the README for contradictions:
+hnb joins the front page's counterexample list and the target-classes
+Measured table (replay-confirmed, deliberately unreported — the devtodo
+call), now that followup-95 made it a verdict instead of a refusal.
+
 ## 2026-08-16 — #118 re-scored by the owner, #123 held on measured demand
 
 **The re-scoring (owner adjudication, recorded in RESULTS.md).**
