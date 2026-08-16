@@ -2,6 +2,23 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — the README sheds its history: the owner's simplification order
+
+The owner read the front page and ordered it cut: the status paragraph, the
+version history, the filing-by-filing accounting of upstream reports, the
+inline ADR and issue numbers — none of it serves the person arriving today.
+The rewrite deletes, and rewords only downward; nothing gets a stronger
+claim than it had. One sentence needed real care: the results line. The old paragraph
+enumerated filings, and #147 is open precisely because a committed table
+(`outcome-map.tsv`) overcounts reported-upstream rows — so the new sentence
+was derived from `spike/assisted/NOVELTY.md`'s upstream round and the live
+tracker links instead: four standing filings (timewarrior, topydo, calcurse,
+stow), devtodo filed and withdrawn the same day by the owner's fair-play
+ruling. The page now says "several of them reported upstream" and carries no
+count. The "not measured from this README alone" sentence survives on
+purpose: criterion 6's first timed run (#87, this batch) is what replaces it
+with a measurement, not an edit.
+
 ## 2026-08-16 — v0.10.0: the pre-freeze batch release
 
 Version bump only — the work is in the entries below from the same two

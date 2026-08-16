@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- README rewritten for a first-time reader (owner direction): the status paragraph, the version history, the filing-by-filing accounting of upstream reports and the inline ADR/issue numbers are gone; installation is the two current paths; the usage contract is five bullets. Every claim that stayed was re-verified against its primary source — the upstream-filings sentence derives from `spike/assisted/NOVELTY.md` and the live tracker links, deliberately not from `outcome-map.tsv` (#147 names that table's overcount).
+
 ## [0.10.0] - 2026-08-16
 
 The batch release for the last stretch of pre-freeze work: the argv form closes the one spelling gap the define contract had, two more v1.0 entry criteria land as met (the kill-criteria review and the UNKNOWN-rate measurement), the timewarrior proof moves into CI, and the scouting guide ships as the agent-facing front door.
