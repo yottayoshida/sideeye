@@ -256,7 +256,13 @@ def check(root):
     # order included — "no hand touched the list" is checked, not narrated.
     # This binds pre-data too: the apparatus PR is where a hand-edit would
     # first try to slip in.
-    bt = [l for l in (root / "spike/unknown-rate/b-targets.txt").read_text().splitlines() if l]
+    def read_lines(rel):
+        p = root / rel
+        if not p.exists():
+            die(f"{rel} is missing — the selection chain cannot be checked")
+        return p.read_text().splitlines()
+
+    bt = [l for l in read_lines("spike/unknown-rate/b-targets.txt") if l]
     bc = [c["tool"] for c in corpus if c["group"] == "B"]
     if bc != bt:
         die("corpus B rows differ from the committed b-targets.txt selection (order included)")
@@ -264,9 +270,9 @@ def check(root):
     # first N of (candidates minus exclusions). Without this, editing
     # b-targets.txt and the corpus together would keep everything
     # "consistent" (R2 measured that pair-edit passing).
-    cands = [l for l in (root / "spike/unknown-rate/b-candidates.txt").read_text().splitlines() if l]
+    cands = [l for l in read_lines("spike/unknown-rate/b-candidates.txt") if l]
     excl = set()
-    for line in (root / "spike/unknown-rate/b-exclusions.txt").read_text().splitlines():
+    for line in read_lines("spike/unknown-rate/b-exclusions.txt"):
         if line and not line.startswith("#"):
             excl.add(line.split("\t")[0])
     derived = [c for c in cands if c not in excl][:len(bt)]

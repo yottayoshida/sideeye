@@ -2253,9 +2253,28 @@ if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unkno
     echo "     fixture good failed — the gate cannot pass its own known-good input"
     ur_fails=$((ur_fails + 1))
 fi
-for bad in tampered-verdict tampered-manifest tampered-define tampered-reason predata-no-placeholder; do
-    if python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/$bad" >/dev/null 2>&1; then
+# Each tampered fixture must die on ITS OWN predicate's message, not merely
+# exit non-zero: a fixture that dies for an unrelated reason (a missing
+# file, a parse error) is a hollow red — it proves nothing about the
+# predicate it was built for, and an rc-only loop cannot tell the
+# difference (R2 caught a mid-flight state where all five were red for the
+# wrong reason).
+for pair in \
+    "tampered-verdict:differs from recomputation" \
+    "tampered-manifest:!= corpus rows" \
+    "tampered-define:define digest mismatch" \
+    "tampered-reason:not in the documented closed set" \
+    "predata-no-placeholder:lacks the not-yet-measured placeholder"; do
+    bad=${pair%%:*}; want=${pair#*:}
+    out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
+          --root "$ROOT/spike/unknown-rate/fixtures/$bad" 2>&1)
+    rc=$?
+    if [ "$rc" = 0 ]; then
         echo "     fixture $bad PASSED — the gate has gone blind to its own predicate"
+        ur_fails=$((ur_fails + 1))
+    elif ! printf '%s' "$out" | grep -qF "$want"; then
+        echo "     fixture $bad died, but not on its predicate (wanted: $want)"
+        printf '%s\n' "$out" | head -3 | sed 's/^/       /'
         ur_fails=$((ur_fails + 1))
     fi
 done
