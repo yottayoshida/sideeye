@@ -28,6 +28,7 @@ is removed at startup, so a report at the path always describes *this* run.
 | `contract_version` | int | yes | The trace contract the binary speaks (v10 today). Crash-point numbering does not carry across contract versions; a saved case from another version replays as `case_no_longer_applies`, never as a verdict. |
 | `verdict` | string | yes | `"PASS"`, `"FAIL"`, `"UNKNOWN"`, or `"SETUP_ERROR"`. The one field everything else hangs off. |
 | `exit_code` | int | yes | Mirrors the verdict: 0 PASS / 1 FAIL / 2 UNKNOWN / 3 SETUP_ERROR. The process exits with the same value. |
+| `oracle_verified` | bool | yes | True only when the completeness oracle's comparison completed and agreed with the shim's account; false in every other case — no `--oracle` given, `--allow-unverified` with no oracle, or a comparison cut short by a refusal. A fact about the run, never about the verdict: a FAIL stands without an oracle. The "verified PASS only" gate is `verdict == "PASS" && oracle_verified` — the prose `oracle` string below is an account, not a field to branch on. |
 
 ## Counters
 

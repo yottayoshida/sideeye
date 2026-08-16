@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `oracle_verified` (#94): every JSON report now carries a required bool that is true exactly when the completeness oracle's comparison completed and agreed with the shim's account, and false on every other path — no `--oracle`, `--allow-unverified` with no oracle, or a comparison cut short by a refusal. This is the contractual spelling of the distinction the exit codes cannot carry: a verified PASS and an `--allow-unverified` PASS both exit 0, and the premise was measured before the change — their JSON diff confines to two prose account fields, neither designed for branching. The bit is a fact about the run, never the verdict (an oracle-borne FAIL carries true; a no-oracle FAIL stands regardless): the "verified PASS only" gate for CI and agents is `verdict == "PASS" && oracle_verified`. The field flows to the MCP tools' `structuredContent` unchanged; the text report and exit codes are untouched — whether an unverified PASS should exit differently belongs to the freeze audit (#86). Acceptance pins the value on all four corners plus the ran-but-not-compared path, each seen red against the pre-change binary first.
+
 ### Changed
 
 - README rewritten for a first-time reader (owner direction): the status paragraph, the version history, the filing-by-filing accounting of upstream reports and the inline ADR/issue numbers are gone; installation is the two current paths; the usage contract is five bullets. Every claim that stayed was re-verified against its primary source — the upstream-filings sentence derives from `spike/assisted/NOVELTY.md` and the live tracker links, deliberately not from `outcome-map.tsv` (#147 names that table's overcount).
