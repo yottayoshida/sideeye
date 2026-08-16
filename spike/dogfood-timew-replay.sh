@@ -30,8 +30,30 @@
 # Needs (Linux container): git, cmake, g++, make, python3, strace, network for the
 # clone, and the `timewarrior` distro package for leg D. From the spike image:
 #   apt-get update && apt-get install -y --no-install-recommends \
-#       git ca-certificates cmake g++ make timewarrior
+#       git ca-certificates cmake g++ make python3 strace timewarrior
+#
+# LEGS selects which legs run (default abcd — the original, full measurement).
+# The CI regression job runs LEGS=abc: the FAIL/PASS pair across the fix, no
+# distro package. Leg a is mandatory — b/c/d replay the case leg A records in
+# this same run, so a subset without a would have nothing to replay. Leg-only
+# preconditions (the distro timewarrior for leg d) are checked only when their
+# leg is selected; an unconditional check here once made LEGS=abc die in an
+# environment that had everything legs a-c need. The state-archive labels
+# (state-after-leg-X) assume the default leg order; with a subset the label
+# names the archive slot, not necessarily the leg that just ran.
 set -eu
+
+# ${LEGS-abcd}, not ${LEGS:-abcd}: an explicitly empty LEGS is a charset
+# error below, never a silent fall-through to all four legs.
+LEGS=${LEGS-abcd}
+case "$LEGS" in
+    *[!abcd]*|"") echo "LEGS may only contain a, b, c, d (got: '$LEGS')"; exit 1 ;;
+esac
+case "$LEGS" in
+    *a*) : ;;
+    *) echo "LEGS must include a: legs b/c/d replay the case leg A records in this run"; exit 1 ;;
+esac
+wants() { case "$LEGS" in *"$1"*) return 0 ;; *) return 1 ;; esac }
 
 SIDEEYE_REPO=${SIDEEYE_REPO:-/work}
 RUN=${RUN:-/tmp/sideeye-timew-replay}
@@ -51,8 +73,10 @@ TIMEW_GIT=${TIMEW_GIT:-https://github.com/GothenburgBitFactory/timewarrior.git}
 for tool in git cmake g++ make python3 strace; do
     command -v "$tool" >/dev/null || { echo "$tool not found; see the header for the install"; exit 1; }
 done
-command -v timew >/dev/null || { echo "distro timewarrior not found (needed for leg D); see the header"; exit 1; }
-DISTRO_TIMEW=$(command -v timew)
+if wants d; then
+    command -v timew >/dev/null || { echo "distro timewarrior not found (needed for leg D); see the header"; exit 1; }
+    DISTRO_TIMEW=$(command -v timew)
+fi
 
 # No recursive delete anywhere in this script: the run directory has to be new, and
 # state resets move the old directory aside instead of removing it.
@@ -163,6 +187,7 @@ OPS_TOTAL=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["ops_
 K=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["k"])' "$CASE")
 echo "case: k=$K of $OPS_TOTAL operations"
 
+if wants b; then
 echo "=========== leg B: replay against the same build (must reproduce) ==========="
 reset_state A
 set +e
@@ -181,7 +206,9 @@ else
     fail "leg B: expected FAIL + 'the case reproduced' (got exit $rc_b)"
     sed 's/^/     | /' "$RUN/b-replay.txt" | tail -12
 fi
+fi
 
+if wants c; then
 echo "=========== leg C: the fix, rebuilt in a separate checkout, same name ==========="
 git clone --quiet "$RUN/src-unpatched" "$RUN/src-patched"
 ( cd "$RUN/src-patched" && git checkout --quiet "$PIN" && git apply "$PATCH" )
@@ -207,7 +234,9 @@ else
     fail "leg C: expected a clean replay PASS (exit $rc_c). A case_no_longer_applies here is honest but does NOT meet the v0.4 acceptance"
     sed 's/^/     | /' "$RUN/c-replay.txt" | tail -12
 fi
+fi
 
+if wants d; then
 echo "=========== leg D: negative control — a different recording must refuse ==========="
 cp "$DISTRO_TIMEW" "$RUN/bin/timew"
 echo "(D) timew: $(timew --version)"
@@ -233,8 +262,9 @@ else
     fail "leg D: expected UNKNOWN case_no_longer_applies (got exit $rc_d) — record what actually happened"
     sed 's/^/     | /' "$RUN/d-replay.txt" | tail -12
 fi
+fi
 
 echo ""
-echo "for the record: $(uname -m), $(g++ --version | head -1)"
+echo "for the record: $(uname -m), $(g++ --version | head -1), legs run: $LEGS"
 echo "commit $PIN, patch sha256 $(sha256sum "$PATCH" | cut -d' ' -f1)"
-if [ "$fails" = "0" ]; then echo "ALL REPLAY-ACROSS-FIX LEGS PASSED"; else echo "$fails leg(s) failed"; exit 1; fi
+if [ "$fails" = "0" ]; then echo "ALL REPLAY-ACROSS-FIX LEGS PASSED (legs: $LEGS)"; else echo "$fails leg(s) failed"; exit 1; fi

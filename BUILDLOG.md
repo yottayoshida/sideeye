@@ -2,6 +2,47 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — #82: the timewarrior proof moves into CI, and plan review re-priced the whole issue
+
+Two decisions before any code, both from adversarial plan review. First, the
+issue's own framing was stale: #82 was written (and amended) before ADR 0017,
+whose ordering requirement keeps the timewarrior finding at "discovered
+automatically — partial" permanently — so this work is **regression hygiene**,
+not criterion-1 progress, and the amendment's three definitions are
+superseded. That is now written where the job lives, not argued here. Second,
+the planned committed-case design (record once, replay-only in CI) died in
+review: the reviewer measured five failure modes it would create — the case
+freezes absolute paths to heredoc-generated scripts, the legs need state
+resets, the recording is environment-sensitive (the distro-vs-pinned 19/24 op
+split is this repo's own measurement of that), submodules were missing from
+the fetch plan, and a shallow-fetched tree breaks the local re-clone — all
+five of which `spike/dogfood-timew-replay.sh` had already solved and measured.
+So CI runs the proven script itself: a `LEGS` selector (default `abcd`,
+unchanged; `a` mandatory since b/c/d replay the case leg A records) and the
+`timew-regression` job runs `LEGS=abc` per push. A per-leg detail the review
+also caught before it shipped: the distro-timewarrior precondition was
+unconditional, which would have killed `LEGS=abc` in exactly the environment
+CI provides — it now belongs to leg d.
+
+Measured: `LEGS=abc` in a container **without** the distro package — ALL LEGS
+PASSED in **37s** (the +10min CI budget was over-cautious by an order of
+magnitude); default `abcd` with the package — ALL PASSED, 35s, behavior
+unchanged. Falsified both directions, with one embarrassment kept on the
+record: the first red-C harness passed `PATCH=` as an environment variable,
+but the script assigns `PATCH=` unconditionally — the override was silently
+ignored, the REAL patch applied, and the "falsification" run came back green
+with the real patch's sha in its own footer (the measured path did not reach
+the thing being varied — the exact class this workspace keeps re-learning).
+The second harness bind-mounted the no-op patch (a new-file-only diff) over
+the script's hardcoded path; the footer then showed the no-op's sha and leg C
+went red on the script's own path — "expected a clean replay PASS", got the
+case reproducing, 1 leg failed, rc=1. Leg B's predicate — extracted verbatim
+from the script by awk, not re-typed — exits 1 when fed a committed PASS
+report. Local-only honesty note: this host's network intercepts TLS, so the
+container clone ran with GIT_SSL_NO_VERIFY for these measurements — the
+script's content trust rests on the full 40-hex pin (its own header's
+argument), and CI verifies TLS normally on GitHub's network.
+
 ## 2026-08-16 — #84 sweep: the numbers land, and the composition is the finding
 
 The sweep ran from the apparatus PR's merge (`b5b23fd`, engine 0.9.0 /
