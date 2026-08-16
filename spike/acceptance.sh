@@ -2236,9 +2236,12 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # table rows >= corpus rows so an empty table can never read as a measured zero, and
 # holds every unknown_reason to report-schema.md's closed set). Before the sweep's
 # artifacts exist it asserts the explicit not-yet-measured placeholder instead.
-# The gate's own predicate is proven falsifiable on committed fixtures every run:
-# fixtures/good must pass; tampered-verdict (one report's verdict flipped, docs left
-# stale) and tampered-manifest (one manifest row deleted) must both fail — the
+# The gate's own predicates are proven falsifiable on committed fixtures every run —
+# one fixture per predicate, not only the two accidents that motivated the gate:
+# fixtures/good must pass; tampered-verdict (report verdict flipped, docs stale),
+# tampered-manifest (a row deleted), tampered-define (define bytes edited after the
+# hash), tampered-reason (an unknown_reason outside the documented closed set) and
+# predata-no-placeholder (no artifacts and no placeholder line) must all fail — the
 # seen-red-once, kept red forever. Sunset: never fired by the v1.0 freeze -> removal
 # list (same rule as check 11).
 ur_fails=0
@@ -2250,14 +2253,14 @@ if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unkno
     echo "     fixture good failed — the gate cannot pass its own known-good input"
     ur_fails=$((ur_fails + 1))
 fi
-for bad in tampered-verdict tampered-manifest; do
+for bad in tampered-verdict tampered-manifest tampered-define tampered-reason predata-no-placeholder; do
     if python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/$bad" >/dev/null 2>&1; then
         echo "     fixture $bad PASSED — the gate has gone blind to its own predicate"
         ur_fails=$((ur_fails + 1))
     fi
 done
 if [ "$ur_fails" = "0" ]; then
-    echo "ok   unknown-rate page in sync; gate red on both tampered fixtures"
+    echo "ok   unknown-rate page in sync; gate red on all five tampered fixtures"
 else
     echo "FAIL unknown-rate drift gate: $ur_fails problem(s)"
     fails=$((fails + 1))

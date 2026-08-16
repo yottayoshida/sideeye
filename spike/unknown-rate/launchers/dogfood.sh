@@ -5,6 +5,12 @@
 # $RUN/{a,b}/report.json. This wrapper only points RUN into the artifact
 # dir; the sweep registers two trials per invocation, one per leg.
 #
+# Spawning via `sh` is fine HERE and only here: the recipes are documented
+# as human-invoked scripts, not something the engine execs — the campaign-2
+# rule ("green must spawn the way the engine does") is about setup/check
+# scripts whose production spawn is the engine's argv exec, and the recipes
+# chmod +x their own generated setup/check before the engine sees them.
+#
 # Usage: dogfood.sh <timew|todoman> <artifact-dir>
 set -u
 tool=${1:?tool}; art=${2:?artifact dir}

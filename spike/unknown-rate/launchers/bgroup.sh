@@ -33,6 +33,8 @@ defs=/work/spike/unknown-rate/defines-b/$t
 # roots) — the same name the engine itself exports to setup/op children.
 optpl=""
 if [ -f "$defs/op.txt" ]; then
+    [ "$(grep -c . "$defs/op.txt")" = 1 ] || {
+        echo "bgroup.sh: $t op.txt must be exactly one non-empty line" >&2; exit 3; }
     optpl=$(head -n 1 "$defs/op.txt")
     [ -n "$optpl" ] || { echo "bgroup.sh: $t op.txt is empty" >&2; exit 3; }
 elif [ ! -x "$defs/op.sh" ]; then

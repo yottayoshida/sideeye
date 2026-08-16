@@ -45,7 +45,7 @@ mkdir -p "$ARTS"
 
 # Apparatus identity, recorded from inside a container (the binary is a
 # Linux cross-build; the host cannot even run it).
-docker run --rm -v "$ROOT":/work sideeye-ur-extra sh -c '
+docker run --rm -v "$ROOT":/work:ro sideeye-ur-extra sh -c '
   /work/zig-out/bin/sideeye 2>&1 | head -1
   sha256sum /work/zig-out/bin/sideeye /work/zig-out/lib/libsideeye_shim.so
 ' > "$ARTS/apparatus.txt" 2>&1 || { echo "sweep: engine identity capture failed" >&2; exit 2; }
@@ -67,14 +67,17 @@ image_for() {
 digest_for() {
     # $1 = ;-separated repo-relative paths (file or directory). A path that
     # does not exist is an apparatus error, never an empty digest — an empty
-    # hash would read as "hashed and clean".
+    # hash would read as "hashed and clean". The caller must capture with
+    # `d=$(digest_for …) || exit 2`: a bare command substitution inside
+    # printf would swallow the failure (R1 measured the sweep finishing
+    # rc=0 over an empty digest column).
     out=$(cd "$ROOT" && for p in $(printf '%s' "$1" | tr ';' ' '); do
         [ -e "$p" ] || { echo "MISSING:$p"; exit 9; }
-        if [ -d "$p" ]; then find "$p" -type f | sort | xargs sha256sum
+        if [ -d "$p" ]; then find "$p" -type f -exec sha256sum {} +
         else sha256sum "$p"; fi
     done)
     case "$out" in ""|MISSING:*|*"MISSING:"*)
-        echo "sweep: define path missing while hashing: $1" >&2; exit 2 ;;
+        echo "sweep: define path missing while hashing: $1" >&2; return 1 ;;
     esac
     printf '%s\n' "$out" | sort | sha256sum | cut -d' ' -f1
 }
@@ -93,18 +96,27 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
     if [ "$launcher" = "-" ]; then
         # Funnel wall: no engine run; the row still reaches the manifest so
         # the funnel table's denominator is asserted, not implied.
+        d=$(digest_for "$defines") || exit 2
         printf '%s\t%s\t%s\t%s\t%s\t-\twall:%s\t%s\t-\t-\n' \
-            "$id" "$group" "$tool" "$class" "$judge" "$args" "$(digest_for "$defines")" >> "$manifest"
+            "$id" "$group" "$tool" "$class" "$judge" "$args" "$d" >> "$manifest"
         continue
     fi
     img=$(image_for "$launcher") || { echo "sweep: no image for $launcher" >&2; exit 2; }
     imgid=$(docker images --no-trunc --format '{{.ID}}' "$img" | head -1)
+    [ -n "$imgid" ] || { echo "sweep: no image id for $img — build failed upstream?" >&2; exit 2; }
     inv="$launcher $args"
     case " $ran " in *" $inv "*) already=1 ;; *) already=0 ;; esac
     if [ "$already" = 0 ]; then
         ran="$ran $inv"
         echo "sweep: $id — $launcher $args"
-        docker run --rm -v "$ROOT":/work "$img" \
+        # The repo mounts read-only: the trials drive real Debian packages
+        # under crash injection as root, and nothing they do may write into
+        # the checkout. Only the artifacts tree is writable (R1 measured a
+        # launcher-arg bug creating a directory in the repo root — the ro
+        # mount turns that whole class into a loud failure).
+        docker run --rm -v "$ROOT":/work:ro \
+            -v "$ARTS":/work/spike/unknown-rate/artifacts \
+            "$img" \
             /work/spike/unknown-rate/launchers/"$launcher" $args \
             /work/spike/unknown-rate/artifacts/"$artdir"
         lrc=$?
@@ -118,9 +130,10 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
         echo "sweep: $id produced no report at $artdir/$rpath (launcher rc=$lrc)" >&2
         exit 2
     fi
+    d=$(digest_for "$defines") || exit 2
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
         "$id" "$group" "$tool" "$class" "$judge" "$imgid" "$launcher $args" \
-        "$(digest_for "$defines")" "$artdir/$rpath" "$lrc" >> "$manifest"
+        "$d" "$artdir/$rpath" "$lrc" >> "$manifest"
 done < "$corpus_stripped"
 rm -f "$corpus_stripped"
 

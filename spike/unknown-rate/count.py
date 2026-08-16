@@ -86,8 +86,14 @@ def sha256_file(p):
     h.update(p.read_bytes())
     return h.hexdigest()
 
+_digest_cache = {}
+
 def digest_for(root, defines):
     # Mirror of sweep.sh digest_for: sorted "sha256  path" lines, hashed.
+    # Memoized: several corpus rows share one defines directory (topydo's
+    # thirteen trials hash the same ops/ tree).
+    if defines in _digest_cache:
+        return _digest_cache[defines]
     import hashlib
     lines = []
     for spec in defines.split(";"):
@@ -98,9 +104,11 @@ def digest_for(root, defines):
         for q in files:
             lines.append(f"{sha256_file(q)}  {q.relative_to(root)}")
     payload = "\n".join(sorted(lines)) + "\n"
-    return hashlib.sha256(payload.encode()).hexdigest()
+    d = hashlib.sha256(payload.encode()).hexdigest()
+    _digest_cache[defines] = d
+    return d
 
-def load_reports(root, corpus, manifest):
+def load_reports(root, manifest):
     """Attach verdict data to every non-wall manifest row."""
     out = {}
     arts = root / "spike/unknown-rate/artifacts"
@@ -141,9 +149,8 @@ def emit(root):
     manifest = read_manifest(root)
     if manifest is None:
         return PLACEHOLDER + "\n"
-    reports = load_reports(root, corpus, manifest)
+    reports = load_reports(root, manifest)
     outcome = read_outcome_map(root)
-    by_id = {c["id"]: c for c in corpus}
 
     # Flatten to judged trials (walls and SETUP_ERROR are listed, not rated).
     trials = []
@@ -177,7 +184,8 @@ def emit(root):
             for w in [w for w in walls if w["group"] == "B"]:
                 L.append(f"| {w['tool']} | {w['cls']} | wall {w['wall']} | - | - |")
             for t in g:
-                L.append(f"| {t['tool']} | {t['cls']} | explored | {t['v']} | {t['reason'] or '-'} |")
+                flag = " (0 crash points)" if t["cp0"] else ""
+                L.append(f"| {t['tool']} | {t['cls']} | explored | {t['v']}{flag} | {t['reason'] or '-'} |")
             for s in [s for s in setup_errors if s["group"] == "B"]:
                 L.append(f"| {s['tool']} | {s['cls']} | SETUP_ERROR (excluded, published) | - | - |")
         else:
@@ -244,6 +252,27 @@ def check(root):
     docs = (root / "docs/unknown-rate.md").read_text()
     block = emit(root)
 
+    # The B-group rows must be exactly the committed mechanical selection,
+    # order included — "no hand touched the list" is checked, not narrated.
+    # This binds pre-data too: the apparatus PR is where a hand-edit would
+    # first try to slip in.
+    bt = [l for l in (root / "spike/unknown-rate/b-targets.txt").read_text().splitlines() if l]
+    bc = [c["tool"] for c in corpus if c["group"] == "B"]
+    if bc != bt:
+        die("corpus B rows differ from the committed b-targets.txt selection (order included)")
+    # And the selection itself must still be the mechanical derivation:
+    # first N of (candidates minus exclusions). Without this, editing
+    # b-targets.txt and the corpus together would keep everything
+    # "consistent" (R2 measured that pair-edit passing).
+    cands = [l for l in (root / "spike/unknown-rate/b-candidates.txt").read_text().splitlines() if l]
+    excl = set()
+    for line in (root / "spike/unknown-rate/b-exclusions.txt").read_text().splitlines():
+        if line and not line.startswith("#"):
+            excl.add(line.split("\t")[0])
+    derived = [c for c in cands if c not in excl][:len(bt)]
+    if derived != bt:
+        die("b-targets.txt is not the first-N derivation of b-candidates.txt minus b-exclusions.txt")
+
     if manifest is None:
         if PLACEHOLDER not in docs:
             die("no artifacts, and docs/unknown-rate.md lacks the not-yet-measured placeholder")
@@ -258,8 +287,36 @@ def check(root):
     if ids_c != ids_m:
         die("manifest trial ids differ from corpus (order included)")
 
+    # The published tables are built from MANIFEST columns; hold every
+    # classifying column to the frozen corpus, or a re-labeled manifest row
+    # (a trial moved between groups, an UNKNOWN re-filed as a funnel wall)
+    # would flow into the tables with the docs regenerated to match — R1
+    # measured exactly that passing the byte-compare alone.
+    by_id_c = {c["id"]: c for c in corpus}
+    for row in manifest:
+        c = by_id_c[row["id"]]
+        for k in ("group", "tool", "cls", "judge"):
+            if row[k] != c[k]:
+                die(f"{row['id']}: manifest {k} {row[k]!r} differs from the frozen corpus {c[k]!r}")
+        wall_m = row["argv"].startswith("wall:")
+        wall_c = c["launcher"] == "-"
+        if wall_m != wall_c:
+            die(f"{row['id']}: wall-ness differs between manifest and corpus")
+        if wall_c and row["argv"] != f"wall:{c['args']}":
+            die(f"{row['id']}: wall reason {row['argv']!r} differs from corpus {c['args']!r}")
+        if not wall_c:
+            # The report path decides WHICH report speaks for the trial; an
+            # unbound rpath lets verdicts swap between trials with every
+            # classifying column intact (R2 measured the B-group rate
+            # flipping 1/1 -> 0/1 that way). The argv binding closes the
+            # same door for the record's invocation column.
+            if row["rpath"] != f"{c['artdir']}/{c['rpath']}":
+                die(f"{row['id']}: manifest report path {row['rpath']!r} differs from the frozen corpus")
+            if row["argv"] != f"{c['launcher']} {c['args']}":
+                die(f"{row['id']}: manifest argv {row['argv']!r} differs from the frozen corpus")
+
     enum = enum_from_schema_doc(root)
-    reports = load_reports(root, corpus, manifest)
+    reports = load_reports(root, manifest)
     for row in manifest:
         r = reports[row["id"]]
         if "wall" not in r and r["verdict"] == "UNKNOWN" and r["reason"] not in enum:
@@ -275,13 +332,17 @@ def check(root):
     if MARK_BEGIN not in docs or MARK_END not in docs:
         die("docs/unknown-rate.md lacks the results markers")
     published = docs.split(MARK_BEGIN)[1].split(MARK_END)[0]
-    computed = block.split(MARK_BEGIN)[1].split(MARK_END)[0]
-    if published != computed:
-        die("published results block differs from recomputation (drift)")
+    # Row-count first, on the PUBLISHED side: after the byte-compare passes
+    # this could never fire (the recomputation always emits one row per
+    # manifest row — R1 proved the original order unreachable), so the
+    # empty-table guard has to look at the docs before trusting them.
     pub_rows = [l for l in published.splitlines() if l.startswith("| ")]
     if len(pub_rows) < len(corpus):
         die(f"published tables carry {len(pub_rows)} rows for {len(corpus)} corpus trials — "
             f"an empty or truncated table cannot stand in for the measurement")
+    computed = block.split(MARK_BEGIN)[1].split(MARK_END)[0]
+    if published != computed:
+        die("published results block differs from recomputation (drift)")
     print(f"count.py check: OK — {len(corpus)} trials, digests verified, docs in sync")
 
 def main():

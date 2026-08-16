@@ -38,7 +38,7 @@ a-buku-add	A	buku	python-sqlite	l0c	assisted.sh	buku	a-buku-add	report.json	spik
 a-calcurse-purge	A	calcurse	c-cli	l0c	assisted.sh	calcurse	a-calcurse-purge	report.json	spike/assisted/calcurse/ops
 a-devtodo-remove	A	devtodo	cxx-cli	l0c	assisted.sh	devtodo	a-devtodo-remove	report.json	spike/assisted/devtodo/ops
 a-stow-unfold	A	stow	perl-cli	l0c	assisted.sh	stow	a-stow-unfold	report.json	spike/assisted/stow/ops
-a-watson-add	A	watson	python-cli	l0c	watson.sh	-	a-watson-add	report.json	spike/dogfood-watson
+a-watson-add	A	watson	python-cli	l0c	watson.sh	watson	a-watson-add	report.json	spike/dogfood-watson
 a-timew-a	A	timewarrior	c-cpp-cli	l0	dogfood.sh	timew	inv-timew	run/a/report.json	spike/dogfood-timew.sh
 a-timew-b	A	timewarrior	c-cpp-cli	l0c	dogfood.sh	timew	inv-timew	run/b/report.json	spike/dogfood-timew.sh
 a-todoman-a	A	todoman	python-cli	l0	dogfood.sh	todoman	inv-todoman	run/a/report.json	spike/dogfood-todoman.sh

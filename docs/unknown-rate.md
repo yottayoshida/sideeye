@@ -3,12 +3,16 @@
 v1.0 entry criterion 4 (`PRD.md`) requires the UNKNOWN rate on supported
 targets to be **measured and published**, with a target threshold **set from
 that data** — and DESIGN §18 names "UNKNOWN dominates" as a kill condition.
-This page is the measurement's fixed rulebook and its published numbers. The
-rules in this page were committed and merged **before** the sweep ran; the
-results were merged after, in a separate PR, so the first-parent history
-proves the order (the same shape `spike/assisted/verify-assisted.sh` checks
-for assisted claims). Every number between the results markers is recomputed
-from the committed reports by `spike/unknown-rate/count.py`, wired into the
+This page is the measurement's fixed rulebook and its published numbers, and
+it lands in two merges: the rulebook and apparatus first, the sweep's
+results after, in a separate PR — so the first-parent history proves the
+corpus predates the numbers (the same shape
+`spike/assisted/verify-assisted.sh` checks for assisted claims). Until the
+results PR merges, the Results section below carries an explicit
+not-yet-measured placeholder that the CI gate asserts; everything else on
+this page describes procedure, not completed measurement. Every number that
+eventually appears between the results markers is recomputed from the
+committed reports by `spike/unknown-rate/count.py`, wired into the
 acceptance suite — a published figure that drifts from its artifacts goes
 red in CI.
 
@@ -105,6 +109,8 @@ verdict, so it is not a supported class.
 | `spike/assisted/buku/inspection/inv.toml` | instrumentation from the buku-withdrawal analysis, not a corpus question |
 | taskwarrior | in the supported table, but **no committed define exists** — only BUILDLOG prose. Authoring one today would be answer-known authoring: added to A it only lowers a rate that is already not the threshold basis; added to B it contaminates the threshold basis with a known PASS |
 | omamori surface (`spike/dogfood-omamori-surface.sh`) | Rust is not a supported class (the first table); DESIGN §18's demand to re-run it before citation is answered by a follow-up issue, not smuggled into this measurement |
+| omamori dogfood (`spike/dogfood-omamori.sh`) | same class exclusion as the surface script — Rust is outside the first table |
+| `spike/dogfood-timew-replay.sh` | replays a saved case; a replay is not an explore invocation, so it is outside this page's trial unit |
 | hledger | its sweep refusal is sealed unread and it is the last blind-eligible candidate; even scouting it spends that (standing taint rule, `spike/README.md`) |
 | khard | burned (campaign 2); its declaration history is public but its blindness is spent |
 
@@ -129,10 +135,12 @@ target that turns out to be out of domain becomes a W-row, never a silent
 substitution.
 
 **Taint note**: authoring a B-group define requires reading the target's
-documentation, which makes these 20 targets ineligible for any future
-blind campaign (the taint ledger's own rule). hledger is excluded by name
-precisely so this measurement cannot spend the one remaining blind
-candidate.
+documentation — the same kind of recorded contact the campaign taint
+ledger disqualifies blind candidates for. **This page is the record**: the
+20 names in `b-targets.txt` are hereby documented as read by this project,
+and any future blind-candidate selection must treat this list the way the
+campaign ledgers treat theirs. hledger is excluded by name precisely so
+this measurement cannot spend the one remaining blind candidate.
 
 Each B-group target that passes the walls gets one uniform minimal define
 (`defines-b/<t>/`): `setup.sh` seeds the state, the operation is the one
@@ -156,16 +164,18 @@ it).
 
 ## Method
 
-One sweep, one engine build (`zig build -Dtarget=aarch64-linux-gnu` from
-the apparatus PR's merge), fresh containers per trial, driven by
-`spike/unknown-rate/sweep.sh`. Apparatus identity (engine version + sha256,
-shim sha256, image ids) is recorded in `artifacts/apparatus.txt` and per
-trial in `artifacts/manifest.tsv`; the manifest also records each trial's
-define digest, recomputed from the checkout by `count.py check` — "the
-committed defines ran verbatim" is machine-checked. The images are pinned
-by build, not by manifest (the base tags are mutable — the same honesty
-note `spike/assisted/Dockerfile` carries), so environmental identity with
-past runs is recorded, never claimed.
+The protocol: one sweep, one engine build (`zig build
+-Dtarget=aarch64-linux-gnu` at the apparatus PR's merge), fresh containers
+per trial, driven by `spike/unknown-rate/sweep.sh` — the repo mounted
+read-only, with only the artifacts tree writable. Apparatus identity
+(engine version + sha256, shim sha256, image ids) goes into
+`artifacts/apparatus.txt` and per trial into `artifacts/manifest.tsv`; the
+manifest also records each trial's define digest, which `count.py check`
+recomputes from the checkout — that is how "the committed defines ran
+verbatim" becomes machine-checked once the artifacts exist. The images are
+pinned by build, not by manifest (the base tags are mutable — the same
+honesty note `spike/assisted/Dockerfile` carries), so environmental
+identity with past runs is recorded, never claimed.
 
 The campaign declarations run through
 `spike/unknown-rate/launchers/campaign.sh`, **not** through the sealed
@@ -182,13 +192,14 @@ table:
 | khal (bh3) | `HOME=/tmp/blind3/home`, `unset CHECK_KHAL CHECK_TIMEOUT`, roots `/tmp/blind3/hunt/<op>` | same |
 | assisted ×5 | nothing to replicate — their committed `ops/explore.sh` launchers run as-is (the REMEASURE invocation) | — |
 | timewarrior / todoman | nothing — the dogfood recipes run as-is with `RUN` pointed into the artifacts | — |
-| watson | the committed toml + checker run from a staged byte-verbatim copy (its relative paths resolve against the working directory); `WATSON_DIR` set as the BUILDLOG run did | a committed launcher never existed — `launchers/watson.sh` is new apparatus, labeled |
+| watson | the committed toml + checker run from a staged copy (its relative paths resolve against the working directory); `WATSON_DIR` set as the BUILDLOG run did. The launcher records the staged copies' sha256 beside the report, and the manifest's define digest covers the checkout originals — two records a reader can compare; the copy step itself is `cp` | a committed launcher never existed — `launchers/watson.sh` is new apparatus, labeled |
 
 ## Platform
 
-- **Measured**: Linux aarch64, in containers, on this page's sweep. That is
-  the only platform with real-target measurements in this repository (CI's
-  x86_64 job runs the acceptance toys, not real targets).
+- **The measured platform** is Linux aarch64, in containers — this page's
+  sweep runs there, and it is the only platform with real-target
+  measurements in this repository (CI's x86_64 job runs the acceptance
+  toys, not real targets).
 - **macOS**: derived, not measured. The mechanism is structural — no oracle
   exists on macOS (SIP refuses dtruss), and `requireCompleteness`
   (src/main.zig) guards every path that ends in PASS — so under this page's
