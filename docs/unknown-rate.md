@@ -110,7 +110,7 @@ verdict, so it is not a supported class.
 | taskwarrior | in the supported table, but **no committed define exists** — only BUILDLOG prose. Authoring one today would be answer-known authoring: added to A it only lowers a rate that is already not the threshold basis; added to B it contaminates the threshold basis with a known PASS |
 | omamori surface (`spike/dogfood-omamori-surface.sh`) | Rust is not a supported class (the first table); DESIGN §18's demand to re-run it before citation is answered by a follow-up issue, not smuggled into this measurement |
 | omamori dogfood (`spike/dogfood-omamori.sh`) | same class exclusion as the surface script — Rust is outside the first table |
-| `spike/dogfood-timew-replay.sh` | replays a saved case; a replay is not an explore invocation, so it is outside this page's trial unit |
+| `spike/dogfood-timew-replay.sh` | records and replays one case as a single replay-stability measurement (since #82 also run on every push to main and every pull request by the timew-regression CI job); its exploration exists to feed the replay legs, and no run of it joins this page's frozen corpus |
 | hledger | its sweep refusal is sealed unread and it is the last blind-eligible candidate; even scouting it spends that (standing taint rule, `spike/README.md`) |
 | khard | burned (campaign 2); its declaration history is public but its blindness is spent |
 

@@ -241,6 +241,45 @@ jobs:
           [ ! -f /tmp/ci3/state/key.json ] || { echo "key.json survived; the kill did not land"; exit 1; }
           [ -f /tmp/ci3/state/key.json.tmp ] || { echo "key.json.tmp missing; not the reported state"; exit 1; }
 
+  # The timewarrior finding lives here as a replayed regression, not a recipe (#82):
+  # every push to main and every pull request re-proves the FAIL/PASS pair across the fix — record the counterexample
+  # on the pinned unpatched build, replay it FAIL, rebuild with the committed patch,
+  # replay it PASS. Either leg alone can rot silently (a FAIL-only check cannot tell
+  # "the bug is real" from "the replay is broken"; a PASS-only check cannot tell
+  # "fixed" from "case no longer applies"), which is why the pair is the job.
+  #
+  # Scope, stated plainly: this is regression HYGIENE, not v1.0 criterion-1 progress —
+  # ADR 0017's ordering requirement keeps the timewarrior finding at "discovered
+  # automatically — partial", and #82's older amendment definitions are superseded by
+  # that ADR. The novelty record for the finding is BUILDLOG 2026-08-12 (linked, not
+  # restated). The exploration this job performs is not a #84 corpus trial — that
+  # corpus is frozen, and check 12 counts trials from its own manifest.
+  #
+  # A future trace-contract bump does not break this job: the script re-records the
+  # case under the new contract each run (the committed-case alternative would have
+  # gone red instead). If legs go red, the script's own output carries the exit code
+  # and unknown_reason — enough to tell apparatus breakage from a real regression.
+  timew-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Build engine and shim
+        run: zig build
+
+      - name: Install the toolchain the pinned timewarrior build needs
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends git ca-certificates cmake g++ make python3 strace
+
+      - name: "Replay across the fix: record, FAIL unpatched, PASS patched (legs a-c)"
+        run: LEGS=abc sh spike/dogfood-timew-replay.sh
+        env:
+          SIDEEYE_REPO: ${{ github.workspace }}
+
   # The development journal is a delivery artifact here, and it went unwritten for four
   # pull requests once because nothing asked for it. Now something asks: a PR that
   # changes code without touching BUILDLOG.md does not merge. The decision logic was
