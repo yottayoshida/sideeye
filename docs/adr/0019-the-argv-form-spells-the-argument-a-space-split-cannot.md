@@ -1,7 +1,7 @@
 # 0019. The argv form spells the argument a space-split cannot
 
 Date: 2026-08-16
-Status: Proposed
+Status: Accepted
 Amends: ADR 0007 (decision 5)
 
 ## Context

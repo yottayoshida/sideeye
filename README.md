@@ -10,14 +10,14 @@ Sideeye finds out what your program leaves on disk when it dies at the worst pos
 
 It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo — with four upstream reports so far: timewarrior's crash-window bug, a topydo recovery misfire found in follow-up analysis of its campaign, and reports to GNU Stow and calcurse that await a maintainer response. The devtodo finding stands in this repository, deliberately unreported upstream; one further claim, against buku, was withdrawn on re-derivation — the recorded evidence was Sideeye's own falsification gate, and buku recovers in every measured world (`spike/assisted/buku/RUNLOG.md`). Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
 
-**Status: v0.9.0**, trace contract v10. The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and may change in any release. Release history: [CHANGELOG.md](CHANGELOG.md); the road to 1.0: [PRD.md](PRD.md).
+**Status: v0.10.0**, trace contract v10. The Define contract, the report schema and the exit codes are **not frozen** until 1.0 and may change in any release. Release history: [CHANGELOG.md](CHANGELOG.md); the road to 1.0: [PRD.md](PRD.md).
 
 ## Installation
 
 Every release from v0.6.0 on ships prebuilt tarballs for x86_64-linux, aarch64-linux and aarch64-macos (earlier tags predate the artifacts): `sideeye`, `libsideeye_shim` — the shim travels with the binary, it is half the product — and both license files. Download the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases), then:
 
 ```
-$ tar xzf sideeye-v0.9.0-aarch64-macos.tar.gz && cd sideeye-v0.9.0-aarch64-macos
+$ tar xzf sideeye-v0.10.0-aarch64-macos.tar.gz && cd sideeye-v0.10.0-aarch64-macos
 ```
 
 Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`.
