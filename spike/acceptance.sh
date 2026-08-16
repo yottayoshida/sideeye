@@ -2194,11 +2194,12 @@ fi
 echo ""
 echo "=========== check 11: the docs pages' repo paths exist (#79/#80) ==========="
 # Guards path rot, not claim drift: every backticked token containing a slash in the
-# two evidence-first pages must exist in the repo, so a moved transcript or a renamed
+# evidence-first pages must exist in the repo, so a moved transcript or a renamed
 # checker cannot leave a page pointing at nothing. Claim-vs-transcript verification
-# stays a review-time axis. Sunset: never fired by the v1.0 freeze -> removal list.
+# stays a review-time axis. Pages that quote ratios or numbers must keep them out of
+# backticks — a backticked "3/7" is extracted as a path here and goes red (#85). Sunset: never fired by the v1.0 freeze -> removal list.
 doc_fails=0
-for page in "$ROOT/docs/target-classes.md" "$ROOT/docs/checker-cookbook.md"; do
+for page in "$ROOT/docs/target-classes.md" "$ROOT/docs/checker-cookbook.md" "$ROOT/docs/kill-criteria-review.md"; do
     if [ ! -f "$page" ]; then
         echo "     missing page: $page"
         doc_fails=$((doc_fails + 1))
@@ -2223,7 +2224,7 @@ for page in "$ROOT/docs/target-classes.md" "$ROOT/docs/checker-cookbook.md"; do
     set +f
 done
 if [ "$doc_fails" = "0" ]; then
-    echo "ok   every slashed backtick reference in both pages resolves in the repo"
+    echo "ok   every slashed backtick reference in the listed pages resolves in the repo"
 else
     echo "FAIL docs reference existence: $doc_fails missing"
     fails=$((fails + 1))
