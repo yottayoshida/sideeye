@@ -366,10 +366,17 @@ spelled inside the engine's space-split operation contract, and the op.sh
 wrapper is an exec chain the v10 observation rules refuse; cookietool's
 recording was refused because the tool's exit convention (10, apparently
 its deleted-cookie count) does not match the protocol's fixed
-`expected_status 0`. In this sample, every target whose documented
-invocation fit the contract reached a verdict (4/4), and every UNKNOWN
-names a contract gap, not a target behavior. That split is part of the
-threshold material below, not a reason to re-file the refusals.
+`expected_status 0`. Of the five targets whose documented invocations
+could be spelled as operation strings, **four reached a verdict; the
+fifth (cookietool) was refused not on spelling but on the exit status the
+uniform protocol declared** — a define-budget miss of a different kind,
+and unlike hnb/lbdb one its NOTES did not predict. Every UNKNOWN names a
+contract gap; the origin split itself is a line drawn **after** the sweep
+(the frozen rulebook predicted only the hnb/lbdb spelling class), and
+cookietool is the arguable case — a nonstandard exit convention is also a
+fact about the target. Counted either way, the threshold below holds
+(part 1 becomes 1/7 at worst). That split is threshold material, not a
+reason to re-file the refusals.
 
 **The bogofilter-sqlite FAIL** (3/26 worlds, oracle agreed on 25
 operations, L0: `wordlist.db` "holding neither the old nor the new
@@ -378,11 +385,14 @@ never-before-run target — and it has the exact shape of the buku lesson in
 `docs/target-classes.md`: a sqlite-backed store judged by file bytes is
 judged more strictly than its journal contract. This sweep's uniform
 protocol carries no checker and therefore measures no recovery; the
-disposition stays **new-this-sweep (pending triage)** in the outcome
-table, and nothing here is an upstream bug claim.
+disposition stays **new-this-sweep (pending triage)** — the outcome-ratio
+table is A-group-only by its committed rule, so this paragraph and the
+B-group table are the finding's record — and nothing here is an upstream
+bug claim.
 
-**What the artifacts do and do not keep**: each trial's report and
-transcript (and preflight text for the B-group) are committed; saved
+**What the artifacts do and do not keep**: each executed trial's report
+and transcript (and preflight text for the explored B-group trials) are
+committed; saved
 counterexample case files lived under the containers' scratch work
 directories and were not preserved — the sweep records verdict
 distributions, not replay cases (the A-group's cases are already committed
@@ -406,12 +416,18 @@ Both parts hold, so **v1.0 entry criterion 4 is met** on this measurement.
 The two-part shape is deliberate: the composition is the finding. Every
 UNKNOWN in this sample names a contract gap (hnb and lbdb cannot be
 spelled inside the space-split operation contract; cookietool's exit
-convention was mis-declared by the uniform protocol), while every target
-whose documented invocation fit the contract reached a verdict, 4/4. A
-future sweep where target-origin UNKNOWNs dominate would fail part 1
-whatever the total rate does — and per issue #84 step 4, a measured rate
-failing this threshold is DESIGN §18 material; the threshold itself does
-not move.
+convention was mis-declared by the uniform protocol), and four of the
+five spellable targets reached verdicts. Two honesty notes, in the
+repository's own style: the origin classification was drawn after the
+sweep, and cookietool is its arguable case — re-filing it as
+target-origin still satisfies part 1 at exactly 1/7, so the verdict on
+this criterion is robust to that choice. And the merge order (rulebook
+PR first, results PR after) proves the threshold postdates the rules; it
+does not prove the threshold was not chosen to pass — that part is the
+owner's recorded call, made with the margins visible. A future sweep
+where target-origin UNKNOWNs dominate fails part 1 whatever the total
+rate does — and per issue #84 step 4, a measured rate failing this
+threshold is DESIGN §18 material; the threshold itself does not move.
 
 ## Limitations, out loud
 

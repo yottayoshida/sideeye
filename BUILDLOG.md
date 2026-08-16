@@ -5,7 +5,8 @@ Development journal, newest first. Decisions are recorded when they are made —
 ## 2026-08-16 — #84 sweep: the numbers land, and the composition is the finding
 
 The sweep ran from the apparatus PR's merge (`b5b23fd`, engine 0.9.0 /
-contract v10), all 49 corpus trials, one fresh container each, repo mounted
+contract v10), all 49 corpus rows — one fresh container per executed trial
+(36 rows; the other 13 are documented walls that never run), repo mounted
 read-only, no SETUP_ERROR anywhere — `count.py check` closes green over the
 full with-data path (49 digests, docs in sync).
 
@@ -20,9 +21,12 @@ any of those records would have shown up here; it did not.
 define-budget refusals, none target-origin.** hnb and lbdb died on the
 exec-chain rule their NOTES predicted before the sweep; cookietool's
 recording was refused over its exit convention (10 — apparently the count
-of deleted cookies — where the uniform protocol fixed 0). Every target
-whose documented invocation fit the operation contract reached a verdict,
-4/4. The striking row is **bogofilter-sqlite: FAIL 3/26, oracle agreed on
+of deleted cookies — where the uniform protocol fixed 0). Of the five
+targets whose documented invocations could be spelled as operation
+strings, four reached verdicts; cookietool, the fifth, was refused on the
+declared exit status, not on spelling — the first "4/4" draft of this
+sentence was wrong, and review caught it against the frozen definition.
+The striking row is **bogofilter-sqlite: FAIL 3/26, oracle agreed on
 25 operations** — a fresh counterexample from a never-run target, in
 exactly the buku shape (a sqlite store judged by file bytes is judged more
 strictly than its journal contract). No checker ran, so no recovery was
