@@ -1,0 +1,25 @@
+falsify: bogoutil[23]: cannot compile SELECT value FROM bogofilter WHERE key=? LIMIT 1;: file is not a database_
+falsify: Remember to register some spam and ham messages before you
+falsify: use bogofilter to evaluate mail for its probable spam status!
+falsify: bogoutil cannot dump the wordlist
+FAIL  3 of 26 crash worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 21 of 25
+            after  write(/tmp/followup-144/state/wordlist.db)
+            before write(/tmp/followup-144/state/wordlist.db)
+path        wordlist.db
+observed    holding neither the old nor the new content
+explored    26 worlds (crash points 25 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 25 operations (304 syscall lines examined, 142 in scope of the judged state)
+metadata    1 ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): fchown x1. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+checker     falsified before the run (corrupted state -> check failed); ran in 26 world(s)
+l1          no marker configured
+case        /tmp/followup-144/work/cases/000001.json
+replay      sideeye replay /tmp/followup-144/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/followup-144/state SIDEEYE_TRACE_PATH=/tmp/followup-144/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=21 SIDEEYE_SEQ_BASE= <operation>

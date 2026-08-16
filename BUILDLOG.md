@@ -2,6 +2,51 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — #141 + #144: two follow-up measurements, and both came back the good kind of boring
+
+**#141 — the omamori surface probes, re-measured under v10.** DESIGN §18 had
+banned its own calibration sentence from citation until
+`spike/dogfood-omamori-surface.sh` re-ran; it ran (omamori 1.0.4, built
+offline from a tracked-files archive with host-side `cargo vendor` because
+this network's TLS interception kills both git-over-https and rustup inside
+containers — the rustup shim kept trying to sync components, so the build
+calls the toolchain's real cargo directly). The v8 walls are gone exactly as
+the old pins predicted: install, setup and init no longer refuse at
+`symlinkat`/`fchmodat` (#122 made symlinks first-class, #121 made the chmod
+family recorded-only — three of the four reports' metadata lines name the
+excluded `fchmodat x1`; verify observed none), and **all four unguarded
+writers explore fully and PASS** (assisted image: install 16 / setup 28 /
+init 6 / verify 4 crash points, reports committed under
+`spike/followup-141/artifacts/`; the
+spike-image family measured higher counts the same day — the counts are
+image-sensitive, so the refreshed pins keep verdict+reason as the claims and
+demote min_cp to a vacuity floor below both measurements). The citation ban
+is lifted: §18's calibration paragraph and the target-classes Rust story now
+carry the v10 record.
+
+**#144 — the bogofilter-sqlite counterexample, triaged with the tool's own
+reader.** The labeled follow-up (`spike/followup-144/`, outside the #84
+corpus, reading the committed define verbatim) re-ran the sweep's define
+with a checker asking bogofilter's own tools — `bogoutil-sqlite -d` plus a
+real classification. First run was an apparatus lesson the engine caught
+for us: bare `bogoutil` resolves through alternatives to the **BDB**
+variant, which cannot read a sqlite wordlist at all — the checker was red on
+valid state, and the run refused with the checker failing in 25 of 26
+worlds rather than minting a false verdict. With `bogoutil-sqlite` named:
+**FAIL 3/26 reproduced, and the checker passed in every explored world —
+the violating three included** — the git COMMIT_EDITMSG template exactly.
+Review caught the first draft of that sentence overclaiming: the report
+records only the earliest violating world's invariant, so "never failed in
+any world" was an inference over 24 of 26 worlds, not a record. The cheap
+fix was the reviewer's own suggestion — the checker now appends one line
+per invocation to a log outside the judged state, and the committed log
+(`spike/followup-144/artifacts/checker.log`: the falsification gate's red
+first, then 26 passes) turns the claim into an artifact, with run.sh
+pinning its shape so a re-run that breaks it goes red. sqlite's journal
+recovers the wordlist in every crash world; the disposition is
+withdrawal-shaped (the buku class lesson, confirmed on a second store),
+and nothing goes upstream.
+
 ## 2026-08-16 — #82: the timewarrior proof moves into CI, and plan review re-priced the whole issue
 
 Two decisions before any code, both from adversarial plan review. First, the

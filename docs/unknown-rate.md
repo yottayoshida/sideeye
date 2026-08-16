@@ -108,7 +108,7 @@ verdict, so it is not a supported class.
 | `docs/ci-quickstart/sideeye.toml` | drives the demo toy, not a third-party tool |
 | `spike/assisted/buku/inspection/inv.toml` | instrumentation from the buku-withdrawal analysis, not a corpus question |
 | taskwarrior | in the supported table, but **no committed define exists** — only BUILDLOG prose. Authoring one today would be answer-known authoring: added to A it only lowers a rate that is already not the threshold basis; added to B it contaminates the threshold basis with a known PASS |
-| omamori surface (`spike/dogfood-omamori-surface.sh`) | Rust is not a supported class (the first table); DESIGN §18's demand to re-run it before citation is answered by a follow-up issue, not smuggled into this measurement |
+| omamori surface (`spike/dogfood-omamori-surface.sh`) | Rust is not a supported class (the first table); DESIGN §18's demand to re-run it before citation was answered by #141 (re-measured 2026-08-16, all four writers PASS under v10), separately from this measurement |
 | omamori dogfood (`spike/dogfood-omamori.sh`) | same class exclusion as the surface script — Rust is outside the first table |
 | `spike/dogfood-timew-replay.sh` | records and replays one case as a single replay-stability measurement (since #82 also run on every push to main and every pull request by the timew-regression CI job); its exploration exists to feed the replay legs, and no run of it joins this page's frozen corpus |
 | hledger | its sweep refusal is sealed unread and it is the last blind-eligible candidate; even scouting it spends that (standing taint rule, `spike/README.md`) |
@@ -384,11 +384,21 @@ content" between two writes) is a fresh counterexample from a
 never-before-run target — and it has the exact shape of the buku lesson in
 `docs/target-classes.md`: a sqlite-backed store judged by file bytes is
 judged more strictly than its journal contract. This sweep's uniform
-protocol carries no checker and therefore measures no recovery; the
-disposition stays **new-this-sweep (pending triage)** — the outcome-ratio
-table is A-group-only by its committed rule, so this paragraph and the
-B-group table are the finding's record — and nothing here is an upstream
-bug claim.
+protocol carried no checker and measured no recovery, so the disposition
+here was recorded as new-this-sweep. **Triaged 2026-08-16 (#141's sibling
+follow-up, `spike/followup-144/`): recovery holds.** The same define
+re-run with bogofilter's own reader as the checker (bogoutil dump + a real
+classification) reproduced FAIL 3/26 with the earliest violated invariant
+"built-in atomicity (L0)" and **a committed per-world log** — the report
+alone records only the earliest violating world, so the checker writes one
+line per invocation outside the judged state: the falsification gate's red
+first, then 26 passes, one for every explored world including all three
+violating ones (`spike/followup-144/artifacts/checker.log`) — the git
+COMMIT_EDITMSG template exactly. The disposition is
+withdrawal-shaped: the class lesson confirmed on a second sqlite store,
+no upstream claim — the outcome-ratio table is A-group-only by its
+committed rule, so this paragraph, the B-group table and the follow-up's
+committed artifacts are the finding's record.
 
 **What the artifacts do and do not keep**: each executed trial's report
 and transcript (and preflight text for the explored B-group trials) are
