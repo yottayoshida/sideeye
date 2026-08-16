@@ -2,6 +2,20 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — v0.10.0: the pre-freeze batch release
+
+Version bump only — the work is in the entries below from the same two
+days. The release carries the argv form (#95, ADR 0019 flipped to Accepted
+in this commit), criteria 3 and 4 recorded as met, the timew-regression CI
+job, the scouting guide, and the follow-up measurements. The choice of
+0.10.0 over 0.9.1 follows the house precedent that a define-contract
+extension is a minor: the trace contract did not move, but the config
+contract grew a value shape and the case format grew version 3. One
+process note: the buildlog CI gate correctly refused the first push of
+this bump — a version literal in `src/main.zig` is still a src/ touch, and
+the gate does not know "it's only a release" from a code change. This
+entry is the fix, not an exemption.
+
 ## 2026-08-16 — the scouting guide ships: SCOUT.md grows its product form
 
 The batch's last PR promotes the assisted-discovery method to
