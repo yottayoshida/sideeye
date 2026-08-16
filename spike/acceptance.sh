@@ -2229,6 +2229,40 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
+# Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
+# recomputation from corpus.tsv + the committed sweep artifacts (count.py check also
+# re-verifies every manifest define digest against the checkout, requires published
+# table rows >= corpus rows so an empty table can never read as a measured zero, and
+# holds every unknown_reason to report-schema.md's closed set). Before the sweep's
+# artifacts exist it asserts the explicit not-yet-measured placeholder instead.
+# The gate's own predicate is proven falsifiable on committed fixtures every run:
+# fixtures/good must pass; tampered-verdict (one report's verdict flipped, docs left
+# stale) and tampered-manifest (one manifest row deleted) must both fail — the
+# seen-red-once, kept red forever. Sunset: never fired by the v1.0 freeze -> removal
+# list (same rule as check 11).
+ur_fails=0
+if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
+    echo "     the live page/artifacts disagree with recomputation"
+    ur_fails=$((ur_fails + 1))
+fi
+if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/good" >/dev/null 2>&1; then
+    echo "     fixture good failed — the gate cannot pass its own known-good input"
+    ur_fails=$((ur_fails + 1))
+fi
+for bad in tampered-verdict tampered-manifest; do
+    if python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/$bad" >/dev/null 2>&1; then
+        echo "     fixture $bad PASSED — the gate has gone blind to its own predicate"
+        ur_fails=$((ur_fails + 1))
+    fi
+done
+if [ "$ur_fails" = "0" ]; then
+    echo "ok   unknown-rate page in sync; gate red on both tampered fixtures"
+else
+    echo "FAIL unknown-rate drift gate: $ur_fails problem(s)"
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

@@ -1,0 +1,15 @@
+# Disposition of each A-group tool's FAIL verdicts, for the outcome-ratio
+# table (#84 comment amendment). Sourced from the committed record
+# (docs/target-classes.md rows and the artifacts they name) — fixed before
+# the sweep, applied mechanically by count.py. A FAIL from a tool not
+# listed here counts as new-this-sweep (pending triage), never silently as
+# an actionable finding.
+#   reported-upstream  — filed on the target's tracker (actionable finding)
+#   withdrawn          — the bug claim was withdrawn (false-positive side)
+#   kept-unreported    — the finding stands in-repo, deliberately unreported
+timewarrior	reported-upstream
+topydo	reported-upstream
+calcurse	reported-upstream
+stow	reported-upstream
+buku	withdrawn
+devtodo	kept-unreported

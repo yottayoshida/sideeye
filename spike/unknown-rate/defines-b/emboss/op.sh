@@ -1,0 +1,2 @@
+#!/bin/sh
+exec seqret -sequence "$TOY_STATE/in.fasta" -outseq "$TOY_STATE/out.fasta" -auto

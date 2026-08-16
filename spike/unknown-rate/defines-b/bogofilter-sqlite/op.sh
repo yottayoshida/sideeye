@@ -1,0 +1,2 @@
+#!/bin/sh
+exec bogofilter-sqlite -s -d "$TOY_STATE" -I "$TOY_STATE/spam.eml"

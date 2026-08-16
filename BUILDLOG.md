@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — #84 apparatus: the corpus is fixed before the sweep, and the first draft could not fail
+
+The UNKNOWN-rate measurement (v1.0 criterion 4) starts with the PR that must
+merge before any number exists: `docs/unknown-rate.md` (the frozen rulebook —
+unit, four axes, funnel walls, outcome-ratio classification, small-cell rule),
+`spike/unknown-rate/` (corpus.tsv with 49 trials, five launchers, sweep.sh,
+count.py, a third Dockerfile), and acceptance check 12 (the drift gate).
+
+The first corpus design was killed in plan review, and the reviewer was right
+in one sentence: **the measurement could not fail.** Every committed define
+that reaches a verdict today is a define whose past refusal drove #121/#122 —
+the assisted cohort went 4/5 UNKNOWN → 1/5 in one day when those engine PRs
+landed — so a corpus of committed defines measures "did the engine catch up
+with its own inputs", and a threshold set from its ~0% is satisfied by
+construction. The shipped design splits the corpus: the A-group (28 trials,
+10 tools, every runnable committed define — watson counted IN the denominator
+as an UNKNOWN, since "supported" is a class property and watson is a Python
+CLI) is published as the engine's development-input set and is not the
+threshold basis; the B-group (20 targets nobody here ever ran) is, and its
+members were selected by a committed debtags predicate over bookworm's own
+archive metadata with a deterministic sort — the second review round caught
+that "about 10, hand-picked from the predicate's pool" would have moved the
+gerrymandering from the rate to the threshold, so no hand touches the list
+(select-b.sh, b-candidates.txt, b-targets.txt are all committed; the one
+hand-written input is the name-exclusion file carrying the taint ledger and
+hledger's sealed eligibility). Of the 20, seven reached a uniform minimal
+define (setup + one documented state-changing op + L0 + strict oracle;
+grounds quoted per target in defines-b/*/NOTES.md — cookietool's man page
+even documents its temp-file rewrite and a "CAUTION NEEDED" direct-overwrite
+flag); thirteen are funnel walls (W1 does-not-install ×2 measured, W2
+state-not-in-local-files ×9, W3 no-non-interactive-writer ×2), published as
+funnel data outside the engine-rate denominator.
+
+Decisions that will read as opinionated later, recorded now: taskwarrior is
+in the supported table but has no committed define, and reconstructing one
+today from BUILDLOG prose would be answer-known authoring — it joins the
+corpus in neither group (the exclusion table says why); the campaign
+declarations run through a thin open launcher that replicates exactly what
+can move a verdict (HOME, the CHECK_* unsets, the state roots) and
+deliberately not the seal machinery — CLAUDE.md now says a post-campaign open
+re-measurement is not a campaign phase; macOS gets a derived column from the
+requireCompleteness mechanism (every strict PASS → completeness_not_verified,
+no oracle exists there), computed by count.py from a formula, never typed.
+
+The gate was seen red before it was trusted, both sides: fixtures/good passes,
+tampered-verdict (one report's verdict flipped, docs left stale) dies with
+"published results block differs from recomputation", tampered-manifest (one
+row deleted) dies with "manifest rows (2) != corpus rows (3)" — and check 12
+re-runs all three every CI run, so the red proof cannot rot. Pre-data, the
+live check asserts the explicit placeholder line: an empty table can never
+read as a measured zero.
+
 ## 2026-08-15 — #78/#79/#80: found not plumbed, and two evidence-first pages
 
 Batch b_309cfe196cf1. The shim default is the demo's resolver generalized —

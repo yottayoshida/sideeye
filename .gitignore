@@ -24,3 +24,6 @@ spike/blind-hunt[0-9]*/configs/.latest.*
 
 # assisted-discovery working artifacts (#118); the committed record is RESULTS.md
 spike/assisted/runs/
+
+# Python bytecode from running count.py in place
+__pycache__/

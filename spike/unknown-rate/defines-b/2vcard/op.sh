@@ -1,0 +1,2 @@
+#!/bin/sh
+exec 2vcard -f mutt -i "$TOY_STATE/aliases" -o "$TOY_STATE/out.vcf"

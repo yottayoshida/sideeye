@@ -1,0 +1,66 @@
+# The frozen corpus for the #84 UNKNOWN-rate measurement. One row per trial.
+# Fixed before any sweep run (PR order proves it: this file merges in the
+# apparatus PR, the artifacts merge in the results PR).
+#
+# Columns (tab-separated):
+#   trial_id  group(A|B|control)  tool  class  judge  launcher  args  artdir  report_path  defines
+#
+# class slugs map to docs/target-classes.md rows: c-cpp-cli="C/C++ CLI",
+# c-cli="C CLI", cxx-cli="C++ CLI", python-cli="Python CLI",
+# python-sqlite="Python + sqlite", perl-cli="Perl CLI"; shell-helper is the
+# control's behavioral class (not a supported class). B-group class slugs
+# come from the archive's own implemented-in debtag.
+# judge: l0=built-in atomicity only, l0c=+declared checker.
+# launcher "-" with args W1|W2|W3 is a funnel wall: no engine run, the
+# grounds are in defines-b/<tool>/NOTES.md (rules in docs/unknown-rate.md).
+# defines: ;-separated repo-relative paths (a directory means every file
+# under it, sorted) — hashed into the sweep manifest.
+a-topydo-add	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo add	a-topydo-add	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-append	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo append	a-topydo-append	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-del	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo del	a-topydo-del	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-dep-add	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo dep-add	a-topydo-dep-add	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-dep-rm	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo dep-rm	a-topydo-dep-rm	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-depri	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo depri	a-topydo-depri	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-do	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo do	a-topydo-do	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-ls	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo ls	a-topydo-ls	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-postpone	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo postpone	a-topydo-postpone	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-pri	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo pri	a-topydo-pri	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-revert	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo revert	a-topydo-revert	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-sort	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo sort	a-topydo-sort	report.json	spike/blind-hunt/declaration/topydo/ops
+a-topydo-tag	A	topydo	python-cli	l0c	campaign.sh	bh1 topydo tag	a-topydo-tag	report.json	spike/blind-hunt/declaration/topydo/ops
+a-abook-import	A	abook	c-cli	l0c	campaign.sh	bh2 abook import	a-abook-import	report.json	spike/blind-hunt2/declaration/abook/ops
+a-abook-export	A	abook	c-cli	l0c	campaign.sh	bh2 abook export	a-abook-export	report.json	spike/blind-hunt2/declaration/abook/ops
+a-abook-refused	A	abook	c-cli	l0c	campaign.sh	bh2 abook refused	a-abook-refused	report.json	spike/blind-hunt2/declaration/abook/ops
+a-khal-import	A	khal	python-cli	l0c	campaign.sh	bh3 khal import	a-khal-import	report.json	spike/blind-hunt3/declaration/khal/ops
+a-khal-update	A	khal	python-cli	l0c	campaign.sh	bh3 khal update	a-khal-update	report.json	spike/blind-hunt3/declaration/khal/ops
+a-khal-new	A	khal	python-cli	l0c	campaign.sh	bh3 khal new	a-khal-new	report.json	spike/blind-hunt3/declaration/khal/ops
+a-buku-add	A	buku	python-sqlite	l0c	assisted.sh	buku	a-buku-add	report.json	spike/assisted/buku/ops
+a-calcurse-purge	A	calcurse	c-cli	l0c	assisted.sh	calcurse	a-calcurse-purge	report.json	spike/assisted/calcurse/ops
+a-devtodo-remove	A	devtodo	cxx-cli	l0c	assisted.sh	devtodo	a-devtodo-remove	report.json	spike/assisted/devtodo/ops
+a-stow-unfold	A	stow	perl-cli	l0c	assisted.sh	stow	a-stow-unfold	report.json	spike/assisted/stow/ops
+a-watson-add	A	watson	python-cli	l0c	watson.sh	-	a-watson-add	report.json	spike/dogfood-watson
+a-timew-a	A	timewarrior	c-cpp-cli	l0	dogfood.sh	timew	inv-timew	run/a/report.json	spike/dogfood-timew.sh
+a-timew-b	A	timewarrior	c-cpp-cli	l0c	dogfood.sh	timew	inv-timew	run/b/report.json	spike/dogfood-timew.sh
+a-todoman-a	A	todoman	python-cli	l0	dogfood.sh	todoman	inv-todoman	run/a/report.json	spike/dogfood-todoman.sh
+a-todoman-b	A	todoman	python-cli	l0c	dogfood.sh	todoman	inv-todoman	run/b/report.json	spike/dogfood-todoman.sh
+ctl-pass-mv	control	pass	shell-helper	l0c	assisted.sh	pass	ctl-pass-mv	report.json	spike/assisted/pass/ops
+b-2vcard	B	2vcard	perl-cli	l0	bgroup.sh	2vcard	b-2vcard	report.json	spike/unknown-rate/defines-b/2vcard
+b-audiolink	B	audiolink	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/audiolink
+b-bogofilter-bdb	B	bogofilter-bdb	c-cli	l0	bgroup.sh	bogofilter-bdb	b-bogofilter-bdb	report.json	spike/unknown-rate/defines-b/bogofilter-bdb
+b-bogofilter-sqlite	B	bogofilter-sqlite	c-cli	l0	bgroup.sh	bogofilter-sqlite	b-bogofilter-sqlite	report.json	spike/unknown-rate/defines-b/bogofilter-sqlite
+b-bucardo	B	bucardo	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/bucardo
+b-check-postgres	B	check-postgres	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/check-postgres
+b-cookietool	B	cookietool	c-cli	l0	bgroup.sh	cookietool	b-cookietool	report.json	spike/unknown-rate/defines-b/cookietool
+b-cricket	B	cricket	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/cricket
+b-emboss	B	emboss	c-cli	l0	bgroup.sh	emboss	b-emboss	report.json	spike/unknown-rate/defines-b/emboss
+b-flamerobin	B	flamerobin	cxx-cli	-	-	W3	-	-	spike/unknown-rate/defines-b/flamerobin
+b-gammu	B	gammu	c-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/gammu
+b-gnupg-agent	B	gnupg-agent	c-cli	-	-	W3	-	-	spike/unknown-rate/defines-b/gnupg-agent
+b-goobook	B	goobook	python-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/goobook
+b-hnb	B	hnb	c-cli	l0	bgroup.sh	hnb	b-hnb	report.json	spike/unknown-rate/defines-b/hnb
+b-hobbit-plugins	B	hobbit-plugins	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/hobbit-plugins
+b-icinga2-ido-mysql	B	icinga2-ido-mysql	cxx-cli	-	-	W1	-	-	spike/unknown-rate/defines-b/icinga2-ido-mysql
+b-icinga2-ido-pgsql	B	icinga2-ido-pgsql	cxx-cli	-	-	W1	-	-	spike/unknown-rate/defines-b/icinga2-ido-pgsql
+b-lbdb	B	lbdb	perl-cli	l0	bgroup.sh	lbdb	b-lbdb	report.json	spike/unknown-rate/defines-b/lbdb
+b-ldap-git-backup	B	ldap-git-backup	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/ldap-git-backup
+b-ldap-utils	B	ldap-utils	c-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/ldap-utils
