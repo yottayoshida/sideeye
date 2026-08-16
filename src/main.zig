@@ -48,12 +48,15 @@ fn say(comptime fmt: []const u8, args: anytype) void {
 
 const Args = struct {
     state: ?[]const u8 = null,
-    setup: ?[]const u8 = null,
-    operation: ?[]const u8 = null,
+    // The three commands carry either spelling (config.Command): the flags always
+    // bind the string form; the argv form arrives only through a sideeye.toml or a
+    // case_version 3 case file (ADR 0019).
+    setup: ?config.Command = null,
+    operation: ?config.Command = null,
     shim: ?[]const u8 = null,
     work: []const u8 = "/tmp/sideeye-work",
     oracle: ?[]const u8 = null,
-    check: ?[]const u8 = null,
+    check: ?config.Command = null,
     allow_unverified: bool = false,
     fresh_state: bool = false,
     json: ?[]const u8 = null,
@@ -76,9 +79,9 @@ const ReplayCase = struct {
     contract_version: u32,
     define: struct {
         state: []const u8,
-        setup: ?[]const u8 = null,
-        operation: []const u8,
-        check: ?[]const u8 = null,
+        setup: ?config.Command = null,
+        operation: config.Command,
+        check: ?config.Command = null,
         marker: ?[]const u8 = null,
         // Absent in a case_version 1 file; absent means "exit 0 was the contract",
         // which is exactly what every v1 case was recorded under (ADR 0014).
@@ -386,12 +389,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (i + 1 >= argv.len) setupError("an option is missing its value");
         const v = argv[i + 1];
         if (std.mem.eql(u8, argv[i], "--state")) args.state = v
-        else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = v
-        else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = v
+        else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v }
+        else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v }
         else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v
         else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
-        else if (std.mem.eql(u8, argv[i], "--check")) args.check = v
+        else if (std.mem.eql(u8, argv[i], "--check")) args.check = .{ .str = v }
         else if (std.mem.eql(u8, argv[i], "--marker")) args.marker = v
         else if (std.mem.eql(u8, argv[i], "--expect-status")) {
             args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
@@ -444,8 +447,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const c = parsed.value;
         if (!std.mem.eql(u8, c.schema, "sideeye/case"))
             setupError("the file does not declare itself a sideeye case");
-        if (c.case_version != 1 and c.case_version != 2)
-            setupError("this binary understands case schema versions 1 and 2 only");
+        if (c.case_version != 1 and c.case_version != 2 and c.case_version != 3)
+            setupError("this binary understands case schema versions 1, 2 and 3 only");
+        // The same travel-together law, extended to the command shape (ADR 0019): the
+        // argv form arrived with version 3, so an older file carrying it is not an
+        // older file — it is malformed, and reading it under a guessed contract would
+        // replay a define no version-2-era binary ever produced.
+        const carries_argv = (c.define.operation == .argv) or
+            (c.define.setup != null and c.define.setup.? == .argv) or
+            (c.define.check != null and c.define.check.? == .argv);
+        if (c.case_version < 3 and carries_argv)
+            setupError("a case_version 1 or 2 file cannot carry an argv-form command; the array form arrived with version 3");
         // The version and the declaration travel together (ADR 0014): a v1 file
         // carrying a declaration is not a v1 file, and a v2 file without one has
         // lost the very fact the version exists to freeze. Both are refused as
@@ -456,8 +468,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // contract") is the same either way. A v2 `null` refuses like an absence.
         if (c.case_version == 1 and c.define.expected_status != null)
             setupError("a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
-        if (c.case_version == 2 and c.define.expected_status == null)
-            setupError("a case_version 2 file must carry define.expected_status; the case freezes the declaration");
+        if (c.case_version >= 2 and c.define.expected_status == null)
+            setupError("a case_version 2 or 3 file must carry define.expected_status; the case freezes the declaration");
         args.state = c.define.state;
         args.setup = c.define.setup;
         args.operation = c.define.operation;
@@ -503,9 +515,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 const dir_abs = posix.realpath(dz.ptr, &dir_real) orelse setupError("--config's directory could not be resolved");
                 const dir = arena.dupe(u8, std.mem.span(dir_abs)) catch setupError("out of memory");
                 args.state = resolvePathAgainst(arena, dir, d.state);
-                args.setup = if (d.setup) |s| resolveCommandAgainst(arena, dir, s) else null;
-                args.operation = resolveCommandAgainst(arena, dir, d.operation);
-                args.check = if (d.check) |c| resolveCommandAgainst(arena, dir, c) else null;
+                args.setup = if (d.setup) |s| resolveCommand(arena, dir, s) else null;
+                args.operation = resolveCommand(arena, dir, d.operation);
+                args.check = if (d.check) |c| resolveCommand(arena, dir, c) else null;
                 args.marker = d.marker;
                 if (d.expected_status) |es| {
                     args.expect_status = parseExpectStatus(es, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
@@ -627,7 +639,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     // ---- setup -------------------------------------------------------------------
     if (args.setup) |cmd| {
-        const setup_argv = splitArgs(arena_state.allocator(), cmd) catch setupError("--setup is empty");
+        const setup_argv = commandArgv(arena_state.allocator(), cmd) catch setupError("--setup is empty");
         if (setup_argv.len == 0) setupError("--setup is empty");
         const term = posix.runChild(gpa, setup_argv, &.{
             .{ "TOY_STATE", state_abs },
@@ -646,7 +658,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const rec_trace = std.fmt.bufPrint(&rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError("path too long");
     removeFile(rec_trace);
 
-    const op_argv = splitArgs(arena_state.allocator(), operation) catch setupError("--operation is empty");
+    const op_argv = commandArgv(arena_state.allocator(), operation) catch setupError("--operation is empty");
     if (op_argv.len == 0) setupError("--operation is empty");
 
     var oracle_out_buf: [contract.max_path]u8 = undefined;
@@ -1034,8 +1046,26 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // boundaries, baseline behavior, checker falsification — have not run, and the
     // report says so by name. This exit is unconditional; no explore/replay code below
     // is reachable in preflight mode.
-    if (mode == .preflight)
-        preflightReport(arena, n, state, args.setup, operation, shim, args.oracle, args.expect_status);
+    if (mode == .preflight) {
+        // Preflight binds its define from the flags alone (--config is refused above),
+        // and the flags always carry the string form — so both unwraps below are
+        // structurally satisfied today. They are refusals rather than unreachables so
+        // that a future route feeding preflight an argv-form define fails closed with
+        // the constraint named instead of printing a hint that cannot be spelled.
+        // (If such a route ever exists, this check should move ahead of the recording
+        // run — firing here would be a refusal after a side effect, the shape the
+        // --json placement refusal above deliberately avoids.)
+        const pf_msg = "preflight takes the define-surface flags, which carry the string form; the argv form lives in a sideeye.toml, and `sideeye explore --config` answers strictly more";
+        const pf_setup: ?[]const u8 = if (args.setup) |s| switch (s) {
+            .str => |x| x,
+            .argv => setupError(pf_msg),
+        } else null;
+        const pf_op: []const u8 = switch (operation) {
+            .str => |x| x,
+            .argv => setupError(pf_msg),
+        };
+        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.expect_status);
+    }
 
     if (n == 0) {
         requireCompleteness(arena, args.oracle != null, args.allow_unverified);
@@ -1069,7 +1099,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // derived from an instrument that was never shown to respond.
     var check_argv: ?[]const []const u8 = null;
     if (args.check) |check_cmd| {
-        const cargv = splitArgs(arena, check_cmd) catch setupError("--check is empty");
+        const cargv = commandArgv(arena, check_cmd) catch setupError("--check is empty");
         if (cargv.len == 0) setupError("--check is empty");
         check_argv = cargv;
         // Before the falsification exits, for the same reason as the oracle note above:
@@ -1477,6 +1507,17 @@ fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
     var it = std.mem.tokenizeScalar(u8, cmd, ' ');
     while (it.next()) |tok| try list.append(arena, tok);
     return list.items;
+}
+
+/// One spawn shape for both spellings: the string form splits on spaces here (the
+/// flags' rule, ADR 0007 decision 5) and the argv form passes through verbatim
+/// (ADR 0019) — the executor sees a `[]const []const u8` either way, and nothing
+/// downstream of this call knows which spelling the define used.
+fn commandArgv(arena: std.mem.Allocator, cmd: config.Command) ![]const []const u8 {
+    return switch (cmd) {
+        .str => |s| splitArgs(arena, s),
+        .argv => |a| a,
+    };
 }
 
 // ---- preflight ---------------------------------------------------------------------
@@ -1899,6 +1940,24 @@ fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     return readFileAllocCapped(arena, path, std.math.maxInt(usize));
 }
 
+/// A define command as a bare JSON value, mirroring `config.Command.jsonParse`:
+/// the string form is one JSON string, the argv form one array of strings. The two
+/// functions are the write and read halves of the same shape — a case written here
+/// parses back through there.
+fn jsonCommand(w: *std.ArrayList(u8), arena: std.mem.Allocator, cmd: config.Command) !void {
+    switch (cmd) {
+        .str => |s| try jsonString(w, arena, s),
+        .argv => |a| {
+            try w.append(arena, '[');
+            for (a, 0..) |e, i| {
+                if (i != 0) try w.appendSlice(arena, ", ");
+                try jsonString(w, arena, e);
+            }
+            try w.append(arena, ']');
+        },
+    }
+}
+
 /// JSON for the caller, text for the reader, with identical content (DESIGN §13).
 ///
 /// Hand-written rather than derived from a type: the schema is explicitly experimental
@@ -2152,6 +2211,32 @@ fn resolveCommandAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const
     return std.fmt.allocPrint(arena, "{s}/{s}{s}", .{ dir, head, tail }) catch setupError("out of memory");
 }
 
+/// The Command-shaped face of the same rule. The string form goes through
+/// `resolveCommandAgainst` unchanged. The argv form resolves element 0 only, under
+/// the names-a-place test — minus the string form's leading-space skip, on purpose:
+/// that skip mirrors how the space-split executor finds argv[0], and the argv form
+/// has no split — its bytes are verbatim, so an element 0 with a leading space is
+/// the author's own byte string, passed through untouched (and failing loudly at
+/// exec). The remaining elements are arguments — data, never paths to rewrite.
+fn resolveCommand(arena: std.mem.Allocator, dir: []const u8, cmd: config.Command) config.Command {
+    switch (cmd) {
+        .str => |s| return .{ .str = resolveCommandAgainst(arena, dir, s) },
+        .argv => |a| {
+            // The parser refuses empty arrays; this guard is for any future route
+            // that reaches here without it — pass through, and let the spawn site's
+            // own emptiness refusal speak.
+            if (a.len == 0) return .{ .argv = a };
+            const head = a[0];
+            if (head.len == 0 or head[0] == '/' or head[0] == ' ' or std.mem.indexOfScalar(u8, head, '/') == null)
+                return .{ .argv = a };
+            const out = arena.alloc([]const u8, a.len) catch setupError("out of memory");
+            out[0] = std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, head }) catch setupError("out of memory");
+            for (a[1..], 1..) |e, idx| out[idx] = e;
+            return .{ .argv = out };
+        },
+    }
+}
+
 test "toml paths resolve against the toml's directory, commands only when they name a place" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
@@ -2164,6 +2249,20 @@ test "toml paths resolve against the toml's directory, commands only when they n
     // argv[0] is found the way the executor finds it: leading spaces must not let a
     // place-naming command slip past resolution and run cwd-relative.
     try std.testing.expectEqualStrings("/cfg/./check.sh", resolveCommandAgainst(a, "/cfg", " ./check.sh"));
+    // The argv arm: element 0 only, same names-a-place test, tail untouched — and
+    // verbatim means verbatim: a leading space disqualifies resolution instead of
+    // being skipped, because nothing here splits or trims (ADR 0019).
+    const rel = resolveCommand(a, "/cfg", .{ .argv = &.{ "./check.sh", "--strict", "a b" } });
+    try std.testing.expectEqualStrings("/cfg/./check.sh", rel.argv[0]);
+    try std.testing.expectEqualStrings("--strict", rel.argv[1]);
+    try std.testing.expectEqualStrings("a b", rel.argv[2]);
+    const bare = resolveCommand(a, "/cfg", .{ .argv = &.{ "mytool", "x/y" } });
+    try std.testing.expectEqualStrings("mytool", bare.argv[0]);
+    try std.testing.expectEqualStrings("x/y", bare.argv[1]);
+    const abs = resolveCommand(a, "/cfg", .{ .argv = &.{"/usr/bin/tool"} });
+    try std.testing.expectEqualStrings("/usr/bin/tool", abs.argv[0]);
+    const spaced = resolveCommand(a, "/cfg", .{ .argv = &.{" ./check.sh"} });
+    try std.testing.expectEqualStrings(" ./check.sh", spaced.argv[0]);
 }
 
 /// FNV-1a over the class names of the subject's counted operations 1..k, hex-encoded.
@@ -2220,7 +2319,16 @@ fn writeCase(
     var doc: std.ArrayList(u8) = .empty;
     const w = &doc;
     var nb: [16]u8 = undefined;
-    w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": 2,\n  \"sideeye_version\": ") catch return null;
+    // The version and the shape travel together (ADR 0019, the ADR 0014 law): a case
+    // whose define carries the argv form is version 3; one spelled entirely in
+    // strings stays version 2, byte-shaped exactly as every v2-era reader expects.
+    const carries_argv = (args.operation.? == .argv) or
+        (args.setup != null and args.setup.? == .argv) or
+        (args.check != null and args.check.? == .argv);
+    const case_version: u32 = if (carries_argv) 3 else 2;
+    w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
+    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
+    w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
     jsonString(w, arena, version) catch return null;
     w.appendSlice(arena, ",\n  \"contract_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}) catch return null) catch return null;
@@ -2228,13 +2336,13 @@ fn writeCase(
     jsonString(w, arena, args.state.?) catch return null;
     if (args.setup) |s| {
         w.appendSlice(arena, ",\n    \"setup\": ") catch return null;
-        jsonString(w, arena, s) catch return null;
+        jsonCommand(w, arena, s) catch return null;
     }
     w.appendSlice(arena, ",\n    \"operation\": ") catch return null;
-    jsonString(w, arena, args.operation.?) catch return null;
+    jsonCommand(w, arena, args.operation.?) catch return null;
     if (args.check) |c| {
         w.appendSlice(arena, ",\n    \"check\": ") catch return null;
-        jsonString(w, arena, c) catch return null;
+        jsonCommand(w, arena, c) catch return null;
     }
     if (args.marker) |m| {
         w.appendSlice(arena, ",\n    \"marker\": ") catch return null;

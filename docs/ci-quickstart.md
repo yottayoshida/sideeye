@@ -23,8 +23,11 @@ operation = "myapp commit"        # explored: killed before each state-changing 
 
 Relative paths and place-naming commands (`./x`, `../x`) resolve against the
 toml's own directory, so the file means the same thing from any cwd (ADR 0007).
-Commands split on spaces — no quoting; anything an argument cannot spell
-belongs in a script.
+Commands split on spaces — no quoting. An argument that carries a space is
+spelled with the argv form, one line, passed verbatim (ADR 0019):
+`operation = ["myapp", "commit", "-m", "a message with spaces"]`. A define
+spelled as argv skips `sideeye preflight` (flags carry the string form only)
+and goes straight to `explore --config`, which answers strictly more.
 
 **2. The workflow steps** — build sideeye (zig 0.16 via `mlugg/setup-zig`),
 install `strace` (the completeness oracle; without it a would-be PASS refuses

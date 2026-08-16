@@ -689,10 +689,23 @@ static int cmd_load_key(void) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s init|rotate|doctor|load-key\n", argv[0]);
+        fprintf(stderr, "usage: %s init|rotate|rotate-msg|doctor|load-key\n", argv[0]);
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
+    /* rotate-msg <message>: rotates only when <message> is the exact byte string
+     * "note with spaces" — one argv element carrying spaces. The split-on-space
+     * string form cannot spell that argument (it arrives split into three
+     * elements and argc lands at 5), so a rotate reached through this command is
+     * structural evidence the argv form (#95, ADR 0019) delivered its elements
+     * verbatim. Anything else exits 1 before touching the state. */
+    if (strcmp(argv[1], "rotate-msg") == 0) {
+        if (argc != 3 || strcmp(argv[2], "note with spaces") != 0) {
+            fprintf(stderr, "rotate-msg requires exactly one argument, the exact string \"note with spaces\"\n");
+            return 1;
+        }
+        return cmd_rotate();
+    }
     /* TOY_SELFEXEC: the tail-exec CLI shape #123 judges. Stage 1 writes one state
      * file (so the carried operation count is non-trivial), then replaces this
      * image with itself; the whole rotate runs in the SECOND image. Stage 2 is

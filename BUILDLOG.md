@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — #95: the argv form, and the wall it was built against turns out to hide a real bug
+
+**The shape of the change (ADR 0019).** One tagged union — `config.Command`,
+string or argv — carried from the parser through `Args`, the case file and
+the three spawn sites, so the two spellings meet only where both become the
+executor's argv. The string path is byte-identical to before: the flags still
+bind strings, `splitArgs` still splits them, and a case spelled entirely in
+strings still writes `case_version: 2` — the bump to 3 happens only when a
+define actually carries the argv form (the ADR 0014 travel-together law,
+extended to shape). The parser's array grammar is deliberately narrower than
+TOML's: one line, quoted elements, commas, and a named line-numbered refusal
+for everything outside that — including the array form on a non-command key,
+which a value-first parse would have accepted silently (plan R1's catch,
+confirmed against the code: the old parser read the value before dispatching
+on the key). Review then caught the refusal *count* claimed in prose
+disagreeing between four documents while a reachable refusal sat unpinned —
+the counted-claim class; the counts are gone and the branch is pinned.
+
+**Red first, and the instrument lied once.** Before the implementation, the
+current binary was fed both an argv operation and an argv `state`: line-named
+refusals, exit 3 — measured in the working session, not kept as an artifact;
+the durable red is structural, and review verified it: check 2ab's argv toml
+exits 3 on any build without the feature, so the acceptance suite cannot go
+green pre-feature, and the acceptance refusal checks plus the unit-test
+refusal table pin the walls that replaced that one generic refusal. The one stumble: the first followup-95 run reported `rc=0` while
+its own log said the apparatus had failed — the raw exit code went to `tail`,
+not to the record. The pipe-hides-rc class, re-learned; the re-run reads the
+raw rc before any pipe.
+
+**followup-95: the sweep's hnb wall was the spelling, and only the spelling.**
+Run in the sweep's own image (hnb 1.9.18 baked in), this branch's engine:
+the wrapper spelling still refuses exactly as the #84 sweep recorded
+(UNKNOWN, child_process_detected — the control), and the same question
+spelled as argv explores fully and lands **FAIL — 1 violation over 3 crash
+points, strict oracle agreeing on all 3 operations** (the engine's headline
+prints "1 of 4", counting the baseline world — #150): hnb's save path rewrites `notes.hnb`
+through truncation, and a kill inside the open→write window leaves the file
+neither old nor new — the devtodo/calcurse class on a third target. The v3
+case replays in a fresh work directory. Finding kept in-repo, deliberately
+unreported (the devtodo target-selection call). One self-caught slip on the
+way: the NOTES' Result section was drafted before the run — the
+conclusion-before-measurement class R1 flagged on the #123 comment this same
+batch — and was reverted to a placeholder until the artifacts existed.
+
+**What did not change, verified rather than assumed.** No trace-contract
+movement (no shim or record change; existing saved cases replay untouched),
+no report-schema movement (the operation never reached the report), and
+preflight is untouched — the plan's original hint-branch idea died in review
+as unreachable code, and the real constraint (an argv-form define cannot use
+preflight, because preflight is flags-only by its own refusal) is documented
+where the argv form is.
+
 ## 2026-08-16 — #81: the README's agent section states two measurements and one absence
 
 The batch's last PR adds the agent-onboarding section to the README's MCP

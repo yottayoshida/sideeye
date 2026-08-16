@@ -1382,6 +1382,26 @@ else
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
+# The argv form's boundary (#95, ADR 0019), through the binary: the unit tests pin
+# every refusal branch; these four prove the same walls stand at the CLI, line named.
+toml_refusal "the argv form refuses an unclosed bracket" \
+'[world]
+state = "./state"
+[define]
+operation = ["a", "b"' "line 4: .*does not close"
+toml_refusal "the argv form refuses a trailing comma" \
+'[world]
+state = "./state"
+[define]
+operation = ["a",]' "trailing comma"
+toml_refusal "the argv form refuses an empty array" \
+'[world]
+state = "./state"
+[define]
+operation = []' "the array is empty"
+toml_refusal "a non-command key refuses the array form by name" \
+'[world]
+state = ["./state"]' "belongs to the commands"
 
 echo "=========== check 2y: the L1 success marker is a strict subset, never a leak (ADR 0008) ==========="
 # The post-success invariant fires only in worlds where the operation's own claim
@@ -1527,6 +1547,81 @@ else
 fi
 
 echo ""
+echo "=========== check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019) ==========="
+# The toy's rotate-msg demands ONE argv element "note with spaces". The negative
+# control runs first and from the same define material: the string form splits that
+# argument into three, the toy refuses before touching state, and the recording run
+# fails — the exact UNKNOWN the sweep measured on hnb. The array form then reaches
+# the toy verbatim: the BUGGY rotate explores to FAIL, the saved case is
+# case_version 3 with the operation as a JSON array, and that case replays in a
+# fresh work directory. Finally a v2 case hand-edited to carry an argv-form command
+# refuses: the shape arrived with version 3, and version and shape travel together.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+cat > /tmp/acc/spacearg-str.toml <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = "$OUT/toy-bug rotate-msg note with spaces"
+TOML
+o=$("$SIDEEYE" explore --config /tmp/acc/spacearg-str.toml \
+    --shim "$SHIM" --work /tmp/acc/work-str --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "recording_run_failed"; then
+    echo "ok   the string form cannot spell the spaced argument (UNKNOWN, recording run failed)"
+else
+    echo "FAIL string-form control: exit $rc (wanted 2 + recording_run_failed)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+cat > /tmp/acc/spacearg.toml <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = ["$OUT/toy-bug", "rotate-msg", "note with spaces"]
+TOML
+o=$("$SIDEEYE" explore --config /tmp/acc/spacearg.toml \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+spacecase=/tmp/acc/work/cases/000001.json
+case_ok=0
+grep -q '"case_version": 3' "$spacecase" 2>/dev/null \
+    && grep -q '"operation": \["' "$spacecase" 2>/dev/null && case_ok=1
+o2=$("$SIDEEYE" replay "$spacecase" --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
+rc2=$?
+if [ "$rc" = "1" ] && [ "$case_ok" = "1" ] && [ "$rc2" = "1" ] \
+    && echo "$o2" | grep -q "the case reproduced"; then
+    echo "ok   the argv form explores to FAIL, saves a v3 case, and the case replays"
+else
+    echo "FAIL argv-form round-trip: explore=$rc case_fields=$case_ok replay=$rc2"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+# Both arms of the pairing gate, each pinned to its message — a bare exit-3 match
+# would also be satisfied by an unreadable fixture that was never written.
+python3 - "$spacecase" /tmp/acc/v2-with-argv.json /tmp/acc/v1-with-argv.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+a = json.loads(json.dumps(c)); a["case_version"] = 2
+json.dump(a, open(sys.argv[2], "w"))
+b = json.loads(json.dumps(c)); b["case_version"] = 1; del b["define"]["expected_status"]
+json.dump(b, open(sys.argv[3], "w"))
+PY
+o3=$("$SIDEEYE" replay /tmp/acc/v2-with-argv.json --shim "$SHIM" --work /tmp/acc/work-r2 2>&1)
+rc3=$?
+o4=$("$SIDEEYE" replay /tmp/acc/v1-with-argv.json --shim "$SHIM" --work /tmp/acc/work-r3 2>&1)
+rc4=$?
+if [ "$rc3" = "3" ] && echo "$o3" | grep -q "cannot carry an argv-form command" \
+    && [ "$rc4" = "3" ] && echo "$o4" | grep -q "cannot carry an argv-form command"; then
+    echo "ok   a v1 or v2 case carrying an argv-form command refuses (the shape arrived with v3)"
+else
+    echo "FAIL argv pairing gate: v2=$rc3 v1=$rc4 (wanted 3 + the named refusal, both)"
+    echo "$o3" | sed 's/^/     | /' | head -2
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 3b: traces are identical up to pid renaming ==========="
 # v0.1 claimed the recording run's trace was byte-identical across runs. v3 puts a pid
 # in every record, and pids differ between runs by nature — so the claim becomes:
