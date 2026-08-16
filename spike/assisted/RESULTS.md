@@ -51,6 +51,22 @@ Correction). The scores above are the owner's and stand as scored;
 re-scoring, if any, is the owner's call with `REMEASURE.md` and the
 correction as inputs.*
 
+*Re-scored, 2026-08-16 (owner; inputs: the note above, `REMEASURE.md`, the
+#84 sweep, and `spike/followup-95/`): drivable-slice discovery value **3.5
+of 5** (was 1.5). The mechanical part: calcurse, stow and devtodo are found
+— stow and devtodo reached verified, replay-confirmed counterexamples once
+#121/#122 closed the gaps their questions had been blocked on; buku counts
+zero on this axis (the question stood; the answer sat inside the store's own
+contract, and the claim was withdrawn); pass stays blocked on #123. The half
+point is hnb — outside this cohort, measured under the same assisted shape
+in `spike/followup-95/`: the #84 sweep's spelling refusal, re-posed through
+the argv form (#95), landed a real counterexample on the first try. Counting
+a sixth target against a five-target denominator is irregular, and the
+irregularity is the disclosure: the number reads "three of these five, plus
+corroboration that the pattern holds beyond them". Question quality stays
+5/5, unchanged. The original 2026-08-15 scores above stand as the record of
+what was known then.*
+
 **The failure-mode inversion, recorded**: the metadata gate was designed
 against an agent posing vacuous questions. None appeared. The binding
 constraint was the JUDGE's reach — engine coverage — which the gate was

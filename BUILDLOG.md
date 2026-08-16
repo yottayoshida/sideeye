@@ -2,6 +2,35 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — #118 re-scored by the owner, #123 held on measured demand
+
+**The re-scoring (owner adjudication, recorded in RESULTS.md).**
+Drivable-slice discovery value 1.5 → **3.5 of 5**; question quality stays
+5/5. The mechanics: stow and devtodo graduated from blocked to found when
+#121/#122 closed the gaps under their questions; buku counts zero (question
+stood, answer sat inside the store's contract, claim withdrawn); pass stays
+blocked on #123. The half point is hnb — outside the cohort, same assisted
+shape, and the deliberately irregular part of the number: a sixth target
+against a five-target denominator, disclosed in the record as
+"corroboration the pattern holds beyond them" rather than silently pooled.
+The owner also ruled the product decision: **advance** — the agent-facing
+scouting guide gets written (next PR), and #118 stays open per its own
+tracking note.
+
+**#123 stays open and unbuilt, and now the reason is measured rather than
+felt.** The trigger was "build when multi-process friction dominates". The
+#84 sweep's two child refusals turned out to be spelling (both op.sh
+wrappers; #95 dissolved hnb's live), leaving one direct demand (pass) plus
+one potential (lbdb through a wrapper child). Against that: the address
+`(subject pid, seq)` is load-bearing across engine, case format and replay;
+ADR 0002 already rejected both obvious mechanisms; and the ADR 0018
+precedent prices the smaller half of this issue at 1106 PR lines (~370 of
+them src/ + shim/ insertions, measured from that PR's own diffstat — the
+review caught this entry's first draft carrying "~450" inherited from an
+earlier review's estimate, unverified: the remembered-number class again).
+The disposition comment carries all of it, with the reopen condition stated
+as a data condition, not a mood.
+
 ## 2026-08-16 — #95: the argv form, and the wall it was built against turns out to hide a real bug
 
 **The shape of the change (ADR 0019).** One tagged union — `config.Command`,
