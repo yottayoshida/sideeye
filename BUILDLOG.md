@@ -2,7 +2,20 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-16 — #85: the §18 review is written, and criterion 3 flips on it
+## 2026-08-16 — #81: the README's agent section states two measurements and one absence
+
+The batch's last PR adds the agent-onboarding section to the README's MCP
+chapter: the two measured agent workflows stated separately (fix-from-report,
+twice; define authoring, five targets in minutes), and the unmeasured path —
+setup from the README alone — named as unmeasured instead of implied. The
+lightweight review caught the draft doing, in miniature, exactly what the
+#85 review's R1 caught at scale: "handed only the counterexample" had
+dropped the bug-blind replay plumbing from the input list (PRD's own honesty
+note says the input set is the report *and what it transitively names*), and
+"documentation-reading protocol" implied a docs-only scout when the protocol
+grants source, tests and trackers too. Both were claims of *less* access
+than measured — flattering compression, the same overclaim class in the
+humble direction. Fixed before commit.
 
 The kill-criteria review (`docs/kill-criteria-review.md`) scores all eight
 §18 conditions against the collected data — none triggered — and PRD
