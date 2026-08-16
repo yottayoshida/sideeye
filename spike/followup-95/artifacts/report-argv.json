@@ -1,0 +1,28 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "crash_points": 3,
+  "explored": 4,
+  "violations": 1,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 3,
+    "invariant": "built-in atomicity (L0)",
+    "after": {"op": "open", "path": "/tmp/followup-95/state-argv/notes.hnb"},
+    "before": {"op": "write", "path": "/tmp/followup-95/state-argv/notes.hnb"},
+    "subject": "notes.hnb",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/tmp/followup-95/work-argv/cases/000001.json",
+  "replay": "sideeye replay /tmp/followup-95/work-argv/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 3 operations (121 syscall lines examined, 28 in scope of the judged state)",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

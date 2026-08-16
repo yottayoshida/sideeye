@@ -61,7 +61,7 @@ expected_status = "3"           # optional: the exit status that means "complete
                                 # (default "0") — for git-style conventions
 ```
 
-The same define works as flags (`--state`/`--setup`/`--operation`/`--check`/`--marker`/`--expect-status`); `--json <path>` writes the identical report for a machine to branch on. Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0. Command strings split on spaces, no quoting; anything an argument cannot spell belongs in a script file (ADR 0007).
+The same define works as flags (`--state`/`--setup`/`--operation`/`--check`/`--marker`/`--expect-status`); `--json <path>` writes the identical report for a machine to branch on. Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0. Command strings split on spaces, no quoting (ADR 0007); an argument that carries a space is spelled with the argv form instead — `operation = ["mytool", "commit", "-m", "a message with spaces"]`, one line, passed verbatim (ADR 0019). One constraint travels with the argv form: `sideeye preflight` reads flags only, which carry the string form — a define spelled as argv goes straight to `explore --config`, which answers strictly more.
 
 A FAIL saves its counterexample to `<work>/cases/NNNNNN.json` and prints the ready-to-paste `sideeye replay <case.json>` line. Replay re-runs the same pipeline — every trust gate included — restricted to that crash point; when the code changed underneath the case, the answer is `case no longer applies`, never a verdict about a shifted address.
 

@@ -210,7 +210,7 @@ check     = "./check.sh"          # runs after crash + restart, in a fresh proce
 
 If Define ever needs more than this, that is movement toward the kill criteria in §18, and we should notice.
 
-Noticed twice, deliberately, and recorded both times: `marker` joined with the L1 layer (ADR 0008), and `expected_status` joined for targets whose success convention is a non-zero exit — git-style tools were unjudgeable without it (ADR 0014). Neither is a new verb: one is the operation's own success claim, the other the fact of what that claim's exit status is. A sixth key should face this sentence again.
+Noticed three times, deliberately, and recorded each time: `marker` joined with the L1 layer (ADR 0008), `expected_status` joined for targets whose success convention is a non-zero exit — git-style tools were unjudgeable without it (ADR 0014) — and the argv form joined for the argument a space-split string cannot spell, after the #84 sweep measured the script-file escape hatch being refused structurally for exactly the targets that needed it (ADR 0019). The third is not a key at all but a second value shape for the existing commands; the sentence above covers shapes as much as keys, and a sixth key — or a third shape — should face it again.
 
 Define has three levels; the lower ones are zero-effort:
 

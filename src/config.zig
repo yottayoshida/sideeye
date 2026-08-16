@@ -1,7 +1,8 @@
-//! sideeye.toml — the Define contract's file form (ADR 0007).
+//! sideeye.toml — the Define contract's file form (ADR 0007, ADR 0019).
 //!
 //! The parser accepts a strict subset of TOML on purpose: `[world]` and `[define]`
-//! section headers, `key = "double-quoted string"` pairs, blank lines and `#`
+//! section headers, `key = "double-quoted string"` pairs, the one-line argv form
+//! `key = ["prog", "arg"]` on the three command keys, blank lines and `#`
 //! comments — nothing else. What a config parser accepts is the width of the
 //! contract, so anything unexpected is a named, line-numbered refusal rather than
 //! something to skip: an ignored key is a declared invariant that silently never
@@ -13,11 +14,31 @@
 
 const std = @import("std");
 
+/// A define command in one of its two spellings (ADR 0007 decision 5; ADR 0019).
+/// The string form is split on spaces at the spawn site — no quoting, no escapes.
+/// The argv form is passed to the executor verbatim, one element per argument —
+/// it exists exactly for the argument a space-split string cannot spell.
+pub const Command = union(enum) {
+    str: []const u8,
+    argv: []const []const u8,
+
+    /// Case files carry a command as a bare JSON value — a string (the string
+    /// form) or an array of strings (the argv form) — never as a tagged object.
+    /// Anything else is a case from no schema this binary knows.
+    pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Command {
+        return switch (try source.peekNextTokenType()) {
+            .string => .{ .str = try std.json.innerParse([]const u8, allocator, source, options) },
+            .array_begin => .{ .argv = try std.json.innerParse([]const []const u8, allocator, source, options) },
+            else => error.UnexpectedToken,
+        };
+    }
+};
+
 pub const Define = struct {
     state: []const u8,
-    setup: ?[]const u8 = null,
-    operation: []const u8,
-    check: ?[]const u8 = null,
+    setup: ?Command = null,
+    operation: Command,
+    check: ?Command = null,
     /// The L1 success marker (ADR 0008): a byte string the operation prints on stdout
     /// when it has committed. Joined the schema in the same change that made the
     /// engine enforce it — a key that parses before it acts would accept a declared
@@ -49,9 +70,9 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     const Section = enum { none, world, define };
     var section: Section = .none;
     var state: ?[]const u8 = null;
-    var setup: ?[]const u8 = null;
-    var operation: ?[]const u8 = null;
-    var check: ?[]const u8 = null;
+    var setup: ?Command = null;
+    var operation: ?Command = null;
+    var check: ?Command = null;
     var marker: ?[]const u8 = null;
     var expected_status: ?[]const u8 = null;
 
@@ -75,41 +96,126 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
         const eq = std.mem.indexOfScalar(u8, line, '=') orelse
             return fault(line_no, "not a key = \"value\" line");
         const key = std.mem.trim(u8, line[0..eq], " \t");
-        const value = stripQuoted(std.mem.trim(u8, line[eq + 1 ..], " \t")) orelse
-            return fault(line_no, "the value must be one double-quoted string (an inline # comment may follow it)");
-        if (std.mem.indexOfScalar(u8, value, '\\') != null)
-            return fault(line_no, "escape sequences are not part of the contract; anything a plain string cannot spell belongs in a script file");
-        // A NUL truncates at the C boundary, so the config as reviewed and the command
-        // as executed would silently differ; other control bytes are the report-forging
-        // class (#26). The flags could never carry these — the file must not widen that.
-        for (value) |ch| if (ch < 0x20 or ch == 0x7f)
-            return fault(line_no, "control bytes are not part of the contract; anything a plain string cannot spell belongs in a script file");
-        const slot: *?[]const u8 = switch (section) {
+        const rawv = std.mem.trim(u8, line[eq + 1 ..], " \t");
+        const is_array = rawv.len > 0 and rawv[0] == '[';
+        // Two slot shapes: the commands may carry either spelling (ADR 0019); every
+        // other key knows exactly one value shape, and an array there is refused by
+        // name rather than falling into a generic parse error — the key dispatch
+        // happens before the value parse precisely so this refusal can exist.
+        const Slot = union(enum) { cmd: *?Command, str: *?[]const u8 };
+        const slot: Slot = switch (section) {
             .none => return fault(line_no, "a key before any section header"),
             .world => if (std.mem.eql(u8, key, "state"))
-                &state
+                Slot{ .str = &state }
             else
                 return fault(line_no, "unknown key in [world]: only `state` exists"),
             .define => if (std.mem.eql(u8, key, "setup"))
-                &setup
+                Slot{ .cmd = &setup }
             else if (std.mem.eql(u8, key, "operation"))
-                &operation
+                Slot{ .cmd = &operation }
             else if (std.mem.eql(u8, key, "check"))
-                &check
+                Slot{ .cmd = &check }
             else if (std.mem.eql(u8, key, "marker"))
-                &marker
+                Slot{ .str = &marker }
             else if (std.mem.eql(u8, key, "expected_status"))
-                &expected_status
+                Slot{ .str = &expected_status }
             else
                 return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker` and `expected_status` exist"),
         };
-        if (slot.* != null) return fault(line_no, "duplicate key");
-        if (value.len == 0) return fault(line_no, "the value is empty");
-        slot.* = try arena.dupe(u8, value);
+        switch (slot) {
+            .str => |p| {
+                if (is_array)
+                    return fault(line_no, "this key takes one double-quoted string; the array form belongs to the commands (setup, operation, check)");
+                const value = stripQuoted(rawv) orelse
+                    return fault(line_no, "the value must be one double-quoted string (an inline # comment may follow it)");
+                if (badBytes(value)) |msg| return fault(line_no, msg);
+                if (p.* != null) return fault(line_no, "duplicate key");
+                if (value.len == 0) return fault(line_no, "the value is empty");
+                p.* = try arena.dupe(u8, value);
+            },
+            .cmd => |p| {
+                if (p.* != null) return fault(line_no, "duplicate key");
+                if (is_array) {
+                    switch (try parseArrayValue(arena, rawv)) {
+                        .ok => |elems| p.* = .{ .argv = elems },
+                        .bad => |msg| return fault(line_no, msg),
+                    }
+                } else {
+                    const value = stripQuoted(rawv) orelse
+                        return fault(line_no, "the value must be one double-quoted string (an inline # comment may follow it)");
+                    if (badBytes(value)) |msg| return fault(line_no, msg);
+                    if (value.len == 0) return fault(line_no, "the value is empty");
+                    p.* = .{ .str = try arena.dupe(u8, value) };
+                }
+            },
+        }
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
     return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status } };
+}
+
+/// The byte discipline both value shapes share. A NUL truncates at the C boundary,
+/// so the config as reviewed and the command as executed would silently differ;
+/// other control bytes are the report-forging class (#26). Escapes are refused
+/// because there is no escape processing to back them (ADR 0007).
+fn badBytes(value: []const u8) ?[]const u8 {
+    if (std.mem.indexOfScalar(u8, value, '\\') != null)
+        return "escape sequences are not part of the contract; anything a plain string cannot spell belongs in a script file";
+    for (value) |ch| if (ch < 0x20 or ch == 0x7f)
+        return "control bytes are not part of the contract; anything a plain string cannot spell belongs in a script file";
+    return null;
+}
+
+const ArrayResult = union(enum) {
+    ok: []const []const u8,
+    bad: []const u8,
+};
+
+/// The argv form (ADR 0019): `["prog", "arg one", "arg two"]` — one line, every
+/// element one double-quoted string, elements separated by commas, an inline `#`
+/// comment allowed after the closing bracket. Deliberately not TOML's array
+/// grammar: no multi-line arrays, no trailing comma, no non-string elements —
+/// each refusal below is the boundary of the contract, not a parser limitation.
+fn parseArrayValue(arena: std.mem.Allocator, v: []const u8) error{OutOfMemory}!ArrayResult {
+    var elems: std.ArrayList([]const u8) = .empty;
+    var i: usize = 1; // v[0] == '['
+    var expect_elem = true;
+    while (true) {
+        while (i < v.len and (v[i] == ' ' or v[i] == '\t')) i += 1;
+        if (i >= v.len)
+            return .{ .bad = "the array does not close: the argv form is one `[` ... `]` on a single line" };
+        if (v[i] == ']') {
+            if (expect_elem and elems.items.len > 0)
+                return .{ .bad = "a trailing comma before `]` is not part of the contract" };
+            i += 1;
+            break;
+        }
+        if (!expect_elem) {
+            if (v[i] == ',') {
+                i += 1;
+                expect_elem = true;
+                continue;
+            }
+            return .{ .bad = "array elements are separated by commas" };
+        }
+        if (v[i] != '"')
+            return .{ .bad = "every array element is one double-quoted string" };
+        const close = std.mem.indexOfScalarPos(u8, v, i + 1, '"') orelse
+            return .{ .bad = "an array element's closing quote is missing" };
+        const elem = v[i + 1 .. close];
+        if (elem.len == 0) return .{ .bad = "an array element is empty" };
+        if (badBytes(elem)) |msg| return .{ .bad = msg };
+        try elems.append(arena, try arena.dupe(u8, elem));
+        i = close + 1;
+        expect_elem = false;
+    }
+    const rest = std.mem.trim(u8, v[i..], " \t");
+    if (rest.len != 0 and rest[0] != '#')
+        return .{ .bad = "trailing content after `]` (an inline # comment may follow it)" };
+    if (elems.items.len == 0)
+        return .{ .bad = "the array is empty; a command needs at least its argv[0]" };
+    return .{ .ok = elems.items };
 }
 
 /// The value grammar: one double-quoted string, optionally followed by whitespace
@@ -146,10 +252,87 @@ test "the DESIGN §12 example parses, inline comments and all" {
         \\marker    = "Recorded"            # the operation's own success claim (L1)
     );
     try t.expectEqualStrings("./state", r.ok.state);
-    try t.expectEqualStrings("mytool init", r.ok.setup.?);
-    try t.expectEqualStrings("mytool rotate-key", r.ok.operation);
-    try t.expectEqualStrings("./check.sh", r.ok.check.?);
+    try t.expectEqualStrings("mytool init", r.ok.setup.?.str);
+    try t.expectEqualStrings("mytool rotate-key", r.ok.operation.str);
+    try t.expectEqualStrings("./check.sh", r.ok.check.?.str);
     try t.expectEqualStrings("Recorded", r.ok.marker.?);
+}
+
+test "the argv form parses: verbatim elements, spaces and specials inside, inline comment after" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const r = parseFor(as.allocator(),
+        \\[world]
+        \\state = "./state"
+        \\[define]
+        \\setup     = ["./seed.sh", "two words"]
+        \\operation = ["mytool", "commit", "-m", "a message with spaces"]   # argv form (ADR 0019)
+        \\check     = ["./check.sh", "has # and , and [ inside"]
+    );
+    const op = r.ok.operation.argv;
+    try t.expectEqual(@as(usize, 4), op.len);
+    try t.expectEqualStrings("mytool", op[0]);
+    try t.expectEqualStrings("a message with spaces", op[3]);
+    try t.expectEqual(@as(usize, 2), r.ok.setup.?.argv.len);
+    try t.expectEqualStrings("has # and , and [ inside", r.ok.check.?.argv[1]);
+}
+
+test "the argv form refuses on its boundary, each with the line" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const head = "[world]\nstate = \"s\"\n[define]\n";
+    const cases = [_]struct { line: []const u8, frag: []const u8 }{
+        .{ .line = "operation = [\"a\", \"b\"", .frag = "does not close" },
+        .{ .line = "operation = []", .frag = "the array is empty" },
+        .{ .line = "operation = [\"\"]", .frag = "element is empty" },
+        .{ .line = "operation = [\"a\",]", .frag = "trailing comma" },
+        .{ .line = "operation = [\"a\" \"b\"]", .frag = "separated by commas" },
+        .{ .line = "operation = [\"a]", .frag = "closing quote" },
+        .{ .line = "operation = [a]", .frag = "one double-quoted string" },
+        .{ .line = "operation = [\"a\"] extra", .frag = "trailing content" },
+        .{ .line = "operation = [\"a\\tb\"]", .frag = "escape sequences" },
+        .{ .line = "operation = [\"a\tb\"]", .frag = "control bytes" },
+    };
+    for (cases) |c| {
+        const text = std.fmt.allocPrint(a, "{s}{s}\n", .{ head, c.line }) catch unreachable;
+        const r = parseFor(a, text);
+        try t.expectEqual(@as(usize, 4), r.fault.line);
+        try t.expect(std.mem.indexOf(u8, r.fault.what, c.frag) != null);
+    }
+    // A second `[` line would read as a section header; the message names the shape.
+    const multi = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = [\n\"a\"]\n");
+    try t.expectEqual(@as(usize, 4), multi.fault.line);
+    try t.expect(std.mem.indexOf(u8, multi.fault.what, "does not close") != null);
+    const dup = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = [\"a\"]\noperation = \"b\"\n");
+    try t.expectEqualStrings("duplicate key", dup.fault.what);
+}
+
+test "the non-command keys refuse the array form by name" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const st = parseFor(a, "[world]\nstate = [\"s\"]\n");
+    try t.expectEqual(@as(usize, 2), st.fault.line);
+    try t.expect(std.mem.indexOf(u8, st.fault.what, "belongs to the commands") != null);
+    const mk = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\nmarker = [\"m\"]\n");
+    try t.expect(std.mem.indexOf(u8, mk.fault.what, "belongs to the commands") != null);
+    const es = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\nexpected_status = [\"1\"]\n");
+    try t.expect(std.mem.indexOf(u8, es.fault.what, "belongs to the commands") != null);
+}
+
+test "Command.jsonParse reads the bare-value shapes and refuses the rest" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const Box = struct { c: Command };
+    const s = std.json.parseFromSliceLeaky(Box, a, "{\"c\": \"a b\"}", .{}) catch unreachable;
+    try t.expectEqualStrings("a b", s.c.str);
+    const v = std.json.parseFromSliceLeaky(Box, a, "{\"c\": [\"a\", \"b c\"]}", .{}) catch unreachable;
+    try t.expectEqual(@as(usize, 2), v.c.argv.len);
+    try t.expectEqualStrings("b c", v.c.argv[1]);
+    try t.expectError(error.UnexpectedToken, std.json.parseFromSliceLeaky(Box, a, "{\"c\": 42}", .{}));
+    try t.expectError(error.UnexpectedToken, std.json.parseFromSliceLeaky(Box, a, "{\"c\": [1, 2]}", .{}));
 }
 
 test "setup and check are optional; state and operation are not" {

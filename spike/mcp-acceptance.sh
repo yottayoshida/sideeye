@@ -127,7 +127,8 @@ state = "./envstate"
 [define]
 operation = "/bin/sh -c env"
 TOML
-# The operation has a space, which sideeye's arg split rejects — so use a script.
+# The operation has a space; a script stands in for it here (the argv form of
+# ADR 0019 could spell it too, but this fixture also wants the output capture).
 cat > "$WS/printenv.sh" <<'SH'
 #!/bin/sh
 env > /tmp/mcp-childenv.txt

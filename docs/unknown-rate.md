@@ -376,7 +376,11 @@ contract gap; the origin split itself is a line drawn **after** the sweep
 cookietool is the arguable case — a nonstandard exit convention is also a
 fact about the target. Counted either way, the threshold below holds
 (part 1 becomes 1/7 at worst). That split is threshold material, not a
-reason to re-file the refusals.
+reason to re-file the refusals. *(Since this sweep: the argv form — #95,
+ADR 0019 — can spell hnb's invocation without a wrapper, measured in
+`spike/followup-95/`; the record above stands as measured under the
+contract of its day. lbdb's stdin redirect remains outside any argv
+shape's reach.)*
 
 **The bogofilter-sqlite FAIL** (3/26 worlds, oracle agreed on 25
 operations, L0: `wordlist.db` "holding neither the old nor the new

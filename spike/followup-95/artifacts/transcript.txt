@@ -1,0 +1,62 @@
+== followup-95 2026-08-16T09:18:17Z
+hnb: 1.9.18+ds1-3
+engine: sideeye 0.9.0 (trace contract v10)
+-- control (wrapper spelling)
+UNKNOWN  child_process_detected
+         the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+control rc=2
+-- argv form
+FAIL  1 of 4 crash worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  open(/tmp/followup-95/state-argv/notes.hnb)
+            before write(/tmp/followup-95/state-argv/notes.hnb)
+path        notes.hnb
+observed    holding neither the old nor the new content
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (121 syscall lines examined, 28 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+checker     none configured
+l1          no marker configured
+case        /tmp/followup-95/work-argv/cases/000001.json
+replay      sideeye replay /tmp/followup-95/work-argv/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/followup-95/state-argv SIDEEYE_TRACE_PATH=/tmp/followup-95/work-argv/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
+argv rc=1
+-- replay of the argv-form case
+FAIL  1 of 2 crash worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  open(/tmp/followup-95/state-argv/notes.hnb)
+            before write(/tmp/followup-95/state-argv/notes.hnb)
+path        notes.hnb
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      not run (no --oracle given)
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission calls)
+checker     none configured
+l1          no marker configured
+case        /tmp/followup-95/work-argv/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/followup-95/state-argv SIDEEYE_TRACE_PATH=/tmp/followup-95/work-replay/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
+replay rc=1
