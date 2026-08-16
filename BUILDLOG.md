@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — the scouting guide ships: SCOUT.md grows its product form
+
+The batch's last PR promotes the assisted-discovery method to
+`docs/scouting.md`. The promotion is a rewrite, not a copy: the experiment's
+measurement framing (start timestamps, the 15-minute budget, cohort rules)
+stays behind in `spike/assisted/`, and what crosses over is the method — the
+five things a scout reads for, propose-before-define metadata, fail-closed
+checkers, treat-UNKNOWN-as-a-define-bug — plus every lesson the cohort paid
+for and two things this batch added: the argv form for the argument a
+space-split string cannot spell, and the routing note that an argv define
+skips preflight for `explore --config`. Numbers are deliberately absent from
+the guide: measured results live in the records (`spike/assisted/`,
+`spike/followup-95/`), which do not go stale when the next cohort runs.
+SCOUT.md keeps a pointer forward so the experiment's record and the product
+door cannot drift apart silently.
+
+Same PR, a reversal recorded as it happened: on the owner's direction to
+sweep the README for contradictions, hnb was first PROMOTED — into the
+front page's counterexample list and the target-classes Measured table —
+and the owner rejected the promotion within the hour, on a stronger ground
+than the reporting rule: **a small, effectively dormant project is not a
+legitimate measurement target at all**, and putting one on the product's
+front page is wrong even unreported. Both promotions are reverted; the
+re-scoring that had briefly taken a half point from the hnb run is
+corrected 3.5 → **3 of 5** (RESULTS.md carries the correction, the
+selection rule in PROTOCOL.md is tightened from "explorable but
+unreportable" to "not a target", and the scouting guide now says so as its
+first never-do). The followup-95 record itself stands — it was and remains
+the #95 contract measurement — it just names no score and no front page.
+
 ## 2026-08-16 — #118 re-scored by the owner, #123 held on measured demand
 
 **The re-scoring (owner adjudication, recorded in RESULTS.md).**

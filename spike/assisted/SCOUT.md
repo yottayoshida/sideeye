@@ -1,5 +1,10 @@
 # SCOUT — the assisted-discovery loop for agents (#118)
 
+> **Promoted (2026-08-16):** the product form of this method lives at
+> `docs/scouting.md` — measurement framing dropped, the cohort's lessons and
+> the argv form (#95) folded in. This file stays as the experiment's record;
+> new scouting starts from the guide.
+
 You are an agent asked to test whether a repository's stateful CLI survives
 crashes. You may read anything: source, docs, tests, issue trackers, an
 external repository-understanding service. **You propose the question;
