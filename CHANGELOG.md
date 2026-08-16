@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-08-16
+
+The batch release for the last stretch of pre-freeze work: the argv form closes the one spelling gap the define contract had, two more v1.0 entry criteria land as met (the kill-criteria review and the UNKNOWN-rate measurement), the timewarrior proof moves into CI, and the scouting guide ships as the agent-facing front door.
+
 ### Added
 
 - The scouting guide (#118's advanced product decision): `docs/scouting.md` — the working method for handing the repo-reading to an agent, promoted from the experiment's `spike/assisted/SCOUT.md` with the measured lessons folded in (environment inheritance, the determinism probe, propose-before-define metadata) plus this batch's additions (the argv form, and its routing past preflight to `explore --config`). Linked from the README's agent section as one of its doors; the measured records stay in `spike/assisted/` and `spike/followup-95/`, deliberately not restated on the guide.
