@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "crash_points": 0,
+  "explored": 0,
+  "violations": 0,
+  "expected_status": 0,
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "agreed on 0 operations (2047 syscall lines examined, 14 in scope of the judged state)",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

@@ -1,0 +1,12 @@
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (305 syscall lines examined, 19 in scope of the judged state)
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /tmp/bgroup-pre/2vcard/state --setup "/work/spike/unknown-rate/defines-b/2vcard/setup.sh" --operation "2vcard -f mutt -i /tmp/bgroup-pre/2vcard/state/aliases -o /tmp/bgroup-pre/2vcard/state/out.vcf" \
+               --check <your-invariant.sh> --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
+preflight exit=0

@@ -1,0 +1,12 @@
+UNKNOWN  recording_run_failed
+         the operation exited 10 during the recording run where 0 was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)
+
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+preflight exit=2

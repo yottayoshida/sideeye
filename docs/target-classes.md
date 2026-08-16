@@ -4,6 +4,8 @@ The README's constraint list says what a target must do; this page says how real
 
 Two vocabulary notes. A **verdict** is PASS or FAIL; everything else is a named refusal (UNKNOWN), never a silent pass. And a FAIL is a crash-consistency counterexample — a state the tool itself can be left in — not automatically an upstream bug: one recorded FAIL below stands withdrawn as a bug claim because the store's own recovery contract covers it.
 
+To be precise about "supported", since the v1.0 criterion hangs off it: **supported classes are exactly the rows of the first table below** (Measured, with verdicts). The refusal tables and the Rust narrative are not supported classes, whatever verdicts their stories contain. The UNKNOWN rate over supported-class targets — measured on a corpus frozen before it ran, with the threshold set from the data — is published in [docs/unknown-rate.md](unknown-rate.md).
+
 ## Measured, with verdicts
 
 | Class | Tool | What happened | Recorded in |

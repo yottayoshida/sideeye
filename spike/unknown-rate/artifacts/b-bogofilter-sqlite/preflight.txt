@@ -1,0 +1,12 @@
+PREFLIGHT  recording accepted — 25 state-changing operation(s) observed
+
+atomicity    3 path(s) judged pre-or-post
+oracle       agreed on 25 operations (305 syscall lines examined, 116 in scope of the judged state)
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /tmp/bgroup-pre/bogofilter-sqlite/state --setup "/work/spike/unknown-rate/defines-b/bogofilter-sqlite/setup.sh" --operation "bogofilter-sqlite -s -d /tmp/bgroup-pre/bogofilter-sqlite/state -I /tmp/bgroup-pre/bogofilter-sqlite/state/spam.eml" \
+               --check <your-invariant.sh> --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
+preflight exit=0

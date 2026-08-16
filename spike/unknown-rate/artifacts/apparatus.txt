@@ -1,0 +1,7 @@
+sideeye 0.9.0 (trace contract v10)
+0959f511355f6fe3c57691c7edf85519dbb418c9eb07edf6b69fba232073c668  /work/zig-out/bin/sideeye
+31e322a1fb31efd1a317e7be12759ed3de233fcb1c80fab9d43feb6a64262f1d  /work/zig-out/lib/libsideeye_shim.so
+head: b5b23fdfb58bf9e57bc1cdc3765fe7799a5dd39e
+sideeye-ur-extra sha256:df66b6e1a87c2310e824f80d673962f581edfdae08542ec2309fa704dee6aed2
+sideeye-ur-assisted sha256:102ba92c98979e302c0e6f2d88f295d03173b580b18cefe500d45a44a89aac15
+sideeye-ur-campaign sha256:22039ece1eeb5b2276f703c41c8cf606bc9c59313d6e56a17081ac2db83200fe

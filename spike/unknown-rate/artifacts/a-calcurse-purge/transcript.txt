@@ -1,0 +1,23 @@
+falsify: checker(calcurse-purge): I-C: expected exactly one GraceStandup apts line, got 0
+checker(calcurse-purge): I-C: expected exactly one GraceStandup apts line, got 0
+FAIL  1 of 11 crash worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 10 of 10
+            after  open(/tmp/assisted/calcurse/state/d/apts)
+            before write(/tmp/assisted/calcurse/state/d/apts)
+path        d/apts
+observed    holding neither the old nor the new content
+explored    11 worlds (crash points 10 + 1 baseline)
+expected    exit 0
+atomicity   4 path(s) judged pre-or-post
+oracle      agreed on 10 operations (164 syscall lines examined, 45 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes
+checker     falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+l1          no marker configured
+case        /tmp/sideeye-work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/assisted/calcurse/state SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=10 SIDEEYE_SEQ_BASE= <operation>
