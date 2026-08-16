@@ -112,6 +112,15 @@ const ReplayCase = struct {
 var json_path: ?[]const u8 = null;
 var json_arena: ?std.mem.Allocator = null;
 var oracle_note: []const u8 = "not run (no --oracle given)";
+
+/// The machine-readable half of the oracle account (#94). Set true at exactly one
+/// point — beside the "agreed on N operations" note, after the comparison completed
+/// and agreed. Every other outcome keeps the initial false: no --oracle given,
+/// --allow-unverified without an oracle, or a comparison cut short by any refusal
+/// above it (the two flags are not exclusive: an oracle that ran and agreed sets
+/// true even beside an inert --allow-unverified). A fact
+/// about the run, never about the verdict — a FAIL stands without an oracle.
+var oracle_verified: bool = false;
 /// Ownership/permission writes on the state directory (#121, option b): observed by
 /// the oracle alone — the shim does not interpose them — and excluded from every
 /// verdict input. The default says why absence of a note is not absence of writes:
@@ -967,6 +976,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .unsupported => |name| unknown(.unsupported_syscall_observed, name),
         };
 
+        oracle_verified = true;
         oracle_note = std.fmt.allocPrint(
             arena,
             "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
@@ -2057,6 +2067,10 @@ fn buildJson(
     try jsonString(w, arena, verdict);
     try w.appendSlice(arena, ",\n  \"exit_code\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{exit_code}));
+    // The contractual spelling of "did a second witness check this?" (#94). A caller
+    // gates on `verdict == "PASS" && oracle_verified`, never on the prose `oracle` string.
+    try w.appendSlice(arena, ",\n  \"oracle_verified\": ");
+    try w.appendSlice(arena, if (oracle_verified) "true" else "false");
     // Read from the run's own counters rather than passed in as zeroes. An UNKNOWN raised
     // at world 4 of 6 used to report `"explored": 0`, so a caller aggregating coverage
     // from the JSON recorded nothing for every run that ended early.

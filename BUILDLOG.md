@@ -2,6 +2,38 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-16 — oracle_verified: the report says, as a value, whether a second witness checked
+
+Issue #94's gap, measured before anything was written: a verified PASS and an
+`--allow-unverified` PASS were generated on the same clean toy in the spike
+container and their JSONs diffed — both exit 0, and the difference confined to
+two prose account fields (`oracle` and `metadata_writes`). Grep-able, so the
+premise is not "no difference"; it is that neither is a field designed for
+branching — the schema page licenses account prose to change wording between
+releases. The fix is one required bool on every report: `oracle_verified`,
+true at exactly one point in the pipeline (the oracle comparison completed and
+agreed — set beside the "agreed on N operations" note), false on every other
+path: no `--oracle`, `--allow-unverified` with no oracle, a comparison cut
+short by a refusal (the flags are not exclusive — an oracle that ran and
+agreed sets true beside an inert `--allow-unverified`; whether that combo
+should refuse instead is filed as #156, not decided here). Review then added
+two more corners to the pins — the SETUP_ERROR report and the no-oracle FAIL,
+each seen red once against a field-less report — bringing the value pins to
+seven; the pins' repr comparison cannot see a bool-vs-string type regression,
+filed as #157.
+The name was the owner's pick from three shapes: `evidence_level` on every
+verdict was rejected because a no-oracle FAIL would be stamped "unverified" —
+a word that reads as doubt about a counterexample that stands on replay alone;
+a PASS-only field was rejected for pushing three-state logic onto every
+caller. A fact about the run, never the verdict. The exit codes stay untouched
+— whether an unverified PASS should exit differently is the freeze audit's
+question (#86), deliberately not this change's. Acceptance pins the value on
+all four corners (verified PASS true, oracle-borne FAIL true, no-oracle
+UNKNOWN false, --allow-unverified PASS false) plus the ran-but-not-compared
+path (empty oracle), and the pins were run against the pre-change binary
+first: all five red (the field read as empty on every pin), with check 4's
+bidirectional binding firing too — "documented but never generated".
+
 ## 2026-08-16 — the README sheds its history: the owner's simplification order
 
 The owner read the front page and ordered it cut: the status paragraph, the

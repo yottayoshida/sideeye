@@ -708,7 +708,8 @@ echo "=========== check 2k: an empty oracle is not agreement ==========="
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
-    --shim "$SHIM" --work /tmp/acc/work --oracle "$ROOT/spike/empty-oracle.sh" 2>&1)
+    --shim "$SHIM" --work /tmp/acc/work --oracle "$ROOT/spike/empty-oracle.sh" \
+    --json /tmp/acc/report.json 2>&1)
 rc=$?
 if [ "$rc" = "2" ] && echo "$o" | grep -q "oracle_saw_nothing"; then
     echo "ok   an oracle that observed nothing does not confirm anything (exit 2)"
@@ -716,6 +717,15 @@ if [ "$rc" = "2" ] && echo "$o" | grep -q "oracle_saw_nothing"; then
 else
     echo "FAIL empty oracle: exit $rc"
     echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+# #94: this is the "--oracle was given, the oracle ran, and the comparison did not
+# complete" path — the evidence bit must stay false here, not only where no oracle
+# exists at all. The total rule has one true-point; this pins one of its elsewheres.
+if [ "$(field /tmp/acc/report.json oracle_verified)" = "False" ]; then
+    echo "ok   oracle_verified stays false when the oracle ran but nothing was compared"
+else
+    echo "FAIL oracle_verified on the empty-oracle path: '$(field /tmp/acc/report.json oracle_verified)', wanted false"
     fails=$((fails + 1))
 fi
 
@@ -1685,7 +1695,7 @@ echo "=========== check 4: the report schema page is held to the generated repor
 # cover all four verdicts; the comparison is a script taking paths, so the doc
 # side can be falsified in isolation (mutate a copy, watch it go red).
 SD=/tmp/acc-schema
-rm -rf "$SD" && mkdir -p "$SD/s1" "$SD/s2" "$SD/s3" "$SD/s4"
+rm -rf "$SD" && mkdir -p "$SD/s1" "$SD/s2" "$SD/s3" "$SD/s4" "$SD/s5" "$SD/s6"
 TOY_STATE=$SD/s1 "$SIDEEYE" explore --state "$SD/s1" \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work "$SD/w1" --oracle /usr/bin/strace --json "$SD/pass.json" >/dev/null 2>&1
@@ -1705,6 +1715,36 @@ if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$
     echo "ok   the schema page, the generated reports, and the contract enum agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
+    fails=$((fails + 1))
+fi
+
+# The #94 value pins: the evidence bit is a value, not only a documented name. True is
+# reserved for "the comparison completed and agreed" — so the oracle-borne FAIL carries
+# true (the bit is about the run, not the verdict), and the --allow-unverified PASS
+# carries false: exactly the pair the exit codes cannot distinguish. A build that does
+# not emit the field fails every value pin (field() prints nothing for a missing key,
+# and nothing is neither True nor False).
+TOY_STATE=$SD/s5 "$SIDEEYE" explore --state "$SD/s5" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work "$SD/w5" --allow-unverified --json "$SD/unverified-pass.json" >/dev/null 2>&1
+# A FAIL needs no oracle and no flag — it exits before the PASS-side completeness
+# gate — and its report must still carry the bit, as false (R1: the schema's
+# Always=yes was otherwise pinned on no report of this exact shape).
+TOY_STATE=$SD/s6 "$SIDEEYE" explore --state "$SD/s6" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$SD/w6" --json "$SD/nooracle-fail.json" >/dev/null 2>&1
+ev_fails=0
+[ "$(field "$SD/pass.json" oracle_verified)" = "True" ] || { echo "     verified PASS: oracle_verified is '$(field "$SD/pass.json" oracle_verified)', wanted true"; ev_fails=$((ev_fails + 1)); }
+[ "$(field "$SD/fail.json" oracle_verified)" = "True" ] || { echo "     oracle-borne FAIL: oracle_verified is '$(field "$SD/fail.json" oracle_verified)', wanted true"; ev_fails=$((ev_fails + 1)); }
+[ "$(field "$SD/unknown.json" oracle_verified)" = "False" ] || { echo "     no-oracle UNKNOWN: oracle_verified is '$(field "$SD/unknown.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
+[ "$(field "$SD/unverified-pass.json" oracle_verified)" = "False" ] || { echo "     --allow-unverified PASS: oracle_verified is '$(field "$SD/unverified-pass.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
+[ "$(field "$SD/setup.json" oracle_verified)" = "False" ] || { echo "     SETUP_ERROR: oracle_verified is '$(field "$SD/setup.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
+[ "$(field "$SD/nooracle-fail.json" verdict)" = "FAIL" ] || { echo "     no-oracle FAIL: verdict is '$(field "$SD/nooracle-fail.json" verdict)', wanted FAIL"; ev_fails=$((ev_fails + 1)); }
+[ "$(field "$SD/nooracle-fail.json" oracle_verified)" = "False" ] || { echo "     no-oracle FAIL: oracle_verified is '$(field "$SD/nooracle-fail.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
+if [ "$ev_fails" = "0" ]; then
+    echo "ok   oracle_verified: true exactly where the comparison completed and agreed"
+else
+    echo "FAIL oracle_verified value pins: $ev_fails of 7 wrong"
     fails=$((fails + 1))
 fi
 
