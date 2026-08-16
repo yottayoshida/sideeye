@@ -134,6 +134,15 @@ The full contract, and the reason behind each refusal: [DESIGN.md](DESIGN.md).
 
 The root confines *which* config may be named — it is not a sandbox for what that config's operation does: a vetted config's operation can still read `$HOME`, reach the network, or write outside the workspace. For agent-driven use, run the server inside a container or an otherwise restricted workspace, network-off where the target allows it; the loop-closure runs are the worked example (sealed container, mount discipline).
 
+### What an agent has already done here, measured
+
+Two agent workflows are recorded facts in this repository, not aspirations:
+
+- **Writing the fix from the report.** A context-free coding agent, handed only the counterexample — the report JSON, the case it names, the invariant it points at, bug-blind replay plumbing — and the target's pinned checkout, produced the fix and the judge's own replay passed, feature intact. Measured twice: once through the CLI plumbing, once through this MCP server (`spike/loop-closure-timew/`).
+- **Writing the define.** An LLM scout, working under a fixed scouting protocol (assisted, never blind — it may read source, docs, tests, anything, and its contacts are recorded), authored the committed defines for five real targets in 1m25s–5m02s each; re-run unmodified, four of the five reached verified, replay-confirmed counterexamples, and the fifth is a named refusal on a deliberate contract gap (`spike/assisted/`).
+
+What is *not* measured: an agent — or anyone — setting Sideeye up from this README alone; that path has no recorded run yet. The doors an agent needs are the report schema ([docs/report-schema.md](docs/report-schema.md)), the CI quickstart ([docs/ci-quickstart.md](docs/ci-quickstart.md)), and the MCP surface above.
+
 ## What Sideeye is not
 
 - **Not property-based testing** — it varies the world the program runs in, not the input.
