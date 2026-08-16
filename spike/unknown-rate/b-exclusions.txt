@@ -1,0 +1,31 @@
+# Name exclusions for the B-group selection (#84). One entry per line:
+#   <package>	<reason>
+# These are the ONLY hand-written inputs to the selection; everything else
+# is the committed predicate in select-b.sh. A package listed here is
+# excluded whatever the predicate says. Reasons fall in three classes:
+#   measured   — already in the A-group (or its control); its questions are
+#                the engine's development input, so it cannot also serve as
+#                an acquisition-side sample
+#   tainted    — this project read its internals (the campaign taint ledger,
+#                spike/blind-hunt3/candidates.md); the same knowledge that
+#                disqualifies it for blind work makes it a non-fresh sample
+#   sealed     — hledger only: its sweep refusal is sealed unread and it is
+#                the last blind-eligible candidate. Selecting it here would
+#                require scouting it, which spends that eligibility forever.
+topydo	measured (A-group, campaign 1)
+abook	measured (A-group, campaign 2)
+khal	measured (A-group, campaign 3)
+buku	measured (A-group, assisted cohort)
+calcurse	measured (A-group, assisted cohort)
+devtodo	measured (A-group, assisted cohort)
+stow	measured (A-group, assisted cohort)
+timewarrior	measured (A-group, dogfood)
+todoman	measured (A-group, dogfood)
+watson	measured (A-group, dogfood)
+pass	measured (control; helper-process class)
+taskwarrior	tainted (taint ledger; measured in BUILDLOG, no committed define)
+git	tainted (taint ledger; measured in BUILDLOG)
+jrnl	tainted (taint ledger)
+omamori	tainted (taint ledger; dogfood target)
+khard	tainted (campaign 2 burn)
+hledger	sealed (unread sweep refusal; last blind-eligible candidate — do not scout)

@@ -56,6 +56,10 @@ each purchased with a specific failure:
   otherwise. No hand-typed docker/git chains for campaign phases. The driver
   never merges and never commits: irreversible steps stay human, and a merge is
   its own invocation issued only after reading the checks' pass/fail column.
+  A post-campaign **open re-measurement** of a consumed campaign's committed
+  defines (e.g. the #84 sweep) is not a campaign phase: it runs outside the
+  driver, claims no blindness, and must not emit verify-seals-shaped artifacts
+  (`run-manifest.json`) or write into any `blind-hunt*/` directory.
 - **Ledgers are written through `spike/ledger-append.sh`** — it appends and then
   proves the file still extends HEAD's copy, restoring it if not. Hand edits
   broke the append-only prefix twice; the tool makes that unmakeable.

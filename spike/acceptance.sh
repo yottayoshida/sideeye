@@ -2229,6 +2229,62 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
+# Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
+# recomputation from corpus.tsv + the committed sweep artifacts (count.py check also
+# re-verifies every manifest define digest against the checkout, requires published
+# table rows >= corpus rows so an empty table can never read as a measured zero, and
+# holds every unknown_reason to report-schema.md's closed set). Before the sweep's
+# artifacts exist it asserts the explicit not-yet-measured placeholder instead.
+# The gate's own predicates are proven falsifiable on committed fixtures every run —
+# one fixture per predicate, not only the two accidents that motivated the gate:
+# fixtures/good must pass; tampered-verdict (report verdict flipped, docs stale),
+# tampered-manifest (a row deleted), tampered-define (define bytes edited after the
+# hash), tampered-reason (an unknown_reason outside the documented closed set) and
+# predata-no-placeholder (no artifacts and no placeholder line) must all fail — the
+# seen-red-once, kept red forever. Sunset: never fired by the v1.0 freeze -> removal
+# list (same rule as check 11).
+ur_fails=0
+if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
+    echo "     the live page/artifacts disagree with recomputation"
+    ur_fails=$((ur_fails + 1))
+fi
+if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/good" >/dev/null 2>&1; then
+    echo "     fixture good failed — the gate cannot pass its own known-good input"
+    ur_fails=$((ur_fails + 1))
+fi
+# Each tampered fixture must die on ITS OWN predicate's message, not merely
+# exit non-zero: a fixture that dies for an unrelated reason (a missing
+# file, a parse error) is a hollow red — it proves nothing about the
+# predicate it was built for, and an rc-only loop cannot tell the
+# difference (R2 caught a mid-flight state where all five were red for the
+# wrong reason).
+for pair in \
+    "tampered-verdict:differs from recomputation" \
+    "tampered-manifest:!= corpus rows" \
+    "tampered-define:define digest mismatch" \
+    "tampered-reason:not in the documented closed set" \
+    "predata-no-placeholder:lacks the not-yet-measured placeholder"; do
+    bad=${pair%%:*}; want=${pair#*:}
+    out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
+          --root "$ROOT/spike/unknown-rate/fixtures/$bad" 2>&1)
+    rc=$?
+    if [ "$rc" = 0 ]; then
+        echo "     fixture $bad PASSED — the gate has gone blind to its own predicate"
+        ur_fails=$((ur_fails + 1))
+    elif ! printf '%s' "$out" | grep -qF "$want"; then
+        echo "     fixture $bad died, but not on its predicate (wanted: $want)"
+        printf '%s\n' "$out" | head -3 | sed 's/^/       /'
+        ur_fails=$((ur_fails + 1))
+    fi
+done
+if [ "$ur_fails" = "0" ]; then
+    echo "ok   unknown-rate page in sync; gate red on all five tampered fixtures"
+else
+    echo "FAIL unknown-rate drift gate: $ur_fails problem(s)"
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

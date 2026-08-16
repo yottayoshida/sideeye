@@ -1,0 +1,12 @@
+generated: select-b.sh (N=20)
+pool after predicate: 57 packages
+apt release identity of the lists read:
+     origin deb.debian.org
+     release a=now
+     release v=12,o=Debian,a=oldstable-security,n=bookworm-security,l=Debian-Security,c=main,b=arm64
+     release v=12-updates,o=Debian,a=oldstable-updates,n=bookworm-updates,l=Debian,c=main,b=arm64
+     release v=12.15,o=Debian,a=oldstable,n=bookworm,l=Debian,c=main,b=arm64
+ 100 /var/lib/dpkg/status
+ 500 http://deb.debian.org/debian bookworm-updates/main arm64 Packages
+ 500 http://deb.debian.org/debian bookworm/main arm64 Packages
+ 500 http://deb.debian.org/debian-security bookworm-security/main arm64 Packages
