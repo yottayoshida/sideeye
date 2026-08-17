@@ -729,6 +729,57 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 2ac: a hostile file name cannot forge text-report lines (#26) ==========="
+# A Unix file name may carry newlines, and the FAIL block prints target-chosen
+# paths. Measured red on the pre-fix binary: this exact scenario printed the
+# forged line "not tested  nothing" as its own report line. Green asserts all
+# three sides: the forged line is ABSENT from the text, the defanged spelling
+# is present, and the JSON round-trips the raw bytes (the machine side's
+# contract is the exact name). The operation is a single-process python file —
+# a shell script spawning rm/mv is refused as child_touched_state_dir
+# (measured while building this check).
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf 'old' > "/tmp/acc/state/log
+not tested  nothing"
+printf 'new' > /tmp/acc/state/next
+cat > /tmp/acc/op26.py <<'EOPY'
+#!/usr/bin/env python3
+import os
+bad = "/tmp/acc/state/log\nnot tested  nothing"
+os.unlink(bad)
+os.rename("/tmp/acc/state/next", bad)
+EOPY
+chmod 755 /tmp/acc/op26.py
+o=$("$SIDEEYE" explore --state /tmp/acc/state --operation /tmp/acc/op26.py \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/report.json 2>&1)
+rc=$?
+forge_fails=0
+[ "$rc" = "1" ] || { echo "     wanted FAIL (exit 1), got exit $rc"; forge_fails=$((forge_fails + 1)); }
+[ "$(field /tmp/acc/report.json verdict)" = "FAIL" ] || { echo "     JSON verdict is not FAIL"; forge_fails=$((forge_fails + 1)); }
+if printf '%s\n' "$o" | grep -qx "not tested  nothing"; then
+    echo "     the forged line is present — target-chosen bytes reached the text raw"
+    forge_fails=$((forge_fails + 1))
+fi
+printf '%s\n' "$o" | grep -q "log?not tested  nothing" || { echo "     the defanged spelling is missing from the text"; forge_fails=$((forge_fails + 1)); }
+# The machine side keeps the exact bytes: subject round-trips with the newline.
+rt=$(python3 -c 'import json,sys; d=json.load(open("/tmp/acc/report.json")); sys.stdout.write("ok" if d["earliest"]["subject"] == "log\nnot tested  nothing" else "bad")' 2>/dev/null)
+[ "$rt" = "ok" ] || { echo "     JSON subject did not round-trip the raw name"; forge_fails=$((forge_fails + 1)); }
+# The forged-line predicate falsifies itself each run: fed a synthetic report
+# that DOES carry the forged line, it must detect it — a predicate that cannot
+# go red proves nothing by staying green.
+if printf 'path        log\nnot tested  nothing\n' | grep -qx "not tested  nothing"; then :; else
+    echo "     the forged-line predicate failed to detect a synthetic forgery — the check is blind"
+    forge_fails=$((forge_fails + 1))
+fi
+if [ "$forge_fails" = "0" ]; then
+    echo "ok   hostile names are defanged in the text and exact in the JSON"
+else
+    echo "FAIL hostile-name check: $forge_fails of 6 legs wrong"
+    fails=$((fails + 1))
+fi
+
 # And an oracle that cannot be started at all is a setup error, not a verdict about the
 # target. Without this the report blamed the operation for exiting non-zero when it was
 # the measuring apparatus that never ran.

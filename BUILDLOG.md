@@ -2,6 +2,32 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — a hostile file name forged a report line on demand, and the fix defangs the text while the JSON stays as it was
+
+#26, measured before fixed: a state file named with an embedded newline
+(`log`, newline, `not tested  nothing`) drove a real exploration to FAIL
+under the strace oracle, and the pre-fix text report printed the second half
+as its own line — a forged `not tested  nothing` sitting where a verdict
+line sits. The apparatus taught its own lesson first: the obvious shell
+script driving rm/mv is refused as `child_touched_state_dir` (children have
+no crash-point address — the refusal doing its job), so the committed check
+drives the unlink/rename in-process from python. The fix is three operands
+wide and display-only: `after_path`, `before_path` and `path_shown` reach
+the text through the l0 note's existing defang predicate (one predicate, not
+two that drift), while the JSON block keeps reading the raw variables —
+`jsonString` behaves as it always did (controls escaped, invalid UTF-8 to
+U+FFFD, so a valid name round-trips exactly), and the acceptance check pins
+both sides plus the round-trip, with the forged-line predicate falsifying
+itself against a synthetic forgery on every run. `?` and not a hex spelling on
+purpose: one byte in, one byte out, so a hostile name can never bloat the
+report past its buffer and erase the counterexample it names. This overtakes
+the audit's same-day "document" adjudication for #26 with the owner's
+approval, and the audit row carries the dated correction. #35 rides along
+as adjudicated: the scratch-file pattern (git's COMMIT_EDITMSG, measured
+2026-08-11, thirty-four worlds, fsck accepting every crash world) joins the
+checker cookbook's failure-patterns list, and the issue closes as
+documented.
+
 ## 2026-08-17 — the audit adjudicated a fix for a hole that was already closed, and the measurement found the real one next door
 
 The freeze audit classified #27 as class A, "fix before the tag" — and the
