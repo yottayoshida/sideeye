@@ -52,9 +52,10 @@ jobs:
       - name: Read the counterexample from the report
         run: |
           python3 - <<'PY'
-          import json
+          # Explicit check, not assert: assert vanishes under PYTHONOPTIMIZE (#58).
+          import json, sys
           d = json.load(open("/tmp/report.json"))
-          assert d["schema"] == "sideeye/report", d
+          if d["schema"] != "sideeye/report": sys.exit(str(d))
           e = d["earliest"]
           print("verdict:", d["verdict"], "— crash point", e["crash_point"])
           print("window: after", e["after"], "before", e["before"])

@@ -87,14 +87,14 @@ with a note). Class-A resolutions below are the owner's adjudication
 | #26 | target-chosen paths reach the text report unescaped | yes — report surface (text) | B | ~~document~~ **Corrected 2026-08-17, owner decision**: fixed ahead of the adjudicated minimum — the forged line was demonstrated on the pre-fix binary, the three target-chosen operands now reach the text defanged while the JSON keeps the exact bytes, and the acceptance suite pins both sides. Closes with the fix's merge |
 | #27 | standard-form L0 misses a file replaced by a directory when pre or post content is empty — a real false-PASS window | yes — the meaning of PASS | A | ~~fix before the tag~~ **Corrected 2026-08-17, measured**: the issue predates #122, whose (kind, content) pair rule already closed the named window **for pairs that enter the plan** — the issue's own scenario, both empty sides, now lands as one unit pin per case through the real classify+judge path, and a kind-blind mutation reds each pin test individually while sparing the non-empty control. Closes as measured when the pin change merges. The measurement also found the adjacent gap *outside* the plan — the dir-to-dir pair exclusion — filed as #164 and fixed in the same change; #164 joins this table at the pre-tag re-sweep per the snapshot rule |
 | #35 | L0 flags git's COMMIT_EDITMSG scratch file | yes — FAIL-side precision | B | document as a named precision limit on non-durable files — **executed 2026-08-17**: the scratch-file pattern joined the checker cookbook's failure-patterns list with the measured run cited. Closes as documented with that change's merge |
-| #39 | libc conveniences that mutate state behind the PLT (mkstemp family) | yes — observation reach = PASS meaning | A | **narrow**: on Linux the class fails closed through the oracle (sound today). The macOS narrowing must say *this class*, not only #10's platform-binary limit: target-classes will state that on macOS libc-internal mutations are invisible with no oracle to catch them, so a macOS PASS carries only the `--allow-unverified` weaker claim the README already spells. The interpose-on-first-contact policy (PR #38) stands |
-| #46 | no quiescence observation on the stdout capture under a tolerated boundary — a marker could silently vanish and skip L1 | yes — PASS-side miss window | A | **fix** before the tag: include the capture file in the same two-sample quiescence observation the state directory already gets (the issue's own fix shape) |
-| #58 | acceptance asserts vs PYTHONOPTIMIZE | no — test infra | C | defer |
+| #39 | libc conveniences that mutate state behind the PLT (mkstemp family) | yes — observation reach = PASS meaning | A | **narrow**: on Linux the class fails closed through the oracle (sound today). The macOS narrowing must say *this class*, not only #10's platform-binary limit: target-classes will state that on macOS libc-internal mutations are invisible with no oracle to catch them, so a macOS PASS carries only the `--allow-unverified` weaker claim the README already spells. The interpose-on-first-contact policy (PR #38) stands. **Executed 2026-08-17**: the sentence is on target-classes' Not-yet-measured section with the three measurement tiers distinguished (stdio probed on both platforms per ADR 0005, remove measured on Linux, the family itself unmeasured); the issue stays open as the family's lookout post by owner decision |
+| #46 | no quiescence observation on the stdout capture under a tolerated boundary — a marker could silently vanish and skip L1 | yes — PASS-side miss window | A | **fix** before the tag: include the capture file in the same two-sample quiescence observation the state directory already gets (the issue's own fix shape). **Landed 2026-08-17** (PR #170): the capture joins the two-sample observation on both the recording and every world, arming extends to world-local boundary evidence, and the one open follow-on — whether a world-only boundary should refuse outright — is #169, deliberately out of this audit's scope because deciding it changes verdicts |
+| #58 | acceptance asserts vs PYTHONOPTIMIZE | no — test infra | C | ~~defer~~ **Corrected 2026-08-17, owner decision**: fixed ahead of the adjudicated deferral — every judgment `assert` across both acceptance suites and the quickstart workflow replaced by explicit exits, the assert-version hole demonstrated once on falsified input, and both suites run entirely green under `PYTHONOPTIMIZE=1`. Closes with the fix's merge |
 | #62 | loop-closure stage clones the full upstream | no — apparatus weight | C | defer |
 | #63 | the agent-side seal has never been seen red | no — experiment apparatus | C | defer |
 | #64 | secondary observations lack a committed generator | no — apparatus | C | defer |
 | #65 | invariant and leg-C predicate hand-synced across spike/ | no — apparatus | C | defer |
-| #86 | this audit | — | — | stays open until the fix-adjudicated issues land (#5 and #46 after the 2026-08-17 correction — #27 measured already-fixed) and the pre-tag re-sweep runs |
+| #86 | this audit | — | — | stays open until the fix-adjudicated issues land (#5 — #46 landed 2026-08-17; #27 measured already-fixed) and the pre-tag re-sweep runs |
 | #118 | assisted-discovery product thesis | no — product tracking, open by owner ruling | — | stays open |
 | #123 | the judge cannot follow a target across execve | yes — implementing it is a trace-contract event | C | defer with the recorded reading: the single-pid exec chain is already judged under contract v10 (ADR 0018); what remains — true multi-process — refuses today (fail-closed). The hold and reopen condition are on the issue (2026-08-16), and a post-1.0 implementation bumps the contract *honestly* under surface 4's refusal promise |
 | #140 | criterion 1's search half | no — process criterion | — | stays open, upstream-gated |
@@ -112,19 +112,21 @@ PASS, what a refusal says): seven sit on the declared surfaces directly,
 while #26 and #150 sit on the reader-facing verdict text and #156 on flag
 acceptance — constrained in practice though absent from the declaration's
 enumeration. Of the four class-A members and #10, their adjacent honesty
-fix, two resolve by fix or demote before the tag (#46, #5 — #27's window was
-measured already-closed by #122 on 2026-08-17, its row above carries the
-correction) and two by narrowing the stated promise (#39, #10) — none by
+fix, two resolve by fix or demote before the tag (#5 outstanding; #46 landed
+2026-08-17 — #27's window was measured already-closed by #122 on 2026-08-17,
+its row above carries the correction) and two by narrowing the stated promise
+(#39, executed 2026-08-17; #10) — none by
 leaving the PASS claim intact over a documented hole, which is the outcome
 class A forbids.
 
 ## What remains before the tag
 
-1. #46's fix and #5's demotion — each its own PR with equivalent pins (their
-   issues carry fix shapes, not test text). #27 left this list on 2026-08-17:
-   measured already-fixed, pins landed, row corrected above.
-2. #150's relabel and the target-classes narrowing for #10 *and* #39 (the
-   two sentences named in their rows) — small PRs.
+1. #5's demotion — its own PR with equivalent pins (the issue carries a fix
+   shape, not test text). #46's fix landed 2026-08-17 with per-world arming;
+   #27 left this list the same day: measured already-fixed, pins landed, row
+   corrected above.
+2. #150's relabel and the target-classes narrowing for #10 (#39's narrowing
+   executed 2026-08-17, its row above carries the record) — small PRs.
 3. Re-run the sweep, replace the snapshot file (the gate names it by date —
    update both together), update this page, re-run the gate.
 

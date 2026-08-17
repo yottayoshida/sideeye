@@ -1215,11 +1215,13 @@ else
     fails=$((fails + 1))
 fi
 # DESIGN §13: the JSON carries the same claim, and the untested set widened with it.
+# Explicit checks, not assert: assert vanishes under PYTHONOPTIMIZE, and a judgement
+# that can silently stop looking is worse than none (#58).
 if python3 -c '
 import json, sys
 d = json.load(open("/tmp/acc/report.json"))
-assert d["l0"] == "1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt", d["l0"]
-assert "appended tails (files under the history form)" in d["not_tested"], d["not_tested"]
+if d["l0"] != "1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt": sys.exit(d["l0"])
+if "appended tails (files under the history form)" not in d["not_tested"]: sys.exit(d["not_tested"])
 ' 2>/dev/null; then
     echo "ok     ...and the JSON agrees, with appended tails in not_tested"
 else
@@ -1267,7 +1269,7 @@ fi
 if python3 -c '
 import json, sys
 d = json.load(open("/tmp/acc/report.json"))
-assert d["l0"] == "2 path(s) judged pre-or-post", d["l0"]
+if d["l0"] != "2 path(s) judged pre-or-post": sys.exit(d["l0"])
 ' 2>/dev/null; then
     echo "ok     ...and its JSON reports the classification (no history files)"
 else
@@ -1448,10 +1450,10 @@ else
     fails=$((fails + 1))
 fi
 if python3 - <<'PYEOF'
-import json
+import json, sys
 d = json.load(open('/tmp/acc/meta.json'))
-assert 'observed and excluded' in d['metadata_writes'], d['metadata_writes']
-assert 'chmod' in d['metadata_writes'], d['metadata_writes']
+if 'observed and excluded' not in d['metadata_writes']: sys.exit(d['metadata_writes'])
+if 'chmod' not in d['metadata_writes']: sys.exit(d['metadata_writes'])
 PYEOF
 then
     echo "ok   the JSON carries the same exclusion, syscall named"
