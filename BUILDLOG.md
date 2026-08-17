@@ -2,6 +2,35 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — the freeze audit: twenty-six issues against five surfaces, and nothing deferred under an intact PASS claim
+
+Criterion 5's audit ran as #86 wrote it: sweep first (committed snapshot,
+2026-08-17T00:33:15Z — the set includes issues filed the same day, three of
+them under half an hour before the capture, and excludes #87, closed
+seventeen seconds before it; recalled, the table would have missed both
+edges), classify every row, decide every toucher.
+The completeness gate is check-12-shaped — a script, run at each sweep
+rather than wired into CI, checks the table against the snapshot and judges
+a one-row-deleted copy of the page on every run, demanding red there. Ten of twenty-six touch a frozen surface. The class-A
+adjudications are the owner's, taken 2026-08-17 with recommendations visible:
+fix #27 (the L0 kind hole is a real false-PASS window) and #46 (the capture
+quiescence gap), demote #5 (a non-regular entry refuses rather than exploring
+an unreproducible tree — the issue's own "more honest and more annoying"
+option), narrow #39 and #10 (the macOS promise shrinks on the target-classes
+page; the README stays under its cut-only order). The exit-code split — #94's
+deliberately deferred half — is rejected permanently: the flag is the
+caller's consent, macOS would lose exit-0 passes entirely, and the designed
+channel already carries the bit. Two readings are codified so the freeze
+cannot be argued around later: a post-1.0 trace-contract bump is honest under
+the replay promise (refusal, never a misjudged address), and #156's inert
+flag combo freezes as documented behavior — refusing it later would be
+breaking, and that trade is accepted out loud. One stale promise died in the
+sweep: preflight's refusal text still said a machine-readable form "arrives
+with issue #84" — it never did; the text now states the constraint. #13
+closes as fixed (ADR 0005 shipped stdio observation; check 2u pins it).
+The audit's own gate: #86 stays open until #5, #27 and #46 land and the
+pre-tag re-sweep runs — the declaration takes effect at the tag, not today.
+
 ## 2026-08-17 — the clock ran: 4 minutes 22 seconds, README to a real verdict on jrnl
 
 Criterion 6's first measurement, under the protocol committed the day before:

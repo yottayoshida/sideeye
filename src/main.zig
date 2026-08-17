@@ -415,7 +415,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--json")) {
             // Rejected before the removeFile below: a rejection that had already deleted
             // the caller's previous report would be a refusal with a side effect.
-            if (mode == .preflight) setupError("preflight has no machine-readable form yet; it arrives with the UNKNOWN-rate measurement (issue #84)");
+            if (mode == .preflight) setupError("preflight has no machine-readable form; sideeye explore --config answers strictly more, and --json lives there");
             args.json = v;
             json_path = v;
             // Any document at this path describes some earlier run. Removing it now means

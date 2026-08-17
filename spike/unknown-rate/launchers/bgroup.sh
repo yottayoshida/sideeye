@@ -8,8 +8,8 @@
 # the trial is reproducible). Judge config is L0-only by design — no
 # checker — plus the strict oracle; the preflight leg records the funnel
 # instrument's answer (#77) beside the real verdict. preflight has no
-# machine-readable form (src/main.zig names #84 for that; still open), so
-# its text output and exit code are the record.
+# machine-readable form (a deliberate constraint — explore --config answers
+# strictly more), so its text output and exit code are the record.
 #
 # The operation comes in one of two committed spellings, and the difference
 # is measured (BUILDLOG 2026-08-16): op.txt is one static command line the
