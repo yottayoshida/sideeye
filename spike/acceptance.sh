@@ -319,6 +319,133 @@ else
 fi
 
 echo ""
+echo "=========== check 2s: an unreproducible state entry refuses before any world is judged (#5) ==========="
+# restore cannot recreate a FIFO, socket or device. Pre-change, every config below
+# reached a full verdict with the entry silently dropped from each explored world
+# (measured 2026-08-17). One red per detection site, deliberately: the same demotion
+# wired at only one snapshot passes a single red and silently misses the other two.
+# The symlink case is the discriminator AND the green control through the same
+# apparatus shape — a setup-created non-regular-file entry that must NOT refuse.
+cat > /tmp/acc/fifo-setup.sh <<CHECK
+#!/bin/sh
+"$OUT/toy-bug" init && mkfifo /tmp/acc/state/pipe
+CHECK
+cat > /tmp/acc/link-setup.sh <<CHECK
+#!/bin/sh
+"$OUT/toy-bug" init && ln -s key.json /tmp/acc/state/alias
+CHECK
+cat > /tmp/acc/hostile-fifo-setup.sh <<CHECK
+#!/bin/sh
+"$OUT/toy-bug" init && mkfifo "/tmp/acc/state/\$(printf 'p\nq')"
+CHECK
+chmod 755 /tmp/acc/fifo-setup.sh /tmp/acc/link-setup.sh /tmp/acc/hostile-fifo-setup.sh
+
+# initial: present before the recording run — checked with the JSON reason too.
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup /tmp/acc/fifo-setup.sh --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/report.json 2>&1)
+rc=$?
+jr=$(python3 -c 'import json,sys
+d=json.load(open("/tmp/acc/report.json"))
+d.get("unknown_reason")=="unsupported_state_entry" or sys.exit("reason: %s"%d.get("unknown_reason"))
+sys.stdout.write("ok")' 2>/dev/null)
+if [ "$rc" = "2" ] && echo "$o" | grep -q "present before the recording run: pipe" && [ "${jr:-}" = "ok" ]; then
+    echo "ok   a FIFO present before the recording refuses, named, JSON reason carried"
+else
+    echo "FAIL #5 initial red: exit $rc jr=${jr:-none}"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# final: appears during the recording run. The no-oracle path is the only observation
+# window — under an oracle the defined-list refusal (#121) keeps precedence, which
+# check 2w-b's TOY_MKNOD control pins separately.
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+TOY_MKNOD=1 export TOY_MKNOD
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+rc=$?
+unset TOY_MKNOD
+if [ "$rc" = "2" ] && echo "$o" | grep -q "appeared during the recording run: fifo"; then
+    echo "ok   a FIFO left by the operation refuses on the no-oracle path"
+else
+    echo "FAIL #5 final red: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# crashed: exists only inside the crash window — the mknod is invisible (no oracle),
+# the remove's unlink is a kill point, and the world killed before it holds the FIFO.
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+TOY_MKNOD_TRANSIENT=1 export TOY_MKNOD_TRANSIENT
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+rc=$?
+unset TOY_MKNOD_TRANSIENT
+if [ "$rc" = "2" ] && echo "$o" | grep -q "left in a crashed world: transient-fifo"; then
+    echo "ok   a FIFO alive only in the crash window refuses at the crashed snapshot"
+else
+    echo "FAIL #5 crashed red: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# Only the baseline leaves the entry: killed worlds never reach the toy's last act,
+# so the report must attribute the un-killed re-run, not a fictitious crash.
+rm -rf /tmp/acc/state /tmp/acc/work /tmp/acc/once-flag && mkdir -p /tmp/acc/state
+TOY_MKNOD_BASELINE=1 TOY_ONCE_FLAG=/tmp/acc/once-flag export TOY_MKNOD_BASELINE TOY_ONCE_FLAG
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+rc=$?
+unset TOY_MKNOD_BASELINE TOY_ONCE_FLAG
+if [ "$rc" = "2" ] && echo "$o" | grep -q "left by the baseline re-run: baseline-fifo"; then
+    echo "ok   an entry only the baseline leaves is attributed to the baseline, not a crash"
+else
+    echo "FAIL #5 baseline attribution: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# The discriminator: a setup-created symlink is first-class (#122) and must keep its
+# verdict — an implementation refusing "anything that is not a regular file" dies here.
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup /tmp/acc/link-setup.sh --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "crash point 5 of 5"; then
+    echo "ok   a setup-created symlink stays judged, not refused"
+else
+    echo "FAIL #5 symlink discriminator: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# A hostile FIFO name cannot forge report lines: the entry name reaches the text
+# through the one-byte-per-byte defang (#26). The predicate proves on every run that
+# it can see the forgery it guards against, on a synthetic raw-shaped line.
+if printf 'x (present before the recording run: p\nq) y\n' | grep -q "^q)"; then :; else
+    echo "FAIL #5 hostile-name predicate cannot see the forgery it guards against"
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup /tmp/acc/hostile-fifo-setup.sh --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "present before the recording run: p?q" && ! echo "$o" | grep -q "^q)"; then
+    echo "ok   a newline-named FIFO refuses defanged, forging no line"
+else
+    echo "FAIL #5 hostile name: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 1b: the L2 checker judges the same worlds ==========="
 # check.sh cross-examines `doctor` against reality: it fails when the diagnostic claims
 # health while the key cannot be read. That is the DESIGN §12 example, and it should

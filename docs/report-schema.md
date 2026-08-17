@@ -77,7 +77,7 @@ the case file — nothing else in the report was load-bearing for them.
 `trace_truncated`, `checker_not_falsified`, `marker_never_observed`,
 `case_no_longer_applies`, `recording_run_failed`, `baseline_run_failed`,
 `baseline_violates_invariant`, `boundary_without_oracle`,
-`state_not_quiescent`.
+`state_not_quiescent`, `unsupported_state_entry`.
 
 A new refusal joins this list in the change that introduces it, and the
 acceptance check above holds this page to that.

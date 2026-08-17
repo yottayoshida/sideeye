@@ -2,6 +2,60 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — the demotion was the easy half; the review found the classifier that would never produce the entry to demote
+
+#5, the audit's last tag-gating fix, measured before written as usual: the
+issue's symlink half was stale (#122 restores links, dangling included), and
+the live half was `restore`'s catch-all silently dropping `.other`. The
+plan-stage adversarial review then found the hole under the hole, a Critical
+worth the name: `.other` only exists when `d_type` says so. On a filesystem
+that answers `DT_UNKNOWN`, the fallback probed by `open(O_RDONLY)` — which
+*hangs forever* on a FIFO with no writer, reads a socket's failed open back
+as `.missing` (silently absent from the snapshot), and slurps a readable
+device as a regular file. A demotion wired downstream of that classifier
+closes #5 in a shape that quietly does not exist on exactly the filesystems
+most likely to carry special files. The entrance got repaired first:
+`statx(AT_SYMLINK_NOFOLLOW)` on Linux (std binds no libc stat symbol there —
+glibc's are versioned aliases; the syscall layout is std.os.linux's to keep),
+`std.c.fstatat` on Darwin (where std resolves `$INODE64`), no open, no
+follow, and posix.zig's old "stat is unusable here" comment carries the
+dated correction: true of hand-rolling, not of what std ships. A real-FIFO
+unit test pins all five kinds; a regression to probing would surface as a
+test timeout, which the test says out loud.
+
+Two process notes, both cheap and both mine. The first cross-build failure
+hid behind a pipe: `zig build ... | tail -1` reports tail's exit code, and
+the "success" I read was the pipe's — the stale binary then sailed through a
+whole rehearsal answering exit 1 with the demotion nowhere in it. The known
+gotcha, performed anyway; raw `rc=$?` on the bare command found `std.c.fstatat`
+being `void` on linux-gnu in one look. Second, `E.init` was remembered, not
+read — the 0.16 idiom is `linux.errno(rc)`, and the compiler said so on the
+first try, which is what the discipline is for.
+
+The three reds are one per detection site because one red proves one call
+site: setup-created FIFO (initial), TOY_MKNOD on the no-oracle path (final —
+under an oracle the defined-list refusal keeps precedence, pinned by the
+untouched 2w-b control), and TOY_MKNOD_TRANSIENT (crashed: mknod invisible,
+the remove's unlink a kill point, the world killed between them holding the
+FIFO). The symlink discriminator doubles as the green control through the
+same apparatus; a newline-named FIFO pins the defang with the forged-line
+predicate self-falsified each run against a synthetic raw-shaped line.
+
+The diff review sharpened three edges of the first cut. The classifier
+collapsed every syscall failure into "absent" — ENOSYS under an old kernel
+or EPERM under seccomp would have deleted a real entry from the snapshot and
+routed it around the very refusal being added; only a genuinely-gone path
+answers `.missing` now, everything else fails the snapshot loudly, and the
+`statx` type mask gets the check std's own doc demands. The crashed-site
+refusal sat between the capture's two quiescence samples, so a
+still-writing world with a stable FIFO would have refused as the FIFO
+rather than as itself — moved below the second sample, restoring the stated
+order. And the world loop's last iteration is the un-killed baseline: an
+entry only IT leaves (pinned with a flag-file toy whose mkfifo is rotate's
+last act, reached by no killed world) now reads "left by the baseline
+re-run", not a fictitious crash. The both-platforms unit claim was also
+trimmed to what was actually run where.
+
 ## 2026-08-17 — the checks that could stop looking, and the class that gets named instead of judged
 
 #58, fixed ahead of the audit's "defer" with the owner's approval (the same

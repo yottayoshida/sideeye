@@ -39,7 +39,46 @@ pub const Snapshot = struct {
     }
 };
 
-pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong };
+/// The first entry (in the snapshot's sorted order) that `restore` cannot recreate:
+/// `.other` — a FIFO, socket or device — and, fail-closed, `.missing`, which `walk`
+/// never emits (it drops unresolvable entries on the spot). If a future walk change
+/// lets one through, this reports it loudly instead of leaving `restore` to
+/// manufacture an absent entry one world later (#5).
+pub fn firstUnsupportedEntry(snap: Snapshot) ?[]const u8 {
+    for (snap.entries.items) |e| {
+        if (e.kind == .other or e.kind == .missing) return e.rel;
+    }
+    return null;
+}
+
+test "firstUnsupportedEntry flags exactly the kinds restore cannot recreate" {
+    var snap = Snapshot{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
+    defer snap.deinit();
+    const a = snap.arena.allocator();
+
+    // Every supported kind present and nothing flagged: an implementation that flags
+    // "anything but .file" — or lumps .dir in with the unsupported — dies here.
+    try snap.entries.append(a, .{ .rel = "a.txt", .kind = .file, .content = "x" });
+    try snap.entries.append(a, .{ .rel = "d", .kind = .dir, .content = "" });
+    try snap.entries.append(a, .{ .rel = "l", .kind = .symlink, .content = "a.txt" });
+    try std.testing.expectEqual(@as(?[]const u8, null), firstUnsupportedEntry(snap));
+
+    // Mixed with two unsupported entries: the FIRST in snapshot order is named
+    // (walk sorts by rel, so this is deterministic in real snapshots too).
+    try snap.entries.append(a, .{ .rel = "m-pipe", .kind = .other, .content = "" });
+    try snap.entries.append(a, .{ .rel = "z-sock", .kind = .other, .content = "" });
+    try std.testing.expectEqualStrings("m-pipe", firstUnsupportedEntry(snap).?);
+
+    // `.missing` never leaves walk, but an artificial one is flagged, not ignored:
+    // fail-closed against a future walk change letting it through.
+    var snap2 = Snapshot{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
+    defer snap2.deinit();
+    const a2 = snap2.arena.allocator();
+    try snap2.entries.append(a2, .{ .rel = "ghost", .kind = .missing, .content = "" });
+    try std.testing.expectEqualStrings("ghost", firstUnsupportedEntry(snap2).?);
+}
+
+pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed };
 
 const max_depth = 32;
 
@@ -94,8 +133,12 @@ fn walk(
         var full_buf: [contract.max_path]u8 = undefined;
         const full = try joinZ(&full_buf, root, rel);
         var kind = posix.kindFromDirent(ent);
-        // Some filesystems leave dirent.type unset; ask the path directly then.
-        if (kind == .missing) kind = posix.kindOfPath(full.ptr);
+        // Some filesystems leave dirent.type unset; ask the path directly then —
+        // without opening it (a FIFO would block) and without following links (#5).
+        if (kind == .missing) kind = posix.kindOfPathNoFollow(full.ptr) catch
+            // Fail-closed: an entry that cannot be classified must not silently
+            // vanish from the snapshot — that would route it around #5's refusal.
+            return error.ClassifyFailed;
 
         switch (kind) {
             .dir => {
@@ -112,10 +155,11 @@ fn walk(
                 const target = readLinkTarget(full.ptr, &tbuf) orelse return error.ReadFailed;
                 try entries.append(arena, .{ .rel = rel, .kind = .symlink, .content = try arena.dupe(u8, target) });
             },
-            // Sockets and devices are recorded as present but opaque. v0.1 does not
-            // claim to restore them faithfully, which is why the plan lists snapshot
-            // fidelity as out of scope rather than pretending otherwise. (Symlinks
-            // left this bucket in #122: they are first-class above.)
+            // Sockets, FIFOs and devices are recorded as present but opaque — so the
+            // engine can refuse honestly: restore cannot recreate them, and since #5
+            // any snapshot carrying one stops the run (`unsupported_state_entry`)
+            // instead of exploring a tree the recording never had. (Symlinks left
+            // this bucket in #122: they are first-class above.)
             .other => try entries.append(arena, .{ .rel = rel, .kind = .other, .content = "" }),
             .missing => {},
         }
@@ -340,7 +384,11 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
                 }
                 _ = posix.close(fd);
             },
-            else => {},
+            // Unreachable from any explored path since #5's refusal fires on every
+            // snapshot before restore runs — kept loud, not silent: an `.other` that
+            // somehow arrives here would otherwise become a tool-manufactured
+            // `missing` in the next world's judgement, the exact shape #5 demoted.
+            .other, .missing => return error.CreateFailed,
         }
     }
 }

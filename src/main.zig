@@ -660,6 +660,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     }
 
     var initial = engine.takeSnapshot(gpa, state_abs) catch setupError("could not snapshot the initial state");
+    // #5, checked before anything runs: an unreproducible entry the setup left (or
+    // that predates the run) fails fast — no recording, no worlds. Nothing competes
+    // with this refusal here.
+    refuseUnsupportedEntry(arena_state.allocator(), initial, "present before the recording run");
     defer initial.deinit();
 
     // ---- recording run -----------------------------------------------------------
@@ -1031,6 +1035,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (!snapshotsEqual(initial, final) and trace.mutation_count == 0)
         unknown(.state_changed_without_ops, "the state directory changed while zero mutating operations were recorded: operations were missed");
 
+    // #5, after every trust detector above has had its say: under an oracle a mid-run
+    // mknod already refused as unsupported_syscall_observed (#121's defined list keeps
+    // precedence), and quiescence judged the samples themselves — this catches what
+    // reaches here with no syscall witness at all, the no-oracle path being the one
+    // place an unreproducible entry could otherwise slip into the worlds.
+    refuseUnsupportedEntry(arena, final, "appeared during the recording run");
+
     const n = trace.kill_point_count;
     crash_points = n;
 
@@ -1330,6 +1341,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
             }
             if (args.marker != null) marker_seen = world_capture.marker_seen;
         }
+
+        // #5, after every observation of this world has fired — the armed double
+        // sample above and the capture's bracketing second sample just now — so a
+        // still-writing world refuses as itself (state_not_quiescent), never as
+        // this (R1). A special file reaches this snapshot whether or not any
+        // syscall witness saw it born; on macOS with no oracle, none did. The
+        // baseline is the one un-killed world, and an entry only IT leaves gets
+        // its own attribution instead of a fictitious crash (R1).
+        refuseUnsupportedEntry(arena, crashed, if (k <= n) "left in a crashed world" else "left by the baseline re-run");
+
         if (marker_seen and k <= n) marker_worlds += 1;
         const l1 = if (marker_seen) engine.judgeL1(l0_plan, initial, final, crashed) else null;
 
@@ -1898,6 +1919,26 @@ fn appendSanitized(names: *std.ArrayList(u8), arena: std.mem.Allocator, s: []con
 /// report-schema change. `?` and not a hex spelling on purpose: 1:1, so a
 /// hostile name can never bloat the report past its output buffer and erase
 /// the counterexample it names.
+/// #5's demotion, shared by the three snapshot sites: a state tree holding an entry
+/// `restore` cannot recreate must not be explored — every world would run against a
+/// tree the recording run never had, and the crash points were derived from the
+/// recording run. Ordering is deliberate at every call site: snapshot-trust
+/// detectors (the oracle's defined-list scrutiny, quiescence) come first, this
+/// demotion second, judgement last — so an existing refusal's reason is never
+/// overtaken. The entry name reaches the text through the same one-byte-per-byte
+/// defang as every other target-chosen string (#26); `phase` says which snapshot
+/// saw it. Returns only when the snapshot is clean.
+fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase: []const u8) void {
+    if (engine.firstUnsupportedEntry(snap)) |rel| {
+        const detail = std.fmt.allocPrint(
+            arena,
+            "the state directory holds an entry that is neither a regular file, a directory nor a symlink ({s}: {s}) — restore cannot recreate it, so every explored world would run against a tree the recording run never had",
+            .{ phase, textShown(arena, rel) },
+        ) catch "the state directory holds an entry that restore cannot recreate (a FIFO, socket or device)";
+        unknown(.unsupported_state_entry, detail);
+    }
+}
+
 fn textShown(arena: std.mem.Allocator, s: []const u8) []const u8 {
     var out: std.ArrayList(u8) = .empty;
     appendSanitized(&out, arena, s) catch return "(allocation failed)";
