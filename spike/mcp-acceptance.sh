@@ -68,45 +68,48 @@ req="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"server/discover\",\"params\":{$M
 {\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{$META}}
 {\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
 drive "$req"
+# Explicit checks, not assert: assert vanishes under PYTHONOPTIMIZE, and a judgement
+# that can silently stop looking is worse than none (#58).
 python3 - <<'PY' && pass "discover+list+explore: all stdout lines are single JSON-RPC, no child report leaked" || fail "transport contamination or bad response"
 import json, sys
 lines=[l for l in open("/tmp/mcp.out") if l.strip()]
 if len(lines)!=3: sys.exit("wanted 3 lines, got %d"%len(lines))
 for l in lines:
     d=json.loads(l)
-    assert d.get("jsonrpc")=="2.0", l[:60]
+    if d.get("jsonrpc")!="2.0": sys.exit(l[:60])
 raw=open("/tmp/mcp.out").read()
 for s in ["crash worlds violated","reproduce   SIDEEYE","atomicity   "]:
-    assert s not in raw, "child report leaked: "+s
+    if s in raw: sys.exit("child report leaked: "+s)
 d1,d2,d3=[json.loads(l) for l in lines]
-assert d1["result"]["supportedVersions"]==["2026-07-28"], d1
-assert "tools" in d1["result"]["capabilities"], d1
+if d1["result"]["supportedVersions"]!=["2026-07-28"]: sys.exit(d1)
+if "tools" not in d1["result"]["capabilities"]: sys.exit(d1)
 names=[t["name"] for t in d2["result"]["tools"]]
-assert names==["sideeye_explore_config","sideeye_replay_case"], names
+if names!=["sideeye_explore_config","sideeye_replay_case"]: sys.exit(names)
 # DiscoverResult and ListToolsResult both extend CacheableResult (schema.ts), which
 # REQUIRES ttlMs and cacheScope; resultType is required on every Result a 2026-07-28
 # server emits. A strict client validates these before anything else works.
 for r in (d1["result"], d2["result"], d3["result"]):
-    assert r.get("resultType")=="complete", r
+    if r.get("resultType")!="complete": sys.exit(r)
 for r in (d1["result"], d2["result"]):
-    assert isinstance(r.get("ttlMs"), int) and r["ttlMs"]>=0, r
-    assert r.get("cacheScope") in ("public","private"), r
+    if not (isinstance(r.get("ttlMs"), int) and r["ttlMs"]>=0): sys.exit(r)
+    if r.get("cacheScope") not in ("public","private"): sys.exit(r)
 sc=d3["result"]["structuredContent"]
 # This check verifies transport + wiring, not toy-bug's specific verdict (that is the
 # explore suite's job): a real verdict, isError consistent with it, echoed in content.
-v=sc["verdict"]; assert v in ("PASS","FAIL","UNKNOWN","SETUP_ERROR"), sc
-assert d3["result"]["isError"] is (v not in ("PASS","FAIL")), d3["result"]
-assert v in d3["result"]["content"][0]["text"], "content summary missing verdict"
+v=sc["verdict"]
+if v not in ("PASS","FAIL","UNKNOWN","SETUP_ERROR"): sys.exit(sc)
+if d3["result"]["isError"] is not (v not in ("PASS","FAIL")): sys.exit(d3["result"])
+if v not in d3["result"]["content"][0]["text"]: sys.exit("content summary missing verdict")
 PY
 
 echo "=========== mcp 2: _meta is validated on every method ==========="
 # Missing _meta on tools/list (not just tools/call) must be -32602; a wrong version
 # must be -32022 with supported/requested. tools/call-only validation would miss these.
 drive '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
-python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));assert d["error"]["code"]==-32602,d' \
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));d["error"]["code"]==-32602 or sys.exit(d)' \
   && pass "missing _meta on tools/list is -32602" || fail "missing _meta not refused on tools/list"
 drive '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"1999-01-01","io.modelcontextprotocol/clientCapabilities":{}}}}'
-python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));e=d["error"];assert e["code"]==-32022 and e["data"]["supported"]==["2026-07-28"] and e["data"]["requested"]=="1999-01-01",d' \
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));e=d["error"];(e["code"]==-32022 and e["data"]["supported"]==["2026-07-28"] and e["data"]["requested"]=="1999-01-01") or sys.exit(d)' \
   && pass "unsupported version is -32022 with supported/requested" || fail "version negotiation wrong"
 
 echo "=========== mcp 3: a path outside the server root is refused, not executed ==========="
@@ -114,7 +117,7 @@ echo "=========== mcp 3: a path outside the server root is refused, not executed
 # outside the root so realpath succeeds but the prefix check fails.
 echo "not a config" > /tmp/outside.toml
 drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"/tmp/outside.toml\"}}}"
-python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));r=d["result"];assert r["isError"] is True and "outside the server root" in r["content"][0]["text"],d' \
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];(r["isError"] is True and "outside the server root" in r["content"][0]["text"]) or sys.exit(d)' \
   && pass "a path outside SIDEEYE_MCP_ROOT is an isError, not an execution" || fail "path confinement failed"
 
 echo "=========== mcp 4: the child gets a minimal env (no credential leak) ==========="
@@ -173,7 +176,7 @@ PATH="$FAKEDIR:$PATH" SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WO
 # canonical self-exec ran the real binary, not the PATH fake — which is only evidence
 # now that stale reports are unlinked before the child runs (check 6): the first
 # suite version could satisfy this assert from a previous call's report file.
-python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));sc=d["result"].get("structuredContent",{});assert sc.get("schema")=="sideeye/report" and "verdict" in sc,d' \
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));sc=d["result"].get("structuredContent",{});(sc.get("schema")=="sideeye/report" and "verdict" in sc) or sys.exit(d)' \
   && pass "self-exec ran the real binary (a real sideeye report), not the PATH fake" || fail "self-exec used argv[0]/PATH, not the canonical path"
 
 echo "=========== mcp 6: a reused work dir must not serve a stale verdict ==========="
@@ -185,10 +188,10 @@ echo "=========== mcp 6: a reused work dir must not serve a stale verdict ======
 # target, delivered as this call's result. Measured live on 2026-08-12: run 2 returned
 # a full report while neither work-dir file had been rewritten.
 drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
-python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));assert d["result"]["structuredContent"]["verdict"]=="FAIL",d' \
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));d["result"]["structuredContent"]["verdict"]=="FAIL" or sys.exit(d)' \
   || fail "precondition: server A did not reach toy-bug's FAIL"
 drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye-fixed.toml\"}}}"
-python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));v=d["result"]["structuredContent"]["verdict"];assert v=="PASS",("stale or wrong verdict for toy-fixed: %s"%v,d)' \
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));v=d["result"]["structuredContent"]["verdict"];v=="PASS" or sys.exit(("stale or wrong verdict for toy-fixed: %s"%v,d))' \
   && pass "server B answered about ITS target (toy-fixed PASS), not server A's stale FAIL" \
   || fail "a reused work dir served a stale verdict (or toy-fixed did not PASS)"
 
@@ -233,7 +236,7 @@ unset SIDEEYE_NOT_SET_VAR 2>/dev/null || true
 SIDEEYE_MCP_CHILD_ENV=SIDEEYE_NOT_SET_VAR \
   SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WORK=/tmp/mcp-work \
   sh -c "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/env2.toml\"}}}' | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
-python3 -c 'import json;d=json.load(open("/tmp/mcp.out"));r=d["result"];assert r["isError"] is True and "SIDEEYE_NOT_SET_VAR" in r["content"][0]["text"],d' \
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];(r["isError"] is True and "SIDEEYE_NOT_SET_VAR" in r["content"][0]["text"]) or sys.exit(d)' \
   && pass "a listed-but-absent name is a loud tool error naming the variable" \
   || fail "a listed-but-absent name was not refused loudly"
 
@@ -266,13 +269,13 @@ req="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\
 REQ="$req" SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
   sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
 python3 - <<'PY' && pass "explore FAIL, then replay FAIL twice — the second call did not die on leftovers" || fail "the second replay in one session diverged (state freshness missing)"
-import json
+import json, sys
 lines=[l for l in open("/tmp/mcp.out") if l.strip()]
-assert len(lines)==3, "wanted 3 responses, got %d"%len(lines)
+if len(lines)!=3: sys.exit("wanted 3 responses, got %d"%len(lines))
 r1,r2,r3=[json.loads(l)["result"] for l in lines]
-v1=r1["structuredContent"]["verdict"]; assert v1=="FAIL", "explore: %s"%v1
-v2=r2["structuredContent"]["verdict"]; assert v2=="FAIL", "first replay: %s"%v2
-v3=r3["structuredContent"]["verdict"]; assert v3=="FAIL", "second replay: %s"%v3
+for tag, r in (("explore", r1), ("first replay", r2), ("second replay", r3)):
+    v=r["structuredContent"]["verdict"]
+    if v!="FAIL": sys.exit("%s: %s"%(tag, v))
 PY
 
 echo ""

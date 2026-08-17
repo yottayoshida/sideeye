@@ -43,6 +43,7 @@ The first Rust target (omamori) surfaced three walls in sequence: `child_process
 ## Not yet measured
 
 - **Node/libuv tools**: no recorded run. The expected wall is the thread refusal (libuv starts a worker pool), which is measured on toys — but no real Node target run exists in this repository, so this row is a prediction, labeled as one.
+- **libc functions that mutate state through internal calls** (the mkstemp family, mkdtemp, tmpfile, dprintf — #39): no recorded run for any of these members. The *mechanism* is not a projection — two class members are measured: stdio's internal writes (ADR 0005, probed on both platforms; the macOS probe showed dyld interposition equally blind to libSystem-internal calls) and remove(3), measured on Linux through the timewarrior work (PR #38). On Linux the class fails closed, in the same shape the raw-syscall wall pins above: the oracle sees the internal syscalls, the accounts diverge, the run refuses. On macOS there is no oracle, so for the unmeasured members the consequence is inferred from that mechanism, not measured: an internal mutation is invisible to the shim with nothing to catch it, and a macOS PASS carries only the weaker `--allow-unverified` claim the README spells out. The interpose-on-first-contact policy stands, and #39 stays open as the family's lookout post: a member gets reimplemented through the recorded wrappers when a real target first demonstrates it.
 
 ---
 

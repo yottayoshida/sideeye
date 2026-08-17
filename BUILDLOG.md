@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — the checks that could stop looking, and the class that gets named instead of judged
+
+#58, fixed ahead of the audit's "defer" with the owner's approval (the same
+overtake shape as #26, and the audit row carries the same dated correction):
+`assert` in a judgment is a check that can be turned off from the outside —
+`PYTHONOPTIMIZE=1` strips it and the suite keeps answering green with only
+exit codes examined. The counts were re-measured before touching anything
+(the issue's 18+3 was stale): five live asserts in the explore suite,
+twenty-two in the MCP suite, and one more in the quickstart workflow the
+issue never named — the same-class sweep over every committed `*.sh`/`*.py`
+found nothing else (the replay suite was converted back when the defect was
+first caught there). The conversion is the replay suite's shape verbatim;
+the hole was demonstrated once on falsified input before converting, and
+the completion bar was raised from "a representative red" to running both
+suites end to end under `PYTHONOPTIMIZE=1` — 142 ok and all-passed, so the
+judgments demonstrably still look when the switch that silenced them is on.
+
+#39 executes the audit's narrowing, and the writing job turned out to be
+about measurement tiers, not platforms: the class's two demonstrated
+members carry different evidence (stdio probed on macOS too — ADR 0005's
+dyld line; remove(3) measured on Linux only), and the first draft's flat
+"measured precedent" would have promoted an inference to a measurement.
+The committed sentence separates probed / measured-on-Linux / unmeasured,
+and states the macOS consequence for the unmeasured members as mechanism
+inference. The issue stays open on purpose: its body is the family's
+lookout post, and closing it would orphan the fix pattern it carries.
+
 ## 2026-08-17 — the capture joins the quiescence observation, and the straggler that motivated it cannot be built
 
 #46, measured live before implementing (twice bitten by stale issues this
