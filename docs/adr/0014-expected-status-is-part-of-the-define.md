@@ -1,6 +1,6 @@
 # ADR 0014 — The operation's success status is part of the define
 
-- **Status:** Proposed (flips to Accepted when the implementing PR merges)
+- **Status:** Accepted (the implementing PR merged long before this line caught up — flipped 2026-08-17, noticed by the freeze audit, which cites this ADR as a frozen surface's ground)
 - **Relates to:** ADR 0007 (the config file form), ADR 0009 (saved cases), DESIGN §12
   (the define budget sentence this deliberately spends against)
 - **Scope:** `--expect-status` / `expected_status`, case schema v1 → v2, the report's

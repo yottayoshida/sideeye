@@ -159,8 +159,8 @@ change the v10 observation rules refuse structurally, so for the two
 the define budget could not spell the target inside the contract. The
 `sideeye preflight` answer (#77) is recorded beside each verdict as the
 funnel instrument — in text + exit code, since preflight has no
-machine-readable form yet (still open; `src/main.zig` names this issue for
-it).
+machine-readable form (a deliberate constraint: `explore --config` answers
+strictly more, and `--json` lives there).
 
 ## Method
 
