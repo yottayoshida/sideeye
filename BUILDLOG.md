@@ -2,6 +2,17 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — v0.11.0: the day's four batches ship as one minor
+
+Owner-selected minor over patch: the release carries a required new report
+field (`oracle_verified`), a new refusal (`unsupported_state_entry`), and an
+expansion of what L0 judges (dir-to-dir pairs) — surface additions, not
+repairs only. Three version spots moved together (build.zig.zon, main.zig's
+banner constant, the README quickstart tarball name); the v0.10.0 strings
+that remain are the SIGILL incident's historical records and stay. The
+first push of this bump forgot this very file and the buildlog gate caught
+it — the gate doing for the journal exactly what it was installed to do.
+
 ## 2026-08-17 — the demotion was the easy half; the review found the classifier that would never produce the entry to demote
 
 #5, the audit's last tag-gating fix, measured before written as usual: the
