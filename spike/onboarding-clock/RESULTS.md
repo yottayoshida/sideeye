@@ -6,7 +6,12 @@ the first measurement.**
 ## The number and where it comes from
 
 - Start `2026-08-16T23:57:56.585Z` — the driver session's first timestamped
-  event (`runs/run1/timeline.tsv`, line 2).
+  event (`runs/run1/timeline.tsv`, line 4; lines 2-3 are the init and
+  rate-limit events, which the stream leaves untimestamped). The protocol
+  declared the start as "the init event's timestamp"; the instrument therefore
+  uses the first event that carries one — a drift of the init latency, in the
+  direction that *favors* a met (a later start), immaterial against 4:22 vs
+  10:00 and disclosed here rather than absorbed.
 - Stop `2026-08-17T00:02:18.624Z` — the tool result of
   `./sideeye explore --config /tmp/se/sideeye.toml --oracle /usr/bin/strace …`
   returning exit 0: `PASS`, 4 of 4 crash worlds (crash points 3 + baseline),
@@ -42,11 +47,27 @@ reading than the protocol's — it demanded the literal prefix
 Adjudication, recorded rather than silently passed: the seal exists to keep
 outside information from entering the run — the network, this repository,
 prior knowledge of the target. All three commands move driver-authored bytes
-*into* the box; nothing flowed the other way, and both prerequisite
-predicates are clean. The run stands. The protocol now says this explicitly
-for future runs (host-side authoring and transfer of the driver's own files
-is inside the seal); the extractor keeps its strict prefix check so the
-transfer pattern is always surfaced for adjudication, never silent.
+*into* the box; nothing flowed the other way. On the repository-read
+predicate, precision about what "clean" means: the extractor checks the
+file-path keys of tool calls, so a Bash-side or relative-path read is outside
+that predicate's sight — the conclusion rests on the committed timeline being
+short enough to verify by eye (145 events, all committed; note heads truncate
+at 160 characters, and the full commands re-project from the raw stream), not
+on the predicate alone. The run stands. The protocol file itself stays byte-identical
+to its pre-run commit — this paragraph, not that file, is where run 1's
+adjudication lives: host-side authoring and transfer of the driver's own
+files is inside the seal, and any future protocol revision that wants to say
+so in the protocol restarts the run count per the protocol's own rule. The
+extractor keeps its strict prefix check so the transfer pattern is always
+surfaced for adjudication, never silent.
+
+Two instrument gaps, disclosed: the protocol promised the target's installed
+version "recorded" — run 1 carries it only in a truncated tool-result head in
+the timeline (jrnl v4.6), not as a meta field (filed, #160); and during run 1
+the extractor's denied-tool list named fewer tools than the launcher denies —
+the rest were denied only at the CLI layer, and none was ever attempted. The
+extractor has since been synced to the launcher's full list; re-projection of
+run 1 is unchanged by it (the run's tool calls were Bash and Write only).
 
 ## What the driver said, verbatim
 
@@ -76,6 +97,8 @@ addition unused. One protocol artifact, not a README gap: the box carries no
 
 One run, one driver, one target. It proves the path exists and was walked
 once in well under the budget — not a distribution, not a promise about every
-target class. The rehearsal that preceded it found the release artifacts
-broken on any CPU but their builder's (BUILDLOG 2026-08-17); the clock ran
-against the repaired artifact, sha-pinned in the Dockerfile.
+target class. The rehearsal that preceded it found the aarch64-linux release
+artifacts of v0.9.0 and v0.10.0 broken on lesser CPUs than their builders'
+(measured on Apple-Silicon Docker; the x86_64 artifact shares the
+construction, presumed affected and unverified — BUILDLOG 2026-08-17); the
+clock ran against the repaired artifact, sha-pinned in the Dockerfile.

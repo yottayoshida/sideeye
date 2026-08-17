@@ -69,7 +69,11 @@ def main():
                 note = f"tool_use {name}: {head(cmd or inp)}"
                 if name == "Bash" and not cmd.strip().startswith("docker exec onboarding-box"):
                     violations.append(f"non-box Bash at {ts}: {head(cmd)}")
-                if name in ("WebFetch", "WebSearch", "Task", "Agent", "Workflow"):
+                if name in (
+                    "WebFetch", "WebSearch", "Task", "Agent", "Workflow",
+                    "SendMessage", "PushNotification", "RemoteTrigger",
+                    "ScheduleWakeup", "CronCreate", "CronDelete",
+                ):
                     violations.append(f"denied tool {name} attempted at {ts}")
                 target = str(inp.get("file_path", "")) + str(inp.get("path", ""))
                 if repo_root.rstrip("/") in target:

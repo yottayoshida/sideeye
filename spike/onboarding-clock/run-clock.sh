@@ -57,5 +57,7 @@ python3 "$SCRIPT_DIR/clock-audit.py" \
     "$RESULTS/transcript.jsonl" "$RESULTS" "$CLI_VERSION" "$PROMPT_SHA" "$agent_rc" "$REPO_ROOT"
 
 echo ""
-echo "next: read $RESULTS/meta.json (violations must be empty), pick the qualifying"
+echo "next: read $RESULTS/meta.json and adjudicate every flagged command against"
+echo "      PROTOCOL.md (run 1's precedent: transfer of driver-authored files into"
+echo "      the box is inside the seal; anything else voids), pick the qualifying"
 echo "      stop candidate, and write RESULTS.md with the derived wall-clock"

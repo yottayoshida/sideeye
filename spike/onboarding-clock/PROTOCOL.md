@@ -65,12 +65,7 @@ tools denied by name, and one standing instruction — every command that
 touches the machine goes through `docker exec` to the box. The audit reads
 the transcript afterwards: a command that is not a `docker` invocation of the
 box, a read into this repository's checkout, or any denied-tool attempt voids
-the run. Clarified after run 1's adjudication (the run itself stood): the
-driver authoring files in its own empty scratch directory and moving them
-*into* the box (`docker cp`, base64-through-exec) is inside the seal — the
-seal guards what flows in from outside the driver's head, not the direction
-of its typing. The extractor still surfaces every such transfer for
-adjudication; it is never silent.
+the run.
 
 ## Rehearsal boundary
 
