@@ -131,7 +131,7 @@ How real tool classes have fared against these limits: [docs/target-classes.md](
 
 `sideeye mcp` is a stateless MCP server (stdio) with two tools: `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}`. The tools take *paths* inside `SIDEEYE_MCP_ROOT`, never raw commands — the config file is the trust boundary you vet. Operational settings come from `SIDEEYE_MCP_*` environment variables (ADR 0010 and 0011). The root confines which config may be named, not what that config's operation does: run the server inside a container, network-off where the target allows it.
 
-Measured here, not aspirations: a context-free agent, handed a counterexample and bug-blind replay plumbing, produced the fix — twice: once through the CLI, once through this MCP server (`spike/loop-closure-timew/`) — and an LLM scout authored the defines for five real targets under a fixed protocol (`spike/assisted/`; the method: [docs/scouting.md](docs/scouting.md)). What is *not* measured: anyone setting Sideeye up from this README alone — that path has no recorded run yet.
+Measured here, not aspirations: a context-free agent, handed a counterexample and bug-blind replay plumbing, produced the fix — twice: once through the CLI, once through this MCP server (`spike/loop-closure-timew/`) — an LLM scout authored the defines for five real targets under a fixed protocol (`spike/assisted/`; the method: [docs/scouting.md](docs/scouting.md)), and a context-free agent set Sideeye up **from this README alone** — tarball to a real verdict on an external tool in under five minutes, protocol declared before the clock (`spike/onboarding-clock/`).
 
 ## What Sideeye is not
 

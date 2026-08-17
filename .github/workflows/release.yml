@@ -40,12 +40,15 @@ jobs:
         include:
           - runner: ubuntu-latest
             artifact: x86_64-linux
+            target: x86_64-linux-gnu
             shim: libsideeye_shim.so
           - runner: ubuntu-24.04-arm
             artifact: aarch64-linux
+            target: aarch64-linux-gnu
             shim: libsideeye_shim.so
           - runner: macos-latest
             artifact: aarch64-macos
+            target: aarch64-macos
             shim: libsideeye_shim.dylib
     runs-on: ${{ matrix.runner }}
     steps:
@@ -61,8 +64,16 @@ jobs:
         with:
           version: 0.16.0
 
-      - name: Build (ReleaseSafe)
-        run: zig build -Doptimize=ReleaseSafe
+      # -Dtarget is spelled even where it equals the runner's own platform: a bare
+      # native build compiles for the *builder's* CPU features, and the aarch64-linux
+      # artifacts of v0.9.0 and v0.10.0 shipped with the Graviton runner's extensions
+      # baked in — Illegal instruction on any lesser CPU (Apple-Silicon Docker,
+      # measured 2026-08-17). An explicit target pins the baseline CPU for the
+      # architecture. The smoke test below still runs on the builder's CPU only —
+      # it proves the artifact pair works, not that every CPU can run it; the pin
+      # is what carries that.
+      - name: Build (ReleaseSafe, baseline CPU)
+        run: zig build -Doptimize=ReleaseSafe -Dtarget=${{ matrix.target }}
 
       # The tag and the binary are two spellings of one version, and they have drifted
       # before (0.1.0 vs 0.1.0-dev). A tarball whose binary disagrees with its own
