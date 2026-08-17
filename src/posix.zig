@@ -34,6 +34,12 @@ pub extern "c" fn read(fd: c_int, buf: [*]u8, n: usize) isize;
 pub extern "c" fn write(fd: c_int, buf: [*]const u8, n: usize) isize;
 pub extern "c" fn close(fd: c_int) c_int;
 pub extern "c" fn dup2(old_fd: c_int, new_fd: c_int) c_int;
+/// `off_t` is 64-bit on every target this builds for (aarch64/x86-64 glibc, Darwin), so
+/// the plain symbol is the 64-bit one and no lseek64 spelling is needed.
+pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
+/// Same values on Linux and Darwin.
+pub const SEEK_SET: c_int = 0;
+pub const SEEK_END: c_int = 2;
 
 /// Same value on Linux and Darwin.
 pub const EINTR: c_int = 4;

@@ -2,6 +2,68 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — the capture joins the quiescence observation, and the straggler that motivated it cannot be built
+
+#46, measured live before implementing (twice bitten by stale issues this
+week): the world loop's quiescence double-sample covered the state directory
+only, and `stdout-world.txt` — L1 evidence — was read exactly once, by the
+marker scan. Then the plan-stage measurement closed the door on the issue's
+own reproduction idea: a real straggler cannot be manufactured. The oracle
+flags any non-primary `setsid`/`setpgid` as a boundary (oracle.zig, the
+"visible nowhere else" comment) and refuses before the quiescence code runs,
+and a child that stays in the group cannot outlive `kill(-pgid)` by more
+than scheduling noise. The committed red apparatus is therefore the
+checker: `--check` runs between the two capture samples, so a checker that
+appends to the capture lands its bytes exactly where a surviving writer's
+would — deterministic, and it exercises the guard's own predicate (fp1/fp2
+disagreement), not a lucky race. Measured pre-fix in the container: the
+append sat unread in the capture while the run reached exit 1.
+
+The external plan review found the hole beside the hole: arming was
+recording-global. A toy that forks only when `SIDEEYE_KILL_AT` is set (so:
+in every world, never in the recording) reached a full verdict pre-fix with
+the report's processes line reading `single process` — the recording's story
+spoken over worlds that each crossed a boundary. Arming now includes the
+world's own trace evidence; whether such a world should refuse outright
+(nothing oracle-shaped ever accounts for it) is deliberately not decided
+here — filed as #169, because it changes verdicts.
+
+Shape decisions, each with its reason: one `observeCapture` read produces
+both the marker verdict and the fingerprint, so the two claims cannot come
+from different bytes; the read is bounded by the size measured at open,
+because a live writer must never be able to keep the observer chasing EOF
+(the hang would replace the refusal); the digest is Blake3, because the
+bytes are target-chosen and a same-length rewrite must not be able to keep
+a cheap checksum; the refusal reuses `state_not_quiescent` (the closed set
+is a frozen surface) with a capture-naming message, which is also what lets
+the acceptance red attribute its kill to this check and not the state-dir
+one. `fileContains` lost both call sites and is gone — its straddling-marker
+test carried over to the new observation, on pid-unique paths this time.
+
+The diff review (R1) then found two real holes in the first cut and one
+overclaim. First, the bounded read could be blinded by a truncate: measure
+size B, read b < B after a concurrent shrink, and the stored fingerprint
+says b — so a later honest size-b sample with the same bytes compares
+*equal*, and the change observed mid-read evaporates. The observation now
+records both the measured size and the bytes actually read, equality
+compares both, and reaching EOF below the measured size is its own refusal
+predicate (`sawTruncation`) at every armed comparison — on a regular file
+that shape cannot happen without a concurrent writer. Second, the processes
+line kept telling the recording's story: a world-only boundary armed the
+observation while text and JSON still said `single process`. The note now
+corrects itself before any refusal can fire, and a fourth acceptance case
+pins the corrected account on the quiet world-only run. Third, the
+CHANGELOG draft claimed "a still-live writer surfaces as a refusal" — more
+than two samples can promise (a writer that pauses between them passes);
+narrowed to what is measured. R1 also named the honest limit of the
+committed reds: they all write `stdout-world.txt`, so the recording-side
+comparison has no end-to-end pin — nothing external executes between its
+two samples, the same structural exclusion as the straggler itself. Its
+seen-red is a mutation, run once and reverted: inverting the recording
+comparison flips the green control to `state_not_quiescent` with the
+recording-specific message, which is the wiring-and-attribution proof the
+suite cannot carry.
+
 ## 2026-08-17 — a hostile file name forged a report line on demand, and the fix defangs the text while the JSON stays as it was
 
 #26, measured before fixed: a state file named with an embedded newline
