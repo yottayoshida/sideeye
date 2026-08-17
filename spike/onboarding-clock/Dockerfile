@@ -25,7 +25,7 @@ WORKDIR /home/user/onboarding
 # artifact fails the build.
 RUN curl -sLk -o sideeye-v0.10.0-aarch64-linux.tar.gz \
       https://github.com/yottayoshida/sideeye/releases/download/v0.10.0/sideeye-v0.10.0-aarch64-linux.tar.gz \
- && echo "b66b189d717f07020efe271cb95359914a7c08c2c694dffe54d05d4e2313734f  sideeye-v0.10.0-aarch64-linux.tar.gz" | sha256sum -c -
+ && echo "4851df145396a94db3bddeedb00050d91d87d4afd5cf0b34147f2230da4ffa27  sideeye-v0.10.0-aarch64-linux.tar.gz" | sha256sum -c -
 
 # The front page at the measured commit, verbatim (deviation 3).
 COPY README.md /home/user/onboarding/README.md

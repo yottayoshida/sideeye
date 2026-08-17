@@ -21,10 +21,17 @@ carries them all; RESULTS.md names the qualifying one, checkable by eye.
 """
 import json
 import sys
+from pathlib import Path
+
+# The one transformation between the raw stream and the committed timeline,
+# declared here: the driver's host home directory is spelled `~`. The raw
+# transcript stays out of the repository for exactly this reason (a host path
+# is not evidence, and the projection is re-runnable from the raw file).
+HOME = str(Path.home())
 
 
 def head(s, n=160):
-    s = " ".join(str(s).split())
+    s = " ".join(str(s).replace(HOME, "~").split())
     return s[:n]
 
 

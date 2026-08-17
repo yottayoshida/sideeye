@@ -2,6 +2,24 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — the clock ran: 4 minutes 22 seconds, README to a real verdict on jrnl
+
+Criterion 6's first measurement, under the protocol committed the day before:
+a sealed driver (claude-opus-5, 28 turns, not told it was timed) walked from
+the README to `explore` returning PASS on jrnl — 4 of 4 crash worlds, oracle
+agreed on 3 operations, checker falsified before the run — in 4:22, well
+under the ten-minute budget. Met, first try. The number is derived from the
+committed event timeline, not written by hand; the extractor flagged three
+transfer commands (docker cp / base64-through-exec of driver-authored files)
+and the adjudication is on the results page rather than swallowed — the seal
+guards what flows in from outside the driver, and nothing did. Two honest
+observations from the driver survive as work: `--shim`/`--work` appear only
+in the README's Example, not the Usage bullets (filed), and its own PASS
+carries the history-form reservation (`appended tails` in not_tested) —
+which the driver read, understood, and answered with its own checker; the
+account block did its job on a stranger. What did not survive rehearsal is
+the entry below this one.
+
 ## 2026-08-17 — the release binaries only ran on the machines that built them
 
 The onboarding clock's rehearsal — the step that exists to prove the
