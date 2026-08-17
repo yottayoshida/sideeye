@@ -304,7 +304,16 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
         var full_buf: [contract.max_path]u8 = undefined;
         const full = try joinZ(&full_buf, root, e.rel);
         switch (e.kind) {
-            .dir => _ = posix.mkdir(full.ptr, 0o755),
+            // The only creation whose failure used to be silent — harmless exactly
+            // while dir-to-dir pairs were unjudged, and a tool-manufactured
+            // `missing` the moment they are judged (#164): a world starting without
+            // an empty directory the recording had would read as the target's
+            // violation. Strict on purpose, no EEXIST tolerance: the tree was
+            // emptied above and the root itself never appears in these entries
+            // (walk records children only), so an existing directory here has no
+            // legitimate source — it is a leftover the delete failed to remove,
+            // and accepting it would let world k judge world k-1's residue.
+            .dir => if (posix.mkdir(full.ptr, 0o755) != 0) return error.CreateFailed,
             .symlink => {
                 // Recreate the link with the recorded target, verbatim. The target is
                 // a string, not a path this function resolves — a dangling link is
@@ -630,15 +639,13 @@ pub fn classify(gpa: Allocator, pre: Snapshot, post: Snapshot) error{OutOfMemory
         if (!isJudgedKind(pe.kind)) continue;
         const po = post.find(pe.rel) orelse continue;
         if (!isJudgedKind(po.kind)) continue;
-        // A directory that stays a directory carries nothing to compare — its content
-        // is empty on both sides. Every other combination enters, kind changes
-        // included: the previous code silently skipped a pair whose kind changed
-        // between the clean runs, which was invisible while the oracle refused every
-        // symlink-touching target before a world ran, and became an undisclosed hole
-        // the moment #122 removed that refusal — stow's unfold (fold symlink → real
-        // directory) is exactly such a pair, and it is the window that define exists
-        // to explore (R1; judged-in-full by owner ruling).
-        if (pe.kind == .dir and po.kind == .dir) continue;
+        // A dir-to-dir pair used to be skipped as carrying "nothing to compare" —
+        // but its kind IS the comparison (#164): an empty directory replaced by a
+        // file, or deleted outright, was invisible exactly because the pair never
+        // entered the plan. A directory with children is reached through the
+        // children's own pairs; an empty one has no other witness, so every judged
+        // pair enters now — kind changes included (#122: stow's unfold, fold
+        // symlink → real directory, is the window that define exists to explore).
         // The history form is a statement about appendable byte streams; a symlink's
         // target string is replaced whole or not at all, so only file→file pairs
         // qualify and everything else stays standard.
@@ -750,6 +757,128 @@ pub fn judgeL1(plan: L0Plan, pre: Snapshot, post: Snapshot, crashed: Snapshot) ?
         if (crashed.find(e.rel) != null) return .{ .not_durable = e.rel };
     }
     return null;
+}
+
+// The #27 pins, one test per pin: the issue's named scenario, both ways
+// around. Under a content-only comparison a directory's recorded-empty
+// content reads as equal to an emptied (or not-yet-written) file, and the
+// kind change slips through. The pair rule (#122) closed this; these hold it
+// closed through the real path (classify + judgeL0), because "an emptied
+// file classifies as the standard form" is part of the claim. Separate test
+// fns on purpose — a shared fn masks every pin after the first failure, and
+// a mutation round must report each red individually.
+fn expectHybridAgainstCrashedKind(pre_content: []const u8, post_content: []const u8, crashed_kind: posix.Kind) !void {
+    const gpa = std.testing.allocator;
+    var pre = try testSnapshot(gpa, &.{.{ "note", pre_content }});
+    defer pre.deinit();
+    var post = try testSnapshot(gpa, &.{.{ "note", post_content }});
+    defer post.deinit();
+    var crashed: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer crashed.deinit();
+    try crashed.entries.append(crashed.arena.allocator(), .{ .rel = "note", .kind = crashed_kind, .content = "" });
+    const v = (try testJudge(gpa, pre, post, crashed)) orelse return error.TestExpectedViolation;
+    try std.testing.expectEqualStrings("note", v.hybrid);
+}
+
+test "#27 pin: a post-empty file pair rejects a crashed directory" {
+    try expectHybridAgainstCrashedKind("x", "", .dir);
+}
+
+test "#27 pin: a pre-empty file pair rejects a crashed directory" {
+    try expectHybridAgainstCrashedKind("", "x", .dir);
+}
+
+test "#27 pin: an .other crashed kind is not the emptied file" {
+    // FIFO-shaped: recorded with empty content too. Unit-level property — in
+    // real runs #5's adjudicated demotion will refuse `.other` at snapshot time.
+    try expectHybridAgainstCrashedKind("x", "", .other);
+}
+
+test "#27 control: a non-empty pair rejects the same directory as always" {
+    // Content alone already refuses this shape, so the kind-blind mutation
+    // that reds the three pins above spares this one — it keeps rejecting.
+    try expectHybridAgainstCrashedKind("x", "y", .dir);
+}
+
+// The #164 pins: an empty directory present in both clean runs has no witness
+// but its own pair — with the old skip, a crash world could replace it with a
+// file or delete it and the verdict never looked.
+
+test "#164: a dir-to-dir pair enters the plan and an intact world judges clean" {
+    const gpa = std.testing.allocator;
+    var pre: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer pre.deinit();
+    try pre.entries.append(pre.arena.allocator(), .{ .rel = "box", .kind = .dir, .content = "" });
+    var post: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer post.deinit();
+    try post.entries.append(post.arena.allocator(), .{ .rel = "box", .kind = .dir, .content = "" });
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+    try std.testing.expectEqual(@as(usize, 1), plan.files.items.len);
+    try std.testing.expectEqual(FileForm.standard, plan.files.items[0].form);
+    var intact: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer intact.deinit();
+    try intact.entries.append(intact.arena.allocator(), .{ .rel = "box", .kind = .dir, .content = "" });
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan, intact));
+}
+
+test "#164 pin: an empty directory replaced by an empty file is a violation" {
+    // Content matches both sides; only the kind dissents — the exact shape
+    // the skip used to hide.
+    const gpa = std.testing.allocator;
+    var pre: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer pre.deinit();
+    try pre.entries.append(pre.arena.allocator(), .{ .rel = "box", .kind = .dir, .content = "" });
+    var post: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer post.deinit();
+    try post.entries.append(post.arena.allocator(), .{ .rel = "box", .kind = .dir, .content = "" });
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+    var as_file: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer as_file.deinit();
+    try as_file.entries.append(as_file.arena.allocator(), .{ .rel = "box", .kind = .file, .content = "" });
+    try std.testing.expectEqualStrings("box", judgeL0(plan, as_file).?.hybrid);
+}
+
+test "#164 pin: an empty directory deleted outright is missing" {
+    const gpa = std.testing.allocator;
+    var pre: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer pre.deinit();
+    try pre.entries.append(pre.arena.allocator(), .{ .rel = "box", .kind = .dir, .content = "" });
+    var post: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer post.deinit();
+    try post.entries.append(post.arena.allocator(), .{ .rel = "box", .kind = .dir, .content = "" });
+    var plan = try classify(gpa, pre, post);
+    defer plan.deinit();
+    var gone: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer gone.deinit();
+    try std.testing.expectEqualStrings("box", judgeL0(plan, gone).?.missing);
+}
+
+test "#164 pin: restore goes loud when a directory cannot be created" {
+    // The guard's own falsification: a parentless dir entry makes mkdir fail
+    // with ENOENT, and restore must refuse — a silently absent directory
+    // would let judgeL0 report a `missing` the tool itself manufactured.
+    const gpa = std.testing.allocator;
+    var dbuf: [contract.max_path]u8 = undefined;
+    const parent = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-loud-dir-test-{d}", .{posix.getpid()}) catch unreachable;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "{s}", .{parent}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var rbuf: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&rbuf, "{s}/state", .{parent}) catch unreachable;
+    var rzbuf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rzbuf, "{s}", .{root}) catch unreachable;
+    _ = posix.mkdir(root_z.ptr, 0o755);
+    defer {
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    var snap: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer snap.deinit();
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "a/b", .kind = .dir, .content = "" });
+    try std.testing.expectError(error.CreateFailed, restore(snap, root));
 }
 
 /// Content written over every file when probing whether a checker actually looks at
@@ -1233,7 +1362,8 @@ test "a pair whose kind changes between the clean runs is judged, not skipped (#
     try wrong.entries.append(wrong.arena.allocator(), .{ .rel = "target/sub", .kind = .symlink, .content = "/elsewhere" });
     try std.testing.expectEqualStrings("target/sub", judgeL0(plan, wrong).?.hybrid);
 
-    // Control: an unchanged directory pair carries nothing to compare and stays out.
+    // An unchanged directory pair used to stay out of the plan; since #164 it
+    // enters (its kind is the comparison) and an intact world judges clean.
     var pre2: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
     defer pre2.deinit();
     try pre2.entries.append(pre2.arena.allocator(), .{ .rel = "d", .kind = .dir, .content = "" });
@@ -1242,7 +1372,11 @@ test "a pair whose kind changes between the clean runs is judged, not skipped (#
     try post2.entries.append(post2.arena.allocator(), .{ .rel = "d", .kind = .dir, .content = "" });
     var plan2 = try classify(gpa, pre2, post2);
     defer plan2.deinit();
-    try std.testing.expectEqual(@as(usize, 0), plan2.files.items.len);
+    try std.testing.expectEqual(@as(usize, 1), plan2.files.items.len);
+    var d_ok: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer d_ok.deinit();
+    try d_ok.entries.append(d_ok.arena.allocator(), .{ .rel = "d", .kind = .dir, .content = "" });
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan2, d_ok));
 }
 
 test "L1 judges a post-only symlink by its target, not existence alone (#122)" {

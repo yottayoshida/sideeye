@@ -2,6 +2,55 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-17 — the audit adjudicated a fix for a hole that was already closed, and the measurement found the real one next door
+
+The freeze audit classified #27 as class A, "fix before the tag" — and the
+audit's own sweep had just caught #13 being stale, so the lesson was on the
+table and still didn't transfer: the sweep checked open/closed, not whether
+an open issue's defect still existed at HEAD. It didn't. #122's pair rule
+(kind and content compared together) closed #27's named window two days and
+twenty-eight commits before this branch's HEAD (38e1186, 2026-08-15); the
+plan-stage measurement — write the issue's own scenario as pins through the
+real classify+judge path, run them against HEAD — came back green on the
+first run. The pins stay, one test fn per pin so a mutation reports each red
+individually (the first round used one shared fn and its single failure
+masked the rest — that round's numbers were unobservable and are not
+claimed). Measured on the split tests: a kind-blind mutation (both kind
+checks removed from the standard arm) reds five tests — the three empty-side
+#27 pins, #164's file-replacement pin, and the #122 symlink test — and
+spares the non-empty control, which keeps rejecting on content alone. The
+audit row, PRD and the unreleased CHANGELOG entry carry dated corrections
+rather than silent rewrites; the tag gate shrinks to #46 and #5.
+
+The measurement's real find is the adjacent gap the issue never named:
+`classify` skipped every dir-to-dir pair as "nothing to compare", so an
+empty directory present in both clean runs had no witness at all — a crash
+world could replace it with a file or delete it and PASS stood. Filed as
+#164 (the class-A shape, joining the audit table at the pre-tag re-sweep)
+and fixed in the same change: the skip is gone, the pair enters under the
+standard two-sided rule, and reintroducing the skip as a mutation reds four
+tests (the three #164 pins and the #122 kind-change control). The restore
+prerequisite went loud with it — the directory mkdir was the only creation
+whose failure was ignored, harmless exactly while empty directories were
+unjudged and a tool-manufactured `missing` the moment they are judged. Review
+then killed the EEXIST tolerance the first version carried: the root never
+appears in restore's entries (walk records children only), so an existing
+directory there has no legitimate source — tolerating it would let world k
+judge world k-1's residue through deleteTree's one silent path. Strict now,
+and the guard has its own falsification: a parentless dir entry must refuse,
+and silencing the mkdir as a mutation reds exactly that one pin. Same-day
+process notes, recorded because they cost redos: the first mutation round
+was reverted with `git checkout` on a tree whose base was not yet committed,
+which threw away the implementation along with the mutation — the second
+round committed the base first. And the batch's own filing tripped GitHub's
+closing-keyword parsing twice in one day (#27 accidentally closed the same
+day by the merge-commit prose `fix #27` — reopened within fifteen minutes
+with the accident named; then a shell precedence slip filed #164's text
+twice, #165 closed as the duplicate) — keyword-shaped issue references now
+travel in code spans, the one spelling GitHub's autolinker is measured to
+skip (entities and backslashes are not — the workspace learned that on the
+org migration).
+
 ## 2026-08-17 — the freeze audit: twenty-six issues against five surfaces, and nothing deferred under an intact PASS claim
 
 Criterion 5's audit ran as #86 wrote it: sweep first (committed snapshot,
