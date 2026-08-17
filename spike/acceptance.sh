@@ -222,6 +222,103 @@ else
 fi
 
 echo ""
+echo "=========== check 2r: the stdout capture joins the quiescence observation (#46) ==========="
+# A checker that appends to the world's capture stands in for the straggler the
+# containment design refuses to let anyone manufacture: setsid/setpgid refuse hard, and
+# a group member cannot outlive the group kill deterministically. The checker runs
+# between the engine's two capture samples, so its append lands exactly where a
+# surviving writer's bytes would — no scheduling race, the guard's own predicate. Both
+# checkers carry a real invariant (the key must be readable) so the falsification gate
+# accepts them; the appending one shields the append so its verdict still comes from
+# the invariant alone.
+cat > /tmp/acc/quiet-check.sh <<'CHECK'
+#!/bin/sh
+exec grep -q "^key=" "$SIDEEYE_STATE_DIR/key.json"
+CHECK
+cat > /tmp/acc/append-check.sh <<'CHECK'
+#!/bin/sh
+printf 'a straggler was here\n' >> /tmp/acc/work/stdout-world.txt 2>/dev/null || :
+exec grep -q "^key=" "$SIDEEYE_STATE_DIR/key.json"
+CHECK
+chmod 755 /tmp/acc/quiet-check.sh /tmp/acc/append-check.sh
+
+# Green control first: the same tolerated boundary, a checker that touches nothing
+# beyond its invariant — the verdict must be the boundary-free one.
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+TOY_FORK=1 export TOY_FORK
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check /tmp/acc/quiet-check.sh \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_FORK
+if [ "$rc" = "1" ] && echo "$o" | grep -q "crash point 5 of 5"; then
+    echo "ok   tolerated boundary + quiet checker keeps its verdict (exit 1)"
+else
+    echo "FAIL capture-quiescence green control: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The append is observed and refused. Before this check's change the identical run
+# reached exit 1 with the appended bytes sitting unread in the capture (measured
+# 2026-08-17 on the pre-change engine).
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+TOY_FORK=1 export TOY_FORK
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check /tmp/acc/append-check.sh \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_FORK
+if [ "$rc" = "2" ] && echo "$o" | grep -q "stdout capture of a crashed world changed"; then
+    echo "ok   a write landing between the capture samples is refused (exit 2)"
+else
+    echo "FAIL capture-quiescence red: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The arming case: the recording forks nothing — one variable makes every WORLD fork.
+# The observation must arm on the world's own boundary evidence, not the recording's
+# story; on the pre-change engine this exact run reached exit 1 while the report's
+# processes line said "single process".
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+TOY_FORK_WORLD=1 export TOY_FORK_WORLD
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check /tmp/acc/append-check.sh \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_FORK_WORLD
+if [ "$rc" = "2" ] && echo "$o" | grep -q "stdout capture of a crashed world changed"; then
+    echo "ok   a world-only boundary arms the observation (exit 2)"
+else
+    echo "FAIL world-only arming: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# The same world-only boundary with a quiet checker: tolerated-with-observation (the
+# refuse-or-not question is #169), and the processes line must carry the worlds' own
+# account instead of the recording's "single process" story (it did not, pre-change).
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+TOY_FORK_WORLD=1 export TOY_FORK_WORLD
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check /tmp/acc/quiet-check.sh \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_FORK_WORLD
+if [ "$rc" = "1" ] && echo "$o" | grep -q "boundary appeared in explored worlds"; then
+    echo "ok   a quiet world-only boundary reaches its verdict and the report says so (exit 1)"
+else
+    echo "FAIL world-only processes account: exit $rc"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 1b: the L2 checker judges the same worlds ==========="
 # check.sh cross-examines `doctor` against reality: it fails when the diagnostic claims
 # health while the key cannot be read. That is the DESIGN §12 example, and it should

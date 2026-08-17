@@ -158,6 +158,11 @@
  *                     it. The child's operation has no crash-point address; must refuse.
  *   TOY_SPAWN         posix_spawn a process that touches nothing and wait for it.
  *                     Tolerable: the subject's account remains complete.
+ *   TOY_FORK_WORLD    the same quiet fork as TOY_FORK, taken only when SIDEEYE_KILL_AT
+ *                     is set — inside crash worlds, never in the recording run. The
+ *                     recording-global boundary story then says "no boundary" while
+ *                     every explored world crosses one: the arming case for the
+ *                     per-world quiescence observation (#46).
  *   TOY_SPAWN_WRITES  posix_spawn a shell that writes into the state directory.
  *                     The child never loads the shim's view of the world it was born
  *                     into (new image), and only an oracle can account for it; refuse.
@@ -247,6 +252,17 @@ static void maybe_leave_the_supported_region(void) {
         pid_t p = fork();
         if (p == 0) _exit(0);
         if (p > 0) { int st; waitpid(p, &st, 0); }
+    }
+    /* World-only boundary: the engine sets SIDEEYE_KILL_AT in crash worlds and never
+     * in the recording run, so this fork exists in every explored world while the
+     * recording's account honestly says "single process". */
+    if (getenv("TOY_FORK_WORLD")) {
+        const char *ka = getenv("SIDEEYE_KILL_AT");
+        if (ka && *ka) {
+            pid_t p = fork();
+            if (p == 0) _exit(0);
+            if (p > 0) { int st; waitpid(p, &st, 0); }
+        }
     }
     /* vfork's child may only _exit or exec; anything else is undefined. Exec is the
      * whole reason vfork exists, so that is what this does.

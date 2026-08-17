@@ -761,10 +761,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // recording run — the run that completes normally, where even an unflushed stdio
     // buffer reaches the capture through the exit-time flush. A crash world killed
     // before the marker is not this: there the conditional simply does not apply.
-    if (args.marker) |m| {
-        const seen = fileContains(rec_stdout, m) catch
-            setupError("the recording run's stdout capture could not be read back");
-        if (!seen) {
+    // One observation serves two readers (#46): the marker scan and the capture
+    // fingerprint come from the same bytes, and this is the first of the two samples
+    // the tolerated-boundary path compares after containment.
+    const rec_capture = observeCapture(rec_stdout, args.marker) catch
+        setupError("the recording run's stdout capture could not be read back");
+    if (args.marker != null) {
+        if (!rec_capture.marker_seen) {
             l1_note = "marker configured; never observed, even in the recording run";
             unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all");
         }
@@ -1015,6 +1018,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         defer final_again.deinit();
         if (!snapshotsEqual(final, final_again))
             unknown(.state_not_quiescent, "the state directory changed between two samples taken after the recording run was contained: something is still writing");
+        // The capture is L1 evidence and gets the same observation (#46). Its first
+        // sample was the marker scan above; the oracle-output parse sits between the
+        // two, so the observed window is wide without costing an extra wait.
+        const rec_capture_again = observeCapture(rec_stdout, null) catch
+            setupError("the recording run's stdout capture could not be read back");
+        if (rec_capture.sawTruncation() or rec_capture_again.sawTruncation() or
+            !rec_capture.fingerprintEql(rec_capture_again))
+            unknown(.state_not_quiescent, "the stdout capture changed between two samples taken after the recording run was contained: something is still writing to the inherited stdout");
     }
 
     if (!snapshotsEqual(initial, final) and trace.mutation_count == 0)
@@ -1256,12 +1267,29 @@ pub fn main(init: std.process.Init.Minimal) !void {
         defer crashed.deinit();
 
         // Same observation as after the recording run: when a boundary was crossed,
-        // one sample is a moment and two agreeing samples are a state.
-        if (crossed_boundary) {
+        // one sample is a moment and two agreeing samples are a state. Boundary
+        // evidence is per-world as well as recording-global (#46): a recording that
+        // never forked says nothing about a world where the parent dying earlier sent
+        // the child down a forking path — the same reason the per-world witness above
+        // re-checks what the recording already cleared. Arming here is observation
+        // only; whether a world-only boundary should refuse outright without an
+        // oracle to account for it is #169.
+        const world_armed = crossed_boundary or wtrace.boundary != null or wtrace.foreign_pid_seen;
+        // The processes line must not keep telling the recording's story over worlds
+        // that contradicted it (R1): set before any refusal below, so both the refusal
+        // report and a completed verdict carry the world's own account.
+        if (!crossed_boundary and world_armed)
+            boundary_note = "single process in the recording; a process boundary appeared in explored worlds, observed for quiescence only — nothing accounts for what it did (#169)";
+        var world_capture_first: ?CaptureObservation = null;
+        if (world_armed) {
             var crashed_again = engine.takeSnapshot(gpa, state_abs) catch setupError("could not re-snapshot a crashed state");
             defer crashed_again.deinit();
             if (!snapshotsEqual(crashed, crashed_again))
                 unknown(.state_not_quiescent, "the crashed state changed between two samples: something the subject started is still writing");
+            // The capture's first sample (#46). The second rides the marker scan below,
+            // so the observed window brackets the checker and the scan itself.
+            world_capture_first = observeCapture(world_stdout, null) catch
+                setupError("a world's stdout capture could not be read back");
         }
 
         explored += 1;
@@ -1289,8 +1317,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // conditional does not apply — which is the normal shape of a post-success
         // invariant, not a gap: L0 and the checker judged every world above.
         var marker_seen = false;
-        if (args.marker) |m| marker_seen = fileContains(world_stdout, m) catch
-            setupError("a world's stdout capture could not be read back");
+        if (args.marker != null or world_capture_first != null) {
+            const world_capture = observeCapture(world_stdout, args.marker) catch
+                setupError("a world's stdout capture could not be read back");
+            // The refusal comes before the marker bit is used anywhere: a scan raced
+            // by a live writer must not decide whether L1 applies (#46). Two equal
+            // samples are an observation, never a proof of future quiet.
+            if (world_capture_first) |first| {
+                if (first.sawTruncation() or world_capture.sawTruncation() or
+                    !first.fingerprintEql(world_capture))
+                    unknown(.state_not_quiescent, "the stdout capture of a crashed world changed between two samples: something the subject started is still writing to the inherited stdout");
+            }
+            if (args.marker != null) marker_seen = world_capture.marker_seen;
+        }
         if (marker_seen and k <= n) marker_worlds += 1;
         const l1 = if (marker_seen) engine.judgeL1(l0_plan, initial, final, crashed) else null;
 
@@ -1890,39 +1929,96 @@ fn notTestedJson() []const u8 {
     return "[\"power loss\", \"torn writes\", \"concurrent processes\"]";
 }
 
-/// Whether the file at `path` contains `needle`, read in chunks with an overlap so a
-/// marker straddling a chunk boundary is still found — without holding a chatty
-/// target's whole stdout in memory across a few hundred worlds. An unreadable capture
-/// is an error, never "absent": absence decides whether L1 applies to a world, and an
-/// I/O failure silently read as absence would skip the invariant on the PASS side.
-fn fileContains(path: []const u8, needle: []const u8) error{Unreadable}!bool {
-    if (needle.len == 0) return false;
+/// One bounded observation of a stdout capture: how many bytes it held when opened, a
+/// Blake3 digest of exactly those bytes, and whether `needle` appears among them — read
+/// in chunks with an overlap so a marker straddling a chunk boundary is still found,
+/// without holding a chatty target's whole stdout in memory across a few hundred worlds.
+///
+/// The scan and the fingerprint deliberately come from one read of the same bytes: two
+/// observations of the capture disagreeing is the quiescence refusal (#46), and a marker
+/// verdict taken from different bytes than the fingerprint would let the two claims
+/// drift. The read is bounded by the size measured at open — a still-live writer must
+/// not be able to keep the observer chasing EOF — so growth surfaces as the *next*
+/// observation's differing fingerprint, never as a hang. The digest is Blake3 rather
+/// than a cheap mix because the bytes are target-chosen: a same-length rewrite must not
+/// be able to keep the fingerprint. An unreadable capture is an error, never "absent":
+/// absence decides whether L1 applies to a world, and an I/O failure silently read as
+/// absence would skip the invariant on the PASS side.
+const CaptureObservation = struct {
+    /// The size `lseek` measured when the file was opened.
+    measured: u64,
+    /// The bytes actually read and digested. Less than `measured` only when the file
+    /// shrank underneath the read — on a regular file that is direct evidence of a
+    /// concurrent writer, which is why `sawTruncation` exists as its own predicate
+    /// instead of hoping the next fingerprint happens to differ (R1: a truncate-to-b
+    /// during sample one and an honest size-b sample two would otherwise compare equal).
+    bytes: u64,
+    digest: [std.crypto.hash.Blake3.digest_length]u8,
+    marker_seen: bool,
+
+    /// Fingerprint equality only — `marker_seen` depends on which needle was asked for.
+    fn fingerprintEql(a: CaptureObservation, b: CaptureObservation) bool {
+        return a.measured == b.measured and a.bytes == b.bytes and std.mem.eql(u8, &a.digest, &b.digest);
+    }
+
+    /// The file changed while this very sample was being read.
+    fn sawTruncation(a: CaptureObservation) bool {
+        return a.bytes < a.measured;
+    }
+};
+
+fn observeCapture(path: []const u8, needle: ?[]const u8) error{Unreadable}!CaptureObservation {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return error.Unreadable;
     const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
     if (fd < 0) return error.Unreadable;
     defer _ = posix.close(fd);
+    const end = posix.lseek(fd, 0, posix.SEEK_END);
+    if (end < 0) return error.Unreadable;
+    if (posix.lseek(fd, 0, posix.SEEK_SET) != 0) return error.Unreadable;
+    const bound: u64 = @intCast(end);
+
     var buf: [64 * 1024]u8 = undefined;
-    if (needle.len >= buf.len) return error.Unreadable;
+    const nlen: usize = if (needle) |n| n.len else 0;
+    if (nlen >= buf.len) return error.Unreadable;
+    var hasher = std.crypto.hash.Blake3.init(.{});
+    var seen = false;
     var kept: usize = 0;
-    while (true) {
-        const nr = posix.read(fd, buf[kept..].ptr, buf.len - kept);
+    var total: u64 = 0;
+    while (total < bound) {
+        const room: u64 = @intCast(buf.len - kept);
+        const want: usize = @intCast(@min(room, bound - total));
+        const nr = posix.read(fd, buf[kept..].ptr, want);
         if (nr < 0) {
             if (std.c._errno().* == posix.EINTR) continue;
             return error.Unreadable;
         }
-        if (nr == 0) return false;
-        const have = kept + @as(usize, @intCast(nr));
-        if (std.mem.indexOf(u8, buf[0..have], needle) != null) return true;
-        kept = @min(needle.len - 1, have);
+        // EOF before the measured size: the file shrank underneath us. `bytes` ends up
+        // below `measured`, which `sawTruncation` reports as a change observed inside
+        // this very sample — never left to the next comparison to maybe notice.
+        if (nr == 0) break;
+        const fresh: usize = @intCast(nr);
+        hasher.update(buf[kept .. kept + fresh]);
+        total += fresh;
+        const have = kept + fresh;
+        if (needle) |n| {
+            if (n.len > 0 and std.mem.indexOf(u8, buf[0..have], n) != null) seen = true;
+        }
+        kept = if (nlen == 0) 0 else @min(nlen - 1, have);
         std.mem.copyForwards(u8, buf[0..kept], buf[have - kept .. have]);
     }
+    var out: CaptureObservation = .{ .measured = bound, .bytes = total, .digest = undefined, .marker_seen = seen };
+    hasher.final(&out.digest);
+    return out;
 }
 
-test "fileContains finds a marker straddling the chunk boundary" {
+test "observeCapture finds a straddling marker and fingerprints the same bytes" {
     // posix directly, like the engine itself: the std file API wants an `Io` instance
     // threaded through every call, and this test needs one file, not a runtime.
-    const path = ".zig-cache/tmp-filecontains-test.txt";
+    // pid-unique name: `zig build test` runs this file in several concurrent binaries,
+    // and a fixed shared path passes alone then flakes under pairing (#28).
+    var pb: [128]u8 = undefined;
+    const path = std.fmt.bufPrint(&pb, ".zig-cache/tmp-observecapture-{d}.txt", .{posix.getpid()}) catch unreachable;
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch unreachable;
     const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
@@ -1934,9 +2030,75 @@ test "fileContains finds a marker straddling the chunk boundary" {
     try std.testing.expect(posix.write(fd, "MARKER", 6) == 6);
     _ = posix.close(fd);
     defer removeFile(path);
-    try std.testing.expect(try fileContains(path, "MARKER"));
-    try std.testing.expect(!try fileContains(path, "ABSENT"));
-    try std.testing.expectError(error.Unreadable, fileContains(".zig-cache/no-such-capture", "X"));
+
+    const with = try observeCapture(path, "MARKER");
+    try std.testing.expect(with.marker_seen);
+    try std.testing.expectEqual(@as(u64, 64 * 1024 + 3), with.bytes);
+    const without = try observeCapture(path, "ABSENT");
+    try std.testing.expect(!without.marker_seen);
+    // The fingerprint is a property of the bytes, not of the needle asked about.
+    try std.testing.expect(with.fingerprintEql(without));
+    const unasked = try observeCapture(path, null);
+    try std.testing.expect(with.fingerprintEql(unasked));
+
+    // One appended byte moves the fingerprint.
+    const afd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT, @as(c_uint, 0o644));
+    try std.testing.expect(afd >= 0);
+    try std.testing.expect(posix.lseek(afd, 0, posix.SEEK_END) >= 0);
+    try std.testing.expect(posix.write(afd, "y", 1) == 1);
+    _ = posix.close(afd);
+    const grown = try observeCapture(path, null);
+    try std.testing.expect(!with.fingerprintEql(grown));
+
+    try std.testing.expectError(error.Unreadable, observeCapture(".zig-cache/no-such-capture", "X"));
+}
+
+test "observeCapture separates same-length rewrites by digest alone" {
+    var pb: [128]u8 = undefined;
+    const path = std.fmt.bufPrint(&pb, ".zig-cache/tmp-observecapture-rw-{d}.txt", .{posix.getpid()}) catch unreachable;
+    var zb: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch unreachable;
+    defer removeFile(path);
+
+    for ([_][]const u8{ "AAAA", "AAAB" }, 0..) |content, i| {
+        const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        try std.testing.expect(fd >= 0);
+        try std.testing.expect(posix.write(fd, content.ptr, content.len) == @as(isize, @intCast(content.len)));
+        _ = posix.close(fd);
+        if (i == 0) continue;
+        const b = try observeCapture(path, null);
+        const afd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        try std.testing.expect(afd >= 0);
+        try std.testing.expect(posix.write(afd, "AAAA", 4) == 4);
+        _ = posix.close(afd);
+        const a = try observeCapture(path, null);
+        try std.testing.expectEqual(a.bytes, b.bytes);
+        try std.testing.expect(!a.fingerprintEql(b));
+    }
+
+    // An empty capture observes cleanly: zero bytes, nothing seen, no truncation.
+    const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    _ = posix.close(fd);
+    const empty = try observeCapture(path, "M");
+    try std.testing.expectEqual(@as(u64, 0), empty.bytes);
+    try std.testing.expectEqual(@as(u64, 0), empty.measured);
+    try std.testing.expect(!empty.marker_seen);
+    try std.testing.expect(!empty.sawTruncation());
+}
+
+test "a shrink observed inside one sample is its own evidence, not the next comparison's luck" {
+    // The racy schedule itself (truncate between lseek and read) cannot be staged
+    // deterministically, so the predicate is pinned on the recorded shape: a sample
+    // whose read ended below its measured size. The hazard (R1): truncate-to-b during
+    // sample one, then an honest size-b sample two — identical bytes, identical digest,
+    // equal fingerprints if `measured` were not part of the comparison.
+    const digest = [_]u8{7} ** std.crypto.hash.Blake3.digest_length;
+    const during = CaptureObservation{ .measured = 10, .bytes = 4, .digest = digest, .marker_seen = false };
+    const honest = CaptureObservation{ .measured = 4, .bytes = 4, .digest = digest, .marker_seen = false };
+    try std.testing.expect(during.sawTruncation());
+    try std.testing.expect(!honest.sawTruncation());
+    try std.testing.expect(!during.fingerprintEql(honest));
 }
 
 /// `readFileAlloc` with a ceiling: a case file is caller-supplied input, and reading
