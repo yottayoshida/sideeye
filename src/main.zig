@@ -1437,9 +1437,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
             violations, explored,
             invariant,
             f.k,        n,
-            after,      after_path,
-            before,     before_path,
-            path_shown,
+            // The three target-chosen operands go to the text defanged; the
+            // JSON block below reads the raw variables (#26).
+            after,      textShown(arena, after_path),
+            before,     textShown(arena, before_path),
+            textShown(arena, path_shown),
             what,
             explored,   n,
             expected_status_val,
@@ -1839,13 +1841,28 @@ fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
 
 /// Target-chosen file names go into the text report verbatim, and a Unix file name may
 /// contain newlines and control bytes — enough to forge whole report lines. The JSON
-/// side is escaped in `jsonString`; this is the text side's equivalent for the l0
-/// note. (The FAIL block's path fields have carried the same exposure since v0.1 and
-/// are tracked as their own issue — this guards the surface this change adds.)
+/// side is escaped in `jsonString`; this is the text side's equivalent, first built
+/// for the l0 note and since #26's fix also the FAIL block's route (via `textShown`
+/// below — the v0.1-era exposure there is closed by the same predicate).
 fn appendSanitized(names: *std.ArrayList(u8), arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}!void {
     for (s) |ch| {
         try names.append(arena, if (ch < 0x20 or ch == 0x7f) '?' else ch);
     }
+}
+
+/// The text-shown spelling of a target-chosen string (#26): control bytes
+/// defanged through the same predicate as the l0 note — one predicate, not
+/// two that drift. Display only: the JSON block reads the raw variables,
+/// unchanged by this fix — `jsonString` escapes controls and substitutes
+/// U+FFFD for invalid UTF-8, so valid names round-trip and invalid bytes
+/// degrade the way they always did; defanging the JSON too would be a silent
+/// report-schema change. `?` and not a hex spelling on purpose: 1:1, so a
+/// hostile name can never bloat the report past its output buffer and erase
+/// the counterexample it names.
+fn textShown(arena: std.mem.Allocator, s: []const u8) []const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    appendSanitized(&out, arena, s) catch return "(allocation failed)";
+    return out.items;
 }
 
 /// The `not tested` list is not constant: whenever any file was judged by the history
