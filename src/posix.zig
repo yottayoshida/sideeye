@@ -43,6 +43,8 @@ pub const SEEK_END: c_int = 2;
 
 /// Same value on Linux and Darwin.
 pub const EINTR: c_int = 4;
+/// Same value on Linux and Darwin.
+pub const ENOENT: c_int = 2;
 pub extern "c" fn mkdir(path: [*:0]const u8, mode: c_uint) c_int;
 /// Mutates `template` in place (the trailing XXXXXX) and returns it, or null on failure.
 pub extern "c" fn mkdtemp(template: [*:0]u8) ?[*:0]u8;
@@ -132,7 +134,8 @@ pub const Kind = enum { file, dir, symlink, other, missing };
 /// the kind of ABI guesswork that goes wrong quietly. `dirent.type` carries the same
 /// information for free, is defined identically on both target platforms, and needs no
 /// extra syscall. Some filesystems report DT_UNKNOWN, so the caller falls back to
-/// `isDirPath`.
+/// `kindOfPathNoFollow` (whose doc carries the dated correction to this paragraph's
+/// `stat` claim).
 pub fn kindFromDirent(e: *Dirent) Kind {
     return switch (e.type) {
         DT_DIR => .dir,
@@ -151,18 +154,66 @@ pub fn isDirPath(path: [*:0]const u8) bool {
     return true;
 }
 
-pub fn kindOfPath(path: [*:0]const u8) Kind {
-    // The link question comes first, because everything after it follows links:
-    // `opendir` on a symlink-to-directory answers "directory" and `open` on a
-    // symlink-to-file answers "file" — either would silently reclassify the entry
-    // as the thing it points at.
-    if (isSymlink(path)) return .symlink;
-    if (isDirPath(path)) return .dir;
-    const fd = open(path, O_RDONLY, @as(c_uint, 0));
-    if (fd < 0) return .missing;
-    _ = close(fd);
-    return .file;
+/// Entry kind without opening and without following: the snapshot's DT_UNKNOWN
+/// fallback. Its predecessor probed by `open(O_RDONLY)`, which is three different
+/// wrong answers on the entries this classification exists to notice (#5 R1): a FIFO
+/// with no writer blocks that open forever, a socket's failed open read back as
+/// `.missing` — silently absent from the snapshot — and a readable device passed as
+/// `.file` and got its bytes slurped. `fstatat(AT_SYMLINK_NOFOLLOW)` answers for the
+/// entry itself, never for what it points at, and cannot hang.
+///
+/// This file once refused `stat` outright ("hand-rolling the layout per architecture
+/// is exactly the kind of ABI guesswork that goes wrong quietly" — kindFromDirent's
+/// doc). Corrected 2026-08-17: that was true of hand-rolling and is not true of what
+/// std ships — but the two platforms get there differently, and the difference is
+/// itself the old fear vindicated upstream: on Darwin `std.c.fstatat` resolves the
+/// per-arch symbol (`fstatat$INODE64` on x86-64); on Linux std deliberately binds no
+/// libc stat symbol at all (glibc's are versioned aliases) and speaks the `statx`
+/// syscall directly, with the layout maintained in `std.os.linux`.
+/// Only a path that is genuinely GONE answers `.missing` (the entry raced away
+/// between readdir and here — the same benign race every walk lives with). Every
+/// other failure is `Unclassifiable`, loudly: ENOSYS under an old kernel, EPERM under
+/// seccomp, EACCES, EIO — collapsing those into "absent" would delete a real entry
+/// from the snapshot and route it around #5's refusal, which is the exact silent
+/// shape this function replaced (R1).
+pub const ClassifyError = error{Unclassifiable};
+
+pub fn kindOfPathNoFollow(path: [*:0]const u8) ClassifyError!Kind {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        const rc = lnx.statx(lnx.AT.FDCWD, path, lnx.AT.SYMLINK_NOFOLLOW, .{ .TYPE = true }, &stx);
+        switch (lnx.errno(rc)) {
+            .SUCCESS => {},
+            .NOENT => return .missing,
+            else => return error.Unclassifiable,
+        }
+        // std's own contract: "Callers must check this field since support varies by
+        // kernel version and filesystem." A mode the kernel never filled in is not a
+        // classification.
+        if (!stx.mask.TYPE) return error.Unclassifiable;
+        const m: u32 = stx.mode;
+        if (lnx.S.ISLNK(m)) return .symlink;
+        if (lnx.S.ISDIR(m)) return .dir;
+        if (lnx.S.ISREG(m)) return .file;
+        return .other;
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstatat(std.c.AT.FDCWD, path, &st, std.c.AT.SYMLINK_NOFOLLOW) != 0) {
+            if (std.c._errno().* == ENOENT) return .missing;
+            return error.Unclassifiable;
+        }
+        const m = st.mode;
+        if (std.c.S.ISLNK(m)) return .symlink;
+        if (std.c.S.ISDIR(m)) return .dir;
+        if (std.c.S.ISREG(m)) return .file;
+        return .other;
+    }
 }
+
+/// Test apparatus only: the classification above owes its falsification to a real
+/// FIFO (#5), and std.c carries no mkfifo. The engine itself never creates one.
+pub extern "c" fn mkfifo(path: [*:0]const u8, mode: c_uint) c_int;
 
 /// `d_name` is a fixed-size array in the struct; the name is the NUL-terminated prefix.
 pub fn direntName(e: *Dirent) []const u8 {
@@ -413,4 +464,53 @@ test "exit status decoding distinguishes exit from signal" {
     try std.testing.expectEqual(Term{ .signaled = 9 }, decodeStatus(9));
     try std.testing.expect(decodeStatus(9).isSignal(9));
     try std.testing.expect(!decodeStatus(0x0000).isSignal(9));
+}
+
+test "kindOfPathNoFollow classifies every kind without opening anything" {
+    // The real FIFO is the load-bearing case: the retired open-probing fallback would
+    // block on it forever, so a regression to probing surfaces here as a test timeout
+    // rather than a wrong value. pid-unique paths: `zig build test` runs this file in
+    // several concurrent binaries and a fixed shared path flakes under pairing (#28).
+    var bb: [128]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-kindnf-{d}", .{getpid()}) catch unreachable;
+    _ = mkdir(base.ptr, @as(c_uint, 0o755));
+
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/f", .{base}) catch unreachable;
+    const fd = open(file_z.ptr, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    _ = close(fd);
+    try std.testing.expectEqual(Kind.file, try kindOfPathNoFollow(file_z.ptr));
+
+    var db: [160]u8 = undefined;
+    const dir_z = std.fmt.bufPrintZ(&db, "{s}/d", .{base}) catch unreachable;
+    try std.testing.expect(mkdir(dir_z.ptr, @as(c_uint, 0o755)) == 0);
+    try std.testing.expectEqual(Kind.dir, try kindOfPathNoFollow(dir_z.ptr));
+
+    // Dangling on purpose: the answer must be about the link, never its target —
+    // and a link TO a real file must still answer .symlink, not .file.
+    var lb: [160]u8 = undefined;
+    const dangling_z = std.fmt.bufPrintZ(&lb, "{s}/l", .{base}) catch unreachable;
+    try std.testing.expect(symlink("no-such-target", dangling_z.ptr) == 0);
+    try std.testing.expectEqual(Kind.symlink, try kindOfPathNoFollow(dangling_z.ptr));
+    var l2b: [160]u8 = undefined;
+    const tofile_z = std.fmt.bufPrintZ(&l2b, "{s}/l2", .{base}) catch unreachable;
+    try std.testing.expect(symlink("f", tofile_z.ptr) == 0);
+    try std.testing.expectEqual(Kind.symlink, try kindOfPathNoFollow(tofile_z.ptr));
+
+    var qb: [160]u8 = undefined;
+    const fifo_z = std.fmt.bufPrintZ(&qb, "{s}/pipe", .{base}) catch unreachable;
+    try std.testing.expect(mkfifo(fifo_z.ptr, @as(c_uint, 0o644)) == 0);
+    try std.testing.expectEqual(Kind.other, try kindOfPathNoFollow(fifo_z.ptr));
+
+    var mb: [160]u8 = undefined;
+    const gone_z = std.fmt.bufPrintZ(&mb, "{s}/gone", .{base}) catch unreachable;
+    try std.testing.expectEqual(Kind.missing, try kindOfPathNoFollow(gone_z.ptr));
+
+    _ = unlink(fifo_z.ptr);
+    _ = unlink(tofile_z.ptr);
+    _ = unlink(dangling_z.ptr);
+    _ = unlink(file_z.ptr);
+    _ = rmdir(dir_z.ptr);
+    _ = rmdir(base.ptr);
 }

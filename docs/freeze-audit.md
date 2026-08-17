@@ -79,7 +79,7 @@ with a note). Class-A resolutions below are the owner's adjudication
 
 | # | what it is | touches | class | resolution |
 |---|---|---|---|---|
-| #5 | restore drops FIFOs/sockets/devices; worlds differ from the recorded tree (symlinks fixed in #122) | yes — verdict soundness | A | **demote**: detect a non-regular, non-symlink entry at snapshot time and refuse (UNKNOWN) rather than explore a tree that cannot be reproduced. Fix lands before the tag |
+| #5 | restore drops FIFOs/sockets/devices; worlds differ from the recorded tree (symlinks fixed in #122) | yes — verdict soundness | A | **demote**: detect a non-regular, non-symlink entry at snapshot time and refuse (UNKNOWN) rather than explore a tree that cannot be reproduced. Fix lands before the tag. **Landed 2026-08-17**: `unsupported_state_entry` fires at all three snapshots (initial, final, crashed — the last catching entries no syscall witness saw born), and the demotion's own review first forced the entrance repair: the `DT_UNKNOWN` fallback used to probe by opening, which hangs on a FIFO and misclassifies sockets and devices — classification is by `statx`/`fstatat` now, no open, no follow |
 | #6 | the oracle reads any quoted string on a strace line as a path; a target that *prints* a state path draws a false refusal | no — internal parsing precision, fails closed, fix is non-breaking | — | stays open; fixable in any 1.x |
 | #10 | macOS Apple platform binaries can never be observed; the docs imply a narrower limit | yes — the stated promise | A-adjacent | **narrow**: `docs/target-classes.md` states plainly that a macOS target must be self-built or self-installed, never an Apple-shipped binary. The README stays under its cut-only order |
 | #12 | the omamori dogfood cannot be agent-driven | no — internal tooling | C | defer to 1.x |
@@ -94,7 +94,7 @@ with a note). Class-A resolutions below are the owner's adjudication
 | #63 | the agent-side seal has never been seen red | no — experiment apparatus | C | defer |
 | #64 | secondary observations lack a committed generator | no — apparatus | C | defer |
 | #65 | invariant and leg-C predicate hand-synced across spike/ | no — apparatus | C | defer |
-| #86 | this audit | — | — | stays open until the fix-adjudicated issues land (#5 — #46 landed 2026-08-17; #27 measured already-fixed) and the pre-tag re-sweep runs |
+| #86 | this audit | — | — | stays open until the pre-tag re-sweep runs; every fix-adjudicated issue has landed (#46 and #5 on 2026-08-17; #27 measured already-fixed) |
 | #118 | assisted-discovery product thesis | no — product tracking, open by owner ruling | — | stays open |
 | #123 | the judge cannot follow a target across execve | yes — implementing it is a trace-contract event | C | defer with the recorded reading: the single-pid exec chain is already judged under contract v10 (ADR 0018); what remains — true multi-process — refuses today (fail-closed). The hold and reopen condition are on the issue (2026-08-16), and a post-1.0 implementation bumps the contract *honestly* under surface 4's refusal promise |
 | #140 | criterion 1's search half | no — process criterion | — | stays open, upstream-gated |
@@ -112,19 +112,18 @@ PASS, what a refusal says): seven sit on the declared surfaces directly,
 while #26 and #150 sit on the reader-facing verdict text and #156 on flag
 acceptance — constrained in practice though absent from the declaration's
 enumeration. Of the four class-A members and #10, their adjacent honesty
-fix, two resolve by fix or demote before the tag (#5 outstanding; #46 landed
-2026-08-17 — #27's window was measured already-closed by #122 on 2026-08-17,
-its row above carries the correction) and two by narrowing the stated promise
-(#39, executed 2026-08-17; #10) — none by
+fix, two resolve by fix or demote before the tag (both landed 2026-08-17 —
+#46's observation and #5's demotion; #27's window was measured already-closed
+by #122 on 2026-08-17, its row above carries the correction) and two by
+narrowing the stated promise (#39, executed 2026-08-17; #10) — none by
 leaving the PASS claim intact over a documented hole, which is the outcome
 class A forbids.
 
 ## What remains before the tag
 
-1. #5's demotion — its own PR with equivalent pins (the issue carries a fix
-   shape, not test text). #46's fix landed 2026-08-17 with per-world arming;
-   #27 left this list the same day: measured already-fixed, pins landed, row
-   corrected above.
+1. ~~The adjudicated fixes~~ — done: #46's observation and #5's demotion both
+   landed 2026-08-17 (#27 left this list the same day, measured already-fixed;
+   each row above carries its record).
 2. #150's relabel and the target-classes narrowing for #10 (#39's narrowing
    executed 2026-08-17, its row above carries the record) — small PRs.
 3. Re-run the sweep, replace the snapshot file (the gate names it by date —

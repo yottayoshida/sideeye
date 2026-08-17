@@ -94,6 +94,17 @@
  *   TOY_MKNOD          mknod a fifo inside the state directory: the control beside
  *                      TOY_CHMOD — an unmodelled syscall must still refuse, because
  *                      #121's exclusion is a defined list, not a loosened net.
+ *   TOY_MKNOD_TRANSIENT  mknod a fifo, then remove it before rotating. The mknod is
+ *                      invisible to the shim (not interposed); the remove's unlink IS
+ *                      a recorded kill point — so the world killed before that unlink
+ *                      holds a FIFO in its crashed snapshot while the initial and
+ *                      final states are clean. The crashed-side window for #5.
+ *   TOY_MKNOD_BASELINE mkfifo as rotate's very LAST act, but only when the flag file
+ *                      named by TOY_ONCE_FLAG (outside the state directory, so restore
+ *                      never resets it) already exists; the first completed run — the
+ *                      recording — plants the flag instead. Killed worlds never reach
+ *                      the last act, so only the baseline re-run leaves the FIFO:
+ *                      the attribution case for #5's per-world refusal.
  *   TOY_REMOVE         delete state through remove(3) — a file, a path that was never
  *                      created, and a directory. libc implements remove as unlink (then
  *                      rmdir on the directory errno) internally, without crossing the
@@ -630,6 +641,16 @@ static int cmd_rotate(void) {
         if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
     }
 
+    /* A special file that exists only inside the operation: the mknod is invisible to
+     * the shim, the remove's unlink is a recorded kill point — the world killed before
+     * that unlink holds the FIFO while initial and final are clean (#5). */
+    if (getenv("TOY_MKNOD_TRANSIENT")) {
+        char f[4096];
+        join_path(f, sizeof f, "transient-fifo");
+        if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
+        if (remove(f) != 0) return 1;
+    }
+
     /* A rewrite that no run repeats — the class the history form must NOT tolerate. */
     if (getenv("TOY_NONDET_REWRITE")) {
         char nd[4096];
@@ -678,6 +699,24 @@ static int cmd_rotate(void) {
         if (write_file(scr, "x\n") != 0) return 1;
         if (unlink(scr) != 0) return 1;
     }
+    /* The very last act, so no killed world ever reaches it: the recording (first
+     * completed run) plants the flag, and only the baseline re-run — the other run
+     * that finishes — sees it and leaves the FIFO (#5's attribution case). */
+    if (getenv("TOY_MKNOD_BASELINE")) {
+        const char *flag = getenv("TOY_ONCE_FLAG");
+        if (flag && *flag) {
+            if (access(flag, F_OK) == 0) {
+                char f[4096];
+                join_path(f, sizeof f, "baseline-fifo");
+                if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
+            } else {
+                int fd = open(flag, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (fd < 0) return 1;
+                close(fd);
+            }
+        }
+    }
+
     /* Last, after every state operation: the git-convention shape, where a run that
      * did all its work still reports a non-zero status by design. */
     if (getenv("TOY_EXIT_STATUS")) return atoi(getenv("TOY_EXIT_STATUS"));

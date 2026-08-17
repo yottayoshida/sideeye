@@ -99,6 +99,13 @@ model — the snapshots never captured them, and no verdict ever depended on the
 claim is not "a read-only open has no effects"; it is "it has no effects on anything any
 verdict reads".
 
+> **Superseded in part, 2026-08-17 (#5):** the special-files half of the paragraph above
+> no longer describes the code. Snapshots *do* record a FIFO, socket or device (as an
+> opaque `other` entry), and since #5's demotion a run refuses (`unsupported_state_entry`)
+> rather than explore a tree `restore` cannot recreate — so no verdict depends on their
+> *content*, exactly as argued here, but their *presence* now stops a run instead of
+> passing unmentioned. The metadata and FUSE/network sentences stand.
+
 ## Alternatives considered
 
 - **Record open flags in `Record.aux` and project at judgement time.** Keeps forensics,

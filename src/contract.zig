@@ -348,6 +348,12 @@ pub const UnknownReason = enum {
     /// contained, disagreed: something was still writing. Whatever the verdict would
     /// have been, it would have described a moment nobody chose.
     state_not_quiescent,
+    /// A state-directory entry is neither a regular file, a directory nor a symlink —
+    /// a FIFO, a socket, a device. `restore` cannot recreate such an entry, so every
+    /// explored world would run against a tree the recording run never had, and the
+    /// crash points were derived from the recording run (#5). Refusing is the honest
+    /// answer; recreating the common cases later would be an additive relaxation.
+    unsupported_state_entry,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);
