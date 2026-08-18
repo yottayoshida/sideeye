@@ -76,7 +76,7 @@ $ TOY=/tmp/se/toy-bug /work/zig-out/bin/sideeye explore --state /tmp/se/state \
     --check /work/spike/check.sh --shim /work/zig-out/lib/libsideeye_shim.so \
     --work /tmp/se/work --oracle /usr/bin/strace
 
-FAIL  1 of 6 crash worlds violated an invariant
+FAIL  1 of 6 explored worlds violated an invariant
 
 invariant   built-in atomicity, and the checker
 earliest    crash point 5 of 5

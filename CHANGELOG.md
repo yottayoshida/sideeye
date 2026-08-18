@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- The verdict headlines stop calling the baseline a crash world (#150, the freeze audit's adjudicated relabel — applied to both verdicts, wider than filed): `FAIL N of M crash worlds` and `PASS N/N crash worlds` both counted the un-killed baseline in their totals while the very next line said `explored M worlds (crash points K + 1 baseline)`; a reader quoting the headline against the machine fields got an off-by-one that was never in the numbers, only in the label. Both headlines now say `explored worlds`, and the acceptance suite binds the printed numerator and denominator to the same run's JSON `violations`/`explored` — a wording-only pin would have passed an implementation that relabeled and wrongly changed the denominator. The MCP transport-contamination check drops its prose anchors (which would have chased this very relabel) for an exact match of `content[0].text` against a reconstruction from `structuredContent`, self-falsified each run by a doctored response. The seven `oracle_verified` value pins go through one typed predicate (#157, fixed ahead of the audit's deferral by owner decision): `field()`'s print cannot tell a JSON bool `true` from a string `"True"`, and the pin now checks the type with the value, self-falsified on every call against an in-memory string-`"True"` document through the same predicate.
+
 ## [0.11.0] - 2026-08-17
 
 ### Fixed

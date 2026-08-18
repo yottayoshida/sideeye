@@ -77,9 +77,6 @@ if len(lines)!=3: sys.exit("wanted 3 lines, got %d"%len(lines))
 for l in lines:
     d=json.loads(l)
     if d.get("jsonrpc")!="2.0": sys.exit(l[:60])
-raw=open("/tmp/mcp.out").read()
-for s in ["crash worlds violated","reproduce   SIDEEYE","atomicity   "]:
-    if s in raw: sys.exit("child report leaked: "+s)
 d1,d2,d3=[json.loads(l) for l in lines]
 if d1["result"]["supportedVersions"]!=["2026-07-28"]: sys.exit(d1)
 if "tools" not in d1["result"]["capabilities"]: sys.exit(d1)
@@ -99,7 +96,29 @@ sc=d3["result"]["structuredContent"]
 v=sc["verdict"]
 if v not in ("PASS","FAIL","UNKNOWN","SETUP_ERROR"): sys.exit(sc)
 if d3["result"]["isError"] is not (v not in ("PASS","FAIL")): sys.exit(d3["result"])
-if v not in d3["result"]["content"][0]["text"]: sys.exit("content summary missing verdict")
+# Transport contamination is judged structurally, not by prose anchors (#150 review:
+# anchors on headline wording would have needed to chase every relabel, and a real
+# leak never occurs in a green run so anchors carry no shown detection power). The
+# summary text must be EXACTLY what mcp.zig's summarize() derives from the report —
+# any child report interleaved into the text breaks the equality.
+def expected_text(s):
+    t = s["verdict"] if isinstance(s.get("verdict"), str) else "?"
+    if isinstance(s.get("unknown_reason"), str): t += " (%s)" % s["unknown_reason"]
+    if isinstance(s.get("message"), str): t += ": %s" % s["message"]
+    if isinstance(s.get("case"), str) and s["case"] != "(none)": t += "\ncase: " + s["case"]
+    if isinstance(s.get("replay"), str) and s["replay"] != "-": t += "\nreplay: " + s["replay"]
+    return t
+def text_matches(res):
+    scc = res.get("structuredContent")
+    txt = res.get("content", [{}])[0].get("text")
+    return isinstance(scc, dict) and txt == expected_text(scc)
+# Self-falsification through the SAME predicate: a response whose text carries a
+# leaked headline line must be rejected, every run.
+import copy
+doctored = copy.deepcopy(d3["result"])
+doctored["content"][0]["text"] += "\nFAIL  1 of 6 explored worlds violated an invariant"
+if text_matches(doctored): sys.exit("self-falsification failed: a leaked headline passed the summary-equality check")
+if not text_matches(d3["result"]): sys.exit("content.text is not the canonical summary of structuredContent")
 PY
 
 echo "=========== mcp 2: _meta is validated on every method ==========="

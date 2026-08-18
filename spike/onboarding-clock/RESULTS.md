@@ -14,7 +14,7 @@ the first measurement.**
   10:00 and disclosed here rather than absorbed.
 - Stop `2026-08-17T00:02:18.624Z` — the tool result of
   `./sideeye explore --config /tmp/se/sideeye.toml --oracle /usr/bin/strace …`
-  returning exit 0: `PASS`, 4 of 4 crash worlds (crash points 3 + baseline),
+  returning exit 0: `PASS`, 4 of 4 explored worlds (crash points 3 + baseline),
   the oracle agreeing on 3 operations, the checker falsified before the run.
   It is the single stop candidate the extractor found (`runs/run1/meta.json`,
   `stop_candidates`).

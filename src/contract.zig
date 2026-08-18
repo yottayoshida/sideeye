@@ -326,7 +326,7 @@ pub const UnknownReason = enum {
     /// The invariant failed in the world that was never crashed. Whatever is wrong is
     /// wrong without any help from sideeye: either the checker rejects a state the
     /// operation produces normally, or the operation is broken on its own. Neither is a
-    /// crash-consistency counterexample, and reporting one as "N of N crash worlds
+    /// crash-consistency counterexample, and reporting one as "N of N explored worlds
     /// violated" would attribute to crashing something that happens without it.
     baseline_violates_invariant,
     /// The baseline world — the one run to completion without a kill — did not end the
