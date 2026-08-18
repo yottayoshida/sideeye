@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Until v1.0, the Define contract, report schema, and exit codes may change in any release.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Until v1.0, any of the five frozen-at-1.0 surfaces — the Define contract, report schema, exit codes, replay compatibility, the MCP surface (`docs/contract-freeze.md`) — may change in any release.
 
 ## [Unreleased]
+
+### Added
+
+- `docs/contract-freeze.md` — the permanent, normative home of the five surfaces frozen at v1.0 (config format, report schema, exit codes, replay compatibility, the MCP surface), moved out of the freeze-audit page because that page retires at the tag while the promise does not; PRD's frozen list now names all five and points there. The pre-tag re-sweep this completes replaced the audit snapshot (13 open issues at 2026-08-18, down from 26 at 2026-08-17): thirteen of the original snapshot's rows closed, and four issues filed *and* resolved inside the inter-sweep window — #164 (fixed with #27's measurement), #165 (its accidental duplicate), #167, #169 — were enumerated by a closed-issue query, since a final-state capture is structurally blind to an issue that opened and closed inside the window; all seventeen are struck on the audit page with their adjudication history, and the completeness gate counts active rows only, with the strike separation seen red once. Criterion 5 is met; `#86` closes with this change.
 
 ### Fixed
 
@@ -15,8 +19,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - On macOS, the `no_shim_marker` refusal names an Apple-shipped platform binary as one possible cause on its detail line (#10, the freeze audit's adjudicated narrowing, executed wider than filed): `docs/target-classes.md` now states the limit plainly — a macOS target must be self-built or self-installed, never an Apple-shipped binary, because the platform identity travels with the code signature and copying the binary does not change it — where it previously read as an unusual hardened-runtime case. The clause names a cause, not the cause (`no_shim_marker` proves only that the shim never initialised), the Linux wording is byte-identical, and the macOS CI job pins the refusal shape permanently: exit 2, the machine token, the macOS clause, and the JSON `message` appearing verbatim in the text report. Two stale issues closed alongside: #6 by measurement (already fixed by ADR 0006's typed resolver — the named unit pin was mutation-checked once with single-test attribution) and #12 as the documented by-design decision — not a measurement; the guarded surface stays unmeasured by that decision — with the audience assumption now stated on `docs/scouting.md`.
-
-### Fixed
 
 - The verdict headlines stop calling the baseline a crash world (#150, the freeze audit's adjudicated relabel — applied to both verdicts, wider than filed): `FAIL N of M crash worlds` and `PASS N/N crash worlds` both counted the un-killed baseline in their totals while the very next line said `explored M worlds (crash points K + 1 baseline)`; a reader quoting the headline against the machine fields got an off-by-one that was never in the numbers, only in the label. Both headlines now say `explored worlds`, and the acceptance suite binds the printed numerator and denominator to the same run's JSON `violations`/`explored` — a wording-only pin would have passed an implementation that relabeled and wrongly changed the denominator. The MCP transport-contamination check drops its prose anchors (which would have chased this very relabel) for an exact match of `content[0].text` against a reconstruction from `structuredContent`, self-falsified each run by a doctored response. The seven `oracle_verified` value pins go through one typed predicate (#157, fixed ahead of the audit's deferral by owner decision): `field()`'s print cannot tell a JSON bool `true` from a string `"True"`, and the pin now checks the type with the value, self-falsified on every call against an in-memory string-`"True"` document through the same predicate.
 

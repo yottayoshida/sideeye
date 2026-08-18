@@ -2,6 +2,41 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-18 — the pre-tag re-sweep closes the audit: snapshot replaced, resolved rows struck, the freeze declaration moves to its permanent home
+
+Entry opened at the start of the work, per this file's contract. This is the
+third and last PR of the re-sweep batch (#169 and #167+#159 landed first —
+their entries below); it executes freeze-audit's What-remains item 3 and
+closes #86, meeting v1.0 criterion 5.
+
+Decisions, as adjudicated through plan review:
+
+- **The snapshot and the gate's name move in one commit** — the gate's own
+  header calls them one trust root. 13 open issues at the re-sweep capture,
+  down from 26; the delta is all accounted: thirteen of the original
+  snapshot's rows closed (that count includes #159), and four issues were
+  filed *and* resolved inside the inter-sweep window — #164 (fixed with
+  #27's measurement), #165 (its accidental duplicate), #167 and #169 —
+  enumerated by a closed-issue query over the window, because a final-state
+  capture is structurally blind to an issue that opened and closed inside
+  it (the implementation review caught #164 missing; the query then also
+  surfaced #165, which the review had not named).
+- **Resolved rows are struck, not deleted.** A struck row (`| ~~#N~~ …`)
+  keeps its adjudication history on the page but no longer matches the
+  gate's `^| #` anchor — the gate counts active rows only. Review was right
+  that the gate cannot prove a struck row is *genuinely* closed (it proves
+  set equality of active rows against the snapshot, nothing more); that is
+  commit review's job and the page says so, the same way it already says
+  the snapshot itself is trusted by review, not machine.
+- **The declaration moves to `docs/contract-freeze.md`.** #86's third ask —
+  "the freeze itself lands in the docs" — was unmet in the letter: the five
+  surfaces lived only on the audit page, which retires at the tag. Review
+  (M-8) also caught PRD's normative list still naming four surfaces; it
+  names five now and points at the new page as the single normative source.
+- **Criterion 6 and #159 are deliberately separated**: the README change
+  does not re-run the onboarding clock — the criterion's evidence is the
+  pre-change README's measured run, and the audit row says so.
+
 ## 2026-08-18 — the text defang learns UTF-8 (#167), and the README says --shim and --work out loud (#159)
 
 Entry opened at the start of the work, per this file's contract. Both are
