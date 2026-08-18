@@ -100,7 +100,20 @@ new second `[ "$rc" = "2" ]` is the same predicate form whose red the
 toy-bug run produced). target-classes now records the two measured
 refusal paths by OS instead of implying one.
 
-## 2026-08-18 — the headline stops calling the baseline a crash world, on both verdicts
+**And the replacement was refuted the same way one push later.** The
+hardened-runtime carrier claimed "ignored silently on every measured OS" —
+technically true with one OS measured, exactly the claim-exceeds-
+measurement shape — and the runner promptly measured the second OS the
+other way: on `macos-26-arm64` the ad-hoc `runtime`-flagged noop *accepted*
+the insertion (the shim loaded, ran, and the refusal came one detector
+later as `completeness_not_verified`). Both dyld behaviours are
+OS-dependent, in opposite directions. The clause carrier is now the
+deterministic synthesis of the marker's absence, dyld's mood not invited:
+a decoy dylib that never writes `shim_ready`, handed to `--shim` — whether
+it loads or not, the marker cannot appear, so `no_shim_marker` and the
+clause follow on any OS. Measured locally through the extracted-YAML form
+(exit 2, token, clause, containment — same four predicates, reds standing);
+this is the same synthesis philosophy as the MCP doctored-response red.
 
 Entry opened at the start of the work, per this file's contract; decisions
 recorded as they land.

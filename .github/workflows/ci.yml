@@ -93,11 +93,15 @@ jobs:
       # insertion silently (the run completes, no_shim_marker), while macOS 26's
       # dyld terminates the target over the arm64/arm64e mismatch
       # (recording_run_failed) — so the platform binary pins only the refusal
-      # fact, exit 2 and never a verdict. The macOS clause (#10) is pinned on a
-      # self-built hardened-runtime binary, where the insertion is ignored
-      # silently on every measured OS: exit 2, the machine token, the macOS
-      # clause, and the JSON message appearing verbatim in the text. Each
-      # predicate seen red once (BUILDLOG 2026-08-18).
+      # fact, exit 2 and never a verdict. (A hardened-runtime ad-hoc binary was
+      # tried as the clause carrier and is OS-dependent in the other direction:
+      # macOS 15 ignores the insertion, macOS 26 lets it through.) The macOS
+      # clause (#10) is therefore pinned on the deterministic synthesis of
+      # "the shim never initialised": a decoy dylib that never writes
+      # shim_ready, handed to --shim — whether dyld loads it or not, the marker
+      # cannot appear, on any OS. Predicates: exit 2, the machine token, the
+      # macOS clause, and the JSON message appearing verbatim in the text.
+      # Each predicate seen red once (BUILDLOG 2026-08-18).
       - name: The macOS refusal keeps its shape, and the clause is pinned
         run: |
           set +e
@@ -111,13 +115,14 @@ jobs:
 
           printf 'int main(void){return 0;}\n' > "$d/noop.c"
           zig cc -o "$d/noop" "$d/noop.c"
-          codesign -s - -f -o runtime "$d/noop"
+          printf 'int sideeye_decoy;\n' > "$d/decoy.c"
+          zig cc -dynamiclib -o "$d/decoy.dylib" "$d/decoy.c"
           set +e
-          out=$(./zig-out/bin/sideeye explore --state "$d/state" --operation "$d/noop" --check /usr/bin/true --work "$d/work" --json "$d/report.json" 2>&1)
+          out=$(./zig-out/bin/sideeye explore --state "$d/state" --operation "$d/noop" --check /usr/bin/true --shim "$d/decoy.dylib" --work "$d/work" --json "$d/report.json" 2>&1)
           rc=$?
           set -e
           printf '%s\n' "$out" | head -3
-          [ "$rc" = "2" ] || { echo "expected exit 2 from a hardened self-built binary, got $rc"; exit 1; }
+          [ "$rc" = "2" ] || { echo "expected exit 2 when the shim never initialises, got $rc"; exit 1; }
           printf '%s\n' "$out" > "$d/text.out"
           python3 - "$d" <<'EOF'
           import json, sys
