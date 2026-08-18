@@ -88,6 +88,57 @@ jobs:
           echo "$out" | tail -25
           [ "$rc" = "1" ] || { echo "expected exit 1 from the demo, got $rc"; exit 1; }
 
+      # An Apple-shipped platform binary can never be observed, but *how* it
+      # refuses is OS-dependent — measured, not assumed: macOS 15 strips the
+      # insertion silently (the run completes, no_shim_marker), while macOS 26's
+      # dyld terminates the target over the arm64/arm64e mismatch
+      # (recording_run_failed) — so the platform binary pins only the refusal
+      # fact, exit 2 and never a verdict. (A hardened-runtime ad-hoc binary was
+      # tried as the clause carrier and is OS-dependent in the other direction:
+      # macOS 15 ignores the insertion, macOS 26 lets it through.) The macOS
+      # clause (#10) is therefore pinned on the deterministic synthesis of
+      # "the shim never initialised": a decoy dylib that never writes
+      # shim_ready, handed to --shim — whether dyld loads it or not, the marker
+      # cannot appear, on any OS. Predicates: exit 2, the machine token, the
+      # macOS clause, and the JSON message appearing verbatim in the text.
+      # Each predicate seen red once (BUILDLOG 2026-08-18).
+      - name: The macOS refusal keeps its shape, and the clause is pinned
+        run: |
+          set +e
+          d="${RUNNER_TEMP:-/tmp}/platform-binary-pin"
+          mkdir -p "$d/state-apple" "$d/state"
+          out=$(./zig-out/bin/sideeye explore --state "$d/state-apple" --operation /usr/bin/true --check /usr/bin/true --work "$d/work-apple" --json "$d/report-apple.json" 2>&1)
+          rc=$?
+          set -e
+          printf '%s\n' "$out" | head -3
+          [ "$rc" = "2" ] || { echo "expected exit 2 from an Apple platform binary, got $rc"; exit 1; }
+
+          printf 'int main(void){return 0;}\n' > "$d/noop.c"
+          zig cc -o "$d/noop" "$d/noop.c"
+          printf 'int sideeye_decoy;\n' > "$d/decoy.c"
+          zig cc -dynamiclib -o "$d/decoy.dylib" "$d/decoy.c"
+          set +e
+          out=$(./zig-out/bin/sideeye explore --state "$d/state" --operation "$d/noop" --check /usr/bin/true --shim "$d/decoy.dylib" --work "$d/work" --json "$d/report.json" 2>&1)
+          rc=$?
+          set -e
+          printf '%s\n' "$out" | head -3
+          [ "$rc" = "2" ] || { echo "expected exit 2 when the shim never initialises, got $rc"; exit 1; }
+          printf '%s\n' "$out" > "$d/text.out"
+          python3 - "$d" <<'EOF'
+          import json, sys
+          d = sys.argv[1]
+          r = json.load(open(d + "/report.json"))
+          if r.get("unknown_reason") != "no_shim_marker":
+              sys.exit("unknown_reason is %r, wanted no_shim_marker" % r.get("unknown_reason"))
+          msg = r.get("message")
+          if not isinstance(msg, str) or "Apple-shipped platform binary" not in msg:
+              sys.exit("the macOS clause is missing from the JSON message: %r" % msg)
+          text = open(d + "/text.out").read()
+          if msg not in text:
+              sys.exit("the text report does not carry the JSON message verbatim")
+          EOF
+          echo "ok   the platform-binary refusal keeps its shape: exit 2, the token, the macOS clause, JSON message verbatim in the text"
+
       # No oracle here: dtruss is DTrace-based and System Integrity Protection refuses
       # it. That is why this job asserts FAIL rather than PASS — a counterexample is
       # real whether or not the account of the run was complete, while "no counter-

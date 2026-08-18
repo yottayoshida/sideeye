@@ -80,9 +80,9 @@ with a note). Class-A resolutions below are the owner's adjudication
 | # | what it is | touches | class | resolution |
 |---|---|---|---|---|
 | #5 | restore drops FIFOs/sockets/devices; worlds differ from the recorded tree (symlinks fixed in #122) | yes — verdict soundness | A | **demote**: detect a non-regular, non-symlink entry at snapshot time and refuse (UNKNOWN) rather than explore a tree that cannot be reproduced. Fix lands before the tag. **Landed 2026-08-17**: `unsupported_state_entry` fires at all three snapshots (initial, final, crashed — the last catching entries no syscall witness saw born), and the demotion's own review first forced the entrance repair: the `DT_UNKNOWN` fallback used to probe by opening, which hangs on a FIFO and misclassifies sockets and devices — classification is by `statx`/`fstatat` now, no open, no follow |
-| #6 | the oracle reads any quoted string on a strace line as a path; a target that *prints* a state path draws a false refusal | no — internal parsing precision, fails closed, fix is non-breaking | — | stays open; fixable in any 1.x |
-| #10 | macOS Apple platform binaries can never be observed; the docs imply a narrower limit | yes — the stated promise | A-adjacent | **narrow**: `docs/target-classes.md` states plainly that a macOS target must be self-built or self-installed, never an Apple-shipped binary. The README stays under its cut-only order |
-| #12 | the omamori dogfood cannot be agent-driven | no — internal tooling | C | defer to 1.x |
+| #6 | the oracle reads any quoted string on a strace line as a path; a target that *prints* a state path draws a false refusal | no — internal parsing precision, fails closed, fix is non-breaking | — | ~~stays open; fixable in any 1.x~~ **Closed 2026-08-18, measured already-fixed**: the issue predates ADR 0006 (2026-08-11), whose typed resolver names this false-positive verbatim in its Context and closed it — a classified `write` is an fd syscall, scoped from its descriptor annotation only, and the named unit pin exists ("a state-directory string inside a write buffer is not scope"; mutation-checked once with attribution fixed by `--test-filter`). The close is scoped to the named case: the conservative whole-line net remains for *unclassified* syscalls and only ever refuses — deliberate fail-closed residue |
+| #10 | macOS Apple platform binaries can never be observed; the docs imply a narrower limit | yes — the stated promise | A-adjacent | **narrow**: `docs/target-classes.md` states plainly that a macOS target must be self-built or self-installed, never an Apple-shipped binary. The README stays under its cut-only order. **Landed 2026-08-18, wider than adjudicated here by owner decision**: the report's macOS build also names an Apple-shipped platform binary as *one possible cause* on the `no_shim_marker` detail line — never the cause; the review killed the attributing form, since the marker proves only that `shim_ready` never appeared — with the refusal shape (exit 2, token, clause, the JSON `message` contained verbatim in the text) pinned permanently in the macOS CI job, each check predicate seen red once. The Linux wording is byte-identical |
+| #12 | the omamori dogfood cannot be agent-driven | no — internal tooling | C | ~~defer to 1.x~~ **Closed 2026-08-18, owner decision**: the by-design account was already on the record — PRD's v0.4 status carries the full account (the guards fire for a human at a terminal exactly as for an agent; measuring one would need break-glass, which removes the defence under test), and DESIGN says "not measured either way". Closed as documented, not as fixed; the audience-assumption generalisation went to `docs/scouting.md` as one sentence |
 | #13 | stdio (fopen/fwrite) invisible to the shim | **stale** — fixed by ADR 0005 (flush-granularity observation), pinned by acceptance check 2u | — | **close as fixed**; the unmeasured reach note (Go, raw syscalls) already lives on the target-classes page |
 | #26 | target-chosen paths reach the text report unescaped | yes — report surface (text) | B | ~~document~~ **Corrected 2026-08-17, owner decision**: fixed ahead of the adjudicated minimum — the forged line was demonstrated on the pre-fix binary, the three target-chosen operands now reach the text defanged while the JSON keeps the exact bytes, and the acceptance suite pins both sides. Closes with the fix's merge |
 | #27 | standard-form L0 misses a file replaced by a directory when pre or post content is empty — a real false-PASS window | yes — the meaning of PASS | A | ~~fix before the tag~~ **Corrected 2026-08-17, measured**: the issue predates #122, whose (kind, content) pair rule already closed the named window **for pairs that enter the plan** — the issue's own scenario, both empty sides, now lands as one unit pin per case through the real classify+judge path, and a kind-blind mutation reds each pin test individually while sparing the non-empty control. Closes as measured when the pin change merges. The measurement also found the adjacent gap *outside* the plan — the dir-to-dir pair exclusion — filed as #164 and fixed in the same change; #164 joins this table at the pre-tag re-sweep per the snapshot rule |
@@ -115,7 +115,8 @@ enumeration. Of the four class-A members and #10, their adjacent honesty
 fix, two resolve by fix or demote before the tag (both landed 2026-08-17 —
 #46's observation and #5's demotion; #27's window was measured already-closed
 by #122 on 2026-08-17, its row above carries the correction) and two by
-narrowing the stated promise (#39, executed 2026-08-17; #10) — none by
+narrowing the stated promise (#39, executed 2026-08-17; #10, landed
+2026-08-18) — none by
 leaving the PASS claim intact over a documented hole, which is the outcome
 class A forbids.
 
@@ -124,9 +125,10 @@ class A forbids.
 1. ~~The adjudicated fixes~~ — done: #46's observation and #5's demotion both
    landed 2026-08-17 (#27 left this list the same day, measured already-fixed;
    each row above carries its record).
-2. The target-classes narrowing for #10 (#39's narrowing executed 2026-08-17,
-   #150's relabel landed 2026-08-18 on both verdict headlines — each row above
-   carries its record) — a small PR.
+2. ~~The target-classes narrowing for #10~~ — done: landed 2026-08-18, wider
+   than the docs-only adjudication (the report's macOS clause and a CI pin
+   came with it; #39's narrowing executed 2026-08-17, #150's relabel landed
+   2026-08-18 on both verdict headlines — each row above carries its record).
 3. Re-run the sweep, replace the snapshot file (the gate names it by date —
    update both together), update this page, re-run the gate.
 

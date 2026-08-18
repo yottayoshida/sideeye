@@ -801,8 +801,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim was built against a different trace contract than this engine");
 
+    // The macOS clause names a cause, not the cause: this branch proves only that
+    // `shim_ready` never appeared, and an Apple-shipped platform binary is one way
+    // that happens — alongside the three the message always listed (#10). The Linux
+    // wording stays byte-identical so no existing pin moves.
     if (!trace.saw_shim_ready)
-        unknown(.no_shim_marker, "the shim never initialised: statically linked, hardened, or not injected at all");
+        unknown(.no_shim_marker, if (builtin.os.tag == .macos)
+            "the shim never initialised: statically linked, hardened, or not injected at all — on macOS, an Apple-shipped platform binary is one possible cause (the system refuses injection for platform binaries, and copying the binary elsewhere does not change its signature)"
+        else
+            "the shim never initialised: statically linked, hardened, or not injected at all");
 
     if (trace.truncated)
         unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown");
