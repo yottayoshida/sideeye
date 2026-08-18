@@ -82,7 +82,7 @@ echo "=========== check 1: inside the boundary ==========="
 run_case "toy-bug FAILs"       "$OUT/toy-bug"   1 "crash point 5 of 5"
 run_case "  ...names the window" "$OUT/toy-bug" 1 "after  unlink"
 run_case "  ...and the next op"  "$OUT/toy-bug" 1 "before rename"
-run_case "toy-fixed PASSes"    "$OUT/toy-fixed" 0 "crash worlds satisfied"
+run_case "toy-fixed PASSes"    "$OUT/toy-fixed" 0 "explored worlds satisfied"
 
 # Checked as a relation rather than a fixed number. The first version asserted
 # "crash points 5 + 1", which is the buggy toy's count — the corrected one performs no
@@ -94,7 +94,10 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 n=$(echo "$o" | grep -o 'crash points [0-9]*' | awk '{print $3}')
-e=$(echo "$o" | grep -o 'explored [0-9]*' | awk '{print $2}')
+# Anchored to the explored LINE ("explored N worlds"): the PASS headline now also
+# contains the word "explored", and `[0-9]*` matches zero digits — the unanchored
+# pattern silently picked it up as an empty value when the headline was relabeled.
+e=$(echo "$o" | grep -o 'explored [0-9][0-9]* worlds' | awk '{print $2}')
 if [ -n "$n" ] && [ -n "$e" ] && [ "$e" = "$((n + 1))" ]; then
     echo "ok     ...explored ($e) == N ($n) + 1"
 else
@@ -442,6 +445,55 @@ if [ "$rc" = "2" ] && echo "$o" | grep -q "present before the recording run: p?q
 else
     echo "FAIL #5 hostile name: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 2t: the headline's numbers are the JSON's numbers (#150) ==========="
+# A wording-only pin passes an implementation that relabels AND wrongly changes the
+# denominator to crash points; these legs bind the printed numerator/denominator to
+# the same run's machine fields. Old-label absence is checked on the headline forms
+# only: l1's "of N crash worlds" counts crash points and is correct, and the metadata
+# note's prose is not a counting statement.
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/report.json 2>&1)
+rc=$?
+hd=$(HEADLINE="$(echo "$o" | head -1)" python3 -c 'import json,os,re,sys
+h = os.environ["HEADLINE"]
+m = re.match(r"^FAIL  ([0-9]+) of ([0-9]+) explored worlds violated an invariant$", h)
+if not m: sys.exit("headline shape: %r" % h)
+d = json.load(open("/tmp/acc/report.json"))
+if int(m.group(1)) != d["violations"]: sys.exit("numerator %s != violations %r" % (m.group(1), d["violations"]))
+if int(m.group(2)) != d["explored"]: sys.exit("denominator %s != explored %r" % (m.group(2), d["explored"]))
+sys.stdout.write("ok")' 2>&1)
+if [ "$rc" = "1" ] && [ "${hd:-}" = "ok" ] && ! echo "$o" | grep -q "crash worlds violated"; then
+    echo "ok   FAIL headline: numerator==violations, denominator==explored, old label absent"
+else
+    echo "FAIL #150 FAIL-side structural pin: rc=$rc ${hd:-}"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/report.json 2>&1)
+rc=$?
+hd=$(HEADLINE="$(echo "$o" | head -1)" python3 -c 'import json,os,re,sys
+h = os.environ["HEADLINE"]
+m = re.match(r"^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity invariant$", h)
+if not m: sys.exit("headline shape: %r" % h)
+d = json.load(open("/tmp/acc/report.json"))
+if int(m.group(1)) != d["explored"]: sys.exit("numerator %s != explored %r" % (m.group(1), d["explored"]))
+if int(m.group(2)) != d["explored"]: sys.exit("denominator %s != explored %r" % (m.group(2), d["explored"]))
+sys.stdout.write("ok")' 2>&1)
+if [ "$rc" = "0" ] && [ "${hd:-}" = "ok" ] && ! echo "$o" | grep -q "crash worlds satisfied"; then
+    echo "ok   PASS headline: both numbers==explored, old label absent"
+else
+    echo "FAIL #150 PASS-side structural pin: rc=$rc ${hd:-}"
+    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 
@@ -803,6 +855,20 @@ for k in sys.argv[2].split("."):
     d=d[k] if isinstance(d,dict) else None
 print(d)' "$1" "$2" 2>/dev/null; }
 
+# oracle_verified is promised as a JSON bool (#157): field()'s print() cannot tell a
+# bool true from a string "True", so this pin checks the TYPE with the value — and
+# self-falsifies against an in-memory string-"True" document through the SAME
+# predicate on every call, so the red cannot drift from what it guards.
+ov_pin() { python3 -c 'import json,sys
+def pin(doc, expected):
+    v = doc.get("oracle_verified")
+    return type(v) is bool and v is expected
+if pin({"oracle_verified": "True"}, True):
+    sys.exit("self-falsification failed: a string \"True\" passed the typed pin")
+d = json.load(open(sys.argv[1]))
+if not pin(d, sys.argv[2] == "true"):
+    sys.exit("oracle_verified is %r, wanted %s as a JSON bool" % (d.get("oracle_verified"), sys.argv[2]))' "$1" "$2" 2>&1; }
+
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
@@ -946,10 +1012,10 @@ fi
 # #94: this is the "--oracle was given, the oracle ran, and the comparison did not
 # complete" path — the evidence bit must stay false here, not only where no oracle
 # exists at all. The total rule has one true-point; this pins one of its elsewheres.
-if [ "$(field /tmp/acc/report.json oracle_verified)" = "False" ]; then
-    echo "ok   oracle_verified stays false when the oracle ran but nothing was compared"
+if ov_pin /tmp/acc/report.json false >/dev/null; then
+    echo "ok   oracle_verified stays false (as a JSON bool) when the oracle ran but nothing was compared"
 else
-    echo "FAIL oracle_verified on the empty-oracle path: '$(field /tmp/acc/report.json oracle_verified)', wanted false"
+    echo "FAIL oracle_verified on the empty-oracle path: $(ov_pin /tmp/acc/report.json false)"
     fails=$((fails + 1))
 fi
 
@@ -1753,7 +1819,7 @@ else
 fi
 o=$("$SIDEEYE" replay "$case_file" --shim "$SHIM" --work /tmp/acc/work-r --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "1" ] && echo "$o" | grep -q "crash worlds violated" && echo "$o" | grep -q "the case reproduced"; then
+if [ "$rc" = "1" ] && echo "$o" | grep -q "explored worlds violated" && echo "$o" | grep -q "the case reproduced"; then
     echo "ok   an unchanged target reproduces the case (FAIL)"
 else
     echo "FAIL replay reproduction: exit $rc"
@@ -2011,15 +2077,15 @@ TOY_STATE=$SD/s6 "$SIDEEYE" explore --state "$SD/s6" \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work "$SD/w6" --json "$SD/nooracle-fail.json" >/dev/null 2>&1
 ev_fails=0
-[ "$(field "$SD/pass.json" oracle_verified)" = "True" ] || { echo "     verified PASS: oracle_verified is '$(field "$SD/pass.json" oracle_verified)', wanted true"; ev_fails=$((ev_fails + 1)); }
-[ "$(field "$SD/fail.json" oracle_verified)" = "True" ] || { echo "     oracle-borne FAIL: oracle_verified is '$(field "$SD/fail.json" oracle_verified)', wanted true"; ev_fails=$((ev_fails + 1)); }
-[ "$(field "$SD/unknown.json" oracle_verified)" = "False" ] || { echo "     no-oracle UNKNOWN: oracle_verified is '$(field "$SD/unknown.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
-[ "$(field "$SD/unverified-pass.json" oracle_verified)" = "False" ] || { echo "     --allow-unverified PASS: oracle_verified is '$(field "$SD/unverified-pass.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
-[ "$(field "$SD/setup.json" oracle_verified)" = "False" ] || { echo "     SETUP_ERROR: oracle_verified is '$(field "$SD/setup.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
+ov_pin "$SD/pass.json" true >/dev/null || { echo "     verified PASS: $(ov_pin "$SD/pass.json" true)"; ev_fails=$((ev_fails + 1)); }
+ov_pin "$SD/fail.json" true >/dev/null || { echo "     oracle-borne FAIL: $(ov_pin "$SD/fail.json" true)"; ev_fails=$((ev_fails + 1)); }
+ov_pin "$SD/unknown.json" false >/dev/null || { echo "     no-oracle UNKNOWN: $(ov_pin "$SD/unknown.json" false)"; ev_fails=$((ev_fails + 1)); }
+ov_pin "$SD/unverified-pass.json" false >/dev/null || { echo "     --allow-unverified PASS: $(ov_pin "$SD/unverified-pass.json" false)"; ev_fails=$((ev_fails + 1)); }
+ov_pin "$SD/setup.json" false >/dev/null || { echo "     SETUP_ERROR: $(ov_pin "$SD/setup.json" false)"; ev_fails=$((ev_fails + 1)); }
 [ "$(field "$SD/nooracle-fail.json" verdict)" = "FAIL" ] || { echo "     no-oracle FAIL: verdict is '$(field "$SD/nooracle-fail.json" verdict)', wanted FAIL"; ev_fails=$((ev_fails + 1)); }
-[ "$(field "$SD/nooracle-fail.json" oracle_verified)" = "False" ] || { echo "     no-oracle FAIL: oracle_verified is '$(field "$SD/nooracle-fail.json" oracle_verified)', wanted false"; ev_fails=$((ev_fails + 1)); }
+ov_pin "$SD/nooracle-fail.json" false >/dev/null || { echo "     no-oracle FAIL: $(ov_pin "$SD/nooracle-fail.json" false)"; ev_fails=$((ev_fails + 1)); }
 if [ "$ev_fails" = "0" ]; then
-    echo "ok   oracle_verified: true exactly where the comparison completed and agreed"
+    echo "ok   oracle_verified: true exactly where the comparison completed and agreed (typed as JSON bool)"
 else
     echo "FAIL oracle_verified value pins: $ev_fails of 7 wrong"
     fails=$((fails + 1))

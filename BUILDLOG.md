@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-18 — the headline stops calling the baseline a crash world, on both verdicts
+
+Entry opened at the start of the work, per this file's contract; decisions
+recorded as they land.
+
+#150 as adjudicated (relabel to explored worlds, sweep the greps first) —
+and the plan review found the same mislabel on the PASS headline, which the
+issue never named: `PASS {explored}/{explored} crash worlds satisfied...`
+counts the baseline too, and the public records quote it (taskwarrior's
+12/12 against an 11-operation oracle account, the onboarding clock's 4 of
+4). Owner decision: both verdicts in this PR — fixing the FAIL line while
+knowingly leaving its twin would be the same defect with a paper trail.
+
+Three more review-driven decisions, taken before code: the headline tests
+compare the printed numerator/denominator against the same run's JSON
+`violations`/`explored` (a wording-only pin passes an implementation that
+"fixes" the denominator to crash points); the MCP transport-contamination
+check drops its prose anchors — which would have needed to chase this very
+relabel — for an exact match of `content[0].text` against a reconstruction
+from `structuredContent`, self-falsified by feeding the same predicate a
+doctored response; and #157 is pulled forward by owner decision (the same
+overtake shape as #58) as one typed `pin()` used by both the seven real
+oracle_verified pins and a synthetic string-"True" rejection, so the red
+cannot drift from the predicate it falsifies. #156 stays deferred — the
+audit accepted the permanence trade explicitly, and nothing new argues
+against it; the issue gets an out-of-band note, not code.
+
+The sweep taught two lessons on its first container run. First, a
+classification error of mine: dogfood-todoman.sh looked like current
+apparatus, but its define bytes are hashed by the frozen unknown-rate
+sweep — relabeling one word in a comment broke the corpus digest
+(check 12 caught it immediately; the file is reverted and reclassified
+as frozen evidence, stale wording being the price of the freeze).
+Second, the reverse collision the grep-for-old-text sweep cannot see:
+`grep -o 'explored [0-9]*'` matches ZERO digits, so the relabeled PASS
+headline's "explored worlds" started matching an extraction that had
+only ever seen the "explored N worlds" line, feeding it an empty value.
+Sweeping for consumers of the old wording finds half the problem; the
+other half is old patterns that newly match the NEW wording. The
+extraction is anchored to the unit word now, and the only other
+output-parsing pattern in the suite anchors on l1's unchanged phrasing.
+
 ## 2026-08-17 — v0.11.0: the day's four batches ship as one minor
 
 Owner-selected minor over patch: the release carries a required new report

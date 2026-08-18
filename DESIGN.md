@@ -256,7 +256,7 @@ not tested : power loss, torn writes, concurrent processes
 And a PASS:
 
 ```
-PASS  rotate-key: 5/5 crash worlds satisfied the invariant
+PASS  rotate-key: 5/5 explored worlds satisfied the invariant
       checker falsified before run: corrupted state -> check exited 1  [ok]
       not tested : power loss, torn writes, concurrent processes
 ```

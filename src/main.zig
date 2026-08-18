@@ -1357,7 +1357,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // The baseline world was never killed. If the invariant fails there, it fails
         // without any help from sideeye — the checker rejects a state the operation
         // produces normally, or the operation is broken on its own — and neither is a
-        // crash-consistency counterexample. Reporting it as "N of N crash worlds violated
+        // crash-consistency counterexample. Reporting it as "N of N explored worlds violated
         // an invariant" blames crashing for something that happens without it.
         //
         // Reachable two ways: a checker that rejects the operation's normal output, or
@@ -1471,7 +1471,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         case_note = case_shown;
         replay_note = replay_cmd;
         say(
-            \\FAIL  {d} of {d} crash worlds violated an invariant
+            \\FAIL  {d} of {d} explored worlds violated an invariant
             \\
             \\invariant   {s}
             \\earliest    crash point {d} of {d}
@@ -1532,7 +1532,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     requireCompleteness(arena, args.oracle != null, args.allow_unverified);
 
     say(
-        \\PASS  {d}/{d} crash worlds satisfied the built-in atomicity invariant
+        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant
         \\      explored {d} worlds (crash points {d} + 1 baseline)
         \\      expected status: {d}
         \\      atomicity: {s}

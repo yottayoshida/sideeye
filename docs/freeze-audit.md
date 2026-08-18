@@ -99,9 +99,9 @@ with a note). Class-A resolutions below are the owner's adjudication
 | #123 | the judge cannot follow a target across execve | yes — implementing it is a trace-contract event | C | defer with the recorded reading: the single-pid exec chain is already judged under contract v10 (ADR 0018); what remains — true multi-process — refuses today (fail-closed). The hold and reopen condition are on the issue (2026-08-16), and a post-1.0 implementation bumps the contract *honestly* under surface 4's refusal promise |
 | #140 | criterion 1's search half | no — process criterion | — | stays open, upstream-gated |
 | #147 | outcome-map.tsv overcounts reported-upstream rows | no — evidence-page correction | — | stays open; fix is independent of any frozen surface |
-| #150 | the FAIL headline counts the baseline under "crash worlds" | yes — reader-facing verdict label | B | **fix** before the tag (relabel to explored worlds; sweep acceptance greps first). Machine fields are already correct |
+| #150 | the FAIL headline counts the baseline under "crash worlds" | yes — reader-facing verdict label | B | **fix** before the tag (relabel to explored worlds; sweep acceptance greps first). Machine fields are already correct. **Landed 2026-08-18**, wider than filed: the PASS headline carried the same mislabel (the issue never named it; the plan review did) and both verdicts now say explored worlds, with the printed numbers pinned against the same run's JSON `violations`/`explored` — a wording-only pin would have passed a wrongly-changed denominator |
 | #156 | `--oracle` + `--allow-unverified` accepted and inert | yes — CLI acceptance semantics | C | defer with the note said out loud: freezing means the inert acceptance is permanent — making the combo refuse after 1.0 would be a breaking change, and that trade is accepted (the report's bit is honest either way) |
-| #157 | value pins cannot see a bool-vs-string type regression | no — test infra | C | defer |
+| #157 | value pins cannot see a bool-vs-string type regression | no — test infra | C | ~~defer~~ **Corrected 2026-08-18, owner decision**: fixed ahead of the adjudicated deferral — the seven oracle_verified pins go through one typed predicate (`type is bool` with the value), self-falsified on every call against an in-memory string-"True" document through the same predicate. Closes with the fix's merge |
 | #159 | README never introduces `--shim`/`--work` outside the Example | no — docs under the cut-only order | C | awaiting the owner's call |
 | #160 | onboarding-clock hardening before run 2 | no — apparatus | C | defer to run 2 |
 | #161 | release glibc floor inherited, not chosen | no — release engineering, outside the five surfaces | C | worth deciding before 1.0, not contract-bound |
@@ -124,8 +124,9 @@ class A forbids.
 1. ~~The adjudicated fixes~~ — done: #46's observation and #5's demotion both
    landed 2026-08-17 (#27 left this list the same day, measured already-fixed;
    each row above carries its record).
-2. #150's relabel and the target-classes narrowing for #10 (#39's narrowing
-   executed 2026-08-17, its row above carries the record) — small PRs.
+2. The target-classes narrowing for #10 (#39's narrowing executed 2026-08-17,
+   #150's relabel landed 2026-08-18 on both verdict headlines — each row above
+   carries its record) — a small PR.
 3. Re-run the sweep, replace the snapshot file (the gate names it by date —
    update both together), update this page, re-run the gate.
 
