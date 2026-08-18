@@ -1,6 +1,19 @@
 # ADR 0002 — Process boundaries: containment, and what makes a child tolerable
 
-- **Status:** Accepted (2026-08-11; proposed 2026-08-10)
+- **Status:** Accepted (2026-08-11; proposed 2026-08-10). Superseded in part by #169
+  (2026-08-18): a boundary that appears **only in an explored world** — one the
+  recording never crossed — now refuses (`boundary_without_oracle`, the per-world
+  analog of the recording-time refusal, same reason token, distinguished by message)
+  instead of being tolerated with observation. The tolerance below still governs
+  boundaries the recording crossed and an oracle accounted for. The knowingly-open
+  window recorded at the bottom of this page is **unchanged** by #169 and now covers
+  the whole remaining exposure: a target whose *recording-crossed* children behave
+  differently in explored worlds (worlds run without an oracle, so a world
+  child's state-directory operations are accounted for by neither shim nor
+  oracle when the child does not load the shim — snapshots and the checker
+  still observe the resulting state, but nothing accounts for the operations) —
+  closing that means an oracle on all N+1 worlds, the cost already written
+  down there.
 - **Supersedes:** none. Narrows the "single-process only" limit stated in ADR 0001's
   interposition table and DESIGN §9
 - **Scope:** the trace contract (v2 → v3), the kill mechanism, and the conditions under

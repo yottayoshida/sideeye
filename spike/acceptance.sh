@@ -282,41 +282,40 @@ else
     fails=$((fails + 1))
 fi
 
-# The arming case: the recording forks nothing — one variable makes every WORLD fork.
-# The observation must arm on the world's own boundary evidence, not the recording's
-# story; on the pre-change engine this exact run reached exit 1 while the report's
-# processes line said "single process".
-rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
-TOY_FORK_WORLD=1 export TOY_FORK_WORLD
-o=$("$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
-    --check /tmp/acc/append-check.sh \
-    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
-rc=$?
-unset TOY_FORK_WORLD
-if [ "$rc" = "2" ] && echo "$o" | grep -q "stdout capture of a crashed world changed"; then
-    echo "ok   a world-only boundary arms the observation (exit 2)"
-else
-    echo "FAIL world-only arming: exit $rc"
-    echo "$o" | sed 's/^/     | /'
-    fails=$((fails + 1))
-fi
+# NOTE(#169): the world-only arming check that lived here is gone, not migrated.
+# Its machinery (#46's capture observation) is unreachable on the world-only side
+# now — the refusal fires first — and on the tolerated side the check directly
+# above already pins the identical run (TOY_FORK + contaminating checker, same
+# predicates), so a migrated copy would only re-run it.
 
-# The same world-only boundary with a quiet checker: tolerated-with-observation (the
-# refuse-or-not question is #169), and the processes line must carry the worlds' own
-# account instead of the recording's "single process" story (it did not, pre-change).
+# A world-only boundary refuses (#169): the recording forks nothing — one variable
+# makes every WORLD fork — and the recording's clearance cannot cover a boundary it
+# never crossed; worlds run with no oracle at all. Same reason token as the
+# recording-time refusal (its per-world analog), distinguished by the message, and
+# the JSON processes account must tell the world's story, not "single process".
+# Pre-#169 this exact run reached a full verdict (exit 1).
 rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
 TOY_FORK_WORLD=1 export TOY_FORK_WORLD
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --check /tmp/acc/quiet-check.sh \
-    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/world-only.json 2>&1)
 rc=$?
 unset TOY_FORK_WORLD
-if [ "$rc" = "1" ] && echo "$o" | grep -q "boundary appeared in explored worlds"; then
-    echo "ok   a quiet world-only boundary reaches its verdict and the report says so (exit 1)"
+if [ "$rc" = "2" ] && echo "$o" | grep -q "boundary appeared in an explored world that the recording never crossed" \
+   && ! echo "$o" | grep -q "observed for quiescence only" \
+   && python3 -c 'import json,sys
+d = json.load(open("/tmp/acc/world-only.json"))
+if d.get("unknown_reason") != "boundary_without_oracle":
+    sys.exit("unknown_reason is %r, wanted boundary_without_oracle" % d.get("unknown_reason"))
+p = d.get("processes")
+if not isinstance(p, str) or "refused" not in p or "explored world" not in p:
+    sys.exit("the processes account still tells the recording story: %r" % p)
+if "observed for quiescence only" in p:
+    sys.exit("the pre-#169 tolerate wording survives in the processes account")'; then
+    echo "ok   a world-only boundary refuses under the recording-time reason (exit 2)"
 else
-    echo "FAIL world-only processes account: exit $rc"
+    echo "FAIL world-only boundary refusal: exit $rc"
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
