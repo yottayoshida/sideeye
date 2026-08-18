@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-08-18
+
 ### Added
 
-- `docs/contract-freeze.md` — the permanent, normative home of the five surfaces frozen at v1.0 (config format, report schema, exit codes, replay compatibility, the MCP surface), moved out of the freeze-audit page because that page retires at the tag while the promise does not; PRD's frozen list now names all five and points there. The pre-tag re-sweep this completes replaced the audit snapshot (13 open issues at 2026-08-18, down from 26 at 2026-08-17): thirteen of the original snapshot's rows closed, and four issues filed *and* resolved inside the inter-sweep window — #164 (fixed with #27's measurement), #165 (its accidental duplicate), #167, #169 — were enumerated by a closed-issue query, since a final-state capture is structurally blind to an issue that opened and closed inside the window; all seventeen are struck on the audit page with their adjudication history, and the completeness gate counts active rows only, with the strike separation seen red once. Criterion 5 is met; `#86` closes with this change.
+- `docs/contract-freeze.md` — the permanent, normative home of the five surfaces frozen at v1.0 (config format, report schema, exit codes, replay compatibility, the MCP surface), moved out of the freeze-audit page because that page retires at the tag while the promise does not; PRD's frozen list now names all five and points there. The pre-tag re-sweep this completes replaced the audit snapshot (13 open issues at 2026-08-18, down from 26 at 2026-08-17): thirteen of the original snapshot's rows closed, and four issues filed *and* resolved inside the inter-sweep window — #164 (fixed with #27's measurement), #165 (its accidental duplicate), #167, #169 — were enumerated by a closed-issue query, since a final-state capture is structurally blind to an issue that opened and closed inside the window; all seventeen are struck on the audit page with their adjudication history, and the completeness gate counts active rows only, with the strike separation seen red once. Criterion 5 is met; `#86` closed with it.
 
 ### Fixed
 
