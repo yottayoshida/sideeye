@@ -1,0 +1,13 @@
+#39	libc convenience functions that mutate state behind the PLT: mkstemp family, mkdtemp, tmpfile, dprintf
+#62	Loop-closure stage carries a full upstream clone; fetch only the pin
+#63	The agent-side seal has never been seen red
+#64	Secondary observations of the loop-closure run have no committed generator
+#65	The declared invariant and the leg-C predicate live in multiple hand-synced copies across spike/
+#86	v1.0 criterion 5: contract-freeze audit — every open issue touching a frozen surface gets fixed or documented before the freeze
+#118	Assisted discovery: bring your own scout — Sideeye remains the judge
+#123	Exec image replacement: the judge cannot follow a target across execve
+#140	v1.0 criterion 1 (search half): one qualifying find under the provenance gate (ADR 0017)
+#147	outcome-map.tsv classifies all 12 topydo FAIL rows as reported-upstream, but the record shows one filing
+#156	--oracle with --allow-unverified is accepted and inert — should the combo refuse?
+#160	Onboarding-clock apparatus hardening before any run 2
+#161	Release targets inherit Zig's default glibc floor; consider pinning it explicitly

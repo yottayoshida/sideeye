@@ -14,7 +14,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 # The snapshot is this gate's trust root; a re-sweep replaces the file and
 # this name together. Nothing machine-checks the snapshot itself — that is
 # commit review's job, and the page says so.
-SNAPSHOT="$ROOT/spike/freeze-audit/snapshot-2026-08-17.tsv"
+SNAPSHOT="$ROOT/spike/freeze-audit/snapshot-2026-08-18.tsv"
 PAGE="$ROOT/docs/freeze-audit.md"
 
 [ -s "$SNAPSHOT" ] || { echo "FAIL: snapshot missing or empty: $SNAPSHOT"; exit 1; }
