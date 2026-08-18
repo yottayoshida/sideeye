@@ -59,6 +59,7 @@ expected_status = "3"           # optional: the exit status that means "complete
 ```
 
 - The same define works as flags: `--state` / `--setup` / `--operation` / `--check` / `--marker` / `--expect-status`.
+- `--shim` names the interposition library when it is not beside the binary (the tarball and zig-out layouts are found on their own); `--work` moves the scratch directory for traces and cases (default `/tmp/sideeye-work`).
 - `--json <path>` writes the same report as JSON, for a machine to branch on.
 - Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0.
 - Command strings split on spaces, no quoting. An argument that carries a space uses the argv form instead: `operation = ["mytool", "commit", "-m", "a message with spaces"]` — one line, passed verbatim.

@@ -1910,24 +1910,53 @@ fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
     ) catch "classified";
 }
 
+/// One scan unit of a target-chosen byte string, shared by the two text-side
+/// defang predicates (#167): `len` bytes starting at `i` are either kept
+/// verbatim or defanged as a unit. C0 controls and DEL keep their original
+/// treatment. The C1 range (U+0080–U+009F) is defanged in *both* encodings —
+/// as a raw byte (invalid UTF-8) and as its valid two-byte form — because an
+/// 8-bit-CSI terminal interprets either arrival as an escape introducer. Any
+/// other invalid UTF-8 defangs one byte at a time (resync). A valid multi-byte
+/// sequence outside the C1 codepoints passes through whole, which is what
+/// keeps a continuation byte that merely *falls* in 0x80–0x9F (À is C3 80)
+/// from being mangled — the classification is by codepoint, never by byte.
+const DefangUnit = struct { len: usize, defang: bool };
+fn defangUnit(s: []const u8, i: usize) DefangUnit {
+    const ch = s[i];
+    if (ch < 0x20 or ch == 0x7f) return .{ .len = 1, .defang = true };
+    if (ch < 0x80) return .{ .len = 1, .defang = false };
+    const len = std.unicode.utf8ByteSequenceLength(ch) catch return .{ .len = 1, .defang = true };
+    if (i + len > s.len or !std.unicode.utf8ValidateSlice(s[i..][0..len]))
+        return .{ .len = 1, .defang = true };
+    const cp = std.unicode.utf8Decode(s[i..][0..len]) catch return .{ .len = 1, .defang = true };
+    if (cp >= 0x80 and cp <= 0x9f) return .{ .len = len, .defang = true };
+    return .{ .len = len, .defang = false };
+}
+
 /// Target-chosen file names go into the text report verbatim, and a Unix file name may
 /// contain newlines and control bytes — enough to forge whole report lines. The JSON
 /// side is escaped in `jsonString`; this is the text side's equivalent, first built
 /// for the l0 note and since #26's fix also the FAIL block's route (via `textShown`
-/// below — the v0.1-era exposure there is closed by the same predicate).
+/// below — the v0.1-era exposure there is closed by the same predicate). One `?` per
+/// defanged unit — never more bytes out than in, so a hostile name cannot bloat the
+/// report past its output buffer (a two-byte encoded C1 shrinks to one `?`).
 fn appendSanitized(names: *std.ArrayList(u8), arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}!void {
-    for (s) |ch| {
-        try names.append(arena, if (ch < 0x20 or ch == 0x7f) '?' else ch);
+    var i: usize = 0;
+    while (i < s.len) {
+        const u = defangUnit(s, i);
+        if (u.defang) try names.append(arena, '?') else try names.appendSlice(arena, s[i..][0..u.len]);
+        i += u.len;
     }
 }
 
 /// The text-shown spelling of a target-chosen string (#26): control bytes
 /// defanged through the same predicate as the l0 note — one predicate, not
-/// two that drift. Display only: the JSON block reads the raw variables,
-/// unchanged by this fix — `jsonString` escapes controls and substitutes
-/// U+FFFD for invalid UTF-8, so valid names round-trip and invalid bytes
-/// degrade the way they always did; defanging the JSON too would be a silent
-/// report-schema change. `?` and not a hex spelling on purpose: 1:1, so a
+/// two that drift. The FAIL block's JSON (`earliest.*`) still reads the raw
+/// variables — `jsonString` escapes controls and substitutes U+FFFD for
+/// invalid UTF-8, so valid names round-trip there; prose fields built from
+/// this spelling (the l0 note, refusal messages) carry the defanged form in
+/// JSON too, the same bytes as the text (#167). `?` and not a hex spelling
+/// on purpose: one `?` per defanged unit, never more bytes out than in, so a
 /// hostile name can never bloat the report past its output buffer and erase
 /// the counterexample it names.
 /// #5's demotion, shared by the three snapshot sites: a state tree holding an entry
@@ -1936,9 +1965,9 @@ fn appendSanitized(names: *std.ArrayList(u8), arena: std.mem.Allocator, s: []con
 /// recording run. Ordering is deliberate at every call site: snapshot-trust
 /// detectors (the oracle's defined-list scrutiny, quiescence) come first, this
 /// demotion second, judgement last — so an existing refusal's reason is never
-/// overtaken. The entry name reaches the text through the same one-byte-per-byte
-/// defang as every other target-chosen string (#26); `phase` says which snapshot
-/// saw it. Returns only when the snapshot is clean.
+/// overtaken. The entry name reaches the text through the same non-bloating
+/// defang as every other target-chosen string (#26/#167); `phase` says which
+/// snapshot saw it. Returns only when the snapshot is clean.
 fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase: []const u8) void {
     if (engine.firstUnsupportedEntry(snap)) |rel| {
         const detail = std.fmt.allocPrint(
@@ -2682,28 +2711,58 @@ fn divergenceDetail(
     return sanitizeForReport(arena, composed) catch lead;
 }
 
-/// Replace bytes below 0x20 (and 0x7f) with a visible `\xNN` spelling. The JSON side
-/// escapes controls already; the text side printed them raw, which let target-chosen
-/// names inject report lines. Printable bytes pass through untouched.
+/// Replace each defanged unit (see `defangUnit`: C0/DEL, C1 in either encoding,
+/// invalid UTF-8) with a visible `\xNN` spelling per byte. The JSON side escapes
+/// controls already; the text side printed them raw, which let target-chosen
+/// names inject report lines. Everything else passes through untouched.
 fn sanitizeForReport(arena: std.mem.Allocator, s: []const u8) ![]const u8 {
     var clean = true;
-    for (s) |ch| {
-        if (ch < 0x20 or ch == 0x7f) {
+    var i: usize = 0;
+    while (i < s.len) {
+        const u = defangUnit(s, i);
+        if (u.defang) {
             clean = false;
             break;
         }
+        i += u.len;
     }
     if (clean) return s;
     var out: std.ArrayList(u8) = .empty;
-    for (s) |ch| {
-        if (ch < 0x20 or ch == 0x7f) {
-            var nb: [4]u8 = undefined;
-            try out.appendSlice(arena, std.fmt.bufPrint(&nb, "\\x{x:0>2}", .{ch}) catch unreachable);
+    i = 0;
+    while (i < s.len) {
+        const u = defangUnit(s, i);
+        if (u.defang) {
+            for (s[i..][0..u.len]) |ch| {
+                var nb: [4]u8 = undefined;
+                try out.appendSlice(arena, std.fmt.bufPrint(&nb, "\\x{x:0>2}", .{ch}) catch unreachable);
+            }
         } else {
-            try out.append(arena, ch);
+            try out.appendSlice(arena, s[i..][0..u.len]);
         }
+        i += u.len;
     }
     return out.items;
+}
+
+test "the defang classifier covers raw C1, encoded C1 and invalid bytes, and spares real UTF-8 (#167)" {
+    // À is C3 80 and € is E2 82 AC — continuation bytes that *fall* inside the
+    // C1 range. A lazy byte-wise widening would mangle both; é (C3 A9) would
+    // not catch that, its continuation byte lies outside 0x80–0x9F. 0xFF is
+    // the invalid-but-not-C1 independent pin: raw 0x9B alone cannot tell
+    // "defangs C1" from "defangs any invalid byte".
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    // The l0-note/FAIL route: one '?' per defanged unit.
+    try std.testing.expectEqualStrings("A?B", textShown(arena, "A\x9bB")); // raw C1
+    try std.testing.expectEqualStrings("A?B", textShown(arena, "A\xc2\x9bB")); // encoded C1 (U+009B, CSI)
+    try std.testing.expectEqualStrings("A?B", textShown(arena, "A\xffB")); // invalid, not C1
+    try std.testing.expectEqualStrings("ÀB€", textShown(arena, "ÀB€")); // real UTF-8 spared
+    // The divergence route: same classification, visible \xNN spelling.
+    try std.testing.expectEqualStrings("A\\x9bB", try sanitizeForReport(arena, "A\x9bB"));
+    try std.testing.expectEqualStrings("A\\xc2\\x9bB", try sanitizeForReport(arena, "A\xc2\x9bB"));
+    try std.testing.expectEqualStrings("A\\xffB", try sanitizeForReport(arena, "A\xffB"));
+    try std.testing.expectEqualStrings("ÀB€", try sanitizeForReport(arena, "ÀB€"));
 }
 
 test "divergence detail escapes a control byte a target put in a path" {

@@ -2,6 +2,41 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-18 — the text defang learns UTF-8 (#167), and the README says --shim and --work out loud (#159)
+
+Entry opened at the start of the work, per this file's contract. Both are
+pre-tag re-sweep adjudications (owner, 2026-08-18): #167 fixes now rather
+than deferring, #159's held call resolves as a minimal Usage addition.
+
+Decisions for #167:
+
+- **One classifier, two spellings.** Plan review found the second predicate
+  the issue never named: `sanitizeForReport` (the oracle-divergence detail
+  route) has the same C0/DEL-only blindness as `appendSanitized` (the
+  l0-note/FAIL route). What is shared is the *classification* — which unit
+  of bytes gets defanged — not the replacement: the l0 route keeps its
+  1:1-or-shrinking `?` (a hostile name must never bloat the report past its
+  buffer), the divergence route keeps its visible `\xNN` spelling.
+- **C1 is defanged in both encodings.** A raw 0x80–0x9F byte is invalid
+  UTF-8 and defangs as such; the *valid* two-byte encoding (C2 80–C2 9F,
+  the codepoints U+0080–U+009F themselves) defangs too — an 8-bit-CSI
+  terminal interprets either arrival as an escape introducer. This is one
+  class wider than the issue's own suggestion (which stopped at invalid
+  bytes), and the reason is on the classifier.
+- **Real UTF-8 is the guarded regression, and é cannot guard it.** Plan
+  review caught the first draft's control: é is C3 A9, whose continuation
+  byte lies *outside* 0x80–0x9F, so a lazy byte-wise widening would pass
+  it. The controls are À (C3 80) and € (E2 82 AC) — continuation bytes
+  inside the C1 range — plus 0xFF as the invalid-but-not-C1 independent
+  pin. Any other invalid byte defangs one byte at a time (resync).
+
+Measured: unit 167/167 native (one new test covering both routes and both
+spellings). Seen red by mutation: `defangUnit` replaced with exactly the
+lazy byte-wise widening the test exists to kill — 166/167, the only
+failure is the new test itself ("the defang classifier covers raw C1,
+encoded C1 and invalid bytes, and spares real UTF-8"), on the À/€/0xFF
+controls. Reverted, green again.
+
 ## 2026-08-18 — a world-only boundary refuses (#169): the recording's clearance cannot cover a boundary the recording never crossed
 
 Entry opened at the start of the work, per this file's contract. The pre-tag
