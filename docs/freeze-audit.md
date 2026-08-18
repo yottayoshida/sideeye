@@ -42,9 +42,27 @@ to active form makes the gate fail — the strike separation is load-bearing,
 not typographic.
 
 **The rule this declaration carries.** It takes effect at the v1.0 tag, not
-today. The pre-tag re-sweep this page demanded ran on 2026-08-18; the
-declaration's permanent home is `docs/contract-freeze.md` — this page
-retires at the tag, the promise does not.
+today. Before tagging, the sweep is re-run and this page updated for any
+issue opened or closed since the snapshot — **the audit is a gate, not a
+ceremony performed once and aged.** The 2026-08-18 re-sweep satisfied that
+rule for the tag it was aimed at; it did not retire the rule, and the
+sentence saying so was briefly deleted in the re-sweep's own PR and restored
+when the next two filings proved why it exists (below). The declaration's
+permanent home is `docs/contract-freeze.md` — this page retires at the tag,
+the promise does not.
+
+**Filed after this snapshot** (2026-08-18, hours after it was taken, which is
+the drift the rule above exists to catch): `#180` (one-command install — a
+Homebrew formula, measured to need no code change) and `#181` (the "macOS has
+no oracle" claim rests on `dtruss` alone; `fs_usage`, `ktrace`, OpenBSM and
+Endpoint Security were never measured, and ADR 0001 still says "to be
+measured"). Read against the five surfaces, neither touches one — `#180` is
+release engineering, the same class as `#161`; `#181` would add capability
+through channels that are already frozen and already accommodate it (the
+`--oracle` flag and the `oracle_verified` field). That reading is this page's
+author's, recorded so the next sweep confirms or corrects it rather than
+rediscovering the issues; the formal classification is the next sweep's, and
+the gate below counts neither until then.
 
 ## The declaration: what freezes at v1.0
 
@@ -145,9 +163,15 @@ same way the snapshot's own trust is.
    resolved alongside, resolved rows struck, gate re-run green
    with the strike separation seen red once.
 
-Nothing remains. #86 closes when this update merges; criterion 5 is met.
-The declaration's permanent home is `docs/contract-freeze.md` — the freeze
-survives this page's retirement at the tag.
+Nothing on this list remains, and criterion 5 is met — #86 closed with the
+re-sweep (2026-08-18). One standing obligation is not on the list and never
+leaves it: the rule above. Whatever is filed between now and the tag gets
+swept and classified before the tag, however many times that takes; two such
+filings already exist (`#180`, `#181`, noted at the top). "Criterion 5 is
+met" is a statement about the audit that ran, not a promise that the tracker
+stopped moving. The declaration's permanent home is
+`docs/contract-freeze.md` — the freeze survives this page's retirement at
+the tag.
 
 #26 and #35 resolve as "document", and their rows above *are* the record —
 no further page is owed.
