@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-18 — the re-sweep's own PR deleted the rule that keeps the audit honest, and two filings proved it within hours
+
+Straight into the embarrassing column. The freeze-audit page carried a
+standing sentence: *"Before tagging, the sweep is re-run and this page
+updated for any issue opened or closed since the snapshot — the audit is a
+gate, not a ceremony performed once and aged."* PR #178 replaced it with a
+report that the re-sweep **had run**, which converts a standing obligation
+into a completed one — the exact transformation the deleted clause names and
+forbids. Two external reviews of that PR (R1: one P1, two P2, one P3; R2:
+CLOSED) did not catch it; they were looking at the snapshot's arithmetic,
+the class narrative, PRD's surface count and the CHANGELOG header.
+
+It took hours to matter: filing `#180` (Homebrew install) and `#181` (the
+macOS oracle claim resting on `dtruss` alone) left the page reading "nothing
+remains" while two unclassified issues sat outside it. Neither touches a
+frozen surface on this author's reading — `#180` is release engineering like
+`#161`; `#181` adds capability through `--oracle` and `oracle_verified`,
+both already frozen and both already shaped to carry it — so criterion 5's
+substance is intact and only the bookkeeping drifted. Restored the sentence,
+recorded the two filings with that reading marked as the author's rather
+than the sweep's, and reconciled "What remains" so that "criterion 5 is met"
+reads as a statement about the audit that ran, not a promise that the
+tracker stopped moving.
+
+The general shape, worth more than this instance: **when an edit replaces a
+rule with a record of having followed it, the rule is gone.** Both readings
+of the paragraph look correct in review, because the record is true. What
+distinguishes them is tense, and tense is exactly what a diff review reads
+past.
+
 ## 2026-08-18 — v0.12.0: the re-sweep ships as a minor
 
 Owner decision: minor, not patch — #169 changes verdict behaviour (a
