@@ -2,6 +2,85 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-18 — the last pre-tag narrowing: macOS says its widest limit out loud (#10), and two old issues turn out to be already answered (#6, #12)
+
+Entry opened at the start of the work, per this file's contract; decisions
+recorded as they land.
+
+The batch picked #6, #10 and #12 together. Measuring before implementing
+reclassified two of the three:
+
+- **#6 (the oracle reads any quoted string as a path) is already fixed** —
+  ADR 0006's Context names the issue's false-positive verbatim ("a
+  `write(1, "/tmp/s/x")` whose buffer merely contains a state-directory
+  string is read as touching the state directory") and the typed resolver
+  closed it: `write` is classified, therefore an fd syscall, therefore
+  scoped from its descriptor annotation only. The named unit pin exists
+  ("a state-directory string inside a write buffer is not scope"). What
+  remains of `touchesStateDir` is the conservative whole-line net for
+  *unclassified* syscalls, and that route only ever refuses (`unsupported`)
+  — fail-closed residue, deliberately kept. Plan: mutation-check the pin
+  once (attribution fixed with `zig test --test-filter`, not the build
+  graph — build.zig does not forward `b.args` to the test artifact), close
+  as measured already-fixed, scoped to the named classified-write case.
+- **#12 (the omamori dogfood cannot be agent-driven) is already recorded**
+  — PRD's v0.4 status carries the full account (guards fire for a human at
+  a terminal exactly as for an agent; measuring one would need break-glass,
+  which removes the defence under test; out of scope on discipline), and
+  DESIGN says "not measured either way". The close is the documented
+  by-design decision, not a fix — the plan review (R1 M-4) caught the draft
+  calling it "measured covered", which claimed a measurement nobody made.
+  One sentence generalising the audience assumption goes on scouting.md.
+- **#10 executes as adjudicated** (class A-adjacent narrow), wider than the
+  audit's docs-only wording by owner decision: the `no_shim_marker` detail
+  line gains a macOS-only clause naming an Apple-shipped platform binary as
+  *one possible cause* — not the first suspect; the review (R1 M-1) killed
+  the attributing form, since `no_shim_marker` proves only that `shim_ready`
+  never appeared — and the macOS CI job gains a permanent pin (R1 M-2:
+  a one-off local measurement is evidence it printed today, not a
+  regression pin): exit 2, `unknown_reason` == `no_shim_marker`, the macOS
+  clause present, the JSON `message` contained verbatim in the text (a
+  containment check, not an extracted-line equality). The Linux wording
+  stays byte-identical (comptime branch), so no existing pin moves.
+
+Measurements, as they ran (all on the dev Mac, aarch64-macos):
+
+- **#6 pin mutation**: `zig test --dep contract -Mmain=src/oracle.zig
+  -Mcontract=src/contract.zig --test-filter "a state-directory string inside
+  a write buffer is not scope"` — green on HEAD (1/1, raw rc 0). Mutating
+  `isFdSyscall` to `return false` (dropping every classified fd syscall into
+  the whole-line net): the *same filtered invocation* fails 0/1, raw rc 1,
+  and the failing assert is the pin's own `classes.items.len == 0` — the
+  issue's exact defect shape, attributed to the named test, not to some
+  other member of the suite. Reverted; green again; `git status` clean on
+  `src/oracle.zig`. First attempt at the single-file invocation failed with
+  "no module named 'contract'" — `@import("contract")` is a build-graph
+  module, so the direct form needs `--dep`/`-M`, which is also why the
+  attribution cannot ride on `zig build test` (build.zig does not forward
+  `b.args`).
+- **#10 diagnostic, measured on the real binary**: `sideeye explore --state
+  <scratch>/state --operation /usr/bin/true --check /usr/bin/true --work
+  <scratch>/work --json <scratch>/report.json` against `/usr/bin/true`
+  (an Apple platform binary): exit 2, `unknown_reason` `no_shim_marker`,
+  the macOS clause on the detail line, and the JSON `message` contained
+  verbatim in the text output (checked by substring, one detail line).
+  `preflight` was the first attempt and refused `--json` by design
+  ("preflight has no machine-readable form"), so the CI pin uses `explore`.
+- **Seen red once — per predicate, not per script** (the implementation
+  review caught the first pass claiming the guard falsified when only one of
+  its four predicates had been): *clause* — the same script against a build
+  with the branch stashed fails "the macOS clause is missing from the JSON
+  message", raw rc 1; *exit code* — the same script pointed at a self-built
+  toy-bug (which FAILs, exit 1) fails "expected exit 2 from an Apple
+  platform binary, got 1", raw rc 1; *reason token* — pointed at a run whose
+  checker never falsifies (a real UNKNOWN, not a doctored file) it fails
+  "unknown_reason is 'checker_not_falsified', wanted no_shim_marker", raw
+  rc 1; *containment* — the one synthetic input: a green run's report.json
+  with a doctored text.out fails "the text report does not carry the JSON
+  message verbatim", raw rc 1. Each failure is the named predicate's own
+  message. The step also re-ran extracted from the workflow YAML (what the
+  runner will actually execute after dedent): green, raw rc 0.
+
 ## 2026-08-18 — the headline stops calling the baseline a crash world, on both verdicts
 
 Entry opened at the start of the work, per this file's contract; decisions

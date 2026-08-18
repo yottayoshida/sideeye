@@ -15,6 +15,15 @@ experiment protocol this repository ran against real targets
 lessons those runs paid for folded in. The measured results live there, not
 here — numbers on a guide page go stale; the records don't.
 
+One assumption this page deliberately does not make: that the *operation*
+itself can be issued by an agent. Some targets guard their state-changing
+commands by design — omamori is the example on record (#12): its guards
+fire for an agent, and for a human at a terminal alike, and bypassing them
+would remove the defence under test, so its guarded surface stays
+unmeasured by that decision (its unguarded writers were measured
+separately). The scout can still prepare the define; whether the run can
+be issued at all is the target's own decision.
+
 ## What the scout reads for
 
 Five things, in one pass over source, docs, tests and tracker (all of it is
