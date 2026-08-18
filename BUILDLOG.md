@@ -81,6 +81,25 @@ Measurements, as they ran (all on the dev Mac, aarch64-macos):
   message. The step also re-ran extracted from the workflow YAML (what the
   runner will actually execute after dedent): green, raw rc 0.
 
+**The pin's first CI run refuted its single-path assumption.** Local green,
+runner red: on the `macos-26-arm64` runner the same `/usr/bin/true`
+invocation answered `recording_run_failed`, not `no_shim_marker` — dyld
+*terminated the target* ("inserted dylib ... incompatible architecture
+(have 'arm64', need 'arm64e')") instead of stripping the insertion
+silently the way this dev machine's macOS 15 does. "An Apple platform
+binary cannot be observed" is true on both; *how* it refuses is
+OS-dependent, and the macOS clause never prints on the terminate path
+(it lives on the `no_shim_marker` detail line). The step is now two
+measurements: the platform binary pins only the refusal fact (exit 2,
+never a verdict), and the clause's four predicates moved to a self-built
+hardened-runtime binary — `zig cc` noop, `codesign -s - -o runtime`,
+flags `0x10002(adhoc,runtime)` — where the insertion is ignored silently
+and the run answers `no_shim_marker` with the clause (measured locally;
+the same predicates, so the per-predicate reds above still hold — the
+new second `[ "$rc" = "2" ]` is the same predicate form whose red the
+toy-bug run produced). target-classes now records the two measured
+refusal paths by OS instead of implying one.
+
 ## 2026-08-18 — the headline stops calling the baseline a crash world, on both verdicts
 
 Entry opened at the start of the work, per this file's contract; decisions

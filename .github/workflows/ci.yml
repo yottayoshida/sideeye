@@ -88,23 +88,36 @@ jobs:
           echo "$out" | tail -25
           [ "$rc" = "1" ] || { echo "expected exit 1 from the demo, got $rc"; exit 1; }
 
-      # An Apple-shipped platform binary can never be observed — SIP strips the
-      # injected library — and on macOS the report names that as one possible
-      # cause, never the cause: no_shim_marker proves only that shim_ready was
-      # absent (#10). Pinned permanently because a one-off local measurement
-      # only proves the clause printed once: exit 2, the machine token, the
-      # macOS clause, and the JSON message appearing verbatim in the text.
-      # Seen red once against a build without the branch (BUILDLOG 2026-08-18).
-      - name: An Apple platform binary refuses with the macOS clause
+      # An Apple-shipped platform binary can never be observed, but *how* it
+      # refuses is OS-dependent — measured, not assumed: macOS 15 strips the
+      # insertion silently (the run completes, no_shim_marker), while macOS 26's
+      # dyld terminates the target over the arm64/arm64e mismatch
+      # (recording_run_failed) — so the platform binary pins only the refusal
+      # fact, exit 2 and never a verdict. The macOS clause (#10) is pinned on a
+      # self-built hardened-runtime binary, where the insertion is ignored
+      # silently on every measured OS: exit 2, the machine token, the macOS
+      # clause, and the JSON message appearing verbatim in the text. Each
+      # predicate seen red once (BUILDLOG 2026-08-18).
+      - name: The macOS refusal keeps its shape, and the clause is pinned
         run: |
           set +e
           d="${RUNNER_TEMP:-/tmp}/platform-binary-pin"
-          mkdir -p "$d/state"
-          out=$(./zig-out/bin/sideeye explore --state "$d/state" --operation /usr/bin/true --check /usr/bin/true --work "$d/work" --json "$d/report.json" 2>&1)
+          mkdir -p "$d/state-apple" "$d/state"
+          out=$(./zig-out/bin/sideeye explore --state "$d/state-apple" --operation /usr/bin/true --check /usr/bin/true --work "$d/work-apple" --json "$d/report-apple.json" 2>&1)
           rc=$?
           set -e
           printf '%s\n' "$out" | head -3
           [ "$rc" = "2" ] || { echo "expected exit 2 from an Apple platform binary, got $rc"; exit 1; }
+
+          printf 'int main(void){return 0;}\n' > "$d/noop.c"
+          zig cc -o "$d/noop" "$d/noop.c"
+          codesign -s - -f -o runtime "$d/noop"
+          set +e
+          out=$(./zig-out/bin/sideeye explore --state "$d/state" --operation "$d/noop" --check /usr/bin/true --work "$d/work" --json "$d/report.json" 2>&1)
+          rc=$?
+          set -e
+          printf '%s\n' "$out" | head -3
+          [ "$rc" = "2" ] || { echo "expected exit 2 from a hardened self-built binary, got $rc"; exit 1; }
           printf '%s\n' "$out" > "$d/text.out"
           python3 - "$d" <<'EOF'
           import json, sys
