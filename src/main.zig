@@ -1289,15 +1289,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // evidence is per-world as well as recording-global (#46): a recording that
         // never forked says nothing about a world where the parent dying earlier sent
         // the child down a forking path — the same reason the per-world witness above
-        // re-checks what the recording already cleared. Arming here is observation
-        // only; whether a world-only boundary should refuse outright without an
-        // oracle to account for it is #169.
+        // re-checks what the recording already cleared.
         const world_armed = crossed_boundary or wtrace.boundary != null or wtrace.foreign_pid_seen;
-        // The processes line must not keep telling the recording's story over worlds
-        // that contradicted it (R1): set before any refusal below, so both the refusal
-        // report and a completed verdict carry the world's own account.
-        if (!crossed_boundary and world_armed)
-            boundary_note = "single process in the recording; a process boundary appeared in explored worlds, observed for quiescence only — nothing accounts for what it did (#169)";
+        // A boundary the recording never crossed has no clearance to inherit: the
+        // recording's oracle accounted for no process beside the subject, and worlds
+        // run with no oracle at all, so nothing can say what this process did. The
+        // per-world analog of the recording-time refusal, under the same reason
+        // token — the message is what distinguishes them. The account is written
+        // BEFORE the refusal so the report's processes field tells the world's
+        // story, never the recording's "single process".
+        if (!crossed_boundary and world_armed) {
+            boundary_note = "single process in the recording; a process boundary appeared in an explored world — refused: nothing accounts for what it did";
+            unknown(.boundary_without_oracle, "a process boundary appeared in an explored world that the recording never crossed; explored worlds run without an oracle, so nothing accounts for what the other process did");
+        }
         var world_capture_first: ?CaptureObservation = null;
         if (world_armed) {
             var crashed_again = engine.takeSnapshot(gpa, state_abs) catch setupError("could not re-snapshot a crashed state");

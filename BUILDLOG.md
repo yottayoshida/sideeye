@@ -2,6 +2,62 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-18 — a world-only boundary refuses (#169): the recording's clearance cannot cover a boundary the recording never crossed
+
+Entry opened at the start of the work, per this file's contract. The pre-tag
+re-sweep classified two issues filed since the 2026-08-17 snapshot; owner
+adjudication (2026-08-18): #169 fix, #167 fix, #159's held call resolved as
+a minimal README addition — all three land before the tag, then the snapshot
+is replaced and #86 closes.
+
+Decisions for #169, as adjudicated through plan review:
+
+- **No new `unknown_reason`.** The refusal reuses `boundary_without_oracle`
+  — the issue itself calls the missing refusal "the per-world analog of
+  `boundary_without_oracle`", and the token's meaning (a boundary nobody's
+  oracle accounts for) applies verbatim: worlds run with no oracle at all.
+  The recording-time and world-time refusals differ in `message`, not in
+  token, so the schema's closed set does not move — which also dissolves
+  the "extend the schema before the freeze" pressure the first draft had.
+- **The account is written before the refusal.** Replacing the
+  processes-note update with a bare `unknown()` would have shipped a JSON
+  whose `processes` field still said "single process" under a refusal
+  naming a world boundary (review catch). Order: note first, refuse second.
+- **The existing world-only checks: one inverts, one is deleted.** The
+  quiet-checker check (exit 1, tolerated-with-observation) inverts to the
+  refusal — that inversion *is* the fix's red/green pair. The arming check
+  (capture contamination observed) would die silently, because the refusal
+  now fires before the capture observation. The first draft migrated it to
+  `TOY_FORK`; implementation review caught that the migrated copy was a
+  byte-identical re-run of the check directly above it (same toy variable,
+  same contaminating checker, same predicates) — the #46 machinery is
+  already pinned on the tolerated side, so the world-only arming check is
+  deleted with a note, not migrated.
+- **The `crossed_boundary=true` window stays, documented.** Review pressed
+  to refuse every world boundary; declined as adjudicated scope — ADR 0002
+  already accepts the world-divergence window with its cost written down
+  (closing it means an oracle on all N+1 worlds), and refusing every
+  boundary would unmeasure legitimately-forking targets. ADR 0002 gains
+  the clarification instead.
+
+Measured (container, aarch64-linux cross build): full acceptance 150 ok on
+the fix — the inverted world-only check green (exit 2,
+`boundary_without_oracle`, the world-story `processes` account in the
+JSON, the pre-#169 tolerate wording absent from text and JSON both). Seen
+red by mutation, twice: first pass removed only the `unknown()` call (note
+kept) — the suite failed on exactly one check, "world-only boundary
+refusal: exit 1", the full-verdict FAIL headline in its output. Review
+correctly objected that this is not the *exact* pre-#169 behaviour (the
+note differs) and that the first draft's old-wording negation grepped for
+the old *check's* echo text, not the old report wording — both fixed: the
+negation now targets the report's own pre-#169 wording ("observed for
+quiescence only", text and JSON), and the mutation was re-run with note
+AND refusal both restored to their pre-#169 forms — the suite fails the
+same single check, on the exit code (1, the full verdict; the old-wording
+negations sit later in the predicate chain and guard the narrower
+regression where the refusal stays but the tolerate wording returns).
+Reverted; unit 166/166 native.
+
 ## 2026-08-18 — the last pre-tag narrowing: macOS says its widest limit out loud (#10), and two old issues turn out to be already answered (#6, #12)
 
 Entry opened at the start of the work, per this file's contract; decisions
