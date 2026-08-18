@@ -1,6 +1,6 @@
 .{
     .name = .sideeye,
-    .version = "0.11.0",
+    .version = "0.12.0",
     .fingerprint = 0x8264c345f73fec58, // Changing this has security and trust implications.
     // Pinned to a tagged release, not a -dev build: ziglang.org keeps only tagged
     // releases and the current master, so a pinned -dev version eventually 404s and

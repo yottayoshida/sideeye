@@ -2,6 +2,22 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-18 — v0.12.0: the re-sweep ships as a minor
+
+Owner decision: minor, not patch — #169 changes verdict behaviour (a
+world-only-forking target that previously reached PASS/FAIL now refuses,
+exit 2), the same shape that made v0.11.0 a minor. The version moves in
+the usual three places (build.zig.zon, src/main.zig, README's quickstart
+tarball name — grepped, no residuals). README cross-check against the
+release content (checklist step 3.5): the boundary paragraph's two
+sentences both stay true under #169 — a world-only boundary is a boundary
+the oracle did not confirm, so it lands on the already-documented UNKNOWN
+side; the quickstart name is bumped; adding contract-freeze.md to the
+docs table is *declined* under the README's cut-only order (adding a row
+would need its own owner call, and the PRD link already carries it).
+CHANGELOG promoted with one release-time truth edit ("#86 closes with
+this change" → "closed with it").
+
 ## 2026-08-18 — the pre-tag re-sweep closes the audit: snapshot replaced, resolved rows struck, the freeze declaration moves to its permanent home
 
 Entry opened at the start of the work, per this file's contract. This is the

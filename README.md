@@ -15,7 +15,7 @@ It has produced replay-confirmed counterexamples against real tools — timewarr
 Download the tarball for your platform (x86_64/aarch64 Linux, aarch64 macOS) from [Releases](https://github.com/yottayoshida/sideeye/releases), then:
 
 ```
-$ tar xzf sideeye-v0.11.0-aarch64-macos.tar.gz && cd sideeye-v0.11.0-aarch64-macos
+$ tar xzf sideeye-v0.12.0-aarch64-macos.tar.gz && cd sideeye-v0.12.0-aarch64-macos
 ```
 
 Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`.
