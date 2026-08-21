@@ -1,0 +1,27 @@
+== borg-create checker drills — borg 1.4.0 — frozen apparatus active
+drill ok   green-old-state (rc=0)
+drill ok   green-new-state (rc=0)
+checker(borg-create): leg V: borg check failed after crash (and lock removal, when one ran)
+drill ok   red-leg-V (rc=1)
+checker(borg-create): leg T: archive listing 'base
+probe
+third' is neither the old state nor the completed create
+drill ok   red-leg-T (rc=1)
+checker(borg-create): leg C: base alpha bytes changed
+drill ok   red-leg-C (rc=1)
+checker(borg-create): leg N: probe alpha is neither old nor the archived bytes
+drill ok   red-leg-N (rc=1)
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.cache/borg/CACHEDIR.TAG': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/files': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/pre12-meta': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/README': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/config': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/chunks': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/chunks.archive.d': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.config/borg/security/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/key-type': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.config/borg/security/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/location': Permission denied
+rm: cannot remove '/tmp/cohort2/borg/state/ambient/.config/borg/security/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/manifest-timestamp': Permission denied
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg R: borg break-lock failed on a stale lock
+drill ok   red-leg-R (rc=1)
+== drills failed: 0

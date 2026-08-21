@@ -2,6 +2,16 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — borg-r3: the sendfile rerun, paid for in one line this time
+
+The r2 explore cleared the cache refusal and stopped one syscall later on
+`unsupported_syscall_observed: sendfile` — CPython's shutil fast-copy,
+the exact refusal hg-r3 met this morning. The lesson was already paid
+for: the sitecustomize gains the same one line
+(`shutil._USE_CP_SENDFILE = False`), question bytes unchanged, seven
+drills green again. hg needed a fork in the road and an owner ruling to
+cross this; borg needed a copy of the receipt.
+
 ## 2026-08-21 — borg-r2: the client cache is state, and the engine's restore semantics said so twice today
 
 The r1 explore refused `kill_did_not_land`: the engine restores only the
