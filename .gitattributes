@@ -1,0 +1,29 @@
+# GitHub language stats.
+#
+# This is a Zig project: the engine is src/ and shim/. Everything under spike/
+# is apparatus, and most of it is a record rather than code — the sealed blind
+# campaigns, the assisted cohorts, and the dormant pre-campaign spikes are
+# evidence for claims made in PRD.md and DESIGN.md. They are never edited
+# (blind-hunt through blind-hunt3 have taken no commit since 2026-08-14), and
+# counting them made Shell the repository's largest language at 52%, ahead of
+# the engine it exists to test.
+#
+# Marked linguist-documentation, which excludes a path from the language bar
+# without collapsing its diffs. The live harness is deliberately NOT listed:
+# acceptance.sh, mcp-acceptance.sh, campaign-driver.sh, rehearse-campaign.sh
+# and the toy builders are shell that is actually maintained, and hiding them
+# would overstate how much of this repository is Zig.
+#
+# A closed cohort belongs here. Add its directory when it closes.
+
+spike/blind-hunt/**          linguist-documentation
+spike/blind-hunt2/**         linguist-documentation
+spike/blind-hunt3/**         linguist-documentation
+spike/assisted/**            linguist-documentation
+spike/cohort2/**             linguist-documentation
+spike/loop-closure-timew/**  linguist-documentation
+spike/dogfood-watson/**      linguist-documentation
+spike/followup-*/**          linguist-documentation
+spike/unknown-rate/**        linguist-documentation
+spike/freeze-audit/**        linguist-documentation
+spike/onboarding-clock/**    linguist-documentation
