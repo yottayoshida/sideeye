@@ -1,0 +1,22 @@
+verify-assisted: spike/cohort2/hg-r4
+anchor: main (b0e5a32) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+define    spike/cohort2/hg-r4/ops/check.sh  introduced @ 6f2dc20 (position 2)
+define    spike/cohort2/hg-r4/ops/hg-commit.toml  introduced @ 6f2dc20 (position 2)
+define    spike/cohort2/hg-r4/ops/setup.sh  introduced @ 6f2dc20 (position 2)
+define    spike/cohort2/hg-r4/ops/explore.sh  introduced @ 6f2dc20 (position 2)
+artifact  spike/cohort2/hg-r4/cases/000001.json  introduced @ b0e5a32 (position 1)
+artifact  spike/cohort2/hg-r4/explore-transcript.txt  introduced @ b0e5a32 (position 1)
+artifact  spike/cohort2/hg-r4/report.json  introduced @ b0e5a32 (position 1)
+ok   D1: define complete @ 6f2dc20 strictly precedes first artifact @ b0e5a32
+ok   D2: spike/cohort2/hg-r4/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort2/hg-r4/ops/hg-commit.toml byte-identical at both points
+ok   D2: spike/cohort2/hg-r4/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort2/hg-r4/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort2/hg-r4
+
+== PROTOCOL.md provenance (first-parent, oneline; the full -p form is reserved for a criterion-1 claim, which this is not):
+097cfa8 Cohort 2 probes: two walls where predicted, three survivors, engine order fixed (#183) (#186)
+8a2d0f9 Cohort 2 freeze fixups: the R2 residuals that #184 merged without (#185)
+6a2d254 Cohort 2 freeze: selection record, probe gate, claim discipline, and the five-target image (#183) (#184)
