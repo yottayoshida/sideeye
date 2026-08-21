@@ -37,7 +37,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         ca-certificates \
         unzip \
+        libfaketime \
     && rm -rf /var/lib/apt/lists/*
+# libfaketime (#200): the clock shim for the Borg determinism follow-up —
+# loaded via /etc/ld.so.preload (additive with the engine's LD_PRELOAD of
+# the sideeye shim), activated only where FAKETIME is exported.
 
 # Mercurial 7.2.4 from the PyPI sdist (PyPI's published sha256; C
 # extensions build with gcc above). --no-index --no-deps make the
