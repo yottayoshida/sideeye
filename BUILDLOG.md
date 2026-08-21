@@ -2,6 +2,25 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — hg-r2: the first explore died at hello, and the revision rule got its first customer
+
+The first engine run against the merged hg define stopped at a SETUP
+ERROR before touching the target: the engine resolves `--state` to an
+absolute path before setup runs, and the launcher had not pre-created the
+state root — the exact lesson docs/scouting.md already carries ("create
+the state root and the report's directory before exploring") and the
+calcurse launcher already embodies. The transcript is committed beside
+the r1 define (`explore-r1-transcript.txt`, two lines, rc 3).
+
+The fix is one mkdir in the launcher, and it still gets a new directory
+(`hg-r2/`): the launcher is D2-held from the define's anchor, an in-place
+edit would read as a tuned question at claim time, and the protocol's
+revision rule exists precisely so that nobody has to argue about whether
+a given in-place edit was innocent. No test explore ran against the
+uncommitted fix — an unpushed define that reaches worlds and FAILs would
+burn the target's provenance — so the fix leans on the calcurse
+precedent and ships to main before the engine sees it again.
+
 ## 2026-08-21 — the Mercurial define: the question is written down before the engine is allowed to ask it
 
 Cohort 2's first define (`spike/cohort2/hg/`, P1 of three proposals): kill
