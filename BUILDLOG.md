@@ -2,6 +2,40 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the probes ran, two walls fell where predicted, and the frozen jj plan was wrong twice in instructive ways
+
+All five cohort-2 probes ran (engine-free, positive control first — the
+unpinned `borg create` split, so the harness demonstrably flags
+nondeterminism). Outcomes, transcripts committed under
+`spike/cohort2/probes/`: Borg and KeePassXC record the pre-declared
+determinism walls (both re-checked against latest stable: Borg 1.4.5
+carries the same `time_end` code; KeePassXC's randomness is the format's
+own guarantee). Mercurial, Jujutsu and Bun pass all seven conditions —
+Bun's byte-determinism over a local-tarball `bun add` was the surprise of
+the day, and it survives `--network=none`, so the DNS/443 contact its
+strace showed is optional.
+
+The jj plan needed amending twice, both times by measurement and both
+before any explore (the amendment window the protocol allows): the frozen
+`.jj` state root failed the closure condition because jj 0.44 colocates
+the git store at `./.git` by default (jj-v1 transcript), and the corrected
+repo-wide root then split on a single byte run — the reflog line jj's git
+export stamps with wall-clock time (jj-v2). `core.logAllRefUpdates=false`
+in the pre-state settles it (jj final transcript). The closure condition
+caught a wrong frozen assumption on its first outing, which is the best
+argument it will ever make for itself.
+
+Three shim-visibility forecasts go into the define phase: Mercurial's
+commit path spawns one C-level thread that Python-level hooks cannot see
+and `worker.*` configs do not remove — hunted to the mmap-ed
+rev-branch-cache and removed by `storage.revbranchcache.mmap=no`,
+measured with an in-transcript control. The jj release binary is
+statically linked, so `LD_PRELOAD` cannot load into it at all — jj's slot
+will open on a `no_shim_marker`-class wall unless a dynamic build is
+worth the apparatus. Bun spawns six threads during `bun add`, and the
+shim notes every `pthread_create`. Engine order, fixed before any define:
+Mercurial → Jujutsu → Bun.
+
 ## 2026-08-21 — cohort 2 opens: the claim discipline is frozen before any measurement, and the plan's first draft was wrong three ways
 
 Criterion 1 is the last v1.0 item and its four upstream reports sit

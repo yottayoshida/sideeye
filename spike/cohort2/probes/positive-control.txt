@@ -1,0 +1,109 @@
+== borg probe (control) — borg 1.4.0 — 2026-08-21T07:43:08Z
+== ambient after init (condition 7 baseline):
+WS/ambient/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/README
+WS/ambient/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/chunks
+WS/ambient/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/config
+WS/ambient/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/files
+WS/ambient/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/pre12-meta
+WS/ambient/.cache/borg/CACHEDIR.TAG
+WS/ambient/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/key-type
+WS/ambient/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/location
+WS/ambient/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/manifest-timestamp
+== run A
+Warning: The repository at location /tmp/probe-borg-control/stateA/repo was previously located at /tmp/probe-borg-control/state/repo
+Do you want to continue? [yN] yes (from BORG_RELOCATED_REPO_ACCESS_IS_OK)
+== run B (>=2s later)
+Warning: The repository at location /tmp/probe-borg-control/stateB/repo was previously located at /tmp/probe-borg-control/state/repo
+Do you want to continue? [yN] yes (from BORG_RELOCATED_REPO_ACCESS_IS_OK)
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: state tree after run A differs from pre-state
+ok   3-artifact-count: borg list shows 1 archive(s), expected exactly 1
+ok   4-round-trip: extracted bytes match the source tree
+== diff -r of the two state trees:
+Binary files /tmp/probe-borg-control/stateA/repo/data/0/2 and /tmp/probe-borg-control/stateB/repo/data/0/2 differ
+Binary files /tmp/probe-borg-control/stateA/repo/data/0/4 and /tmp/probe-borg-control/stateB/repo/data/0/4 differ
+Binary files /tmp/probe-borg-control/stateA/repo/index.5 and /tmp/probe-borg-control/stateB/repo/index.5 differ
+Binary files /tmp/probe-borg-control/stateA/repo/integrity.5 and /tmp/probe-borg-control/stateB/repo/integrity.5 differ
+ok   5-determinism-CONTROL: unpinned create must differ across runs (diff rc=1; 0=identical)
+== strace pass (fresh copies; mutating paths outside the state root listed)
+strace'd run rc=0
+== write-opened paths (openat with O_WRONLY|O_RDWR|O_CREAT), deduped:
+"/tmp/jligt1ck"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/chunks"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/config-3vgdzrzl.tmp"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/config-p4r6eiao.tmp"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/files"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.exclusive.5fh6c_25.tmp/ce84042a312e@20059217612218.39-0"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.exclusive.9ax0upo7.tmp/ce84042a312e@20059217612218.39-0"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.roster"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/pre12-meta"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/txn.tmp/chunks"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/txn.tmp/config"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/txn.tmp/files"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/key-type-zdnnapw2.tmp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/location-617v99bq.tmp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/location-orbmex7d.tmp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/manifest-timestamp-k4wiq_14.tmp"
+"WS/stateS/repo/data/0/2"
+"WS/stateS/repo/data/0/3"
+"WS/stateS/repo/data/0/4"
+"WS/stateS/repo/data/0/5"
+"WS/stateS/repo/hints.5.tmp"
+"WS/stateS/repo/index.5.tmp"
+"WS/stateS/repo/integrity.5.tmp"
+"WS/stateS/repo/lock.exclusive.t01cwi_8.tmp/ce84042a312e@20059217612218.39-0"
+"WS/stateS/repo/lock.roster"
+"/tmp/tmp389tit_j"
+"/tmp/tmp48dn45b3/file"
+"/tmp/tmpihly_cu1/file"
+"/tmp/tmpj3mi22gt/idx"
+"/tmp/tmpj69v1dwb/file"
+"/tmp/tmppsmg04zj/idx"
+"/var/lib/libuuid/clock.txt"
+== renames and unlinks:
+"/tmp/jligt1ck"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/config"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/config-3vgdzrzl.tmp"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/config-p4r6eiao.tmp"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.exclusive"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.exclusive.5fh6c_25.tmp"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.exclusive.9ax0upo7.tmp"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.exclusive/ce84042a312e@20059217612218.39-0"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/lock.roster"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/txn.active"
+"WS/ambientS/.cache/borg/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/txn.tmp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/key-type"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/key-type-zdnnapw2.tmp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/location"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/location-617v99bq.tmp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/location-orbmex7d.tmp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/manifest-timestamp"
+"WS/ambientS/.config/borg/security/509cf5c63b450d97a455a14036dc0130c82787c8f2a9806a02a48600e953bf6c/manifest-timestamp-k4wiq_14.tmp"
+"WS/stateS/repo/hints.1"
+"WS/stateS/repo/hints.5"
+"WS/stateS/repo/hints.5.tmp"
+"WS/stateS/repo/index.1"
+"WS/stateS/repo/index.5"
+"WS/stateS/repo/index.5.tmp"
+"WS/stateS/repo/integrity.1"
+"WS/stateS/repo/integrity.5"
+"WS/stateS/repo/integrity.5.tmp"
+"WS/stateS/repo/lock.exclusive"
+"WS/stateS/repo/lock.exclusive.t01cwi_8.tmp"
+"WS/stateS/repo/lock.exclusive/ce84042a312e@20059217612218.39-0"
+"WS/stateS/repo/lock.roster"
+"/tmp/tmp389tit_j"
+"/tmp/tmp48dn45b3"
+"/tmp/tmpihly_cu1"
+"/tmp/tmpj3mi22gt"
+"/tmp/tmpj69v1dwb"
+"/tmp/tmppsmg04zj"
+"chunks"
+"config"
+"file"
+"files"
+"idx"
+== process/thread creation (clone/fork), count:
+0
+== reading (condition 6): persistent writes must be inside WS/stateS/repo; writes under WS/ambientS are the declared client cache/security (excluded: reset per run, do not feed the next invocation from a fresh copy); /tmp and /dev writes are scratch.
+== conditions failed: 0

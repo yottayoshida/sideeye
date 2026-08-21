@@ -124,8 +124,21 @@ here:
    change and one modified working file. Operation: `jj commit` with a
    fixed message, identity and timestamps pinned via jj's documented
    reproducibility environment (exact names read from jj's docs at probe
-   time and recorded). State root: the whole `.jj`. Expected: exactly one
-   new commit and one new operation-log entry; `jj file show` round-trips.
+   time and recorded). State root: the repository directory — working
+   copy, `.jj`, and the colocated `.git` together. *(Amended before any
+   explore, 2026-08-21, in two measured steps: this line originally froze
+   the root as "the whole `.jj`". The first probe's closure condition
+   measured persistent writes landing in `./.git` — jj 0.44's
+   `jj git init` colocates the git store by default — so the frozen root
+   was wrong about where the state lives, which is precisely what
+   condition 6 exists to catch (`probes/jj-v1.txt`). Under the corrected
+   repository-wide root, determinism then split on exactly one byte run:
+   the colocated `.git/logs/HEAD` reflog line jj writes on export carries
+   wall-clock time (`probes/jj-v2.txt`). The reflog is a convenience log
+   with a documented off switch, not repository state; the pre-state now
+   sets `core.logAllRefUpdates=false` and drops init's own reflog lines,
+   and the passing probe under that pre-state is `probes/jj.txt`.)* Expected: exactly one new commit
+   and one new operation-log entry; `jj file show` round-trips.
 4. **KeePassXC** — pre-state: a `keepassxc-cli db-create` database (probe
    password on stdin — the probe is manual; stdin is not the engine).
    Operation: `keepassxc-cli add` of one entry. State root: the directory

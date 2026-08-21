@@ -1,0 +1,80 @@
+== jj probe — jj 0.44.0-af45d57de7163cc5f17f3df178a31577e4951ea3 — 2026-08-21T07:52:42Z
+== pre-state: 3 commits (incl. root and working copy), 5 operations
+== run A
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+== run B (>=2s later)
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: .jj after run A differs from pre-state .jj
+ok   3-artifact-count: commits +1 (expected +1), operations +1 (expected +1)
+ok   4-round-trip: jj file show -r @- alpha returns the committed bytes
+== diff -r of the two .jj trees:
+ok   5-determinism: two runs >=2s apart byte-identical .jj (diff rc=0)
+== strace pass (fresh copy; mutating paths outside .jj listed)
+strace'd run rc=0
+== write-opened paths (openat with O_WRONLY|O_RDWR|O_CREAT), deduped:
+"WS/repoS/.git/HEAD.lock"
+"WS/repoS/.git/index.lock"
+"WS/repoS/.git/logs/HEAD"
+"WS/repoS/.git/logs/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428"
+"WS/repoS/.git/logs/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4"
+"WS/repoS/.git/objects/.tmpP2ln0Q"
+"WS/repoS/.git/objects/.tmpiJo17u"
+"WS/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock"
+"WS/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock"
+"WS/repoS/.jj/repo/git_import_export.lock"
+"WS/repoS/.jj/repo/index/op_links/.tmpZsq9CN"
+"WS/repoS/.jj/repo/index/segments/.tmphAbvxc"
+"WS/repoS/.jj/repo/op_heads/heads/8bf620d78870d37a25e5418df4f031ca2e53b82620f2aacccf307c11992bcd44771bf54493d3470565f67404456fdf894a810159dd0b16507216989a08aaec1c"
+"WS/repoS/.jj/repo/op_heads/heads/lock"
+"WS/repoS/.jj/repo/op_store/operations/.tmpRkB4yq"
+"WS/repoS/.jj/repo/op_store/views/.tmpR2msgA"
+"WS/repoS/.jj/repo/store/extra/.tmpZXf277"
+"WS/repoS/.jj/repo/store/extra/.tmpwHmXup"
+"WS/repoS/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815"
+"WS/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2"
+"WS/repoS/.jj/repo/store/extra/lock"
+"WS/repoS/.jj/working_copy"
+"WS/repoS/.jj/working_copy/.tmpj3PbPz"
+"WS/repoS/.jj/working_copy/working_copy.lock"
+== renames and unlinks:
+"WS/repoS/.git/HEAD"
+"WS/repoS/.git/HEAD.lock"
+"WS/repoS/.git/index"
+"WS/repoS/.git/index.lock"
+"WS/repoS/.git/objects/.tmpP2ln0Q"
+"WS/repoS/.git/objects/.tmpiJo17u"
+"WS/repoS/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428"
+"WS/repoS/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4"
+"WS/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428"
+"WS/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock"
+"WS/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4"
+"WS/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock"
+"WS/repoS/.jj/repo/git_import_export.lock"
+"WS/repoS/.jj/repo/index/op_links/.tmpZsq9CN"
+"WS/repoS/.jj/repo/index/op_links/8bf620d78870d37a25e5418df4f031ca2e53b82620f2aacccf307c11992bcd44771bf54493d3470565f67404456fdf894a810159dd0b16507216989a08aaec1c"
+"WS/repoS/.jj/repo/index/segments/.tmphAbvxc"
+"WS/repoS/.jj/repo/index/segments/76269392bb4630047c5d0e9ec33084cf8618c849e892a38c19bc9b328fef494ceaa2b0bc21c9e958e1ac04bb8cc5a06cd39274e85cd474ccbcc236f2ff807319"
+"WS/repoS/.jj/repo/op_heads/heads/e84870c8b7328188f8670ab4c8a85373edf247a263eee9cedfc0a990ef3986514f17ac3da6b4db4036749c2ddf2c0458bb1f60868386ff50abe70ad2bcff538d"
+"WS/repoS/.jj/repo/op_heads/heads/lock"
+"WS/repoS/.jj/repo/op_store/operations/.tmpRkB4yq"
+"WS/repoS/.jj/repo/op_store/operations/8bf620d78870d37a25e5418df4f031ca2e53b82620f2aacccf307c11992bcd44771bf54493d3470565f67404456fdf894a810159dd0b16507216989a08aaec1c"
+"WS/repoS/.jj/repo/op_store/views/.tmpR2msgA"
+"WS/repoS/.jj/repo/op_store/views/15a8da25ec7ab8ecf3de8b1100280824e68fac566caa8231442974299084c97e67d41afde229923c283795ffa514f36e87f5228893c42c722d09dc91c7e46dce"
+"WS/repoS/.jj/repo/store/extra/.tmpZXf277"
+"WS/repoS/.jj/repo/store/extra/.tmpwHmXup"
+"WS/repoS/.jj/repo/store/extra/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815"
+"WS/repoS/.jj/repo/store/extra/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2"
+"WS/repoS/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe"
+"WS/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2"
+"WS/repoS/.jj/repo/store/extra/lock"
+"WS/repoS/.jj/working_copy/.tmpj3PbPz"
+"WS/repoS/.jj/working_copy/checkout"
+"WS/repoS/.jj/working_copy/working_copy.lock"
+== process/thread creation (clone/fork), count:
+11
+== reading (condition 6): persistent writes must be inside WS/repoS/.jj; /tmp and /dev writes are scratch.
+== ambient consulted (condition 7): identity and clocks are pinned entirely through JJ_* environment (printed above); HOME is a fresh per-probe directory, contents after the runs:
+== conditions failed: 0

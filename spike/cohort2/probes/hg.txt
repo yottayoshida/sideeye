@@ -1,0 +1,77 @@
+== hg probe — Mercurial Distributed SCM (version 7.2.4) — 2026-08-21T07:59:44Z
+== pre-state: 1 changeset, alpha modified in the working copy
+0:bd3adcbab378 initial
+== run A
+== run B (>=2s later)
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: .hg after run A differs from pre-state .hg
+ok   3-artifact-count: changeset count after commit: 2, expected exactly 2
+ok   4-round-trip: hg cat -r tip alpha returns the committed bytes
+== diff -r of the two .hg trees:
+ok   5-determinism: two runs >=2s apart byte-identical .hg (diff rc=0)
+== strace pass (fresh copy; mutating paths outside .hg listed)
+strace'd run rc=0
+== write-opened paths (openat with O_WRONLY|O_RDWR|O_CREAT), deduped:
+"WS/repoS/.hg/.dirstate-4764hpen~"
+"WS/repoS/.hg/.dirstate-ldt1uxq3~"
+"WS/repoS/.hg/cache/.branch2-served-i9grcq3j~"
+"WS/repoS/.hg/cache/.rbc-revs-v2-0qh6n90f1~"
+"WS/repoS/.hg/cache/rbc-revs-v2"
+"WS/repoS/.hg/journal.backup.branch.bck"
+"WS/repoS/.hg/journal.backup.dirstate.bck"
+"WS/repoS/.hg/journal.desc"
+"WS/repoS/.hg/last-message.txt"
+"WS/repoS/.hg/store/00changelog.d"
+"WS/repoS/.hg/store/00changelog.i"
+"WS/repoS/.hg/store/00manifest.i"
+"WS/repoS/.hg/store/data/.alpha.i-hn60san41~"
+"WS/repoS/.hg/store/data/alpha.i"
+"WS/repoS/.hg/store/journal"
+"WS/repoS/.hg/store/journal.backupfiles"
+"WS/repoS/.hg/store/undo.backupfiles"
+"WS/repoS/.hg/tmpzmrjkox_"
+"WS/repoS/.hg/undo.backup.branch.bck"
+"WS/repoS/.hg/undo.backup.dirstate.bck"
+"WS/repoS/.hg/wcache/.manifestfulltextcache-fvtd7i55~"
+"WS/repoS/.hg/wcache/checknoexec"
+== renames and unlinks:
+"WS/repoS/.hg/.dirstate-4764hpen~"
+"WS/repoS/.hg/.dirstate-ldt1uxq3~"
+"WS/repoS/.hg/cache/.branch2-served-i9grcq3j~"
+"WS/repoS/.hg/cache/.rbc-revs-v2-0qh6n90f1~"
+"WS/repoS/.hg/cache/.rbc-revs-v2-0qh6n90f2~"
+"WS/repoS/.hg/cache/branch2-served"
+"WS/repoS/.hg/cache/branch2-served.hidden"
+"WS/repoS/.hg/cache/branch2-visible"
+"WS/repoS/.hg/dirstate"
+"WS/repoS/.hg/journal.backup.branch.bck"
+"WS/repoS/.hg/journal.backup.dirstate.bck"
+"WS/repoS/.hg/journal.desc"
+"WS/repoS/.hg/last-message.txt"
+"WS/repoS/.hg/store/data/.alpha.i-hn60san41~"
+"WS/repoS/.hg/store/data/.alpha.i-hn60san42~"
+"WS/repoS/.hg/store/journal"
+"WS/repoS/.hg/store/journal.backupfiles"
+"WS/repoS/.hg/store/lock"
+"WS/repoS/.hg/store/undo"
+"WS/repoS/.hg/store/undo.backupfiles"
+"WS/repoS/.hg/store/undo.narrowspec"
+"WS/repoS/.hg/store/undo.phaseroots"
+"WS/repoS/.hg/tmpzmrjkox_"
+"WS/repoS/.hg/undo.backup.branch.bck"
+"WS/repoS/.hg/undo.backup.dirstate.bck"
+"WS/repoS/.hg/undo.bookmarks"
+"WS/repoS/.hg/undo.branch"
+"WS/repoS/.hg/undo.desc"
+"WS/repoS/.hg/undo.dirstate"
+"WS/repoS/.hg/undo.narrowspec.dirstate"
+"WS/repoS/.hg/wcache/.manifestfulltextcache-fvtd7i55~"
+"WS/repoS/.hg/wcache/manifestfulltextcache"
+"WS/repoS/.hg/wlock"
+== process/thread creation (clone/fork), count:
+1
+== reading (condition 6): persistent writes must be inside WS/repoS/.hg; the working-copy file writes (if any) are the operation's own tree; /tmp and /dev writes are scratch.
+== thread forecast: CLONE_THREAD count with storage.revbranchcache.mmap=no, then default (control)
+mmap=no: 0 CLONE_THREAD lines / default (control): 2
+ok   forecast-thread-free: storage.revbranchcache.mmap=no removes the commit thread; the default shows it (control)
+== conditions failed: 0
