@@ -1,0 +1,17 @@
+verify-assisted: spike/cohort2/bun
+anchor: main (d737bdc) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+note: the working tree differs from main under spike/cohort2/bun — ignored; every anchor below is read from the committed history
+define    spike/cohort2/bun/ops/bun-add.toml  introduced @ 9669aad (position 2)
+define    spike/cohort2/bun/ops/check.sh  introduced @ 9669aad (position 2)
+define    spike/cohort2/bun/ops/setup.sh  introduced @ 9669aad (position 2)
+define    spike/cohort2/bun/ops/explore.sh  introduced @ 9669aad (position 2)
+artifact  spike/cohort2/bun/explore-transcript.txt  introduced @ d737bdc (position 1)
+artifact  spike/cohort2/bun/report.json  introduced @ d737bdc (position 1)
+ok   D1: define complete @ 9669aad strictly precedes first artifact @ d737bdc
+ok   D2: spike/cohort2/bun/ops/bun-add.toml byte-identical at both points
+ok   D2: spike/cohort2/bun/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort2/bun/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort2/bun/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort2/bun
