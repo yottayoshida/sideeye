@@ -1,0 +1,15 @@
+# Cohort-2 jj define (P1): kill `jj commit` partway; the checker holds the
+# readability/conservation/old-or-new/staleness-recovery contract
+# (proposals.md). Determinism and closure for exactly this shape:
+# ../probes/jj.txt. The JJ_* pins reach the operation child from the
+# launcher's environment. Standing forecast: the release binary is
+# static, so a no_shim_marker-class refusal at recording is the expected
+# recorded outcome.
+[world]
+state = "/tmp/cohort2/jj/repo"
+
+[define]
+setup           = "./setup.sh"
+operation       = "jj -R /tmp/cohort2/jj/repo commit -m probe"
+check           = "./check.sh"
+expected_status = "0"

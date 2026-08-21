@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the jj and bun defines land together: two questions written down under standing wall forecasts
+
+The cohort's last two defines ship in one PR, both with their expected
+outcomes declared up front from the probe phase: jj's release binary is
+static (`LD_PRELOAD` cannot load — a `no_shim_marker`-class refusal at
+recording is the forecast), and bun spawns six threads during `bun add`
+(`multiple_threads_detected` is the forecast). The defines exist so those
+walls are *measured through the mini-seal*, not assumed — and so that if
+either forecast is wrong, the question is already committed and the
+verdict counts.
+
+jj's checker asks the op-log contract (readable repo, initial bytes
+conserved, description list old-or-new, `jj workspace update-stale`
+exactly when jj reports staleness), reads with `--ignore-working-copy` so
+observation does not trigger the auto-snapshot, and paid two small
+tuitions in its drills: the description-list literals forgot the root
+commit's empty row (the exact lesson hg-r4's probe already taught — pin
+literals, then let the first contact correct them), and
+`description("initial")` resolves nothing because jj matches the full
+description including its trailing newline — `subject()` is the right
+revset, confirmed in-container before trusting it. bun's checker holds
+the triple (package.json/lockfile/node_modules) to
+old-or-new-or-repairable with re-run-the-install as the documented
+recovery, and its poisoned-cache drill (same tarball name, different
+bytes) proves the byte-comparison leg is load-bearing. All nine drills
+green across the two targets, greens as controls.
+
 ## 2026-08-21 — the verify transcript merged through a red gate, because the merge command never looked at the gate
 
 The hg-r4 verify transcript (verify-assisted green end to end: define

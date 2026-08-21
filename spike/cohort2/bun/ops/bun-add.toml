@@ -1,0 +1,15 @@
+# Cohort-2 bun define (P1): kill `bun add` partway; the checker holds the
+# triple-consistency-through-recovery contract (proposals.md).
+# Determinism, closure and offline independence for exactly this shape:
+# ../probes/bun.txt, ../probes/bun-network-independence.txt. The ambient
+# env reaches the operation child from the launcher. Standing forecast:
+# the probe measured 6 threads, so a multiple_threads_detected refusal at
+# recording is the expected recorded outcome.
+[world]
+state = "/tmp/cohort2/bun/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "bun add --cwd /tmp/cohort2/bun/state /tmp/cohort2/bun/dep-1.0.0.tgz"
+check           = "./check.sh"
+expected_status = "0"
