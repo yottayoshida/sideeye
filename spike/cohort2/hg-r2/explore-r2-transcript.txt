@@ -1,0 +1,11 @@
+UNKNOWN  unsupported_syscall_observed
+         sendfile
+
+atomicity   23 path(s) judged pre-or-post; 6 file(s) judged by the history form (appended tails not judged): cache/rbc-revs-v2, store/00changelog.d, store/00changelog.i (+3 more)
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

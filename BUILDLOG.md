@@ -2,6 +2,29 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — hg-r3: sendfile is outside the contract, and the owner chose the declared workaround over the wall
+
+The r2 explore ran deep — recording contained, 23 paths under the
+pre-or-post form, 6 under history preservation — and refused:
+`unsupported_syscall_observed: sendfile`. The strace hunt pinned it to the
+transaction's backup copies (`branch`/`dirstate` → `journal.backup.*`,
+then → `undo.backup.*`): hg's `util.copyfile` calls `shutil.copyfile`,
+and CPython 3.13 fast-copies through `os.sendfile` with no environment
+switch (`_USE_CP_SENDFILE` is a bare module global). Adding sendfile to
+the shim is a contract change and the contract is frozen.
+
+The fork was real: record the wall and almost certainly end the cohort
+empty (jj's release binary is static, bun runs six threads — both
+forecast walls), or bend the target's runtime one documented notch
+further than the hgrc configs. The owner chose the workaround, r3: a
+setup-generated `sitecustomize.py` sets `shutil._USE_CP_SENDFILE = False`
+— identical bytes through supported syscalls, verified by a normal run
+with zero sendfile calls — declared in the define, the proposals and here,
+with the standing condition that any finding reproduces against stock hg
+(strace fault injection, the four filings' method) before it is claimed.
+This is a private CPython attribute, not a documented interface, and the
+declaration says so plainly rather than dressing it up as configuration.
+
 ## 2026-08-21 — hg-r2: the first explore died at hello, and the revision rule got its first customer
 
 The first engine run against the merged hg define stopped at a SETUP
