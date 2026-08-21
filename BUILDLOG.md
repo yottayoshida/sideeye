@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — #200: the Borg wall falls to a three-piece apparatus, and the issue's premise was wrong twice
+
+The issue predicted one leak (time_end's monotonic duration). Running
+found three, each by measurement rather than reading: the monotonic
+duration; the manifest's utcnow; and — after both clocks were provably
+frozen — the TAM authentication tag's random salt, present even at
+encryption=none (found by diffing `borg debug dump-archive` between two
+frozen runs: `salt`/`hmac`/`id` were the only moving fields). The
+apparatus that pins all three: libfaketime via `/etc/ld.so.preload` with
+FAKETIME `@...x0` (realtime frozen; monotonic deliberately left real so
+sleeps and timeouts outside borg stay alive — the first frozen round
+proved why by hanging in the harness's own gap sleep while borg itself
+had finished fine), plus a sitecustomize pinning `time.monotonic` and
+`os.urandom` (Python-scoped via PYTHONPATH; the C world untouched). The
+urandom pin crossed a line drawn earlier the same day ("crypto randomness
+is where we give up") and went to the owner instead of under the rug:
+approved, with the distinction recorded — this is an integrity tag's
+salt on an unencrypted repository, not encryption, and the
+reproduce-against-stock condition already covers any finding.
+
+The harness paid a tuition too: the first frozen round still split, and
+the culprit was the probe itself — borg stores the full command line in
+the archive metadata, and a harness that runs A and B in different
+directories manufactures a split no real exploration would see. The
+probe now runs A and B in place at one canonical path, restored from a
+pristine snapshot between runs — which is the engine's own restore
+semantics, so the probe got more faithful by being corrected. Final
+record: control splits (the check can fail), pinned splits (the wall
+stands without the apparatus), frozen is six-for-six green.
+
 ## 2026-08-21 — the closing verify transcripts: the mini-seal held on all three engine targets
 
 verify-assisted runs green on jj and bun (define strictly before
