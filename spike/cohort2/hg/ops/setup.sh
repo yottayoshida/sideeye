@@ -24,6 +24,8 @@ printf 'alpha, fixed bytes\n' > "$R/alpha"
 printf 'beta, fixed bytes\n'  > "$R/beta"
 touch -t 202601010000 "$R/alpha" "$R/beta"
 hg -R "$R" add "$R/alpha" "$R/beta"
-hg -R "$R" commit -m initial -d "2026-01-01 00:00:00 +0000"
+# --user explicitly: hg prefers an ambient $HGUSER over the hgrc, and both
+# setup and the operation inherit the engine's environment.
+hg -R "$R" commit -m initial -d "2026-01-01 00:00:00 +0000" --user "probe <probe@example.invalid>"
 printf 'alpha, modified fixed bytes\n' > "$R/alpha"
 touch -t 202601020000 "$R/alpha"

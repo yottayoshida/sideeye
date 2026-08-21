@@ -1,15 +1,16 @@
 # Cohort-2 hg define (P1): kill `hg commit` partway; the checker holds the
 # documented recovery contract (proposals.md carries the why/what/where).
-# The date argument carries spaces, so the operation uses the argv form
-# (ADR 0019). Determinism and state-root closure for exactly this shape:
-# ../probes/hg.txt. HGRCPATH reaches the operation child from the launcher
-# (ops/explore.sh) — the child inherits the engine's environment, not the
-# setup script's.
+# The date and user arguments carry spaces, so the operation uses the argv
+# form (ADR 0019); --user rides the argv because hg prefers an ambient
+# $HGUSER over the hgrc. Determinism and state-root closure for exactly
+# this shape: ../probes/hg.txt. HGRCPATH reaches the operation child from
+# the launcher (ops/explore.sh) — the child inherits the engine's
+# environment, not the setup script's.
 [world]
 state = "/tmp/cohort2/hg/repo/.hg"
 
 [define]
 setup           = "./setup.sh"
-operation       = ["hg", "-R", "/tmp/cohort2/hg/repo", "commit", "-m", "probe", "-d", "2026-01-02 00:00:00 +0000"]
+operation       = ["hg", "-R", "/tmp/cohort2/hg/repo", "commit", "-m", "probe", "-d", "2026-01-02 00:00:00 +0000", "--user", "probe <probe@example.invalid>"]
 check           = "./check.sh"
 expected_status = "0"

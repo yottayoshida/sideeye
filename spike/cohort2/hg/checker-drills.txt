@@ -1,12 +1,16 @@
-== hg-commit checker drills — Mercurial Distributed SCM (version 7.2.4) — 2026-08-21T08:42:22Z
+== hg-commit checker drills — Mercurial Distributed SCM (version 7.2.4) — 2026-08-21T08:53:28Z
 drill ok   green-old-state (rc=0)
 drill ok   green-new-state (rc=0)
 checker(hg-commit): leg V: hg verify failed after crash (and recovery, when one ran)
 drill ok   red-leg-V (rc=1)
-checker(hg-commit): leg C: rev 0 alpha bytes changed: 'different bytes'
+checker(hg-commit): leg C: rev 0 alpha bytes changed
 drill ok   red-leg-C (rc=1)
+checker(hg-commit): leg C: rev 0 alpha bytes changed
+drill ok   red-leg-C-trailing-lf (rc=1)
 checker(hg-commit): leg T: 3 changesets visible; the contract allows exactly the old state (1) or the completed commit (2)
 drill ok   red-leg-T (rc=1)
+checker(hg-commit): leg D: store holds the completed commit but the working copy parent is '0', not 1
+drill ok   red-leg-D (rc=1)
 checker(hg-commit): abandoned transaction present; running the documented hg recover
 checker(hg-commit): leg R: hg recover failed on an abandoned transaction
 drill ok   red-leg-R (rc=1)

@@ -24,8 +24,12 @@ and a strace of a third.
   the documented recovery: `hg recover` succeeds when an abandoned
   transaction exists, `hg verify` passes afterward, the pre-existing
   changeset and both committed files' bytes are conserved, and the
-  visible tip is either the old state or the completed new commit — never
-  a third thing.
+  **whole repository** is either the old state or the completed new
+  commit — never a third thing. That includes the working copy's own
+  account: old means parent rev 0 with alpha still modified, new means
+  parent rev 1 and clean. A store that committed while the working copy
+  still claims the old dirty state is the third thing — the next commit
+  would silently duplicate the change.
 - **where from**: `hg help recover` (the documented contract);
   `hg help verify` (the integrity oracle); the probe's strace listing for
   the write set. The byte-determinism and state-root closure that make
