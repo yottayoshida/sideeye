@@ -95,7 +95,7 @@ report refuses to be reassuring without an account.
 | `case` | string | Path of the saved counterexample this run wrote or replayed; `"(none)"` when no case exists. |
 | `replay` | string | The exact replay command for the saved case; `"-"` when there is none. |
 | `oracle` | string | The completeness account: how many operations the two witnesses agreed on, or that no oracle ran. |
-| `metadata_writes` | string | Ownership/permission writes on the state directory (#121): observed by the oracle and excluded from judgement — chown/chmod families change none of the judged state (names, bytes, link targets). Without an oracle the note says they are not observable at all (the shim does not interpose them); absence of a note is never absence of writes. |
+| `metadata_writes` | string | Ownership/permission/timestamp writes on the state directory (#121, #190): observed by the oracle and excluded from judgement — the chown/chmod and utime families change none of the judged state (names, bytes, link targets). Without an oracle the note says they are not observable at all (the shim does not interpose them); absence of a note is never absence of writes. |
 | `checker` | string | The declared invariant's account (`"none configured"` when unused). |
 | `processes` | string | The process-boundary account: what else was observed and whether it touched the state. |
 | `not_tested` | array of strings | Fault classes this run does not claim to have tested (power loss, torn writes, concurrent processes, …). Read it before trusting a PASS. |

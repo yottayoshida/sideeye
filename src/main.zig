@@ -126,7 +126,7 @@ var oracle_verified: bool = false;
 /// verdict input. The default says why absence of a note is not absence of writes:
 /// without an oracle nothing can see a chown, and "was not seen" must not read as
 /// "did not happen" here any more than anywhere else in this tool.
-var metadata_note: []const u8 = "not observable (no oracle ran; the shim does not interpose ownership/permission calls)";
+var metadata_note: []const u8 = "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)";
 var checker_note: []const u8 = "none configured";
 /// The L1 story (ADR 0008): whether a success marker was declared, and in how many
 /// crash worlds it was observed — the worlds where the post-success invariant was
@@ -908,7 +908,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // its crash worlds at 0644 whether or not the target ever chmods (R2,
             // the buku shape: sqlite fchowns only as root, so the note would
             // otherwise vanish exactly where the flattening bites hardest).
-            if (items.len == 0) break :blk "none observed. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes";
+            if (items.len == 0) break :blk "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes and times";
             var names: std.ArrayList(u8) = .empty;
             var listed: std.ArrayList([]const u8) = .empty;
             for (items) |n| {
@@ -931,7 +931,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             }
             break :blk std.fmt.allocPrint(
                 arena,
-                "{d} ownership/permission write(s) observed and excluded from judgement — outside the judged state (#121): {s}. Restore does not reproduce ownership/permission state: crash worlds run at the engine's default modes",
+                "{d} ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): {s}. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes and times",
                 .{ items.len, names.items },
             ) catch "observed (detail unavailable)";
         };
