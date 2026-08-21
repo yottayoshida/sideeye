@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — hg-r4: 101 worlds green, and the baseline check earned its keep on a mode that carries meaning
+
+With #190 merged, the r3 explore finally ran the whole campaign: 101
+crash worlds, the checker green in every one — the documented `hg
+recover` fired in 62 worlds and succeeded in all of them, verify held,
+conservation held, the working copy agreed with the store on every line.
+Then the un-killed baseline world died to the standing kill and the run
+refused with `baseline_run_failed`.
+
+The trace diff told it straight: the baseline ran a longer operation
+stream than the recording, because the engine's restore flattens modes
+(documented behavior since #121's note) and hg caches the filesystem's
+exec-bit answer AS a mode — an executable `.hg/wcache/checkisexec`. Every
+restored world silently re-ran the exec probe the recording had skipped,
+shifting every operation index; the baseline was simply the world where
+the shifted stream reached the kill that is never supposed to land. The
+baseline check exists to say "the restored state is not the recorded
+state", and it said exactly that about a state whose bytes matched and
+whose *meaning* did not.
+
+The r4 fix is define-side and one line: setup removes `wcache` from the
+pre-state, so the recording and every world probe from the same blank
+slate. Measured outside the engine before committing: with no wcache, a
+mode-flattened copy of the pre-state produces a syscall-name sequence
+identical to a mode-preserving copy (167 calls, diff clean); the probe's
+temp names still differ per run, which the engine already tolerates by
+design (classes gate, paths warn).
+
 ## 2026-08-21 — #190: the timestamp family joins the metadata exclusion, the decision the code reserved for itself
 
 The r3 explore cleared sendfile and refused one syscall later:
