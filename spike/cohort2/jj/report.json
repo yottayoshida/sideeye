@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "UNKNOWN",
+  "exit_code": 2,
+  "oracle_verified": false,
+  "crash_points": 0,
+  "explored": 0,
+  "violations": 0,
+  "expected_status": 0,
+  "unknown_reason": "no_shim_marker",
+  "message": "the shim never initialised: statically linked, hardened, or not injected at all",
+  "l0": "95 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "not run (no --oracle given)",
+  "metadata_writes": "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

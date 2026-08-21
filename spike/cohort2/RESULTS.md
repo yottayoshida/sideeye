@@ -97,6 +97,28 @@ explore time.
 
 ## Engine outcomes (updated as targets complete)
 
+- **Jujutsu (2026-08-21)** — **named wall, as forecast**:
+  `no_shim_marker` at recording; the v0.44.0 release binary is statically
+  linked and cannot load an `LD_PRELOAD` shim. The measured binary is the
+  latest stable, so the recheck is inherent. Terminal for this cohort;
+  a dynamically-built jj stays a possible future apparatus decision.
+  Ruling: `jj/RUNLOG.md`.
+- **Bun (2026-08-21)** — **named wall, as forecast**:
+  `multiple_threads_detected` at recording (the probe's six threads);
+  single-threaded exploration is a v0.1 contract property. The measured
+  binary is the latest stable (1.4.0, 2026-08-20). Terminal. Ruling:
+  `bun/RUNLOG.md`.
+
+**Cohort closed (2026-08-21).** Five frozen targets, five recorded
+outcomes: two probe walls (Borg, KeePassXC — determinism), two engine
+walls (jj — static linkage; Bun — threads), one full verdict (Mercurial —
+null-with-verdict: FAIL 73/107, all L0-only, the documented contract held
+in 107/107 worlds, refused as a claim by the frozen reading). Criterion-1
+candidates from this cohort: **zero**, said plainly; the freeze is what
+makes that an honest, publishable result rather than a shelved one. The
+criterion-1 search continues on the four standing upstream reports and
+any future cohort.
+
 - **Mercurial (2026-08-21)** — the define took four revisions to reach a
   verdict, each one's refusal committed as evidence (r1 SETUP ERROR at
   state resolution; r2 sendfile, worked around by a declared

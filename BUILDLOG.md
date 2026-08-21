@@ -2,6 +2,22 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — both forecasts land verbatim, and cohort 2 closes with five recorded outcomes
+
+The jj explore refused `no_shim_marker` (static binary — the shim never
+initialised) and the bun explore refused `multiple_threads_detected`
+("Saved lockfile" printed first: bun's own run was fine, the engine's
+single-thread contract was not). Both are the exact refusals the probe
+phase forecast, both measured binaries are the latest upstream stable so
+the wall rechecks are inherent, and both are terminal for this cohort —
+the dynamic-jj build stays an open apparatus decision, not a debt.
+
+Cohort 2 is closed: five frozen targets, five recorded outcomes, zero
+criterion-1 candidates, every step from selection to walls under the
+committed discipline. The honest sentence for #183 is that the search
+came up empty and the record proves the search was real. Criterion 1
+continues on the standing upstream reports and any future cohort.
+
 ## 2026-08-21 — the jj and bun defines land together: two questions written down under standing wall forecasts
 
 The cohort's last two defines ship in one PR, both with their expected

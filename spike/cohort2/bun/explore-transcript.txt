@@ -1,0 +1,14 @@
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+UNKNOWN  multiple_threads_detected
+         the target created a thread; operation order would not be deterministic
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

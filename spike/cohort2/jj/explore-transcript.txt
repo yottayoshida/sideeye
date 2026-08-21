@@ -1,0 +1,16 @@
+Initialized repo in "."
+Working copy  (@) now at: sryyqqkq/0 2a7e63ac (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 c66ab3a2 (divergent) initial
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+UNKNOWN  no_shim_marker
+         the shim never initialised: statically linked, hardened, or not injected at all
+
+atomicity   95 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
