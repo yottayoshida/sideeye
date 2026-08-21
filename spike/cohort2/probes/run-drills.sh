@@ -70,5 +70,15 @@ else
     echo "drill ok   6b-closure-control stayed green on a closed run"
 fi
 
+# ---- drill 6c: an unattributable mutation must go red (fail-closed) ----------
+# A target that locks its memory shows strace bare pointers instead of path
+# strings (measured on keepassxc-cli); the accounting must refuse, not skip.
+_before=$FAILS
+cat > "$WS/strace6c.log" <<'EOF'
+51    openat(AT_FDCWD, 0xaaaaea93eec8, O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4
+EOF
+closure_check "$WS/strace6c.log" "$WS/state6b"
+expect_red "6c-closure-unattributable"
+
 note "drills failed: $DRILL_FAILS (probe-condition reds above are the drills working, counted separately)"
 [ "$DRILL_FAILS" -eq 0 ] && exit 0 || exit 1

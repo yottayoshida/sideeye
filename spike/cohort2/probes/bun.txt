@@ -1,4 +1,4 @@
-== bun probe — bun 1.4.0 — 2026-08-21T08:19:08Z
+== bun probe — bun 1.4.0 — 2026-08-21T08:33:25Z
 == condition 7 — ambient: HOME, BUN_INSTALL_CACHE_DIR and TMPDIR under <WS>/ambientX, created fresh per run (reset shown by the mkdir below; nothing pre-exists).
 == run A
 reset: stateA copied from pre-state; ambientA created empty
@@ -19,7 +19,7 @@ Saved lockfile
 
 installed probe-dep@../dep-1.0.0.tgz
 
-1 package installed [3.00ms]
+1 package installed [4.00ms]
 ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
 ok   2-non-noop: state after run A differs from pre-state
 ok   3-artifact-count: node_modules is exactly 'probe-dep' (got: 'probe-dep '), lockfile present=1, bun pm ls is exactly one dep row (got: '└── probe-dep@../dep-1.0.0.tgz ')
@@ -29,27 +29,14 @@ ok   5-determinism: two runs >=2s apart byte-identical project tree (diff rc=0)
 == strace pass (fresh copies; raw log kept as bun.strace)
 strace'd run rc=0
 == mutating paths (all mutating syscalls, successful only, deduped):
-".564a2fdf351f85c6-1.package"
-".564a2fdf353e64bd-0.hm"
-".lock-9063581eaff2de13.tmp"
-"@T@0c447c57efeffc48@@@1"
-"bun.lock"
-"index.js"
-"node_modules"
-"package.json"
-"probe-dep"
-WS/ambientS/tmp/.564a2fdf351f85c6-1.package/index.js
-WS/ambientS/tmp/.564a2fdf351f85c6-1.package/package.json
-WS/ambientS/tmp/.564a2fdf353e64bd-0.hm
-WS/stateS/.lock-9063581eaff2de13.tmp
-WS/stateS/package.json
-ok   6-closure: every mutating path sits under the declared prefixes
+/probes/run-bun.sh: 86: mutating_paths: not found
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
 == thread creations (successful CLONE_THREAD):
-4
+6
 == network syscalls (socket/connect, non-AF_UNIX), first 10 — the companion transcript shows the add succeeding with no network at all:
 == forecast — linkage of the release binary (the shim needs dynamic loading):
-	linux-vdso.so.1 (0x0000ffff97aff000)
-	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff978f0000)
-	/lib/ld-linux-aarch64.so.1 (0x0000ffff97ab0000)
-	libpthread.so.0 => /lib/aarch64-linux-gnu/libpthread.so.0 (0x0000ffff978c0000)
+	linux-vdso.so.1 (0x0000ffff9ed1c000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff9eb20000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff9ece0000)
+	libpthread.so.0 => /lib/aarch64-linux-gnu/libpthread.so.0 (0x0000ffff9eaf0000)
 == conditions failed: 0

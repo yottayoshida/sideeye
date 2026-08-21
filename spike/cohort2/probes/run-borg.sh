@@ -98,12 +98,11 @@ echo "strace'd run rc=$?"
 cp "$WS/strace.log" "$OUT/borg-$MODE.strace" 2>/dev/null || true
 note "mutating paths (all mutating syscalls, successful only, deduped):"
 mutating_paths "$WS/strace.log" | sort -u | sed "s|$WS|WS|"
-# Declared: the operation reads the source tree and its own python runtime;
-# its persistent writes must sit under the state copy, the per-run ambient
-# copy, or scratch. /var/lib/libuuid is libuuid's own clock state (uuid
-# uniqueness bookkeeping, system-wide, not target state and not consulted
-# by the judgement) — declared, with that reason, rather than hidden.
-closure_check "$WS/strace.log" "$WS/stateS" "$WS/ambientS" "$WS/extract" /tmp/ /var/lib/libuuid/
+# Declared: persistent writes must sit under the state copy, the per-run
+# ambient copy, or scratch. (libuuid attempts /var/lib/libuuid/clock.txt
+# and fails ENOENT in this container — a failed call mutates nothing and
+# the fail-closed accounting counts successes only, so no exclusion.)
+closure_check "$WS/strace.log" "$WS/stateS" "$WS/ambientS" "$WS/extract" /tmp/
 note "thread creations (successful CLONE_THREAD):"
 thread_counts "$WS/strace.log"
 

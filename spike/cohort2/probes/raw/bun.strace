@@ -1,119 +1,118 @@
-64    execve("/usr/bin/timeout", ["timeout", "120", "bun", "add", "../dep-1.0.0.tgz"], 0xffffcda2d840 /* 8 vars */) = 0
+63    execve("/usr/bin/timeout", ["timeout", "120", "bun", "add", "../dep-1.0.0.tgz"], 0xffffd62296d0 /* 8 vars */) = 0
+63    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+63    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+63    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xffff99f250f0) = 64
+64    execve("/usr/local/sbin/bun", ["bun", "add", "../dep-1.0.0.tgz"], 0xffffd662ac88 /* 8 vars */) = -1 ENOENT (No such file or directory)
+64    execve("/usr/local/bin/bun", ["bun", "add", "../dep-1.0.0.tgz"], 0xffffd662ac88 /* 8 vars */) = 0
 64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
 64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
 64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
-64    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xffffaf7ec0f0) = 65
-65    execve("/usr/local/sbin/bun", ["bun", "add", "../dep-1.0.0.tgz"], 0xffffe134bbb8 /* 8 vars */) = -1 ENOENT (No such file or directory)
-65    execve("/usr/local/bin/bun", ["bun", "add", "../dep-1.0.0.tgz"], 0xffffe134bbb8 /* 8 vars */) = 0
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/sys/vm/overcommit_memory", O_RDONLY) = 3</proc/sys/vm/overcommit_memory>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/enabled>
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node1", R_OK) = -1 ENOENT (No such file or directory)
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node2", R_OK) = -1 ENOENT (No such file or directory)
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node3", R_OK) = -1 ENOENT (No such file or directory)
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node4", R_OK) = -1 ENOENT (No such file or directory)
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node5", R_OK) = -1 ENOENT (No such file or directory)
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node6", R_OK) = -1 ENOENT (No such file or directory)
-65    clone(child_stack=0xffff8aae8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[66], tls=0xffff8aae8f80, child_tidptr=0xffff8aae8930) = 66
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/65/maps>
-65    getcwd("/tmp/probe-bun/stateS", 4096) = 22
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-bun/stateS/package.json>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "//package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-65    chdir("/tmp/probe-bun/stateS")    = 0
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/home/.bunfig.toml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    getcwd("/tmp/probe-bun/stateS", 4096) = 22
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/bunfig.toml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    readlinkat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/fd/3", "/tmp/probe-bun/stateS/package.js"..., 4096) = 34
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = 4</tmp/probe-bun/stateS>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/home/.npmrc", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, ".npmrc", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 5</sys/devices/system/cpu/online>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 5</proc/65/cgroup>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/fs/cgroup//cpu.max", O_RDONLY|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 7</usr/share/zoneinfo/Etc/UTC>
-65    clone(child_stack=0xffff89df8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[67], tls=0xffff89df8f80, child_tidptr=0xffff89df8930) = 67
-65    write(1</dev/null<char 1:3>>, "bun add v1.4.0 (34cbb9a40)\n", 27) = 27
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_RDONLY|O_LARGEFILE) = 7</tmp/probe-bun/stateS/package.json>
-65    clone(child_stack=0xffff899e8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID <unfinished ...>
-67    getcwd("/tmp/probe-bun/stateS", 4096) = 22
-65    <... clone resumed>, parent_tid=[68], tls=0xffff899e8f80, child_tidptr=0xffff899e8930) = 68
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "bun.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "bun.lockb", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "package-lock.json", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "yarn.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "pnpm-lock.yaml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/cache", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 9</tmp/probe-bun/ambientS/cache>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/tmp", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 10</tmp/probe-bun/ambientS/tmp>
-68    clone(child_stack=0xffff895d8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[69], tls=0xffff895d8f80, child_tidptr=0xffff895d8930) = 69
-65    openat(10</tmp/probe-bun/ambientS/tmp>, ".564a2fdf353e64bd-0.hm", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 11</tmp/probe-bun/ambientS/tmp/.564a2fdf353e64bd-0.hm>
-65    renameat(10</tmp/probe-bun/ambientS/tmp>, ".564a2fdf353e64bd-0.hm", 9</tmp/probe-bun/ambientS/cache>, ".564a2fdf353e64bd-0.hm") = 0
-65    unlinkat(9</tmp/probe-bun/ambientS/cache>, ".564a2fdf353e64bd-0.hm", 0) = 0
-68    newfstatat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/resolv.conf", {st_mode=S_IFREG|0644, st_size=222, ...}, 0) = 0
-68    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/host.conf", O_RDONLY|O_CLOEXEC <unfinished ...>
-65    clone(child_stack=0xffff891c8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID <unfinished ...>
-68    <... openat resumed>)             = 11</etc/host.conf>
-65    <... clone resumed>, parent_tid=[70], tls=0xffff891c8f80, child_tidptr=0xffff891c8930) = 70
-65    write(2</dev/null<char 1:3>>, "Resolving dependencies\n", 23) = 23
-68    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 11</etc/resolv.conf>
-70    clone(child_stack=0xffff88db8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[71], tls=0xffff88db8f80, child_tidptr=0xffff88db8930) = 71
-70    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/dep-1.0.0.tgz", O_RDONLY|O_LARGEFILE) = 12</tmp/probe-bun/dep-1.0.0.tgz>
-68    newfstatat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/nsswitch.conf", {st_mode=S_IFREG|0644, st_size=494, ...}, 0) = 0
-68    newfstatat(AT_FDCWD</tmp/probe-bun/stateS>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-68    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC <unfinished ...>
-70    openat(10</tmp/probe-bun/ambientS/tmp>, ".564a2fdf351f85c6-1.package", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY <unfinished ...>
-68    <... openat resumed>)             = 11</etc/nsswitch.conf>
-70    <... openat resumed>)             = -1 ENOENT (No such file or directory)
-70    mkdirat(10</tmp/probe-bun/ambientS/tmp>, ".564a2fdf351f85c6-1.package", 0755) = 0
-70    openat(10</tmp/probe-bun/ambientS/tmp>, ".564a2fdf351f85c6-1.package", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 12</tmp/probe-bun/ambientS/tmp/.564a2fdf351f85c6-1.package>
-70    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/auxv", O_RDONLY) = 13</proc/65/auxv>
-68    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/hosts", O_RDONLY|O_CLOEXEC) = 11</etc/hosts>
-70    openat(12</tmp/probe-bun/ambientS/tmp/.564a2fdf351f85c6-1.package>, "package.json", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) = 13</tmp/probe-bun/ambientS/tmp/.564a2fdf351f85c6-1.package/package.json>
-70    openat(12</tmp/probe-bun/ambientS/tmp/.564a2fdf351f85c6-1.package>, "index.js", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) = 13</tmp/probe-bun/ambientS/tmp/.564a2fdf351f85c6-1.package/index.js>
-70    renameat2(10</tmp/probe-bun/ambientS/tmp>, ".564a2fdf351f85c6-1.package", 9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1", RENAME_NOREPLACE) = 0
-70    openat(9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 12</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>
-70    readlinkat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/fd/12", "/tmp/probe-bun/ambientS/cache/@T"..., 4096) = 53
-70    openat(9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1/package.json", O_RDONLY|O_LARGEFILE) = 13</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1/package.json>
-70    readlinkat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/fd/13", "/tmp/probe-bun/ambientS/cache/@T"..., 4096) = 66
-70    write(6<{eventfd-count=0, eventfd-id=11, eventfd-semaphore=0}>, "\1\0\0\0\0\0\0\0", 8) = 8
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1/binding.gyp", F_OK) = -1 ENOENT (No such file or directory)
-65    write(2</dev/null<char 1:3>>, "Resolved, downloaded and extract"..., 39) = 39
-65    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/binding.gyp", F_OK) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "node_modules", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = -1 ENOENT (No such file or directory)
-65    mkdirat(AT_FDCWD</tmp/probe-bun/stateS>, "node_modules", 0755) = 0
-68    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/gai.conf", O_RDONLY|O_CLOEXEC <unfinished ...>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "node_modules", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY <unfinished ...>
-68    <... openat resumed>)             = 11</etc/gai.conf>
-65    <... openat resumed>)             = 12</tmp/probe-bun/stateS/node_modules>
-65    openat(12</tmp/probe-bun/stateS/node_modules>, "/tmp/probe-bun/stateS/node_modules", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 13</tmp/probe-bun/stateS/node_modules>
-65    openat(9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 11</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>
-65    openat(13</tmp/probe-bun/stateS/node_modules>, "probe-dep", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
-65    mkdirat(13</tmp/probe-bun/stateS/node_modules>, "probe-dep", 0755) = 0
-65    openat(13</tmp/probe-bun/stateS/node_modules>, "probe-dep", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 15</tmp/probe-bun/stateS/node_modules/probe-dep>
-65    linkat(11</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>, "package.json", 15</tmp/probe-bun/stateS/node_modules/probe-dep>, "package.json", 0) = 0
-65    linkat(11</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>, "index.js", 15</tmp/probe-bun/stateS/node_modules/probe-dep>, "index.js", 0) = 0
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "bun.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, ".lock-9063581eaff2de13.tmp", O_WRONLY|O_CREAT|O_LARGEFILE, 0777) = 11</tmp/probe-bun/stateS/.lock-9063581eaff2de13.tmp>
-65    write(11</tmp/probe-bun/stateS/.lock-9063581eaff2de13.tmp>, "{\n  \"lockfileVersion\": 2,\n  \"con"..., 364) = 364
-65    renameat(AT_FDCWD</tmp/probe-bun/stateS>, ".lock-9063581eaff2de13.tmp", AT_FDCWD</tmp/probe-bun/stateS>, "bun.lock") = 0
-65    write(2</dev/null<char 1:3>>, "Saved lockfile\n", 15) = 15
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_RDONLY|O_LARGEFILE) = 11</tmp/probe-bun/stateS/package.json>
-65    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0664) = 11</tmp/probe-bun/stateS/package.json>
-65    write(11</tmp/probe-bun/stateS/package.json>, "{\n  \"name\": \"probe-proj\",\n  \"ver"..., 110) = 110
-65    write(1</dev/null<char 1:3>>, "\ninstalled probe-dep@../dep-1.0."..., 69) = 69
-71    +++ exited with 0 +++
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/sys/vm/overcommit_memory", O_RDONLY) = 3</proc/sys/vm/overcommit_memory>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node1", R_OK) = -1 ENOENT (No such file or directory)
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node2", R_OK) = -1 ENOENT (No such file or directory)
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node3", R_OK) = -1 ENOENT (No such file or directory)
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node4", R_OK) = -1 ENOENT (No such file or directory)
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node5", R_OK) = -1 ENOENT (No such file or directory)
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/node/node6", R_OK) = -1 ENOENT (No such file or directory)
+64    clone(child_stack=0xffff85678140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[65], tls=0xffff85678f80, child_tidptr=0xffff85678930) = 65
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/64/maps>
+64    getcwd("/tmp/probe-bun/stateS", 4096) = 22
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-bun/stateS/package.json>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "//package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    chdir("/tmp/probe-bun/stateS")    = 0
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/home/.bunfig.toml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    getcwd("/tmp/probe-bun/stateS", 4096) = 22
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/bunfig.toml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    readlinkat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/fd/3", "/tmp/probe-bun/stateS/package.js"..., 4096) = 34
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = 4</tmp/probe-bun/stateS>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/home/.npmrc", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, ".npmrc", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 5</sys/devices/system/cpu/online>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 5</proc/64/cgroup>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/fs/cgroup//cpu.max", O_RDONLY|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 7</usr/share/zoneinfo/Etc/UTC>
+64    clone(child_stack=0xffff849f8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[66], tls=0xffff849f8f80, child_tidptr=0xffff849f8930) = 66
+64    write(1</dev/null<char 1:3>>, "bun add v1.4.0 (34cbb9a40)\n", 27) = 27
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_RDONLY|O_LARGEFILE) = 7</tmp/probe-bun/stateS/package.json>
+64    clone(child_stack=0xffff845e8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID <unfinished ...>
+66    getcwd("/tmp/probe-bun/stateS", 4096) = 22
+64    <... clone resumed>, parent_tid=[67], tls=0xffff845e8f80, child_tidptr=0xffff845e8930) = 67
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "bun.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "bun.lockb", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "package-lock.json", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "yarn.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "pnpm-lock.yaml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/cache", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 9</tmp/probe-bun/ambientS/cache>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/tmp", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 10</tmp/probe-bun/ambientS/tmp>
+67    clone(child_stack=0xffff7fff8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[68], tls=0xffff7fff8f80, child_tidptr=0xffff7fff8930) = 68
+64    openat(10</tmp/probe-bun/ambientS/tmp>, ".de8d338fae308696-0.hm", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 12</tmp/probe-bun/ambientS/tmp/.de8d338fae308696-0.hm>
+64    renameat(10</tmp/probe-bun/ambientS/tmp>, ".de8d338fae308696-0.hm", 9</tmp/probe-bun/ambientS/cache>, ".de8d338fae308696-0.hm") = 0
+64    unlinkat(9</tmp/probe-bun/ambientS/cache>, ".de8d338fae308696-0.hm", 0) = 0
+67    newfstatat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/resolv.conf", {st_mode=S_IFREG|0644, st_size=222, ...}, 0) = 0
+67    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/host.conf", O_RDONLY|O_CLOEXEC) = 11</etc/host.conf>
+64    clone(child_stack=0xffff7fbe8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[69], tls=0xffff7fbe8f80, child_tidptr=0xffff7fbe8930) = 69
+64    write(2</dev/null<char 1:3>>, "Resolving dependencies\n", 23) = 23
+67    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 11</etc/resolv.conf>
+69    clone(child_stack=0xffff7f7d8140, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[70], tls=0xffff7f7d8f80, child_tidptr=0xffff7f7d8930) = 70
+69    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/dep-1.0.0.tgz", O_RDONLY|O_LARGEFILE <unfinished ...>
+67    newfstatat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/nsswitch.conf",  <unfinished ...>
+69    <... openat resumed>)             = 11</tmp/probe-bun/dep-1.0.0.tgz>
+67    <... newfstatat resumed>{st_mode=S_IFREG|0644, st_size=494, ...}, 0) = 0
+67    newfstatat(AT_FDCWD</tmp/probe-bun/stateS>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+67    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 12</etc/nsswitch.conf>
+69    openat(10</tmp/probe-bun/ambientS/tmp>, ".de8d338fae1357d9-1.package", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+69    mkdirat(10</tmp/probe-bun/ambientS/tmp>, ".de8d338fae1357d9-1.package", 0755) = 0
+69    openat(10</tmp/probe-bun/ambientS/tmp>, ".de8d338fae1357d9-1.package", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 11</tmp/probe-bun/ambientS/tmp/.de8d338fae1357d9-1.package>
+67    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/hosts", O_RDONLY|O_CLOEXEC <unfinished ...>
+69    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/auxv", O_RDONLY) = 13</proc/64/auxv>
+67    <... openat resumed>)             = 12</etc/hosts>
+69    openat(11</tmp/probe-bun/ambientS/tmp/.de8d338fae1357d9-1.package>, "package.json", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) = 12</tmp/probe-bun/ambientS/tmp/.de8d338fae1357d9-1.package/package.json>
+69    openat(11</tmp/probe-bun/ambientS/tmp/.de8d338fae1357d9-1.package>, "index.js", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) = 12</tmp/probe-bun/ambientS/tmp/.de8d338fae1357d9-1.package/index.js>
+69    renameat2(10</tmp/probe-bun/ambientS/tmp>, ".de8d338fae1357d9-1.package", 9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1", RENAME_NOREPLACE) = 0
+69    openat(9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 11</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>
+69    readlinkat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/fd/11", "/tmp/probe-bun/ambientS/cache/@T"..., 4096) = 53
+69    openat(9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1/package.json", O_RDONLY|O_LARGEFILE) = 12</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1/package.json>
+69    readlinkat(AT_FDCWD</tmp/probe-bun/stateS>, "/proc/self/fd/12", "/tmp/probe-bun/ambientS/cache/@T"..., 4096) = 66
+69    write(6<{eventfd-count=0, eventfd-id=10, eventfd-semaphore=0}>, "\1\0\0\0\0\0\0\0", 8) = 8
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1/binding.gyp", F_OK) = -1 ENOENT (No such file or directory)
+64    write(2</dev/null<char 1:3>>, "Resolved, downloaded and extract"..., 39) = 39
+67    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/etc/gai.conf", O_RDONLY|O_CLOEXEC <unfinished ...>
+64    faccessat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/binding.gyp", F_OK <unfinished ...>
+67    <... openat resumed>)             = 11</etc/gai.conf>
+64    <... faccessat resumed>)          = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "node_modules", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+64    mkdirat(AT_FDCWD</tmp/probe-bun/stateS>, "node_modules", 0755) = 0
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "node_modules", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 12</tmp/probe-bun/stateS/node_modules>
+64    openat(12</tmp/probe-bun/stateS/node_modules>, "/tmp/probe-bun/stateS/node_modules", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 11</tmp/probe-bun/stateS/node_modules>
+64    openat(9</tmp/probe-bun/ambientS/cache>, "@T@0c447c57efeffc48@@@1", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 14</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>
+64    openat(11</tmp/probe-bun/stateS/node_modules>, "probe-dep", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+64    mkdirat(11</tmp/probe-bun/stateS/node_modules>, "probe-dep", 0755) = 0
+64    openat(11</tmp/probe-bun/stateS/node_modules>, "probe-dep", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 15</tmp/probe-bun/stateS/node_modules/probe-dep>
+64    linkat(14</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>, "package.json", 15</tmp/probe-bun/stateS/node_modules/probe-dep>, "package.json", 0) = 0
+64    linkat(14</tmp/probe-bun/ambientS/cache/@T@0c447c57efeffc48@@@1>, "index.js", 15</tmp/probe-bun/stateS/node_modules/probe-dep>, "index.js", 0) = 0
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "bun.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, ".lock-ba2cdcb6b5c7c8c8.tmp", O_WRONLY|O_CREAT|O_LARGEFILE, 0777) = 11</tmp/probe-bun/stateS/.lock-ba2cdcb6b5c7c8c8.tmp>
+64    write(11</tmp/probe-bun/stateS/.lock-ba2cdcb6b5c7c8c8.tmp>, "{\n  \"lockfileVersion\": 2,\n  \"con"..., 364) = 364
+64    renameat(AT_FDCWD</tmp/probe-bun/stateS>, ".lock-ba2cdcb6b5c7c8c8.tmp", AT_FDCWD</tmp/probe-bun/stateS>, "bun.lock") = 0
+64    write(2</dev/null<char 1:3>>, "Saved lockfile\n", 15) = 15
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_RDONLY|O_LARGEFILE) = 11</tmp/probe-bun/stateS/package.json>
+64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "/tmp/probe-bun/stateS/package.json", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0664) = 11</tmp/probe-bun/stateS/package.json>
+64    write(11</tmp/probe-bun/stateS/package.json>, "{\n  \"name\": \"probe-proj\",\n  \"ver"..., 110) = 110
+64    write(1</dev/null<char 1:3>>, "\ninstalled probe-dep@../dep-1.0."..., 69) = 69
 70    +++ exited with 0 +++
+69    +++ exited with 0 +++
 68    +++ exited with 0 +++
 67    +++ exited with 0 +++
-69    +++ exited with 0 +++
 66    +++ exited with 0 +++
 65    +++ exited with 0 +++
-64    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=65, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
 64    +++ exited with 0 +++
+63    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=64, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
+63    +++ exited with 0 +++

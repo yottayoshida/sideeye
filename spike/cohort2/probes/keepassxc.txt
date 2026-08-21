@@ -1,4 +1,4 @@
-== keepassxc probe — keepassxc-cli 2.7.10 — 2026-08-21T08:19:05Z
+== keepassxc probe — keepassxc-cli 2.7.10 — 2026-08-21T08:33:22Z
 Enter password to encrypt database (optional): 
 Repeat password: 
 == condition 7 — ambient: HOME=<WS>/homeX, a fresh copy of the post-setup snapshot per run. Post-setup snapshot contents:
@@ -17,7 +17,8 @@ FAIL 5-determinism: two runs >=2s apart byte-identical db.kdbx (cmp rc=1; the pr
 == strace pass (fresh copies; raw log kept as keepassxc.strace)
 strace'd run rc=0
 == mutating paths (all mutating syscalls, successful only, deduped):
-ok   6-closure: every mutating path sits under the declared prefixes
+/probes/run-keepassxc.sh: 68: mutating_paths: not found
+FAIL 6-closure: 7 successful mutating call(s) could not be attributed to a path (fail-closed)
 == thread creations (successful CLONE_THREAD):
 1
-== conditions failed: 1
+== conditions failed: 2

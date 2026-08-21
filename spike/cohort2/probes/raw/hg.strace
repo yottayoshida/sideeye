@@ -1,4 +1,4 @@
-37    execve("/usr/local/bin/hg", ["hg", "-R", "/tmp/probe-hg/repoS", "commit", "-m", "probe", "-d", "2026-01-02 00:00:00 +0000"], 0xffffc2069ba8 /* 6 vars */) = 0
+37    execve("/usr/local/bin/hg", ["hg", "-R", "/tmp/probe-hg/repoS", "commit", "-m", "probe", "-d", "2026-01-02 00:00:00 +0000"], 0xfffffa194c98 /* 6 vars */) = 0
 37    faccessat(AT_FDCWD</>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
 37    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
@@ -14,31 +14,31 @@
 37    openat(AT_FDCWD</>, "/usr/pyvenv.cfg", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/bin/pyvenv.cfg", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    readlinkat(AT_FDCWD</>, "/usr/bin/python3", "python3.13", 4096) = 10
-37    readlinkat(AT_FDCWD</>, "/usr/bin/python3.13", 0xffffc97e3e50, 4096) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/bin/python3.13", 0xffffe9d272d0, 4096) = -1 EINVAL (Invalid argument)
 37    openat(AT_FDCWD</>, "/usr/bin/python3._pth", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/bin/python3.13._pth", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/bin/pybuilddir.txt", O_RDONLY) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup.local", 0xffffc97e8e20, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python313.zip", 0xffffc97e8b50, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffc97e8bb0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.py", 0xffffc97e8bb0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.pyc", 0xffffc97e8bb0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup.local", 0xffffe9d2c2a0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python313.zip", 0xffffe9d2bfd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffe9d2c030, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.py", 0xffffe9d2c030, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.pyc", 0xffffe9d2c030, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/os.py", {st_mode=S_IFREG|0644, st_size=41635, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/lib-dynload", 0xffffc97e8bb0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/lib-dynload", 0xffffe9d2c030, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 3</usr/share/zoneinfo/Etc/UTC>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffc97e87b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffe9d2bc30, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3.13>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3.so", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.so", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3.so", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.so", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.py", {st_mode=S_IFREG|0644, st_size=5884, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.py", {st_mode=S_IFREG|0644, st_size=5884, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/encodings/__pycache__/__init__.cpython-313.pyc>
@@ -53,9 +53,9 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/utf_8.py", {st_mode=S_IFREG|0644, st_size=1005, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/utf_8.py", {st_mode=S_IFREG|0644, st_size=1005, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__pycache__/utf_8.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/encodings/__pycache__/utf_8.cpython-313.pyc>
-37    newfstatat(AT_FDCWD</>, "/usr/bin/pyvenv.cfg", 0xffffc97e8530, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/pyvenv.cfg", 0xffffc97e8590, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/home/.local/lib/python3.13/site-packages", 0xffffc97e87a0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/pyvenv.cfg", 0xffffe9d2b9b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/pyvenv.cfg", 0xffffe9d2ba10, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/home/.local/lib/python3.13/site-packages", 0xffffe9d2bc20, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/local/lib/python3.13/dist-packages>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -79,14 +79,14 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3/dist-packages>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7ef0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3.so", 0xffffc97e7ef0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7ef0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.so", 0xffffc97e7ef0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b370, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3.so", 0xffffe9d2b370, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b370, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.so", 0xffffe9d2b370, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.py", {st_mode=S_IFREG|0644, st_size=6755, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.py", {st_mode=S_IFREG|0644, st_size=6755, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/_distutils_hack/__pycache__/__init__.cpython-313.pyc>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/dist-packages", 0xffffc97e8800, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/dist-packages", 0xffffe9d2bc80, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sitecustomize.py", {st_mode=S_IFREG|0644, st_size=155, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sitecustomize.py", {st_mode=S_IFREG|0644, st_size=155, ...}, 0) = 0
@@ -102,11 +102,11 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin/hg", {st_mode=S_IFREG|0755, st_size=1440, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/bin/hg", O_RDONLY|O_CLOEXEC) = 3</usr/local/bin/hg>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin/hg", {st_mode=S_IFREG|0755, st_size=1440, ...}, 0) = 0
-37    readlinkat(AT_FDCWD</>, "/usr/local/bin/hg", 0xffffc97d7540, 4096) = -1 EINVAL (Invalid argument)
-37    readlinkat(AT_FDCWD</>, "/usr", 0xffffc97d80d0, 1023) = -1 EINVAL (Invalid argument)
-37    readlinkat(AT_FDCWD</>, "/usr/local", 0xffffc97d80d0, 1023) = -1 EINVAL (Invalid argument)
-37    readlinkat(AT_FDCWD</>, "/usr/local/bin", 0xffffc97d80d0, 1023) = -1 EINVAL (Invalid argument)
-37    readlinkat(AT_FDCWD</>, "/usr/local/bin/hg", 0xffffc97d80d0, 1023) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/local/bin/hg", 0xffffe9d1a9c0, 4096) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr", 0xffffe9d1b550, 1023) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/local", 0xffffe9d1b550, 1023) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/local/bin", 0xffffe9d1b550, 1023) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/local/bin/hg", 0xffffe9d1b550, 1023) = -1 EINVAL (Invalid argument)
 37    openat(AT_FDCWD</>, "/usr/local/bin/hg", O_RDONLY) = 3</usr/local/bin/hg>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -120,10 +120,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.abi3.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.abi3.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.py", {st_mode=S_IFREG|0644, st_size=3377, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__init__.py", {st_mode=S_IFREG|0644, st_size=3377, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/hgdemandimport/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/hgdemandimport/__pycache__/__init__.cpython-313.pyc>
@@ -141,10 +141,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/contextlib.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/contextlib.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7170, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3.so", 0xffffc97e7170, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7170, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.so", 0xffffc97e7170, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2a5f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3.so", 0xffffe9d2a5f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2a5f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.so", 0xffffe9d2a5f0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.py", {st_mode=S_IFREG|0644, st_size=52500, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.py", {st_mode=S_IFREG|0644, st_size=52500, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/collections/__pycache__/__init__.cpython-313.pyc>
@@ -175,10 +175,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/types.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/types.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7440, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3.so", 0xffffc97e7440, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7440, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.so", 0xffffc97e7440, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2a8c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3.so", 0xffffe9d2a8c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2a8c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.so", 0xffffe9d2a8c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.py", {st_mode=S_IFREG|0644, st_size=4767, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.py", {st_mode=S_IFREG|0644, st_size=4767, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/__pycache__/__init__.cpython-313.pyc>
@@ -197,10 +197,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.abi3.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.so", 0xffffc97e8ca0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.abi3.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.so", 0xffffe9d2c120, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__init__.py", {st_mode=S_IFREG|0644, st_size=412, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -234,10 +234,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pdb.py", {st_mode=S_IFREG|0755, st_size=90924, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.py", {st_mode=S_IFREG|0644, st_size=17876, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -259,10 +259,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/locale.py", {st_mode=S_IFREG|0644, st_size=79033, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8070, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.abi3.so", 0xffffc97e8070, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8070, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.so", 0xffffc97e8070, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b4f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.abi3.so", 0xffffe9d2b4f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b4f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.so", 0xffffe9d2b4f0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/utils/__pycache__/__init__.cpython-313.pyc>
@@ -281,10 +281,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/pycompat.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/pycompat.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.abi3.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.abi3.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.py", {st_mode=S_IFREG|0644, st_size=38, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__init__.py", {st_mode=S_IFREG|0644, st_size=38, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/concurrent/__pycache__/__init__.cpython-313.pyc>
@@ -292,10 +292,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3.13/concurrent>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.abi3.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.abi3.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/concurrent/futures/__init__.py", {st_mode=S_IFREG|0644, st_size=1583, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -337,10 +337,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/copyreg.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/copyreg.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.abi3.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.abi3.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.py", {st_mode=S_IFREG|0644, st_size=8446, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/__init__.py", {st_mode=S_IFREG|0644, st_size=8446, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/http/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/http/__pycache__/__init__.cpython-313.pyc>
@@ -356,10 +356,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/inspect.py", {st_mode=S_IFREG|0644, st_size=128276, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.py", {st_mode=S_IFREG|0644, st_size=14020, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -380,10 +380,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/typing.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/typing.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.abi3.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.abi3.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.py", {st_mode=S_IFREG|0644, st_size=38, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__init__.py", {st_mode=S_IFREG|0644, st_size=38, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/xmlrpc/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/xmlrpc/__pycache__/__init__.cpython-313.pyc>
@@ -450,10 +450,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/resourceutil.py", {st_mode=S_IFREG|0644, st_size=4796, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/__pycache__/resourceutil.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/utils/__pycache__/resourceutil.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.so", 0xffffc97e7610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.so", 0xffffe9d2aa90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.py", {st_mode=S_IFREG|0644, st_size=703, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.py", {st_mode=S_IFREG|0644, st_size=703, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/resources/__pycache__/__init__.cpython-313.pyc>
@@ -466,10 +466,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__pycache__/_common.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/resources/__pycache__/_common.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e6e20, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3.so", 0xffffc97e6e20, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e6e20, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.so", 0xffffc97e6e20, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2a2a0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3.so", 0xffffe9d2a2a0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2a2a0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.so", 0xffffe9d2a2a0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.py", {st_mode=S_IFREG|0644, st_size=296, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tempfile.py", {st_mode=S_IFREG|0644, st_size=40094, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/tempfile.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/tempfile.cpython-313.pyc>
@@ -546,10 +546,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/policy.py", {st_mode=S_IFREG|0644, st_size=6846, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.abi3.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.abi3.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/interfaces/__pycache__/__init__.cpython-313.pyc>
@@ -559,10 +559,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/local/lib/python3.13/dist-packages/mercurial/interfaces>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/interfaces/modules.py", {st_mode=S_IFREG|0644, st_size=2663, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.abi3.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.so", 0xffffc97e7ac0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.abi3.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.so", 0xffffe9d2af40, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pure/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/pure/__pycache__/__init__.cpython-313.pyc>
@@ -578,10 +578,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__modulepolicy__.py", {st_mode=S_IFREG|0644, st_size=61, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/__modulepolicy__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/__modulepolicy__.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7a60, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.abi3.so", 0xffffc97e7a60, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7a60, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.so", 0xffffc97e7a60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2aee0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.abi3.so", 0xffffe9d2aee0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2aee0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.so", 0xffffe9d2aee0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/cext/__pycache__/__init__.cpython-313.pyc>
@@ -592,10 +592,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/parsers.cpython-313-aarch64-linux-gnu.so", {st_mode=S_IFREG|0755, st_size=465696, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cext/parsers.cpython-313-aarch64-linux-gnu.so", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/cext/parsers.cpython-313-aarch64-linux-gnu.so>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.abi3.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.abi3.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/__init__.py", {st_mode=S_IFREG|0644, st_size=7522, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/color.py", {st_mode=S_IFREG|0644, st_size=18517, ...}, 0) = 0
@@ -612,20 +612,20 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/initialization.py", {st_mode=S_IFREG|0644, st_size=2604, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.abi3.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.abi3.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__init__.py", {st_mode=S_IFREG|0644, st_size=1966, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/profiling.py", {st_mode=S_IFREG|0644, st_size=12242, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/registrar.py", {st_mode=S_IFREG|0644, st_size=19731, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.abi3.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.so", 0xffffc97e8240, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.abi3.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.so", 0xffffe9d2b6c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__init__.py", {st_mode=S_IFREG|0644, st_size=706, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/scmutil.py", {st_mode=S_IFREG|0644, st_size=80471, ...}, 0) = 0
@@ -676,10 +676,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/templatekw.py", {st_mode=S_IFREG|0644, st_size=29222, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.abi3.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.abi3.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/admin/__pycache__/__init__.cpython-313.pyc>
@@ -689,10 +689,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/local/lib/python3.13/dist-packages/mercurial/admin>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/admin/chainsaw.py", {st_mode=S_IFREG|0644, st_size=7757, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.abi3.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.so", 0xffffc97e8140, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.abi3.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.so", 0xffffe9d2b5c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.py", {st_mode=S_IFREG|0644, st_size=3795, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__init__.py", {st_mode=S_IFREG|0644, st_size=3795, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/hgweb/__pycache__/__init__.cpython-313.pyc>
@@ -769,10 +769,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/configitems.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/configitems.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7030, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.abi3.so", 0xffffc97e7030, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7030, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.so", 0xffffc97e7030, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2a4b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.abi3.so", 0xffffe9d2a4b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2a4b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.so", 0xffffe9d2a4b0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.py", {st_mode=S_IFREG|0644, st_size=308, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__init__.py", {st_mode=S_IFREG|0644, st_size=308, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/tomllib/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/tomllib/__pycache__/__init__.cpython-313.pyc>
@@ -810,10 +810,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__pycache__/readers.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/resources/__pycache__/readers.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e6000, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3.so", 0xffffc97e6000, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e6000, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.so", 0xffffc97e6000, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d29480, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3.so", 0xffffe9d29480, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d29480, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.so", 0xffffe9d29480, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.py", {st_mode=S_IFREG|0644, st_size=89791, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/_itertools.py", {st_mode=S_IFREG|0644, st_size=1277, ...}, 0) = 0
@@ -884,10 +884,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/node.py", {st_mode=S_IFREG|0644, st_size=1834, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/node.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/node.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.abi3.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.abi3.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/__pycache__/__init__.cpython-313.pyc>
@@ -895,10 +895,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/local/lib/python3.13/dist-packages/mercurial/thirdparty>
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7130, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.abi3.so", 0xffffc97e7130, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7130, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.so", 0xffffc97e7130, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2a5b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.abi3.so", 0xffffe9d2a5b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2a5b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.so", 0xffffe9d2a5b0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/thirdparty/attr/__init__.py", {st_mode=S_IFREG|0644, st_size=1602, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/bookmarks.py", {st_mode=S_IFREG|0644, st_size=35471, ...}, 0) = 0
@@ -956,10 +956,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/dateutil.py", {st_mode=S_IFREG|0644, st_size=12697, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.abi3.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.so", 0xffffc97e75e0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.abi3.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.so", 0xffffe9d2aa60, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.py", {st_mode=S_IFREG|0644, st_size=9332, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__init__.py", {st_mode=S_IFREG|0644, st_size=9332, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__pycache__/__init__.cpython-313.pyc>
@@ -1078,10 +1078,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/http/server.py", {st_mode=S_IFREG|0644, st_size=48992, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e65d0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.abi3.so", 0xffffc97e65d0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e65d0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.so", 0xffffc97e65d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d29a50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.abi3.so", 0xffffe9d29a50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d29a50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.so", 0xffffe9d29a50, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/urllib/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/urllib/__pycache__/__init__.cpython-313.pyc>
@@ -1193,10 +1193,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/cmd_impls/outgoing.py", {st_mode=S_IFREG|0644, st_size=4785, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.abi3.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.abi3.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.py", {st_mode=S_IFREG|0644, st_size=908, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__init__.py", {st_mode=S_IFREG|0644, st_size=908, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/configuration/__pycache__/__init__.cpython-313.pyc>
@@ -1206,10 +1206,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/local/lib/python3.13/dist-packages/mercurial/configuration>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/configuration/command.py", {st_mode=S_IFREG|0644, st_size=5757, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.abi3.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.abi3.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.py", {st_mode=S_IFREG|0644, st_size=11686, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__init__.py", {st_mode=S_IFREG|0644, st_size=11686, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/merge_utils/__pycache__/__init__.cpython-313.pyc>
@@ -1275,10 +1275,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dagparser.py", {st_mode=S_IFREG|0644, st_size=15480, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.abi3.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.abi3.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/filelog.py", {st_mode=S_IFREG|0644, st_size=17804, ...}, 0) = 0
@@ -1313,10 +1313,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/wireprotoframing.py", {st_mode=S_IFREG|0644, st_size=66898, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.abi3.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.abi3.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/stabletailgraph/__pycache__/__init__.cpython-313.pyc>
@@ -1334,10 +1334,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/sidedata.py", {st_mode=S_IFREG|0644, st_size=5773, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.abi3.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.abi3.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/store_utils/__pycache__/__init__.cpython-313.pyc>
@@ -1427,10 +1427,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/pushkey.py", {st_mode=S_IFREG|0644, st_size=1704, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.abi3.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.so", 0xffffc97e7b90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.abi3.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.so", 0xffffe9d2b010, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.py", {st_mode=S_IFREG|0644, st_size=308, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__init__.py", {st_mode=S_IFREG|0644, st_size=308, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/exchanges/__pycache__/__init__.cpython-313.pyc>
@@ -1469,10 +1469,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tarfile.py", {st_mode=S_IFREG|0755, st_size=115495, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7230, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.abi3.so", 0xffffc97e7230, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7230, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.so", 0xffffc97e7230, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2a6b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.abi3.so", 0xffffe9d2a6b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2a6b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.so", 0xffffe9d2a6b0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.py", {st_mode=S_IFREG|0644, st_size=557, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__init__.py", {st_mode=S_IFREG|0644, st_size=557, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/xml/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/xml/__pycache__/__init__.cpython-313.pyc>
@@ -1480,10 +1480,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/xml", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3.13/xml>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.abi3.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.so", 0xffffc97e76e0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.abi3.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.so", 0xffffe9d2ab60, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.py", {st_mode=S_IFREG|0644, st_size=4019, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__init__.py", {st_mode=S_IFREG|0644, st_size=4019, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/xml/dom/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/xml/dom/__pycache__/__init__.cpython-313.pyc>
@@ -1554,9 +1554,9 @@
 37    openat(AT_FDCWD</>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
 37    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libreadline.so.8", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libreadline.so.8.2>
 37    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libtinfo.so.6.5>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/home/.terminfo", 0x27a65470, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/home/.terminfo", 0x15e8f470, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/etc/terminfo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/lib/terminfo", 0x27a654f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/lib/terminfo", 0x15e8f4f0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/share/terminfo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    faccessat(AT_FDCWD</>, "/etc/terminfo/d/dumb", R_OK) = -1 ENOENT (No such file or directory)
 37    faccessat(AT_FDCWD</>, "/usr/share/terminfo/d/dumb", R_OK) = 0
@@ -1570,7 +1570,7 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/paths.py", {st_mode=S_IFREG|0644, st_size=2180, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/main_script/__pycache__/paths.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/main_script/__pycache__/paths.cpython-313.pyc>
 37    getcwd("/", 1024)                 = 2
-37    newfstatat(AT_FDCWD</>, "/.hg", 0xffffc97e9110, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/.hg", 0xffffe9d2c590, 0) = -1 ENOENT (No such file or directory)
 37    getcwd("/", 1024)                 = 2
 37    getcwd("/", 1024)                 = 2
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/requires", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/requires>
@@ -1590,10 +1590,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/color.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/color.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.abi3.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.abi3.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.py", {st_mode=S_IFREG|0644, st_size=3369, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__init__.py", {st_mode=S_IFREG|0644, st_size=3369, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/curses/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/curses/__pycache__/__init__.cpython-313.pyc>
@@ -1628,10 +1628,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/wireprototypes.py", {st_mode=S_IFREG|0644, st_size=13287, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.abi3.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.abi3.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/branching/__pycache__/__init__.cpython-313.pyc>
@@ -1643,10 +1643,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/exchanges/peer.py", {st_mode=S_IFREG|0644, st_size=2011, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.abi3.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.so", 0xffffc97e86f0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.abi3.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.so", 0xffffe9d2bb70, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/upgrade_utils/__pycache__/__init__.cpython-313.pyc>
@@ -1681,15 +1681,15 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/pathutil.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/pathutil.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/REPOS", 0xffffc97e8b30, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/REPOS", 0xffffe9d2bfb0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.HG", 0xffffc97e8b90, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.HG", 0xffffe9d2c010, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/requires", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/requires>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/STORE", 0xffffc97e8b90, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/STORE", 0xffffe9d2c010, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/requires", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/store/requires>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/hgrc", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/hgrc-not-shared", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
@@ -1702,7 +1702,7 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/store.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/store.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/STORE", 0xffffc97e88d0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/STORE", 0xffffe9d2bd50, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/vfs_options.py", {st_mode=S_IFREG|0644, st_size=14211, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/repo/__pycache__/vfs_options.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/repo/__pycache__/vfs_options.cpython-313.pyc>
@@ -1712,10 +1712,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__pycache__/config.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__pycache__/config.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/CACHE", 0xffffc97e8b90, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/CACHE", 0xffffe9d2c010, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/WCACHE", 0xffffc97e8b90, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/WCACHE", 0xffffe9d2c010, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branchmap.py", {st_mode=S_IFREG|0644, st_size=70842, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/branchmap.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/branchmap.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/utils/repoviewutil.py", {st_mode=S_IFREG|0644, st_size=1776, ...}, 0) = 0
@@ -1728,10 +1728,10 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/metadata.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/metadata.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e8430, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.abi3.so", 0xffffc97e8430, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e8430, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.so", 0xffffc97e8430, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b8b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.abi3.so", 0xffffe9d2b8b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b8b0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.so", 0xffffe9d2b8b0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/multiprocessing/__init__.py", {st_mode=S_IFREG|0644, st_size=916, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/flagutil.py", {st_mode=S_IFREG|0644, st_size=8035, ...}, 0) = 0
@@ -1750,25 +1750,25 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/hook.py", {st_mode=S_IFREG|0644, st_size=12231, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/hook.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/hook.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/proc/self/ns/pid", {st_mode=S_IFREG|0444, st_size=0, ...}, 0) = 0
-37    symlinkat("659ba96ea69c/f00002cd:37", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wlock") = 0
-37    symlinkat("659ba96ea69c/f00002cd:37", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/lock") = 0
+37    symlinkat("49cb8485d833/f00002cd:37", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wlock") = 0
+37    symlinkat("49cb8485d833/f00002cd:37", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/lock") = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/obsolete.py", {st_mode=S_IFREG|0644, st_size=38483, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/obsolete.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/obsolete.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/obsutil.py", {st_mode=S_IFREG|0644, st_size=36787, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/obsutil.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/obsutil.cpython-313.pyc>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/shelvedstate", 0xffffc97e90b0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/graftstate", 0xffffc97e9110, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/updatestate", 0xffffc97e9110, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/shelvedstate", 0xffffe9d2c530, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/graftstate", 0xffffe9d2c590, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/updatestate", 0xffffe9d2c590, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/context.py", {st_mode=S_IFREG|0644, st_size=111046, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/context.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/context.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/local/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/filecmp.py", {st_mode=S_IFREG|0644, st_size=10652, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffc97e7fd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.abi3.so", 0xffffc97e7fd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.abi3-aarch64-linux-gnu.so", 0xffffc97e7fd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.so", 0xffffc97e7fd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffe9d2b450, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.abi3.so", 0xffffe9d2b450, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.abi3-aarch64-linux-gnu.so", 0xffffe9d2b450, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.so", 0xffffe9d2b450, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/testing/__init__.py", {st_mode=S_IFREG|0644, st_size=1409, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__pycache__/__init__.cpython-313.pyc>
@@ -1833,8 +1833,8 @@
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.i", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/store/00changelog.i>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/randomaccessfile.py", {st_mode=S_IFREG|0644, st_size=7092, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__pycache__/randomaccessfile.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/__pycache__/randomaccessfile.cpython-313.pyc>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/obsstore", 0xffffc97e85b0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/obsstore", 0xffffc97e8610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/obsstore", 0xffffe9d2ba30, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/obsstore", 0xffffe9d2ba90, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/obsstore", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/phaseroots", {st_mode=S_IFREG|0644, st_size=43, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.i", {st_mode=S_IFREG|0644, st_size=64, ...}, 0) = 0
@@ -1864,33 +1864,33 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/calendar.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/calendar.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/REPOS", 0xffffc97e9110, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/REPOS", 0xffffe9d2c590, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/match.py", {st_mode=S_IFREG|0644, st_size=60190, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/match.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/match.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/REPOS", 0xffffc97e8b20, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/REPOS", 0xffffe9d2bfa0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/dirstate>
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/timestamp.py", {st_mode=S_IFREG|0644, st_size=5811, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__pycache__/timestamp.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/dirstateutils/__pycache__/timestamp.cpython-313.pyc>
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/tmpkkl8d_yz", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/tmpkkl8d_yz>
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/tmpkkl8d_yz", 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/tmpzmb814wt", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/tmpzmb814wt>
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/tmpzmb814wt", 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/checkisexec", {st_mode=S_IFREG|0755, st_size=0, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/checknoexec", 0xffffc97e8db0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/checknoexec", 0xffffe9d2c230, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/checknoexec", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/wcache/checknoexec>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/checknoexec", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/checklink", {st_mode=S_IFLNK|0777, st_size=16, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.HG", 0xffffc97e8e10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.HG", 0xffffe9d2c290, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/alpha", {st_mode=S_IFREG|0644, st_size=28, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/beta", {st_mode=S_IFREG|0644, st_size=18, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00manifest.i", {st_mode=S_IFREG|0644, st_size=148, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffc97e7fd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffe9d2b450, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/manifest.py", {st_mode=S_IFREG|0644, st_size=88861, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/manifest.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/manifest.cpython-313.pyc>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00manifest.i", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/store/00manifest.i>
@@ -1899,7 +1899,7 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/filelog.py", {st_mode=S_IFREG|0644, st_size=17804, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/filelog.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/filelog.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.hg", 0xffffc97e7ca0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.hg", 0xffffe9d2b120, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/alpha.i", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/store/data/alpha.i>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/alpha", {st_mode=S_IFREG|0644, st_size=28, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/alpha", {st_mode=S_IFREG|0644, st_size=28, ...}, AT_SYMLINK_NOFOLLOW) = 0
@@ -1911,18 +1911,18 @@
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/beta", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/beta>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/beta", {st_mode=S_IFREG|0644, st_size=18, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", 0777) = -1 EEXIST (File exists)
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-qfsv36r_~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/.dirstate-qfsv36r_~>
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-0sgb0qrl~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/.dirstate-0sgb0qrl~>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-qfsv36r_~", 0644) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-qfsv36r_~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/.dirstate-qfsv36r_~>
-37    write(3</tmp/probe-hg/repoS/.hg/.dirstate-qfsv36r_~>, "\275:\334\272\263x*\217\216\223\234\177\217\22=\201\20\202\275\332\0\0\0\0\0\0\0\0\0\0\0\0"..., 83) = 83
+37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-0sgb0qrl~", 0644) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-0sgb0qrl~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/.dirstate-0sgb0qrl~>
+37    write(3</tmp/probe-hg/repoS/.hg/.dirstate-0sgb0qrl~>, "\275:\334\272\263x*\217\216\223\234\177\217\22=\201\20\202\275\332\0\0\0\0\0\0\0\0\0\0\0\0"..., 83) = 83
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
-37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-qfsv36r_~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate") = 0
+37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-0sgb0qrl~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate") = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
-37    utimensat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", [{tv_sec=1787300340, tv_nsec=0} /* 2026-08-21T08:19:00+0000 */, {tv_sec=1787300340, tv_nsec=0} /* 2026-08-21T08:19:00+0000 */], 0) = 0
+37    utimensat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", [{tv_sec=1787301197, tv_nsec=0} /* 2026-08-21T08:33:17+0000 */, {tv_sec=1787301197, tv_nsec=0} /* 2026-08-21T08:33:17+0000 */], 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/mergestate.py", {st_mode=S_IFREG|0644, st_size=29590, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/mergestate.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/mergestate.cpython-313.pyc>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge", 0xffffc97e8b10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge", 0xffffe9d2bf90, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge/state", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge/state2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/mergeutil.py", {st_mode=S_IFREG|0644, st_size=498, ...}, 0) = 0
@@ -1930,7 +1930,7 @@
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/last-message.txt", 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/last-message.txt", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/last-message.txt>
 37    write(3</tmp/probe-hg/repoS/.hg/last-message.txt>, "probe", 5) = 5
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/journal", 0xffffc97e9110, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/journal", 0xffffe9d2c590, 0) = -1 ENOENT (No such file or directory)
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.desc", 0) = -1 ENOENT (No such file or directory)
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", 0777) = -1 EEXIST (File exists)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.desc", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/journal.desc>
@@ -1948,18 +1948,18 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/commit.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 5</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/commit.cpython-313.pyc>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge/state", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge/state2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data-s/alpha.i", 0xffffc97e8b90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data-s/alpha.i", 0xffffe9d2c010, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/alpha.i", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/store/data/alpha.i>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/alpha", {st_mode=S_IFREG|0644, st_size=28, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/alpha", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/alpha>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/alpha.i", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/store/data/alpha.i>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/alpha.i", {st_mode=S_IFREG|0644, st_size=84, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b1~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 5</tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b1~>
-37    linkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b1~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b2~", 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b2~", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b2~>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b2~", {st_mode=S_IFREG|0600, st_size=0, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b1~", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ugul4r_b2~", 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y1~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 5</tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y1~>
+37    linkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y1~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y2~", 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y2~", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y2~>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y2~", {st_mode=S_IFREG|0600, st_size=0, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y1~", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/.alpha.i-ww3gwp1y2~", 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/data/alpha.i", O_RDWR|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/store/data/alpha.i>
 37    write(3</tmp/probe-hg/repoS/.hg/store/journal>, "data/alpha.i\084\n", 16) = 16
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/revlogutils/nodemap.py", {st_mode=S_IFREG|0644, st_size=22085, ...}, 0) = 0
@@ -1975,7 +1975,7 @@
 37    write(3</tmp/probe-hg/repoS/.hg/store/journal>, "00manifest.i\000148\n", 17) = 17
 37    write(5</tmp/probe-hg/repoS/.hg/store/00manifest.i>, "\0\0\0\0\0T\0\0\0\0\0;\0\0\0]\0\0\0\0\0\0\0\1\0\0\0\0\377\377\377\377"..., 123) = 123
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00manifest.i", {st_mode=S_IFREG|0644, st_size=271, ...}, 0) = 0
-37    utimensat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00manifest.i", [{tv_sec=1787300341, tv_nsec=0} /* 2026-08-21T08:19:01+0000 */, {tv_sec=1787300341, tv_nsec=0} /* 2026-08-21T08:19:01+0000 */], 0) = 0
+37    utimensat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00manifest.i", [{tv_sec=1787301198, tv_nsec=0} /* 2026-08-21T08:33:18+0000 */, {tv_sec=1787301198, tv_nsec=0} /* 2026-08-21T08:33:18+0000 */], 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.d", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/store/00changelog.d>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.d", {st_mode=S_IFREG|0644, st_size=104, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.d", O_RDWR|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/store/00changelog.d>
@@ -1989,28 +1989,28 @@
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/branching/__pycache__/rev_cache.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 5</usr/local/lib/python3.13/dist-packages/mercurial/branching/__pycache__/rev_cache.cpython-313.pyc>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-names-v2", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/cache/rbc-names-v2>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2>
-37    statfs("/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599321, f_bavail=222453365, f_files=60710912, f_ffree=60469940, f_fsid={val=[0xfd5ed676, 0xa76bfdfc]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
-37    clone(child_stack=0xffffb63b4a40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[38], tls=0xffffb63b5880, child_tidptr=0xffffb63b5230) = 38
+37    statfs("/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599321, f_bavail=222453365, f_files=60710912, f_ffree=60469940, f_fsid={val=[0xc6fc60f7, 0xac43cade]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+37    clone(child_stack=0xffff85544a40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[38], tls=0xffff85545880, child_tidptr=0xffff85545230) = 38
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/bookmarks.py", {st_mode=S_IFREG|0644, st_size=35471, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/bookmarks.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 5</usr/local/lib/python3.13/dist-packages/mercurial/__pycache__/bookmarks.cpython-313.pyc>
 38    +++ exited with 0 +++
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks.current", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/bookmarks", 0xffffc97e8ad0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks.current", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/bookmarks", 0xffffe9d2bf50, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.i", {st_mode=S_IFREG|0644, st_size=64, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks.current", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge", 0xffffc97e90b0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/merge", 0xffffe9d2c530, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/branch", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", 0777) = -1 EEXIST (File exists)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", 0xffffc97e8ea0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
-37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599321, f_bavail=222453365, f_files=60710912, f_ffree=60469940, f_fsid={val=[0xfd5ed676, 0xa76bfdfc]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", 0xffffe9d2c320, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599321, f_bavail=222453365, f_files=60710912, f_ffree=60469940, f_fsid={val=[0xc6fc60f7, 0xac43cade]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/branch", {st_mode=S_IFREG|0644, st_size=8, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/branch", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", 0xffffc97e8e40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", 0xffffe9d2c2c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/branch", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/branch", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/branch>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7</tmp/probe-hg/repoS/.hg/journal.backup.branch.bck>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/branch", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
@@ -2018,13 +2018,13 @@
 37    write(4</tmp/probe-hg/repoS/.hg/store/journal.backupfiles>, "2\nplain\0branch\0journal.backup.br"..., 43) = 43
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", 0777) = -1 EEXIST (File exists)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", 0xffffc97e8ea0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
-37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599318, f_bavail=222453362, f_files=60710912, f_ffree=60469939, f_fsid={val=[0xfd5ed676, 0xa76bfdfc]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", 0xffffe9d2c320, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599318, f_bavail=222453362, f_files=60710912, f_ffree=60469939, f_fsid={val=[0xc6fc60f7, 0xac43cade]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/dirstate>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7</tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
@@ -2036,24 +2036,24 @@
 37    write(5</tmp/probe-hg/repoS/.hg/store/00changelog.i>, "\0\0\0\0\0h\0\0\0\0\0a\0\0\0`\0\0\0\1\0\0\0\1\0\0\0\0\377\377\377\377"..., 64) = 64
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", {st_mode=S_IFREG|0644, st_size=8, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp1~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 5</tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp1~>
-37    linkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp1~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp2~", 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp2~", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp2~>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp2~", {st_mode=S_IFREG|0600, st_size=0, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp1~", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-xs9q2iqp2~", 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc1~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 5</tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc1~>
+37    linkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc1~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc2~", 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc2~", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc2~>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc2~", {st_mode=S_IFREG|0600, st_size=0, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc1~", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.rbc-revs-v2-8mrhqpnc2~", 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", O_RDWR|O_CREAT|O_APPEND|O_CLOEXEC, 0666) = 5</tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", {st_mode=S_IFREG|0644, st_size=8, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2", O_RDWR|O_CLOEXEC) = 5</tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2>
 37    write(5</tmp/probe-hg/repoS/.hg/cache/rbc-revs-v2>, "\234\22z\236\0\0\0\0", 8) = 8
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", 0777) = -1 EEXIST (File exists)
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-ultzh09r~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 5</tmp/probe-hg/repoS/.hg/.dirstate-ultzh09r~>
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-1m0y0vno~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 5</tmp/probe-hg/repoS/.hg/.dirstate-1m0y0vno~>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate", {st_mode=S_IFREG|0644, st_size=83, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-ultzh09r~", 0644) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-ultzh09r~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-hg/repoS/.hg/.dirstate-ultzh09r~>
-37    write(5</tmp/probe-hg/repoS/.hg/.dirstate-ultzh09r~>, "\234\22z\236l:\225e\236\307\272>\177\246\357,\300\331\221O\0\0\0\0\0\0\0\0\0\0\0\0"..., 83) = 83
-37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-ultzh09r~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate") = 0
+37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-1m0y0vno~", 0644) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-1m0y0vno~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-hg/repoS/.hg/.dirstate-1m0y0vno~>
+37    write(5</tmp/probe-hg/repoS/.hg/.dirstate-1m0y0vno~>, "\234\22z\236l:\225e\236\307\272>\177\246\357,\300\331\221O\0\0\0\0\0\0\0\0\0\0\0\0"..., 83) = 83
+37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/.dirstate-1m0y0vno~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/dirstate") = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</tmp/probe-hg/repoS/.hg>
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/undo.backupfiles", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-hg/repoS/.hg/store/undo.backupfiles>
@@ -2071,24 +2071,24 @@
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/undo.backupfiles", 0) = -1 ENOENT (No such file or directory)
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store", 0777) = -1 EEXIST (File exists)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/undo.backupfiles", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/store/undo.backupfiles>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", 0xffffc97e8ea0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
-37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599321, f_bavail=222453365, f_files=60710912, f_ffree=60469942, f_fsid={val=[0xfd5ed676, 0xa76bfdfc]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", 0xffffe9d2c320, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599321, f_bavail=222453365, f_files=60710912, f_ffree=60469942, f_fsid={val=[0xc6fc60f7, 0xac43cade]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", {st_mode=S_IFREG|0644, st_size=8, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", O_RDONLY|O_CLOEXEC) = 4</tmp/probe-hg/repoS/.hg/journal.backup.branch.bck>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-hg/repoS/.hg/undo.backup.branch.bck>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
 37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.branch.bck", 0644) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", 0xffffc97e8ea0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
-37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599319, f_bavail=222453363, f_files=60710912, f_ffree=60469941, f_fsid={val=[0xfd5ed676, 0xa76bfdfc]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", 0xffffe9d2c320, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+37    statfs("/tmp/probe-hg/repoS/.hg", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599319, f_bavail=222453363, f_files=60710912, f_ffree=60469941, f_fsid={val=[0xc6fc60f7, 0xac43cade]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", {st_mode=S_IFREG|0644, st_size=83, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", O_RDONLY|O_CLOEXEC) = 4</tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck>
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-hg/repoS/.hg/undo.backup.dirstate.bck>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
@@ -2100,42 +2100,42 @@
 37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.desc", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/undo.desc") = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/journal.backupfiles", {st_mode=S_IFREG|0644, st_size=88, ...}, 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/journal.backupfiles", 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/journal", 0xffffc97e8ea0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/journal", 0xffffe9d2c320, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", {st_mode=S_IFREG|0644, st_size=8, ...}, 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.branch.bck", 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", {st_mode=S_IFREG|0644, st_size=83, ...}, 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/journal.backup.dirstate.bck", 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache", 0777) = -1 EEXIST (File exists)
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-dvla0pwq~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/cache/.branch2-served-dvla0pwq~>
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-zamerds4~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/cache/.branch2-served-zamerds4~>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/branch2-served", {st_mode=S_IFREG|0644, st_size=94, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-dvla0pwq~", 0644) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-dvla0pwq~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/cache/.branch2-served-dvla0pwq~>
-37    write(3</tmp/probe-hg/repoS/.hg/cache/.branch2-served-dvla0pwq~>, "9c127a9e6c3a95659ec7ba3e7fa6ef2c"..., 94) = 94
-37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-dvla0pwq~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/branch2-served") = 0
+37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-zamerds4~", 0644) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-zamerds4~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/cache/.branch2-served-zamerds4~>
+37    write(3</tmp/probe-hg/repoS/.hg/cache/.branch2-served-zamerds4~>, "9c127a9e6c3a95659ec7ba3e7fa6ef2c"..., 94) = 94
+37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/.branch2-served-zamerds4~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/branch2-served") = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/branch2-served.hidden", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/branch2-served.hidden", 0) = -1 ENOENT (No such file or directory)
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/cache/branch2-visible", 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.i", {st_mode=S_IFREG|0644, st_size=128, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/obsstore", 0xffffc97e8be0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/obsstore", 0xffffe9d2c060, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/phaseroots", {st_mode=S_IFREG|0644, st_size=43, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.i", {st_mode=S_IFREG|0644, st_size=128, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffc97e8be0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffc97e8be0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffe9d2c060, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/narrowspec", 0xffffe9d2c060, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00manifest.i", {st_mode=S_IFREG|0644, st_size=271, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks", 0xffffc97e8be0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks.current", 0xffffc97e8be0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/bookmarks", 0xffffc97e8be0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks", 0xffffe9d2c060, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/bookmarks.current", 0xffffe9d2c060, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/bookmarks", 0xffffe9d2c060, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/00changelog.i", {st_mode=S_IFREG|0644, st_size=128, ...}, 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/store/lock", 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wlock", 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache", 0777) = -1 EEXIST (File exists)
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-s4vqymd_~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-s4vqymd_~>
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-081mjihq~", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-081mjihq~>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/manifestfulltextcache", {st_mode=S_IFREG|0644, st_size=117, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-s4vqymd_~", 0644) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-s4vqymd_~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-s4vqymd_~>
-37    write(3</tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-s4vqymd_~>, "\367I\22n\243&\2729\30<=\360\230\3A\341D\34s\354\0\0\0]alpha\0ca"..., 234) = 234
+37    fchmodat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-081mjihq~", 0644) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-081mjihq~", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-081mjihq~>
+37    write(3</tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-081mjihq~>, "\367I\22n\243&\2729\30<=\360\230\3A\341D\34s\354\0\0\0]alpha\0ca"..., 234) = 234
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/manifestfulltextcache", {st_mode=S_IFREG|0644, st_size=117, ...}, 0) = 0
-37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-s4vqymd_~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/manifestfulltextcache") = 0
+37    renameat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/.manifestfulltextcache-081mjihq~", AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/manifestfulltextcache") = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/manifestfulltextcache", {st_mode=S_IFREG|0644, st_size=234, ...}, 0) = 0
-37    utimensat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/manifestfulltextcache", [{tv_sec=1787300340, tv_nsec=0} /* 2026-08-21T08:19:00+0000 */, {tv_sec=1787300340, tv_nsec=0} /* 2026-08-21T08:19:00+0000 */], 0) = 0
+37    utimensat(AT_FDCWD</>, "/tmp/probe-hg/repoS/.hg/wcache/manifestfulltextcache", [{tv_sec=1787301197, tv_nsec=0} /* 2026-08-21T08:33:17+0000 */, {tv_sec=1787301197, tv_nsec=0} /* 2026-08-21T08:33:17+0000 */], 0) = 0
 37    +++ exited with 0 +++

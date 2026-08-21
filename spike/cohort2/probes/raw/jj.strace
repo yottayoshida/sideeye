@@ -1,21 +1,21 @@
-144   execve("/usr/local/bin/jj", ["jj", "commit", "-m", "probe"], 0xfffffda4d488 /* 14 vars */) = 0
+144   execve("/usr/local/bin/jj", ["jj", "commit", "-m", "probe"], 0xfffffbdab648 /* 14 vars */) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/proc/sys/vm/overcommit_memory", O_RDONLY|O_LARGEFILE) = 3</proc/sys/vm/overcommit_memory>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY|O_LARGEFILE) = 3</sys/kernel/mm/transparent_hugepage/enabled>
-144   clone(child_stack=0xffffa8cfa710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[145], tls=0xffffa8cfa808, child_tidptr=0x172e340) = 145
+144   clone(child_stack=0xffff97a0f710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[145], tls=0xffff97a0f808, child_tidptr=0x172e340) = 145
 145   faccessat(AT_FDCWD</tmp/probe-jj/repoS>, "/sys/devices/system/node/node1", R_OK) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/passwd", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</etc/passwd>
 144   getcwd("/tmp/probe-jj/repoS", 512) = 20
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1bc1e18, 4081) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1bc1e18, 4090) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", 0xffffd1bc1e18, 4096) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1bc1908, 4082) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1bc1908, 4091) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home", 0xffffd1bc1908, 4096) = -1 EINVAL (Invalid argument)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/jj/config.toml", 0xffffd1bc2840, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/jj/conf.d", 0xffffd1bc2840, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.jjconfig.toml", 0xffffd1bc2840, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.config/jj/config.toml", 0xffffd1bc2840, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.config/jj/conf.d", 0xffffd1bc2840, 0) = -1 ENOENT (No such file or directory)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1ce2858, 4081) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1ce2858, 4090) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", 0xffffd1ce2858, 4096) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1ce2348, 4082) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1ce2348, 4091) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home", 0xffffd1ce2348, 4096) = -1 EINVAL (Invalid argument)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/jj/config.toml", 0xffffd1ce3280, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/jj/conf.d", 0xffffd1ce3280, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.jjconfig.toml", 0xffffd1ce3280, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.config/jj/config.toml", 0xffffd1ce3280, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.config/jj/conf.d", 0xffffd1ce3280, 0) = -1 ENOENT (No such file or directory)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -25,13 +25,13 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/workspace-config.toml", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.jj/repo/store/type>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/git_target", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.jj/repo/store/git_target>
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1b971e8, 4057) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1b971e8, 4066) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", 0xffffd1b971e8, 4072) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj", 0xffffd1b971e8, 4076) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo", 0xffffd1b971e8, 4081) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store", 0xffffd1b971e8, 4087) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/..", 0xffffd1b971e8, 4090) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1cb7c28, 4057) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1cb7c28, 4066) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", 0xffffd1cb7c28, 4072) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj", 0xffffd1cb7c28, 4076) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo", 0xffffd1cb7c28, 4081) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store", 0xffffd1cb7c28, 4087) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/..", 0xffffd1cb7c28, 4090) = -1 EINVAL (Invalid argument)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 144   getcwd("/tmp/probe-jj/repoS", 512) = 20
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD", {st_mode=S_IFREG|0644, st_size=41, ...}, 0) = 0
@@ -44,7 +44,7 @@
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/commondir", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/config", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.git/config>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1b95630, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cb6070, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.git/HEAD>
 144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/proc/self/exe", "/usr/local/bin/jj", 256) = 17
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/gitconfig", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
@@ -65,9 +65,9 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/submodule_store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.jj/repo/submodule_store/type>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.jj/working_copy/type>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/checkout", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.jj/working_copy/checkout>
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1b99218, 4081) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1b99218, 4090) = -1 EINVAL (Invalid argument)
-144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", 0xffffd1b99218, 4096) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", 0xffffd1cb9c58, 4081) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", 0xffffd1cb9c58, 4090) = -1 EINVAL (Invalid argument)
+144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", 0xffffd1cb9c58, 4096) = -1 EINVAL (Invalid argument)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/localtime", {st_mode=S_IFLNK|0777, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/localtime", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</usr/share/zoneinfo/Etc/UTC>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/git_import_export.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</tmp/probe-jj/repoS/.jj/repo/git_import_export.lock>
@@ -77,7 +77,7 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links/3bebf3e7acd792c4e7eb64dbf55263229e48ae3251038526d416b7711bd2aa1aa722e66cc0146e36c5728cf0a67f16a58c5e501803acbad9443bb26919e03401", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.jj/repo/index/op_links/3bebf3e7acd792c4e7eb64dbf55263229e48ae3251038526d416b7711bd2aa1aa722e66cc0146e36c5728cf0a67f16a58c5e501803acbad9443bb26919e03401>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/654347258892c9d6ccca33f636d500156642477ba1da936781a0924967e9b8e3fd6a310396c0c41c40f3fa783984901a9372fca867f714eee346db208ed2a16f", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.jj/repo/index/segments/654347258892c9d6ccca33f636d500156642477ba1da936781a0924967e9b8e3fd6a310396c0c41c40f3fa783984901a9372fca867f714eee346db208ed2a16f>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</tmp/probe-jj/repoS/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1b90010, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cb0a50, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.git/HEAD>
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
@@ -88,7 +88,7 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</tmp/probe-jj/repoS/.git/objects/pack>
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", {st_mode=S_IFREG|0444, st_size=174, ...}, 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.config/git/ignore", 0xffffd1b8aac0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/home/.config/git/ignore", 0xffffd1cab500, 0) = -1 ENOENT (No such file or directory)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/info/exclude", {st_mode=S_IFREG|0644, st_size=269, ...}, 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/info/exclude", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.git/info/exclude>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/working_copy.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</tmp/probe-jj/repoS/.jj/working_copy/working_copy.lock>
@@ -98,33 +98,33 @@
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/tree_state", {st_mode=S_IFREG|0600, st_size=48, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/57/79465a5b10f58944ef75ac1514081c2b733961", {st_mode=S_IFREG|0444, st_size=212, ...}, 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/57/79465a5b10f58944ef75ac1514081c2b733961", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</tmp/probe-jj/repoS/.git/objects/57/79465a5b10f58944ef75ac1514081c2b733961>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/shallow", 0xffffd1b8a5c0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/shallow", 0xffffd1cab000, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</tmp/probe-jj/repoS/.jj/repo/store/extra/heads>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 6</tmp/probe-jj/repoS/.jj/repo/store/extra/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</proc/144/cgroup>
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/sys/fs/cgroup/cgroup.controllers", {st_mode=S_IFREG|0444, st_size=0, ...}, 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
-144   clone(child_stack=0xffffa8af3710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[146], tls=0xffffa8af3808, child_tidptr=0x172e340) = 146
-144   clone(child_stack=0xffffa88f0710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[147], tls=0xffffa88f0808, child_tidptr=0x172e340) = 147
-144   clone(child_stack=0xffffa86e9710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[148], tls=0xffffa86e9808, child_tidptr=0x172e340) = 148
-144   clone(child_stack=0xffffa84e2710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[149], tls=0xffffa84e2808, child_tidptr=0x172e340) = 149
-144   clone(child_stack=0xffffa82db710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[150], tls=0xffffa82db808, child_tidptr=0x172e340) = 150
-144   clone(child_stack=0xffffa80d4710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[151], tls=0xffffa80d4808, child_tidptr=0x172e340) = 151
-144   clone(child_stack=0xffffa7ecd710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[152], tls=0xffffa7ecd808, child_tidptr=0x172e340) = 152
-144   clone(child_stack=0xffffa7cc6710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[153], tls=0xffffa7cc6808, child_tidptr=0x172e340) = 153
-144   clone(child_stack=0xffffa7abf710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[154], tls=0xffffa7abf808, child_tidptr=0x172e340) = 154
-144   clone(child_stack=0xffffa78b8710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[155], tls=0xffffa78b8808, child_tidptr=0x172e340) = 155
-148   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.gitignore", 0xffffa86e8540, 0) = -1 ENOENT (No such file or directory)
-148   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</tmp/probe-jj/repoS>
-148   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/alpha", {st_mode=S_IFREG|0644, st_size=28, ...}, AT_SYMLINK_NOFOLLOW) = 0
+144   clone(child_stack=0xffff97808710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[146], tls=0xffff97808808, child_tidptr=0x172e340) = 146
+144   clone(child_stack=0xffff97605710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[147], tls=0xffff97605808, child_tidptr=0x172e340) = 147
+144   clone(child_stack=0xffff973fe710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[148], tls=0xffff973fe808, child_tidptr=0x172e340) = 148
+144   clone(child_stack=0xffff971f7710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[149], tls=0xffff971f7808, child_tidptr=0x172e340) = 149
+144   clone(child_stack=0xffff96ff0710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[150], tls=0xffff96ff0808, child_tidptr=0x172e340) = 150
+144   clone(child_stack=0xffff96de9710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[151], tls=0xffff96de9808, child_tidptr=0x172e340) = 151
+144   clone(child_stack=0xffff96be2710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[152], tls=0xffff96be2808, child_tidptr=0x172e340) = 152
+144   clone(child_stack=0xffff969db710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[153], tls=0xffff969db808, child_tidptr=0x172e340) = 153
+144   clone(child_stack=0xffff967d4710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[154], tls=0xffff967d4808, child_tidptr=0x172e340) = 154
+144   clone(child_stack=0xffff965cd710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[155], tls=0xffff965cd808, child_tidptr=0x172e340) = 155
+152   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.gitignore", 0xffff96be1540, 0) = -1 ENOENT (No such file or directory)
+152   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</tmp/probe-jj/repoS>
+152   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/alpha", {st_mode=S_IFREG|0644, st_size=28, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621", {st_mode=S_IFREG|0444, st_size=51, ...}, 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</tmp/probe-jj/repoS/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/working_copy.lock", 0) = 0
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1b8f210, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cafc50, 0) = -1 ENOENT (No such file or directory)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/heads/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/heads/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/heads/", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</tmp/probe-jj/repoS/.git/refs/heads>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/remotes/", 0xffffd1b8e3b0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/remotes/", 0xffffd1caedf0, 0) = -1 ENOENT (No such file or directory)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/tags/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/tags/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/tags/", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</tmp/probe-jj/repoS/.git/refs/tags>
@@ -133,7 +133,7 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</tmp/probe-jj/repoS/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</tmp/probe-jj/repoS/.jj/repo/store/extra/lock>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/heads>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4", 0xffffd1ba5cb0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4", 0xffffd1cc66f0, 0) = -1 ENOENT (No such file or directory)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
@@ -141,11 +141,11 @@
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</tmp/probe-jj/repoS/.git/objects/pack>
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpsK5xoB", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</tmp/probe-jj/repoS/.git/objects/.tmpsK5xoB>
-144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpsK5xoB>, "x\1", 2) = 2
-144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpsK5xoB>, "J\316\317\315\315\4\254D\301\310\324\224\241\244(5U\301(\321,\325\302\334\"\315\310\33449\3318"..., 213) = 213
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpQivyrq", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</tmp/probe-jj/repoS/.git/objects/.tmpQivyrq>
+144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpQivyrq>, "x\1", 2) = 2
+144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpQivyrq>, "J\316\317\315\315\4\254D\301\310\324\224\241\244(5U\301(\321,\325\302\334\"\315\310\33449\3318"..., 213) = 213
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/6b", 0777) = 0
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpsK5xoB", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4") = 0
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpQivyrq", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4") = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/usr/share/zoneinfo", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/usr/share/zoneinfo/Etc", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Etc>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/usr/share/zoneinfo/Antarctica", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Antarctica>
@@ -164,8 +164,8 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/usr/share/zoneinfo/Asia", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Asia>
 144   readlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/etc/localtime", "/usr/share/zoneinfo/Etc/UTC", 256) = 27
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/usr/share/zoneinfo/Etc/UTC", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</usr/share/zoneinfo/Etc/UTC>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1ba53b0, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs.lock", 0xffffd1ba53b0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cc5df0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs.lock", 0xffffd1cc5df0, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep", 0777) = -1 EEXIST (File exists)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -176,15 +176,15 @@
 144   write(4</tmp/probe-jj/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock>, "6bfad012fa89194903e5c1212c7c1e6d"..., 40) = 40
 144   write(4</tmp/probe-jj/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock>, "\n", 1) = 1
 144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4") = 0
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpE9gJtJ", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpE9gJtJ>
-144   write(4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpE9gJtJ>, "\200\0\0\0002774b145b2380aff1c9c33ae22b8"..., 202) = 202
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpE9gJtJ", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2") = 0
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpyfE5y2", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpyfE5y2>
+144   write(4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpyfE5y2>, "\200\0\0\0002774b145b2380aff1c9c33ae22b8"..., 202) = 202
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpyfE5y2", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2") = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2>
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe", 0) = 0
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/lock", 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</tmp/probe-jj/repoS/.jj/repo/store/extra/lock>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/heads>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428", 0xffffd1ba5cb0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428", 0xffffd1cc66f0, 0) = -1 ENOENT (No such file or directory)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
@@ -192,13 +192,13 @@
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</tmp/probe-jj/repoS/.git/objects/pack>
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpN9dDeR", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</tmp/probe-jj/repoS/.git/objects/.tmpN9dDeR>
-144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpN9dDeR>, "x\1", 2) = 2
-144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpN9dDeR>, "\2,9?77\263D\301\310\304\222\241\244(5U\301(\321,\325\302\334\"\315\310\33449\3318"..., 212) = 212
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpadMqTn", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</tmp/probe-jj/repoS/.git/objects/.tmpadMqTn>
+144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpadMqTn>, "x\1", 2) = 2
+144   write(4</tmp/probe-jj/repoS/.git/objects/.tmpadMqTn>, "\2,9?77\263D\301\310\304\222\241\244(5U\301(\321,\325\302\334\"\315\310\33449\3318"..., 212) = 212
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/4a", 0777) = -1 EEXIST (File exists)
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpN9dDeR", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428") = 0
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1ba53b0, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs.lock", 0xffffd1ba53b0, 0) = -1 ENOENT (No such file or directory)
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/.tmpadMqTn", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428") = 0
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cc5df0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs.lock", 0xffffd1cc5df0, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep", 0777) = -1 EEXIST (File exists)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -206,17 +206,17 @@
 144   write(4</tmp/probe-jj/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock>, "4af6d7a1ad855039c5a1ae47fbff5a2f"..., 40) = 40
 144   write(4</tmp/probe-jj/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock>, "\n", 1) = 1
 144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428") = 0
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpzkBEWl", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpzkBEWl>
-144   write(4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpzkBEWl>, "\200\0\0\0002774b145b2380aff1c9c33ae22b8"..., 246) = 246
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpzkBEWl", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815") = 0
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpQF6acF", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpQF6acF>
+144   write(4</tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpQF6acF>, "\200\0\0\0002774b145b2380aff1c9c33ae22b8"..., 246) = 246
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/.tmpQF6acF", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815") = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</tmp/probe-jj/repoS/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815>
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2", 0) = 0
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/store/extra/lock", 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/git_import_export.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</tmp/probe-jj/repoS/.jj/repo/git_import_export.lock>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1ba45c0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cc5000, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.git/HEAD>
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1ba3dd0, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs.lock", 0xffffd1ba3dd0, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cc4810, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs.lock", 0xffffd1cc4810, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.git/HEAD>
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git", 0777) = -1 EEXIST (File exists)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -224,15 +224,15 @@
 144   write(4</tmp/probe-jj/repoS/.git/HEAD.lock>, "6bfad012fa89194903e5c1212c7c1e6d"..., 40) = 40
 144   write(4</tmp/probe-jj/repoS/.git/HEAD.lock>, "\n", 1) = 1
 144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD.lock", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD") = 0
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-apply/applying", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-apply/rebasing", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-apply", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-merge/interactive", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-merge", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/CHERRY_PICK_HEAD", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/MERGE_HEAD", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/BISECT_LOG", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/REVERT_HEAD", 0xffffd1ba4a00, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-apply/applying", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-apply/rebasing", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-apply", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-merge/interactive", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/rebase-merge", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/CHERRY_PICK_HEAD", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/MERGE_HEAD", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/BISECT_LOG", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/REVERT_HEAD", 0xffffd1cc5440, 0) = -1 ENOENT (No such file or directory)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621", {st_mode=S_IFREG|0444, st_size=51, ...}, 0) = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/index", {st_mode=S_IFREG|0644, st_size=104, ...}, 0) = 0
@@ -244,27 +244,27 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/index.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</tmp/probe-jj/repoS/.git/index.lock>
 144   write(4</tmp/probe-jj/repoS/.git/index.lock>, "DIRC\0\0\0\2\0\0\0\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 104) = 104
 144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/index.lock", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/index") = 0
-144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1ba4170, 0) = -1 ENOENT (No such file or directory)
+144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/packed-refs", 0xffffd1cc4bb0, 0) = -1 ENOENT (No such file or directory)
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</tmp/probe-jj/repoS/.git/HEAD>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.git/worktrees", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpMwkDkt", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpMwkDkt>
-144   write(4</tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpMwkDkt>, "\n\24J\366\327\241\255\205P9\305\241\256G\373\377Z/\326 \224(B\37\n\7defaul"..., 85) = 85
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpMwkDkt", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/views/15a8da25ec7ab8ecf3de8b1100280824e68fac566caa8231442974299084c97e67d41afde229923c283795ffa514f36e87f5228893c42c722d09dc91c7e46dce") = 0
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmp3TCvnv", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmp3TCvnv>
-144   write(4</tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmp3TCvnv>, "\n@\25\250\332%\354z\270\354\363\336\213\21\0(\10$\346\217\254Vl\252\2021D)t)\220\204"..., 335) = 335
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmp3TCvnv", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/operations/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74") = 0
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpGZdiOu", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpGZdiOu>
+144   write(4</tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpGZdiOu>, "\n\24J\366\327\241\255\205P9\305\241\256G\373\377Z/\326 \224(B\37\n\7defaul"..., 85) = 85
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/views/.tmpGZdiOu", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/views/15a8da25ec7ab8ecf3de8b1100280824e68fac566caa8231442974299084c97e67d41afde229923c283795ffa514f36e87f5228893c42c722d09dc91c7e46dce") = 0
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmpPnDTVA", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmpPnDTVA>
+144   write(4</tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmpPnDTVA>, "\n@\25\250\332%\354z\270\354\363\336\213\21\0(\10$\346\217\254Vl\252\2021D)t)\220\204"..., 335) = 335
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/operations/.tmpPnDTVA", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_store/operations/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74") = 0
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links", 0777) = -1 EEXIST (File exists)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments", 0777) = -1 EEXIST (File exists)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 144   mkdirat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/changed_paths", 0777) = -1 EEXIST (File exists)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/changed_paths", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpvpI5zO", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpvpI5zO>
-144   write(4</tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpvpI5zO>, "\6\0\0\0\0\0\0\0\10\0\0\0\2\0\0\0\0\0\0\0\7\0\0\0\0\0\0\0\377\377\377\377"..., 412) = 412
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpvpI5zO", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/76269392bb4630047c5d0e9ec33084cf8618c849e892a38c19bc9b328fef494ceaa2b0bc21c9e958e1ac04bb8cc5a06cd39274e85cd474ccbcc236f2ff807319") = 0
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpBkW3Jj", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpBkW3Jj>
-144   write(4</tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpBkW3Jj>, "\n@v&\223\222\273F0\4|]\16\236\3030\204\317\206\30\310I\350\222\243\214\31\274\2332\217\357"..., 66) = 66
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpBkW3Jj", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74") = 0
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpm3RTIs", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpm3RTIs>
+144   write(4</tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpm3RTIs>, "\6\0\0\0\0\0\0\0\10\0\0\0\2\0\0\0\0\0\0\0\7\0\0\0\0\0\0\0\377\377\377\377"..., 412) = 412
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/.tmpm3RTIs", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/segments/76269392bb4630047c5d0e9ec33084cf8618c849e892a38c19bc9b328fef494ceaa2b0bc21c9e958e1ac04bb8cc5a06cd39274e85cd474ccbcc236f2ff807319") = 0
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpz9bnCd", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpz9bnCd>
+144   write(4</tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpz9bnCd>, "\n@v&\223\222\273F0\4|]\16\236\3030\204\317\206\30\310I\350\222\243\214\31\274\2332\217\357"..., 66) = 66
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links/.tmpz9bnCd", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/index/op_links/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74") = 0
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_heads/heads/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</tmp/probe-jj/repoS/.jj/repo/op_heads/heads/lock>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_heads/heads/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 5</tmp/probe-jj/repoS/.jj/repo/op_heads/heads/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74>
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/op_heads/heads/3bebf3e7acd792c4e7eb64dbf55263229e48ae3251038526d416b7711bd2aa1aa722e66cc0146e36c5728cf0a67f16a58c5e501803acbad9443bb26919e03401", 0) = 0
@@ -274,9 +274,9 @@
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/tree_state", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</tmp/probe-jj/repoS/.jj/working_copy/tree_state>
 144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy", O_RDWR|O_LARGEFILE|O_CLOEXEC|O_TMPFILE, 0666) = 6</tmp/probe-jj/repoS/.jj/working_copy/#127128>(deleted)
 144   newfstatat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/tree_state", {st_mode=S_IFREG|0600, st_size=48, ...}, AT_SYMLINK_NOFOLLOW) = 0
-144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/.tmpn7bXeq", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</tmp/probe-jj/repoS/.jj/working_copy/.tmpn7bXeq>
-144   write(5</tmp/probe-jj/repoS/.jj/working_copy/.tmpn7bXeq>, "\22@\34b\230<_\357\214\262\26\212\6\7H~M\211\206\f?[4\"\215\230\362\16\325t\337B"..., 75) = 75
-144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/.tmpn7bXeq", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/checkout") = 0
+144   openat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/.tmpkOPrkg", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</tmp/probe-jj/repoS/.jj/working_copy/.tmpkOPrkg>
+144   write(5</tmp/probe-jj/repoS/.jj/working_copy/.tmpkOPrkg>, "\22@\34b\230<_\357\214\262\26\212\6\7H~M\211\206\f?[4\"\215\230\362\16\325t\337B"..., 75) = 75
+144   renameat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/.tmpkOPrkg", AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/checkout") = 0
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/working_copy/working_copy.lock", 0) = 0
 144   write(2</dev/null<char 1:3>>, "Working copy  (@) now at: ", 26) = 26
 144   write(2</dev/null<char 1:3>>, "s", 1) = 1
@@ -307,15 +307,15 @@
 144   write(2</dev/null<char 1:3>>, "probe", 5) = 5
 144   write(2</dev/null<char 1:3>>, "\n", 1) = 1
 144   unlinkat(AT_FDCWD</tmp/probe-jj/repoS>, "/tmp/probe-jj/repoS/.jj/repo/git_import_export.lock", 0) = 0
-154   +++ exited with 0 +++
-153   +++ exited with 0 +++
-150   +++ exited with 0 +++
-149   +++ exited with 0 +++
 155   +++ exited with 0 +++
+154   +++ exited with 0 +++
+148   +++ exited with 0 +++
 152   +++ exited with 0 +++
 151   +++ exited with 0 +++
-148   +++ exited with 0 +++
+149   +++ exited with 0 +++
 147   +++ exited with 0 +++
 146   +++ exited with 0 +++
+150   +++ exited with 0 +++
+153   +++ exited with 0 +++
 145   +++ exited with 0 +++
 144   +++ exited with 0 +++

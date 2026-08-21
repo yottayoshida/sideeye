@@ -1,4 +1,4 @@
-37    execve("/usr/bin/borg", ["borg", "create", "--timestamp", "2026-01-01T00:00:00", "/tmp/probe-borg-pinned/stateS/re"..., "/tmp/probe-borg-pinned/src"], 0xfffff947f4b8 /* 8 vars */) = 0
+37    execve("/usr/bin/borg", ["borg", "create", "--timestamp", "2026-01-01T00:00:00", "/tmp/probe-borg-pinned/stateS/re"..., "/tmp/probe-borg-pinned/src"], 0xffffc5baf098 /* 8 vars */) = 0
 37    faccessat(AT_FDCWD</>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
 37    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
@@ -14,31 +14,31 @@
 37    openat(AT_FDCWD</>, "/usr/pyvenv.cfg", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/bin/pyvenv.cfg", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    readlinkat(AT_FDCWD</>, "/usr/bin/python3", "python3.13", 4096) = 10
-37    readlinkat(AT_FDCWD</>, "/usr/bin/python3.13", 0xfffff2b8f600, 4096) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/bin/python3.13", 0xffffcde05f40, 4096) = -1 EINVAL (Invalid argument)
 37    openat(AT_FDCWD</>, "/usr/bin/python3._pth", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/bin/python3.13._pth", O_RDONLY) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/bin/pybuilddir.txt", O_RDONLY) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup.local", 0xfffff2b945d0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python313.zip", 0xfffff2b94300, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xfffff2b94360, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.py", 0xfffff2b94360, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.pyc", 0xfffff2b94360, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup.local", 0xffffcde0af10, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python313.zip", 0xffffcde0ac40, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffcde0aca0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.py", 0xffffcde0aca0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/os.pyc", 0xffffcde0aca0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/os.py", {st_mode=S_IFREG|0644, st_size=41635, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/lib-dynload", 0xfffff2b94360, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/lib/python3.13/lib-dynload", 0xffffcde0aca0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 3</usr/share/zoneinfo/Etc/UTC>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xfffff2b93f60, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffcde0a8a0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xfffff2b94280, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffcde0abc0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3.13>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b94280, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3.so", 0xfffff2b94280, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b94280, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.so", 0xfffff2b94280, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0abc0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3.so", 0xffffcde0abc0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0abc0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.so", 0xffffcde0abc0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.py", {st_mode=S_IFREG|0644, st_size=5884, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__init__.py", {st_mode=S_IFREG|0644, st_size=5884, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/encodings/__pycache__/__init__.cpython-313.pyc>
@@ -53,9 +53,9 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/utf_8.py", {st_mode=S_IFREG|0644, st_size=1005, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/utf_8.py", {st_mode=S_IFREG|0644, st_size=1005, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/encodings/__pycache__/utf_8.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/encodings/__pycache__/utf_8.cpython-313.pyc>
-37    newfstatat(AT_FDCWD</>, "/usr/bin/pyvenv.cfg", 0xfffff2b93ce0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/pyvenv.cfg", 0xfffff2b93d40, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/root/.local/lib/python3.13/site-packages", 0xfffff2b93f50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/pyvenv.cfg", 0xffffcde0a620, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/pyvenv.cfg", 0xffffcde0a680, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/root/.local/lib/python3.13/site-packages", 0xffffcde0a890, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/local/lib/python3.13/dist-packages>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -79,14 +79,14 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3/dist-packages>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b936a0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3.so", 0xfffff2b936a0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b936a0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.so", 0xfffff2b936a0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde09fe0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3.so", 0xffffcde09fe0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde09fe0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.so", 0xffffcde09fe0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.py", {st_mode=S_IFREG|0644, st_size=6755, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__init__.py", {st_mode=S_IFREG|0644, st_size=6755, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/_distutils_hack/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/_distutils_hack/__pycache__/__init__.cpython-313.pyc>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/dist-packages", 0xfffff2b93fb0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/dist-packages", 0xffffcde0a8f0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sitecustomize.py", {st_mode=S_IFREG|0644, st_size=155, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sitecustomize.py", {st_mode=S_IFREG|0644, st_size=155, ...}, 0) = 0
@@ -102,20 +102,20 @@
 37    newfstatat(AT_FDCWD</>, "/usr/bin/borg", {st_mode=S_IFREG|0755, st_size=961, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/bin/borg", O_RDONLY|O_CLOEXEC) = 3</usr/bin/borg>
 37    newfstatat(AT_FDCWD</>, "/usr/bin/borg", {st_mode=S_IFREG|0755, st_size=961, ...}, 0) = 0
-37    readlinkat(AT_FDCWD</>, "/usr/bin/borg", 0xfffff2b82cf0, 4096) = -1 EINVAL (Invalid argument)
-37    readlinkat(AT_FDCWD</>, "/usr", 0xfffff2b83880, 1023) = -1 EINVAL (Invalid argument)
-37    readlinkat(AT_FDCWD</>, "/usr/bin", 0xfffff2b83880, 1023) = -1 EINVAL (Invalid argument)
-37    readlinkat(AT_FDCWD</>, "/usr/bin/borg", 0xfffff2b83880, 1023) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/bin/borg", 0xffffcddf9630, 4096) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr", 0xffffcddfa1c0, 1023) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/bin", 0xffffcddfa1c0, 1023) = -1 EINVAL (Invalid argument)
+37    readlinkat(AT_FDCWD</>, "/usr/bin/borg", 0xffffcddfa1c0, 1023) = -1 EINVAL (Invalid argument)
 37    openat(AT_FDCWD</>, "/usr/bin/borg", O_RDONLY) = 3</usr/bin/borg>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/bin>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.py", {st_mode=S_IFREG|0644, st_size=17876, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/re/__init__.py", {st_mode=S_IFREG|0644, st_size=17876, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/re/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/re/__pycache__/__init__.cpython-313.pyc>
@@ -131,10 +131,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/functools.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/functools.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b92dd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3.so", 0xfffff2b92dd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b92dd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.so", 0xfffff2b92dd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde09710, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3.so", 0xffffcde09710, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde09710, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.so", 0xffffcde09710, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.py", {st_mode=S_IFREG|0644, st_size=52500, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__init__.py", {st_mode=S_IFREG|0644, st_size=52500, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/collections/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/collections/__pycache__/__init__.cpython-313.pyc>
@@ -184,10 +184,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/copyreg.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/copyreg.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93fa0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3.so", 0xfffff2b93fa0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93fa0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.so", 0xfffff2b93fa0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a8e0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3.so", 0xffffcde0a8e0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a8e0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.so", 0xffffcde0a8e0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.py", {st_mode=S_IFREG|0644, st_size=4767, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__init__.py", {st_mode=S_IFREG|0644, st_size=4767, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/__pycache__/__init__.cpython-313.pyc>
@@ -195,10 +195,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3.13/importlib>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.abi3.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.so", 0xfffff2b94450, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.abi3.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.so", 0xffffcde0ad90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.py", {st_mode=S_IFREG|0644, st_size=34091, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__init__.py", {st_mode=S_IFREG|0644, st_size=34091, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/metadata/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/metadata/__pycache__/__init__.cpython-313.pyc>
@@ -209,10 +209,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/__future__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/__future__.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.py", {st_mode=S_IFREG|0644, st_size=14020, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/json/__init__.py", {st_mode=S_IFREG|0644, st_size=14020, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/json/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/json/__pycache__/__init__.cpython-313.pyc>
@@ -233,10 +233,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/json/__pycache__/encoder.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/json/__pycache__/encoder.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.abi3.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.abi3.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.py", {st_mode=S_IFREG|0644, st_size=1764, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/email/__init__.py", {st_mode=S_IFREG|0644, st_size=1764, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/email/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/email/__pycache__/__init__.cpython-313.pyc>
@@ -297,10 +297,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/_weakrefset.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/_weakrefset.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.py", {st_mode=S_IFREG|0644, st_size=296, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__init__.py", {st_mode=S_IFREG|0644, st_size=296, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/pathlib/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/pathlib/__pycache__/__init__.cpython-313.pyc>
@@ -372,10 +372,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.so", 0xfffff2b93cd0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.so", 0xffffcde0a610, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.py", {st_mode=S_IFREG|0644, st_size=89791, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__init__.py", {st_mode=S_IFREG|0644, st_size=89791, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/zipfile/__pycache__/__init__.cpython-313.pyc>
@@ -431,10 +431,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3.13/zipfile>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.abi3.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.abi3.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.py", {st_mode=S_IFREG|0644, st_size=11956, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__init__.py", {st_mode=S_IFREG|0644, st_size=11956, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/zipfile/_path/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/zipfile/_path/__pycache__/__init__.cpython-313.pyc>
@@ -479,10 +479,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/abc.py", {st_mode=S_IFREG|0644, st_size=7659, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/__pycache__/abc.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/__pycache__/abc.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.so", 0xfffff2b93550, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.so", 0xffffcde09e90, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.py", {st_mode=S_IFREG|0644, st_size=703, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__init__.py", {st_mode=S_IFREG|0644, st_size=703, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/resources/__pycache__/__init__.cpython-313.pyc>
@@ -494,12 +494,12 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/_common.py", {st_mode=S_IFREG|0644, st_size=5589, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__pycache__/_common.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/resources/__pycache__/_common.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b92650, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.abi3.so", 0xfffff2b92650, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b92650, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.so", 0xfffff2b92650, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.py", 0xfffff2b92650, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.pyc", 0xfffff2b92650, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde08f90, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.abi3.so", 0xffffcde08f90, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde08f90, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.so", 0xffffcde08f90, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.py", 0xffffcde08f90, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile/__init__.pyc", 0xffffcde08f90, 0) = -1 ENOTDIR (Not a directory)
 37    newfstatat(AT_FDCWD</>, "/usr/bin/tempfile", {st_mode=S_IFREG|0755, st_size=68008, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/tempfile.py", {st_mode=S_IFREG|0644, st_size=40094, ...}, 0) = 0
@@ -525,7 +525,7 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/importlib/resources/__pycache__/_functional.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/importlib/resources/__pycache__/_functional.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/bin>
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xfffff2b94520, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python313.zip", 0xffffcde0ae60, 0) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/lib/python313.zip", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/usr/lib/python313.zip", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -538,21 +538,21 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</usr/lib/python3/dist-packages>
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borgbackup-1.4.0.egg-info/entry_points.txt", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borgbackup-1.4.0.egg-info/entry_points.txt>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b948c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.abi3.so", 0xfffff2b948c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b948c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.so", 0xfffff2b948c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.py", 0xfffff2b948c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.pyc", 0xfffff2b948c0, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0b200, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.abi3.so", 0xffffcde0b200, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0b200, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.so", 0xffffcde0b200, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.py", 0xffffcde0b200, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/borg/__init__.pyc", 0xffffcde0b200, 0) = -1 ENOTDIR (Not a directory)
 37    newfstatat(AT_FDCWD</>, "/usr/bin/borg", {st_mode=S_IFREG|0755, st_size=961, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.abi3.so", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.so", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.abi3.so", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.so", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.py", {st_mode=S_IFREG|0644, st_size=859, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__init__.py", {st_mode=S_IFREG|0644, st_size=859, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/__pycache__/__init__.cpython-313.pyc>
@@ -561,10 +561,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.abi3.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.abi3.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.py", {st_mode=S_IFREG|0644, st_size=494, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__init__.py", {st_mode=S_IFREG|0644, st_size=494, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/packaging/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/packaging/__pycache__/__init__.cpython-313.pyc>
@@ -617,10 +617,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/configparser.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/configparser.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b94140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.abi3.so", 0xfffff2b94140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b94140, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.so", 0xfffff2b94140, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0aa80, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.abi3.so", 0xffffcde0aa80, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0aa80, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.so", 0xffffcde0aa80, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.py", {st_mode=S_IFREG|0644, st_size=83766, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__init__.py", {st_mode=S_IFREG|0644, st_size=83766, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/logging/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/logging/__pycache__/__init__.cpython-313.pyc>
@@ -645,12 +645,12 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/subprocess.py", {st_mode=S_IFREG|0644, st_size=89486, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/subprocess.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/subprocess.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b939c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.abi3.so", 0xfffff2b939c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b939c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.so", 0xfffff2b939c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.py", 0xfffff2b939c0, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.pyc", 0xfffff2b939c0, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a300, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.abi3.so", 0xffffcde0a300, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a300, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.so", 0xffffcde0a300, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.py", 0xffffcde0a300, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/locale/__init__.pyc", 0xffffcde0a300, 0) = -1 ENOTDIR (Not a directory)
 37    newfstatat(AT_FDCWD</>, "/usr/bin/locale", {st_mode=S_IFREG|0755, st_size=75176, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/locale.py", {st_mode=S_IFREG|0644, st_size=79033, ...}, 0) = 0
@@ -1417,10 +1417,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/logger.py", {st_mode=S_IFREG|0644, st_size=9370, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/archiver.py", {st_mode=S_IFREG|0644, st_size=304602, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.abi3.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.abi3.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.py", {st_mode=S_IFREG|0644, st_size=4800, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__init__.py", {st_mode=S_IFREG|0644, st_size=4800, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/helpers/__pycache__/__init__.cpython-313.pyc>
@@ -1440,10 +1440,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/constants.py", {st_mode=S_IFREG|0644, st_size=5386, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__pycache__/constants.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/__pycache__/constants.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.abi3.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.abi3.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__init__.py", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/crypto/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/crypto/__pycache__/__init__.cpython-313.pyc>
@@ -1700,10 +1700,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/lib-dynload", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.abi3.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.so", 0xfffff2b92160, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.abi3.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.so", 0xffffcde08aa0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.py", {st_mode=S_IFREG|0644, st_size=1118, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__init__.py", {st_mode=S_IFREG|0644, st_size=1118, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/msgpack/__pycache__/__init__.cpython-313.pyc>
@@ -1801,10 +1801,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/yes.py", {st_mode=S_IFREG|0644, st_size=4700, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/helpers/__pycache__/yes.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/helpers/__pycache__/yes.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.abi3.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.so", 0xfffff2b93c90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.abi3.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.so", 0xffffcde0a5d0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.py", {st_mode=S_IFREG|0644, st_size=304, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__init__.py", {st_mode=S_IFREG|0644, st_size=304, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/algorithms/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/algorithms/__pycache__/__init__.cpython-313.pyc>
@@ -1888,10 +1888,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/xattr.py", {st_mode=S_IFREG|0644, st_size=5988, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.abi3.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.abi3.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.py", {st_mode=S_IFREG|0644, st_size=1596, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__init__.py", {st_mode=S_IFREG|0644, st_size=1596, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/platform/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/platform/__pycache__/__init__.cpython-313.pyc>
@@ -2161,10 +2161,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/__pycache__/selftest.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/__pycache__/selftest.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b939c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.abi3.so", 0xfffff2b939c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b939c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.so", 0xfffff2b939c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde0a300, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.abi3.so", 0xffffcde0a300, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde0a300, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.so", 0xffffcde0a300, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.py", {st_mode=S_IFREG|0644, st_size=3223, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__init__.py", {st_mode=S_IFREG|0644, st_size=3223, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/unittest/__pycache__/__init__.cpython-313.pyc>
@@ -2219,10 +2219,10 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/signals.py", {st_mode=S_IFREG|0644, st_size=2403, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/unittest/__pycache__/signals.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/unittest/__pycache__/signals.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93510, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.abi3.so", 0xfffff2b93510, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93510, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.so", 0xfffff2b93510, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde09e50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.abi3.so", 0xffffcde09e50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde09e50, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.so", 0xffffcde09e50, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.py", {st_mode=S_IFREG|0644, st_size=14513, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__init__.py", {st_mode=S_IFREG|0644, st_size=14513, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/testsuite/__pycache__/__init__.cpython-313.pyc>
@@ -2233,10 +2233,10 @@
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/__pycache__/filecmp.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/__pycache__/filecmp.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.abi3.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.so", 0xfffff2b92d90, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.abi3.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.so", 0xffffcde096d0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.py", {st_mode=S_IFREG|0644, st_size=28676, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__init__.py", {st_mode=S_IFREG|0644, st_size=28676, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3.13/sysconfig/__pycache__/__init__.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3.13/sysconfig/__pycache__/__init__.cpython-313.pyc>
@@ -2245,8 +2245,8 @@
 37    newfstatat(AT_FDCWD</>, "/usr/bin/python3", {st_mode=S_IFLNK|0777, st_size=10, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    readlinkat(AT_FDCWD</>, "/usr/bin/python3", "python3.13", 4096) = 10
 37    newfstatat(AT_FDCWD</>, "/usr/bin/python3.13", {st_mode=S_IFREG|0755, st_size=6673736, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup", 0xfffff2b92a80, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup.local", 0xfffff2b92a80, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup", 0xffffcde093c0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/Modules/Setup.local", 0xffffcde093c0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/fuse_impl.py", {st_mode=S_IFREG|0644, st_size=866, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/fuse_impl.py", {st_mode=S_IFREG|0644, st_size=866, ...}, 0) = 0
@@ -2267,13 +2267,13 @@
 37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    getcwd("/", 1024)                 = 2
-37    openat(AT_FDCWD</>, "/tmp/5vgj60et", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/5vgj60et>
-37    write(3</tmp/5vgj60et>, "blat", 4) = 4
-37    unlinkat(AT_FDCWD</>, "/tmp/5vgj60et", 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpit1ta3e8", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/tmpit1ta3e8>
-37    newfstatat(AT_FDCWD</>, "/tmp/tmpit1ta3e8", {st_mode=S_IFREG|0600, st_size=0, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpit1ta3e8", O_RDONLY|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC) = 4</tmp/tmpit1ta3e8>
-37    unlinkat(AT_FDCWD</>, "/tmp/tmpit1ta3e8", 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/m1eh4ki_", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/m1eh4ki_>
+37    write(3</tmp/m1eh4ki_>, "blat", 4) = 4
+37    unlinkat(AT_FDCWD</>, "/tmp/m1eh4ki_", 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmp49n4s4oo", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 3</tmp/tmp49n4s4oo>
+37    newfstatat(AT_FDCWD</>, "/tmp/tmp49n4s4oo", {st_mode=S_IFREG|0600, st_size=0, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmp49n4s4oo", O_RDONLY|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC) = 4</tmp/tmp49n4s4oo>
+37    unlinkat(AT_FDCWD</>, "/tmp/tmp49n4s4oo", 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
@@ -2282,12 +2282,12 @@
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/hashindex.py", {st_mode=S_IFREG|0644, st_size=20653, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/borg/testsuite/__pycache__/hashindex.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/borg/testsuite/__pycache__/hashindex.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.cpython-313-aarch64-linux-gnu.so", 0xfffff2b93240, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.abi3.so", 0xfffff2b93240, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.abi3-aarch64-linux-gnu.so", 0xfffff2b93240, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.so", 0xfffff2b93240, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.py", 0xfffff2b93240, 0) = -1 ENOTDIR (Not a directory)
-37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.pyc", 0xfffff2b93240, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.cpython-313-aarch64-linux-gnu.so", 0xffffcde09b80, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.abi3.so", 0xffffcde09b80, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.abi3-aarch64-linux-gnu.so", 0xffffcde09b80, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.so", 0xffffcde09b80, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.py", 0xffffcde09b80, 0) = -1 ENOTDIR (Not a directory)
+37    newfstatat(AT_FDCWD</>, "/usr/bin/base64/__init__.pyc", 0xffffcde09b80, 0) = -1 ENOTDIR (Not a directory)
 37    newfstatat(AT_FDCWD</>, "/usr/bin/base64", {st_mode=S_IFREG|0755, st_size=68048, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/base64.py", {st_mode=S_IFREG|0755, st_size=21629, ...}, 0) = 0
@@ -2309,7 +2309,7 @@
 37    openat(AT_FDCWD</>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3</etc/passwd>
 37    newfstatat(AT_FDCWD</>, "/etc/nsswitch.conf", {st_mode=S_IFREG|0644, st_size=494, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/etc/group", O_RDONLY|O_CLOEXEC) = 3</etc/group>
-37    newfstatat(AT_FDCWD</>, "2026-01-01T00:00:00", 0xfffff2b94560, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "2026-01-01T00:00:00", 0xffffcde0aea0, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/usr/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3.13/_strptime.py", {st_mode=S_IFREG|0644, st_size=29383, ...}, 0) = 0
@@ -2323,80 +2323,80 @@
 37    newfstatat(AT_FDCWD</>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/etc/nsswitch.conf", {st_mode=S_IFREG|0644, st_size=494, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3</etc/passwd>
-37    mkdirat(AT_FDCWD</>, "/tmp/tmpj9de33mg", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpj9de33mg/idx", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpj9de33mg/idx>
-37    write(3</tmp/tmpj9de33mg/idx>, "BORG_IDX\3\0\0\0\7\4\0\0 \f", 18) = 18
-37    write(3</tmp/tmpj9de33mg/idx>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
-37    openat(AT_FDCWD</>, "/tmp/tmpj9de33mg/idx", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpj9de33mg/idx>
-37    newfstatat(AT_FDCWD</>, "/tmp/tmpj9de33mg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpj9de33mg", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmpj9de33mg>
-37    unlinkat(3</tmp/tmpj9de33mg>, "idx", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/tmpj9de33mg", AT_REMOVEDIR) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/tmp2vqmco9j", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmp2vqmco9j/idx", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmp2vqmco9j/idx>
-37    write(3</tmp/tmp2vqmco9j/idx>, "BORG_IDX\3\0\0\0\7\4\0\0 \f\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45382) = 45382
-37    openat(AT_FDCWD</>, "/tmp/tmp2vqmco9j/idx", O_RDONLY|O_CLOEXEC) = 3</tmp/tmp2vqmco9j/idx>
-37    newfstatat(AT_FDCWD</>, "/tmp/tmp2vqmco9j", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmp2vqmco9j", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmp2vqmco9j>
-37    unlinkat(3</tmp/tmp2vqmco9j>, "idx", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/tmp2vqmco9j", AT_REMOVEDIR) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpuc7qjk2m/file>
-37    write(3</tmp/tmpuc7qjk2m/file>, "BORG_IDX2\0\0\0\7\4\0\0 \f", 18) = 18
-37    write(3</tmp/tmpuc7qjk2m/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
-37    openat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpuc7qjk2m/file>
-37    openat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpuc7qjk2m/file>
-37    openat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpuc7qjk2m/file>
-37    write(3</tmp/tmpuc7qjk2m/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \f", 18) = 18
-37    write(3</tmp/tmpuc7qjk2m/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
-37    openat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpuc7qjk2m/file>
-37    newfstatat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmpuc7qjk2m>
-37    unlinkat(3</tmp/tmpuc7qjk2m>, "file", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/tmpuc7qjk2m", AT_REMOVEDIR) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/tmpjts4j6in", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpjts4j6in/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpjts4j6in/file>
-37    write(3</tmp/tmpjts4j6in/file>, "BORG_IDX2\0\0\0\7\4\0\0 \10", 18) = 18
-37    write(3</tmp/tmpjts4j6in/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 41240) = 41240
-37    openat(AT_FDCWD</>, "/tmp/tmpjts4j6in/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpjts4j6in/file>
-37    openat(AT_FDCWD</>, "/tmp/tmpjts4j6in/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpjts4j6in/file>
-37    openat(AT_FDCWD</>, "/tmp/tmpjts4j6in/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpjts4j6in/file>
-37    write(3</tmp/tmpjts4j6in/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \10", 18) = 18
-37    write(3</tmp/tmpjts4j6in/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 41240) = 41240
-37    openat(AT_FDCWD</>, "/tmp/tmpjts4j6in/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpjts4j6in/file>
-37    newfstatat(AT_FDCWD</>, "/tmp/tmpjts4j6in", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmpjts4j6in", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmpjts4j6in>
-37    unlinkat(3</tmp/tmpjts4j6in>, "file", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/tmpjts4j6in", AT_REMOVEDIR) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmp_7a_1n8g/file>
-37    write(3</tmp/tmp_7a_1n8g/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \10", 18) = 18
-37    write(3</tmp/tmp_7a_1n8g/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 41240) = 41240
-37    newfstatat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g/file", {st_mode=S_IFREG|0600, st_size=41258, ...}, 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmp_7a_1n8g/file>
-37    write(3</tmp/tmp_7a_1n8g/file>, "BORG_IDX\320\7\0\0\3\20\0\0 \10", 18) = 18
-37    write(3</tmp/tmp_7a_1n8g/file>, "00000000000000000000000000001833"..., 163960) = 163960
-37    newfstatat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g/file", {st_mode=S_IFREG|0600, st_size=163978, ...}, 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmp_7a_1n8g/file>
-37    write(3</tmp/tmp_7a_1n8g/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \10", 18) = 18
-37    write(3</tmp/tmp_7a_1n8g/file>, "00000000000000000000000000001511"..., 41240) = 41240
-37    newfstatat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g/file", {st_mode=S_IFREG|0600, st_size=41258, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmp_7a_1n8g>
-37    unlinkat(3</tmp/tmp_7a_1n8g>, "file", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/tmp_7a_1n8g", AT_REMOVEDIR) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/tmpio7y_kl_", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpio7y_kl_/idx", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpio7y_kl_/idx>
+37    write(3</tmp/tmpio7y_kl_/idx>, "BORG_IDX\3\0\0\0\7\4\0\0 \f", 18) = 18
+37    write(3</tmp/tmpio7y_kl_/idx>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
+37    openat(AT_FDCWD</>, "/tmp/tmpio7y_kl_/idx", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpio7y_kl_/idx>
+37    newfstatat(AT_FDCWD</>, "/tmp/tmpio7y_kl_", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpio7y_kl_", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmpio7y_kl_>
+37    unlinkat(3</tmp/tmpio7y_kl_>, "idx", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/tmpio7y_kl_", AT_REMOVEDIR) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/tmp_yw5pdo5", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmp_yw5pdo5/idx", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmp_yw5pdo5/idx>
+37    write(3</tmp/tmp_yw5pdo5/idx>, "BORG_IDX\3\0\0\0\7\4\0\0 \f\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45382) = 45382
+37    openat(AT_FDCWD</>, "/tmp/tmp_yw5pdo5/idx", O_RDONLY|O_CLOEXEC) = 3</tmp/tmp_yw5pdo5/idx>
+37    newfstatat(AT_FDCWD</>, "/tmp/tmp_yw5pdo5", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmp_yw5pdo5", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmp_yw5pdo5>
+37    unlinkat(3</tmp/tmp_yw5pdo5>, "idx", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/tmp_yw5pdo5", AT_REMOVEDIR) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/tmp9lyjtvua", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmp9lyjtvua/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmp9lyjtvua/file>
+37    write(3</tmp/tmp9lyjtvua/file>, "BORG_IDX2\0\0\0\7\4\0\0 \f", 18) = 18
+37    write(3</tmp/tmp9lyjtvua/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
+37    openat(AT_FDCWD</>, "/tmp/tmp9lyjtvua/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmp9lyjtvua/file>
+37    openat(AT_FDCWD</>, "/tmp/tmp9lyjtvua/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmp9lyjtvua/file>
+37    openat(AT_FDCWD</>, "/tmp/tmp9lyjtvua/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmp9lyjtvua/file>
+37    write(3</tmp/tmp9lyjtvua/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \f", 18) = 18
+37    write(3</tmp/tmp9lyjtvua/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
+37    openat(AT_FDCWD</>, "/tmp/tmp9lyjtvua/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmp9lyjtvua/file>
+37    newfstatat(AT_FDCWD</>, "/tmp/tmp9lyjtvua", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmp9lyjtvua", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmp9lyjtvua>
+37    unlinkat(3</tmp/tmp9lyjtvua>, "file", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/tmp9lyjtvua", AT_REMOVEDIR) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/tmpw1kb18nw", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpw1kb18nw/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpw1kb18nw/file>
+37    write(3</tmp/tmpw1kb18nw/file>, "BORG_IDX2\0\0\0\7\4\0\0 \10", 18) = 18
+37    write(3</tmp/tmpw1kb18nw/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 41240) = 41240
+37    openat(AT_FDCWD</>, "/tmp/tmpw1kb18nw/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpw1kb18nw/file>
+37    openat(AT_FDCWD</>, "/tmp/tmpw1kb18nw/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpw1kb18nw/file>
+37    openat(AT_FDCWD</>, "/tmp/tmpw1kb18nw/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpw1kb18nw/file>
+37    write(3</tmp/tmpw1kb18nw/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \10", 18) = 18
+37    write(3</tmp/tmpw1kb18nw/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 41240) = 41240
+37    openat(AT_FDCWD</>, "/tmp/tmpw1kb18nw/file", O_RDONLY|O_CLOEXEC) = 3</tmp/tmpw1kb18nw/file>
+37    newfstatat(AT_FDCWD</>, "/tmp/tmpw1kb18nw", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpw1kb18nw", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmpw1kb18nw>
+37    unlinkat(3</tmp/tmpw1kb18nw>, "file", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/tmpw1kb18nw", AT_REMOVEDIR) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpwqyt4xlh/file>
+37    write(3</tmp/tmpwqyt4xlh/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \10", 18) = 18
+37    write(3</tmp/tmpwqyt4xlh/file>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 41240) = 41240
+37    newfstatat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh/file", {st_mode=S_IFREG|0600, st_size=41258, ...}, 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpwqyt4xlh/file>
+37    write(3</tmp/tmpwqyt4xlh/file>, "BORG_IDX\320\7\0\0\3\20\0\0 \10", 18) = 18
+37    write(3</tmp/tmpwqyt4xlh/file>, "00000000000000000000000000001833"..., 163960) = 163960
+37    newfstatat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh/file", {st_mode=S_IFREG|0600, st_size=163978, ...}, 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh/file", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/tmpwqyt4xlh/file>
+37    write(3</tmp/tmpwqyt4xlh/file>, "BORG_IDX\0\0\0\0\7\4\0\0 \10", 18) = 18
+37    write(3</tmp/tmpwqyt4xlh/file>, "00000000000000000000000000001511"..., 41240) = 41240
+37    newfstatat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh/file", {st_mode=S_IFREG|0600, st_size=41258, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    openat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 3</tmp/tmpwqyt4xlh>
+37    unlinkat(3</tmp/tmpwqyt4xlh>, "file", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/tmpwqyt4xlh", AT_REMOVEDIR) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/fallback.py", {st_mode=S_IFREG|0644, st_size=34475, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/fallback.py", {st_mode=S_IFREG|0644, st_size=34475, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/usr/lib/python3/dist-packages/msgpack/__pycache__/fallback.cpython-313.pyc", O_RDONLY|O_CLOEXEC) = 3</usr/lib/python3/dist-packages/msgpack/__pycache__/fallback.cpython-313.pyc>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive.ewusay50.tmp", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive.ewusay50.tmp/371820d87c15@191371923986926.37-0", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-borg-pinned/stateS/repo/lock.exclusive.ewusay50.tmp/371820d87c15@191371923986926.37-0>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive.ewusay50.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive") = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive.flez9kx0.tmp", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive.flez9kx0.tmp/92acf9263a6e@68331849688998.37-0", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-borg-pinned/stateS/repo/lock.exclusive.flez9kx0.tmp/92acf9263a6e@68331849688998.37-0>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive.flez9kx0.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive") = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-borg-pinned/stateS/repo/lock.roster>
-37    write(3</tmp/probe-borg-pinned/stateS/repo/lock.roster>, "{\"exclusive\": [[\"371820d87c15@19"..., 56) = 56
+37    write(3</tmp/probe-borg-pinned/stateS/repo/lock.roster>, "{\"exclusive\": [[\"92acf9263a6e@68"..., 55) = 55
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/config", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-borg-pinned/stateS/repo/config>
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</tmp/probe-borg-pinned/stateS/repo/data>
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data/0", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</tmp/probe-borg-pinned/stateS/repo/data/0>
@@ -2415,69 +2415,69 @@
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg", 0777) = -1 EEXIST (File exists)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", 0777) = -1 EEXIST (File exists)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/tam_required", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
+37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", 0777) = -1 EEXIST (File exists)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/tam_required", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg", 0777) = -1 EEXIST (File exists)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", 0777) = -1 EEXIST (File exists)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", 0777) = -1 EEXIST (File exists)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", 0777) = -1 EEXIST (File exists)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/CACHEDIR.TAG", {st_mode=S_IFREG|0600, st_size=198, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=33, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=33, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", 0777) = -1 EEXIST (File exists)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/CACHEDIR.TAG", {st_mode=S_IFREG|0600, st_size=198, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", {st_mode=S_IFREG|0600, st_size=520, ...}, 0) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.pfp6adl0.tmp", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.pfp6adl0.tmp/371820d87c15@191371923986926.37-0", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.pfp6adl0.tmp/371820d87c15@191371923986926.37-0>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.pfp6adl0.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>, "{\"exclusive\": [[\"371820d87c15@19"..., 56) = 56
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", {st_mode=S_IFREG|0600, st_size=520, ...}, 0) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.ys4tqgxq.tmp", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.ys4tqgxq.tmp/92acf9263a6e@68331849688998.37-0", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.ys4tqgxq.tmp/92acf9263a6e@68331849688998.37-0>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.ys4tqgxq.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>, "{\"exclusive\": [[\"92acf9263a6e@68"..., 55) = 55
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location>
 37    write(2</dev/null<char 1:3>>, "Warning: The repository at locat"..., 161) = 161
 37    write(2</dev/null<char 1:3>>, "yes (from BORG_RELOCATED_REPO_AC"..., 44) = 44
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-yhridwcn.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-yhridwcn.tmp>
-37    write(5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-yhridwcn.tmp>, "/tmp/probe-borg-pinned/stateS/re"..., 34) = 34
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-yhridwcn.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-pfssrcji.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-pfssrcji.tmp>
-37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-pfssrcji.tmp>, "[cache]\nversion = 1\nrepository ="..., 521) = 521
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-pfssrcji.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>, "{\"exclusive\": []}", 17) = 17
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive/371820d87c15@191371923986926.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive/371820d87c15@191371923986926.37-0", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive", AT_REMOVEDIR) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gk26xm9z.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gk26xm9z.tmp>
+37    write(5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gk26xm9z.tmp>, "/tmp/probe-borg-pinned/stateS/re"..., 34) = 34
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gk26xm9z.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-p51w8wi4.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-p51w8wi4.tmp>
+37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-p51w8wi4.tmp>, "[cache]\nversion = 1\nrepository ="..., 521) = 521
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-p51w8wi4.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>, "{\"exclusive\": []}", 17) = 17
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive/92acf9263a6e@68331849688998.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive/92acf9263a6e@68331849688998.37-0", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive", AT_REMOVEDIR) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", 0777) = -1 EEXIST (File exists)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
@@ -2486,43 +2486,43 @@
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg", 0777) = -1 EEXIST (File exists)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", 0777) = -1 EEXIST (File exists)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", 0777) = -1 EEXIST (File exists)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", 0777) = -1 EEXIST (File exists)
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/CACHEDIR.TAG", {st_mode=S_IFREG|0600, st_size=198, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.ql9iif6q.tmp", 0700) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.ql9iif6q.tmp/371820d87c15@191371923986926.37-0", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.ql9iif6q.tmp/371820d87c15@191371923986926.37-0>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive.ql9iif6q.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>, "{\"exclusive\": [[\"371820d87c15@19"..., 56) = 56
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", 0xfffff2b94340, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.active", 0xfffff2b94340, 0) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/pre12-meta", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/pre12-meta>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.qhzo_m2y.tmp", 0700) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.qhzo_m2y.tmp/92acf9263a6e@68331849688998.37-0", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.qhzo_m2y.tmp/92acf9263a6e@68331849688998.37-0>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive.qhzo_m2y.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    write(5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>, "{\"exclusive\": [[\"92acf9263a6e@68"..., 55) = 55
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", 0xffffcde0ac80, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.active", 0xffffcde0ac80, 0) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/pre12-meta", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/pre12-meta>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type", {st_mode=S_IFREG|0600, st_size=1, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location", {st_mode=S_IFREG|0600, st_size=34, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
 37    getcwd("/", 1024)                 = 2
 37    getcwd("/", 1024)                 = 2
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
@@ -2536,35 +2536,35 @@
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/src", O_RDONLY|O_NOFOLLOW|O_NOATIME|O_CLOEXEC|O_DIRECTORY) = 5</tmp/probe-borg-pinned/src>
 37    newfstatat(5</tmp/probe-borg-pinned/src>, "alpha", {st_mode=S_IFREG|0644, st_size=24, ...}, AT_SYMLINK_NOFOLLOW) = 0
 37    openat(5</tmp/probe-borg-pinned/src>, "alpha", O_RDONLY|O_NOCTTY|O_NONBLOCK|O_NOFOLLOW|O_NOATIME|O_CLOEXEC) = 6</tmp/probe-borg-pinned/src/alpha>
-37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", 0777) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", {st_mode=S_IFREG|0600, st_size=521, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/config", 0xfffff2b94860, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", {st_mode=S_IFREG|0600, st_size=521, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/config", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", O_RDONLY|O_CLOEXEC) = 7</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/config", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/config>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config", {st_mode=S_IFREG|0600, st_size=521, ...}, 0) = 0
-37    fchmodat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/config", 0600) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks", {st_mode=S_IFREG|0600, st_size=45382, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/chunks", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks", {st_mode=S_IFREG|0600, st_size=45382, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/chunks", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks", O_RDONLY|O_CLOEXEC) = 7</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/chunks", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/chunks>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks", {st_mode=S_IFREG|0600, st_size=45382, ...}, 0) = 0
-37    fchmodat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/chunks", 0600) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/files", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/files", 0xfffff2b948c0, 0) = -1 ENOENT (No such file or directory)
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files", O_RDONLY|O_CLOEXEC) = 7</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/files", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/files>
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-37    fchmodat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp/files", 0600) = 0
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.active") = 0
+37    mkdirat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", 0777) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", {st_mode=S_IFREG|0600, st_size=521, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/config", 0xffffcde0b1a0, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", {st_mode=S_IFREG|0600, st_size=521, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/config", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", O_RDONLY|O_CLOEXEC) = 7</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/config", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/config>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config", {st_mode=S_IFREG|0600, st_size=521, ...}, 0) = 0
+37    fchmodat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/config", 0600) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks", {st_mode=S_IFREG|0600, st_size=45382, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/chunks", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks", {st_mode=S_IFREG|0600, st_size=45382, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/chunks", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks", O_RDONLY|O_CLOEXEC) = 7</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/chunks", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/chunks>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks", {st_mode=S_IFREG|0600, st_size=45382, ...}, 0) = 0
+37    fchmodat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/chunks", 0600) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/files", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/files", 0xffffcde0b200, 0) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files", O_RDONLY|O_CLOEXEC) = 7</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/files", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/files>
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+37    fchmodat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp/files", 0600) = 0
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.active") = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 7</tmp/probe-borg-pinned/stateS/repo>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/index.1", {st_mode=S_IFREG|0600, st_size=41258, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 7</tmp/probe-borg-pinned/stateS/repo/data>
@@ -2573,7 +2573,7 @@
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 7</tmp/probe-borg-pinned/stateS/repo>
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/index.1", {st_mode=S_IFREG|0600, st_size=41258, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive/371820d87c15@191371923986926.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive/92acf9263a6e@68331849688998.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 7</tmp/probe-borg-pinned/stateS/repo/data>
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data/0", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 7</tmp/probe-borg-pinned/stateS/repo/data/0>
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/integrity.1", O_RDONLY|O_CLOEXEC) = 7</tmp/probe-borg-pinned/stateS/repo/integrity.1>
@@ -2594,8 +2594,8 @@
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data/0/1", {st_mode=S_IFREG|0600, st_size=17, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data/0/0", {st_mode=S_IFREG|0600, st_size=476, ...}, 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data/0/3", {st_mode=S_IFREG|0600, st_size=49, ...}, 0) = 0
-37    statfs("/tmp/probe-borg-pinned/stateS/repo", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599196, f_bavail=222453240, f_files=60710912, f_ffree=60469934, f_fsid={val=[0xfa4aca67, 0xc424badf]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
-37    write(5</tmp/probe-borg-pinned/stateS/repo/data/0/4>, "BORG_SEG\224\276\vC\33\2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 547) = 547
+37    statfs("/tmp/probe-borg-pinned/stateS/repo", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=234599196, f_bavail=222453240, f_files=60710912, f_ffree=60469934, f_fsid={val=[0xea866701, 0x86fc3d58]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+37    write(5</tmp/probe-borg-pinned/stateS/repo/data/0/4>, "BORG_SEG\24\214\321\5\33\2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 547) = 547
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data/0", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-borg-pinned/stateS/repo/data/0>
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/data/0/5", O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 5</tmp/probe-borg-pinned/stateS/repo/data/0/5>
 37    write(5</tmp/probe-borg-pinned/stateS/repo/data/0/5>, "BORG_SEG@\364<%\t\0\0\0\2", 17) = 17
@@ -2620,49 +2620,49 @@
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/index.1", 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/hints.1", 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/integrity.1", 0) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-w8nu2eq_.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-w8nu2eq_.tmp>
-37    write(6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-w8nu2eq_.tmp>, "/tmp/probe-borg-pinned/stateS/re"..., 34) = 34
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location-w8nu2eq_.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/location") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type-cqc2u575.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type-cqc2u575.tmp>
-37    write(6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type-cqc2u575.tmp>, "2", 1) = 1
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type-cqc2u575.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/key-type") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp-yqxyqy2k.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp-yqxyqy2k.tmp>
-37    write(6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp-yqxyqy2k.tmp>, "2026-08-21T08:18:58.725936", 26) = 26
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp-yqxyqy2k.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/manifest-timestamp") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/files>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks>
-37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks>, "BORG_IDX\5\0\0\0\7\4\0\0 \f", 18) = 18
-37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/chunks>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-dq_90ec0.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-dq_90ec0.tmp>
-37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-dq_90ec0.tmp>, "[cache]\nversion = 1\nrepository ="..., 594) = 594
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config-dq_90ec0.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/config") = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95>
-37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.active", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp") = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp>
-37    unlinkat(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp>, "files", 0) = 0
-37    unlinkat(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp>, "config", 0) = 0
-37    unlinkat(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp>, "chunks", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/txn.tmp", AT_REMOVEDIR) = 0
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/pre12-meta", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/pre12-meta>
-37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/pre12-meta>, "{}", 2) = 2
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>, "{\"exclusive\": []}", 17) = 17
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster>
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.roster", 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive/371820d87c15@191371923986926.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive/371820d87c15@191371923986926.37-0", 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/651292ce499097c16c7cc26b0fad3f5765445aae0db957186afe731f65d54d95/lock.exclusive", AT_REMOVEDIR) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gihcwv1s.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gihcwv1s.tmp>
+37    write(6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gihcwv1s.tmp>, "/tmp/probe-borg-pinned/stateS/re"..., 34) = 34
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location-gihcwv1s.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/location") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type-i5a_c1l7.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type-i5a_c1l7.tmp>
+37    write(6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type-i5a_c1l7.tmp>, "2", 1) = 1
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type-i5a_c1l7.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/key-type") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp-7hz7cr_o.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp-7hz7cr_o.tmp>
+37    write(6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp-7hz7cr_o.tmp>, "2026-08-21T08:33:15.663588", 26) = 26
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp-7hz7cr_o.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/manifest-timestamp") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.config/borg/security/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/files>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks>
+37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks>, "BORG_IDX\5\0\0\0\7\4\0\0 \f", 18) = 18
+37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/chunks>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 45364) = 45364
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-mphu8wul.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-mphu8wul.tmp>
+37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-mphu8wul.tmp>, "[cache]\nversion = 1\nrepository ="..., 594) = 594
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config-mphu8wul.tmp", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/config") = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762>
+37    renameat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.active", AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp") = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp>
+37    unlinkat(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp>, "files", 0) = 0
+37    unlinkat(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp>, "config", 0) = 0
+37    unlinkat(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp>, "chunks", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/txn.tmp", AT_REMOVEDIR) = 0
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/pre12-meta", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/pre12-meta>
+37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/pre12-meta>, "{}", 2) = 2
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    write(6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>, "{\"exclusive\": []}", 17) = 17
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster>
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.roster", 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive/92acf9263a6e@68331849688998.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive/92acf9263a6e@68331849688998.37-0", 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/ambientS/.cache/borg/707957c19c75933afc21bf9ece7bdee58aaa7e9172758ff79bc02eee9a1c2762/lock.exclusive", AT_REMOVEDIR) = 0
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.roster", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-borg-pinned/stateS/repo/lock.roster>
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.roster", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-borg-pinned/stateS/repo/lock.roster>
 37    write(3</tmp/probe-borg-pinned/stateS/repo/lock.roster>, "{\"exclusive\": []}", 17) = 17
@@ -2670,7 +2670,7 @@
 37    openat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.roster", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-borg-pinned/stateS/repo/lock.roster>
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.roster", 0) = 0
 37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
-37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive/371820d87c15@191371923986926.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive/371820d87c15@191371923986926.37-0", 0) = 0
+37    newfstatat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive/92acf9263a6e@68331849688998.37-0", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive/92acf9263a6e@68331849688998.37-0", 0) = 0
 37    unlinkat(AT_FDCWD</>, "/tmp/probe-borg-pinned/stateS/repo/lock.exclusive", AT_REMOVEDIR) = 0
 37    +++ exited with 0 +++

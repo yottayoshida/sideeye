@@ -1,14 +1,14 @@
-== borg probe (control) — borg 1.4.0 — 2026-08-21T08:18:52Z
+== borg probe (control) — borg 1.4.0 — 2026-08-21T08:33:09Z
 == condition 7 — ambient: BORG_BASE_DIR=<WS>/ambientX, a fresh copy of the post-init snapshot per run (reset shown by the copy commands below); BORG_RELOCATED_REPO_ACCESS_IS_OK=yes. Post-init ambient snapshot:
 WS/ambient/.cache/borg/CACHEDIR.TAG
-WS/ambient/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/README
-WS/ambient/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/chunks
-WS/ambient/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/config
-WS/ambient/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/files
-WS/ambient/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/pre12-meta
-WS/ambient/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/key-type
-WS/ambient/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/location
-WS/ambient/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/manifest-timestamp
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/README
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/chunks
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/config
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/files
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/pre12-meta
+WS/ambient/.config/borg/security/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/key-type
+WS/ambient/.config/borg/security/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/location
+WS/ambient/.config/borg/security/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/manifest-timestamp
 == run A
 reset: stateA and ambientA are fresh copies of the pre-state snapshots
 Warning: The repository at location /tmp/probe-borg-control/stateA/repo was previously located at /tmp/probe-borg-control/state/repo
@@ -30,83 +30,8 @@ ok   5-determinism-CONTROL: unpinned create must differ across runs (diff rc=1; 
 == strace pass (fresh copies; raw log kept as <target>.strace)
 strace'd run rc=0
 == mutating paths (all mutating syscalls, successful only, deduped):
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/config"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/config-5d0dp4b6.tmp"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/config-obx1slqu.tmp"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.exclusive"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.exclusive.i7_alzju.tmp"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.exclusive.xtlw9ldl.tmp"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.exclusive/77e8e23060c8@192314362945229.37-0"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.roster"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.active"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.tmp"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.tmp/chunks"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.tmp/config"
-"WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.tmp/files"
-"WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/key-type"
-"WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/key-type-6kou13c3.tmp"
-"WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/location"
-"WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/location-gja7n52o.tmp"
-"WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/location-pnilf9tn.tmp"
-"WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/manifest-timestamp"
-"WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/manifest-timestamp-oih3g6t0.tmp"
-"WS/stateS/repo/hints.1"
-"WS/stateS/repo/hints.5"
-"WS/stateS/repo/hints.5.tmp"
-"WS/stateS/repo/index.1"
-"WS/stateS/repo/index.5"
-"WS/stateS/repo/index.5.tmp"
-"WS/stateS/repo/integrity.1"
-"WS/stateS/repo/integrity.5"
-"WS/stateS/repo/integrity.5.tmp"
-"WS/stateS/repo/lock.exclusive"
-"WS/stateS/repo/lock.exclusive.lh6z6yqa.tmp"
-"WS/stateS/repo/lock.exclusive/77e8e23060c8@192314362945229.37-0"
-"WS/stateS/repo/lock.roster"
-"/tmp/tmp8msgp7qa"
-"/tmp/tmp_das55um"
-"/tmp/tmpar6cse4s"
-"/tmp/tmpdt4nchn_"
-"/tmp/tmpkudl6gqm"
-"/tmp/tmppm9tpx6n"
-"/tmp/vqrf7ac0"
-"chunks"
-"config"
-"file"
-"files"
-"idx"
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/chunks
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/config-5d0dp4b6.tmp
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/config-obx1slqu.tmp
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/files
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.exclusive.i7_alzju.tmp/77e8e23060c8@192314362945229.37-0
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.exclusive.xtlw9ldl.tmp/77e8e23060c8@192314362945229.37-0
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/lock.roster
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/pre12-meta
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.tmp/chunks
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.tmp/config
-WS/ambientS/.cache/borg/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/txn.tmp/files
-WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/key-type-6kou13c3.tmp
-WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/location-gja7n52o.tmp
-WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/location-pnilf9tn.tmp
-WS/ambientS/.config/borg/security/daad00d898fc26c8fb660d171cf75312f7806004712e9fb4c33c8e3294bb1eaf/manifest-timestamp-oih3g6t0.tmp
-WS/stateS/repo/data/0/2
-WS/stateS/repo/data/0/3
-WS/stateS/repo/data/0/4
-WS/stateS/repo/data/0/5
-WS/stateS/repo/hints.5.tmp
-WS/stateS/repo/index.5.tmp
-WS/stateS/repo/integrity.5.tmp
-WS/stateS/repo/lock.exclusive.lh6z6yqa.tmp/77e8e23060c8@192314362945229.37-0
-WS/stateS/repo/lock.roster
-/tmp/tmp8msgp7qa/file
-/tmp/tmp_das55um
-/tmp/tmpar6cse4s/file
-/tmp/tmpdt4nchn_/idx
-/tmp/tmpkudl6gqm/file
-/tmp/tmppm9tpx6n/idx
-/tmp/vqrf7ac0
-ok   6-closure: every mutating path sits under the declared prefixes
+/probes/run-borg.sh: 100: mutating_paths: not found
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
 == thread creations (successful CLONE_THREAD):
 0
 == conditions failed: 0

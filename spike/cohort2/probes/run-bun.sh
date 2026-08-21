@@ -56,8 +56,9 @@ verdict "2-non-noop" $ok "state after run A differs from pre-state"
 # Exactly the expected artifacts and nothing else: node_modules holds
 # probe-dep (plus bun's .bin/.cache bookkeeping dirs at most), the lockfile
 # exists, and the full bun pm ls tree names exactly one dependency.
-nm=$(ls "$WS/stateA/node_modules" | grep -v '^\.' | tr '\n' ' ')
+nm=$(ls -A "$WS/stateA/node_modules" | tr '\n' ' ')
 lockn=0; [ -f "$WS/stateA/bun.lock" ] && lockn=1
+# node_modules must hold exactly probe-dep (ls -A: dot entries count too).
 # bun pm ls shows local-tarball deps as name@<specifier-path>; the whole
 # dependency block must be that single row.
 lstree=$(cd "$WS/stateA" && HOME="$WS/ambientA/home" BUN_INSTALL_CACHE_DIR="$WS/ambientA/cache" bun pm ls 2>/dev/null | sed -n '2,$p' | tr '\n' ' ')

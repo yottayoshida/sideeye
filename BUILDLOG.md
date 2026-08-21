@@ -43,15 +43,31 @@ The probe PR's own R1 returned seven P1 and was right seven times: the
 conditions 1–5 (closure is now condition 6 in the FAILS counter, seen red
 and green in drills.txt with the other predicates); the mutating-path
 listing missed most mutating syscalls and the raw strace logs were not
-committed (they are now, and the closure sweep promptly surfaced borg's
-undeclared `/var/lib/libuuid/clock.txt` write — declared with its reason);
-KeePassXC's runs shared one HOME (per-run ambient copies now); the
-transcripts' timestamps contradicted the "cohort order" claim (the final
-transcripts are one clean in-order sweep); the latest-stable rechecks and
-the linkage/thread forecasts existed only as prose (committed transcripts
-now). Two of my own exactness literals were wrong on first contact — jj's
-root-commit row and bun's tarball-path version display — which is what
-exact assertions are for.
+committed (they are now); KeePassXC's runs shared one HOME (per-run
+ambient copies now); the transcripts' timestamps contradicted the "cohort
+order" claim (the final transcripts are one clean in-order sweep); the
+latest-stable rechecks and the linkage/thread forecasts existed only as
+prose (committed transcripts now). Two of my own exactness literals were
+wrong on first contact — jj's root-commit row and bun's tarball-path
+version display — which is what exact assertions are for.
+
+R2 then caught the closure check itself fail-open — a P0, and the exact
+class the predicate exists to forbid: strace shows bare pointers where a
+target locks its memory, and the extraction silently dropped those calls,
+so an empty allowlist still passed. The rebuilt accounting is fail-closed
+(every successful mutating call must be attributed or the condition
+fails), drilled red both ways (an undeclared write, an unattributable
+pointer call) with a green control, and its first honest sweep produced
+three corrections at once: KeePassXC gains a second, independent wall
+(7 unattributable calls — the memory locking that makes it a password
+manager also makes it unauditable to ptrace); the `/var/lib/libuuid`
+"finding" dissolved (the raw log shows ENOENT — the old extraction was
+counting failed calls); and hg's lock symlinks taught the parser that a
+symlink's first argument is content, not a path. Two sweeps of transcript
+numbers also disagreed (bun's thread count, 6 vs 4) because the counter
+ignored unfinished/resumed pairs — it now counts them with a consistency
+assertion, and every number in RESULTS was re-read from the final
+transcripts, not from the terminal scrollback of an earlier sweep.
 
 ## 2026-08-21 — cohort 2 opens: the claim discipline is frozen before any measurement, and the plan's first draft was wrong three ways
 
