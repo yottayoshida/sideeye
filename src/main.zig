@@ -908,7 +908,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // its crash worlds at 0644 whether or not the target ever chmods (R2,
             // the buku shape: sqlite fchowns only as root, so the note would
             // otherwise vanish exactly where the flattening bites hardest).
-            if (items.len == 0) break :blk "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes and times";
+            if (items.len == 0) break :blk "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore";
             var names: std.ArrayList(u8) = .empty;
             var listed: std.ArrayList([]const u8) = .empty;
             for (items) |n| {
@@ -931,7 +931,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             }
             break :blk std.fmt.allocPrint(
                 arena,
-                "{d} ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): {s}. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes and times",
+                "{d} ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): {s}. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
                 .{ items.len, names.items },
             ) catch "observed (detail unavailable)";
         };
