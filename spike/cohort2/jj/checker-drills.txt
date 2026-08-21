@@ -1,0 +1,14 @@
+== jj-commit checker drills — jj 0.44.0-af45d57de7163cc5f17f3df178a31577e4951ea3 — 2026-08-21T10:04:31Z
+drill ok   green-old-state (rc=0)
+drill ok   green-new-state (rc=0)
+checker(jj-commit): leg V log: 'jj ...' exited 255 (124 = timeout): Internal error: The repository appears broken or inaccessible
+Caused by:
+1: Failed to read operation backend type
+2: Cannot access /tmp/drill-v/.jj/repo/op_store/type
+3: No such file or directory (os 
+drill ok   red-leg-V (rc=1)
+checker(jj-commit): leg T: description list '|third|probe|initial||' is neither the old state nor the completed commit
+drill ok   red-leg-T (rc=1)
+checker(jj-commit): leg C: the initial commit's alpha bytes changed
+drill ok   red-leg-C (rc=1)
+== drills failed: 0

@@ -1,0 +1,27 @@
+== bun-add checker drills — bun 1.4.0 — 2026-08-21T10:03:47Z
+drill ok   green-old-state (rc=0)
+drill ok   green-new-state (rc=0)
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "/usr/lib/python3.13/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/json/decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Unterminated string starting at: line 1 column 25 (char 24)
+checker(bun-add): leg T: package.json does not parse — a torn manifest survived the crash
+drill ok   red-leg-T (rc=1)
+checker(bun-add): the dependency tarball is missing (setup writes it)
+drill ok   red-leg-R-precondition (rc=1)
+checker(bun-add): leg N: installed index.js differs from the tarball's
+drill ok   red-leg-N (rc=1)
+== drills failed: 0
