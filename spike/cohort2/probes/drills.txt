@@ -1,0 +1,15 @@
+== probe-predicate drills — 2026-08-21T08:18:52Z
+FAIL 1-exit-codes: drill input: run A rc=1 (a failing operation), run B rc=0
+drill ok   1-exit-codes went red as required
+FAIL 2-non-noop: drill input: post-state identical to pre-state
+drill ok   2-non-noop went red as required
+FAIL 3-artifact-count: drill input: listing 'probe extra-archive' where exactly 'probe' was expected
+drill ok   3-artifact-count went red as required
+FAIL 4-round-trip: drill input: extracted bytes differ from the source
+drill ok   4-round-trip went red as required
+   outside: /tmp/probe-drills/undeclared/leak.txt
+FAIL 6-closure: mutating paths outside the declared prefixes (listed above)
+drill ok   6-closure went red as required
+ok   6-closure: every mutating path sits under the declared prefixes
+drill ok   6b-closure-control stayed green on a closed run
+== drills failed: 0 (probe-condition reds above are the drills working, counted separately)

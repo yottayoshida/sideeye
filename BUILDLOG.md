@@ -8,12 +8,14 @@ All five cohort-2 probes ran (engine-free, positive control first — the
 unpinned `borg create` split, so the harness demonstrably flags
 nondeterminism). Outcomes, transcripts committed under
 `spike/cohort2/probes/`: Borg and KeePassXC record the pre-declared
-determinism walls (both re-checked against latest stable: Borg 1.4.5
-carries the same `time_end` code; KeePassXC's randomness is the format's
-own guarantee). Mercurial, Jujutsu and Bun pass all seven conditions —
-Bun's byte-determinism over a local-tarball `bun add` was the surprise of
-the day, and it survives `--network=none`, so the DNS/443 contact its
-strace showed is optional.
+determinism walls (both re-checked against latest stable in committed
+transcripts: the fetched Borg 1.4.5 source carries the same `time_end`
+code; KeePassXC 2.7.12 is current and its CLI help carries no determinism
+option — the randomness is the format's own guarantee). Mercurial, Jujutsu
+and Bun pass all six machine-judged conditions, with the ambient evidence
+(condition 7) printed in each transcript — Bun's byte-determinism over a
+local-tarball `bun add` was the surprise of the day, and it survives
+`--network=none`, so the DNS/443 contact its strace showed is optional.
 
 The jj plan needed amending twice, both times by measurement and both
 before any explore (the amendment window the protocol allows): the frozen
@@ -25,16 +27,31 @@ in the pre-state settles it (jj final transcript). The closure condition
 caught a wrong frozen assumption on its first outing, which is the best
 argument it will ever make for itself.
 
-Three shim-visibility forecasts go into the define phase: Mercurial's
-commit path spawns one C-level thread that Python-level hooks cannot see
-and `worker.*` configs do not remove — hunted to the mmap-ed
-rev-branch-cache and removed by `storage.revbranchcache.mmap=no`,
-measured with an in-transcript control. The jj release binary is
-statically linked, so `LD_PRELOAD` cannot load into it at all — jj's slot
-will open on a `no_shim_marker`-class wall unless a dynamic build is
-worth the apparatus. Bun spawns six threads during `bun add`, and the
-shim notes every `pthread_create`. Engine order, fixed before any define:
-Mercurial → Jujutsu → Bun.
+Three shim-visibility forecasts go into the define phase, each now
+measured inside its own transcript: Mercurial's commit path spawns one
+thread by default and the forecast table pins the off switch exclusively
+(`storage.revbranchcache.mmap=no` → 0; both `worker.*` switches → still
+1). The jj release binary answers `ldd` with "not a dynamic executable" —
+`LD_PRELOAD` cannot load into it at all, so jj's slot will open on a
+`no_shim_marker`-class wall unless a dynamic build is worth the
+apparatus. Bun makes six successful `CLONE_THREAD` creations during
+`bun add`, and the shim notes every `pthread_create`. Engine order, fixed
+before any define: Mercurial → Jujutsu → Bun.
+
+The probe PR's own R1 returned seven P1 and was right seven times: the
+"all seven pass" wording claimed machine judgement the harness only gave
+conditions 1–5 (closure is now condition 6 in the FAILS counter, seen red
+and green in drills.txt with the other predicates); the mutating-path
+listing missed most mutating syscalls and the raw strace logs were not
+committed (they are now, and the closure sweep promptly surfaced borg's
+undeclared `/var/lib/libuuid/clock.txt` write — declared with its reason);
+KeePassXC's runs shared one HOME (per-run ambient copies now); the
+transcripts' timestamps contradicted the "cohort order" claim (the final
+transcripts are one clean in-order sweep); the latest-stable rechecks and
+the linkage/thread forecasts existed only as prose (committed transcripts
+now). Two of my own exactness literals were wrong on first contact — jj's
+root-commit row and bun's tarball-path version display — which is what
+exact assertions are for.
 
 ## 2026-08-21 — cohort 2 opens: the claim discipline is frozen before any measurement, and the plan's first draft was wrong three ways
 

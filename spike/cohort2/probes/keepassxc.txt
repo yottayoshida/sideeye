@@ -1,23 +1,23 @@
-== keepassxc probe — keepassxc-cli 2.7.10 — 2026-08-21T07:53:44Z
+== keepassxc probe — keepassxc-cli 2.7.10 — 2026-08-21T08:19:05Z
 Enter password to encrypt database (optional): 
 Repeat password: 
-== pre-state: one database, no entries beyond defaults
+== condition 7 — ambient: HOME=<WS>/homeX, a fresh copy of the post-setup snapshot per run. Post-setup snapshot contents:
+WS/home/.config/keepassxc/keepassxc.ini
 == run A
+reset: stateA and homeA are fresh copies of the post-setup snapshots
 == run B (>=2s later)
+reset: stateB and homeB are fresh copies of the post-setup snapshots
 ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
 ok   2-non-noop: state after run A differs from pre-state
-ok   3-artifact-count: ls shows probe-entry exactly 1 time(s), expected exactly 1
+ok   3-artifact-count: root listing is exactly 'probe-entry' (got: 'probe-entry ')
 ok   4-round-trip: show -a username returns the stored value ('probe-user')
 == cmp of the two databases:
 /tmp/probe-keepassxc/stateA/db.kdbx /tmp/probe-keepassxc/stateB/db.kdbx differ: char 42, line 1
 FAIL 5-determinism: two runs >=2s apart byte-identical db.kdbx (cmp rc=1; the pre-declared expectation is that this fails)
-== strace pass (fresh copy; mutating paths outside the state root listed)
+== strace pass (fresh copies; raw log kept as keepassxc.strace)
 strace'd run rc=0
-== write-opened paths (openat with O_WRONLY|O_RDWR|O_CREAT), deduped:
-== renames and unlinks:
-== process/thread creation (clone/fork), count:
+== mutating paths (all mutating syscalls, successful only, deduped):
+ok   6-closure: every mutating path sits under the declared prefixes
+== thread creations (successful CLONE_THREAD):
 1
-== reading (condition 6): persistent writes must be inside WS/stateS; /tmp, /dev and /tmp/probe-keepassxc/home cache writes are scratch/ambient.
-== ambient (condition 7): HOME is a fresh per-probe directory; contents after the runs:
-WS/home/.config/keepassxc/keepassxc.ini
 == conditions failed: 1

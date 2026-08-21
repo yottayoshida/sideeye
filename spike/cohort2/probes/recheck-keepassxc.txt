@@ -1,0 +1,6 @@
+== KeePassXC wall recheck against latest upstream stable (2026-08-21)
+== latest release per GitHub API:
+tag=2.7.12 published=2026-03-10T01:16:42Z
+== the mechanism is the format: every KDBX save derives fresh random salts/IVs; determinism is absent by design, not by version.
+== measured absence of any determinism-related option in the shipped CLI (2.7.10, the probe image):
+(no determinism/seed/reproducibility option exists in either command's help)

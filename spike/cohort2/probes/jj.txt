@@ -1,77 +1,90 @@
-== jj probe — jj 0.44.0-af45d57de7163cc5f17f3df178a31577e4951ea3 — 2026-08-21T07:57:16Z
-== pre-state: 3 commits (incl. root and working copy), 5 operations
+== jj probe — jj 0.44.0-af45d57de7163cc5f17f3df178a31577e4951ea3 — 2026-08-21T08:19:03Z
+== condition 7 — ambient: identity and clocks pinned entirely through the environment; HOME=<WS>/home fresh and checked empty after the runs. The pins, with values:
+JJ_EMAIL=probe@example.invalid
+JJ_OP_HOSTNAME=probe-host
+JJ_OP_TIMESTAMP=2026-01-01T00:00:00+00:00
+JJ_OP_USERNAME=probe-user
+JJ_RANDOMNESS_SEED=42
+JJ_TIMESTAMP=2026-01-01T00:00:00+00:00
+JJ_TZ_OFFSET_MINS=0
+JJ_USER=probe
+== pre-state log: '|initial||' — 5 operations
 == run A
+reset: repoA is a fresh copy of the pre-state repo
 Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
 Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
 == run B (>=2s later)
+reset: repoB is a fresh copy of the pre-state repo
 Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
 Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
 ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
 ok   2-non-noop: repository dir after run A differs from pre-state
-ok   3-artifact-count: commits +1 (expected +1), operations +1 (expected +1)
+ok   3-artifact-count: log is exactly '|probe|initial||' (got '|probe|initial||'), operations +1 (expected +1)
 ok   4-round-trip: jj file show -r @- alpha returns the committed bytes
 == diff -r of the two repository trees (working copy + .jj + .git):
 ok   5-determinism: two runs >=2s apart byte-identical repository dir (diff rc=0)
-== strace pass (fresh copy; mutating paths outside .jj listed)
+== strace pass (fresh copy; raw log kept as jj.strace)
 strace'd run rc=0
-== write-opened paths (openat with O_WRONLY|O_RDWR|O_CREAT), deduped:
-"WS/repoS/.git/HEAD.lock"
-"WS/repoS/.git/index.lock"
-"WS/repoS/.git/objects/.tmpcLv4Jj"
-"WS/repoS/.git/objects/.tmpeSEOus"
-"WS/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock"
-"WS/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock"
-"WS/repoS/.jj/repo/git_import_export.lock"
-"WS/repoS/.jj/repo/index/op_links/.tmpAzLHog"
-"WS/repoS/.jj/repo/index/segments/.tmpOkSVm9"
-"WS/repoS/.jj/repo/op_heads/heads/8bf620d78870d37a25e5418df4f031ca2e53b82620f2aacccf307c11992bcd44771bf54493d3470565f67404456fdf894a810159dd0b16507216989a08aaec1c"
-"WS/repoS/.jj/repo/op_heads/heads/lock"
-"WS/repoS/.jj/repo/op_store/operations/.tmpEtoer8"
-"WS/repoS/.jj/repo/op_store/views/.tmp77XkD2"
-"WS/repoS/.jj/repo/store/extra/.tmpPLxHNN"
-"WS/repoS/.jj/repo/store/extra/.tmpoonW33"
-"WS/repoS/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815"
-"WS/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2"
-"WS/repoS/.jj/repo/store/extra/lock"
-"WS/repoS/.jj/working_copy"
-"WS/repoS/.jj/working_copy/.tmpVex18o"
-"WS/repoS/.jj/working_copy/working_copy.lock"
-== renames and unlinks:
+== mutating paths (all mutating syscalls, successful only, deduped):
 "WS/repoS/.git/HEAD"
 "WS/repoS/.git/HEAD.lock"
 "WS/repoS/.git/index"
 "WS/repoS/.git/index.lock"
-"WS/repoS/.git/objects/.tmpcLv4Jj"
-"WS/repoS/.git/objects/.tmpeSEOus"
+"WS/repoS/.git/objects/.tmpN9dDeR"
+"WS/repoS/.git/objects/.tmpsK5xoB"
 "WS/repoS/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428"
+"WS/repoS/.git/objects/6b"
 "WS/repoS/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4"
 "WS/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428"
 "WS/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock"
 "WS/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4"
 "WS/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock"
 "WS/repoS/.jj/repo/git_import_export.lock"
-"WS/repoS/.jj/repo/index/op_links/.tmpAzLHog"
-"WS/repoS/.jj/repo/index/op_links/8bf620d78870d37a25e5418df4f031ca2e53b82620f2aacccf307c11992bcd44771bf54493d3470565f67404456fdf894a810159dd0b16507216989a08aaec1c"
-"WS/repoS/.jj/repo/index/segments/.tmpOkSVm9"
+"WS/repoS/.jj/repo/index/op_links/.tmpBkW3Jj"
+"WS/repoS/.jj/repo/index/op_links/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74"
+"WS/repoS/.jj/repo/index/segments/.tmpvpI5zO"
 "WS/repoS/.jj/repo/index/segments/76269392bb4630047c5d0e9ec33084cf8618c849e892a38c19bc9b328fef494ceaa2b0bc21c9e958e1ac04bb8cc5a06cd39274e85cd474ccbcc236f2ff807319"
-"WS/repoS/.jj/repo/op_heads/heads/e84870c8b7328188f8670ab4c8a85373edf247a263eee9cedfc0a990ef3986514f17ac3da6b4db4036749c2ddf2c0458bb1f60868386ff50abe70ad2bcff538d"
+"WS/repoS/.jj/repo/op_heads/heads/3bebf3e7acd792c4e7eb64dbf55263229e48ae3251038526d416b7711bd2aa1aa722e66cc0146e36c5728cf0a67f16a58c5e501803acbad9443bb26919e03401"
 "WS/repoS/.jj/repo/op_heads/heads/lock"
-"WS/repoS/.jj/repo/op_store/operations/.tmpEtoer8"
-"WS/repoS/.jj/repo/op_store/operations/8bf620d78870d37a25e5418df4f031ca2e53b82620f2aacccf307c11992bcd44771bf54493d3470565f67404456fdf894a810159dd0b16507216989a08aaec1c"
-"WS/repoS/.jj/repo/op_store/views/.tmp77XkD2"
+"WS/repoS/.jj/repo/op_store/operations/.tmp3TCvnv"
+"WS/repoS/.jj/repo/op_store/operations/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74"
+"WS/repoS/.jj/repo/op_store/views/.tmpMwkDkt"
 "WS/repoS/.jj/repo/op_store/views/15a8da25ec7ab8ecf3de8b1100280824e68fac566caa8231442974299084c97e67d41afde229923c283795ffa514f36e87f5228893c42c722d09dc91c7e46dce"
-"WS/repoS/.jj/repo/store/extra/.tmpPLxHNN"
-"WS/repoS/.jj/repo/store/extra/.tmpoonW33"
+"WS/repoS/.jj/repo/store/extra/.tmpE9gJtJ"
+"WS/repoS/.jj/repo/store/extra/.tmpzkBEWl"
 "WS/repoS/.jj/repo/store/extra/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815"
 "WS/repoS/.jj/repo/store/extra/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2"
 "WS/repoS/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe"
 "WS/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2"
 "WS/repoS/.jj/repo/store/extra/lock"
-"WS/repoS/.jj/working_copy/.tmpVex18o"
+"WS/repoS/.jj/working_copy/.tmpn7bXeq"
 "WS/repoS/.jj/working_copy/checkout"
 "WS/repoS/.jj/working_copy/working_copy.lock"
-== process/thread creation (clone/fork), count:
+WS/repoS/.git/HEAD.lock
+WS/repoS/.git/index.lock
+WS/repoS/.git/objects/.tmpN9dDeR
+WS/repoS/.git/objects/.tmpsK5xoB
+WS/repoS/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock
+WS/repoS/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock
+WS/repoS/.jj/repo/git_import_export.lock
+WS/repoS/.jj/repo/index/op_links/.tmpBkW3Jj
+WS/repoS/.jj/repo/index/segments/.tmpvpI5zO
+WS/repoS/.jj/repo/op_heads/heads/1c62983c5fef8cb2168a0607487e4d89860c3f5b34228d98f20ed574df42dc40e74fe4f9d9e5977b9e165c36ab3b581c222edd712055eb2477351da2c9829d74
+WS/repoS/.jj/repo/op_heads/heads/lock
+WS/repoS/.jj/repo/op_store/operations/.tmp3TCvnv
+WS/repoS/.jj/repo/op_store/views/.tmpMwkDkt
+WS/repoS/.jj/repo/store/extra/.tmpE9gJtJ
+WS/repoS/.jj/repo/store/extra/.tmpzkBEWl
+WS/repoS/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815
+WS/repoS/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2
+WS/repoS/.jj/repo/store/extra/lock
+WS/repoS/.jj/working_copy/.tmpn7bXeq
+WS/repoS/.jj/working_copy/working_copy.lock
+ok   6-closure: every mutating path sits under the declared prefixes
+== thread creations (successful CLONE_THREAD):
 11
-== reading (condition 6): persistent writes must be inside WS/repoS (the repository dir: working copy + .jj + colocated .git); /tmp and /dev writes are scratch.
-== ambient consulted (condition 7): identity and clocks are pinned entirely through JJ_* environment (printed above); HOME is a fresh per-probe directory, contents after the runs:
+== condition 7 evidence — HOME after both runs (expected empty):
+(no output above = HOME stayed empty)
+== forecast — linkage of the release binary (a static binary cannot load an LD_PRELOAD shim):
+	not a dynamic executable
 == conditions failed: 0

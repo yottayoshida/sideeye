@@ -1,33 +1,58 @@
 # Cohort 2 — probe outcomes (2026-08-21)
 
-Engine-free probes per PROTOCOL.md's frozen plans, run in cohort order
-inside the `sideeye-cohort2` image (versions in each transcript). The
-positive control ran first and split, so the harness is known to flag
-nondeterminism (`probes/positive-control.txt`). Raw transcripts are the
-record; this page is the index and the ruling.
+Engine-free probes per PROTOCOL.md's frozen plans, run in the
+`sideeye-cohort2` image. The final transcripts come from **one sweep in
+cohort order** — drills, positive control, then Borg → Mercurial →
+Jujutsu → KeePassXC → Bun — after two committed rounds of harness and
+plan iteration disclosed below. Raw strace logs are committed beside the
+transcripts (`probes/raw/`). This page is the index and the ruling; the
+transcripts are the record.
+
+**What is machine-judged and what is read.** Conditions 1–6 are judged by
+the harness's own predicates (the `FAILS` counter in each transcript;
+condition 6 is the closure check over every mutating syscall). Condition 7
+is printed evidence — the ambient's contents and per-run reset — read, not
+scored. Every judging predicate has been seen red once against a violating
+input: conditions 1, 2, 3, 4 and 6 in `probes/drills.txt` (with a green
+control for the closure check), condition 5 by the positive control
+(`probes/positive-control.txt`, the unpinned `borg create`, which split).
 
 ## Outcomes
 
 | # | Target | Probe verdict | Transcript |
 |---|--------|---------------|------------|
-| 1 | BorgBackup 1.4.0 | **named wall: determinism** — conditions 1–4 pass; two pinned `borg create` runs 2s apart differ in `data/*` segments, `index.5`, `integrity.5` | `probes/borg.txt` |
-| 2 | Mercurial 7.2.4 | **pass, all seven** — whole-`.hg` root byte-identical across runs; closure clean (every persistent write inside `.hg`); commit-path thread removed by documented config (control shown) | `probes/hg.txt` |
-| 3 | Jujutsu 0.44.0 | **pass, all seven, after two measured corrections** — v1: frozen `.jj` root failed closure (colocated `./.git` writes); v2: repo-wide root split on the reflog's wall-clock line; final: `core.logAllRefUpdates=false` pre-state, byte-identical repo | `probes/jj-v1.txt`, `probes/jj-v2.txt`, `probes/jj.txt` |
-| 4 | KeePassXC 2.7.10 | **named wall: determinism (pre-declared)** — conditions 1–4 pass; two `keepassxc-cli add` runs produce different `db.kdbx` bytes | `probes/keepassxc.txt` |
-| 5 | Bun 1.4.0 | **pass, all seven** — local-tarball `bun add` byte-identical across runs; succeeds under `--network=none` (the observed DNS/443 contact is optional) | `probes/bun.txt`, `probes/bun-network-independence.txt` |
+| 1 | BorgBackup 1.4.0 | **named wall: determinism** — conditions 1–4 and 6 pass; two pinned `borg create` runs 2s apart differ in `data/*` segments, `index.5`, `integrity.5` | `probes/borg.txt` |
+| 2 | Mercurial 7.2.4 | **pass** — conditions 1–6 machine-green; whole-`.hg` root byte-identical across runs; closure clean | `probes/hg.txt` |
+| 3 | Jujutsu 0.44.0 | **pass** — conditions 1–6 machine-green, after two measured pre-explore plan amendments (below) | `probes/jj.txt` |
+| 4 | KeePassXC 2.7.10 | **named wall: determinism (pre-declared)** — conditions 1–4 and 6 pass; two `keepassxc-cli add` runs produce different `db.kdbx` bytes | `probes/keepassxc.txt` |
+| 5 | Bun 1.4.0 | **pass** — conditions 1–6 machine-green over a local-tarball `bun add`; the same add succeeds under `docker --network=none` | `probes/bun.txt`, `probes/bun-network-independence.txt` |
+
+**The jj amendments** (PROTOCOL "Probe plans" note): the frozen `.jj` root
+failed the closure condition — jj 0.44's `jj git init` colocates the git
+store at `./.git`, measured in `probes/jj-v1.txt` — and the corrected
+repository-wide root then split on one byte run, the reflog line jj's git
+export stamps with wall-clock time (`probes/jj-v2.txt`). The final
+pre-state sets `core.logAllRefUpdates=false`. Both earlier transcripts
+predate the final harness (they carry its older, weaker output format);
+they are committed as the amendments' evidence, not as verdicts.
+
+**Declared exclusion, borg**: `/var/lib/libuuid/clock.txt` — libuuid's own
+uuid-uniqueness bookkeeping, written during borg runs; system state, not
+target state, not consulted by any judgement; declared in the harness with
+that reason rather than left for a reader to find.
 
 ## Wall rechecks (latest upstream stable, per PROTOCOL "Versions")
 
-- **Borg**: the wall's mechanism — `time_end = timestamp + monotonic
-  duration`, stored in archive metadata — is present verbatim in the
-  latest stable's source (1.4.5, released 2026-07-18,
-  `src/borg/archive.py`; read in both `1.4-maint` and the `1.4.5` tag).
-  The wall is a property of the current release, not of trixie's 1.4.0
-  package. Terminal.
-- **KeePassXC**: the mechanism is the product — every KDBX save is
-  encrypted with fresh randomness; no deterministic-save mode exists in
-  any version by design (latest stable 2.7.12, released 2026-03-10). A
-  run-level recheck cannot change a property the format guarantees.
+- **Borg** (`probes/recheck-borg.txt`): latest stable is 1.4.5
+  (2026-07-18, GitHub API). The fetched 1.4.5 `src/borg/archive.py`
+  carries the mechanism verbatim: `duration = timedelta(seconds=
+  time.monotonic() - self.start_monotonic)`, `end = timestamp + duration`,
+  stored as `time_end` in the archive metadata. The wall is a property of
+  the current release. Terminal.
+- **KeePassXC** (`probes/recheck-keepassxc.txt`): latest stable is 2.7.12
+  (2026-03-10, GitHub API). The mechanism is the format — every KDBX save
+  derives fresh random salts/IVs — and the shipped CLI's help carries no
+  determinism/seed/reproducibility option (measured in the transcript).
   Terminal.
 
 ## Engine order (fixed here, before any define or explore)
@@ -38,26 +63,26 @@ Walls yield their slots; survivors keep the cohort order:
 
 ## Shim-visibility forecasts carried into the define phase
 
-These are strace observations, not verdicts; the engine's own refusals
-decide at explore time.
+Transcript-measured observations; the engine's own refusals decide at
+explore time.
 
-- **Mercurial**: one C-level thread on the commit path (around the mmap-ed
-  rev-branch-cache; invisible to Python threading hooks;
-  `worker.*` configs do not remove it). `storage.revbranchcache.mmap=no`
-  removes it — measured with a same-transcript control — so the define's
-  launcher pins that config. Expected: records cleanly.
-- **Jujutsu**: the aarch64 release binary is **statically linked** ("not a
-  dynamic executable") — `LD_PRELOAD` interposition cannot load into it at
-  all, so the engine is expected to refuse at recording
-  (`no_shim_marker`-class). When jj's slot arrives the choice is between
-  recording that wall and building a dynamically-linked jj as apparatus;
-  neither choice is made here.
-- **Bun**: dynamically linked, but the strace pass shows 6 threads
-  (`CLONE_THREAD`) during `bun add` — the shim notes any `pthread_create`
-  and the engine refuses (`multiple_threads_detected`). Expected wall at
-  recording unless a single-threaded mode exists; to be measured at its
-  slot. Runs offline (`--network=none` transcript), so the network contact
-  is not the blocker.
+- **Mercurial** (`probes/hg.txt`): one successful `CLONE_THREAD` during
+  `hg commit` by default; the forecast table measures it per configuration
+  — default 1, `worker.enabled=no` 1, `worker.backgroundclose=no` 1,
+  `storage.revbranchcache.mmap=no` **0**. The shim notes every
+  `pthread_create` and the engine refuses on threads, so the define's
+  launcher pins that config.
+- **Jujutsu** (`probes/jj.txt`): `ldd /usr/local/bin/jj` prints "not a
+  dynamic executable" — a static binary cannot load an `LD_PRELOAD` shim,
+  so the engine is expected to refuse at recording. When jj's slot arrives
+  the choice is between recording that wall and building a
+  dynamically-linked jj as apparatus; neither choice is made here.
+- **Bun** (`probes/bun.txt`): dynamically linked (ldd output in the
+  transcript), but 6 successful `CLONE_THREAD` creations during `bun add`
+  — a `multiple_threads_detected` refusal is the expectation unless a
+  single-threaded mode exists; to be measured at its slot. The network
+  contact its strace shows is optional (the `--network=none` companion
+  transcript), so that part is not the blocker.
 
 ## What this phase deliberately did not do
 

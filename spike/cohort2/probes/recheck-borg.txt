@@ -1,0 +1,45 @@
+== Borg wall recheck against latest upstream stable (host-side, 2026-08-21)
+== latest release per GitHub API:
+tag=1.4.5 published=2026-07-18T22:36:16Z
+== the time_end mechanism in the 1.4.5 tag's src/borg/archive.py (fetched raw; sha256 of the fetch shown):
+d8748f7144db81a80e9c2445ed3ef880124986a2c9bcb7b138810cd5c5abeca2  archive-1.4.5.py
+-- the save() lines that add a monotonic duration to the pinned timestamp and store it:
+435-                 checkpoint_interval=1800, numeric_ids=False, noatime=False, noctime=False,
+436-                 noflags=False, noacls=False, noxattrs=False,
+437:                 progress=False, chunker_params=CHUNKER_PARAMS, start=None, start_monotonic=None, end=None,
+438-                 consider_part_files=False, log_json=False, iec=False):
+439-        self.cwd = os.getcwd()
+440-        self.key = key
+441-        self.repository = repository
+442-        self.cache = cache
+443-        self.manifest = manifest
+--
+460-        self.noacls = noacls
+461-        self.noxattrs = noxattrs
+462:        assert (start is None) == (start_monotonic is None), 'Logic error: if start is given, start_monotonic must be given as well and vice versa.'
+463-        if start is None:
+464-            start = utcnow()
+465:            start_monotonic = time.monotonic()
+466-        self.chunker_params = chunker_params
+467-        self.start = start
+468:        self.start_monotonic = start_monotonic
+469-        if end is None:
+470-            end = utcnow()
+471-        self.end = end
+472-        self.consider_part_files = consider_part_files
+473-        self.pipeline = DownloadPipeline(self.repository, self.key)
+474-        self.create = create
+--
+622-            raise self.AlreadyExists(name)
+623-        self.items_buffer.flush(flush=True)
+624:        duration = timedelta(seconds=time.monotonic() - self.start_monotonic)
+625-        if timestamp is None:
+626-            end = utcnow()
+627-            start = end - duration
+628-        else:
+629-            end = timestamp + duration
+630-            start = timestamp
+519:        # fall back to time if there is no time_end present in metadata
+520:        ts = self.metadata.get('time_end') or self.metadata.time
+642:            'time_end': end.strftime(ISO_FORMAT),
+2465:                'time_end': archive.metadata.get('time_end') or archive.metadata.time,
