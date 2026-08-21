@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.12.0",
+  "contract_version": 10,
+  "define": {
+    "state": "/tmp/cohort2/borg/state",
+    "setup": "/work/spike/cohort2/borg-r3/ops/./setup.sh",
+    "operation": "borg create --timestamp 2026-01-01T00:00:00 /tmp/cohort2/borg/state/repo::probe /tmp/cohort2/borg/src",
+    "check": "/work/spike/cohort2/borg-r3/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 94,
+  "ops_total": 118,
+  "prefix_hash": "7d861e16f452538e",
+  "after_class": "open",
+  "after_path": "/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/chunks",
+  "before_class": "write",
+  "before_path": "/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/chunks",
+  "violation": "hybrid"
+}

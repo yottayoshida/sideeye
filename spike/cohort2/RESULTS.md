@@ -119,6 +119,31 @@ makes that an honest, publishable result rather than a shelved one. The
 criterion-1 search continues on the four standing upstream reports and
 any future cohort.
 
+## The #200 follow-up (same day): Borg's wall lifted, and a second null-with-verdict
+
+The owner reopened Borg's determinism wall as its own decision (#200,
+"before v1.0"). The wall fell to a three-piece declared apparatus
+(libfaketime realtime-x0 + sitecustomize pins on `time.monotonic` and
+`os.urandom` — the last owner-approved as an integrity tag's salt, not
+encryption), measured leak by leak in the frozen probe
+(`probes/borg-frozen.txt`, with the pinned and control transcripts beside
+it as contrast). The define then took three revisions — the outside-root
+client cache (`kill_did_not_land`), then hg-r3's sendfile line — and
+reached the cohort's second full verdict, reproduced identically twice:
+
+- **Borg (2026-08-21, borg-r3)** — **FAIL 3/119, every violation L0-only,
+  all three in the relocated client cache's in-place rewrite** — and
+  **Borg's documented transactional contract held in all 119 worlds**
+  (`break-lock` fired in 14, succeeded in 14; `borg check`, base
+  conservation, old-or-new: green everywhere). Under the frozen claim
+  rule: a precision-limit observation, not a candidate. Ruling:
+  `borg-r3/RUNLOG.md`.
+
+The cohort's final ledger therefore reads: five targets, six recorded
+outcomes (KeePassXC's wall stands; Borg's wall was lifted by declared
+apparatus and became a null-with-verdict), two full verdicts, zero
+criterion-1 candidates.
+
 - **Mercurial (2026-08-21)** — the define took four revisions to reach a
   verdict, each one's refusal committed as evidence (r1 SETUP ERROR at
   state resolution; r2 sendfile, worked around by a declared
