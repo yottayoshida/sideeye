@@ -2,7 +2,88 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-18 — the re-sweep's own PR deleted the rule that keeps the audit honest, and two filings proved it within hours
+## 2026-08-21 — cohort 2 opens: the claim discipline is frozen before any measurement, and the plan's first draft was wrong three ways
+
+Criterion 1 is the last v1.0 item and its four upstream reports sit
+unanswered (calcurse #529 and stow #139 re-measured today: zero comments),
+so a second cohort opens rather than waiting. Selection cleared the owner
+hard gate today — BorgBackup, Mercurial, Jujutsu, KeePassXC, Bun, evidence
+and sign-off on #183 — and `spike/cohort2/PROTOCOL.md` freezes the rules
+before any probe or measurement (pre-freeze target contact was install
+plus `--version` in the image build, the cohort-1 pre-window allowance;
+measured there: borg 1.4.0, hg 7.2.4, jj 0.44.0, keepassxc-cli 2.7.10,
+bun 1.4.0, strace 6.13): probe gate first (engine-free, seven pinned
+conditions per transcript, all seven or no pass, positive control before
+the first verdict counts, and the five probe plans themselves frozen in
+the protocol), claim reading fixed in advance (only a saved
+case whose violated invariant is the declared checker is a criterion-1
+candidate; an L0-only FAIL is a precision-limit observation, the #35
+ruling applied cohort-wide), and the mini-seal sharpened to #140's gate
+(no explore before the define is on main; a define revision is a new
+target directory; a FAIL freezes the define).
+
+The plan's first draft did not survive review, and the reversals are worth
+their lines:
+
+- **The checker was designed to judge a scratch copy** on the belief that
+  the quiescence double-sample brackets the checker's state access. It
+  does not — `main.zig` takes the crashed snapshot and judges L0 *before*
+  the checker runs (the stdout capture is what brackets the checker), and
+  buku's committed checker already recovery-opens the crashed db directly.
+  A scratch copy would also have handed Borg a relocated-repository prompt
+  for free. Reversed: checkers run on the crashed state.
+- **Borg was slotted as engine target 1** on the assumption `--timestamp`
+  pins the archive clock. It pins the start only; `time_end` is start plus
+  a `time.monotonic()` duration and lands in the archive metadata (read in
+  both `1.4-maint` and `1.4.5` `archive.py`). Byte determinism is expected
+  to fail, and the probe gate now exists to buy that answer for the price
+  of two normal runs instead of a define and an explore.
+- **The noise model overclaimed**: the draft assumed L0 would flag every
+  transactional target's uncommitted partials. DESIGN §12 says otherwise —
+  one-sided files are unconstrained, append-extended files are judged by
+  history preservation — so the claim rule is framed as "how an L0-only
+  FAIL is read if it appears", not as a prediction that it will.
+
+Also reversed in review: an in-place define fix can never satisfy D2 (the
+verifier anchors the define at its introduction and demands blob identity),
+and a delete-and-re-add inside one merge collapses to `M` on the
+first-parent line — so define revisions are new target directories, the
+only shape that is an `A` event under every merge style. And the
+verification transcript cannot ride the artifacts' own PR: the verifier
+reads main, so verification is a follow-up PR after the artifacts merge.
+
+KeePassXC moved from slot 1 to slot 4 (owner decision, recorded on #183
+before any measured contact): its save is encrypted with fresh randomness
+per write, a determinism wall is the likely outcome, and the binding
+constraint on v1.0 is the upstream-response clock on a find — walls can
+wait, finds cannot.
+
+The first image build failed and taught the build its shape: the
+development machine sits behind a TLS-intercepting proxy whose CA the host
+trusts but a stock Debian container does not — in-container pip died on
+"self-signed certificate in certificate chain" against PyPI, and the curl
+steps for jj/bun would have died the same way one layer later (apt
+survived because Debian's default mirror transport is plain HTTP).
+Downloads moved host-side into `fetch-artifacts.sh` with committed sha256
+pins (PyPI's published digest for the Mercurial 7.2.4 sdist, upstream's
+SHASUMS256.txt for Bun 1.4.0, a stated first-download pin for jj v0.44.0),
+and the Dockerfile re-verifies every copy so the build never has to trust
+the context. The corporate CA stays out of the image and the repository.
+
+The freeze PR's own review (R1, fresh session) returned six P1 and caught
+this entry overclaiming in its first form: "frozen before anything is
+installed" was false — the image build had already installed and
+version-checked all five targets — so the claim narrowed to what the
+cohort-1 rule actually allows (install + `--version` pre-window) and the
+measured versions moved into the record. Same round: the Mercurial
+eligibility ruling now cites its primary source instead of asserting a
+sprint from memory; the five probe plans were frozen into the protocol
+(pass conditions chosen before any probe can run, all seven or no pass);
+pip gained `--no-index --no-deps` so the no-network claim is enforced
+rather than hoped; and the launcher's precedence was demoted from "the
+verifier proves it" to "read off D3's listing" — the verifier holds
+toml/checker/setup only.
+
 
 Straight into the embarrassing column. The freeze-audit page carried a
 standing sentence: *"Before tagging, the sweep is re-run and this page
