@@ -188,12 +188,14 @@ therefore adds:
   - `verify-assisted.sh spike/cohort2/<target>` green proves the
     define **as the verifier defines it** — the toml, checker and setup —
     strictly precedes the artifacts, byte-identical. The launcher is
-    outside D1 and held to D2 only when it exists at both points, so the
-    launcher's precedence is not proven by the green: it is read off D3's
-    listing, which names every scanned file with its introducing commit,
-    and the claim states that reading explicitly. An environment change
-    smuggled into a launcher after the fact is exactly what this reading
-    exists to catch.
+    outside D1, and D2 holds it only when it exists at the define anchor —
+    a launcher introduced after the anchor and edited between explore and
+    artifacts would show D3 nothing but its introduction. This cohort
+    closes that gap by rule rather than by reading: **the launcher ships
+    with the define** — an `ops/` without its `explore.sh` is not a
+    complete define and does not open exploration. Present at the anchor,
+    the launcher is held byte-identical by D2 like everything else, and a
+    launcher revision is a define revision (new target directory).
   - This file is outside the verifier's define set entirely; its history
     is the only thing holding it. The claim transcript therefore includes
     `git log --first-parent -p -- spike/cohort2/PROTOCOL.md` — full
@@ -249,13 +251,15 @@ tag is mutable and apt packages are unversioned, so a rebuild may drift.
 The freeze build (2026-08-21, arm64) measured: borg 1.4.0 (apt trixie;
 upstream stable is 1.4.5 — the re-check rule below covers the gap),
 Mercurial 7.2.4, jj 0.44.0, keepassxc-cli 2.7.10, Bun 1.4.0, strace 6.13,
-Python 3.13.5. That `--version` pass is the only pre-freeze target
-contact. The versions that actually run are re-recorded in each probe
+Python 3.13.5. That install-and-`--version` pass is the only pre-freeze
+target contact. The versions that actually run are re-recorded in each probe
 transcript and RUNLOG. Three pins are exact, fetched on the host by
 `fetch-artifacts.sh` (the build machine's TLS-intercepting proxy broke
-in-container pip verification — measured — and a stock container's curl
-shares the same trust store, so downloads run host-side; the script
-carries the pins and the Dockerfile re-verifies every copy): Mercurial 7.2.4 by PyPI's published
+in-container pip verification — measured, 2026-08-21 — and a stock
+container's curl shares the same trust store, so the same failure is
+inferred, not measured: curl was dropped from the image instead.
+Downloads run host-side; the script carries the pins and the Dockerfile
+re-verifies every copy): Mercurial 7.2.4 by PyPI's published
 sdist sha256, Bun 1.4.0 by upstream's SHASUMS256.txt, jj v0.44.0 by a hash
 measured from the 2026-08-21 download — upstream ships no checksum asset
 for it, so that pin is first-download trust, stated as such.
