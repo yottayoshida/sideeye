@@ -2,6 +2,27 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — Borg's verdict: FAIL 3/119, all three in the cache we relocated, and the contract held everywhere
+
+The r3 explore ran 118 crash worlds plus baseline and reproduced its
+verdict identically on a second run: FAIL 3/119, oracle_verified true,
+single process, the #190 exclusion visible (fchmodat x3). The reading
+writes itself: **Borg's documented transactional contract held in all
+119 worlds** — break-lock fired in 14 and succeeded in 14, borg check
+passed everywhere, the base archive extracted byte-identically in every
+world, the listing was never a third thing. The three L0 violations sit
+in `ambient/.cache/borg/<repo-id>/chunks` — the client cache's in-place
+rewrite, a file borg documents as deletable-and-rebuildable, judged at
+all only because r2 moved it inside the state root so worlds could run.
+The all-5a repo id in the flagged path is the pinned urandom looking back
+at us — the apparatus working, visibly.
+
+Under the claim rule frozen before the cohort's first explore: a
+precision-limit observation, no criterion-1 candidate. That is the
+second null-with-verdict of the day, and the stronger one: the strongest
+documented crash promise in the cohort, asked 118 ways under pinned
+clocks and entropy, and kept 118 times.
+
 ## 2026-08-21 — borg-r3: the sendfile rerun, paid for in one line this time
 
 The r2 explore cleared the cache refusal and stopped one syscall later on
