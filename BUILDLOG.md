@@ -2,6 +2,22 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the verify transcript merged through a red gate, because the merge command never looked at the gate
+
+The hg-r4 verify transcript (verify-assisted green end to end: define
+strictly before artifacts, all four files byte-identical, the PROTOCOL
+provenance attached in oneline form) went to main in #194 — and #194's
+buildlog gate was RED, because the PR touched `spike/` without touching
+this file. The gate did its job; the operator did not: the CI-polling
+loop broke on "nothing pending" and the merge ran unconditionally in the
+same command, so a failed=1 that was printed on every poll line was
+scrolled past. Two mistakes stacked — the forgotten entry, and a
+poll-then-merge pipeline that never gated on failures. This entry is the
+missing BUILDLOG paragraph and the record of the bypass; the operational
+fix is the obvious one (a merge command must test the failure count it
+just printed), and it goes to the session's learning pass, not to another
+layer of harness.
+
 ## 2026-08-21 — the first cohort-2 verdict: FAIL 73/107, and the frozen claim rule refuses it on schedule
 
 hg-r4 reached the cohort's first verdict, twice identically: FAIL, 73 of
