@@ -1,0 +1,84 @@
+falsify: checker(hg-commit): leg V: hg verify failed after crash (and recovery, when one ran)
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+checker(hg-commit): abandoned transaction present; running the documented hg recover
+FAIL  73 of 107 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 16 of 106
+            after  rename(/tmp/cohort2/hg/repo/.hg/.dirstate-p4damoc3~)
+            before unlink(/tmp/cohort2/hg/repo/.hg/last-message.txt)
+path        dirstate
+observed    holding neither the old nor the new content
+explored    107 worlds (crash points 106 + 1 baseline)
+expected    exit 0
+atomicity   19 path(s) judged pre-or-post; 5 file(s) judged by the history form (appended tails not judged): cache/rbc-revs-v2, store/00changelog.d, store/00changelog.i (+2 more)
+oracle      agreed on 106 operations (6015 syscall lines examined, 756 in scope of the judged state)
+metadata    12 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x10, utimensat x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 107 world(s)
+l1          no marker configured
+case        /out/work/cases/000001.json
+replay      sideeye replay /out/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/cohort2/hg/repo/.hg SIDEEYE_TRACE_PATH=/out/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=16 SIDEEYE_SEQ_BASE= <operation>

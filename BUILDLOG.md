@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the first cohort-2 verdict: FAIL 73/107, and the frozen claim rule refuses it on schedule
+
+hg-r4 reached the cohort's first verdict, twice identically: FAIL, 73 of
+107 worlds, earliest at crash point 16, `oracle_verified: true`, single
+process, the #190 exclusion visibly working in the metadata line
+(fchmodat x10, utimensat x2). And the reading is the whole point of the
+freeze: **every violation is L0-only, and Mercurial's documented contract
+held in all 107 worlds** — recover succeeded in all 62 worlds that had an
+abandoned transaction, verify passed everywhere, the checker's transcript
+carries zero leg failures (the single red leg V line wears the falsify:
+prefix, the #134 labeling doing its job). The torn file behind the
+earliest case is `dirstate` holding a valid intermediate between its
+pre-transaction rewrite and its final one — the multi-write shape, #35's
+class, exactly what the protocol pre-declared as "recorded as a
+precision-limit observation and never claimed."
+
+73/107 is a seductive number. It would headline. The claim rule was
+frozen before the first explore precisely so that nobody — including the
+author on a long day — gets to decide after seeing it whether it counts.
+It does not count. Mercurial's outcome is a null-with-verdict: the
+contract held, the instrument's byte-atomicity form over-fires on files
+written more than once per operation, and both facts are now committed
+records. Criterion 1 stays open on the upstream watch and the remaining
+targets.
+
 ## 2026-08-21 — hg-r4: 101 worlds green, and the baseline check earned its keep on a mode that carries meaning
 
 With #190 merged, the r3 explore finally ran the whole campaign: 101

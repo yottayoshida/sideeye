@@ -95,8 +95,24 @@ explore time.
   (the `--network=none` companion transcript), so that part is not the
   blocker.
 
-## What this phase deliberately did not do
+## Engine outcomes (updated as targets complete)
 
-No define exists yet; no engine explore has run; no failure of any target
-has been observed. The first define (Mercurial) follows the sharpened
-mini-seal: define PR to main first, explore after.
+- **Mercurial (2026-08-21)** — the define took four revisions to reach a
+  verdict, each one's refusal committed as evidence (r1 SETUP ERROR at
+  state resolution; r2 sendfile, worked around by a declared
+  sitecustomize; r3 utimensat, which ripened #190, then
+  `baseline_run_failed` from the exec-bit cache the mode-flattening
+  restore cannot carry; r4 removes `wcache` from the pre-state). The
+  verdict: **FAIL 73/107, every violation L0-only — and Mercurial's
+  documented contract held in all 107 worlds** (`hg recover` succeeded in
+  all 62 worlds that needed it; the checker failed nowhere). Under the
+  claim rule frozen above before any explore, this is a **precision-limit
+  observation, recorded and not claimed; criterion-1 candidate: none.**
+  The full ruling: `hg-r4/RUNLOG.md`.
+
+## What the probe phase deliberately did not do
+
+At the probe phase's close, no define existed and no engine explore had
+run. The defines follow the sharpened mini-seal: define PR to main first,
+explore after; each explore's outcome lands above as its target
+completes.
