@@ -2,6 +2,15 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the closing verify transcripts: the mini-seal held on all three engine targets
+
+verify-assisted runs green on jj and bun (define strictly before
+artifacts, all files byte-identical at both points), joining hg-r4's
+transcript from earlier today. Every engine target in cohort 2 now
+carries a machine-checked provenance record — including the two that
+ended in walls, where the record's value is exactly that the wall was
+measured through the same discipline a find would have been.
+
 ## 2026-08-21 — both forecasts land verbatim, and cohort 2 closes with five recorded outcomes
 
 The jj explore refused `no_shim_marker` (static binary — the shim never

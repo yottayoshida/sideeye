@@ -1,0 +1,17 @@
+verify-assisted: spike/cohort2/jj
+anchor: main (d737bdc) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+note: the working tree differs from main under spike/cohort2/jj — ignored; every anchor below is read from the committed history
+define    spike/cohort2/jj/ops/check.sh  introduced @ 9669aad (position 2)
+define    spike/cohort2/jj/ops/jj-commit.toml  introduced @ 9669aad (position 2)
+define    spike/cohort2/jj/ops/setup.sh  introduced @ 9669aad (position 2)
+define    spike/cohort2/jj/ops/explore.sh  introduced @ 9669aad (position 2)
+artifact  spike/cohort2/jj/explore-transcript.txt  introduced @ d737bdc (position 1)
+artifact  spike/cohort2/jj/report.json  introduced @ d737bdc (position 1)
+ok   D1: define complete @ 9669aad strictly precedes first artifact @ d737bdc
+ok   D2: spike/cohort2/jj/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort2/jj/ops/jj-commit.toml byte-identical at both points
+ok   D2: spike/cohort2/jj/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort2/jj/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort2/jj
