@@ -1,0 +1,18 @@
+verify-assisted: spike/cohort2/borg-r3
+anchor: main (79bb7bc) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+note: the working tree differs from main under spike/cohort2/borg-r3 — ignored; every anchor below is read from the committed history
+define    spike/cohort2/borg-r3/ops/borg-create.toml  introduced @ f508312 (position 2)
+define    spike/cohort2/borg-r3/ops/check.sh  introduced @ f508312 (position 2)
+define    spike/cohort2/borg-r3/ops/setup.sh  introduced @ f508312 (position 2)
+define    spike/cohort2/borg-r3/ops/explore.sh  introduced @ f508312 (position 2)
+artifact  spike/cohort2/borg-r3/cases/000001.json  introduced @ 79bb7bc (position 1)
+artifact  spike/cohort2/borg-r3/explore-transcript.txt  introduced @ 79bb7bc (position 1)
+artifact  spike/cohort2/borg-r3/report.json  introduced @ 79bb7bc (position 1)
+ok   D1: define complete @ f508312 strictly precedes first artifact @ 79bb7bc
+ok   D2: spike/cohort2/borg-r3/ops/borg-create.toml byte-identical at both points
+ok   D2: spike/cohort2/borg-r3/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort2/borg-r3/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort2/borg-r3/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort2/borg-r3

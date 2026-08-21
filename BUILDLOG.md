@@ -2,6 +2,16 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the borg verify transcript closes #200: four mini-seals, four greens, still zero claims
+
+verify-assisted green on borg-r3 (define at f508312 strictly before
+artifacts at 79bb7bc, all four files byte-identical), the fourth
+verify-green mini-seal of the day after hg-r4, jj and bun. #200 closes
+with its outcome: the wall was lifted by declared apparatus, the
+strongest documented promise in the cohort was asked 118 ways, and it
+held every time. The search stays empty-handed and the record stays
+honest — which is the only way an empty hand is worth anything.
+
 ## 2026-08-21 — Borg's verdict: FAIL 3/119, all three in the cache we relocated, and the contract held everywhere
 
 The r3 explore ran 118 crash worlds plus baseline and reproduced its
