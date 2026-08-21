@@ -2,6 +2,21 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the borg define: the strongest documented promise in the cohort, asked under the declared pins
+
+The define (`spike/cohort2/borg/`, P1 of three proposals): kill
+`borg create` over a repository holding a prior archive, and the
+documented transactional contract must hold — stale-lock removal
+(`break-lock`, exactly when a lock exists), `borg check`, the
+pre-existing `base` archive conserved byte-identically, the listing
+old-or-new, a new-side content assertion. The launcher installs the
+three-piece apparatus (ld.so.preload + FAKETIME x0 + PYTHONPATH); setup
+generates the sitecustomize so its bytes are D2-held (the hg-r3 reason).
+Seven drills green on the first run — greens as controls, five reds one
+leg each, including the leg V/leg C split (a corrupted segment vs a
+VALID repo with different base bytes — the case `borg check` cannot see)
+and the as-nobody unremovable-lock red. No explore has run.
+
 ## 2026-08-21 — #200: the Borg wall falls to a three-piece apparatus, and the issue's premise was wrong twice
 
 The issue predicted one leak (time_end's monotonic duration). Running

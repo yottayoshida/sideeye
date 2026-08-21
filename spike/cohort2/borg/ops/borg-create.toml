@@ -1,0 +1,13 @@
+# Cohort-2 borg define (P1, #200): kill `borg create` partway; the checker
+# holds the documented transactional contract (proposals.md carries the
+# why/what/where and the declared clock/entropy apparatus). Determinism
+# and closure for exactly this shape: ../probes/borg-frozen.txt. The
+# apparatus reaches the operation child from the launcher's environment.
+[world]
+state = "/tmp/cohort2/borg/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "borg create --timestamp 2026-01-01T00:00:00 /tmp/cohort2/borg/state/repo::probe /tmp/cohort2/borg/src"
+check           = "./check.sh"
+expected_status = "0"

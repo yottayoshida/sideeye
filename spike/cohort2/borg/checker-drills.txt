@@ -1,0 +1,17 @@
+== borg-create checker drills — borg 1.4.0 — frozen apparatus active
+drill ok   green-old-state (rc=0)
+drill ok   green-new-state (rc=0)
+checker(borg-create): leg V: borg check failed after crash (and lock removal, when one ran)
+drill ok   red-leg-V (rc=1)
+checker(borg-create): leg T: archive listing 'base
+probe
+third' is neither the old state nor the completed create
+drill ok   red-leg-T (rc=1)
+checker(borg-create): leg C: base alpha bytes changed
+drill ok   red-leg-C (rc=1)
+checker(borg-create): leg N: probe alpha is neither old nor the archived bytes
+drill ok   red-leg-N (rc=1)
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg R: borg break-lock failed on a stale lock
+drill ok   red-leg-R (rc=1)
+== drills failed: 0
