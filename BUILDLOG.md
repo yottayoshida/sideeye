@@ -12,7 +12,7 @@ and sign-off on #183 — and `spike/cohort2/PROTOCOL.md` freezes the rules
 before any probe or measurement (pre-freeze target contact was install
 plus `--version` in the image build, the cohort-1 pre-window allowance;
 measured there: borg 1.4.0, hg 7.2.4, jj 0.44.0, keepassxc-cli 2.7.10,
-bun 1.4.0, strace 6.13): probe gate first (engine-free, seven pinned
+bun 1.4.0, strace 6.13, Python 3.13.5): probe gate first (engine-free, seven pinned
 conditions per transcript, all seven or no pass, positive control before
 the first verdict counts, and the five probe plans themselves frozen in
 the protocol), claim reading fixed in advance (only a saved
@@ -62,8 +62,10 @@ The first image build failed and taught the build its shape: the
 development machine sits behind a TLS-intercepting proxy whose CA the host
 trusts but a stock Debian container does not — in-container pip died on
 "self-signed certificate in certificate chain" against PyPI, and the curl
-steps for jj/bun would have died the same way one layer later (apt
-survived because Debian's default mirror transport is plain HTTP).
+steps for jj/bun would have died the same way one layer later — an
+inference from the shared trust store, not a measurement: curl was
+dropped from the image instead of tested (apt survived because Debian's
+default mirror transport is plain HTTP).
 Downloads moved host-side into `fetch-artifacts.sh` with committed sha256
 pins (PyPI's published digest for the Mercurial 7.2.4 sdist, upstream's
 SHASUMS256.txt for Bun 1.4.0, a stated first-download pin for jj v0.44.0),
@@ -82,7 +84,20 @@ sprint from memory; the five probe plans were frozen into the protocol
 pip gained `--no-index --no-deps` so the no-network claim is enforced
 rather than hoped; and the launcher's precedence was demoted from "the
 verifier proves it" to "read off D3's listing" — the verifier holds
-toml/checker/setup only.
+toml/checker/setup only. R2 then showed the D3 reading still cannot catch
+a launcher edited between explore and artifacts, so the rule moved once
+more: the launcher ships with the define, present at the anchor, held
+byte-identical by D2 like everything else.
+
+And straight into the embarrassing column again: the freeze PR (#184)
+merged **without** R2's three residual fixes. The commit was cut from the
+staged snapshot taken before the R2 round, while the fixes sat unstaged in
+the working tree — so the PR body claimed "R2 confirmed closure" about
+content that did not contain the closures. The failed branch switch after
+the merge is what surfaced it. The fixes land in the immediate follow-up
+that carries this paragraph; the lesson is the usual one wearing new
+clothes: a claim about the shipped thing must be measured on the shipped
+thing — `git diff --cached` after the last edit, not before it.
 
 
 Straight into the embarrassing column. The freeze-audit page carried a
