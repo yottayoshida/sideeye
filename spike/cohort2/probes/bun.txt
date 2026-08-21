@@ -1,0 +1,42 @@
+== bun probe — bun 1.4.0 — 2026-08-21T08:33:25Z
+== condition 7 — ambient: HOME, BUN_INSTALL_CACHE_DIR and TMPDIR under <WS>/ambientX, created fresh per run (reset shown by the mkdir below; nothing pre-exists).
+== run A
+reset: stateA copied from pre-state; ambientA created empty
+bun add v1.4.0 (34cbb9a40)
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+
+installed probe-dep@../dep-1.0.0.tgz
+
+1 package installed [1.00ms]
+== run B (>=2s later)
+reset: stateB copied from pre-state; ambientB created empty
+bun add v1.4.0 (34cbb9a40)
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+
+installed probe-dep@../dep-1.0.0.tgz
+
+1 package installed [4.00ms]
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: state after run A differs from pre-state
+ok   3-artifact-count: node_modules is exactly 'probe-dep' (got: 'probe-dep '), lockfile present=1, bun pm ls is exactly one dep row (got: '└── probe-dep@../dep-1.0.0.tgz ')
+ok   4-round-trip: installed files byte-match the tarball's sources
+== diff -r of the two state trees:
+ok   5-determinism: two runs >=2s apart byte-identical project tree (diff rc=0)
+== strace pass (fresh copies; raw log kept as bun.strace)
+strace'd run rc=0
+== mutating paths (all mutating syscalls, successful only, deduped):
+/probes/run-bun.sh: 86: mutating_paths: not found
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+6
+== network syscalls (socket/connect, non-AF_UNIX), first 10 — the companion transcript shows the add succeeding with no network at all:
+== forecast — linkage of the release binary (the shim needs dynamic loading):
+	linux-vdso.so.1 (0x0000ffff9ed1c000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff9eb20000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff9ece0000)
+	libpthread.so.0 => /lib/aarch64-linux-gnu/libpthread.so.0 (0x0000ffff9eaf0000)
+== conditions failed: 0

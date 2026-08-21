@@ -1,0 +1,24 @@
+== keepassxc probe — keepassxc-cli 2.7.10 — 2026-08-21T08:33:22Z
+Enter password to encrypt database (optional): 
+Repeat password: 
+== condition 7 — ambient: HOME=<WS>/homeX, a fresh copy of the post-setup snapshot per run. Post-setup snapshot contents:
+WS/home/.config/keepassxc/keepassxc.ini
+== run A
+reset: stateA and homeA are fresh copies of the post-setup snapshots
+== run B (>=2s later)
+reset: stateB and homeB are fresh copies of the post-setup snapshots
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: state after run A differs from pre-state
+ok   3-artifact-count: root listing is exactly 'probe-entry' (got: 'probe-entry ')
+ok   4-round-trip: show -a username returns the stored value ('probe-user')
+== cmp of the two databases:
+/tmp/probe-keepassxc/stateA/db.kdbx /tmp/probe-keepassxc/stateB/db.kdbx differ: char 42, line 1
+FAIL 5-determinism: two runs >=2s apart byte-identical db.kdbx (cmp rc=1; the pre-declared expectation is that this fails)
+== strace pass (fresh copies; raw log kept as keepassxc.strace)
+strace'd run rc=0
+== mutating paths (all mutating syscalls, successful only, deduped):
+/probes/run-keepassxc.sh: 68: mutating_paths: not found
+FAIL 6-closure: 7 successful mutating call(s) could not be attributed to a path (fail-closed)
+== thread creations (successful CLONE_THREAD):
+1
+== conditions failed: 2

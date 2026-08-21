@@ -2,6 +2,73 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — the probes ran, two walls fell where predicted, and the frozen jj plan was wrong twice in instructive ways
+
+All five cohort-2 probes ran (engine-free, positive control first — the
+unpinned `borg create` split, so the harness demonstrably flags
+nondeterminism). Outcomes, transcripts committed under
+`spike/cohort2/probes/`: Borg and KeePassXC record the pre-declared
+determinism walls (both re-checked against latest stable in committed
+transcripts: the fetched Borg 1.4.5 source carries the same `time_end`
+code; KeePassXC 2.7.12 is current and its CLI help carries no determinism
+option — the randomness is the format's own guarantee). Mercurial, Jujutsu
+and Bun pass all six machine-judged conditions, with the ambient evidence
+(condition 7) printed in each transcript — Bun's byte-determinism over a
+local-tarball `bun add` was the surprise of the day, and it survives
+`--network=none`, so the DNS/443 contact its strace showed is optional.
+
+The jj plan needed amending twice, both times by measurement and both
+before any explore (the amendment window the protocol allows): the frozen
+`.jj` state root failed the closure condition because jj 0.44 colocates
+the git store at `./.git` by default (jj-v1 transcript), and the corrected
+repo-wide root then split on a single byte run — the reflog line jj's git
+export stamps with wall-clock time (jj-v2). `core.logAllRefUpdates=false`
+in the pre-state settles it (jj final transcript). The closure condition
+caught a wrong frozen assumption on its first outing, which is the best
+argument it will ever make for itself.
+
+Three shim-visibility forecasts go into the define phase, each now
+measured inside its own transcript: Mercurial's commit path spawns one
+thread by default and the forecast table pins the off switch exclusively
+(`storage.revbranchcache.mmap=no` → 0; both `worker.*` switches → still
+1). The jj release binary answers `ldd` with "not a dynamic executable" —
+`LD_PRELOAD` cannot load into it at all, so jj's slot will open on a
+`no_shim_marker`-class wall unless a dynamic build is worth the
+apparatus. Bun makes six successful `CLONE_THREAD` creations during
+`bun add`, and the shim notes every `pthread_create`. Engine order, fixed
+before any define: Mercurial → Jujutsu → Bun.
+
+The probe PR's own R1 returned seven P1 and was right seven times: the
+"all seven pass" wording claimed machine judgement the harness only gave
+conditions 1–5 (closure is now condition 6 in the FAILS counter, seen red
+and green in drills.txt with the other predicates); the mutating-path
+listing missed most mutating syscalls and the raw strace logs were not
+committed (they are now); KeePassXC's runs shared one HOME (per-run
+ambient copies now); the transcripts' timestamps contradicted the "cohort
+order" claim (the final transcripts are one clean in-order sweep); the
+latest-stable rechecks and the linkage/thread forecasts existed only as
+prose (committed transcripts now). Two of my own exactness literals were
+wrong on first contact — jj's root-commit row and bun's tarball-path
+version display — which is what exact assertions are for.
+
+R2 then caught the closure check itself fail-open — a P0, and the exact
+class the predicate exists to forbid: strace shows bare pointers where a
+target locks its memory, and the extraction silently dropped those calls,
+so an empty allowlist still passed. The rebuilt accounting is fail-closed
+(every successful mutating call must be attributed or the condition
+fails), drilled red both ways (an undeclared write, an unattributable
+pointer call) with a green control, and its first honest sweep produced
+three corrections at once: KeePassXC gains a second, independent wall
+(7 unattributable calls — the memory locking that makes it a password
+manager also makes it unauditable to ptrace); the `/var/lib/libuuid`
+"finding" dissolved (the raw log shows ENOENT — the old extraction was
+counting failed calls); and hg's lock symlinks taught the parser that a
+symlink's first argument is content, not a path. Two sweeps of transcript
+numbers also disagreed (bun's thread count, 6 vs 4) because the counter
+ignored unfinished/resumed pairs — it now counts them with a consistency
+assertion, and every number in RESULTS was re-read from the final
+transcripts, not from the terminal scrollback of an earlier sweep.
+
 ## 2026-08-21 — cohort 2 opens: the claim discipline is frozen before any measurement, and the plan's first draft was wrong three ways
 
 Criterion 1 is the last v1.0 item and its four upstream reports sit

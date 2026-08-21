@@ -1,0 +1,37 @@
+== jj probe — jj 0.44.0-af45d57de7163cc5f17f3df178a31577e4951ea3 — 2026-08-21T08:33:20Z
+== condition 7 — ambient: identity and clocks pinned entirely through the environment; HOME=<WS>/home fresh and checked empty after the runs. The pins, with values:
+JJ_EMAIL=probe@example.invalid
+JJ_OP_HOSTNAME=probe-host
+JJ_OP_TIMESTAMP=2026-01-01T00:00:00+00:00
+JJ_OP_USERNAME=probe-user
+JJ_RANDOMNESS_SEED=42
+JJ_TIMESTAMP=2026-01-01T00:00:00+00:00
+JJ_TZ_OFFSET_MINS=0
+JJ_USER=probe
+== pre-state log: '|initial||' — 5 operations
+== run A
+reset: repoA is a fresh copy of the pre-state repo
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+== run B (>=2s later)
+reset: repoB is a fresh copy of the pre-state repo
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: repository dir after run A differs from pre-state
+ok   3-artifact-count: log is exactly '|probe|initial||' (got '|probe|initial||'), operations +1 (expected +1)
+ok   4-round-trip: jj file show -r @- alpha returns the committed bytes
+== diff -r of the two repository trees (working copy + .jj + .git):
+ok   5-determinism: two runs >=2s apart byte-identical repository dir (diff rc=0)
+== strace pass (fresh copy; raw log kept as jj.strace)
+strace'd run rc=0
+== mutating paths (all mutating syscalls, successful only, deduped):
+/probes/run-jj.sh: 88: mutating_paths: not found
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+11
+== condition 7 evidence — HOME after both runs (expected empty):
+(no output above = HOME stayed empty)
+== forecast — linkage of the release binary (a static binary cannot load an LD_PRELOAD shim):
+	not a dynamic executable
+== conditions failed: 0

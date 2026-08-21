@@ -1,0 +1,13 @@
+== bun network-independence check: bun add of a local tarball under docker run --network=none
+== 1.4.0 — 2026-08-21T08:00:33Z
+bun add v1.4.0 (34cbb9a40)
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+
+installed probe-dep@../dep-1.0.0.tgz
+
+1 package installed [1.00ms]
+RC=0
+index.js
+package.json

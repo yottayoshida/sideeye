@@ -1,0 +1,30 @@
+== hg probe — Mercurial Distributed SCM (version 7.2.4) — 2026-08-21T08:33:15Z
+== condition 7 — ambient: HGRCPATH=<WS>/hgrc (contents above are its two lines: [ui] username), HOME=<WS>/home (fresh, empty). Neither is copied per run: the config file is read-only to hg and HOME stays empty — shown after the runs below.
+== pre-state: 1 changeset, alpha modified in the working copy
+0:bd3adcbab378 initial
+== run A
+reset: repoA is a fresh copy of the pre-state repo
+== run B (>=2s later)
+reset: repoB is a fresh copy of the pre-state repo
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: .hg after run A differs from pre-state .hg
+ok   3-artifact-count: log is exactly '1:probe 0:initial' (got: '1:probe 0:initial ')
+ok   4-round-trip: hg cat -r tip alpha returns the committed bytes
+== diff -r of the two .hg trees:
+ok   5-determinism: two runs >=2s apart byte-identical .hg (diff rc=0)
+== strace pass (fresh copy; raw log kept as hg.strace)
+strace'd run rc=0
+== mutating paths (all mutating syscalls, successful only, deduped):
+/probes/run-hg.sh: 74: mutating_paths: not found
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+1
+== condition 7 evidence — HOME after both runs (expected empty):
+(no output above = HOME stayed empty; HGRCPATH file is the only ambient input and hg only reads it)
+== thread forecast (successful CLONE_THREAD count per configuration):
+  default: 1
+  storage.revbranchcache.mmap=no: 0
+  worker.enabled=no: 1
+  worker.backgroundclose=no: 1
+reading: the commit-path thread exists by default, survives the worker.* switches, and storage.revbranchcache.mmap=no removes it — that config rides the define's launcher.
+== conditions failed: 0

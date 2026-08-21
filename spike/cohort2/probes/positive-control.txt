@@ -1,0 +1,37 @@
+== borg probe (control) — borg 1.4.0 — 2026-08-21T08:33:09Z
+== condition 7 — ambient: BORG_BASE_DIR=<WS>/ambientX, a fresh copy of the post-init snapshot per run (reset shown by the copy commands below); BORG_RELOCATED_REPO_ACCESS_IS_OK=yes. Post-init ambient snapshot:
+WS/ambient/.cache/borg/CACHEDIR.TAG
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/README
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/chunks
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/config
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/files
+WS/ambient/.cache/borg/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/pre12-meta
+WS/ambient/.config/borg/security/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/key-type
+WS/ambient/.config/borg/security/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/location
+WS/ambient/.config/borg/security/e2dfa0c871dbc23d4f29db0db45de1acd2ea08689197910c1c8f1869bffb7d83/manifest-timestamp
+== run A
+reset: stateA and ambientA are fresh copies of the pre-state snapshots
+Warning: The repository at location /tmp/probe-borg-control/stateA/repo was previously located at /tmp/probe-borg-control/state/repo
+Do you want to continue? [yN] yes (from BORG_RELOCATED_REPO_ACCESS_IS_OK)
+== run B (>=2s later)
+reset: stateB and ambientB are fresh copies of the pre-state snapshots
+Warning: The repository at location /tmp/probe-borg-control/stateB/repo was previously located at /tmp/probe-borg-control/state/repo
+Do you want to continue? [yN] yes (from BORG_RELOCATED_REPO_ACCESS_IS_OK)
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: state tree after run A differs from pre-state
+ok   3-artifact-count: borg list --short prints exactly 'probe' (got: 'probe')
+ok   4-round-trip: extracted bytes match the source tree
+== diff -r of the two state trees:
+Binary files /tmp/probe-borg-control/stateA/repo/data/0/2 and /tmp/probe-borg-control/stateB/repo/data/0/2 differ
+Binary files /tmp/probe-borg-control/stateA/repo/data/0/4 and /tmp/probe-borg-control/stateB/repo/data/0/4 differ
+Binary files /tmp/probe-borg-control/stateA/repo/index.5 and /tmp/probe-borg-control/stateB/repo/index.5 differ
+Binary files /tmp/probe-borg-control/stateA/repo/integrity.5 and /tmp/probe-borg-control/stateB/repo/integrity.5 differ
+ok   5-determinism-CONTROL: unpinned create must differ across runs (diff rc=1; 0=identical)
+== strace pass (fresh copies; raw log kept as <target>.strace)
+strace'd run rc=0
+== mutating paths (all mutating syscalls, successful only, deduped):
+/probes/run-borg.sh: 100: mutating_paths: not found
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+0
+== conditions failed: 0

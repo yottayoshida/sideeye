@@ -1,0 +1,12 @@
+== KeePassXC wall recheck against latest upstream stable (2026-08-21)
+== latest release per GitHub API:
+tag=2.7.12 published=2026-03-10T01:16:42Z
+== the mechanism is the format: every KDBX save derives fresh random salts/IVs; determinism is absent by design, not by version.
+== measured absence of any determinism-related option in the shipped CLI (2.7.10, the probe image):
+(no determinism/seed/reproducibility option exists in either command's help)
+
+== addendum (2026-08-21, same day): the help measurement above ran on 2.7.10, the probe image's binary, not on 2.7.12. The 2.7.12-level recheck is the changelog: the 2.7.11 and 2.7.12 sections, fetched raw, grepped for any determinism/seed/reproducibility change:
+-- fetched CHANGELOG.md sha256: 4656ca2303f3dd8f817decda30101d4a40700be97591416a479f84702547cc67
+-- 2.7.11 + 2.7.12 sections, lines matching determin/seed/random/reproduc:
+(no determinism/seed/reproducibility change in either section)
+-- scan denominator: the two sections span 91 lines (section heads at lines 3, 24, 93 of the fetched file)
