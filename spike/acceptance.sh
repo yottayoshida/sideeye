@@ -1634,7 +1634,7 @@ o=$(env TOY_CHMOD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/meta.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "ownership/permission write(s) observed and excluded"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "ownership/permission/timestamp write(s) observed and excluded"; then
     echo "ok   a chmod on state is excluded from judgement and named in the text report"
 else
     echo "FAIL chmod: exit $rc (wanted PASS with the metadata note)"

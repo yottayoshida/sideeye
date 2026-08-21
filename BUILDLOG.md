@@ -2,7 +2,27 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-21 — hg-r3: sendfile is outside the contract, and the owner chose the declared workaround over the wall
+## 2026-08-21 — #190: the timestamp family joins the metadata exclusion, the decision the code reserved for itself
+
+The r3 explore cleared sendfile and refused one syscall later:
+`unsupported_syscall_observed: utimensat` — CPython's copy machinery
+touches timestamps once per transaction-backup copy. The full syscall
+inventory of the operation against the oracle's sets showed utimensat as
+the *only* remaining blocker (ioctl and the stat family already sit in
+the read-only list), and the oracle's own comment had reserved exactly
+this call: "#121's ruling covered ownership/permission only; widening the
+excluded list is its own decision, not a side effect."
+
+The decision came due and the owner ruled (issue #190): the whole family
+— `utimensat`, `futimesat`, `utimes`, `utime`, not just the spelling this
+cohort hit — joins the exclusion, same shape as #121 option b. Test
+first: the new unit test went red on the pre-change engine with the right
+attribution (`unsupported = utimensat`, 167/168), then green after the
+list change. Two prose consumers were updated with the mechanism, not
+found by luck: the same-class scan for the old wording caught acceptance
+check 2w-b's grep anchor (which would have gone red in CI against the
+widened note) and README's sample report line — the exact
+prose-edit-moves-a-test-anchor shape this workspace has paid for before.
 
 The r2 explore ran deep — recording contained, 23 paths under the
 pre-or-post form, 6 under history preservation — and refused:

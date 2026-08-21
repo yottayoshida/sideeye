@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- The oracle's metadata exclusion widens from the ownership/permission families to the timestamp family (`utimensat`, `futimesat`, `utimes`, `utime`) (#190): observed, reported in the `metadata_writes` account, excluded from judgement — timestamps change none of the judged state (names, bytes, link targets). Runs that previously refused with `unsupported_syscall_observed` on a timestamp write now reach a verdict; the `metadata_writes` prose names timestamps alongside ownership/permission. Schema shape and the `unknown_reason` set are unchanged.
+
 ## [0.12.0] - 2026-08-18
 
 ### Added

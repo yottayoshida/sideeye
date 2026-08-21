@@ -123,11 +123,21 @@ const metadata_path_syscalls = [_]PathSpec{
     // family, not from what a cohort happened to hit — leaving it out would
     // re-block the exact class #121 unblocks on any newer runner (R1).
     .{ .name = "fchmodat2", .args = &.{.{ .dirfd = 0, .path = 1 }} },
-    // Deliberately absent: the timestamp family (utimensat/utimes/futimens).
-    // Timestamps are also outside the judged state by this file's own definition,
-    // but #121's ruling covered ownership/permission only; widening the excluded
-    // list is its own decision, not a side effect. They still refuse via the
-    // conservative net — blocked-but-loud, the safe side.
+    // The timestamp family (#190, owner-ruled 2026-08-21). This list once said
+    // "deliberately absent: widening is its own decision, not a side effect" —
+    // the decision came due when the cohort-2 Mercurial explore refused on the
+    // single utimensat CPython's shutil issues per transaction-backup copy.
+    // Timestamps change none of the judged state (names, bytes, link targets),
+    // exactly like ownership and permission; the whole family is listed, not
+    // just the spelling one cohort hit. glibc emits futimens as utimensat with
+    // a NULL path — that resolves to `.unresolvable`, which counts as observed
+    // EVEN when the descriptor points outside the state directory: the note
+    // over-reports rather than scoping through the fd, the same honest
+    // direction #121 chose for every unresolvable metadata write.
+    .{ .name = "utimensat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "futimesat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "utimes", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "utime", .args = &.{.{ .dirfd = null, .path = 0 }} },
 };
 /// The fd-addressed forms, scoped from the descriptor annotation like every fd
 /// syscall (a state path inside some other argument must not scope them in).
@@ -979,6 +989,61 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
     const u = try parse(arena_state.allocator(), unresolvable, "/tmp/s", "", "");
     try std.testing.expectEqual(@as(?[]const u8, null), u.unsupported);
     try std.testing.expectEqual(@as(usize, 1), u.metadata_observed.items.len);
+}
+
+test "timestamp writes are recorded-only, like ownership and permission (#190)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The measured shape from the cohort-2 Mercurial explore: CPython's shutil
+    // touches timestamps once per transaction-backup copy. All five spellings —
+    // the *at path form, the NULL-path form glibc emits for futimens (resolves
+    // `.unresolvable`, counted as observed — the honest over-reporting
+    // direction), and the three legacy forms — interleaved with a real write.
+    // The write must still be the only counted class beside the open; the
+    // timestamps must be observed, never `unsupported`.
+    const subject =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  openat(AT_FDCWD</work>, "/tmp/s/db", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/db>
+        \\9  write(3</tmp/s/db>, "x", 1) = 1
+        \\9  utimensat(AT_FDCWD</work>, "/tmp/s/db", [{tv_sec=1, tv_nsec=0}, {tv_sec=1, tv_nsec=0}], 0) = 0
+        \\9  utimensat(3</tmp/s/db>, NULL, [UTIME_NOW, UTIME_NOW], 0) = 0
+        \\9  utimes("/tmp/s/db", [{tv_sec=1, tv_usec=0}, {tv_sec=1, tv_usec=0}]) = 0
+        \\9  futimesat(AT_FDCWD</work>, "/tmp/s/db", [{tv_sec=1, tv_usec=0}, {tv_sec=1, tv_usec=0}]) = 0
+        \\9  utime("/tmp/s/db", {actime=1, modtime=1}) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), subject, "/tmp/s", "", "/work");
+    const want = [_]contract.OpClass{ .open, .write };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    try std.testing.expectEqual(@as(usize, 5), p.metadata_observed.items.len);
+    try std.testing.expectEqualStrings("utimensat", p.metadata_observed.items[0]);
+    try std.testing.expectEqualStrings("utimensat", p.metadata_observed.items[1]);
+    try std.testing.expectEqualStrings("utimes", p.metadata_observed.items[2]);
+    try std.testing.expectEqualStrings("futimesat", p.metadata_observed.items[3]);
+    try std.testing.expectEqualStrings("utime", p.metadata_observed.items[4]);
+
+    // Outside the state directory: none of our business, not even as a note.
+    const outside =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  utimensat(AT_FDCWD</work>, "/etc/passwd", [{tv_sec=1, tv_nsec=0}, {tv_sec=1, tv_nsec=0}], 0) = 0
+        \\
+    ;
+    const o = try parse(arena_state.allocator(), outside, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 0), o.metadata_observed.items.len);
+    try std.testing.expectEqual(@as(?[]const u8, null), o.unsupported);
+
+    // The NULL-path form on an OUTSIDE descriptor is still counted: the path is
+    // unresolvable, and the exclusion over-reports rather than scoping through
+    // the fd. This pins the over-report as intent, not accident.
+    const outside_fd =
+        \\9  execve("/work/t", ["t"], 0x0) = 0
+        \\9  utimensat(3</etc/passwd>, NULL, [UTIME_NOW, UTIME_NOW], 0) = 0
+        \\
+    ;
+    const of = try parse(arena_state.allocator(), outside_fd, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 1), of.metadata_observed.items.len);
+    try std.testing.expectEqual(@as(?[]const u8, null), of.unsupported);
 }
 
 test "the conservative net is still alive after the symlink class landed" {
