@@ -1,0 +1,30 @@
+falsify: checker(borg-create): leg V: borg check failed after crash (and lock removal, when one ran)
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): leg T list: 'borg ...' exited 2 (124 = timeout): Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+Cache is newer than repository - do you have multiple, independently updated repos with same ID?
+UNKNOWN  kill_did_not_land
+         a world was asked to die before a given operation and did not
+
+atomicity   11 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

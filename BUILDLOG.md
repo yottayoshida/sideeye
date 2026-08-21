@@ -2,6 +2,21 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-21 — borg-r2: the client cache is state, and the engine's restore semantics said so twice today
+
+The r1 explore refused `kill_did_not_land`: the engine restores only the
+state root, Borg's client cache lived outside it, and after the recording
+every world's `borg create` met a cache newer than its rolled-back
+repository and refused (rc 2) before reaching any operation the standing
+kill could land on. The same class as hg's wcache this morning — state
+that decides the target's behavior must live where restore can carry it.
+r2 moves `BORG_BASE_DIR` inside the state root, and the checker gains leg
+R0: the crashed world's cache is derived state that can legitimately sit
+ahead of the rolled-back repository, Borg's documented handling of a
+suspect cache is deletion-and-rebuild, so the checker discards it before
+reading and answers the two first-contact prompts with the documented env
+overrides. Question bytes unchanged; seven drills green again.
+
 ## 2026-08-21 — the borg define: the strongest documented promise in the cohort, asked under the declared pins
 
 The define (`spike/cohort2/borg/`, P1 of three proposals): kill
