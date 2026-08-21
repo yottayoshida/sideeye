@@ -1,0 +1,29 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "oracle_verified": true,
+  "crash_points": 106,
+  "explored": 107,
+  "violations": 73,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 16,
+    "invariant": "built-in atomicity (L0)",
+    "after": {"op": "rename", "path": "/tmp/cohort2/hg/repo/.hg/.dirstate-p4damoc3~"},
+    "before": {"op": "unlink", "path": "/tmp/cohort2/hg/repo/.hg/last-message.txt"},
+    "subject": "dirstate",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "19 path(s) judged pre-or-post; 5 file(s) judged by the history form (appended tails not judged): cache/rbc-revs-v2, store/00changelog.d, store/00changelog.i (+2 more)",
+  "l1": "no marker configured",
+  "case": "/out/work/cases/000001.json",
+  "replay": "sideeye replay /out/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 106 operations (6015 syscall lines examined, 756 in scope of the judged state)",
+  "metadata_writes": "12 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x10, utimensat x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 107 world(s)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes", "appended tails (files under the history form)"]
+}

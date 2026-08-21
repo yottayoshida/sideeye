@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 3,
+  "sideeye_version": "0.12.0",
+  "contract_version": 10,
+  "define": {
+    "state": "/tmp/cohort2/hg/repo/.hg",
+    "setup": "/work/spike/cohort2/hg-r4/ops/./setup.sh",
+    "operation": ["hg", "-R", "/tmp/cohort2/hg/repo", "commit", "-m", "probe", "-d", "2026-01-02 00:00:00 +0000", "--user", "probe <probe@example.invalid>"],
+    "check": "/work/spike/cohort2/hg-r4/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 16,
+  "ops_total": 106,
+  "prefix_hash": "e64b31ca3bcef621",
+  "after_class": "rename",
+  "after_path": "/tmp/cohort2/hg/repo/.hg/.dirstate-p4damoc3~",
+  "before_class": "unlink",
+  "before_path": "/tmp/cohort2/hg/repo/.hg/last-message.txt",
+  "violation": "hybrid"
+}
