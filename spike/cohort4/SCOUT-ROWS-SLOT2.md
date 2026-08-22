@@ -129,6 +129,52 @@ unison again — and then asserts with the target's own re-scan that the two
 replicas agree and each file's content is whole. This is what rule 9 asks
 for, and it is a different code path from the writer.
 
+**Determinism forecast, at the same grain as himalaya's `mint_id` row.**
+Four nondeterministic values touch unison's state, and they do not all
+share an apparatus.
+
+| Value | Where it lands | How it is fixed |
+|---|---|---|
+| **inode** | `ArchiveFile` carries `Fileinfo.stamp`, and `stamp info` returns `InodeStamp info.inode` (`fileinfo.ml:233`) | **`ignoreinodenumbers = true`** — the preference is read one line earlier (`fileinfo.ml:231-232`) and returns `NoStamp` instead. Its documented alias is `pretendwin`. **Not `fastcheck`**: that preference selects *how* update detection reads a file, and the inode reaches the archive regardless of it |
+| **mtime** | `Props.t`, stored in both `ArchiveDir` and `ArchiveFile` | a property of the fixture — build the replicas with fixed mtimes |
+| **ctime** | **does not reach the archive** | nothing to do; `props.ml:672` says ctime "is never synchronized", and :694 that "this final ctime will not get stored in the archive" |
+| **`gettimeofday` + `√2·getpid` + inode** | `freshDirStamp ()` computes `(Unix.gettimeofday () +. sqrt 2. *. float (Unix.getpid ())) *. 1000.` (`props.ml:1575-1579`, the expression itself at :1577), and `setDirChangeFlag p stamp inode` adds the directory's inode to it (`props.ml:1583-1585`). The result is stored **in the `Props.t` length field of a directory**, which is marshalled into `ArchiveDir` | needs **faketime and a getpid interposer together** — and note that `ignoreinodenumbers` does **not** reach this one. It gates `Fileinfo.stamp` only; this inode arrives by a different path |
+
+Outside the archive: the lock file's intermediate name carries the pid —
+`Lock.acquire` creates `unique name (Unix.getpid ())` and renames it into
+place (`lock.ml:47`), so a kill between the two leaves a pid-named file
+behind.
+`fpcache` compares against `InodeStamp` as well (`fpcache.ml:253`). The
+commit log is clean: `writeCommitLog` writes only the source, target and
+temp paths (`files.ml:30-47`) — no timestamp, no pid. Archive filenames are
+`ar`/`tm`/`sc`/`lk`/`fp` plus a hash of the root (`update.ml:225-231`),
+with the hostname inside `thisRootsGlobalName`, which a container fixes.
+
+**One apparatus interaction to check before trusting faketime here.**
+`Fileinfo.unchanged` takes `t0 = Util.time ()` — that is `Unix.time`,
+whole seconds (`ubase/util.ml:304`) — and if the file's mtime equals it
+exactly, it **sleeps one second and reports the file as changed**
+(`fileinfo.ml:246-249`). With a frozen clock the outcome depends on whether
+the same freeze reaches `stat`: if faketime fakes `time(2)` but not the
+mtime the branch never fires, and if it fakes both it fires on **every**
+file, adding a second each and flipping `dataUnchanged` to false. That is a
+behaviour change caused by the determinism apparatus itself, so it belongs
+in the probe's first reading rather than in an assumption.
+
+**Build and image pin.** The v2.54.0 release carries **no Linux aarch64
+asset** — the arm64 builds are macOS only (`Unison-2.54.0-macos-arm64.app.tar.gz`,
+`unison-2.54.0-macos-arm64.tar.gz`); Linux ships `ubuntu-22.04` in i386,
+x86_64 and x86_64-static. **On an arm64 image this forces a self-build**,
+and the reason is disclosable rather than a preference. Requirements
+(`INSTALL.md`): a C99 compiler, **OCaml 4.08 or newer** — `NEWS.md:170`
+records that unison builds with OCaml 5 — `make` (any variant), and basic
+POSIX tools. lablgtk3 is needed **only** for the GUI and its absence is
+detected automatically, so a plain `make` on an image without GTK already
+produces the CLI alone; **`make tui`** states that intent explicitly. The
+installed CLI is `src/unison`. `make install` honours `$PREFIX` and
+`$DESTDIR`. Cross-compilation exists via `make TOOL_PREFIX=…` but is not
+needed for a native arm64 build.
+
 **Rule 15: present**, per the five-step sequence above.
 
 **Rule 14: clears.** 51 terms, controls green, 217 unique issues. The
