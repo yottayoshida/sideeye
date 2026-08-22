@@ -20,7 +20,7 @@ blocked at freeze time is a reason not to freeze.
 | Probe plans, per target | **blocked** | the target list |
 | Apparatus policy | carried | — |
 | The mini-seal | carried | — |
-| **Claim reading** | **blocked** | #231's merge |
+| **Claim reading** | drafted | — (#231 merged, ADR 0020) |
 | Bench and refill | drafted | — |
 | Versions and image | **blocked** | the target list |
 | Reporting | carried | — |
@@ -114,20 +114,51 @@ The amendment rule is carried verbatim and extended as cohort 3 extended
 it: an amendment made after a target's first explore cannot change how that
 target's outcome is read, and neither can one made after its probe.
 
-## Claim reading — BLOCKED on #231
+## Claim reading — drafted (#231 merged 2026-08-22, ADR 0020)
 
-This is the section the freeze cannot be written without, and the reason
-the order in `PREP.md` §9 is not negotiable. #231 replaces "the earliest
-violating world" with the **earliest checker-red world** as the claim
-exhibit, keeping the overall earliest as the first physical counterexample,
-and the engine must save a case for both before a protocol can cite the
-rule. The freeze will quote the merged behaviour and the ADR that lands
-with it, not a plan.
+The mechanism this section waited on is on main: **ADR 0020**, "The report
+carries a second exhibit: the earliest checker-red world"
+(`docs/adr/0020-the-report-carries-a-second-exhibit.md`, Accepted), landed
+with #231 in PR #241. What it changed, in the terms this protocol needs:
 
-Carried regardless of that shape: an **L0-only FAIL is a precision-limit
-observation, recorded and never claimed** (#35's ruling, applied
-cohort-wide in advance). The new reading applies to cohort 4 only; cohorts
-1–3 are not re-read (#231's own non-goal).
+- `earliest` keeps its meaning, its field and its file — the first
+  violating world of any class, its case still the first written. No
+  existing consumer moves.
+- The report gains **`checker_earliest`**, present on FAIL exactly when
+  some violating world's violation includes the declared checker, decided
+  from the world-judgment bits (`l2_failed`) and **never from a parse of
+  the invariant string**. Absent when no checker-red world exists —
+  including every checkerless define, structurally.
+- The checker exhibit is saved as its own case when it is a different
+  world, written strictly after the earliest's, so `000001`'s owner never
+  changes.
+
+**The rule this cohort freezes, to be written into `PROTOCOL.md` verbatim:**
+
+> A criterion-1 candidate is a run whose **`checker_earliest`** exhibit
+> exists — that is, a run in which some violating world's violation
+> includes the declared checker — and the exhibit named there is the
+> claim's exhibit. An **L0-only FAIL is a precision-limit observation,
+> recorded and never claimed** (#35's ruling, applied cohort-wide in
+> advance); a run whose only violations are L0-only has no
+> `checker_earliest` and therefore no candidacy. The overall `earliest`
+> remains the first physical counterexample and is reported as such,
+> whether or not it is the exhibit.
+
+Two things this does **not** change, stated so they are not read into it:
+
+- **No re-reading of cohorts 1–3.** ADR 0020's own non-goal, and the
+  amendment rule's. The poetry pair stays recorded-not-claimed and
+  recorded-never-claimed on the rules they froze.
+- **The FAIL-freeze rule still binds.** A post-FAIL revision cannot claim,
+  and `checker_earliest` does not reopen that door — it changes which world
+  is the exhibit within a run, not which runs are eligible.
+
+One consequence for the probe plans, once targets exist: an operation whose
+write order puts an L0-only world in front of its checker-red one is now
+**measurable rather than unclaimable**, which widens what a candidate
+operation may look like. It does not lower the bar — the checker still has
+to break.
 
 ## Bench and refill — drafted
 

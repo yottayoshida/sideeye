@@ -333,7 +333,7 @@ believed:
 
 1. This file and the tooling in §8 merged (no target named).
 2. ~~Owner decides §7~~ — **done 2026-08-22: the default stands** (§7). No ADR.
-3. Engine change (#231) merged with tests and the schema note.
+3. ~~Engine change (#231)~~ — **merged 2026-08-22** (PR #241, main `8b75ad7`, ADR 0020 Accepted). The claim-reading section of `PROTOCOL-DRAFT.md` is drafted against it.
 4. `preflight.sh`, `novelty-prescan.sh`, `merge-gate.sh` merged, each with
    its falsification transcript.
 5. ~~Scout brief written against §6~~ — **done 2026-08-22:
