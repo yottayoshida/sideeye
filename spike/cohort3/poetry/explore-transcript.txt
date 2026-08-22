@@ -1,0 +1,56 @@
+artifact run rc=1
+# The committed artifact run (run 1 of the retained pair; run 0 — identical verdict, cases unretained — and run 2, the reproduction, are noted in RUNLOG.md).
+Skipping virtualenv creation, as specified in config file.
+Updating dependencies
+Resolving dependencies...
+
+Writing lock file
+Skipping virtualenv creation, as specified in config file.
+falsify: checker(poetry-add): leg V: pyproject.toml no longer parses as TOML: Traceback (most recent call last):
+falsify:   File "<string>", line 1, in <module>
+falsify:     import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))
+falsify:                          ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+Skipping virtualenv creation, as specified in config file.
+Skipping virtualenv creation, as specified in config file.
+checker(poetry-add): check --lock red; recovery chain step 1 (poetry lock): Error: pyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.
+checker(poetry-add): step 1 failed (rc=1); step 2, the documented regenerate (poetry lock --regenerate): Skipping virtualenv creation, as specified in config file.
+
+The lock file does not have a metadata entry.
+Regenerate the lock file with the `poetry lock` command.
+Skipping virtualenv creation, as specified in config file.
+checker(poetry-add): check --lock red; recovery chain step 1 (poetry lock): Error: pyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.
+Skipping virtualenv creation, as specified in config file.
+checker(poetry-add): check --lock red; recovery chain step 1 (poetry lock): 
+The Poetry configuration is invalid:
+  - Either [project.name] or [tool.poetry.name] is required in package mode.
+  - Either [project.version] or [tool.poetry.version] is required in package mode.
+checker(poetry-add): step 1 failed (rc=1); step 2, the documented regenerate (poetry lock --regenerate): 
+The Poetry configuration is invalid:
+  - Either [project.name] or [tool.poetry.name] is required in package mode.
+  - Either [project.version] or [tool.poetry.version] is required in package mode.
+checker(poetry-add): leg R: the documented recovery chain failed — poetry lock, then poetry lock --regenerate (rc=1, 124/137 = timeout): 
+The Poetry configuration is invalid:
+  - Either [project.name] or [tool.poetry.name] is required in package mode.
+  - Either [project.version] or [tool.poetry.version] is required in package mode.
+Skipping virtualenv creation, as specified in config file.
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 4
+            after  open(/tmp/cohort3/poetry/state/poetry.lock)
+            before write(/tmp/cohort3/poetry/state/poetry.lock)
+path        poetry.lock
+observed    holding neither the old nor the new content
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): pyproject.toml
+oracle      agreed on 4 operations (21637 syscall lines examined, 3109 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+l1          no marker configured
+case        /work/spike/cohort3/poetry/work/cases/000001.json
+replay      sideeye replay /work/spike/cohort3/poetry/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   8 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/cohort3/poetry/state SIDEEYE_TRACE_PATH=/work/spike/cohort3/poetry/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

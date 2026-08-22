@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the poetry verdict: the rule refuses the number I wanted
+
+FAIL, 2 of 5 worlds, reproduced identically across three runs — and
+**no candidate**, because the run's earliest violating world is the
+empty lock: L0 red, checker healed (chain step 2 brought it back
+green, with poetry's self-prescribing step-1 failure observed in a
+real crash world for the first time). The checker-red world is real —
+crash point 4 empties user-authored `pyproject.toml` and the whole
+documented chain fails on the result — but the write shape puts the
+lock first, so the L0-only lock world owns "earliest" in every run of
+this operation, and the frozen claim rule (earliest saved case must
+have the declared checker as its violated invariant) reads the run as
+recorded-not-claimed. This is the hg 73/107 shape again, one cohort
+later, refused by machinery instead of willpower. The declaration's
+miss, on the record: proposals.md predicted every world's behavior
+correctly (A heals at step 1, empty lock at step 2, empty manifest
+chain-fails — all confirmed by the engine) and still called the
+manifest world "the candidate shape", reading only the checker column
+and forgetting that L0 fires independently at an earlier crash point.
+Candidacy is a property of the run, not of a world. Two smaller
+things: run 0's cases were lost to `--work` defaulting inside the
+discarded container (transcript and report retained and matching;
+runs 1-2 re-measured with the work dir mounted — operator error,
+recorded), and the deferred revision question (a manifest-only
+operation like `poetry version patch` would put the checker-red world
+earliest; new target dir, owner's call) plus the upstream-report
+material (the stale prescription; the manifest wound) sit in
+`poetry/RUNLOG.md` behind the standing gates. The cohort closes with
+papis.
+
 ## 2026-08-22 — scout model sensitivity: the metadata gate checks presence, not truth (#221)
 
 Measured whether the scouting method survives a weaker scout: the assisted
