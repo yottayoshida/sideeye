@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — cargo r1 refuses on the forecast thread; r2 lifts it with a RUSTC stand-in
+
+The first cargo explore refused as the define disclosed it might:
+`UNKNOWN child_process_detected (clone3)`, reproduced on a second run
+(`spike/cohort3/cargo/explore-r1-transcript.txt`; the reproduction's
+machine-readable form beside it as `explore-r1-repro-transcript.txt`). The boundary is the
+probe's forecast wearing a different name: the `rustc -vV` child's
+internal thread arrives through a raw `clone3` carrying `CLONE_THREAD`,
+which the oracle refuses (a thread past the pthread wrapper). A refusal
+is not a FAIL — the define is not frozen — so the disclosed, owner-gated
+option came due. **Owner approval (2026-08-22): a RUSTC stand-in**,
+cargo's own documented configuration, in a new directory
+(spike/cohort3/cargo-r2) per the mini-seal.
+
+Measured before writing r2: with the stand-in, `cargo add` completes
+rc 0, records the identical manifest entry, and the strace carries
+**zero CLONE_THREAD lines** — the boundary gone, the remaining child a
+thread-free /bin/sh. `cargo add` and `generate-lockfile` ask the
+stand-in for `-vV` and nothing else; **`cargo metadata` asks for a full
+target-info probe** (`--print=file-names ... --print=cfg`) and dies at
+the stand-in — measured, and the reason the r2 checker carries `unset
+RUSTC`: the apparatus reaches exactly the recorded operation, and the
+checker's job is stock cargo's reader. Setup's cache-warm metadata call
+went for the same reason (generate-lockfile alone creates both caches —
+measured). The r2 drills run with RUSTC exported at the stand-in, the
+way the engine's environment will carry it, so the green controls
+double as the falsification of the unset line. Seven for seven,
+attribution unchanged. Stock reproduction stays mandatory for any
+finding: real rustc, no stand-in, strace fault injection.
+
 ## 2026-08-22 — the cargo define: manifest survival, asked before any crash exists
 
 Cohort 3's first define (spike/cohort3/cargo), pushed before any engine

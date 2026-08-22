@@ -1,0 +1,28 @@
+== cargo r2 checker drills — cargo 1.98.0 (797e8a9bc 2026-08-05) — 2026-08-22T02:07:03Z
+setup rc=0 (ran with RUSTC=/tmp/cohort3/cargo-r2/rustc-standin — engine-faithful)
+harness env: RUSTC=/tmp/cohort3/cargo-r2/rustc-standin for every drill below
+drill ok   green-old: checker green as required
+drill ok   green-new: checker green as required
+the dependency entry the stand-in-mediated add recorded:
+depcrate = { version = "0.1.0", path = "../depcrate" }
+metadata-with-standin rc=101 (the red the checker's unset prevents):
+error: failed to run `rustc` to learn about target-specific information
+
+drill ok   unset-red-side: metadata under the stand-in is red (rc=101)
+drill ok   V-red-torn-manifest: checker red in the intended leg — checker(cargo-add): leg V: cargo metadata exited 101 (124 = timeout): error: invalid basic string, expected `"`
+ --> tmp/cohort3/cargo-r2/drill-v/Cargo.toml:2:11
+  |
+2 | name = "ap
+  |           ^
+drill ok   V-red-torn-lock: checker red in the intended leg — checker(cargo-add): leg V: cargo metadata exited 101 (124 = timeout): error: failed to parse lock file at: /tmp/cohort3/cargo-r2/drill-vl/Cargo.lock
+
+Caused by:
+  TOML parse error at line 8, column 4
+    |
+  8 | dep
+    |    ^
+  key with no value, expected `=`
+drill ok   T-red-named-twice: checker red in the intended leg — checker(cargo-add): leg T: the manifest names depcrate 2 times — neither the old state nor the completed add
+drill ok   C-red-mutated-source: checker red in the intended leg — checker(cargo-add): leg C: src/lib.rs bytes changed
+drill ok   guard-red-missing-manifest: checker red in the intended leg — checker(cargo-add): the manifest is missing from the state dir
+== drills failed: 0
