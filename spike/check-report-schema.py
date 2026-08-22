@@ -45,9 +45,8 @@ def main():
     for r in reports:
         observed |= flatten(r)
     # after/before are documented as one row each ({op, path} described in
-    # prose); their subkeys collapse onto the parent. checker_earliest carries
-    # the same two objects (#231, ADR 0020).
-    observed = {k if not re.match(r"(checker_)?earliest\.(after|before)\.", k)
+    # prose); their subkeys collapse onto the parent.
+    observed = {k if not re.match(r"earliest\.(after|before)\.", k)
                 else k.rsplit(".", 1)[0] for k in observed}
 
     documented = set(re.findall(r"^\| `([a-z0-9_.]+)`", md, re.M))

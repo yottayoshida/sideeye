@@ -72,7 +72,7 @@ declared invariant itself broke:
 | `checker_earliest.invariant` | string | One of the checker-bearing forms only: `"the checker (L2)"`, `"built-in atomicity, and the checker"`, `"the post-success invariant, and the checker"`. |
 | `checker_earliest.subject` | string | As `earliest.subject`, for this world. |
 | `checker_earliest.observed` | string | As `earliest.observed`, for this world. |
-| `checker_earliest.case` | string | Path of this exhibit's saved case. The same path as `case` when the two exhibits are one world; its own file (written strictly after the earliest's, so `000001` always belongs to `earliest`) when they differ; `"(not saved)"` when no case could be written — including when the earliest's own case failed to write, so that ownership holds even under write failure. |
+| `checker_earliest.case` | string | Path of this exhibit's saved case. The same path as `case` when the two exhibits are one world; its own file when they differ, written strictly after the earliest's — so within a run the earliest's case always takes the lower id, and in a fresh work directory that is `000001` (ids are claimed `O_EXCL`, so a reused work directory continues its numbering); `"(not saved)"` when no case could be written — including when the earliest's own case failed to write, so the ordering holds even under write failure. |
 | `checker_earliest.replay` | string | The replay command for `checker_earliest.case`, mirroring `replay`'s conventions (`"-"` when there is no saved case; the replay-mode sentence when this run *is* a replay of it). |
 
 What the loop-closure experiments' judges actually read, for calibration: the

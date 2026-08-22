@@ -45,8 +45,13 @@ does in every other env-driven toy check.
 The three falsification drills, run and measured (all 2026-08-22).
 **Pre-change binary** (origin/main in a worktree) against the new toy
 and checker: FAIL 2 of 5, earliest k=2 L0-only, **no
-`checker_earliest` field, one case file** — every new assertion red
-structurally. **The schema pin, both directions, raw rc**: the new
+`checker_earliest` field, one case file**. Red on that binary, named
+rather than totalled (this PR's R1 caught the first draft's "every
+new assertion" — six of check 4c's assertions are about the old
+behavior and stay green on the old binary): the two
+`checker_earliest` field pins, both case-ownership pins on the
+second file, the `checker red` text grep, the whole replay leg, and
+the same-world control reads. **The schema pin, both directions, raw rc**: the new
 doc against the old binary's four-report corpus exits 1 with
 "documented but never generated" naming all nine `checker_earliest`
 rows; the old doc against the new binary's corpus exits 1 with

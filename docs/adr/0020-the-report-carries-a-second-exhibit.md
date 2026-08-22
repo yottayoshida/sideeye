@@ -60,12 +60,18 @@ rule can cite a report that already exists.
    a replay of a checker-red case, `checker_earliest` appears with
    `case` naming the replayed file and `replay` carrying the existing
    "(this run is a replay; the case reproduced)" convention.
-5. **The text report changes only when the two exhibits differ**:
-   three lines labeled `checker world` / `checker case` /
-   `checker replay` (the bare `checker` label already belongs to the
-   falsification account). When the earliest is itself checker-red —
-   every FAIL this engine had produced before poetry — the text is
-   byte-identical to today's.
+5. **The text report changes only when the two exhibits differ**: a
+   three-line section headed `checker red crash point {k} of {n}
+   ({invariant})` with indented `case` and `replay` continuation lines
+   (the bare `checker` label already belongs to the falsification
+   account). The section carries the crash point, the invariant form
+   and the case/replay pair only; the world's full window
+   (after/before/subject/observed) is machine-read from
+   `checker_earliest` in the JSON — a deliberate asymmetry with the
+   earliest's text block, and the one place DESIGN §13's "identical
+   content" is narrowed on purpose. When the earliest is itself
+   checker-red — every FAIL this engine had produced before poetry —
+   the text is byte-identical to today's.
 6. **The case file format does not change.** Its `violation` field
    keeps the existing rule (the L0 tag when L0 fired, else
    `"checker"`), which means a combined-world case file cannot by
@@ -102,11 +108,13 @@ rule can cite a report that already exists.
   (poetry: recorded, not claimed; poetry-r2: recorded, never claimed)
   stand. The next campaign's PROTOCOL cites #231 and this ADR when it
   freezes its own reading against the new report.
-- `docs/report-schema.md` gains the rows, `spike/check-report-schema.py`
-  learns the `checker_earliest.after`/`checker_earliest.before`
-  collapse, and acceptance's check-4 FAIL fixture gains `--check` (it
-  runs without one today, so a checker-red world was structurally
-  impossible in the schema corpus).
+- `docs/report-schema.md` gains the rows, and acceptance's check-4
+  FAIL fixture gains `--check` (it runs without one today, so a
+  checker-red world was structurally impossible in the schema corpus).
+  The schema checker's flattening needs no change: it descends one
+  level, so `checker_earliest.after`/`.before` surface as single keys
+  matched by their own documented rows, exactly as `earliest.after`/
+  `.before` always have.
 - A run whose earliest is L0-only but which contains a checker-red
   world now yields two replayable counterexamples instead of one; the
   poetry shape becomes exhibitable by machinery instead of by prose.

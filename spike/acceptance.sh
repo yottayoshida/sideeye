@@ -2139,9 +2139,23 @@ grep -q "the case reproduced" "$XD/rout.txt" || { echo "     replay: no 'the cas
 [ "$(field "$XD/rr.json" checker_earliest.case)" = "$ccase" ] || { echo "     replay checker_earliest.case: '$(field "$XD/rr.json" checker_earliest.case)', wanted the replayed path"; x_fails=$((x_fails + 1)); }
 [ "$(field "$XD/rr.json" checker_earliest.replay)" = "(this run is a replay; the case reproduced)" ] || { echo "     replay checker_earliest.replay: '$(field "$XD/rr.json" checker_earliest.replay)'"; x_fails=$((x_fails + 1)); }
 # Same-world control: the plain buggy toy's earliest IS checker-red, so
-# checker_earliest mirrors earliest, shares its case, and adds no text section.
-[ "$(field "$SD/fail.json" checker_earliest.crash_point)" = "$(field "$SD/fail.json" earliest.crash_point)" ] || { echo "     same-world: crash points differ"; x_fails=$((x_fails + 1)); }
-[ "$(field "$SD/fail.json" checker_earliest.case)" = "$(field "$SD/fail.json" case)" ] || { echo "     same-world: cases differ"; x_fails=$((x_fails + 1)); }
+# checker_earliest mirrors earliest, shares its case, and adds no text
+# section. The crash point is pinned to its concrete value (5, the same
+# number check 1 pins in text) so a missing/broken fail.json cannot make
+# the two field() reads vacuously equal as empty strings (R1).
+[ "$(field "$SD/fail.json" checker_earliest.crash_point)" = "5" ] || { echo "     same-world: checker_earliest.crash_point '$(field "$SD/fail.json" checker_earliest.crash_point)', wanted 5"; x_fails=$((x_fails + 1)); }
+[ "$(field "$SD/fail.json" earliest.crash_point)" = "5" ] || { echo "     same-world: earliest.crash_point '$(field "$SD/fail.json" earliest.crash_point)', wanted 5"; x_fails=$((x_fails + 1)); }
+[ "$(field "$SD/fail.json" checker_earliest.case)" = "$(field "$SD/fail.json" case)" ] && [ -n "$(field "$SD/fail.json" case)" ] || { echo "     same-world: cases differ or empty"; x_fails=$((x_fails + 1)); }
+# And the text side of the same-world promise — no `checker red` section —
+# needs a captured same-world FAIL, with a positive control on the same
+# output so a silent run cannot pass the negative grep vacuously.
+rm -rf "$XD/swstate" && mkdir -p "$XD/swstate"
+TOY_STATE=$XD/swstate TOY=$OUT/toy-bug "$SIDEEYE" explore --state "$XD/swstate" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work "$XD/swwork" --oracle /usr/bin/strace > "$XD/swout.txt" 2>&1
+grep -q "atomicity, and the checker" "$XD/swout.txt" || { echo "     same-world text: control line missing (run broke?)"; x_fails=$((x_fails + 1)); }
+grep -q "^checker red" "$XD/swout.txt" && { echo "     same-world text: unexpected 'checker red' section"; x_fails=$((x_fails + 1)); }
 if [ "$x_fails" = "0" ]; then
     echo "ok   both exhibits carried, 000001 owned by the earliest, the checker case replays"
 else
