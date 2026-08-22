@@ -28,13 +28,15 @@
 # says nothing about what it passed.
 #
 # What this gate does NOT see, stated so a green is read correctly:
-# the path-bearing classes (open, rename, unlink, mkdir, rmdir, truncate,
-# link, symlink) are compared path by path and carry the precision. The
-# descriptor-bearing ones (write, fsync, ftruncate) reach the interposer
-# as a number, not a path, so they are compared by count against the
-# interposer's whole run — which catches a total bypass (the raw toy, and
-# cargo's shape) but not a partial one. A target whose danger lives in
-# descriptor writes needs the engine's own recording run to settle it.
+# every class is compared path to path - the descriptor classes reach the
+# interposer as a number, so the logger resolves them through
+# /proc/self/fd, and an interposed call it could not resolve is reported
+# and never used to excuse a mismatch. The comparison is on basenames, so
+# two files sharing a name in different directories inside the root can
+# cover for each other. A child that drops the preload (static, setuid)
+# reads as a wall here, which is true but names a different wall class.
+# And it measures one normal run: it says nothing about crash behaviour,
+# which is the engine's job, later.
 #
 # Exit 0 the condition holds, 1 the condition fails (a named wall), 2 the
 # gate could not measure. Never read a 2 as a pass.
@@ -140,6 +142,6 @@ case "${1:-}" in
         exit $?
         ;;
     *)
-        sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'
+        awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"
         exit 2 ;;
 esac

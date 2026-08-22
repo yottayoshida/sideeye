@@ -168,7 +168,7 @@ validate() {
 case "${1:-}" in
     --selftest) selftest; exit $? ;;
     --validate) validate; exit $? ;;
-    "" | -h | --help) sed -n '2,43p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    "" | -h | --help) awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"; exit 2 ;;
 esac
 
 need gh

@@ -18,8 +18,21 @@ SYSCALL_CLASS = {
     "link": "link", "linkat": "link",
     "symlink": "symlink", "symlinkat": "symlink",
 }
-PATH_BEARING = {"open", "rename", "unlink", "mkdir", "rmdir", "truncate",
-                "link", "symlink"}
+# Every class is compared by path. The descriptor classes reach the
+# interposer as a number, so the logger resolves them through
+# /proc/self/fd; anything it could not resolve is reported separately and
+# never used to excuse a mismatch.
+# Syscalls whose mutation is addressed by a quoted path argument. The
+# rest are addressed by a descriptor, which strace -y decorates with the
+# path and the logger resolves through /proc/self/fd - so every class is
+# still compared path to path.
+TAKES_PATH_ARG = {
+    "open", "openat", "openat2", "creat",
+    "rename", "renameat", "renameat2",
+    "unlink", "unlinkat", "truncate",
+    "mkdir", "mkdirat", "rmdir",
+    "link", "linkat", "symlink", "symlinkat",
+}
 MUTATING_OPEN = re.compile(r"O_(CREAT|TRUNC|WRONLY|RDWR|APPEND)")
 
 line_re = re.compile(r"^(?:\[pid\s+\d+\]\s*|\d+\s+)?([a-z_0-9]+)\((.*)\)\s*=\s*(-?\d+|0x[0-9a-f]+)")
@@ -54,11 +67,16 @@ with open(strace_path, errors="replace") as fh:
         if name == "unlinkat" and "AT_REMOVEDIR" in args:
             cls = "rmdir"
 
-        paths = quoted_re.findall(args)
-        target = None
-        if cls in PATH_BEARING and paths:
+        # Which argument carries the path is a property of the SYSCALL,
+        # not of its class: write(4</p>, "text") has a quoted argument
+        # that is payload, and openat(AT_FDCWD</work>, "p") has an
+        # angle-bracket decoration that is the wrong directory. Deciding
+        # by class silently read the write payload as a path and dropped
+        # every write - measured 2026-08-22, caught by the self-test.
+        if name in TAKES_PATH_ARG:
+            paths = quoted_re.findall(args)
             # rename/link take (from, to); the mutation lands on the last.
-            target = paths[-1]
+            target = paths[-1] if paths else None
         else:
             fds = fdpath_re.findall(args)
             target = fds[0] if fds else None
@@ -95,22 +113,15 @@ lines = []
 for cls in sorted(kernel):
     seen = kernel[cls]
     logged = logger.get(cls, [])
-    if cls in PATH_BEARING:
-        logged_names = set(os.path.basename(p) for p in logged)
-        unmatched = [rawline for path, rawline in seen
-                     if os.path.basename(path) not in logged_names]
-        lines.append("  %-8s kernel=%d/%d in-root, interposed=%d, unmatched=%d"
-                     % (cls, len(seen), len(seen), len(logged), len(unmatched)))
-        for rawline in unmatched:
-            missed.append((cls, rawline))
-    else:
-        # No path on the descriptor side of the logger: counts only, and
-        # the transcript says so rather than implying path-level proof.
-        short = max(0, len(seen) - len(logged))
-        lines.append("  %-8s kernel=%d/%d in-root, interposed=%d (count comparison only)"
-                     % (cls, len(seen), len(seen), len(logged)))
-        if short:
-            missed.append((cls, "%d in-root %s call(s) beyond the interposed count" % (short, cls)))
+    unresolved = [p for p in logged if p.startswith("fd=")]
+    logged_names = set(os.path.basename(p) for p in logged if not p.startswith("fd="))
+    unmatched = [rawline for path, rawline in seen
+                 if os.path.basename(path) not in logged_names]
+    note = "" if not unresolved else ", %d interposed call(s) had no resolvable path" % len(unresolved)
+    lines.append("  %-8s kernel=%d/%d in-root, interposed=%d, unmatched=%d%s"
+                 % (cls, len(seen), len(seen), len(logged), len(unmatched), note))
+    for rawline in unmatched:
+        missed.append((cls, rawline))
 
 if not kernel:
     print("BROKEN no state-root mutation observed at all - wrong root, or the")

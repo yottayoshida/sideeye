@@ -23,11 +23,23 @@
  * The log is written with syscall(SYS_write) on purpose: this library
  * interposes write(), and logging through it would recurse.
  *
+ * The interposed set is the shim's own exported set, restricted to the
+ * state-mutating entry points - taken from `nm -D` on the built shim, not
+ * from memory. That includes the stdio flush family (fclose, fflush,
+ * fseek, rewind and their variants): a buffered write reaches the kernel
+ * through an internal libc call no PLT interposer can see, which is why
+ * the shim exports those functions and why a logger without them would
+ * report a false wall on any target that writes through stdio (#39's
+ * class). Those emit a `write`, which can only over-count - and the
+ * descriptor classes are a floor check (kernel <= interposer), so
+ * over-counting costs precision, never a missed bypass.
+ *
  * Not a shim, not a judge: it never blocks, never kills, never inspects
  * state. It answers one question, and the probe transcript records it.
  */
 
 #define _GNU_SOURCE
+#define _LARGEFILE64_SOURCE
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <stdarg.h>
@@ -70,10 +82,25 @@ static void emit(const char *cls, const char *detail) {
     (void)syscall(SYS_write, log_fd, buf, n);
 }
 
+/* Resolve the descriptor to a path so the descriptor classes can be
+ * compared path by path, like the others. Comparing them by count was
+ * measured to be worse than useless: this library's own writes to stdout
+ * inflate the count until a raw in-root write can no longer stand out.
+ * /proc is Linux-only, and so is this gate. */
 static void emit_fd(const char *cls, int fd) {
-    char detail[64];
-    snprintf(detail, sizeof(detail), "fd=%d", fd);
-    emit(cls, detail);
+    char link[64];
+    char target[3072];
+    if (fd >= 0) {
+        snprintf(link, sizeof(link), "/proc/self/fd/%d", fd);
+        ssize_t n = readlink(link, target, sizeof(target) - 1);
+        if (n > 0) {
+            target[n] = 0;
+            emit(cls, target);
+            return;
+        }
+    }
+    snprintf(target, sizeof(target), "fd=%d", fd);
+    emit(cls, target);
 }
 
 #define REAL(sym) \
@@ -254,4 +281,94 @@ int fdatasync(int fd) {
     REAL(fdatasync)
     emit_fd("fsync", fd);
     return real_fdatasync(fd);
+}
+
+/* ---- large-file variants: distinct symbols the shim also exports ---- */
+
+int creat64(const char *path, mode_t mode) {
+    REAL(creat64)
+    emit("open", path);
+    return real_creat64(path, mode);
+}
+
+FILE *fopen64(const char *path, const char *mode) {
+    REAL(fopen64)
+    emit("open", path);
+    return real_fopen64(path, mode);
+}
+
+FILE *freopen64(const char *path, const char *mode, FILE *stream) {
+    REAL(freopen64)
+    emit("open", path);
+    return real_freopen64(path, mode, stream);
+}
+
+ssize_t pwrite64(int fd, const void *buf, size_t count, off64_t offset) {
+    REAL(pwrite64)
+    emit_fd("write", fd);
+    return real_pwrite64(fd, buf, count, offset);
+}
+
+int ftruncate64(int fd, off64_t length) {
+    REAL(ftruncate64)
+    emit_fd("truncate", fd);
+    return real_ftruncate64(fd, length);
+}
+
+int truncate64(const char *path, off64_t length) {
+    REAL(truncate64)
+    emit("truncate", path);
+    return real_truncate64(path, length);
+}
+
+/* ---- the stdio flush family -----------------------------------------
+ * Buffered bytes reach the kernel from inside libc, past any PLT. The
+ * shim exports these for that reason (#39); so does this logger.
+ */
+
+static void emit_stream(const char *cls, FILE *stream) {
+    int fd = stream ? fileno(stream) : -1;
+    emit_fd(cls, fd);
+}
+
+int fclose(FILE *stream) {
+    REAL(fclose)
+    emit_stream("write", stream);
+    return real_fclose(stream);
+}
+
+int fflush(FILE *stream) {
+    REAL(fflush)
+    emit_stream("write", stream);
+    return real_fflush(stream);
+}
+
+int fflush_unlocked(FILE *stream) {
+    REAL(fflush_unlocked)
+    emit_stream("write", stream);
+    return real_fflush_unlocked(stream);
+}
+
+int fseek(FILE *stream, long offset, int whence) {
+    REAL(fseek)
+    emit_stream("write", stream);
+    return real_fseek(stream, offset, whence);
+}
+
+int fseeko(FILE *stream, off_t offset, int whence) {
+    REAL(fseeko)
+    emit_stream("write", stream);
+    return real_fseeko(stream, offset, whence);
+}
+
+int fsetpos(FILE *stream, const fpos_t *pos) {
+    REAL(fsetpos)
+    emit_stream("write", stream);
+    return real_fsetpos(stream, pos);
+}
+
+void rewind(FILE *stream) {
+    REAL(rewind)
+    emit_stream("write", stream);
+    real_rewind(stream);
 }

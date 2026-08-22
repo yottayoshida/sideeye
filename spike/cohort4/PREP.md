@@ -132,6 +132,7 @@ exists.
 | C2 | `nm` was absent and stderr was discarded, producing "no symbols imported at all" from an empty result (same entry). | Any zero-count claim needs a **tool-presence positive control** in the same transcript. | Both new scripts refuse to print a count when their own tool probe fails |
 | C3 | Counts printed without denominators ("failed=0") are indistinguishable from "nothing was measured". | Every count in a gate's output carries its denominator. | Script output format |
 | C4 | A same-class scan with a leading `--` in the pattern silently returned zero (recorded in the workspace's gotcha register). | Scans use `grep -e`, and every scan ships with a positive control hit. | Script + PROTOCOL text |
+| C7 | **Found by this PR's own same-class scan, 2026-08-22.** The scan asked which other lists in this change were chosen by taste rather than derived, and the interposer's function list was one: it omitted the shim's **stdio flush family** (`fclose`, `fflush`, `fseek`, `rewind` and variants), which the shim exports precisely because buffered bytes reach the kernel from inside libc, past any PLT (#39's class) — so any target writing through stdio would have been reported as a **false wall**. Fixing that exposed a second defect: comparing descriptor classes by count let the logger's own 47 writes to stdout swallow a raw in-root write, and keying path extraction on the class rather than the syscall name made the analyser read `write`'s payload as its path and drop every write. | The list is derived from `nm -D` on the built shim, restricted to the mutating set; descriptors are resolved through `/proc/self/fd` so every class is compared path to path; extraction is keyed on the syscall name. | The self-test caught both regressions: after the fix the raw toy is flagged on all five classes with their exact paths, the libc toy stays green, and the interior count returns to 4 |
 | C6 | **Measured during this preparation, 2026-08-22**: the novelty gate's own term list is load-bearing and cannot be settled by taste. Run against the two targets cohort 3 actually burned, `psf/black`'s issues answered **eight or more** terms, but `rust-lang/rustfmt#6041` answered exactly **two** (`disk`, `disk+full`) — remove `disk` and rustfmt reads as novel. Narrowing with `in:title` makes it worse: `truncate in:title` returns 0 against a repository whose known issue plain `truncate` finds. A broad term also **saturates the page limit** (four terms returned exactly 100 = a floor, not a count) while only the top 20 by relevance are listed. | The term list is derived from the titles of issues this project has already had to find, and `--validate` holds it to them: black#2479, black#5207 and rustfmt#6041 must all be surfaced, or the list is wrong. Saturated terms print `>=100 SATURATED` and counts are never summed. | `novelty-prescan.sh --validate`, 3 of 3, with a red proof: stripping `disk` makes it MISS rustfmt#6041 (`novelty-prescan-validation.txt`) |
 | C5 | **Measured during this preparation, 2026-08-22**: the tracker search the novelty gate depends on returns **zero for any space-separated phrase**. Against `psf/black` at `--limit 100`: `disk` → 30 hits (including both known issues), `disk full` → **0**, `disk+full` → 5, `full disk` → **0**. A pre-scan written the natural way would have reported zero for every term and called a known defect novel — the precise failure cohort 4 cannot afford. | Terms are single tokens or `+` joins; a multi-word term is **refused**, naming the `+` form. Every scan runs a fixed positive control (`psf/black` + `disk` must return 2479 and 5207) and a negative control before any target term is believed. | `novelty-prescan.sh`, controls run on every invocation |
 
@@ -247,10 +248,13 @@ mini-seal requires to come later.
   breakdown.
 
 **What condition 8 does not see**, recorded so a green is read correctly:
-the path-bearing classes are compared path by path and carry the
-precision; `write`, `fsync` and `ftruncate` reach the interposer as a
-descriptor rather than a path, so they are compared by count and catch a
-total bypass but not a partial one.
+every class is compared path to path (the logger resolves descriptors
+through `/proc/self/fd`, and unresolvable ones are reported, never used to
+excuse a mismatch); the comparison is on basenames, so two files sharing a
+name in different directories inside the root can cover for each other; a
+child that drops the preload reads as a wall here, which is true but names
+a different wall class; and it measures one normal run, so it says nothing
+about crash behaviour.
 
 ## 6. Selection rules, v4 — delta from #209 (owner sign-off required)
 

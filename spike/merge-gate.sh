@@ -111,7 +111,7 @@ selftest() {
 case "${1:-}" in
     --selftest) selftest; exit $? ;;
     "" | -h | --help)
-        sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+        awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"
         exit 2 ;;
 esac
 
