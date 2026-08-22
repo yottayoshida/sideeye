@@ -1,0 +1,5 @@
+# Git metadata of the fetched himalaya checkout: excluded from the build
+# context so the tree the Dockerfile digest-verifies is exactly the tree
+# fetch-artifacts.sh digested (both sides exclude .git), and so 60MB of
+# pack files stay out of the context.
+artifacts/himalaya-src/.git

@@ -2,6 +2,91 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — cohort 4 begins: the freeze is a fill-in, and one of its citations turned out not to exist
+
+Entry opened at the start of the work, per the contract. The slate has been
+signed off since 2026-08-22 — **himalaya (Rust) and vdirsyncer (Python), two
+slots, the remaining primaries and the whole bench deliberately empty** — and
+`PROTOCOL-DRAFT.md` says the freeze should be a fill-in rather than a write.
+Two of its three blocked sections unblock with the target list (per-target
+probe plans, versions and image); the third (claim reading) unblocked when
+#231 merged. So the work here is: scout rows for the two targets, the image
+with its freeze-build transcript, the probe plans with fixture bytes inlined,
+and the freeze itself.
+
+Division of labour, set today by the owner: this session owns the freeze and
+everything downstream (probes, defines, explores); a peer session supplies
+the measured scout rows — rules 1–3 and 11–17 receipts, the novelty
+pre-scans (rule 14), write-path readings from public source, checker
+sketches — all target-non-contact, delivered on a local branch, with
+BUILDLOG left to this session so the head cannot collide (the #238/#231
+lesson).
+
+First finding of the day, before any new measurement: **the himalaya
+write-path determination this cohort has been leaning on is not on main.**
+The 2026-08-22 reading (io-maildir's std driver, `fs::rename`/`fs::write`,
+no fsync, the tmp→new two-stage window, musl-static distribution) was made
+in a session and recorded in workspace memory, but
+`grep -rn "io-maildir|AwaitCreateTmp|WantsRename|fs::rename"` across every
+committed .md and .txt returns zero lines. A freeze cannot cite a chat. The
+row is being re-derived from public source and committed like vdirsyncer's —
+the E4 register row again, in a new costume: a determination that never
+became a diff was never checked as one.
+
+Image plan, decided now: trixie-slim with the apt layer pinned by build,
+artifacts fetched host-side against the TLS-intercepting proxy (the cohort-2
+measurement, unchanged); rust 1.98.0 from the same channel-manifest pin
+cohort 3 used (the tarball is still in the local cache and re-verifies
+against the published sha256); **himalaya built from the v2.1.0 source tag
+inside the image** — the distributed binaries are musl-static cross-builds,
+which the shim cannot enter, so the measured binary is a self-build and the
+freeze says so in the versions section — with the crate closure vendored
+host-side by `cargo vendor --locked` against himalaya's own committed
+Cargo.lock; vdirsyncer at its current stable with a uv-generated hash lock,
+the cohort-3 pattern verbatim.
+
+**Same day, and the paragraph above is already stale on one word: the
+slate lost vdirsyncer to its own measured row.** The scout rows this
+cohort demanded (rules measured, not recalled) came back from the peer
+session and failed vdirsyncer on rule 2 (three commits in the six-month
+window, all typo/docs/CI), rule 3 (one substantive author in that window),
+and rules 11/17 (two of eight recent bug issues answered within a week,
+five never answered) — and the checker anchor the slate had assumed,
+`repair`, sits behind an interactive `click.confirm`
+(cli/__init__.py:261, re-verified here from the fetched wheel before
+gating on it). The 2026-08-22 sign-off was made on rows that had not been
+measured to the brief's standard; the measurement outranks the sign-off.
+Owner ruling (2026-08-23, AskUserQuestion, both halves): **vdirsyncer is
+dropped, and the second slot is re-scouted before the freeze lands** — no
+single-target cohort, no promotion clause in the freeze. The FAIL row
+stays committed with its transcripts; the rejection table is the audit.
+
+The himalaya half of the freeze filled in meanwhile, and picking the
+operation settled on the arm the write-path reading singled out:
+**`maildir messages copy` is the one io-maildir arm without a tmp stage**
+— the destination is created at its final path and filled in place
+(`entry/copy.rs`, the I/O at `client.rs:227` `fs::copy`), so every
+intermediate state is a visible message in the target folder. save and
+move are tmp→rename, the papis shape. Two rule-16 forecasts came out of
+reading the same sources, each with committed apparatus the probe must
+first show red without: minted entry names embed the pid
+(`{secs}.#{counter:x}M{nanos}P{pid}.{hostname}`, entry.rs:48-56, via libc
+getpid at client.rs:239) — `pin-getpid.c`, loaded the libfaketime way —
+and `fs::copy` prefers `copy_file_range`/`sendfile`, both of which the
+oracle reports as unsupported (the hg-r2 precedent, oracle.zig's own
+test) — `seccomp-enosys.json`, answering exactly those three names with
+ENOSYS so std falls back to the libc read/write loop the shim exports.
+The kill window needs neither: the destination exists empty before any
+bytes move, so strace fault injection reproduces the torn state against
+the stock tool under every copy mechanism.
+
+The image built once end-to-end (rc=0): the digest chain held (tag commit
+→ tree digest → Cargo.lock → 316 vendored crates), the offline build
+produced a himalaya the `ldd` assertion confirmed glibc-dynamic, and the
+18-wheel vdirsyncer layer installed — now to be replaced by slot 2's when
+the re-scout lands, which is also when `freeze-build.txt` gets recorded
+for real.
+
 ## 2026-08-22 — the rejections were thinner than the funnel implied, and six were re-judged
 
 The cohort-4 candidate funnel went out with two numbers I had not counted

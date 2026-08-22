@@ -1,0 +1,5 @@
+# Host-fetched build inputs (fetch-artifacts.sh): the himalaya source
+# checkout, its vendored crate closure, the rust tarball and the Python
+# wheels. Pinned by the committed script; the artifacts themselves are
+# re-fetchable and stay out of the repository, same as cohort 2 and 3.
+artifacts/
