@@ -2,6 +2,30 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — black's verdict: the engine finds the right thing; the thing was known
+
+The cohort's first full crash-world FAIL: 1 of 3 worlds, crash point 2
+of 2 — after the truncating open, before the single write — the empty
+file, exactly the tear the define's R1 forced into the frozen reading
+and the `E-red-empty-file` drill rehearsed. Combined invariant
+("built-in atomicity, and the checker"), oracle-verified, reproduced
+identically three times, replayable case committed. A candidate shape
+under the frozen reading.
+
+Then the novelty gate did its job: the recorded tracker search
+(positive control included) surfaced psf/black#2479 — open since
+2021, "black in-place reformat wipes or corrupts target when disk is
+full" — the same non-atomic write surface under a different trigger,
+with the maintainer-endorsed temp-file fix now pending as
+psf/black#5207 (opened 2026-07-01, after the measured stable shipped).
+The candidate closes as not novel; nothing is filed upstream. What
+stands: the sweet-spot thesis measured — define to checker-red verdict
+in three worlds and minutes on the most-used Python formatter, finding
+the defect class its own tracker needed five years to converge on. And
+one inherited fact for target 3: that same thread names rustfmt as a
+direct in-place writer, so rustfmt's novelty gate gets checked before
+its define is written.
+
 ## 2026-08-22 — the black define: a formatter's in-place rewrite, the textbook shape
 
 Cohort 3's second define (spike/cohort3/black), pushed before any engine

@@ -140,6 +140,25 @@ All five passed, so the cohort order stands unchanged:
   (its checker-red ruling, drilled at the edges in both revisions)
   stays asked, not answered. The cohort order continues with black.
 
+- **black (2026-08-22)** — **FAIL, candidate shape, closed at the
+  novelty gate**: the cohort's first full crash-world verdict — 1 of 3
+  worlds, the earliest case at crash point 2 (after the truncating
+  `open`, before the single `write`: the empty file the define's R1
+  predicted), violated invariant **"built-in atomicity, and the
+  checker"** (leg E: parses, different program), `oracle_verified`
+  true, reproduced identically three times. A candidate under the
+  frozen reading — and the recorded novelty search found the
+  phenomenon known upstream: psf/black#2479 (open since 2021, the same
+  in-place wipe under disk-full) with fix PR psf/black#5207 open since
+  2026-07-01, after the measured stable shipped. No criterion-1 claim;
+  nothing filed upstream (owner-gated). The verdict still proves the
+  sweet-spot thesis: frozen define to checker-red verdict in three
+  worlds and minutes, on the most-used Python formatter, finding the
+  exact defect its tracker took 2021-2026 to converge on. Ruling:
+  `black/RUNLOG.md`. Inherited by target 3: the same thread publicly
+  names rustfmt as a direct in-place writer — its novelty gate gets
+  checked before its define exists.
+
 ## What the probe phase deliberately did not do
 
 At the probe phase's close, no define existed and no engine explore had
