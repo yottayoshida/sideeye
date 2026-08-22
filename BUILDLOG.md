@@ -2,6 +2,108 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — cohort 4's preconditions, and the gate that caught its own author
+
+This entry is late, and says so first: the contract in CLAUDE.md is to open
+the entry when the work starts, and four commits of `spike/` landed before
+a word of it existed. Written now, before the pull request, with the
+reversal it would otherwise have hidden left in.
+
+**What the work is.** Not a cohort — its preconditions. Every mistake
+cohorts 1–3 paid for, mapped to the thing that makes it impossible rather
+than merely noticed, plus the four gates that make some of those rows
+mechanical. No target is named anywhere in it, deliberately: selection is
+the owner's, and it comes after the engine change (#231) and the PROTOCOL
+freeze that cites it.
+
+**The reversal, which changed the plan.** The first draft read criterion
+1's *author-confirmed* leg as the target's maintainer, counted four
+upstream reports sitting at zero comments for 7–10 days, and concluded the
+gate was blocked on other people. It is not. PRD glosses the phrase —
+"this project's author judges the bug real, upstream confirmation is
+sought, not required" — and DESIGN scored timewarrior exactly that way,
+clean, with this project's own patch at PASS 25/25. `#140` never
+contradicted that; its *Live candidates* paragraph just reads as though
+the replies were the path. One clarifying line there settles it, and no
+criterion changes. What is actually missing, counted from the record: no
+single finding has yet been novel, automatically discovered, and
+provenance-clean at once — timewarrior lacks the first, topydo and cohorts
+2–3 the second, the assisted cohort the third. That combination is what a
+fourth cohort is for, and nothing external stands between here and it.
+
+**The exit rule, decided before the cohort rather than after it.** PRD's
+default stands: no criterion-1 find, no v1.0, the kill analysis ships
+instead. What the analysis should *conclude* on a null is deliberately
+left open — with two facts recorded now so they cannot be discovered
+conveniently later. A null fires none of §18's eight conditions (its
+antecedent, "finds nothing beyond existing hand-written adversarial
+tests", is contradicted by the record and `docs/kill-criteria-review.md`
+says so), so the document will not produce a mechanical verdict. And the
+two fallbacks considered and declined — pre-authorising an assisted-cohort
+finding despite its red provenance, and re-measuring an assisted target
+under the mini-seal (barred by the criterion's own text) — are written
+down, so that choosing one later reads as a change.
+
+**The gates, each falsified before being believed.**
+
+- `spike/merge-gate.sh`. Three merges went out wrong in two cohorts — #184
+  with the review fix unstaged, #194 with a red gate, #216 on "no checks
+  reported" read as no failures — and they are one predicate now: at least
+  one success, no failure, nothing pending, clean tree, local head equal to
+  the PR's. Zero checks refuses; a zero denominator is absence of evidence.
+  Self-test 7 of 7 against those three shapes and four more, plus a live
+  run against a merged PR, which it refused for two independent reasons.
+  It deliberately does not merge: chaining the wait to the merge is how
+  #194 happened.
+- `spike/cohort4/preflight.sh` + `visibility-logger.c` +
+  `preflight-analyse.py`. Probe conditions 8 and 9, engine-free. Condition
+  8 asks, before any define exists, whether every state-root mutation
+  passed through a function an LD_PRELOAD shim can interpose — the
+  question cargo answered only after two defines and two explores. On this
+  repository's own toys: `toy.c` PASS, `toy_raw.c` WALL naming the
+  unmatched `openat`, `renameat` and `unlinkat`. Condition 9 counts kill
+  points; the libc toy reports 4. Stated in the header, because a green
+  must be read correctly: the path-bearing classes carry the precision,
+  and `write`/`fsync`/`ftruncate` are compared by count, catching a total
+  bypass but not a partial one.
+- `spike/cohort4/novelty-prescan.sh`. Cohort 3 spent black's slot learning
+  that the novelty question belongs at selection, not after the verdict.
+  Writing the script surfaced a trap worth the exercise: a space-separated
+  query returns **zero** through this API — `disk` gives 30 hits against
+  psf/black at `--limit 100`, `disk full` gives 0 — so the natural phrasing
+  would have called every known defect novel. Multi-word terms are refused.
+- `spike/upstream-report-status.sh`, because a table of dates nobody
+  re-measures is indistinguishable from a table nobody re-read.
+
+**The gate that caught its own author.** Running the pre-scan against the
+two targets cohort 3 actually burned was meant to confirm it and found a
+hole instead. psf/black's issues answer eight or more terms; but
+`rust-lang/rustfmt#6041` answers exactly two, `disk` and `disk+full`.
+Remove `disk` and rustfmt reads as novel — the one verdict the script
+exists to prevent, missed by a margin of one word. So the term list is no
+longer a matter of taste: it is derived from the titles of issues this
+project has already had to find, and `--validate` holds it to them
+(black#2479, black#5207, rustfmt#6041, 3 of 3), shown red by stripping
+`disk`. Two smaller measurements from the same run: narrowing with
+`in:title` is actively harmful — `truncate in:title` returns 0 against a
+repository whose known issue plain `truncate` finds — and a broad term
+saturates the page limit, four terms returning exactly 100, a floor rather
+than a count, with only the top 20 by relevance listed. Saturation now
+prints as SATURATED, counts are no longer summed, and the header says the
+scan cannot prove absence. The exploratory full scans are not committed:
+they were produced by the term list this run replaced, and a transcript
+that does not match its script is worse than none.
+
+**Order, recorded so it cannot drift** (the owner's, 2026-08-22): the
+BUILDLOG entry for #231 opens before its code; the engine separates the
+overall earliest from the claim exhibit, tracking the checker-red class
+from the invariant bits at world-judgement time rather than by parsing an
+invariant's name; acceptance miniaturises poetry (k=2 L0-only, k=4
+checker-red, overall earliest stays 2, checker exhibit is 4, the case for 4
+replays) with the new assertion shown red once; that merges; **then** the
+cohort-4 PROTOCOL freeze writes the new reading down; then targets. The
+engine work is another session's, and this file waits on it.
+
 ## 2026-08-22 — cohort 3 leaves the language bar
 
 The `.gitattributes` rule written when cohort 2 closed says "a closed
