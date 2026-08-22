@@ -1,0 +1,29 @@
+# class-drift-check.py — the analyser's class set, held to the engine's
+#
+# Run 2026-08-22. preflight-analyse.py maps syscall names onto the engine's
+# kill-point OpClass names, which is a second copy of a declaration whose
+# home is src/contract.zig — #65's shape, introduced by the change that
+# added the analyser. Three directions are recorded: the green, and two
+# reds, and the unreadable-input case that must not read as a pass.
+#
+# Every line of the deliberate-failure blocks is prefixed REDPROOF| so an
+# excerpt cannot be mistaken for a genuine red.
+
+== GREEN
+  engine kill-point classes: 10, analyser classes: 10
+  ok      the analyser's class set matches src/contract.zig exactly
+rc=0
+
+== RED PROOF 1 — a class removed from the analyser copy (deliberate)
+REDPROOF|   engine kill-point classes: 10, analyser classes: 9
+REDPROOF|   FAILED the analyser does not know these engine classes: symlink
+REDPROOF| rc=1 (expected)
+
+== RED PROOF 2 — a class the engine does not have, added to the analyser (deliberate)
+REDPROOF|   engine kill-point classes: 10, analyser classes: 11
+REDPROOF|   FAILED the analyser invents classes the engine does not have: chmod
+REDPROOF| rc=1 (expected)
+
+== BROKEN — an unreadable declaration must not read as agreement (deliberate)
+REDPROOF|   BROKEN could not read the declarations: [Errno 2] No such file or directory: '/nonexistent'
+REDPROOF| rc=2 (expected; a 2 is never a pass)
