@@ -39,8 +39,9 @@ table beside it. Drills ten for ten, attributed.
 finding was recovery-shaped) forced a re-scan with poetry's own error
 text as the query — and "Regenerate the lock file" surfaced #1196 and
 PR #6753: **the self-prescribing recovery failure was reported in
-2019, fixed in 1.2.2, and the fix's own test fixture is the
-unparseable "This lock file is broken!"**. Poetry 2.0 then split the
+2019, fixed upstream (in 1.2.2 via backport #6759; main's fix shipped
+in 1.3.0), and the fix's own test fixture is the unparseable "This
+lock file is broken!"**. Poetry 2.0 then split the
 command on purpose — bare `poetry lock` preserves (and so must read)
 the existing lock, `--regenerate` carries the #6753 behavior — and
 `test_lock_with_invalid_lockfile` pins both halves as intended.
@@ -63,11 +64,17 @@ original entry's "leaving the project stuck until a human deletes the
 lockfile — a step no error and no document names" was **false** — 
 `poetry lock --help` documents the way out, and only the second,
 recovery-shaped scan was pointed well enough to break the story. The
-drills grew from ten to twelve (both heal-through-regenerate greens,
-the whole-chain red, and the persistent-red branch R1 caught as
-never-rehearsed — fabricated with a missing-README state measured
-before the drill was written), every leg-R branch now attributed by a
-branch-specific fragment instead of a shared "leg R" tail.
+drills went from ten to eleven — the two lock-red drills became
+heal-through-regenerate greens, the empty-manifest red became the
+whole-chain red, and one drill is genuinely new: the persistent-red
+branch R1 caught as never-rehearsed, fabricated with a missing-README
+state measured before the drill was written — every leg-R branch now
+attributed by a branch-specific fragment instead of a shared "leg R"
+tail. (R2 caught both of this paragraph's original numbers: "fixed in
+1.2.2" without the backport attribution, and "ten to twelve" for what
+is a count of eleven — the claims-from-open-sources rule, violated in
+the very entry that records a narrative reversed by a better-pointed
+measurement.)
 
 ## 2026-08-22 — the rustfmt verify transcript: the formatter half sealed
 

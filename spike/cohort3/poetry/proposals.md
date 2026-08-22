@@ -45,9 +45,11 @@ the shipped checker):
 
 The self-prescribing failure in row B is a **known, ruled-on surface**:
 issue #1196 ("`poetry lock` should overwrite broken `poetry.lock`,
-not error out") reported exactly this irony, PR #6753 fixed it in
-1.2.2 (its fixture `tests/fixtures/invalid_lock/poetry.lock` is the
-unparseable line "This lock file is broken!"), and poetry 2.0's
+not error out") reported exactly this irony, PR #6753 fixed it (its
+fixture `tests/fixtures/invalid_lock/poetry.lock` is the unparseable
+line "This lock file is broken!"; shipped in 1.2.2 through backport
+#6759 — measured: its merge commit is contained in the 1.2.2 tag —
+while main's #6753 itself first shipped in 1.3.0), and poetry 2.0's
 semantics change re-split the command: bare `poetry lock` now
 preserves the existing lock (so it must read it and fails when it
 cannot), `--regenerate` carries the #6753 behavior. The current
