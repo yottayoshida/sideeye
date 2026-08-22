@@ -1,0 +1,53 @@
+30    execve("/usr/local/bin/rustfmt", ["rustfmt", "/tmp/probe-rustfmt/rootS/probe.r"...], 0xffffc23d5ec8 /* 5 vars */) = 0
+30    readlinkat(AT_FDCWD</>, "/proc/self/exe", "/usr/local/bin/rustfmt", 4096) = 22
+30    faccessat(AT_FDCWD</>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/librustc_driver-e6f11afaeca7c6f5.so", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/librustc_driver-e6f11afaeca7c6f5.so>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    openat(AT_FDCWD</>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+30    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgcc_s.so.1>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/../lib/libdl.so.2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    newfstatat(AT_FDCWD</>, "/usr/local/bin/../lib/../lib/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+30    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/../lib/libLLVM.so.22.1-rust-1.98.0-stable", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/libLLVM.so.22.1-rust-1.98.0-stable>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/../lib/../lib/librt.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    newfstatat(AT_FDCWD</>, "/usr/local/bin/../lib/../lib/../lib/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+30    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/librt.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/librt.so.1>
+30    openat(AT_FDCWD</>, "/usr/local/bin/../lib/../lib/../lib/libz.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+30    openat(AT_FDCWD</>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/30/maps>
+30    readlinkat(AT_FDCWD</>, "/tmp", 0xffffe5c80bb0, 1023) = -1 EINVAL (Invalid argument)
+30    readlinkat(AT_FDCWD</>, "/tmp/probe-rustfmt", 0xffffe5c80bb0, 1023) = -1 EINVAL (Invalid argument)
+30    readlinkat(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS", 0xffffe5c80bb0, 1023) = -1 EINVAL (Invalid argument)
+30    readlinkat(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/probe.rs", 0xffffe5c80bb0, 1023) = -1 EINVAL (Invalid argument)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/probe.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=72, ...}) = 0
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/probe.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=72, ...}) = 0
+30    readlinkat(AT_FDCWD</>, "/tmp", 0xffffe5c7ff20, 1023) = -1 EINVAL (Invalid argument)
+30    readlinkat(AT_FDCWD</>, "/tmp/probe-rustfmt", 0xffffe5c7ff20, 1023) = -1 EINVAL (Invalid argument)
+30    readlinkat(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS", 0xffffe5c7ff20, 1023) = -1 EINVAL (Invalid argument)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/.rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/.rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/.rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/.rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/home/.rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/home/rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/home/.config/rustfmt/.rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/home/.config/rustfmt/rustfmt.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c80090) = -1 ENOENT (No such file or directory)
+30    getcwd("/", 512)                  = 2
+30    statx(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/probe", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffe5c7f530) = -1 ENOENT (No such file or directory)
+30    openat(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/probe.rs", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-rustfmt/rootS/probe.rs>
+30    statx(3</tmp/probe-rustfmt/rootS/probe.rs>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=72, ...}) = 0
+30    statx(3</tmp/probe-rustfmt/rootS/probe.rs>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=72, ...}) = 0
+30    openat(AT_FDCWD</>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/30/maps>
+30    openat(AT_FDCWD</>, "/tmp/probe-rustfmt/rootS/probe.rs", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</tmp/probe-rustfmt/rootS/probe.rs>
+30    write(3</tmp/probe-rustfmt/rootS/probe.rs>, "fn main() {\n    let x = vec![1, "..., 97) = 97
+30    +++ exited with 0 +++

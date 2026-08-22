@@ -1,0 +1,271 @@
+== papis probe — papis, version 0.16.0 — 2026-08-22T00:34:09Z
+== condition 7 — ambient: XDG_CONFIG_HOME and XDG_CACHE_HOME are created FRESH PER RUN (the reset) with the config above pointing at that run's library copy; HOME=<WS>/home fresh. use-cache=False means no cache layer should exist at all — the cache dir is shown after the runs and the closure pass measures it.
+setup: papis add (existing doc) rc=1
+pre-state library:
+== run A
+reset: libA is a fresh copy of the pre-state; xdg-A and cache-A are fresh
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+        sock=sock,
+    ...<14 lines>...
+        assert_fingerprint=self.assert_fingerprint,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+        sock=sock,
+    ...<8 lines>...
+        tls_in_tls=tls_in_tls,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/util/ssl_.py", line 433, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/util/ssl_.py", line 477, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/ssl.py", line 455, in wrap_socket
+    return self.sslsocket_class._create(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sock=sock,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        session=session
+        ^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/lib/python3.13/ssl.py", line 1076, in _create
+    self.do_handshake()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/ssl.py", line 1372, in do_handshake
+    self._sslobj.do_handshake()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+urllib3.exceptions.SSLError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/dist-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='arxiv.org', port=443): Max retries exceeded with url: /abs//tmp/probe-papis/fixture.txt (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/bin/papis", line 8, in <module>
+    sys.exit(run())
+             ~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1970, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/papis/commands/add.py", line 483, in cli
+    importers = list(
+        chain.from_iterable(
+            get_matching_importers_by_uri(f, include_downloaders=True)
+            for f in files))
+  File "/usr/local/lib/python3.13/dist-packages/papis/commands/add.py", line 485, in <genexpr>
+    get_matching_importers_by_uri(f, include_downloaders=True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/papis/importer/__init__.py", line 286, in get_matching_importers_by_uri
+    result = match(IMPORTER_NAMESPACE_NAME)
+  File "/usr/local/lib/python3.13/dist-packages/papis/importer/__init__.py", line 269, in match
+    importer = cls.match(uri)
+  File "/usr/local/lib/python3.13/dist-packages/papis/importer/arxiv.py", line 37, in match
+    if is_arxivid(uri):
+       ~~~~~~~~~~^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/papis/arxiv.py", line 181, in is_arxivid
+    validate_arxivid(arxivid)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/papis/arxiv.py", line 165, in validate_arxivid
+    response = session.get(f"{ARXIV_ABS_URL}/{arxivid}")
+  File "/usr/local/lib/python3.13/dist-packages/requests/sessions.py", line 671, in get
+    return self.request("GET", url, params=params, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/requests/adapters.py", line 727, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='arxiv.org', port=443): Max retries exceeded with url: /abs//tmp/probe-papis/fixture.txt (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)')))
+== run B (>=2s later)
+reset: libB is a fresh copy of the pre-state; xdg-B and cache-B are fresh
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+        sock=sock,
+    ...<14 lines>...
+        assert_fingerprint=self.assert_fingerprint,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+        sock=sock,
+    ...<8 lines>...
+        tls_in_tls=tls_in_tls,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/util/ssl_.py", line 433, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/util/ssl_.py", line 477, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/ssl.py", line 455, in wrap_socket
+    return self.sslsocket_class._create(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sock=sock,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        session=session
+        ^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/lib/python3.13/ssl.py", line 1076, in _create
+    self.do_handshake()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/ssl.py", line 1372, in do_handshake
+    self._sslobj.do_handshake()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+urllib3.exceptions.SSLError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/dist-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/usr/local/lib/python3.13/dist-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='arxiv.org', port=443): Max retries exceeded with url: /abs//tmp/probe-papis/fixture.txt (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/bin/papis", line 8, in <module>
+    sys.exit(run())
+             ~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1970, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/papis/commands/add.py", line 483, in cli
+    importers = list(
+        chain.from_iterable(
+            get_matching_importers_by_uri(f, include_downloaders=True)
+            for f in files))
+  File "/usr/local/lib/python3.13/dist-packages/papis/commands/add.py", line 485, in <genexpr>
+    get_matching_importers_by_uri(f, include_downloaders=True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/papis/importer/__init__.py", line 286, in get_matching_importers_by_uri
+    result = match(IMPORTER_NAMESPACE_NAME)
+  File "/usr/local/lib/python3.13/dist-packages/papis/importer/__init__.py", line 269, in match
+    importer = cls.match(uri)
+  File "/usr/local/lib/python3.13/dist-packages/papis/importer/arxiv.py", line 37, in match
+    if is_arxivid(uri):
+       ~~~~~~~~~~^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/papis/arxiv.py", line 181, in is_arxivid
+    validate_arxivid(arxivid)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/papis/arxiv.py", line 165, in validate_arxivid
+    response = session.get(f"{ARXIV_ABS_URL}/{arxivid}")
+  File "/usr/local/lib/python3.13/dist-packages/requests/sessions.py", line 671, in get
+    return self.request("GET", url, params=params, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/requests/adapters.py", line 727, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='arxiv.org', port=443): Max retries exceeded with url: /abs//tmp/probe-papis/fixture.txt (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1029)')))
+FAIL 1-exit-codes: run A rc=1, run B rc=1 (success convention: 0)
+FAIL 2-non-noop: the library after run A differs from the pre-state
+FAIL 3-artifact-count: library dirs are exactly 'existing-doc probe-doc' (got: ''); probe-doc holds exactly 'fixture.txt info.yaml' (got: '')
+FAIL 4-round-trip: the copied file round-trips its bytes; papis list names the new document (0 matching line(s))
+info.yaml, as measured (recorded, not predicted):
+cat: /tmp/probe-papis/libA/probe-doc/info.yaml: No such file or directory
+== diff -r of the two library copies (papis_id pinning is judged here):
+ok   5-determinism: two runs >=2s apart leave byte-identical libraries (diff rc=0)
+== strace pass (fresh copy; raw log kept as papis.strace)
+strace'd run rc=1
+== mutating paths (successful only, deduped):
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+0
+== condition 7 evidence — per-run cache dir after run A (use-cache=False: expected empty) and HOME:
+(cache files above, if any)
+(HOME files above, if any)
+== conditions failed: 4

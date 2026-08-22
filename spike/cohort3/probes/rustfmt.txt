@@ -1,0 +1,29 @@
+== rustfmt probe — rustfmt 1.9.0-stable (88d9e12ae1 2026-08-18) — 2026-08-22T00:33:48Z
+== condition 7 — ambient: HOME=<WS>/home, fresh and shown after the runs; rustfmt documents no cache, and the closure pass measures whether that holds.
+== run A
+reset: rootA is a fresh copy of the pre-state
+== run B (>=2s later)
+reset: rootB is a fresh copy of the pre-state
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: probe.rs's bytes changed (the fixture is not already rustfmt-formatted)
+ok   3-artifact-count: the state root holds exactly 'probe.rs' (got: 'probe.rs ')
+ok   4-round-trip: rustfmt --check exits 0 on the result (the tool's own oracle; rc=0)
+the formatted bytes, as measured (recorded, not predicted):
+fn main() {
+    let x = vec![1, 2, 3];
+    let s: u32 = x.iter().sum();
+    println!("{}", s);
+}
+== diff -r of the two state roots:
+ok   5-determinism: two runs >=2s apart leave byte-identical state roots (diff rc=0)
+== strace pass (fresh copy; raw log kept as rustfmt.strace)
+strace'd run rc=0
+== mutating paths (successful only, deduped):
+WS/rootS/probe.rs
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+0
+== condition 7 evidence — HOME after all runs:
+(no output above = HOME stayed empty)
+== conditions failed: 0

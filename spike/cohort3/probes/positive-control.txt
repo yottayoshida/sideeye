@@ -1,0 +1,14 @@
+== positive control (synthetic wall-clock write) — 2026-08-22T00:57:43Z
+== run A
+reset: rootA is a fresh copy of the pre-state
+== run B (>=2s later)
+reset: rootB is a fresh copy of the pre-state
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+== diff -r of the two state roots (the control expects a SPLIT):
+diff -r /tmp/probe-positive/rootA/stamp /tmp/probe-positive/rootB/stamp
+1c1
+< 1787360263458932542
+---
+> 1787360265465502334
+FAIL 5-determinism: two runs >=2s apart byte-identical (diff rc=1)
+control ok: the determinism predicate split on a wall-clock write (the FAIL above is the control working; every other condition green)

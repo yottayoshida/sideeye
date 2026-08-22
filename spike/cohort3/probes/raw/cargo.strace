@@ -1,0 +1,267 @@
+63    execve("/usr/local/bin/cargo", ["cargo", "add", "--offline", "--path", "../depcrate"], 0xffffef0b6aa0 /* 7 vars */) = 0
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/proc/self/exe", "/usr/local/bin/cargo", 4096) = 20
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libdl.so.2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgcc_s.so.1>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/ssl/openssl.cnf", O_RDONLY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/63/maps>
+63    getcwd("/tmp/probe-cargo/appS", 512) = 22
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/.cargo/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/.cargo/config.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe84f0) = -1 ENOENT (No such file or directory)
+63    statx(0</dev/null<char 1:3>>, NULL, AT_STATX_SYNC_AS_STAT, STATX_ALL, NULL) = -1 EFAULT (Bad address)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/.cargo", 0xffffc7fe88c0, 1023) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/.cargo/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/.cargo/config.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe84f0) = -1 ENOENT (No such file or directory)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/.cargo", 0xffffc7fe88c0, 1023) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/.cargo/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/.cargo/config.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe84f0) = -1 ENOENT (No such file or directory)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/.cargo", 0xffffc7fe88c0, 1023) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/.cargo/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/.cargo/config.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe84f0) = -1 ENOENT (No such file or directory)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/.cargo", 0xffffc7fe88c0, 1023) = -1 ENOENT (No such file or directory)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S", 0xffffc7fe88c0, 1023) = -1 EINVAL (Invalid argument)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/config.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe84f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/var/ssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/share/ssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/ssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/openssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/etc/openssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/cert.pem", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/certs.pem", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/ca-bundle.pem", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/cacert.pem", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/ca-certificates.crt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/certs/ca-certificates.crt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/certs/ca-root-nss.crt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/certs/ca-bundle.crt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/CARootCertificates.pem", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/tls-ca-bundle.pem", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/share/certs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/lib/ssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/lib/ssl/cert.pem", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=224449, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/lib/ssl/certs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=16384, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/dev/urandom", O_RDONLY) = 3</dev/urandom<char 1:9>>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/lib/ssl/cert.pem", O_RDONLY) = 3</etc/ssl/certs/ca-certificates.crt>
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", F_OK) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", 0xffffc7fea6e0, 0) = -1 ENOENT (No such file or directory)
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", F_OK) = -1 ENOENT (No such file or directory)
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.config/git/config", F_OK) = -1 ENOENT (No such file or directory)
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/etc/gitconfig", F_OK) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", 0xffffc7fea590, 0) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", 0xffffc7fea570, 0) = -1 ENOENT (No such file or directory)
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", F_OK) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", 0xffffc7feacb0, 0) = -1 ENOENT (No such file or directory)
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", F_OK) = -1 ENOENT (No such file or directory)
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.config/git/config", F_OK) = -1 ENOENT (No such file or directory)
+63    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/etc/gitconfig", F_OK) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", 0xffffc7feab60, 0) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/home/.gitconfig", 0xffffc7feab40, 0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=58, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-cargo/appS/Cargo.toml>
+63    statx(3</tmp/probe-cargo/appS/Cargo.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=58, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/build.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe28e0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/README.md", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe27f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/README.txt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe27f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/README", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe27f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/src/lib.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=29, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/src/main.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe28e0) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/src/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/examples", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/tests", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/benches", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe8a40) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe8a40) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe8a40) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-cargo/appS/Cargo.toml>
+63    statx(3</tmp/probe-cargo/appS/Cargo.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=58, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.package-cache", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 3</tmp/probe-cargo/cargo-home-S/.package-cache>
+63    statfs("/tmp/probe-cargo/cargo-home-S/.package-cache", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=233573122, f_bavail=221427166, f_files=60710912, f_ffree=60441040, f_fsid={val=[0x4db52033, 0xce29f9d6]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+63    getcwd("/tmp/probe-cargo/appS", 512) = 22
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/Cargo.toml", O_RDONLY|O_CLOEXEC) = 4</tmp/probe-cargo/depcrate/Cargo.toml>
+63    statx(4</tmp/probe-cargo/depcrate/Cargo.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=63, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/build.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2270) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.md", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2180) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.txt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2180) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2180) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/lib.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=26, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/main.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2270) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/examples", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/tests", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/benches", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/Cargo.toml", O_RDONLY|O_CLOEXEC) = 4</tmp/probe-cargo/depcrate/Cargo.toml>
+63    statx(4</tmp/probe-cargo/depcrate/Cargo.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=63, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/build.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe1e60) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.md", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe1d70) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.txt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe1d70) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe1d70) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/lib.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=26, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/main.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe1e60) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/examples", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/tests", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/benches", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    write(2</dev/null<char 1:3>>, "      Adding", 12) = 12
+63    write(2</dev/null<char 1:3>>, " depcrate (local) to dependencie"..., 34) = 34
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml", AT_STATX_SYNC_AS_STAT|AT_SYMLINK_NOFOLLOW, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=58, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=58, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.tomlssDk4P", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</tmp/probe-cargo/appS/Cargo.tomlssDk4P>
+63    write(3</tmp/probe-cargo/appS/Cargo.tomlssDk4P>, "[package]\nname = \"app\"\nversion ="..., 129) = 129
+63    renameat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.tomlssDk4P", AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml") = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=129, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.toml", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-cargo/appS/Cargo.toml>
+63    statx(3</tmp/probe-cargo/appS/Cargo.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=129, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/build.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe28e0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/README.md", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe27f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/README.txt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe27f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/README", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe27f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/src/lib.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=29, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/src/main.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe28e0) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/src/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/examples", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/tests", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/benches", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe8a40) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe8a40) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/Cargo.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe8a40) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.lock", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=147, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.lock", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-cargo/appS/Cargo.lock>
+63    statfs("/tmp/probe-cargo/appS/Cargo.lock", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=233573120, f_bavail=221427164, f_files=60710912, f_ffree=60441040, f_fsid={val=[0x4db52033, 0xce29f9d6]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/Cargo.toml", O_RDONLY|O_CLOEXEC) = 4</tmp/probe-cargo/depcrate/Cargo.toml>
+63    statx(4</tmp/probe-cargo/depcrate/Cargo.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=63, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/build.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe20f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.md", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2000) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.txt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2000) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe2000) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/lib.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=26, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/main.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe20f0) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/examples", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/tests", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/benches", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.package-cache", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 3</tmp/probe-cargo/cargo-home-S/.package-cache>
+63    statfs("/tmp/probe-cargo/cargo-home-S/.package-cache", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=233573119, f_bavail=221427163, f_files=60710912, f_ffree=60441040, f_fsid={val=[0x4db52033, 0xce29f9d6]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/Cargo.toml", O_RDONLY|O_CLOEXEC) = 4</tmp/probe-cargo/depcrate/Cargo.toml>
+63    statx(4</tmp/probe-cargo/depcrate/Cargo.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=63, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/build.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fde7f0) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.md", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fde700) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README.txt", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fde700) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/README", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fde700) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/lib.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=26, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/main.rs", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fde7f0) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/src/bin", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/examples", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/tests", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate/benches", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/depcrate", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache", 0xffffc7fe7338, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0644) = 4</tmp/probe-cargo/cargo-home-S/.global-cache>
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/dev/urandom", O_RDONLY|O_CLOEXEC) = 5</dev/urandom<char 1:9>>
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache-journal", 0xffffc7fe8050, 0) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache-wal", 0xffffc7fe8020, 0) = -1 ENOENT (No such file or directory)
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache", {st_mode=S_IFREG|0644, st_size=0, ...}, 0) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache-journal", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0644) = 5</tmp/probe-cargo/cargo-home-S/.global-cache-journal>
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-cargo/cargo-home-S>
+63    unlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache-journal", 0) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.lock", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-cargo/appS/Cargo.lock>
+63    statfs("/tmp/probe-cargo/appS/Cargo.lock", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=233573104, f_bavail=221427148, f_files=60710912, f_ffree=60441039, f_fsid={val=[0x4db52033, 0xce29f9d6]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/Cargo.lock", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 3</tmp/probe-cargo/appS/Cargo.lock>
+63    statfs("/tmp/probe-cargo/appS/Cargo.lock", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=233573104, f_bavail=221427148, f_files=60710912, f_ffree=60441039, f_fsid={val=[0x4db52033, 0xce29f9d6]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+63    write(3</tmp/probe-cargo/appS/Cargo.lock>, "# This file is automatically @ge"..., 228) = 228
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.package-cache", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 3</tmp/probe-cargo/cargo-home-S/.package-cache>
+63    statfs("/tmp/probe-cargo/cargo-home-S/.package-cache", {f_type=OVERLAYFS_SUPER_MAGIC, f_bsize=4096, f_blocks=238745273, f_bfree=233573103, f_bavail=221427147, f_files=60710912, f_ffree=60441039, f_fsid={val=[0x4db52033, 0xce29f9d6]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_RELATIME}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/sbin/rustc", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fe7f00) = -1 ENOENT (No such file or directory)
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/rustc", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0755, stx_size=1261376, ...}) = 0
+63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/rustc", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0755, stx_size=1261376, ...}) = 0
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/target/.rustc_info.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+63    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/proc/self/exe", "/usr/local/bin/cargo", 256) = 20
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/dev/null", O_RDONLY|O_CLOEXEC) = 5</dev/null<char 1:3>>
+63    clone(child_stack=0xffffbc790000, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+64    execve("/usr/local/sbin/rustc", ["rustc", "-vV"], 0xaaaafe5ffea0 /* 10 vars */) = -1 ENOENT (No such file or directory)
+64    execve("/usr/local/bin/rustc", ["rustc", "-vV"], 0xaaaafe5ffea0 /* 10 vars */ <unfinished ...>
+63    <... clone resumed>)              = 64
+64    <... execve resumed>)             = 0
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/proc/self/exe", "/usr/local/bin/rustc", 4096) = 20
+64    faccessat(AT_FDCWD</tmp/probe-cargo/appS>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/librustc_driver-e6f11afaeca7c6f5.so", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/librustc_driver-e6f11afaeca7c6f5.so>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libdl.so.2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/../lib/libLLVM.so.22.1-rust-1.98.0-stable", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/libLLVM.so.22.1-rust-1.98.0-stable>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/../lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgcc_s.so.1>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/../lib/../lib/librt.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/../lib/../lib/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/librt.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/librt.so.1>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/../lib/../lib/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/../lib/../lib/../lib/libz.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/etc/malloc.conf", 0xffffe0f23810, 4096) = -1 ENOENT (No such file or directory)
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/proc/sys/vm/overcommit_memory", O_RDONLY|O_CLOEXEC) = 3</proc/sys/vm/overcommit_memory>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/64/maps>
+64    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/proc/self/statm", O_RDONLY|O_CLOEXEC) = 3</proc/64/statm>
+64    statx(3</proc/64/statm>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0444, stx_size=0, ...}) = 0
+64    clone(child_stack=0xffffa9a7ac00, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[65], tls=0xffffa9a7ba40, child_tidptr=0xffffa9a7b3f0) = 65
+64    write(1<pipe:[8310]>, "rustc 1.98.0 (88d9e12ae 2026-08-"..., 36) = 36
+64    write(1<pipe:[8310]>, "binary: rustc\n", 14) = 14
+64    write(1<pipe:[8310]>, "commit-hash: 88d9e12ae178fab0fb5"..., 54) = 54
+64    write(1<pipe:[8310]>, "commit-date: 2026-08-18\n", 24) = 24
+64    write(1<pipe:[8310]>, "host: aarch64-unknown-linux-gnu\n", 32) = 32
+64    write(1<pipe:[8310]>, "release: 1.98.0\n", 16) = 16
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "rustc", 0xffffa9e10200, 256) = -1 ENOENT (No such file or directory)
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr", 0xffffe0f196e0, 1023) = -1 EINVAL (Invalid argument)
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local", 0xffffe0f196e0, 1023) = -1 EINVAL (Invalid argument)
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin", 0xffffe0f196e0, 1023) = -1 EINVAL (Invalid argument)
+64    faccessat2(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/bin/", F_OK, AT_EACCESS) = 0
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/lib", 0xffffe0f196e0, 1023) = -1 EINVAL (Invalid argument)
+64    readlinkat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/lib/librustc_driver-e6f11afaeca7c6f5.so", 0xffffe0f196e0, 1023) = -1 EINVAL (Invalid argument)
+64    write(1<pipe:[8310]>, "LLVM version: 22.1.8\n", 21) = 21
+65    +++ exited with 0 +++
+64    +++ exited with 0 +++
+63    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=64, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/appS/target/.rustc_info.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = -1 ENOENT (No such file or directory)
+63    write(2</dev/null<char 1:3>>, "     Locking", 12) = 12
+63    write(2</dev/null<char 1:3>>, " 1 package to latest compatible "..., 40) = 40
+63    write(2</dev/null<char 1:3>>, "      Adding", 12) = 12
+63    write(2</dev/null<char 1:3>>, " depcrate v0.1.0 (/tmp/probe-car"..., 45) = 45
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache", {st_mode=S_IFREG|0644, st_size=57344, ...}, 0) = 0
+63    newfstatat(AT_FDCWD</tmp/probe-cargo/appS>, "/tmp/probe-cargo/cargo-home-S/.global-cache", {st_mode=S_IFREG|0644, st_size=57344, ...}, 0) = 0
+63    +++ exited with 0 +++

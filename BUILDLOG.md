@@ -2,6 +2,74 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — cohort 3 probes: five for five, and the bench stays seated
+
+Drills re-proven on the new image, the synthetic positive control split
+as required, then the five primaries: **all five hold probes with all
+six machine-judged conditions green** — four on their first probe under
+the frozen plan, papis under a plan amended after its first probe
+failed (kept as papis-v1). First contact proceeded in cohort order, but
+the committed transcripts are final-harness re-runs whose timestamps
+are not (each header carries its own; all postdate the freeze merge) —
+the first draft of this entry said "in frozen order" and the R1 review
+caught the claim outrunning the committed evidence. The refill bench is
+not activated either way: even reading papis's first probe as its
+outcome, four primaries passed, and the rule promotes only below four.
+Engine order stands: cargo → black → rustfmt → poetry → papis.
+
+The probe phase earned its keep twice. First, **papis**: the original
+plan's probe failed with a network traceback — `papis add` of a local
+text file runs importer auto-matching, and the arxiv importer validates
+the local PATH against arxiv.org over HTTPS, so a failed fetch fails a
+purely local add (measured here as TLS verification dying under the
+intercepting proxy — the network was reached; R2 caught this sentence
+still saying "unreachable" after the reword landed everywhere else). No config filters the importer set (measured
+in the source); `--from` skips matching structurally. One measured
+amendment (metadata via a frozen YAML fixture and `--from yaml`),
+recorded in the PROTOCOL with `papis-v1.txt` as evidence — the jj
+pattern from cohort 2, again. Under the amended plan the determinism
+condition also answered the open question: **the fixture's `papis_id`
+pins it** — byte-identical libraries across runs.
+
+Second, **cargo**, where a hypothesis died properly: an ad-hoc
+measurement said a warm CARGO_HOME removes the `rustc -vV` child (zero
+clones on the second run). Wrong — that second run was a **no-op add on
+an already-edited manifest**, short-circuiting before the resolver ever
+ran; the measurement did not reach the thing it claimed to measure. The
+transcript's forecast loop uses a fresh pre-state per configuration and
+shows the child (and its internal thread) in both states. So cargo's
+define faces one vfork child per add whose thread the shim will observe;
+the documented `RUSTC` override is recorded as gated apparatus, not
+assumed.
+
+Also measured: poetry's `add --lock` builds a virtualenv (threads) even
+though it installs nothing — `POETRY_VIRTUALENVS_CREATE=false` takes the
+thread count to zero with only oracle-accountable discovery forks left.
+black and rustfmt run thread-free and child-free. papis carries 3
+in-process threads, off switch unscouted. One harness anchor was
+corrected mid-probe: bare `papis list` prints folder paths, so the
+round-trip check now reads the document back through `papis list
+--format` — papis's own reading — instead of grepping for a title in
+output that never contains one.
+
+The batch's R1 (a fresh context-free subagent again — Codex still out of
+credits) returned three P1s, all adopted: the "in cohort order" claim
+above (reworded to what the transcripts show); "unreachable network" in
+the papis story, when what v1 measured was a *reached* network dying on
+TLS verification under the intercepting proxy (reworded — any fetch
+failure propagates the same way, but the claim now names the measured
+one); and the cargo/poetry `thread_counts` lines printing `inconsistent`
+without RESULTS saying so — the pairing assertion assumes only
+CLONE_THREAD clones split into unfinished/resumed pairs, vfork splits
+too, the machine judge refused fail-closed, and the thread facts came
+from the raw logs and the clone-only forecasts (now disclosed, with the
+lib.sh limitation named). Its P2s too: the positive control's gate was
+fail-open (any red printed "control ok" — now gated on the determinism
+verdict specifically, diff rc = 1, everything else green) and the
+corrected papis anchor had never been red in its final form (it now
+drills itself against a wrong id in the transcript). The affected four
+probes were re-run under the fixed harness; black and rustfmt stand.
+
 ## 2026-08-22 — cohort 3 opens: the sweet-spot five frozen, with a bench that refills
 
 Selection frozen in #209 before any contact: **cargo → black → rustfmt →

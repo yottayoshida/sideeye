@@ -1,0 +1,82 @@
+== papis probe — papis, version 0.16.0 — 2026-08-22T00:57:57Z
+== condition 7 — ambient: XDG_CONFIG_HOME and XDG_CACHE_HOME are created FRESH PER RUN (the reset) with the config above pointing at that run's library copy; HOME=<WS>/home fresh. use-cache=False means no cache layer should exist at all — the cache dir is shown after the runs and the closure pass measures it. The metadata fixtures live outside the state root and are read, not written.
+setup: papis add (existing doc, --from yaml) rc=0
+pre-state library:
+WS/pre/lib/existing-doc
+WS/pre/lib/existing-doc/existing.txt
+WS/pre/lib/existing-doc/info.yaml
+== run A
+reset: libA is a fresh copy of the pre-state; xdg-A and cache-A are fresh
+[INFO] importer: Merging data from importer 'yaml'.
+[INFO] database.cache: Indexing library. This might take a while...
+[INFO] document: Created reference 'Probe_Probe_2026'.
+[INFO] commands.add: Copying 'fixture.txt' to 'fixture.txt'.
+[INFO] commands.add: Document folder is '/tmp/probe-papis/libA/probe-doc'.
+[INFO] commands.add: Checking if this document is already in the library. This uses the keys ['doi', 'isbn', 'isbn10', 'eprint', 'url', 'doc_url'] to determine uniqueness.
+[INFO] commands.add: No document matching the new metadata found in the 'probe' library.
+[INFO] commands.add: Moving document to '/tmp/probe-papis/libA/probe-doc'.
+== run B (>=2s later)
+reset: libB is a fresh copy of the pre-state; xdg-B and cache-B are fresh
+[INFO] importer: Merging data from importer 'yaml'.
+[INFO] database.cache: Indexing library. This might take a while...
+[INFO] document: Created reference 'Probe_Probe_2026'.
+[INFO] commands.add: Copying 'fixture.txt' to 'fixture.txt'.
+[INFO] commands.add: Document folder is '/tmp/probe-papis/libB/probe-doc'.
+[INFO] commands.add: Checking if this document is already in the library. This uses the keys ['doi', 'isbn', 'isbn10', 'eprint', 'url', 'doc_url'] to determine uniqueness.
+[INFO] commands.add: No document matching the new metadata found in the 'probe' library.
+[INFO] commands.add: Moving document to '/tmp/probe-papis/libB/probe-doc'.
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: the library after run A differs from the pre-state
+ok   3-artifact-count: library dirs are exactly 'existing-doc probe-doc' (got: 'existing-doc probe-doc '); probe-doc holds exactly 'fixture.txt info.yaml' (got: 'fixture.txt info.yaml ')
+anchor drill: the same read-back against 'Probe probe9999' counts 0 (a mismatched id goes red)
+ok   4-round-trip: the copied file round-trips its bytes; papis reads back 'Probe probe0001' exactly once (1 matching line(s); wrong-id drill counted 0)
+info.yaml, as measured (recorded, not predicted):
+author: Probe Author
+author_list:
+- family: Author
+  given: Probe
+files:
+- fixture.txt
+papis_id: probe0001
+ref: Probe_Probe_2026
+title: Probe
+year: 2026
+== diff -r of the two library copies (papis_id pinning is judged here):
+ok   5-determinism: two runs >=2s apart leave byte-identical libraries (diff rc=0)
+== strace pass (fresh copy; raw log kept as papis.strace)
+strace'd run rc=0
+== mutating paths (successful only, deduped):
+/dev/shm/sem.5b05uj
+/dev/shm/sem.Zvcpl9
+/dev/shm/sem.gMsgZG
+/dev/shm/sem.mp-gceugwwp
+/dev/shm/sem.mp-ie8iul65
+/dev/shm/sem.mp-mwx22134
+/dev/shm/sem.mp-nnaioxaz
+/dev/shm/sem.mp-xup6ovai
+/dev/shm/sem.mp-z_ryhqqs
+/dev/shm/sem.n2FPEo
+/dev/shm/sem.ukRHv0
+/dev/shm/sem.zZpjR5
+/tmp/5vhtvv60
+WS/cache-S/papis
+WS/cache-S/papis/database
+WS/libS/probe-doc
+/tmp/tmpclbamh5x
+/tmp/tmpclbamh5x/fixture.txt
+/tmp/tmpclbamh5x/info.yaml
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+3
+== condition 7 evidence — per-run cache dir after run A (use-cache=False: expected no files; the directory skeleton may appear) and HOME; the fixtures are unmutated:
+WS/cache-A
+WS/cache-A/papis
+WS/cache-A/papis/database
+(cache entries above: directories only = no cache file was written)
+(HOME files above, if any)
+fixture.txt: unchanged
+existing.txt: unchanged
+probe-meta.yaml: unchanged
+existing-meta.yaml: unchanged
+== conditions failed: 0
