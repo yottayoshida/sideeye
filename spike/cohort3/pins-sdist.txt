@@ -1,0 +1,6 @@
+bibtexparser==1.4.4 \
+    --hash=sha256:093b6c824f7a71d3a748867c4057b71f77c55b8dbc07efc993b781771520d8fb
+    # via papis
+python-doi==0.2.0 \
+    --hash=sha256:2e01e56fb319bd219ea8586baa43a1fc794dfe45a83156ac70242c4ce961fd9a
+    # via papis

@@ -1,0 +1,213 @@
+# freeze-build.txt — the freeze build's evidence, captured 2026-08-22 on the
+# arm64 build host. Raw command/output pairs; the build host's home directory
+# is abbreviated to ~. This is the transcript behind PROTOCOL.md's Versions
+# section and the install-plus--version pre-freeze contact claim.
+
+$ shasum -a 256 artifacts/rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz
+ac9283184301aeed06ecc9f5aa4c1be7041e18a1b197b6cb6c5d162d98f566da  rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz
+
+$ tar -xJf artifacts/rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz -O rust-1.98.0-aarch64-unknown-linux-gnu/components
+rustc
+rust-std-aarch64-unknown-linux-gnu
+rust-docs
+rust-docs-json-preview
+cargo
+rustfmt-preview
+rust-analyzer-preview
+llvm-tools-preview
+clippy-preview
+rust-analysis-aarch64-unknown-linux-gnu
+llvm-bitcode-linker-preview
+
+$ sh fetch-artifacts.sh; echo rc=$?
+ok   rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz (cached)
+Collecting anyio==4.14.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 3))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/anyio-4.14.2-py3-none-any.whl
+Collecting arxiv==4.0.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 9))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/arxiv-4.0.1-py3-none-any.whl
+Collecting backports-zstd==1.7.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 13))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/backports_zstd-1.7.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+Collecting beautifulsoup4==4.15.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 101))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/beautifulsoup4-4.15.0-py3-none-any.whl
+Collecting black==26.5.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 105))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/black-26.5.1-py3-none-any.whl
+Collecting build==1.5.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 133))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/build-1.5.0-py3-none-any.whl
+Collecting cachecontrol==0.14.4 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 137))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/cachecontrol-0.14.4-py3-none-any.whl
+Collecting certifi==2026.7.22 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 141))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/certifi-2026.7.22-py3-none-any.whl
+Collecting cffi==2.1.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 148))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/cffi-2.1.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
+Collecting charset-normalizer==3.5.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 250))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/charset_normalizer-3.5.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+Collecting cleo==2.1.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 424))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/cleo-2.1.0-py3-none-any.whl
+Collecting click==8.4.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 428))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/click-8.4.2-py3-none-any.whl
+Collecting colorama==0.4.6 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 434))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/colorama-0.4.6-py2.py3-none-any.whl
+Collecting crashtest==0.4.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 438))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/crashtest-0.4.1-py3-none-any.whl
+Collecting cryptography==50.0.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 442))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/cryptography-50.0.0-cp311-abi3-manylinux_2_28_aarch64.whl
+Collecting distlib==0.4.3 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 490))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/distlib-0.4.3-py2.py3-none-any.whl
+Collecting dominate==2.9.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 494))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/dominate-2.9.1-py2.py3-none-any.whl
+Collecting dulwich==1.2.12 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 498))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/dulwich-1.2.12-cp313-cp313-manylinux_2_28_aarch64.whl
+Collecting fastjsonschema==2.22.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 542))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/fastjsonschema-2.22.2-py3-none-any.whl
+Collecting filelock==3.32.3 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 546))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/filelock-3.32.3-py3-none-any.whl
+Collecting filetype==1.2.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 553))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/filetype-1.2.0-py2.py3-none-any.whl
+Collecting findpython==0.8.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 557))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/findpython-0.8.0-py3-none-any.whl
+Collecting h11==0.16.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 561))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/h11-0.16.0-py3-none-any.whl
+Collecting habanero==2.9.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 567))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/habanero-2.9.2-py3-none-any.whl
+Collecting httpcore==1.0.9 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 571))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/httpcore-1.0.9-py3-none-any.whl
+Collecting httpcore2==2.12.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 575))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/httpcore2-2.12.0-py3-none-any.whl
+Collecting httpx==0.28.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 579))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/httpx-0.28.1-py3-none-any.whl
+Collecting httpx2==2.12.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 583))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/httpx2-2.12.0-py3-none-any.whl
+Collecting idna==3.19 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 587))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/idna-3.19-py3-none-any.whl
+Collecting installer==1.0.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 595))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/installer-1.0.1-py3-none-any.whl
+Collecting jaraco-classes==3.4.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 599))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/jaraco.classes-3.4.0-py3-none-any.whl
+Collecting jaraco-context==6.1.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 603))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/jaraco_context-6.1.2-py3-none-any.whl
+Collecting jaraco-functools==4.6.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 607))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/jaraco_functools-4.6.0-py3-none-any.whl
+Collecting jeepney==0.9.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 611))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/jeepney-0.9.0-py3-none-any.whl
+Collecting keyring==25.7.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 617))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/keyring-25.7.0-py3-none-any.whl
+Collecting lark==1.3.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 621))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/lark-1.3.1-py3-none-any.whl
+Collecting lxml==6.1.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 625))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/lxml-6.1.2-cp313-cp313-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl
+Collecting more-itertools==11.1.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 805))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/more_itertools-11.1.0-py3-none-any.whl
+Collecting msgpack==1.2.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 811))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/msgpack-1.2.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+Collecting mypy-extensions==1.1.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 879))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/mypy_extensions-1.1.0-py3-none-any.whl
+Collecting packaging==26.3 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 883))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/packaging-26.3-py3-none-any.whl
+Collecting papis==0.16.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 892))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/papis-0.16.0-py3-none-any.whl
+Collecting pathspec==1.1.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 895))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pathspec-1.1.1-py3-none-any.whl
+Collecting pbs-installer==2026.8.14 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 899))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pbs_installer-2026.8.14-py3-none-any.whl
+Collecting pkginfo==1.12.1.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 903))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pkginfo-1.12.1.2-py3-none-any.whl
+Collecting platformdirs==4.11.3 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 907))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/platformdirs-4.11.3-py3-none-any.whl
+Collecting poetry==2.4.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 916))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/poetry-2.4.1-py3-none-any.whl
+Collecting poetry-core==2.4.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 919))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/poetry_core-2.4.0-py3-none-any.whl
+Collecting prompt-toolkit==3.0.53 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 923))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/prompt_toolkit-3.0.53-py3-none-any.whl
+Collecting pycparser==3.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 927))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pycparser-3.0-py3-none-any.whl
+Collecting pygments==2.21.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 931))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pygments-2.21.0-py3-none-any.whl
+Collecting pyparsing==3.3.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 935))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pyparsing-3.3.2-py3-none-any.whl
+Collecting pyproject-hooks==1.2.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 939))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pyproject_hooks-1.2.0-py3-none-any.whl
+Collecting python-discovery==1.5.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 945))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/python_discovery-1.5.2-py3-none-any.whl
+Collecting python-slugify==8.0.4 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 949))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/python_slugify-8.0.4-py2.py3-none-any.whl
+Collecting pytokens==0.4.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 953))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pytokens-0.4.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+Collecting pyyaml==6.0.3 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 997))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/pyyaml-6.0.3-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+Collecting rapidfuzz==3.14.5 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1072))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/rapidfuzz-3.14.5-cp313-cp313-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl
+Collecting requests==2.34.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1157))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/requests-2.34.2-py3-none-any.whl
+Collecting requests-toolbelt==1.0.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1166))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/requests_toolbelt-1.0.0-py2.py3-none-any.whl
+Collecting secretstorage==3.5.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1170))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/secretstorage-3.5.0-py3-none-any.whl
+Collecting shellingham==1.5.4 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1174))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/shellingham-1.5.4-py2.py3-none-any.whl
+Collecting soupsieve==2.9.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1178))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/soupsieve-2.9.2-py3-none-any.whl
+Collecting text-unidecode==1.3 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1182))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/text_unidecode-1.3-py2.py3-none-any.whl
+Collecting tomlkit==0.15.1 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1186))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/tomlkit-0.15.1-py3-none-any.whl
+Collecting tqdm==4.70.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1190))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/tqdm-4.70.0-py3-none-any.whl
+Collecting trove-classifiers==2026.6.1.19 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1194))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/trove_classifiers-2026.6.1.19-py3-none-any.whl
+Collecting truststore==0.10.4 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1198))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/truststore-0.10.4-py3-none-any.whl
+Collecting typing-extensions==4.16.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1204))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/typing_extensions-4.16.0-py3-none-any.whl
+Collecting urllib3==2.7.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1208))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/urllib3-2.7.0-py3-none-any.whl
+Collecting virtualenv==21.7.4 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1215))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/virtualenv-21.7.4-py3-none-any.whl
+Collecting wcwidth==0.8.2 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-wheels.txt (line 1219))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/wcwidth-0.8.2-py3-none-any.whl
+Successfully downloaded anyio arxiv backports-zstd beautifulsoup4 black build cachecontrol certifi cffi charset-normalizer cleo click colorama crashtest cryptography distlib dominate dulwich fastjsonschema filelock filetype findpython h11 habanero httpcore httpcore2 httpx httpx2 idna installer jaraco-classes jaraco-context jaraco-functools jeepney keyring lark lxml more-itertools msgpack mypy-extensions packaging papis pathspec pbs-installer pkginfo platformdirs poetry poetry-core prompt-toolkit pycparser pygments pyparsing pyproject-hooks python-discovery python-slugify pytokens pyyaml rapidfuzz requests requests-toolbelt secretstorage shellingham soupsieve text-unidecode tomlkit tqdm trove-classifiers truststore typing-extensions urllib3 virtualenv wcwidth
+Collecting bibtexparser==1.4.4 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-sdist.txt (line 1))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/bibtexparser-1.4.4.tar.gz
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting python-doi==0.2.0 (from -r ~/claude_workspace/sideeye/spike/cohort3/pins-sdist.txt (line 4))
+  File was already downloaded ~/claude_workspace/sideeye/spike/cohort3/artifacts/wheels/python-doi-0.2.0.tar.gz
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Successfully downloaded bibtexparser python-doi
+artifacts ready in ~/claude_workspace/sideeye/spike/cohort3/artifacts
+rc=0
+
+$ ls artifacts/wheels/*.whl | wc -l; ls artifacts/wheels/*.tar.gz | wc -l
+      72
+       2
+
+# Guard falsification (the cover check's own predicate): a copy of the pins
+# with ONE --hash continuation line deleted must fail the check.
+$ awk 'NR==5 && /--hash/ {next} {print}' pins-wheels.txt > artifacts/drill/pins-wheels.txt  # plus verbatim copies of the other inputs
+$ sh artifacts/drill/fetch-artifacts.sh; echo rc=$?
+FAIL: pins-wheels.txt + pins-sdist.txt do not cover pins-all.txt exactly (line-level, hashes included)
+980a981
+>     --hash=sha256:cfa139f3ed1a23ee8f88a145ddb5ac7605b8bbfd8592baacd7ce3d8bb4313c7f
+rc=1 (captured below from the raw run)
+raw rc=1
+
+$ docker run --rm sideeye-cohort3 sh -c 'cargo --version; rustc --version; rustfmt --version; black --version; poetry --version; papis --version; strace -V | head -1; python3 --version'; echo rc=$?
+cargo 1.98.0 (797e8a9bc 2026-08-05)
+rustc 1.98.0 (88d9e12ae 2026-08-18)
+rustfmt 1.9.0-stable (88d9e12ae1 2026-08-18)
+black, 26.5.1 (compiled: no)
+Python (CPython) 3.13.5
+Poetry (version 2.4.1)
+papis, version 0.16.0
+strace -- version 6.13
+Python 3.13.5
+rc=0
