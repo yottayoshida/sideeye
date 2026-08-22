@@ -1,0 +1,247 @@
+== novelty pre-scan: andreafrancia/trash-cli
+== date: 2026-08-22T22:28:55Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          13 hit(s) (all listed)
+      #406 open 2026-07-08 fix crashes on --sort=none and missing deletion date
+      #401 open 2026-07-07 support file names that are not valid UTF-8
+      #332 open 2024-01-23 Crash while removing file/dir wth utf-8 chars
+      #144 open 2019-05-08 trash-cli unable to restore trashed file with sudo
+      #392 merged 2026-07-03 Prevent restore from escaping the trash volume
+      #334 closed 2024-02-21 Crash with `--volumes`: AttributeError: 'PrintVolumesList' object has no attribute 'run_action'
+      #172 closed 2020-06-27 trash-restore dose not exist from a apt package
+      #52 closed 2015-06-16 Segfault  in all trash-cli commands (crash)
+      #48 closed 2015-02-15 trash-empty crashes with directories without read permission
+      #21 closed 2013-08-02 Crash/Stacktrace when selecting a value out of range in restore-trash
+      #22 closed 2013-08-02 Support ranges in restore-trash
+      #69 closed 2016-09-29 trash-rm crashes on .trashinfo files without Path
+      #170 merged 2020-05-14 Python 3 compatibility in list_mount_points
+  corrupt        1 hit(s) (all listed)
+      #393 merged 2026-07-03 Sanitize control characters in filenames
+  corruption     0 hit(s)
+  truncated      0 hit(s)
+  truncate       0 hit(s)
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #405 open 2026-07-08 trash-empty: remove files without write bit
+      #402 open 2026-07-07 stop crashing rm on an empty pattern
+      #302 open 2023-05-22 `trash-empty` empty only PWD trashcan (like `trash-restore` does)
+      #364 open 2025-02-17 trash-empty: Cannot remove file
+      #318 open 2023-10-24 trash-empty: option to only empty files trashed prior to application start
+      #319 open 2023-11-03 Confirm Dialog on `trash-empty`
+      #118 open 2018-03-30 [Enhancement] size based trash-empty
+      #276 open 2022-12-06 `trash-empty --all-users` duplicate trash directories
+      #382 open 2026-04-17 Guarded rm
+      #129 open 2018-10-12 Clarify documentation: behavior of `trash-empty` on different mount points
+      #228 open 2022-03-24 Would like to see the output of trash-empty command
+      #370 open 2025-08-18 Seems to have deleted all of my trashed files
+      #247 open 2022-09-12 trash-put --home-fallback (was: trash-put cannot trash regular empty file)
+      #252 open 2022-09-26 trash-empty sometimes at random spools/spins up all my parked disks
+      #348 open 2024-08-17 Permission denied: '/proc/filesystems' on Termux
+      #333 open 2024-02-13 [Question] How to correctly answer "Proceed? (y/n)" when using trash-empty in script?
+      #366 open 2025-07-01 Add better command line argument support
+      #33 open 2014-03-19 More safety Tips / Suggestions
+      #256 open 2022-10-18 Is whitelisting non-physical fstypes really a good idea?
+      #241 open 2022-08-17 Help should include the other commands
+  atomic         5 hit(s) (all listed)
+      #273 closed 2022-11-25 trash-cli-git AUR installation fails
+      #264 closed 2022-11-17 shtab does not generating working completions
+      #112 closed 2018-01-02 OSError: [Errno 36] File name too long
+      #210 closed 2021-07-10 Tests fail on 0.21.6.30
+      #81 closed 2017-01-04 Python 3 compatibility
+  atomically     0 hit(s)
+  interrupted    2 hit(s) (all listed)
+      #133 closed 2018-11-20 trash-put from non-writable directory copies file to trashcan twice, although reporting an error
+      #112 closed 2018-01-02 OSError: [Errno 36] File name too long
+  interrupt      4 hit(s) (all listed)
+      #58 closed 2015-11-20 trash remove non existing files on a mounted windows share, trash process hangs
+      #133 closed 2018-11-20 trash-put from non-writable directory copies file to trashcan twice, although reporting an error
+      #112 closed 2018-01-02 OSError: [Errno 36] File name too long
+      #103 closed 2017-08-21 ^C in trash-restore is not catched
+  sigkill        1 hit(s) (all listed)
+      #152 closed 2019-10-06 trash-list and trash-empty cannot exit 
+  sigint         1 hit(s) (all listed)
+      #271 open 2022-11-24 RFE: Explicit the way of quitting trash-restore cleanly
+  ctrl-c         8 hit(s) (all listed)
+      #122 open 2018-05-23 Experience about trash-restore and trash-rm
+      #363 open 2025-02-11 Zsh completion doesn't follow zstyle-set substring matching behavior
+      #271 open 2022-11-24 RFE: Explicit the way of quitting trash-restore cleanly
+      #133 closed 2018-11-20 trash-put from non-writable directory copies file to trashcan twice, although reporting an error
+      #112 closed 2018-01-02 OSError: [Errno 36] File name too long
+      #103 closed 2017-08-21 ^C in trash-restore is not catched
+      #1 closed 2011-11-23 Issue with permanent deletion?
+      #152 closed 2019-10-06 trash-list and trash-empty cannot exit 
+  power          1 hit(s) (all listed)
+      #322 closed 2023-12-05 If a trash fails before everything is deleted, all the files that *were* deleted *cannot be restored*
+  outage         0 hit(s)
+  ENOSPC         1 hit(s) (all listed)
+      #394 merged 2026-07-03 Harden trash-put against unwritable dirs
+  disk           22 hit(s) (all listed)
+      #400 open 2026-07-07 trash-restore should trust only secure shared trash directories
+      #348 open 2024-08-17 Permission denied: '/proc/filesystems' on Termux
+      #252 open 2022-09-26 trash-empty sometimes at random spools/spins up all my parked disks
+      #356 open 2024-10-26 [Feature request] Show size of file as part of metadata in trash-list
+      #247 open 2022-09-12 trash-put --home-fallback (was: trash-put cannot trash regular empty file)
+      #341 open 2024-04-02 I have a number of bind mounts, and `trash-list` shows trashed items without any duplication.
+      #277 open 2022-12-12 trash-put: --force-another-volume  (was Possibility of change the path of trash should be there! :()
+      #384 closed 2026-04-19 Multiple security fixes
+      #387 merged 2026-05-09 Preserve raw filename bytes in trashinfo Path entries
+      #355 closed 2024-10-14 trash dir and file to be trashed are not in the same volume
+      #283 closed 2023-01-09 PermissionError: [Errno 13] Permission denied: '/proc/filesystems'
+      #299 closed 2023-05-08 `trash-put` uses 100% of the CPU and does not delete a file
+      #298 closed 2023-04-25 `trash-put` hangs my system for a while
+      #273 closed 2022-11-25 trash-cli-git AUR installation fails
+      #9 closed 2012-10-09 Can't trash regular file
+      #149 closed 2019-07-17 Add (optional) disk usage information on `trash-list`
+      #109 closed 2017-11-23 trash-put creates a .Trash directory without sticky bit, trash-list complains about it
+      #163 closed 2020-04-17 Specify a global trash directory? 
+      #195 closed 2021-03-03 trash --trash-dir=/tmp/.Trash a.txt failed
+      #178 merged 2020-12-11 trash-list: Show all partitions including not physical
+  partial        2 hit(s) (all listed)
+      #363 open 2025-02-11 Zsh completion doesn't follow zstyle-set substring matching behavior
+      #133 closed 2018-11-20 trash-put from non-writable directory copies file to trashcan twice, although reporting an error
+  incomplete     1 hit(s) (all listed)
+      #137 closed 2019-02-09 Problem deleting files beginning with minus
+  dataloss       1 hit(s) (all listed)
+      #389 closed 2026-05-10 Q: Project status?
+  recover        7 hit(s) (all listed)
+      #213 open 2021-10-27 Add a command paramater to shred trashed files (replace with 0's)
+      #354 open 2024-10-13 `trash-put` hangs indefinitely if ownership of .Trash-<UID> is wrong
+      #322 closed 2023-12-05 If a trash fails before everything is deleted, all the files that *were* deleted *cannot be restored*
+      #10 closed 2012-11-02 implement -i for trash-put
+      #203 closed 2021-05-21 Option to show preview and/or confirmation
+      #68 closed 2016-09-25 That's something i want to do about root's permission file, i thought someone mybe need it
+      #110 closed 2017-12-02 Neither trash-restore nor GUI file manager can see deleted file
+  recovery       2 hit(s) (all listed)
+      #213 open 2021-10-27 Add a command paramater to shred trashed files (replace with 0's)
+      #32 closed 2014-03-19 trash-empty should ask for confirmation
+  rollback       2 hit(s) (all listed)
+      #214 closed 2021-10-30 trash-empty lists trash directories in /proc, /sys, /, /dev, /run
+      #81 closed 2017-01-04 Python 3 compatibility
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #250 closed 2022-09-21 Trash-{list,restore,empty} not working on bindfs mounted directories
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #33 open 2014-03-19 More safety Tips / Suggestions
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #33 open 2014-03-19 More safety Tips / Suggestions
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      6 hit(s) (all listed)
+      #376 open 2025-12-01 trash-restore terminates too eagerly
+      #175 open 2020-09-29 feature request: trash-restore accept argument instead of prompt and support specific destination to store
+      #392 merged 2026-07-03 Prevent restore from escaping the trash volume
+      #393 merged 2026-07-03 Sanitize control characters in filenames
+      #260 merged 2022-11-02 Added a "--overwrite" flag to trash-restore which forces the restore to overwrite any existing files
+      #259 closed 2022-11-02 Add a flag to trash-restore to allow a force overwrite of existing files
+  clobber        0 hit(s)
+  blank          1 hit(s) (all listed)
+      #382 open 2026-04-17 Guarded rm
+  unreadable     6 hit(s) (all listed)
+      #406 open 2026-07-08 fix crashes on --sort=none and missing deletion date
+      #217 closed 2021-12-04 test_trash_empty_will_skip_unreadable_dir tries to touch system directories breaking the sandbox
+      #218 closed 2021-12-04 Running tests leave behind temp directories
+      #220 closed 2021-12-04 Fix unit test test_trash_empty_will_skip_unreadable_dir
+      #81 closed 2017-01-04 Python 3 compatibility
+      #78 closed 2017-01-04 Refactor: octal literals
+  garbage        2 hit(s) (all listed)
+      #284 closed 2023-01-18 Trash-cli doesn't send the file to macOS's recycle bin or allows to send to another trash path
+      #65 closed 2016-06-07 trash-empty not working for partitions
+  mangled        0 hit(s)
+  contents       16 hit(s) (all listed)
+      #332 open 2024-01-23 Crash while removing file/dir wth utf-8 chars
+      #318 open 2023-10-24 trash-empty: option to only empty files trashed prior to application start
+      #387 merged 2026-05-09 Preserve raw filename bytes in trashinfo Path entries
+      #247 open 2022-09-12 trash-put --home-fallback (was: trash-put cannot trash regular empty file)
+      #273 closed 2022-11-25 trash-cli-git AUR installation fails
+      #233 merged 2022-06-20 Fix the unhandled exception 'FileNotFoundError' that occurs in 'trashcli.list.SizeExtractor.extract_attribute()'
+      #264 closed 2022-11-17 shtab does not generating working completions
+      #250 closed 2022-09-21 Trash-{list,restore,empty} not working on bindfs mounted directories
+      #210 closed 2021-07-10 Tests fail on 0.21.6.30
+      #115 closed 2018-03-18 Use bytes to interact with ctypes instead of strings
+      #48 closed 2015-02-15 trash-empty crashes with directories without read permission
+      #18 closed 2013-05-06 Problem trashing with verbose option
+      #17 closed 2013-04-05 Parse Error While Trash-list 
+      #81 closed 2017-01-04 Python 3 compatibility
+      #71 closed 2016-12-12 trash-empty (n) not working
+      #65 closed 2016-06-07 trash-empty not working for partitions
+  in-place       22 hit(s) (all listed)
+      #405 open 2026-07-08 trash-empty: remove files without write bit
+      #404 open 2026-07-08 trash-put: do not leave a copy of a file
+      #379 open 2026-03-22 `trash` and `trash-list` use inconsistent directories
+      #150 open 2019-08-24 trash-put: Compatability with Windows Subsystem for Linux (WSL)
+      #289 open 2023-02-19 trash-restore from anywhere
+      #364 open 2025-02-17 trash-empty: Cannot remove file
+      #277 open 2022-12-12 trash-put: --force-another-volume  (was Possibility of change the path of trash should be there! :()
+      #394 merged 2026-07-03 Harden trash-put against unwritable dirs
+      #247 open 2022-09-12 trash-put --home-fallback (was: trash-put cannot trash regular empty file)
+      #357 closed 2024-11-05 Consider using semantic versioning
+      #339 closed 2024-03-28 Don't force user to install old mock library
+      #335 closed 2024-03-08 ZSH completion very slow
+      #331 closed 2024-01-20 replace old mock by the new unittest.mock
+      #323 closed 2023-12-07 Provide an option to send deleted items to macOS Desktop Trash.
+      #133 closed 2018-11-20 trash-put from non-writable directory copies file to trashcan twice, although reporting an error
+      #298 closed 2023-04-25 `trash-put` hangs my system for a while
+      #235 merged 2022-06-27 Fix links to trash specification
+      #39 closed 2014-06-24 Man-page points to a wrong website
+      #8 closed 2012-09-30 trash-cli creates a new .Trash directory also a ~/.local/share/Trash exists
+      #74 closed 2016-12-29 debian etc packaging ?
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #103 closed 2017-08-21 ^C in trash-restore is not catched
+  reboot         1 hit(s) (all listed)
+      #28 closed 2013-12-03 Cannot trash file in /tmp
+  disk+full      4 hit(s) (all listed)
+      #277 open 2022-12-12 trash-put: --force-another-volume  (was Possibility of change the path of trash should be there! :()
+      #298 closed 2023-04-25 `trash-put` hangs my system for a while
+      #149 closed 2019-07-17 Add (optional) disk usage information on `trash-list`
+      #110 closed 2017-12-02 Neither trash-restore nor GUI file manager can see deleted file
+  data+loss      1 hit(s) (all listed)
+      #389 closed 2026-05-10 Q: Project status?
+  partial+write  1 hit(s) (all listed)
+      #133 closed 2018-11-20 trash-put from non-writable directory copies file to trashcan twice, although reporting an error
+  crash+safe     0 hit(s)
+  atomic+write   5 hit(s) (all listed)
+      #273 closed 2022-11-25 trash-cli-git AUR installation fails
+      #264 closed 2022-11-17 shtab does not generating working completions
+      #112 closed 2018-01-02 OSError: [Errno 36] File name too long
+      #210 closed 2021-07-10 Tests fail on 0.21.6.30
+      #81 closed 2017-01-04 Python 3 compatibility
+  lock+file      6 hit(s) (all listed)
+      #247 open 2022-09-12 trash-put --home-fallback (was: trash-put cannot trash regular empty file)
+      #311 closed 2023-09-02  cannot trash regular file --btrfs subvolumes
+      #242 closed 2022-08-21 Does anyone still have problem problems with ZFS or btrfs?
+      #10 closed 2012-11-02 implement -i for trash-put
+      #165 closed 2020-05-02 "No files trashed from current dir" error
+      #13 closed 2013-01-31 Problems with trash and partitions
+  write+failure  3 hit(s) (all listed)
+      #264 closed 2022-11-17 shtab does not generating working completions
+      #210 closed 2021-07-10 Tests fail on 0.21.6.30
+      #81 closed 2017-01-04 Python 3 compatibility
+  file+contents  14 hit(s) (all listed)
+      #332 open 2024-01-23 Crash while removing file/dir wth utf-8 chars
+      #247 open 2022-09-12 trash-put --home-fallback (was: trash-put cannot trash regular empty file)
+      #387 merged 2026-05-09 Preserve raw filename bytes in trashinfo Path entries
+      #273 closed 2022-11-25 trash-cli-git AUR installation fails
+      #264 closed 2022-11-17 shtab does not generating working completions
+      #233 merged 2022-06-20 Fix the unhandled exception 'FileNotFoundError' that occurs in 'trashcli.list.SizeExtractor.extract_attribute()'
+      #250 closed 2022-09-21 Trash-{list,restore,empty} not working on bindfs mounted directories
+      #210 closed 2021-07-10 Tests fail on 0.21.6.30
+      #48 closed 2015-02-15 trash-empty crashes with directories without read permission
+      #18 closed 2013-05-06 Problem trashing with verbose option
+      #17 closed 2013-04-05 Parse Error While Trash-list 
+      #81 closed 2017-01-04 Python 3 compatibility
+      #71 closed 2016-12-12 trash-empty (n) not working
+      #65 closed 2016-06-07 trash-empty not working for partitions
+
+== 51 terms run; 36 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
+== script exit rc=0

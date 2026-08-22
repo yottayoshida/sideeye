@@ -1,0 +1,53 @@
+== rule 11/17 receipts: pypa/pipx
+== gh api repos/pypa/pipx/issues?state=all&sort=created&direction=desc&per_page=60  (pull_request filtered out)
+== gh api repos/pypa/pipx/issues/<N>/comments?per_page=100  per issue
+== run at 2026-08-22T22:44:57Z
+
+== 60 items fetched, 11 are issues, showing the 11 most recent
+
+#2005  2026-08-14T14:06:20Z  by=merwok  labels=[bug]  state=open
+    title: Doc for pipx run uses sphinx-build as script name
+    FIRST RESPONSE: +6.1d [WITHIN-1-WEEK] by SirHegel (NONE) at 2026-08-20T16:40:13Z
+
+#2004  2026-08-14T12:17:55Z  by=jaraco  labels=[-]  state=open
+    title: `[pipx.run]` entry points are not honored under the uv backend (uv tool run)
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1994  2026-08-03T15:49:27Z  by=basilevs  labels=[-]  state=closed
+    title: pipx run <URL> (default uv backend) does not discover a package's console-script entry points
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1987  2026-07-29T09:15:33Z  by=marko1olo  labels=[-]  state=closed
+    title: pipx upgrade --install silently ignores a version specifier
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1984  2026-07-29T03:07:40Z  by=marko1olo  labels=[-]  state=closed
+    title: Released pipx.pyz omits colorama and tomli, so it fails to start on Windows and on Python 3.10
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1980  2026-07-27T15:45:19Z  by=kevinbowen777  labels=[-]  state=closed
+    title: Link to Release Notes on pypi.org/project/pipx is broken/incorrect
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1978  2026-07-27T06:32:09Z  by=tomazfs  labels=[bug]  state=closed
+    title: pipx.pyz > 0.15.0 does not work on windows
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1976  2026-07-25T04:51:38Z  by=ZeroAdark  labels=[-]  state=closed
+    title: README Linux installation command conflicts with PEP 668 guidance
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1974  2026-07-24T07:48:58Z  by=alexejpissarev  labels=[bug]  state=closed
+    title: pipx list --global fails for non-root users due to .lock file permissions in global venvs
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1965  2026-07-17T22:01:43Z  by=alberto743  labels=[bug]  state=closed
+    title: Crash (UnicodeDecodeError) on install/list when a foreign executable is in pipx's bin dir
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1963  2026-07-16T15:16:52Z  by=MrDaGree  labels=[bug]  state=closed
+    title: Conflicts when installing on ubuntu noble due to platformdirs
+    FIRST RESPONSE: +0.4h [WITHIN-1-WEEK] by gaborbernat (CONTRIBUTOR) at 2026-07-16T15:42:01Z
+
+== 2 of 11 recent issues answered within 1 week by someone other than the author
+== author_association is what distinguishes a maintainer reply from a passer-by; both are listed above

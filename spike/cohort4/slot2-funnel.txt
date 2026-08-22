@@ -1,0 +1,21 @@
+== slot-2 funnel: rules 1, 2, 3 measured in the same 6-month window
+== since=2026-02-23T00:00:00Z   run at 2026-08-22T22:43:11Z
+== gh api repos/<r>  and  gh api --paginate repos/<r>/commits?since=2026-02-23T00:00:00Z&per_page=100
+
+andreafrancia/trash-cli         4547 stars  Python      pushed=2026-08-22
+    rule 2: 64 commits in window, latest release {"message":"Not Found","documentation_url":"https://docs.github.com/rest/releases/releases#get-the-latest-release","status":"404"}none
+    rule 3: 4 distinct authors in window -> andreafrancia:46 SOV710:2 wadeio:1 timoteostewart:1 
+pypa/pipx                      12940 stars  Python      pushed=2026-08-20
+    rule 2: 262 commits in window, latest release 1.16.7 2026-08-13
+    rule 3: 49 distinct authors in window -> gaborbernat:141 github-actions[bot]:22 pre-commit-ci[bot]:18 dependabot[bot]:13 
+bcpierce00/unison               5453 stars  OCaml       pushed=2026-08-06
+    rule 2: 67 commits in window, latest release v2.54.0 2026-05-01
+    rule 3: 4 distinct authors in window -> tleedjarv:34 gdt:31 bcourbage:1 OnkV:1 
+Homebrew/brew                  49236 stars  Ruby        pushed=2026-08-22
+    rule 2: 3839 commits in window, latest release 6.0.18 2026-08-17
+    rule 3: 129 distinct authors in window -> MikeMcQuaid:1728 p-linnane:276 BrewTestBot:202 cho-m:178 
+CocoaPods/CocoaPods            14834 stars  Ruby        pushed=2026-07-06
+    rule 2: 25 commits in window, latest release 1.17.0 2026-07-06
+    rule 3: 1 distinct authors in window -> amorde:25 
+
+== a 0-commit window is a measurement here: the same command returned 184 for pimalaya/himalaya

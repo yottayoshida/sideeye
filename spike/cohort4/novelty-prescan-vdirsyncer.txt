@@ -1,0 +1,352 @@
+== novelty pre-scan: pimutils/vdirsyncer
+== date: 2026-08-22T22:11:36Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          32 hit(s) (all listed)
+      #1156 open 2025-01-16 crash when syncing raise exceptions.NotFoundError(href)
+      #249 open 2015-07-28 Add a timeout for unreachable server
+      #1037 merged 2023-01-30 Fix crash when using auth certs
+      #918 closed 2021-07-22 Crash when syncing item with "%0A"
+      #881 closed 2021-04-28 Enhancement: storage type or config to be used with Kontact's directory handling
+      #185 closed 2015-02-25 Handle iCalendar parsing errors gracefully
+      #63 closed 2014-05-22 Don't crash when sync actions fail.
+      #335 closed 2016-02-18 Won't run from cron
+      #350 closed 2016-02-28 Figure out what to do with Davical tests in "untrusted builds"
+      #341 closed 2016-02-25 Caldav to Caldav
+      #344 closed 2016-02-27 http calendars fail in 0.90
+      #203 closed 2015-05-14 Double URL-encoding on python 3.
+      #657 closed 2017-08-02 Google calendar crashes with start/end date set
+      #523 closed 2016-11-19 Vdirsyncer crashes on google contacts sync
+      #219 closed 2015-06-14 Discontinue Python 2 support
+      #725 closed 2018-03-14 Failure to upload carddav to Hover.com server
+      #490 closed 2016-08-18 Crash with collections and singlefile backend
+      #565 closed 2017-02-25 Problem with syncing and handling a non-color value as color metadata for a calendar
+      #442 closed 2016-05-03 pypi 0.10.0 missing?
+      #398 closed 2016-03-30 Show exit status of task
+  corrupt        11 hit(s) (all listed)
+      #1161 open 2025-02-12 InvalidXMLResponse
+      #1001 open 2022-08-24 _clean_body mangles UTF-16
+      #1004 closed 2022-09-09 Can vdirsyncer accomodate files containing multiple events?
+      #70 closed 2014-05-29 Singlefile storage corrupts vcards
+      #273 closed 2015-09-21 XML_PARSE_HUGE & etag property is missing
+      #261 closed 2015-09-02 ownCloud returns some weird ics files which vdirsyncer doesn't know how to handle
+      #552 closed 2017-02-11 Bad error message when token file is corrupted.
+      #452 closed 2016-05-18 Getting 200 instead of 207 status code. Partially invalid XML response.
+      #214 closed 2015-06-06 sync against davmail results in raise exceptions.NotFoundError(href)
+      #435 merged 2016-04-23 Initial MacOS X launchd .plist file.
+      #730 merged 2018-04-01 Implement http storage in rust
+  corruption     0 hit(s)
+  truncated      3 hit(s) (all listed)
+      #1209 open 2026-02-14 Given URL is not a homeset URL
+      #835 closed 2020-06-17 Local changes always produce conflict, resolution not working?
+      #74 closed 2014-06-10 Error uploading ICS to CALDAV (OwnCloud)
+  truncate       3 hit(s) (all listed)
+      #1209 open 2026-02-14 Given URL is not a homeset URL
+      #835 closed 2020-06-17 Local changes always produce conflict, resolution not working?
+      #74 closed 2014-06-10 Error uploading ICS to CALDAV (OwnCloud)
+  empty          67 hit(s) (all listed)
+      #1026 open 2023-01-01 empty lines in events causes upload failures
+      #694 open 2017-12-22 vdirsyncer incorrectly complains that "Storage was completely emptied"
+      #1099 open 2023-12-05 When syncing with Google Calendar, if the GCal side is empty, vdirsyncer errors with "Storage was completely emptied" (on local side)
+      #769 open 2018-09-27 Can't sync caldav even though local repository is empty
+      #1223 open 2026-07-02 google_contacts: _put records request URL instead of Location header → deletes/re-uploads its own contacts on every sync
+      #980 open 2022-04-29 Question: Sample config file for Radicale
+      #1082 open 2023-08-02 failure using type="google_contacts" (type="google_calendar" works with same client_id, client_secret and token)
+      #968 open 2022-02-02 Enhancement proposal: Add support for hiding data from calendar copies 
+      #969 open 2022-02-21 Suggestion: add -y flag
+      #230 open 2015-07-10 Warn about invalid metadata values
+      #1159 open 2025-01-25 yandex carddav failed - vdirsyncer doesn't understand
+      #832 open 2020-06-14 error: Unknown error occurred for calendars
+      #616 open 2017-04-07 RFC: Match by displayname, v2
+      #654 open 2017-07-19 one of the tests in tests/system/cli/test_sync.py occasionally hangs
+      #1091 open 2023-09-27 Issue aggregating multiple iCalendars feeds into a single CalDAV calendar
+      #1207 closed 2026-02-10 Cannot sync with google on first run:
+      #1136 merged 2024-09-01 storage/http: add support for `filter_hook`
+      #502 closed 2016-09-13 Validation error in iCalendar: A calendar object on a CalDAV server MUST NOT have a METHOD property.
+      #1102 closed 2023-12-13 Invalid ICS files (missing `END:VEVENT`s and `END:VCALENDAR`) are silently ignored
+      #818 closed 2020-05-01 vdirsyncer single file calendar sync's growth of running time is quadratic or higher (it takes "forever")
+  atomic         8 hit(s) (all listed)
+      #744 open 2018-06-09 Syncing fails on an Android/termux as os.link is not available
+      #225 closed 2015-07-05 vdirsyncer throws errors when syncing with one calendar
+      #462 closed 2016-06-08 Filesystem `update` race condition
+      #525 closed 2016-11-27 Google Calendar Discovering Failure
+      #813 closed 2020-03-05 Exception when running on vboxsf filesystem
+      #34 closed 2014-04-16 ctag support
+      #189 merged 2015-03-30 Mention todoman as a supported client.
+      #632 merged 2017-05-11 Use inode number in addition to mtime
+  atomically     3 hit(s) (all listed)
+      #462 closed 2016-06-08 Filesystem `update` race condition
+      #34 closed 2014-04-16 ctag support
+      #189 merged 2015-03-30 Mention todoman as a supported client.
+  interrupted    1 hit(s) (all listed)
+      #641 closed 2017-06-12 Can't run the tests
+  interrupt      2 hit(s) (all listed)
+      #739 open 2018-05-24 Precondition failed (HTTP 412) when rerunning sync to mailbox.org
+      #641 closed 2017-06-12 Can't run the tests
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #654 open 2017-07-19 one of the tests in tests/system/cli/test_sync.py occasionally hangs
+  ctrl-c         4 hit(s) (all listed)
+      #739 open 2018-05-24 Precondition failed (HTTP 412) when rerunning sync to mailbox.org
+      #249 open 2015-07-28 Add a timeout for unreachable server
+      #738 closed 2018-05-24 Google Calendar 403 "unrestricted scope" on `vdirsyncer discover`
+      #107 merged 2014-08-21 Reuse passwords
+  power          18 hit(s) (all listed)
+      #1018 open 2022-12-20 Only last entry of read-only get synced
+      #775 open 2018-11-19 memotoo server returned something vdirsyncer does not understand
+      #842 open 2020-08-15 Discovery fails on Nextcloud Caldav/Cardav server
+      #502 closed 2016-09-13 Validation error in iCalendar: A calendar object on a CalDAV server MUST NOT have a METHOD property.
+      #952 closed 2021-12-08 Authorization not working for Baikal 0.8.0
+      #881 closed 2021-04-28 Enhancement: storage type or config to be used with Kontact's directory handling
+      #951 closed 2021-11-29 Can't sync online ics
+      #292 closed 2015-11-13 remoteStorage implementation doesn't check state on OAuth
+      #223 closed 2015-06-22 Normalizing uris with colons failes
+      #250 closed 2015-07-29 sync with horde does not work
+      #257 closed 2015-09-01 sync: Store hashes of item content
+      #462 closed 2016-06-08 Filesystem `update` race condition
+      #588 closed 2017-03-08 ignore .git dir
+      #753 closed 2018-07-02 Empty contract directory when using discover on ArchLinux
+      #742 closed 2018-06-03 Password Fetch external commands
+      #790 closed 2019-03-17 Maintenance
+      #166 closed 2015-01-15 "Error: no such option: --max-workers" and "Exception in thread Thread-1"
+      #240 closed 2015-07-21 sync issues with collections containing spaces
+  outage         3 hit(s) (all listed)
+      #484 closed 2016-07-27 Issues doing discovery against Google Calendar
+      #493 closed 2016-08-21 brutus.lostpackets.de is down
+      #572 merged 2017-03-01 Add fastmail testserver
+  ENOSPC         0 hit(s)
+  disk           19 hit(s) (all listed)
+      #595 open 2017-03-12 Support for managed attachments
+      #581 open 2017-03-05 Avoid saving the entire item in memory for Items returned by filesystem storage
+      #603 open 2017-03-15 Add `retry` parameter to http-ish storages
+      #24 open 2014-04-02 Sync daemon mode
+      #1032 closed 2023-01-16 redirect issue with baikal Release 0.9.3
+      #998 closed 2022-07-29 Restart=on-failure in systemd service is unnecessary
+      #350 closed 2016-02-28 Figure out what to do with Davical tests in "untrusted builds"
+      #228 closed 2015-07-07 Deprecate/discourage various forms of password storage?
+      #259 closed 2015-09-02 can't see exchange addressbook
+      #469 closed 2016-06-15 Special codepath for `collections = null`
+      #443 closed 2016-05-05 Cannot connect to OwnCloud server with self-signed certificate
+      #640 closed 2017-06-12 local variable 'discovered' referenced before assignment
+      #753 closed 2018-07-02 Empty contract directory when using discover on ArchLinux
+      #951 closed 2021-11-29 Can't sync online ics
+      #36 closed 2014-04-23 Problems setting up sync, Unable to initialize storage carddav.
+      #47 closed 2014-05-02 vdirsyncer can't find config
+      #13 closed 2014-03-13 Support for broken VObjects
+      #127 closed 2014-10-18 New conflict resolution modes
+      #133 closed 2014-11-15 Introduce post_hook for filesystem storage
+  partial        60 hit(s) (all listed)
+      #764 open 2018-09-11 Documentation is missing quotes for `partial_sync`
+      #749 open 2018-06-19 Support digest auth in HTTP
+      #800 open 2019-06-05 vdirsyncer fails to sync privately shared icloud calendars
+      #760 open 2018-07-27 Accept NotFoundErrors
+      #761 open 2018-07-27 Too many resources error
+      #734 open 2018-05-17 A leading space in UID will cause a NotFoundError with Google calendar 
+      #844 open 2020-09-04 Document one-way sync
+      #801 open 2019-06-11 parsing of long or multiple lines for a single entry
+      #963 open 2022-01-18 Google Calendar sync: 409 errors when syncing from a CalDAV server to gcal and source event changes
+      #654 open 2017-07-19 one of the tests in tests/system/cli/test_sync.py occasionally hangs
+      #696 open 2018-01-01 Unknown error, Precondition Failed
+      #1101 open 2023-12-11 Sync aborted after a single error
+      #1091 open 2023-09-27 Issue aggregating multiple iCalendars feeds into a single CalDAV calendar
+      #575 open 2017-03-02 Ocassionally, google backend fail
+      #733 open 2018-05-07 Respect HTTP header 'Retry-After'
+      #1109 open 2024-01-08 Sync fails randomly with Nextcloud's "Contact birthdays" calendar.
+      #744 open 2018-06-09 Syncing fails on an Android/termux as os.link is not available
+      #964 open 2022-01-18 Retry PUT 409 errors - delete and re-create event
+      #1151 open 2024-12-09 Google Calendar failing on 2nd sync with Unknown error
+      #806 open 2019-10-29 Tripcase imported ics does not sync to radicale
+  incomplete     4 hit(s) (all listed)
+      #654 open 2017-07-19 one of the tests in tests/system/cli/test_sync.py occasionally hangs
+      #997 closed 2022-07-22 Authorization error with google oauth2
+      #606 closed 2017-03-21 Debian, Ubuntu, Fedora and nix ship outdated packages
+      #574 closed 2017-03-02 NextCloud 11.0.2 access forbidden (HTTP 403)
+  dataloss       0 hit(s)
+  recover        4 hit(s) (all listed)
+      #1093 open 2023-10-12 Request mechanism to debug "multiple items with the same UID"
+      #467 closed 2016-06-10 fails syncing google calendar with vdirsyncer.exceptions.NotFoundError
+      #652 closed 2017-07-18 vdirsyncer breaks on 404 not found
+      #116 merged 2014-09-09 bugfix: save password with host in keyring
+  recovery       0 hit(s)
+  rollback       1 hit(s) (all listed)
+      #643 closed 2017-06-17 [feature request] Enable custom event handlers
+  resume         6 hit(s) (all listed)
+      #739 open 2018-05-24 Precondition failed (HTTP 412) when rerunning sync to mailbox.org
+      #733 open 2018-05-07 Respect HTTP header 'Retry-After'
+      #654 open 2017-07-19 one of the tests in tests/system/cli/test_sync.py occasionally hangs
+      #144 closed 2014-12-02 sync against davmail results in several 'Server sent item twice'  and an exception
+      #469 closed 2016-06-15 Special codepath for `collections = null`
+      #846 merged 2020-10-04 contrib/systemd: implement service timeout
+  half-written   1 hit(s) (all listed)
+      #643 closed 2017-06-17 [feature request] Enable custom event handlers
+  wipe           5 hit(s) (all listed)
+      #739 open 2018-05-24 Precondition failed (HTTP 412) when rerunning sync to mailbox.org
+      #694 open 2017-12-22 vdirsyncer incorrectly complains that "Storage was completely emptied"
+      #349 closed 2016-02-28 move memory storage to testhelpers
+      #350 closed 2016-02-28 Figure out what to do with Davical tests in "untrusted builds"
+      #725 closed 2018-03-14 Failure to upload carddav to Hover.com server
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #453 open 2016-05-22 Move read_only to pair section
+      #844 open 2020-09-04 Document one-way sync
+  erasing        0 hit(s)
+  erased         2 hit(s) (all listed)
+      #453 open 2016-05-22 Move read_only to pair section
+      #844 open 2020-09-04 Document one-way sync
+  destroy        2 hit(s) (all listed)
+      #453 open 2016-05-22 Move read_only to pair section
+      #1140 open 2024-09-17 Office365 "multiple items with the same UID" gone insane
+  destroys       0 hit(s)
+  overwrite      14 hit(s) (all listed)
+      #1208 open 2026-02-10 Error when syncing: exceptions.NotFoundError(href)
+      #964 open 2022-01-18 Retry PUT 409 errors - delete and re-create event
+      #888 open 2021-05-21 add conflict_resolution possibility to  "add two events" depending on the resolution script
+      #1155 open 2025-01-06 Missing edge case in sync protocol?
+      #1091 open 2023-09-27 Issue aggregating multiple iCalendars feeds into a single CalDAV calendar
+      #1141 closed 2024-09-17 Do not load netrc config files
+      #960 merged 2022-01-14 storage/base: for read_only storages do not overwrite the meta data
+      #110 closed 2014-09-01 UID with '/' breaks
+      #723 closed 2018-03-05 "Force" Sync with discover and "auto"-yes
+      #462 closed 2016-06-08 Filesystem `update` race condition
+      #525 closed 2016-11-27 Google Calendar Discovering Failure
+      #145 closed 2014-12-05 DavMail help!?!
+      #127 closed 2014-10-18 New conflict resolution modes
+      #212 closed 2015-06-04 Cannot update event with UID collision
+  clobber        0 hit(s)
+  blank          7 hit(s) (all listed)
+      #1083 open 2023-08-11 Feature request: option to only sync calendar event time start and time end
+      #1026 open 2023-01-01 empty lines in events causes upload failures
+      #1028 closed 2023-01-02 Google Sync 400: invalid_request
+      #1033 closed 2023-01-17 vdirsyncer 0.19: auth_cert broken
+      #574 closed 2017-03-02 NextCloud 11.0.2 access forbidden (HTTP 403)
+      #229 closed 2015-07-09 Broken sync due to strange UID in calendar
+      #277 closed 2015-10-01 vdirsyncer breaks on syncing weird Outlook fields in vcf files
+  unreadable     7 hit(s) (all listed)
+      #405 open 2016-04-06 The way DAV figures out names of collections is wrong
+      #853 closed 2020-11-12 convert VTODOS with due dates into calendar events, so google/outlook users can subscribe to nextcloud calendar
+      #261 closed 2015-09-02 ownCloud returns some weird ics files which vdirsyncer doesn't know how to handle
+      #711 closed 2018-02-06 vdirsyncer discover. Icloud 3 Calenders Only one UUID found
+      #132 closed 2014-11-11 Simply appending the collection name to the URL/path is wrong
+      #96 closed 2014-08-16 Make logging work better with multiprocessing
+      #248 merged 2015-07-28 Repair message for exception
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       23 hit(s) (all listed)
+      #1200 open 2025-10-05 CalDAV/iCloud: PUT 404 when VEVENT has no DTEND (zero-duration event)
+      #968 open 2022-02-02 Enhancement proposal: Add support for hiding data from calendar copies 
+      #375 open 2016-03-10 Use external library for vobject parsing
+      #1026 open 2023-01-01 empty lines in events causes upload failures
+      #888 open 2021-05-21 add conflict_resolution possibility to  "add two events" depending on the resolution script
+      #1093 open 2023-10-12 Request mechanism to debug "multiple items with the same UID"
+      #866 open 2021-02-08 Added option to skip objects the remote fails to provide
+      #1140 open 2024-09-17 Office365 "multiple items with the same UID" gone insane
+      #744 open 2018-06-09 Syncing fails on an Android/termux as os.link is not available
+      #795 open 2019-04-12 [Unintended Feature|Bug] creating nested directories from collection names
+      #1102 closed 2023-12-13 Invalid ICS files (missing `END:VEVENT`s and `END:VCALENDAR`) are silently ignored
+      #818 closed 2020-05-01 vdirsyncer single file calendar sync's growth of running time is quadratic or higher (it takes "forever")
+      #1004 closed 2022-09-09 Can vdirsyncer accomodate files containing multiple events?
+      #144 closed 2014-12-02 sync against davmail results in several 'Server sent item twice'  and an exception
+      #526 closed 2016-11-27 Problems with @ in UID
+      #565 closed 2017-02-25 Problem with syncing and handling a non-color value as color metadata for a calendar
+      #641 closed 2017-06-12 Can't run the tests
+      #665 closed 2017-08-27 vdirsync discover fails with radicale
+      #703 closed 2018-01-18 Posteo generates invalid VCARDS (escaped newlines, trailing "NULL")
+      #113 closed 2014-09-08 warning for skipped hrefs leading to unhanded exception
+  in-place       46 hit(s) (all listed)
+      #1218 open 2026-06-05 Mention the .ics alternative for the Google calendar
+      #375 open 2016-03-10 Use external library for vobject parsing
+      #560 open 2017-02-18 Testing google backend on travis
+      #1208 open 2026-02-10 Error when syncing: exceptions.NotFoundError(href)
+      #749 open 2018-06-19 Support digest auth in HTTP
+      #1023 open 2022-12-27 Fix: import aiostream only if sys.version < python 3.9
+      #1124 open 2024-04-15 don't normalize paths in expand_path
+      #1095 open 2023-11-14 unknown error occurred in prepare_new_status
+      #866 open 2021-02-08 Added option to skip objects the remote fails to provide
+      #1128 open 2024-04-29 Vdirsyncer outputs invalid VCARD files: LF instead of CRLF line endings.
+      #1063 open 2023-04-20 Cannot Authorize Google in SSH Session
+      #964 open 2022-01-18 Retry PUT 409 errors - delete and re-create event
+      #744 open 2018-06-09 Syncing fails on an Android/termux as os.link is not available
+      #795 open 2019-04-12 [Unintended Feature|Bug] creating nested directories from collection names
+      #842 open 2020-08-15 Discovery fails on Nextcloud Caldav/Cardav server
+      #1168 closed 2025-03-18 Sync is shown as Delete and Recreation
+      #1196 merged 2025-09-20 Merge docs-requirements.txt into pyproject.toml
+      #1120 closed 2024-02-26 [WIP] Handle recurring events with duplicate UIDs
+      #1028 closed 2023-01-02 Google Sync 400: invalid_request
+      #1014 closed 2022-12-06 Username not supplied to davmail: 401 Unauthorized 
+  unclean        0 hit(s)
+  shutdown       4 hit(s) (all listed)
+      #144 closed 2014-12-02 sync against davmail results in several 'Server sent item twice'  and an exception
+      #291 closed 2015-11-06 Exception in thread Thread
+      #166 closed 2015-01-15 "Error: no such option: --max-workers" and "Exception in thread Thread-1"
+      #167 closed 2015-01-18 Threading error: NoneType object is not callable
+  reboot         0 hit(s)
+  disk+full      5 hit(s) (all listed)
+      #581 open 2017-03-05 Avoid saving the entire item in memory for Items returned by filesystem storage
+      #350 closed 2016-02-28 Figure out what to do with Davical tests in "untrusted builds"
+      #228 closed 2015-07-07 Deprecate/discourage various forms of password storage?
+      #443 closed 2016-05-05 Cannot connect to OwnCloud server with self-signed certificate
+      #640 closed 2017-06-12 local variable 'discovered' referenced before assignment
+  data+loss      9 hit(s) (all listed)
+      #964 open 2022-01-18 Retry PUT 409 errors - delete and re-create event
+      #848 open 2020-10-13 VTODO support for Google (Tasks?)
+      #869 open 2021-03-07 cli/discover: remove/add local collections if the remote collection is deleted/created
+      #443 closed 2016-05-05 Cannot connect to OwnCloud server with self-signed certificate
+      #145 closed 2014-12-05 DavMail help!?!
+      #118 closed 2014-09-18 Exception when trying to sync....
+      #127 closed 2014-10-18 New conflict resolution modes
+      #89 closed 2014-07-08 Problem syncing vcards with group construct
+      #314 closed 2015-12-31 Document how to sync with Claws-mail
+  partial+write  7 hit(s) (all listed)
+      #964 open 2022-01-18 Retry PUT 409 errors - delete and re-create event
+      #654 open 2017-07-19 one of the tests in tests/system/cli/test_sync.py occasionally hangs
+      #696 open 2018-01-01 Unknown error, Precondition Failed
+      #1065 open 2023-04-26 Error while syncing new calendar event
+      #1014 closed 2022-12-06 Username not supplied to davmail: 401 Unauthorized 
+      #468 closed 2016-06-11 partial sync
+      #790 closed 2019-03-17 Maintenance
+  crash+safe     0 hit(s)
+  atomic+write   3 hit(s) (all listed)
+      #462 closed 2016-06-08 Filesystem `update` race condition
+      #525 closed 2016-11-27 Google Calendar Discovering Failure
+      #189 merged 2015-03-30 Mention todoman as a supported client.
+  lock+file      7 hit(s) (all listed)
+      #720 open 2018-02-19 Improve error message for when status db is locked
+      #691 open 2017-11-25 fails to discover gmail calendar  validate_token_parameters
+      #561 closed 2017-02-21 Lock pair during sync
+      #462 closed 2016-06-08 Filesystem `update` race condition
+      #98 closed 2014-08-18 LICENSE missing from distfile
+      #81 closed 2014-06-25 Disallow parallel synchronization of same collection?
+      #83 closed 2014-07-03 vdirsyncer finds no contacts in Zimbra address book
+  write+failure  6 hit(s) (all listed)
+      #654 open 2017-07-19 one of the tests in tests/system/cli/test_sync.py occasionally hangs
+      #696 open 2018-01-01 Unknown error, Precondition Failed
+      #1191 closed 2025-08-30 Produces error in nextcloud logs reduce_string_array(): Implicitly marking parameter $remove_short_values as nullable is deprecated
+      #1051 merged 2023-03-10 Prevent single file storage from performing unnecessary N^2 loop
+      #334 closed 2016-02-17 "Failed to import test module" when running the tests
+      #354 merged 2016-03-02 Add packaging guidelines
+  file+contents  15 hit(s) (all listed)
+      #1200 open 2025-10-05 CalDAV/iCloud: PUT 404 when VEVENT has no DTEND (zero-duration event)
+      #866 open 2021-02-08 Added option to skip objects the remote fails to provide
+      #1093 open 2023-10-12 Request mechanism to debug "multiple items with the same UID"
+      #888 open 2021-05-21 add conflict_resolution possibility to  "add two events" depending on the resolution script
+      #795 open 2019-04-12 [Unintended Feature|Bug] creating nested directories from collection names
+      #1102 closed 2023-12-13 Invalid ICS files (missing `END:VEVENT`s and `END:VCALENDAR`) are silently ignored
+      #818 closed 2020-05-01 vdirsyncer single file calendar sync's growth of running time is quadratic or higher (it takes "forever")
+      #1004 closed 2022-09-09 Can vdirsyncer accomodate files containing multiple events?
+      #144 closed 2014-12-02 sync against davmail results in several 'Server sent item twice'  and an exception
+      #526 closed 2016-11-27 Problems with @ in UID
+      #565 closed 2017-02-25 Problem with syncing and handling a non-color value as color metadata for a calendar
+      #641 closed 2017-06-12 Can't run the tests
+      #113 closed 2014-09-08 warning for skipped hrefs leading to unhanded exception
+      #153 closed 2014-12-18 Main rule has no ORGANIZER
+      #222 closed 2015-06-20 Read-only (public) calendars?
+
+== 51 terms run; 37 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
+== script exit rc=0

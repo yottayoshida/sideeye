@@ -1,0 +1,53 @@
+== rule 11/17 receipts: Homebrew/brew
+== gh api repos/Homebrew/brew/issues?state=all&sort=created&direction=desc&per_page=60  (pull_request filtered out)
+== gh api repos/Homebrew/brew/issues/<N>/comments?per_page=100  per issue
+== run at 2026-08-22T22:45:04Z
+
+== 60 items fetched, 11 are issues, showing the 11 most recent
+
+#23609  2026-08-22T01:57:27Z  by=bobisageek  labels=[-]  state=closed
+    title: linuxbrew - `brew search` throws ruby error on some search terms (that match casks??)
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#23606  2026-08-21T19:56:32Z  by=dot-agi  labels=[-]  state=closed
+    title: Cask upgrade segfault: Ruby GC releases Security.framework objects on the child side of fork in
+    FIRST RESPONSE: +0.1h [WITHIN-1-WEEK] by MikeMcQuaid (MEMBER) at 2026-08-21T20:00:12Z
+
+#23602  2026-08-21T11:22:10Z  by=github-actions[bot]  labels=[deploy failure]  state=closed
+    title: docs.brew.sh deployment failed!
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#23599  2026-08-21T10:12:50Z  by=solrevdev  labels=[-]  state=closed
+    title: Cask upgrade destroys the app: instance_eval of a lambda EMPTY_BLOCK raises "wrong number of ar
+    FIRST RESPONSE: +0.0h [WITHIN-1-WEEK] by github-actions[bot] (CONTRIBUTOR) at 2026-08-21T10:12:59Z
+
+#23592  2026-08-21T03:41:57Z  by=yayoi111  labels=[-]  state=closed
+    title: Trust.trust_file crashes with `Error: user <name> doesn't exist` when $USER does not match a lo
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#23588  2026-08-20T17:38:36Z  by=fxcoudert  labels=[-]  state=closed
+    title: brew testbot uses bottle cache, even when patch has changed
+    FIRST RESPONSE: +0.0h [WITHIN-1-WEEK] by github-actions[bot] (CONTRIBUTOR) at 2026-08-20T17:38:52Z
+
+#23586  2026-08-20T13:15:40Z  by=Danthewaann  labels=[-]  state=closed
+    title: brew list --versions fails to list casks with an error
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#23569  2026-08-19T18:21:31Z  by=edjchapman  labels=[-]  state=closed
+    title: `brew bundle check` reports every installed cask as missing (NameError swallowed in `Cask::Cask
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#23567  2026-08-19T16:51:09Z  by=tksohishi  labels=[-]  state=closed
+    title: brew bundle treats every installed cask as missing when the Brewfile contains any formula entry
+    FIRST RESPONSE: +1.5h [WITHIN-1-WEEK] by fjarlq (NONE) at 2026-08-19T18:21:36Z
+
+#23564  2026-08-19T15:37:19Z  by=YupItzAfi  labels=[-]  state=closed
+    title: URL should accept JSON through Curl POST
+    FIRST RESPONSE: +0.1h [WITHIN-1-WEEK] by MikeMcQuaid (MEMBER) at 2026-08-19T15:41:39Z
+
+#23562  2026-08-19T07:50:54Z  by=sgoendoer  labels=[-]  state=closed
+    title: Multiple "enter password" requests per update
+    FIRST RESPONSE: +0.4h [WITHIN-1-WEEK] by MikeMcQuaid (MEMBER) at 2026-08-19T08:15:43Z
+
+== 6 of 11 recent issues answered within 1 week by someone other than the author
+== author_association is what distinguishes a maintainer reply from a passer-by; both are listed above
