@@ -1,0 +1,43 @@
+== papis thread-off-switch scout — papis, version 0.16.0 — 2026-08-22T05:30:20Z
+setup: papis add (existing doc) rc=0
+== clone forecast per configuration (fresh pre-state and ambient each; rc and landing asserted so a zero cannot mean 'did nothing'):
+  default          : rc=0, document landed=yes, threads=3, clone lines total=14, distinct pids=14
+  PAPIS_NP=0       : rc=0, document landed=yes, threads=0, clone lines total=0, distinct pids=1
+== strace pass under PAPIS_NP=0 (fresh copy; raw log kept as papis-np0.strace)
+strace'd run rc=0
+== mutating paths (successful only, deduped):
+WS/cache-S/papis
+WS/cache-S/papis/database
+WS/libS/probe-doc
+/tmp/tmp3p9lj_l7
+/tmp/tmp3p9lj_l7/fixture.txt
+/tmp/tmp3p9lj_l7/info.yaml
+/tmp/yrlia_xk
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations under PAPIS_NP=0 (successful CLONE_THREAD):
+0
+== state-root write shape under PAPIS_NP=0 (the syscalls that decide the crash worlds):
+106   renameat(AT_FDCWD</>, "/tmp/tmp3p9lj_l7", AT_FDCWD</>, "WS/libS/probe-doc") = 0
+106   fchmodat(AT_FDCWD</>, "WS/libS/probe-doc", 0755) = 0
+== the document papis wrote under PAPIS_NP=0 (recorded, not predicted):
+author: Probe Author
+author_list:
+- family: Author
+  given: Probe
+files:
+- fixture.txt
+papis_id: probe0001
+ref: Probe_Probe_2026
+title: Probe
+year: 2026
+read-back under the switch: 'Probe probe0001' matches 1 line(s); wrong-id drill counts 0
+== determinism under PAPIS_NP=0 (two runs >=2s apart, fresh ambient each):
+  run D1 rc=0
+  run D2 rc=0
+diff -r of the two libraries: rc=0 (0 = byte-identical)
+== modes of the new document directory and its contents (the fchmodat question):
+755 WS/libD1/probe-doc
+644 WS/libD1/probe-doc/fixture.txt
+644 WS/libD1/probe-doc/info.yaml
+== scout done (this script judges nothing; the numbers above feed the define's proposals)

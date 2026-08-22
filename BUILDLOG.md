@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the poetry-r2 verify transcript: the fifth seal, and the papis off switch
+
+verify-assisted green on poetry-r2 (define at 88447be strictly before
+artifacts at 89e8ae2, all four define files byte-identical). Both
+poetry records — the primary and its revision — now carry the
+complete seal, and the pair is what #231 cites.
+
+Scouted papis in the same window, at the slot RESULTS reserved for it
+("3 in-process threads; no off switch measured yet"). Papis documents
+one: `PAPIS_NP`, whose own docstring says setting it to 0 disables
+multiprocessing on all platforms — an env pin, the free apparatus
+tier. Measured with the probe's fixtures and the probe's predicates
+(`papis/thread-offswitch-scout.txt`): default = 3 threads, 14 clone
+lines, 14 pids; **`PAPIS_NP=0` = 0 threads, 0 clones, one pid**, rc 0,
+document landed, read-back exact with the wrong-id drill at zero,
+determinism green, closure clean. Both forecast legs assert rc and
+landing, so a zero cannot mean "died at startup" — the
+zero-without-a-denominator trap, closed in the harness this time
+rather than in the prose. The write shape it exposes is the opposite
+of the cohort's other four: papis builds the whole document in a
+temp directory outside the library and moves it in with **one
+`renameat`**, then `fchmodat`s the result to 0755. Two state-root
+calls, the first atomic — so the expected verdict is a PASS, and the
+one seam worth declaring carefully is the mode, which the engine's
+restore flattens by design (the cohort-2 hg `checkisexec` lesson: a
+checker that asserts a mode fails its own baseline).
+
 ## 2026-08-22 — the poetry-r2 verdict: the wound, sealed, and a rule for the next campaign
 
 FAIL, 1 of 3 worlds, reproduced identically twice — the declared

@@ -1,0 +1,17 @@
+verify-assisted: spike/cohort3/poetry-r2
+anchor: main (89e8ae2) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+define    spike/cohort3/poetry-r2/ops/check.sh  introduced @ 88447be (position 2)
+define    spike/cohort3/poetry-r2/ops/poetry-version.toml  introduced @ 88447be (position 2)
+define    spike/cohort3/poetry-r2/ops/setup.sh  introduced @ 88447be (position 2)
+define    spike/cohort3/poetry-r2/ops/explore.sh  introduced @ 88447be (position 2)
+artifact  spike/cohort3/poetry-r2/cases/000001.json  introduced @ 89e8ae2 (position 1)
+artifact  spike/cohort3/poetry-r2/explore-transcript.txt  introduced @ 89e8ae2 (position 1)
+artifact  spike/cohort3/poetry-r2/report.json  introduced @ 89e8ae2 (position 1)
+ok   D1: define complete @ 88447be strictly precedes first artifact @ 89e8ae2
+ok   D2: spike/cohort3/poetry-r2/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort3/poetry-r2/ops/poetry-version.toml byte-identical at both points
+ok   D2: spike/cohort3/poetry-r2/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort3/poetry-r2/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort3/poetry-r2
