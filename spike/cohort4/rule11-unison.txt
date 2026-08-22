@@ -1,0 +1,57 @@
+== rule 11/17 receipts: bcpierce00/unison
+== gh api repos/bcpierce00/unison/issues?state=all&sort=created&direction=desc&per_page=60  (pull_request filtered out)
+== gh api repos/bcpierce00/unison/issues/<N>/comments?per_page=100  per issue
+== run at 2026-08-22T22:44:45Z
+
+== 60 items fetched, 16 are issues, showing the 12 most recent
+
+#1203  2026-07-26T15:31:45Z  by=jjYBdx4IL  labels=[enhancement]  state=open
+    title: Add --dry-run command line option to non-interactively detect changes
+    FIRST RESPONSE: +18.9d [OVER-1-WEEK] by carlospgmat03 (NONE) at 2026-08-14T13:16:42Z
+
+#1201  2026-07-06T10:39:59Z  by=rrthomas  labels=[defect]  state=closed
+    title: Lack of clarity in wiki page
+    FIRST RESPONSE: +1.2h [WITHIN-1-WEEK] by gdt (COLLABORATOR) at 2026-07-06T11:51:02Z
+
+#1200  2026-06-24T14:28:32Z  by=gdt  labels=[defect,effort-medium,windows]  state=open
+    title: Windows CI builds dependencies (e.g. atk)
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1199  2026-06-24T12:52:53Z  by=aalesv  labels=[defect,wontfix,windows]  state=open
+    title: Fast check not working correctly due to pseudo inode number calculations
+    FIRST RESPONSE: +1.9h [WITHIN-1-WEEK] by gdt (COLLABORATOR) at 2026-06-24T14:44:28Z
+
+#1195  2026-05-12T18:56:30Z  by=kimjune01  labels=[-]  state=closed
+    title: Protect this repo from AI-generated PRs
+    FIRST RESPONSE: +3.0h [WITHIN-1-WEEK] by gdt (COLLABORATOR) at 2026-05-12T21:58:50Z
+
+#1186  2026-04-17T21:44:06Z  by=Fakhriddin3040  labels=[defect,effort-low,impact-low]  state=open
+    title: Uncaught exception `Sys_error("Is a directory")`
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1184  2026-04-13T18:36:19Z  by=Satlinker  labels=[enhancement]  state=closed
+    title: Option to delete files at the destination first before copying a new version.
+    FIRST RESPONSE: +7.0d [OVER-1-WEEK] by gdt (COLLABORATOR) at 2026-04-20T18:44:11Z
+
+#1183  2026-04-13T18:22:51Z  by=Satlinker  labels=[enhancement,feedback]  state=closed
+    title: Prevent standby while copying
+    FIRST RESPONSE: +7.0d [OVER-1-WEEK] by gdt (COLLABORATOR) at 2026-04-20T18:42:03Z
+
+#1182  2026-04-05T17:42:24Z  by=stdedos  labels=[defect,effort-low,impact-low,feedback,project]  state=closed
+    title: https://github.com/bcpierce00/unison/wiki: Make html manual renderable
+    FIRST RESPONSE: +15.0d [OVER-1-WEEK] by gdt (COLLABORATOR) at 2026-04-20T18:39:30Z
+
+#1169  2025-12-09T15:53:37Z  by=frohro  labels=[defect,feedback]  state=closed
+    title: Uncaught exception: Please report a bug....
+    FIRST RESPONSE: +1.8h [WITHIN-1-WEEK] by gdt (COLLABORATOR) at 2025-12-09T17:42:12Z
+
+#1165  2025-11-06T15:51:46Z  by=h8ghbzc9bbr8c7  labels=[feedback]  state=closed
+    title: Memory leak in unison (text) and fs-monitor?
+    FIRST RESPONSE: +0.1h [WITHIN-1-WEEK] by tleedjarv (CONTRIBUTOR) at 2025-11-06T16:00:30Z
+
+#1164  2025-11-06T14:11:39Z  by=jhjourdan  labels=[defect,windows]  state=closed
+    title: Error when building with MinGW : ` ./copy_stubs.c:369:7: error: request for member 'ByteCount' 
+    FIRST RESPONSE: +0.4h [WITHIN-1-WEEK] by gdt (COLLABORATOR) at 2025-11-06T14:33:50Z
+
+== 6 of 12 recent issues answered within 1 week by someone other than the author
+== author_association is what distinguishes a maintainer reply from a passer-by; both are listed above

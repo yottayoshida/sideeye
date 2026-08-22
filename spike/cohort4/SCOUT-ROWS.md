@@ -47,7 +47,7 @@ Two notes on how to read those numbers, both measured rather than assumed:
 |---|---|
 | Repository | `pimalaya/himalaya`, Rust, Apache-2.0 |
 | Version read | **v2.1.0**, tag `ca88bee`, published 2026-08-16 (`gh api repos/pimalaya/himalaya/releases/latest`) |
-| Operation proposed | **`himalaya maildir message copy`** — one message file copied into another Maildir folder |
+| Operation proposed | **`himalaya maildir messages copy -m <src> -t <dst> <id>`** — one message file copied into another Maildir |
 | Stars | 7,079 |
 | Last push | 2026-08-16T19:58:59Z |
 | Releases | v2.1.0 2026-08-16, v2.0.0 2026-07-26, v1.2.0 2026-02-19, v1.1.0 2025-01-11, v1.0.0 2024-12-09 |
@@ -59,10 +59,13 @@ one plain file per message, flags encoded in the filename's `:2,` suffix.
 Ordinary files in a directory tree — no database, no own transaction engine.
 
 **Non-interactive mutating commands.** The `maildir` subcommand tree carries
-`message save`, `message copy`, `message move`, `flag add|set|remove`,
-`create`, `delete`, `rename` (`src/maildir/`). `message copy` takes its ids
-and both folder paths as arguments and prints one line on success; nothing
-on its path prompts.
+`messages save`, `messages copy`, `messages move`, `flags add|set|remove`,
+`create`, `delete`, `rename`, `list` (`src/maildir/cli.rs`, which sets
+`rename_all = "kebab-case"`, so the `Messages` variant spells `messages`;
+`msgs` and `msg` are its aliases and there is no singular `message` form).
+`messages copy` takes its ids positionally and both Maildirs as `-m/--maildir`
+and `-t/--target` (`src/maildir/arg.rs`); it prints one line on success and
+nothing on its path prompts.
 
 **Write path.** All Maildir I/O goes through `io-maildir` 0.3.0, pinned in
 `Cargo.lock` with checksum `b02306d3…c060d`. The crate was fetched from
@@ -90,7 +93,7 @@ without spending a define; this is a forecast, and it is falsifiable there.
 `read_entries_par`, via `thread::scope` and `available_parallelism`
 (`src/client.rs:468,475`). That function is **read-only**, and himalaya
 calls the non-parallel `read_entries` from two listing sites in
-`src/maildir/backend.rs` only. `message copy` runs `resolve_maildir` then
+`src/maildir/backend.rs` only. `messages copy` runs `resolve_maildir` then
 `client.copy` per id and does not reach it. Forecast: single-threaded on
 the measured path — **to be confirmed by probe, because the refusal is
 decided by the call site, not by the function's character**.
@@ -99,20 +102,35 @@ decided by the call site, not by the function's character**.
 chosen over the others.** The arms differ in atomicity, and only one has an
 interior:
 
-- `message copy` → `entry/copy.rs` mints a fresh Maildir id, builds the
+- `messages copy` → `entry/copy.rs` mints a fresh Maildir id, builds the
   **final** target path with `build_target_path`, and yields a single
   `WantsCopy`, which the driver serves with `fs::copy(from, to)`. There is
   no staging file. `fs::copy` opens the destination and fills it, so a kill
   inside it leaves **a partial message at its final path in `cur/` or
   `new/`** — visible to any reader of the Maildir.
-- `message save` → `entry/store.rs`, documented as "write to `/tmp`, atomic
+- `messages save` → `entry/store.rs`, documented as "write to `/tmp`, atomic
   rename into target". A kill leaves a partial file in `tmp/`, which Maildir
   treats as garbage to be swept; the final path never sees it.
-- `message move`, `flag add|set|remove` → a single `fs::rename`.
+- `messages move`, `flags add|set|remove` → a single `fs::rename`.
 
 `save`, `move` and the flag commands are the papis shape — one atomic
 mutation, a contrast measurement rather than a criterion-1 slot, which
 `SCOUT-BRIEF.md` rule 15 exists to keep out. `copy` is not that shape.
+
+**Determinism forecast, and the apparatus it needs.** Every new file
+`io-maildir` creates is named by `mint_id`, which formats
+`{secs}.#{counter:x}M{nanos}P{pid}.{hostname}` (`src/entry.rs:53-56`). Three
+of those four inputs are fixable in the image: `secs`/`nanos` are wall clock
+(faketime), `counter` is a process-local `AtomicU32` starting from zero in a
+fresh process (`src/entry.rs:45`), and `hostname` comes from the `gethostname` crate and is
+fixed by the container. **`pid` is not**: the driver answers `WantsPid` with
+`process::id()` (`src/client.rs:239`), so two runs of the same command
+produce different filenames and a baseline comparison splits structurally.
+This is a determinism hazard of the same class as watson's
+`baseline_violates_invariant`, and it must be lifted by apparatus named
+before the probe — a `getpid` interposer via `ld.so.preload`, which works
+here for the same reason the shim does: the call is routed through libc.
+Named as a forecast; the probe is what confirms the interposer holds.
 
 **Novelty pre-scan (rule 14): clears.** 51 terms, controls green, 0
 saturated, 132 unique issues surfaced. Reading: **no issue describes this
@@ -130,10 +148,18 @@ every responder `soywod` with `author_association=MEMBER`. Restricted to
 (`#727` never answered, `#726` answered at +11.4d). Fastest +0.1h, slowest
 answered bug +11.4d.
 
-**Checker sketch.** After a killed `message copy`, the target's own reader
-is the checker: `himalaya maildir message read --folder <target> <id>` for
-the copied message, and `himalaya maildir envelope list --folder <target>`
-for the folder. Documented recovery step preceding the assert: **none is
+**Checker sketch.** After a killed `messages copy`, the target's own reader
+is the checker — but **it is not in the `maildir` subtree**. That subtree
+carries only Save, Copy and Move (`src/maildir/message/cli.rs`), and its own
+doc comment says rendering content "is the job of the shared `messages` and
+`envelopes` commands". So the checker is the **top-level, backend-agnostic**
+pair reaching the same Maildir through the account's backend:
+`himalaya message read <id>` (`MessageCommand::Read`,
+`src/shared/message/cli.rs:47`) and `himalaya envelope list`
+(`src/shared/envelope/cli.rs:21`, visible alias `ls`).
+This strengthens rule 9 rather than weakening it: the reader is a different
+code path from the writer, so the checker is not asserting with the same
+function that produced the state. Documented recovery step preceding the assert: **none is
 documented for Maildir in himalaya's docs** — which is itself the honest
 answer to that column, and it means the checker asserts on the state as
 left, with no repair step to run first. The invariant candidate: every file
@@ -245,7 +271,7 @@ Conjunctive: all must hold.
 | 6 plain files / directory tree | PASS | PASS |
 | 7 no SQLite/embedded DB as main store | PASS | PASS for the vdir; sync status *is* SQLite |
 | 8 non-interactive mutating commands | PASS | PASS for `sync`; **not** for `repair` |
-| 9 checker writable with the target itself | PASS `message read` / `envelope list` | **UNRESOLVED** — `repair` is interactive; needs re-argument |
+| 9 checker writable with the target itself | PASS — top-level `message read` / `envelope list`, a different path from the writer | **UNRESOLVED** — `repair` is interactive; needs re-argument |
 | 10 dynamic linking, single-threaded-ish | forecast PASS, probe decides | forecast PASS, probe decides |
 | 11 / 17 bug reports answered ≤1 week | PASS 6 of 8 bug reports | **FAIL** 1 of 6 bug reports |
 | 12 currently used, not legacy-only | PASS | used, but development is near-stopped |
