@@ -151,7 +151,7 @@ Measured here, not aspirations: a context-free agent, handed a counterexample an
 | [BUILDLOG.md](BUILDLOG.md) | Decisions as they happen, including the wrong ones |
 | [docs/report-schema.md](docs/report-schema.md) | Every field the JSON report carries, held to the code by CI |
 | [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
-| [docs/scouting.md](docs/scouting.md) | Handing the repo-reading to an agent |
+| [docs/scouting.md](docs/scouting.md) | Handing the repo-reading to an agent — and how capable that agent has to be |
 | [docs/target-classes.md](docs/target-classes.md) | Real tool classes against the constraint list, each row backed by a recorded run |
 | [docs/checker-cookbook.md](docs/checker-cookbook.md) | Annotated real checkers, and the failure patterns that taught them |
 | [docs/adr/](docs/adr/) | One record per irreversible decision |

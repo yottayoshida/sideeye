@@ -24,6 +24,27 @@ unmeasured by that decision (its unguarded writers were measured
 separately). The scout can still prepare the define; whether the run can
 be issued at all is the target's own decision.
 
+## How capable the scout has to be
+
+Frontier-class. This was measured once, not assumed: the
+reading-and-proposing pass was re-run by four fresh agents of different
+capability, under identical conditions, against the assisted cohort's five
+targets (`spike/scout-model-comparison/`, #221). The top tier (Claude
+Opus 5, and a Claude Fable 5 control) matched or exceeded the committed
+scout artifacts, determinism forecasts included. One tier down (Claude
+Sonnet 5) the proposals stayed real but picked up drivability and
+determinism misses — survivable, because the falsification gate, preflight
+and the probes exist to catch exactly that, but those are the expensive
+layers to pay in. The small tier (Claude Haiku 4.5) fell below the bar:
+invented invariants, argv that cannot run, wrong determinism calls — with
+every why / what-property / where-from field present. The metadata bar
+checks that a proposal is *argued*, not that it is *true*; scout capability
+is what makes it true.
+
+So: **use Opus 5 or better; Sonnet 5 is the measured floor.** A weaker
+scout still cannot touch a verdict — that guarantee is structural — it can
+only waste the judge's time.
+
 ## What the scout reads for
 
 Five things, in one pass over source, docs, tests and tracker (all of it is
