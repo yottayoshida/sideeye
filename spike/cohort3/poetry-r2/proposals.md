@@ -8,14 +8,39 @@ not a wall but a claim-reading structure: its FAIL's earliest world
 was the mid-write lock (L0-only, checker-healed), and the write shape
 (lock first) makes that ordering invariant for every run of `add`.
 The checker-red manifest world the primary recorded at its crash
-point 4 can only become an earliest case under an operation whose
-**only** in-root write is the manifest. `poetry version patch` is that
-operation, measured. Owner-approved 2026-08-22 (the deferred revision
-question in `../poetry/RUNLOG.md`, taken up by name), before any
-engine contact with this define. Scout sources: the primary's record,
-the committed revision probe below, and the poetry CLI reference
-(`version patch`: bumps the version in pyproject.toml). Assisted
-provenance.
+point 4 can only stand as the earliest, single-shape exhibit under an
+operation whose **only** in-root write is the manifest.
+`poetry version patch` is that operation, measured. Owner-approved
+2026-08-22 (the deferred revision question in `../poetry/RUNLOG.md`,
+taken up by name), before any engine contact with this define. Scout
+sources: the primary's record, the committed revision probe below,
+and the poetry CLI reference (`version patch`: bumps the version in
+pyproject.toml). Assisted provenance.
+
+## Standing under the FAIL-freeze rule (the ruling this file must carry)
+
+The frozen charter says, in the same PROTOCOL bullet as the revision
+mechanics: **"a FAIL freezes the define — later revisions cannot
+produce a criterion-1 claim for that target"** (cohort-3 PROTOCOL,
+restating cohort 2's "Once any explore of a target reaches a FAIL
+verdict, later define revisions cannot produce a criterion-1 claim
+for that target: the question would no longer precede the answer.
+UNKNOWN and refusal iteration stays free"). Poetry's explore reached
+a FAIL verdict before this revision existed. **Therefore nothing this
+revision measures is, or can become, a criterion-1 candidate or
+claim** — owner ruling 2026-08-22, on the record here before the
+define freezes; the ruling exists because this file's first draft
+cited the revision rule's mechanics while omitting this sentence, and
+the define's R1 review caught the omission.
+
+What this revision is for, restated under that ruling: a **sealed
+minimal reproduction** of the manifest wound the primary already
+measured — one crash point, one violating world, checker-red through
+poetry's whole documented recovery chain, with the define frozen on
+main before the engine ran — as upstream-report material behind the
+standing per-report owner gate. The record's evidentiary value (the
+mini-seal, the drills, the earliest-by-construction structure) is
+unchanged; only its accounting is: recorded, never claimed.
 
 ## The revision probe (committed: `probe.txt`, raw `poetry-r2.strace`)
 
@@ -45,8 +70,11 @@ syscall granularity the single write is all-or-nothing, so a torn
 manifest is surgery-reachable only. **There is no earlier in-root
 mutation, so a violating world at the empty-manifest point is the
 run's earliest by construction** — the primary's claim-reading lesson
-(candidacy is a property of the run, not of a world), applied before
-freezing this time.
+(which worlds stand first is a property of the run, not of a world),
+applied before freezing this time. Under the FAIL-freeze ruling above
+this buys evidentiary cleanliness for the report, not candidacy: the
+sealed record shows the wound as the operation's only failure shape,
+with no noise world in front of it.
 
 ## The property (P1)
 
@@ -72,18 +100,23 @@ manifest) is **green**. The **empty manifest** parses as empty TOML
 (leg V green — the primary's trials pinned this), the configuration
 is invalid, the whole chain fails (the primary's trial row D and this
 define's `R-red-chain-empty-manifest` drill, both measured), and
-**that red is the candidate shape** — checker-red, the combined
+**that red is the expected FAIL shape** — checker-red, the combined
 atomicity-and-checker form where L0 also flags the bytes, earliest by
-the write-shape argument above. In user terms: kill `poetry version
+the write-shape argument above, and under the FAIL-freeze ruling
+**recorded, never a candidate**. In user terms: kill `poetry version
 patch` between its truncating open and its write, and the entire
 user-authored manifest — dependencies, configuration, everything, not
 just the version line — is destroyed, and nothing in poetry's
 documented path brings it back.
 
-Apparatus reading, frozen before explore (the primary's, restated): a
-FAIL whose earliest case's checker message contains "timed out" or
-names rc 124 is an apparatus outcome, not a verdict; the response is
-a re-run.
+Apparatus reading, frozen before explore (the primary's, sharpened
+after this define's R1 flagged a collision): the checker annotates a
+timed-out step with the words "this step timed out" **only when the
+step's rc was actually 124 or 137** — the legend is conditional, so
+the tokens cannot appear in an ordinary red. A FAIL whose earliest
+case's checker message carries that annotation is an apparatus
+outcome (a container hiccup crossing the 24–60x margins), not a
+verdict; the response is a re-run.
 
 Branch rehearsal: nine for nine in the committed `checker-drills.txt`
 — greens on old and new, both engine-unreachable heal branches

@@ -31,6 +31,34 @@ empty-manifest point, the earliest case is checker-red by
 construction — the first candidate-shaped prospect of the cohort
 where the claim reading and the write shape point the same way.
 
+**Reversed by R1 before merge — the candidacy was never available.**
+The frozen charter's own bullet, the one sentence the first draft's
+citation skipped: "a FAIL freezes the define — later revisions cannot
+produce a criterion-1 claim for that target" (cohort 2's original
+adds the reason: the question would no longer precede the answer;
+only refusal and UNKNOWN iteration stay free). Poetry reached its
+FAIL verdict before this revision existed, so nothing r2 measures can
+be a candidate, and the paragraph above was written by an author who
+had read the revision mechanics around that sentence and not the
+sentence itself — the same selective-citation shape the novelty scan
+lesson warned about, one layer up. Owner ruling, on the record in
+proposals.md before the freeze: measure r2 to the end as a **sealed
+minimal reproduction for the upstream conversation** (one crash
+point, one world, checker-red through the whole documented chain —
+no noise world in front), recorded and never claimed; criterion 1
+moves to a cohort designed with both poetry lessons — write order
+and the FAIL-freeze — in front of the first contact. R1's three P2s
+also landed before the freeze: the toml's probe-configuration
+sentence had inverted the primary's careful disclosure (main legs
+ran venv-ON; venv-off is a third delta, promoted from the forecast
+leg), the static "124/137 = timeout" legend in the chain-fail red
+collided with the frozen apparatus reading (the candidate-shaped
+message would have carried the apparatus trigger tokens on every
+ordinary red — now the annotation is conditional on the step's
+actual rc), and the pass drills printed only their fragment line,
+leaving the healing step unattributable from committed evidence (now
+full output).
+
 verify-assisted green on poetry (define at 75b3d19 strictly before
 artifacts at f35bf72, all four define files byte-identical;
 `verify-transcript.txt` committed beside the ruling). The seal

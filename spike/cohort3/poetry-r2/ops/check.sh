@@ -12,11 +12,13 @@
 # --help documents; the chain failing, or the re-check staying red, is
 # the failure — the primary's chain ruling, inherited unchanged), then
 # version coherence (leg N: the version is the old string or the new
-# string, never a third thing). Every leg's rc is checked; a timeout's
-# 124 is annotated inside the red it produces, and the apparatus
-# reading (a red whose message names a timeout is apparatus, not
-# verdict) is frozen in proposals.md. Ambient env is exported here so
-# a standalone invocation matches the launcher.
+# string, never a third thing). Every leg's rc is checked; a step
+# that actually timed out (rc 124/137) gets the conditional "this
+# step timed out" annotation inside its red — the tokens cannot
+# appear in an ordinary red — and the apparatus reading (a red
+# carrying that annotation is apparatus, not verdict) is frozen in
+# proposals.md. Ambient env is exported here so a standalone
+# invocation matches the launcher.
 set -u
 S=${SIDEEYE_STATE_DIR:?checker needs SIDEEYE_STATE_DIR}
 P=/tmp/cohort3/poetry-r2
@@ -48,11 +50,17 @@ if [ "$rc" -ne 0 ]; then
         echo "checker(poetry-version): step 1 failed (rc=$rc); step 2, the documented regenerate (poetry lock --regenerate): $(head -c 200 "$T/relock")"
         timeout 300 poetry -C "$S" lock --regenerate > "$T/regen" 2>&1
         rc=$?
-        [ "$rc" -eq 0 ] || fail "leg R: the documented recovery chain failed — poetry lock, then poetry lock --regenerate (rc=$rc, 124/137 = timeout): $(head -c 200 "$T/regen")"
+        if [ "$rc" -ne 0 ]; then
+            tnote=""; case "$rc" in 124|137) tnote="; this step timed out" ;; esac
+            fail "leg R: the documented recovery chain failed — poetry lock, then poetry lock --regenerate (rc=$rc$tnote): $(head -c 200 "$T/regen")"
+        fi
     fi
     timeout 120 poetry -C "$S" check --lock > "$T/check2" 2>&1
     rc=$?
-    [ "$rc" -eq 0 ] || fail "leg R: the recovery chain ran but check --lock is still red (rc=$rc, 124 = timeout): $(head -c 200 "$T/check2")"
+    if [ "$rc" -ne 0 ]; then
+        tnote=""; case "$rc" in 124|137) tnote="; this step timed out" ;; esac
+        fail "leg R: the recovery chain ran but check --lock is still red (rc=$rc$tnote): $(head -c 200 "$T/check2")"
+    fi
 fi
 
 # ---- leg N: the version is old-or-new, never a third thing ----------------

@@ -19,9 +19,9 @@ drill() { # name want(pass|fail) state-dir expected-fragment
         case "$out" in
             *"$frag"*)
                 echo "drill ok   $name: checker green as required"
-                if [ -n "$frag" ]; then
-                    echo "  the transcript line carrying the required evidence:"
-                    printf '%s\n' "$out" | grep -F "$frag" | sed 's/^/  | /'
+                if [ -n "$out" ]; then
+                    echo "  full checker output (so the healing step is attributable, not just the fragment):"
+                    printf '%s\n' "$out" | sed 's/^/  | /'
                 fi ;;
             *) echo "drill FAIL $name: green but WITHOUT the required evidence line '$frag' — $out"; FAILS=$((FAILS+1)) ;;
         esac
