@@ -30,6 +30,17 @@ threshold set from it would be satisfied by construction. So:
 - **A-group** — every committed, runnable define in the repository. Its
   rate is published **as the engine's development-input set**, and is *not*
   the threshold basis.
+
+  **As of 2026-08-16, and not re-swept since** (#239). Sixteen further
+  defines have been committed after this sweep ran — cohorts 2 and 3
+  (`spike/cohort2/`, `spike/cohort3/`), several of which reach named
+  refusals rather than verdicts. The published rate below therefore
+  describes the corpus as it stood on the sweep date, not the repository as
+  it stands now, and re-running it would move the number. The **threshold**
+  is unaffected: it is set from B-group data only, and no cohort-2 or
+  cohort-3 target is in B-group. This note sits outside the generated
+  block on purpose — `count.py` owns everything between the results
+  markers and compares it byte for byte.
 - **B-group** — targets this project has never run, selected mechanically
   (no hand-picking; see below). **The threshold is set from B-group data
   only.**

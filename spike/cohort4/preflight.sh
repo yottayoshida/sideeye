@@ -83,8 +83,25 @@ run_measured() { # mode root outdir cmd...
     python3 "$ANALYSE" "$mode" "$root" "$out/strace.txt" "$out/logger.txt"
 }
 
+# The analyser's class set is a second copy of the engine's kill-point
+# OpClass (src/contract.zig) — #65's shape, introduced by this change. It
+# therefore carries a check that goes red when the engine moves, rather
+# than a comment asking the next reader to remember.
+DRIFT="$here/class-drift-check.py"
+
 selftest() {
     need cc
+    need python3
+    echo "== class-drift check against the engine (#65's shape)"
+    if [ -f "$DRIFT" ]; then
+        python3 "$DRIFT" "$here/../../src/contract.zig" "$ANALYSE"
+        rc=$?
+        [ $rc -eq 0 ] || return 1
+    else
+        echo "  BROKEN drift check missing: $DRIFT"
+        return 2
+    fi
+    echo
     tmp=${TMPDIR:-/tmp}/preflight-selftest.$$
     mkdir -p "$tmp/libc/state" "$tmp/raw/state" || die_broken "cannot create $tmp"
     toys="$here/../toys"

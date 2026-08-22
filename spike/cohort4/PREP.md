@@ -163,6 +163,12 @@ recorded artifact (`docs/target-classes.md`):
 - threads (`multiple_threads_detected`) — Bun; libuv is forecast, unmeasured
 - child processes doing the writing (`child_touched_state_dir`) — pass, #123
 - raw syscalls past libc (`oracle_missed_operation`) — cargo's manifest rename, #217
+- **internal libc calls that mutate state** — the same refusal from a
+  different cause, measured 2026-08-22 on `spike/toys/toy_mkstemp.c`
+  (`mkstemp-class.txt`, #39): `mkstemp` + write + fsync + rename leaves its
+  *creation* invisible, and `dprintf` its write. The idiom is what a
+  careful C program is supposed to use, which makes this the row most
+  likely to bite a C or C++ candidate
 - nondeterministic writers (`baseline_violates_invariant`) — watson
 - encrypted / memory-locked state — KeePassXC's probe wall
 
@@ -266,12 +272,18 @@ Rules 1–13 of #209 carry over. The deltas:
   than one in-root kill point; confirmed at probe by condition 9.
 - **16. Wall forecast against §3F.** Any forecast wall enters with its
   lifting apparatus named before the probe, or the target does not enter.
+  §3F now includes the internal-libc-call row measured 2026-08-22
+  (`mkstemp-class.txt`): the canonical C atomic-replace idiom hides its file
+  creation inside libc, so a C or C++ candidate whose write path uses
+  `mkstemp` reaches cargo's wall.
 - **17. Rule 11 measured on bug reports**, with our own zero-reply record
   stated beside it.
 
 Target *names* are deliberately absent from this file: selection is the
-owner's call, and the scout brief that proposes candidates is written
-after §7 is decided, because the exit rule changes what a good target is.
+owner's call. The brief that proposes candidates against these rules is
+`SCOUT-BRIEF.md`, written after §7 was decided — the exit rule changes what
+a good target is, and deciding it first is what keeps the slate from being
+chosen around a fallback.
 
 ## 7. The exit rule — decided 2026-08-22: the default stands
 
@@ -321,10 +333,20 @@ believed:
 
 1. This file and the tooling in §8 merged (no target named).
 2. ~~Owner decides §7~~ — **done 2026-08-22: the default stands** (§7). No ADR.
-3. Engine change (#231) merged with tests and the schema note.
+3. ~~Engine change (#231)~~ — **merged 2026-08-22** (PR #241, main `8b75ad7`, ADR 0020 Accepted). The claim-reading section of `PROTOCOL-DRAFT.md` is drafted against it.
 4. `preflight.sh`, `novelty-prescan.sh`, `merge-gate.sh` merged, each with
    its falsification transcript.
-5. Scout brief written against §6 (Opus 5 or better, `docs/scouting.md`);
-   candidates proposed; **owner signs off on the target list**.
-6. PROTOCOL frozen, citing 2–5 by merge.
+5. ~~Scout brief written against §6~~ — **done 2026-08-22:
+   `SCOUT-BRIEF.md`**, with the selection method declared there: the
+   novelty pre-scan is a **veto, not a ranking** (silence has four possible
+   meanings and only one of them is "novel"; ranking by it selects toward
+   projects nobody examines, against rules 1, 3, 11 and 12). Surviving
+   candidates are ordered by coverage. Still open: candidates proposed, and
+   **the owner signs off on the target list**.
+6. PROTOCOL frozen, citing 2–5 by merge. **Draft ready
+   (`PROTOCOL-DRAFT.md`, 2026-08-22)**: every section marked carried,
+   drafted, or blocked with the reason. Three are blocked — the per-target
+   probe plans and the image on the target list, and the claim reading on
+   #231's merge. A section still blocked at freeze time is a reason not to
+   freeze.
 7. Probes, in cohort order. Then defines. Then explores.

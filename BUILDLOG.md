@@ -67,6 +67,126 @@ assertions broke — `case: .../000002.json, wanted .../000001.json`
 and `checker_earliest.case: .../000003.json, wanted .../000002.json`
 — so the 000001-owner invariant is measured by assertions that die
 when it does, and the mutant was reverted from the committed base.
+## 2026-08-22 — the register was ten measurements behind the measurements
+
+`docs/target-classes.md` says what "supported" means — "supported classes
+are exactly the rows of the first table below" — and PRD's UNKNOWN-rate
+criterion takes the word from there. It listed thirteen tools, all of them
+from the blind campaigns and the assisted cohort. **None of cohort 2's
+five and none of cohort 3's five were on it.** Two cohorts of measurement,
+closed and recorded in their own RESULTS and RUNLOG files, never reached
+the page that summarises what has been measured.
+
+Backfilled here, in the shape the page already uses. Six verdict rows —
+Mercurial (FAIL 73/107, all L0-only, contract held 107/107), Borg (FAIL
+3/119, same shape, under declared pins), black and rustfmt (FAIL 1/3 each,
+the same in-place tear in two languages, both already on their trackers),
+poetry (FAIL 2/5, not a candidate because the earliest world is L0-only,
+with the checker-red world behind it reported as python-poetry/poetry#11019),
+papis (PASS 2/2, the contrast case). Three refusal rows — jj on static
+linkage, Bun on threads, cargo on the raw-syscall rename. And one new
+section for a distinction the page could not previously express: KeePassXC
+never reached a define, because the engine-free probe refused first on
+determinism and on 7 unattributable calls. Calling that an engine refusal
+would have been a claim about a judgement that never happened.
+
+Two consequences worth stating rather than leaving to be noticed. The
+supported set grew by six rows today, so any sentence elsewhere that
+counts supported classes is now stale. And `docs/unknown-rate.md`'s
+A-group is defined as *every committed, runnable define in the repository*
+while its sweep ran on 2026-08-16 — before both cohorts, which have since
+committed **16** further defines, several of which reach named refusals
+rather than verdicts. That page now carries an as-of note saying so. The
+threshold is unaffected: it is set from B-group only, and no cohort-2 or
+cohort-3 target is in B-group. Re-running the A-group sweep is filed
+separately rather than done here, because doing it inside a documentation
+change would bury a measurement in a backfill.
+
+One row on that page was not stale but empty, and it is filled here by
+measuring rather than by moving text. `#39` — libc functions that mutate
+state through internal calls — carried "no recorded run for any of these
+members" since it was filed. Two members are now measured
+(`spike/cohort4/mkstemp-class.txt`, on a new toy written for it), and both
+are invisible in the way the mechanism predicted. The canonical C
+atomic-replace idiom, `mkstemp` + write + fsync + rename, has its
+**creation** performed inside libc: the kernel issues
+`openat(..., O_RDWR|O_CREAT|O_EXCL, 0600)` in the state root and the
+interposer records no `open` for that path. The control is in the same
+run and needed no arranging — the write and the fsync on that same temp
+file *are* visible, because the program issues those itself. `dprintf`
+behaves identically (its `open` is visible, its write is not) and
+`tmpfile` left nothing inside the root.
+
+This one matters for cohort 4 before selection rather than after: a C or
+C++ target whose atomic write goes through `mkstemp` hits the same wall as
+cargo's raw rename, and the idiom is the one a careful C program is
+*supposed* to use. `preflight.sh visibility` names it at probe time, which
+is the whole point of having built the thing before the cohort rather than
+during it — and this is its third falsification shape, distinct from the
+raw-syscall toy and the libc-routed one.
+
+Then the same-class scan asked which *other* documents summarise
+measurements, and the answer was worse than the two being fixed. Searched
+for any mention of cohorts 2 or 3 — by name, by issue number, or by target
+— **`PRD.md`, `DESIGN.md`, `docs/kill-criteria-review.md`, `README.md` and
+`docs/scouting.md` returned zero each.** PRD's criterion-1 status trail
+stops on 2026-08-15 and closes with "what remains is the
+novelty/confirmation/fix/replay work on the assisted findings", written
+before the two campaigns that were run specifically to close that
+criterion. The document that defines the v1.0 gate had no record of ten
+targets measured against it.
+
+PRD and DESIGN §17 gain those outcomes here — facts only, no criterion
+re-scored — and the closing sentence is corrected to say what remains:
+one finding that is novel, automatically discovered and provenance-clean
+at once. `docs/kill-criteria-review.md` is deliberately **not** touched:
+criterion 3 is scored there against collected data, the data has since
+grown by ten targets, and its Row 8 names its own margin as one trial.
+Re-scoring a met criterion inside a documentation backfill is exactly the
+move this repository refuses; it is filed instead. README needed nothing —
+it points at `docs/target-classes.md` rather than restating it, which is
+why fixing the register fixed the README too.
+
+**CI caught what the local checks did not: the as-of note broke a machine
+check.** `docs/unknown-rate.md` carries a generated results block between
+`<!-- unknown-rate:results:begin/end -->` markers whose own first line says
+"do not edit between the markers", and acceptance check 12 compares it
+byte for byte against `count.py`'s recomputation. The note landed directly
+under the `#### A-group` heading — which `count.py` *generates* — so the
+block stopped matching and the linux job went red on the drift gate. The
+diff was one blank line.
+
+This is the recorded class, happening to the person who wrote the register:
+a prose edit moving an anchor that code reads. The fix is not to reword the
+note but to move it out of the block entirely — it now hangs off the
+A-group *definition* bullet, which is prose the generator does not own, and
+says so in its last sentence. The generated block was then restored from
+`count.py emit` rather than hand-repaired, and the diff against main is 11
+added lines and zero deletions: no published number moved.
+
+Two smaller things worth the ink. The local reproduction was available all
+along — `python3 spike/unknown-rate/count.py check` prints exactly what CI
+prints — and I did not run it before pushing, which is why a one-blank-line
+error cost a CI round. And the first fix attempt was not enough: removing
+the note left the extra blank line behind, and the check stayed red until
+the block was replaced with the generator's own bytes. A gate that compares
+byte for byte does not care which of two edits caused the mismatch.
+
+Two claims of my own were caught by the pre-review check on numbers and
+universals before this was committed. "On tools with millions of users"
+was not measured anywhere — replaced with the star counts #209 actually
+recorded. And DESIGN's arithmetic counted Borg twice, once as a probe wall
+and once as the verdict that wall became when #200 lifted it: eleven
+outcomes for ten targets. Now four walls that stood, one lifted, six
+verdicts.
+
+One measurement error of my own, caught by its own denominator: the local
+replication of acceptance check 11 printed "1 slashed refs checked" for a
+page with 46 of them. `for r in $refs` does not split on newlines in zsh,
+so the whole list arrived as one string. The real check runs under `sh` in
+the container and was never affected — but had the output not carried its
+denominator, "0 missing" would have read as a pass. Re-run properly: 46
+checked, 0 missing, with a planted bad path as the control.
 
 ## 2026-08-22 — cohort 4's preconditions, and the gate that caught its own author
 
