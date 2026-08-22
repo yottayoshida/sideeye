@@ -381,6 +381,13 @@ static int cmd_init(void) {
         join_path(nd, sizeof nd, "nondet.txt");
         if (write_file(nd, "seed\n") != 0) return 1;
     }
+    if (getenv("TOY_SPLIT_REWRITE")) {
+        char d[4096], p[4096];
+        join_path(d, sizeof d, "derived.txt");
+        join_path(p, sizeof p, "primary.txt");
+        if (write_file(d, "derived-old\n") != 0) return 1;
+        if (write_file(p, "primary-old\n") != 0) return 1;
+    }
     if (getenv("TOY_STDIO_SEEK")) {
         char sk[4096];
         join_path(sk, sizeof sk, "stdio-seek.txt");
@@ -393,6 +400,28 @@ static int cmd_rotate(void) {
     char key[4096], tmp[4096];
     join_path(key, sizeof key, KEY_NAME);
     join_path(tmp, sizeof tmp, TMP_NAME);
+
+    /* The poetry shape, shrunk (#231, ADR 0020): two in-place truncate-and-write
+     * rewrites, derived first, primary second — exactly four kill points (open,
+     * write, open, write; no fsync, so the numbering matches the declared k=2 /
+     * k=4). The split checker (check-split.sh) judges only the primary, so the
+     * derived file's mid-write world is an L0-only precision-limit observation
+     * standing physically ahead of the checker-red world: the overall earliest
+     * and the claim exhibit are forced apart. Replaces the key rotate. */
+    if (getenv("TOY_SPLIT_REWRITE")) {
+        char d[4096], p[4096];
+        join_path(d, sizeof d, "derived.txt");
+        join_path(p, sizeof p, "primary.txt");
+        int fd = open(d, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "derived-new\n", 12) != 12) { close(fd); return 1; }
+        if (close(fd) != 0) return 1;
+        fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "primary-new\n", 12) != 12) { close(fd); return 1; }
+        if (close(fd) != 0) return 1;
+        return 0;
+    }
 
     /* A read-only open of state before any mutation. The result is deliberately unused:
      * the point is the open itself, which must not consume a crash-point address. */

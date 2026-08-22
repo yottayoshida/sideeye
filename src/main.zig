@@ -235,7 +235,7 @@ fn usage() void {
 
 fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
     if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, reason.name(), detail);
+        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), detail);
     // The classification lines appear here too: DESIGN §13 demands text and JSON
     // carry identical content, and the JSON below already does. Before the snapshots
     // exist this honestly reads "not classified".
@@ -309,7 +309,7 @@ fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
 /// that stale verdict could be a PASS for a run that never explored anything.
 fn setupError(detail: []const u8) noreturn {
     if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, detail);
+        writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, detail);
     say("SETUP ERROR  {s}\n", .{detail});
     std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
 }
@@ -1126,7 +1126,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\      not tested: {s}
             \\
         , .{ expected_status_val, l0_note, oracle_note, metadata_note, l1_note, case_note, notTestedText() });
-        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
+        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -1207,6 +1207,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var first_failure_l2 = false;
     var first_failure_path: [contract.max_path]u8 = undefined;
     var first_failure_path_len: usize = 0;
+    // The claim exhibit (#231, ADR 0020): the earliest world whose violation
+    // includes the declared checker, latched independently of the overall
+    // earliest by the judgment-time bit (`l2_failed`), never by parsing the
+    // invariant string. Often the same world as `first_failure`; the poetry
+    // shape — an L0-only precision-limit world structurally ahead of the real
+    // checker-red one — is where the two diverge.
+    var first_checker: ?engine.WorldResult = null;
+    var first_checker_l0 = false;
+    var first_checker_l1 = false;
+    var first_checker_path: [contract.max_path]u8 = undefined;
+    var first_checker_path_len: usize = 0;
     var marker_worlds: u32 = 0;
     var checks_run: u32 = 0;
 
@@ -1391,14 +1402,20 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 first_failure_l1 = l1 != null;
                 first_failure_l2 = l2_failed;
                 if (v) |vv| {
-                    const p = switch (vv) {
-                        .missing => |p| p,
-                        .hybrid => |p| p,
-                        .rewritten => |p| p,
-                        .not_durable => |p| p,
-                    };
+                    const p = violationPath(vv);
                     @memcpy(first_failure_path[0..p.len], p);
                     first_failure_path_len = p.len;
+                }
+            }
+            if (l2_failed and first_checker == null) {
+                const v = l0 orelse l1;
+                first_checker = .{ .k = k, .term = term, .landed = landed, .violation = v };
+                first_checker_l0 = l0 != null;
+                first_checker_l1 = l1 != null;
+                if (v) |vv| {
+                    const p = violationPath(vv);
+                    @memcpy(first_checker_path[0..p.len], p);
+                    first_checker_path_len = p.len;
                 }
             }
         }
@@ -1436,12 +1453,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             "the post-success invariant (L1)"
         else
             "the checker (L2)";
-        const what = if (f.violation) |v| switch (v) {
-            .missing => "present before and after the operation, but gone from the crashed state",
-            .hybrid => "holding neither the old nor the new content",
-            .rewritten => "present, but its recorded history is no longer a prefix of its content",
-            .not_durable => "the operation claimed success before the kill, and this part of the new state did not survive",
-        } else "the checker exited non-zero after restart";
+        const what = violationObserved(f.violation);
         const path_shown = if (first_failure_path_len > 0)
             first_failure_path[0..first_failure_path_len]
         else
@@ -1481,6 +1493,55 @@ pub fn main(init: std.process.Init.Minimal) !void {
             "-";
         case_note = case_shown;
         replay_note = replay_cmd;
+        // The claim exhibit (#231, ADR 0020). Same world as the earliest: it
+        // shares the earliest's case file — no duplicate is written. Different
+        // world: its case is written strictly AFTER the earliest's, so in a
+        // fresh work directory 000001 always belongs to the overall earliest;
+        // and when the earliest's case could not be written at all, the checker
+        // case is not written either, keeping that ownership an invariant even
+        // under write failure. The second write sits inside the same
+        // explore-only condition as the first: a replay does not mint (ADR 0009).
+        const checker_detail: ?CheckerEarliest = if (first_checker) |fc| blk: {
+            const caddr = trace.logicalAddress(fc.k);
+            const cinvariant = if (first_checker_l0)
+                "built-in atomicity, and the checker"
+            else if (first_checker_l1)
+                "the post-success invariant, and the checker"
+            else
+                "the checker (L2)";
+            const same_world = fc.k == f.k;
+            const csaved: ?[]const u8 = if (same_world)
+                saved_case
+            else if (only_k == null and saved_case != null) blk2: {
+                var case_args = args;
+                case_args.state = state_abs;
+                break :blk2 writeCase(arena, args.work, case_args, fc.k, n, trace, if (fc.violation) |v| @tagName(v) else "checker");
+            } else null;
+            const ccase = if (same_world) case_shown else (csaved orelse "(not saved)");
+            const creplay = if (same_world)
+                replay_cmd
+            else if (csaved) |cc|
+                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}", .{ cc, shim }) catch "-"
+            else
+                "-";
+            break :blk .{
+                .e = .{
+                    .k = fc.k,
+                    .after = if (caddr.after) |a| a.class.name() else "(start)",
+                    .after_path = if (caddr.after) |a| a.path else "",
+                    .before = if (caddr.before) |b| b.class.name() else "(end)",
+                    .before_path = if (caddr.before) |b| b.path else "",
+                    .subject = if (first_checker_path_len > 0)
+                        first_checker_path[0..first_checker_path_len]
+                    else
+                        "(named by the checker, not by path)",
+                    .observed = violationObserved(fc.violation),
+                    .invariant = cinvariant,
+                },
+                .case = ccase,
+                .replay = creplay,
+            };
+        } else null;
         say(
             \\FAIL  {d} of {d} explored worlds violated an invariant
             \\
@@ -1499,10 +1560,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\l1          {s}
             \\case        {s}
             \\replay      {s}
-            \\processes   {s}
-            \\not tested  {s}
-            \\
-            \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} SIDEEYE_SEQ_BASE= <operation>
             \\
         , .{
             violations, explored,
@@ -1523,9 +1580,28 @@ pub fn main(init: std.process.Init.Minimal) !void {
             l1_note,
             case_shown,
             replay_cmd,
+        });
+        // Printed only when the two exhibits are different worlds; when the
+        // earliest is itself checker-red — every FAIL this engine produced
+        // before poetry — the text above is byte-identical to what it was.
+        if (checker_detail) |cd| {
+            if (cd.e.k != f.k) say(
+                \\checker red crash point {d} of {d} ({s})
+                \\            case   {s}
+                \\            replay {s}
+                \\
+            , .{ cd.e.k, n, cd.e.invariant, cd.case, cd.replay });
+        }
+        say(
+            \\processes   {s}
+            \\not tested  {s}
+            \\
+            \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} SIDEEYE_SEQ_BASE= <operation>
+            \\
+        , .{
             boundary_note,
             notTestedText(),
-            state_abs,  alt_env,     repro_trace, preload_var, shim, f.k,
+            state_abs, alt_env, repro_trace, preload_var, shim, f.k,
         });
         if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
             .k = f.k,
@@ -1536,7 +1612,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .subject = path_shown,
             .observed = what,
             .invariant = invariant,
-        }, null, null);
+        }, checker_detail, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
@@ -1556,7 +1632,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      not tested: {s}
         \\
     , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundary_note, notTestedText() });
-    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null);
+    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -2297,6 +2373,24 @@ fn jsonString(w: *std.ArrayList(u8), arena: std.mem.Allocator, s: []const u8) !v
     try w.append(arena, '"');
 }
 
+fn violationPath(v: engine.Violation) []const u8 {
+    return switch (v) {
+        .missing => |p| p,
+        .hybrid => |p| p,
+        .rewritten => |p| p,
+        .not_durable => |p| p,
+    };
+}
+
+fn violationObserved(v: ?engine.Violation) []const u8 {
+    return if (v) |vv| switch (vv) {
+        .missing => "present before and after the operation, but gone from the crashed state",
+        .hybrid => "holding neither the old nor the new content",
+        .rewritten => "present, but its recorded history is no longer a prefix of its content",
+        .not_durable => "the operation claimed success before the kill, and this part of the new state did not survive",
+    } else "the checker exited non-zero after restart";
+}
+
 const Earliest = struct {
     k: u32,
     after: []const u8,
@@ -2308,11 +2402,21 @@ const Earliest = struct {
     invariant: []const u8,
 };
 
+/// The claim exhibit (#231, ADR 0020): the `earliest` shape plus its own case
+/// and replay, nested so the object is absent — fields and all — whenever no
+/// violating world involved the declared checker.
+const CheckerEarliest = struct {
+    e: Earliest,
+    case: []const u8,
+    replay: []const u8,
+};
+
 fn buildJson(
     arena: std.mem.Allocator,
     verdict: []const u8,
     exit_code: u8,
     detail: ?Earliest,
+    checker_detail: ?CheckerEarliest,
     unknown_reason: ?[]const u8,
     message: ?[]const u8,
 ) ![]const u8 {
@@ -2374,6 +2478,30 @@ fn buildJson(
         try w.appendSlice(arena, "\n  }");
     }
 
+    if (checker_detail) |cd| {
+        try w.appendSlice(arena, ",\n  \"checker_earliest\": {\n    \"crash_point\": ");
+        try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{cd.e.k}));
+        try w.appendSlice(arena, ",\n    \"invariant\": ");
+        try jsonString(w, arena, cd.e.invariant);
+        try w.appendSlice(arena, ",\n    \"after\": {\"op\": ");
+        try jsonString(w, arena, cd.e.after);
+        try w.appendSlice(arena, ", \"path\": ");
+        try jsonString(w, arena, cd.e.after_path);
+        try w.appendSlice(arena, "},\n    \"before\": {\"op\": ");
+        try jsonString(w, arena, cd.e.before);
+        try w.appendSlice(arena, ", \"path\": ");
+        try jsonString(w, arena, cd.e.before_path);
+        try w.appendSlice(arena, "},\n    \"subject\": ");
+        try jsonString(w, arena, cd.e.subject);
+        try w.appendSlice(arena, ",\n    \"observed\": ");
+        try jsonString(w, arena, cd.e.observed);
+        try w.appendSlice(arena, ",\n    \"case\": ");
+        try jsonString(w, arena, cd.case);
+        try w.appendSlice(arena, ",\n    \"replay\": ");
+        try jsonString(w, arena, cd.replay);
+        try w.appendSlice(arena, "\n  }");
+    }
+
     try w.appendSlice(arena, ",\n  \"l0\": ");
     try jsonString(w, arena, l0_note);
     try w.appendSlice(arena, ",\n  \"l1\": ");
@@ -2421,10 +2549,11 @@ fn writeJsonReport(
     verdict: []const u8,
     exit_code: u8,
     detail: ?Earliest,
+    checker_detail: ?CheckerEarliest,
     unknown_reason: ?[]const u8,
     message: ?[]const u8,
 ) void {
-    const doc = buildJson(arena, verdict, exit_code, detail, unknown_reason, message) catch
+    const doc = buildJson(arena, verdict, exit_code, detail, checker_detail, unknown_reason, message) catch
         return jsonFailed("the document could not be built");
 
     var pbuf: [contract.max_path]u8 = undefined;

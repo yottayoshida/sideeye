@@ -2,6 +2,46 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — #231: the overall earliest and the claim exhibit are two different things
+
+Entry started before the first line of code, per the contract. The
+poetry pair proved that "the run's saved case = the earliest violating
+world" promotes an engine implementation detail — one case per run —
+into a scoring rule: poetry's lock-first write shape puts an L0-only
+precision-limit world structurally ahead of the real checker-red
+manifest destruction, and the exhibit slot was already taken. The fix
+is to separate the two roles the single case has been playing.
+**Overall earliest stays exactly what it is** — the first physical
+counterexample, `earliest` in the report, `cases/000001.json` on
+disk, every existing consumer untouched. **The claim exhibit becomes
+its own thing**: the earliest world whose violation includes the
+declared checker, tracked by the invariant bits at world-judgment
+time (never by parsing the invariant string), saved as its own case
+when it is a different world, and reported as `checker_earliest` —
+the `earliest` shape plus its own `case` and `replay` inside, absent
+when no checker-red world exists. The write order is fixed (earliest
+first), so 000001's owner never changes; if the earliest case cannot
+be written, the checker case is not written either, keeping "000001,
+when present, belongs to the earliest" as an invariant. Plan R1
+measured one assumption dead before it shipped: acceptance's check-4
+FAIL fixture runs without `--check`, so a checker-red world is
+structurally impossible there and the fixture change is definite
+work, not a contingency — with the `--oracle` kept, because the same
+fixture feeds the `ov_pin`. (Decisions recorded as they land; the
+mutation drill's result is appended below when it runs.)
+
+Two decisions from the implementation itself. The regression toy's
+first draft used the existing `write_file` helper, whose `fsync` is
+itself a kill point — six crash points instead of the declared four,
+with the exhibits at k=2/k=5 instead of the declared k=2/k=4; the toy
+now does raw open/write/close so the committed check asserts the
+numbers the design named. And the replay leg of the new acceptance
+check initially invoked `sideeye replay` bare: a case carries the
+define but not the environment, so the fresh recording would have run
+the toy's ordinary rotate instead of the split rewrite and refused
+with `case_no_longer_applies` — the env rides the invocation, as it
+does in every other env-driven toy check.
+
 ## 2026-08-22 — cohort 4's preconditions, and the gate that caught its own author
 
 This entry is late, and says so first: the contract in CLAUDE.md is to open
