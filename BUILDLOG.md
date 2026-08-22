@@ -2,6 +2,24 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the rustfmt define: measured with the answer's fame declared up front
+
+Target 3 proceeds by owner decision (2026-08-22) with its novelty gate
+already known closed — rust-lang/rustfmt#6041 has named the in-place
+erasure surface since before this cohort existed, and the recorded
+pre-define search sits in proposals.md. The define exists for the
+ledger's completeness and as black's cross-language companion: same
+class, same discipline, a Rust target. The checker differs from
+black's where the language differs: leg V is rustc's own front end
+(--crate-type bin, so the empty file — the engine-reachable tear, the
+same one-truncating-open-one-write shape as black, probe strace lines
+51-52 — fails V with "main function not found" rather than parsing as
+an empty module), and leg E is a two-anchor byte comparison against
+the frozen source and the probe-measured formatted output (Rust has no
+stdlib AST to compare cheaply; both anchors are committed
+measurements). Drills six for six, message-attributed; green-new
+byte-matches the probe's anchor live.
+
 ## 2026-08-22 — the black verify transcript: the cohort's first FAIL under the full seal
 
 verify-assisted green on black (define at 413cdb2 strictly before
