@@ -171,6 +171,32 @@ All five passed, so the cohort order stands unchanged:
   `rustfmt/RUNLOG.md`. The formatter half of the matrix is now fully
   measured; the criterion-1 search continues with poetry and papis.
 
+- **poetry (2026-08-22)** — **FAIL, L0-only earliest: recorded, not a
+  candidate**. The define merged after one recorded reversal (the
+  recovery-shaped novelty re-scan surfaced poetry#1196/PR#6753 and
+  upstream's test pinning bare-lock-fails as intended; the owner's
+  chain ruling made leg R = prescription → documented `--regenerate` →
+  re-check, and moved the live prospect from the lock to the
+  manifest). The explore: 2 of 5 worlds violated, reproduced
+  identically across three runs. The earliest world (empty lock,
+  crash point 2) is **L0 red and checker-healed** — chain step 2
+  brought it back green, with poetry's self-prescribing step-1
+  failure observed in a real crash world; the frozen claim rule
+  (earliest saved case must have the declared checker as its violated
+  invariant; L0-only is a precision-limit observation) therefore
+  reads the run as **no candidate**. The checker-red world exists —
+  crash point 4 destroys user-authored `pyproject.toml` and the whole
+  documented chain fails — but the write shape (lock first) puts the
+  L0-only lock world ahead of it in every run of this operation. All
+  world-level declarations were confirmed; the declaration's
+  candidacy expectation was wrong, and the rule frozen against
+  exactly that pull (the hg 73/107 lesson) did the refusing. Ruling:
+  `poetry/RUNLOG.md`, which also records the deferred revision
+  question (a manifest-only operation such as `poetry version patch`
+  as a new target-dir revision) and the upstream-report material (the
+  stale prescription; the manifest wound) behind the standing owner
+  gate. The cohort closes with papis.
+
 ## What the probe phase deliberately did not do
 
 At the probe phase's close, no define existed and no engine explore had
