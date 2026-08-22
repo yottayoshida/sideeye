@@ -77,17 +77,59 @@ and issues `fs::write`, `fs::rename`, `fs::copy`, `fs::remove_file`,
 `fsync` occur 0 times in the crate**; the control for that zero is in the
 same run — `fs::rename` occurs, so the grep was capable of matching.
 
-**Wall forecast (rule 16): no wall predicted, with the reasoning stated.**
-The relevant recorded wall is cargo's, and `docs/target-classes.md` is
-explicit that it is a *routing* wall, not a Rust one: cargo's manifest
-rename is a raw syscall while the binary imports libc `rename`, and rustfmt
-— also Rust — gave the class its first clean verdict. himalaya sits on the
-rustfmt side by measurement: its writes are `std::fs`, and the reverse
-lookup of `Cargo.lock` shows `rustix` reaching the binary only through
-`crossterm`, `gethostname`, `tempfile` and `terminal_size` — **none of them
-on the Maildir write path**. Read-only rustix is already tolerated (the
-omamori precedent). `preflight.sh visibility` settles it at probe time
-without spending a define; this is a forecast, and it is falsifiable there.
+**Wall forecast (rule 16): one arm has a wall, the other arms do not, and
+the wall costs one symbol to lift.** This row was wrong in the first draft
+of this file, which read "no wall predicted" from `std::fs` alone. `std::fs`
+is not one routing decision; it is several.
+
+Start with what is not a wall. cargo's refusal is a *routing* wall, not a
+Rust one — `docs/target-classes.md` records its manifest rename as a raw
+syscall while the binary imports libc `rename`, and rustfmt, also Rust,
+gave the class its first clean verdict. himalaya's `fs::rename`, `fs::write`
+and `fs::remove_file` all route through libc, and the `Cargo.lock` reverse
+lookup shows `rustix` reaching the binary only through `crossterm`,
+`gethostname`, `tempfile` and `terminal_size` — **none on the Maildir write
+path**. Read-only rustix is already tolerated (the omamori precedent). Those
+arms are visible.
+
+**`fs::copy` is the exception, and it is the arm this row proposes to
+measure.** On Linux `std::fs::copy` has no body of its own: it opens both
+files and calls `io::copy`
+(`library/std/src/sys/fs/unix.rs:2393`), which specialises into the kernel
+copy path and tries **`copy_file_range`, then `sendfile`, then a read/write
+loop** (`library/std/src/sys/io/kernel_copy/linux.rs:210-251`). Against the
+shim's export list (`shim/src/linux.zig`, 51 symbols) neither
+`copy_file_range` nor `sendfile` nor `ioctl` nor `syscall` is interposed,
+while `write`, `writev` and `pwrite` are. **So as the engine stands, the
+bytes of a copied message reach disk unseen: `oracle_missed_operation`.**
+
+The apparatus, named as rule 16 requires, is **one exported symbol**. std
+calls `copy_file_range` through its `syscall!` macro, whose implementation
+carries the decisive comment
+(`library/std/src/sys/pal/unix/weak/syscall.rs`):
+
+    // Use a weak symbol from libc when possible, allowing `LD_PRELOAD`
+    // interposition, but if it's not found just use a raw syscall.
+
+The weak lookup runs first, glibc has provided `copy_file_range` since 2.27
+(Ubuntu 22.04 ships 2.35), and `dlsym`'s global search order finds a
+preloaded definition before libc's. **Exporting `copy_file_range` from the
+shim therefore captures this call**, which is precisely what cargo's inline
+syscall instruction made impossible. Adding `sendfile` as well covers the
+second fallback.
+
+Two ways forward, both legal under rule 16 and both cheap:
+
+- **Extend the shim by one symbol** (`copy_file_range`, plus `sendfile` for
+  insurance) and measure `messages copy` as proposed. `preflight.sh
+  visibility` confirms the capture before a define is spent.
+- **Measure a different arm.** `messages save` (`fs::write` + `fs::rename`)
+  and `messages move` / `flags *` (`fs::rename`) touch only interposed
+  symbols and need no engine change — at the cost of the interior, since
+  those are the papis shape.
+
+This is a forecast in both directions and `preflight.sh visibility` is what
+settles it.
 
 **Threads (rule 10).** `io-maildir` spawns threads in exactly one place:
 `read_entries_par`, via `thread::scope` and `available_parallelism`
@@ -278,7 +320,7 @@ Conjunctive: all must hold.
 | 13 language diversity across the cohort | — cohort-level, see below | — |
 | 14 novelty pre-scan clears | PASS | PASS |
 | 15 interior forecast | PASS, `fs::copy` at the final path | PASS, `link`+`unlink`, weaker |
-| 16 wall forecast with apparatus named | PASS, no wall predicted | PASS, `mkstemp` row does not apply |
+| 16 wall forecast with apparatus named | **CONDITIONAL** — the `fs::copy` arm is unseen today (`copy_file_range` not interposed); apparatus is one exported symbol, other arms are clean | PASS, `mkstemp` row does not apply |
 
 ## The rejection this produces
 
