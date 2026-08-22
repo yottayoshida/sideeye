@@ -232,16 +232,51 @@ here. Two general rules close the gaps a loose plan would leave:
    cache layer exists at all — stronger than relocating it; the library
    is small), XDG directories pinned; the library directory is the state
    root and holds one existing document, added at setup from a fixture
-   file with content `existing document, fixed bytes` and metadata
-   `title=Existing / author=Probe Author / papis_id=existing0001`.
-   Operation: `papis add --batch` of a second fixture file **outside**
-   the root with content `probe document, fixed bytes` and every
-   metadata field fixed: `--set title Probe --set author 'Probe Author'
-   --set year 2026 --set papis_id probe0001 --folder-name probe-doc`.
+   file with content `existing document, fixed bytes` and this frozen
+   metadata fixture (`existing-meta.yaml`):
+
+   ```yaml
+   title: Existing
+   author: Probe Author
+   papis_id: existing0001
+   ```
+
+   Operation: `papis add --batch --from yaml <probe-meta.yaml>
+   --folder-name probe-doc` of a second fixture file **outside** the
+   root with content `probe document, fixed bytes`, where
+   `probe-meta.yaml` is this frozen metadata fixture:
+
+   ```yaml
+   title: Probe
+   author: Probe Author
+   year: 2026
+   papis_id: probe0001
+   ```
+
    papis auto-generates `papis_id` when missing; whether the explicit
    value pins it is exactly what the determinism condition measures.
    Expected: exactly one new document directory (an `info.yaml` plus the
-   copied file), and `papis list` names it.
+   copied file), and papis reads it back — `papis list --all --format`
+   returns the fixture's title and papis_id (the bare listing prints
+   folder paths only, measured at probe time). *(Amended before this
+   target's accepted probe, 2026-08-22, in one measured step: the
+   original plan carried the metadata via `--set` key-value flags and no
+   `--from`. Its probe (`probes/papis-v1.txt`) failed conditions 1-4:
+   with no `--from`, `papis add` runs importer auto-matching on the
+   file's URI, papis 0.16's arxiv importer treats the path as a
+   candidate arXiv identifier and **validates it against arxiv.org over
+   HTTPS** — `add.py` line 483 → `get_matching_importers_by_uri` →
+   `arxiv.py is_arxivid` → a GET of `/abs/<the local path>` — and a
+   failed fetch fails the whole add (what the transcript measured is TLS
+   certificate verification failing under this machine's intercepting
+   proxy; the network was reached and the fetch still died — any fetch
+   failure propagates the same way, the exceptions being uncaught). The importer set has no
+   config filter (measured in `papis/importer/__init__.py`: every
+   plugin is tried, exceptions propagate). Passing `--from` skips URI
+   matching structurally (`add.py`: `if from_importer:` precedes the
+   matching branch), and the `yaml` importer reads a local fixture —
+   the same fixed metadata, no network. The v1 probe is read as what it
+   is: a failed probe of the original plan, kept as evidence.)*
 
 A target that fails its probe records a **named wall**: which condition
 failed and the raw evidence. Every target here installs at the current

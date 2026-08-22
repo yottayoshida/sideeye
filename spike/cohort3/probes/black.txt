@@ -1,0 +1,40 @@
+== black probe — black, 26.5.1 (compiled: no) Python (CPython) 3.13.5  — 2026-08-22T00:33:40Z
+== condition 7 — ambient: HOME=<WS>/home, fresh and shown after the runs; --no-cache means no cache directory exists to reset (the reset procedure is the absence).
+== run A
+reset: rootA is a fresh copy of the pre-state
+reformatted /tmp/probe-black/rootA/probe.py
+
+All done! ✨ 🍰 ✨
+1 file reformatted.
+== run B (>=2s later)
+reset: rootB is a fresh copy of the pre-state
+reformatted /tmp/probe-black/rootB/probe.py
+
+All done! ✨ 🍰 ✨
+1 file reformatted.
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: probe.py's bytes changed (the fixture is not already black-formatted)
+ok   3-artifact-count: the state root holds exactly 'probe.py' (got: 'probe.py ')
+ok   4-round-trip: black --check --no-cache exits 0 on the result (the tool's own oracle; rc=0)
+the formatted bytes, as measured (recorded, not predicted):
+x = [1, 2, 3]
+
+
+def f(a, b):
+    return {"k": a + b, "l": [v for v in x]}
+
+
+y = f(1, 2)
+== diff -r of the two state roots:
+ok   5-determinism: two runs >=2s apart leave byte-identical state roots (diff rc=0)
+== strace pass (fresh copy; raw log kept as black.strace)
+strace'd run rc=0
+== mutating paths (successful only, deduped):
+WS/rootS/probe.py
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+0
+== condition 7 evidence — HOME after all runs:
+(no output above = HOME stayed empty; with --no-cache there is no cache directory anywhere — the closure pass is the proof)
+== conditions failed: 0

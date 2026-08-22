@@ -1,0 +1,54 @@
+== cargo probe — cargo 1.98.0 (797e8a9bc 2026-08-05) — 2026-08-22T00:57:45Z
+== condition 7 — ambient: CARGO_HOME is created FRESH PER RUN at <WS>/cargo-home-<run> (the reset), HOME=<WS>/home fresh and shown after the runs. The dep crate fixture lives outside the state root at <WS>/depcrate and is never mutated (asserted below).
+setup: cargo generate-lockfile --offline rc=0
+Cargo.lock
+Cargo.toml
+src
+== run A
+reset: appA is a fresh copy of the pre-state; cargo-home-A is fresh
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/tmp/probe-cargo/depcrate)
+== run B (>=2s later)
+reset: appB is a fresh copy of the pre-state; cargo-home-B is fresh
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/tmp/probe-cargo/depcrate)
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: the state root after run A differs from the pre-state
+ok   3-artifact-count: Cargo.toml names depcrate exactly once (got 1); cargo metadata --offline lists it (1 occurrence(s))
+the manifest's dependency section after run A:
+[dependencies]
+depcrate = { version = "0.1.0", path = "../depcrate" }
+ok   4-round-trip: metadata resolves depcrate ("id":"path+file:///tmp/probe-cargo/depcrate#0.1.0"); fixture bytes intact
+measured: Cargo.lock changed (cargo add updated it)
+== diff -r of the two state roots:
+ok   5-determinism: two runs >=2s apart leave byte-identical state roots (diff rc=0)
+== strace pass (fresh copy; raw log kept as cargo.strace)
+strace'd run rc=0
+== mutating paths (successful only, deduped):
+WS/appS/Cargo.lock
+WS/appS/Cargo.toml
+WS/appS/Cargo.tomlssDk4P
+WS/cargo-home-S/.global-cache
+WS/cargo-home-S/.global-cache-journal
+WS/cargo-home-S/.package-cache
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+inconsistent: 1 inline + 0 unfinished CLONE_THREAD vs 1 resumed clone successes
+== condition 7 evidence — the fixture is unmutated (both files) and HOME after all runs:
+depcrate/src/lib.rs: unchanged
+depcrate/Cargo.toml: unchanged
+(files above, if any, are what cargo left in HOME; CARGO_HOME contents:)
+WS/cargo-home-A/.global-cache
+WS/cargo-home-A/.package-cache
+== clone/execve forecast per CARGO_HOME state (cold = fresh dir, warm = the cold run's dir reused; fresh pre-state each):
+  cold: 5 clone line(s), 1 non-cargo execve call(s) (unfinished/resumed pairs counted once)
+    108   execve("/usr/local/bin/rustc", ["rustc", "-vV"], 0xaaab15a7f4a0 /* 10 vars */ <unfinished ...>
+    108   <... execve resumed>)             = 0
+  warm: 5 clone line(s), 1 non-cargo execve call(s) (unfinished/resumed pairs counted once)
+    127   execve("/usr/local/bin/rustc", ["rustc", "-vV"], 0xaaaaf25c04a0 /* 10 vars */ <unfinished ...>
+    127   <... execve resumed>)             = 0
+reading: the rustc -vV child appears in BOTH states — a warm CARGO_HOME does not remove the version probe, so every fresh add carries one vfork child whose internal thread the shim will observe. Whether that refuses is the engine's decision at explore; any workaround (cargo's documented RUSTC override) is apparatus with its own gate, not assumed here.
+== conditions failed: 0
