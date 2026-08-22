@@ -1,7 +1,7 @@
 # 0020. The report carries a second exhibit: the earliest checker-red world
 
 Date: 2026-08-22
-Status: Proposed
+Status: Accepted
 
 ## Context
 
@@ -53,8 +53,9 @@ rule can cite a report that already exists.
    owner never changes. When it is the same world, `checker_earliest.
    case` names the same file; no duplicate is written. When the
    earliest's case cannot be written at all, the checker case is not
-   written either — "000001, when present, belongs to the earliest"
-   stays an invariant even under write failure.
+   written either — "the earliest's case takes the lower id" (000001
+   in a fresh work directory) stays an invariant even under write
+   failure.
 4. **Replay does not mint cases** (ADR 0009, unchanged): the second
    case write sits inside the same explore-only guard as the first. On
    a replay of a checker-red case, `checker_earliest` appears with

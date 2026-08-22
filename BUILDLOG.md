@@ -50,8 +50,10 @@ rather than totalled (this PR's R1 caught the first draft's "every
 new assertion" — six of check 4c's assertions are about the old
 behavior and stay green on the old binary): the two
 `checker_earliest` field pins, both case-ownership pins on the
-second file, the `checker red` text grep, the whole replay leg, and
-the same-world control reads. **The schema pin, both directions, raw rc**: the new
+second file, the `checker red` text grep, five of the replay leg's
+six assertions (the sixth — the replayed-path equality — compares
+two empty reads against the old binary and is vacuously green
+there), and the same-world control reads as they stood at drill time. **The schema pin, both directions, raw rc**: the new
 doc against the old binary's four-report corpus exits 1 with
 "documented but never generated" naming all nine `checker_earliest`
 rows; the old doc against the new binary's corpus exits 1 with
