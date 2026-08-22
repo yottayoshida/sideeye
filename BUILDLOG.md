@@ -2,6 +2,38 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the poetry define: the recovery that prescribes itself
+
+Target 4, the first live criterion-1 prospect. The committed probe
+strace pinned the write shape: `poetry add --lock` touches the state
+root in four syscalls — **lock first, manifest second, both in-place
+truncate-and-write** — so the reachable crash states are empty-lock,
+new-lock-plus-old-manifest (the lock knowing a dependency the manifest
+does not), and empty-manifest. Five engine-free trials fed each state
+to poetry's own reader and its prescribed recovery, and they split the
+world exactly where a property should sit: the between-writes state
+**heals** — `poetry check --lock` names the fix ("Run `poetry lock`"),
+and it works; the empty and torn lock states get the same or a worse
+answer and **the prescription itself fails** (rc 1), leaving the
+project stuck until a human deletes the lockfile — a step no error and
+no document names. The drills then measured the punchline: the failing
+`poetry lock` on an empty lock **prints "Regenerate the lock file with
+the `poetry lock` command"** — the recovery prescribing itself while
+failing. The pre-define novelty scan (recorded in proposals.md) found
+no issue naming this recovery failure.
+
+The checker follows the cohort rule to the letter: documented recovery
+first — poetry prints its own, so leg R runs it exactly once when
+check is red, and the prescription failing IS the red. The
+green-heal-A drill pins the other side (state A must heal and end
+green, with the transcript carrying the recovery line, so a checker
+that never ran the recovery cannot fake the green). One wrong-leg
+declaration was caught before commit this time, by applying the black
+and rustfmt R1 lessons up front: an empty pyproject parses as an empty
+TOML document, so it lands in leg R (invalid configuration, failed
+prescription), not leg V — the declaration says so, with the trial
+table beside it. Drills ten for ten, attributed.
+
 ## 2026-08-22 — the rustfmt verify transcript: the formatter half sealed
 
 verify-assisted green on rustfmt (define at 9faf204 strictly before

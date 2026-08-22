@@ -1,0 +1,16 @@
+# Cohort-3 poetry define (P1): kill `poetry add --lock` partway; the
+# checker holds the come-back-through-poetry's-own-path property
+# (proposals.md carries the write shape, the five pre-define trials and
+# the declared world readings). Determinism and closure evidence:
+# ../../probes/poetry.txt — the probe ran cwd = the project dir with a
+# relative dep path and fresh ambient per run; the define's deltas are
+# the -C directory flag, an absolute dep path and setup-warmed shared
+# ambient, and the engine re-verifies determinism at explore.
+[world]
+state = "/tmp/cohort3/poetry/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "poetry -C /tmp/cohort3/poetry/state add --lock /tmp/cohort3/poetry/deppkg"
+check           = "./check.sh"
+expected_status = "0"

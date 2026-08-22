@@ -1,0 +1,16 @@
+== poetry checker drills — Poetry (version 2.4.1) — 2026-08-22T03:25:35Z
+setup rc=0 (poetry lock under the launcher's env)
+drill ok   green-old: checker green as required
+poetry add rc=0 (must be 0 for green-new to mean what it claims)
+drill ok   green-new: checker green as required
+the dependency entry the absolute-path add recorded:
+10:deppkg = {path = "/tmp/cohort3/poetry/deppkg"}
+drill ok   green-heal-A: checker green as required (and the transcript carries: running the prescribed recovery)
+drill ok   R-red-empty-lock: checker red in the intended leg — Regenerate the lock file with the `poetry lock` command.
+drill ok   R-red-torn-lock: checker red in the intended leg — Unable to read the lock file (Expected '=' after a key in a key/value pair (at end of document)).
+drill ok   V-red-torn-manifest: checker red in the intended leg —                          ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+drill ok   R-red-empty-manifest: checker red in the intended leg —   - Either [project.version] or [tool.poetry.version] is required in package mode.
+drill ok   T-red-named-twice: checker red in the intended leg — checker(poetry-add): leg T: the manifest names deppkg 2 times — neither the old state nor the completed add
+drill ok   C-red-fixture-mutated: checker red in the intended leg — checker(poetry-add): leg C: the dependency fixture's __init__.py changed
+drill ok   guard-red-missing-lock: checker red in the intended leg — checker(poetry-add): poetry.lock is missing from the state dir
+== drills failed: 0
