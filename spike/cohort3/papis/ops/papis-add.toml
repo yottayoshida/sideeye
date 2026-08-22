@@ -1,0 +1,19 @@
+# Cohort-3 papis define (P1): kill `papis add` partway; the checker
+# holds the library-holds-old-or-complete-new property (proposals.md
+# carries the write shape, the pre-define trials and the declared world
+# readings). Determinism and closure evidence: ../probes/papis.txt (the
+# accepted probe) and ../papis/thread-offswitch-scout.txt (the same
+# predicates re-run under this define's configuration). The probe ran
+# cwd = the workspace with fresh ambient per run and no PAPIS_NP pin;
+# the define's deltas are absolute fixture paths, setup-warmed shared
+# ambient, and PAPIS_NP=0 (promoted from the scout, the only leg
+# measured under it: 0 threads, 0 clones, one pid, document landed),
+# and the engine re-verifies determinism at explore.
+[world]
+state = "/tmp/cohort3/papis/lib"
+
+[define]
+setup           = "./setup.sh"
+operation       = "papis add --batch --from yaml /tmp/cohort3/papis/probe-meta.yaml --folder-name probe-doc /tmp/cohort3/papis/fixture.txt"
+check           = "./check.sh"
+expected_status = "0"

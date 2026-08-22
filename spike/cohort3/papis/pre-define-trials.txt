@@ -1,0 +1,267 @@
+== papis pre-define trials — papis, version 0.16.0 — 2026-08-22T05:34:57Z
+python3 yaml module: 6.0.3
+setup: the pre-state (one existing document) rc=0
+setup: the completed-add state rc=0
+---- A: old state (engine-reachable)
+  library contents:
+    WS/lA/existing-doc
+    WS/lA/existing-doc/existing.txt
+    WS/lA/existing-doc/info.yaml
+  papis list rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+  papis doctor --all-checks rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [WARNING] commands.doctor: Found 3 errors.
+    | bibtex-type	type	/tmp/trials-papis/lA/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lA/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lA/existing-doc
+  papis doctor --all-checks --fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [WARNING] commands.doctor: Found 3 errors.
+    | bibtex-type	type	/tmp/trials-papis/lA/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lA/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lA/existing-doc
+    | [INFO] commands.doctor: Auto-fixed 0 / 3 errors!
+  papis list AFTER the fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+  library contents AFTER the fix:
+    WS/lA/existing-doc
+    WS/lA/existing-doc/existing.txt
+    WS/lA/existing-doc/info.yaml
+---- B: completed add (engine-reachable)
+  library contents:
+    WS/lB/existing-doc
+    WS/lB/existing-doc/existing.txt
+    WS/lB/existing-doc/info.yaml
+    WS/lB/probe-doc
+    WS/lB/probe-doc/fixture.txt
+    WS/lB/probe-doc/info.yaml
+  papis list rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    | Probe probe0001
+  papis doctor --all-checks rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis doctor --all-checks --fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis list AFTER the fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    | Probe probe0001
+  library contents AFTER the fix:
+    WS/lB/existing-doc
+    WS/lB/existing-doc/existing.txt
+    WS/lB/existing-doc/info.yaml
+    WS/lB/probe-doc
+    WS/lB/probe-doc/fixture.txt
+    WS/lB/probe-doc/info.yaml
+  probe-doc/info.yaml AFTER the fix:
+    | author: Probe Author
+    | author_list:
+    | - family: Author
+    |   given: Probe
+    | files:
+    | - fixture.txt
+    | papis_id: probe0001
+    | ref: Probe_Probe_2026
+    | title: Probe
+    | year: 2026
+---- C: probe-doc present but empty (surgery)
+  library contents:
+    WS/lC/existing-doc
+    WS/lC/existing-doc/existing.txt
+    WS/lC/existing-doc/info.yaml
+    WS/lC/probe-doc
+  papis list rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+  papis doctor --all-checks rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [WARNING] commands.doctor: Found 3 errors.
+    | bibtex-type	type	/tmp/trials-papis/lC/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lC/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lC/existing-doc
+  papis doctor --all-checks --fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [WARNING] commands.doctor: Found 3 errors.
+    | bibtex-type	type	/tmp/trials-papis/lC/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lC/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lC/existing-doc
+    | [INFO] commands.doctor: Auto-fixed 0 / 3 errors!
+  papis list AFTER the fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+  library contents AFTER the fix:
+    WS/lC/existing-doc
+    WS/lC/existing-doc/existing.txt
+    WS/lC/existing-doc/info.yaml
+    WS/lC/probe-doc
+---- D: probe-doc without info.yaml (surgery)
+  library contents:
+    WS/lD/existing-doc
+    WS/lD/existing-doc/existing.txt
+    WS/lD/existing-doc/info.yaml
+    WS/lD/probe-doc
+    WS/lD/probe-doc/fixture.txt
+  papis list rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+  papis doctor --all-checks rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [WARNING] commands.doctor: Found 3 errors.
+    | bibtex-type	type	/tmp/trials-papis/lD/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lD/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lD/existing-doc
+  papis doctor --all-checks --fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [WARNING] commands.doctor: Found 3 errors.
+    | bibtex-type	type	/tmp/trials-papis/lD/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lD/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lD/existing-doc
+    | [INFO] commands.doctor: Auto-fixed 0 / 3 errors!
+  papis list AFTER the fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+  library contents AFTER the fix:
+    WS/lD/existing-doc
+    WS/lD/existing-doc/existing.txt
+    WS/lD/existing-doc/info.yaml
+    WS/lD/probe-doc
+    WS/lD/probe-doc/fixture.txt
+---- E: probe-doc without its attachment (surgery)
+  library contents:
+    WS/lE/existing-doc
+    WS/lE/existing-doc/existing.txt
+    WS/lE/existing-doc/info.yaml
+    WS/lE/probe-doc
+    WS/lE/probe-doc/info.yaml
+  papis list rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    | Probe probe0001
+  papis doctor --all-checks rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis doctor --all-checks --fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis list AFTER the fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    | Probe probe0001
+  library contents AFTER the fix:
+    WS/lE/existing-doc
+    WS/lE/existing-doc/existing.txt
+    WS/lE/existing-doc/info.yaml
+    WS/lE/probe-doc
+    WS/lE/probe-doc/info.yaml
+  probe-doc/info.yaml AFTER the fix:
+    | author: Probe Author
+    | author_list:
+    | - family: Author
+    |   given: Probe
+    | files:
+    | - fixture.txt
+    | papis_id: probe0001
+    | ref: Probe_Probe_2026
+    | title: Probe
+    | year: 2026
+---- F: torn info.yaml (surgery)
+  library contents:
+    WS/lF/existing-doc
+    WS/lF/existing-doc/existing.txt
+    WS/lF/existing-doc/info.yaml
+    WS/lF/probe-doc
+    WS/lF/probe-doc/fixture.txt
+    WS/lF/probe-doc/info.yaml
+  papis list rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    |  c86091c106e36c9125853a7fb86eab9f
+  papis doctor --all-checks rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis doctor --all-checks --fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis list AFTER the fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    |  c86091c106e36c9125853a7fb86eab9f
+  library contents AFTER the fix:
+    WS/lF/existing-doc
+    WS/lF/existing-doc/existing.txt
+    WS/lF/existing-doc/info.yaml
+    WS/lF/probe-doc
+    WS/lF/probe-doc/fixture.txt
+    WS/lF/probe-doc/info.yaml
+  probe-doc/info.yaml AFTER the fix:
+    | author: Probe Author
+    | author_list:
+    | - fami
+    | papis_id: c86091c106e36c9125853a7fb86eab9f
+---- G: truncated attachment (surgery)
+  library contents:
+    WS/lG/existing-doc
+    WS/lG/existing-doc/existing.txt
+    WS/lG/existing-doc/info.yaml
+    WS/lG/probe-doc
+    WS/lG/probe-doc/fixture.txt
+    WS/lG/probe-doc/info.yaml
+  papis list rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    | Probe probe0001
+  papis doctor --all-checks rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis doctor --all-checks --fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+  papis list AFTER the fix rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | Existing existing0001
+    | Probe probe0001
+  library contents AFTER the fix:
+    WS/lG/existing-doc
+    WS/lG/existing-doc/existing.txt
+    WS/lG/existing-doc/info.yaml
+    WS/lG/probe-doc
+    WS/lG/probe-doc/fixture.txt
+    WS/lG/probe-doc/info.yaml
+  probe-doc/info.yaml AFTER the fix:
+    | author: Probe Author
+    | author_list:
+    | - family: Author
+    |   given: Probe
+    | files:
+    | - fixture.txt
+    | papis_id: probe0001
+    | ref: Probe_Probe_2026
+    | title: Probe
+    | year: 2026
+== trials done (this script judges nothing; the readings feed the define's declaration)

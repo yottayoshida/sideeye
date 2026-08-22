@@ -2,6 +2,42 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the papis define: the target that has no interior to crash inside
+
+The cohort's last define, and the first whose declaration expects a
+PASS. Papis builds the whole document in a temp directory outside the
+library and moves it in with one `renameat`, then `fchmodat`s it to
+0755 — and chmod is not a kill point (`OpClass` in `src/contract.zig`
+lists open/write/rename/unlink/fsync/truncate/mkdir/rmdir/link/symlink;
+`src/oracle.zig` records chmod as *metadata observed*, disclosed and
+not judged). So the engine-reachable crash set is a single world: the
+library before the rename. An operation with one atomic mutation has
+no interior. Declared as such, with the mode seam written down and
+deliberately not asserted — restore flattens permission state, so a
+mode leg would fail its own baseline (mercurial's `checkisexec`,
+cohort 2, applied before the fact this time).
+
+The checker came out of measurement, and measurement contradicted
+every intuition I would have coded. Seven library states through
+papis's own reader (`pre-define-trials.txt`): **`papis list` exits 0
+in all seven** — an rc assertion would be a check that cannot fail; a
+document directory with no `info.yaml` is **silently ignored**, so an
+orphaned attachment is invisible to the tool; a document whose
+attachment is **gone** is listed happily; and a torn `info.yaml` is
+loaded with a **freshly generated random `papis_id` persisted back
+into the damaged file** — the reader writes. That last one fixes the
+checker's shape: every structural and byte assertion runs before the
+reader, or the checker judges its own side effect. And `papis doctor`,
+the obvious candidate for "documented recovery first", is measured
+unusable as one: in a two-document library it falls to the interactive
+picker and returns rc 0 having examined nothing, and where it does run
+it reports three type errors **on the untouched baseline** and
+auto-fixes zero of them. The rule is satisfied by having looked and
+recorded that there is none — not by assuming one exists because the
+command does. Drills eleven for eleven, attributed; most reds are
+surgery-only shapes, rehearsed anyway because an unseen branch is not
+a trusted branch.
+
 ## 2026-08-22 — the poetry-r2 verify transcript: the fifth seal, and the papis off switch
 
 verify-assisted green on poetry-r2 (define at 88447be strictly before
