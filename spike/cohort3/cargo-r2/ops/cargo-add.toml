@@ -1,0 +1,15 @@
+# Cohort-3 cargo define, revision 2: kill `cargo add` partway; the
+# checker holds the manifest-survival property. The question is r1's
+# unchanged (../../cargo/proposals.md, including the torn-lock ruling);
+# this revision adds the owner-approved RUSTC stand-in (proposals.md
+# here) after r1's child_process_detected refusal. Determinism/closure
+# evidence: ../../probes/cargo.txt, measured on the probe's spelling —
+# the stand-in delta is measured in proposals.md here.
+[world]
+state = "/tmp/cohort3/cargo-r2/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "cargo add --offline --manifest-path /tmp/cohort3/cargo-r2/state/Cargo.toml --path /tmp/cohort3/cargo-r2/depcrate"
+check           = "./check.sh"
+expected_status = "0"

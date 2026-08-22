@@ -1,0 +1,14 @@
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/tmp/cohort3/cargo/depcrate)
+UNKNOWN  child_process_detected
+         clone3
+
+atomicity   2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): Cargo.lock, Cargo.toml
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
