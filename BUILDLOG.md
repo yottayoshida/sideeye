@@ -42,6 +42,25 @@ the toy's ordinary rotate instead of the split rewrite and refused
 with `case_no_longer_applies` — the env rides the invocation, as it
 does in every other env-driven toy check.
 
+The three falsification drills, run and measured (all 2026-08-22).
+**Pre-change binary** (origin/main in a worktree) against the new toy
+and checker: FAIL 2 of 5, earliest k=2 L0-only, **no
+`checker_earliest` field, one case file** — every new assertion red
+structurally. **The schema pin, both directions, raw rc**: the new
+doc against the old binary's four-report corpus exits 1 with
+"documented but never generated" naming all nine `checker_earliest`
+rows; the old doc against the new binary's corpus exits 1 with
+"generated but not documented" naming the same nine. (The first
+measurement of side (a) read the rc through a `head` pipe and printed
+0 beside the red message — the exact pipe trap this workspace has on
+record; re-measured bare.) **The write-order mutation**: a scratch
+mutant writing a checker-world case before the earliest's was built
+and run against the committed check 4c; exactly the two ownership
+assertions broke — `case: .../000002.json, wanted .../000001.json`
+and `checker_earliest.case: .../000003.json, wanted .../000002.json`
+— so the 000001-owner invariant is measured by assertions that die
+when it does, and the mutant was reverted from the committed base.
+
 ## 2026-08-22 — cohort 4's preconditions, and the gate that caught its own author
 
 This entry is late, and says so first: the contract in CLAUDE.md is to open
