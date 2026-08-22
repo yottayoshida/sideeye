@@ -2,6 +2,63 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — poetry revision 2: the operation that writes only the manifest
+
+Owner ruling (same day as the poetry verdict, order explicit:
+poetry-r2 before papis): take up the deferred revision question. The
+revision changes the operation — `version patch` instead of
+`add --lock` — which is not cargo-r2's apparatus-swap kind, and the
+proposals say so up front: the primary's outcome was a claim-reading
+structure (lock-first write order puts an L0-only world ahead of the
+checker-red manifest world in every run), so the only way the
+manifest wound can become an earliest case is an operation whose only
+in-root write is the manifest. Measured before writing anything:
+`version patch` works under package-mode=false, bumps 0.1.0 → 0.1.1
+byte-deterministically, **leaves poetry.lock byte-identical** (no
+lock syscalls; version does not participate in the lock's
+content-hash — `check --lock` green after the bump), and mutates the
+state root in exactly one truncate-plus-104-byte-write. The full
+seven-condition probe harness was re-run for the new operation
+(committed in the revision dir): conditions 1–6 machine-green, **0
+threads, 0 clones** under venv-off — this operation spawns nothing,
+cleaner than the primary. Drills nine for nine with the chain's every
+branch re-rehearsed in this define's own state (branch rehearsal is
+per-define, not per-copied-code — the heal branches are
+engine-unreachable here and rehearsed anyway). Version-shaped novelty
+round recorded (four terms, nothing named); the destruction round and
+control carry over from the primary. If this define FAILs at the
+empty-manifest point, the earliest case is checker-red by
+construction — the first candidate-shaped prospect of the cohort
+where the claim reading and the write shape point the same way.
+
+**Reversed by R1 before merge — the candidacy was never available.**
+The frozen charter's own bullet, the one sentence the first draft's
+citation skipped: "a FAIL freezes the define — later revisions cannot
+produce a criterion-1 claim for that target" (cohort 2's original
+adds the reason: the question would no longer precede the answer;
+only refusal and UNKNOWN iteration stay free). Poetry reached its
+FAIL verdict before this revision existed, so nothing r2 measures can
+be a candidate, and the paragraph above was written by an author who
+had read the revision mechanics around that sentence and not the
+sentence itself — the same selective-citation shape the novelty scan
+lesson warned about, one layer up. Owner ruling, on the record in
+proposals.md before the freeze: measure r2 to the end as a **sealed
+minimal reproduction for the upstream conversation** (one crash
+point, one world, checker-red through the whole documented chain —
+no noise world in front), recorded and never claimed; criterion 1
+moves to a cohort designed with both poetry lessons — write order
+and the FAIL-freeze — in front of the first contact. R1's three P2s
+also landed before the freeze: the toml's probe-configuration
+sentence had inverted the primary's careful disclosure (main legs
+ran venv-ON; venv-off is a third delta, promoted from the forecast
+leg), the static "124/137 = timeout" legend in the chain-fail red
+collided with the frozen apparatus reading (the candidate-shaped
+message would have carried the apparatus trigger tokens on every
+ordinary red — now the annotation is conditional on the step's
+actual rc), and the pass drills printed only their fragment line,
+leaving the healing step unattributable from committed evidence (now
+full output).
+
 ## 2026-08-22 — The scouting guide stops legislating target selection
 
 docs/scouting.md is the public method page, and its "must never" list was
