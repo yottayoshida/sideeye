@@ -2,6 +2,17 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the poetry verify transcript: the fourth seal
+
+verify-assisted green on poetry (define at 75b3d19 strictly before
+artifacts at f35bf72, all four define files byte-identical;
+`verify-transcript.txt` committed beside the ruling). The seal
+matters more than usual here: this is the target where the frozen
+claim rule refused a claimable-looking number, and the sealed order
+proves the rule predates the worlds it refused — the chain ruling,
+the moved prospect and the claim reading were all on main before the
+engine ran. One target remains: papis.
+
 ## 2026-08-22 — the poetry verdict: the rule refuses the number I wanted
 
 FAIL, 2 of 5 worlds, reproduced identically across three runs — and
