@@ -4,7 +4,8 @@
 # readings). Determinism and closure evidence: ../../probes/papis.txt
 # (the accepted probe) and ../thread-offswitch-scout.txt (the same
 # predicates re-run under this define's configuration). The probe ran
-# cwd = the harness workspace, with fresh ambient per run, a pre-state
+# cwd = / (it never chdirs; the raw strace decorates every AT_FDCWD as
+# </>), with fresh ambient per run, a pre-state
 # copied from a prebuilt tree, and no PAPIS_NP pin; the define's deltas
 # are the fixture location (/tmp/probe-papis -> /tmp/cohort3/papis),
 # cwd = this ops directory, a pre-state rebuilt by a live `papis add`

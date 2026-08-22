@@ -137,7 +137,8 @@ checker, none of them what intuition would have written:
    assertions all run *before* the reader — otherwise the checker
    judges its own side effect, non-deterministically.
 4. **`papis doctor` is not a recovery here** — now measured with the
-   selection flag, so the tool actually ran on every state. Three
+   selection flag on each of the seven library states, so the tool
+   actually ran everywhere it was judged. Three
    findings, each disqualifying on its own: it is **red on the
    untouched baseline** (six errors — `bibtex-type`,
    `biblatex-type-alias`, `biblatex-required-keys` per document — on
@@ -232,7 +233,8 @@ C's fixture, leg R's set mismatch, and two guard branches (an entry
 the operation cannot produce; the existing document's lost metadata).
 The ten not seen red are the symmetric variants of drilled branches
 (leg C's other three fixtures, leg E's parse failure and field check,
-the guard's other absence branches) plus leg R's rc path. Per-leg red
+leg D's own parse failure, the guard's three other absence branches)
+plus leg R's rc path. Per-leg red
 — the campaign's requirement — is met with room to spare; "every
 branch" is not claimed.
 Most shapes are surgery-only: with one atomic rename a half-built
@@ -241,19 +243,22 @@ because a branch that has never been seen red is not trusted.
 
 ## Rejected shapes
 
-- *Asserting the document directory's mode* — unjudgeable by
-  construction (restore flattens modes); it would fail its own
-  baseline. Declared above instead.
+- *Asserting the document directory's mode* — it cannot observe the
+  seam: restore assigns its own 0755/0644, which are papis's
+  post-chmod modes, so the leg is vacuous at this umask and a
+  false-candidate generator under a stricter one. The mechanism is
+  measured in "The mode seam" above.
 - *Using `papis doctor` as the reader leg* — red on the untouched
   baseline (six type errors over the two healthy documents), rc 0
   while saying so. A check that is red before the operation cannot
   judge what the operation did.
 - *Running `papis doctor --fix` as the documented recovery* — measured
-  with its selection flag on all ten states: for the one damage shape
-  it can act on it removes the lost file from the document rather than
-  restoring it, and on a torn `info.yaml` it crashes. Forgetting is
-  not recovery, and a lever that dies on the damage cannot be applied
-  before asserting.
+  with its selection flag on the seven library states (A–G; H/I/J run
+  no doctor by design): for the one damage shape it can act on it
+  removes the lost file from the document rather than restoring it,
+  and on a torn `info.yaml` it crashes. Forgetting is not recovery,
+  and a lever that dies on the damage cannot be applied before
+  asserting.
 - *Asserting `info.yaml` byte-for-byte* — papis's own reader rewrites
   metadata (trial F), and the generated `ref` field is derived; the
   frozen `title`/`papis_id` pair is the assertion that means what it
