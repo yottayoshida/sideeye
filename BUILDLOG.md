@@ -102,6 +102,29 @@ cohort-3 target is in B-group. Re-running the A-group sweep is filed
 separately rather than done here, because doing it inside a documentation
 change would bury a measurement in a backfill.
 
+One row on that page was not stale but empty, and it is filled here by
+measuring rather than by moving text. `#39` — libc functions that mutate
+state through internal calls — carried "no recorded run for any of these
+members" since it was filed. Two members are now measured
+(`spike/cohort4/mkstemp-class.txt`, on a new toy written for it), and both
+are invisible in the way the mechanism predicted. The canonical C
+atomic-replace idiom, `mkstemp` + write + fsync + rename, has its
+**creation** performed inside libc: the kernel issues
+`openat(..., O_RDWR|O_CREAT|O_EXCL, 0600)` in the state root and the
+interposer records no `open` for that path. The control is in the same
+run and needed no arranging — the write and the fsync on that same temp
+file *are* visible, because the program issues those itself. `dprintf`
+behaves identically (its `open` is visible, its write is not) and
+`tmpfile` left nothing inside the root.
+
+This one matters for cohort 4 before selection rather than after: a C or
+C++ target whose atomic write goes through `mkstemp` hits the same wall as
+cargo's raw rename, and the idiom is the one a careful C program is
+*supposed* to use. `preflight.sh visibility` names it at probe time, which
+is the whole point of having built the thing before the cohort rather than
+during it — and this is its third falsification shape, distinct from the
+raw-syscall toy and the libc-routed one.
+
 Then the same-class scan asked which *other* documents summarise
 measurements, and the answer was worse than the two being fixed. Searched
 for any mention of cohorts 2 or 3 — by name, by issue number, or by target

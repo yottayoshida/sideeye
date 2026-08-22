@@ -1,0 +1,56 @@
+# The mkstemp class, measured (#39) — 2026-08-22
+#
+# docs/target-classes.md listed the mkstemp family, mkdtemp, tmpfile and
+# dprintf under "Not yet measured": no recorded run for any member. This is
+# that run, for two of them, using spike/toys/toy_mkstemp.c — the same
+# rotation as toy.c written the way a C program that wants an atomic replace
+# usually writes it.
+#
+# The positive control is inside the same run: the temp file's write and
+# fsync ARE visible to the interposer, because the program issues those
+# itself. Only the creation is missing.
+#
+$ cc --version | head -1
+cc (Debian 12.2.0-14+deb12u1) 12.2.0
+$ ldd --version | head -1
+ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+$ strace --version | head -1
+strace -- version 6.1
+
+$ preflight.sh visibility <state> -- toy_mkstemp rotate
+== artifacts: /tmp/m/out
+== target exit status: 0
+  fsync    kernel=1/1 in-root, interposed=1, unmatched=0
+  open     kernel=2/2 in-root, interposed=4, unmatched=1
+  rename   kernel=1/1 in-root, interposed=1, unmatched=0
+  write    kernel=2/2 in-root, interposed=77, unmatched=1, 1 interposed call(s) had no resolvable path
+WALL the kernel mutated the state root past the interposer:
+  open     4090  openat(AT_FDCWD</work>, "/tmp/m/state/key.json.0d9TSM", O_RDWR|O_CREAT|O_EXCL, 0600) = 4</tmp/m/state/key.json.0d9TSM>
+  write    4090  write(4</tmp/m/state/log.txt>, "rotated to 2\n", 13) = 13
+  reading: an LD_PRELOAD shim cannot see these; this is the cargo
+           class (#217), a named wall at probe time, zero defines spent
+VISIBILITY_RC=1
+
+$ every in-root path the interposer recorded
+      1 LOGGER fsync /tmp/m/state/key.json.0d9TSM
+      1 LOGGER open /tmp/m/state/log.txt
+      1 LOGGER rename /tmp/m/state/key.json
+      1 LOGGER write /tmp/m/state/key.json.0d9TSM
+
+$ every in-root mutation the kernel performed
+openat(AT_FDCWD</work>, "/tmp/m/state/key.json.0d9TSM", O_RDWR|O_CREAT|O_EXCL, 0600) = 4</tmp/m/state/key.json.0d9TSM>
+write(5</tmp/m/out/logger.txt>, "LOGGER write /tmp/m/state/key.js"..., 42) = 42
+write(4</tmp/m/state/key.json.0d9TSM>, "key=2\n", 6) = 6
+write(5</tmp/m/out/logger.txt>, "LOGGER fsync /tmp/m/state/key.js"..., 42) = 42
+fsync(4</tmp/m/state/key.json.0d9TSM>) = 0
+write(5</tmp/m/out/logger.txt>, "LOGGER rename /tmp/m/state/key.j"..., 36) = 36
+renameat(AT_FDCWD</work>, "/tmp/m/state/key.json.0d9TSM", AT_FDCWD</work>, "/tmp/m/state/key.json") = 0
+write(5</tmp/m/out/logger.txt>, "LOGGER open /tmp/m/state/log.txt"..., 33) = 33
+openat(AT_FDCWD</work>, "/tmp/m/state/log.txt", O_WRONLY|O_CREAT|O_APPEND, 0644) = 4</tmp/m/state/log.txt>
+write(4</tmp/m/state/log.txt>, "rotated to 2\n", 13) = 13
+
+$ did tmpfile leave anything in the state root?
+.
+..
+key.json
+log.txt
