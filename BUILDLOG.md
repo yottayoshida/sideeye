@@ -2,6 +2,63 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the cargo define: manifest survival, asked before any crash exists
+
+Cohort 3's first define (spike/cohort3/cargo), pushed before any engine
+contact per the mini-seal. The property is **manifest survival**: kill
+`cargo add --offline --path` anywhere and the project must still open to
+cargo's own reader — leg V (`cargo metadata --offline` parses and
+resolves), leg T (the dependency set is old-or-new: depcrate named zero
+times or exactly once, metadata agreeing), leg C (source bytes
+conserved). The deliberate omission: **no manifest+lock simultaneity
+assertion** — the cargo book says the lockfile "is maintained by Cargo
+and should not be manually edited", so lock re-sync is cargo's own job,
+exercised by running its reader rather than legislated by the checker;
+L0 still judges the lock's bytes. The rejected alternative (asserting
+simultaneity) would manufacture FAILs out of cargo's documented
+maintenance model.
+
+Checker drills: six for six, each red **attributed to its intended
+leg** — the drill asserts the checker's message names the leg it was
+aimed at (a red from the wrong leg is a drill failure), which is the
+mutation-killed-by-the-wrong-test lesson applied to checker
+falsification. The torn-manifest drill red carries cargo's own parse
+error; the leg-T red is depcrate named twice in *valid* TOML
+(dependencies + dev-dependencies) — the one wrong-set shape metadata
+happily resolves, so only T can catch it.
+
+Ambient: CARGO_HOME outside the state root, warmed once by setup so
+every world *finds* a warmed CARGO_HOME — shared and mutable across
+worlds, deliberately outside the snapshot (borg-r3 put its ambient
+inside the root; here the caches would be L0 noise), so cross-world
+cache drift can only surface as an engine refusal, and that would be
+the recorded outcome. The probe's forecast (the per-add `rustc -vV`
+child and its internal thread) rides into this define as a disclosed
+possible refusal too; the documented RUSTC override stays an
+owner-gated option for a revision, not an assumption.
+
+The define's R1 (fresh subagent) found the thing worth finding before
+the irreversible step: **the likeliest FAIL shape — a torn Cargo.lock —
+had no decided reading and no measurement.** Measuring settled it hard:
+cargo writes `Cargo.toml` through temp+rename but rewrites `Cargo.lock`
+**in place** (the probe strace had the evidence all along); a lock torn
+mid-entry fails `cargo metadata --offline` with "failed to parse lock
+file", rc 101, no recovery hint — while an *absent* lock is silently
+regenerated, rc 0. My first tear measurement lied briefly: a 60-byte
+truncation lands inside the lock's comment header and parses as valid
+empty TOML, which cargo happily re-locks — the tear has to cut into an
+entry to measure anything. **Owner ruling (2026-08-22): no recovery
+leg.** Cargo's automatic maintenance already gets its turn by running
+the reader (it heals an absent lock unprompted); a torn lock is the
+state where that maintenance refuses to engage, so it is checker-red —
+a criterion-1 candidate shape, with claim and report still behind the
+standing gates. The `V-red-torn-lock` drill pins the measured behavior
+in the committed transcript. Also from R1: the toml's "determinism and
+closure for exactly this shape" overstated the probe (the probed
+spelling differs from the define's — now named in the comment), and the
+recorded dependency entry is now measured and printed by the drills
+rather than forecast in a comment.
+
 ## 2026-08-22 — cohort 3 probes: five for five, and the bench stays seated
 
 Drills re-proven on the new image, the synthetic positive control split

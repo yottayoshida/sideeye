@@ -1,0 +1,18 @@
+# Cohort-3 cargo define (P1): kill `cargo add` partway; the checker holds
+# the manifest-survival property (proposals.md carries the why/what/where,
+# the torn-lock ruling and the disclosed thread forecast). Determinism and
+# closure evidence: ../../probes/cargo.txt — measured on the probe's
+# spelling (cwd = state root, relative --path, fresh CARGO_HOME per run),
+# NOT this exact one (--manifest-path + absolute --path from the ops cwd,
+# warmed shared CARGO_HOME); the recorded manifest entry is the same
+# relative line either way (drilled), and the engine re-verifies
+# determinism itself at explore. CARGO_HOME reaches the operation from
+# the launcher's environment.
+[world]
+state = "/tmp/cohort3/cargo/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "cargo add --offline --manifest-path /tmp/cohort3/cargo/state/Cargo.toml --path /tmp/cohort3/cargo/depcrate"
+check           = "./check.sh"
+expected_status = "0"
