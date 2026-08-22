@@ -79,9 +79,11 @@ is a document no filesystem-level leg can see and only the reader
 reveals. Drills went from eleven to thirteen. Two claims were also
 walked back to what the record supports: the trials arrive *with* this
 define rather than ahead of it on main (the scout is the part that
-predates it), and "every branch rehearsed" is now stated as what it
-is — per-leg red with nine of the checker's messages seen red, not all
-of them.
+predates it), and "every branch rehearsed" is now stated as what a
+count says it is — ten of the checker's twenty failure messages seen
+red, per-leg red met, "every branch" not claimed. I wrote "nine"
+there first, from the shape of the drill list rather than from a
+count; the count is what shipped.
 
 ## 2026-08-22 — the poetry-r2 verify transcript: the fifth seal, and the papis off switch
 

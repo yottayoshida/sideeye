@@ -221,15 +221,20 @@ by the engine as a violation like any nonzero exit — the apparatus
 reading is that a red naming a timeout is apparatus, not verdict.
 
 Branch rehearsal: thirteen for thirteen in the committed
-`checker-drills.txt`, each red attributed by a branch-specific
-fragment. Coverage, stated precisely rather than as "every branch":
-the two greens, plus reds in leg D (five of its messages: not-a-plain-
-directory, missing `info.yaml` — reached by two different surgeries,
-an empty directory and an attachment-only directory — missing
-attachment, wrong attachment bytes, lost frozen fields), leg E, leg C,
-leg R, and two guard branches (an entry the operation cannot produce;
-the existing document's lost metadata). Per-leg red is met with room
-to spare; not every one of the checker's messages has been seen red.
+`checker-drills.txt` — two greens and eleven reds, every fragment
+matching exactly one of the checker's messages (verified
+mechanically). Coverage, counted rather than characterised: the
+checker has **twenty** distinct failure messages and **ten** of them
+have been seen red — leg D's five (not a plain directory; missing
+`info.yaml`, reached by two different surgeries; missing attachment;
+wrong attachment bytes; lost frozen fields), leg E's attachment, leg
+C's fixture, leg R's set mismatch, and two guard branches (an entry
+the operation cannot produce; the existing document's lost metadata).
+The ten not seen red are the symmetric variants of drilled branches
+(leg C's other three fixtures, leg E's parse failure and field check,
+the guard's other absence branches) plus leg R's rc path. Per-leg red
+— the campaign's requirement — is met with room to spare; "every
+branch" is not claimed.
 Most shapes are surgery-only: with one atomic rename a half-built
 document is not engine-reachable, and they are rehearsed anyway
 because a branch that has never been seen red is not trusted.
