@@ -2,6 +2,88 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — cohort 3 opens: the sweet-spot five frozen, with a bench that refills
+
+Selection frozen in #209 before any contact: **cargo → black → rustfmt →
+poetry → papis** under the owner's thirteen-condition ruleset (≥1k stars,
+6-month activity, sustained contributors, CLI-primary, precious local
+plain-file state, no transaction engine, non-interactive mutations,
+self-checkable, probe-verifiable observability — plus the sharpened three:
+≤1-week maintainer responsiveness measured on real issues, currently used
+rather than legacy-only, language diversity). New over cohort 2: **the
+refill rule** — a probe wall promotes the bench head (taplo → unison →
+sc-im, re-qualified at promotion) until four targets have passed probes,
+so a wall costs a transcript, not the cohort.
+
+The plan's adversarial review ran into something new: Codex completed its
+investigation (five interim reports, real repo cross-checks) and then the
+provider's content filter blocked the final consolidated findings list.
+The interim findings were recovered and each re-verified here before
+adoption: the verifier lives at `spike/assisted/verify-assisted.sh` (the
+plan had the path wrong); `PYTHON_KEYRING_BACKEND` needs the
+fully-qualified `keyring.backends.null.Keyring`; black has an official
+`--no-cache` (so the cache class is removed, not relocated); papis
+auto-generates `papis_id`, so pinning time alone would not make its add
+deterministic — the probe plan pins it via `--set` and lets the
+determinism condition judge. The truncation is disclosed in the plan as
+an honesty note: the findings list may be incomplete.
+
+One defect in the cohort-2 record surfaced during that review and is
+recorded here rather than retro-edited there: all five cohort-2 probe run
+scripts call `mutating_paths` — a name the fail-closed closure rebuild
+renamed to `closure_paths` — in their informational path listing, and the
+committed transcripts carry the `not found` line. Display only; condition
+6 was judged by `closure_check` throughout, so the verdicts stand. The
+cohort-3 run scripts call the defined name.
+
+Freeze-day measurements that moved the plan: the cargo-add manual
+promises **manifest editing only**, so "Cargo.lock also updates" was
+demoted from a frozen expectation to a measured observation; the Rust
+combined tarball carries rustc/std/cargo but **not rustfmt** (channel
+manifest, 2026-08-22) — rustfmt rides its own component tarball, both
+hash-pinned from the manifest. The Python closure is a uv cross-platform
+lock (74 packages, PyPI-published hashes, `--require-hashes` at both
+download and install); exactly two packages ship no wheel at their locked
+versions and enter as pure-Python sdists: bibtexparser 1.4.4 and
+python-doi 0.2.0 — measured by the wheels-only download refusing them,
+one at a time.
+
+Two build mistakes, recorded: the first image build failed at the pip
+layer — Debian's apt python ships a `typing_extensions` with no RECORD
+file, which pip cannot uninstall; fixed with `--ignore-installed` (the
+locked versions land in /usr/local, which precedes dist-packages, and
+Debian's copies are left untouched). And the failure was initially
+invisible because the build command was piped into `tail`, which
+swallowed the exit code — the repo's own pipe-hides-rc lesson, re-enacted
+and caught only because the versions were measured afterward against the
+image that was supposed to exist.
+
+The freeze PR's own R1 (six P1s, all adopted) reversed one of this
+entry's paragraphs within hours: the combined rust tarball **does**
+bundle rustfmt-preview — the reviewer listed the shipped artifact's own
+`components` file, which the earlier "measured in the manifest" claim
+never opened (it had read rustup's network component model instead of
+the artifact). The separate rustfmt tarball is gone; `install.sh` now
+selects its four components explicitly, and the committed evidence is
+the artifact's `components` file plus the in-image `rustfmt --version`,
+both in `freeze-build.txt` (R2 flagged the first draft of this sentence
+for citing an uncommitted build log).
+The same review falsified the pins cover guard against its own
+predicate — a deleted `--hash` continuation line sailed through the
+name==version comparison — so the guard now compares every line, and
+`freeze-build.txt` carries the red drill (rc=1 on the mutated copy) next
+to the green run. The other adoptions: the refill algorithm is now
+deterministic (all five primaries probed unconditionally, in order;
+bench refills toward four passes only after the fifth verdict — no
+outcome can shrink or reorder the measured set), the probe fixtures are
+inlined in the PROTOCOL byte for byte (a "pre-computed formatted form"
+for the formatter targets would itself have been pre-freeze contact, so
+the formatter oracle is the tool's own `--check` plus the determinism
+condition), the positive-control substitution is scoped explicitly
+instead of hiding inside an "applies verbatim", and the freeze build's
+evidence is a committed transcript (`freeze-build.txt`) instead of
+prose.
+
 ## 2026-08-21 — the borg verify transcript closes #200: four mini-seals, four greens, still zero claims
 
 verify-assisted green on borg-r3 (define at f508312 strictly before
