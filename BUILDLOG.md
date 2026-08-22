@@ -102,6 +102,36 @@ cohort-3 target is in B-group. Re-running the A-group sweep is filed
 separately rather than done here, because doing it inside a documentation
 change would bury a measurement in a backfill.
 
+Then the same-class scan asked which *other* documents summarise
+measurements, and the answer was worse than the two being fixed. Searched
+for any mention of cohorts 2 or 3 — by name, by issue number, or by target
+— **`PRD.md`, `DESIGN.md`, `docs/kill-criteria-review.md`, `README.md` and
+`docs/scouting.md` returned zero each.** PRD's criterion-1 status trail
+stops on 2026-08-15 and closes with "what remains is the
+novelty/confirmation/fix/replay work on the assisted findings", written
+before the two campaigns that were run specifically to close that
+criterion. The document that defines the v1.0 gate had no record of ten
+targets measured against it.
+
+PRD and DESIGN §17 gain those outcomes here — facts only, no criterion
+re-scored — and the closing sentence is corrected to say what remains:
+one finding that is novel, automatically discovered and provenance-clean
+at once. `docs/kill-criteria-review.md` is deliberately **not** touched:
+criterion 3 is scored there against collected data, the data has since
+grown by ten targets, and its Row 8 names its own margin as one trial.
+Re-scoring a met criterion inside a documentation backfill is exactly the
+move this repository refuses; it is filed instead. README needed nothing —
+it points at `docs/target-classes.md` rather than restating it, which is
+why fixing the register fixed the README too.
+
+Two claims of my own were caught by the pre-review check on numbers and
+universals before this was committed. "On tools with millions of users"
+was not measured anywhere — replaced with the star counts #209 actually
+recorded. And DESIGN's arithmetic counted Borg twice, once as a probe wall
+and once as the verdict that wall became when #200 lifted it: eleven
+outcomes for ten targets. Now four walls that stood, one lifted, six
+verdicts.
+
 One measurement error of my own, caught by its own denominator: the local
 replication of acceptance check 11 printed "1 slashed refs checked" for a
 page with 46 of them. `for r in $refs` does not split on newlines in zsh,
