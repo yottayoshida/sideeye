@@ -1,0 +1,15 @@
+# Cohort-3 rustfmt define (P1): kill `rustfmt` partway through its
+# in-place rewrite; the checker holds the source-survival property
+# (proposals.md carries the why — including that the expected find is
+# pre-known on the target's own tracker — and the torn-file reading).
+# Determinism and closure evidence: ../../probes/rustfmt.txt — the probe
+# ran the same operation shape at its own directories; the define's only
+# delta is the path, and the engine re-verifies determinism at explore.
+[world]
+state = "/tmp/cohort3/rustfmt/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "rustfmt /tmp/cohort3/rustfmt/state/probe.rs"
+check           = "./check.sh"
+expected_status = "0"

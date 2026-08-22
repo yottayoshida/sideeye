@@ -1,0 +1,27 @@
+== rustfmt checker drills — rustfmt 1.9.0-stable (88d9e12ae1 2026-08-18) — leg-V oracle: rustc 1.98.0 (88d9e12ae 2026-08-18) — 2026-08-22T03:12:58Z
+drill ok   green-old: checker green as required
+rustfmt rc=0 (must be 0 for green-new to mean what it claims)
+drill ok   green-new: checker green as required
+the formatted bytes, as measured:
+fn main() {
+    let x = vec![1, 2, 3];
+    let s: u32 = x.iter().sum();
+    println!("{}", s);
+}
+drill ok   V-red-truncated: checker red in the intended leg — checker(rustfmt-format): leg V: rustc rejected the crashed file (rc=1, 124 = timeout): error: this file contains an unclosed delimiter
+ --> /tmp/cohort3/rustfmt/drill-v/probe.rs:1:31
+  |
+1 | fn main(){let x=vec![1,2,3];le
+  |          - unclosed delimiter ^
+
+error: aborting due to 1 pre
+drill ok   V-red-empty-file: checker red in the intended leg — checker(rustfmt-format): leg V: rustc rejected the crashed file (rc=1, 124 = timeout): error[E0601]: `main` function not found in crate `probe`
+  |
+  = note: consider adding a `main` function to `/tmp/cohort3/rustfmt/drill-empty/probe.rs`
+
+error: aborting due to 1 previous error
+
+For mo
+drill ok   E-red-neither-anchor: checker red in the intended leg — checker(rustfmt-format): leg E: the file compiles but is neither the frozen source nor the probe-measured formatted output
+drill ok   guard-red-missing-file: checker red in the intended leg — checker(rustfmt-format): probe.rs is missing from the state dir
+== drills failed: 0
