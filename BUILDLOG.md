@@ -4,130 +4,182 @@ Development journal, newest first. Decisions are recorded when they are made —
 
 ## 2026-08-23 — cohort 4 begins: the freeze is a fill-in, and one of its citations turned out not to exist
 
-Entry opened at the start of the work, per the contract. The slate has been
-signed off since 2026-08-22 — **himalaya (Rust) and vdirsyncer (Python), two
-slots, the remaining primaries and the whole bench deliberately empty** — and
-`PROTOCOL-DRAFT.md` says the freeze should be a fill-in rather than a write.
-Two of its three blocked sections unblock with the target list (per-target
-probe plans, versions and image); the third (claim reading) unblocked when
-#231 merged. So the work here is: scout rows for the two targets, the image
-with its freeze-build transcript, the probe plans with fixture bytes inlined,
-and the freeze itself.
+Entry opened at the start of the work, per the contract. The slate has
+been signed off since 2026-08-22 (himalaya and vdirsyncer, two slots, the
+remaining primaries and the whole bench deliberately empty), and
+`PROTOCOL-DRAFT.md` says the freeze should be a fill-in rather than a
+write. Two of its three blocked sections unblock with the target list
+(per-target probe plans, versions and image); the third (claim reading)
+unblocked when #231 merged. So the work here is: scout rows for the two
+targets, the image with its freeze-build transcript, the probe plans with
+fixture bytes inlined, and the freeze itself.
 
-Division of labour, set today by the owner: this session owns the freeze and
-everything downstream (probes, defines, explores); a peer session supplies
-the measured scout rows — rules 1–3 and 11–17 receipts, the novelty
-pre-scans (rule 14), write-path readings from public source, checker
-sketches — all target-non-contact, delivered on a local branch, with
+Division of labour, set today by the owner: this session owns the freeze
+and everything downstream (probes, defines, explores); a peer session
+supplies the measured scout rows (rules 1-3 and 11-17 receipts, the
+novelty pre-scans, write-path readings from public source, checker
+sketches), all target-non-contact, delivered on a local branch, with
 BUILDLOG left to this session so the head cannot collide (the #238/#231
 lesson).
 
 First finding of the day, before any new measurement: **the himalaya
-write-path determination this cohort has been leaning on is not on main.**
-The 2026-08-22 reading (io-maildir's std driver, `fs::rename`/`fs::write`,
-no fsync, the tmp→new two-stage window, musl-static distribution) was made
-in a session and recorded in workspace memory, but
-`grep -rn "io-maildir|AwaitCreateTmp|WantsRename|fs::rename"` across every
-committed .md and .txt returns zero lines. A freeze cannot cite a chat. The
-row is being re-derived from public source and committed like vdirsyncer's —
-the E4 register row again, in a new costume: a determination that never
-became a diff was never checked as one.
+write-path determination this cohort has been leaning on is not on
+main.** The 2026-08-22 reading (io-maildir's std driver,
+`fs::rename`/`fs::write`, no fsync, the tmp-then-new two-stage window,
+static distribution) was made in a session and recorded in workspace
+memory, but a grep for its terms across every committed .md and .txt
+returns zero lines. A freeze cannot cite a chat. The row was re-derived
+from public source and committed like vdirsyncer's: the E4 register row
+again, in a new costume. A determination that never became a diff was
+never checked as one.
 
-Image plan, decided now: trixie-slim with the apt layer pinned by build,
-artifacts fetched host-side against the TLS-intercepting proxy (the cohort-2
-measurement, unchanged); rust 1.98.0 from the same channel-manifest pin
-cohort 3 used (the tarball is still in the local cache and re-verifies
-against the published sha256); **himalaya built from the v2.1.0 source tag
-inside the image** — the distributed binaries are musl-static cross-builds,
-which the shim cannot enter, so the measured binary is a self-build and the
-freeze says so in the versions section — with the crate closure vendored
-host-side by `cargo vendor --locked` against himalaya's own committed
-Cargo.lock; vdirsyncer at its current stable with a uv-generated hash lock,
-the cohort-3 pattern verbatim.
+Image plan, decided in the morning: trixie-slim with the apt layer pinned
+by build, artifacts fetched host-side against the TLS-intercepting proxy
+(the cohort-2 measurement, unchanged); rust 1.98.0 from the same
+channel-manifest pin cohort 3 used (the tarball is still in the local
+cache and re-verifies against the published sha256); **himalaya built
+from the v2.1.0 source tag inside the image**, because the distributed
+binaries are static cross-builds the shim cannot enter, so the measured
+binary is a self-build and the freeze says so in the versions section,
+with the crate closure vendored host-side by `cargo vendor --locked`
+against himalaya's own committed Cargo.lock; vdirsyncer at its current
+stable with a uv-generated hash lock, the cohort-3 pattern verbatim.
 
 **Same day, and the paragraph above is already stale on one word: the
 slate lost vdirsyncer to its own measured row.** The scout rows this
 cohort demanded (rules measured, not recalled) came back from the peer
 session and failed vdirsyncer on rule 2 (three commits in the six-month
 window, all typo/docs/CI), rule 3 (one author in that window), and rules
-11/17 (one of its six recent bug reports answered within a week — the
+11/17 (one of its six recent bug reports answered within a week, the
 committed row's figure; the peer's first chat message carried a different
 count from an earlier cut of the same measurement, this entry briefly
-copied it, and the committed transcript outranks the chat — the E4
-failure in miniature, caught by the digits check run early) —
-and the checker anchor the slate had assumed, `repair`, sits behind an
-interactive `click.confirm` (cli/__init__.py:261, re-verified here from
-the fetched wheel before gating on it). The 2026-08-22 sign-off was made on rows that had not been
-measured to the brief's standard; the measurement outranks the sign-off.
-Owner ruling (2026-08-23, AskUserQuestion, both halves): **vdirsyncer is
-dropped, and the second slot is re-scouted before the freeze lands** — no
+copied it, and the committed transcript outranks the chat, the E4 failure
+in miniature, caught by the digits check run early). The checker anchor
+the slate had assumed, `repair`, sits behind an interactive
+`click.confirm` (re-verified here from the fetched wheel before gating on
+it). The 2026-08-22 sign-off was made on rows that had not been measured
+to the brief's standard; the measurement outranks the sign-off. Owner
+ruling (2026-08-23, AskUserQuestion, both halves): **vdirsyncer is
+dropped, and the second slot is re-scouted before the freeze lands**; no
 single-target cohort, no promotion clause in the freeze. The FAIL row
 stays committed with its transcripts; the rejection table is the audit.
 
 The himalaya half of the freeze filled in meanwhile, and picking the
 operation settled on the arm the write-path reading singled out:
-**`maildir messages copy` is the one io-maildir arm without a tmp stage**
-— the destination is created at its final path and filled in place
+**`maildir messages copy` is the one io-maildir arm without a tmp stage**.
+The destination is created at its final path and filled in place
 (`entry/copy.rs`, the I/O at `client.rs:227` `fs::copy`), so every
 intermediate state is a visible message in the target folder. save and
-move are tmp→rename, the papis shape. Two rule-16 forecasts came out of
-reading the same sources, each with committed apparatus the probe must
-first show red without: minted entry names embed the pid
+move rename; copy exposes. Two rule-16 forecasts came out of reading the
+same sources, each with committed apparatus the probe must first show red
+without: minted entry names embed the pid
 (`{secs}.#{counter:x}M{nanos}P{pid}.{hostname}`, entry.rs:48-56, via libc
-getpid at client.rs:239) — `pin-getpid.c`, loaded the libfaketime way —
-and `fs::copy` prefers `copy_file_range`/`sendfile`, both of which the
-oracle reports as unsupported (the hg-r2 precedent, oracle.zig's own
-test) — `seccomp-enosys.json`, answering exactly those three names with
-ENOSYS so std falls back to the libc read/write loop the shim exports.
-The kill window needs neither: the destination exists empty before any
-bytes move, so strace fault injection reproduces the torn state against
-the stock tool under every copy mechanism.
-
-The image built once end-to-end (rc=0): the digest chain held (tag commit
-→ tree digest → Cargo.lock → 316 vendored crates), the offline build
-produced a himalaya the `ldd` assertion confirmed glibc-dynamic, and the
-18-wheel vdirsyncer layer installed — now to be replaced by slot 2's when
-the re-scout lands, which is also when `freeze-build.txt` gets recorded
-for real.
+getpid at client.rs:239), answered by `pin-getpid.c` loaded the
+libfaketime way; and `fs::copy` prefers `copy_file_range`/`sendfile`,
+both of which the oracle reports as unsupported (the hg-r2 precedent,
+oracle.zig's own test), answered by `seccomp-enosys.json`, which lands
+std on the libc read/write loop the shim exports. The kill window needs
+neither: the destination exists empty before any bytes move, so strace
+fault injection reproduces the torn state against the stock tool under
+every copy mechanism.
 
 **The re-scout came back one-for-five, and the owner closed both open
 questions in one gate (2026-08-23, AskUserQuestion).** Homebrew fell on
 rule 5, trash-cli and pipx on rules 11/17, CocoaPods on rule 3; **unison
-survived rules 1–15** with the best rule-9 row of any candidate in four
-cohorts — the `DANGER.README` commit log, replayed mechanically by the
-next startup. Rulings: **unison takes slot 2**, and **himalaya stays on
-`messages copy` with the seccomp profile as the ruled lift** — the peer's
-correction had meanwhile shown the copy arm invisible to the shim's 52
-exports (`fs::copy` → `copy_file_range`/`sendfile`), and the profile
-turned out to be the one apparatus that lifts *both* targets' copy walls,
-because seccomp filters at the kernel boundary and cannot be dodged by
-the `syscall(3)` spelling unison uses (copy_stubs.c:199) or by the
-weak-symbol route std uses. That taxonomy — inline instruction /
-`syscall(3)` / weak lookup, three mechanisms the old wall table read as
-one — is now a row in `docs/target-classes.md` and roadmap #244 (the
-shim-side lift: an export plus the oracle op class it would also need).
+survived rules 1-15**, entering on a strong rule-3 row (two contributors
+at comparable weight) and a writer that leaves a commit log for exactly
+the window this engine crashes into. Rulings: **unison takes slot 2**,
+and **himalaya stays on `messages copy` with the seccomp profile as the
+ruled lift**. The peer's correction had meanwhile shown the copy arm
+invisible to the shim's 52 exports (`fs::copy` reaching
+`copy_file_range`/`sendfile`), and the profile turned out to be the one
+apparatus that lifts *both* targets' copy walls, because seccomp filters
+at the kernel boundary and cannot be dodged by the `syscall(3)` spelling
+unison uses (copy_stubs.c:199) or by the weak-symbol route std uses. That
+taxonomy (inline instruction / `syscall(3)` / weak lookup, three
+mechanisms the old wall table read as one) is now a row in
+`docs/target-classes.md` and roadmap #244: the shim-side lift, an export
+plus the oracle op class it would also need.
 
 The unison determinism reading (peer, from source, line-numbered in
 `SCOUT-ROWS-SLOT2.md`) found the preference that actually removes inodes
-from the archive is `ignoreinodenumbers`, *not* `fastcheck` — and found
+from the archive is `ignoreinodenumbers`, *not* `fastcheck`, and found
 the hazard the preference does not reach: **`freshDirStamp` folds
 `(gettimeofday + √2·getpid)·1000 + the directory's inode` into one
 archived number** (props.ml:1575-1585). faketime and `pin-getpid.c`
 cover two of the three terms; the directory inode has no apparatus, so
 the freeze names it honestly as the residue the probe's two-run
-comparison measures — a possible nondeterministic-writer wall, priced at
+comparison measures, a possible nondeterministic-writer wall, priced at
 one transcript. The same reading flagged that a frozen clock can flip
 `Fileinfo.unchanged`'s equal-second branch (a one-second sleep and a
-forced "changed" per file, fileinfo.ml:246-249) — the apparatus changing
+forced "changed" per file, fileinfo.ml:246-249): the apparatus changing
 the target's behaviour, to be measured at the probe rather than assumed
-away. `seccomp-enosys.json` gained an arg-filtered ioctl rule (ENOTTY
-for FICLONE, value 0x40049409, everything else untouched) so the
-reflink arm fails by construction instead of by trusting the container
-filesystem. The image now builds both targets from commit-pinned trees
-— unison because upstream ships no aarch64-linux binary at all (nine
-release assets read; macOS arm64 only) — and the freeze-build transcript
-is being regenerated `--no-cache` so every quoted line comes from one
-clean build rather than from cache hits of the vdirsyncer-era layers.
+away. `seccomp-enosys.json` gained an arg-filtered ioctl rule (ENOTTY for
+FICLONE, value 0x40049409, everything else untouched) so the reflink arm
+fails by construction instead of by trusting the container filesystem.
+The image now builds both targets from commit-pinned trees (unison
+because upstream ships no aarch64-linux binary at all; nine release
+assets read, macOS arm64 only) and the freeze-build transcript comes from
+a single --no-cache build so every quoted line is from one clean build
+rather than from cache hits of the vdirsyncer-era layers.
+
+**The first-sight review came back BLOCK, and its P0 was real: the
+unison sign-off rested on a misreading of the recovery path.** The rows
+and this entry had said the `DANGER.README` commit log is "replayed
+mechanically by the next startup". The pinned source says otherwise,
+verified here by direct read before gating: `processCommitLog`
+(files.ml:70) detects the file and raises Fatal, instructing the user to
+inspect the named files, delete the notice, and run again; the notice
+itself (files.ml:30-46) says the same. No replay exists. Owner re-ruling
+(2026-08-23, AskUserQuestion, on the corrected facts): **unison stays**,
+with the checker's recovery defined as following the tool's own written
+instruction (the one deletion, the single non-tool action) and then
+re-running the tool for the assert, and with the Fatal refusal itself
+used as a tool-command assert leg. Third pre-define catch of the same
+shape: papis `doctor`, vdirsyncer `repair`, unison replay. The reviewer's
+sweep also caught the peer's files.ml call-site line numbers coming from
+a newer revision (a systematic +21 shift; re-pinned to the v2.54.0 tree
+by grep here), a four-not-three count in the vdirsyncer rule-11 prose
+(#1207 also drew no non-author comment; the committed transcript already
+said so), and a bug-set "fastest" figure that belonged to a non-bug
+issue. Four of the reviewer's own line numbers were themselves off by
+one (:27/:69/:83 and a NEWS.md:169) and were rejected against grep -n
+output before any edit: the reviewer's numbers get the same verification
+as anyone's.
+
+The review's remaining structural point was that the image gates had
+only ever been seen green. Every pin and assert in the Dockerfile and
+fetch-artifacts.sh is now shown red once against a synthetic mutation
+(`guard-reds.txt`): both tree-digest checks (one flipped hex character
+each), the ldd dynamic-linkage assertion (a static hello), the commit
+pin (flipped hex in the pinned SHA), and the download sha pin (an
+uncached name pointed at a small real file). Two misfires during that
+work are kept in the transcript because they are the register working:
+the first mutation targeted a variable the rewritten script no longer
+has and came back green (a green falsification is a broken falsification
+until proven otherwise), and one raw rc was first read through a pipe
+and said 0 while FAIL printed, the C1 row stepped in again. LC_ALL=C now
+pins the digest sort collation on both sides (host and image digests
+re-verified unchanged), and the digest's scope is stated where it is
+computed: file contents and names, not symlinks or modes (zero symlinks
+in both trees, measured).
+
+Also today, relayed by the session that owns upstream reporting:
+**poetry #11019 drew its first comments and was closed not-planned**, so
+rule 11 has now been tested on a report of ours exactly once, negatively.
+`spike/upstream-report-status.sh` gains the fifth row so the measuring
+device stops being blind to it, and the freeze's Reporting section gains
+the lesson as a requirement: measure the recovery paths outside the tool,
+and when they fail, before reporting (for himalaya, what is lost before
+it reaches the synchronized side; for unison, whether damage propagates
+to the healthy replica, which would break the external recovery path
+itself). A note for cohort-5 selection, not this slate: poetry's manifest
+survives corruption because users keep it in version control, a
+recoverability class rule 5's current wording does not capture. And the
+owner's punctuation ruling (relayed and scope-confirmed today) applied
+to everything written today: em dashes are gone from this cohort's new
+files; older entries and the verbatim ADR 0020 quotation stay as
+written.
 
 ## 2026-08-22 — the rejections were thinner than the funnel implied, and six were re-judged
 

@@ -4,12 +4,12 @@
 # cohort 2 measured (spike/cohort2/fetch-artifacts.sh): the development
 # machine sits behind a TLS-intercepting proxy whose CA a stock Debian
 # container does not trust, so in-container pip/curl fail certificate
-# verification (apt survives — it is plain HTTP). Downloads run host-side;
+# verification (apt survives, being plain HTTP). Downloads run host-side;
 # every input is verified against a pin, and the Dockerfile re-verifies
 # the copies.
 #
 # Pins:
-#   - rust 1.98.0: sha256 from the Rust channel manifest — the same
+#   - rust 1.98.0: sha256 from the Rust channel manifest, the same
 #     artifact and pin as cohort 3 (spike/cohort3/fetch-artifacts.sh);
 #     cohort 3's cached copy is reused when its hash matches.
 #   - himalaya v2.1.0: the tag's COMMIT, ca88bee08ad2e92127b46dc6200d1e8201885156,
@@ -23,7 +23,7 @@
 #     package must match the sha256 in himalaya's own committed
 #     Cargo.lock, which travels inside the digest-verified tree.
 #   - unison v2.54.0: the tag's COMMIT, b1a49141e7eb5334e31efcf4d08073c192d6c1ae
-#     (a lightweight tag — the ref names the commit directly; read
+#     (a lightweight tag: the ref names the commit directly; read
 #     2026-08-23). Same digest re-verification in the Dockerfile
 #     (unison-src.digest). No crate closure: unison builds from its own
 #     tree with OCaml and make, both from the image's apt layer.
@@ -70,10 +70,14 @@ src_at_commit() { # dirname url tag commit
 
 # The source-tree digest the Dockerfile re-verifies. Git metadata is
 # excluded on both sides; the digest is over sorted per-file sha256
-# lines, a format shasum (host) and sha256sum (image) print identically.
+# lines, a format shasum (host) and sha256sum (image) print identically,
+# and LC_ALL=C pins the sort collation on both sides. Scope, stated so a
+# green is read correctly: the digest covers regular-file contents and
+# names only; symlinks, permission bits and empty directories are outside
+# it (both pinned trees carry zero symlinks, measured 2026-08-23).
 digest_tree() { # dirname
     (cd "$dest/$1" && find . -type f -not -path './.git/*' -print0 \
-        | sort -z | xargs -0 -n 64 shasum -a 256 | shasum -a 256 | cut -d' ' -f1) \
+        | LC_ALL=C sort -z | xargs -0 -n 64 shasum -a 256 | shasum -a 256 | cut -d' ' -f1) \
         > "$dest/$1.digest"
     echo "ok   $1.digest $(cat "$dest/$1.digest")"
 }
@@ -102,13 +106,17 @@ if [ "$vend_n" -eq 0 ]; then
     echo "FAIL vendor: 0 crate dirs" >&2
     exit 1
 fi
-echo "ok   vendor: $vend_n crate dirs (Cargo.lock names $lock_n packages; the difference is himalaya itself, which is not vendored)"
+if [ $((lock_n - vend_n)) -eq 1 ]; then
+    echo "ok   vendor: $vend_n crate dirs (Cargo.lock names $lock_n packages; the difference is himalaya itself, which is not vendored)"
+else
+    echo "ok   vendor: $vend_n crate dirs (Cargo.lock names $lock_n packages; NOTE: expected a difference of exactly 1, the unvendored himalaya itself)"
+fi
 
 digest_tree himalaya-src
 
 # unison v2.54.0 (lightweight tag -> pinned commit). No aarch64-linux
 # release asset exists upstream (measured 2026-08-23: macOS arm64 only),
-# so the measured binary is a self-build — the disclosure lives in
+# so the measured binary is a self-build; the disclosure lives in
 # PROTOCOL.md's Versions section.
 src_at_commit unison-src https://github.com/bcpierce00/unison.git \
     v2.54.0 b1a49141e7eb5334e31efcf4d08073c192d6c1ae

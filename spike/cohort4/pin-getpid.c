@@ -1,11 +1,11 @@
-/* pin-getpid.so — declared apparatus (PROTOCOL.md: apparatus policy,
+/* pin-getpid.so: declared apparatus (PROTOCOL.md: apparatus policy,
  * himalaya probe plan).
  *
  * Pins the pid component of io-maildir's minted entry names
  * ({secs}.#{counter:x}M{nanos}P{pid}.{hostname}, entry.rs:48-56): the
  * target reads it through std::process::id(), which on Linux is the
  * libc getpid symbol (client.rs:239), so a preloaded definition wins.
- * Loaded via /etc/ld.so.preload for the target's runs only — the
+ * Loaded via /etc/ld.so.preload for the target's runs only, the
  * libfaketime precedent: the engine owns LD_PRELOAD, so additive
  * interposition goes through the loader's file.
  *
