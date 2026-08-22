@@ -1,0 +1,44 @@
+== poetry checker drills — Poetry (version 2.4.1) — 2026-08-22T03:57:12Z
+setup rc=0 (poetry lock under the launcher's env)
+drill ok   green-old: checker green as required
+poetry add rc=0 (must be 0 for green-new to mean what it claims)
+drill ok   green-new: checker green as required
+the dependency entry the absolute-path add recorded:
+10:deppkg = {path = "/tmp/cohort3/poetry/deppkg"}
+drill ok   green-heal-A-prescription: checker green as required
+  the transcript line carrying the required evidence:
+  | checker(poetry-add): check --lock red; recovery chain step 1 (poetry lock): Error: pyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.
+drill ok   green-heal-B-empty-lock: checker green as required
+  the transcript line carrying the required evidence:
+  | Regenerate the lock file with the `poetry lock` command.
+drill ok   green-heal-C-torn-lock: checker green as required
+  the transcript line carrying the required evidence:
+  | checker(poetry-add): step 1 failed (rc=1); step 2, the documented regenerate (poetry lock --regenerate): Skipping virtualenv creation, as specified in config file.
+drill ok   R-red-chain-empty-manifest: checker red in the intended branch; full checker output:
+  | checker(poetry-add): check --lock red; recovery chain step 1 (poetry lock): 
+  | The Poetry configuration is invalid:
+  |   - Either [project.name] or [tool.poetry.name] is required in package mode.
+  |   - Either [project.version] or [tool.poetry.version] is required in package mode.
+  | checker(poetry-add): step 1 failed (rc=1); step 2, the documented regenerate (poetry lock --regenerate): 
+  | The Poetry configuration is invalid:
+  |   - Either [project.name] or [tool.poetry.name] is required in package mode.
+  |   - Either [project.version] or [tool.poetry.version] is required in package mode.
+  | checker(poetry-add): leg R: the documented recovery chain failed — poetry lock, then poetry lock --regenerate (rc=1, 124/137 = timeout): 
+  | The Poetry configuration is invalid:
+  |   - Either [project.name] or [tool.poetry.name] is required in package mode.
+  |   - Either [project.version] or [tool.poetry.version] is required in package mode.
+drill ok   R-red-persistent-still-red: checker red in the intended branch; full checker output:
+  | checker(poetry-add): check --lock red; recovery chain step 1 (poetry lock): Error: Declared README file does not exist: MISSING.md
+  | checker(poetry-add): leg R: the recovery chain ran but check --lock is still red (rc=1, 124 = timeout): Error: Declared README file does not exist: MISSING.md
+drill ok   V-red-torn-manifest: checker red in the intended branch; full checker output:
+  | checker(poetry-add): leg V: pyproject.toml no longer parses as TOML: Traceback (most recent call last):
+  |   File "<string>", line 1, in <module>
+  |     import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))
+  |                          ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+drill ok   T-red-named-twice: checker red in the intended branch; full checker output:
+  | checker(poetry-add): leg T: the manifest names deppkg 2 times — neither the old state nor the completed add
+drill ok   C-red-fixture-mutated: checker red in the intended branch; full checker output:
+  | checker(poetry-add): leg C: the dependency fixture's __init__.py changed
+drill ok   guard-red-missing-lock: checker red in the intended branch; full checker output:
+  | checker(poetry-add): poetry.lock is missing from the state dir
+== drills failed: 0

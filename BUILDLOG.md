@@ -2,6 +2,80 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the poetry define: the recovery that prescribes itself
+
+Target 4, the first live criterion-1 prospect. The committed probe
+strace pinned the write shape: `poetry add --lock` touches the state
+root in four syscalls — **lock first, manifest second, both in-place
+truncate-and-write** — so the reachable crash states are empty-lock,
+new-lock-plus-old-manifest (the lock knowing a dependency the manifest
+does not), and empty-manifest. Five engine-free trials fed each state
+to poetry's own reader and its prescribed recovery, and they split the
+world exactly where a property should sit: the between-writes state
+**heals** — `poetry check --lock` names the fix ("Run `poetry lock`"),
+and it works; the empty and torn lock states get the same or a worse
+answer and **the prescription itself fails** (rc 1), leaving the
+project stuck until a human deletes the lockfile — a step no error and
+no document names. The drills then measured the punchline: the failing
+`poetry lock` on an empty lock **prints "Regenerate the lock file with
+the `poetry lock` command"** — the recovery prescribing itself while
+failing. The pre-define novelty scan (recorded in proposals.md) found
+no issue naming this recovery failure.
+
+The checker follows the cohort rule to the letter: documented recovery
+first — poetry prints its own, so leg R runs it exactly once when
+check is red, and the prescription failing IS the red. The
+green-heal-A drill pins the other side (state A must heal and end
+green, with the transcript carrying the recovery line, so a checker
+that never ran the recovery cannot fake the green). One wrong-leg
+declaration was caught before commit this time, by applying the black
+and rustfmt R1 lessons up front: an empty pyproject parses as an empty
+TOML document, so it lands in leg R (invalid configuration, failed
+prescription), not leg V — the declaration says so, with the trial
+table beside it. Drills ten for ten, attributed.
+
+**Reversed the same day, before merge.** R1's novelty-scan finding
+(the recorded terms were corruption-shaped while the claimed-absent
+finding was recovery-shaped) forced a re-scan with poetry's own error
+text as the query — and "Regenerate the lock file" surfaced #1196 and
+PR #6753: **the self-prescribing recovery failure was reported in
+2019, fixed upstream (in 1.2.2 via backport #6759; main's fix shipped
+in 1.3.0), and the fix's own test fixture is the unparseable "This
+lock file is broken!"**. Poetry 2.0 then split the
+command on purpose — bare `poetry lock` preserves (and so must read)
+the existing lock, `--regenerate` carries the #6753 behavior — and
+`test_lock_with_invalid_lockfile` pins both halves as intended.
+Re-measured in-container: `--regenerate` heals the empty and torn
+lock, rc 0, re-check green; on the empty manifest **everything fails**
+— the name the rebuild needs was in the file the crash destroyed. Two
+consequences, both frozen by an owner ruling before any engine
+contact: leg R became a chain (prescription, then the documented
+regenerate — a prescription-only red would be a manufactured
+candidate that upstream answers with "intended"), and the live
+prospect moved from the lock to the manifest: `poetry add` rewrites
+user-authored `pyproject.toml` through the same in-place
+truncate-and-write the formatter half died of, and no scan term
+(destruction-shaped round recorded in proposals.md, control "cache"
+2479) finds it reported. The stale prescriptions (`check.py:184`,
+`locker.py:358,365` — while `installer.py:270` already routes through
+a dynamic `_lock_fix_command()`) are upstream-report material behind
+the owner gate, not a candidate. The near-miss to remember: the
+original entry's "leaving the project stuck until a human deletes the
+lockfile — a step no error and no document names" was **false** — 
+`poetry lock --help` documents the way out, and only the second,
+recovery-shaped scan was pointed well enough to break the story. The
+drills went from ten to eleven — the two lock-red drills became
+heal-through-regenerate greens, the empty-manifest red became the
+whole-chain red, and one drill is genuinely new: the persistent-red
+branch R1 caught as never-rehearsed, fabricated with a missing-README
+state measured before the drill was written — every leg-R branch now
+attributed by a branch-specific fragment instead of a shared "leg R"
+tail. (R2 caught both of this paragraph's original numbers: "fixed in
+1.2.2" without the backport attribution, and "ten to twelve" for what
+is a count of eleven — the claims-from-open-sources rule, violated in
+the very entry that records a narrative reversed by a better-pointed
+measurement.)
+
 ## 2026-08-22 — the rustfmt verify transcript: the formatter half sealed
 
 verify-assisted green on rustfmt (define at 9faf204 strictly before
