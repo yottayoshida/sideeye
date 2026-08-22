@@ -6,6 +6,11 @@ Two vocabulary notes. A **verdict** is PASS or FAIL; everything else is a named 
 
 To be precise about "supported", since the v1.0 criterion hangs off it: **supported classes are exactly the rows of the first table below** (Measured, with verdicts). The refusal tables and the Rust narrative are not supported classes, whatever verdicts their stories contain. The UNKNOWN rate over supported-class targets — measured on a corpus frozen before it ran, with the threshold set from the data — is published in [docs/unknown-rate.md](unknown-rate.md).
 
+*Backfill note (2026-08-22): the six cohort-2 and cohort-3 verdict rows below,
+and the refusal rows beneath them, were added together after both cohorts
+closed. `docs/unknown-rate.md`'s A-group sweep predates them — see the
+as-of note there.*
+
 ## Measured, with verdicts
 
 | Class | Tool | What happened | Recorded in |
@@ -21,6 +26,13 @@ To be precise about "supported", since the v1.0 criterion hangs off it: **suppor
 | Python + sqlite | buku | strict **FAIL** 2/22 under the built-in byte comparison — and withdrawn as a bug claim: a journaled database's mid-transaction byte state is exactly what its journal recovers from, and buku recovers in every measured world. The class lesson: judging a journaled store by file bytes is stricter than its contract — confirmed a second time on bogofilter-sqlite (the #84 sweep's fresh FAIL, triaged with the tool's own reader as checker: recovery held in every world, `spike/followup-144/`) | `spike/assisted/REMEASURE.md`, `spike/assisted/buku/RUNLOG.md` (Correction section) |
 | Perl CLI | GNU Stow | **FAIL** 2/5 once symlinks became first-class kill points (v0.8.0); reported upstream as aspiers/stow#139 | `spike/assisted/REMEASURE.md`, artifacts under `spike/assisted/stow/` |
 
+| DVCS with its own transaction engine | Mercurial | **FAIL** 73/107 worlds — and every violation L0-only, with hg's documented contract holding in all 107 (`hg recover` succeeded in all 62 worlds that needed it). A precision-limit observation under the cohort's frozen claim rule, claimed as nothing | `spike/cohort2/hg-r4/RUNLOG.md`, `spike/cohort2/RESULTS.md` |
+| Deduplicating backup with a repository format | Borg | **FAIL** 3/119 — all three L0-only and all three in the relocated client cache's in-place rewrite, while Borg's transactional contract held in all 119 worlds. Measured under declared clock and entropy pins; a precision-limit observation, claimed as nothing | `spike/cohort2/borg-r3/RUNLOG.md`, `spike/cohort2/RESULTS.md` |
+| Python in-place formatter | black | **FAIL** 1/3 worlds, crash point 2 — after the truncating `open`, before the single `write`: the empty file. `oracle_verified`, reproduced identically three times. Not novel: `psf/black#2479` reports the same surface (open since 2021, fix PR `psf/black#5207`), so no criterion-1 claim and nothing filed | `spike/cohort3/black/RUNLOG.md` |
+| Rust in-place formatter | rustfmt | **FAIL** 1/3, crash point 2 — the same shape in a second language, combined invariant (rustc E0601 on the empty bin crate), `oracle_verified`, reproduced twice. Measured with the novelty gate already closed before the define existed (`rust-lang/rustfmt#6041`, open since 2024-01-24); no claim, nothing filed | `spike/cohort3/rustfmt/RUNLOG.md` |
+| Python manifest + lock manager | poetry | **FAIL** 2/5, reproduced across three runs. Not a criterion-1 candidate: the earliest violating world is L0-only and the checker heals it, so the frozen claim rule refuses — while the checker-red world behind it (crash point 4 destroys a user-authored `pyproject.toml`) is real and was reported upstream as `python-poetry/poetry#11019`. A revision measuring the manifest-only operation reproduced the same wound under the FAIL-freeze rule, recorded and never claimed | `spike/cohort3/poetry/RUNLOG.md`, `spike/cohort3/poetry-r2/RUNLOG.md` |
+| Python personal-library store | papis | **PASS** 2/2 (one crash point plus the baseline), `oracle_verified`, single process, reproduced twice. `papis add` builds the document outside the library and moves it in with one `renameat`, so the only crash world the engine can produce is the library before the move — the cohort's contrast case | `spike/cohort3/papis/RUNLOG.md` |
+
 ## Refusals that are the correct answer
 
 | Class | Tool | The named wall | Recorded in |
@@ -28,6 +40,20 @@ To be precise about "supported", since the v1.0 criterion hangs off it: **suppor
 | Nondeterministic writers | watson | `baseline_violates_invariant` — every run rewrites fresh uuids, so no invariant survives even a clean run; refusing is the honest verdict | `spike/dogfood-watson/`, `BUILDLOG.md` |
 | Shell CLIs over helper processes | pass | `child_touched_state_dir` — the dangerous slice runs in fork+exec children; judging it needs the multi-process slice (#123, open) | `spike/assisted/pass/explore-v10-transcript.txt` |
 | Tools with non-durable scratch files | git | the built-in atomicity form flags `COMMIT_EDITMSG`, a scratch file — a recorded precision limit (#35, open) | `BUILDLOG.md` |
+
+| Statically linked release binaries | Jujutsu | `no_shim_marker` at recording — the v0.44.0 release binary is statically linked and cannot load an `LD_PRELOAD` shim. The measured binary is the latest stable, so the recheck is inherent (#201, after v1.0) | `spike/cohort2/jj/RUNLOG.md` |
+| Multi-threaded runtimes | Bun | `multiple_threads_detected` at recording — the probe's six threads. Single-threaded exploration is a v0.1 contract property; the measured binary is the latest stable, 1.4.0 (#202, after v1.0) | `spike/cohort2/bun/RUNLOG.md` |
+| Tools whose state writes bypass libc | cargo | two named walls in sequence: `child_process_detected` on the `rustc -vV` child's internal thread, and then — with an owner-approved stand-in lifting that boundary — `oracle_missed_operation`, because the manifest's atomic rename is a raw syscall past every function an `LD_PRELOAD` shim can interpose, measured with an interposing logger against a libc-routed positive control (#217, after v1.0) | `spike/cohort3/cargo-r2/RUNLOG.md`, `spike/cohort3/cargo-r2/raw-rename-diagnosis.txt` |
+
+## Walls found before the engine ran
+
+Not engine refusals: these targets never reached a define, because the
+engine-free probe gate refused first. The distinction matters — nothing
+below is a statement about what the judge would have said.
+
+| Class | Tool | The probe's refusal | Recorded in |
+|---|---|---|---|
+| Encrypted, memory-locked stores | KeePassXC 2.7.10 | conditions 5 and 6 of the probe gate: two `keepassxc-cli add` runs two seconds apart produce different `db.kdbx` bytes, and 7 successful mutating calls could not be attributed to a path (fail-closed). Latest stable rechecked at 2.7.12 | `spike/cohort2/probes/keepassxc.txt`, `spike/cohort2/probes/recheck-keepassxc.txt` |
 
 ## Walls, measured on toys
 
@@ -40,9 +66,17 @@ To be precise about "supported", since the v1.0 criterion hangs off it: **suppor
 
 The first Rust target (omamori) surfaced three walls in sequence: `child_process_detected`, an unsupported `flock`, then `oracle_missed_operation` on a read-only `openat` issued by the rustix crate — the whole class looked UNKNOWN and was filed as #19. The fix scoped crash-point numbering to state-changing operations (`docs/adr/0003-what-counts-as-a-crash-point.md`); one wall remained — `baseline_violates_invariant` over the target's nondeterministic audit lines — until the L0 history form (#24, #25 — both closed) produced **PASS 143/143**. The 2026-08-12 record had its unguarded install/setup/init surfaces refusing at `symlinkat`/`fchmodat`; the 2026-08-16 re-measurement (#141, contract v10, omamori 1.0.4) shows those walls gone — all four unguarded writers explore fully and PASS, with the chmod writes observed and excluded per #121 (`spike/dogfood-omamori-surface.sh` pins the outcomes). A Rust tool whose *writes* bypass libc still refuses (the raw-syscall wall above).
 
+Two real Rust targets followed in cohort 3, and they land on opposite
+sides. **rustfmt** is the class's first clean Rust verdict — dynamically
+linked, single-threaded, FAIL in three worlds and minutes. **cargo** is
+the harder half: not a linkage or thread wall but a routing one, its
+manifest rename issued as a raw syscall while the binary imports libc
+`rename`, which is why an import table cannot decide the question and an
+interposing logger can (#217).
+
 ## Not yet measured
 
-- **Node/libuv tools**: no recorded run. The expected wall is the thread refusal (libuv starts a worker pool), which is measured on toys — but no real Node target run exists in this repository, so this row is a prediction, labeled as one.
+- **Node/libuv tools**: still no recorded run — Bun, refused on threads in cohort 2, is not Node and does not use libuv, so it is a neighbour rather than an instance. The expected wall is the thread refusal (libuv starts a worker pool), which is measured on toys — but no real Node target run exists in this repository, so this row is a prediction, labeled as one.
 - **libc functions that mutate state through internal calls** (the mkstemp family, mkdtemp, tmpfile, dprintf — #39): no recorded run for any of these members. The *mechanism* is not a projection — two class members are measured: stdio's internal writes (ADR 0005, probed on both platforms; the macOS probe showed dyld interposition equally blind to libSystem-internal calls) and remove(3), measured on Linux through the timewarrior work (PR #38). On Linux the class fails closed, in the same shape the raw-syscall wall pins above: the oracle sees the internal syscalls, the accounts diverge, the run refuses. On macOS there is no oracle, so for the unmeasured members the consequence is inferred from that mechanism, not measured: an internal mutation is invisible to the shim with nothing to catch it, and a macOS PASS carries only the weaker `--allow-unverified` claim the README spells out. The interpose-on-first-contact policy stands, and #39 stays open as the family's lookout post: a member gets reimplemented through the recorded wrappers when a real target first demonstrates it.
 
 ---

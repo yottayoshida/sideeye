@@ -67,6 +67,48 @@ assertions broke — `case: .../000002.json, wanted .../000001.json`
 and `checker_earliest.case: .../000003.json, wanted .../000002.json`
 — so the 000001-owner invariant is measured by assertions that die
 when it does, and the mutant was reverted from the committed base.
+## 2026-08-22 — the register was ten measurements behind the measurements
+
+`docs/target-classes.md` says what "supported" means — "supported classes
+are exactly the rows of the first table below" — and PRD's UNKNOWN-rate
+criterion takes the word from there. It listed thirteen tools, all of them
+from the blind campaigns and the assisted cohort. **None of cohort 2's
+five and none of cohort 3's five were on it.** Two cohorts of measurement,
+closed and recorded in their own RESULTS and RUNLOG files, never reached
+the page that summarises what has been measured.
+
+Backfilled here, in the shape the page already uses. Six verdict rows —
+Mercurial (FAIL 73/107, all L0-only, contract held 107/107), Borg (FAIL
+3/119, same shape, under declared pins), black and rustfmt (FAIL 1/3 each,
+the same in-place tear in two languages, both already on their trackers),
+poetry (FAIL 2/5, not a candidate because the earliest world is L0-only,
+with the checker-red world behind it reported as python-poetry/poetry#11019),
+papis (PASS 2/2, the contrast case). Three refusal rows — jj on static
+linkage, Bun on threads, cargo on the raw-syscall rename. And one new
+section for a distinction the page could not previously express: KeePassXC
+never reached a define, because the engine-free probe refused first on
+determinism and on 7 unattributable calls. Calling that an engine refusal
+would have been a claim about a judgement that never happened.
+
+Two consequences worth stating rather than leaving to be noticed. The
+supported set grew by six rows today, so any sentence elsewhere that
+counts supported classes is now stale. And `docs/unknown-rate.md`'s
+A-group is defined as *every committed, runnable define in the repository*
+while its sweep ran on 2026-08-16 — before both cohorts, which have since
+committed **16** further defines, several of which reach named refusals
+rather than verdicts. That page now carries an as-of note saying so. The
+threshold is unaffected: it is set from B-group only, and no cohort-2 or
+cohort-3 target is in B-group. Re-running the A-group sweep is filed
+separately rather than done here, because doing it inside a documentation
+change would bury a measurement in a backfill.
+
+One measurement error of my own, caught by its own denominator: the local
+replication of acceptance check 11 printed "1 slashed refs checked" for a
+page with 46 of them. `for r in $refs` does not split on newlines in zsh,
+so the whole list arrived as one string. The real check runs under `sh` in
+the container and was never affected — but had the output not carried its
+denominator, "0 missing" would have read as a pass. Re-run properly: 46
+checked, 0 missing, with a planted bad path as the control.
 
 ## 2026-08-22 — cohort 4's preconditions, and the gate that caught its own author
 
