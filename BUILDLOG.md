@@ -2,6 +2,15 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the rustfmt verify transcript: the formatter half sealed
+
+verify-assisted green on rustfmt (define at 9faf204 strictly before
+artifacts at 8f33bdb, all four define files byte-identical;
+`verify-transcript.txt` committed beside the ruling). Both formatter
+verdicts — black and rustfmt, two languages, one wound — now carry the
+complete seal: questions frozen on main before the worlds that
+answered them existed.
+
 ## 2026-08-22 — rustfmt's verdict: the second language, the same wound
 
 FAIL, 1 of 3 worlds, crash point 2 — the empty file, the declared tear

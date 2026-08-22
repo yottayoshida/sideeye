@@ -1,0 +1,17 @@
+verify-assisted: spike/cohort3/rustfmt
+anchor: main (8f33bdb) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+define    spike/cohort3/rustfmt/ops/check.sh  introduced @ 9faf204 (position 2)
+define    spike/cohort3/rustfmt/ops/rustfmt-format.toml  introduced @ 9faf204 (position 2)
+define    spike/cohort3/rustfmt/ops/setup.sh  introduced @ 9faf204 (position 2)
+define    spike/cohort3/rustfmt/ops/explore.sh  introduced @ 9faf204 (position 2)
+artifact  spike/cohort3/rustfmt/cases/000001.json  introduced @ 8f33bdb (position 1)
+artifact  spike/cohort3/rustfmt/explore-transcript.txt  introduced @ 8f33bdb (position 1)
+artifact  spike/cohort3/rustfmt/report.json  introduced @ 8f33bdb (position 1)
+ok   D1: define complete @ 9faf204 strictly precedes first artifact @ 8f33bdb
+ok   D2: spike/cohort3/rustfmt/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort3/rustfmt/ops/rustfmt-format.toml byte-identical at both points
+ok   D2: spike/cohort3/rustfmt/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort3/rustfmt/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort3/rustfmt
