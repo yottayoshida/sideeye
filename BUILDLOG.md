@@ -2,6 +2,20 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the papis verify transcript: the sixth seal, and the ledger is shut
+
+verify-assisted green on papis (define at 22cec73 strictly before
+artifacts at 410def6, all four define files byte-identical). Six
+sealed records across the cohort — black, rustfmt, poetry, poetry-r2,
+papis, and the poetry pair's shared reading — every one of them a
+question frozen on main before the worlds that answered it existed.
+Cohort 3 is closed: five primaries measured, no bench promotion,
+criterion 1 unmet, and the comparison the cohort was built for on the
+record. What moves next is not another target in this cohort but the
+three things it filed: the poetry manifest prospect behind the
+upstream gate, #217's ptrace-grade observer, and #231's claim reading
+for the next campaign's freeze.
+
 ## 2026-08-22 — papis passes, and cohort 3 closes
 
 PASS, 2 of 2 worlds, crash points 1 + 1 baseline, single process,
