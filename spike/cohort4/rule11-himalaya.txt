@@ -1,0 +1,57 @@
+== rule 11/17 receipts: pimalaya/himalaya
+== gh api repos/pimalaya/himalaya/issues?state=all&sort=created&direction=desc&per_page=60  (pull_request filtered out)
+== gh api repos/pimalaya/himalaya/issues/<N>/comments?per_page=100  per issue
+== run at 2026-08-22T22:18:40Z
+
+== 60 items fetched, 44 are issues, showing the 12 most recent
+
+#736  2026-08-18T20:28:45Z  by=FpTargeT  labels=[-]  state=open
+    title: completion subcommand doesn't print to stdout despite --help saying it does
+    FIRST RESPONSE: +16.9h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-08-19T13:25:20Z
+
+#732  2026-08-14T23:40:17Z  by=dndungu  labels=[-]  state=closed
+    title: [Bug] os error 35 (EAGAIN) at IMAP AUTHENTICATE against Gmail mailbox with ~260k messages — no 
+    FIRST RESPONSE: +18.9h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-08-15T18:35:39Z
+
+#731  2026-08-14T07:02:06Z  by=nathanhan666  labels=[-]  state=closed
+    title: [Bug] IMAP search fallback fails with os error 35 when the server returns a large UID set (Tenc
+    FIRST RESPONSE: +5.3h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-08-14T12:22:39Z
+
+#730  2026-08-13T13:11:50Z  by=edwinhu  labels=[gmail]  state=closed
+    title: JSON output broken on some Gmail commands
+    FIRST RESPONSE: +25.6h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-08-14T14:49:45Z
+
+#729  2026-08-11T00:53:19Z  by=WCG-King  labels=[-]  state=closed
+    title: v2.0.0: AUTHENTICATE PLAIN fails against Coremail (126/163) — server advertises SASL-IR but rej
+    FIRST RESPONSE: +9.1h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-08-11T09:56:36Z
+
+#727  2026-08-04T09:57:41Z  by=truls27a  labels=[-]  state=closed
+    title: --from "Name <email>" breaks the composed From header and sending
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#726  2026-08-04T09:57:17Z  by=truls27a  labels=[-]  state=closed
+    title: message compose/reply/forward don't set a From header without --from
+    FIRST RESPONSE: +11.4d [OVER-1-WEEK] by soywod (MEMBER) at 2026-08-15T19:19:31Z
+
+#725  2026-08-01T14:54:08Z  by=jonassmedegaard  labels=[-]  state=closed
+    title: first-time-use experience
+    FIRST RESPONSE: +15.1d [OVER-1-WEEK] by soywod (MEMBER) at 2026-08-16T16:29:27Z
+
+#724  2026-07-31T16:17:26Z  by=jonassmedegaard  labels=[-]  state=closed
+    title: XDG desktop file contains obsolete and deprecated items
+    FIRST RESPONSE: +0.1h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-07-31T16:24:39Z
+
+#723  2026-07-31T14:28:39Z  by=jonassmedegaard  labels=[-]  state=closed
+    title: right-align SIZE column in `list` subcommand
+    FIRST RESPONSE: +1.4h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-07-31T15:52:09Z
+
+#722  2026-07-30T10:00:54Z  by=exengo  labels=[-]  state=closed
+    title: Autodiscover fails on smpt
+    FIRST RESPONSE: +0.3h [WITHIN-1-WEEK] by soywod (MEMBER) at 2026-07-30T10:16:03Z
+
+#721  2026-07-29T15:14:12Z  by=a-stevan  labels=[-]  state=closed
+    title: why is `--account` required in `message compose` ?
+    FIRST RESPONSE: +17.4d [OVER-1-WEEK] by soywod (MEMBER) at 2026-08-16T00:25:11Z
+
+== 8 of 12 recent issues answered within 1 week by someone other than the author
+== author_association is what distinguishes a maintainer reply from a passer-by; both are listed above

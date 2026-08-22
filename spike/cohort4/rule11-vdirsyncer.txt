@@ -1,0 +1,57 @@
+== rule 11/17 receipts: pimutils/vdirsyncer
+== gh api repos/pimutils/vdirsyncer/issues?state=all&sort=created&direction=desc&per_page=60  (pull_request filtered out)
+== gh api repos/pimutils/vdirsyncer/issues/<N>/comments?per_page=100  per issue
+== run at 2026-08-22T22:18:46Z
+
+== 60 items fetched, 35 are issues, showing the 12 most recent
+
+#1223  2026-07-02T12:04:45Z  by=Dinth  labels=[-]  state=open
+    title: google_contacts: _put records request URL instead of Location header → deletes/re-uploads its o
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1222  2026-06-16T16:06:15Z  by=viiru-  labels=[-]  state=open
+    title: Fails to parse RFC 7986-compliant iCalendar files
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1218  2026-06-05T14:44:35Z  by=rdiez  labels=[-]  state=open
+    title: Mention the .ics alternative for the Google calendar
+    FIRST RESPONSE: +34.2d [OVER-1-WEEK] by ikus060 (NONE) at 2026-07-09T19:15:53Z
+
+#1217  2026-06-05T14:37:29Z  by=rdiez  labels=[-]  state=open
+    title: Document that [type = "http"] requires [collections = null]
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1216  2026-06-05T14:16:12Z  by=rdiez  labels=[-]  state=closed
+    title: Improve documentation of "metadata = xxx"
+    FIRST RESPONSE: +0.2h [WITHIN-1-WEEK] by WhyNotHugo (MEMBER) at 2026-06-05T14:27:25Z
+
+#1215  2026-06-05T14:00:20Z  by=rdiez  labels=[-]  state=open
+    title: Add a link to GitHub repository to pimutils.org
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1214  2026-04-01T15:06:45Z  by=balli1187  labels=[type: bug]  state=open
+    title: Feature Request: Configurable field exclusions for ETag calculation in http storage
+    FIRST RESPONSE: +1.4h [WITHIN-1-WEEK] by WhyNotHugo (MEMBER) at 2026-04-01T16:33:19Z
+
+#1212  2026-03-30T17:08:57Z  by=bernardotorres  labels=[-]  state=closed
+    title: Bug: DAV multiget can abort sync when one href is omitted from REPORT response
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#1210  2026-03-29T19:41:58Z  by=Tonus1  labels=[-]  state=closed
+    title: Is my python version too old ? (3.9)
+    FIRST RESPONSE: +2.0h [WITHIN-1-WEEK] by WhyNotHugo (MEMBER) at 2026-03-29T21:40:50Z
+
+#1209  2026-02-14T13:01:04Z  by=mcr-ksh  labels=[-]  state=open
+    title: Given URL is not a homeset URL
+    FIRST RESPONSE: +2.6h [WITHIN-1-WEEK] by WhyNotHugo (MEMBER) at 2026-02-14T15:40:00Z
+
+#1208  2026-02-10T06:33:53Z  by=mike-lloyd03  labels=[-]  state=open
+    title: Error when syncing: exceptions.NotFoundError(href)
+    FIRST RESPONSE: +106.2d [OVER-1-WEEK] by tacognito (NONE) at 2026-05-27T10:34:17Z
+
+#1207  2026-02-10T00:58:06Z  by=mike-lloyd03  labels=[-]  state=closed
+    title: Cannot sync with google on first run:
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+== 4 of 12 recent issues answered within 1 week by someone other than the author
+== author_association is what distinguishes a maintainer reply from a passer-by; both are listed above
