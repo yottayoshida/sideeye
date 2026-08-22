@@ -1,0 +1,28 @@
+# Diagnosis of the r2 refusal (oracle_missed_operation): which route the
+# manifest rename takes. Transient container on the cohort image with
+# binutils/gcc added for this diagnosis only (nothing committed to the
+# image); every command and its raw output follows.
+
+$ nm -D /usr/local/bin/cargo | grep -wE "rename|renameat|renameat2"
+                 U rename@GLIBC_2.17
+
+# cargo IMPORTS libc rename — so an import table alone cannot decide. A
+# minimal LD_PRELOAD logger interposing rename AND renameat, run under
+# strace, decides: if the logger stays silent while strace sees the
+# rename, the call is a raw syscall past libc.
+
+$ sanity: the logger fires on a libc rename (mv uses renameat via libc? use a C-free control: python3 os.rename)
+LOGGER rename(/tmp/t/a -> /tmp/t/b)
+
+$ LD_PRELOAD=/tmp/logger.so strace -f -e trace=rename,renameat,renameat2 cargo add --offline --manifest-path /tmp/t/state/Cargo.toml --path /tmp/t/depcrate
+      Adding depcrate (local) to dependencies
+      Adding depcrate v0.1.0 (/tmp/t/depcrate)
+add rc=0
+
+$ grep rename /tmp/t/s.log   # what the kernel saw
+506   renameat(AT_FDCWD, "/tmp/t/state/Cargo.tomlIEtJvi", AT_FDCWD, "/tmp/t/state/Cargo.toml") = 0
+
+# reading: strace saw the manifest renameat; the logger printed nothing
+# for it — the rename reaches the kernel without passing the libc
+# functions an LD_PRELOAD shim can interpose. The python control above
+# shows the logger does fire on a libc-routed rename.
