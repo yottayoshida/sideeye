@@ -106,8 +106,12 @@ then `Os.delete temp`. **Five mutating steps with the final path exposed
 between two of them**, not the papis shape. The other branch is a single
 `Os.rename "renameLocal(3)"` (`files.ml:346`). (Line numbers re-pinned to
 the v2.54.0 checkout on 2026-08-23: the first draft of this row cited
-call-site lines from a newer revision, a systematic +21 shift the freeze
-review caught; the sequence itself was verified unchanged.)
+call-site lines from a newer revision, where a 21-line insertion upstream
+of renameLocal had shifted every citation below it by +21 while citations
+above it and in other files were unchanged. The fix was per-citation
+grep -n against the pinned checkout, never a bulk offset, which would
+have broken the unchanged ones. The sequence itself was verified
+unchanged.)
 
 **`sync_all` / `fsync` / `fdatasync`: 0 occurrences in `src/`.**
 

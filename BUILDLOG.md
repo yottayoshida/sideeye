@@ -138,8 +138,11 @@ re-running the tool for the assert, and with the Fatal refusal itself
 used as a tool-command assert leg. Third pre-define catch of the same
 shape: papis `doctor`, vdirsyncer `repair`, unison replay. The reviewer's
 sweep also caught the peer's files.ml call-site line numbers coming from
-a newer revision (a systematic +21 shift; re-pinned to the v2.54.0 tree
-by grep here), a four-not-three count in the vdirsyncer rule-11 prose
+a newer revision (a 21-line insertion upstream of renameLocal shifted
+the citations below it by +21 while the rest sat unchanged, so each was
+re-pinned individually by grep against the v2.54.0 tree; a bulk offset
+would have broken the unchanged ones), a four-not-three count in the
+vdirsyncer rule-11 prose
 (#1207 also drew no non-author comment; the committed transcript already
 said so), and a bug-set "fastest" figure that belonged to a non-bug
 issue. Four of the reviewer's own line numbers were themselves off by
