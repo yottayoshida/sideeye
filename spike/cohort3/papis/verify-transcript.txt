@@ -1,0 +1,16 @@
+verify-assisted: spike/cohort3/papis
+anchor: main (410def6) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+define    spike/cohort3/papis/ops/check.sh  introduced @ 22cec73 (position 2)
+define    spike/cohort3/papis/ops/papis-add.toml  introduced @ 22cec73 (position 2)
+define    spike/cohort3/papis/ops/setup.sh  introduced @ 22cec73 (position 2)
+define    spike/cohort3/papis/ops/explore.sh  introduced @ 22cec73 (position 2)
+artifact  spike/cohort3/papis/explore-transcript.txt  introduced @ 410def6 (position 1)
+artifact  spike/cohort3/papis/report.json  introduced @ 410def6 (position 1)
+ok   D1: define complete @ 22cec73 strictly precedes first artifact @ 410def6
+ok   D2: spike/cohort3/papis/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort3/papis/ops/papis-add.toml byte-identical at both points
+ok   D2: spike/cohort3/papis/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort3/papis/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort3/papis
