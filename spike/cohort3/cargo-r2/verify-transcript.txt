@@ -1,0 +1,16 @@
+verify-assisted: spike/cohort3/cargo-r2
+anchor: main (0fb9a73) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+define    spike/cohort3/cargo-r2/ops/cargo-add.toml  introduced @ 24e773f (position 2)
+define    spike/cohort3/cargo-r2/ops/check.sh  introduced @ 24e773f (position 2)
+define    spike/cohort3/cargo-r2/ops/setup.sh  introduced @ 24e773f (position 2)
+define    spike/cohort3/cargo-r2/ops/explore.sh  introduced @ 24e773f (position 2)
+artifact  spike/cohort3/cargo-r2/explore-transcript.txt  introduced @ 0fb9a73 (position 1)
+artifact  spike/cohort3/cargo-r2/report.json  introduced @ 0fb9a73 (position 1)
+ok   D1: define complete @ 24e773f strictly precedes first artifact @ 0fb9a73
+ok   D2: spike/cohort3/cargo-r2/ops/cargo-add.toml byte-identical at both points
+ok   D2: spike/cohort3/cargo-r2/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort3/cargo-r2/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort3/cargo-r2/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort3/cargo-r2

@@ -2,6 +2,15 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the cargo verify transcript: a wall measured under the full seal
+
+verify-assisted green on cargo-r2 (define at 24e773f strictly before
+artifacts at 0fb9a73, all four define files byte-identical;
+`verify-transcript.txt` committed beside the ruling) — the cohort's
+first engine outcome, a two-layer wall, carries the same mini-seal
+discipline the cohort-2 walls did: the question preceded the answer
+even when the answer was a refusal.
+
 ## 2026-08-22 — cargo r2: the stand-in lifts one wall and finds another — the manifest rename never touches libc
 
 The r2 explore got past the child-thread boundary (`single process` in
