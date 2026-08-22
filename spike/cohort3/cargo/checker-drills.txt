@@ -1,0 +1,22 @@
+== cargo checker drills — cargo 1.98.0 (797e8a9bc 2026-08-05) — 2026-08-22T01:43:39Z
+drill ok   green-old: checker green as required
+drill ok   green-new: checker green as required
+the dependency entry the absolute --path recorded:
+depcrate = { version = "0.1.0", path = "../depcrate" }
+drill ok   V-red-torn-manifest: checker red in the intended leg — checker(cargo-add): leg V: cargo metadata exited 101 (124 = timeout): error: invalid basic string, expected `"`
+ --> tmp/cohort3/cargo/drill-v/Cargo.toml:2:11
+  |
+2 | name = "ap
+  |           ^
+drill ok   V-red-torn-lock: checker red in the intended leg — checker(cargo-add): leg V: cargo metadata exited 101 (124 = timeout): error: failed to parse lock file at: /tmp/cohort3/cargo/drill-vl/Cargo.lock
+
+Caused by:
+  TOML parse error at line 8, column 4
+    |
+  8 | dep
+    |    ^
+  key with no value, expected `=`
+drill ok   T-red-named-twice: checker red in the intended leg — checker(cargo-add): leg T: the manifest names depcrate 2 times — neither the old state nor the completed add
+drill ok   C-red-mutated-source: checker red in the intended leg — checker(cargo-add): leg C: src/lib.rs bytes changed
+drill ok   guard-red-missing-manifest: checker red in the intended leg — checker(cargo-add): the manifest is missing from the state dir
+== drills failed: 0
