@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.12.0",
+  "contract_version": 10,
+  "define": {
+    "state": "/tmp/cohort3/poetry-r2/state",
+    "setup": "/work/spike/cohort3/poetry-r2/ops/./setup.sh",
+    "operation": "poetry -C /tmp/cohort3/poetry-r2/state version patch",
+    "check": "/work/spike/cohort3/poetry-r2/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/tmp/cohort3/poetry-r2/state/pyproject.toml",
+  "before_class": "write",
+  "before_path": "/tmp/cohort3/poetry-r2/state/pyproject.toml",
+  "violation": "hybrid"
+}

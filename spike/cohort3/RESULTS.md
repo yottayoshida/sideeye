@@ -197,6 +197,22 @@ All five passed, so the cohort order stands unchanged:
   stale prescription; the manifest wound) behind the standing owner
   gate. The cohort closes with papis.
 
+- **poetry revision 2 (2026-08-22)** — **FAIL, the declared shape,
+  recorded and never claimed (the FAIL-freeze rule)**: `poetry
+  version patch`, the operation whose only in-root write is the
+  manifest, measured as a sealed minimal reproduction of the
+  primary's manifest wound. 1 of 3 worlds: the empty manifest,
+  combined invariant ("built-in atomicity, and the checker" — the
+  whole documented recovery chain fails on a config whose name and
+  version died with the file), reproduced identically twice, no
+  noise world in front. The revision's candidacy was never available
+  — poetry's target-level FAIL predates it, and the define carries
+  that ruling on its face after R1 caught the first draft citing
+  around the FAIL-freeze sentence. Ruling: `poetry-r2/RUNLOG.md`.
+  The claim-reading design gap the poetry pair demonstrates is filed
+  as #231 for the next campaign's protocol. The cohort closes with
+  papis.
+
 ## What the probe phase deliberately did not do
 
 At the probe phase's close, no define existed and no engine explore had
