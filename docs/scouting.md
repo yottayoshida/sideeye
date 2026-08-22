@@ -132,21 +132,20 @@ the recorded one has its answer.
 
 ## What a scout must never do
 
-- **Pick a dormant target.** When the target is a third-party project (not
-  the tool you maintain yourself), it must be demonstrably alive — this
-  repository's bar is ≥500 stars, more than one contributor, and activity
-  within the last month (a merged PR, a release, or similar), all three —
-  and the selection itself goes to a human for sign-off before any measured
-  contact. A small, effectively dormant project is not a legitimate target
-  at all, not merely one to avoid reporting to.
 - **Call any of this "blind".** The word belongs to the sealed campaign
   protocol (ADR 0012); assisted runs read the target, and no run that read
   the target may wear the label.
 - **Put itself in the verdict.** No "the model believes this is a bug",
   anywhere. A belief becomes a checker or it stays out of the record.
-- **File findings upstream by default.** Whether a finding is reported is
-  decided at target selection, not at discovery — the selection rule and
-  its history live in `spike/assisted/PROTOCOL.md`.
+- **File findings upstream by default.** Whether a finding on a
+  third-party project is reported is decided at target selection, before
+  any measured contact — not at discovery, with a fresh FAIL in hand.
+  Sideeye does not restrict what you may point it at; who hears about a
+  result is a judgement about the people on the other end, made once, up
+  front. The selection rule this repository's own experiments ran under —
+  a liveness bar and a human sign-off, recorded with its history in
+  `spike/assisted/PROTOCOL.md` — binds those experiments, not your use of
+  the tool.
 
 ## After a FAIL
 
