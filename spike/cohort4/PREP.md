@@ -343,5 +343,10 @@ believed:
    projects nobody examines, against rules 1, 3, 11 and 12). Surviving
    candidates are ordered by coverage. Still open: candidates proposed, and
    **the owner signs off on the target list**.
-6. PROTOCOL frozen, citing 2–5 by merge.
+6. PROTOCOL frozen, citing 2–5 by merge. **Draft ready
+   (`PROTOCOL-DRAFT.md`, 2026-08-22)**: every section marked carried,
+   drafted, or blocked with the reason. Three are blocked — the per-target
+   probe plans and the image on the target list, and the claim reading on
+   #231's merge. A section still blocked at freeze time is a reason not to
+   freeze.
 7. Probes, in cohort order. Then defines. Then explores.
