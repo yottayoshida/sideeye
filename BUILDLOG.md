@@ -2,6 +2,65 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the rejections were thinner than the funnel implied, and six were re-judged
+
+The cohort-4 candidate funnel went out with two numbers I had not counted
+and one stage that was not a stage. Recounted from the file the enumeration
+actually wrote: 159 unique repositories, not 163 rows; the language wall
+forecast removed **128**, not the 64 I reported (that figure was Go plus
+TypeScript plus JavaScript and omitted Shell, PHP, Java, Swift, Kotlin, C#,
+Nix and six more); and the "~50 left" was never computed — it was written to
+keep the column continuous. The owner's audit derived ~89 rejections at the
+rules-4/5/7 stage from those numbers, which was correct arithmetic on a
+wrong table: the real figure is 31 in, 22 rejected, 2 set aside, 3 unread,
+4 already measured.
+
+Worse than the counts: **no project was read at that stage.** Every one of
+the 31 was judged from the search result's own one-line description plus
+recollection. The brief this cohort runs under says a candidate row missing
+a measurement is an incomplete row; by its own standard the whole column
+was incomplete, and I had written the word "read" over it.
+
+The owner's instruction was to re-judge the thin rejections against primary
+sources, reading only. Six rows, and the results split:
+
+- **pnpm** — upheld, and now on the project's own sentence: the README
+  calls the Rust port experimental, so the shipped CLI is still the Node one
+  and the thread forecast applies to what rule 12 says to measure. The doubt
+  was real (Rust is the majority language by bytes, with a genuine
+  workspace); the answer happened to be the one I had guessed.
+- **neomutt** — my rule was **wrong**. "Batch mode" is a first-class mode in
+  neomutt's own man page, -e/--command runs commands after config, and draft
+  files on stdin are documented as processed identically in batch and
+  interactive mode. Rule 8 does not fail. The rejection now rests on rule 4
+  — the primary interface is a TUI — which is a judgment about the word
+  "primary", recorded as one.
+- **ArchiveBox** — my rule was **wrong** in the other direction. The primary
+  data is files under the archive directory; the project itself calls its
+  SQLite file "your index", so rule 7 passes. It is still rejected, on rule
+  4 (five interfaces, browser extension listed first) and more strongly on
+  rule 16: the archiving is done by Chrome, wget and yt-dlp — child
+  processes writing the state, which is the pass wall (#123).
+- **TrendRadar**, **ffsubsync** — upheld, bases upgraded from a search
+  summary to the projects' own READMEs.
+- **calcure** — **weakened to uncertain.** Its README documents
+  argument-driven task and event adding, so rule 8 is unproven; rule 4 is
+  the likelier objection. One wiki page would settle it and this pass did
+  not open it.
+
+Zero rejections were fully overturned, which is the least interesting part
+of the result. The interesting part is that two of them now stand on a
+judgment rather than on a rule a measurement can settle, and the owner can
+see which.
+
+Two process notes. The register's E4 check — grep the diff for digits and
+open the primary source for each — is bound to *diffs*, and the wrong funnel
+went out in a chat message, which is not a diff. The check never fired. And
+this log's first draft backticked upstream repository names, which is
+exactly what acceptance check 11 extracts as repository paths; the
+convention `docs/target-classes.md` already follows is now followed here
+too, with a note saying why.
+
 ## 2026-08-22 — #231: the overall earliest and the claim exhibit are two different things
 
 Entry started before the first line of code, per the contract. The
