@@ -2,6 +2,124 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the rejections were thinner than the funnel implied, and six were re-judged
+
+The cohort-4 candidate funnel went out with two numbers I had not counted
+and one stage that was not a stage. Recounted from the file the enumeration
+actually wrote: 159 unique repositories, not 163 rows; the language wall
+forecast removed **128**, not the 64 I reported (that figure was Go plus
+TypeScript plus JavaScript and omitted Shell, PHP, Java, Swift, Kotlin, C#,
+Nix and six more); and the "~50 left" was never computed — it was written to
+keep the column continuous. The owner's audit derived ~89 rejections at the
+rules-4/5/7 stage from those numbers, which was correct arithmetic on a
+wrong table: the real figure is 31 in, 22 rejected, 2 set aside, 3 unread,
+4 already measured.
+
+Worse than the counts: **no project was read at that stage.** Every one of
+the 31 was judged from the search result's own one-line description plus
+recollection. The brief this cohort runs under says a candidate row missing
+a measurement is an incomplete row; by its own standard the whole column
+was incomplete, and I had written the word "read" over it.
+
+**Owner rulings that close the selection (2026-08-22, recorded at the moment
+they were made rather than when the freeze is written — the contract in
+CLAUDE.md).**
+
+- **Rule 9 is pinned to reading (b): a checker must go through the target's
+  own commands.** The alternative — reading a plain-text store directly —
+  was declined. The precedent held: every cohort-2 and cohort-3 checker went
+  through its target's commands. **No exception clause for neomutt**, which
+  was offered and refused.
+- **The slate freezes at two: himalaya (Rust) and vdirsyncer (Python).** The
+  remaining three primary slots and the bench are deliberately not filled.
+- **neomutt therefore drops on rule 9**, and it is the only candidate in
+  four cohorts to fall to an interpretation rather than to a measurable
+  wall: its write path was measured visible (libc `open` + `rename`, no
+  mkstemp) and its batch mode measured to write into the judged maildir, and
+  neither fact saved it, because it has no non-interactive read-back for a
+  checker to use. himalaya has `envelope list` / `message read` and
+  vdirsyncer has `repair`, so neither needs the reading that was refused.
+  The freeze will carry that record rather than only the outcome.
+
+Worth keeping beside those three: the candidate that moved three times today
+moved on my reasoning each time, never on the target. neomutt was rejected
+on rule 8 (wrong — batch mode is a first-class mode in its own man page),
+returned to the pool with both open questions answered favourably from
+source, and then dropped on rule 9. The target never changed.
+
+**Third pass, same day: the two rows left on a judgment were read from
+source, and one of them changed the slate.** neomutt returns to the pool
+with both of its open questions answered favourably — send/send.c has an
+Fcc branch guarded by SEND_BATCH ("Printed when an Fcc in batch mode
+fails"), so a non-interactive invocation with a local `record` writes into
+the judged maildir; and maildir/message.c opens the temp file with plain
+`open(path, O_WRONLY | O_EXCL | O_CREAT, 0666)` and moves it with
+`rename()` — libc, no mkstemp, which is the question today's #39
+measurement made cheap to ask of any C candidate. What holds it back is
+rule 4 (the primary interface is a TUI — a judgment reading cannot settle)
+and rule 9 (no non-interactive read-back, so a checker would read the
+maildir rather than use the tool). It brings the language the slate lacks.
+
+calcure's rule 8 was simply wrong, not merely unproven: `--task` and
+`--event` both add and exit. But calcure/savers.py then argues against the
+slot better than my rejection did — every row is written to `<file>.bak`
+and moved with `Path.replace()`, so **no window loses the user's tasks**,
+and the forecast is PASS with `.bak` noise in the judged root. Overturning
+a rejection and finding the target uninteresting are different results, and
+this pass produced the second.
+
+The three unread rows closed too: yadm is a `#!/bin/sh` script whose writes
+run in git children (the pass wall, #123 — GitHub's "Python" is its test
+suite), and bob and proto keep re-downloadable toolchains, which is not
+primary data. proto's user-authored `.prototools` is the only part worth
+revisiting if slots stay empty.
+
+Slate after three passes: himalaya (Rust), vdirsyncer (Python), neomutt
+(C) — three languages, all multi-file coherence, **two primary slots and
+the whole bench still empty**. The population argument is unchanged: 128 of
+159 enumerated repositories fell to language wall forecasts, and both walls
+doing that work are scheduled after v1.0.
+
+The owner's instruction was to re-judge the thin rejections against primary
+sources, reading only. Six rows, and the results split:
+
+- **pnpm** — upheld, and now on the project's own sentence: the README
+  calls the Rust port experimental, so the shipped CLI is still the Node one
+  and the thread forecast applies to what rule 12 says to measure. The doubt
+  was real (Rust is the majority language by bytes, with a genuine
+  workspace); the answer happened to be the one I had guessed.
+- **neomutt** — my rule was **wrong**. "Batch mode" is a first-class mode in
+  neomutt's own man page, -e/--command runs commands after config, and draft
+  files on stdin are documented as processed identically in batch and
+  interactive mode. Rule 8 does not fail. The rejection now rests on rule 4
+  — the primary interface is a TUI — which is a judgment about the word
+  "primary", recorded as one.
+- **ArchiveBox** — my rule was **wrong** in the other direction. The primary
+  data is files under the archive directory; the project itself calls its
+  SQLite file "your index", so rule 7 passes. It is still rejected, on rule
+  4 (five interfaces, browser extension listed first) and more strongly on
+  rule 16: the archiving is done by Chrome, wget and yt-dlp — child
+  processes writing the state, which is the pass wall (#123).
+- **TrendRadar**, **ffsubsync** — upheld, bases upgraded from a search
+  summary to the projects' own READMEs.
+- **calcure** — **weakened to uncertain.** Its README documents
+  argument-driven task and event adding, so rule 8 is unproven; rule 4 is
+  the likelier objection. One wiki page would settle it and this pass did
+  not open it.
+
+Zero rejections were fully overturned, which is the least interesting part
+of the result. The interesting part is that two of them now stand on a
+judgment rather than on a rule a measurement can settle, and the owner can
+see which.
+
+Two process notes. The register's E4 check — grep the diff for digits and
+open the primary source for each — is bound to *diffs*, and the wrong funnel
+went out in a chat message, which is not a diff. The check never fired. And
+this log's first draft backticked upstream repository names, which is
+exactly what acceptance check 11 extracts as repository paths; the
+convention `docs/target-classes.md` already follows is now followed here
+too, with a note saying why.
+
 ## 2026-08-22 — #231: the overall earliest and the claim exhibit are two different things
 
 Entry started before the first line of code, per the contract. The

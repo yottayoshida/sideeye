@@ -53,6 +53,17 @@ requirements).
 its sweep refusal is sealed unread. Do not read its internals, its
 tracker, or scout it. That eligibility is spent the moment anyone looks.
 
+## Cohort 4 — preparation, open
+
+`cohort4/` holds preconditions, not a campaign: `PREP.md` (the register of
+every mistake cohorts 1-3 paid for, mapped to what makes it impossible),
+`SCOUT-BRIEF.md` (the instrument for proposing candidates),
+`PROTOCOL-DRAFT.md` (each section marked carried, drafted or blocked),
+`CANDIDATES-REJECTED.md` (the rejections the brief requires be shown beside
+the survivors), and the gates with their falsification transcripts. No
+target is named in any of it, and the frozen `PROTOCOL.md` does not exist
+yet.
+
 ## Assisted-discovery cohort (#118) — closed record, live acceptance tests
 
 `assisted/` holds the first cohort: `PROTOCOL.md`, `SCOUT.md`,
