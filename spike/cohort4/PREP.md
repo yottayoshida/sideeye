@@ -164,20 +164,46 @@ recorded artifact (`docs/target-classes.md`):
 A target whose forecast lands in this list enters only with the apparatus
 that lifts the wall named **before** the probe, or does not enter.
 
-## 4. Engine prerequisite (#231): one case per invariant class
+## 4. Engine prerequisite (#231), as the owner specified it (2026-08-22)
 
 Today the engine saves the run's earliest violating world, and the claim
-rule reads that saved case. B1 is the consequence. The change:
+rule reads that saved case. B1 is the consequence. The work is owned by
+the session that closed cohort 3; the procedure below is the owner's, and
+this file records it because cohort 4's PROTOCOL freeze is downstream of
+it.
 
-- **Behaviour**: save the earliest violating world **per invariant class** —
-  one for L0-only, one for the checker-red (combined) form.
+**The framing**: separate the **overall earliest** from the **claim
+exhibit**. The existing earliest is not a mistake to remove — it is the
+first physical counterexample of a FAIL and keeps that meaning. What is
+missing is a second, machine-readable exhibit: the earliest **checker-red**
+world.
+
+- **Shape — to be compared, not assumed**: keep `case`/`replay` intact and
+  add the second exhibit additively (`checker_case`, `checker_replay`,
+  `checker_earliest`), *or* reorganise into a `cases` structure now, while
+  the freeze has not landed. Both are on the table; the comparison is part
+  of the work.
+- **Implementation**: track the checker-red class from the **invariant bits
+  at world-judgement time** — never by parsing the string "built-in
+  atomicity, and the checker" after the fact. The first L0-only case and
+  the first checker-red case are saved independently.
+- **Acceptance**: a synthetic regression that miniaturises poetry's own
+  structure — **k=2 is L0-only, k=4 is checker-red**. Assert that the
+  overall earliest stays 2, that the checker exhibit is 4, and that **the
+  case for 4 replays**. Per the repository's rule, the new assertion is
+  **shown red once** before it is trusted.
+- **BUILDLOG first**: the entry is opened *before* the code is touched —
+  writing it up at PR time is too late under this repository's rule. The
+  opening thesis is exactly "separate the overall earliest from the claim
+  exhibit"; that is enough to start.
 - **Contract check**: `docs/contract-freeze.md` surface 2 (report schema)
-  is frozen *at the v1.0 tag*; before it, changes are allowed by the
-  CHANGELOG's standing header. The change is additive in shape but touches
-  case output, so it lands with a `docs/report-schema.md` note and tests,
-  and the PROTOCOL cites the merged change rather than a plan.
-- **Order** (from #231, unchanged): engine change → PROTOCOL freeze citing
-  it → targets. Not applicable to cohorts 1–3.
+  freezes *at the v1.0 tag*; before it, changes are allowed by the
+  CHANGELOG's standing header. Case output is still touched, so the change
+  lands with a `docs/report-schema.md` note and tests.
+- **Order, not to be inverted**: BUILDLOG opened → engine change →
+  acceptance regression → merged to main → **then** the cohort-4 PROTOCOL
+  freeze, which is where the new reading is first written down as a rule →
+  then target contact. Nothing here re-reads cohorts 1–3.
 
 ## 5. Two new probe conditions
 
