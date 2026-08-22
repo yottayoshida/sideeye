@@ -2,6 +2,16 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the black verify transcript: the cohort's first FAIL under the full seal
+
+verify-assisted green on black (define at 413cdb2 strictly before
+artifacts at 32ae2fc, all four define files byte-identical;
+`verify-transcript.txt` committed beside the ruling). The first
+crash-world FAIL of the cohort carries the complete discipline: the
+question — including the R1-corrected torn-file reading and the
+empty-file drill — stood frozen on main before the world that answered
+it existed.
+
 ## 2026-08-22 — black's verdict: the engine finds the right thing; the thing was known
 
 The cohort's first full crash-world FAIL: 1 of 3 worlds, crash point 2

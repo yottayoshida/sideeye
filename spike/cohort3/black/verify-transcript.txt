@@ -1,0 +1,17 @@
+verify-assisted: spike/cohort3/black
+anchor: main (32ae2fc) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+define    spike/cohort3/black/ops/black-format.toml  introduced @ 413cdb2 (position 2)
+define    spike/cohort3/black/ops/check.sh  introduced @ 413cdb2 (position 2)
+define    spike/cohort3/black/ops/setup.sh  introduced @ 413cdb2 (position 2)
+define    spike/cohort3/black/ops/explore.sh  introduced @ 413cdb2 (position 2)
+artifact  spike/cohort3/black/cases/000001.json  introduced @ 32ae2fc (position 1)
+artifact  spike/cohort3/black/explore-transcript.txt  introduced @ 32ae2fc (position 1)
+artifact  spike/cohort3/black/report.json  introduced @ 32ae2fc (position 1)
+ok   D1: define complete @ 413cdb2 strictly precedes first artifact @ 32ae2fc
+ok   D2: spike/cohort3/black/ops/black-format.toml byte-identical at both points
+ok   D2: spike/cohort3/black/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort3/black/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort3/black/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort3/black
