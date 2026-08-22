@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the poetry-r2 verdict: the wound, sealed, and a rule for the next campaign
+
+FAIL, 1 of 3 worlds, reproduced identically twice — the declared
+shape to the letter: the empty manifest at crash point 2, combined
+invariant, the whole documented recovery chain failing on a config
+whose name and version died with the file, and **no noise world in
+front** — the evidentiary contrast with the primary that this
+revision existed to buy. Recorded and never claimed, per the
+FAIL-freeze ruling the define carries on its face. Two additions
+beyond the verdict. First, an outside reading of the poetry pair
+(relayed by the owner) named the design gap precisely: the cohort
+rule promoted the engine's save-one-case behavior into claim
+eligibility, so L0 precision noise can mask a real checker red —
+correct as cherry-picking prevention, odd as semantics, and
+demonstrated cleanly by these two records. Filed as #231 for the
+next campaign's protocol (earliest checker-red world as the
+mechanical exhibit, or first violation per invariant class —
+engine-side case saving plus a contract-freeze check as
+preconditions), freezing before that campaign's first contact and
+changing nothing in cohorts 1–3: applying it "before papis" was
+considered and declined on the record — papis's rename-shaped write
+has no maskable world, r2's disqualifier is the FAIL-freeze rule
+(its earliest world *was* checker-red), and the only run it would
+help, the primary's, is read-frozen. Second, the run-0 lesson from
+the primary held: `--work` was mounted from the first run and the
+case survived.
+
 ## 2026-08-22 — poetry revision 2: the operation that writes only the manifest
 
 Owner ruling (same day as the poetry verdict, order explicit:

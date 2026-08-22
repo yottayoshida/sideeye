@@ -1,0 +1,44 @@
+artifact run rc=1
+# The committed artifact run (run 1 of two identical runs; run 2, the reproduction, is noted in RUNLOG.md).
+Skipping virtualenv creation, as specified in config file.
+Updating dependencies
+Resolving dependencies...
+
+Writing lock file
+falsify: checker(poetry-version): leg V: pyproject.toml no longer parses as TOML: Traceback (most recent call last):
+falsify:   File "<string>", line 1, in <module>
+falsify:     import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))
+falsify:                          ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+checker(poetry-version): check --lock red; recovery chain step 1 (poetry lock): 
+The Poetry configuration is invalid:
+  - Either [project.name] or [tool.poetry.name] is required in package mode.
+  - Either [project.version] or [tool.poetry.version] is required in package mode.
+checker(poetry-version): step 1 failed (rc=1); step 2, the documented regenerate (poetry lock --regenerate): 
+The Poetry configuration is invalid:
+  - Either [project.name] or [tool.poetry.name] is required in package mode.
+  - Either [project.version] or [tool.poetry.version] is required in package mode.
+checker(poetry-version): leg R: the documented recovery chain failed — poetry lock, then poetry lock --regenerate (rc=1): 
+The Poetry configuration is invalid:
+  - Either [project.name] or [tool.poetry.name] is required in package mode.
+  - Either [project.version] or [tool.poetry.version] is required in package mode.
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/tmp/cohort3/poetry-r2/state/pyproject.toml)
+            before write(/tmp/cohort3/poetry-r2/state/pyproject.toml)
+path        pyproject.toml
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 2 operations (14672 syscall lines examined, 2229 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /work/spike/cohort3/poetry-r2/work/cases/000001.json
+replay      sideeye replay /work/spike/cohort3/poetry-r2/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/cohort3/poetry-r2/state SIDEEYE_TRACE_PATH=/work/spike/cohort3/poetry-r2/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
