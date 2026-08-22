@@ -3,9 +3,12 @@
 # (proposals.md carries the write shape, the five pre-define trials and
 # the declared world readings). Determinism and closure evidence:
 # ../../probes/poetry.txt — the probe ran cwd = the project dir with a
-# relative dep path and fresh ambient per run; the define's deltas are
-# the -C directory flag, an absolute dep path and setup-warmed shared
-# ambient, and the engine re-verifies determinism at explore.
+# relative dep path, fresh ambient per run, and virtualenv creation ON;
+# the define's deltas are the -C directory flag, an absolute dep path,
+# setup-warmed shared ambient, and POETRY_VIRTUALENVS_CREATE=false
+# (promoted from the probe's forecast section, where 0 threads was
+# measured under it), and the engine re-verifies determinism at
+# explore.
 [world]
 state = "/tmp/cohort3/poetry/state"
 
