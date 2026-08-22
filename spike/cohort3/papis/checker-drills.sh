@@ -18,7 +18,9 @@ drill() { # name want(pass|fail) state-dir expected-fragment
     name=$1; want=$2; st=$3; frag=$4
     out=$(SIDEEYE_STATE_DIR="$st" "$OPS/check.sh" 2>&1); rc=$?
     if [ "$want" = pass ] && [ "$rc" -eq 0 ]; then
-        echo "drill ok   $name: checker green as required${out:+ — $out}"
+        echo "drill ok   $name: checker green as required — the state it judged:"
+        find "$st" -mindepth 1 | sed "s|$P|P|" | sort | sed 's/^/  | /'
+        if [ -n "$out" ]; then printf '%s\n' "$out" | sed 's/^/  | /'; fi
     elif [ "$want" = fail ] && [ "$rc" -eq 1 ]; then
         case "$out" in
             *"$frag"*)
@@ -33,7 +35,7 @@ drill() { # name want(pass|fail) state-dir expected-fragment
 }
 
 echo "== papis checker drills — $(papis --version 2>&1 | tr -d '\n') — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-DIRS="$P/d-old $P/d-new $P/d-empty $P/d-noinfo $P/d-noattach $P/d-torn $P/d-bytes $P/d-exist $P/d-stray $P/d-guard"
+DIRS="$P/d-old $P/d-new $P/d-empty $P/d-noinfo $P/d-noattach $P/d-torn $P/d-bytes $P/d-link $P/d-exist $P/d-lostinfo $P/d-stray $P/d-nested"
 rm -rf $DIRS
 export XDG_CONFIG_HOME="$P/xdg" XDG_CACHE_HOME="$P/cache" HOME="$P/home"
 export PAPIS_NP=0
@@ -89,27 +91,41 @@ cp -a "$P/d-new" "$P/d-bytes"
 head -c 5 "$P/d-new/probe-doc/fixture.txt" > "$P/d-bytes/probe-doc/fixture.txt"
 drill "D-red-attachment-bytes" fail "$P/d-bytes" "no longer holds the fixture's bytes"
 
+# leg D red: the entry is there but it is a dangling symlink, which
+# `ls` lists and `-e` denies — the shape that walked past the first
+# draft's presence test (this define's R1)
+cp -a "$P/d-old" "$P/d-link"
+ln -s /nonexistent-target "$P/d-link/probe-doc"
+drill "D-red-symlink-entry" fail "$P/d-link" "not a plain directory"
+
 # leg E red: the pre-existing document's attachment mutated
 cp -a "$P/d-new" "$P/d-exist"
 printf 'x' >> "$P/d-exist/existing-doc/existing.txt"
 drill "E-red-existing-mutated" fail "$P/d-exist" "leg E: the existing document's attachment changed"
 
-# leg R red: a third, structurally valid document the declaration does
-# not account for — leg D and leg E both pass, and only papis's own
-# reader shows it
-cp -a "$P/d-new" "$P/d-stray"
-cp -a "$P/d-new/probe-doc" "$P/d-stray/other-doc"
-sed -i 's/^title: Probe$/title: Other/; s/^papis_id: probe0001$/papis_id: other0001/' "$P/d-stray/other-doc/info.yaml"
-drill "R-red-stray-document" fail "$P/d-stray" "papis lists a different document set"
+# guard red: the existing document lost its metadata
+cp -a "$P/d-new" "$P/d-lostinfo"; rm "$P/d-lostinfo/existing-doc/info.yaml"
+drill "guard-red-existing-lost-info" fail "$P/d-lostinfo" "the existing document has lost its info.yaml"
+
+# guard red: an entry this operation cannot produce (the enumeration
+# the accepted probe had and the first draft dropped)
+cp -a "$P/d-new" "$P/d-stray"; : > "$P/d-stray/stray-entry"
+drill "guard-red-stray-entry" fail "$P/d-stray" "entries this operation cannot produce"
+
+# leg R red: a document NESTED inside the new document's directory —
+# measured: papis indexes the library recursively, so this is a third
+# document that the top-level entry enumeration cannot see and leg D's
+# member checks pass over. Only papis's own reader shows it, which is
+# what leg R is for.
+cp -a "$P/d-new" "$P/d-nested"
+mkdir -p "$P/d-nested/probe-doc/nested"
+printf 'title: Nested\nauthor: Probe Author\npapis_id: nested0001\n' > "$P/d-nested/probe-doc/nested/info.yaml"
+drill "R-red-nested-document" fail "$P/d-nested" "papis lists a different document set"
 
 # leg C red: the outside-root fixture mutated
 printf 'x' >> "$P/fixture.txt"
 drill "C-red-fixture-mutated" fail "$P/d-new" "leg C: the outside-root fixture fixture.txt changed"
 printf 'probe document, fixed bytes' > "$P/fixture.txt"
-
-# guard red: the existing document is gone entirely
-cp -a "$P/d-old" "$P/d-guard"; rm -rf "$P/d-guard/existing-doc"
-drill "guard-red-existing-gone" fail "$P/d-guard" "the existing document's directory is missing"
 
 rm -rf $DIRS "$P/xdg-new"
 echo "== drills failed: $FAILS"

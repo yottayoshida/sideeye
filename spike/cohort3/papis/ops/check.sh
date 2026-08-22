@@ -11,19 +11,26 @@
 # exactly the documents leg D found).
 #
 # The reader runs LAST on purpose, and it is the only leg that can
-# write: the pre-define trials measured papis generating and
-# PERSISTING a fresh random papis_id into a document whose info.yaml
-# lost that field (trials.txt, state F). A byte assertion after the
-# reader would be judging the checker's own side effect, so every
-# structural and byte assertion precedes it.
+# write: the pre-define trials measured `papis list` — by itself, with
+# no other command run — generating and PERSISTING a papis_id into a
+# document whose info.yaml lost that field, and two byte-identical
+# torn states received different ids, so the value is random rather
+# than derived (pre-define-trials.txt, states F and H/I/J). A byte
+# assertion after the reader would be judging the checker's own side
+# effect, so every structural and byte assertion precedes it.
 #
-# No documented recovery is applied, because the trials found none that
-# applies: `papis doctor` — papis's repair command — retrieves nothing
-# non-interactively in a multi-document library (it falls to the
-# picker: "Cannot show the picker... No documents retrieved", rc 0),
-# reports the same three type errors on the untouched pre-state
-# baseline, and auto-fixes zero of them. That is measured, not assumed;
-# proposals.md carries the transcript reference.
+# No documented recovery is applied, because the trials measured
+# papis's repair command — `papis doctor -a`, with the selection flag
+# its help documents — and none of what it does is a recovery here:
+# it is red on the untouched baseline (six type errors over the two
+# healthy documents, rc 0 while saying so), its one applicable fix
+# "repairs" a lost attachment by REMOVING the file from the document
+# ("[FIX] Removing file from document"), and on a torn info.yaml it
+# dies with an uncaught AttributeError. A command that is red before
+# the operation, that resolves data loss by forgetting the data, and
+# that crashes on the damage it would be called for, is not the
+# documented recovery the cohort rule asks for. Measured, not assumed:
+# pre-define-trials.txt, states A–G.
 #
 # The library papis reads is $SIDEEYE_STATE_DIR, so the config is
 # written per invocation with that path (its content is otherwise the
@@ -63,15 +70,31 @@ print("%s|%s" % (d.get("title"), d.get("papis_id")))
 ' "$1" 2> "$T/yaml.err"
 }
 
-# ---- guard: the library and the existing document are there ---------------
+# ---- guard: the library holds what a library of this define can hold ------
+# The entry enumeration is the guard the accepted probe had and the
+# first draft of this checker dropped: without it a stray entry, or a
+# probe-doc that is a dangling symlink or a plain file, walks past
+# every leg (leg D's -e is false for a dangling link, and leg R then
+# expects the old set).
 [ -d "$S" ] || fail "the library directory is missing"
+entries=$(ls -A "$S" | sort | tr '\n' ' ')
+case "$entries" in
+    'existing-doc ')            probe_present=no ;;
+    'existing-doc probe-doc ')  probe_present=yes ;;
+    *) fail "the library holds entries this operation cannot produce (got: $entries)" ;;
+esac
 [ -d "$S/existing-doc" ] || fail "the existing document's directory is missing from the library"
 [ -f "$S/existing-doc/info.yaml" ] || fail "the existing document has lost its info.yaml"
 [ -f "$S/existing-doc/existing.txt" ] || fail "the existing document has lost its attachment"
 
 # ---- leg D: the new document is all-or-nothing ----------------------------
-if [ -e "$S/probe-doc" ]; then
-    [ -d "$S/probe-doc" ] || fail "leg D: probe-doc exists but is not a directory"
+# Presence comes from the guard's entry list, not from a -e test: a
+# dangling symlink named probe-doc is listed by ls and invisible to
+# -e, and the two legs that branch on presence must never disagree
+# about it.
+if [ "$probe_present" = yes ]; then
+    { [ -d "$S/probe-doc" ] && [ ! -L "$S/probe-doc" ]; } \
+        || fail "leg D: the library holds a probe-doc entry that is not a plain directory"
     [ -f "$S/probe-doc/info.yaml" ] || fail "leg D: probe-doc is present but its info.yaml is missing"
     [ -f "$S/probe-doc/fixture.txt" ] || fail "leg D: probe-doc is present but its attachment fixture.txt is missing"
     printf 'probe document, fixed bytes' | cmp -s - "$S/probe-doc/fixture.txt" \
@@ -109,7 +132,7 @@ if [ "$rc" -ne 0 ]; then
     tnote=""; case "$rc" in 124|137) tnote="; this step timed out" ;; esac
     fail "leg R: papis list failed (rc=$rc$tnote): $(head -c 200 "$T/list.err")"
 fi
-if [ -e "$S/probe-doc" ]; then
+if [ "$probe_present" = yes ]; then
     printf 'Existing existing0001\nProbe probe0001\n' > "$T/want"
 else
     printf 'Existing existing0001\n' > "$T/want"

@@ -1,5 +1,24 @@
-== papis pre-define trials — papis, version 0.16.0 — 2026-08-22T05:34:57Z
+== papis pre-define trials — papis, version 0.16.0 — 2026-08-22T06:06:24Z
 python3 yaml module: 6.0.3
+== papis doctor --help (the selection flag this revision adds, from the tool's own help):
+  | Usage: papis doctor [OPTIONS] [QUERY]
+  | 
+  |   Check for common problems in documents.
+  | 
+  | Options:
+  |   -h, --help         Show this message and exit.
+  |   --sort FIELD       Sort documents with respect to the FIELD.
+  |   --reverse          Reverse sort order.
+  |   -t, --checks TEXT  Checks to run on every document.
+  |   --list-checks      List all supported checks.
+  |   --json             Output the results in JSON format.
+  |   --fix              Auto fix the errors with the auto fixer mechanism.
+  |   -s, --suggest      Suggest commands to be run for resolution.
+  |   -e, --explain      Give a short message for the reason of the error.
+  |   --edit             Edit every file with the edit command.
+  |   -a, --all          Apply action to all matching documents.
+  |   --doc-folder PATH  Document folder on which to apply action.
+  |   --all-checks       Run all available checks (ignores --checks).
 setup: the pre-state (one existing document) rc=0
 setup: the completed-add state rc=0
 ---- A: old state (engine-reachable)
@@ -10,7 +29,7 @@ setup: the completed-add state rc=0
   papis list rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
-  papis doctor --all-checks rc=0, output:
+  papis doctor -a --all-checks rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | [WARNING] commands.doctor: Found 3 errors.
     | bibtex-type	type	/tmp/trials-papis/lA/existing-doc
@@ -18,7 +37,7 @@ setup: the completed-add state rc=0
     | biblatex-type-alias	type	/tmp/trials-papis/lA/existing-doc
     | 
     | biblatex-required-keys	type	/tmp/trials-papis/lA/existing-doc
-  papis doctor --all-checks --fix rc=0, output:
+  papis doctor -a --all-checks --fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | [WARNING] commands.doctor: Found 3 errors.
     | bibtex-type	type	/tmp/trials-papis/lA/existing-doc
@@ -46,14 +65,35 @@ setup: the completed-add state rc=0
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
     | Probe probe0001
-  papis doctor --all-checks rc=0, output:
+  papis doctor -a --all-checks rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
-  papis doctor --all-checks --fix rc=0, output:
+    | [WARNING] commands.doctor: Found 6 errors.
+    | bibtex-type	type	/tmp/trials-papis/lB/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lB/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lB/existing-doc
+    | 
+    | bibtex-type	type	/tmp/trials-papis/lB/probe-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lB/probe-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lB/probe-doc
+  papis doctor -a --all-checks --fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
+    | [WARNING] commands.doctor: Found 6 errors.
+    | bibtex-type	type	/tmp/trials-papis/lB/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lB/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lB/existing-doc
+    | 
+    | bibtex-type	type	/tmp/trials-papis/lB/probe-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lB/probe-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lB/probe-doc
+    | [INFO] commands.doctor: Auto-fixed 0 / 6 errors!
   papis list AFTER the fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
@@ -85,7 +125,7 @@ setup: the completed-add state rc=0
   papis list rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
-  papis doctor --all-checks rc=0, output:
+  papis doctor -a --all-checks rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | [WARNING] commands.doctor: Found 3 errors.
     | bibtex-type	type	/tmp/trials-papis/lC/existing-doc
@@ -93,7 +133,7 @@ setup: the completed-add state rc=0
     | biblatex-type-alias	type	/tmp/trials-papis/lC/existing-doc
     | 
     | biblatex-required-keys	type	/tmp/trials-papis/lC/existing-doc
-  papis doctor --all-checks --fix rc=0, output:
+  papis doctor -a --all-checks --fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | [WARNING] commands.doctor: Found 3 errors.
     | bibtex-type	type	/tmp/trials-papis/lC/existing-doc
@@ -120,7 +160,7 @@ setup: the completed-add state rc=0
   papis list rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
-  papis doctor --all-checks rc=0, output:
+  papis doctor -a --all-checks rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | [WARNING] commands.doctor: Found 3 errors.
     | bibtex-type	type	/tmp/trials-papis/lD/existing-doc
@@ -128,7 +168,7 @@ setup: the completed-add state rc=0
     | biblatex-type-alias	type	/tmp/trials-papis/lD/existing-doc
     | 
     | biblatex-required-keys	type	/tmp/trials-papis/lD/existing-doc
-  papis doctor --all-checks --fix rc=0, output:
+  papis doctor -a --all-checks --fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | [WARNING] commands.doctor: Found 3 errors.
     | bibtex-type	type	/tmp/trials-papis/lD/existing-doc
@@ -157,14 +197,40 @@ setup: the completed-add state rc=0
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
     | Probe probe0001
-  papis doctor --all-checks rc=0, output:
+  papis doctor -a --all-checks rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
-  papis doctor --all-checks --fix rc=0, output:
+    | [WARNING] commands.doctor: Found 7 errors.
+    | bibtex-type	type	/tmp/trials-papis/lE/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lE/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lE/existing-doc
+    | 
+    | files	/tmp/trials-papis/lE/probe-doc/fixture.txt	/tmp/trials-papis/lE/probe-doc
+    | 
+    | bibtex-type	type	/tmp/trials-papis/lE/probe-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lE/probe-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lE/probe-doc
+  papis doctor -a --all-checks --fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
+    | [WARNING] commands.doctor: Found 7 errors.
+    | bibtex-type	type	/tmp/trials-papis/lE/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lE/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lE/existing-doc
+    | 
+    | files	/tmp/trials-papis/lE/probe-doc/fixture.txt	/tmp/trials-papis/lE/probe-doc
+    | [INFO] doctor: [FIX] Removing file from document: 'fixture.txt'.
+    | 
+    | bibtex-type	type	/tmp/trials-papis/lE/probe-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lE/probe-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lE/probe-doc
+    | [INFO] commands.doctor: Auto-fixed 1 / 7 errors!
   papis list AFTER the fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
@@ -180,8 +246,7 @@ setup: the completed-add state rc=0
     | author_list:
     | - family: Author
     |   given: Probe
-    | files:
-    | - fixture.txt
+    | files: []
     | papis_id: probe0001
     | ref: Probe_Probe_2026
     | title: Probe
@@ -197,19 +262,81 @@ setup: the completed-add state rc=0
   papis list rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
-    |  c86091c106e36c9125853a7fb86eab9f
-  papis doctor --all-checks rc=0, output:
+    |  9fb7c0ce0490f9ade9e40312f591695f
+  papis doctor -a --all-checks rc=1, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
-  papis doctor --all-checks --fix rc=0, output:
+    | Traceback (most recent call last):
+    |   File "/usr/local/bin/papis", line 8, in <module>
+    |     sys.exit(run())
+    |              ~~~^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1569, in __call__
+    |     return self.main(*args, **kwargs)
+    |            ~~~~~~~~~^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1490, in main
+    |     rv = self.invoke(ctx)
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1970, in invoke
+    |     return _process_result(sub_ctx.command.invoke(sub_ctx))
+    |                            ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1353, in invoke
+    |     return ctx.invoke(self.callback, **ctx.params)
+    |            ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 907, in invoke
+    |     return callback(*args, **kwargs)
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/commands/doctor.py", line 348, in cli
+    |     errors = gather_errors(documents, checks=checks)
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 1032, in gather_errors
+    |     errors.extend(REGISTERED_CHECKS[check].operate(doc))
+    |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 959, in string_cleaner_check
+    |     if (has_author_initials(key, value, STRING_CLEANER_INITIALS_SPACE_REGEX)
+    |         ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 918, in has_author_initials
+    |     return any(pattern.search(author["given"])
+    |                for author in doc["author_list"]
+    |                if author.get("given") and author.get("family"))
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 920, in <genexpr>
+    |     if author.get("given") and author.get("family"))
+    |        ^^^^^^^^^^
+    | AttributeError: 'str' object has no attribute 'get'
+  papis doctor -a --all-checks --fix rc=1, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
+    | Traceback (most recent call last):
+    |   File "/usr/local/bin/papis", line 8, in <module>
+    |     sys.exit(run())
+    |              ~~~^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1569, in __call__
+    |     return self.main(*args, **kwargs)
+    |            ~~~~~~~~~^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1490, in main
+    |     rv = self.invoke(ctx)
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1970, in invoke
+    |     return _process_result(sub_ctx.command.invoke(sub_ctx))
+    |                            ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 1353, in invoke
+    |     return ctx.invoke(self.callback, **ctx.params)
+    |            ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/click/core.py", line 907, in invoke
+    |     return callback(*args, **kwargs)
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/commands/doctor.py", line 348, in cli
+    |     errors = gather_errors(documents, checks=checks)
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 1032, in gather_errors
+    |     errors.extend(REGISTERED_CHECKS[check].operate(doc))
+    |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 959, in string_cleaner_check
+    |     if (has_author_initials(key, value, STRING_CLEANER_INITIALS_SPACE_REGEX)
+    |         ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 918, in has_author_initials
+    |     return any(pattern.search(author["given"])
+    |                for author in doc["author_list"]
+    |                if author.get("given") and author.get("family"))
+    |   File "/usr/local/lib/python3.13/dist-packages/papis/doctor.py", line 920, in <genexpr>
+    |     if author.get("given") and author.get("family"))
+    |        ^^^^^^^^^^
+    | AttributeError: 'str' object has no attribute 'get'
   papis list AFTER the fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
-    |  c86091c106e36c9125853a7fb86eab9f
+    |  9fb7c0ce0490f9ade9e40312f591695f
   library contents AFTER the fix:
     WS/lF/existing-doc
     WS/lF/existing-doc/existing.txt
@@ -221,7 +348,7 @@ setup: the completed-add state rc=0
     | author: Probe Author
     | author_list:
     | - fami
-    | papis_id: c86091c106e36c9125853a7fb86eab9f
+    | papis_id: 9fb7c0ce0490f9ade9e40312f591695f
 ---- G: truncated attachment (surgery)
   library contents:
     WS/lG/existing-doc
@@ -234,14 +361,35 @@ setup: the completed-add state rc=0
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
     | Probe probe0001
-  papis doctor --all-checks rc=0, output:
+  papis doctor -a --all-checks rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
-  papis doctor --all-checks --fix rc=0, output:
+    | [WARNING] commands.doctor: Found 6 errors.
+    | bibtex-type	type	/tmp/trials-papis/lG/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lG/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lG/existing-doc
+    | 
+    | bibtex-type	type	/tmp/trials-papis/lG/probe-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lG/probe-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lG/probe-doc
+  papis doctor -a --all-checks --fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
-    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
-    | [WARNING] commands.doctor: No documents retrieved
+    | [WARNING] commands.doctor: Found 6 errors.
+    | bibtex-type	type	/tmp/trials-papis/lG/existing-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lG/existing-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lG/existing-doc
+    | 
+    | bibtex-type	type	/tmp/trials-papis/lG/probe-doc
+    | 
+    | biblatex-type-alias	type	/tmp/trials-papis/lG/probe-doc
+    | 
+    | biblatex-required-keys	type	/tmp/trials-papis/lG/probe-doc
+    | [INFO] commands.doctor: Auto-fixed 0 / 6 errors!
   papis list AFTER the fix rc=0, output:
     | [INFO] database.cache: Indexing library. This might take a while...
     | Existing existing0001
@@ -264,4 +412,17 @@ setup: the completed-add state rc=0
     | ref: Probe_Probe_2026
     | title: Probe
     | year: 2026
+---- demonstration: the same state B WITHOUT the selection flag
+  papis doctor --all-checks (no -a) rc=0, output:
+    | [INFO] database.cache: Indexing library. This might take a while...
+    | [ERROR] pick.prompt_toolkit: Cannot show the picker when no interactive output is available. Both 'stdout' and 'stderr' are not connected as TTY interfaces (likely being piped to some other process).
+    | [WARNING] commands.doctor: No documents retrieved
+---- attribution: who writes the generated papis_id
+  H, no command run at all      : papis_id line = (none)
+  I, ONLY papis list run — its output:
+    | Existing existing0001
+    |  d1ea7e76e5c975efa817393fb94c47b8
+  I, after papis list only     : papis_id line = papis_id: d1ea7e76e5c975efa817393fb94c47b8
+  J, a second independent torn state, papis list only: papis_id line = papis_id: b6fc4c7b3a0f81f9bca37be4bdd81a0a
+  (I and J start from byte-identical torn files: equal ids = derived, different ids = random)
 == trials done (this script judges nothing; the readings feed the define's declaration)

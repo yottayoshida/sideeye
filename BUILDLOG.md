@@ -38,6 +38,51 @@ command does. Drills eleven for eleven, attributed; most reds are
 surgery-only shapes, rehearsed anyway because an unseen branch is not
 a trusted branch.
 
+**Corrected before merge, on R1's findings and one of my own.** The
+paragraph above was right that doctor is not the recovery and wrong
+about how I had shown it: the trials ran `papis doctor` with **no
+selection flag**, so in every two-document library it fell to the
+interactive picker and examined nothing — including state E, the
+missing-attachment shape built *for* doctor's `files` check, which
+therefore never ran once. The measurement was designed around a check
+it then prevented from executing. Re-run with `-a`, doctor is worse
+than impotent and the rejection is stronger for being fair: it is red
+on the **untouched baseline** (six type errors over two healthy
+documents, rc 0 while saying so); its one applicable fix prints
+"[FIX] Removing file from document" and leaves `files: []` — the
+library made consistent by **forgetting the lost data**, which the
+cargo and poetry rulings already refused to call recovery; and on a
+torn `info.yaml` **doctor itself dies**, rc 1 with an uncaught
+AttributeError, which is precisely the damage a repair would exist
+for. Four more corrections landed in the same round. **The
+"reader writes" claim was unattributable** — the trials ran list, then
+doctor, then doctor --fix, then list, and dumped the file once at the
+end — so three states were added: no command run (no `papis_id`),
+`papis list` alone (a `papis_id` appears — the reader is the writer),
+and a second byte-identical torn state whose id came out **different**,
+so "random" is now measured rather than asserted. **The mode-seam
+argument had the right conclusion and the wrong mechanism**: restore
+creates 0755 directories and 0644 files and never chmods, which are
+exactly papis's post-chmod modes, so a mode leg is *vacuous* at this
+umask and a *false-candidate generator* under a stricter one — not
+"fails its own baseline", the shorthand I had carried over from
+mercurial's `checkisexec` and was about to propagate to the next
+define. **The checker had dropped the probe's entry enumeration**, so
+a stray entry, a `probe-doc` that is a plain file, or a dangling
+symlink named `probe-doc` (listed by `ls`, denied by `-e`) walked past
+every leg; the guard now enumerates and the two legs that branch on
+presence read that one answer instead of testing independently. And
+the leg-R drill had to change with it: a third top-level document now
+trips the guard first, so the drill became a document **nested inside**
+`probe-doc` — measured: papis indexes the library recursively, so that
+is a document no filesystem-level leg can see and only the reader
+reveals. Drills went from eleven to thirteen. Two claims were also
+walked back to what the record supports: the trials arrive *with* this
+define rather than ahead of it on main (the scout is the part that
+predates it), and "every branch rehearsed" is now stated as what it
+is — per-leg red with nine of the checker's messages seen red, not all
+of them.
+
 ## 2026-08-22 — the poetry-r2 verify transcript: the fifth seal, and the papis off switch
 
 verify-assisted green on poetry-r2 (define at 88447be strictly before

@@ -8,6 +8,17 @@
 # declarations that intuition had produced; these trials are how the
 # papis declaration gets its legs from measurement instead.
 #
+# REVISION (2026-08-22, after this define's own R1): the first version
+# ran `papis doctor` with no query and no selection flag, so in every
+# library holding two documents it fell to the interactive picker and
+# examined nothing — including state E, the missing-attachment shape
+# built specifically for doctor's `files` check, which therefore never
+# ran once. A rejection of doctor as the documented recovery cannot
+# rest on a measurement that never let it run. Every doctor invocation
+# below now carries `-a` (its own help: "Apply action to all matching
+# documents"); the no-`-a` behaviour is kept as a named demonstration
+# because the trap itself is worth the record.
+#
 # Engine-free: normal executions and file surgery only. Fixtures and
 # config are the accepted probe's, byte-for-byte.
 set -u
@@ -16,6 +27,8 @@ rm -rf "$WS"; mkdir -p "$WS"
 
 echo "== papis pre-define trials — $(papis --version 2>&1 | tr -d '\n') — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "python3 yaml module: $(python3 -c 'import yaml; print(yaml.__version__)' 2>&1)"
+echo "== papis doctor --help (the selection flag this revision adds, from the tool's own help):"
+papis doctor --help 2>/dev/null | sed 's/^/  | /'
 
 printf 'existing document, fixed bytes' > "$WS/existing.txt"
 printf 'probe document, fixed bytes'    > "$WS/fixture.txt"
@@ -74,11 +87,11 @@ trial() { # label lib-dir
     out=$(XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis list --all --format '{doc[title]} {doc[papis_id]}' 2>&1); rc=$?
     echo "  papis list rc=$rc, output:"
     printf '%s\n' "$out" | sed 's/^/    | /'
-    dout=$(XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis doctor --all-checks 2>&1); drc=$?
-    echo "  papis doctor --all-checks rc=$drc, output:"
+    dout=$(XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis doctor -a --all-checks 2>&1); drc=$?
+    echo "  papis doctor -a --all-checks rc=$drc, output:"
     printf '%s\n' "$dout" | sed 's/^/    | /'
-    fout=$(XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis doctor --all-checks --fix 2>&1); frc=$?
-    echo "  papis doctor --all-checks --fix rc=$frc, output:"
+    fout=$(XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis doctor -a --all-checks --fix 2>&1); frc=$?
+    echo "  papis doctor -a --all-checks --fix rc=$frc, output:"
     printf '%s\n' "$fout" | sed 's/^/    | /'
     out2=$(XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis list --all --format '{doc[title]} {doc[papis_id]}' 2>&1); rc2=$?
     echo "  papis list AFTER the fix rc=$rc2, output:"
@@ -118,5 +131,46 @@ trial "F: torn info.yaml (surgery)" "$WS/lF"
 # G: attachment truncated (surgery)
 cp -a "$WS/new" "$WS/lG"; head -c 5 "$WS/new/probe-doc/fixture.txt" > "$WS/lG/probe-doc/fixture.txt"
 trial "G: truncated attachment (surgery)" "$WS/lG"
+
+# ---- the no-selection-flag trap, kept on the record ------------------------
+# What the first version of these trials measured everywhere: with no
+# query and no -a, a library holding two documents sends doctor to the
+# interactive picker, which cannot run non-interactively — and it exits
+# 0 having examined nothing. A rejection built on this output would be
+# a rejection of the invocation, not of the tool.
+echo "---- demonstration: the same state B WITHOUT the selection flag"
+xdg="$WS/xdg-t"; cache="$WS/cache-t"
+rm -rf "$xdg" "$cache"; write_config "$xdg" "$WS/lB"; mkdir -p "$cache"
+dout=$(XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis doctor --all-checks 2>&1); drc=$?
+echo "  papis doctor --all-checks (no -a) rc=$drc, output:"
+printf '%s\n' "$dout" | sed 's/^/    | /'
+
+# ---- who writes the generated papis_id, and is it random? ------------------
+# The define's checker runs every structural and byte assertion BEFORE
+# papis's reader, on the grounds that the reader persists a generated
+# papis_id into a document that lost the field (first seen in state F).
+# The first version could not attribute that write: it ran list, then
+# doctor, then doctor --fix, then list again, and dumped the file once
+# at the end. These three states separate the writers, and the pair of
+# independent torn states answers "random or derived".
+torn_state() { # dir
+    cp -a "$WS/new" "$1"
+    head -c 40 "$WS/new/probe-doc/info.yaml" > "$1/probe-doc/info.yaml"
+}
+show_id() { # label dir
+    printf '  %s: papis_id line = %s\n' "$1" "$(grep '^papis_id:' "$2/probe-doc/info.yaml" 2>/dev/null || echo '(none)')"
+}
+echo "---- attribution: who writes the generated papis_id"
+torn_state "$WS/lH"; show_id "H, no command run at all      " "$WS/lH"
+torn_state "$WS/lI"
+xdg="$WS/xdg-i"; cache="$WS/cache-i"; rm -rf "$xdg" "$cache"; write_config "$xdg" "$WS/lI"; mkdir -p "$cache"
+XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis list --all --format '{doc[title]} {doc[papis_id]}' > "$WS/i.out" 2>/dev/null
+echo "  I, ONLY papis list run — its output:"; sed 's/^/    | /' "$WS/i.out"
+show_id "I, after papis list only     " "$WS/lI"
+torn_state "$WS/lJ"
+xdg="$WS/xdg-j"; cache="$WS/cache-j"; rm -rf "$xdg" "$cache"; write_config "$xdg" "$WS/lJ"; mkdir -p "$cache"
+XDG_CONFIG_HOME="$xdg" XDG_CACHE_HOME="$cache" papis list --all --format '{doc[title]} {doc[papis_id]}' > /dev/null 2>&1
+show_id "J, a second independent torn state, papis list only" "$WS/lJ"
+echo "  (I and J start from byte-identical torn files: equal ids = derived, different ids = random)"
 
 echo "== trials done (this script judges nothing; the readings feed the define's declaration)"

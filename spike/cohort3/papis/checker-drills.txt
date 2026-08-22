@@ -1,11 +1,20 @@
-== papis checker drills — papis, version 0.16.0 — 2026-08-22T05:39:10Z
+== papis checker drills — papis, version 0.16.0 — 2026-08-22T06:09:54Z
 setup rc=0 (the library with its existing document, under the launcher's env)
-drill ok   green-old: checker green as required
+drill ok   green-old: checker green as required — the state it judged:
+  | P/d-old/existing-doc
+  | P/d-old/existing-doc/existing.txt
+  | P/d-old/existing-doc/info.yaml
 papis add rc=0 (must be 0 for green-new to mean what it claims)
 the document the add wrote:
 P/d-new/probe-doc/fixture.txt
 P/d-new/probe-doc/info.yaml
-drill ok   green-new: checker green as required
+drill ok   green-new: checker green as required — the state it judged:
+  | P/d-new/existing-doc
+  | P/d-new/existing-doc/existing.txt
+  | P/d-new/existing-doc/info.yaml
+  | P/d-new/probe-doc
+  | P/d-new/probe-doc/fixture.txt
+  | P/d-new/probe-doc/info.yaml
 drill ok   D-red-empty-dir: checker red in the intended branch; full checker output:
   | checker(papis-add): leg D: probe-doc is present but its info.yaml is missing
 drill ok   D-red-no-info: checker red in the intended branch; full checker output:
@@ -16,12 +25,16 @@ drill ok   D-red-torn-info: checker red in the intended branch; full checker out
   | checker(papis-add): leg D: probe-doc/info.yaml no longer carries the frozen title and papis_id (title|papis_id = None|None)
 drill ok   D-red-attachment-bytes: checker red in the intended branch; full checker output:
   | checker(papis-add): leg D: probe-doc's attachment no longer holds the fixture's bytes
+drill ok   D-red-symlink-entry: checker red in the intended branch; full checker output:
+  | checker(papis-add): leg D: the library holds a probe-doc entry that is not a plain directory
 drill ok   E-red-existing-mutated: checker red in the intended branch; full checker output:
   | checker(papis-add): leg E: the existing document's attachment changed
-drill ok   R-red-stray-document: checker red in the intended branch; full checker output:
-  | checker(papis-add): leg R: papis lists a different document set than the library holds — got [Existing existing0001;Other other0001;Probe probe0001;] want [Existing existing0001;Probe probe0001;]
+drill ok   guard-red-existing-lost-info: checker red in the intended branch; full checker output:
+  | checker(papis-add): the existing document has lost its info.yaml
+drill ok   guard-red-stray-entry: checker red in the intended branch; full checker output:
+  | checker(papis-add): the library holds entries this operation cannot produce (got: existing-doc probe-doc stray-entry )
+drill ok   R-red-nested-document: checker red in the intended branch; full checker output:
+  | checker(papis-add): leg R: papis lists a different document set than the library holds — got [Existing existing0001;Nested nested0001;Probe probe0001;] want [Existing existing0001;Probe probe0001;]
 drill ok   C-red-fixture-mutated: checker red in the intended branch; full checker output:
   | checker(papis-add): leg C: the outside-root fixture fixture.txt changed
-drill ok   guard-red-existing-gone: checker red in the intended branch; full checker output:
-  | checker(papis-add): the existing document's directory is missing from the library
 == drills failed: 0
