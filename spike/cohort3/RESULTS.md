@@ -213,6 +213,50 @@ All five passed, so the cohort order stands unchanged:
   as #231 for the next campaign's protocol. The cohort closes with
   papis.
 
+- **papis (2026-08-22)** — **PASS, 2 of 2 worlds, the cohort's
+  contrast case**: crash points 1 + 1 baseline, `oracle_verified`
+  true, single process, reproduced identically twice. `papis add`
+  builds the document in a temp directory outside the library and
+  moves it in with one `renameat`, so the only crash world the engine
+  can produce is the library before the move. Every element of the
+  declaration matched the report, including which of the engine's two
+  PASS headlines would appear and the `fchmodat x1` metadata
+  disclosure. The define's review reversed part of its own reasoning
+  before merge: the `papis doctor` rejection had been measured
+  without doctor's selection flag, so the check it cited had never
+  run — re-measured fairly, doctor is red on an untouched library,
+  "repairs" a lost attachment by removing the file from the document,
+  and dies on a torn `info.yaml`. Ruling: `papis/RUNLOG.md`, which
+  also records four target observations (a bare `papis list`
+  persists a randomly generated `papis_id`; incomplete documents are
+  silently ignored; missing attachments are listed happily; indexing
+  is recursive) behind the standing owner gate.
+
+## The cohort, closed
+
+Five primaries, five outcomes, no bench promotion needed:
+
+| target | outcome |
+|---|---|
+| cargo | named wall, two layers deep, terminal (raw-syscall rename past the shim) |
+| black | FAIL, candidate shape, closed at the novelty gate (psf/black#2479) |
+| rustfmt | FAIL, same wound in a second language, novelty pre-closed (rust-lang/rustfmt#6041) |
+| poetry | FAIL, earliest world L0-only — recorded, not claimed |
+| poetry-r2 | FAIL, the manifest wound sealed as a minimal reproduction — recorded, never claimed (FAIL-freeze) |
+| papis | **PASS** — one atomic mutation, no interior to crash inside |
+
+**Criterion 1 is not met by this cohort.** What it produced instead:
+two known-surface FAILs that prove the sweet-spot thesis across two
+languages in minutes each; one live prospect (poetry's manifest
+destruction) measured, sealed and available for an upstream
+conversation behind the owner gate; one named engine wall with its
+after-1.0 issue (#217); one claim-reading design gap found by the
+poetry pair and filed for the next campaign (#231); and one measured
+demonstration that the engine says PASS when a tool stages and
+renames. The four in-place writers and the one atomic mover were
+measured under the same engine, the same discipline and the same
+seal, which is the comparison the cohort was for.
+
 ## What the probe phase deliberately did not do
 
 At the probe phase's close, no define existed and no engine explore had

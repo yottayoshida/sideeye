@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — papis passes, and cohort 3 closes
+
+PASS, 2 of 2 worlds, crash points 1 + 1 baseline, single process,
+reproduced identically twice — and the report matched the declaration
+line for line, including the two things a PASS most needs to prove
+about itself: it carried the **non-vacuous headline** (`2/2 explored
+worlds satisfied the built-in atomicity invariant`, not "the operation
+performed nothing that can change the judged state", which would have
+meant the shim never saw the rename), and the metadata line disclosed
+`fchmodat x1` as observed-and-excluded, exactly where the declaration
+said the unjudgeable seam was. The falsification gate fired through
+leg E before any world ran. `papis add` stages the whole document
+outside the library and moves it in with one `renameat`; the only
+crash world the engine can build is the library before the move.
+
+So the cohort closes 5 for 5 measured, criterion 1 unmet, and the
+record is the comparison it was designed to be: four tools that
+rewrite files in place — black, rustfmt, poetry, poetry's revision —
+and one that stages and renames, all under the same engine, the same
+discipline, the same seal. What it leaves behind is worth more than
+the verdict count: a live upstream prospect (poetry's manifest
+destruction, sealed as a minimal reproduction), a named engine wall
+with its after-1.0 issue (#217), a claim-reading design gap the poetry
+pair exposed and #231 carries into the next campaign, and — from this
+last target — a checker whose every leg came out of measurement that
+contradicted intuition, plus the reminder that a rejection is only as
+good as the invocation it was measured with.
+
 ## 2026-08-22 — the papis define: the target that has no interior to crash inside
 
 The cohort's last define, and the first whose declaration expects a
