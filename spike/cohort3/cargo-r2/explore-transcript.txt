@@ -1,0 +1,43 @@
+# cargo r2, first explore run: the launcher invoked with --json
+# /tmp/report.json inside the container; rc, the human transcript and
+# the report follow. Second run reproduced the same refusal (rc 2,
+# UNKNOWN oracle_missed_operation) — noted in RUNLOG.md.
+=== human transcript:
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/tmp/cohort3/cargo-r2/depcrate)
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 22    renameat(AT_FDCWD</work/spike/cohort3/cargo-r2/ops>, "/tmp/cohort3/cargo-r2/state/Cargo.tomlI2K6rq", AT_FDCWD</work/spike/cohort3/cargo-r2/ops>, "/tmp/cohort3/cargo-r2/state/Cargo.toml") = 0; the shim recorded: open("/tmp/cohort3/cargo-r2/state/Cargo.lock")
+
+atomicity   2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): Cargo.lock, Cargo.toml
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+=== report.json:
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 10,
+  "verdict": "UNKNOWN",
+  "exit_code": 2,
+  "oracle_verified": false,
+  "crash_points": 0,
+  "explored": 0,
+  "violations": 0,
+  "expected_status": 0,
+  "unknown_reason": "oracle_missed_operation",
+  "message": "the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 22    renameat(AT_FDCWD</work/spike/cohort3/cargo-r2/ops>, \"/tmp/cohort3/cargo-r2/state/Cargo.tomlI2K6rq\", AT_FDCWD</work/spike/cohort3/cargo-r2/ops>, \"/tmp/cohort3/cargo-r2/state/Cargo.toml\") = 0; the shim recorded: open(\"/tmp/cohort3/cargo-r2/state/Cargo.lock\")",
+  "l0": "2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): Cargo.lock, Cargo.toml",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "ran; the comparison did not complete",
+  "metadata_writes": "1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "none configured",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes", "appended tails (files under the history form)"]
+}

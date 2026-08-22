@@ -121,6 +121,25 @@ All five passed, so the cohort order stands unchanged:
 
 **cargo → black → rustfmt → poetry → papis.**
 
+## Engine outcomes (updated as targets complete)
+
+- **cargo (2026-08-22)** — **named wall, two layers deep, terminal**:
+  r1 refused `child_process_detected` (the probe's forecast — the
+  `rustc -vV` child's internal raw thread); the owner-approved RUSTC
+  stand-in lifted that boundary (`single process` in the r2 report) and
+  r2 then refused `oracle_missed_operation`: **the manifest's atomic
+  rename is a raw syscall** — cargo imports libc `rename` but does not
+  route this call through it, measured with an interposing logger
+  against a libc-routed positive control
+  (`cargo-r2/raw-rename-diagnosis.txt`) — past every function an
+  LD_PRELOAD shim can interpose. The two-witness design refused rather
+  than judging blind; both refusals reproduced on second runs. A
+  ptrace-grade observer is engine architecture, the after-1.0 family of
+  #201/#202. Measured binary = current stable, recheck inherent.
+  Ruling: `cargo-r2/RUNLOG.md`. The torn-lock question this define froze
+  (its checker-red ruling, drilled at the edges in both revisions)
+  stays asked, not answered. The cohort order continues with black.
+
 ## What the probe phase deliberately did not do
 
 At the probe phase's close, no define existed and no engine explore had

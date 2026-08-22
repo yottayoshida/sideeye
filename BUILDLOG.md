@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — cargo r2: the stand-in lifts one wall and finds another — the manifest rename never touches libc
+
+The r2 explore got past the child-thread boundary (`single process` in
+its report — the stand-in doing its job) and refused one layer deeper:
+`oracle_missed_operation`. The oracle saw the manifest's atomic rename
+(`Cargo.tomlI2K6rq` → `Cargo.toml`); the shim — loaded, recording the
+operations on either side of it — had nothing. Diagnosis with a
+committed transcript: cargo *imports* libc `rename@GLIBC_2.17`, so the
+import table decides nothing (an earlier check that concluded "no
+imports" had actually measured a missing `nm` binary — the
+zero-without-a-denominator trap, caught before it was written anywhere
+that matters); a minimal LD_PRELOAD logger interposing rename and
+renameat, with python's libc-routed `os.rename` as the positive
+control (fires), stays silent through `cargo add` while strace watches
+the renameat reach the kernel. **The rename is a raw syscall.** The
+two-witness design earned its keep: one witness saw what the other
+could not, and the engine refused rather than judging blind.
+
+Ruling (cargo-r2/RUNLOG.md): a named wall, terminal for the cohort —
+the operation under study is invisible to a libc interposer, and a
+ptrace-grade observer is engine architecture (the after-1.0 family of
+#201/#202). cargo's slot closes with its torn-lock question asked and
+not answered: the in-place lock rewrite, the parse-failure brick, and
+the silent regeneration of an absent lock are all measured and
+committed at the edges (drills, diagnosis, probe strace), but no crash
+world could be explored to test them. The cohort order continues with
+black — whose probe showed zero threads and zero children.
+
 ## 2026-08-22 — cargo r1 refuses on the forecast thread; r2 lifts it with a RUSTC stand-in
 
 The first cargo explore refused as the define disclosed it might:
