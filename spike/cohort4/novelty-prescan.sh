@@ -35,27 +35,56 @@
 # would report zero for every term and the target would be called novel.
 # Multi-word terms are therefore refused, with the + form named.
 #
+# What this scan does NOT do, measured 2026-08-22 against psf/black:
+# it does not enumerate a tracker. A broad term saturates the page limit
+# (crash, empty, truncate and truncated all returned exactly 100, i.e. a
+# floor, not a count), and only the top 20 by GitHub's relevance order are
+# listed. That ordering is why the two known black issues surfaced under
+# eight different terms - a property of the ranking, not a guarantee.
+# Narrowing with in:title makes it worse, not better: `truncate in:title`
+# returns 0 against a repository whose known issue `truncate` finds.
+# The scan is built to make a known write shape hard to miss across many
+# terms; it cannot prove absence, and no zero here means "novel" on its
+# own.
+#
 # Usage:
 #   sh spike/cohort4/novelty-prescan.sh <owner/repo> [extra-terms...]
-#   sh spike/cohort4/novelty-prescan.sh --selftest
+#   sh spike/cohort4/novelty-prescan.sh --selftest   # the search path
+#   sh spike/cohort4/novelty-prescan.sh --validate   # the term list itself
 #
 # Exit 0 the scan ran with its controls green, 2 the scan could not
 # measure. There is no exit 1: this script has no verdict to give.
 set -u
 
-# Single tokens, or + joins. Crash-consistency vocabulary as it actually
-# appears in trackers.
-TERMS='crash corrupt corruption truncated truncate empty atomic atomically
+# Single tokens, or + joins. The vocabulary is derived from the real
+# issues this project has already had to find, not from imagination -
+# see --validate, which holds the list to them:
+#
+#   psf/black#2479        "... wipes or corrupts target when disk is full"
+#   psf/black#5207        "Write formatted files atomically to avoid corruption ..."
+#   rust-lang/rustfmt#6041 "Gracefully handle full disk instead of erasing file contents"
+#
+# The third one is why the list is not a matter of taste: it answers only
+# `disk` and `disk+full`. Drop `disk` and rustfmt reads as novel.
+TERMS=${NOVELTY_TERMS:-'crash corrupt corruption truncated truncate empty atomic atomically
 interrupted interrupt sigkill sigint ctrl-c power outage ENOSPC disk partial
 incomplete dataloss recover recovery rollback resume half-written
-disk+full data+loss partial+write crash+safe atomic+write lock+file'
+wipe wipes erase erasing erased destroy destroys overwrite clobber
+blank unreadable garbage mangled contents in-place unclean shutdown reboot
+disk+full data+loss partial+write crash+safe atomic+write lock+file
+write+failure file+contents'}
 
 need() {
     command -v "$1" >/dev/null 2>&1 ||
         { echo "BROKEN $1 not installed - the scan cannot measure"; exit 2; }
 }
 
+# GitHub's search API allows 30 authenticated requests a minute; a
+# throttled scan is slower than a scan that half-refuses on 403.
+THROTTLE=${NOVELTY_THROTTLE:-2}
+
 count_hits() { # repo term -> integer, or the word BROKEN
+    sleep "$THROTTLE"
     n=$(gh search issues --repo "$1" --include-prs --limit 100 \
             --json number -q 'length' "$2" 2>&1)
     rc=$?
@@ -65,11 +94,13 @@ count_hits() { # repo term -> integer, or the word BROKEN
     fi
     case "$n" in
         ''|*[!0-9]*) echo "BROKEN" ;;
+        100) echo ">=100" ;;
         *) echo "$n" ;;
     esac
 }
 
 list_hits() { # repo term
+    sleep "$THROTTLE"
     gh search issues --repo "$1" --include-prs --limit 20 \
         --json number,state,createdAt,title \
         -q '.[] | "      #\(.number) \(.state) \(.createdAt[0:10]) \(.title)"' \
@@ -106,8 +137,37 @@ selftest() {
     return $rc
 }
 
+# The slow check: run the whole term list against repositories whose
+# crash-consistency issues this project already knows, and require that
+# they come back. A term list that cannot find a known issue would call
+# its target novel - which is the one mistake this script exists to stop.
+validate() {
+    need gh
+    fails=0
+    check_known() { # repo issue-number
+        found=0
+        for t in $TERMS; do
+            hits=$(list_hits "$1" "$t" 2>&1)
+            case "$hits" in
+                *"#$2 "*) found=1; echo "  found #$2 in $1 via term: $t"; break ;;
+            esac
+        done
+        if [ $found -eq 0 ]; then
+            echo "  MISSED #$2 in $1 - no term in the list surfaces it"
+            fails=$((fails + 1))
+        fi
+    }
+    echo "== validate: the term list against issues this project already knows"
+    check_known psf/black 2479
+    check_known psf/black 5207
+    check_known rust-lang/rustfmt 6041
+    echo "== validate failures: $fails of 3"
+    [ $fails -eq 0 ] || return 1
+}
+
 case "${1:-}" in
     --selftest) selftest; exit $? ;;
+    --validate) validate; exit $? ;;
     "" | -h | --help) sed -n '2,43p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
 
@@ -129,7 +189,8 @@ controls || exit 2
 
 echo
 echo "== terms"
-total_hits=0
+hit_terms=0
+saturated=0
 term_count=0
 for t in $TERMS "$@"; do
     term_count=$((term_count + 1))
@@ -137,14 +198,20 @@ for t in $TERMS "$@"; do
     case "$hits" in
         BROKEN) echo "  BROKEN the search errored on term '$t' - the scan is incomplete"; exit 2 ;;
     esac
-    printf '  %-14s %s hit(s)\n' "$t" "$hits"
-    if [ "$hits" != "0" ]; then
-        total_hits=$((total_hits + hits))
-        list_hits "$repo" "$t"
-    fi
+    case "$hits" in
+        ">=100") printf '  %-14s >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below\n' "$t"
+                 saturated=$((saturated + 1))
+                 hit_terms=$((hit_terms + 1))
+                 list_hits "$repo" "$t" ;;
+        0)       printf '  %-14s 0 hit(s)\n' "$t" ;;
+        *)       printf '  %-14s %s hit(s) (all listed)\n' "$t" "$hits"
+                 hit_terms=$((hit_terms + 1))
+                 list_hits "$repo" "$t" ;;
+    esac
 done
 
 echo
-echo "== $term_count terms run, $total_hits hit(s) total (a term may hit twice)"
+echo "== $term_count terms run; $hit_terms returned hits, $saturated of those saturated at the page limit"
+echo "== counts are not summed: a saturated term has no count, and one issue answers many terms"
 echo "== this script does not decide novelty. The judgement, and the write"
 echo "   shape it is about, go in the target's proposal citing this transcript."

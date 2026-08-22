@@ -72,7 +72,10 @@ and no single finding has yet held all three at once:
 | cohorts 2 and 3 (mini-seal) | yes | **no** on both checker-red finds (black, rustfmt) | clean — `verify-assisted.sh` green | novelty |
 
 **The missing combination is novel × automatic × mini-seal provenance, in
-one finding.** That is what cohort 4 is for, and it is entirely within
+one finding.** The novelty half is now mechanical and was checked against
+the two slots cohort 3 actually lost: `--validate` surfaces `psf/black#2479`,
+`psf/black#5207` and `rust-lang/rustfmt#6041`, so both defines would have
+been stopped before they were written. That is what cohort 4 is for, and it is entirely within
 this project's reach — no maintainer's reply stands between here and the
 gate.
 
@@ -129,6 +132,7 @@ exists.
 | C2 | `nm` was absent and stderr was discarded, producing "no symbols imported at all" from an empty result (same entry). | Any zero-count claim needs a **tool-presence positive control** in the same transcript. | Both new scripts refuse to print a count when their own tool probe fails |
 | C3 | Counts printed without denominators ("failed=0") are indistinguishable from "nothing was measured". | Every count in a gate's output carries its denominator. | Script output format |
 | C4 | A same-class scan with a leading `--` in the pattern silently returned zero (recorded in the workspace's gotcha register). | Scans use `grep -e`, and every scan ships with a positive control hit. | Script + PROTOCOL text |
+| C6 | **Measured during this preparation, 2026-08-22**: the novelty gate's own term list is load-bearing and cannot be settled by taste. Run against the two targets cohort 3 actually burned, `psf/black`'s issues answered **eight or more** terms, but `rust-lang/rustfmt#6041` answered exactly **two** (`disk`, `disk+full`) — remove `disk` and rustfmt reads as novel. Narrowing with `in:title` makes it worse: `truncate in:title` returns 0 against a repository whose known issue plain `truncate` finds. A broad term also **saturates the page limit** (four terms returned exactly 100 = a floor, not a count) while only the top 20 by relevance are listed. | The term list is derived from the titles of issues this project has already had to find, and `--validate` holds it to them: black#2479, black#5207 and rustfmt#6041 must all be surfaced, or the list is wrong. Saturated terms print `>=100 SATURATED` and counts are never summed. | `novelty-prescan.sh --validate`, 3 of 3, with a red proof: stripping `disk` makes it MISS rustfmt#6041 (`novelty-prescan-validation.txt`) |
 | C5 | **Measured during this preparation, 2026-08-22**: the tracker search the novelty gate depends on returns **zero for any space-separated phrase**. Against `psf/black` at `--limit 100`: `disk` → 30 hits (including both known issues), `disk full` → **0**, `disk+full` → 5, `full disk` → **0**. A pre-scan written the natural way would have reported zero for every term and called a known defect novel — the precise failure cohort 4 cannot afford. | Terms are single tokens or `+` joins; a multi-word term is **refused**, naming the `+` form. Every scan runs a fixed positive control (`psf/black` + `disk` must return 2479 and 5207) and a negative control before any target term is believed. | `novelty-prescan.sh`, controls run on every invocation |
 
 ### D. Delivery hygiene — three merges in two cohorts went out wrong
@@ -307,7 +311,7 @@ believed:
 | `spike/merge-gate.sh` | D1, D2, D3 | `--selftest`, 7 of 7: the empty rollup (#216), a failure among successes (#194), a running check, a legacy pending context, a null rollup, malformed JSON, and an all-green case. Exercised against a real merged PR, which it refused for two independent reasons. |
 | `spike/cohort4/preflight.sh` + `visibility-logger.c` + `preflight-analyse.py` | A2, A3, and C1–C3 in its own output | `--selftest` on this repository's own toys: libc-routed PASS, raw-syscall WALL, interior count 4. Transcript: `preflight-selftest.txt`. |
 | `spike/upstream-report-status.sh` | the stale-table risk in §2 | `--selftest`: a control issue known to carry comments must not read back as zero. |
-| `spike/cohort4/novelty-prescan.sh` | A1, C5 | `--selftest`: the fixed positive control returns both known issues, the negative control returns 0, and the multi-word refusal path was exercised. |
+| `spike/cohort4/novelty-prescan.sh` | A1, C5, C6 | `--selftest` (the search path): fixed positive control returns both known issues, negative control returns 0, multi-word refusal exercised. `--validate` (the term list): black#2479, black#5207 and rustfmt#6041 all surfaced, 3 of 3 — and shown red by stripping `disk`, which makes rustfmt#6041 unreachable. Transcript: `novelty-prescan-validation.txt`. |
 
 ## 9. Order of work
 
