@@ -59,6 +59,27 @@ actual rc), and the pass drills printed only their fragment line,
 leaving the healing step unattributable from committed evidence (now
 full output).
 
+## 2026-08-22 — The scouting guide stops legislating target selection
+
+docs/scouting.md is the public method page, and its "must never" list was
+carrying this repository's own governance dressed as method: the ≥500-star
+liveness bar, the human sign-off before measured contact, and the flat "a
+dormant project is not a legitimate target at all". Those rules decide
+which third parties *this project's experiments* touch and who signs off —
+they are recorded, with their history, as the owner rule in
+`spike/assisted/PROTOCOL.md` — but a reader pointing Sideeye at their own
+dormant tool, or a fork they maintain, is squarely inside the tool's
+purpose, and no guide sentence should say otherwise. The page also broke
+its own opening rule: the intro says numbers on a guide page go stale and
+belong in the records, and the one number on the page was the star bar.
+The dormant-target bullet is deleted; the upstream-filing bullet keeps the
+part that is genuinely method — reporting is decided at selection, not at
+discovery — and now says plainly that the bar and the sign-off bind this
+repository's experiments, not the reader. Prompted by the owner asking
+whose rules those were.
+
+## 2026-08-22 — the poetry verify transcript: the fourth seal
+
 verify-assisted green on poetry (define at 75b3d19 strictly before
 artifacts at f35bf72, all four define files byte-identical;
 `verify-transcript.txt` committed beside the ruling). The seal
