@@ -44,13 +44,26 @@ same day: **vdirsyncer is dropped, and the second slot is re-scouted
 before this freeze lands** — no single-target cohort, no promotion clause.
 vdirsyncer's row stays in `SCOUT-ROWS.md` as the rejection it is.
 
-**Order, frozen: himalaya → [SLOT 2 — pending re-scout, owner sign-off
-required before this file merges; a pending slot here is a reason not to
-freeze].** The bench is deliberately empty — the owner's 2026-08-22
-ruling, unchanged by the re-scout: the enumerated pool measured thin (128
-of 159 repositories fell to language-wall forecasts recorded in
-`CANDIDATES-REJECTED.md`), and the #201 tripwire for a null outcome is
-already recorded there and on #201.
+The re-scout measured five more candidates by the same yardstick
+(`SCOUT-ROWS-SLOT2.md`): Homebrew fell on rule 5 (its main state is
+re-downloadable), trash-cli and pipx on rules 11/17, CocoaPods on rule 3,
+and **unison survived rules 1–15** — its window is carried by two
+contributors at comparable weight (stronger than himalaya's rule-3 row),
+its recovery step is the best-documented of any candidate measured in
+four cohorts (the `DANGER.README` commit log, replayed by the next
+startup — files.ml:70), and four of its seven recent defect-labelled
+issues were answered within a week. Its one wall (rule 16) and the
+apparatus that lifts it are in the probe plans below. The owner ruled it
+in on 2026-08-23.
+
+**Order, frozen: himalaya → unison.** Two languages × two write-shape
+classes: a mint-named fresh delivery into a maildir (Rust), and a
+rename-pair-with-commit-log replica update (OCaml). The bench is
+deliberately empty — the owner's 2026-08-22 ruling, unchanged by the
+re-scout: the enumerated pool measured thin (128 of 159 repositories fell
+to language-wall forecasts recorded in `CANDIDATES-REJECTED.md`), the
+re-scout's own funnel came back one-for-five, and the #201 tripwire for a
+null outcome is already recorded there and on #201.
 
 ## Provenance: assisted, scout named
 
@@ -167,30 +180,145 @@ of this freeze — a probe implementation may not substitute its own.
    the apparatus policy; the probe transcript must show the split without
    it (the falsification) before any run uses it.
 
-   **Copy-mechanism forecast (rule 16).** `fs::copy` on Linux prefers
-   `copy_file_range(2)` with a `sendfile(2)` fallback before the plain
-   read/write loop. The oracle reports both as unsupported operations
-   (the hg-r2 sendfile precedent; `oracle.zig`'s v0.1 model), so a stock
-   run may refuse rather than measure. The declared apparatus is
-   `seccomp-enosys.json` (committed beside this file): a container
-   seccomp profile answering exactly `copy_file_range`, `sendfile` and
-   `sendfile64` with ENOSYS, which Rust's std treats as "unavailable,
-   fall back" — landing the copy on the libc read/write path the shim
-   exports and the oracle models. Owner-gated, probe-falsified the same
-   way (strace must show the syscall without the profile and its absence
-   with it). **The kill window does not depend on this apparatus**: the
-   destination is created (`O_CREAT|O_TRUNC`) before any bytes move, so
-   a kill between creation and fill leaves a zero-length message at its
-   final path under every copy mechanism — the stock-reproduction rule
-   below stays satisfiable by strace fault injection alone.
+   **Copy-mechanism forecast (rule 16), and the owner's ruling on it
+   (2026-08-23).** `fs::copy` on Linux prefers `copy_file_range(2)` with
+   a `sendfile(2)` fallback before the plain read/write loop, and treats
+   ENOSYS as "unavailable, fall back" (rust 1.98.0,
+   library/std/src/sys/io/kernel_copy/linux.rs — read while scouting).
+   Neither syscall is among the shim's exports, and the oracle reports
+   both as unsupported operations (the hg-r2 sendfile precedent;
+   `oracle.zig`'s v0.1 model), so an unlifted run refuses rather than
+   measures. Three lifts were put to the owner: switch the operation to
+   a tmp→rename arm (declined — it surrenders the interior), extend the
+   shim and oracle (declined for this cohort; std reaches
+   `copy_file_range` through a weak-symbol lookup whose own comment
+   invites `LD_PRELOAD` interposition, so the extension is cheap and is
+   filed as roadmap rather than done under a campaign), and **the chosen
+   apparatus: `seccomp-enosys.json`** (committed beside this file), a
+   container seccomp profile answering exactly `copy_file_range`,
+   `sendfile` and `sendfile64` with ENOSYS — landing the copy on the
+   libc read/write path the shim exports and the oracle models, the same
+   accelerated-path-off shape as the pre-declared CPython sendfile
+   fallback. Probe-falsified before use: strace must show the syscall
+   without the profile and its absence with it. **The kill window does
+   not depend on this apparatus**: the destination is created
+   (`O_CREAT|O_TRUNC`) before any bytes move, so a kill between creation
+   and fill leaves a zero-length message at its final path under every
+   copy mechanism — the stock-reproduction rule below stays satisfiable
+   by strace fault injection alone.
 
    Ambient: `XDG_CONFIG_HOME`/`HOME` at reset-between-runs paths shown in
    the transcript; the config is passed explicitly with `-c` either way.
 
-2. **[SLOT 2 — pending re-scout.** The probe plan for the second target
-   is written into this section, with its fixture bytes inlined, before
-   this file merges. A section still pending at freeze time is a reason
-   not to freeze — `PROTOCOL-DRAFT.md`'s own rule.**]**
+2. **unison** — the state root is one directory holding the two replicas
+   *and unison's own state*: `a/` (the changed side), `b/` (the side the
+   change propagates to), and `unison/` (the `UNISON` directory:
+   archives, fingerprint cache, lock files, and the `DANGER.README`
+   commit log). All three inside the root on purpose — the borg
+   client-cache lesson, state that decides the target's behaviour must
+   live where restore can carry it — and because the commit-log replay
+   (`processCommitLogs`, files.ml:84, run by the next startup) is rule
+   9's recovery step, the checker's world has to contain the log.
+
+   Pre-state: built at setup in two frozen steps, both in the probe
+   transcript. Step 1 — both replicas hold the same two files, and one
+   `unison ./a ./b -batch` run builds the archives (this run is part of
+   setup, not the operation; its transcript lines are labelled so).
+   Step 2 — setup overwrites `a/notes.txt` with the changed bytes. The
+   fixture bytes (LF, trailing newline):
+
+   `a/notes.txt` and `b/notes.txt` at step 1, exactly:
+
+   ```
+   the original note, fixed bytes
+   ```
+
+   `a/stable.txt` and `b/stable.txt` (the bystander that must never
+   change), exactly:
+
+   ```
+   the bystander, fixed bytes
+   ```
+
+   `a/notes.txt` after step 2, exactly (longer than the original on
+   purpose, so a torn propagation is visibly torn):
+
+   ```
+   the changed note, fixed bytes, deliberately longer than what it replaces
+   ```
+
+   Operation: `unison ./a ./b -batch`, cwd at the state root, `UNISON`
+   pointing at `<root>/unison` — the same strings every run: unison
+   derives its archive names from a hash of the root descriptors, so the
+   root paths are part of the fixture (the cohort-2 borg argv lesson).
+
+   Expected: `b/notes.txt` carries the changed bytes; `a/` untouched and
+   `b/stable.txt` byte-identical; no `DANGER.README` after a clean run;
+   the archive files under `unison/` updated. The propagation's write
+   path is the reason this target has a slot: the local update goes
+   through `renameLocal` (files.ml) — `Stasher.backup`, `writeCommitLog`
+   (files.ml:343), a rename moving the live target aside, a rename
+   moving the new content in (files.ml:347,358), `clearCommitLog`, then
+   the temp's deletion — five mutating steps with the final path exposed
+   between two of them, and a documented, mechanical recovery for
+   exactly that window.
+
+   **Copy-mechanism forecast (rule 16), the wall this target entered
+   with.** The temp file that feeds the rename pair is filled by
+   unison's C copy stub, which tries `ioctl(FICLONE)`, then
+   `copy_file_range` through the raw `syscall(3)` entry point
+   (copy_stubs.c:199), then `sendfile` (:204), then a read/write loop —
+   the first three invisible to the shim. **The ruled apparatus is the
+   same `seccomp-enosys.json` as himalaya's**: seccomp filters at the
+   kernel boundary, so it catches the `syscall(3)` spelling exactly as
+   it catches the libc one — the reason one profile lifts both targets'
+   walls. The profile also answers `ioctl` with ENOTTY **for the
+   FICLONE request argument alone** (an arg-filtered rule, value
+   0x40049409), so the reflink arm fails by construction rather than by
+   relying on the container filesystem's lack of reflink support; every
+   other ioctl passes through untouched.
+
+   **Determinism forecast, from the commissioned source reading
+   (`SCOUT-ROWS-SLOT2.md`, 2026-08-23), with one residue no apparatus
+   covers.** What the archive marshals is `update.mli`'s type:
+   properties, fingerprint, an inode stamp, a resource stamp. The inode
+   stamp is removed by **unison's own documented preference
+   `ignoreinodenumbers` (alias `pretendwin`)** — fileinfo.ml:231, and
+   note it is NOT `fastcheck`, which chooses how files are compared and
+   leaves inodes in the archive — so the operation carries
+   `-ignoreinodenumbers=true`, free-tier apparatus, declared here.
+   ctime never enters the archive (props.ml:672,694). mtime enters via
+   the properties and is fixture-pinned. Two nondeterminism sources
+   remain: **`freshDirStamp`** (props.ml:1575-1585) folds
+   `(gettimeofday + √2·getpid)·1000 + the directory's inode` into one
+   number stored in a changed directory's archived properties — clock
+   and pid fall to libfaketime and `pin-getpid.c` (the same two
+   interpositions himalaya's plan declares, owner-gated), **but the
+   directory inode is not coverable by any declared apparatus and
+   `ignoreinodenumbers` does not reach this path**. Whether restored
+   pre-states reproduce inodes on the container filesystem is exactly
+   what the probe's two-run comparison measures; a split that survives
+   the declared apparatus is a named wall of the nondeterministic-writer
+   class, recorded at probe time, costing no define. Lock files mint
+   their intermediate name from the pid (lock.ml:47 — `pin-getpid`
+   covers it); the fingerprint cache compares by inode stamp
+   (fpcache.ml:253 — whether `ignoreinodenumbers` empties that too is a
+   probe reading); `DANGER.README` carries only the three paths
+   (files.ml:30-47), nothing volatile.
+
+   **One measured caution about the apparatus itself**: `Fileinfo.
+   unchanged` takes the current time at second resolution and, when a
+   file's mtime equals it, sleeps one second and reports the file
+   changed (fileinfo.ml:246-249). A frozen clock can therefore change
+   the target's behaviour — whether that branch is never taken or taken
+   for every file depends on what mtimes the restored pre-state carries
+   relative to the frozen instant. The probe's first reading under
+   faketime measures this rather than assuming it, the
+   normalisation-erases-the-anomaly caution applied to our own
+   apparatus.
+
+   Ambient: `HOME` at a reset-between-runs path shown in the transcript
+   (`UNISON` is set explicitly either way).
 
 A target that fails its probe records a **named wall**: which condition
 failed and the raw evidence. Every target installs at the current upstream
@@ -208,11 +336,13 @@ Three tiers, unchanged from cohort 3:
   any Python target, on `unsupported_syscall_observed: sendfile` only.
 - **Interposition — clock, entropy, or identity — is a per-target owner
   decision.** The image carries libfaketime; this cohort adds two
-  committed, target-named candidates (himalaya's `pin-getpid.c` and
-  `seccomp-enosys.json`, above), each of which must be seen to answer a
-  measured split or refusal in the probe transcript before a define
-  carries it. Apparatus discovered mid-probe is an amendment that must
-  land before that target's first contact.
+  committed candidates that both targets' plans name (`pin-getpid.c`
+  for the pid each target folds into its on-disk names or stamps, and
+  `seccomp-enosys.json` for the kernel-side copy paths the shim cannot
+  see), each of which must be seen to answer a measured split or
+  refusal in the probe transcript before a define carries it. Apparatus
+  discovered mid-probe is an amendment that must land before that
+  target's first contact.
 
 Whatever the apparatus: **a finding must reproduce against the stock tool
 with no apparatus beyond strace fault injection before it is claimed or
@@ -284,11 +414,22 @@ in the Dockerfile). rust 1.98.0 builds it, from the same channel-manifest
 sha256 pin as cohort 3, and stays in the build stage — the runtime image
 carries the himalaya binary, not cargo.
 
-**[SLOT 2 — pending: the second target's pin and install layer, and the
-regenerated `freeze-build.txt`, land with the slot.]** The committed
-`freeze-build.txt` is the transcript of the freeze build and the only
-pre-freeze target contact; the versions that actually run are re-recorded
-in each probe transcript and RUNLOG.
+**unison is also built from source, for a different disclosed reason:
+upstream publishes no aarch64-linux binary at all** (measured 2026-08-23:
+macOS arm64, and x86_64/i386 Linux only), so on this architecture a build
+from the pinned source is the install path, not a substitution for one.
+The pin: the v2.54.0 tag names commit
+`b1a49141e7eb5334e31efcf4d08073c192d6c1ae` directly (verified at fetch),
+the copied tree is re-verified against the same style of per-file digest,
+and the build is INSTALL.md's own `make` with the image's apt OCaml
+(trixie's 5.3.0; the minimum is 4.08) — lablgtk3 deliberately absent,
+which is what selects the text UI. The same `ldd` assertion applies: a
+static unison would reproduce himalaya's distribution wall by accident,
+so it fails the build instead.
+
+The committed `freeze-build.txt` is the transcript of the freeze build
+and the only pre-freeze target contact; the versions that actually run
+are re-recorded in each probe transcript and RUNLOG.
 
 ## Reporting, and delivery
 

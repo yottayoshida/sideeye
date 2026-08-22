@@ -9,22 +9,26 @@
 # All build inputs are fetched on the HOST by ./fetch-artifacts.sh into
 # ./artifacts/ (gitignored): this machine's TLS-intercepting proxy breaks
 # in-container pip/curl certificate verification (measured 2026-08-21,
-# cohort-2 image build).
+# cohort-2 image build). apt survives — it is plain HTTP — which is why
+# the OCaml toolchain below installs normally.
 #
-# himalaya is BUILT FROM SOURCE here, on purpose and with a disclosure
-# the PROTOCOL carries: the distributed binaries are musl-static
-# cross-builds, which LD_PRELOAD cannot enter, so the measured binary is
-# a glibc-dynamic self-build of the same v2.1.0 tree with the same
-# default feature set — the delta to the distributed artifact is linkage,
-# not features. The runtime stage asserts the built binary is in fact
-# dynamically linked against glibc; a silently-static build fails there,
-# not at the first probe.
+# BOTH targets are BUILT FROM SOURCE here, for two different disclosed
+# reasons the PROTOCOL carries:
+#   - himalaya's distributed binaries are musl-static cross-builds, which
+#     LD_PRELOAD cannot enter; the self-build is glibc-dynamic with the
+#     same v2.1.0 tree and the same default feature set — the delta to
+#     the distributed artifact is linkage, not features.
+#   - unison publishes no aarch64-linux binary at all (measured
+#     2026-08-23: macOS arm64 and x86_64/i386 Linux only), so on this
+#     architecture a build from the pinned source IS the install path.
+# Each runtime binary is asserted dynamically linked against glibc; a
+# silently-static build fails at image build, not at the first probe.
 #
 # arm64-only, on purpose: the rust tarball is aarch64 and the engine this
 # cohort mounts is the cross-built aarch64-linux pair. On an x86_64 host
 # the version checks fail loudly at build time.
 
-FROM debian:trixie-slim AS build
+FROM debian:trixie-slim AS build-himalaya
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -70,45 +74,56 @@ RUN cd /build/himalaya-src \
     && cargo build --release --locked --offline \
     && ./target/release/himalaya --version
 
+FROM debian:trixie-slim AS build-unison
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ocaml \
+        gcc \
+        libc6-dev \
+        make \
+    && rm -rf /var/lib/apt/lists/*
+# INSTALL.md's prerequisites: a C99 compiler, OCaml >= 4.08 (trixie ships
+# 5.3.0), make. lablgtk3 is deliberately absent — its presence is what
+# triggers the GUI build, so leaving it out selects the text UI.
+
+COPY artifacts/unison-src /build/unison-src
+COPY artifacts/unison-src.digest /build/unison-src.digest
+RUN cd /build/unison-src \
+    && got=$(find . -type f -not -path './.git/*' -print0 | sort -z \
+        | xargs -0 -n 64 sha256sum | sha256sum | cut -d' ' -f1) \
+    && want=$(cat /build/unison-src.digest) \
+    && { [ "$got" = "$want" ] \
+        || { echo "unison-src digest mismatch: got $got wanted $want"; exit 1; }; } \
+    && make \
+    && ./src/unison -version
+
 FROM debian:trixie-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         strace \
         python3 \
-        python3-pip \
         ca-certificates \
         libfaketime \
         gcc \
         libc6-dev \
     && rm -rf /var/lib/apt/lists/*
-# gcc/libc6-dev: the probe harness compiles its toys and the condition-8
-# visibility logger in-container. libfaketime: carried from cohort 2
-# (#200) so a determinism wall CAN be lifted by declared apparatus
-# without rebuilding the image — using it is a per-target owner decision
-# (PROTOCOL: apparatus policy), never a default.
+# gcc/libc6-dev: the probe harness compiles its toys, the condition-8
+# visibility logger, and pin-getpid.c in-container. python3: the
+# preflight analyser. libfaketime: carried from cohort 2 (#200) so a
+# determinism wall CAN be lifted by declared apparatus without
+# rebuilding the image — using it is a per-target owner decision
+# (PROTOCOL: apparatus policy), never a default. No pip layer: cohort
+# 4's slate carries no Python target.
 
-# The self-built target, and the assertion that justifies self-building:
-# the binary must be dynamically linked against glibc (the distributed
-# musl-static artifact is exactly what the shim cannot enter).
-COPY --from=build /build/himalaya-src/target/release/himalaya /usr/local/bin/himalaya
+# The self-built targets, and the assertion that justifies self-building:
+# each binary must be dynamically linked against glibc (himalaya's
+# distributed musl-static artifact is exactly what the shim cannot
+# enter, and a static unison would reproduce that wall by accident).
+COPY --from=build-himalaya /build/himalaya-src/target/release/himalaya /usr/local/bin/himalaya
+COPY --from=build-unison /build/unison-src/src/unison /usr/local/bin/unison
 RUN himalaya --version \
     && ldd /usr/local/bin/himalaya \
-    && ldd /usr/local/bin/himalaya | grep -q 'libc\.so\.6'
-
-# vdirsyncer 0.20.0 with its full locked closure (18 packages, all
-# wheels — measured 2026-08-23, no sdist-only package in this closure).
-# --require-hashes re-verifies every copied file against the
-# PyPI-published hashes in the committed lock, so a tampered artifacts/
-# fails here. --no-index makes the no-network claim an enforced property.
-# --break-system-packages: a single-purpose container. --ignore-installed:
-# the apt layer ships a Debian-owned typing_extensions with no RECORD
-# file, which pip cannot uninstall (measured 2026-08-22, cohort-3 build);
-# the locked versions land in /usr/local, which precedes dist-packages on
-# sys.path.
-COPY artifacts/wheels /tmp/wheels
-COPY pins-wheels.txt pins-sdist.txt /tmp/
-RUN pip3 install --break-system-packages --no-index \
-        --ignore-installed --find-links /tmp/wheels --require-hashes \
-        -r /tmp/pins-wheels.txt -r /tmp/pins-sdist.txt \
-    && rm -rf /tmp/wheels /tmp/pins-wheels.txt /tmp/pins-sdist.txt \
-    && vdirsyncer --version
+    && ldd /usr/local/bin/himalaya | grep -q 'libc\.so\.6' \
+    && unison -version \
+    && ldd /usr/local/bin/unison \
+    && ldd /usr/local/bin/unison | grep -q 'libc\.so\.6'

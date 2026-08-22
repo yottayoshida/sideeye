@@ -4,8 +4,9 @@
 # cohort 2 measured (spike/cohort2/fetch-artifacts.sh): the development
 # machine sits behind a TLS-intercepting proxy whose CA a stock Debian
 # container does not trust, so in-container pip/curl fail certificate
-# verification. Downloads run host-side; every input is verified against a
-# pin, and the Dockerfile re-verifies the copies.
+# verification (apt survives — it is plain HTTP). Downloads run host-side;
+# every input is verified against a pin, and the Dockerfile re-verifies
+# the copies.
 #
 # Pins:
 #   - rust 1.98.0: sha256 from the Rust channel manifest — the same
@@ -21,30 +22,16 @@
 #     is enforced again at build time by cargo itself: every vendored
 #     package must match the sha256 in himalaya's own committed
 #     Cargo.lock, which travels inside the digest-verified tree.
-#   - vdirsyncer 0.20.0: pins-wheels.txt, a uv-generated hash lock
-#     (command in its header; behind this proxy uv needs --system-certs).
-#     All 18 packages in the closure ship wheels at their locked versions
-#     (measured 2026-08-23: `pip download --only-binary=:all:` succeeded
-#     for every line), so pins-sdist.txt is empty; it exists so the cover
-#     check below stays line-exact with cohort 3's.
+#   - unison v2.54.0: the tag's COMMIT, b1a49141e7eb5334e31efcf4d08073c192d6c1ae
+#     (a lightweight tag — the ref names the commit directly; read
+#     2026-08-23). Same digest re-verification in the Dockerfile
+#     (unison-src.digest). No crate closure: unison builds from its own
+#     tree with OCaml and make, both from the image's apt layer.
 set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
 dest="$here/artifacts"
-mkdir -p "$dest" "$dest/wheels"
-
-# The split files must cover the lock exactly — every LINE, hashes
-# included (cohort 3's check, kept verbatim; it was falsified there
-# against a deleted hash line).
-chk=$(mktemp -d) || exit 1
-trap 'rm -f "$chk/split" "$chk/all"; rmdir "$chk" 2>/dev/null' EXIT
-sort "$here/pins-wheels.txt" "$here/pins-sdist.txt" > "$chk/split"
-sort "$here/pins-all.txt" > "$chk/all"
-if ! cmp -s "$chk/split" "$chk/all"; then
-    echo "FAIL: pins-wheels.txt + pins-sdist.txt do not cover pins-all.txt exactly (line-level, hashes included)" >&2
-    diff "$chk/split" "$chk/all" >&2 || true
-    exit 1
-fi
+mkdir -p "$dest"
 
 sum() {
     if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"
@@ -66,6 +53,31 @@ fetch() {
     echo "ok   $name"
 }
 
+# One content-addressed source checkout: clone at the tag when absent,
+# then verify HEAD against the pinned commit either way.
+src_at_commit() { # dirname url tag commit
+    dir="$dest/$1"
+    if [ ! -d "$dir" ]; then
+        git clone --quiet --depth 1 --branch "$3" "$2" "$dir"
+    fi
+    got=$(git -C "$dir" rev-parse HEAD)
+    if [ "$got" != "$4" ]; then
+        echo "FAIL $1: HEAD $got, wanted $4" >&2
+        exit 1
+    fi
+    echo "ok   $1 at $got"
+}
+
+# The source-tree digest the Dockerfile re-verifies. Git metadata is
+# excluded on both sides; the digest is over sorted per-file sha256
+# lines, a format shasum (host) and sha256sum (image) print identically.
+digest_tree() { # dirname
+    (cd "$dest/$1" && find . -type f -not -path './.git/*' -print0 \
+        | sort -z | xargs -0 -n 64 shasum -a 256 | shasum -a 256 | cut -d' ' -f1) \
+        > "$dest/$1.digest"
+    echo "ok   $1.digest $(cat "$dest/$1.digest")"
+}
+
 # rust: same artifact and pin as cohort 3; reuse its cached copy.
 rust=rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz
 if [ ! -f "$dest/$rust" ] && [ -f "$here/../cohort3/artifacts/$rust" ]; then
@@ -75,18 +87,9 @@ fetch "$rust" \
     "https://static.rust-lang.org/dist/2026-08-20/$rust" \
     ac9283184301aeed06ecc9f5aa4c1be7041e18a1b197b6cb6c5d162d98f566da
 
-# himalaya source at the pinned tag commit (content-addressed).
-himalaya_commit=ca88bee08ad2e92127b46dc6200d1e8201885156
-if [ ! -d "$dest/himalaya-src" ]; then
-    git clone --quiet --depth 1 --branch v2.1.0 \
-        https://github.com/pimalaya/himalaya.git "$dest/himalaya-src"
-fi
-got=$(git -C "$dest/himalaya-src" rev-parse HEAD)
-if [ "$got" != "$himalaya_commit" ]; then
-    echo "FAIL himalaya-src: HEAD $got, wanted $himalaya_commit" >&2
-    exit 1
-fi
-echo "ok   himalaya-src at $got"
+# himalaya v2.1.0 (annotated tag -> pinned commit).
+src_at_commit himalaya-src https://github.com/pimalaya/himalaya.git \
+    v2.1.0 ca88bee08ad2e92127b46dc6200d1e8201885156
 
 # The crate closure. Skipped when present: cargo re-verifies every crate
 # against Cargo.lock at build time, so a stale vendor cannot pass silently.
@@ -101,21 +104,15 @@ if [ "$vend_n" -eq 0 ]; then
 fi
 echo "ok   vendor: $vend_n crate dirs (Cargo.lock names $lock_n packages; the difference is himalaya itself, which is not vendored)"
 
-# The source-tree digest the Dockerfile re-verifies. Git metadata is
-# excluded on both sides; the digest is over sorted per-file sha256 lines,
-# a format shasum (host) and sha256sum (image) print identically.
-(cd "$dest/himalaya-src" && find . -type f -not -path './.git/*' -print0 \
-    | sort -z | xargs -0 -n 64 shasum -a 256 | shasum -a 256 | cut -d' ' -f1) \
-    > "$dest/himalaya-src.digest"
-echo "ok   himalaya-src.digest $(cat "$dest/himalaya-src.digest")"
+digest_tree himalaya-src
 
-# Wheels: hash-verified by pip against the lock. No sdist download step:
-# pins-sdist.txt is empty (see header), and the cover check above proves
-# nothing was dropped to make it so.
-python3 -m pip download --require-hashes --no-deps -r "$here/pins-wheels.txt" \
-    --only-binary=:all: --python-version 3.13 --implementation cp \
-    --platform manylinux_2_28_aarch64 --platform manylinux_2_17_aarch64 \
-    --platform manylinux2014_aarch64 \
-    -d "$dest/wheels"
+# unison v2.54.0 (lightweight tag -> pinned commit). No aarch64-linux
+# release asset exists upstream (measured 2026-08-23: macOS arm64 only),
+# so the measured binary is a self-build — the disclosure lives in
+# PROTOCOL.md's Versions section.
+src_at_commit unison-src https://github.com/bcpierce00/unison.git \
+    v2.54.0 b1a49141e7eb5334e31efcf4d08073c192d6c1ae
+
+digest_tree unison-src
 
 echo "artifacts ready in $dest"
