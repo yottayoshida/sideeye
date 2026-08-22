@@ -21,6 +21,39 @@ recollection. The brief this cohort runs under says a candidate row missing
 a measurement is an incomplete row; by its own standard the whole column
 was incomplete, and I had written the word "read" over it.
 
+**Third pass, same day: the two rows left on a judgment were read from
+source, and one of them changed the slate.** neomutt returns to the pool
+with both of its open questions answered favourably — send/send.c has an
+Fcc branch guarded by SEND_BATCH ("Printed when an Fcc in batch mode
+fails"), so a non-interactive invocation with a local `record` writes into
+the judged maildir; and maildir/message.c opens the temp file with plain
+`open(path, O_WRONLY | O_EXCL | O_CREAT, 0666)` and moves it with
+`rename()` — libc, no mkstemp, which is the question today's #39
+measurement made cheap to ask of any C candidate. What holds it back is
+rule 4 (the primary interface is a TUI — a judgment reading cannot settle)
+and rule 9 (no non-interactive read-back, so a checker would read the
+maildir rather than use the tool). It brings the language the slate lacks.
+
+calcure's rule 8 was simply wrong, not merely unproven: `--task` and
+`--event` both add and exit. But calcure/savers.py then argues against the
+slot better than my rejection did — every row is written to `<file>.bak`
+and moved with `Path.replace()`, so **no window loses the user's tasks**,
+and the forecast is PASS with `.bak` noise in the judged root. Overturning
+a rejection and finding the target uninteresting are different results, and
+this pass produced the second.
+
+The three unread rows closed too: yadm is a `#!/bin/sh` script whose writes
+run in git children (the pass wall, #123 — GitHub's "Python" is its test
+suite), and bob and proto keep re-downloadable toolchains, which is not
+primary data. proto's user-authored `.prototools` is the only part worth
+revisiting if slots stay empty.
+
+Slate after three passes: himalaya (Rust), vdirsyncer (Python), neomutt
+(C) — three languages, all multi-file coherence, **two primary slots and
+the whole bench still empty**. The population argument is unchanged: 128 of
+159 enumerated repositories fell to language wall forecasts, and both walls
+doing that work are scheduled after v1.0.
+
 The owner's instruction was to re-judge the thin rejections against primary
 sources, reading only. Six rows, and the results split:
 

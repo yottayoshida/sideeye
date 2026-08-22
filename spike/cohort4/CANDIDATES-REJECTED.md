@@ -7,8 +7,10 @@ committed rather than left in a scratch directory because it is the
 evidence half of a selection, and the owner asked for it after auditing the
 funnel below and finding it thin.
 
-**Second pass, 2026-08-22 (owner instruction): every rejection whose basis
-was an unverified description line was re-judged against primary sources.**
+**Second and third passes, 2026-08-22 (owner instruction): every rejection
+whose basis was an unverified description line was re-judged against primary
+sources, and the rows left resting on a judgment were then read from source
+code.**
 Six rows were re-opened. Two had their stated rule replaced, one was
 weakened to uncertain, three were upheld with the basis upgraded from
 recall to measurement. The re-judgments are in §"Second pass" below and are
@@ -56,17 +58,17 @@ Sorted as the enumeration returned them. "Basis" is what the judgment actually r
 | smacke/ffsubsync | 7,849 | Python | reject | 5 | **measured, second pass**: a CLI exists; what fails is rule 5 — its output is derived from its inputs |
 | samuelclay/NewsBlur | 7,593 | Python | reject | 4 — web reader | description |
 | jarun/buku | 7,179 | Python | already measured, and 7 | — | cohort 1 record; withdrawn as a bug claim because a journalled DB's mid-transaction state is what its journal is for |
-| yadm-dev/yadm | 6,394 | Python (listed) | **unread candidate** | — | a dotfiles manager wrapping git. Forecast: the writes happen in git child processes, which is the `pass` wall (`child_touched_state_dir`, #123). Not rejected — the forecast wants checking |
+| yadm-dev/yadm | 6,394 | sh (GitHub says Python: the tests) | reject | 16 | **third pass, measured**: `yadm` is a `#!/bin/sh` script re-execing under bash; state mutations run in git child processes — the `pass` wall (#123) |
 | GothenburgBitFactory/taskwarrior | 6,014 | C++ | already measured | — | PASS 12/12 record |
 | stringer-rss/stringer | 4,126 | Ruby | reject | 4 — self-hosted web reader | description |
-| neomutt/neomutt | 3,814 | C | reject | ~~8~~ → **4, as a judgment** | **re-judged, second pass**: the man page lists Batch mode as a first-class mode, so rule 8 does not fail. See §Second pass |
+| neomutt/neomutt | 3,814 | C | **returned to the pool** | ~~8~~ — overturned; rule 4 open as a judgment | **third pass**: batch mode does Fcc (send.c), and the maildir write is libc `open` + `rename`, no mkstemp. See §Third pass |
 | martinrotter/rssguard | 2,720 | C++ | reject | 4 — GUI | description |
-| anufrievroman/calcure | 2,338 | Python | reject | ~~8~~ → **4, uncertain** | **re-judged, second pass**: the README documents argument-driven task/event adding, so rule 8 is unproven. One wiki page would settle it |
-| MordechaiHadad/bob | 2,138 | Rust | **unread candidate** | — | neovim version manager: installed versions plus a JSON. Multi-file coherence on paper |
+| anufrievroman/calcure | 2,338 | Python | **no longer rejected** | ~~8~~ — overturned | **third pass**: `--task` and `--event` add and exit. Ranked low on a measured forecast (atomic `Path.replace`, no loss window) — see §Third pass |
+| MordechaiHadad/bob | 2,138 | Rust | reject | 5 | **third pass**: the state is downloaded toolchains, which are re-downloadable |
 | Rongronggg9/RSS-to-Telegram-Bot | 2,137 | Python | reject | 4 and 5 — a bot service | description |
 | GitGuardian/ggshield | 1,991 | Python | reject | 5 — a scanner, no primary store | description |
 | OfflineIMAP/offlineimap | 1,859 | Python | reject | 2 and 12 — pushed 2023-06-13, description says "[LEGACY" | pushed date measured; description |
-| moonrepo/proto | 1,396 | Rust | **unread candidate** | — | pluggable version manager: tools, a lockfile, config. Multi-file coherence on paper |
+| moonrepo/proto | 1,396 | Rust | reject | 5 | **third pass**: same shape as bob; its user-authored `.prototools` is the only primary-data part, worth a second look only if slots stay empty |
 | mongodb/kingfisher | 1,206 | Rust | reject | 5 — a secrets scanner | description |
 
 ## What the first pass did not contain, said plainly (superseded in part by the second)
@@ -179,6 +181,95 @@ description of what it does rather than from the search result's summary.
 - **Still unread from the original pool: 3** (yadm, bob, proto) plus the
   two set aside on cost (brew, CocoaPods), which the owner has kept out of
   scope for this pass.
+
+
+## Third pass — the two judgment rows and the three unread, read from source
+
+Owner instruction after the second pass: finish the rows that were left
+resting on a judgment, and read the three unread candidates. Reading only;
+sources named per row.
+
+### neomutt — **returns to the pool, and is the strongest row this pass produced**
+
+Two questions were open after the second pass. Both are now answered from
+the source, and both answer favourably.
+
+- **Does batch mode mutate the judged maildir?** Yes. send/send.c carries
+  the branch `if (rc && (flags & SEND_BATCH))` under the comment *"Printed
+  when an Fcc in batch mode fails."* Fcc runs in batch mode, so with
+  `record` pointed at a local maildir a non-interactive invocation writes
+  into the state root. Rule 8 passes on the code, not on the man page alone.
+- **Is the write path visible to an interposer?** Yes, and this is the
+  question the mkstemp measurement (#39) made cheap to ask of any C
+  candidate. maildir/message.c opens the temp file with
+  `fd = open(path, O_WRONLY | O_EXCL | O_CREAT, 0666)` and moves it with
+  `rename(oldpath, fullpath)` — plain libc calls, no `mkstemp`, no raw
+  syscalls. Rule 16's forecast is favourable.
+
+What remains, and it is not small: **rule 4** — the primary interface is an
+interactive TUI, which is the judgment this pass was asked to finish and
+which it cannot settle by reading; and **rule 9** — no obvious
+non-interactive read-back command, so a checker would read the maildir
+directly rather than through the tool. Cohort 3's checkers used their
+target's own commands.
+
+What it brings that the current slate lacks: **C**. himalaya is Rust and
+vdirsyncer is Python, so rule 13's language diversity currently rests on
+two languages cohort 3 already measured.
+
+### calcure — **rule 8 overturned, and the write shape then argues against the slot**
+
+calcure/configuration.py defines `--task NAME` ("add a task and exit") and
+`--event YYYY-MM-DD-name` ("add an event and exit"). Rule 8 passes
+outright; the second pass's "unproven" was too generous to my own
+rejection, which was simply wrong.
+
+But calcure/savers.py settles what a slot would buy. The save writes every
+row into `<file>.bak` and then calls `Path.replace()` onto the original — an
+atomic rename, with no fsync and a fixed temp name inside the state root.
+**There is no window in which the user's tasks are lost**: the original
+stands until the replace. The forecast is therefore PASS, with L0 noise from
+the `.bak` file appearing in the judged root — the `COMMIT_EDITMSG` shape
+(#35). Storage is CSV (`csv` module, plain text), so rules 6 and 7 pass, and
+rule 9 is weak for the same reason as neomutt's: no non-interactive
+read-back.
+
+**Status: no longer rejected, and ranked low on a measured forecast rather
+than on a wrong rule.** That distinction is the point of this pass.
+
+### yadm — **rejected on rule 16, measured**
+
+GitHub reports the language as Python (the test suite); the tool itself is
+`yadm`, a `#!/bin/sh` script that re-execs under bash. Its state mutations
+are performed by **git child processes**, which is `child_touched_state_dir`
+— the `pass` wall (#123, open). The forecast the first pass guessed is now
+read from the file.
+
+### bob, proto — **rejected on rule 5**
+
+Both are version managers: the state is downloaded toolchains, which are
+re-downloadable, so what they keep is not primary data a user would lose.
+proto has one genuine primary-data file (a user-authored `.prototools`),
+which is the only part worth a second look if slots stay open. Both also
+need the network to install, so a probe would need offline fixtures — a cost
+note, not a rule.
+
+## The slate after three passes
+
+| # | Candidate | Language | Axis | State |
+|---|---|---|---|---|
+| 1 | himalaya | Rust | A (maildir) | clean; **cost**: the distribution is musl-static, so the measured binary must be a self-build, and the freeze has to say so |
+| 2 | vdirsyncer | Python | A + C (status ↔ vdir, `repair`) | clean; rule 11 borderline (comment counts only), and condition 9 is a gate — a count of 1 means no slot |
+| 3 | **neomutt** | **C** | A (maildir) | write path measured visible; **rule 4 is a judgment** and rule 9 needs a checker that does not use the tool |
+| 4 | — | — | — | empty |
+| 5 | — | — | — | empty |
+| bench | — | — | — | empty |
+
+Two of five primary slots remain empty, and the bench is empty. The
+population argument in the first pass has not changed: 128 of 159 enumerated
+repositories were excluded by language wall forecast, and the two walls
+doing that work (#201 static linkage, #202 threads) are both scheduled
+after v1.0.
 
 ## Why the funnel came out wrong
 
