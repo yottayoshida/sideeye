@@ -213,6 +213,34 @@ non-interactive read-back command, so a checker would read the maildir
 directly rather than through the tool. Cohort 3's checkers used their
 target's own commands.
 
+**The header-cache question, closed by reading (raised in review).** An
+optional header cache (tokyocabinet/lmdb/bdb) would be an embedded store,
+so rule 7 had to be checked. `hcache/config.c` declares
+`{ "header_cache", DT_PATH, 0, ... }` — **default unset** — and its
+validator refuses the setting outright unless `header_cache_backend` was set
+first ("Set option %s before setting %s"). The cache is therefore **off
+unless an operator turns it on with two explicit settings**, so rule 7 is
+not engaged, no apparatus pin is needed, and the probe does not have to scan
+for it. Cheaper than forecast.
+
+**The rule-9 question is an interpretation, not a measurement — and it
+decides whether this candidate is in.** Rule 9 reads "a checker can be
+written using the target itself". Two readings, and the freeze has to pick
+one in writing rather than leave it implicit:
+
+- **(a) The store may be read directly when it is plain text.** A maildir is
+  files; a checker can assert on them without the tool. neomutt stays.
+- **(b) The tool's own commands are required.** A target with no
+  non-interactive read-back fails rule 9. neomutt drops.
+
+Cohort precedent leans (b): every cohort-2 and cohort-3 checker went through
+its target's own commands (`hg recover`, `borg check`, black's `--check`,
+`papis list`, poetry's documented chain). And the asymmetry matters — of the
+three slate candidates, himalaya has `envelope list` / `message read` and
+vdirsyncer has `repair`, so **neomutt is the only one that needs reading
+(a)**. Choosing (a) to keep it changes what rule 9 means for every future
+cohort, which is why it belongs in the freeze text and not in a probe.
+
 What it brings that the current slate lacks: **C**. himalaya is Rust and
 vdirsyncer is Python, so rule 13's language diversity currently rests on
 two languages cohort 3 already measured.
