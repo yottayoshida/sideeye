@@ -163,6 +163,12 @@ recorded artifact (`docs/target-classes.md`):
 - threads (`multiple_threads_detected`) — Bun; libuv is forecast, unmeasured
 - child processes doing the writing (`child_touched_state_dir`) — pass, #123
 - raw syscalls past libc (`oracle_missed_operation`) — cargo's manifest rename, #217
+- **internal libc calls that mutate state** — the same refusal from a
+  different cause, measured 2026-08-22 on `spike/toys/toy_mkstemp.c`
+  (`mkstemp-class.txt`, #39): `mkstemp` + write + fsync + rename leaves its
+  *creation* invisible, and `dprintf` its write. The idiom is what a
+  careful C program is supposed to use, which makes this the row most
+  likely to bite a C or C++ candidate
 - nondeterministic writers (`baseline_violates_invariant`) — watson
 - encrypted / memory-locked state — KeePassXC's probe wall
 
@@ -264,18 +270,20 @@ Rules 1–13 of #209 carry over. The deltas:
   write shape, with a positive control, before the target is frozen.
 - **15. Interior forecast (A2).** The operation must plausibly have more
   than one in-root kill point; confirmed at probe by condition 9.
-- **16. Wall forecast against §3F**, which now includes the internal-libc-call
-  row measured 2026-08-22 (`mkstemp-class.txt`): the canonical C
-  atomic-replace idiom hides its file creation inside libc, so a C or C++
-  candidate whose write path uses `mkstemp` reaches cargo's wall.
-- **16b. (superseded numbering kept for the diff)** Any forecast wall enters with its
+- **16. Wall forecast against §3F.** Any forecast wall enters with its
   lifting apparatus named before the probe, or the target does not enter.
+  §3F now includes the internal-libc-call row measured 2026-08-22
+  (`mkstemp-class.txt`): the canonical C atomic-replace idiom hides its file
+  creation inside libc, so a C or C++ candidate whose write path uses
+  `mkstemp` reaches cargo's wall.
 - **17. Rule 11 measured on bug reports**, with our own zero-reply record
   stated beside it.
 
 Target *names* are deliberately absent from this file: selection is the
-owner's call, and the scout brief that proposes candidates is written
-after §7 is decided, because the exit rule changes what a good target is.
+owner's call. The brief that proposes candidates against these rules is
+`SCOUT-BRIEF.md`, written after §7 was decided — the exit rule changes what
+a good target is, and deciding it first is what keeps the slate from being
+chosen around a fallback.
 
 ## 7. The exit rule — decided 2026-08-22: the default stands
 
