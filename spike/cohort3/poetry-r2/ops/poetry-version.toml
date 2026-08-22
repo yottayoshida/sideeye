@@ -1,0 +1,17 @@
+# Cohort-3 poetry revision 2 (P1): kill `poetry version patch` partway;
+# the checker holds the come-back-through-poetry's-own-path property
+# (proposals.md carries the revision's reason, the owner approval, the
+# probed write shape and the declared world readings). Determinism and
+# closure evidence: ../probe.txt — the probe ran cwd = the project dir
+# with fresh ambient per run and virtualenv creation off (0 threads,
+# 0 clones measured under it); the define's deltas are the -C directory
+# flag and setup-warmed shared ambient, and the engine re-verifies
+# determinism at explore.
+[world]
+state = "/tmp/cohort3/poetry-r2/state"
+
+[define]
+setup           = "./setup.sh"
+operation       = "poetry -C /tmp/cohort3/poetry-r2/state version patch"
+check           = "./check.sh"
+expected_status = "0"

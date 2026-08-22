@@ -2,7 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-22 — the poetry verify transcript: the fourth seal
+## 2026-08-22 — poetry revision 2: the operation that writes only the manifest
+
+Owner ruling (same day as the poetry verdict, order explicit:
+poetry-r2 before papis): take up the deferred revision question. The
+revision changes the operation — `version patch` instead of
+`add --lock` — which is not cargo-r2's apparatus-swap kind, and the
+proposals say so up front: the primary's outcome was a claim-reading
+structure (lock-first write order puts an L0-only world ahead of the
+checker-red manifest world in every run), so the only way the
+manifest wound can become an earliest case is an operation whose only
+in-root write is the manifest. Measured before writing anything:
+`version patch` works under package-mode=false, bumps 0.1.0 → 0.1.1
+byte-deterministically, **leaves poetry.lock byte-identical** (no
+lock syscalls; version does not participate in the lock's
+content-hash — `check --lock` green after the bump), and mutates the
+state root in exactly one truncate-plus-104-byte-write. The full
+seven-condition probe harness was re-run for the new operation
+(committed in the revision dir): conditions 1–6 machine-green, **0
+threads, 0 clones** under venv-off — this operation spawns nothing,
+cleaner than the primary. Drills nine for nine with the chain's every
+branch re-rehearsed in this define's own state (branch rehearsal is
+per-define, not per-copied-code — the heal branches are
+engine-unreachable here and rehearsed anyway). Version-shaped novelty
+round recorded (four terms, nothing named); the destruction round and
+control carry over from the primary. If this define FAILs at the
+empty-manifest point, the earliest case is checker-red by
+construction — the first candidate-shaped prospect of the cohort
+where the claim reading and the write shape point the same way.
 
 verify-assisted green on poetry (define at 75b3d19 strictly before
 artifacts at f35bf72, all four define files byte-identical;
