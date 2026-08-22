@@ -2041,8 +2041,13 @@ rm -rf "$SD" && mkdir -p "$SD/s1" "$SD/s2" "$SD/s3" "$SD/s4" "$SD/s5" "$SD/s6"
 TOY_STATE=$SD/s1 "$SIDEEYE" explore --state "$SD/s1" \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work "$SD/w1" --oracle /usr/bin/strace --json "$SD/pass.json" >/dev/null 2>&1
-TOY_STATE=$SD/s2 "$SIDEEYE" explore --state "$SD/s2" \
+# The FAIL fixture runs WITH the checker (#231): `checker_earliest` is a
+# documented field, and the bidirectional pin below needs some generated report
+# to carry it — a checkerless FAIL cannot, structurally. Same toy/check pair as
+# check 1b, whose earliest world is checker-red (the combined invariant).
+TOY_STATE=$SD/s2 TOY=$OUT/toy-bug "$SIDEEYE" explore --state "$SD/s2" \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work "$SD/w2" --oracle /usr/bin/strace --json "$SD/fail.json" >/dev/null 2>&1
 # UNKNOWN needs the would-be-PASS path: a FAIL stands without the oracle, but a
 # PASS without completeness refuses — so the fixed toy, oracle-less, is the recipe.
@@ -2087,6 +2092,74 @@ if [ "$ev_fails" = "0" ]; then
     echo "ok   oracle_verified: true exactly where the comparison completed and agreed (typed as JSON bool)"
 else
     echo "FAIL oracle_verified value pins: $ev_fails of 7 wrong"
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 4c: the second exhibit — the earliest checker-red world (#231) ==========="
+# The poetry shape, shrunk: TOY_SPLIT_REWRITE rewrites derived.txt then
+# primary.txt in place (four kill points), and check-split.sh judges only the
+# primary. World k=2 (derived mid-write) is an L0-only precision-limit
+# observation; world k=4 (primary mid-write) is the checker-red one. The report
+# must carry both exhibits, the earliest must own 000001, and the checker
+# exhibit's own case must replay. Seen red once against the pre-change binary
+# (no checker_earliest field) and once by the write-order mutation drill —
+# both recorded in BUILDLOG (2026-08-22).
+XD=/tmp/acc-exhibit
+rm -rf "$XD" && mkdir -p "$XD/state"
+TOY_STATE=$XD/state TOY_SPLIT_REWRITE=1 "$SIDEEYE" explore --state "$XD/state" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check "$ROOT/spike/check-split.sh" \
+    --shim "$SHIM" --work "$XD/work" --oracle /usr/bin/strace --json "$XD/r.json" > "$XD/out.txt" 2>&1
+rc=$?
+x_fails=0
+[ "$rc" = "1" ] || { echo "     explore: exit $rc, wanted 1"; x_fails=$((x_fails + 1)); }
+grep -q "^FAIL  2 of 5 explored worlds" "$XD/out.txt" || { echo "     headline: not 'FAIL  2 of 5'"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/r.json" earliest.crash_point)" = "2" ] || { echo "     earliest.crash_point: '$(field "$XD/r.json" earliest.crash_point)', wanted 2"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/r.json" earliest.invariant)" = "built-in atomicity (L0)" ] || { echo "     earliest.invariant: '$(field "$XD/r.json" earliest.invariant)'"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/r.json" checker_earliest.crash_point)" = "4" ] || { echo "     checker_earliest.crash_point: '$(field "$XD/r.json" checker_earliest.crash_point)', wanted 4"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/r.json" checker_earliest.invariant)" = "built-in atomicity, and the checker" ] || { echo "     checker_earliest.invariant: '$(field "$XD/r.json" checker_earliest.invariant)'"; x_fails=$((x_fails + 1)); }
+ecase=$(field "$XD/r.json" case)
+ccase=$(field "$XD/r.json" checker_earliest.case)
+case "$ecase" in */cases/000001.json) : ;; *) echo "     case: '$ecase', wanted .../cases/000001.json"; x_fails=$((x_fails + 1)) ;; esac
+case "$ccase" in */cases/000002.json) : ;; *) echo "     checker_earliest.case: '$ccase', wanted .../cases/000002.json"; x_fails=$((x_fails + 1)) ;; esac
+# 000001's owner is the earliest, pinned in the case file itself, not by name.
+[ "$(field "$ecase" k)" = "2" ] || { echo "     000001's k: '$(field "$ecase" k)', wanted 2 (the earliest)"; x_fails=$((x_fails + 1)); }
+[ "$(field "$ccase" k)" = "4" ] || { echo "     000002's k: '$(field "$ccase" k)', wanted 4 (the checker world)"; x_fails=$((x_fails + 1)); }
+grep -q "^checker red crash point 4 of 4 (built-in atomicity, and the checker)" "$XD/out.txt" || { echo "     text: no 'checker red' section for the distinct world"; x_fails=$((x_fails + 1)); }
+# The checker exhibit's case replays on its own (R1: the replay path is part of
+# the frozen surface, so its report is asserted, not assumed). The case carries
+# the define, not the environment — the toy's env rides the invocation.
+TOY_STATE=$XD/state TOY_SPLIT_REWRITE=1 "$SIDEEYE" replay "$ccase" --shim "$SHIM" --work "$XD/rwork" --json "$XD/rr.json" > "$XD/rout.txt" 2>&1
+rrc=$?
+[ "$rrc" = "1" ] || { echo "     replay: exit $rrc, wanted 1 (reproduced)"; x_fails=$((x_fails + 1)); }
+grep -q "the case reproduced" "$XD/rout.txt" || { echo "     replay: no 'the case reproduced'"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/rr.json" earliest.crash_point)" = "4" ] || { echo "     replay earliest.crash_point: '$(field "$XD/rr.json" earliest.crash_point)', wanted 4"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/rr.json" checker_earliest.crash_point)" = "4" ] || { echo "     replay checker_earliest: '$(field "$XD/rr.json" checker_earliest.crash_point)', wanted 4"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/rr.json" checker_earliest.case)" = "$ccase" ] || { echo "     replay checker_earliest.case: '$(field "$XD/rr.json" checker_earliest.case)', wanted the replayed path"; x_fails=$((x_fails + 1)); }
+[ "$(field "$XD/rr.json" checker_earliest.replay)" = "(this run is a replay; the case reproduced)" ] || { echo "     replay checker_earliest.replay: '$(field "$XD/rr.json" checker_earliest.replay)'"; x_fails=$((x_fails + 1)); }
+# Same-world control: the plain buggy toy's earliest IS checker-red, so
+# checker_earliest mirrors earliest, shares its case, and adds no text
+# section. The crash point is pinned to its concrete value (5, the same
+# number check 1 pins in text) so a missing/broken fail.json cannot make
+# the two field() reads vacuously equal as empty strings (R1).
+[ "$(field "$SD/fail.json" checker_earliest.crash_point)" = "5" ] || { echo "     same-world: checker_earliest.crash_point '$(field "$SD/fail.json" checker_earliest.crash_point)', wanted 5"; x_fails=$((x_fails + 1)); }
+[ "$(field "$SD/fail.json" earliest.crash_point)" = "5" ] || { echo "     same-world: earliest.crash_point '$(field "$SD/fail.json" earliest.crash_point)', wanted 5"; x_fails=$((x_fails + 1)); }
+[ "$(field "$SD/fail.json" checker_earliest.case)" = "$(field "$SD/fail.json" case)" ] && [ -n "$(field "$SD/fail.json" case)" ] || { echo "     same-world: cases differ or empty"; x_fails=$((x_fails + 1)); }
+# And the text side of the same-world promise — no `checker red` section —
+# needs a captured same-world FAIL, with a positive control on the same
+# output so a silent run cannot pass the negative grep vacuously.
+rm -rf "$XD/swstate" && mkdir -p "$XD/swstate"
+TOY_STATE=$XD/swstate TOY=$OUT/toy-bug "$SIDEEYE" explore --state "$XD/swstate" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work "$XD/swwork" --oracle /usr/bin/strace > "$XD/swout.txt" 2>&1
+grep -q "atomicity, and the checker" "$XD/swout.txt" || { echo "     same-world text: control line missing (run broke?)"; x_fails=$((x_fails + 1)); }
+grep -q "^checker red" "$XD/swout.txt" && { echo "     same-world text: unexpected 'checker red' section"; x_fails=$((x_fails + 1)); }
+if [ "$x_fails" = "0" ]; then
+    echo "ok   both exhibits carried, 000001 owned by the earliest, the checker case replays"
+else
+    echo "FAIL the second exhibit: $x_fails assertion(s) wrong"
     fails=$((fails + 1))
 fi
 

@@ -395,7 +395,11 @@ re-run with bogofilter's own reader as the checker (bogoutil dump + a real
 classification) reproduced FAIL 3/26 with the earliest violated invariant
 "built-in atomicity (L0)" and **a committed per-world log** — the report
 alone records only the earliest violating world, so the checker writes one
-line per invocation outside the judged state: the falsification gate's red
+line per invocation outside the judged state (as measured then; since
+2026-08-22 the report also carries the earliest *checker-red* world as its
+own exhibit, `checker_earliest` — #231, ADR 0020 — which does not replace
+this technique: the per-world log covers every world, the exhibit covers
+one): the falsification gate's red
 first, then 26 passes, one for every explored world including all three
 violating ones (`spike/followup-144/artifacts/checker.log`) — the git
 COMMIT_EDITMSG template exactly. The disposition is

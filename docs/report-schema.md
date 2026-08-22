@@ -55,6 +55,26 @@ records zero for a run that ended early.
 | `earliest.subject` | string | What the violation is about — a file name for L0, `"(named by the checker, not by path)"` for L2. |
 | `earliest.observed` | string | What was actually seen in the crashed state, in one sentence. |
 
+The claim exhibit (#231, ADR 0020) — present on `FAIL` exactly when some
+violating world's violation includes the declared checker, decided by the
+judgment-time bits, never by parsing the invariant string. Absent on every
+checkerless define, structurally. Often the same world as `earliest`; the two
+diverge when a precision-limit world (an in-place writer caught mid-write,
+which the checker heals) stands physically earlier than the world where the
+declared invariant itself broke:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `checker_earliest` | object | The earliest crash world whose violation includes the declared checker — the claim exhibit. |
+| `checker_earliest.crash_point` | int | As `earliest.crash_point`, for this world. |
+| `checker_earliest.after` | object | `{op, path}` — as `earliest.after`, for this world. |
+| `checker_earliest.before` | object | `{op, path}` — as `earliest.before`, for this world. |
+| `checker_earliest.invariant` | string | One of the checker-bearing forms only: `"the checker (L2)"`, `"built-in atomicity, and the checker"`, `"the post-success invariant, and the checker"`. |
+| `checker_earliest.subject` | string | As `earliest.subject`, for this world. |
+| `checker_earliest.observed` | string | As `earliest.observed`, for this world. |
+| `checker_earliest.case` | string | Path of this exhibit's saved case. The same path as `case` when the two exhibits are one world; its own file when they differ, written strictly after the earliest's — so within a run the earliest's case always takes the lower id, and in a fresh work directory that is `000001` (ids are claimed `O_EXCL`, so a reused work directory continues its numbering); `"(not saved)"` when no case could be written — including when the earliest's own case failed to write, so the ordering holds even under write failure. |
+| `checker_earliest.replay` | string | The replay command for `checker_earliest.case`, mirroring `replay`'s conventions (`"-"` when there is no saved case; the replay-mode sentence when this run *is* a replay of it). |
+
 What the loop-closure experiments' judges actually read, for calibration: the
 gate predicate was `verdict`, `explored`, `crash_points`, and the absence of
 `unknown_reason`; the fix-side agents read `earliest.before` / `earliest.after`
@@ -92,7 +112,7 @@ report refuses to be reassuring without an account.
 |---|---|---|
 | `l0` | string | What the built-in atomicity form judged (file counts, forms applied). |
 | `l1` | string | The success-marker layer's account (`"no marker configured"` when unused). |
-| `case` | string | Path of the saved counterexample this run wrote or replayed; `"(none)"` when no case exists. |
+| `case` | string | Path of the saved counterexample this run wrote or replayed; `"(none)"` when no case exists; `"(not saved)"` when a FAIL's case could not be written. |
 | `replay` | string | The exact replay command for the saved case; `"-"` when there is none. |
 | `oracle` | string | The completeness account: how many operations the two witnesses agreed on, or that no oracle ran. |
 | `metadata_writes` | string | Ownership/permission/timestamp writes on the state directory (#121, #190): observed by the oracle and excluded from judgement — the chown/chmod and utime families change none of the judged state (names, bytes, link targets). Without an oracle the note says they are not observable at all (the shim does not interpose them); absence of a note is never absence of writes. |
