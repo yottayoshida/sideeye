@@ -1,0 +1,30 @@
+# novelty-prescan.sh --validate — the term list, held to issues this project already knows
+#
+# Run 2026-08-22. Two directions, because a check that has only ever
+# been green says nothing about what it passed.
+#
+# Why this check exists: the first run of the scan against
+# rust-lang/rustfmt surfaced #6041 under exactly two terms (disk,
+# disk+full), where psf/black's two issues answered eight or more.
+# The term list is therefore load-bearing, and taste is not evidence
+# that it is wide enough.
+
+== GREEN: the current term list
+== validate: the term list against issues this project already knows
+  found #2479 in psf/black via term: corrupt
+  found #5207 in psf/black via term: corruption
+  found #6041 in rust-lang/rustfmt via term: disk
+== validate failures: 0 of 3
+rc=0
+
+== RED PROOF — a DELIBERATE failure, not a real one.
+== Produced by overriding the term list to 'crash corrupt corruption',
+== i.e. removing the only term that reaches rustfmt#6041. Every line
+== of the block below is prefixed REDPROOF| so that an excerpt cannot
+== be mistaken for a genuine red.
+REDPROOF| == validate: the term list against issues this project already knows
+REDPROOF|   found #2479 in psf/black via term: corrupt
+REDPROOF|   found #5207 in psf/black via term: corruption
+REDPROOF|   MISSED #6041 in rust-lang/rustfmt - no term in the list surfaces it
+REDPROOF| == validate failures: 1 of 3
+REDPROOF| rc=1 (expected)
