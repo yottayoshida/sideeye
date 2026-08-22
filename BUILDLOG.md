@@ -94,6 +94,32 @@ scan cannot prove absence. The exploratory full scans are not committed:
 they were produced by the term list this run replaced, and a transcript
 that does not match its script is worse than none.
 
+**Re-read at PR-open, as the contract asks — and the same-class scan
+found three defects in this change's own gate.** The scan's question was
+which other lists here were chosen by taste rather than derived. The
+interposer's function list was one: it omitted the shim's stdio flush
+family (`fclose`, `fflush`, `fseek`, `rewind` and variants), which the
+shim exports precisely because buffered bytes reach the kernel from inside
+libc, past any PLT — #39's class. Any target writing through stdio would
+have been called a false wall. The list now comes from `nm -D` on the
+built shim, restricted to the mutating set.
+
+Fixing that hid the second one. Descriptor classes were compared by count,
+and once the logger emitted stdio flushes, its own 47 writes to stdout
+swallowed the raw in-root write the positive control exists to catch — the
+row went quiet while the verdict still read WALL from the path classes, so
+nothing looked wrong. Descriptors are resolved through `/proc/self/fd`
+now, and every class is compared path to path. That exposed the third:
+path extraction keyed on the *class* read `write`'s payload as its path
+and dropped every write, which showed up as a missing row and a kill-point
+count falling from 4 to 3. Extraction is keyed on the syscall name.
+
+After the three, the raw toy is flagged on all five classes with their
+exact paths, the libc toy stays green, and the interior count is 4 again.
+Worth stating plainly: two of the three were introduced by the fix to the
+first, and only the self-test's own numbers showed it — the verdicts never
+stopped being correct.
+
 **Order, recorded so it cannot drift** (the owner's, 2026-08-22): the
 BUILDLOG entry for #231 opens before its code; the engine separates the
 overall earliest from the claim exhibit, tracking the checker-red class
