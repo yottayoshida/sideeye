@@ -271,6 +271,24 @@ repositories were excluded by language wall forecast, and the two walls
 doing that work (#201 static linkage, #202 threads) are both scheduled
 after v1.0.
 
+**Owner ruling on that population argument (2026-08-22, recorded on #201
+with a pointer on #140).** The three reach walls stay after v1.0, with one
+named tripwire: **if cohort 4 ends with criterion 1 still open, bringing
+#201 — the static-linkage kill injector — forward is re-examined before any
+cohort-5 selection is frozen.** The reasoning given: a fifth cohort would
+be selecting from a pool this page has now measured as thin, at which point
+the injector stops being roadmap and becomes gate work; and #201 is the only
+bounded one of the three, because the oracle already sees statically linked
+targets and only the injector is missing. #202 (threads) is the larger lever
+— Go's runtime, every JS/TS runtime, the JVM layer — and stays after v1.0
+by its own text.
+
+Two consequences for this page. The tripwire fires on cohort 4's outcome,
+so nothing in the slate or the freeze changes now. And if it ever fires,
+**himalaya's cost note disappears**: with a static-linkage injector there is
+no reason to measure a self-build, and the freeze would no longer have to
+say that the measured binary differs from the distributed one.
+
 ## Why the funnel came out wrong
 
 The table was assembled after the work rather than during it, and the columns were filled to be continuous rather than counted. Two of its four numbers were arithmetic I did not do. The register in `spike/cohort4/PREP.md` lists this defect — claims written from memory rather than from an open source — as row E4, and the check it prescribes (grep the diff for digits, open the primary source for each) is a check on *diffs*, which a chat message is not. That gap is real: the message was not a commit, so nothing made me re-derive the numbers before sending them.
