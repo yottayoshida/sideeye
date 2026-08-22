@@ -1,4 +1,4 @@
-== poetry-r2 checker drills — Poetry (version 2.4.1) — 2026-08-22T05:13:33Z
+== poetry-r2 checker drills — Poetry (version 2.4.1) — 2026-08-22T05:18:30Z
 setup rc=0 (poetry lock under the launcher's env)
 drill ok   green-old: checker green as required
 poetry version patch rc=0 (must be 0 for green-new to mean what it claims)

@@ -25,7 +25,8 @@ produce a criterion-1 claim for that target"** (cohort-3 PROTOCOL,
 restating cohort 2's "Once any explore of a target reaches a FAIL
 verdict, later define revisions cannot produce a criterion-1 claim
 for that target: the question would no longer precede the answer.
-UNKNOWN and refusal iteration stays free"). Poetry's explore reached
+UNKNOWN and refusal iteration stays free, through new directories").
+Poetry's explore reached
 a FAIL verdict before this revision existed. **Therefore nothing this
 revision measures is, or can become, a criterion-1 candidate or
 claim** — owner ruling 2026-08-22, on the record here before the
@@ -124,7 +125,7 @@ re-rehearsed in this define's own state (step-1 heal via a
 staleness-inserting surgery carrying check's verbatim prescription;
 step-2 heal via an empty lock carrying the verbatim
 self-prescription — rehearsed because branch rehearsal is per-define,
-not per-copied-code), the whole-chain red (the candidate shape), the
+not per-copied-code), the whole-chain red (the expected FAIL shape), the
 persistent-red branch (missing-README surgery: check red, step 1
 rc 0, re-check red), leg V (torn), leg N (a third version), guard
 (missing lock).

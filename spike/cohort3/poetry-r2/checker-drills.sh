@@ -78,10 +78,11 @@ cp -a "$P/state" "$P/d-hb"
 : > "$P/d-hb/poetry.lock"
 drill "green-heal-B-empty-lock" pass "$P/d-hb" 'Regenerate the lock file with the `poetry lock` command'
 
-# leg R red, chain branch: the EMPTY manifest — THE declared candidate
-# world of this revision (kill between the truncating open and the
-# single write). Parses as empty TOML (leg V green), config invalid,
-# whole chain fails.
+# leg R red, chain branch: the EMPTY manifest — the declared
+# expected-FAIL world of this revision (kill between the truncating
+# open and the single write; recorded, never a candidate — the
+# FAIL-freeze ruling in proposals.md). Parses as empty TOML (leg V
+# green), config invalid, whole chain fails.
 cp -a "$P/d-new" "$P/d-em"
 : > "$P/d-em/pyproject.toml"
 drill "R-red-chain-empty-manifest" fail "$P/d-em" "the documented recovery chain failed"
