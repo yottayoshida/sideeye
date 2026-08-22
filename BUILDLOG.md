@@ -49,12 +49,15 @@ the cohort-3 pattern verbatim.
 slate lost vdirsyncer to its own measured row.** The scout rows this
 cohort demanded (rules measured, not recalled) came back from the peer
 session and failed vdirsyncer on rule 2 (three commits in the six-month
-window, all typo/docs/CI), rule 3 (one substantive author in that window),
-and rules 11/17 (two of eight recent bug issues answered within a week,
-five never answered) — and the checker anchor the slate had assumed,
-`repair`, sits behind an interactive `click.confirm`
-(cli/__init__.py:261, re-verified here from the fetched wheel before
-gating on it). The 2026-08-22 sign-off was made on rows that had not been
+window, all typo/docs/CI), rule 3 (one author in that window), and rules
+11/17 (one of its six recent bug reports answered within a week — the
+committed row's figure; the peer's first chat message carried a different
+count from an earlier cut of the same measurement, this entry briefly
+copied it, and the committed transcript outranks the chat — the E4
+failure in miniature, caught by the digits check run early) —
+and the checker anchor the slate had assumed, `repair`, sits behind an
+interactive `click.confirm` (cli/__init__.py:261, re-verified here from
+the fetched wheel before gating on it). The 2026-08-22 sign-off was made on rows that had not been
 measured to the brief's standard; the measurement outranks the sign-off.
 Owner ruling (2026-08-23, AskUserQuestion, both halves): **vdirsyncer is
 dropped, and the second slot is re-scouted before the freeze lands** — no

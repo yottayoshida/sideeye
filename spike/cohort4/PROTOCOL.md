@@ -34,10 +34,12 @@ rejection table is what makes the slate auditable.
 freeze.** The 2026-08-22 sign-off named himalaya and vdirsyncer on rows
 that had not yet been measured to the brief's standard. Measuring them
 (2026-08-23) failed vdirsyncer on rule 2 (three commits in six months, all
-typo/docs/CI), rule 3 (one substantive author in the window), and rules
-11/17 (two of eight recent bug issues answered within a week, five never
-answered) — and found the intended checker anchor, `repair`, gated behind
-an interactive `click.confirm` (cli/__init__.py:261). The owner ruled the
+typo/docs/CI), rule 3 (one author in the window), and rules 11/17 (one of
+its six recent bug reports answered within a week; three drew no comment
+from anyone but their author, and one was answered after 106 days by a
+non-maintainer — `SCOUT-ROWS.md`, `rule11-vdirsyncer.txt`) — and found the
+intended checker anchor, `repair`, gated behind an interactive
+`click.confirm` (cli/__init__.py:261). The owner ruled the
 same day: **vdirsyncer is dropped, and the second slot is re-scouted
 before this freeze lands** — no single-target cohort, no promotion clause.
 vdirsyncer's row stays in `SCOUT-ROWS.md` as the rejection it is.
