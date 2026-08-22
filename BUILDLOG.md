@@ -2,6 +2,21 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — rustfmt's verdict: the second language, the same wound
+
+FAIL, 1 of 3 worlds, crash point 2 — the empty file, the declared tear
+— combined invariant with leg V carrying rustc's own E0601, reproduced
+identically twice, replayable case committed. Exactly black's verdict
+in a second language, which was the point: the owner sent this target
+through with its novelty gate already closed (#6041 has named the
+surface since 2024) to buy the cross-language proof, and the engine
+delivered it in three worlds. The formatter half of the matrix is
+done: two languages, one non-atomic in-place write, both current
+stables destroyed by a kill between the truncating open and the
+write. Nothing filed upstream; the criterion-1 search moves to poetry
+and papis, whose trackers name no crash-destruction surface in the
+pre-scans.
+
 ## 2026-08-22 — the rustfmt define: measured with the answer's fame declared up front
 
 Target 3 proceeds by owner decision (2026-08-22) with its novelty gate

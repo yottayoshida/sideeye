@@ -159,6 +159,18 @@ All five passed, so the cohort order stands unchanged:
   names rustfmt as a direct in-place writer — its novelty gate gets
   checked before its define exists.
 
+- **rustfmt (2026-08-22)** — **FAIL, known-surface verdict, novelty
+  pre-closed**: measured by owner decision with the gate already closed
+  before the define existed (rust-lang/rustfmt#6041, open since
+  2024-01-24; recorded pre-define search in the proposals). The explore:
+  1 of 3 worlds, crash point 2 — the empty file the declaration named —
+  combined invariant (leg V: rustc E0601 on an empty bin crate),
+  `oracle_verified` true, reproduced identically twice. The
+  cross-language proof point beside black: same class, same discipline,
+  Rust target, minutes. No claim, nothing filed. Ruling:
+  `rustfmt/RUNLOG.md`. The formatter half of the matrix is now fully
+  measured; the criterion-1 search continues with poetry and papis.
+
 ## What the probe phase deliberately did not do
 
 At the probe phase's close, no define existed and no engine explore had
