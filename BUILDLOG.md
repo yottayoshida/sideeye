@@ -2,6 +2,23 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — cohort 3 leaves the language bar
+
+The `.gitattributes` rule written when cohort 2 closed says "a closed
+cohort belongs here; add its directory when it closes", and cohort 3
+closed this morning, so `spike/cohort3/** linguist-documentation`
+goes in. Measured rather than predicted: the cohort contributes
+**123,757 bytes of shell across 38 scripts**, and GitHub currently
+counts Shell at 359,264 bytes (37.1%) against Zig's 550,992 (56.9%);
+excluding the sealed cohort leaves **235,507 bytes of shell — the
+live harness, and only the live harness** (acceptance, the MCP
+suite, the campaign driver, the rehearsal, the toy builders), which
+is what the rule is for: hide the evidence, keep the maintained code
+visible. The effect is display-only — checkout, diff, merge,
+`verify-assisted.sh`, CI and code search are all indifferent, and
+`linguist-documentation` does not collapse diffs the way
+`linguist-generated` would.
+
 ## 2026-08-22 — the papis verify transcript: the sixth seal, and the ledger is shut
 
 verify-assisted green on papis (define at 22cec73 strictly before
