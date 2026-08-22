@@ -264,7 +264,11 @@ Rules 1–13 of #209 carry over. The deltas:
   write shape, with a positive control, before the target is frozen.
 - **15. Interior forecast (A2).** The operation must plausibly have more
   than one in-root kill point; confirmed at probe by condition 9.
-- **16. Wall forecast against §3F.** Any forecast wall enters with its
+- **16. Wall forecast against §3F**, which now includes the internal-libc-call
+  row measured 2026-08-22 (`mkstemp-class.txt`): the canonical C
+  atomic-replace idiom hides its file creation inside libc, so a C or C++
+  candidate whose write path uses `mkstemp` reaches cargo's wall.
+- **16b. (superseded numbering kept for the diff)** Any forecast wall enters with its
   lifting apparatus named before the probe, or the target does not enter.
 - **17. Rule 11 measured on bug reports**, with our own zero-reply record
   stated beside it.
@@ -324,7 +328,12 @@ believed:
 3. Engine change (#231) merged with tests and the schema note.
 4. `preflight.sh`, `novelty-prescan.sh`, `merge-gate.sh` merged, each with
    its falsification transcript.
-5. Scout brief written against §6 (Opus 5 or better, `docs/scouting.md`);
-   candidates proposed; **owner signs off on the target list**.
+5. ~~Scout brief written against §6~~ — **done 2026-08-22:
+   `SCOUT-BRIEF.md`**, with the selection method declared there: the
+   novelty pre-scan is a **veto, not a ranking** (silence has four possible
+   meanings and only one of them is "novel"; ranking by it selects toward
+   projects nobody examines, against rules 1, 3, 11 and 12). Surviving
+   candidates are ordered by coverage. Still open: candidates proposed, and
+   **the owner signs off on the target list**.
 6. PROTOCOL frozen, citing 2–5 by merge.
 7. Probes, in cohort order. Then defines. Then explores.
