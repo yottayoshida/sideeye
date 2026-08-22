@@ -90,6 +90,45 @@ produced a himalaya the `ldd` assertion confirmed glibc-dynamic, and the
 the re-scout lands, which is also when `freeze-build.txt` gets recorded
 for real.
 
+**The re-scout came back one-for-five, and the owner closed both open
+questions in one gate (2026-08-23, AskUserQuestion).** Homebrew fell on
+rule 5, trash-cli and pipx on rules 11/17, CocoaPods on rule 3; **unison
+survived rules 1–15** with the best rule-9 row of any candidate in four
+cohorts — the `DANGER.README` commit log, replayed mechanically by the
+next startup. Rulings: **unison takes slot 2**, and **himalaya stays on
+`messages copy` with the seccomp profile as the ruled lift** — the peer's
+correction had meanwhile shown the copy arm invisible to the shim's 52
+exports (`fs::copy` → `copy_file_range`/`sendfile`), and the profile
+turned out to be the one apparatus that lifts *both* targets' copy walls,
+because seccomp filters at the kernel boundary and cannot be dodged by
+the `syscall(3)` spelling unison uses (copy_stubs.c:199) or by the
+weak-symbol route std uses. That taxonomy — inline instruction /
+`syscall(3)` / weak lookup, three mechanisms the old wall table read as
+one — is now a row in `docs/target-classes.md` and roadmap #244 (the
+shim-side lift: an export plus the oracle op class it would also need).
+
+The unison determinism reading (peer, from source, line-numbered in
+`SCOUT-ROWS-SLOT2.md`) found the preference that actually removes inodes
+from the archive is `ignoreinodenumbers`, *not* `fastcheck` — and found
+the hazard the preference does not reach: **`freshDirStamp` folds
+`(gettimeofday + √2·getpid)·1000 + the directory's inode` into one
+archived number** (props.ml:1575-1585). faketime and `pin-getpid.c`
+cover two of the three terms; the directory inode has no apparatus, so
+the freeze names it honestly as the residue the probe's two-run
+comparison measures — a possible nondeterministic-writer wall, priced at
+one transcript. The same reading flagged that a frozen clock can flip
+`Fileinfo.unchanged`'s equal-second branch (a one-second sleep and a
+forced "changed" per file, fileinfo.ml:246-249) — the apparatus changing
+the target's behaviour, to be measured at the probe rather than assumed
+away. `seccomp-enosys.json` gained an arg-filtered ioctl rule (ENOTTY
+for FICLONE, value 0x40049409, everything else untouched) so the
+reflink arm fails by construction instead of by trusting the container
+filesystem. The image now builds both targets from commit-pinned trees
+— unison because upstream ships no aarch64-linux binary at all (nine
+release assets read; macOS arm64 only) — and the freeze-build transcript
+is being regenerated `--no-cache` so every quoted line comes from one
+clean build rather than from cache hits of the vdirsyncer-era layers.
+
 ## 2026-08-22 — the rejections were thinner than the funnel implied, and six were re-judged
 
 The cohort-4 candidate funnel went out with two numbers I had not counted

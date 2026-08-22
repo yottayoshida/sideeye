@@ -204,7 +204,7 @@ mechanisms in order:
 3. **`sendfile`** (`copy_stubs.c:204`, and again at :260);
 4. only then a `read`/`write` loop.
 
-Against the shim's actual export list (`shim/src/linux.zig`, 51 symbols):
+Against the shim's actual export list (`shim/src/linux.zig`, 52 symbols):
 
 | Mechanism | Interposed? |
 |---|---|

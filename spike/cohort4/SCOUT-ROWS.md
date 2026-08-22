@@ -98,7 +98,7 @@ files and calls `io::copy`
 (`library/std/src/sys/fs/unix.rs:2393`), which specialises into the kernel
 copy path and tries **`copy_file_range`, then `sendfile`, then a read/write
 loop** (`library/std/src/sys/io/kernel_copy/linux.rs:210-251`). Against the
-shim's export list (`shim/src/linux.zig`, 51 symbols) neither
+shim's export list (`shim/src/linux.zig`, 52 symbols) neither
 `copy_file_range` nor `sendfile` nor `ioctl` nor `syscall` is interposed,
 while `write`, `writev` and `pwrite` are. **So as the engine stands, the
 bytes of a copied message reach disk unseen: `oracle_missed_operation`.**

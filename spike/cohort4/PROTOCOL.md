@@ -12,11 +12,16 @@ was named.
 Everything below was committed before any probe, explore, or
 target-behavior measurement. Pre-freeze contact with the targets was
 **install plus `--version` only** — the standing pre-window rule — and it
-happened once, in this file's own image build (`freeze-build.txt`).
-Reading a target's public source and tracker while scouting is not
-observing a failure in execution — criterion 1's own text — and every such
-reading is recorded in `SCOUT-ROWS.md` with the command that produced it.
-The rules that decide what counts are not allowed to know the results.
+happened in this file's own image builds; the committed transcript is the
+final `--no-cache` build (`freeze-build.txt`). The first build of the day
+also installed and version-checked vdirsyncer, then still on the slate —
+that contact stayed inside the same window, and the candidate was dropped
+by its measured row, not by anything the build observed. Reading a
+target's public source and tracker while scouting is not observing a
+failure in execution — criterion 1's own text — and every such reading is
+recorded in `SCOUT-ROWS.md` and `SCOUT-ROWS-SLOT2.md` with the command
+that produced it. The rules that decide what counts are not allowed to
+know the results.
 
 ## Targets and selection
 
@@ -126,7 +131,8 @@ of this freeze — a probe implementation may not substitute its own.
    created at its final path and filled in place (io-maildir
    `entry/copy.rs`; the I/O is `fs::copy` at `client.rs:227`), so every
    intermediate state is a visible message file in the target folder.
-   save and move are tmp→rename (the papis shape); copy is the slot.
+   save stages through tmp and renames; move and the flag commands are a
+   single rename — the papis shape either way; copy is the slot.
 
    Pre-state: the root holds `cur/`, `new/`, `tmp/` and one subfolder
    `Archive/` with its own `cur/`, `new/`, `tmp/` — all empty except
@@ -193,7 +199,7 @@ of this freeze — a probe implementation may not substitute its own.
    shim and oracle (declined for this cohort; std reaches
    `copy_file_range` through a weak-symbol lookup whose own comment
    invites `LD_PRELOAD` interposition, so the extension is cheap and is
-   filed as roadmap rather than done under a campaign), and **the chosen
+   filed as roadmap, #244, rather than done under a campaign), and **the chosen
    apparatus: `seccomp-enosys.json`** (committed beside this file), a
    container seccomp profile answering exactly `copy_file_range`,
    `sendfile` and `sendfile64` with ENOSYS — landing the copy on the
