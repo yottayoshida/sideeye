@@ -2,6 +2,89 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the papis define: the target that has no interior to crash inside
+
+The cohort's last define, and the first whose declaration expects a
+PASS. Papis builds the whole document in a temp directory outside the
+library and moves it in with one `renameat`, then `fchmodat`s it to
+0755 — and chmod is not a kill point (`OpClass` in `src/contract.zig`
+lists open/write/rename/unlink/fsync/truncate/mkdir/rmdir/link/symlink;
+`src/oracle.zig` records chmod as *metadata observed*, disclosed and
+not judged). So the engine-reachable crash set is a single world: the
+library before the rename. An operation with one atomic mutation has
+no interior. Declared as such, with the mode seam written down and
+deliberately not asserted — restore flattens permission state, so a
+mode leg would fail its own baseline (mercurial's `checkisexec`,
+cohort 2, applied before the fact this time).
+
+The checker came out of measurement, and measurement contradicted
+every intuition I would have coded. Seven library states through
+papis's own reader (`pre-define-trials.txt`): **`papis list` exits 0
+in all seven** — an rc assertion would be a check that cannot fail; a
+document directory with no `info.yaml` is **silently ignored**, so an
+orphaned attachment is invisible to the tool; a document whose
+attachment is **gone** is listed happily; and a torn `info.yaml` is
+loaded with a **freshly generated random `papis_id` persisted back
+into the damaged file** — the reader writes. That last one fixes the
+checker's shape: every structural and byte assertion runs before the
+reader, or the checker judges its own side effect. And `papis doctor`,
+the obvious candidate for "documented recovery first", is measured
+unusable as one: in a two-document library it falls to the interactive
+picker and returns rc 0 having examined nothing, and where it does run
+it reports three type errors **on the untouched baseline** and
+auto-fixes zero of them. The rule is satisfied by having looked and
+recorded that there is none — not by assuming one exists because the
+command does. Drills eleven for eleven, attributed; most reds are
+surgery-only shapes, rehearsed anyway because an unseen branch is not
+a trusted branch.
+
+**Corrected before merge, on R1's findings and one of my own.** The
+paragraph above was right that doctor is not the recovery and wrong
+about how I had shown it: the trials ran `papis doctor` with **no
+selection flag**, so in every two-document library it fell to the
+interactive picker and examined nothing — including state E, the
+missing-attachment shape built *for* doctor's `files` check, which
+therefore never ran once. The measurement was designed around a check
+it then prevented from executing. Re-run with `-a`, doctor is worse
+than impotent and the rejection is stronger for being fair: it is red
+on the **untouched baseline** (six type errors over two healthy
+documents, rc 0 while saying so); its one applicable fix prints
+"[FIX] Removing file from document" and leaves `files: []` — the
+library made consistent by **forgetting the lost data**, which the
+cargo and poetry rulings already refused to call recovery; and on a
+torn `info.yaml` **doctor itself dies**, rc 1 with an uncaught
+AttributeError, which is precisely the damage a repair would exist
+for. Four more corrections landed in the same round. **The
+"reader writes" claim was unattributable** — the trials ran list, then
+doctor, then doctor --fix, then list, and dumped the file once at the
+end — so three states were added: no command run (no `papis_id`),
+`papis list` alone (a `papis_id` appears — the reader is the writer),
+and a second byte-identical torn state whose id came out **different**,
+so "random" is now measured rather than asserted. **The mode-seam
+argument had the right conclusion and the wrong mechanism**: restore
+creates 0755 directories and 0644 files and never chmods, which are
+exactly papis's post-chmod modes, so a mode leg is *vacuous* at this
+umask and a *false-candidate generator* under a stricter one — not
+"fails its own baseline", the shorthand I had carried over from
+mercurial's `checkisexec` and was about to propagate to the next
+define. **The checker had dropped the probe's entry enumeration**, so
+a stray entry, a `probe-doc` that is a plain file, or a dangling
+symlink named `probe-doc` (listed by `ls`, denied by `-e`) walked past
+every leg; the guard now enumerates and the two legs that branch on
+presence read that one answer instead of testing independently. And
+the leg-R drill had to change with it: a third top-level document now
+trips the guard first, so the drill became a document **nested inside**
+`probe-doc` — measured: papis indexes the library recursively, so that
+is a document no filesystem-level leg can see and only the reader
+reveals. Drills went from eleven to thirteen. Two claims were also
+walked back to what the record supports: the trials arrive *with* this
+define rather than ahead of it on main (the scout is the part that
+predates it), and "every branch rehearsed" is now stated as what a
+count says it is — ten of the checker's twenty failure messages seen
+red, per-leg red met, "every branch" not claimed. I wrote "nine"
+there first, from the shape of the drill list rather than from a
+count; the count is what shipped.
+
 ## 2026-08-22 — the poetry-r2 verify transcript: the fifth seal, and the papis off switch
 
 verify-assisted green on poetry-r2 (define at 88447be strictly before
