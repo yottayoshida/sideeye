@@ -2,6 +2,35 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — scout model sensitivity: the metadata gate checks presence, not truth (#221)
+
+Measured whether the scouting method survives a weaker scout: the assisted
+five re-scouted, paper-only, by four fresh agents under identical
+conditions (Fable 5 control, Opus 5, Sonnet 5, Haiku 4.5 — protocol frozen
+as #221 before the arms ran; record in `spike/scout-model-comparison/`).
+Outcome: Opus ≥ the control ≈ the committed baseline (and it re-found
+calcurse's measured FAIL shape as its P1, independently); Sonnet usable
+with gate-catchable misses; Haiku below the bar — wrong determinism calls
+on three of five targets, six of fifteen argvs undrivable as written, every
+metadata field present throughout. Owner ruling: scouts run on Opus 5 or
+better, Sonnet 5 is the measured floor; now stated in `docs/scouting.md`.
+
+Two things this run paid for. First, the contamination probe before the
+arms: the workspace memory index turns out to be injected into fresh
+subagents, so the cohort-2/3 targets (walls named in the index) were
+unusable for comparison and the assisted five carried a disclosed
+existence-of-filing leak for calcurse and stow — disclosure was mandatory,
+and all four arms located and quoted the same sentence verbatim. Second,
+the grader-bias caveat is recorded rather
+than solved: the grader is the orchestrating session, same model family as
+the control arm, unblinded; the mitigation is that every judgement in
+RESULTS.md anchors to committed text, and six load-bearing citations were
+opened against the checkouts (six of six matched) before the tables were
+written. The wrong-in-hindsight candidate to watch: opus's four
+beyond-record findings are static claims — if one of them fails to
+reproduce under a probe, the "exceeded the baseline" line above overstates
+it by exactly that much.
+
 ## 2026-08-22 — the rustfmt verify transcript: the formatter half sealed
 
 verify-assisted green on rustfmt (define at 9faf204 strictly before
