@@ -21,6 +21,32 @@ recollection. The brief this cohort runs under says a candidate row missing
 a measurement is an incomplete row; by its own standard the whole column
 was incomplete, and I had written the word "read" over it.
 
+**Owner rulings that close the selection (2026-08-22, recorded at the moment
+they were made rather than when the freeze is written — the contract in
+CLAUDE.md).**
+
+- **Rule 9 is pinned to reading (b): a checker must go through the target's
+  own commands.** The alternative — reading a plain-text store directly —
+  was declined. The precedent held: every cohort-2 and cohort-3 checker went
+  through its target's commands. **No exception clause for neomutt**, which
+  was offered and refused.
+- **The slate freezes at two: himalaya (Rust) and vdirsyncer (Python).** The
+  remaining three primary slots and the bench are deliberately not filled.
+- **neomutt therefore drops on rule 9**, and it is the only candidate in
+  four cohorts to fall to an interpretation rather than to a measurable
+  wall: its write path was measured visible (libc `open` + `rename`, no
+  mkstemp) and its batch mode measured to write into the judged maildir, and
+  neither fact saved it, because it has no non-interactive read-back for a
+  checker to use. himalaya has `envelope list` / `message read` and
+  vdirsyncer has `repair`, so neither needs the reading that was refused.
+  The freeze will carry that record rather than only the outcome.
+
+Worth keeping beside those three: the candidate that moved three times today
+moved on my reasoning each time, never on the target. neomutt was rejected
+on rule 8 (wrong — batch mode is a first-class mode in its own man page),
+returned to the pool with both open questions answered favourably from
+source, and then dropped on rule 9. The target never changed.
+
 **Third pass, same day: the two rows left on a judgment were read from
 source, and one of them changed the slate.** neomutt returns to the pool
 with both of its open questions answered favourably — send/send.c has an
