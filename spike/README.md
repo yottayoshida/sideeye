@@ -20,6 +20,7 @@ rehearsal green is required before a Seal A PR and after any tool change).
 | `campaign-driver.sh` | non-sealed driver: status / sweep / select / verify / explore. Refuses dirty trees, uncommitted inputs, existing outdirs |
 | `ledger-append.sh` | the ONLY pen for campaign ledgers — appends, then proves byte-prefix against HEAD |
 | `rehearse-campaign.sh` | full-apparatus rehearsal in a scratch repo; every guard is fired with a planted defect before the real thing runs |
+| `upstream-report-status.sh` | prints the standing upstream reports with their state, comment count and last activity, measured now and stamped with the measurement time - the citations in PRD/#140 carry dates that go stale silently |
 | `merge-gate.sh` | one verdict line for "may this PR be merged": checks green with denominators, clean tree, local head equal to the PR's. `--selftest` falsifies it against the three merges that went out wrong |
 | `cohort4/preflight.sh`, `cohort4/visibility-logger.c`, `cohort4/preflight-analyse.py` | probe conditions 8 (every state-root mutation passed through an interposable function) and 9 (how many kill points the operation has). Engine-free. `--selftest` falsifies both against `toys/toy.c` and `toys/toy_raw.c` |
 | `cohort4/novelty-prescan.sh` | the recorded tracker search a novelty judgement cites, with the controls that make a zero mean something. Refuses multi-word terms: they silently return zero |

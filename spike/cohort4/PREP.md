@@ -21,7 +21,7 @@ Read the outcomes, not the effort. Every row is a committed record.
 | Blind 1–3 (ADR 0012/0015/0016) | topydo, abook, khal | topydo 12/13 counterexamples (filed `topydo/topydo#341`; not novel as a phenomenon — `topydo/topydo#318`), abook null, khal null | 0 claimed |
 | Assisted cohort (`spike/assisted/`) | buku, calcurse, devtodo, pass, stow | calcurse FAIL (`lfos/calcurse#529`), stow FAIL (`aspiers/stow#139`), devtodo FAIL (deliberately unreported), pass wall (`child_touched_state_dir`), buku withdrawn | 0 — provenance red by the mini-seal's own checker (define and first artifact in the same merge) |
 | Cohort 2 (#183) — transaction machinery | Mercurial, Borg, jj, Bun, KeePassXC | five frozen targets, six recorded outcomes: two probe walls, two engine walls, two full verdicts (hg FAIL 73/107 all L0-only, contract held 107/107; borg FAIL 3/119 all L0-only, contract held 119/119) | **0**, said plainly |
-| Cohort 3 (#209) — the sweet spot | cargo, black, rustfmt, poetry (+r2), papis | cargo two-layer named wall (terminal); black FAIL 1/3 checker-red — **known upstream** (`psf/black#2479` open since 2021, fix `psf/black#5207` since 2026-07-01); rustfmt FAIL 1/3 checker-red — **known surface**, gate closed before the define (`rust-lang/rustfmt#6041` since 2024-01-24); poetry FAIL 2/5, earliest world L0-only ⇒ no candidate; poetry-r2 FAIL 1/3, barred by the FAIL-freeze rule | **0** |
+| Cohort 3 (#209) — the sweet spot. **Closed 2026-08-22**, all five measured (main `bcf2ae1`) | cargo, black, rustfmt, poetry (+r2), papis | cargo two-layer named wall (terminal); black FAIL 1/3 checker-red — **known upstream** (`psf/black#2479` open since 2021, fix `psf/black#5207` since 2026-07-01); rustfmt FAIL 1/3 checker-red — **known surface**, gate closed before the define (`rust-lang/rustfmt#6041` since 2024-01-24); poetry FAIL 2/5, earliest world L0-only ⇒ no candidate; poetry-r2 FAIL 1/3, barred by the FAIL-freeze rule; papis **PASS 2/2** — one crash point, the contrast case | **0** |
 
 Three readings that the design must answer, not restate:
 
@@ -31,20 +31,57 @@ Three readings that the design must answer, not restate:
 2. **Novelty is the bottleneck.** Both checker-red finds were already on
    their trackers. The class "a formatter rewrites a file in place" is
    public knowledge with years-old issues.
-3. **Confirmation is a dependency the cohort cannot supply.** See §2.
+3. **The gate is closer than the record reads.** Nothing external blocks
+   it — §2. What is missing is one finding that is novel, automatically
+   discovered, and provenance-clean at the same time.
 
 ## 2. Where criterion 1 actually stands (#140)
 
-The gate's legs, with their status as recorded in PRD.md:
+**Corrected 2026-08-22 against the primary sources, because the first
+draft of this file got it wrong in the direction that would have changed
+the plan.** "author-confirmed" does **not** mean the target's maintainer.
+PRD's criterion 1 glosses it (the sentence entered 2026-08-13 in the
+Seal A commit and ADR 0017 left it standing):
 
-- found by Sideeye, from an invariant committed first — **closed**
-- kept as a replayed regression case — **closed**
-- novel — **measured, and the answer keeps coming back split**
-- real / author-confirmed — **open**
-- fixed — **open**
+> "author-confirmed" reads as §17 scored it for timewarrior: **this
+> project's author judges the bug real, upstream confirmation is sought,
+> not required.**
 
-The last two are not work this project can perform. Measured 2026-08-22,
-the four standing upstream reports:
+DESIGN §17 scored timewarrior that way in practice — "judged a real bug /
+stops after the fix — **clean** ... judged real by this project's author
+(not yet confirmed by timewarrior's maintainers) ... a three-part patch
+reaches PASS 25/25 (measured)". So conditions 4 and 5 of §17's six are
+closable by this project, and have been closed once.
+
+`#140` does not contradict this. It quotes the ADR's words unchanged; what
+it adds is a *Live candidates* paragraph about four upstream reports
+awaiting a response, which reads as though the maintainers' replies were
+the live path. They are not the gate. One clarifying line on `#140` —
+naming the PRD gloss — removes the drift; no criterion changes.
+
+### What is actually missing
+
+Counted from the record, three near-misses each lack a **different** leg,
+and no single finding has yet held all three at once:
+
+| Finding | automatic | novel | provenance | missing |
+|---|---|---|---|---|
+| timewarrior (#778) | **partial** — a human read the strace to seed the target and the window | yes | — | automatic discovery |
+| topydo (blind campaign 1, sealed) | yes | **no** — `topydo/topydo#318` reports the same surface | machine-checked seals | novelty |
+| assisted cohort: calcurse, stow, devtodo | yes | yes — `spike/assisted/NOVELTY.md`, four for four, positive controls throughout | **red** — `verify-assisted.sh` reports define and first artifact in the same merge; and `spike/assisted/RESULTS.md` records that these same three had their `proposals.md` written *after* their explorations (one self-reported, two caught by R1 from file birth times) | provenance |
+| cohorts 2 and 3 (mini-seal) | yes | **no** on both checker-red finds (black, rustfmt) | clean — `verify-assisted.sh` green | novelty |
+
+**The missing combination is novel × automatic × mini-seal provenance, in
+one finding.** That is what cohort 4 is for, and it is entirely within
+this project's reach — no maintainer's reply stands between here and the
+gate.
+
+### The upstream reports, and why they are still tracked
+
+They are evidence of practice, not a gate condition. Their status is
+**measured, not remembered** — `spike/upstream-report-status.sh` prints
+the table below with its measurement date, so a stale copy cannot pass for
+a current one:
 
 | Report | State | Comments | Last activity |
 |---|---|---|---|
@@ -53,18 +90,12 @@ the four standing upstream reports:
 | `aspiers/stow#139` | OPEN | 0 | 2026-08-15 |
 | `lfos/calcurse#529` | OPEN | 0 | 2026-08-15 |
 
-Four filings, zero comments of any kind, 7 to 10 days since each one's
-last recorded activity (the table's dates are `updatedAt`, not the filing
-date — the silence is at least that long, not exactly it). Cohort 3 added
-selection rule 11 (measured maintainer responsiveness) precisely against
-this, and cohort 3 then produced nothing reportable — so the rule has
-still never been tested on a report of ours.
+*measured 2026-08-22T06:52Z by `spike/upstream-report-status.sh`*
 
-**The consequence for planning:** a fourth cohort can produce, at most, a
-novel candidate plus a filed report. It cannot produce an author
-confirmation or a fix. If "cohort 4 is the last cohort" is to mean
-anything, what happens to criterion 1 in each outcome has to be decided
-**before** the cohort runs — §7.
+Four filings, zero comments of any kind. Cohort 3 added selection rule 11
+(measured maintainer responsiveness) partly against this, and then
+produced nothing reportable — so the rule has still never been tested on a
+report of ours. Worth keeping, worth not over-reading.
 
 ## 3. The register — every mistake that cost a measurement, and what makes it impossible here
 
@@ -208,11 +239,36 @@ Target *names* are deliberately absent from this file: selection is the
 owner's call, and the scout brief that proposes candidates is written
 after §7 is decided, because the exit rule changes what a good target is.
 
-## 7. The exit rule — the decision that makes this the last cohort
+## 7. The exit rule — decided 2026-08-22: the default stands
 
-Frozen before the cohort runs, or it is not a rule. The options, with what
-each costs, are in the covering issue; the chosen one is written here and
-in the PROTOCOL before the first target is named.
+**PRD's default is unchanged**: "If criterion 1 cannot be met, v1.0 does
+not ship — the kill analysis ships instead." No ADR, no re-scoring, no
+pre-authorised fallback. Recorded here so the decision is dated before the
+cohort runs rather than discovered after it.
+
+What the owner decided **not** to decide in advance: what the kill analysis
+should conclude if cohort 4 comes back null. That judgement waits for the
+document. Two facts belong on the record now, so they are not discovered
+as convenient later:
+
+- **§18 will not fire on a null.** Its antecedent is "Sideeye finds
+  nothing beyond existing hand-written adversarial tests", and the record
+  contradicts it — timewarrior, topydo, calcurse, stow, devtodo, black,
+  rustfmt. `docs/kill-criteria-review.md` already says the antecedent was
+  checked and did not hold (2026-08-16, none of the eight triggered).
+- **So the kill analysis will not produce a mechanical verdict.** It will
+  say the tool works and the self-set gate measures something narrower,
+  and the choice among §18's own "stopped or redesigned" — or a third,
+  narrowing the claim — will be a judgement made after seeing the result.
+  PRD's warning applies to exactly that moment: "A failed search is a §18
+  data point, not a reason to soften the scoring."
+
+Two paths were considered and declined for now, both recorded so that
+choosing one later is visibly a change rather than a discovery:
+pre-authorising an assisted-cohort finding (calcurse/stow/devtodo) despite
+its red provenance, and re-measuring an assisted target under the
+mini-seal — the latter barred by the criterion's own text, since this
+project has already observed those targets failing in execution.
 
 ## 8. What this preparation already built
 
@@ -224,16 +280,17 @@ believed:
 |---|---|---|
 | `spike/merge-gate.sh` | D1, D2, D3 | `--selftest`, 7 of 7: the empty rollup (#216), a failure among successes (#194), a running check, a legacy pending context, a null rollup, malformed JSON, and an all-green case. Exercised against a real merged PR, which it refused for two independent reasons. |
 | `spike/cohort4/preflight.sh` + `visibility-logger.c` + `preflight-analyse.py` | A2, A3, and C1–C3 in its own output | `--selftest` on this repository's own toys: libc-routed PASS, raw-syscall WALL, interior count 4. Transcript: `preflight-selftest.txt`. |
+| `spike/upstream-report-status.sh` | the stale-table risk in §2 | `--selftest`: a control issue known to carry comments must not read back as zero. |
 | `spike/cohort4/novelty-prescan.sh` | A1, C5 | `--selftest`: the fixed positive control returns both known issues, the negative control returns 0, and the multi-word refusal path was exercised. |
 
 ## 9. Order of work
 
 1. This file and the tooling in §8 merged (no target named).
-2. Owner decides §7; the decision is recorded here and in an ADR.
+2. ~~Owner decides §7~~ — **done 2026-08-22: the default stands** (§7). No ADR.
 3. Engine change (#231) merged with tests and the schema note.
 4. `preflight.sh`, `novelty-prescan.sh`, `merge-gate.sh` merged, each with
    its falsification transcript.
-5. Scout brief written against §6; candidates proposed; **owner signs off
-   on the target list**.
+5. Scout brief written against §6 (Opus 5 or better, `docs/scouting.md`);
+   candidates proposed; **owner signs off on the target list**.
 6. PROTOCOL frozen, citing 2–5 by merge.
 7. Probes, in cohort order. Then defines. Then explores.
