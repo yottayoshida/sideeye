@@ -147,6 +147,31 @@ move this repository refuses; it is filed instead. README needed nothing —
 it points at `docs/target-classes.md` rather than restating it, which is
 why fixing the register fixed the README too.
 
+**CI caught what the local checks did not: the as-of note broke a machine
+check.** `docs/unknown-rate.md` carries a generated results block between
+`<!-- unknown-rate:results:begin/end -->` markers whose own first line says
+"do not edit between the markers", and acceptance check 12 compares it
+byte for byte against `count.py`'s recomputation. The note landed directly
+under the `#### A-group` heading — which `count.py` *generates* — so the
+block stopped matching and the linux job went red on the drift gate. The
+diff was one blank line.
+
+This is the recorded class, happening to the person who wrote the register:
+a prose edit moving an anchor that code reads. The fix is not to reword the
+note but to move it out of the block entirely — it now hangs off the
+A-group *definition* bullet, which is prose the generator does not own, and
+says so in its last sentence. The generated block was then restored from
+`count.py emit` rather than hand-repaired, and the diff against main is 11
+added lines and zero deletions: no published number moved.
+
+Two smaller things worth the ink. The local reproduction was available all
+along — `python3 spike/unknown-rate/count.py check` prints exactly what CI
+prints — and I did not run it before pushing, which is why a one-blank-line
+error cost a CI round. And the first fix attempt was not enough: removing
+the note left the extra blank line behind, and the check stayed red until
+the block was replaced with the generator's own bytes. A gate that compares
+byte for byte does not care which of two edits caused the mismatch.
+
 Two claims of my own were caught by the pre-review check on numbers and
 universals before this was committed. "On tools with millions of users"
 was not measured anywhere — replaced with the star counts #209 actually
