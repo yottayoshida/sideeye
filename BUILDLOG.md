@@ -2,6 +2,43 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-22 — the black define: a formatter's in-place rewrite, the textbook shape
+
+Cohort 3's second define (spike/cohort3/black), pushed before any engine
+contact. The shape is what this tool was designed around: black rewrites
+the user's source **in place** — no temp file, no rename (the probe's
+root holds exactly probe.py before and after), and the write reaches the
+file through libc (an interposing logger fired on `open64`, the same
+2026-08-22 trial in which cargo stayed silent — named trial, the
+explore's own recording re-verifies). The property borrows black's own
+`--safe` contract and stretches it across a crash: the source must
+survive as a program — it parses (leg V) and its AST equals the frozen
+pre-operation program's (leg E). Both the unformatted old bytes and the
+formatted output are green on both legs; the green-new drill proves the
+AST equality live (black's quote normalization does not touch the AST).
+The torn-file reading is declared ahead of any world — and the define's
+R1 corrected its first draft before the freeze: the probe strace shows
+the rewrite is ONE truncating open plus ONE write, so the
+engine-reachable tear is the **empty file**, which *parses* (an empty
+module) and fails **leg E**, not leg V as first written; a mid-token
+tear (a partial write) fails leg V; either way checker-red, a candidate
+shape — with no recovery leg, because black documents no crash recovery
+and the source is the primary data (the cargo ruling's principle,
+applied where no self-heal exists at all; no open decision fork, so
+declared rather than gated). Drills six for six after R1 (the empty
+file drilled as its own leg-E red), message-attributed.
+
+Recorded here as promised: the previous batch's verify PR (#216) was
+**merged while its CI reported "no checks reported"** — the watch
+returned before the checks had started, and a chained
+watch-count-merge command read pass=0 fail=0 pending=0 as "no
+failures" instead of "no evidence". The post-merge CI came back all
+green (transcript-and-BUILDLOG diff), so no harm — but this is the
+#194 lesson in a new coat: zero is not a verdict without a
+denominator, and merge stays a separate command from the poll that
+justifies it. This batch's merges are issued only after a non-empty
+check list shows failed=0.
+
 ## 2026-08-22 — the cargo verify transcript: a wall measured under the full seal
 
 verify-assisted green on cargo-r2 (define at 24e773f strictly before

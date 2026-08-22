@@ -1,0 +1,17 @@
+== black checker drills — black, 26.5.1 (compiled: no) Python (CPython) 3.13.5  — 2026-08-22T02:45:02Z
+drill ok   green-old: checker green as required
+drill ok   green-new: checker green as required
+the formatted bytes, as measured:
+x = [1, 2, 3]
+
+
+def f(a, b):
+    return {"k": a + b, "l": [v for v in x]}
+
+
+y = f(1, 2)
+drill ok   V-red-truncated: checker red in the intended leg — checker(black-format): leg V: the crashed file no longer parses as Python: '{' was never closed (<unknown>, line 3)
+drill ok   E-red-empty-file: checker red in the intended leg — checker(black-format): leg E: the file parses but is a DIFFERENT program from the frozen source
+drill ok   E-red-different-program: checker red in the intended leg — checker(black-format): leg E: the file parses but is a DIFFERENT program from the frozen source
+drill ok   guard-red-missing-file: checker red in the intended leg — checker(black-format): probe.py is missing from the state dir
+== drills failed: 0
