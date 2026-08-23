@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "0.12.0",
+  "contract_version": 10,
+  "define": {
+    "state": "/tmp/cohort4/himalaya/store",
+    "setup": "/work/spike/cohort4/himalaya-r2/ops/./setup.sh",
+    "operation": "himalaya -c /tmp/cohort4/himalaya/config.toml maildir messages copy 1700000000.#0M0P1.probehost --maildir . --target Archive",
+    "check": "/work/spike/cohort4/himalaya-r2/ops/./check.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/tmp/cohort4/himalaya/store/Archive/cur/1787453368.#0M788841588P23.5f0d9c929d68:2,S",
+  "before_class": "write",
+  "before_path": "/tmp/cohort4/himalaya/store/Archive/cur/1787453368.#0M788841588P23.5f0d9c929d68:2,S",
+  "violation": "checker"
+}

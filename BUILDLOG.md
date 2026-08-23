@@ -2,6 +2,41 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — himalaya-r2: a FAIL through the declared checker, reproduced twice
+
+The revision ran and the declaration held on every point it made.
+**FAIL, 1 of 3 worlds, `oracle_verified: true`, single process**, the
+violated invariant being the checker rather than the engine's built-in
+atomicity invariant, and the report carrying `checker_earliest` — which
+is exactly what this cohort's frozen claim rule asks a criterion-1
+candidate to be. Two runs agree on every field that carries a judgement;
+the eight that differ are the minted filename, which the checker is
+name-agnostic about by design, and the per-run work paths. The exhibit
+replays.
+
+The crash lands after the destination is opened and before anything is
+written to it, and leaves a message file at its final path in the target
+folder with **0 bytes against the source's 307**. `proposals.md` named
+that window, that leg and that world count before the engine ran, and
+nothing in it was adjusted afterwards.
+
+What is deliberately not claimed yet, and is written into RESULTS rather
+than left to be discovered later: the stock reproduction is still owed
+(the freeze wants a measurement, and the kill window being
+apparatus-independent is so far an argument), the outside-the-tool
+recovery paths the Reporting section demands are unmeasured, and novelty
+was cleared at selection time rather than here.
+
+One correction to my own procedure, recorded before the good news
+because it is the part worth remembering: the first pair of r2 runs
+happened with the r2 define on a local branch only. The mini-seal wants
+a revision's directory first-parent on main before the engine touches
+it, and `verify-assisted.sh` refuses on exactly that. The checker had
+been on main since #247, so criterion 1's own text held, but the
+mechanical discipline is the part that makes a claim publishable. Those
+runs were discarded and repeated after the merge. They cost four
+minutes.
+
 ## 2026-08-23 — himalaya explores, refuses, and the refusal is a gap between two predicates
 
 The first explore of the merged define came back UNKNOWN:
