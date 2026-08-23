@@ -30,6 +30,15 @@ The contract:
 - ADRs live in `docs/adr/` and are created `Proposed`, flipped to `Accepted` when the
   implementing PR merges.
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
+- **When a campaign or cohort closes, add its directory to `.gitattributes`.** Everything
+  under `spike/` that is a finished record rather than maintained code is marked
+  `linguist-documentation`, so the language bar reflects the engine instead of the
+  apparatus; the live harness is deliberately excluded from that list. The rule was
+  already written at the top of `.gitattributes`, and cohort 4 still closed without it
+  being applied, because nothing opens that file at the moment a cohort ends. It is
+  repeated here because this is the file that is open. Verify with `git check-attr`
+  over the full tracked list, not a sample, and check the live harness comes back
+  `unspecified`.
 - Acceptance (`spike/acceptance.sh`) runs in the Linux container; every new check must be
   seen red once (mutation or synthetic input) before it is trusted.
 - Unit tests never write to a fixed shared path: `zig build test` runs the same test in
