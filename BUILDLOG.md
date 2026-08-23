@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — the formula shipped and the README still said "download the tarball"
+
+`#180`'s whole thesis was that installing takes four steps and one thing
+to remember where the ecosystem's answer is one line. The formula landed,
+`brew install yottayoshida/tap/sideeye` works, the issue was closed
+quoting that line — and the README, which is where anyone would actually
+look, still opened with `tar xzf`. Half the issue, shipped as if it were
+all of it.
+
+The mechanism is worth naming because it is not "forgot". The release
+checklist has a README step and it ran, at bump time, and its conclusion
+was correct **then**: the only version-relative string was the tarball
+name. The formula merged afterwards. Nothing brought the README back into
+view once the thing it described had changed, because the checklist
+attaches that step to a version bump and this change was not one.
+
+Fixed here: the install section leads with brew, the tarball path stays
+for everyone it still serves and now says *why* it wants you in that
+directory (the shim sits beside the binary), and the three usage examples
+drop their `./` since the primary path puts sideeye on `PATH`.
+
+Checked before editing, because prose edits have moved test anchors here
+before: nothing reads the README's install block. `quickstart.yml` builds
+from source and `acceptance.sh` only mentions the README in a comment.
+Checked after: `sideeye demo` from `PATH` exits 1 with the shim resolved
+out of the Cellar, and `sideeye preflight` on a real state directory
+refuses with `no_shim_marker` — which is SIP declining to inject into
+`/bin/sh`, a platform binary, and not a shim it failed to find. Zero
+complaints about a missing `--shim` in either.
+
 ## 2026-08-23 — v0.13.0: a second exhibit, a wider metadata exclusion, a relocatable shim
 
 Minor rather than patch, and the reason is the second of those three: the
