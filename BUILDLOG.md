@@ -2,6 +2,59 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — the recovery paths outside the tool
+
+The last precondition the freeze's Reporting section puts in front of a
+report: measure the recovery paths that exist outside the tool, and the
+conditions under which they do not apply. Seven legs, every "none"
+paired with a positive control, the damaged store produced by a real
+crash each time rather than assembled.
+
+**The first thing measured was my own scan.** A three-level walk of
+himalaya's command tree reported 208 commands; measuring the depth
+instead of assuming it found a fourth level with 29 more. The loose
+parse then turned out to be reading wrapped alias lines as commands
+(`gmail settings forwarding-addresses del,` came from a continuation
+line), so the enumeration is indentation-strict and validated in both
+directions: every node it keeps answers `--help` (216 of 216), and every
+node the fix dropped is not a command (21 tried, 0 real). The
+dropped-node check printed a reassuring `0` the first time it ran with
+its input file missing, which is the whole reason it now refuses on an
+empty list.
+
+**The answer.** Two recovery paths exist and both need the user to
+notice first, and nothing offers to. Repeating the copy restores the
+message but leaves the empty one beside it, listed as a message.
+Deleting the empty one works by hand. Meanwhile the tool has no command
+that inspects stored mail: two of 216 are repair-shaped and neither
+reads a mailbox, and `account check` reports `maildir: OK` over the
+damaged store. Python's `mailbox.Maildir` enumerates the empty file as
+an ordinary message as well, so a second tool inherits it rather than
+flagging it.
+
+The synchronized side the freeze asked about specifically cannot help,
+and the reason is stronger than the maildir-only case it names: the
+operation copies between two folders in one local root and makes **no
+network syscall at all** (0, positive control 2), and this version has
+no sync command anywhere in the tree. The message being created has
+never existed anywhere else at the moment it is destroyed.
+
+**And one measurement went against my own framing, which is why the
+controls are there.** `message delete` refused on the empty message with
+`Cannot determine the trash mailbox`, and I had already written that up
+as the tool being unable to remove it. The control refuses in the same
+words on a healthy message in the same folder under the same config: it
+is a property of an account with no trash mailbox, not of the finding.
+Configure one and the empty message deletes. The first version of that
+control was not a control at all, because it targeted the source
+message without `-m` and failed with a different error entirely.
+
+Left explicitly unmeasured, in the transcript rather than in my head:
+whether an external syncer would carry the empty message outward to a
+server. That is the shape the freeze calls the strongest form, it needs
+a second tool and a server, and it is a question about making things
+worse rather than about recovery.
+
 ## 2026-08-23 — the stock reproduction, and what it corrected about my own argument
 
 The freeze wants a finding to reproduce against the stock tool with

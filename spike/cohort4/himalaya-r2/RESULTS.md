@@ -61,11 +61,40 @@ did not predict is in the metadata line, disclosed and unjudged: one
 ## What is not claimed here
 
 - **No upstream contact.** Each report is its own owner-approved gate,
-  and the freeze's Reporting section adds a precondition this finding has
-  not met yet: measure the recovery paths that exist outside the tool and
-  the conditions under which they do not apply. For himalaya that is the
-  other side of the sync, and it is unmeasured. That is the one
-  measurement still standing between this candidate and a report.
+  and nothing here authorises contact. The freeze's other precondition,
+  the outside-the-tool recovery paths, **is now measured**
+  (`external-recovery.txt`, seven legs, every "none" paired with a
+  positive control). Summarised:
+
+  - **Two recovery paths exist, and both need the user to notice first.**
+    The source survives, so the copy can be repeated, but the repeat
+    leaves the empty message in place beside the good one and the tool
+    lists both. The empty one can be deleted by hand once the account
+    names a trash mailbox.
+  - **Nothing offers to notice.** Of 216 commands (the tree's depth
+    measured, not assumed) exactly two are repair-shaped, and neither
+    reads a mailbox: `account check` validates the account and reports
+    `maildir: OK` over the damaged store, and `gmail settings send-as
+    verify` is alias ownership. There is no sync command in this version
+    at all. Python's `mailbox.Maildir`, an independent reader, enumerates
+    the empty file as an ordinary message too.
+  - **The synchronized side cannot help, and not only in the
+    maildir-only configuration the freeze names.** The operation copies
+    between two folders inside one local root and makes no network
+    syscall at all (0, against a positive control of 2), so the message
+    being created has never existed anywhere else at the moment it is
+    destroyed.
+  - **One thing measured against my own framing.** `message delete`
+    first refused on the empty message, which read like a second defect.
+    The control says otherwise: it refuses on a healthy message in the
+    same folder under the same config in the same words, because the
+    account names no trash mailbox. Configure one and the empty message
+    deletes. Reported as a configuration property, not as part of this
+    finding.
+  - **Not measured, stated rather than implied:** whether an external
+    syncer managing the maildir would carry the empty message outward to
+    the server. That needs a second tool and a server, and it is a
+    question about making things worse rather than about recovery.
 - **The stock reproduction is done, and it turned the toml's argument
   into a measurement** (`stock-reproduction.txt`). No shim, no engine, no
   seccomp, no `/etc/ld.so.preload`, no interposer: the stock binary under

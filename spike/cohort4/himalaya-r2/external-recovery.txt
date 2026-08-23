@@ -1,0 +1,181 @@
+himalaya: himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+apparatus absent: /etc/ld.so.preload absent, LD_PRELOAD=<unset>
+
+==============================================================
+R1. Does the tool itself offer a way back? The whole command
+    surface, enumerated rather than remembered.
+==============================================================
+   tree depth measured: 4 levels (not assumed)
+   commands enumerated: 216 strict, 237 loose
+   every kept node answers --help: valid=216 invalid=0
+   nodes the strict parse dropped: tried=21, real commands among them=0
+   positive control: the same loop calls 'maildir messages copy' real
+
+   scanning all 216 commands for anything repair-shaped:
+     90:account check
+     216:gmail settings send-as verify
+   matches: 2
+   positive control: the same scan finds 'copy' in this list
+   
+   reading: two matches out of 216, and neither looks at stored mail.
+   'account check' validates the account CONFIGURATION (its own help
+   says so, and R2 measures it). 'gmail settings send-as verify' is
+   Gmail alias ownership. There is no sync command in this version at
+   all: the account subtree is list and check, nothing else.
+   
+   This says the tool has nothing that would NOTICE the damage. It
+   deliberately does not say the damage cannot be undone: R5 measures
+   that separately, and finds it can be, by hand, once the user knows.
+
+==============================================================
+R2. The one check-shaped command, run against the damage.
+==============================================================
+   operation rc=137, target folder holds 1 entry, 0 bytes
+   account check rc=0
+     Account: probe
+       maildir: OK
+   it did not mention the damaged message
+   store unchanged across the check
+   reading: the account is valid, so the tool's only check-shaped
+   command passes over a mailbox that holds a message with no message
+   in it. It is a configuration validator, not a store validator.
+
+==============================================================
+R3. At the instant of the crash, does anything else hold a copy?
+==============================================================
+   operation rc=0, network syscalls traced during it: 0
+   positive control (a process that does connect): 2 network syscalls
+   reading: the operation copies from one folder to another inside the
+   same local root and never speaks to anything. The message it was
+   creating in the target folder therefore exists nowhere else at the
+   moment it is destroyed. This is the decisive half of the question:
+   a synchronized side cannot restore content it has never seen, so
+   the maildir-only case the freeze names is not the only case where
+   recovery is unavailable. It is unavailable in every case.
+
+==============================================================
+R4. The obvious recovery: the source survived, so do it again.
+==============================================================
+   operation rc=137, target folder holds 1 entry, 0 bytes
+   source after the crash: 307 bytes, sha 654533e9d8aa08a0
+   re-run rc=0
+   what the target folder holds now:
+     1787455922.#0M457112590P2188.4685b522f320:2,S -> 0 bytes
+     1787455922.#0M460330423P2202.4685b522f320:2,S -> 307 bytes
+   entries: 2
+   and what the tool lists:
+   envelope list rc=0
+     
+     ┌───────────────────────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐
+     │ ID                                        ┆ FLAGS ┆ SUBJECT                       ┆ FROM         ┆ DATE                   ┆  SIZE │
+     ╞═══════════════════════════════════════════╪═══════╪═══════════════════════════════╪══════════════╪════════════════════════╪═══════╡
+     │ 1787455922.#0M460330423P2202.4685b522f320 ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
+     │ 1787455922.#0M457112590P2188.4685b522f320 ┆       ┆                               ┆              ┆                        ┆   0 B │
+     └───────────────────────────────────────────┴───────┴───────────────────────────────┴──────────────┴────────────────────────┴───────┘
+
+==============================================================
+R5. Can the tool remove the damaged message?
+==============================================================
+   operation rc=137, target folder holds 1 entry, 0 bytes
+   the maildir-specific API has no delete: save copy move help 
+   trying the shared command on the damaged entry, id 1787455922.#0M471114381P2226.4685b522f320
+   message delete rc=1
+     Error: Cannot determine the trash mailbox; set `mailbox.alias.trash` in your config
+     
+     Suggestions:
+      - Run with --log-level to enable more verbose logs
+   target folder afterwards: 1 in cur, 0 in tmp, 0 in new
+     remaining: 1787455922.#0M471114381P2226.4685b522f320:2,S (0 bytes)
+   
+   control: is that refusal about the damaged message, or about any
+   message under this configuration? Same command, same folder, same
+   config, on a HEALTHY copy produced by letting the operation finish:
+   healthy copy in Archive: 1787455922.#0M479165381P2267.4685b522f320 (307 bytes)
+   message delete on it rc=1
+     Error: Cannot determine the trash mailbox; set `mailbox.alias.trash` in your config
+     
+     Suggestions:
+
+   so the refusal is generic to the configuration, not specific to
+   the damaged message. Reported that way rather than as a second
+   defect.
+   
+   and with a trash mailbox configured, which the error asks for.
+   The control above consumed the damaged store, so it is produced
+   again here rather than assumed to still be there:
+   operation rc=137, target folder holds 1 entry, 0 bytes
+   message delete rc=0
+     Successfully moved 1 message(s) to the trash   Archive/cur now: 0 entry, Trash/cur: 1 entry
+     in Trash: 1787455922.#0M493048923P2307.4685b522f320:2,S (0 bytes)
+   
+   reading: the phantom is removable. The refusal above is a property
+   of a configuration with no trash mailbox, and it refuses on healthy
+   mail in exactly the same words, so it is not part of this finding
+   and is not reported as one. What R5 leaves standing is narrower and
+   is the whole point: removal is manual, and it requires the user to
+   already know which of the messages in the folder is not a message.
+
+==============================================================
+R6. Does anything outside himalaya see it as damage?
+==============================================================
+   operation rc=137, target folder holds 1 entry, 0 bytes
+   target folder (holds the damaged copy): 1 message(s) enumerated by python mailbox.Maildir
+     subject=None from=None headers=0 body=0 bytes
+   source folder (positive control, healthy): 1 message(s) enumerated by python mailbox.Maildir
+     subject='Existing message, fixed bytes' from='Probe Author <probe@example.invalid>' headers=6 body=64 bytes
+   python reader rc=0
+   reading: an independent maildir reader enumerates the zero-byte file
+   as an ordinary message too. Nothing in the maildir format marks it,
+   so a second tool is not a recovery path either: it inherits the
+   same object.
+
+==============================================================
+R7. What bounds the loss.
+==============================================================
+   source message after the crash: 307 bytes, sha 654533e9d8aa08a0
+   leg E of the checker asserts exactly this, and it held in both runs.
+   So the original is not lost. What the crash creates is a second,
+   message-shaped object with nothing in it, in the folder the user
+   was archiving into.
+
+==============================================================
+The answer the freeze asked for, and its limits.
+==============================================================
+   RECOVERY PATHS THAT EXIST:
+     1. The source message survives, so the copy can be repeated (R4,
+        R7). This restores the intended message. It does not remove
+        the empty one: the folder afterwards holds both, and the tool
+        lists both as messages.
+     2. The empty message can be deleted by hand, once the user knows
+        it is there and the account names a trash mailbox (R5).
+   
+   CONDITIONS UNDER WHICH THEY DO NOT APPLY:
+     Both paths require the user to notice. Nothing offers to.
+     The tool has no command that inspects stored mail (R1, 2 matches
+     in 216 and neither reads a mailbox), its one check-shaped command
+     reports the account OK over the damaged store (R2), and an
+     independent maildir reader enumerates the empty file as an
+     ordinary message as well (R6). In the listing the only difference
+     is blank columns and 0 B.
+   
+   THE SYNCHRONIZED SIDE, WHICH THE FREEZE ASKED ABOUT SPECIFICALLY:
+     It cannot help, and not only in the maildir-only configuration
+     the freeze names. The operation copies between two folders inside
+     one local root and makes no network syscall at all (R3, 0 against
+     a positive control of 2), and this version of the tool has no
+     sync command in any of its 216 (R1). The message being created in
+     the target folder has therefore never existed anywhere else at
+     the moment it is destroyed. A remote side cannot restore content
+     it has never seen.
+   
+   NOT MEASURED, AND STATED RATHER THAN IMPLIED:
+     Whether an EXTERNAL syncer (isync, offlineimap) managing this
+     maildir would upload the empty message to the server as a new
+     message, which is the shape the freeze calls the strongest form:
+     the external recovery path itself carrying the damage outward.
+     Measuring it needs a second tool and a server, neither of which
+     is in this image. It is a question about making things worse,
+     not about recovery, so the recovery question above is answered
+     without it.
+
+== BROKEN checks: 0
