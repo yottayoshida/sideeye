@@ -9,19 +9,74 @@
 # directory, a bounded runtime, and its capture judged by the same
 # check-capture.py the unprivileged half showed red first.
 #
-# The invocations are designed from this machine's man pages, captured in
-# survey.txt, not from memory: ktrace's filter grammar (class specifier
-# 'C3' = the filesystem class), fs_usage's process-name filter, and
-# eslogger's root + Full Disk Access requirements are all documented
-# there. OpenBSM has no leg here: auditd(8) declares the subsystem
-# deprecated since 11.0 and DISABLED since 14.0, which the unprivileged
-# half records as its dismissal.
+# The invocations are designed from this machine's man pages, whose
+# relevant excerpts survey.sh commits into survey.txt (R1 caught the
+# first version of this comment citing captures that did not exist):
+# ktrace's filter grammar and -c option, fs_usage's process-name
+# synopsis, and eslogger's root + Full Disk Access requirement. OpenBSM
+# has no leg here: auditd(8) declares the subsystem deprecated since
+# 11.0 and DISABLED since 14.0, which the unprivileged half records as
+# its dismissal.
+#
+# Verdict scope: L1, L3, L4, L5 are judged by check-capture.py; L2 is
+# deliberately not — it prints no paths, and its answer is read from the
+# aggregate-row count's own format.
 #
 # What this script deliberately does not do: touch anything outside its
 # own mktemp directory and its transcript, or leave observers running
 # (every background observer is killed by its leg, and a watchdog bounds
 # each leg at 45s).
 set -u
+
+# --selftest: show this script's own guards failing, without root. R1
+# found two guards no transcript had ever shown red: the wrapper
+# readability check (round 2 falsified the exec bit, not readability)
+# and the residue check (three transcripts of successful silence). Both
+# are exercised here against their own predicates.
+if [ "${1:-}" = "--selftest" ]; then
+    SW=$(mktemp -d "${TMPDIR:-/tmp}/se181self.XXXXXX")
+    sfail=0
+    echo "== guard: wrapper readability"
+    if [ -r "$SW/does-not-exist.sh" ]; then
+        echo "  selftest FAIL: a missing wrapper reads as readable"; sfail=$((sfail+1))
+    else
+        echo "  selftest ok: the predicate goes red on a missing wrapper"
+    fi
+    printf 'x\n' > "$SW/exists.sh"
+    if [ -r "$SW/exists.sh" ]; then
+        echo "  selftest ok: positive control, a present wrapper reads as readable"
+    else
+        echo "  selftest FAIL: positive control unreadable"; sfail=$((sfail+1))
+    fi
+    echo "== guard: the residue check's predicate (pgrep -x by observer name)"
+    # Falsified with a process REALLY NAMED fs_usage. Not a copy of
+    # /bin/sleep: the first version tried that and the copy died with
+    # SIGKILL on exec — a platform binary copied to a new path fails its
+    # signature identity check, the exact mechanism this repository's
+    # platform-binary refusal text describes. A freshly compiled sleeper
+    # is ad-hoc signed by the linker and runs.
+    printf 'unsigned int sleep(unsigned int);\nint main(void){sleep(20);return 0;}\n' > "$SW/sleeper.c"
+    /usr/bin/cc -o "$SW/fs_usage" "$SW/sleeper.c" 2>/dev/null || {
+        echo "  selftest FAIL: could not build the named sleeper"; sfail=$((sfail+1)); }
+    "$SW/fs_usage" &
+    fakepid=$!
+    if pgrep -x fs_usage > /dev/null 2>&1; then
+        echo "  selftest ok: the predicate fires on a live process named fs_usage"
+    else
+        echo "  selftest FAIL: a running process named fs_usage was not found - the residue check cannot see what it exists for"; sfail=$((sfail+1))
+    fi
+    kill "$fakepid" 2>/dev/null; wait "$fakepid" 2>/dev/null
+    if pgrep -x fs_usage > /dev/null 2>&1; then
+        echo "  selftest FAIL: the name still matches after the kill; the green direction is broken"; sfail=$((sfail+1))
+    else
+        echo "  selftest ok: silence returns once the process is gone"
+    fi
+    /bin/rm -rf "${SW:?}"
+    echo "== selftest failures: $sfail"
+    [ "$sfail" -eq 0 ] || exit 1
+    exit 0
+fi
+
 [ "$(id -u)" = 0 ] || {
     echo "this is the privileged half; run it with sudo" >&2
     exit 2
@@ -41,7 +96,12 @@ CHECK="$here/check-capture.py"
 # The settle time is a real parameter, not politeness: an observer that
 # initialises slowly (eslogger creates an ES client) would miss the
 # toy's whole life, and that miss would be indistinguishable from
-# blindness. 2 seconds for every leg, uniformly.
+# blindness. 2 seconds for every leg, uniformly — and whether the
+# observer is still alive after the settle is RECORDED, because an
+# observer that died at startup (eslogger's refusal) leaves an empty-ish
+# capture that must read as "refused at start", never as "watched and
+# saw nothing". R1 also caught that the 45s watchdog bounded only the
+# observer while the toy ran unbounded; the toy now has its own.
 observe() { # capture-file state-dir observer-cmd...
     cap=$1; st=$2; shift 2
     mkdir -p "$st"
@@ -50,13 +110,20 @@ observe() { # capture-file state-dir observer-cmd...
     ( sleep 45; kill "$obs" 2>/dev/null ) &
     watchdog=$!
     sleep 2
-    "$W/toy" "$st" > "$st.toy-account" 2>&1
+    if kill -0 "$obs" 2>/dev/null; then alive=yes; else alive="no (exited during settle)"; fi
+    "$W/toy" "$st" > "$st.toy-account" 2>&1 &
+    toypid=$!
+    ( sleep 30; kill "$toypid" 2>/dev/null ) &
+    toydog=$!
+    wait "$toypid"
     toyrc=$?
+    kill "$toydog" 2>/dev/null; wait "$toydog" 2>/dev/null
     sleep 2
     kill "$obs" 2>/dev/null
     wait "$obs" 2>/dev/null
     kill "$watchdog" 2>/dev/null
     wait "$watchdog" 2>/dev/null
+    echo "   observer alive after settle: $alive"
     echo "   toy rc=$toyrc (its own account: $(wc -l < "$st.toy-account" | tr -d ' ') lines)"
     [ "$toyrc" -eq 0 ] || bad "the toy itself failed under this observer, so the capture judges a run that did not complete"
 }
@@ -130,9 +197,13 @@ echo "=============================================================="
 # The toy is dtruss's DIRECT child here, not wrapped: putting /bin/sh in
 # front would make the traced root process an Apple platform binary,
 # which is exactly the case the SIP question must NOT be measured on.
-# Contamination is prevented by streams instead - dtruss writes its
-# trace to stderr, the toy's account goes out on stdout - so the capture
-# holds only what dtruss emitted.
+# Streams are split on the theory that dtruss writes its trace to stderr
+# while the toy's account goes out on stdout — and round 3 MEASURED that
+# theory failing: dtruss remixes its child's stdout onto stderr, so the
+# toy's lines land in the capture anyway. The split stays (it costs
+# nothing and documents intent), but the real defense is check-capture's
+# contamination guard, which is what turned round 1's false "ok" into
+# round 3's correct FAIL.
 mkdir -p "$W/state-d"
 dtruss -f "$W/toy" "$W/state-d" 2> "$W/dtruss.cap" > "$W/state-d.toy-account" &
 job=$!

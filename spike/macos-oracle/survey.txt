@@ -26,7 +26,7 @@
 
 == the toy, built and self-accounted
    codesign identity of the fresh build (linker-applied, not ours):
-     Executable=/private/var/folders/lm/837r2dnd3tsbn9ng4rvxgrbm0000gp/T/se181.rlWTU6/toy
+     Executable=/private/var/folders/lm/837r2dnd3tsbn9ng4rvxgrbm0000gp/T/se181.saVZ5K/toy
      Identifier=toy
      Format=Mach-O thin (arm64)
    toy rc=0; its own account:
@@ -95,26 +95,72 @@
    announced. This machine runs 15.3.1, so no events flow from this
    subsystem regardless of privileges: dismissed without a sudo leg.
 
+== the man-page lines the privileged invocations are designed from
+   (committed here because the sudo half's comment cites them; a
+    design source that is only in a session's memory is not a source)
+-- ktrace: the -f/-c options and the filter grammar
+   | FILTER DESCRIPTIONS
+   |      A filter description is a comma-separated list of class and subclass
+   |      specifiers that indicate which events should be traced.  A class
+   |      specifier starts with ‘C’ and contains a single byte, specified in either
+   |      decimal or hex.  A subclass specifier starts with ‘S’ and takes two
+   | 
+   | 		-c command [...]
+   | 			Run the command specified by command and stop tracing
+   | 			when it exits.	All arguments after this option are
+   | 			passed to the command.
+   | --
+   | 
+   | 		-c command [...]
+   | 			Run the command specified by command and stop tracing
+   | 			when it exits.	All arguments after this option are
+   | 			passed to the command.
+-- eslogger: the root + TCC requirement in Apple's words
+   |      Like all Endpoint Security clients, eslogger must be run as super-user
+   |      and requires the responsible process to have TCC Full Disk Access
+   |      authorization.  See TCC AUTHORIZATION below.  To avoid feedback loops
+   |      when filtering output using shell pipelines, eslogger automatically
+   |      suppresses events for all processes that are part of its process group.
+   | --
+   |      eslogger requires the responsible process to have been authorized for
+   |      Full Disk Access.	For running eslogger in an SSH session, enable "Allow
+-- fs_usage: the synopsis the process-name filter comes from
+   | SYNOPSIS
+   |      fs_usage [-e] [-w] [-f mode] [-b] [-t seconds]
+   | 	      [-R rawfile [-S start_time -E end_time]]
+   | 	      [pid | cmd [pid | cmd [...]]]
+   | 
+   | DESCRIPTION
+
 == census: where the no-oracle claim lives (tracked files, this spike excluded)
 -- positive control: the dtruss-only claim sites
-   .github/workflows/ci.yml:142:      # No oracle here: dtruss is DTrace-based and System Integrity Protection refuses
    BUILDLOG.md:28:- `sudo dtruss` on the self-built, ad-hoc-signed toy: genuinely unknown —
    BUILDLOG.md:30:  overstate ("SIP refuses dtruss" is then true only of unprivileged
-   BUILDLOG.md:2453:macOS oracle claim resting on `dtruss` alone) left the page reading "nothing
-   BUILDLOG.md:7878:**`dtruss` is not usable.** SIP is enabled and DTrace refuses: *"DTrace requires
-   BUILDLOG.md:7879:additional privileges"*. `sudo dtruss` may work, but a tool that demands sudo to reach
-   docs/adr/0001-language-and-interposition.md:69:| Completeness oracle | `strace` | to be measured — `dtruss` is DTrace-based and constrained by SIP |
+   BUILDLOG.md:62:The lie. L1 reported dtruss "ok - all 3 tokens present", and every one
+   BUILDLOG.md:63:of its marker lines began with `op ` — the toy's OWN stdout. dtruss runs
+   BUILDLOG.md:78:dtruss capture; the ground-truth control passes `--allow-self-account`
+   BUILDLOG.md:82:**Predictions for round 2, before it runs:** dtruss becomes a measured
+   BUILDLOG.md:103:`chmod 755`. The wrapper stayed 0644, dtruss and dtrace died on "failed
+   BUILDLOG.md:116:dtruss and dtrace keep the toy as their DIRECT child, because /bin/sh in
+   BUILDLOG.md:121:**Predictions for round 3:** dtruss, clean streams — capture holds
+   BUILDLOG.md:132:dtruss did not refuse. It printed its trace header and **zero syscall
+   BUILDLOG.md:137:— dtruss remixes its child's stdout onto stderr, so the toy's account
+   BUILDLOG.md:157:with no probes even as root, and dtruss fails silently on top of it;
+   BUILDLOG.md:171:site now says the provider — and "dtruss traced nothing" rested on a
+   BUILDLOG.md:176:couple of bytes, and a dtruss syscall line runs tens of bytes, so
+   BUILDLOG.md:2714:macOS oracle claim resting on `dtruss` alone) left the page reading "nothing
+   BUILDLOG.md:8139:**`dtruss` is not usable.** SIP is enabled and DTrace refuses: *"DTrace requires
+   BUILDLOG.md:8140:additional privileges"*. `sudo dtruss` may work, but a tool that demands sudo to reach
+   docs/adr/0001-language-and-interposition.md:69:| Completeness oracle | `strace` | measured 2026-08-23 (#181, `spike/macos-oracle/`): none unprivileged; SIP leaves DTrace's syscall provider with no probes even as root (`dtruss` runs the target and exits 0 with no syscall in its capture); `fs_usage` gave an ordered, attributed, full-path account of the survey's toy, but requires root |
    docs/freeze-audit.md:57:no oracle" claim rests on `dtruss` alone; `fs_usage`, `ktrace`, OpenBSM and
-   docs/unknown-rate.md:215:  exists on macOS (SIP refuses dtruss), and `requireCompleteness`
-   shim/src/macos.zig:14://! What is *not* available here is an oracle: `dtruss` is DTrace-based and System
-   src/main.zig:223:        \\               has no usable oracle: dtruss is blocked by SIP. The report says
-   src/main.zig:267:/// `allow_unverified` exists because macOS has no oracle sideeye can use. `dtruss` is
+   shim/src/macos.zig:16://! root, and `dtruss` — built on that provider — runs the target and exits 0 with no
+   src/main.zig:271:/// under SIP even as root — `dtruss`, built on it, runs the target and exits 0 with no
 -- the candidates, file counts
-   fs_usage             2 file(s)
+   fs_usage             8 file(s)
    ktrace               4 file(s)
    praudit              0 file(s)
-   eslogger             1 file(s)
-   Endpoint Security    2 file(s)
+   eslogger             2 file(s)
+   Endpoint Security    3 file(s)
    OpenBSM              2 file(s)
    kdebug               1 file(s)
    (the issue measured all of these at zero on 2026-08-18; the

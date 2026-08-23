@@ -1,0 +1,7 @@
+== guard: wrapper readability
+  selftest ok: the predicate goes red on a missing wrapper
+  selftest ok: positive control, a present wrapper reads as readable
+== guard: the residue check's predicate (pgrep -x by observer name)
+  selftest ok: the predicate fires on a live process named fs_usage
+  selftest ok: silence returns once the process is gone
+== selftest failures: 0

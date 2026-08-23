@@ -56,7 +56,8 @@ cause. L3: **fs_usage is oracle-shaped.** Full paths, operation names
 (open / WrData / rename / unlink / mkdir), attribution to `toy.<pid>`,
 timestamps, order intact — all three markers in first-appearance order,
 nine event lines, zero contamination, no truncation at these path
-lengths. The kdebug substrate sees everything the oracle role needs.
+lengths. The kdebug substrate saw everything this survey's
+six-operation toy asked of the oracle role.
 
 The lie. L1 reported dtruss "ok - all 3 tokens present", and every one
 of its marker lines began with `op ` — the toy's OWN stdout. dtruss runs
@@ -141,7 +142,8 @@ false pass it was built from.
 
 Everything else landed as predicted. dtrace reproduced the round-1
 probe refusal verbatim in a clean transcript. ktrace started under the
-/bin/sh wrapper (337 events, toy-rc=0 in its separated account) and
+/bin/sh wrapper (a 337-line capture — a launch line, a column header
+and a blank, then events — toy-rc=0 in its separated account) and
 carried **0** marker paths in its own event lines — kdebug packs path
 bytes into hex args; fs_usage is the shipped resolver. eslogger repeated
 its FDA refusal, and fs_usage passed a third time, 9 of 9 marker lines
@@ -151,15 +153,50 @@ from the observer.
 oracle" was false as universally stated and is now corrected in seven
 places (four claim sites the issue named, plus ci.yml, unknown-rate.md
 and an acceptance.sh comment the issue's census missed): no
-*unprivileged* oracle exists; DTrace is dead under SIP even as root,
-failing silently; `fs_usage` as root is oracle-shaped — full paths,
-operation names, per-process attribution, order intact, three
-consecutive passes; Endpoint Security sits behind root plus a Full Disk
-Access grant; OpenBSM is disabled by Apple since 14.0. The 08-10
+*unprivileged* oracle exists; SIP leaves DTrace's syscall provider
+with no probes even as root, and dtruss fails silently on top of it;
+`fs_usage` as root gave an ordered, attributed, full-path account of
+the survey's six-operation toy, three runs out of three; Endpoint
+Security's shipped CLI refuses without root plus a Full Disk Access
+grant (a first-party ES client is unmeasured); OpenBSM is disabled by
+Apple since 14.0. The 08-10
 product stance — no root demand in a distributable default — survives
 untouched, now standing on measurement instead of one sentence about
 one tool. Left explicitly unmeasured: fs_usage's drop behaviour under
 load, ktrace's --json output, and eslogger with FDA actually granted.
+
+**R1 found eight claims wider than their transcript lines, all
+accepted.** The heaviest: "DTrace is dead under SIP even as root" was
+measured only for the syscall provider the probes named — every claim
+site now says the provider — and "dtruss traced nothing" rested on a
+capture the transcript showed only excerpts of. The arithmetic that
+makes it checkable from committed data: the 283-byte capture holds the
+SIP notice (80 bytes), the trace header (~36) and the toy's seven
+`op` lines plus `done` (166) — those sum to the byte count within a
+couple of bytes, and a dtruss syscall line runs tens of bytes, so
+there is no room for even one. "Endpoint Security sits behind root plus
+FDA" is now scoped to its shipped CLI, the thing actually measured.
+"337 events" was numerically false (three preamble lines). The man-page
+provenance the sudo script's comment cited was never committed —
+survey.txt now carries the ktrace filter grammar, the eslogger TCC
+paragraph and the fs_usage synopsis it designs from. And two guards no
+transcript had shown red — wrapper readability and the residue check —
+now fail on their own predicates in `sudo-survey.sh --selftest`, the
+residue one against a live process really named fs_usage. observe()
+additionally bounds the toy (R1: the 45s watchdog bounded only the
+observer) and records whether the observer survived the settle;
+rounds 1-3 ran before those two fixes, and no conclusion rests on the
+paths they change — fs_usage's passes and eslogger's refusal are
+outcome-proven in their transcripts.
+
+The residue selftest's first version produced its own measurement: it
+staged the fake observer by copying /bin/sleep to a file named
+fs_usage, and the copy died on exec with SIGKILL — a platform binary
+at a new path fails its signature identity check, which is the exact
+mechanism this repository's platform-binary refusal text describes
+("copying the binary elsewhere does not change its signature"). The
+selftest now compiles its sleeper, ad-hoc signed by the linker, and
+passes in both directions.
 
 ## 2026-08-23 — the record catches up with cohort 4, and the denominators get a route
 

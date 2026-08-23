@@ -109,6 +109,24 @@ echo "   announced. This machine runs 15.3.1, so no events flow from this"
 echo "   subsystem regardless of privileges: dismissed without a sudo leg."
 
 echo ""
+echo "== the man-page lines the privileged invocations are designed from"
+echo "   (committed here because the sudo half's comment cites them; a"
+echo "    design source that is only in a session's memory is not a source)"
+echo "-- ktrace: the -f/-c options and the filter grammar"
+man ktrace 2>/dev/null | col -b | grep -A4 '^FILTER DESCRIPTIONS' > "$W/man-ktrace.txt"
+man ktrace 2>/dev/null | col -b | grep -B1 -A3 '^\s*-c command' >> "$W/man-ktrace.txt"
+if [ -s "$W/man-ktrace.txt" ]; then sed 's/^/   | /' "$W/man-ktrace.txt"
+else bad "ktrace man excerpts came back empty; the C3 invocation would rest on memory"; fi
+echo "-- eslogger: the root + TCC requirement in Apple's words"
+man eslogger 2>/dev/null | col -b | grep -B1 -A3 'Full Disk Access' | head -8 > "$W/man-eslogger.txt"
+if [ -s "$W/man-eslogger.txt" ]; then sed 's/^/   | /' "$W/man-eslogger.txt"
+else bad "eslogger man excerpt came back empty"; fi
+echo "-- fs_usage: the synopsis the process-name filter comes from"
+man fs_usage 2>/dev/null | col -b | sed -n '/^SYNOPSIS/,/^DESCRIPTION/p' | head -6 > "$W/man-fsusage.txt"
+if [ -s "$W/man-fsusage.txt" ]; then sed 's/^/   | /' "$W/man-fsusage.txt"
+else bad "fs_usage man excerpt came back empty"; fi
+
+echo ""
 echo "== census: where the no-oracle claim lives (tracked files, this spike excluded)"
 echo "-- positive control: the dtruss-only claim sites"
 git -C "$repo" grep -n 'dtruss' -- ':!spike/' | sed 's/^/   /'
