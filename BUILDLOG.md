@@ -27,11 +27,15 @@ its `metadata` line was already about restore rather than about the
 oracle's exclusion. `docs/scouting.md`'s table row had already moved with
 #221.
 
-One thing the reconciliation found and did not act on: the README's list
-of tools with replay-confirmed counterexamples names timewarrior, topydo,
-GNU Stow, calcurse and devtodo, and is now behind. That is a claim about
-the project's record rather than a version-relative string, so it is
-raised rather than quietly edited here.
+The reconciliation also found the README's list of tools with
+replay-confirmed counterexamples — timewarrior, topydo, GNU Stow,
+calcurse, devtodo — running behind. That is a claim about the project's
+record rather than a version-relative string, so it went to the owner
+rather than being quietly edited; the ruling was to add himalaya, whose
+counterexample replays and whose report is filed as
+`pimalaya/himalaya#738`. poetry stays out for now: its report is closed
+and its outcome is a separate question from whether the counterexample
+stands.
 
 168 tests, and the binary answers `sideeye 0.13.0`, which is the exact
 form the release workflow checks against the tag.
