@@ -2,7 +2,7 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-23 (open) — #181: the macOS no-oracle claim gets its measurement
+## 2026-08-23 — #181: the macOS no-oracle claim gets its measurement
 
 The claim decides what a verdict means on half the supported platforms,
 lives in four claim sites plus CI and two docs, names one tool, and ADR
@@ -124,6 +124,42 @@ with the round-1 probe refusal back; ktrace starts this time, and its
 observer lines carrying a marker path number **0** (151 non-op event
 lines in round 1 held none); eslogger identical FDA refusal; fs_usage
 passes a third time.
+
+**Round 3 (08:41Z): complete. Four predictions held; the one that
+missed, missed in a direction worth the whole survey.**
+
+dtruss did not refuse. It printed its trace header and **zero syscall
+lines**, ran the toy to completion, and **exited 0** — a silent empty
+trace, which for an oracle is worse than a refusal, because the exit
+code alone reads as success. The prediction said "refusal lines"; the
+reality is quieter and more dangerous. The stream separation also failed
+— dtruss remixes its child's stdout onto stderr, so the toy's account
+landed in the capture after all — and the contamination guard built
+after round 1 **fired in production**, turning what round 1 had scored
+as "ok" into the correct FAIL. The guard's first real catch is the same
+false pass it was built from.
+
+Everything else landed as predicted. dtrace reproduced the round-1
+probe refusal verbatim in a clean transcript. ktrace started under the
+/bin/sh wrapper (337 events, toy-rc=0 in its separated account) and
+carried **0** marker paths in its own event lines — kdebug packs path
+bytes into hex args; fs_usage is the shipped resolver. eslogger repeated
+its FDA refusal, and fs_usage passed a third time, 9 of 9 marker lines
+from the observer.
+
+**The verdicts, and what moved.** The claim "macOS has no usable
+oracle" was false as universally stated and is now corrected in seven
+places (four claim sites the issue named, plus ci.yml, unknown-rate.md
+and an acceptance.sh comment the issue's census missed): no
+*unprivileged* oracle exists; DTrace is dead under SIP even as root,
+failing silently; `fs_usage` as root is oracle-shaped — full paths,
+operation names, per-process attribution, order intact, three
+consecutive passes; Endpoint Security sits behind root plus a Full Disk
+Access grant; OpenBSM is disabled by Apple since 14.0. The 08-10
+product stance — no root demand in a distributable default — survives
+untouched, now standing on measurement instead of one sentence about
+one tool. Left explicitly unmeasured: fs_usage's drop behaviour under
+load, ktrace's --json output, and eslogger with FDA actually granted.
 
 ## 2026-08-23 — the formula shipped and the README still said "download the tarball"
 

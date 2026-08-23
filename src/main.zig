@@ -219,9 +219,10 @@ fn usage() void {
         \\               every replay: it lives for the whole client session, and the
         \\               second replay used to die in the leftovers of the first
         \\  --allow-unverified
-        \\               accept PASS with no completeness check. Needed on macOS, which
-        \\               has no usable oracle: dtruss is blocked by SIP. The report says
-        \\               so, and the claim it makes is weaker.
+        \\               accept PASS with no completeness check. Needed on macOS: DTrace
+        \\               is dead under SIP even as root, and the one oracle-shaped
+        \\               candidate (fs_usage) requires root (#181). The report says so,
+        \\               and the claim it makes is weaker.
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\
@@ -264,9 +265,11 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
 /// appeared to perform no operations at all: that is the case where the shim saw
 /// nothing, which is precisely when the question of whether it *could* see matters most.
 ///
-/// `allow_unverified` exists because macOS has no oracle sideeye can use. `dtruss` is
-/// DTrace-based and refuses to run under System Integrity Protection, and the
-/// alternatives need an entitlement that a single distributed binary cannot carry.
+/// `allow_unverified` exists because macOS has no oracle sideeye can use by default
+/// (measured, #181, spike/macos-oracle/): DTrace is dead under SIP even as root — the
+/// syscall provider matches no probes, and `dtruss` exits 0 having traced nothing —
+/// `fs_usage` is oracle-shaped but root-gated, and Endpoint Security sits behind root
+/// plus a Full Disk Access grant.
 /// Rather than branch on the platform — which would break the claim that both operating
 /// systems produce the same verdict for the same scenario — the caller states the
 /// weaker claim deliberately, and the report says which claim was made.

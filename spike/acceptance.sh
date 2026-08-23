@@ -702,9 +702,10 @@ fi
 
 echo ""
 echo "=========== check 2g: the weaker claim is available, and says so ==========="
-# macOS has no oracle sideeye can use — dtruss is DTrace-based and SIP refuses it — so
-# there has to be a way to accept PASS without one. It must be asked for explicitly and
-# it must be visible in the report, otherwise the two kinds of PASS are indistinguishable.
+# macOS has no oracle sideeye can use by default — DTrace is dead under SIP even as
+# root, and the oracle-shaped candidate (fs_usage) is root-gated (#181) — so there has
+# to be a way to accept PASS without one. It must be asked for explicitly and it must
+# be visible in the report, otherwise the two kinds of PASS are indistinguishable.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \

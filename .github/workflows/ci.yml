@@ -139,10 +139,11 @@ jobs:
           EOF
           echo "ok   the platform-binary refusal keeps its shape: exit 2, the token, the macOS clause, JSON message verbatim in the text"
 
-      # No oracle here: dtruss is DTrace-based and System Integrity Protection refuses
-      # it. That is why this job asserts FAIL rather than PASS — a counterexample is
-      # real whether or not the account of the run was complete, while "no counter-
-      # example found" would need a completeness check this platform cannot provide.
+      # No oracle here: DTrace is dead under SIP even as root, and the one oracle-shaped
+      # candidate, fs_usage, is root-gated (measured, #181, spike/macos-oracle/). That is
+      # why this job asserts FAIL rather than PASS — a counterexample is real whether or
+      # not the account of the run was complete, while "no counterexample found" would
+      # need a completeness check this platform does not provide by default.
       - name: Interposition works and finds the planted bug
         run: |
           set -eu
