@@ -106,6 +106,18 @@ for `.gitattributes`, bought by exactly this failure; the record and the
 verify transcript now sit beside it. That is a scope addition to this
 change, deliberate and named here rather than slipped in.
 
+**Then the same class bit a third time, in the rule itself.** Running the
+diff through the universal-quantifier scan the claims rule asks for —
+before opening the PR, after the commits were already pushed — turned up
+the new `CLAUDE.md` sentence saying each define that reached an explore
+leaves a verify transcript. Cohort 2 holds nine define directories and
+four transcripts: hg's first three revisions and borg's first two all
+reached explores and left none, because the transcript belongs to the
+revision that produced the recorded outcome. Fixed forward rather than
+amended, since the branch was pushed. Three instances in one change —
+prose, then prose, then a rule written to prevent the first two — is the
+argument for running that scan before review rather than after.
+
 ## 2026-08-23 — the formula shipped and the README still said "download the tarball"
 
 `#180`'s whole thesis was that installing takes four steps and one thing

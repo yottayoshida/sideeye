@@ -42,9 +42,10 @@ The contract:
 - **A cohort close moves the top-level record too, in the same sitting.** The rows
   belong in `docs/target-classes.md` (one per verdict, one per wall), the cohort
   paragraph in `PRD.md`'s criterion-1 trail and `DESIGN.md` §17, and the new define
-  count in the as-of note of `docs/unknown-rate.md`. Each define that reached an
-  explore also leaves its `verify-transcript.txt` beside its artifacts, the way
-  cohorts 2 and 3 did. Cohort 4 closed with none of that written and
+  count in the as-of note of `docs/unknown-rate.md`. The revision that produced the
+  recorded outcome also leaves its `verify-transcript.txt` beside its artifacts, the
+  way cohorts 2 and 3 did — one per outcome, not one per define directory: cohort 2
+  holds nine define directories and four transcripts. Cohort 4 closed with none of that written and
   `target-classes.md` still calling a closed issue open — one day after that same page
   had been hand-backfilled for the two cohorts before it. Backfilling is the symptom;
   the pages moving when the cohort does is the fix.
