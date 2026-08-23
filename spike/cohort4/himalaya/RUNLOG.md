@@ -1,4 +1,4 @@
-# himalaya (cohort 4, target 1) — run log
+# himalaya (cohort 4, target 1): run log
 
 ## The invocation the launcher cannot carry
 
