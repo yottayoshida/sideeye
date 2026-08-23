@@ -61,11 +61,53 @@ did not predict is in the metadata line, disclosed and unjudged: one
 ## What is not claimed here
 
 - **No upstream contact.** Each report is its own owner-approved gate,
-  and the freeze's Reporting section adds a precondition this finding has
-  not met yet: measure the recovery paths that exist outside the tool and
-  the conditions under which they do not apply. For himalaya that is the
-  other side of the sync, and it is unmeasured. That is the one
-  measurement still standing between this candidate and a report.
+  and nothing here authorises contact. The freeze's other precondition,
+  the outside-the-tool recovery paths, **is now measured**
+  (`external-recovery.txt`, seven legs). Every sentence below is scoped
+  to the one account configuration measured: a maildir account with no
+  remote, on this build.
+
+  - **Two recovery paths work, and both need the user to notice first.**
+    The source is byte-identical after the crash, so the copy can simply
+    be repeated. The repeat does not remove the empty entry: the folder
+    afterwards holds both and the tool lists both as messages. The empty
+    entry can also be moved out by the tool's own delete, once the
+    account names a trash mailbox and that mailbox exists. It lands in
+    Trash still at 0 bytes; emptying the trash was not measured.
+  - **Nothing measured offers to notice.** Of 216 command names (the
+    tree's depth measured, not assumed; the strict walk had 0 failed
+    `--help` invocations, so no subtree was silently treated as a leaf)
+    two are repair-shaped and neither is about stored mail: `account
+    check` validates the account and reports `maildir: OK` over the
+    damaged store, and `gmail settings send-as verify` is alias
+    ownership. No name in the surface is a sync. This is a claim about
+    names: commands that *read* stored mail plainly exist, and
+    `envelope list` is how the empty entry gets displayed as an ordinary
+    message in the first place. The one independent reader tried,
+    python's `mailbox.Maildir`, enumerates it as an ordinary message as
+    well.
+  - **Re-fetching from a server cannot restore the target-folder
+    entry**, because that entry is never sent anywhere while it is being
+    created: the operation makes no call of the traced `%network` class,
+    against a positive control on the same filter and the same counting
+    expression. That is about the entry, not the content. The content
+    may well exist on a server, and it certainly still exists in the
+    source folder, which is the honest limit of this finding's severity.
+  - **Two things measured against my own framing.** `message delete`
+    first refused on the empty entry, which read like a second defect;
+    the control refuses in the same words on a healthy message in the
+    same folder under the same config, so it is a property of an account
+    with no trash mailbox and is not reported as part of this finding.
+    And the first draft of the network leg counted a hand-written list
+    of syscall names, which measures "none of the names I thought of"
+    rather than none: the positive control catches `getsockname` and
+    `getpeername`, which that list did not have.
+  - **Not measured, stated rather than implied:** whether an external
+    syncer would carry the empty message outward to a server (the shape
+    the freeze calls the strongest form, needing a second tool and a
+    server); whether any reader other than the one tried would flag the
+    entry; and whether clap's help output is a faithful index of the
+    binary, which is the limit of R1's completeness.
 - **The stock reproduction is done, and it turned the toml's argument
   into a measurement** (`stock-reproduction.txt`). No shim, no engine, no
   seccomp, no `/etc/ld.so.preload`, no interposer: the stock binary under
