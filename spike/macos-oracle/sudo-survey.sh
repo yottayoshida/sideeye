@@ -48,13 +48,23 @@ if [ "${1:-}" = "--selftest" ]; then
     else
         echo "  selftest FAIL: positive control unreadable"; sfail=$((sfail+1))
     fi
+    echo "== control: what happens to a COPIED platform binary (recorded,"
+    echo "   because a BUILDLOG claim about it needs a committed line)"
+    # The first residue falsification tried `cp /bin/sleep` and the copy
+    # died on exec. That observation is reproduced here deliberately so
+    # the transcript carries it: exec status and codesign's verdict on
+    # the copy, next to the original's.
+    cp /bin/sleep "$SW/sleep-copy"
+    "$SW/sleep-copy" 1 2> "$SW/copy-err.txt"
+    crc=$?
+    echo "  copied /bin/sleep, ran it: rc=$crc $(head -1 "$SW/copy-err.txt" 2>/dev/null)"
+    echo "  codesign verify on the copy:    $(codesign --verify "$SW/sleep-copy" 2>&1 | head -1; echo '(silence = valid)')"
+    echo "  codesign verify on the original: $(codesign --verify /bin/sleep 2>&1 | head -1 ; echo '(silence = valid)')"
+
     echo "== guard: the residue check's predicate (pgrep -x by observer name)"
-    # Falsified with a process REALLY NAMED fs_usage. Not a copy of
-    # /bin/sleep: the first version tried that and the copy died with
-    # SIGKILL on exec — a platform binary copied to a new path fails its
-    # signature identity check, the exact mechanism this repository's
-    # platform-binary refusal text describes. A freshly compiled sleeper
-    # is ad-hoc signed by the linker and runs.
+    # Falsified with a process REALLY NAMED fs_usage — compiled, because
+    # the control above shows what happens to a copied platform binary.
+    # A freshly compiled sleeper is ad-hoc signed by the linker and runs.
     printf 'unsigned int sleep(unsigned int);\nint main(void){sleep(20);return 0;}\n' > "$SW/sleeper.c"
     /usr/bin/cc -o "$SW/fs_usage" "$SW/sleeper.c" 2>/dev/null || {
         echo "  selftest FAIL: could not build the named sleeper"; sfail=$((sfail+1)); }
@@ -100,8 +110,11 @@ CHECK="$here/check-capture.py"
 # observer is still alive after the settle is RECORDED, because an
 # observer that died at startup (eslogger's refusal) leaves an empty-ish
 # capture that must read as "refused at start", never as "watched and
-# saw nothing". R1 also caught that the 45s watchdog bounded only the
-# observer while the toy ran unbounded; the toy now has its own.
+# saw nothing". Alive is not READY — no generic handshake exists, so
+# readiness is only ever proven by the capture itself, and the liveness
+# line is a diagnostic, not a claim. R1 also caught that the 45s
+# watchdog bounded only the observer while the toy ran unbounded; the
+# toy now has its own.
 observe() { # capture-file state-dir observer-cmd...
     cap=$1; st=$2; shift 2
     mkdir -p "$st"

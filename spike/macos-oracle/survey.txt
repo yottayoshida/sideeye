@@ -26,7 +26,7 @@
 
 == the toy, built and self-accounted
    codesign identity of the fresh build (linker-applied, not ours):
-     Executable=/private/var/folders/lm/837r2dnd3tsbn9ng4rvxgrbm0000gp/T/se181.saVZ5K/toy
+     Executable=/private/var/folders/lm/837r2dnd3tsbn9ng4rvxgrbm0000gp/T/se181.zicc57/toy
      Identifier=toy
      Format=Mach-O thin (arm64)
    toy rc=0; its own account:
@@ -131,6 +131,11 @@
    | 	      [pid | cmd [pid | cmd [...]]]
    | 
    | DESCRIPTION
+-- and the one mapping the man pages do not state: class 3 IS the
+   filesystem class, from this machine's SDK header (R2 caught the
+   C3 invocation resting on memory)
+   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/kdebug.h:
+   | 104:#define DBG_FSYSTEM     3
 
 == census: where the no-oracle claim lives (tracked files, this spike excluded)
 -- positive control: the dtruss-only claim sites
@@ -148,9 +153,9 @@
    BUILDLOG.md:157:with no probes even as root, and dtruss fails silently on top of it;
    BUILDLOG.md:171:site now says the provider — and "dtruss traced nothing" rested on a
    BUILDLOG.md:176:couple of bytes, and a dtruss syscall line runs tens of bytes, so
-   BUILDLOG.md:2714:macOS oracle claim resting on `dtruss` alone) left the page reading "nothing
-   BUILDLOG.md:8139:**`dtruss` is not usable.** SIP is enabled and DTrace refuses: *"DTrace requires
-   BUILDLOG.md:8140:additional privileges"*. `sudo dtruss` may work, but a tool that demands sudo to reach
+   BUILDLOG.md:2723:macOS oracle claim resting on `dtruss` alone) left the page reading "nothing
+   BUILDLOG.md:8148:**`dtruss` is not usable.** SIP is enabled and DTrace refuses: *"DTrace requires
+   BUILDLOG.md:8149:additional privileges"*. `sudo dtruss` may work, but a tool that demands sudo to reach
    docs/adr/0001-language-and-interposition.md:69:| Completeness oracle | `strace` | measured 2026-08-23 (#181, `spike/macos-oracle/`): none unprivileged; SIP leaves DTrace's syscall provider with no probes even as root (`dtruss` runs the target and exits 0 with no syscall in its capture); `fs_usage` gave an ordered, attributed, full-path account of the survey's toy, but requires root |
    docs/freeze-audit.md:57:no oracle" claim rests on `dtruss` alone; `fs_usage`, `ktrace`, OpenBSM and
    shim/src/macos.zig:16://! root, and `dtruss` — built on that provider — runs the target and exits 0 with no

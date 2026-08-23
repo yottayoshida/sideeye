@@ -191,12 +191,15 @@ outcome-proven in their transcripts.
 
 The residue selftest's first version produced its own measurement: it
 staged the fake observer by copying /bin/sleep to a file named
-fs_usage, and the copy died on exec with SIGKILL — a platform binary
-at a new path fails its signature identity check, which is the exact
-mechanism this repository's platform-binary refusal text describes
-("copying the binary elsewhere does not change its signature"). The
-selftest now compiles its sleeper, ad-hoc signed by the linker, and
-passes in both directions.
+fs_usage, and the copy died on exec. R2 refused the claim because no
+committed line carried it, so the selftest now reproduces it as a
+recorded control: the copy exits 137 (SIGKILL) — and codesign still
+VERIFIES the copy, which narrows the cause. The signature is not
+broken; copying does not change it, exactly as this repository's
+platform-binary refusal text says, and what kills the copy is the
+execution policy on a platform-signed binary at a foreign path. The
+staged observer is therefore compiled — ad-hoc signed by the linker,
+it runs — and the guard passes in both directions.
 
 ## 2026-08-23 — the record catches up with cohort 4, and the denominators get a route
 

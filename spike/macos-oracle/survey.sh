@@ -125,6 +125,15 @@ echo "-- fs_usage: the synopsis the process-name filter comes from"
 man fs_usage 2>/dev/null | col -b | sed -n '/^SYNOPSIS/,/^DESCRIPTION/p' | head -6 > "$W/man-fsusage.txt"
 if [ -s "$W/man-fsusage.txt" ]; then sed 's/^/   | /' "$W/man-fsusage.txt"
 else bad "fs_usage man excerpt came back empty"; fi
+echo "-- and the one mapping the man pages do not state: class 3 IS the"
+echo "   filesystem class, from this machine's SDK header (R2 caught the"
+echo "   C3 invocation resting on memory)"
+KH=$(xcrun --show-sdk-path 2>/dev/null)/usr/include/sys/kdebug.h
+grep -n 'define DBG_FSYSTEM' "$KH" > "$W/kdebug-class.txt" 2>/dev/null
+if [ -s "$W/kdebug-class.txt" ]; then
+    echo "   $KH:"
+    sed 's/^/   | /' "$W/kdebug-class.txt"
+else bad "DBG_FSYSTEM not found in the SDK header; C3 would rest on memory"; fi
 
 echo ""
 echo "== census: where the no-oracle claim lives (tracked files, this spike excluded)"
