@@ -1,0 +1,71 @@
+
+== himalaya himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+
+== trial A: envelope list on the target folder, healthy store with a whole copy
+   A: rc=0, store mutated: no
+     stdout (first 2 lines): |┌───────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐|
+
+== trial B: message read of the copied message, healthy store
+   id as the reader names it: 1767225600.#0M0P4242.host
+   B: rc=0, store mutated: no
+     stdout (first 2 lines): Date: Sun, 1 Mar 2026 09:00:00 +0000|From: Probe Author <probe@example.invalid>|
+
+== trial C: envelope list on a TORN store (zero-length message in the target folder)
+   C: rc=0, store mutated: no
+     stdout (first 2 lines): |┌───────────────────────────┬───────┬─────────┬──────┬──────┬──────┐|
+
+== trial D: envelope list on a TORN store (message cut mid-headers)
+   D: rc=0, store mutated: no
+     stdout (first 2 lines): |┌───────────────────────────┬───────┬─────────┬──────────────┬────────────────────────┬───────┐|
+
+== trial E: envelope list on the target folder when the copy never happened
+   E: rc=0, store mutated: no
+     stdout (first 2 lines): |┌────┬───────┬─────────┬──────┬──────┬──────┐|
+
+== trial G: what does the reader SHOW for a torn message, against a whole one and an absent one?
+   whole: 1 row(s) naming the copied message
+   torn0: 1 row(s) naming the copied message
+   torn-partial: 1 row(s) naming the copied message
+   empty: 0 row(s) naming the copied message
+   and what the reader prints for the zero-length one:
+     ╞═══════════════════════════╪═══════╪═════════╪══════╪══════╪══════╡
+     │ 1767225600.#0M0P4242.host ┆       ┆         ┆      ┆      ┆  0 B │
+     └───────────────────────────┴───────┴─────────┴──────┴──────┴──────┘
+   and its message read:
+     rc=1, bytes of output: 106
+
+== trial F: is there a documented recovery? the top-level command surface
+   Commands:
+     mailbox      Manage mailboxes using the shared API [alias: mbox]
+     envelope     Manage envelopes using the shared API
+     flag         Manage flags using the shared API
+     message      Manage messages using the shared API [alias: msg]
+     attachment   Manage attachments using the shared API
+     imap         IMAP-specific API
+     jmap         JMAP-specific API
+     gmail        Gmail-specific API
+     msgraph      Microsoft Graph CLI
+     maildir      Maildir-specific API
+     m2dir        M2dir-specific API
+     smtp         SMTP-specific API
+     configure    Configure an account interactively [alias: wizard]
+     account      Manage accounts defined in the TOML configuration file
+     completion   Generate completion script for the give shell(s) to the given directory
+     manual       Generate manual pages to the given directory
+     json-schema  Generate JSON Schemas of every command's JSON output to the given directory
+     help         Print this message or the help of the given subcommand(s)
+   
+   and the maildir subtree:
+   Commands:
+     create    Create a Maildir folder
+     rename    Rename a Maildir folder
+     delete    Delete a Maildir folder
+     list      List Maildir folders
+     messages  Manage MAILDIR messages
+     flags     Manage MAILDIR flags
+     help      Print this message or the help of the given subcommand(s)
+   
+
+== readers that mutated the store: 0
+(a nonzero count is not a failure of this script: it is the fact the
+ checker has to be ordered around, exactly as papis's list was.)
