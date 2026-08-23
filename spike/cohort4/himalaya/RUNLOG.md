@@ -32,3 +32,10 @@ back to the libc read/write path with the profile on.
    first-parent on main before the engine touches the target, so the run
    and its artifacts land in a separate PR. `proposals.md` states the
    declared world readings before that happens.
+
+## Outcome
+
+r1 refused (`unsupported_syscall_observed: copy_file_range`, exit 2);
+`run1/` holds that transcript and its reasoning. The revision that
+answers it is `../himalaya-r2/`, which reached a FAIL through the
+declared checker. Its results are `../himalaya-r2/RESULTS.md`.
