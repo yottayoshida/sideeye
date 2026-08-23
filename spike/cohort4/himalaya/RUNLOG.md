@@ -12,7 +12,7 @@ would refuse rather than measure. The full line:
 docker run --rm \
   --security-opt seccomp=<repo>/spike/cohort4/seccomp-enosys.json \
   -v <repo>:/work sideeye-cohort4 \
-  sh /work/spike/cohort4/himalaya/ops/explore.sh --json <report path>
+  /work/spike/cohort4/himalaya/ops/explore.sh --json <report path>
 ```
 
 That the profile is required rather than decorative is measured, not

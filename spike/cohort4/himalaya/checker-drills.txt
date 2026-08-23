@@ -1,6 +1,6 @@
 == the operation itself: setup, the frozen argv, then the checker
    operation rc=0: Message(s) successfully copied
-   the copy it left: 1787451722.#0M840838050P17.6c42edda9701:2,S (307 bytes)
+   the copy it left: 1787452581.#0M716508000P16.3728d2c7575e:2,S (307 bytes)
 drill ok   live/operation-then-checker: checker green as required
 
 == the other state the operation can leave (killed before it created anything)
@@ -12,6 +12,8 @@ drill ok   guard/stray-root-entry: red through the expected leg: checker(himalay
 drill ok   guard/extra-source-message: red through the expected leg: checker(himalaya-copy): the source folder holds entries this operation cannot produce (got: 1700000000.#0M0P1.probehost:2,S another:2,S )
 drill ok   guard/staged-leftover: red through the expected leg: checker(himalaya-copy): new/ or tmp/ is not empty: this operation stages nothing, so 1 entry/entries there is damage or a shape the define did not declare
 drill ok   guard/two-copies: red through the expected leg: checker(himalaya-copy): the target folder holds 2 entries; one copy operation cannot produce more than one
+drill ok   guard/unreadable-control: checker green as required
+drill ok   guard/unreadable-target-folder: red through the expected leg: checker(himalaya-copy): the target folder could not be listed: ls: cannot open directory '/tmp/drills-himalaya/g6/Archive/cur': Permission denied
 
 == leg D: the copy is all-or-nothing
 drill ok   legD/zero-length-copy: red through the expected leg: checker(himalaya-copy): leg D: the copy is present but its bytes are not the source's (0 bytes on disk against 307 in the source)

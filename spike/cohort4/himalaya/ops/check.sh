@@ -91,7 +91,11 @@ src_entries=$(ls -A "$S/cur" | sort | tr '\n' ' ')
 [ "$src_entries" = "$MSGID:2,S " ] \
     || fail "the source folder holds entries this operation cannot produce (got: $src_entries)"
 
-empties=$(find "$S/new" "$S/tmp" "$S/Archive/new" "$S/Archive/tmp" -mindepth 1 | wc -l | tr -d ' ')
+# find's own status is read first: a failure here would otherwise count
+# as zero staged entries and pass the guard, the fail-open direction.
+find "$S/new" "$S/tmp" "$S/Archive/new" "$S/Archive/tmp" -mindepth 1 > "$T/staged" 2> "$T/staged.err" \
+    || fail "the staging directories could not be listed: $(head -c 200 "$T/staged.err")"
+empties=$(wc -l < "$T/staged" | tr -d ' ')
 [ "$empties" = 0 ] \
     || fail "new/ or tmp/ is not empty: this operation stages nothing, so $empties entry/entries there is damage or a shape the define did not declare"
 

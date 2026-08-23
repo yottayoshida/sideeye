@@ -54,14 +54,39 @@ stays**, and is not optional: without it `fs::copy` reaches
 as unsupported. It applies at the container boundary, so the launcher
 cannot carry it and the RUNLOG records the invocation that does.
 
-Drills: every leg red once, on its own, with the expected leg named —
-guard through five shapes, leg D through four, legs E and C through one
-each. **Leg R could not be reached by damaging the store**, because
-every state that makes the reader disagree with the disk is caught by an
-earlier leg first, so its predicate is exercised directly with a reader
-put in front of the real one that answers wrongly: the same synthetic
-pinning this repository uses for a dyld phrase it cannot provoke. Both
-states the operation can actually leave are green.
+Drills: every leg red once, on its own, with the expected leg named.
+**Re-read after two review rounds, per the contract, and two sentences
+of this paragraph did not survive them.**
+
+The first draft said "both states the operation can actually leave are
+green", and R1 pointed out that both had been measured on stores built
+by hand: the operation itself appeared in no transcript in the PR. It
+does now, first case in the drills, through the define's own setup and
+the toml's own argv, and it is the case that matters most, because a red
+checker on the un-killed state is what `baseline_violates_invariant`
+costs the target its slot for. The run also demonstrated the
+name-agnostic design rather than arguing it: with the probe's clock and
+pid pins absent the copy landed as
+`1787451722.#0M840838050P17.<host>:2,S`, 307 bytes, and the checker
+passed.
+
+The same draft said leg R's predicate was "exercised directly" and left
+it there. R1 counted the leg's fail sites: five, with two drilled. All
+five are drilled now. Leg C is two drills rather than one, a changed
+config and a missing one, because the first version reported a config
+that had been deleted as one that had "changed".
+
+R1's first finding was the sharper one, and it was mine: the drills
+spawned check.sh as `sh file`, the form CLAUDE.md forbids and campaign 2
+bought with a Permission denied at the first sealed exploration, and
+they had copied setup.sh's config-writing inline, so the define's own
+setup had no green run anywhere and a drift between it and the checker's
+leg C would have stayed green in the drills. R2 then proved the fix by
+its own predicate rather than by inspection: with check.sh at 644 every
+drill fails with Permission denied, so the exec bit is load-bearing and
+there is no silent `sh` fallback.
+
+## 2026-08-23 — cohort 4 probes: the plans are frozen, so the scripts are transcription
 
 Entry opened at the start of the probes work, an hour after the freeze
 (#245) merged. The probe plans, fixtures, argv and apparatus are all

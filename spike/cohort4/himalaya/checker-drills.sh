@@ -111,6 +111,25 @@ run "guard/staged-leftover" "new/ or tmp/ is not empty" "$W/g4"
 build "$W/g5" yes; msg_bytes > "$W/g5/Archive/cur/1767225600.#0M2P78.somehost:2,S"
 run "guard/two-copies" "cannot produce more than one" "$W/g5"
 
+# The listing-status guard is new in this round, so it is drilled against
+# its own predicate rather than against the accident that suggested it.
+# Without it an unreadable target folder counts as zero entries, leg D is
+# skipped entirely, and whether the checker goes red at all depends on
+# what the reader happens to do: a false pass waiting on someone else's
+# behaviour.
+#
+# It has to run as a NON-ROOT user. The container runs as root, and root
+# bypasses the permission bits, so the first version of this drill made
+# the directory unreadable and watched the checker sail through it. The
+# drill was measuring nothing. setpriv drops to nobody for this one case,
+# and the positive control below shows the same user reading a healthy
+# store green, so a red here is the guard and not the uid.
+build "$W/g6" yes; chmod 0777 "$W/g6" "$W/g6/cur" "$W/g6/Archive"
+run "guard/unreadable-control" green "$W/g6" setpriv --reuid=65534 --regid=65534 --clear-groups
+chmod 000 "$W/g6/Archive/cur"
+run "guard/unreadable-target-folder" "the target folder could not be listed" "$W/g6" setpriv --reuid=65534 --regid=65534 --clear-groups
+chmod 755 "$W/g6/Archive/cur"
+
 echo ""
 echo "== leg D: the copy is all-or-nothing"
 build "$W/d1" yes; : > "$W/d1/Archive/cur/1767225600.#0M1P77.somehost:2,S"
@@ -133,9 +152,9 @@ echo "== leg C: the outside-root configuration is conserved"
 build "$W/c1" yes
 cp "$P/config.toml" "$W/config.saved"
 printf 'tampered\n' >> "$P/config.toml"
-run "legC/config-changed" "leg C: the outside-root account configuration" "$W/c1"
+run "legC/config-changed" "account configuration changed" "$W/c1"
 rm -f "$P/config.toml"
-run "legC/config-missing" "leg C: the outside-root account configuration" "$W/c1"
+run "legC/config-missing" "account configuration is gone" "$W/c1"
 cp "$W/config.saved" "$P/config.toml"
 
 echo ""
