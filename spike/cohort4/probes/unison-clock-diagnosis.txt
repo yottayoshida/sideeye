@@ -13,51 +13,61 @@ unison unison version 2.54.0 (ocaml 5.3.0); ld.so.preload=/usr/lib/aarch64-linux
 
 == point 2: the same apparatus, applied to the target only
   setup run rc=0
-  a/notes.txt mtime after the pre-state was built: 1787446275  (frozen instant = 1767225600)
+  a/notes.txt mtime after the pre-state was built: 1787447833  (frozen instant = 1767225600)
   A: rc=0 | Synchronization complete at 00:00:00  (1 item transf
   B: rc=0 | Synchronization complete at 00:00:00  (1 item transf
 
 == point 3: determinism under the target-only plumbing, four variants
-  control: b/notes.txt mtime A=1787446275 B=1787446278; differing entries=3
-      Binary files <r>/resA/unison/ar0f8379c904f9c440c21f9f6f8f58ac1a and <r>/resB/unison/ar0f8379c904f9c440c21f9f6f8f58ac1a differ
-      Binary files <r>/resA/unison/aree209d9f706d0086f71218f355424ea7 and <r>/resB/unison/aree209d9f706d0086f71218f355424ea7 differ
-      Binary files <r>/resA/unison/fp0f8379c904f9c440c21f9f6f8f58ac1a and <r>/resB/unison/fp0f8379c904f9c440c21f9f6f8f58ac1a differ
-  pin-getpid: b/notes.txt mtime A=1787446278 B=1787446280; differing entries=3
-      Binary files <r>/resA/unison/ar0e3dad15bb2b08aa69e2e6452fd62af2 and <r>/resB/unison/ar0e3dad15bb2b08aa69e2e6452fd62af2 differ
-      Binary files <r>/resA/unison/ar83f98af0a46784455f6207560fe15adb and <r>/resB/unison/ar83f98af0a46784455f6207560fe15adb differ
-      Binary files <r>/resA/unison/fp83f98af0a46784455f6207560fe15adb and <r>/resB/unison/fp83f98af0a46784455f6207560fe15adb differ
-  times: b/notes.txt mtime A=1787446280 B=1787446280; differing entries=3
-      Binary files <r>/resA/unison/ar447aeec43535a114265bb347c45ebaeb and <r>/resB/unison/ar447aeec43535a114265bb347c45ebaeb differ
-      Binary files <r>/resA/unison/ar8f4d49bcc38c024f6510112e4d00f84a and <r>/resB/unison/ar8f4d49bcc38c024f6510112e4d00f84a differ
-      Binary files <r>/resA/unison/fp8f4d49bcc38c024f6510112e4d00f84a and <r>/resB/unison/fp8f4d49bcc38c024f6510112e4d00f84a differ
-  both: b/notes.txt mtime A=1787446282 B=1787446282; differing entries=3
-      Binary files <r>/resA/unison/ar86e25e0cd63d14737736b9afd0f9caa9 and <r>/resB/unison/ar86e25e0cd63d14737736b9afd0f9caa9 differ
-      Binary files <r>/resA/unison/are0ced200a4131a97507daa4a0887e3ed and <r>/resB/unison/are0ced200a4131a97507daa4a0887e3ed differ
-      Binary files <r>/resA/unison/fpe0ced200a4131a97507daa4a0887e3ed and <r>/resB/unison/fpe0ced200a4131a97507daa4a0887e3ed differ
+  control: b/notes.txt mtime A=1787447834 B=1787447836; differing entries=3
+      Binary files <r>/resA/unison/ar43d2ebb7b3501ec28d091de0f3fa4f8d and <r>/resB/unison/ar43d2ebb7b3501ec28d091de0f3fa4f8d differ
+      Binary files <r>/resA/unison/arfce001dd30eef13304c07d567aee11a5 and <r>/resB/unison/arfce001dd30eef13304c07d567aee11a5 differ
+      Binary files <r>/resA/unison/fpfce001dd30eef13304c07d567aee11a5 and <r>/resB/unison/fpfce001dd30eef13304c07d567aee11a5 differ
+  pin-getpid: b/notes.txt mtime A=1787447836 B=1787447838; differing entries=3
+      Binary files <r>/resA/unison/ar5bae430a3f2bf7e7774181b1becd0ae1 and <r>/resB/unison/ar5bae430a3f2bf7e7774181b1becd0ae1 differ
+      Binary files <r>/resA/unison/arbf26907a3a5958d73bfba754abcc70e1 and <r>/resB/unison/arbf26907a3a5958d73bfba754abcc70e1 differ
+      Binary files <r>/resA/unison/fpbf26907a3a5958d73bfba754abcc70e1 and <r>/resB/unison/fpbf26907a3a5958d73bfba754abcc70e1 differ
+  times: b/notes.txt mtime A=1787447838 B=1787447838; differing entries=3
+      Binary files <r>/resA/unison/ar7f5ce98446d1fa66834b9d4a4f3490e7 and <r>/resB/unison/ar7f5ce98446d1fa66834b9d4a4f3490e7 differ
+      Binary files <r>/resA/unison/arefdb2284dede965dddcc391eb4ccc0b7 and <r>/resB/unison/arefdb2284dede965dddcc391eb4ccc0b7 differ
+      Binary files <r>/resA/unison/fpefdb2284dede965dddcc391eb4ccc0b7 and <r>/resB/unison/fpefdb2284dede965dddcc391eb4ccc0b7 differ
+  both: b/notes.txt mtime A=1787447840 B=1787447840; differing entries=3
+      Binary files <r>/resA/unison/ar0ecbf353e9a931a80eefee6b67db40d7 and <r>/resB/unison/ar0ecbf353e9a931a80eefee6b67db40d7 differ
+      Binary files <r>/resA/unison/ar5f847010d2c6393ed4c159115d8214ac and <r>/resB/unison/ar5f847010d2c6393ed4c159115d8214ac differ
+      Binary files <r>/resA/unison/fp5f847010d2c6393ed4c159115d8214ac and <r>/resB/unison/fp5f847010d2c6393ed4c159115d8214ac differ
 
 == point 4: what is left moving, measured where the runs actually happen
-  ar86e25e0cd63d14737736b9afd0f9caa9: 8 differing bytes of 1064
-  are0ced200a4131a97507daa4a0887e3ed: 8 differing bytes of 1064
-  fpe0ced200a4131a97507daa4a0887e3ed: 20 differing bytes of 141
+  ar0ecbf353e9a931a80eefee6b67db40d7: 6 differing bytes of 1064
+  ar5f847010d2c6393ed4c159115d8214ac: 6 differing bytes of 1064
+  fp5f847010d2c6393ed4c159115d8214ac: 18 differing bytes of 141
   inodes as each run saw them (the freeze forecast the DIRECTORY inode
   as the un-coverable residue, so this is the term to check):
     run A before: root=266726 a=266727 b=266730
-    run A after:  the propagated b/notes.txt has inode 266731, mtime 1787446284
+    run A after:  the propagated b/notes.txt has inode 266731, mtime 1787447842
     run B before: root=266726 a=266727 b=266730
-    run B after:  the propagated b/notes.txt has inode 266731, mtime 1787446284
+    run B after:  the propagated b/notes.txt has inode 266731, mtime 1787447842
 
 == reading, and what it does NOT say
-  Ruled out by measurement as the term that varies: the wall clock
-  (frozen), the pid (pinned), the propagated file's mtime (pinned by
-  -times and identical above), and the inodes - the directories AND
-  the propagated file come back with the same numbers on both runs.
-  freshDirStamp's inode term, which the freeze named as the
-  un-coverable residue, is therefore NOT what is moving: the freeze's
-  forecast was wrong about which term survives.
-  What does move is 4 to 8 bytes inside each archive and 19 in the
-  fingerprint cache, and this diagnosis does not attribute them. That
-  is stated rather than guessed: three separate hypotheses were tested
-  and each was eliminated, and a fourth would be a guess.
+  Hypotheses eliminated by measurement, one variant each (4):
+    - the wall clock, frozen 
+    - the pid, pinned 
+    - the propagated file's mtime, pinned by -times 
+    - the inodes of the directories and of the propagated file
+  Residual difference after all of them: ar (6 bytes) ar (6 bytes) fp (18 bytes) 
+
+  Two things this does NOT say.
+  1. It does not eliminate the propagated mtime FOR THE SHIPPED ARGV.
+     The frozen operation carries no -times, and the control variant
+     above shows its mtime differing between runs. The elimination
+     holds in the -times variants, and the point of measuring them is
+     narrow: even with the mtime pinned, the archive still differs, so
+     amending the frozen argv would not buy determinism. It is not a
+     claim that the shipped run has no mtime term.
+  2. It does not attribute the residue. freshDirStamp's inode term,
+     which the freeze named as the un-coverable residue, is measured
+     above and does not move, so the freeze's forecast was wrong about
+     which term survives. What does move is unattributed, and stays
+     recorded that way.
+
   The probe does not need the attribution. Two runs of one operation
   on one pre-state do not agree, so condition 5 fails and unison is a
   named wall of the nondeterministic-writer class, recorded at probe

@@ -2,10 +2,10 @@
 # synthetic wall-clock write through the same determinism predicate
 # as the targets, which must split. A harness that has never flagged
 # anything proves nothing about the probes it passed.
-# Captured by capture.sh on 2026-08-23T00:53:43Z.
+# Captured by capture.sh on 2026-08-23T01:14:49Z.
 
 $ docker run --rm -v <repo>:/repo:ro sideeye-cohort4 sh /repo/spike/cohort4/probes/run-positive-control.sh
-== positive control (synthetic wall-clock write), 2026-08-23T00:53:43Z
+== positive control (synthetic wall-clock write), 2026-08-23T01:14:49Z
 == run A
 reset: rootA is a fresh copy of the pre-state
 == run B (>=2s later)
@@ -14,9 +14,9 @@ ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
 == diff -r of the two state roots (the control expects a SPLIT):
 diff -r /tmp/probe-positive/rootA/stamp /tmp/probe-positive/rootB/stamp
 1c1
-< 1787446423143799625
+< 1787447689129211834
 ---
-> 1787446425147714876
+> 1787447691143543960
 FAIL 5-determinism: two runs >=2s apart byte-identical (diff rc=1)
 control ok: the determinism predicate split on a wall-clock write (the FAIL above is the control working; every other condition green)
 raw rc=0

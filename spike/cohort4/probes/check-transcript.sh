@@ -12,6 +12,10 @@
 # than its claimed set is the register's own row: a count of zero failures
 # says nothing until the size of the scan is asserted too.
 #
+# Scope, so a pass is read correctly: this compares verdict NAMES. A
+# truncation that removed a predicate while leaving its verdict call would
+# still pass here. It closes the shape the accident had, not the class.
+#
 # Usage:
 #   sh check-transcript.sh <target> <mode> <transcript-file>
 #   sh check-transcript.sh --selftest
@@ -23,10 +27,18 @@ set -u
 
 usage() { echo "usage: $0 <target> <mode> <transcript> | $0 --selftest" >&2; exit 2; }
 
-# The expected sets, per target and mode. These are the names the frozen
-# plans require to be judged; 6-closure is emitted by cohort 2's
-# closure_check, the rest by the probe script itself, and reading them off
-# the transcript covers both sources uniformly.
+# The expected sets, per target and mode.
+#
+# What these sets are NOT: the PROTOCOL's conditions 1 through 9. Condition
+# 7 is printed ambient evidence and has never been machine-judged, here or
+# in cohorts 2 and 3 (`grep -rn 'verdict "7' spike/` finds nothing), and
+# `seccomp-active` is an apparatus check rather than a gate condition. The
+# sets below are exactly the verdicts these scripts emit in each mode, so
+# what this guard proves is that none of them went missing - not that the
+# PROTOCOL's numbering was satisfied. Read "all judged" and not "9 of 9".
+#
+# 6-closure is emitted by cohort 2's closure_check, the rest by the probe
+# script itself; reading them off the transcript covers both uniformly.
 expected_for() { # target mode
     case "$1/$2" in
       himalaya/bare)
@@ -95,7 +107,7 @@ selftest() {
     # both unnecessary and blocked by the local guard).
     _ws=$(mktemp -d "${TMPDIR:-/tmp}/check-transcript-selftest-XXXXXX") \
         || { echo "BROKEN selftest: cannot create a work directory"; exit 2; }
-    trap 'rm -f "$_ws/complete.txt" "$_ws/missing.txt" "$_ws/renamed.txt" "$_ws/empty.txt"; rmdir "$_ws" 2>/dev/null' EXIT
+    trap 'rm -f "$_ws/complete.txt" "$_ws/missing.txt" "$_ws/renamed.txt" "$_ws/extra.txt" "$_ws/empty.txt"; rmdir "$_ws" 2>/dev/null' EXIT
     _fails=0
 
     # A complete synthetic transcript for unison/bare.
@@ -122,14 +134,29 @@ selftest() {
     check unison bare "$_ws/renamed.txt"; _rc=$?
     [ "$_rc" -eq 1 ] || { echo "SELFTEST FAIL: renamed-verdict transcript returned $_rc, wanted 1"; _fails=$((_fails+1)); }
 
-    # Red 3: the extractor's own control. A transcript with no verdict
+    # Red 3: a verdict the plan never asked for, with none missing. The
+    # renamed case exercises both halves of the set difference at once;
+    # this one isolates the extra half, which a rename can mask.
+    cp "$_ws/complete.txt" "$_ws/extra.txt"
+    echo "ok   10-invented: synthetic" >> "$_ws/extra.txt"
+    echo "-- selftest 4: an extra verdict alone must turn it red"
+    check unison bare "$_ws/extra.txt"; _rc=$?
+    [ "$_rc" -eq 1 ] || { echo "SELFTEST FAIL: extra-verdict transcript returned $_rc, wanted 1"; _fails=$((_fails+1)); }
+
+    # Red 4: a target/mode this guard has no set for must be BROKEN. A
+    # typo'd invocation must not read as "nothing was required".
+    echo "-- selftest 5: an unknown target/mode must be BROKEN (2)"
+    check unison sideways "$_ws/complete.txt"; _rc=$?
+    [ "$_rc" -eq 2 ] || { echo "SELFTEST FAIL: unknown mode returned $_rc, wanted 2"; _fails=$((_fails+1)); }
+
+    # Red 5: the extractor's own control. A transcript with no verdict
     # lines must be BROKEN, never "everything missing".
     echo "== nothing here is a verdict line" > "$_ws/empty.txt"
-    echo "-- selftest 4: a transcript with no verdicts must be BROKEN (2), not a set difference"
+    echo "-- selftest 6: a transcript with no verdicts must be BROKEN (2), not a set difference"
     check unison bare "$_ws/empty.txt"; _rc=$?
     [ "$_rc" -eq 2 ] || { echo "SELFTEST FAIL: verdict-less transcript returned $_rc, wanted 2"; _fails=$((_fails+1)); }
 
-    echo "== selftest failures: $_fails of 4"
+    echo "== selftest failures: $_fails of 6"
     [ "$_fails" -eq 0 ] || exit 1
     exit 0
 }

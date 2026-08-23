@@ -1,18 +1,18 @@
-49    execve("/usr/bin/env", ["env", "LD_PRELOAD=", "himalaya", "-c", "/tmp/probe-himalaya-bare/config-"..., "maildir", "messages", "copy", "1700000000.#0M0P1.probehost", "--maildir", ".", "--target", "Archive"], 0xffffe4e0ba70 /* 6 vars */) = 0
+49    execve("/usr/bin/env", ["env", "LD_PRELOAD=", "FAKETIME=", "himalaya", "-c", "/tmp/probe-himalaya-bare/config-"..., "maildir", "messages", "copy", "1700000000.#0M0P1.probehost", "--maildir", ".", "--target", "Archive"], 0xffffd21ab2a8 /* 6 vars */) = 0
 49    faccessat(AT_FDCWD</>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
 49    openat(AT_FDCWD</>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
 49    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
-49    execve("/usr/local/sbin/himalaya", ["himalaya", "-c", "/tmp/probe-himalaya-bare/config-"..., "maildir", "messages", "copy", "1700000000.#0M0P1.probehost", "--maildir", ".", "--target", "Archive"], 0xaaaaeb233400 /* 7 vars */) = -1 ENOENT (No such file or directory)
-49    execve("/usr/local/bin/himalaya", ["himalaya", "-c", "/tmp/probe-himalaya-bare/config-"..., "maildir", "messages", "copy", "1700000000.#0M0P1.probehost", "--maildir", ".", "--target", "Archive"], 0xaaaaeb233400 /* 7 vars */) = 0
+49    execve("/usr/local/sbin/himalaya", ["himalaya", "-c", "/tmp/probe-himalaya-bare/config-"..., "maildir", "messages", "copy", "1700000000.#0M0P1.probehost", "--maildir", ".", "--target", "Archive"], 0xaaaab21a4400 /* 8 vars */) = -1 ENOENT (No such file or directory)
+49    execve("/usr/local/bin/himalaya", ["himalaya", "-c", "/tmp/probe-himalaya-bare/config-"..., "maildir", "messages", "copy", "1700000000.#0M0P1.probehost", "--maildir", ".", "--target", "Archive"], 0xaaaab21a4400 /* 8 vars */) = 0
 49    faccessat(AT_FDCWD</>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
 49    openat(AT_FDCWD</>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
 49    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgcc_s.so.1>
 49    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
 49    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
 49    openat(AT_FDCWD</>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/49/maps>
-49    readlinkat(AT_FDCWD</>, "/tmp", 0xffffda753d90, 1023) = -1 EINVAL (Invalid argument)
-49    readlinkat(AT_FDCWD</>, "/tmp/probe-himalaya-bare", 0xffffda753d90, 1023) = -1 EINVAL (Invalid argument)
-49    readlinkat(AT_FDCWD</>, "/tmp/probe-himalaya-bare/config-S.toml", 0xffffda753d90, 1023) = -1 EINVAL (Invalid argument)
+49    readlinkat(AT_FDCWD</>, "/tmp", 0xffffdf17a7a0, 1023) = -1 EINVAL (Invalid argument)
+49    readlinkat(AT_FDCWD</>, "/tmp/probe-himalaya-bare", 0xffffdf17a7a0, 1023) = -1 EINVAL (Invalid argument)
+49    readlinkat(AT_FDCWD</>, "/tmp/probe-himalaya-bare/config-S.toml", 0xffffdf17a7a0, 1023) = -1 EINVAL (Invalid argument)
 49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/config-S.toml", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=80, ...}) = 0
 49    openat(AT_FDCWD</>, "/tmp/probe-himalaya-bare/config-S.toml", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-himalaya-bare/config-S.toml>
 49    statx(3</tmp/probe-himalaya-bare/config-S.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=80, ...}) = 0
@@ -24,12 +24,12 @@
 49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/Archive/cur", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
 49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/Archive/new", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
 49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/Archive/tmp", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFDIR|0755, stx_size=4096, ...}) = 0
-49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/./new/1700000000.#0M0P1.probehost", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffda748510) = -1 ENOENT (No such file or directory)
-49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/./tmp/1700000000.#0M0P1.probehost", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffda748510) = -1 ENOENT (No such file or directory)
+49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/./new/1700000000.#0M0P1.probehost", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffdf16ef20) = -1 ENOENT (No such file or directory)
+49    statx(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/./tmp/1700000000.#0M0P1.probehost", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffdf16ef20) = -1 ENOENT (No such file or directory)
 49    openat(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/./cur", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</tmp/probe-himalaya-bare/rootS/cur>
 49    openat(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/./cur/1700000000.#0M0P1.probehost:2,S", O_RDONLY|O_CLOEXEC) = 3</tmp/probe-himalaya-bare/rootS/cur/1700000000.#0M0P1.probehost:2,S>
 49    statx(3</tmp/probe-himalaya-bare/rootS/cur/1700000000.#0M0P1.probehost:2,S>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=307, ...}) = 0
-49    openat(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/Archive/cur/1787446379.#0M96150257P49.30d245b283fa:2,S", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0100644) = 4</tmp/probe-himalaya-bare/rootS/Archive/cur/1787446379.#0M96150257P49.30d245b283fa:2,S>
-49    statx(4</tmp/probe-himalaya-bare/rootS/Archive/cur/1787446379.#0M96150257P49.30d245b283fa:2,S>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+49    openat(AT_FDCWD</>, "/tmp/probe-himalaya-bare/rootS/Archive/cur/1787447698.#0M480455171P49.7bcb9f6f93a6:2,S", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0100644) = 4</tmp/probe-himalaya-bare/rootS/Archive/cur/1787447698.#0M480455171P49.7bcb9f6f93a6:2,S>
+49    statx(4</tmp/probe-himalaya-bare/rootS/Archive/cur/1787447698.#0M480455171P49.7bcb9f6f93a6:2,S>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
 49    write(1</dev/null<char 1:3>>, "Message(s) successfully copied\n", 31) = 31
 49    +++ exited with 0 +++

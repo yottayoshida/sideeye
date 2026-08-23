@@ -32,14 +32,18 @@ LIMIT=20
 echo "unison $(unison -version); ld.so.preload=$FT; runs bounded at ${LIMIT}s"
 echo ""
 
-# Ground truth is read with the apparatus OFF. The first cut of this file
-# read mtimes that way and then compared them against a target running
-# with the apparatus ON, which answered a question nobody asked.
+# Ground truth is the mtime ON DISK, read with the apparatus off. That is
+# not "the mtime the target sees": libfaketime fakes what some stat
+# callers are told (coreutils' stat is faked, python's os.stat is not),
+# and the mechanism that matters below is a `cp -a` running under the
+# apparatus, which reads a faked stat and writes the frozen instant as
+# the copy's REAL mtime. So the disk is the right thing to read here, and
+# the claim is about the disk.
 mt() { env -u FAKETIME python3 -c "import os,sys;print(int(os.stat(sys.argv[1]).st_mtime))" "$1"; }
 
 prep() { # dir under-apparatus(yes/no)
     W=$1
-    rm -rf "$W"; mkdir -p "$W/root/a" "$W/root/b" "$W/root/unison" "$W/home"
+    rm -rf "${W:?}"; mkdir -p "$W/root/a" "$W/root/b" "$W/root/unison" "$W/home"
     if [ "$2" = yes ]; then export FAKETIME="$FZ"; fi
     printf 'the original note, fixed bytes\n' > "$W/root/a/notes.txt"
     printf 'the original note, fixed bytes\n' > "$W/root/b/notes.txt"
@@ -56,7 +60,7 @@ prep() { # dir under-apparatus(yes/no)
 runop() { # dir tag extra-args preload under-apparatus
     W=$1
     if [ "$5" = yes ]; then export FAKETIME="$FZ"; fi
-    rm -rf "$W/root" "$W/home"; cp -a "$W/pristine" "$W/root"; cp -a "$W/phome" "$W/home"
+    rm -rf "${W:?}/root" "${W:?}/home"; cp -a "$W/pristine" "$W/root"; cp -a "$W/phome" "$W/home"
     unset FAKETIME
     timeout "$LIMIT" env FAKETIME="$FZ" LD_PRELOAD="$4" sh -c "cd $W/root && UNISON=$W/root/unison HOME=$W/home unison ./a ./b -batch -ignoreinodenumbers=true $3" > "$W/$2.out" 2>&1
     rc=$?
@@ -101,16 +105,31 @@ for v in "control::" "pin-getpid::/tmp/pg.so" "times:-times=true:" "both:-times=
 done
 echo ""
 echo "== point 4: what is left moving, measured where the runs actually happen"
-W=/tmp/vboth
-for f in $(cd "$W/resA/unison" && ls ar* fp* 2>/dev/null); do
-    cmp -s "$W/resA/unison/$f" "$W/resB/unison/$f" && continue
-    echo "  $f: $(cmp -l "$W/resA/unison/$f" "$W/resB/unison/$f" | wc -l | tr -d ' ') differing bytes of $(stat -c %s "$W/resA/unison/$f")"
+# A name of its own: prep() assigns $W, so anything below that calls prep
+# and then reads $W is reading the wrong directory. An earlier revision
+# did exactly that and printed an EMPTY residual line without complaint,
+# which is the failure this file exists to catch in others.
+VB=/tmp/vboth
+resid=""
+for f in $(cd "$VB/resA/unison" && ls ar* fp* 2>/dev/null); do
+    cmp -s "$VB/resA/unison/$f" "$VB/resB/unison/$f" && continue
+    resid="$resid$(echo "$f" | cut -c1-2) ($(cmp -l "$VB/resA/unison/$f" "$VB/resB/unison/$f" | wc -l | tr -d ' ') bytes) "
+done
+if [ -z "$resid" ]; then
+    echo "  BROKEN: no residual difference could be read from $VB - either the"
+    echo "  variant did not run or this measurement is looking in the wrong"
+    echo "  place. Nothing below should be believed."
+    exit 2
+fi
+for f in $(cd "$VB/resA/unison" && ls ar* fp* 2>/dev/null); do
+    cmp -s "$VB/resA/unison/$f" "$VB/resB/unison/$f" && continue
+    echo "  $f: $(cmp -l "$VB/resA/unison/$f" "$VB/resB/unison/$f" | wc -l | tr -d ' ') differing bytes of $(stat -c %s "$VB/resA/unison/$f")"
 done
 echo "  inodes as each run saw them (the freeze forecast the DIRECTORY inode"
 echo "  as the un-coverable residue, so this is the term to check):"
 prep /tmp/p4 no > /dev/null 2>&1
 for r in A B; do
-    rm -rf /tmp/p4/root /tmp/p4/home
+    rm -rf "${W:?}/root" "${W:?}/home"
     cp -a /tmp/p4/pristine /tmp/p4/root; cp -a /tmp/p4/phome /tmp/p4/home
     echo "    run $r before: root=$(stat -c %i /tmp/p4/root) a=$(stat -c %i /tmp/p4/root/a) b=$(stat -c %i /tmp/p4/root/b)"
     timeout "$LIMIT" env FAKETIME="$FZ" LD_PRELOAD=/tmp/pg.so sh -c "cd /tmp/p4/root && UNISON=/tmp/p4/root/unison HOME=/tmp/p4/home unison ./a ./b -batch -ignoreinodenumbers=true -times=true" > /dev/null 2>&1
@@ -119,17 +138,30 @@ for r in A B; do
 done
 echo ""
 echo "== reading, and what it does NOT say"
-echo "  Ruled out by measurement as the term that varies: the wall clock"
-echo "  (frozen), the pid (pinned), the propagated file's mtime (pinned by"
-echo "  -times and identical above), and the inodes - the directories AND"
-echo "  the propagated file come back with the same numbers on both runs."
-echo "  freshDirStamp's inode term, which the freeze named as the"
-echo "  un-coverable residue, is therefore NOT what is moving: the freeze's"
-echo "  forecast was wrong about which term survives."
-echo "  What does move is 4 to 8 bytes inside each archive and 19 in the"
-echo "  fingerprint cache, and this diagnosis does not attribute them. That"
-echo "  is stated rather than guessed: three separate hypotheses were tested"
-echo "  and each was eliminated, and a fourth would be a guess."
+# Generated from the numbers measured above rather than typed beside
+# them: an earlier revision of this file hard-coded both the byte counts
+# and the count of eliminated hypotheses, and each drifted from its own
+# output within one run.
+elim="the wall clock, frozen | the pid, pinned | the propagated file's mtime, pinned by -times | the inodes of the directories and of the propagated file"
+n_elim=$(printf '%s' "$elim" | awk -F'|' '{print NF}')
+echo "  Hypotheses eliminated by measurement, one variant each ($n_elim):"
+printf '%s\n' "$elim" | tr '|' '\n' | sed 's/^ */    - /'
+echo "  Residual difference after all of them: $resid"
+echo ""
+echo "  Two things this does NOT say."
+echo "  1. It does not eliminate the propagated mtime FOR THE SHIPPED ARGV."
+echo "     The frozen operation carries no -times, and the control variant"
+echo "     above shows its mtime differing between runs. The elimination"
+echo "     holds in the -times variants, and the point of measuring them is"
+echo "     narrow: even with the mtime pinned, the archive still differs, so"
+echo "     amending the frozen argv would not buy determinism. It is not a"
+echo "     claim that the shipped run has no mtime term."
+echo "  2. It does not attribute the residue. freshDirStamp's inode term,"
+echo "     which the freeze named as the un-coverable residue, is measured"
+echo "     above and does not move, so the freeze's forecast was wrong about"
+echo "     which term survives. What does move is unattributed, and stays"
+echo "     recorded that way."
+echo ""
 echo "  The probe does not need the attribution. Two runs of one operation"
 echo "  on one pre-state do not agree, so condition 5 fails and unison is a"
 echo "  named wall of the nondeterministic-writer class, recorded at probe"

@@ -10,9 +10,9 @@ provenance gate is untouched. The plans these runs execute were frozen in
 | Drills re-run under this image | 0 failures in both cohorts' sets | `drills-under-image.txt` |
 | Positive control | split, as required | `positive-control.txt` |
 | himalaya, bare (falsification) | both forecasts fired | `himalaya-bare.txt` |
-| **himalaya, apparatus** | **9 of 9 conditions pass** | `himalaya.txt` |
+| **himalaya, apparatus** | **every judged condition passes** | `himalaya.txt` |
 | unison, bare (falsification) | both forecasts fired | `unison-bare.txt` |
-| **unison, apparatus** | **8 of 9; determinism fails: named wall** | `unison.txt` |
+| **unison, apparatus** | **determinism fails, the rest pass: named wall** | `unison.txt` |
 
 Every transcript ends with a verdict manifest (`check-transcript.sh`),
 which compares the verdict names that were emitted against the names the
@@ -25,14 +25,21 @@ bought that check is in the BUILDLOG.
 The frozen operation is `maildir messages copy`, the one io-maildir arm
 that fills a message at its final path rather than staging it. Under the
 declared apparatus (libfaketime and `pin-getpid.so` on the target
-invocations, the container under `seccomp-enosys.json`) all nine
-conditions pass:
+invocations, the container under `seccomp-enosys.json`) every condition
+the plan has a verdict for passes. What "every" covers is worth stating,
+because the count is not the PROTOCOL's 1-to-9: condition 7 is printed
+ambient evidence and has never been machine-judged in any cohort, and the
+apparatus check `seccomp-active` is judged but is not a gate condition.
+The manifest at the end of each transcript names the exact set.
 
 - Two runs two seconds apart leave **byte-identical** state roots. The
   minted entry name is `1767225600.#0M0P4242.<host>:2,S` in both, which is
   the apparatus visible in the artifact: frozen clock, pinned pid.
 - **Condition 8 passes**: every in-root mutation the kernel performed also
-  passed through a function the interposer sees.
+  passed through a function the interposer sees. Conditions 8 and 9 run
+  without `pin-getpid` (preflight owns `LD_PRELOAD` for its own logger,
+  and an env assignment would replace it rather than add to it), which
+  each transcript now records at the point it happens.
 - **Condition 9 counts 2 kill points** (one `open`, one `write`) inside
   the state root. Not the papis shape.
 - The copy runs on the libc read/write path: the dedicated strace shows
@@ -47,7 +54,7 @@ pid fields visibly differing), and the copy **succeeds** through
 
 ## unison: a named wall, bought for one transcript
 
-Eight conditions pass, including the two the target was most likely to
+Every condition but determinism passes, including the two the target was most likely to
 fail. Condition 8 is clean: with the seccomp profile landing the copy
 stub on its read/write fallback, **every** in-root mutation is
 interposable (link 4/4, open 21/21, rename 3/3, unlink 8/8, write 26/26,
@@ -58,7 +65,9 @@ do: replicas have not changed since last sync."
 
 **Condition 5 fails.** Two runs of the frozen operation, from the same
 restored pre-state, do not leave byte-identical roots: two archive files
-and the fingerprint cache differ, by 4 to 8 and 19 bytes. That is the
+and the fingerprint cache differ, by a handful of bytes each; the exact
+counts are printed by the diagnosis and move a little between its runs,
+so they are read from the transcript rather than quoted here. That is the
 nondeterministic-writer class, recorded at probe time, and it costs no
 define, which is the entire point of running probes before defines.
 
@@ -73,17 +82,23 @@ the frozen plan on two points rather than confirming it:
    one second and call it changed), and libfaketime then scaled that
    one-second sleep by the frozen speed. strace caught it as
    `clock_nanosleep(CLOCK_REALTIME, {tv_sec=9223372036})`: a wait that
-   cannot end. Applied to the target only, the same apparatus is harmless.
+   cannot end. Applied to the target only, the same apparatus lets both
+   runs complete; that it leaves the target's behaviour otherwise
+   untouched is not something these runs measured, and is not claimed.
    The apparatus was breaking the measurement, not the target.
 2. **The residue is not the term the freeze forecast.** The freeze named
    the directory inode inside `freshDirStamp` as the un-coverable one.
    Measured, the directory inodes, and the propagated file's inode, come
-   back identical on both runs, as does its mtime once `-times=true` is
-   added. Clock, pid, mtime and inode are each eliminated by a separate
-   measurement, and the archive still differs. **The residue is
-   unattributed, and is recorded as unattributed.** Four hypotheses were
-   tested; a fifth would be a guess, and the probe's verdict does not
-   depend on it.
+   back identical on both runs. Four hypotheses are eliminated one variant
+   at a time (clock, pid, propagated mtime, inodes) and the archive still
+   differs, so **the residue is recorded as unattributed** rather than
+   assigned to the term the forecast expected.
+   One qualifier the diagnosis states and this summary must not drop: the
+   mtime elimination holds **in the `-times` variants, not in the shipped
+   argv**, which carries no `-times` and whose propagated mtime does
+   differ between runs. The narrow thing those variants buy is the answer
+   to "would amending the argv fix determinism": no, the archive still
+   differs with the mtime pinned.
 
 `-times=true` appears in the diagnosis only to answer the question an
 owner would otherwise have to guess at: whether amending the frozen argv

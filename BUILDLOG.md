@@ -20,7 +20,7 @@ under seccomp-enosys.json, where the accepted verdict lives). unison runs
 the same two modes with its own argv. Apparatus plumbing corrections, if
 any, land in the transcript per the freeze's own rule.
 
-**himalaya passed nine of nine, and the bare mode earned its keep.**
+**himalaya passed every judged condition, and the bare mode earned its keep.**
 Without apparatus the two runs split on the minted entry name and the
 copy *succeeded* through `copy_file_range` — the shim-invisible path — so
 the seccomp profile was justified by measurement before it was used once.
@@ -48,13 +48,15 @@ the target invocations only is the whole fix, and it is recorded as a
 plumbing correction inside the probe rather than quietly applied.
 
 Then the wall itself. Two runs of the frozen operation on one restored
-pre-state leave archives differing by 4 to 8 bytes. The freeze forecast
+pre-state leave archives differing by a handful of bytes, the counts printed by
+the diagnosis rather than quoted from memory. The freeze forecast
 the directory inode inside `freshDirStamp` as the un-coverable residue;
-measurement eliminated it — the directory inodes, the propagated file's
-inode and (with `-times=true`) its mtime all come back identical, and the
-archive still differs. **The residue is recorded as unattributed**, with
-the four eliminated hypotheses named, because a fifth would be a guess
-and the verdict does not depend on it. `-times=true` was measured purely
+measurement eliminated it: the directory inodes and the propagated file's
+inode come back identical, and so does its mtime once `-times=true` is
+added — a qualifier worth keeping, since the shipped argv carries no
+`-times` and its propagated mtime does differ. **The residue is recorded
+as unattributed**, with the four eliminated hypotheses named, because a
+fifth would be a guess and the verdict does not depend on it. `-times=true` was measured purely
 to answer whether amending the frozen argv would buy determinism: it does
 not, so no amendment is proposed. Cost: one transcript, zero defines.
 Condition 8 meanwhile passed cleanly for unison too — with the profile

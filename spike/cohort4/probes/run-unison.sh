@@ -44,7 +44,7 @@ WS=/tmp/probe-unison-$MODE
 OUT=${PROBE_OUT:-$WS}
 PREFLIGHT_SH="$(dirname "$0")/../preflight.sh"
 PINGETPID_SRC="$(dirname "$0")/../pin-getpid.c"
-rm -rf "$WS"; mkdir -p "$WS"
+rm -rf "${WS:?}"; mkdir -p "$WS"
 
 # The frozen operation argv (PROTOCOL: one argv, carried identically by
 # the setup run and both probe runs). $PGP delivers pin-getpid.so to the
@@ -96,7 +96,7 @@ find "$WS/pristine/unison" -type f | sed "s|$WS|WS|" | sort
 note "condition 7, ambient: HOME=<WS>/home, restored from pristine-home before every run; UNISON is set explicitly to <WS>/root/unison inside the operation (in-root, PROTOCOL's borg-lesson placement). Restores are printed."
 
 restore() {
-    rm -rf "$WS/root" "$WS/home"
+    rm -rf "${WS:?}/root" "${WS:?}/home"
     cp -a "$WS/pristine" "$WS/root"
     cp -a "$WS/pristine-home" "$WS/home"
     echo "restore: root and home reset to pristine (canonical path unchanged)"
@@ -155,11 +155,10 @@ verdict "4-round-trip" $ok "re-running the frozen argv on the synced result: rc=
 echo "$rtout" | tail -3
 
 note "diff -r of the two results (in-place, canonical path):"
-before_det=$FAILS
 diff -r "$WS/resultA" "$WS/resultB"; drc=$?
 if [ "$MODE" = bare ]; then
     [ "$drc" -eq 1 ] && ok=yes || ok=no
-    verdict "5-determinism-falsification" $ok "bare runs split as forecast (diff rc=$drc; freshDirStamp's clock/pid/inode terms are live)"
+    verdict "5-determinism-falsification" $ok "bare runs split as forecast (diff rc=$drc). Which term does the splitting is NOT asserted here: the diff above is the measurement, and unison-clock-diagnosis.txt is where the terms are separated one at a time"
 else
     [ "$drc" -eq 0 ] && ok=yes || ok=no
     verdict "5-determinism" $ok "two runs >=2s apart leave byte-identical state roots (diff rc=$drc). If this is FAIL: the residue outlives every declared apparatus and is recorded unattributed (unison-clock-diagnosis.txt eliminates clock, pid, propagated mtime and inode separately); a nondeterministic-writer wall, recorded at probe time, costing no define"
@@ -207,8 +206,8 @@ if [ "$MODE" = bare ]; then
     verdict "8-visibility-falsification" $ok "the bare copy reaches a kernel-side mechanism the shim cannot see (FICLONE=$fic, successful cfr/sendfile=$kok): the justification for the profile. If FAIL: the stub fell straight to read/write on this filesystem and the apparatus is NOT justified; that goes to the owner before any apparatus run is accepted"
     grep -E '^\S+ +(ioctl\(.*(FICLONE|0x40049409)|copy_file_range\(|sendfile\()' "$WS/kcopy.log" | head -4
 else
-    [ "$kok" -eq 0 ] && ok=yes || ok=no
-    verdict "seccomp-active" $ok "no SUCCESSFUL kernel-side copy (successful cfr/sendfile: $kok of $kall attempts; FICLONE attempts=$fic answered ENOTTY by the arg-filtered rule): the stub fell back to the read/write loop"
+    [ "$kok" -eq 0 ] && [ "$kall" -ge 1 ] && ok=yes || ok=no
+    verdict "seccomp-active" $ok "no SUCCESSFUL kernel-side copy, and the target did attempt one (successful cfr/sendfile: $kok of $kall attempts; zero attempts would mean the profile was never exercised, so it fails too; FICLONE attempts=$fic answered ENOTTY by the arg-filtered rule): the stub fell back to the read/write loop"
     grep -E '^\S+ +(ioctl\(.*(FICLONE|0x40049409)|copy_file_range\(|sendfile\()' "$WS/kcopy.log" | head -4
 fi
 
@@ -222,6 +221,7 @@ if [ "$MODE" = apparatus ]; then
     # `env` process, and unison ran with no logger at all. The pid pin
     # changes generated NAMES, never which syscalls are interposable, so
     # dropping it here costs the measurement nothing.
+    note "conditions 8 and 9 run WITHOUT pin-getpid, recorded here rather than only in a comment: preflight installs its own visibility logger through LD_PRELOAD, and an env assignment on the target replaces that variable rather than adding to it. That happened once here and produced a wall whose own counts disagreed (interposed=9 against unmatched=21). The clock stays on. Pinning the pid changes generated NAMES, never which syscalls are interposable."
     note "condition 8, shim visibility agrees with the kernel (preflight, restored pre-state)"
     restore
     ( cd "$WS/root" && PROBE_OUT="$WS" sh "$PREFLIGHT_SH" visibility "$WS/root" -- \

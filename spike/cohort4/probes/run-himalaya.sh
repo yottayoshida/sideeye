@@ -33,20 +33,21 @@ WS=/tmp/probe-himalaya-$MODE
 OUT=${PROBE_OUT:-$WS}
 PREFLIGHT_SH="$(dirname "$0")/../preflight.sh"
 PINGETPID_SRC="$(dirname "$0")/../pin-getpid.c"
-rm -rf "$WS"; mkdir -p "$WS"
+rm -rf "${WS:?}"; mkdir -p "$WS"
 
 MSGID='1700000000.#0M0P1.probehost'
 
 PGP=""
+FTV=""
 if [ "$MODE" = apparatus ]; then
     FTLIB=$(find /usr/lib -name "libfaketime.so.1" | head -1)
     [ -n "$FTLIB" ] || { echo "SETUP: libfaketime not in the image"; exit 2; }
     cc -shared -fPIC -o "$WS/pin-getpid.so" "$PINGETPID_SRC" \
         || { echo "SETUP: pin-getpid.so did not compile"; exit 2; }
     echo "$FTLIB" > /etc/ld.so.preload
-    export FAKETIME="@2026-01-01 00:00:00 x0"
     PGP="$WS/pin-getpid.so"
-    note "apparatus (PROTOCOL, himalaya plan): ld.so.preload=$FTLIB; FAKETIME='$FAKETIME' (realtime only; monotonic real); pin-getpid.so via LD_PRELOAD on the TARGET invocations only. PLUMBING CORRECTION, recorded per the freeze's own rule: the plan said pin-getpid rides /etc/ld.so.preload like faketime, but that file preloads EVERY process, including strace, whose child management breaks when its own getpid answers 4242 (measured in this probe session: 'strace: Unexpected wait status 0', empty log; faketime-only preload left strace healthy, pin-getpid-only broke it). The mechanism is unchanged: the libc getpid symbol is still interposed in the target, and only the delivery moves to the env var. CONSEQUENCE FOR THE DEFINE, recorded now: any strace-based observation layer will hit the same breakage if pin-getpid is global; the engine run needs the same target-only delivery or an engine-side pid pin."
+    FTV="@2026-01-01 00:00:00 x0"
+    note "apparatus (PROTOCOL, himalaya plan): ld.so.preload=$FTLIB; FAKETIME='$FTV' and pin-getpid.so on the TARGET invocations only, never on the harness. PLUMBING CORRECTION, recorded per the freeze's own rule: the plan said the apparatus rides /etc/ld.so.preload, but that file and an exported FAKETIME reach EVERY process the harness runs. pin-getpid there breaks strace, whose child management fails when its own getpid answers 4242 (measured in this probe session: 'strace: Unexpected wait status 0', empty log; faketime-only preload left strace healthy, pin-getpid-only broke it). The mechanism is unchanged: the libc getpid symbol is still interposed in the target, and only the delivery moves to the env var. A frozen clock there is worse: cp -a reads a faked stat and writes the frozen instant as the copy's REAL mtime, which is what hung the unison probe (unison-clock-diagnosis.txt). Both targets therefore carry the apparatus on the target invocations only. CONSEQUENCE FOR THE DEFINE, recorded now: any strace-based observation layer hits the same breakage if pin-getpid is global; the engine run needs the same target-only delivery or an engine-side pid pin."
 fi
 
 note "himalaya probe ($MODE), $(himalaya --version | head -1), $(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -74,14 +75,15 @@ run_once() { # suffix -> runs the frozen operation against a fresh pre-state cop
     printf '[accounts.probe]\ndefault = true\nmaildir.root = "%s"\n' "$WS/root$sfx" \
         > "$WS/config-$sfx.toml"
     echo "reset: root$sfx is a fresh copy of the pre-state; home-$sfx and config-$sfx.toml are fresh"
-    HOME="$WS/home-$sfx" XDG_CONFIG_HOME="$WS/home-$sfx/.config" LD_PRELOAD="$PGP" \
+    HOME="$WS/home-$sfx" XDG_CONFIG_HOME="$WS/home-$sfx/.config" \
+        LD_PRELOAD="$PGP" FAKETIME="$FTV" \
         himalaya -c "$WS/config-$sfx.toml" maildir messages copy "$MSGID" \
         --maildir . --target Archive 2>&1
 }
 
 note "run A"; run_once A; rcA=$?
-env -u FAKETIME sleep 2
-note "run B (>=2s later; env -u FAKETIME sleep, because under x0 a frozen-scaled sleep never returns)"; run_once B; rcB=$?
+sleep 2
+note "run B (>=2s later)"; run_once B; rcB=$?
 
 [ "$rcA" -eq 0 ] && [ "$rcB" -eq 0 ] && ok=yes || ok=no
 verdict "1-exit-codes" $ok "run A rc=$rcA, run B rc=$rcB (success convention: 0)"
@@ -111,7 +113,6 @@ HOME="$WS/home-A" XDG_CONFIG_HOME="$WS/home-A/.config" \
     himalaya -c "$WS/config-A.toml" envelope list -m Archive 2>&1 | head -5
 
 note "diff -r of the two state roots:"
-before_det=$FAILS
 diff -r "$WS/rootA" "$WS/rootB"; drc=$?
 if [ "$MODE" = bare ]; then
     # The falsification the PROTOCOL requires before the apparatus is
@@ -128,7 +129,7 @@ cp -a "$WS/pre/root" "$WS/rootS"
 mkdir -p "$WS/home-S/.config"
 printf '[accounts.probe]\ndefault = true\nmaildir.root = "%s"\n' "$WS/rootS" > "$WS/config-S.toml"
 HOME="$WS/home-S" XDG_CONFIG_HOME="$WS/home-S/.config" \
-    run_strace "$WS/strace.log" env "LD_PRELOAD=$PGP" \
+    run_strace "$WS/strace.log" env "LD_PRELOAD=$PGP" "FAKETIME=$FTV" \
     himalaya -c "$WS/config-S.toml" maildir messages copy "$MSGID" \
     --maildir . --target Archive > /dev/null 2>&1
 echo "strace'd run rc=$?"
@@ -162,7 +163,7 @@ mkdir -p "$WS/home-K/.config"
 printf '[accounts.probe]\ndefault = true\nmaildir.root = "%s"\n' "$WS/rootK" > "$WS/config-K.toml"
 HOME="$WS/home-K" XDG_CONFIG_HOME="$WS/home-K/.config" \
     strace -f -o "$WS/kcopy.log" -e trace=copy_file_range,sendfile,sendfile64 \
-    env "LD_PRELOAD=$PGP" \
+    env "LD_PRELOAD=$PGP" "FAKETIME=$FTV" \
     himalaya -c "$WS/config-K.toml" maildir messages copy "$MSGID" --maildir . --target Archive \
     > /dev/null 2>&1
 echo "copy-mechanism run rc=$?"
@@ -174,8 +175,8 @@ if [ "$MODE" = bare ]; then
     verdict "8-visibility-falsification" $ok "the bare copy SUCCEEDS through the kernel-side path the shim cannot see (successful copy_file_range/sendfile lines: $kok of $kall attempts): the justification for seccomp-enosys.json"
     grep -E '^\S+ +(copy_file_range|sendfile)\(' "$WS/kcopy.log" | head -3
 else
-    [ "$kok" -eq 0 ] && ok=yes || ok=no
-    verdict "seccomp-active" $ok "no SUCCESSFUL copy_file_range/sendfile in the dedicated pass (successful: $kok of $kall attempts; ENOSYS-failed attempts are the profile working): the copy fell back to the libc read/write loop"
+    [ "$kok" -eq 0 ] && [ "$kall" -ge 1 ] && ok=yes || ok=no
+    verdict "seccomp-active" $ok "no SUCCESSFUL copy_file_range/sendfile in the dedicated pass, and the target did attempt it (successful: $kok of $kall attempts; zero attempts would mean the profile was never exercised, so it fails too; ENOSYS-failed attempts are the profile working): the copy fell back to the libc read/write loop"
     grep -E '^\S+ +(copy_file_range|sendfile)\(' "$WS/kcopy.log" | head -3
 fi
 
@@ -187,6 +188,7 @@ note "thread creations (successful CLONE_THREAD):"
 thread_counts "$WS/strace.log"
 
 if [ "$MODE" = apparatus ]; then
+    note "conditions 8 and 9 run WITHOUT pin-getpid, recorded here rather than only in a comment: preflight installs its own visibility logger through LD_PRELOAD, and an env assignment on the target replaces that variable rather than adding to it, which would leave the run with no logger at all (measured once on unison, where it produced a wall whose own counts disagreed). The clock stays on. Pinning the pid changes generated NAMES, never which syscalls are interposable, so the two gates measure the same thing either way."
     note "condition 8, shim visibility agrees with the kernel (preflight, fresh copy)"
     cp -a "$WS/pre/root" "$WS/rootV"
     mkdir -p "$WS/home-V/.config"

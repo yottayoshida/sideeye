@@ -1,10 +1,10 @@
 # Both cohorts' predicate drills, re-run under the frozen cohort-4
 # image. PROTOCOL.md's harness-continuity requirement: an image change
 # is a harness change, so no probe verdict counts before this run.
-# Captured by capture.sh on 2026-08-23T00:53:42Z.
+# Captured by capture.sh on 2026-08-23T01:14:46Z.
 
 $ docker run --rm -v <repo>:/repo:ro sideeye-cohort4 sh /repo/spike/cohort2/probes/run-drills.sh
-== probe-predicate drills — 2026-08-23T00:53:42Z
+== probe-predicate drills — 2026-08-23T01:14:48Z
 FAIL 1-exit-codes: drill input: run A rc=1 (a failing operation), run B rc=0
 drill ok   1-exit-codes went red as required
 FAIL 2-non-noop: drill input: post-state identical to pre-state

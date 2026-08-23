@@ -1,36 +1,36 @@
 # himalaya probe, bare mode. Captured by spike/cohort4/probes/capture.sh
-# on 2026-08-23T00:52:56Z, inside the frozen cohort-4 image.
+# on 2026-08-23T01:14:56Z, inside the frozen cohort-4 image.
 # BARE is the falsification the frozen plan requires BEFORE the
 # apparatus is used: no faketime, no pin-getpid, no seccomp. The
 # determinism split and the kernel-side copy measured here are what
 # justify the apparatus. This mode is not a probe verdict.
 
 $ docker run --rm  -v <repo>:/repo -e PROBE_OUT=/repo/spike/cohort4/probes/raw sideeye-cohort4 sh /repo/spike/cohort4/probes/run-himalaya.sh bare
-== himalaya probe (bare), himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp, 2026-08-23T00:52:57Z
+== himalaya probe (bare), himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp, 2026-08-23T01:14:56Z
 == condition 7, ambient: HOME and XDG_CONFIG_HOME are created FRESH PER RUN under <WS>/home-<run>; the account config is written per run (its maildir.root names that run's root copy) and passed explicitly with -c either way. Shown non-empty-or-empty after the runs.
 == run A
 reset: rootA is a fresh copy of the pre-state; home-A and config-A.toml are fresh
 Message(s) successfully copied
-== run B (>=2s later; env -u FAKETIME sleep, because under x0 a frozen-scaled sleep never returns)
+== run B (>=2s later)
 reset: rootB is a fresh copy of the pre-state; home-B and config-B.toml are fresh
 Message(s) successfully copied
 ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
 ok   2-non-noop: the state root after run A differs from the pre-state
 ok   3-artifact-count: Archive/cur holds exactly one file (got 1); new/ and tmp/ everywhere hold zero (got 0)
 the minted copy's filename in run A:
-1787446377.#0M42418756P20.30d245b283fa:2,S
+1787447696.#0M450462295P20.7bcb9f6f93a6:2,S
 and in run B:
-1787446379.#0M62553924P24.30d245b283fa:2,S
+1787447698.#0M464440046P24.7bcb9f6f93a6:2,S
 ok   4-round-trip: copy body identical to the source; flag suffix preserved; source file untouched
 tool read-back of the target folder (envelope list -m Archive, informational):
 
-┌────────────────────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐
-│ ID                                     ┆ FLAGS ┆ SUBJECT                       ┆ FROM         ┆ DATE                   ┆  SIZE │
-╞════════════════════════════════════════╪═══════╪═══════════════════════════════╪══════════════╪════════════════════════╪═══════╡
-│ 1787446377.#0M42418756P20.30d245b283fa ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
+┌─────────────────────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐
+│ ID                                      ┆ FLAGS ┆ SUBJECT                       ┆ FROM         ┆ DATE                   ┆  SIZE │
+╞═════════════════════════════════════════╪═══════╪═══════════════════════════════╪══════════════╪════════════════════════╪═══════╡
+│ 1787447696.#0M450462295P20.7bcb9f6f93a6 ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
 == diff -r of the two state roots:
-Only in /tmp/probe-himalaya-bare/rootA/Archive/cur: 1787446377.#0M42418756P20.30d245b283fa:2,S
-Only in /tmp/probe-himalaya-bare/rootB/Archive/cur: 1787446379.#0M62553924P24.30d245b283fa:2,S
+Only in /tmp/probe-himalaya-bare/rootA/Archive/cur: 1787447696.#0M450462295P20.7bcb9f6f93a6:2,S
+Only in /tmp/probe-himalaya-bare/rootB/Archive/cur: 1787447698.#0M464440046P24.7bcb9f6f93a6:2,S
 ok   5-determinism-falsification: bare runs split as forecast (diff rc=1; the minted filenames above show the differing clock and pid fields)
 == strace pass (fresh copy; raw log kept as himalaya-bare.strace)
 strace'd run rc=0
@@ -41,7 +41,7 @@ ok   8-visibility-falsification: the bare copy SUCCEEDS through the kernel-side 
 61    copy_file_range(3, NULL, 4, NULL, 1073741824, 0) = 307
 61    copy_file_range(3, NULL, 4, NULL, 1073741824, 0) = 0
 == mutating paths (successful only, deduped):
-WS/rootS/Archive/cur/1787446379.#0M96150257P49.30d245b283fa:2,S
+WS/rootS/Archive/cur/1787447698.#0M480455171P49.7bcb9f6f93a6:2,S
 unattributed count: 0
 ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
 == thread creations (successful CLONE_THREAD):
