@@ -6,9 +6,12 @@
 //! from the operating system is plain POSIX: walk a directory, read and write a file,
 //! fork, exec, wait. That surface has been stable for decades.
 //!
-//! The shim reached the same conclusion first, for a different reason (it cannot use a
-//! standard library at all inside somebody else's process). Both halves ending up on
-//! the same small set of calls is a convenience, not a coincidence.
+//! The shim reached the same conclusion first, for a harsher reason: inside somebody
+//! else's process there is no heap, no standard-library I/O, and nothing the target
+//! has not already initialised (shim/src/common.zig states the rules). It still uses
+//! `std` — the allocation-free slices: `std.mem` and `std.fmt` into fixed buffers, and
+//! `std.c`/`std.os.linux` as ABI tables. Both halves ending up on the same small set
+//! of calls is a convenience, not a coincidence.
 //!
 //! Types come from `std.c`, which is a description of the platform ABI rather than an
 //! abstraction over it, so it does not carry the same churn.

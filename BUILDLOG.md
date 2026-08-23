@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — posix.zig said the shim cannot use std at all; the shim uses std
+
+Found by a peer session quoting the comment as a primary source for an
+outward-facing draft, where the owner caught it disagreeing with the
+implementation. `src/posix.zig`'s header said the shim "cannot use a
+standard library at all inside somebody else's process". Measured, with
+test blocks separated from runtime code: the shim's runtime paths use
+`std.mem` (span, eql, sliceTo, startsWith, endsWith), `std.fmt`
+(bufPrint, bufPrintZ), `std.math.maxInt`, `std.c` (Stat, fstat, _errno)
+and `std.os.linux` (statx, errno). The peer's census also listed
+`std.c.fopen`/`fclose`; those are test-only, which is why the
+runtime/test split was worth running before rewording.
+
+What the shim actually forbids was already written correctly one
+directory over — `shim/src/common.zig`: no heap, no standard-library
+I/O, no locks, no assumptions about what the target has initialised.
+posix.zig's paraphrase was stronger than the accurate rule its own
+neighbour states. The reword says the rule, names common.zig as its
+home, and says plainly that the shim still uses std's allocation-free
+slices.
+
+Same-class scan: one site. And the scan itself needed its control — the
+first pattern matched nothing because the phrase breaks across two
+comment lines, and it took the known-hit control going red to notice
+the scan was blind ("cannot use a" ends line 9, "standard library"
+opens line 10). The "no std" pattern's hits are all "no stdin",
+unrelated.
+
 ## 2026-08-23 — #181: the macOS no-oracle claim gets its measurement
 
 The claim decides what a verdict means on half the supported platforms,
