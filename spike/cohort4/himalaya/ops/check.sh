@@ -11,7 +11,7 @@
 # leg R (himalaya's own reader agrees with what leg D found).
 #
 # ORDERING, measured rather than inherited. papis's checker had to put its
-# reader last because `papis list` WROTE — it minted and persisted a random
+# reader last because `papis list` WROTE: it minted and persisted a random
 # papis_id into a document that had lost one, so a byte assertion after it
 # would have judged the checker's own side effect. himalaya's reader was
 # measured for the same hazard before this file was written, on healthy,
@@ -36,8 +36,8 @@
 # with libfaketime and a getpid interposer, which this define cannot reuse:
 # the engine owns LD_PRELOAD for its shim, and /etc/ld.so.preload was
 # measured to break strace, which the engine uses as its oracle. The engine
-# needs no cross-run byte identity of its own — it refuses on threads and
-# on a baseline that violates the invariant — so the checker asserts on the
+# needs no cross-run byte identity of its own, refusing on threads and on
+# a baseline that violates the invariant instead, so the checker asserts on the
 # copy's CONTENT and flag suffix and never on its name. The one thing the
 # name must satisfy is the maildir flag suffix, which carries the message's
 # state and is part of what a copy has to preserve.

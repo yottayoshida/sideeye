@@ -66,7 +66,7 @@ run() {
         FAILS=$((FAILS+1)); return 0
     fi
     case "$out" in
-        *"$expect"*) echo "drill ok   $name: red through the expected leg — $out" ;;
+        *"$expect"*) echo "drill ok   $name: red through the expected leg: $out" ;;
         *) echo "drill FAIL $name: red, but through the WRONG leg (wanted '$expect'): $out"; FAILS=$((FAILS+1)) ;;
     esac
 }
@@ -141,7 +141,7 @@ out=$(SIDEEYE_STATE_DIR="$W/r2" PATH="$W/fake:$PATH" sh "$CHECK" 2>&1); rc=$?
 case "$rc:$out" in
     0:*) echo "drill FAIL legR/reader-lists-nothing: checker stayed green"; FAILS=$((FAILS+1)) ;;
     *"leg R: the target folder holds one message but the reader lists 0"*)
-        echo "drill ok   legR/reader-lists-nothing: red through the expected leg — $out" ;;
+        echo "drill ok   legR/reader-lists-nothing: red through the expected leg: $out" ;;
     *) echo "drill FAIL legR/reader-lists-nothing: red through the WRONG leg: $out"; FAILS=$((FAILS+1)) ;;
 esac
 
@@ -159,7 +159,7 @@ out=$(SIDEEYE_STATE_DIR="$W/r3" PATH="$W/fake:$PATH" sh "$CHECK" 2>&1); rc=$?
 case "$rc:$out" in
     0:*) echo "drill FAIL legR/reader-cannot-read: checker stayed green"; FAILS=$((FAILS+1)) ;;
     *"leg R: the copy is on disk but the reader cannot read it back"*)
-        echo "drill ok   legR/reader-cannot-read: red through the expected leg — $out" ;;
+        echo "drill ok   legR/reader-cannot-read: red through the expected leg: $out" ;;
     *) echo "drill FAIL legR/reader-cannot-read: red through the WRONG leg: $out"; FAILS=$((FAILS+1)) ;;
 esac
 echo "   (trial G in pre-define-trials.txt is the measurement that leg R"

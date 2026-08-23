@@ -2,7 +2,7 @@
 # The exact launcher for this define (committed so a fresh checkout can
 # reproduce the measured run). The apparatus it can carry is environment:
 # HOME and XDG at declared ambient paths, fresh per setup. The clock and
-# pid pins the probe used are deliberately absent — the toml's Versions
+# pid pins the probe used are deliberately absent; the toml's Versions
 # note says why, and the checker is name-agnostic in consequence.
 #
 # What this script CANNOT carry, and what therefore has to be in the

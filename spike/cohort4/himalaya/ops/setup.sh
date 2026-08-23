@@ -1,7 +1,7 @@
 #!/bin/sh
 # Cohort-4 himalaya define (P1) setup: the maildir store (state root) in
-# io-maildir's default nested-fs layout — the root directory is itself the
-# INBOX — holding one existing message, plus the account configuration the
+# io-maildir's default nested-fs layout (the root directory is itself the
+# INBOX) holding one existing message, plus the account configuration the
 # operation reads from outside the root.
 #
 # Fixture bytes are the accepted probe's, unchanged (spike/cohort4/PROTOCOL.md

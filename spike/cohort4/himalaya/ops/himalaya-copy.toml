@@ -5,7 +5,7 @@
 #
 # Why this arm. io-maildir stages `message save` through tmp/ and moves it
 # with a rename, and `message move` and the flag commands are a single
-# rename — the papis shape, one atomic mutation with no interior. `messages
+# rename: the papis shape, one atomic mutation with no interior. `messages
 # copy` is the one arm that does not stage: it mints the destination name,
 # builds the FINAL path, and fills the file in place (entry/copy.rs; the
 # I/O is fs::copy at client.rs:227). The probe counted its interior at two
@@ -21,12 +21,12 @@
 #     two-run byte comparison could pass. This define cannot reuse them:
 #     the engine owns LD_PRELOAD for its shim, and /etc/ld.so.preload was
 #     measured to break strace, which the engine uses as its oracle. It
-#     also does not need them — the engine refuses on threads and on a
-#     baseline that violates the invariant, not on cross-run byte identity
-#     — so the checker asserts on the copy's content and flag suffix and
-#     never on its minted name. The probe's determinism result stands as
-#     what it measured: the operation is byte-reproducible when the clock
-#     and pid are pinned.
+#     also does not need them, because the engine refuses on threads and
+#     on a baseline that violates the invariant, not on cross-run byte
+#     identity, so the checker asserts on the copy's content and flag
+#     suffix and never on its minted name. The probe's determinism result
+#     stands as what it measured: the operation is byte-reproducible when
+#     the clock and pid are pinned.
 #   - THE SECCOMP PROFILE IS KEPT, and it is not optional here. Without it
 #     fs::copy reaches copy_file_range, which the shim does not export and
 #     the oracle reports as an unsupported operation; the profile answers
