@@ -2,6 +2,40 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — v0.13.0: a second exhibit, a wider metadata exclusion, a relocatable shim
+
+Minor rather than patch, and the reason is the second of those three: the
+oracle's metadata exclusion widens to the timestamp family (#190), so a
+run that previously refused with `unsupported_syscall_observed` on a
+timestamp write now reaches a verdict. That changes what existing targets
+answer, which is not a patch-level change. `checker_earliest` (#231) also
+adds a field to the report.
+
+The version lives in three places and all three moved: `build.zig.zon`,
+`src/main.zig`, and the tarball name in the README's install block. Found
+by grepping for the old version rather than from memory, which also
+turned up a dozen mentions that must NOT move, because they name v0.12.0
+as a past artifact: the headerpad measurement in `build.zig` and
+`release.yml`, this file's own history, and the `sideeye_version` stamped
+into every committed case file.
+
+README reconciliation, the step that exists because two releases in a row
+forgot it: the install block's tarball name is the only change it needs.
+The FAIL report sample stays byte-accurate because its earliest world is
+itself checker-red, which is exactly the case #231 leaves untouched, and
+its `metadata` line was already about restore rather than about the
+oracle's exclusion. `docs/scouting.md`'s table row had already moved with
+#221.
+
+One thing the reconciliation found and did not act on: the README's list
+of tools with replay-confirmed counterexamples names timewarrior, topydo,
+GNU Stow, calcurse and devtodo, and is now behind. That is a claim about
+the project's record rather than a version-relative string, so it is
+raised rather than quietly edited here.
+
+168 tests, and the binary answers `sideeye 0.13.0`, which is the exact
+form the release workflow checks against the tag.
+
 ## 2026-08-23 — the shim was not relocatable, and only a package manager noticed
 
 `#180` had already measured that a Homebrew formula needs no code change:
