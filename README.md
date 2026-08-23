@@ -6,7 +6,7 @@
 
 > *Sideeye doesn't believe it.*
 
-Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process immediately before each of its state-changing operations, one crash world per operation, then brings back the **earliest failing crash point**, saved as a replayable case. It breaks worlds, not inputs: same input, hostile universe.
+Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process immediately before each of its state-changing operations, one crash world per operation, then brings back the **earliest failing crash point**, saved as a replayable case. When that earliest world trips only the built-in comparison and some other world falsifies **your own checker**, the report carries that world as a second exhibit — usually the one worth reading, and the reason the first failing world alone is not always the whole answer. It breaks worlds, not inputs: same input, hostile universe.
 
 It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo, himalaya — several of them reported upstream. Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
 
@@ -68,11 +68,12 @@ expected_status = "3"           # optional: the exit status that means "complete
 - The same define works as flags: `--state` / `--setup` / `--operation` / `--check` / `--marker` / `--expect-status`.
 - `--shim` names the interposition library when it is not beside the binary (the tarball and zig-out layouts are found on their own); `--work` moves the scratch directory for traces and cases (default `/tmp/sideeye-work`).
 - `--json <path>` writes the same report as JSON, for a machine to branch on.
+- `--fresh-state` (replay only) empties and recreates the case's state directory before setup, for a caller that cannot hand over a pristine one — a second replay in the same directory would otherwise die in the leftovers of the first.
 - Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0.
 - Command strings split on spaces, no quoting. An argument that carries a space uses the argv form instead: `operation = ["mytool", "commit", "-m", "a message with spaces"]` — one line, passed verbatim.
 - `preflight` reads flags only; a define spelled as argv goes straight to `explore --config`.
 
-A FAIL saves its counterexample to `<work>/cases/NNNNNN.json` and prints the ready-to-paste `sideeye replay` line. Replay re-runs the same pipeline restricted to that crash point; when the code changed underneath the case, it says `case no longer applies` instead of guessing.
+A FAIL saves its counterexample to `<work>/cases/NNNNNN.json` and prints the ready-to-paste `sideeye replay` line. When some world failed your checker and it is not the overall earliest, that world is saved as its own case beside the first and the text report gains a `checker red` section naming it — two files, both replayable; one file when the two exhibits are the same world, and none of this when no world failed the checker. Replay re-runs the same pipeline restricted to that crash point; when the code changed underneath the case, it says `case no longer applies` instead of guessing.
 
 ## Example
 
