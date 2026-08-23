@@ -85,6 +85,46 @@ toy account showing toy-rc=0 separately); ktrace's clean capture shows
 resolve paths — fs_usage is the front-end that does; eslogger's one line
 becomes readable and is expected to name Full Disk Access.
 
+**Round 2 (08:36Z): one prediction confirmed, one measurement settled a
+second time, and a guard of the owner's broke three legs while my BROKEN
+counter said 0.**
+
+What held: eslogger's one line, now readable thanks to the verbatim
+head, names exactly what was predicted — "responsible process needs TCC
+Full Disk Access authorization (ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED)".
+Root changes the refusal from NOT_PRIVILEGED to NOT_PERMITTED: ES is
+reachable only behind root AND an FDA grant to the invoking terminal.
+fs_usage passed a second time, this round with the contamination guard
+attesting all 9 marker lines came from the observer.
+
+What broke: the transcript's line 14 reads "omamori blocked this command
+because it was invoked via sudo/elevated privileges" — the wrapper's
+`chmod 755`. The wrapper stayed 0644, dtruss and dtrace died on "failed
+to execute run-toy.sh: Permission denied", ktrace on "could not start
+process", and none of that reached the BROKEN counter because the chmod
+carried no guard: the exact targets-added-after-the-check shape, one day
+after writing it down elsewhere. The owner's guard blocking the
+measurement is itself the own-guard-blocks-the-next-measurement shape.
+Round 2's L1/L4 therefore measure nothing about SIP; round 1's L2
+remains the only probe-provider evidence (preserved as
+sudo-survey-round1.txt; round 2 as sudo-survey-round2.txt).
+
+Fix: no mode change anywhere. The wrapper is invoked as `/bin/sh
+wrapper`, which needs no exec bit — routing around the guard with an
+absolute /bin/chmod would be circumvention, needing no chmod is not.
+dtruss and dtrace keep the toy as their DIRECT child, because /bin/sh in
+front would make the traced root a platform binary, the one case the
+SIP question must not be measured on; their contamination fix is stream
+separation instead (trace on stderr, toy account on stdout).
+
+**Predictions for round 3:** dtruss, clean streams — capture holds
+DTrace's own refusal lines and zero syscall lines, check FAIL "saw
+nothing", toy account 7 lines with toy-rc=0; dtrace aggregate rows 0
+with the round-1 probe refusal back; ktrace starts this time, and its
+observer lines carrying a marker path number **0** (151 non-op event
+lines in round 1 held none); eslogger identical FDA refusal; fs_usage
+passes a third time.
+
 ## 2026-08-23 — the formula shipped and the README still said "download the tarball"
 
 `#180`'s whole thesis was that installing takes four steps and one thing

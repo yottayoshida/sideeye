@@ -109,20 +109,38 @@ echo "    SIP question turns on)"
 # syscall provider matches no probes at all. Every runner leg now runs
 # the toy through this wrapper, which routes the toy's output to its own
 # account file, so a capture holds only what the OBSERVER emitted.
+# The wrapper is invoked as `/bin/sh wrapper args`, never through its own
+# exec bit, because round 2 measured the alternative: the chmod +x was
+# blocked by the owner's guard ("omamori blocked this command because it
+# was invoked via sudo/elevated privileges"), the wrapper stayed 0644,
+# three legs died on "Permission denied", and this script's own BROKEN
+# counter stayed at 0 because the chmod carried no guard. Routing around
+# the guard with an absolute /bin/chmod would be circumvention; needing
+# no mode change at all is the fix.
 cat > "$W/run-toy.sh" <<WRAP
-#!/bin/sh
 "$W/toy" "\$1" > "\$2" 2>&1
 echo "toy-rc=\$?" >> "\$2"
 WRAP
-chmod 755 "$W/run-toy.sh"
+[ -r "$W/run-toy.sh" ] || bad "the wrapper was not created; runner legs will report blindness that is really a missing file"
 
 echo ""
 echo "=============================================================="
 echo "L1. dtruss as root: the measurement ADR 0001 promised in 2026-08-10"
 echo "=============================================================="
+# The toy is dtruss's DIRECT child here, not wrapped: putting /bin/sh in
+# front would make the traced root process an Apple platform binary,
+# which is exactly the case the SIP question must NOT be measured on.
+# Contamination is prevented by streams instead - dtruss writes its
+# trace to stderr, the toy's account goes out on stdout - so the capture
+# holds only what dtruss emitted.
 mkdir -p "$W/state-d"
-runner "$W/dtruss.cap" dtruss -f "$W/run-toy.sh" "$W/state-d" "$W/state-d.toy-account"
-echo "   toy's own account (separated from the capture): $(tail -1 "$W/state-d.toy-account" 2>/dev/null || echo MISSING)"
+dtruss -f "$W/toy" "$W/state-d" 2> "$W/dtruss.cap" > "$W/state-d.toy-account" &
+job=$!
+( sleep 45; kill "$job" 2>/dev/null ) & watchdog=$!
+wait "$job"; jrc=$?
+kill "$watchdog" 2>/dev/null; wait "$watchdog" 2>/dev/null
+echo "   runner rc=$jrc"
+echo "   toy's own account (stdout, separated): $(wc -l < "$W/state-d.toy-account" 2>/dev/null | tr -d ' ') line(s)"
 verdict "$W/dtruss.cap" "dtruss"
 
 echo ""
@@ -130,10 +148,14 @@ echo "=============================================================="
 echo "L2. dtrace itself, minimal syscall aggregate: splits 'DTrace is"
 echo "    blocked' from 'the dtruss wrapper is broken'"
 echo "=============================================================="
+# The toy is the -c child directly, same platform-binary reasoning as
+# L1. Its stdout can mix into this capture, and that is tolerable here
+# because this leg is judged by the aggregate-row count's format, which
+# an "op ..." line cannot match, not by check-capture.
 mkdir -p "$W/state-t"
 runner "$W/dtrace.cap" dtrace -q \
     -n 'syscall:::entry /pid == $target/ { @[probefunc] = count(); }' \
-    -c "$W/run-toy.sh $W/state-t $W/state-t.toy-account"
+    -c "$W/toy $W/state-t"
 echo "   capture: $(wc -l < "$W/dtrace.cap" | tr -d ' ') line(s); head:"
 head -8 "$W/dtrace.cap" | sed 's/^/     /'
 echo "   syscall names seen (nonzero rows prove per-pid visibility even"
@@ -152,8 +174,11 @@ echo "=============================================================="
 echo "L4. ktrace: same substrate, first-party interface, C3 = the"
 echo "    filesystem class per this machine's man page"
 echo "=============================================================="
+# ktrace records kdebug system-wide, so the platform-binary concern from
+# L1 does not apply: /bin/sh in front changes nothing about what kdebug
+# can see, and the wrapper keeps the toy's stdout out of the capture.
 mkdir -p "$W/state-k"
-runner "$W/ktrace.cap" ktrace trace -f C3 -c "$W/run-toy.sh" "$W/state-k" "$W/state-k.toy-account"
+runner "$W/ktrace.cap" ktrace trace -f C3 -c /bin/sh "$W/run-toy.sh" "$W/state-k" "$W/state-k.toy-account"
 echo "   toy's own account (separated from the capture): $(tail -1 "$W/state-k.toy-account" 2>/dev/null || echo MISSING)"
 verdict "$W/ktrace.cap" "ktrace"
 echo "   the question the contaminated first run could not answer - do"
