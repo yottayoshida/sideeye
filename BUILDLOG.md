@@ -2,6 +2,43 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — the shim was not relocatable, and only a package manager noticed
+
+`#180` had already measured that a Homebrew formula needs no code change:
+the shim search is the binary's own directory then `../lib`, resolved
+through realpath, which is exactly a keg's layout. That held. The formula
+installs, `sideeye version` answers, and `sideeye demo` finds the planted
+bug with the shim resolved out of `../lib`.
+
+**And `brew install` still exits 1.** Homebrew rewrites the install name
+of every dylib in a keg to an absolute path under its prefix, and
+v0.12.0's shim has no padding in its Mach-O header for a longer name, so
+the rewrite fails and the install reports "Failed to fix install
+linkage". Moving the dylib to `libexec` does not help; the whole keg is
+scanned. Nothing in sideeye's own use is affected, because the shim is
+injected by path and its install name is never read. That is exactly why
+this survived to here: the defect is invisible to every consumer except
+a packager.
+
+The fix is one build flag, `headerpad_max_install_names`, macOS only.
+Measured as a pair on the two real artifacts rather than argued: give
+both the same long install name, and v0.12.0's dylib keeps
+`@rpath/libsideeye_shim.dylib` while the rebuilt one takes the new path.
+
+**The tool lies in a way worth writing down.** `install_name_tool` prints
+"larger updated load commands do not fit" on stderr and **exits 0**. Both
+halves of the pair returned 0. The only thing that separated them was
+reading the install name back with `otool -D` afterwards. So the new
+release-workflow check asserts the resulting name, never a status, and
+says so in a comment next to itself. It was seen red on v0.12.0's
+released dylib, which is a real artifact rather than a synthetic one.
+
+Ordering consequence, recorded because it reverses a decision made an
+hour earlier: the formula cannot point at a release that predates this
+flag, so Homebrew now lands after v0.13.0 rather than before it. The
+formula itself is written and `brew audit --new` clean; only its URLs
+and checksums are waiting.
+
 ## 2026-08-23 — cohort 4 closes, and stops counting as Shell
 
 The slate is exhausted: himalaya reached a criterion-1 candidate and the

@@ -104,6 +104,42 @@ jobs:
           echo "$out" | tail -30
           [ "$rc" = "1" ] || { echo "::error::expected exit 1 (FAIL, planted bug found), got $rc"; exit 1; }
 
+      # The shim ships inside a tarball and is also what a package manager
+      # installs. Homebrew rewrites the install name of every dylib in a keg to
+      # an absolute path under its own prefix; without padding in the Mach-O
+      # header that rewrite does not fit, and `brew install` reports "Failed to
+      # fix install linkage" and exits 1 on a build that otherwise runs. Nothing
+      # in sideeye's own use notices, because the shim is injected by path.
+      #
+      # Seen red once, on the real artifact rather than a synthetic one:
+      # v0.12.0's released dylib fails this exact check (its name stays
+      # @rpath/libsideeye_shim.dylib), which is the measurement that produced
+      # the build flag this step guards.
+      #
+      # install_name_tool prints that failure on stderr and STILL EXITS 0, so
+      # the assertion is on the resulting install name, never on a status.
+      #
+      # Delete this step when the shim stops shipping as a dylib, or when the
+      # release stops building a macOS target.
+      - name: The shipped macOS shim can be relocated by a package manager
+        if: matrix.artifact == 'aarch64-macos'
+        run: |
+          set -eu
+          # A copy: rewriting the real file would ship a dylib carrying a
+          # package manager's path as its identity.
+          probe=/tmp/shim-relocate-probe.dylib
+          long=/opt/homebrew/opt/sideeye/lib/libsideeye_shim.dylib
+          cp "zig-out/lib/${{ matrix.shim }}" "$probe"
+          before=$(otool -D "$probe" | tail -1)
+          install_name_tool -id "$long" "$probe" 2> /tmp/relocate.err || true
+          after=$(otool -D "$probe" | tail -1)
+          echo "install name: $before -> $after"
+          [ "$after" = "$long" ] || {
+            echo "::error::the shipped shim's install name cannot be lengthened; build the shim with headerpad_max_install_names"
+            cat /tmp/relocate.err
+            exit 1
+          }
+
       - name: Package
         env:
           REL_TAG: ${{ github.event_name == 'release' && github.ref_name || inputs.tag }}
