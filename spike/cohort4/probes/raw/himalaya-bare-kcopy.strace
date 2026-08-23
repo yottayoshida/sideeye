@@ -1,0 +1,3 @@
+60    copy_file_range(3, NULL, 4, NULL, 1073741824, 0) = 307
+60    copy_file_range(3, NULL, 4, NULL, 1073741824, 0) = 0
+60    +++ exited with 0 +++

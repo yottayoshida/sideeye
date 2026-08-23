@@ -1,0 +1,77 @@
+# Both cohorts' predicate drills, re-run under the frozen cohort-4
+# image. PROTOCOL.md's harness-continuity requirement: an image change
+# is a harness change, so no probe verdict counts before this run.
+# Captured by capture.sh on 2026-08-23T01:33:01Z.
+
+$ docker run --rm -v <repo>:/repo:ro sideeye-cohort4 sh /repo/spike/cohort2/probes/run-drills.sh
+== probe-predicate drills — 2026-08-23T01:33:02Z
+FAIL 1-exit-codes: drill input: run A rc=1 (a failing operation), run B rc=0
+drill ok   1-exit-codes went red as required
+FAIL 2-non-noop: drill input: post-state identical to pre-state
+drill ok   2-non-noop went red as required
+FAIL 3-artifact-count: drill input: listing 'probe extra-archive' where exactly 'probe' was expected
+drill ok   3-artifact-count went red as required
+FAIL 4-round-trip: drill input: extracted bytes differ from the source
+drill ok   4-round-trip went red as required
+   outside: /tmp/probe-drills/undeclared/leak.txt
+FAIL 6-closure: mutating paths outside the declared prefixes (listed above)
+drill ok   6-closure went red as required
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+drill ok   6b-closure-control stayed green on a closed run
+FAIL 6-closure: 1 successful mutating call(s) could not be attributed to a path (fail-closed)
+drill ok   6c-closure-unattributable went red as required
+== drills failed: 0 (probe-condition reds above are the drills working, counted separately)
+raw rc=0
+
+$ docker run --rm -v <repo>:/repo:ro sideeye-cohort4 sh /repo/spike/cohort4/probes/run-drills.sh
+== drill 8a — libc-routed writes must leave condition 8 green
+== condition 8 — shim visibility vs the kernel (artifacts in /tmp/c4-drills/libc/cond8)
+== artifacts: /tmp/c4-drills/libc/cond8
+== target exit status: 0
+  fsync    kernel=1/1 in-root, interposed=1, unmatched=0
+  open     kernel=1/1 in-root, interposed=4, unmatched=0
+  rename   kernel=1/1 in-root, interposed=1, unmatched=0
+  write    kernel=1/1 in-root, interposed=48, unmatched=0, 1 interposed call(s) had no resolvable path
+PASS every in-root mutation passed through an interposable function
+ok   8-visibility: every in-root mutation passed through an interposable function
+drill ok   8a (libc-routed) stayed green as required
+
+== drill 8b — raw-syscall writes must turn condition 8 red
+== condition 8 — shim visibility vs the kernel (artifacts in /tmp/c4-drills/raw/cond8)
+== artifacts: /tmp/c4-drills/raw/cond8
+== target exit status: 0
+  fsync    kernel=1/1 in-root, interposed=0, unmatched=1
+  open     kernel=1/1 in-root, interposed=3, unmatched=1
+  rename   kernel=1/1 in-root, interposed=0, unmatched=1
+  unlink   kernel=1/1 in-root, interposed=0, unmatched=1
+  write    kernel=1/1 in-root, interposed=35, unmatched=1, 1 interposed call(s) had no resolvable path
+WALL the kernel mutated the state root past the interposer:
+  fsync    56    fsync(4</tmp/c4-drills/raw/state/key.json.tmp>) = 0
+  open     56    openat(AT_FDCWD</>, "/tmp/c4-drills/raw/state/key.json.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 4</tmp/c4-drills/raw/state/key.json.tmp>
+  rename   56    renameat(AT_FDCWD</>, "/tmp/c4-drills/raw/state/key.json.tmp", AT_FDCWD</>, "/tmp/c4-drills/raw/state/key.json") = 0
+  unlink   56    unlinkat(AT_FDCWD</>, "/tmp/c4-drills/raw/state/key.json", 0) = 0
+  write    56    write(4</tmp/c4-drills/raw/state/key.json.tmp>, "key=2\n", 6) = 6
+  reading: an LD_PRELOAD shim cannot see these; this is the cargo
+           class (#217), a named wall at probe time, zero defines spent
+FAIL 8-visibility: the kernel mutated the state root past the interposer — a named wall (see the transcript above)
+drill ok   8b (raw syscalls) went red as required
+
+== drill 8c — a gate that cannot run must turn condition 8 red, not skip it
+FAIL 8/9-preflight: gate not found at /tmp/c4-drills/no-such-gate.sh — conditions 8 and 9 could not be measured
+drill ok   8c (gate missing) went red as required
+
+== drill 9a — an operation with an interior must be counted, not refused
+== condition 9 — kill points inside the state root (artifacts in /tmp/c4-drills/libc2/cond9)
+== artifacts: /tmp/c4-drills/libc2/cond9
+== target exit status: 0
+INTERIOR kill points inside the state root: 4 (fsync=1, open=1, rename=1, write=1)
+  reading: 4 crash points; the operation has an interior
+ok   9-interior: counted and recorded above; a count of 1 is an owner decision, not a failure
+drill ok   9a (has an interior) stayed green as required
+
+== drill 9b — a gate that cannot run must turn condition 9 red, not skip it
+FAIL 8/9-preflight: gate not found at /tmp/c4-drills/no-such-gate.sh — conditions 8 and 9 could not be measured
+drill ok   9b (gate missing) went red as required
+
+== drills failed: 0 of 5
+raw rc=0
