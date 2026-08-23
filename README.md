@@ -12,13 +12,20 @@ It has produced replay-confirmed counterexamples against real tools — timewarr
 
 ## Installation
 
-Download the tarball for your platform (x86_64/aarch64 Linux, aarch64 macOS) from [Releases](https://github.com/yottayoshida/sideeye/releases), then:
+```
+$ brew install yottayoshida/tap/sideeye
+```
+
+Covers macOS on Apple silicon and Linux on x86_64 and aarch64. Everything below then works from `PATH`.
+
+Or take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases). Sideeye ships as a binary **and** a shim library, and it looks for the shim beside itself before `../lib`, so run it from the directory you untarred — or pass `--shim`:
 
 ```
 $ tar xzf sideeye-v0.13.0-aarch64-macos.tar.gz && cd sideeye-v0.13.0-aarch64-macos
+$ ./sideeye version
 ```
 
-Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`.
+Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`, which is the same shape.
 
 ## Usage
 
@@ -27,7 +34,7 @@ Three commands, in the order you will meet them.
 **1. See it work** — sixty seconds, needs a C compiler, writes nothing permanent:
 
 ```
-$ ./sideeye demo
+$ sideeye demo
 ```
 
 The demo compiles a small planted-bug tool, explores it, and prints a real FAIL report. Exit 1 — the planted bug found — is success, which makes the demo double as a smoke test of the binary + shim pair.
@@ -35,7 +42,7 @@ The demo compiles a small planted-bug tool, explores it, and prints a real FAIL 
 **2. Ask whether Sideeye can watch your tool** — before writing any config:
 
 ```
-$ ./sideeye preflight --state <dir> --operation "<cmd>"
+$ sideeye preflight --state <dir> --operation "<cmd>"
 ```
 
 One observed run: either `recording accepted` (exit 0) or a refusal naming the same detector a real run would use (exit 2).
@@ -43,7 +50,7 @@ One observed run: either `recording accepted` (exit 0) or a refusal naming the s
 **3. Explore** — the real thing, with the whole define in one file:
 
 ```
-$ ./sideeye explore --config sideeye.toml --oracle /usr/bin/strace
+$ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
 ```
 
 ```toml
