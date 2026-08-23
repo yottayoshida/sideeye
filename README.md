@@ -8,14 +8,14 @@
 
 Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process immediately before each of its state-changing operations, one crash world per operation, then brings back the **earliest failing crash point**, saved as a replayable case. It breaks worlds, not inputs: same input, hostile universe.
 
-It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo — several of them reported upstream. Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
+It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo, himalaya — several of them reported upstream. Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
 
 ## Installation
 
 Download the tarball for your platform (x86_64/aarch64 Linux, aarch64 macOS) from [Releases](https://github.com/yottayoshida/sideeye/releases), then:
 
 ```
-$ tar xzf sideeye-v0.12.0-aarch64-macos.tar.gz && cd sideeye-v0.12.0-aarch64-macos
+$ tar xzf sideeye-v0.13.0-aarch64-macos.tar.gz && cd sideeye-v0.13.0-aarch64-macos
 ```
 
 Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`.
