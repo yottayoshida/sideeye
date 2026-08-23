@@ -2,6 +2,53 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — himalaya explores, refuses, and the refusal is a gap between two predicates
+
+The first explore of the merged define came back UNKNOWN:
+`unsupported_syscall_observed: copy_file_range`, exit 2. The seccomp
+profile was working exactly as the probe measured it — copy_file_range
+and sendfile both ENOSYS, the copy falling back to the libc read/write
+loop, 307 bytes landing correctly. The refusal was not about the target.
+
+**Two predicates that looked like one.** The probe's condition asked
+whether any accelerated copy SUCCEEDED and answered no. The oracle asks
+whether the syscall was OBSERVED, and its predicate reads the syscall's
+name and never its return value (`changesPersistentState`, oracle.zig).
+An ENOSYS from the kernel is still an observation. A profile that makes
+a call fail cannot satisfy a rule about calls being made, and the probe
+gate could be green on its own terms while the next stage refused.
+
+The owner ruled a revision, the cargo-r2 precedent: a refusal is not a
+FAIL, so nothing about the define is frozen by it, and the define
+surface — property, checker, setup, fixtures, argv — moves to
+`himalaya-r2` byte for byte. Only the apparatus changes.
+`no-accel-copy.so` answers the three accelerated primitives in userspace
+so the syscall is never made and the tracer has nothing to see, which is
+reachable because Rust std resolves them as weak symbols precisely so
+`LD_PRELOAD` can interpose them (#244). Measured before the revision was
+written: zero copy_file_range/sendfile lines in the trace, strace itself
+healthy, the copy still 307 bytes. It rides /etc/ld.so.preload because
+the engine owns LD_PRELOAD for its shim, and unlike the pid pin it
+defines only those three functions.
+
+What the apparatus does **not** change, since the stock-reproduction rule
+turns on it: the destination is created with O_CREAT|O_TRUNC and filled
+afterwards on both paths, so the kill window exists whether the fill is
+one copy_file_range or a read/write loop. The apparatus decides what the
+engine can see, not whether the window is there.
+
+**And a procedural error of mine, recorded because the contract asks for
+the reversals.** I explored r2 with its define only on a local branch.
+The mini-seal requires a revision's target directory to be first-parent
+on main before the engine touches it, and `verify-assisted.sh` refuses
+(exit 2) precisely on that. The invariant itself had been on main since
+#247 — the checker in r2 is byte-identical to the one that merged — so
+criterion 1's own text was satisfied, but the mechanical discipline was
+not, and the discipline is the part that makes a claim publishable. Both
+runs were discarded rather than kept with a disclosure. They cost four
+minutes and had already proved themselves reproducible; provenance costs
+more than that.
+
 ## 2026-08-23 — himalaya's define: what the checker may use, measured before it is written
 
 Entry opened before the define exists, per the contract. The probe (#246)
