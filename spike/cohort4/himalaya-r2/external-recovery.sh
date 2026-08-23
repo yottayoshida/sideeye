@@ -9,12 +9,17 @@
 # This is a non-claim, leg-external measurement. It does not touch claim
 # eligibility, and nothing here authorises contact with anyone.
 #
-# The damaged store is PRODUCED, never assembled. Every leg below runs
-# against a store that a real `maildir messages copy` really crashed in
-# the middle of, using the stock reproduction's own instrument: strace,
-# one injected signal, no shim, no engine, no seccomp, no interposer.
-# Hand-building the state was an R1 finding against the define's drills
-# and it is not repeated here.
+# The damaged store is PRODUCED, never assembled, using the stock
+# reproduction's own instrument: strace, one injected signal, no shim, no
+# engine, no seccomp, no interposer. Hand-building the state was an R1
+# finding against the define's drills and it is not repeated here.
+#
+# Which legs crash, precisely, because a reviewer was right that "each
+# leg gets a fresh crash" was not true as first written: R2, R4, R5 (both
+# halves) and R7 each call `damage` for themselves. R6 does too. R3 is
+# the deliberate exception and runs the operation to COMPLETION, because
+# what it counts is the syscalls the whole operation makes; a crashed
+# prefix would be a weaker measurement of the same thing.
 #
 # Every "none" and every "0" in the output is paired with a positive
 # control, because a scan that finds nothing and a scan that never ran
@@ -70,8 +75,20 @@ echo "=============================================================="
 # denominator with entries like `gmail settings forwarding-addresses del,`.
 # Both parses run, and the difference between them is validated in both
 # directions below.
-kids_strict() { himalaya $* --help 2>/dev/null | awk '/^Commands:/{f=1;next} /^Options:/{f=0} f && /^  [a-z][a-z0-9-]*(  |$)/{print $1}' | grep -vE '^help$'; }
-kids_loose()  { himalaya $* --help 2>/dev/null | awk '/^Commands:/{f=1;next} /^Options:/{f=0} f && NF{print $1}' | grep -vE '^help$'; }
+# R1 found by review: a pipeline loses himalaya's exit status, so a --help
+# that FAILED would look like a command with no children and the walk would
+# call it a leaf. The status is captured before anything is piped, and every
+# failure is recorded so the completeness claim below can be checked rather
+# than assumed.
+: > "$W/helpfail"
+kids_strict() {
+    out=$(himalaya $* --help 2>/dev/null) || { echo "strict: $*" >> "$W/helpfail"; return 0; }
+    printf '%s\n' "$out" | awk '/^Commands:/{f=1;next} /^Options:/{f=0} f && /^  [a-z][a-z0-9-]*(  |$)/{print $1}' | grep -vE '^help$'
+}
+kids_loose() {
+    out=$(himalaya $* --help 2>/dev/null) || { echo "loose: $*" >> "$W/helpfail"; return 0; }
+    printf '%s\n' "$out" | awk '/^Commands:/{f=1;next} /^Options:/{f=0} f && NF{print $1}' | grep -vE '^help$'
+}
 walk() { # $1 = kids function name, $2 = file to record the measured depth in
     fr=$($1)
     depth=0
@@ -122,32 +139,57 @@ note "nodes the strict parse dropped: tried=$tried, real commands among them=$al
 himalaya maildir messages copy --help >/dev/null 2>&1 \
     && note "positive control: the same loop calls 'maildir messages copy' real" \
     || bad "positive control failed; the loop cannot recognise a command that exists"
+# Only the STRICT walk's failures can hide a subtree, because the strict
+# tree is the one every claim below is about. The loose walk descends into
+# its own phantoms by construction, so its failures are expected; they are
+# counted separately and are in fact a second, independent confirmation
+# that the dropped nodes are not commands.
+hfs=$(grep -c '^strict: ' "$W/helpfail")
+hfl=$(grep -c '^loose: '  "$W/helpfail")
+note "--help invocations that failed during the strict walk: $hfs"
+note "--help invocations that failed during the loose walk:  $hfl (expected:"
+note "  the loose walk descends into the alias fragments it mis-parses, and"
+note "  this count independently agrees with the $(wc -l < "$W/dropped" | tr -d ' ') dropped above)"
+[ "$hfs" -eq 0 ] || { grep '^strict: ' "$W/helpfail" | sed 's/^/     /'; bad "a subtree may have been silently treated as a leaf"; }
+note "so the strict walk is complete FOR THE MECHANISM IT USES: every node"
+note "it asked answered, and every node it kept is a real command. What it"
+note "does not prove is that clap's help is a faithful index of the binary."
+note "Both parses read the same 'Commands:' blocks and both drop 'help'"
+note "deliberately, so a command reachable some other way would be"
+note "invisible to either of them."
 
 echo ""
-note "scanning all $STRICT commands for anything repair-shaped:"
+note "scanning the NAMES of all $STRICT commands for anything repair-shaped:"
 # grep first, rc read before anything is piped: a pipeline would report
 # sed's status and hide a scan that failed to run.
-grep -inE 'sync|repair|verif|check|fsck|doctor|restor|recover|rebuild|scan|fix|consist|integrit' \
-    "$W/tree" > "$W/hits"
+PAT='sync|repair|verif|check|fsck|doctor|restor|recover|rebuild|scan|fix|consist|integrit'
+grep -inE "$PAT" "$W/tree" > "$W/hits"
 grc=$?
 [ "$grc" -le 1 ] || bad "the scan itself failed (rc=$grc)"
 sed 's/^/     /' "$W/hits"
 note "matches: $(wc -l < "$W/hits" | tr -d ' ')"
-if grep -qi 'copy' "$W/tree"; then
-    note "positive control: the same scan finds 'copy' in this list"
+# The control must run the IDENTICAL expression, not a stand-in: a control
+# built from a different pattern proves that some grep works, not that this
+# one does.
+if printf 'sentinel repair\n' | grep -qiE "$PAT"; then
+    note "positive control: this exact expression matches when given a match"
 else
-    bad "positive control failed; the scan cannot match a word that is there"
+    bad "positive control failed; the scan expression cannot match at all"
 fi
 note ""
-note "reading: two matches out of $STRICT, and neither looks at stored mail."
-note "'account check' validates the account CONFIGURATION (its own help"
-note "says so, and R2 measures it). 'gmail settings send-as verify' is"
-note "Gmail alias ownership. There is no sync command in this version at"
-note "all: the account subtree is list and check, nothing else."
+note "reading, kept to what a scan of command NAMES can support: of the"
+note "$STRICT names, $(wc -l < "$W/hits" | tr -d ' ') are repair-shaped. 'account check' validates the"
+note "account CONFIGURATION (its own help says so, and R2 runs it against"
+note "the damage). 'gmail settings send-as verify' is Gmail alias"
+note "ownership. No name in the surface is a sync."
 note ""
-note "This says the tool has nothing that would NOTICE the damage. It"
-note "deliberately does not say the damage cannot be undone: R5 measures"
-note "that separately, and finds it can be, by hand, once the user knows."
+note "This is a claim about names, not about behaviour. Commands that READ"
+note "stored mail obviously exist, and R4 uses one: 'envelope list' is"
+note "how the empty message gets displayed as an ordinary message in the"
+note "first place. The narrow statement the scan supports is that nothing"
+note "in the surface is named for CHECKING stored mail, and R2 measures"
+note "the one candidate. It says nothing about whether the damage can be"
+note "undone; R5 measures that separately."
 
 echo ""
 echo "=============================================================="
@@ -165,6 +207,18 @@ if grep -qiE '0 bytes|empty|corrupt|truncat|invalid message' "$W/check.out"; the
 else
     note "it did not mention the damaged message"
 fi
+# Same class as the dropped-node loop that once printed a reassuring 0 over
+# a missing file: a grep that finds nothing and a grep with nothing to read
+# print the same answer, so the negative above is only worth something next
+# to a positive on the same file.
+if grep -qi 'maildir' "$W/check.out"; then
+    note "positive control: the same grep does match text that is in that output"
+else
+    bad "the check output could not be searched at all, so 'did not mention' means nothing"
+fi
+sb=$(wc -l < "$W/before" | tr -d ' ')
+[ "$sb" -gt 0 ] || bad "the store snapshot is empty, so 'unchanged' would compare nothing"
+note "snapshot covers $sb file(s) in the store"
 if cmp -s "$W/before" "$W/after"; then note "store unchanged across the check"
 else note "store CHANGED across the check:"; diff "$W/before" "$W/after" | sed 's/^/     /'; fi
 note "reading: the account is valid, so the tool's only check-shaped"
@@ -180,21 +234,40 @@ strace -f -e trace='%network' -o "$W/net.log" \
     himalaya -c "$CFG" maildir messages copy "$MSGID" --maildir . --target Archive \
     > "$W/net.out" 2>&1
 orc=$?
-net=$(grep -cE '^[0-9]+ +(socket|connect|sendto|sendmsg|recvfrom|recvmsg|bind)\(' "$W/net.log")
-note "operation rc=$orc, network syscalls traced during it: $net"
-python3 -c "import socket; socket.socket().connect_ex(('127.0.0.1',1))" >/dev/null 2>&1
+# Found by review: counting a hand-written list of syscall names measures
+# "zero of the names I thought of", not "zero network syscalls". strace was
+# already told to trace the %network class, so the honest count is every
+# syscall line the log holds, whatever it is called. The two non-syscall
+# line shapes strace emits (exit and signal records) are excluded by the
+# same expression.
+syscount() { grep -cE '^[0-9]+ +[a-z_][a-z_0-9]*\(' "$1"; }
+net=$(syscount "$W/net.log")
+note "operation rc=$orc, syscalls of the traced %network class during it: $net"
+[ "$net" -eq 0 ] && note "  (and the log holds $(wc -l < "$W/net.log" | tr -d ' ') line(s) in total, so it was written)"
 strace -f -e trace='%network' -o "$W/net-pc.log" \
     python3 -c "import socket; socket.socket().connect_ex(('127.0.0.1',1))" >/dev/null 2>&1
-netpc=$(grep -cE '^[0-9]+ +(socket|connect|sendto|sendmsg|recvfrom|recvmsg|bind)\(' "$W/net-pc.log")
-note "positive control (a process that does connect): $netpc network syscalls"
+netpc=$(syscount "$W/net-pc.log")
+note "positive control (a process that does connect), same filter and same"
+note "counting expression: $netpc"
+grep -oE '^[0-9]+ +[a-z_][a-z_0-9]*\(' "$W/net-pc.log" | awk '{print $2}' | sort -u | tr -d '(' | tr '\n' ' ' | sed 's/^/     names it caught: /'
+echo ""
 [ "$netpc" -gt 0 ] || bad "the network filter caught nothing even on a real connect; R3's 0 means nothing"
-note "reading: the operation copies from one folder to another inside the"
-note "same local root and never speaks to anything. The message it was"
-note "creating in the target folder therefore exists nowhere else at the"
-note "moment it is destroyed. This is the decisive half of the question:"
-note "a synchronized side cannot restore content it has never seen, so"
-note "the maildir-only case the freeze names is not the only case where"
-note "recovery is unavailable. It is unavailable in every case."
+note "reading, stated narrowly because the sentence I first wrote here was"
+note "wider than the measurement. What is measured: this operation, run to"
+note "completion under this configuration, makes no call of the traced"
+note "network class. It copies between two folders inside one local root."
+note ""
+note "What follows: the ENTRY being created in the target folder is not"
+note "sent anywhere while it is being created, so a remote side has not"
+note "seen THAT entry at the moment it is destroyed, and re-fetching from"
+note "a server cannot put it back. What does NOT follow, and is where the"
+note "first draft over-reached: the message's CONTENT may well exist"
+note "elsewhere, on a server or in the source folder, and R7 measures the"
+note "source surviving locally. So the content is recoverable; the folder"
+note "state is not restored by anything remote."
+note ""
+note "Nor does this prove anything about accounts other than the one"
+note "configured here. It is one measurement of one configuration."
 
 echo ""
 echo "=============================================================="
@@ -273,12 +346,20 @@ sed -n '1,3p' "$W/del2.out" | sed 's/^/     /'
 note "Archive/cur now: $(ls -A "$STORE/Archive/cur" | wc -l | tr -d ' ') entry, Trash/cur: $(ls -A "$STORE/Trash/cur" 2>/dev/null | wc -l | tr -d ' ') entry"
 for f in "$STORE"/Trash/cur/*; do [ -e "$f" ] && note "  in Trash: $(basename "$f") ($(wc -c < "$f" | tr -d ' ') bytes)"; done
 note ""
-note "reading: the phantom is removable. The refusal above is a property"
-note "of a configuration with no trash mailbox, and it refuses on healthy"
-note "mail in exactly the same words, so it is not part of this finding"
-note "and is not reported as one. What R5 leaves standing is narrower and"
-note "is the whole point: removal is manual, and it requires the user to"
-note "already know which of the messages in the folder is not a message."
+note "reading, and it is not 'the message can be deleted', which is what"
+note "the first draft said. What was measured is a MOVE: two config keys"
+note "were added and a Trash folder was created first, and the command"
+note "then relocated the entry out of Archive into Trash, where the"
+note "transcript above shows it still sitting at 0 bytes. Emptying the"
+note "trash was not measured."
+note ""
+note "The refusal before that is a property of an account with no trash"
+note "mailbox: it refuses on healthy mail in the same folder under the"
+note "same config in the same words, so it is not part of this finding"
+note "and is not reported as one. What stands is narrower and is the"
+note "point: getting the empty message out of the folder is a manual"
+note "act, and it requires the user to already know which of the entries"
+note "in the folder is not a message."
 
 echo ""
 echo "=============================================================="
@@ -301,15 +382,18 @@ show("source folder (positive control, healthy)", root)
 PY
 prc=$?
 note "python reader rc=$prc"
-note "reading: an independent maildir reader enumerates the zero-byte file"
-note "as an ordinary message too. Nothing in the maildir format marks it,"
-note "so a second tool is not a recovery path either: it inherits the"
-note "same object."
+note "reading: ONE independent maildir reader, python's stdlib mailbox"
+note "module, enumerates the zero-byte file as an ordinary message, with"
+note "a healthy message in the same store as the control. Nothing in the"
+note "maildir format marks it. That is one reader, not every reader: it"
+note "shows the entry is well formed as far as the format goes, not that"
+note "no tool anywhere would flag it."
 
 echo ""
 echo "=============================================================="
 echo "R7. What bounds the loss."
 echo "=============================================================="
+damage || { echo "== BROKEN: $FAILS"; exit 1; }
 src_now=$(sha256sum < "$STORE/cur/$MSGID:2,S" | cut -c1-16)
 note "source message after the crash: $(wc -c < "$STORE/cur/$MSGID:2,S" | tr -d ' ') bytes, sha $src_now"
 note "leg E of the checker asserts exactly this, and it held in both runs."
@@ -321,42 +405,53 @@ echo ""
 echo "=============================================================="
 echo "The answer the freeze asked for, and its limits."
 echo "=============================================================="
-note "RECOVERY PATHS THAT EXIST:"
-note "  1. The source message survives, so the copy can be repeated (R4,"
-note "     R7). This restores the intended message. It does not remove"
-note "     the empty one: the folder afterwards holds both, and the tool"
-note "     lists both as messages."
-note "  2. The empty message can be deleted by hand, once the user knows"
-note "     it is there and the account names a trash mailbox (R5)."
+note "Every sentence here is scoped to the one account configuration this"
+note "script measured: a maildir account with no remote, on this build."
 note ""
-note "CONDITIONS UNDER WHICH THEY DO NOT APPLY:"
-note "  Both paths require the user to notice. Nothing offers to."
-note "  The tool has no command that inspects stored mail (R1, 2 matches"
-note "  in 216 and neither reads a mailbox), its one check-shaped command"
-note "  reports the account OK over the damaged store (R2), and an"
-note "  independent maildir reader enumerates the empty file as an"
-note "  ordinary message as well (R6). In the listing the only difference"
-note "  is blank columns and 0 B."
+note "RECOVERY PATHS THAT WERE MEASURED TO WORK:"
+note "  1. The content is not lost, so the copy can simply be repeated"
+note "     (R4, R7). The source is byte-identical after the crash. The"
+note "     repeat does not remove the empty entry: the folder afterwards"
+note "     holds both, and the tool lists both as messages."
+note "  2. The empty entry can be moved out of the folder by the tool's"
+note "     own delete, once the account names a trash mailbox and that"
+note "     mailbox exists (R5). It lands in Trash still at 0 bytes;"
+note "     whether emptying the trash removes it was not measured."
+note ""
+note "THE CONDITION BOTH SHARE:"
+note "  Both require the user to notice, and nothing in what was measured"
+note "  offers to. No command NAME in the surface is about checking"
+note "  stored mail (R1, a scan of names only), the one check-shaped"
+note "  command reports the account OK over the damaged store (R2), and"
+note "  the one independent maildir reader tried enumerates the empty"
+note "  file as an ordinary message (R6). In the tool's own listing the"
+note "  entry differs from a real message only by blank columns and 0 B."
 note ""
 note "THE SYNCHRONIZED SIDE, WHICH THE FREEZE ASKED ABOUT SPECIFICALLY:"
-note "  It cannot help, and not only in the maildir-only configuration"
-note "  the freeze names. The operation copies between two folders inside"
-note "  one local root and makes no network syscall at all (R3, 0 against"
-note "  a positive control of 2), and this version of the tool has no"
-note "  sync command in any of its 216 (R1). The message being created in"
-note "  the target folder has therefore never existed anywhere else at"
-note "  the moment it is destroyed. A remote side cannot restore content"
-note "  it has never seen."
+note "  Re-fetching from a server cannot restore the target-folder ENTRY,"
+note "  because that entry is never sent anywhere while it is being"
+note "  created: the operation makes no call of the traced network class"
+note "  (R3, against a positive control on the same filter), and no name"
+note "  in the surface is a sync. This is about the entry, not about the"
+note "  content: the content may well exist on a server, and it certainly"
+note "  still exists in the source folder."
+note ""
+note "  So the maildir-only configuration the freeze names is not the"
+note "  only one where a remote side fails to restore the folder state."
+note "  It is where the CONTENT would also be at risk, and this operation"
+note "  does not put the content at risk, because it conserves the"
+note "  source. That is the honest limit of this finding's severity."
 note ""
 note "NOT MEASURED, AND STATED RATHER THAN IMPLIED:"
-note "  Whether an EXTERNAL syncer (isync, offlineimap) managing this"
-note "  maildir would upload the empty message to the server as a new"
-note "  message, which is the shape the freeze calls the strongest form:"
-note "  the external recovery path itself carrying the damage outward."
-note "  Measuring it needs a second tool and a server, neither of which"
-note "  is in this image. It is a question about making things worse,"
-note "  not about recovery, so the recovery question above is answered"
-note "  without it."
+note "  - Whether an EXTERNAL syncer (isync, offlineimap) managing this"
+note "    maildir would carry the empty message outward to the server as"
+note "    a new message. That is the shape the freeze calls the strongest"
+note "    form, the external recovery path itself carrying the damage."
+note "    It needs a second tool and a server, neither in this image."
+note "  - Whether any tool other than the one python reader tried would"
+note "    flag the entry."
+note "  - Whether clap's help output is a faithful index of the binary."
+note "    R1's completeness is complete for that mechanism, no more."
 
 echo ""
 echo "== BROKEN checks: $FAILS"

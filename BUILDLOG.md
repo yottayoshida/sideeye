@@ -6,54 +6,71 @@ Development journal, newest first. Decisions are recorded when they are made —
 
 The last precondition the freeze's Reporting section puts in front of a
 report: measure the recovery paths that exist outside the tool, and the
-conditions under which they do not apply. Seven legs, every "none"
-paired with a positive control, the damaged store produced by a real
-crash each time rather than assembled.
+conditions under which they do not apply. Seven legs. R2, R4, R5, R6 and
+R7 each produce the damage for themselves with a real crash rather than
+assembling a store by hand; R3 is the deliberate exception and runs the
+operation to completion, because what it counts is what the whole
+operation does.
 
-**The first thing measured was my own scan.** A three-level walk of
-himalaya's command tree reported 208 commands; measuring the depth
-instead of assuming it found a fourth level with 29 more. The loose
-parse then turned out to be reading wrapped alias lines as commands
-(`gmail settings forwarding-addresses del,` came from a continuation
-line), so the enumeration is indentation-strict and validated in both
-directions: every node it keeps answers `--help` (216 of 216), and every
-node the fix dropped is not a command (21 tried, 0 real). The
-dropped-node check printed a reassuring `0` the first time it ran with
-its input file missing, which is the whole reason it now refuses on an
-empty list.
+**The first thing measured was my own scan.** A three-level walk of the
+command tree reported 208 commands; measuring the depth instead of
+assuming it found a fourth level with 29 more. (Those two numbers are
+this entry's own history, not artifacts: the committed script measures
+depth 4 and 216/237.) The loose parse then turned out to be reading
+wrapped alias lines as commands, so the enumeration is
+indentation-strict and validated in both directions: every node it keeps
+answers `--help` (216 of 216), and every node the fix dropped is not a
+command (21 tried, 0 real). The dropped-node check printed a reassuring
+`0` the first time it ran with its input file missing, which is why it
+now refuses on an empty list.
 
-**The answer.** Two recovery paths exist and both need the user to
-notice first, and nothing offers to. Repeating the copy restores the
-message but leaves the empty one beside it, listed as a message.
-Deleting the empty one works by hand. Meanwhile the tool has no command
-that inspects stored mail: two of 216 are repair-shaped and neither
-reads a mailbox, and `account check` reports `maildir: OK` over the
-damaged store. Python's `mailbox.Maildir` enumerates the empty file as
-an ordinary message as well, so a second tool inherits it rather than
-flagging it.
+**The answer.** Two recovery paths work and both need the user to notice
+first. Repeating the copy restores the message but leaves the empty one
+beside it, listed as a message. The empty one can be moved out by the
+tool's own delete once the account names a trash mailbox, where it sits
+in Trash still at 0 bytes. Meanwhile nothing offers to notice: no
+command *name* in the surface is about checking stored mail, and
+`account check` reports `maildir: OK` over the damaged store. The one
+independent reader tried, python's `mailbox.Maildir`, enumerates the
+empty file as an ordinary message as well.
 
-The synchronized side the freeze asked about specifically cannot help,
-and the reason is stronger than the maildir-only case it names: the
-operation copies between two folders in one local root and makes **no
-network syscall at all** (0, positive control 2), and this version has
-no sync command anywhere in the tree. The message being created has
-never existed anywhere else at the moment it is destroyed.
+Re-fetching from a server cannot restore the target-folder entry,
+because the operation makes no call of the traced `%network` class while
+creating it and no name in the surface is a sync. That is about the
+entry and not the content: the content still exists in the source
+folder, which is the honest limit of this finding's severity.
 
-**And one measurement went against my own framing, which is why the
-controls are there.** `message delete` refused on the empty message with
-`Cannot determine the trash mailbox`, and I had already written that up
-as the tool being unable to remove it. The control refuses in the same
-words on a healthy message in the same folder under the same config: it
-is a property of an account with no trash mailbox, not of the finding.
-Configure one and the empty message deletes. The first version of that
-control was not a control at all, because it targeted the source
-message without `-m` and failed with a different error entirely.
+**Three things went against what I had already written, which is the
+entire reason the controls are there.**
 
-Left explicitly unmeasured, in the transcript rather than in my head:
-whether an external syncer would carry the empty message outward to a
-server. That is the shape the freeze calls the strongest form, it needs
-a second tool and a server, and it is a question about making things
-worse rather than about recovery.
+`message delete` refused on the empty message with `Cannot determine the
+trash mailbox`, and I had written that up as the tool being unable to
+remove it. The control refuses in the same words on a healthy message in
+the same folder under the same config, so it is a property of an account
+with no trash mailbox. The first version of that control was not a
+control at all: it targeted the source message without `-m` and failed
+with a different error entirely.
+
+The review then found that the network leg counted a hand-written list
+of syscall names, which measures "none of the names I thought of" rather
+than none. It now counts every syscall line in a log strace was already
+told to fill with the `%network` class, and the positive control
+promptly caught `getsockname` and `getpeername`, neither of which was in
+the old list.
+
+The same review found the walk's `--help` status was being lost through
+a pipe, so a failed invocation would have looked like a childless leaf.
+Capturing it turned up 21 failures, and the new guard stopped the run.
+They are all in the *loose* walk, which descends into the alias
+fragments it mis-parses, so the guard's predicate was too wide and now
+counts the strict walk. The number is a gift: 21 loose failures against
+21 dropped nodes is a second, independent confirmation that the dropped
+ones are not commands.
+
+Left explicitly unmeasured, written into the transcript rather than kept
+in my head: whether an external syncer would carry the empty message
+outward to a server, whether any reader other than the one tried would
+flag it, and whether clap's help is a faithful index of the binary.
 
 ## 2026-08-23 — the stock reproduction, and what it corrected about my own argument
 
