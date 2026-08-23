@@ -1,0 +1,32 @@
+== the two states the operation itself can leave (both must be green)
+drill ok   green/copy-absent: checker green as required
+drill ok   green/copy-present: checker green as required
+
+== guard
+drill ok   guard/missing-dir: red through the expected leg — checker(himalaya-copy): the store has lost its Archive/tmp directory
+drill ok   guard/stray-root-entry: red through the expected leg — checker(himalaya-copy): the store root holds entries this operation cannot produce (got: Archive cur new stray tmp )
+drill ok   guard/extra-source-message: red through the expected leg — checker(himalaya-copy): the source folder holds entries this operation cannot produce (got: 1700000000.#0M0P1.probehost:2,S another:2,S )
+drill ok   guard/staged-leftover: red through the expected leg — checker(himalaya-copy): new/ or tmp/ is not empty: this operation stages nothing, so 1 entry/entries there is damage or a shape the define did not declare
+drill ok   guard/two-copies: red through the expected leg — checker(himalaya-copy): the target folder holds 2 entries; one copy operation cannot produce more than one
+
+== leg D: the copy is all-or-nothing
+drill ok   legD/zero-length-copy: red through the expected leg — checker(himalaya-copy): leg D: the copy is present but its bytes are not the source's (0 bytes on disk against 307 in the source)
+drill ok   legD/cut-mid-headers: red through the expected leg — checker(himalaya-copy): leg D: the copy is present but its bytes are not the source's (120 bytes on disk against 307 in the source)
+drill ok   legD/flags-lost: red through the expected leg — checker(himalaya-copy): leg D: the copy has lost the source's maildir flag suffix (name: 1767225600.#0M1P77.somehost)
+drill ok   legD/dangling-symlink: red through the expected leg — checker(himalaya-copy): leg D: the target folder holds an entry that is not a plain file (1767225600.#0M1P77.somehost:2,S)
+
+== leg E: the source is conserved
+drill ok   legE/source-rewritten: red through the expected leg — checker(himalaya-copy): leg E: the source message's bytes changed
+
+== leg C: the outside-root configuration is conserved
+drill ok   legC/config-changed: red through the expected leg — checker(himalaya-copy): leg C: the outside-root account configuration changed
+
+== leg R: himalaya's own reader agrees
+drill ok   legR/preconditions-green: checker green as required
+drill ok   legR/reader-lists-nothing: red through the expected leg — checker(himalaya-copy): leg R: the target folder holds one message but the reader lists 0
+drill ok   legR/reader-cannot-read: red through the expected leg — checker(himalaya-copy): leg R: the copy is on disk but the reader cannot read it back (rc=1): cannot read this message
+   (trial G in pre-define-trials.txt is the measurement that leg R
+    cannot substitute for leg D: a zero-length copy lists as an
+    ordinary envelope, 0 B and blank columns, rc 0.)
+
+== drills failed: 0

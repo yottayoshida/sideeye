@@ -1,0 +1,46 @@
+# Cohort-4 himalaya define (P1): kill `maildir messages copy` partway; the
+# checker holds the store-holds-old-or-complete-new property (proposals.md
+# carries the write shape, the pre-define trials and the declared world
+# readings).
+#
+# Why this arm. io-maildir stages `message save` through tmp/ and moves it
+# with a rename, and `message move` and the flag commands are a single
+# rename — the papis shape, one atomic mutation with no interior. `messages
+# copy` is the one arm that does not stage: it mints the destination name,
+# builds the FINAL path, and fills the file in place (entry/copy.rs; the
+# I/O is fs::copy at client.rs:227). The probe counted its interior at two
+# engine-reachable kill points, one open and one write
+# (../../probes/himalaya.txt, condition 9).
+#
+# Determinism and closure evidence: ../../probes/himalaya.txt, the accepted
+# probe. The define's deltas from it, each deliberate:
+#
+#   - fixture location moves from /tmp/probe-himalaya to /tmp/cohort4/himalaya;
+#   - the pre-state is built by setup.sh rather than copied per run;
+#   - THE CLOCK AND PID PINS ARE DROPPED. The probe pinned both so its
+#     two-run byte comparison could pass. This define cannot reuse them:
+#     the engine owns LD_PRELOAD for its shim, and /etc/ld.so.preload was
+#     measured to break strace, which the engine uses as its oracle. It
+#     also does not need them — the engine refuses on threads and on a
+#     baseline that violates the invariant, not on cross-run byte identity
+#     — so the checker asserts on the copy's content and flag suffix and
+#     never on its minted name. The probe's determinism result stands as
+#     what it measured: the operation is byte-reproducible when the clock
+#     and pid are pinned.
+#   - THE SECCOMP PROFILE IS KEPT, and it is not optional here. Without it
+#     fs::copy reaches copy_file_range, which the shim does not export and
+#     the oracle reports as an unsupported operation; the profile answers
+#     that and sendfile with ENOSYS so the copy lands on the libc
+#     read/write path both can see (../../seccomp-enosys.json, and the
+#     probe's bare mode where the unlifted copy succeeded through
+#     copy_file_range). It is applied at the container boundary, so the
+#     committed launcher cannot carry it: RUNLOG.md records the docker
+#     invocation that does.
+[world]
+state = "/tmp/cohort4/himalaya/store"
+
+[define]
+setup           = "./setup.sh"
+operation       = "himalaya -c /tmp/cohort4/himalaya/config.toml maildir messages copy 1700000000.#0M0P1.probehost --maildir . --target Archive"
+check           = "./check.sh"
+expected_status = "0"

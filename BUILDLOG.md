@@ -2,7 +2,66 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-08-23 — cohort 4 probes: the plans are frozen, so the scripts are transcription
+## 2026-08-23 — himalaya's define: what the checker may use, measured before it is written
+
+Entry opened before the define exists, per the contract. The probe (#246)
+established the operation is measurable; the define now has to state the
+property, and the mini-seal says nothing may explore until the complete
+define — toml, setup, checker, launcher — is first-parent on main.
+
+Two things get measured before a line of the checker is written, because
+cohort 3 paid for both. papis's checker rejected `papis doctor` as the
+documented recovery on a reading that had never actually run the command
+(no selection flag, so it fell to an interactive picker), and papis's own
+reader turned out to WRITE — `papis list` minted and persisted a random
+papis_id into a document that had lost one, which would have made a byte
+assertion after the reader a judgement of the checker's own side effect.
+So for himalaya: does the reader this checker wants to use mutate the
+store, and does himalaya carry anything that could be called a documented
+recovery? Both answered by trials in `pre-define-trials.txt`, before the
+property is committed.
+
+**Both answers came back useful, and one of them shapes the property.**
+The reader does not write: five states, healthy through zero-length,
+with every path, size and checksum snapshotted around each invocation,
+and nothing moved. So the ordering papis needed does not bind here, and
+the checker says which of the two reasons it is following. There is no
+documented recovery either: the enumerated command surface has no
+doctor, repair, check, verify or fsck, and the maildir subtree offers
+create, rename, delete, list, messages, flags. Nothing is run before the
+assert because nothing claims to repair a store.
+
+The measurement that shapes the property is trial G. **A zero-length
+message lists as an ordinary envelope** — one row, `0 B`, blank subject,
+from and date, rc 0 — and so does one cut mid-headers. Only `message
+read` refuses the empty one. That settles the checker's architecture:
+the byte assertion is what catches a torn copy, and the tool's own
+reader runs beside it rather than instead of it. It also says something
+about what a finding here would mean, which `proposals.md` states before
+the engine has run: a crash in this arm leaves a message the tool
+presents as real and whose content is gone.
+
+Two design decisions recorded with their reasons. The checker is
+**name-agnostic**: io-maildir mints the copy's filename from clock,
+counter, pid and hostname, and the pins the probe used cannot come along
+— the engine owns `LD_PRELOAD` for its shim, and `/etc/ld.so.preload`
+was measured to break strace, which the engine uses as its oracle. The
+engine does not need cross-run byte identity (it refuses on threads and
+on a baseline that violates the invariant), so the checker asserts
+content and flag suffix and never the minted name. The **seccomp profile
+stays**, and is not optional: without it `fs::copy` reaches
+`copy_file_range`, which the shim does not export and the oracle reports
+as unsupported. It applies at the container boundary, so the launcher
+cannot carry it and the RUNLOG records the invocation that does.
+
+Drills: every leg red once, on its own, with the expected leg named —
+guard through five shapes, leg D through four, legs E and C through one
+each. **Leg R could not be reached by damaging the store**, because
+every state that makes the reader disagree with the disk is caught by an
+earlier leg first, so its predicate is exercised directly with a reader
+put in front of the real one that answers wrongly: the same synthetic
+pinning this repository uses for a dyld phrase it cannot provoke. Both
+states the operation can actually leave are green.
 
 Entry opened at the start of the probes work, an hour after the freeze
 (#245) merged. The probe plans, fixtures, argv and apparatus are all
