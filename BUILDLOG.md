@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 (open) — #181: the macOS no-oracle claim gets its measurement
+
+The claim decides what a verdict means on half the supported platforms,
+lives in four claim sites plus CI and two docs, names one tool, and ADR
+0001 has said "to be measured" since 2026-08-10. The 08-10 entry's
+objection — a sudo-only oracle is not a CI tool — is an argument about
+the product default, not about whether an observer exists, and it was
+written without running anything as root.
+
+The survey splits on the privilege line. The unprivileged half ran first
+(`spike/macos-oracle/survey.txt`): every candidate refuses without root,
+each refusal captured verbatim — including the distinction the issue
+called out, that unprivileged `dtrace`'s hard stop is PRIVILEGES while
+SIP only limits "some features". OpenBSM is dismissed there without a
+sudo leg: auditd(8) on this machine says the subsystem is deprecated
+since 11.0, **disabled since 14.0**, and will be removed. The ktrace
+invocation for the privileged half is designed from this machine's man
+page (filter class `C3`, `-c command`), not from memory, because
+unprivileged ktrace refuses before printing usage.
+
+**Predictions, written before the privileged half runs**, so the run can
+contradict them:
+
+- `sudo dtruss` on the self-built, ad-hoc-signed toy: genuinely unknown —
+  this is the promised measurement. If it traces, four claim sites
+  overstate ("SIP refuses dtruss" is then true only of unprivileged
+  invocations); if it refuses even as root, the claim survives with the
+  privilege nuance corrected.
+- `fs_usage` as root: expect visibility with pathnames (kdebug substrate);
+  open questions are path truncation in non-tty output and event drops.
+- `ktrace -f C3`: same substrate as fs_usage; expect the same visibility
+  or a usage error that is itself the measurement.
+- `eslogger`: expect either JSON events or a TCC refusal naming Full Disk
+  Access; either answers whether ES is reachable without our own
+  entitlement.
+- A first-party ES client stays out of reach for a survey (the
+  entitlement is Apple-granted); eslogger is its measurable proxy.
+
+What the answer changes either way: the four claim sites say "macOS has
+no usable oracle" where the measured statement so far is "no unprivileged
+oracle, and the privileged candidates were never asked".
+
 ## 2026-08-23 — the formula shipped and the README still said "download the tarball"
 
 `#180`'s whole thesis was that installing takes four steps and one thing
