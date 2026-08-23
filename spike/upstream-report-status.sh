@@ -22,7 +22,8 @@ REPORTS='GothenburgBitFactory/timewarrior 778
 topydo/topydo 341
 aspiers/stow 139
 lfos/calcurse 529
-python-poetry/poetry 11019'
+python-poetry/poetry 11019
+pimalaya/himalaya 738'
 
 command -v gh >/dev/null 2>&1 ||
     { echo "BROKEN gh not installed - cannot measure"; exit 2; }
