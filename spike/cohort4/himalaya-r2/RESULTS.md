@@ -64,13 +64,18 @@ did not predict is in the metadata line, disclosed and unjudged: one
   and the freeze's Reporting section adds a precondition this finding has
   not met yet: measure the recovery paths that exist outside the tool and
   the conditions under which they do not apply. For himalaya that is the
-  other side of the sync, and it is unmeasured.
-- **The stock reproduction is still owed.** The finding must reproduce
-  against the stock tool with no apparatus beyond strace fault injection
-  before it is claimed or reported. The kill window does not depend on
-  the apparatus — the destination is created and filled afterwards on
-  either copy path — but that is an argument, and the rule wants a
-  measurement.
+  other side of the sync, and it is unmeasured. That is the one
+  measurement still standing between this candidate and a report.
+- **The stock reproduction is done, and it turned the toml's argument
+  into a measurement** (`stock-reproduction.txt`). No shim, no engine, no
+  seccomp, no `/etc/ld.so.preload`, no interposer: the stock binary under
+  strace with one injected signal. Stock copies with a single
+  `copy_file_range` of the whole 307-byte message, not the read/write
+  loop the define measured, and the window is there anyway: the kill
+  leaves a 0-byte message at its final path in the target folder,
+  himalaya lists it as an ordinary envelope, and `message read` on it
+  fails. The apparatus decided what the engine could see. It did not make
+  the finding.
 - **Novelty was cleared at selection time**, not here
   (`../novelty-prescan-himalaya.txt`, rule 14): 51 terms, controls green,
   nothing on the tracker describing this write shape. That is evidence a

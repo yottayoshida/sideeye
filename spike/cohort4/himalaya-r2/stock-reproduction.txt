@@ -1,0 +1,34 @@
+== apparatus check (all of these must be absent)
+   no /etc/ld.so.preload
+   LD_PRELOAD=<unset>
+   himalaya himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+
+== which copy primitive does the stock tool use?
+   operation rc=0
+   22    copy_file_range(3, NULL, 4, NULL, 1073741824, 0) = 307
+   22    copy_file_range(3, NULL, 4, NULL, 1073741824, 0) = 0
+   write() calls on this path: 1
+   reading: stock copies with copy_file_range, one call for the whole
+   message. The define measured a read/write loop because its
+   apparatus removed that primitive; this is the path a user gets.
+
+== the finding, stock: kill at the copy
+   operation rc=137 (killed by the injected signal)
+
+== what the store holds
+   1787453764.#0M538171715P35.eeda1ab15031:2,S: 0 bytes
+   the source message, for contrast: 307 bytes
+
+== what himalaya says about it
+   │ ID                                      ┆ FLAGS ┆ SUBJECT ┆ FROM ┆ DATE ┆ SIZE │
+   ╞═════════════════════════════════════════╪═══════╪═════════╪══════╪══════╪══════╡
+   │ 1787453764.#0M538171715P35.eeda1ab15031 ┆       ┆         ┆      ┆      ┆  0 B │
+   └─────────────────────────────────────────┴───────┴─────────┴──────┴──────┴──────┘
+   and reading it back:
+   message read rc=1 (106 bytes of output)
+
+== reading
+   A crash during `maildir messages copy` leaves a message file at its
+   final path in the target folder with none of the message in it, and
+   the tool lists it as an ordinary envelope. No apparatus of this
+   project was involved: one strace injection, on the stock binary.
