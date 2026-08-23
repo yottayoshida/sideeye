@@ -1,0 +1,55 @@
+# Cohort-4 himalaya, revision 2 (P1 unchanged): kill `maildir messages
+# copy` partway; the checker holds the store-holds-old-or-complete-new
+# property. The property, the checker, the setup and the fixtures are
+# r1's, byte for byte. Only the apparatus that makes the run observable
+# changed, and this file exists as a new target directory because the
+# mini-seal requires a revision to be one.
+#
+# WHY THERE IS A REVISION. r1 refused: `unsupported_syscall_observed:
+# copy_file_range` (../himalaya/run1/). The refusal is not a FAIL, so
+# nothing about the define is frozen by it, and it was not caused by the
+# target: it was caused by a gap between two predicates that had looked
+# like the same one.
+#
+#   - The probe's condition asked whether any accelerated copy SUCCEEDED,
+#     and answered no: the seccomp profile turned copy_file_range and
+#     sendfile into ENOSYS and the copy fell back to the libc read/write
+#     loop, 307 bytes landing correctly (../probes/himalaya.txt).
+#   - The oracle asks whether the syscall was OBSERVED. Its predicate
+#     reads the syscall's name and never its return value (oracle.zig's
+#     changesPersistentState), so an ENOSYS from the kernel refuses the
+#     run exactly as a success would.
+#
+# A profile that makes a call fail cannot satisfy a rule about calls
+# being made. That is the whole diagnosis, and it is worth keeping: a
+# gate can be green on the thing it measures and still not be the thing
+# the next stage requires.
+#
+# THE APPARATUS, and what it changes. `no-accel-copy.so` answers
+# copy_file_range, sendfile and sendfile64 in userspace with ENOSYS, so
+# the syscall is never made and the tracer has nothing to see. Measured
+# before this revision was written: zero copy_file_range/sendfile lines
+# in the trace, strace itself healthy, the copy landing at 307 bytes.
+# It is reachable because Rust std resolves those primitives as weak
+# symbols specifically so LD_PRELOAD can interpose them (#244). It rides
+# /etc/ld.so.preload because the engine owns LD_PRELOAD for its shim;
+# unlike the pid pin, which broke strace's child management, it defines
+# only these three functions and strace was measured healthy under it.
+#
+# WHAT IT DOES NOT CHANGE, stated because the stock-reproduction rule
+# turns on it. The kill window is not made by the apparatus: the
+# destination is created with O_CREAT|O_TRUNC and filled afterwards on
+# both paths, so a kill between the creation and the fill leaves a
+# message at its final path with the wrong bytes whether the fill is one
+# copy_file_range or a read/write loop. The apparatus decides which
+# syscalls the engine can see, not whether the window exists. A finding
+# here still owes its stock reproduction under strace fault injection
+# alone, per the freeze.
+[world]
+state = "/tmp/cohort4/himalaya/store"
+
+[define]
+setup           = "./setup.sh"
+operation       = "himalaya -c /tmp/cohort4/himalaya/config.toml maildir messages copy 1700000000.#0M0P1.probehost --maildir . --target Archive"
+check           = "./check.sh"
+expected_status = "0"
