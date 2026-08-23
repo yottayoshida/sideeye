@@ -1,0 +1,38 @@
+# The tools that read the damaged store — deliberately NOT built on top of
+# the cohort-4 image.
+#
+# The target himalaya in sideeye-cohort4 is a glibc-dynamic self-build, and
+# that image's own Dockerfile says the apt layer is pinned by BUILD rather
+# than by manifest. Installing a mail stack on top of it would pull
+# dependencies that can replace the shared libraries the pinned binary
+# resolves against, which would silently change what "the measured target"
+# means. So the damage is produced by the cohort-4 image untouched, written
+# to a bind mount, and read here by a separate image that never contains the
+# target at all.
+#
+# apt is used rather than pip/curl: this machine sits behind a
+# TLS-intercepting proxy that breaks in-container certificate verification,
+# and apt survives because it is plain HTTP (measured 2026-08-21, recorded in
+# the cohort-4 Dockerfile).
+#
+# Versions are not pinned here on purpose. This is a leg-external, non-claim
+# measurement — it decides no criterion-1 eligibility — and every sentence it
+# produces is scoped to the versions the transcript records at run time.
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        isync \
+        notmuch \
+        dovecot-imapd \
+        python3 \
+        ca-certificates \
+        file \
+    && rm -rf /var/lib/apt/lists/*
+
+# Recorded into the transcript by the driver rather than trusted from here.
+RUN mbsync --version > /versions.txt 2>&1 \
+    && notmuch --version >> /versions.txt 2>&1 \
+    && (dovecot --version >> /versions.txt 2>&1 || echo "dovecot --version failed" >> /versions.txt) \
+    && python3 --version >> /versions.txt 2>&1
+
+WORKDIR /work

@@ -102,12 +102,63 @@ did not predict is in the metadata line, disclosed and unjudged: one
     of syscall names, which measures "none of the names I thought of"
     rather than none: the positive control catches `getsockname` and
     `getpeername`, which that list did not have.
-  - **Not measured, stated rather than implied:** whether an external
-    syncer would carry the empty message outward to a server (the shape
-    the freeze calls the strongest form, needing a second tool and a
-    server); whether any reader other than the one tried would flag the
-    entry; and whether clap's help output is a faithful index of the
-    binary, which is the limit of R1's completeness.
+  - **Now measured — and it moves the severity in both directions**
+    (`outward-reach.txt`, #272). The four things left open above were
+    measured on 2026-08-23 in two images: the damage produced by the
+    cohort-4 image untouched, the syncer and readers in a separate image
+    that never contains the target, so no package install could disturb
+    the shared libraries the pinned binary resolves against.
+    - **The empty message travels, and a real server keeps it.** isync
+      1.5.1 loads the damaged folder as two messages, not one, and pushes
+      both. Synced alone from a clean near side — so the far side's count
+      is about that entry and nothing else — the empty entry produces one
+      far-side message whose entire content is mbsync's own `X-TUID`
+      header. Pushed to dovecot 2.4.1 over IMAP, an independent client
+      asking the server sees **two messages in INBOX**, one of them
+      `RFC822.SIZE=22` with no subject — and with that identification
+      removed as well, by pushing the empty entry alone into a mailbox of
+      its own: the server reports one message there, and **a clean second
+      store pulling that mailbox receives one file of 21 bytes**. That is
+      the shape the freeze calls the strongest form, measured end to end:
+      the external recovery path carries the damage outward, a real server
+      keeps it, and another device downloads it. The report's statement
+      that the entry is never sent anywhere is about the copy itself and
+      remains true; what happens afterwards is this. Scope: one syncer at
+      one version, one server at one version, one configuration.
+    - **One reader flags it, one does not.** `notmuch new` (0.39) prints
+      `Ignoring non-mail file` naming the entry and indexes one message of
+      three files. A planted control — malformed but *not* empty — draws
+      the same refusal in the same run, so the complaint is **not specific
+      to emptiness**; what it establishes is that notmuch separates
+      parseable from unparseable and this entry falls on the unparseable
+      side. It does not characterise every unparseable file, and it is a
+      detection path without being a diagnosis. Python's `mailbox.Maildir`
+      enumerates all three as messages, which is what the report says and
+      stays true.
+    - **The tool can finish the cleanup after all.** `message delete`
+      relocates the entry to Trash, as R5 measured; a second
+      `message delete` against the Trash copy reports
+      `Successfully deleted 1 message(s) from the trash` and the folder is
+      empty. So the route is the delete command twice, on an account whose
+      trash mailbox the user configures and creates first. The scan for a
+      purge/empty/expunge-shaped name covers the three blocks it prints —
+      top level, the shared `mailbox` API, the maildir-specific API — and
+      finds none in any of them, with its own positive control firing. It
+      is **not** a statement about the whole surface: the IMAP-specific API
+      does carry an `expunge`, which is an IMAP command and not a route for
+      a maildir account, and the transcript names it so the scan cannot be
+      read as wider than it is.
+    - **The help audit is narrowed to what is checkable.** Modelling
+      clap's derive expansion from a regex would agree with the help
+      output while both missed a cfg-gated construction, and an extractor
+      that finds nothing agrees with everything. What was checked instead:
+      the pinned source — digest verified against `freeze-build.txt` —
+      declares **no** `hide`, `hide_long_help` or `external_subcommand`
+      across 314 `.rs` files, with the same expression shown matching a
+      planted attribute. R1's enumeration is not undercut by a command the
+      help is told to omit. Whether clap's help is faithful in every other
+      respect is still not measured, and would need introspection of the
+      compiled command tree.
 - **The stock reproduction is done, and it turned the toml's argument
   into a measurement** (`stock-reproduction.txt`). No shim, no engine, no
   seccomp, no `/etc/ld.so.preload`, no interposer: the stock binary under

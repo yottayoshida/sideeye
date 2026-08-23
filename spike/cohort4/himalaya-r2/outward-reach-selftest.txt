@@ -1,0 +1,8 @@
+== selftest: every guard driven through the predicate the run uses
+selftest ok   contains-missing: refused, and said "does not name"
+selftest ok   contains-empty: refused, and said "nothing was measured"
+selftest ok   rc-mismatch: refused, and said "rc=1, required 0"
+selftest ok   missing-input: refused, and said "obtain it with: spike/cohort4/fetch-artifacts.sh"
+selftest ok   digest-mismatch: refused, and said "does not match the committed pin"
+selftest ok   good-case: correct input accepted by both predicates
+== selftest failures: 0
