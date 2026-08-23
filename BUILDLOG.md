@@ -2,6 +2,32 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — the stock reproduction, and what it corrected about my own argument
+
+The freeze wants a finding to reproduce against the stock tool with
+nothing beyond strace fault injection before it is claimed or reported.
+Done, with the apparatus checks in the script rather than in a sentence:
+no `/etc/ld.so.preload`, `LD_PRELOAD` unset, no shim, no engine, no
+seccomp profile.
+
+**And it corrected something I had argued rather than measured.** The r2
+toml said the kill window does not depend on the apparatus, because the
+destination is created and filled afterwards whichever primitive does
+the filling. Stock turns out not to take the path the define measured at
+all: it copies the whole 307-byte message in a single `copy_file_range`,
+where the apparatus had removed that primitive and forced a read/write
+loop. The window is there anyway. Killing at the copy leaves a 0-byte
+message at its final path, himalaya lists it as an ordinary envelope
+with blank subject, sender and date, and `message read` on it fails.
+
+So the argument held, and it is now a measurement, which is the whole
+reason the rule asks for one. The apparatus decided what the engine
+could see; it did not make the finding.
+
+Also caught by a gate rather than by me: the first push of this work
+changed `spike/` without touching BUILDLOG, and CI's buildlog job failed
+the PR. That is the contract this file opens with, enforced.
+
 ## 2026-08-23 — himalaya-r2: a FAIL through the declared checker, reproduced twice
 
 The revision ran and the declaration held on every point it made.
