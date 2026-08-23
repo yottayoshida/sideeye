@@ -2,6 +2,42 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — the README still described a one-exhibit report
+
+v0.13.0 gave the FAIL report a second exhibit (#231, ADR 0020): when the
+earliest failing world trips only the built-in comparison, the earliest
+world that falsified the declared checker is carried alongside it, with
+its own case file. The CHANGELOG says so. The README — which is the
+entry point, and the thing the onboarding clock hands its driver as the
+only documentation — still described the single-exhibit shape: "brings
+back the earliest failing crash point, saved as a replayable case", and
+"a FAIL saves its counterexample to `<work>/cases/NNNNNN.json`",
+singular. Both are now qualified, and `--fresh-state` — a shipped
+replay flag that appeared in `usage()` and nowhere in the README —
+joins the flag list.
+
+This is the release checklist's own lesson recurring. Step 3.5 asks for
+a README pass at every bump, and v0.13.0's pass looked at
+version-relative strings; a report gaining a field is not one of those.
+The rule the checklist states — hold it as "what changed that means the
+README should be reopened", not as "what to fix" — would have caught it:
+the report shape changed.
+
+**Review caught an overclaim in the fix itself.** The first draft said
+the second exhibit appears whenever the earliest world is built-in-only.
+It does not: `first_checker` is set only when some world actually
+falsifies the checker (`src/main.zig:1415`), so a run with no checker,
+or a checker green in every world, has no second exhibit at all. The
+sentence now requires a world that failed the checker, in both places
+that mention it.
+
+What the change is checked against, since prose can claim anything:
+acceptance already pins the shape — `000001.json` for the earliest and
+`000002.json` for the checker world, the text section
+`checker red crash point 4 of 4 (built-in atomicity, and the checker)`,
+and the second case replaying on its own. Nothing in the repository
+reads the README as a test fixture, so there was no anchor to move.
+
 ## 2026-08-23 — the empty message travels, and one reader refuses it
 
 `external-recovery.txt` closed with three things written down as not
