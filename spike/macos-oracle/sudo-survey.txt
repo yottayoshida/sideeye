@@ -1,0 +1,87 @@
+== environment (privileged half)
+   ProductName:		macOS
+   ProductVersion:		15.3.1
+   BuildVersion:		24D70
+   System Integrity Protection status: enabled.
+   uid 0, invoked via sudo by i.yoshida
+   2026-08-23T08:31:12Z
+
+== the toy, rebuilt here so this half stands alone
+   CodeDirectory v=20400 size=380 flags=0x20002(adhoc,linker-signed) hashes=9+0 location=embedded
+   Signature=adhoc
+   (ad-hoc linker signature: the self-built, non-platform case the
+    SIP question turns on)
+
+==============================================================
+L1. dtruss as root: the measurement ADR 0001 promised in 2026-08-10
+==============================================================
+   runner rc=0
+   capture: 10 line(s), 283 bytes
+   marker lines, first 10:
+     3:op open+write marker-a.tmp
+     4:op rename marker-a.tmp -> marker-a
+     5:op open+write marker-b
+     6:op unlink marker-b
+     7:op mkdir marker-sub
+     8:op open+write marker-sub/marker-c
+  dtruss: ok - all 3 tokens present, first appearances in order, 6 line(s) mention a marker
+
+==============================================================
+L2. dtrace itself, minimal syscall aggregate: splits 'DTrace is
+    blocked' from 'the dtruss wrapper is broken'
+==============================================================
+   runner rc=1
+   capture: 2 line(s); head:
+     dtrace: system integrity protection is on, some features will not be available
+     dtrace: invalid probe specifier syscall:::entry /pid == $target/ { @[probefunc] = count(); }: probe description syscall:::entry does not match any probes. System Integrity Protection is on
+   syscall names seen (nonzero rows prove per-pid visibility even
+   though this probe prints no paths):
+     aggregate rows: 0
+
+==============================================================
+L3. fs_usage: kdebug substrate, filtered to the toy by name
+==============================================================
+   toy rc=0 (its own account: 7 lines)
+   capture: 86 line(s), 21199 bytes
+   marker lines, first 10:
+     61:17:31:15.033654  open              F=3        (_WC_T_______)  /private/tmp/se181.hwCVLm/state-f/marker-a.tmp                                                                                                                  0.000480   toy.68557140
+     64:17:31:15.033909    WrData[A]       D=0x03e6454d  B=0x1000   /dev/disk3s5  /private/tmp/se181.hwCVLm/state-f/marker-a.tmp                                                                                                      0.000092 W toy.68557140
+     66:17:31:15.034306  rename                                 /private/tmp/se181.hwCVLm/state-f/marker-a.tmp                                                                                                                        0.000395   toy.68557140
+     68:17:31:15.034694  open              F=3        (_WC_T_______)  /private/tmp/se181.hwCVLm/state-f/marker-b                                                                                                                      0.000371   toy.68557140
+     72:17:31:15.034859    WrData[A]       D=0x03e64551  B=0x1000   /dev/disk3s5  /private/tmp/se181.hwCVLm/state-f/marker-b                                                                                                          0.000073 W toy.68557140
+     73:17:31:15.035175  unlink                                 /private/tmp/se181.hwCVLm/state-f/marker-b                                                                                                                            0.000320   toy.68557140
+     75:17:31:15.035500  mkdir                                  /private/tmp/se181.hwCVLm/state-f/marker-sub                                                                                                                          0.000311   toy.68557140
+     77:17:31:15.036001  open              F=3        (_WC_T_______)  /private/tmp/se181.hwCVLm/state-f/marker-sub/marker-c                                                                                                           0.000480   toy.68557140
+     80:17:31:15.036188    WrData[A]       D=0x03e64552  B=0x1000   /dev/disk3s5  /private/tmp/se181.hwCVLm/state-f/marker-sub/marker-c                                                                                               0.000087 W toy.68557140
+  fs_usage: ok - all 3 tokens present, first appearances in order, 9 line(s) mention a marker
+
+==============================================================
+L4. ktrace: same substrate, first-party interface, C3 = the
+    filesystem class per this machine's man page
+==============================================================
+   runner rc=0
+   capture: 157 line(s), 30566 bytes
+   marker lines, first 10:
+     1:op open+write marker-a.tmp
+     2:op rename marker-a.tmp -> marker-a
+     3:op open+write marker-b
+     4:op unlink marker-b
+     5:op mkdir marker-sub
+     6:op open+write marker-sub/marker-c
+  ktrace: ok - all 3 tokens present, first appearances in order, 6 line(s) mention a marker
+
+==============================================================
+L5. eslogger: Endpoint Security's shipped CLI (root + the invoking
+    terminal's Full Disk Access decide this one)
+==============================================================
+   toy rc=0 (its own account: 7 lines)
+   capture: 1 line(s), 168 bytes
+   marker lines, first 10:
+     (none)
+  eslogger: FAIL - token 'marker-a.tmp' never appears (168 bytes searched)
+  eslogger: (no marker token at all: the observer saw nothing of the toy)
+
+== residue check: no observer left behind
+   (silence above = all observers exited or were killed)
+
+== BROKEN checks: 0

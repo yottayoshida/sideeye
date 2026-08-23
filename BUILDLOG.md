@@ -44,6 +44,47 @@ What the answer changes either way: the four claim sites say "macOS has
 no usable oracle" where the measured statement so far is "no unprivileged
 oracle, and the privileged candidates were never asked".
 
+**Round 1 (2026-08-23T08:31Z) answered two legs decisively and caught my
+harness lying on a third.**
+
+The decisive pair. L2: even as root, DTrace's syscall provider matches
+no probes — "probe description syscall:::entry does not match any
+probes. System Integrity Protection is on". So sudo does not rescue
+DTrace; the 08-10 claim survives at root, though its stated reason
+("requires additional privileges") was the unprivileged symptom, not the
+cause. L3: **fs_usage is oracle-shaped.** Full paths, operation names
+(open / WrData / rename / unlink / mkdir), attribution to `toy.<pid>`,
+timestamps, order intact — all three markers in first-appearance order,
+nine event lines, zero contamination, no truncation at these path
+lengths. The kdebug substrate sees everything the oracle role needs.
+
+The lie. L1 reported dtruss "ok - all 3 tokens present", and every one
+of its marker lines began with `op ` — the toy's OWN stdout. dtruss runs
+the child itself, the child's output landed in the capture, and the
+check judged the target's self-account as the observer's testimony. A
+confident false pass on the exact machine where L2 proves the provider
+is gone. L4 (ktrace) has the same contamination, and its verdict line
+shows only 6 marker lines = the toy's own, which suggests raw kdebug
+events carry no resolved path strings — but round 1 cannot prove that,
+because the capture was cleaned up and only marker lines were excerpted.
+L5 (eslogger) failed with a 1-line capture whose content the transcript
+never showed, for the same excerpting reason.
+
+Fixes, each the shape of a lesson already paid for elsewhere: runner
+legs now route the toy through a wrapper so captures hold only what the
+observer emitted; check-capture rejects a capture whose every marker
+line is the toy's own words (seen red on a synthetic copy of round 1's
+dtruss capture; the ground-truth control passes `--allow-self-account`
+explicitly); verdicts print the capture head verbatim so a refusal
+survives into the transcript after the raw file is cleaned up.
+
+**Predictions for round 2, before it runs:** dtruss becomes a measured
+refusal (capture = DTrace's own error lines, check FAIL "saw nothing",
+toy account showing toy-rc=0 separately); ktrace's clean capture shows
+**0** observer lines carrying a marker path, because raw kdebug does not
+resolve paths — fs_usage is the front-end that does; eslogger's one line
+becomes readable and is expected to name Full Disk Access.
+
 ## 2026-08-23 — the formula shipped and the README still said "download the tarball"
 
 `#180`'s whole thesis was that installing takes four steps and one thing

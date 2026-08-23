@@ -57,8 +57,12 @@ echo "   toy rc=$rc; its own account:"
 sed 's/^/     /' "$W/ground-truth.txt"
 echo "   what it left on disk:"
 ( cd "$W/state" && find . | LC_ALL=C sort | sed 's/^/     /' )
-python3 "$here/check-capture.py" "$W/ground-truth.txt" "ground-truth (positive control)" \
+python3 "$here/check-capture.py" --allow-self-account \
+    "$W/ground-truth.txt" "ground-truth (positive control)" \
     || bad "the ground truth itself fails the check, so no capture can pass it"
+echo "   (--allow-self-account, because the ground truth IS a self-account;"
+echo "    observer legs run without the flag and are rejected if their"
+echo "    capture holds nothing but the toy's own words)"
 
 echo ""
 echo "== candidate presence"

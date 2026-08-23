@@ -7,7 +7,7 @@
    invoked as uid 502 (this half is deliberately unprivileged)
 
 == the check this survey trusts, seen red before it judges anything
-  selftest/complete-in-order: ok - all 3 tokens present, first appearances in order, 3 line(s) mention a marker
+  selftest/complete-in-order: ok - all 3 tokens present, first appearances in order, 3 line(s) mention a marker (3 from the observer itself)
   selftest ok: complete-in-order -> rc 0 (wanted 0)
   selftest/missing-middle-token: FAIL - token 'marker-b' never appears (28 bytes searched)
   selftest ok: missing-middle-token -> rc 1 (wanted 1)
@@ -16,11 +16,17 @@
   selftest/empty-capture: FAIL - token 'marker-a.tmp' never appears (0 bytes searched)
   selftest/empty-capture: (no marker token at all: the observer saw nothing of the toy)
   selftest ok: empty-capture -> rc 1 (wanted 1)
+  selftest/self-account-only: FAIL - every marker line is the toy's own stdout ('op ...'): this capture proves the toy ran, not that the observer saw it
+  selftest ok: self-account-only -> rc 1 (wanted 1)
+  selftest/self-account-allowed (the ground-truth control): ok - all 3 tokens present, first appearances in order, 5 line(s) mention a marker (0 from the observer itself)
+  selftest ok: self-account-allowed (the ground-truth control) -> rc 0 (wanted 0)
+  selftest/mixed-observer-and-self-account: ok - all 3 tokens present, first appearances in order, 6 line(s) mention a marker (1 from the observer itself)
+  selftest ok: mixed-observer-and-self-account -> rc 0 (wanted 0)
   selftest failures: 0
 
 == the toy, built and self-accounted
    codesign identity of the fresh build (linker-applied, not ours):
-     Executable=/private/var/folders/lm/837r2dnd3tsbn9ng4rvxgrbm0000gp/T/se181.UwWnfG/toy
+     Executable=/private/var/folders/lm/837r2dnd3tsbn9ng4rvxgrbm0000gp/T/se181.rlWTU6/toy
      Identifier=toy
      Format=Mach-O thin (arm64)
    toy rc=0; its own account:
@@ -36,7 +42,10 @@
      ./marker-a
      ./marker-sub
      ./marker-sub/marker-c
-  ground-truth (positive control): ok - all 3 tokens present, first appearances in order, 6 line(s) mention a marker
+  ground-truth (positive control): ok - all 3 tokens present, first appearances in order, 6 line(s) mention a marker (0 from the observer itself)
+   (--allow-self-account, because the ground truth IS a self-account;
+    observer legs run without the flag and are rejected if their
+    capture holds nothing but the toy's own words)
 
 == candidate presence
    dtruss     /usr/bin/dtruss
@@ -89,9 +98,11 @@
 == census: where the no-oracle claim lives (tracked files, this spike excluded)
 -- positive control: the dtruss-only claim sites
    .github/workflows/ci.yml:142:      # No oracle here: dtruss is DTrace-based and System Integrity Protection refuses
-   BUILDLOG.md:2411:macOS oracle claim resting on `dtruss` alone) left the page reading "nothing
-   BUILDLOG.md:7836:**`dtruss` is not usable.** SIP is enabled and DTrace refuses: *"DTrace requires
-   BUILDLOG.md:7837:additional privileges"*. `sudo dtruss` may work, but a tool that demands sudo to reach
+   BUILDLOG.md:28:- `sudo dtruss` on the self-built, ad-hoc-signed toy: genuinely unknown —
+   BUILDLOG.md:30:  overstate ("SIP refuses dtruss" is then true only of unprivileged
+   BUILDLOG.md:2453:macOS oracle claim resting on `dtruss` alone) left the page reading "nothing
+   BUILDLOG.md:7878:**`dtruss` is not usable.** SIP is enabled and DTrace refuses: *"DTrace requires
+   BUILDLOG.md:7879:additional privileges"*. `sudo dtruss` may work, but a tool that demands sudo to reach
    docs/adr/0001-language-and-interposition.md:69:| Completeness oracle | `strace` | to be measured — `dtruss` is DTrace-based and constrained by SIP |
    docs/freeze-audit.md:57:no oracle" claim rests on `dtruss` alone; `fs_usage`, `ktrace`, OpenBSM and
    docs/unknown-rate.md:215:  exists on macOS (SIP refuses dtruss), and `requireCompleteness`
@@ -99,13 +110,13 @@
    src/main.zig:223:        \\               has no usable oracle: dtruss is blocked by SIP. The report says
    src/main.zig:267:/// `allow_unverified` exists because macOS has no oracle sideeye can use. `dtruss` is
 -- the candidates, file counts
-   fs_usage             1 file(s)
-   ktrace               3 file(s)
+   fs_usage             2 file(s)
+   ktrace               4 file(s)
    praudit              0 file(s)
-   eslogger             0 file(s)
+   eslogger             1 file(s)
    Endpoint Security    2 file(s)
-   OpenBSM              1 file(s)
-   kdebug               0 file(s)
+   OpenBSM              2 file(s)
+   kdebug               1 file(s)
    (the issue measured all of these at zero on 2026-08-18; the
     nonzero ones today are docs/freeze-audit.md and BUILDLOG quoting
     the issue itself, not measurements)

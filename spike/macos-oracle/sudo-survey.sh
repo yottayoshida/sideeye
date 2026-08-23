@@ -63,6 +63,9 @@ observe() { # capture-file state-dir observer-cmd...
 
 verdict() { # capture-file label
     echo "   capture: $(wc -l < "$1" | tr -d ' ') line(s), $(wc -c < "$1" | tr -d ' ') bytes"
+    echo "   capture head, verbatim (a refusal must be readable in this"
+    echo "   transcript after the raw capture is cleaned up):"
+    head -6 "$1" | sed 's/^/     | /'
     echo "   marker lines, first 10:"
     grep -n 'marker-' "$1" | head -10 | sed 's/^/     /'
     grep -c 'marker-' "$1" > /dev/null || echo "     (none)"
@@ -98,12 +101,28 @@ codesign -dv "$W/toy" 2>&1 | grep -E 'Signature|CodeDirectory' | sed 's/^/   /'
 echo "   (ad-hoc linker signature: the self-built, non-platform case the"
 echo "    SIP question turns on)"
 
+# Runner-style observers (dtruss, dtrace -c, ktrace -c) execute the toy
+# themselves, and the first privileged run proved why that needs care:
+# the toy's stdout landed inside the observer's capture, and the check
+# judged the toy's own account as if the observer had produced it - a
+# confident false pass for dtruss on a machine where L2 shows the
+# syscall provider matches no probes at all. Every runner leg now runs
+# the toy through this wrapper, which routes the toy's output to its own
+# account file, so a capture holds only what the OBSERVER emitted.
+cat > "$W/run-toy.sh" <<WRAP
+#!/bin/sh
+"$W/toy" "\$1" > "\$2" 2>&1
+echo "toy-rc=\$?" >> "\$2"
+WRAP
+chmod 755 "$W/run-toy.sh"
+
 echo ""
 echo "=============================================================="
 echo "L1. dtruss as root: the measurement ADR 0001 promised in 2026-08-10"
 echo "=============================================================="
 mkdir -p "$W/state-d"
-runner "$W/dtruss.cap" dtruss -f "$W/toy" "$W/state-d"
+runner "$W/dtruss.cap" dtruss -f "$W/run-toy.sh" "$W/state-d" "$W/state-d.toy-account"
+echo "   toy's own account (separated from the capture): $(tail -1 "$W/state-d.toy-account" 2>/dev/null || echo MISSING)"
 verdict "$W/dtruss.cap" "dtruss"
 
 echo ""
@@ -114,7 +133,7 @@ echo "=============================================================="
 mkdir -p "$W/state-t"
 runner "$W/dtrace.cap" dtrace -q \
     -n 'syscall:::entry /pid == $target/ { @[probefunc] = count(); }' \
-    -c "$W/toy $W/state-t"
+    -c "$W/run-toy.sh $W/state-t $W/state-t.toy-account"
 echo "   capture: $(wc -l < "$W/dtrace.cap" | tr -d ' ') line(s); head:"
 head -8 "$W/dtrace.cap" | sed 's/^/     /'
 echo "   syscall names seen (nonzero rows prove per-pid visibility even"
@@ -134,8 +153,13 @@ echo "L4. ktrace: same substrate, first-party interface, C3 = the"
 echo "    filesystem class per this machine's man page"
 echo "=============================================================="
 mkdir -p "$W/state-k"
-runner "$W/ktrace.cap" ktrace trace -f C3 -c "$W/toy" "$W/state-k"
+runner "$W/ktrace.cap" ktrace trace -f C3 -c "$W/run-toy.sh" "$W/state-k" "$W/state-k.toy-account"
+echo "   toy's own account (separated from the capture): $(tail -1 "$W/state-k.toy-account" 2>/dev/null || echo MISSING)"
 verdict "$W/ktrace.cap" "ktrace"
+echo "   the question the contaminated first run could not answer - do"
+echo "   ktrace's OWN event lines carry the marker paths, the way"
+echo "   fs_usage's do? Lines mentioning a marker that are not the toy's:"
+grep 'marker-' "$W/ktrace.cap" | grep -cv '^op ' | sed 's/^/     /'
 
 echo ""
 echo "=============================================================="
