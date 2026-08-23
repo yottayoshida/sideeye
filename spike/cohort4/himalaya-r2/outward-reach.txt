@@ -1,0 +1,255 @@
+== apparatus, recorded rather than trusted
+   damage image:  sideeye-cohort4:latest  sha256:3e0aefa766b5
+   tools image:   sideeye-c4-tools:latest  sha256:b6df65d79e25
+   target binary: himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp 86a1872f91da1980 
+   tool: isync 1.5.1
+   tool: notmuch 0.39
+   tool: 2.4.1-4 (7d8c0e5759)
+   tool: Python 3.13.5
+
+==============================================================
+Producing the damage: the stock shape, in the untouched image.
+==============================================================
+   apparatus absent: no /etc/ld.so.preload, LD_PRELOAD=<unset>
+   killed copy rc=137 (137 = the injected signal landed)
+   completed copy rc=0 (the healthy control, made by letting the same operation finish)
+ok   generation ran: rc=0 as required
+   1787477846.#0M766522596P15.1b1ffe162f95:2,S = 0 bytes
+   1787477846.#0M769228929P16.1b1ffe162f95:2,S = 307 bytes
+ok   the damaged entry exists: 1787477846.#0M766522596P15.1b1ffe162f95:2,S
+ok   the healthy control exists: 1787477846.#0M769228929P16.1b1ffe162f95:2,S
+
+==============================================================
+S1. Does an external syncer carry the empty message outward?
+==============================================================
+   isync, Maildir on both sides. mbsync --dry-run is not usable here:
+   against a Maildir near store it aborts on
+   maildir_find_new_msgs: Assertion 'DFlags & FAKEDUMBSTORE' failed.
+   So this is a real sync into a scratch far side.
+== the near side, before
+   1787477846.#0M766522596P15.1b1ffe162f95:2,S = 0 bytes
+   1787477846.#0M769228929P16.1b1ffe162f95:2,S = 307 bytes
+
+== the sync, with maildir and sync debug on
+   mbsync rc=0 (taken from the command, not through a pipe)
+   far side: 0 messages, 0 recent
+   near side: 2 messages, 0 recent
+   Channels: 1    Boxes: 1    Far: +2 *0 #0 -0    Near: +0 *0 #0 -0
+   the syncer's output never names 1787477846.#0M766522596P15.1b1ffe162f95:2,S — nothing below is about that file
+
+== the far side, after
+   1787477848.23_1.57ae0cdb912c,U=1:2,S = 21 bytes
+     its entire content:
+       X-TUID: D8Wm6IJ7zaOX
+   FAR-EMPTY-ARRIVED
+   1787477848.23_2.57ae0cdb912c,U=2:2,S = 328 bytes
+     subject: Existing message, fixed bytes
+   FAR-CONTROL-ARRIVED
+
+== the same question without an inference in it
+   The run above proves two entries went out, and identifies which is
+   which by size. mbsync's own debug output does not name individual
+   files at any verbosity tried (-Dm -Ds), so that identification is
+   an inference rather than the tool saying so. The isolation below
+   removes the inference: each entry is synced ALONE from a clean
+   near side into a clean far side, so the far side's count is about
+   that entry and nothing else.
+   damaged-alone: near held only 1787477846.#0M766522596P15.1b1ffe162f95:2,S (0 bytes)
+     mbsync rc=0, far side afterwards: 1 entry(ies), 21 bytes
+   ISOLATED-EMPTY-TRAVELLED
+   healthy-alone: near held only 1787477846.#0M769228929P16.1b1ffe162f95:2,S (307 bytes)
+     mbsync rc=0, far side afterwards: 1 entry(ies), 328 bytes
+   ISOLATED-CONTROL-TRAVELLED
+
+== reading, kept to what this measured
+   isync isync 1.5.1, Maildir to Maildir, one channel,
+   one configuration. The near side held two entries produced by real
+   operations; the syncer loaded both as messages and pushed both.
+   What lands on the far side for the empty one is a message whose
+   whole content is the syncer's own tracking header.
+   This says nothing about other syncers, other configurations, or
+   what an IMAP server would accept — the IMAP half is its own leg.
+ok   S1 ran: rc=0 as required
+ok   S1 the syncer counted both entries as messages: the output names near side: 2 messages
+ok   S1 positive control: the healthy message reached the far side: the output names FAR-CONTROL-ARRIVED
+ok   S1 the empty entry reached the far side: the output names FAR-EMPTY-ARRIVED
+ok   S1 the empty entry travels when it is the only thing there: the output names ISOLATED-EMPTY-TRAVELLED
+ok   S1 positive control travels under the same isolation: the output names ISOLATED-CONTROL-TRAVELLED
+
+==============================================================
+S2. Does a real IMAP server accept it?
+==============================================================
+   Asked only because S1 answered yes. If the syncer had declined to
+   carry the entry, no server would need to be stood up to know that.
+== bringing up a real IMAP server
+   dovecot start rc=0
+   IMAP reachable on 127.0.0.1:10143: yes
+   near side: 1787477846.#0M766522596P15.1b1ffe162f95:2,S (0 bytes) and 1787477846.#0M769228929P16.1b1ffe162f95:2,S
+
+== pushing the folder to the server
+   mbsync rc=0 (taken from the command)
+   far side: 0 messages, 0 recent
+   near side: 2 messages, 0 recent
+   Channels: 1    Boxes: 1    Far: +2 *0 #0 -0    Near: +0 *0 #0 -0
+
+== what a client asking the server sees, not what the disk holds
+   SELECT INBOX -> OK 2
+   the server reports 2 message(s) in INBOX
+     uid-seq 1  RFC822.SIZE=22  subject=''
+     uid-seq 2  RFC822.SIZE=337  subject='Subject: Existing message, fixed bytes'
+   IMAP-CONTROL-ON-SERVER
+   independent IMAP read rc=0
+
+== the same question without an identification in it
+   Above, which arrival is which rests on subject and size. The push
+   below carries ONE entry — the 0-byte one — into a mailbox of its
+   own, so the server's count for that mailbox is about that entry
+   and nothing else. Then a clean second store pulls the account, the
+   way another device would.
+   isolated push rc=0 — Channels: 1    Boxes: 1    Far: +1 *0 #0 -0    Near: +0 *0 #0 -0
+   second-device pull rc=0 — Channels: 1    Boxes: 1    Far: +0 *0 #0 -0    Near: +1 *0 #0 -0
+   the server reports 1 message(s) in the isolated mailbox
+     its size on the server: 1 (RFC822.SIZE 22)
+   IMAP-ISOLATED-EMPTY-ON-SERVER
+   a clean second store pulled 1 file(s) from that mailbox
+     1787477851.63_1.0b789b75e75f,U=1:2,S = 21 bytes
+   IMAP-SECOND-DEVICE-GOT-EMPTY
+   isolated read + second-device pull rc=0
+
+== reading
+   dovecot 2.4.1-4 (7d8c0e5759), one account, plaintext on
+   loopback. What is measured is what an IMAP client asking the server
+   sees after the folder was pushed — the same question a second
+   device would ask. Nothing here is about other servers or other
+   syncers.
+ok   S2 ran: rc=0 as required
+ok   S2 positive control: the healthy message reached the server: the output names IMAP-CONTROL-ON-SERVER
+ok   S2 the empty message alone reaches the server (isolated push, no identification by subject): the output names IMAP-ISOLATED-EMPTY-ON-SERVER
+ok   S2 a second device pulling the account receives it: the output names IMAP-SECOND-DEVICE-GOT-EMPTY
+
+==============================================================
+R. Does anything outside himalaya flag it?
+==============================================================
+== the store under test
+   damaged (0 bytes, from the killed copy): 1787477846.#0M766522596P15.1b1ffe162f95:2,S
+   healthy (from the completed copy):       1787477846.#0M769228929P16.1b1ffe162f95:2,S
+   planted control (hand-made, malformed but NOT empty): 1700000000.planted.control:2,S
+     61 bytes
+
+== reader 1: notmuch, an indexer
+   notmuch new rc=0
+   Note: Ignoring non-mail file: /work/store/INBOX/cur/1787477846.#0M766522596P15.1b1ffe162f95:2,S
+   Note: Ignoring non-mail file: /work/store/INBOX/cur/1700000000.planted.control:2,S
+   Found 3 total files (that's not much mail).
+   Processed 3 total files in almost no time.
+   Added 1 new message to the database.
+   what it indexed: 1 message(s) of 3 files
+   notmuch named the damaged entry:  yes
+   notmuch named the planted control: yes
+   NOTMUCH-FLAGGED-DAMAGED
+   NOTMUCH-FLAGGED-PLANTED
+   NOTMUCH-INDEXED-CONTROL (the healthy message is in the database)
+
+== reader 2: python's mailbox.Maildir, the one the record already used
+   enumerates 3 message(s)
+     [damaged] subject=None headers=0 body=0 bytes
+     [planted] subject=None headers=0 body=61 bytes
+     [healthy] subject='Existing message, fixed bytes' headers=6 body=64 bytes
+   PYTHON-ENUMERATED-DAMAGED
+   python reader rc=0
+
+== reading, and it goes both ways
+   The indexer refuses the empty entry by name and does not put it in
+   its database, so a detection path exists that the record did not
+   have. Whether that refusal is specific to emptiness or is the same
+   refusal any unparseable file gets is answered by the planted
+   control above, which is malformed but not empty.
+   The python reader still enumerates the empty entry as an ordinary
+   message, which is what the report says and stays true.
+   Two readers, named. Not every reader.
+ok   R ran: rc=0 as required
+ok   R positive control: notmuch indexed the healthy message: the output names NOTMUCH-INDEXED-CONTROL
+ok   R notmuch named the damaged entry in its own output: the output names NOTMUCH-FLAGGED-DAMAGED
+ok   R control: notmuch also names a malformed non-empty file, so the refusal is not emptiness-specific: the output names NOTMUCH-FLAGGED-PLANTED
+ok   R the other reader still enumerates the damaged entry as a message: the output names PYTHON-ENUMERATED-DAMAGED
+
+==============================================================
+T. Can the tool itself finish the cleanup?
+==============================================================
+== the store as the damage left it
+   Archive/cur/1787477846.#0M766522596P15.1b1ffe162f95:2,S = 0 bytes
+   Archive/cur/1787477846.#0M769228929P16.1b1ffe162f95:2,S = 307 bytes
+
+== with a trash mailbox configured, as the tool's error asks
+   message delete rc=0 — Successfully moved 1 message(s) to the trash
+   Archive/cur now: 1 entry(ies)
+   Trash/cur now:   1 entry(ies)
+     in Trash: 1787477851.#0M967916251P23.b921d714ad84:2,S = 0 bytes
+   TRASH-MOVED-ZERO-BYTE
+
+== is there a command that empties it?
+   the shared mailbox API:
+     Commands:
+       list  Shared API to list mailboxes for the active account [alias: ls]
+       help  Print this message or the help of the given subcommand(s)
+     
+     Options:
+   the maildir-specific API:
+     Commands:
+       create    Create a Maildir folder
+       rename    Rename a Maildir folder
+       delete    Delete a Maildir folder
+       list      List Maildir folders
+       messages  Manage MAILDIR messages
+       flags     Manage MAILDIR flags
+       help      Print this message or the help of the given subcommand(s)
+     
+     Options:
+   scanning the blocks inspected above — and ONLY those — for a name
+   that could remove it. This is not a claim about the whole surface:
+   the IMAP-specific API does carry an expunge, which is an IMAP
+   command and not a route for a maildir account, and it is named
+   here so the scan is not read as wider than it is.
+     <top level>: names matching purge/empty/expunge/vacuum/compact = 0
+     mailbox: names matching purge/empty/expunge/vacuum/compact = 0
+     maildir: names matching purge/empty/expunge/vacuum/compact = 0
+     imap (named for contrast, not a maildir route): 1
+   positive control, the same expression against a string that must match: 1
+   TRASH-SCAN-CONTROL-FIRES
+
+== the second delete: what happens to a message already in Trash?
+   message delete on the Trash copy rc=0 — Successfully deleted 1 message(s) from the trash
+   Trash/cur afterwards: 0 entry(ies)
+   TRASH-SECOND-DELETE-REMOVED
+
+== reading
+   Scoped to this account configuration and this build. What the tool
+   can do is relocate the empty entry into a trash mailbox the user
+   creates and names first. Whether anything in the surface then
+   removes it is what the scan above answers, with its own positive
+   control so that a count of zero means the expression works and
+   found nothing, rather than that it matches nothing at all.
+ok   T ran: rc=0 as required
+ok   T the first delete relocated the 0-byte entry into Trash: the output names TRASH-MOVED-ZERO-BYTE
+ok   T the second delete emptied the Trash of it: the output names TRASH-SECOND-DELETE-REMOVED
+ok   T the surface scan's own expression matches when a matching name exists: the output names TRASH-SCAN-CONTROL-FIRES
+
+==============================================================
+H. Is clap's help a faithful index of this binary?
+==============================================================
+   Narrowed on purpose. Modelling clap's derive expansion from a
+   regex would agree with the help output while both missed a
+   cfg-gated construction, and an extractor that finds nothing
+   agrees with everything. What is checkable without rebuilding is
+   whether the pinned source defines any command the help is told
+   to omit, or an escape hatch that accepts unknown ones.
+ok   input present: /Users/i.yoshida/claude_workspace/sideeye/spike/cohort4/artifacts/himalaya-src
+ok   H the source tree hashes to the pinned digest (recomputed, not read from the sidecar): digest matches the committed pin
+   scanned 314 .rs files under the pinned src/
+   clap hiding or escape-hatch attributes found: 0
+ok   H scan denominator: 314 files
+ok   H no hidden or external subcommand is declared in the pinned source
+   positive control, same expression against a planted attribute:
+ok   H the expression matches when a hidden command is present (1)
+
+== failures: 0

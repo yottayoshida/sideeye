@@ -2,6 +2,153 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — the empty message travels, and one reader refuses it
+
+`external-recovery.txt` closed with three things written down as not
+measured, and the himalaya report's severity ceiling rests on them
+(`#272`). The first is the one the freeze calls the strongest form:
+whether an external syncer managing the maildir would carry the empty
+message outward to a server. Measured today, and it does.
+
+**The apparatus, and why it is two images.** The damage is produced by
+`sideeye-cohort4:latest` untouched — the stock reproduction's shape, one
+`strace` injection on `copy_file_range`, no shim, no engine, no seccomp,
+no interposer — writing into a bind mount. The syncer and the readers run
+in a separate `debian:trixie-slim` image that never contains the target.
+The reason is not tidiness: the pinned himalaya is a glibc-dynamic
+self-build, and installing a mail stack on top of that image would pull
+dependencies able to replace the shared libraries the measured binary
+resolves against. The target runs in the pinned image unmodified — the
+generation step checks `/etc/ld.so.preload` is absent and prints
+`LD_PRELOAD` the way the stock reproduction does — and the tools live
+somewhere else.
+
+**leg S, stage 1: mbsync carries it.** isync 1.5.1, Maildir on both
+sides, `Sync All`, `Create Both`. The near side is the damaged Archive
+folder holding two entries produced by real operations — the 0-byte one
+from the killed copy, and a 307-byte one from letting the same copy run
+to completion. mbsync loads the box as **two messages**, not one, and the
+sync reports `Far: +2 *0 #0 -0`. Both arrive. The 307-byte message lands
+as 328 bytes; the empty one lands as **21 bytes whose entire content is
+mbsync's own `X-TUID` bookkeeping header** — the value is minted per run,
+so the transcript holds it and this entry does not. Synced alone from a
+clean near side, so the far side's count is about that entry and nothing
+else, the empty one still produces exactly one far-side message.
+
+So the external recovery path does not merely fail to restore the folder;
+it propagates the damage in the direction the report had said the entry
+never travels. That sentence in `#738` was about the entry never being
+sent **during the copy**, which is still true and was measured with a
+positive control. What was not measured, and is now, is what happens
+afterwards when something else syncs the folder.
+
+**leg R, and it cuts the other way: notmuch refuses the file.**
+`notmuch new` (0.39) over a copy of the damaged Archive itself — not the
+far side; the readers are asked about the store himalaya left behind —
+prints `Note: Ignoring non-mail file:` naming the empty entry, and adds
+one message to its database of three files. That is a detection path the
+record did not have, and it narrows the report's "why it is easy to miss"
+section: the claim there is scoped to the one reader tried, python's,
+which does enumerate the entry as ordinary and still does. What the
+refusal is *not* is emptiness-specific: a planted control in the same run,
+malformed but not empty, draws the same `Ignoring non-mail file`. So
+notmuch distinguishes parseable from unparseable, and this entry falls on
+the unparseable side — which is a detection path without being a
+diagnosis. Recording both directions rather than the convenient one.
+
+**leg S, stage 2: a real server keeps it.** Stage 2 was asked only
+because stage 1 answered yes — if the syncer had declined to carry the
+entry, no server would have been needed to know that. dovecot 2.4.1 on
+loopback, the folder pushed over IMAP, and the far side read back with an
+independent IMAP client rather than by looking in the server's backing
+directory: `SELECT INBOX` reports **2 messages**, one of them
+`RFC822.SIZE=22` with an empty subject.
+
+That identification rests on subject and size, so the leg then removes it:
+the empty entry alone is pushed into a mailbox of its own (`Far: +1`), the
+server reports **one** message there with `RFC822.SIZE 22`, and a clean
+second store pulling that mailbox receives **one file of 21 bytes**
+(`Near: +1`). The chain is measured end to end with nothing inferred — a
+crash inside a local copy produces a message that a real server keeps and
+another device downloads. The first attempt at that isolation pushed
+nothing and the server answered `NONEXISTENT`: pointing the store's Inbox
+at the isolated maildir while matching it with `Patterns "ISO"` makes
+mbsync match nothing and create nothing. The store needs an Inbox of its
+own and the isolated folder as a subfolder.
+
+**leg T, and it goes the other way: the tool can finish the cleanup.**
+`external-recovery.txt` measured the delete relocating the entry into
+Trash and left "whether emptying the trash removes it" open in the same
+sentence. It does: a second `message delete` against the Trash copy
+answers `Successfully deleted 1 message(s) from the trash`, and the folder
+is empty afterwards. The route is the same command twice, on an account
+whose trash mailbox the user configures and creates first. That narrows
+what the report may say about the user being stuck. The scan for a
+purge-shaped name covers the three blocks it prints — top level, the
+shared `mailbox` API, the maildir-specific API — and not the whole
+surface: the IMAP-specific API does carry an `expunge`, irrelevant to a
+maildir account and named in the transcript anyway, because the first
+draft of that sentence said "no name in the surface" and review caught it.
+
+**leg H, narrowed until it was checkable.** Regexing clap's derive
+expansion would have produced a set that agrees with the help output
+while both missed a cfg-gated construction, and an extractor returning
+nothing agrees with everything — the review of the plan said so and was
+right. What is checkable without rebuilding: the pinned source, digest
+verified against `freeze-build.txt`, declares no `hide`,
+`hide_long_help` or `external_subcommand` across 314 `.rs` files, with
+the same expression shown matching a planted attribute. R1's enumeration
+is not undercut by a hidden command. Everything else about clap's
+faithfulness stays unmeasured and is written down as such.
+
+**Three instrument notes, all the documented kinds.** `mbsync --dry-run`
+cannot be used for this: against a Maildir near store it aborts on
+`maildir_find_new_msgs: Assertion 'DFlags & FAKEDUMBSTORE' failed`, so
+stage 1 is a real sync into a scratch far side rather than a dry run. The
+first time I ran it I read `rc=$?` through a `head` pipe and printed
+`dry-run rc=0` for a run that had aborted — the exact trap this
+repository has recorded nine times; the rc is taken from the command now.
+And the guard that mattered most **failed on its first real run, for the
+right reason**: the plan required the syncer's own output to name the
+damaged file, and mbsync names no individual file at any verbosity tried.
+The combined run identified the two arrivals by size, which is an
+inference — precisely the "a mis-mapped empty file plus a correctly
+mapped healthy one would pass" hole the plan's review had named. Rather
+than soften the sentence, the leg now syncs each entry **alone** from a
+clean near side, so the far side's count is about one entry and nothing
+else. The empty one, by itself, produces one far-side message.
+
+**The review round: six P1s, and four of them were guards that could pass
+without measuring.** That is the failure class this repository names most
+often, and it was in the very harness written to avoid it.
+
+- `trash.sh` always exited 0 and the driver asserted only on that, so a
+  failed delete, a skipped second delete or a non-empty Trash would have
+  produced a green cleanup measurement. The markers now come from each
+  command's own rc and the folder's own counts.
+- The reader guard searched the transcript for the damaged filename — which
+  the leg prints in its own preamble before notmuch runs. It would have
+  passed with notmuch flagging nothing. Replaced by four markers emitted
+  from measured outcomes.
+- S2 called any empty-subject message the damaged one and any two-message
+  mailbox proof of the control, an identification S1 had earned and S2 had
+  not. It now pushes the entry alone and pulls it back into a clean store.
+  A server that fails to start is also no longer a soft outcome: the run
+  goes red, because the record's sentence about servers is written from
+  this transcript.
+- The help audit compared the source tree's own `.digest` sidecar with the
+  pin instead of hashing the tree, so a modified tree carrying its old
+  sidecar would have passed. It now recomputes with `fetch-artifacts.sh`'s
+  own expression. And a non-zero count of hiding attributes only printed a
+  note; it fails the run now.
+
+Two more, both real: an unchecked `mktemp` would have made every path a
+root-level one (`/c4`, `/gen.txt`) — the reviewer watched the selftest
+try to create `/present.txt` in its own sandbox — and four sentences in
+the prose were outside the transcript, including a quoted `X-TUID` value
+from an earlier run. That value is minted per run, so the fix is not to
+update it but to stop quoting it: the transcript holds it and the prose
+describes it.
 ## 2026-08-23 — posix.zig said the shim cannot use std at all; the shim uses std
 
 Found by a peer session quoting the comment as a primary source for an
