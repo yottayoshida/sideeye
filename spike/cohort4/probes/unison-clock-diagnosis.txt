@@ -1,0 +1,65 @@
+unison unison version 2.54.0 (ocaml 5.3.0); ld.so.preload=/usr/lib/aarch64-linux-gnu/faketime/libfaketime.so.1; runs bounded at 20s
+
+== point 1: apparatus over the whole harness (what the first run did)
+  setup run rc=0
+  a/notes.txt mtime after the pre-state was built: 1767225600  (frozen instant = 1767225600)
+  A: TIMED OUT (rc=124) - never returned
+  what it was sleeping on (bounded strace of the same run):
+    40    clock_nanosleep(CLOCK_REALTIME, 0, {tv_sec=9223372036, tv_nsec=854775807},  <unfinished ...>
+    reading: the file's mtime as the target reads it equals the frozen
+    instant, which arms unison's own guard (fileinfo.ml:243-249: sleep
+    one second, call the file changed). libfaketime scales that sleep
+    by the frozen speed, so tv_sec is 2^63-ish: the wait cannot end.
+
+== point 2: the same apparatus, applied to the target only
+  setup run rc=0
+  a/notes.txt mtime after the pre-state was built: 1787446275  (frozen instant = 1767225600)
+  A: rc=0 | Synchronization complete at 00:00:00  (1 item transf
+  B: rc=0 | Synchronization complete at 00:00:00  (1 item transf
+
+== point 3: determinism under the target-only plumbing, four variants
+  control: b/notes.txt mtime A=1787446275 B=1787446278; differing entries=3
+      Binary files <r>/resA/unison/ar0f8379c904f9c440c21f9f6f8f58ac1a and <r>/resB/unison/ar0f8379c904f9c440c21f9f6f8f58ac1a differ
+      Binary files <r>/resA/unison/aree209d9f706d0086f71218f355424ea7 and <r>/resB/unison/aree209d9f706d0086f71218f355424ea7 differ
+      Binary files <r>/resA/unison/fp0f8379c904f9c440c21f9f6f8f58ac1a and <r>/resB/unison/fp0f8379c904f9c440c21f9f6f8f58ac1a differ
+  pin-getpid: b/notes.txt mtime A=1787446278 B=1787446280; differing entries=3
+      Binary files <r>/resA/unison/ar0e3dad15bb2b08aa69e2e6452fd62af2 and <r>/resB/unison/ar0e3dad15bb2b08aa69e2e6452fd62af2 differ
+      Binary files <r>/resA/unison/ar83f98af0a46784455f6207560fe15adb and <r>/resB/unison/ar83f98af0a46784455f6207560fe15adb differ
+      Binary files <r>/resA/unison/fp83f98af0a46784455f6207560fe15adb and <r>/resB/unison/fp83f98af0a46784455f6207560fe15adb differ
+  times: b/notes.txt mtime A=1787446280 B=1787446280; differing entries=3
+      Binary files <r>/resA/unison/ar447aeec43535a114265bb347c45ebaeb and <r>/resB/unison/ar447aeec43535a114265bb347c45ebaeb differ
+      Binary files <r>/resA/unison/ar8f4d49bcc38c024f6510112e4d00f84a and <r>/resB/unison/ar8f4d49bcc38c024f6510112e4d00f84a differ
+      Binary files <r>/resA/unison/fp8f4d49bcc38c024f6510112e4d00f84a and <r>/resB/unison/fp8f4d49bcc38c024f6510112e4d00f84a differ
+  both: b/notes.txt mtime A=1787446282 B=1787446282; differing entries=3
+      Binary files <r>/resA/unison/ar86e25e0cd63d14737736b9afd0f9caa9 and <r>/resB/unison/ar86e25e0cd63d14737736b9afd0f9caa9 differ
+      Binary files <r>/resA/unison/are0ced200a4131a97507daa4a0887e3ed and <r>/resB/unison/are0ced200a4131a97507daa4a0887e3ed differ
+      Binary files <r>/resA/unison/fpe0ced200a4131a97507daa4a0887e3ed and <r>/resB/unison/fpe0ced200a4131a97507daa4a0887e3ed differ
+
+== point 4: what is left moving, measured where the runs actually happen
+  ar86e25e0cd63d14737736b9afd0f9caa9: 8 differing bytes of 1064
+  are0ced200a4131a97507daa4a0887e3ed: 8 differing bytes of 1064
+  fpe0ced200a4131a97507daa4a0887e3ed: 20 differing bytes of 141
+  inodes as each run saw them (the freeze forecast the DIRECTORY inode
+  as the un-coverable residue, so this is the term to check):
+    run A before: root=266726 a=266727 b=266730
+    run A after:  the propagated b/notes.txt has inode 266731, mtime 1787446284
+    run B before: root=266726 a=266727 b=266730
+    run B after:  the propagated b/notes.txt has inode 266731, mtime 1787446284
+
+== reading, and what it does NOT say
+  Ruled out by measurement as the term that varies: the wall clock
+  (frozen), the pid (pinned), the propagated file's mtime (pinned by
+  -times and identical above), and the inodes - the directories AND
+  the propagated file come back with the same numbers on both runs.
+  freshDirStamp's inode term, which the freeze named as the
+  un-coverable residue, is therefore NOT what is moving: the freeze's
+  forecast was wrong about which term survives.
+  What does move is 4 to 8 bytes inside each archive and 19 in the
+  fingerprint cache, and this diagnosis does not attribute them. That
+  is stated rather than guessed: three separate hypotheses were tested
+  and each was eliminated, and a fourth would be a guess.
+  The probe does not need the attribution. Two runs of one operation
+  on one pre-state do not agree, so condition 5 fails and unison is a
+  named wall of the nondeterministic-writer class, recorded at probe
+  time for the price of this transcript and no define. Attribution is
+  upstream-report work, and this cohort has not authorised contact.

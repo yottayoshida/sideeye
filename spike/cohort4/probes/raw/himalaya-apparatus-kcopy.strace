@@ -1,0 +1,4 @@
+69    copy_file_range(4, NULL, 5, NULL, 1073741824, 0) = -1 ENOSYS (Function not implemented)
+69    copy_file_range(-1, NULL, -1, NULL, 1, 0) = -1 ENOSYS (Function not implemented)
+69    sendfile(5, 4, NULL, 2147479552)  = -1 ENOSYS (Function not implemented)
+69    +++ exited with 0 +++

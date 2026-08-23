@@ -1,0 +1,163 @@
+# unison probe, apparatus mode. Captured by spike/cohort4/probes/capture.sh
+# on 2026-08-23T00:53:08Z, inside the frozen cohort-4 image.
+# APPARATUS is the accepted probe run: libfaketime via
+# /etc/ld.so.preload, pin-getpid.so via LD_PRELOAD on the target
+# invocations only, the container under seccomp-enosys.json. All
+# conditions the plan requires are judged here.
+
+$ docker run --rm --security-opt seccomp=/Users/i.yoshida/claude_workspace/sideeye/spike/cohort4/seccomp-enosys.json -v <repo>:/repo -e PROBE_OUT=/repo/spike/cohort4/probes/raw sideeye-cohort4 sh /repo/spike/cohort4/probes/run-unison.sh apparatus
+== apparatus (PROTOCOL, unison plan): ld.so.preload=/usr/lib/aarch64-linux-gnu/faketime/libfaketime.so.1, FAKETIME='@2026-01-01 00:00:00 x0' and pin-getpid.so applied to the TARGET invocations only, never to the harness. PLUMBING CORRECTION, measured and recorded per the freeze's rule: the first apparatus run exported FAKETIME for the whole script, so the fixtures and the pristine restores were themselves created under the frozen clock. Their mtimes then equalled the frozen instant as the target reads it, which arms unison's own conservative guard (fileinfo.ml:243-249, sleep one second and call the file changed), and libfaketime scales that one-second sleep by the frozen speed: strace showed clock_nanosleep(CLOCK_REALTIME, tv_sec=9223372036), i.e. never. Evidence and the bisection that found it: unison-clock-diagnosis.txt. libfaketime is inert without FAKETIME in the environment, so keeping it out of the harness is the whole fix.
+== unison probe (apparatus), unison version 2.54.0 (ocaml 5.3.0), 2026-08-23T00:53:08Z
+== setup run (step 1, archive construction; part of setup, NOT the operation)
+Unison 2.54.0 (ocaml 5.3.0): Contacting server...
+Looking for changes
+Warning: No archive files were found for these roots, whose canonical names are:
+	/tmp/probe-unison-apparatus/root/a
+	/tmp/probe-unison-apparatus/root/b
+This can happen either
+because this is the first time you have synchronized these roots, 
+or because you have upgraded Unison to a new version with a different
+archive format.  
+
+Update detection may take a while on this run if the replicas are 
+large.
+
+Unison will assume that the 'last synchronized state' of both replicas
+was completely empty.  This means that any files that are different
+will be reported as conflicts, and any files that exist only on one
+replica will be judged as new and propagated to the other replica.
+If the two replicas are identical, then no changes will be reported.
+
+If you see this message repeatedly, it may be because one of your machines
+is getting its address from DHCP, which is causing its host name to change
+between synchronizations.  See the documentation for the UNISONLOCALHOSTNAME
+environment variable for advice on how to correct this.
+
+
+Reconciling changes
+Nothing to do: replicas have been changed only in identical ways since last sync.
+setup run rc=0
+== pre-state frozen (pristine copies taken after step 2). unison/ after setup:
+WS/pristine/unison/araed67f3dff87792d70fda7d0a5aeb771
+WS/pristine/unison/arb27e883f19f67b4adf6f3d33a6560dfb
+WS/pristine/unison/default.prf
+WS/pristine/unison/fpaed67f3dff87792d70fda7d0a5aeb771
+WS/pristine/unison/fpb27e883f19f67b4adf6f3d33a6560dfb
+WS/pristine/unison/unison.log
+== condition 7, ambient: HOME=<WS>/home, restored from pristine-home before every run; UNISON is set explicitly to <WS>/root/unison inside the operation (in-root, PROTOCOL's borg-lesson placement). Restores are printed.
+== run A
+restore: root and home reset to pristine (canonical path unchanged)
+wall before: 00:53:08.441019512
+Unison 2.54.0 (ocaml 5.3.0): Contacting server...
+Looking for changes
+Reconciling changes
+changed  ---->            notes.txt  
+a            : changed file       modified on 2026-08-23 at  0:53:08  size 73        rw-r--r--
+b            : unchanged file     modified on 2026-08-23 at  0:53:08  size 31        rw-r--r--
+
+1 items will be synced, 0 skipped
+73 B to be synced from a to b
+0 B to be synced from b to a
+Propagating updates
+Starting...           Unison 2.54.0 (ocaml 5.3.0) started propagating changes at 00:00:00.00 on 01 Jan 2026
+Starting...           [BGN] Updating file notes.txt from /tmp/probe-unison-apparatus/root/a to /tmp/probe-unison-apparatus/root/b
+Starting...            98%  0/1  (73 B of 73 B)  --:-- ETA                                    [END] Updating file notes.txt
+ 98%  0/1  (73 B of 73 B)  --:-- ETA                                    100%  1/1  (73 B of 73 B)  00:00:00 ETA                                       Unison 2.54.0 (ocaml 5.3.0) finished propagating changes at 00:00:00.00 on 01 Jan 2026, 0.000 s
+100%  1/1  (73 B of 73 B)  00:00:00 ETA                                       Saving synchronizer state
+Synchronization complete at 00:00:00  (1 item transferred, 0 skipped, 0 failed)
+wall after:  00:53:08.444282928
+== run B (>=2s later)
+restore: root and home reset to pristine (canonical path unchanged)
+wall before: 00:53:10.459482596
+Unison 2.54.0 (ocaml 5.3.0): Contacting server...
+Looking for changes
+Reconciling changes
+changed  ---->            notes.txt  
+a            : changed file       modified on 2026-08-23 at  0:53:08  size 73        rw-r--r--
+b            : unchanged file     modified on 2026-08-23 at  0:53:08  size 31        rw-r--r--
+
+1 items will be synced, 0 skipped
+73 B to be synced from a to b
+0 B to be synced from b to a
+Propagating updates
+Starting...           Unison 2.54.0 (ocaml 5.3.0) started propagating changes at 00:00:00.00 on 01 Jan 2026
+Starting...           [BGN] Updating file notes.txt from /tmp/probe-unison-apparatus/root/a to /tmp/probe-unison-apparatus/root/b
+Starting...            98%  0/1  (73 B of 73 B)  --:-- ETA                                    [END] Updating file notes.txt
+ 98%  0/1  (73 B of 73 B)  --:-- ETA                                    100%  1/1  (73 B of 73 B)  00:00:00 ETA                                       Unison 2.54.0 (ocaml 5.3.0) finished propagating changes at 00:00:00.00 on 01 Jan 2026, 0.000 s
+100%  1/1  (73 B of 73 B)  00:00:00 ETA                                       Saving synchronizer state
+Synchronization complete at 00:00:00  (1 item transferred, 0 skipped, 0 failed)
+wall after:  00:53:10.468130013
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: the state root after run A differs from the pre-state
+ok   3-artifacts: b/notes.txt carried; a/notes.txt untouched; b/stable.txt intact; DANGER.README absent after a clean run
+ok   4-round-trip: re-running the frozen argv on the synced result: rc=0, replicas unchanged, tool's own line: Nothing to do: replicas have not changed since last sync. (uitext.ml carries two such lines, :1325 and :1328; whichever printed is shown)
+Looking for changes
+Reconciling changes
+Nothing to do: replicas have not changed since last sync.
+== diff -r of the two results (in-place, canonical path):
+Binary files /tmp/probe-unison-apparatus/resultA/unison/araed67f3dff87792d70fda7d0a5aeb771 and /tmp/probe-unison-apparatus/resultB/unison/araed67f3dff87792d70fda7d0a5aeb771 differ
+Binary files /tmp/probe-unison-apparatus/resultA/unison/arb27e883f19f67b4adf6f3d33a6560dfb and /tmp/probe-unison-apparatus/resultB/unison/arb27e883f19f67b4adf6f3d33a6560dfb differ
+Binary files /tmp/probe-unison-apparatus/resultA/unison/fpaed67f3dff87792d70fda7d0a5aeb771 and /tmp/probe-unison-apparatus/resultB/unison/fpaed67f3dff87792d70fda7d0a5aeb771 differ
+FAIL 5-determinism: two runs >=2s apart leave byte-identical state roots (diff rc=1). If this is FAIL: the residue outlives every declared apparatus and is recorded unattributed (unison-clock-diagnosis.txt eliminates clock, pid, propagated mtime and inode separately); a nondeterministic-writer wall, recorded at probe time, costing no define
+== strace pass (closure accounting; restored pre-state; raw log kept)
+restore: root and home reset to pristine (canonical path unchanged)
+strace'd run rc=0
+== mutating paths (successful only, deduped):
+/dev/shm/faketime_shm_65
+/dev/shm/sem.faketime_sem_65
+WS/root/b/.unison.notes.txt.b27e883f19f67b4adf6f3d33a6560dfb.unison.tmp
+WS/root/b/notes.txt
+WS/root/unison/araed67f3dff87792d70fda7d0a5aeb771
+WS/root/unison/arb27e883f19f67b4adf6f3d33a6560dfb
+WS/root/unison/fpaed67f3dff87792d70fda7d0a5aeb771
+WS/root/unison/lkaed67f3dff87792d70fda7d0a5aeb771
+WS/root/unison/lkaed67f3dff87792d70fda7d0a5aeb7714242
+WS/root/unison/lkb27e883f19f67b4adf6f3d33a6560dfb
+WS/root/unison/lkb27e883f19f67b4adf6f3d33a6560dfb4242
+WS/root/unison/scaed67f3dff87792d70fda7d0a5aeb771
+WS/root/unison/scb27e883f19f67b4adf6f3d33a6560dfb
+WS/root/unison/tmaed67f3dff87792d70fda7d0a5aeb771
+WS/root/unison/tmb27e883f19f67b4adf6f3d33a6560dfb
+WS/root/unison/unison.log
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+0
+== copy-mechanism pass (dedicated strace: ioctl,copy_file_range,sendfile,sendfile64)
+instrument control: python os.copy_file_range traced 1 line(s)
+restore: root and home reset to pristine (canonical path unchanged)
+copy-mechanism run rc=0
+observed: FICLONE ioctl attempts=1; copy_file_range/sendfile attempts=2, successful=0
+ok   seccomp-active: no SUCCESSFUL kernel-side copy (successful cfr/sendfile: 0 of 2 attempts; FICLONE attempts=1 answered ENOTTY by the arg-filtered rule): the stub fell back to the read/write loop
+105   ioctl(8, BTRFS_IOC_CLONE or FICLONE, 7) = -1 ENOTTY (Inappropriate ioctl for device)
+105   copy_file_range(7, [0], 8, NULL, 73, 0) = -1 ENOSYS (Function not implemented)
+105   sendfile(8, 7, [0], 73)           = -1 ENOSYS (Function not implemented)
+== condition 8, shim visibility agrees with the kernel (preflight, restored pre-state)
+restore: root and home reset to pristine (canonical path unchanged)
+== artifacts: /tmp/preflight.115
+== target exit status: 0
+  link     kernel=4/4 in-root, interposed=4, unmatched=0
+  open     kernel=21/21 in-root, interposed=39, unmatched=0
+  rename   kernel=3/3 in-root, interposed=3, unmatched=0
+  unlink   kernel=8/8 in-root, interposed=8, unmatched=0
+  write    kernel=26/26 in-root, interposed=747, unmatched=0, 1 interposed call(s) had no resolvable path
+PASS every in-root mutation passed through an interposable function
+ok   8-visibility: preflight visibility rc=0 (0 = every in-root mutation matched an interposed call)
+== condition 9, the operation has an interior (preflight, restored pre-state)
+restore: root and home reset to pristine (canonical path unchanged)
+== artifacts: /tmp/preflight.132
+== target exit status: 0
+INTERIOR kill points inside the state root: 62 (link=4, open=21, rename=3, unlink=8, write=26)
+  reading: 62 crash points; the operation has an interior
+ok   9-interior: preflight interior rc=0; count and per-class breakdown above (a count of 1 goes to the owner, not to a FAIL)
+== condition 7 evidence, what the runs left in HOME (restored per run):
+(end of HOME listing)
+== conditions failed: 1
+raw rc=1
+
+$ sh spike/cohort4/probes/check-transcript.sh unison apparatus <this file>
+verdict manifest (unison/apparatus): expected 9, found 9
+  expected: 1-exit-codes 2-non-noop 3-artifacts 4-round-trip 5-determinism 6-closure seccomp-active 8-visibility 9-interior
+  emitted: 1-exit-codes 2-non-noop 3-artifacts 4-round-trip 5-determinism 6-closure 8-visibility 9-interior seccomp-active 
+MANIFEST PASS: every required condition was judged
+manifest rc=0

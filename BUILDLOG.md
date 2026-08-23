@@ -2,6 +2,90 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — cohort 4 probes: the plans are frozen, so the scripts are transcription
+
+Entry opened at the start of the probes work, an hour after the freeze
+(#245) merged. The probe plans, fixtures, argv and apparatus are all
+frozen in PROTOCOL.md, so what this PR adds is their mechanical form: the
+positive control (cohort 3's synthetic wall-clock writer, verbatim in
+predicate path), one run script per target with the fixture bytes
+transcribed exactly, and the transcripts. The one design decision the
+scripts do make, recorded now: each target's script takes a mode argument
+(the borg precedent), because the falsification order is part of the
+frozen plan. himalaya runs `bare` first (no apparatus; the determinism
+split on the minted pid and the strace showing `copy_file_range` are the
+falsifications that JUSTIFY the apparatus) and `apparatus` second
+(ld.so.preload carrying libfaketime and pin-getpid.so, the container
+under seccomp-enosys.json, where the accepted verdict lives). unison runs
+the same two modes with its own argv. Apparatus plumbing corrections, if
+any, land in the transcript per the freeze's own rule.
+
+**himalaya passed nine of nine, and the bare mode earned its keep.**
+Without apparatus the two runs split on the minted entry name and the
+copy *succeeded* through `copy_file_range` — the shim-invisible path — so
+the seccomp profile was justified by measurement before it was used once.
+With it: byte-identical roots, the minted name reading
+`1767225600.#0M0P4242.<host>` in both (the apparatus visible in the
+artifact), condition 8 clean, condition 9 counting two kill points, and 0
+of 3 kernel-copy attempts succeeding.
+
+**unison cost four wrong hypotheses and ended as a named wall — which is
+the probe gate working.** The first apparatus run hung after "Looking for
+changes". Four things were blamed and each was eliminated by measurement
+before the next was tried: the equal-second guard in `Fileinfo.unchanged`
+(reachable only if libfaketime faked stat, which a direct check said it
+did not — and that check was itself wrong, having read the mtimes with
+`env -u FAKETIME`, i.e. with the apparatus switched off); pin-getpid; the
+seccomp profile; and the frozen clock as such. A bisection down to the
+one structural difference found it: **the harness was creating its
+fixtures and pristine restores under the frozen clock**, which made their
+mtimes equal the frozen instant as the target reads them, arming unison's
+own guard — and libfaketime then scaled its one-second sleep by the
+frozen speed. strace named it exactly:
+`clock_nanosleep(CLOCK_REALTIME, {tv_sec=9223372036})`. libfaketime is
+inert without FAKETIME in the environment, so applying the apparatus to
+the target invocations only is the whole fix, and it is recorded as a
+plumbing correction inside the probe rather than quietly applied.
+
+Then the wall itself. Two runs of the frozen operation on one restored
+pre-state leave archives differing by 4 to 8 bytes. The freeze forecast
+the directory inode inside `freshDirStamp` as the un-coverable residue;
+measurement eliminated it — the directory inodes, the propagated file's
+inode and (with `-times=true`) its mtime all come back identical, and the
+archive still differs. **The residue is recorded as unattributed**, with
+the four eliminated hypotheses named, because a fifth would be a guess
+and the verdict does not depend on it. `-times=true` was measured purely
+to answer whether amending the frozen argv would buy determinism: it does
+not, so no amendment is proposed. Cost: one transcript, zero defines.
+Condition 8 meanwhile passed cleanly for unison too — with the profile
+landing the copy stub on its read/write fallback, every in-root mutation
+is interposable — and condition 9 counted 62 kill points, a rich interior
+the cohort will not get to use.
+
+Three harness defects surfaced along the way, all of the same family:
+- An interrupted edit truncated `run-unison.sh` mid-block, deleting the
+  whole round-trip check and leaving only comment lines. **The result was
+  still valid shell**: it would have run, judged one condition fewer, and
+  printed "conditions failed: 0". That bought `check-transcript.sh`,
+  which compares the verdict names emitted against the names the plan
+  requires and now closes every transcript. It is falsified four ways
+  (deleted verdict, renamed verdict, and an extractor control) and its
+  own first cut used sed's `\|`, a GNU extension that matched nothing on
+  the macOS host — caught by that same extractor control.
+- The round-trip check compared the whole state root and went red while
+  the tool printed "Nothing to do"; unison rewrites its archives and
+  appends to `unison.log` on every invocation, which the freeze's own
+  expected-artifacts line already said. It also compared against run A's
+  snapshot when the re-run starts from run B's. Both fixed; the scan for
+  the same class across both probe scripts found no other comparison
+  whose unit was wrong.
+- Condition 8 first reported a wall for unison whose own numbers refused
+  to add up — `interposed=9` against `unmatched=21`. The harness was
+  passing `LD_PRELOAD=pin-getpid.so` into the preflight invocation, which
+  **replaces** the visibility logger preflight had just installed, so
+  unison ran with no interposer at all. A FAIL can be the harness, and
+  the way to tell is that its own numbers disagree with each other.
+
 ## 2026-08-23 — cohort 4 begins: the freeze is a fill-in, and one of its citations turned out not to exist
 
 Entry opened at the start of the work, per the contract. The slate has

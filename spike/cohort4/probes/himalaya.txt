@@ -1,0 +1,74 @@
+# himalaya probe, apparatus mode. Captured by spike/cohort4/probes/capture.sh
+# on 2026-08-23T00:52:59Z, inside the frozen cohort-4 image.
+# APPARATUS is the accepted probe run: libfaketime via
+# /etc/ld.so.preload, pin-getpid.so via LD_PRELOAD on the target
+# invocations only, the container under seccomp-enosys.json. All
+# conditions the plan requires are judged here.
+
+$ docker run --rm --security-opt seccomp=/Users/i.yoshida/claude_workspace/sideeye/spike/cohort4/seccomp-enosys.json -v <repo>:/repo -e PROBE_OUT=/repo/spike/cohort4/probes/raw sideeye-cohort4 sh /repo/spike/cohort4/probes/run-himalaya.sh apparatus
+== apparatus (PROTOCOL, himalaya plan): ld.so.preload=/usr/lib/aarch64-linux-gnu/faketime/libfaketime.so.1; FAKETIME='@2026-01-01 00:00:00 x0' (realtime only; monotonic real); pin-getpid.so via LD_PRELOAD on the TARGET invocations only. PLUMBING CORRECTION, recorded per the freeze's own rule: the plan said pin-getpid rides /etc/ld.so.preload like faketime, but that file preloads EVERY process, including strace, whose child management breaks when its own getpid answers 4242 (measured in this probe session: 'strace: Unexpected wait status 0', empty log; faketime-only preload left strace healthy, pin-getpid-only broke it). The mechanism is unchanged: the libc getpid symbol is still interposed in the target, and only the delivery moves to the env var. CONSEQUENCE FOR THE DEFINE, recorded now: any strace-based observation layer will hit the same breakage if pin-getpid is global; the engine run needs the same target-only delivery or an engine-side pid pin.
+== himalaya probe (apparatus), himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp, 2026-01-01T00:00:00Z
+== condition 7, ambient: HOME and XDG_CONFIG_HOME are created FRESH PER RUN under <WS>/home-<run>; the account config is written per run (its maildir.root names that run's root copy) and passed explicitly with -c either way. Shown non-empty-or-empty after the runs.
+== run A
+reset: rootA is a fresh copy of the pre-state; home-A and config-A.toml are fresh
+Message(s) successfully copied
+== run B (>=2s later; env -u FAKETIME sleep, because under x0 a frozen-scaled sleep never returns)
+reset: rootB is a fresh copy of the pre-state; home-B and config-B.toml are fresh
+Message(s) successfully copied
+ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
+ok   2-non-noop: the state root after run A differs from the pre-state
+ok   3-artifact-count: Archive/cur holds exactly one file (got 1); new/ and tmp/ everywhere hold zero (got 0)
+the minted copy's filename in run A:
+1767225600.#0M0P4242.7f7803a69f65:2,S
+and in run B:
+1767225600.#0M0P4242.7f7803a69f65:2,S
+ok   4-round-trip: copy body identical to the source; flag suffix preserved; source file untouched
+tool read-back of the target folder (envelope list -m Archive, informational):
+
+┌───────────────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐
+│ ID                                ┆ FLAGS ┆ SUBJECT                       ┆ FROM         ┆ DATE                   ┆  SIZE │
+╞═══════════════════════════════════╪═══════╪═══════════════════════════════╪══════════════╪════════════════════════╪═══════╡
+│ 1767225600.#0M0P4242.7f7803a69f65 ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
+== diff -r of the two state roots:
+ok   5-determinism: two runs >=2s apart leave byte-identical state roots (diff rc=0)
+== strace pass (fresh copy; raw log kept as himalaya-apparatus.strace)
+strace'd run rc=0
+== copy-mechanism pass (dedicated strace: copy_file_range,sendfile,sendfile64)
+instrument control: python os.copy_file_range traced 1 line(s) (the attempt is visible even when seccomp answers ENOSYS)
+copy-mechanism run rc=0
+ok   seccomp-active: no SUCCESSFUL copy_file_range/sendfile in the dedicated pass (successful: 0 of 3 attempts; ENOSYS-failed attempts are the profile working): the copy fell back to the libc read/write loop
+69    copy_file_range(4, NULL, 5, NULL, 1073741824, 0) = -1 ENOSYS (Function not implemented)
+69    copy_file_range(-1, NULL, -1, NULL, 1, 0) = -1 ENOSYS (Function not implemented)
+69    sendfile(5, 4, NULL, 2147479552)  = -1 ENOSYS (Function not implemented)
+== mutating paths (successful only, deduped):
+/dev/shm/faketime_shm_54
+/dev/shm/sem.faketime_sem_54
+WS/rootS/Archive/cur/1767225600.#0M0P4242.7f7803a69f65:2,S
+unattributed count: 0
+ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
+== thread creations (successful CLONE_THREAD):
+0
+== condition 8, shim visibility agrees with the kernel (preflight, fresh copy)
+== artifacts: /tmp/preflight.101
+== target exit status: 0
+  open     kernel=1/1 in-root, interposed=6, unmatched=0
+  write    kernel=1/1 in-root, interposed=121, unmatched=0, 1 interposed call(s) had no resolvable path
+PASS every in-root mutation passed through an interposable function
+ok   8-visibility: preflight visibility rc=0 (0 = every in-root mutation matched an interposed call)
+== condition 9, the operation has an interior (preflight, fresh copy)
+== artifacts: /tmp/preflight.117
+== target exit status: 0
+INTERIOR kill points inside the state root: 2 (open=1, write=1)
+  reading: 2 crash points; the operation has an interior
+ok   9-interior: preflight interior rc=0; the count and per-class breakdown are printed above (a count of 1 goes to the owner, not to a FAIL)
+== condition 7 evidence, what the runs left in HOME (fresh per run):
+(end of HOME listing)
+== conditions failed: 0
+raw rc=0
+
+$ sh spike/cohort4/probes/check-transcript.sh himalaya apparatus <this file>
+verdict manifest (himalaya/apparatus): expected 9, found 9
+  expected: 1-exit-codes 2-non-noop 3-artifact-count 4-round-trip 5-determinism 6-closure seccomp-active 8-visibility 9-interior
+  emitted: 1-exit-codes 2-non-noop 3-artifact-count 4-round-trip 5-determinism 6-closure 8-visibility 9-interior seccomp-active 
+MANIFEST PASS: every required condition was judged
+manifest rc=0
