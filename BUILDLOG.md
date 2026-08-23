@@ -10,15 +10,22 @@ through realpath, which is exactly a keg's layout. That held. The formula
 installs, `sideeye version` answers, and `sideeye demo` finds the planted
 bug with the shim resolved out of `../lib`.
 
-**And `brew install` still exits 1.** Homebrew rewrites the install name
-of every dylib in a keg to an absolute path under its prefix, and
-v0.12.0's shim has no padding in its Mach-O header for a longer name, so
-the rewrite fails and the install reports "Failed to fix install
-linkage". Moving the dylib to `libexec` does not help; the whole keg is
-scanned. Nothing in sideeye's own use is affected, because the shim is
-injected by path and its install name is never read. That is exactly why
-this survived to here: the defect is invisible to every consumer except
-a packager.
+**And `brew install` still exits 1.** Homebrew rewrote the shim's install
+name to an absolute path under its prefix, and v0.12.0's shim has no
+padding in its Mach-O header for a longer name, so the rewrite failed and
+the install reported "Failed to fix install linkage". Moving the dylib to
+`libexec` does not help; the whole keg is scanned. sideeye's own lookup
+does not notice, because it resolves the shim by real path and injects
+that path, so the name it carries never enters the search. That is why
+this survived to here: nothing that uses sideeye the way sideeye is used
+had a reason to read it.
+
+R1 caught two places where I had written that more widely than I had
+measured: "the install name is never consulted" is false in general, since
+dyld uses `LC_ID_DYLIB` as the library's identity, and "Homebrew rewrites
+every dylib in a keg" is false too, since it has exceptions this library
+happens not to qualify for. Both narrowed. The causal claim about this
+library was never in doubt; the sentences around it were.
 
 The fix is one build flag, `headerpad_max_install_names`, macOS only.
 Measured as a pair on the two real artifacts rather than argued: give

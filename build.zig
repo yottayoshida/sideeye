@@ -57,15 +57,15 @@ pub fn build(b: *std.Build) void {
                 .imports = &.{.{ .name = "contract", .module = contract }},
             }),
         });
-        // Mach-O only, and it is packaging rather than function: sideeye finds
-        // the shim by path and injects it with DYLD_INSERT_LIBRARIES, so the
-        // dylib's own install name is never consulted. Package managers do
-        // consult it. Homebrew rewrites the ID of every dylib in a keg to an
-        // absolute path under its prefix, and without padding in the Mach-O
-        // header that rewrite does not fit: `brew install` then reports
-        // "Failed to fix install linkage" and exits 1 on a build that
-        // otherwise works. Measured against v0.12.0's released dylib, whose
-        // ID is `@rpath/libsideeye_shim.dylib` and cannot be lengthened.
+        // Mach-O only, and it is packaging rather than function: sideeye locates
+        // the shim by real path and injects that path with
+        // DYLD_INSERT_LIBRARIES, so its own lookup does not depend on the
+        // dylib's install name. Package managers do rewrite it. Homebrew
+        // rewrote this one to an absolute path under its prefix, and without
+        // padding in the Mach-O header the longer name does not fit: `brew
+        // install` reported "Failed to fix install linkage" and exited 1 on a
+        // build that otherwise ran. Measured against v0.12.0's released dylib,
+        // whose ID is `@rpath/libsideeye_shim.dylib` and cannot be lengthened.
         if (target.result.os.tag == .macos) shim.headerpad_max_install_names = true;
         b.installArtifact(shim);
     }
