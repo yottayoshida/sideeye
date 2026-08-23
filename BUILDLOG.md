@@ -2,6 +2,205 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — #181: the macOS no-oracle claim gets its measurement
+
+The claim decides what a verdict means on half the supported platforms,
+lives in four claim sites plus CI and two docs, names one tool, and ADR
+0001 has said "to be measured" since 2026-08-10. The 08-10 entry's
+objection — a sudo-only oracle is not a CI tool — is an argument about
+the product default, not about whether an observer exists, and it was
+written without running anything as root.
+
+The survey splits on the privilege line. The unprivileged half ran first
+(`spike/macos-oracle/survey.txt`): every candidate refuses without root,
+each refusal captured verbatim — including the distinction the issue
+called out, that unprivileged `dtrace`'s hard stop is PRIVILEGES while
+SIP only limits "some features". OpenBSM is dismissed there without a
+sudo leg: auditd(8) on this machine says the subsystem is deprecated
+since 11.0, **disabled since 14.0**, and will be removed. The ktrace
+invocation for the privileged half is designed from this machine's man
+page (filter class `C3`, `-c command`), not from memory, because
+unprivileged ktrace refuses before printing usage.
+
+**Predictions, written before the privileged half runs**, so the run can
+contradict them:
+
+- `sudo dtruss` on the self-built, ad-hoc-signed toy: genuinely unknown —
+  this is the promised measurement. If it traces, four claim sites
+  overstate ("SIP refuses dtruss" is then true only of unprivileged
+  invocations); if it refuses even as root, the claim survives with the
+  privilege nuance corrected.
+- `fs_usage` as root: expect visibility with pathnames (kdebug substrate);
+  open questions are path truncation in non-tty output and event drops.
+- `ktrace -f C3`: same substrate as fs_usage; expect the same visibility
+  or a usage error that is itself the measurement.
+- `eslogger`: expect either JSON events or a TCC refusal naming Full Disk
+  Access; either answers whether ES is reachable without our own
+  entitlement.
+- A first-party ES client stays out of reach for a survey (the
+  entitlement is Apple-granted); eslogger is its measurable proxy.
+
+What the answer changes either way: the four claim sites say "macOS has
+no usable oracle" where the measured statement so far is "no unprivileged
+oracle, and the privileged candidates were never asked".
+
+**Round 1 (2026-08-23T08:31Z) answered two legs decisively and caught my
+harness lying on a third.**
+
+The decisive pair. L2: even as root, DTrace's syscall provider matches
+no probes — "probe description syscall:::entry does not match any
+probes. System Integrity Protection is on". So sudo does not rescue
+DTrace; the 08-10 claim survives at root, though its stated reason
+("requires additional privileges") was the unprivileged symptom, not the
+cause. L3: **fs_usage is oracle-shaped.** Full paths, operation names
+(open / WrData / rename / unlink / mkdir), attribution to `toy.<pid>`,
+timestamps, order intact — all three markers in first-appearance order,
+nine event lines, zero contamination, no truncation at these path
+lengths. The kdebug substrate saw everything this survey's
+six-operation toy asked of the oracle role.
+
+The lie. L1 reported dtruss "ok - all 3 tokens present", and every one
+of its marker lines began with `op ` — the toy's OWN stdout. dtruss runs
+the child itself, the child's output landed in the capture, and the
+check judged the target's self-account as the observer's testimony. A
+confident false pass on the exact machine where L2 proves the provider
+is gone. L4 (ktrace) has the same contamination, and its verdict line
+shows only 6 marker lines = the toy's own, which suggests raw kdebug
+events carry no resolved path strings — but round 1 cannot prove that,
+because the capture was cleaned up and only marker lines were excerpted.
+L5 (eslogger) failed with a 1-line capture whose content the transcript
+never showed, for the same excerpting reason.
+
+Fixes, each the shape of a lesson already paid for elsewhere: runner
+legs now route the toy through a wrapper so captures hold only what the
+observer emitted; check-capture rejects a capture whose every marker
+line is the toy's own words (seen red on a synthetic copy of round 1's
+dtruss capture; the ground-truth control passes `--allow-self-account`
+explicitly); verdicts print the capture head verbatim so a refusal
+survives into the transcript after the raw file is cleaned up.
+
+**Predictions for round 2, before it runs:** dtruss becomes a measured
+refusal (capture = DTrace's own error lines, check FAIL "saw nothing",
+toy account showing toy-rc=0 separately); ktrace's clean capture shows
+**0** observer lines carrying a marker path, because raw kdebug does not
+resolve paths — fs_usage is the front-end that does; eslogger's one line
+becomes readable and is expected to name Full Disk Access.
+
+**Round 2 (08:36Z): one prediction confirmed, one measurement settled a
+second time, and a guard of the owner's broke three legs while my BROKEN
+counter said 0.**
+
+What held: eslogger's one line, now readable thanks to the verbatim
+head, names exactly what was predicted — "responsible process needs TCC
+Full Disk Access authorization (ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED)".
+Root changes the refusal from NOT_PRIVILEGED to NOT_PERMITTED: ES is
+reachable only behind root AND an FDA grant to the invoking terminal.
+fs_usage passed a second time, this round with the contamination guard
+attesting all 9 marker lines came from the observer.
+
+What broke: the transcript's line 14 reads "omamori blocked this command
+because it was invoked via sudo/elevated privileges" — the wrapper's
+`chmod 755`. The wrapper stayed 0644, dtruss and dtrace died on "failed
+to execute run-toy.sh: Permission denied", ktrace on "could not start
+process", and none of that reached the BROKEN counter because the chmod
+carried no guard: the exact targets-added-after-the-check shape, one day
+after writing it down elsewhere. The owner's guard blocking the
+measurement is itself the own-guard-blocks-the-next-measurement shape.
+Round 2's L1/L4 therefore measure nothing about SIP; round 1's L2
+remains the only probe-provider evidence (preserved as
+sudo-survey-round1.txt; round 2 as sudo-survey-round2.txt).
+
+Fix: no mode change anywhere. The wrapper is invoked as `/bin/sh
+wrapper`, which needs no exec bit — routing around the guard with an
+absolute /bin/chmod would be circumvention, needing no chmod is not.
+dtruss and dtrace keep the toy as their DIRECT child, because /bin/sh in
+front would make the traced root a platform binary, the one case the
+SIP question must not be measured on; their contamination fix is stream
+separation instead (trace on stderr, toy account on stdout).
+
+**Predictions for round 3:** dtruss, clean streams — capture holds
+DTrace's own refusal lines and zero syscall lines, check FAIL "saw
+nothing", toy account 7 lines with toy-rc=0; dtrace aggregate rows 0
+with the round-1 probe refusal back; ktrace starts this time, and its
+observer lines carrying a marker path number **0** (151 non-op event
+lines in round 1 held none); eslogger identical FDA refusal; fs_usage
+passes a third time.
+
+**Round 3 (08:41Z): complete. Four predictions held; the one that
+missed, missed in a direction worth the whole survey.**
+
+dtruss did not refuse. It printed its trace header and **zero syscall
+lines**, ran the toy to completion, and **exited 0** — a silent empty
+trace, which for an oracle is worse than a refusal, because the exit
+code alone reads as success. The prediction said "refusal lines"; the
+reality is quieter and more dangerous. The stream separation also failed
+— dtruss remixes its child's stdout onto stderr, so the toy's account
+landed in the capture after all — and the contamination guard built
+after round 1 **fired in production**, turning what round 1 had scored
+as "ok" into the correct FAIL. The guard's first real catch is the same
+false pass it was built from.
+
+Everything else landed as predicted. dtrace reproduced the round-1
+probe refusal verbatim in a clean transcript. ktrace started under the
+/bin/sh wrapper (a 337-line capture — a launch line, a column header
+and a blank, then events — toy-rc=0 in its separated account) and
+carried **0** marker paths in its own event lines — kdebug packs path
+bytes into hex args; fs_usage is the shipped resolver. eslogger repeated
+its FDA refusal, and fs_usage passed a third time, 9 of 9 marker lines
+from the observer.
+
+**The verdicts, and what moved.** The claim "macOS has no usable
+oracle" was false as universally stated and is now corrected in seven
+places (four claim sites the issue named, plus ci.yml, unknown-rate.md
+and an acceptance.sh comment the issue's census missed): no
+*unprivileged* oracle exists; SIP leaves DTrace's syscall provider
+with no probes even as root, and dtruss fails silently on top of it;
+`fs_usage` as root gave an ordered, attributed, full-path account of
+the survey's six-operation toy, three runs out of three; Endpoint
+Security's shipped CLI refuses without root plus a Full Disk Access
+grant (a first-party ES client is unmeasured); OpenBSM is disabled by
+Apple since 14.0. The 08-10
+product stance — no root demand in a distributable default — survives
+untouched, now standing on measurement instead of one sentence about
+one tool. Left explicitly unmeasured: fs_usage's drop behaviour under
+load, ktrace's --json output, and eslogger with FDA actually granted.
+
+**R1 found eight claims wider than their transcript lines, all
+accepted.** The heaviest: "DTrace is dead under SIP even as root" was
+measured only for the syscall provider the probes named — every claim
+site now says the provider — and "dtruss traced nothing" rested on a
+capture the transcript showed only excerpts of. The arithmetic that
+makes it checkable from committed data: the 283-byte capture holds the
+SIP notice (80 bytes), the trace header (~36) and the toy's seven
+`op` lines plus `done` (166) — those sum to the byte count within a
+couple of bytes, and a dtruss syscall line runs tens of bytes, so
+there is no room for even one. "Endpoint Security sits behind root plus
+FDA" is now scoped to its shipped CLI, the thing actually measured.
+"337 events" was numerically false (three preamble lines). The man-page
+provenance the sudo script's comment cited was never committed —
+survey.txt now carries the ktrace filter grammar, the eslogger TCC
+paragraph and the fs_usage synopsis it designs from. And two guards no
+transcript had shown red — wrapper readability and the residue check —
+now fail on their own predicates in `sudo-survey.sh --selftest`, the
+residue one against a live process really named fs_usage. observe()
+additionally bounds the toy (R1: the 45s watchdog bounded only the
+observer) and records whether the observer survived the settle;
+rounds 1-3 ran before those two fixes, and no conclusion rests on the
+paths they change — fs_usage's passes and eslogger's refusal are
+outcome-proven in their transcripts.
+
+The residue selftest's first version produced its own measurement: it
+staged the fake observer by copying /bin/sleep to a file named
+fs_usage, and the copy died on exec. R2 refused the claim because no
+committed line carried it, so the selftest now reproduces it as a
+recorded control: the copy exits 137 (SIGKILL) — and codesign still
+VERIFIES the copy, which narrows the cause. The signature is not
+broken; copying does not change it, exactly as this repository's
+platform-binary refusal text says, and what kills the copy is the
+execution policy on a platform-signed binary at a foreign path. The
+staged observer is therefore compiled — ad-hoc signed by the linker,
+it runs — and the guard passes in both directions.
+
 ## 2026-08-23 — the record catches up with cohort 4, and the denominators get a route
 
 Cohort 4 closed this morning; the top-level record did not move with it.

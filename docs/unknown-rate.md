@@ -213,7 +213,9 @@ table:
   measurements in this repository (CI's x86_64 job runs the acceptance
   toys, not real targets).
 - **macOS**: derived, not measured. The mechanism is structural — no oracle
-  exists on macOS (SIP refuses dtruss), and `requireCompleteness`
+  is usable by default on macOS (SIP leaves DTrace's syscall provider with
+  no probes even as root; the candidate measured oracle-shaped, `fs_usage`,
+  is root-gated — #181), and `requireCompleteness`
   (src/main.zig) guards every path that ends in PASS — so under this page's
   strict protocol every Linux PASS derives to UNKNOWN
   (`completeness_not_verified`) while a FAIL stands on its own evidence.

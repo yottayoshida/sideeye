@@ -1,0 +1,104 @@
+== environment (privileged half)
+   ProductName:		macOS
+   ProductVersion:		15.3.1
+   BuildVersion:		24D70
+   System Integrity Protection status: enabled.
+   uid 0, invoked via sudo by i.yoshida
+   2026-08-23T08:36:06Z
+
+== the toy, rebuilt here so this half stands alone
+   CodeDirectory v=20400 size=380 flags=0x20002(adhoc,linker-signed) hashes=9+0 location=embedded
+   Signature=adhoc
+   (ad-hoc linker signature: the self-built, non-platform case the
+    SIP question turns on)
+omamori blocked this command because it was invoked via sudo/elevated privileges
+
+==============================================================
+L1. dtruss as root: the measurement ADR 0001 promised in 2026-08-10
+==============================================================
+   runner rc=1
+   toy's own account (separated from the capture): MISSING
+   capture: 2 line(s), 161 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | dtrace: system integrity protection is on, some features will not be available
+     | dtrace: failed to execute /private/tmp/se181.rMd0iz/run-toy.sh: Permission denied
+   marker lines, first 10:
+     (none)
+  dtruss: FAIL - token 'marker-a.tmp' never appears (161 bytes searched)
+  dtruss: (no marker token at all: the observer saw nothing of the toy)
+
+==============================================================
+L2. dtrace itself, minimal syscall aggregate: splits 'DTrace is
+    blocked' from 'the dtruss wrapper is broken'
+==============================================================
+   runner rc=1
+   capture: 2 line(s); head:
+     dtrace: system integrity protection is on, some features will not be available
+     dtrace: failed to execute /private/tmp/se181.rMd0iz/run-toy.sh: Permission denied
+   syscall names seen (nonzero rows prove per-pid visibility even
+   though this probe prints no paths):
+     aggregate rows: 0
+
+==============================================================
+L3. fs_usage: kdebug substrate, filtered to the toy by name
+==============================================================
+   toy rc=0 (its own account: 7 lines)
+   capture: 79 line(s), 19441 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | 17:36:08.606842    RdData[S]       D=0x00e8e88a  B=0x4000   /dev/disk3s5  /private/var/root/Library/Group Containers/UBF8T346G9.com.microsoft.wdav.events/networkprotection/microsoft_defender_network_protection.log         0.000676 W netext.68565005
+     | 17:36:08.921651    RdMeta[S]       D=0x00018a08  B=0x1000   /dev/disk3  /dev/disk3                                                                                                                                            0.000659 W 2.1.239.66778582
+     | 17:36:09.117062  exit                                                                                                                                                                                                         0.000014   toy.68566451
+     | 17:36:09.307561    RdData[A]       D=0x002c7ea2  B=0x4000   /dev/disk3s2  /System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e/..namedfork/rsrc                                                  0.000199 W toy.68566452
+     | 17:36:09.307641  fsgetpath                              /private/tmp/se181.rMd0iz/toy                                                                                                                                         0.000005   toy.68566452
+     | 17:36:09.307646  fsgetpath                              /usr/lib/dyld                                                                                                                                                         0.000006   toy.68566452
+   marker lines, first 10:
+     57:17:36:09.310131  open              F=3        (_WC_T_______)  /private/tmp/se181.rMd0iz/state-f/marker-a.tmp                                                                                                                  0.000260   toy.68566452
+     61:17:36:09.310174    WrData[A]       D=0x03e645e0  B=0x1000   /dev/disk3s5  /private/tmp/se181.rMd0iz/state-f/marker-a.tmp                                                                                                      0.000023 W toy.68566452
+     62:17:36:09.310369  rename                                 /private/tmp/se181.rMd0iz/state-f/marker-a.tmp                                                                                                                        0.000206   toy.68566452
+     64:17:36:09.310595  open              F=3        (_WC_T_______)  /private/tmp/se181.rMd0iz/state-f/marker-b                                                                                                                      0.000223   toy.68566452
+     68:17:36:09.310626    WrData[A]       D=0x03e645e1  B=0x1000   /dev/disk3s5  /private/tmp/se181.rMd0iz/state-f/marker-b                                                                                                          0.000017 W toy.68566452
+     69:17:36:09.310843  unlink                                 /private/tmp/se181.rMd0iz/state-f/marker-b                                                                                                                            0.000226   toy.68566452
+     71:17:36:09.311036  mkdir                                  /private/tmp/se181.rMd0iz/state-f/marker-sub                                                                                                                          0.000189   toy.68566452
+     73:17:36:09.311240  open              F=3        (_WC_T_______)  /private/tmp/se181.rMd0iz/state-f/marker-sub/marker-c                                                                                                           0.000202   toy.68566452
+     77:17:36:09.311278    WrData[A]       D=0x03e645e2  B=0x1000   /dev/disk3s5  /private/tmp/se181.rMd0iz/state-f/marker-sub/marker-c                                                                                               0.000020 W toy.68566452
+  fs_usage: ok - all 3 tokens present, first appearances in order, 9 line(s) mention a marker (9 from the observer itself)
+
+==============================================================
+L4. ktrace: same substrate, first-party interface, C3 = the
+    filesystem class per this machine's man page
+==============================================================
+   runner rc=71
+   toy's own account (separated from the capture): MISSING
+   capture: 1 line(s), 51 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | ktrace: could not start process: Permission denied
+   marker lines, first 10:
+     (none)
+  ktrace: FAIL - token 'marker-a.tmp' never appears (51 bytes searched)
+  ktrace: (no marker token at all: the observer saw nothing of the toy)
+   the question the contaminated first run could not answer - do
+   ktrace's OWN event lines carry the marker paths, the way
+   fs_usage's do? Lines mentioning a marker that are not the toy's:
+     0
+
+==============================================================
+L5. eslogger: Endpoint Security's shipped CLI (root + the invoking
+    terminal's Full Disk Access decide this one)
+==============================================================
+   toy rc=0 (its own account: 7 lines)
+   capture: 1 line(s), 168 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | Failed to create ES client: Not permitted to create an ES Client, responsible process needs TCC Full Disk Access authorization (ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED)
+   marker lines, first 10:
+     (none)
+  eslogger: FAIL - token 'marker-a.tmp' never appears (168 bytes searched)
+  eslogger: (no marker token at all: the observer saw nothing of the toy)
+
+== residue check: no observer left behind
+   (silence above = all observers exited or were killed)
+
+== BROKEN checks: 0

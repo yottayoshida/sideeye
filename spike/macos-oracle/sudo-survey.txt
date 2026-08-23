@@ -1,0 +1,116 @@
+== environment (privileged half)
+   ProductName:		macOS
+   ProductVersion:		15.3.1
+   BuildVersion:		24D70
+   System Integrity Protection status: enabled.
+   uid 0, invoked via sudo by i.yoshida
+   2026-08-23T08:41:24Z
+
+== the toy, rebuilt here so this half stands alone
+   CodeDirectory v=20400 size=380 flags=0x20002(adhoc,linker-signed) hashes=9+0 location=embedded
+   Signature=adhoc
+   (ad-hoc linker signature: the self-built, non-platform case the
+    SIP question turns on)
+
+==============================================================
+L1. dtruss as root: the measurement ADR 0001 promised in 2026-08-10
+==============================================================
+   runner rc=0
+   toy's own account (stdout, separated): 0 line(s)
+   capture: 10 line(s), 283 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | dtrace: system integrity protection is on, some features will not be available
+     | 	PID/THRD  SYSCALL(args) 		 = return
+     | op open+write marker-a.tmp
+     | op rename marker-a.tmp -> marker-a
+     | op open+write marker-b
+     | op unlink marker-b
+   marker lines, first 10:
+     3:op open+write marker-a.tmp
+     4:op rename marker-a.tmp -> marker-a
+     5:op open+write marker-b
+     6:op unlink marker-b
+     7:op mkdir marker-sub
+     8:op open+write marker-sub/marker-c
+  dtruss: FAIL - every marker line is the toy's own stdout ('op ...'): this capture proves the toy ran, not that the observer saw it
+
+==============================================================
+L2. dtrace itself, minimal syscall aggregate: splits 'DTrace is
+    blocked' from 'the dtruss wrapper is broken'
+==============================================================
+   runner rc=1
+   capture: 2 line(s); head:
+     dtrace: system integrity protection is on, some features will not be available
+     dtrace: invalid probe specifier syscall:::entry /pid == $target/ { @[probefunc] = count(); }: probe description syscall:::entry does not match any probes. System Integrity Protection is on
+   syscall names seen (nonzero rows prove per-pid visibility even
+   though this probe prints no paths):
+     aggregate rows: 0
+
+==============================================================
+L3. fs_usage: kdebug substrate, filtered to the toy by name
+==============================================================
+   toy rc=0 (its own account: 7 lines)
+   capture: 85 line(s), 20968 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | 17:41:25.963120    RdData[S]       D=0x00e8e89a  B=0x4000   /dev/disk3s5  /private/var/root/Library/Group Containers/UBF8T346G9.com.microsoft.wdav.events/networkprotection/microsoft_defender_network_protection.log         0.000369 W netext.68573821
+     | 17:41:25.963364    RdData[S]       D=0x0642df94  B=0x4000   /dev/disk3s5  /Library/Logs/Netskope/nsdebuglog.log                                                                                                               0.000066 W com.netskope.cli.62126519
+     | 17:41:26.595612    RdMeta[S]       D=0x0012e14c  B=0x1000   /dev/disk3  /dev/disk3                                                                                                                                            0.000129 W mdworker_shared.68573969
+     | 17:41:26.944995    RdData[S]       D=0x03e64485  B=0x1000   /dev/disk3s5  /Users/i.yoshida/Library/Application Support/Notion/Partitions/notion/Local Storage/leveldb/069521.log                                              0.000796 W Notion.61722394
+     | 17:41:26.945015    RdData[S]       D=0x03e60ffc  B=0x1000   /dev/disk3s5  /Users/i.yoshida/Library/Application Support/Notion/Partitions/notion/Local Storage/leveldb/069521.log                                              0.000704 W Notion.61722394
+     | 17:41:27.583739  exit                                                                                                                                                                                                         0.000020   toy.68573980
+   marker lines, first 10:
+     60:17:41:27.587725  open              F=3        (_WC_T_______)  /private/tmp/se181.DiMZa8/state-f/marker-a.tmp                                                                                                                  0.000408   toy.68573981
+     64:17:41:27.588081    WrData[A]       D=0x03e6456d  B=0x1000   /dev/disk3s5  /private/tmp/se181.DiMZa8/state-f/marker-a.tmp                                                                                                      0.000311 W toy.68573981
+     65:17:41:27.588348  rename                                 /private/tmp/se181.DiMZa8/state-f/marker-a.tmp                                                                                                                        0.000512   toy.68573981
+     67:17:41:27.588669  open              F=3        (_WC_T_______)  /private/tmp/se181.DiMZa8/state-f/marker-b                                                                                                                      0.000316   toy.68573981
+     71:17:41:27.588744    WrData[A]       D=0x03e645c7  B=0x1000   /dev/disk3s5  /private/tmp/se181.DiMZa8/state-f/marker-b                                                                                                          0.000054 W toy.68573981
+     72:17:41:27.589019  unlink                                 /private/tmp/se181.DiMZa8/state-f/marker-b                                                                                                                            0.000316   toy.68573981
+     74:17:41:27.589335  mkdir                                  /private/tmp/se181.DiMZa8/state-f/marker-sub                                                                                                                          0.000311   toy.68573981
+     76:17:41:27.589626  open              F=3        (_WC_T_______)  /private/tmp/se181.DiMZa8/state-f/marker-sub/marker-c                                                                                                           0.000287   toy.68573981
+     80:17:41:27.589690    WrData[A]       D=0x03e645dc  B=0x1000   /dev/disk3s5  /private/tmp/se181.DiMZa8/state-f/marker-sub/marker-c                                                                                               0.000044 W toy.68573981
+  fs_usage: ok - all 3 tokens present, first appearances in order, 9 line(s) mention a marker (9 from the observer itself)
+
+==============================================================
+L4. ktrace: same substrate, first-party interface, C3 = the
+    filesystem class per this machine's man page
+==============================================================
+   runner rc=0
+   toy's own account (separated from the capture): toy-rc=0
+   capture: 337 line(s), 69231 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | Launching '/bin/sh /private/tmp/se181.DiMZa8/run-toy.sh /private/tmp/se181.DiMZa8/state-k /private/tmp/se181.DiMZa8/state-k.toy-account'
+     | walltime                          delta(us)(duration)    debug-id                             arg1             arg2             arg3             arg4             thread-id        cpu  process-name(pid)                             
+     | 
+     | 2026-08-23 17:41:30.592024 JST          0.0              VFS_LOOKUP                           e2a157f96ad6bb39 2f65746176697270 742f62642f726176 2f656e6f7a656d69 4165bac            9(AP-P) ktrace(66723)  
+     | 2026-08-23 17:41:30.592024 JST          0.0(0.0)         VFS_LOOKUP                           62363230322f7a74 6e6f7a2f302e312e 73412f6f666e6965 6f796b6f542f6169 4165bac            9(AP-P) ktrace(66723)  
+     | 2026-08-23 17:41:30.592067 JST         43.6              VFS_LOOKUP                           e2a157f96ad6bb39 2f65746176697270 742f62642f726176 2f656e6f7a656d69 4165bac            9(AP-P) ktrace(66723)  
+   marker lines, first 10:
+     (none)
+  ktrace: FAIL - token 'marker-a.tmp' never appears (69231 bytes searched)
+  ktrace: (no marker token at all: the observer saw nothing of the toy)
+   the question the contaminated first run could not answer - do
+   ktrace's OWN event lines carry the marker paths, the way
+   fs_usage's do? Lines mentioning a marker that are not the toy's:
+     0
+
+==============================================================
+L5. eslogger: Endpoint Security's shipped CLI (root + the invoking
+    terminal's Full Disk Access decide this one)
+==============================================================
+   toy rc=0 (its own account: 7 lines)
+   capture: 1 line(s), 168 bytes
+   capture head, verbatim (a refusal must be readable in this
+   transcript after the raw capture is cleaned up):
+     | Failed to create ES client: Not permitted to create an ES Client, responsible process needs TCC Full Disk Access authorization (ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED)
+   marker lines, first 10:
+     (none)
+  eslogger: FAIL - token 'marker-a.tmp' never appears (168 bytes searched)
+  eslogger: (no marker token at all: the observer saw nothing of the toy)
+
+== residue check: no observer left behind
+   (silence above = all observers exited or were killed)
+
+== BROKEN checks: 0

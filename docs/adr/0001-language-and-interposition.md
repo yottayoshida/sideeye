@@ -66,7 +66,7 @@ other environments need; the fetching mechanism is interchangeable.
 | Injection | `LD_PRELOAD` | `DYLD_INSERT_LIBRARIES` |
 | Symbol replacement | export the same symbol name; reach the real one via `dlsym(RTLD_NEXT, …)` | a `__DATA,__interpose` section holding (replacement, original) pairs; the real one is callable directly |
 | Main reason a target is out of bounds | static linking, raw `syscall(2)` | hardened runtime + library validation, SIP-protected binaries |
-| Completeness oracle | `strace` | to be measured — `dtruss` is DTrace-based and constrained by SIP |
+| Completeness oracle | `strace` | measured 2026-08-23 (#181, `spike/macos-oracle/`): none unprivileged; SIP leaves DTrace's syscall provider with no probes even as root (`dtruss` runs the target and exits 0 with no syscall in its capture); `fs_usage` gave an ordered, attributed, full-path account of the survey's toy, but requires root |
 
 The skeleton (operation classification, path normalisation, trace format, re-entrancy
 guard, kill decision) is shared; only symbol resolution differs per platform.

@@ -1,0 +1,13 @@
+== guard: wrapper readability
+  selftest ok: the predicate goes red on a missing wrapper
+  selftest ok: positive control, a present wrapper reads as readable
+== control: what happens to a COPIED platform binary (recorded,
+   because a BUILDLOG claim about it needs a committed line)
+./sudo-survey.sh: line 88: 74769 Killed: 9               "$SW/sleep-copy" 1 2> "$SW/copy-err.txt"
+  copied /bin/sleep, ran it: rc=137 
+  codesign verify on the copy:    (silence = valid)
+  codesign verify on the original: (silence = valid)
+== guard: the residue check's predicate (pgrep -x by observer name)
+  selftest ok: the predicate fires on a live process named fs_usage
+  selftest ok: silence returns once the process is gone
+== selftest failures: 0

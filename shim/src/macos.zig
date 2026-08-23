@@ -11,9 +11,14 @@
 //! `main`, found no original, and got -1 back. The replacements call the real functions
 //! directly instead (see `darwin_libc.zig`).
 //!
-//! What is *not* available here is an oracle: `dtruss` is DTrace-based and System
-//! Integrity Protection refuses it. The engine's structural detectors carry completeness
-//! alone on this platform, and a PASS requires the caller to say `--allow-unverified`.
+//! What is *not* available here is an unprivileged oracle (measured, #181,
+//! spike/macos-oracle/): DTrace's syscall provider matches no probes under SIP even as
+//! root, and `dtruss` — built on that provider — runs the target and exits 0 with no
+//! syscall in its capture, which for an oracle is worse than a refusal. Of the
+//! candidates measured there, only `fs_usage` produced an ordered, attributed,
+//! full-path account of the survey's toy, and it requires root, which a distributable
+//! default cannot demand. The engine's structural detectors carry completeness alone on
+//! this platform, and a PASS requires the caller to say `--allow-unverified`.
 
 const libc = @import("darwin_libc.zig");
 const ops = @import("ops.zig");
