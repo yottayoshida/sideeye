@@ -1,0 +1,6 @@
+# Git metadata of the fetched source checkouts: excluded from the build
+# context so the trees the Dockerfile digest-verifies are exactly the
+# trees fetch-artifacts.sh digested (both sides exclude .git), and so
+# the pack files stay out of the context.
+artifacts/himalaya-src/.git
+artifacts/unison-src/.git

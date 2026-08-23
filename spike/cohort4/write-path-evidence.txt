@@ -1,0 +1,150 @@
+== write-path evidence, both candidates
+== date: 2026-08-22T22:20:48Z
+== workdir: /private/tmp/claude-502/-Users-i-yoshida-claude-workspace/d0ecebe8-40ed-4772-a0fa-3c89c8be2fc6/scratchpad
+
+########## himalaya (Rust) ##########
+$ git clone --depth 1 --branch v2.1.0 https://github.com/pimalaya/himalaya.git
+  HEAD: ca88bee08ad2e92127b46dc6200d1e8201885156  tag: v2.1.0
+
+-- the maildir I/O crate, pinned by Cargo.lock
+$ grep -A3 '^name = "io-maildir"' Cargo.lock
+  name = "io-maildir"
+  version = "0.3.0"
+  source = "registry+https://github.com/rust-lang/crates.io-index"
+  checksum = "b02306d32aa78f1f493d70b751f539379c8ca4f7873e765e878d101eba6c060d"
+
+-- fetch that exact crate and verify it is the one the lockfile pins
+$ curl -sSL https://static.crates.io/crates/io-maildir/io-maildir-0.3.0.crate
+   (the crates.io /api/v1 download endpoint refuses without a User-Agent:
+    it answers 200 with a JSON data-access-policy error body, 277 bytes.)
+  sha256 downloaded : b02306d32aa78f1f493d70b751f539379c8ca4f7873e765e878d101eba6c060d
+  sha256 in Cargo.lock: b02306d32aa78f1f493d70b751f539379c8ca4f7873e765e878d101eba6c060d
+  MATCH - the source read below is the source that gets built
+
+-- which 'fs' is it? (cargo's wall was a raw syscall, not Rust as such)
+$ sed -n '9,15p' src/client.rs
+  use std::{
+      fs, io,
+      path::Path,
+      process, thread,
+      time::{SystemTime, UNIX_EPOCH},
+  };
+  
+
+-- every filesystem-mutating call in the std driver
+$ grep -rnE 'fs::(rename|write|copy|remove_file|remove_dir_all|create_dir_all)' src/
+  src/client.rs:197:                            fs::create_dir_all(parent)?;
+  src/client.rs:199:                        fs::write(path.as_str(), &contents)?;
+  src/client.rs:206:                        fs::create_dir_all(path.as_str())?;
+  src/client.rs:213:                        fs::remove_dir_all(path.as_str())?;
+  src/client.rs:220:                        fs::rename(from.as_str(), to.as_str())?;
+  src/client.rs:227:                        fs::copy(from.as_str(), to.as_str())?;
+  src/client.rs:408:        fs::remove_file(path.as_str())?;
+
+-- durability: is anything flushed to disk?
+$ grep -rcE 'sync_all|sync_data|fsync' src/   (count over the whole crate)
+  0 occurrences
+  control: the same grep for a call that IS present, so a 0 is a measurement
+$ grep -rcE 'fs::rename' src/
+  1 occurrences
+
+-- per-operation atomicity: the arms differ, and only one has an interior
+$ head -3 src/entry/store.rs ; head -3 src/entry/copy.rs
+  store: //! I/O-free coroutine storing an entry in a Maildir per the
+  store: //! delivery protocol (write to `/tmp`, atomic rename into target).
+  copy:  //! I/O-free coroutine copying a Maildir entry to another Maildir.
+  copy:  //!
+  copy:  //! Copying is a fresh delivery into `target`: a brand-new Maildir
+$ grep -n 'build_target_path\|WantsCopy' src/entry/copy.rs
+  148:                let target = build_target_path(&self.target, subdir, &id, flags);
+  151:                MaildirCoroutineState::Yielded(MaildirYield::WantsCopy(pairs))
+  203:fn build_target_path(
+  285:            MaildirCoroutineState::Yielded(MaildirYield::WantsCopy(pairs)) => {
+
+-- threads: where they are, and whether a mutating command reaches them
+$ grep -rn 'thread::' src/   (io-maildir)
+  src/client.rs:453:    /// [`thread::available_parallelism`].
+  src/client.rs:468:        let n_threads = thread::available_parallelism()
+  src/client.rs:475:        thread::scope(
+$ grep -rn 'read_entries' himalaya/src/   (the callers)
+  src/maildir/backend.rs:4://! high-level client (`list_maildirs`, `list_entries`, `read_entries`,
+  src/maildir/backend.rs:58:        let fulls = self.read_entries(&maildir, &entries)?;
+  src/maildir/backend.rs:79:        let fulls = self.read_entries(&maildir, &entries)?;
+
+-- rustix carried, but by whom? (read-only rustix is tolerated; writes are not)
+$ reverse-lookup of Cargo.lock dependency lists
+  rustix <- ['crossterm', 'gethostname', 'tempfile', 'terminal_size']
+  linux-raw-sys <- ['rustix']
+
+########## vdirsyncer (Python) ##########
+$ git clone --depth 1 https://github.com/pimutils/vdirsyncer.git
+  HEAD: 7ef30bfaad2891c3fb177d1d8a9bd4a486be8a1c
+  NOTE: default branch, not a tag - the newest tag v0.20.0 is the PyPI 0.20.0 of 2025-08-28
+
+-- the single atomic-write helper every local write goes through
+$ sed -n '208,231p' vdirsyncer/utils.py
+  @contextlib.contextmanager
+  def atomic_write(dest, mode="wb", overwrite=False):
+      if "w" not in mode:
+          raise RuntimeError("`atomic_write` requires write access")
+  
+      fd, src = tempfile.mkstemp(prefix=os.path.basename(dest), dir=os.path.dirname(dest))
+      file = os.fdopen(fd, mode=mode)
+  
+      try:
+          yield file
+      except Exception:
+          os.unlink(src)
+          raise
+      else:
+          file.flush()
+          file.close()
+  
+          if overwrite:
+              os.rename(src, dest)
+          else:
+              os.link(src, dest)
+              os.unlink(src)
+
+-- its call sites, with the overwrite flag that decides the shape
+$ grep -rn 'atomic_write(' vdirsyncer/ --include='*.py'
+  vdirsyncer/cli/utils.py:249:    with atomic_write(path, mode="w", overwrite=True) as f:
+  vdirsyncer/storage/singlefile.py:196:            with atomic_write(self.path, mode="wb", overwrite=True) as f:
+  vdirsyncer/storage/filesystem.py:135:            with atomic_write(fpath, mode="wb", overwrite=False) as f:
+  vdirsyncer/storage/filesystem.py:155:        with atomic_write(fpath, mode="wb", overwrite=True) as f:
+  vdirsyncer/storage/filesystem.py:210:            with atomic_write(fpath, mode="wb", overwrite=True) as f:
+  vdirsyncer/storage/google.py:76:        with atomic_write(self._token_file, mode="w", overwrite=True) as f:
+  vdirsyncer/utils.py:209:def atomic_write(dest, mode="wb", overwrite=False):
+
+-- does tempfile.mkstemp reach libc mkstemp(3)?  (#39's wall is C-specific)
+$ python3 -c "import tempfile, inspect; print(inspect.getsourcefile(tempfile))"
+  /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py
+$ python3 -c "import tempfile, inspect; print(inspect.getsource(tempfile._mkstemp_inner))" | grep -n 'open'
+  14:            fd = _os.open(file, flags, 0o600)
+  15:        except FileExistsError:
+  25:    raise FileExistsError(_errno.EEXIST,
+  reading: the name loop and the open are Python-level, so an interposer
+  sees the openat. This is the opposite of the C mkstemp(3) case in #39.
+  NOT SETTLED HERE: this was read on the host's CPython
+  (Python 3.14.7). The image's interpreter is what the probe must confirm,
+  via preflight.sh visibility.
+
+-- threads and the event loop
+$ grep -rnE 'threading|to_thread|run_in_executor|ThreadPool' vdirsyncer/ --include='*.py'
+  vdirsyncer/storage/google.py:10:from threading import Thread
+  vdirsyncer/utils.py:166:        from threading import Lock
+
+-- interactivity of the command a checker would want
+$ grep -rn 'click.confirm' vdirsyncer/ --include='*.py'
+  vdirsyncer/cli/__init__.py:268:    click.confirm("Do you want to continue?", abort=True)
+  vdirsyncer/cli/utils.py:355:    if implicit_create or click.confirm("Should vdirsyncer attempt to create it?"):
+
+-- the status store (rule 7 reads on the MAIN store; this is the other one)
+$ grep -rn 'sqlite3\|class SqliteStatus' vdirsyncer/sync/status.py
+  5:import sqlite3
+  111:class SqliteStatus(_StatusBase):
+  116:        self._c = sqlite3.connect(path)
+  118:        self._c.row_factory = sqlite3.Row
+  184:        except sqlite3.OperationalError:
+
+== end of evidence

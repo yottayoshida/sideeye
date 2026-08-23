@@ -1,0 +1,61 @@
+# guard-reds.txt: every new pin/assert in this freeze's Dockerfile and
+# fetch-artifacts.sh shown red once against a synthetic mutation, before
+# being trusted (the repository's falsification rule, applied to the
+# image gates the same way probes/drills.txt applies it to conditions 8
+# and 9). Captured 2026-08-23 on the arm64 build host. Raw rc always
+# read without a pipe. Each mutation was restored (or its mutant file
+# deleted) immediately after the red; the green counterpart of every
+# gate is freeze-build.txt.
+
+== red 1: himalaya source-tree digest check (Dockerfile, build-himalaya) ==
+mutation: first hex character of artifacts/himalaya-src.digest flipped to 'e'
+$ docker build -t sideeye-cohort4-redtest . ; (raw rc read from $?)
+red1 raw rc=1
+failing step: #15 [build-himalaya 8/8] RUN cd /build/himalaya-src && got=$(find ...) ...
+runtime output:
+himalaya-src digest mismatch: got f036686dd970ec7a540c1049dcb5c33e2935ecb7a7e11228526b67d0ffb5459f wanted e036686dd970ec7a540c1049dcb5c33e2935ecb7a7e11228526b67d0ffb5459f
+restored: artifacts/himalaya-src.digest begins f036686d again
+
+== red 2: unison source-tree digest check (Dockerfile, build-unison) ==
+mutation: first hex character of artifacts/unison-src.digest flipped to 'e'
+$ docker build -t sideeye-cohort4-redtest . ; (raw rc read from $?)
+red2 raw rc=1
+failing step: #15 [build-unison 5/5] RUN cd /build/unison-src && got=$(find ...) ...
+runtime output:
+unison-src digest mismatch: got 444928cf6fcce258a3ef76b9cd09437b28bfb41eb4a80307c818ba6a90abd2e5 wanted e44928cf6fcce258a3ef76b9cd09437b28bfb41eb4a80307c818ba6a90abd2e5
+restored: artifacts/unison-src.digest begins 444928cf again
+
+== red 3: the ldd dynamic-linkage assertion (Dockerfile, runtime stage) ==
+The assertion's own predicate, run against a synthetic static binary in
+the built image (the accident that motivated the gate is himalaya's
+static distribution; the falsification is independent of it):
+$ docker run --rm sideeye-cohort4 sh -c 'printf "int main(){return 0;}\n" > /tmp/h.c && gcc -static -o /tmp/h /tmp/h.c && (ldd /tmp/h || true) && ldd /tmp/h | grep -q "libc\.so\.6"; echo "assert rc=$?"'
+	not a dynamic executable
+	not a dynamic executable
+assert rc=1
+
+== red 4a: the commit pin (fetch-artifacts.sh, src_at_commit) ==
+mutation: the himalaya call's pinned commit first hex ca->ea (mutant copy
+of the script; the real script untouched)
+$ sh mutant-fetch-a.sh > /tmp/red4a.log 2>&1; echo rc=$?
+red4a raw rc=1
+FAIL himalaya-src: HEAD ca88bee08ad2e92127b46dc6200d1e8201885156, wanted ea88bee08ad2e92127b46dc6200d1e8201885156
+
+== red 4b: the download sha pin (fetch-artifacts.sh, fetch) ==
+mutation: the rust artifact renamed to an uncached name and its URL
+pointed at a small real file (the channel manifest), keeping the
+original sha256 pin, so the post-download hash comparison is what fires
+$ sh mutant-fetch-b.sh > /tmp/red4b.log 2>&1; echo rc=$?
+red4b raw rc=1
+FAIL rust-RED-mutant.tar.xz: sha256 3f7d139b73bbbd0004ef6e58b430831c68cdad2b1f64ee2eb35d54c09199489a, wanted ac9283184301aeed06ecc9f5aa4c1be7041e18a1b197b6cb6c5d162d98f566da
+(the mismatching download was deleted by the gate itself: ls afterwards
+reports No such file or directory)
+
+== two misfires during this falsification, kept because they are the point ==
+- The first 4a mutant targeted a variable (himalaya_commit=) that no
+  longer exists in the rewritten script; sed matched nothing, the mutant
+  was byte-identical, and the run came back green. A green falsification
+  run is a broken falsification until proven otherwise.
+- The first 4a rc was read through a pipe (sh mutant.sh | tail -1; echo
+  $?) and reported 0 while the FAIL line was printing: tail's rc, the C1
+  register row, stepped in again and caught by re-reading the raw rc.

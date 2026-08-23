@@ -1,0 +1,263 @@
+== novelty pre-scan: pimalaya/himalaya
+== date: 2026-08-22T22:06:39Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          18 hit(s) (all listed)
+      #736 open 2026-08-18 completion subcommand doesn't print to stdout despite --help saying it does
+      #491 closed 2024-10-20 Error Installing on NixOS Linux x86-64
+      #641 closed 2026-03-08 IMAP SELECT crashes with "Received malformed message" when Gmail mailbox has keyword flags containing spaces
+      #495 closed 2024-11-07 type error using sample config from repo
+      #78 closed 2021-04-08 Allow send to accept message in stdin
+      #657 closed 2026-03-25 Panic (index out of bounds) when passing raw message as CLI argument to 'message send'
+      #644 closed 2026-03-13 Bug:  panics with index out of bounds when parsing email
+      #680 closed 2026-05-15 Clarify template send usage for stdin and attachments
+      #591 closed 2025-10-30 crash when terminal is not wide enough
+      #138 closed 2021-04-30 Core Dumped with Terminal Width < 63 Characters
+      #596 closed 2025-12-21 crash when envelop or list folder with subfolder(s)
+      #597 closed 2025-12-27 Panic on mailbox.org: assertion failed: self.is_char_boundary(new_len)
+      #544 closed 2025-01-16 Better handle case when IMAP THREAD extension not available
+      #497 closed 2024-11-07 panic during envelope listing when envelope contains non-ASCII char
+      #587 closed 2025-09-10 Panic when `THREAD` not supported
+      #592 closed 2025-11-14 assertion failed: self.is_char_boundary when running himalaya
+      #573 closed 2025-04-15 Panic with `message reply` sometimes
+      #184 closed 2021-08-04 Nix build down - cachix 404
+  corrupt        4 hit(s) (all listed)
+      #711 closed 2026-07-15 attachment download corrupts binary attachments in v1.2.0 (fixed on master)
+      #628 closed 2026-02-12 AUTHENTICATE PLAIN continuation (`+`) mishandled
+      #625 closed 2026-02-10 AUTHENTICATE PLAIN fails against Migadu IMAP proxy, kills connection before LOGIN fallback
+      #468 closed 2024-09-04 Installation using `nix-darwin` not usable, `nix-shell -p himalaya` works
+  corruption     0 hit(s)
+  truncated      2 hit(s) (all listed)
+      #494 closed 2024-11-01 Use OAuth client id with a https (secure) redirect url
+      #434 closed 2022-12-22 Truncate sender name when listing messages
+  truncate       4 hit(s) (all listed)
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+      #597 closed 2025-12-27 Panic on mailbox.org: assertion failed: self.is_char_boundary(new_len)
+      #591 closed 2025-10-30 crash when terminal is not wide enough
+      #434 closed 2022-12-22 Truncate sender name when listing messages
+  empty          49 hit(s) (all listed)
+      #649 open 2026-03-15 Mail.ru IMAP: envelope list returns empty due to skipping invalid fetch
+      #489 closed 2024-10-13 account wizard does not set Default on empty config
+      #535 closed 2025-01-06 Empty envelope search result leads to `page 1 out of bounds` error
+      #38 closed 2021-03-10 Subtract with overflow if next page empty
+      #136 closed 2021-04-30 Empty inbox causes error with vim plugin
+      #229 closed 2021-10-21 Cannot read msg with an empty subject
+      #352 closed 2022-03-29 read -t html causes plain text emails to be blank
+      #729 closed 2026-08-11 v2.0.0: AUTHENTICATE PLAIN fails against Coremail (126/163) — server advertises SASL-IR but rejects inline initial response; no way to disable SASL-IR
+      #131 closed 2021-04-27 Sender field empty when From: header only contains email address
+      #522 closed 2024-12-11 Important Warnings are silenced by default
+      #682 closed 2026-05-19 fix: prevent panic when message send receives invalid email
+      #648 closed 2026-03-15 Outlook wizard fails with custom domain (tommyziegler.com) and does not bootstrap OAuth tokens when keyring is empty
+      #403 closed 2022-08-10 Show if mail has an attachment in list command
+      #478 closed 2024-09-10 Add flag to force reading text version of HTML part
+      #643 closed 2026-03-13 feat: Add Gmail REST API backend for native CJK search support
+      #707 closed 2026-06-20 Proton Bridge: Himalaya envelope list silently skips malformed FETCH rows and returns incomplete mailbox listing
+      #646 merged 2026-03-14 fix: honor positional input in save commands
+      #259 closed 2021-11-05 Add attachments with `save` and `send` commands
+      #645 closed 2026-03-14 message save and template save ignore positional input in non-interactive mode
+      #662 closed 2026-04-02 message save and template save do not set \Draft flag when saving to Drafts folder
+  atomic         3 hit(s) (all listed)
+      #712 closed 2026-07-26 Make IMAP raw command support batch
+      #588 closed 2025-09-13 [cargo] `cargo install --all-features` fails with compile errors
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+  atomically     1 hit(s) (all listed)
+      #712 closed 2026-07-26 Make IMAP raw command support batch
+  interrupted    0 hit(s)
+  interrupt      3 hit(s) (all listed)
+      #123 closed 2021-04-23 idle mode does not start back after network interruption
+      #404 merged 2022-08-10 vim: update new message/draft behavior
+      #173 merged 2021-07-01 Mail/Msg refactoring
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         5 hit(s) (all listed)
+      #24 closed 2021-01-17 Implement the TUI
+      #259 closed 2021-11-05 Add attachments with `save` and `send` commands
+      #517 closed 2024-12-10 Configuration wizard hangs 
+      #101 closed 2021-04-14 Autocomplete arguments and mail ids
+      #155 closed 2021-05-21 Experiments around TUI
+  power          1 hit(s) (all listed)
+      #561 closed 2025-02-10 Add pager configuration
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           5 hit(s) (all listed)
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+      #468 closed 2024-09-04 Installation using `nix-darwin` not usable, `nix-shell -p himalaya` works
+      #166 closed 2021-06-07 Integrate PGP
+      #65 closed 2021-04-05 Ensure that SMTP connection failures do not cause messages to drop
+      #154 closed 2021-05-18 Dhall alternative configuration file
+  partial        3 hit(s) (all listed)
+      #613 closed 2026-01-22 SASL PLAIN authentication fails with MalformedMessage on Migadu, LOGIN fallback also fails
+      #580 closed 2025-07-09 Draft messages return only headers when using `message read` command
+      #429 closed 2022-12-01 use builtin IMAP functions for copying and moving emails
+  incomplete     7 hit(s) (all listed)
+      #707 closed 2026-06-20 Proton Bridge: Himalaya envelope list silently skips malformed FETCH rows and returns incomplete mailbox listing
+      #694 closed 2026-06-05 MacOS builds broken
+      #619 closed 2026-01-31 Option to disable IMAP BINARY extension (save-copy fails with STRATO)
+      #658 closed 2026-03-28 Issues with otherwise working himalaya  v1.2.0 sending mesages, exim4, dovecot; also freezes if attempting port 993
+      #699 closed 2026-06-10 docs: agent/LLM-friendly quickstart (llms.txt) + verified Gmail recipes for drafts, archive search, and folder aliases
+      #617 closed 2026-01-29 Envelope parsing fails for emails with undisclosed-recipients in To field
+      #173 merged 2021-07-01 Mail/Msg refactoring
+  dataloss       0 hit(s)
+  recover        3 hit(s) (all listed)
+      #59 closed 2021-04-05 Save email upon error
+      #468 closed 2024-09-04 Installation using `nix-darwin` not usable, `nix-shell -p himalaya` works
+      #181 closed 2021-07-22 Ineffective sender censoring on image in README.md
+  recovery       2 hit(s) (all listed)
+      #468 closed 2024-09-04 Installation using `nix-darwin` not usable, `nix-shell -p himalaya` works
+      #187 closed 2021-08-05 Implement ability to save more than one draft per account
+  rollback       1 hit(s) (all listed)
+      #303 closed 2022-02-23 build failures in 0.5.6
+  resume         35 hit(s) (all listed)
+      #710 closed 2026-07-10 Microsoft exchange configuration issues
+      #714 closed 2026-07-27 cannot get 2.0.0 to work
+      #673 closed 2026-04-23 bug: exmail.qq.com, TLS error: invalid peer certificate: UnknownIssuer
+      #535 closed 2025-01-06 Empty envelope search result leads to `page 1 out of bounds` error
+      #499 closed 2024-11-10 Make the wizard ask to re-use IMAP credentials for SMTP
+      #498 closed 2024-11-09 If a message has unread flag I must access it twice with `himalaya message read` to see content
+      #493 closed 2024-11-01 Support other TLS provider and unify cargo features
+      #590 closed 2025-10-29 `$EDITOR` not spawning
+      #525 closed 2024-12-12 WARN: skipping invalid fetch
+      #684 closed 2026-05-21 Sohu IMAP: Multi-line literal strings in ENVELOPE cause 'skipping invalid fetch'
+      #351 closed 2022-03-21 Set up custom SMTP send command
+      #484 closed 2024-09-20 Keyring not working on MacOS
+      #342 closed 2022-03-13 Implement the backend synchronizer
+      #614 closed 2026-01-22 [TLS] HandshakeFailure when connecting to IMAP server (rust-tls compatibility issue)
+      #618 closed 2026-01-30 Problem with Outlook.com
+      #629 closed 2026-02-13 iCloud: SMTP send succeeds but append to ‘Sent Messages’ fails with NO: Mailbox does not exist when message.send.save-copy = true
+      #658 closed 2026-03-28 Issues with otherwise working himalaya  v1.2.0 sending mesages, exim4, dovecot; also freezes if attempting port 993
+      #619 closed 2026-01-31 Option to disable IMAP BINARY extension (save-copy fails with STRATO)
+      #615 closed 2026-01-26 Cannot connect to Proton Mail Bridge
+      #622 closed 2026-02-06 Auth issue with imap.exmail.qq.com
+  half-written   1 hit(s) (all listed)
+      #735 closed 2026-08-16 feat(maildir): surface custom keywords on read
+  wipe           2 hit(s) (all listed)
+      #735 closed 2026-08-16 feat(maildir): surface custom keywords on read
+      #155 closed 2021-05-21 Experiments around TUI
+  wipes          1 hit(s) (all listed)
+      #735 closed 2026-08-16 feat(maildir): surface custom keywords on read
+  erase          2 hit(s) (all listed)
+      #303 closed 2022-02-23 build failures in 0.5.6
+      #417 closed 2022-10-14 Cargo lock file out of date in 0.6.1
+  erasing        0 hit(s)
+  erased         3 hit(s) (all listed)
+      #303 closed 2022-02-23 build failures in 0.5.6
+      #417 closed 2022-10-14 Cargo lock file out of date in 0.6.1
+      #391 merged 2022-06-05 bumping lettre to 0.10.0-rc.7
+  destroy        2 hit(s) (all listed)
+      #711 closed 2026-07-15 attachment download corrupts binary attachments in v1.2.0 (fixed on master)
+      #522 closed 2024-12-11 Important Warnings are silenced by default
+  destroys       0 hit(s)
+  overwrite      0 hit(s)
+  clobber        0 hit(s)
+  blank          11 hit(s) (all listed)
+      #352 closed 2022-03-29 read -t html causes plain text emails to be blank
+      #133 closed 2021-04-27 Write/Reply file format on linux
+      #131 closed 2021-04-27 Sender field empty when From: header only contains email address
+      #680 closed 2026-05-15 Clarify template send usage for stdin and attachments
+      #206 closed 2021-09-23 Support format=flowed?
+      #494 closed 2024-11-01 Use OAuth client id with a https (secure) redirect url
+      #540 merged 2025-01-11 docs: link to conventionalcommits.org instead of their repo
+      #280 closed 2022-01-27 Squeeze multiple blank lines
+      #282 merged 2022-02-02 Release v0.5.2
+      #271 closed 2021-12-08 No reaction to incoming email when running `himalaya notify`
+      #162 closed 2021-06-03 Support `xdg-email` via `mailto:` scheme
+  unreadable     1 hit(s) (all listed)
+      #402 closed 2022-08-06 Error: cannot parse header "To" when trying to read an email
+  garbage        0 hit(s)
+  mangled        2 hit(s) (all listed)
+      #363 closed 2022-04-11 Writing emails with non ascii header values mangles them
+      #662 closed 2026-04-02 message save and template save do not set \Draft flag when saving to Drafts folder
+  contents       11 hit(s) (all listed)
+      #711 closed 2026-07-15 attachment download corrupts binary attachments in v1.2.0 (fixed on master)
+      #492 closed 2024-10-30 Pre-release packaging: Windows .zips bundle duplicate binaries
+      #240 closed 2021-10-25 feature request: "read last" / "read last-n"
+      #657 closed 2026-03-25 Panic (index out of bounds) when passing raw message as CLI argument to 'message send'
+      #494 closed 2024-11-01 Use OAuth client id with a https (secure) redirect url
+      #142 closed 2021-05-02 Emacs plugin
+      #658 closed 2026-03-28 Issues with otherwise working himalaya  v1.2.0 sending mesages, exim4, dovecot; also freezes if attempting port 993
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+      #448 closed 2023-05-14 support ip-addresses as imap/smtp host
+      #218 closed 2021-10-10 Removing some duplicated code
+      #224 merged 2021-10-13 One Read Pane
+  in-place       25 hit(s) (all listed)
+      #724 closed 2026-07-31 XDG desktop file contains obsolete and deprecated items
+      #471 closed 2024-09-10 Find a way to preview HTML message
+      #701 closed 2026-06-10 fix(imap): Gmail-compatible search fallback + docs from #699
+      #254 closed 2021-11-02 Cannot run system commands with MSYS2 on Windows
+      #662 closed 2026-04-02 message save and template save do not set \Draft flag when saving to Drafts folder
+      #351 closed 2022-03-21 Set up custom SMTP send command
+      #343 closed 2022-03-13 Implement the GUI
+      #699 closed 2026-06-10 docs: agent/LLM-friendly quickstart (llms.txt) + verified Gmail recipes for drafts, archive search, and folder aliases
+      #57 closed 2021-04-05 Notmuch support?
+      #610 closed 2026-01-20 Feature request: Structured JSON array output for multiple message read
+      #142 closed 2021-05-02 Emacs plugin
+      #497 closed 2024-11-07 panic during envelope listing when envelope contains non-ASCII char
+      #461 closed 2023-12-07 remove atty crate
+      #452 closed 2023-07-12 Stop breaking configuration compatibility please
+      #419 closed 2022-10-18 Add man page
+      #350 closed 2022-03-20 [Question] setup with pass and sync
+      #312 closed 2022-02-27 Experiments around config wizard
+      #156 closed 2021-05-23 Cache sessions in a daemon
+      #69 merged 2021-04-06 Preview mailboxes with telescope
+      #76 merged 2021-04-08 Add support for installing using Nix (zero maintenance)
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     3 hit(s) (all listed)
+      #680 closed 2026-05-15 Clarify template send usage for stdin and attachments
+      #497 closed 2024-11-07 panic during envelope listing when envelope contains non-ASCII char
+      #591 closed 2025-10-30 crash when terminal is not wide enough
+  atomic+write   1 hit(s) (all listed)
+      #588 closed 2025-09-13 [cargo] `cargo install --all-features` fails with compile errors
+  lock+file      20 hit(s) (all listed)
+      #88 closed 2021-04-09 Cargo.lock is not up-to-date
+      #513 closed 2024-12-05 Better version management
+      #638 closed 2026-03-03 (incorrect?) error message when sending mail
+      #525 closed 2024-12-12 WARN: skipping invalid fetch
+      #619 closed 2026-01-31 Option to disable IMAP BINARY extension (save-copy fails with STRATO)
+      #593 closed 2025-11-25 freeze when sending large (?) attachments
+      #573 closed 2025-04-15 Panic with `message reply` sometimes
+      #588 closed 2025-09-13 [cargo] `cargo install --all-features` fails with compile errors
+      #591 closed 2025-10-30 crash when terminal is not wide enough
+      #518 closed 2024-12-10 Invalid sequence set when listing envelopes
+      #629 closed 2026-02-13 iCloud: SMTP send succeeds but append to ‘Sent Messages’ fails with NO: Mailbox does not exist when message.send.save-copy = true
+      #497 closed 2024-11-07 panic during envelope listing when envelope contains non-ASCII char
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+      #571 closed 2025-04-04 cargo install with oauth2 features failed
+      #459 closed 2023-11-22 `himalaya account sync` does not attempt to retry on closed socket connection or socket timeout
+      #417 closed 2022-10-14 Cargo lock file out of date in 0.6.1
+      #385 merged 2022-05-28 Update gitignore
+      #391 merged 2022-06-05 bumping lettre to 0.10.0-rc.7
+      #76 merged 2021-04-08 Add support for installing using Nix (zero maintenance)
+      #73 closed 2021-04-07 Add support for installing using Nix
+  write+failure  6 hit(s) (all listed)
+      #638 closed 2026-03-03 (incorrect?) error message when sending mail
+      #172 closed 2021-06-23 Could not append message to `Sent` if the sending folder is not named Sent
+      #142 closed 2021-05-02 Emacs plugin
+      #588 closed 2025-09-13 [cargo] `cargo install --all-features` fails with compile errors
+      #313 closed 2022-02-28 Cannot Append Message to Sent
+      #222 closed 2021-10-11 need some help updating the test
+  file+contents  8 hit(s) (all listed)
+      #711 closed 2026-07-15 attachment download corrupts binary attachments in v1.2.0 (fixed on master)
+      #492 closed 2024-10-30 Pre-release packaging: Windows .zips bundle duplicate binaries
+      #657 closed 2026-03-25 Panic (index out of bounds) when passing raw message as CLI argument to 'message send'
+      #494 closed 2024-11-01 Use OAuth client id with a https (secure) redirect url
+      #142 closed 2021-05-02 Emacs plugin
+      #658 closed 2026-03-28 Issues with otherwise working himalaya  v1.2.0 sending mesages, exim4, dovecot; also freezes if attempting port 993
+      #529 closed 2024-12-13 Error when TLS connection not properly closed
+      #218 closed 2021-10-10 Removing some duplicated code
+
+== 51 terms run; 35 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
+== script exit rc=0

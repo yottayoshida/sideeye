@@ -1,0 +1,486 @@
+== novelty pre-scan: bcpierce00/unison
+== date: 2026-08-22T22:33:48Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          52 hit(s) (all listed)
+      #378 open 2020-09-15 unison is ungraceful when running out of memory
+      #1187 closed 2026-04-17 Fix crash when current directory is passed as first argument
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #1179 merged 2026-03-30 Make reading of fpcache file more robust
+      #1157 merged 2025-10-17 Fix an oversight in uimacbridge
+      #1149 merged 2025-10-09 Remove (stale) locks at connection close and process exit
+      #1170 closed 2026-01-15 wip: internationalization: languages module (PoC)
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #994 closed 2024-02-08 Add feature to rewrite symlinks
+      #1053 closed 2024-08-23 unison-fsmonitor consumes infinite memory when the main unison process crashes
+      #1044 closed 2024-06-07 Crashes randomly during sync
+      #1006 closed 2024-03-12 a recursive call is not 100% reliably tail recursive, perhaps provoked by Arch
+      #1014 merged 2024-03-31 Fix update propagation stop request not working
+      #990 closed 2024-01-19 propagation (of new files in a directory?) uses 6 stack frames per file, rather than iterating (NOT ABOUT ocaml 5.x!!)
+      #265 closed 2019-05-11 crash on macOS 10.14.4  with large number of files
+      #79 closed 2017-06-04 Unison fails on OSX if "-follow" and "-repeat watch" are set
+      #935 closed 2023-06-09 Best-effort synchronization: Damaged drive issue
+      #744 closed 2022-05-27 CI builds (v2.52.1) on Windows have broken GUI (due to mingw64-binutils 2.38)
+      #767 closed 2022-07-15 2.52.1 intermittant crash with Unison server failed: Invalid argument: Bytearray.blit_to_bytes
+      #772 closed 2022-07-25 v2.52.1 precompiled for Windows crashes
+  corrupt        18 hit(s) (all listed)
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #1179 merged 2026-03-30 Make reading of fpcache file more robust
+      #1006 closed 2024-03-12 a recursive call is not 100% reliably tail recursive, perhaps provoked by Arch
+      #935 closed 2023-06-09 Best-effort synchronization: Damaged drive issue
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #788 merged 2022-09-04 NEWS: Add items for (unreleased) 2.53.0
+      #340 closed 2020-05-10 Protocol error on roots with 1.2E9 files (integer overflow, but x86-64??)
+      #606 closed 2021-12-02 File corruption on macOS
+      #774 closed 2022-08-10 problems with make -j8
+      #61 closed 2017-01-17 Using filenames with % causes crash (with watcher, on macOS)
+      #510 merged 2021-05-13 Fix Windows-1252 transcoding table
+      #410 merged 2020-10-22 Assume documentation strings are in UTF-8
+      #149 merged 2018-02-01 'logfile': when relative path then root to home
+      #360 merged 2020-08-14 Add ANSI color to text UI
+      #62 closed 2017-01-25 Segfault when syncing
+      #32 closed 2016-08-18 Unison failed: Uncaught exception Failure("input_value: bad bigarray kind")
+      #64 closed 2017-02-12 "Protocol error: corrupted message received" after security update to Debian/Jessie
+      #84 closed 2017-08-05 Silent failure during fingerprint scan
+  corruption     11 hit(s) (all listed)
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #1179 merged 2026-03-30 Make reading of fpcache file more robust
+      #809 merged 2022-10-24 Improved parallel transport mechanism and improved cleanup
+      #606 closed 2021-12-02 File corruption on macOS
+      #628 merged 2022-02-04 Restore compatibility with 2.48
+      #626 merged 2022-01-30 Umarshal - version-independent serialization format
+      #583 closed 2021-09-05 [Question] Syncing between NTFS & exFAT: any potential issues?
+      #499 closed 2021-04-07 Re-index just one side?
+      #204 merged 2018-06-21 Typo
+      #62 closed 2017-01-25 Segfault when syncing
+      #48 closed 2016-12-05 Unison segfaults on Fedora 25
+  truncated      7 hit(s) (all listed)
+      #506 open 2021-05-07 Change GUI to be clearer about which side is local vs. remote.
+      #396 open 2020-10-14 text UI should query terminal width and scale output 
+      #1164 closed 2025-11-06 Error when building with MinGW : ` ./copy_stubs.c:369:7: error: request for member 'ByteCount' in something not a structure or union`
+      #962 merged 2023-09-07 Use UTF-8 encoding-safe string truncation in UI
+      #325 closed 2020-03-07 URLs in PDF version of manual run off end of line and are truncated
+      #626 merged 2022-01-30 Umarshal - version-independent serialization format
+      #96 closed 2017-09-28 selftest fails on macOS High Sierra
+  truncate       8 hit(s) (all listed)
+      #506 open 2021-05-07 Change GUI to be clearer about which side is local vs. remote.
+      #396 open 2020-10-14 text UI should query terminal width and scale output 
+      #871 open 2023-03-19 Remove external rsync support (as more complicated than useful)
+      #1164 closed 2025-11-06 Error when building with MinGW : ` ./copy_stubs.c:369:7: error: request for member 'ByteCount' in something not a structure or union`
+      #962 merged 2023-09-07 Use UTF-8 encoding-safe string truncation in UI
+      #325 closed 2020-03-07 URLs in PDF version of manual run off end of line and are truncated
+      #626 merged 2022-01-30 Umarshal - version-independent serialization format
+      #96 closed 2017-09-28 selftest fails on macOS High Sierra
+  empty          65 hit(s) (all listed)
+      #937 open 2023-06-13 "Open profile on startup" not working on macOS 13.4.1 (perhaps macOS bug, perhaps Unison)
+      #636 open 2022-02-13 Tests leave fingerprint/archive files in ~/.unison
+      #831 open 2022-11-14 Add preference/option similar to rsync's `-x`, to not cross mount points
+      #662 open 2022-03-06 Add workaround for macOS 12 not allowing rename(2) on 0500 mode directory (which is legal but strange and unhelpful)
+      #80 open 2017-06-12 Implement lookahead in path specifications
+      #833 open 2022-11-15 Graceful stop in repeat mode - part 2
+      #293 open 2019-10-29 unison fails to propagate deletion if stat fails on (longer) temp file due to excessively long filename
+      #605 open 2021-11-20 Add workaround for openssh <8.7 failure to restore blocking status (needs stdout/stderr on same fd to trigger, e.g. systemd)
+      #1122 closed 2025-02-14 Unison (fastcheck=true) doesn't notice new files (written in exFAT by another computer running Windows)
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #1129 closed 2025-06-02 -batch -silent isn’t silent.
+      #1106 closed 2025-01-03 Sync with MTP : Error in renaming : Input/output error
+      #1073 closed 2024-10-28 unison-gui: make '-times' default or add a gui option
+      #1055 closed 2024-09-19 error prompt incorrectly suggests <spc> as a valid action (in old unison)
+      #978 closed 2023-10-30 Add ability to jail users within the current directory
+      #952 closed 2023-08-16 macOS GUI client fails to sync extended attributes
+      #993 closed 2024-02-04 unison-gui: Add quiet/auto mode, that only shows window/GUI when necessary.
+      #962 merged 2023-09-07 Use UTF-8 encoding-safe string truncation in UI
+      #1006 closed 2024-03-12 a recursive call is not 100% reliably tail recursive, perhaps provoked by Arch
+      #913 merged 2023-05-01 unison-manual: Clean up cruft
+  atomic         12 hit(s) (all listed)
+      #1047 open 2024-06-10 Unison fails on first sync to synchronize directories covered by -atomic
+      #1204 merged 2026-08-06 Use a more POSIX-y rename in Windows
+      #272 open 2019-07-27 add ability to collapse directories in the synchronisation view (GTK UI)
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #1006 closed 2024-03-12 a recursive call is not 100% reliably tail recursive, perhaps provoked by Arch
+      #950 closed 2023-08-04 [BUG] unison does not return on "Nothing to do: replicas have not changed since last sync."
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #474 merged 2021-01-30 Revert "Add new directories as 'unchanged'"
+      #156 merged 2018-02-06 Documentation fixes relating to backup, merge, atomic
+      #99 merged 2017-10-15 Add fix from mroi
+      #96 closed 2017-09-28 selftest fails on macOS High Sierra
+  atomically     1 hit(s) (all listed)
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+  interrupted    13 hit(s) (all listed)
+      #447 open 2020-12-04 Enable customization of temporary file prefixes and suffixes
+      #310 open 2020-01-13 Add machine-readable status indication for sync outcomes
+      #287 open 2019-09-28 unison should not invoke rsync with --append-verify
+      #408 open 2020-10-22 Add optional feature to prevent system sleep during operation
+      #570 open 2021-08-01 Local sync does not resume partial transfer
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #927 merged 2023-05-27 Improve the TUI output when interrupted
+      #896 closed 2023-04-05 Configuration option to disable exponential backoff?
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #110 closed 2017-11-28 Add separate scan, scan, compare, act steps -- to workaround scaling problems
+      #656 merged 2022-03-01 More defensive initPrefs and refreshConnection
+      #369 closed 2020-08-29 Prepare release 2.52.0
+      #87 closed 2017-08-18 Unison chmod on partial transfers with "-dontchmod"
+  interrupt      19 hit(s) (all listed)
+      #447 open 2020-12-04 Enable customization of temporary file prefixes and suffixes
+      #310 open 2020-01-13 Add machine-readable status indication for sync outcomes
+      #833 open 2022-11-15 Graceful stop in repeat mode - part 2
+      #570 open 2021-08-01 Local sync does not resume partial transfer
+      #287 open 2019-09-28 unison should not invoke rsync with --append-verify
+      #408 open 2020-10-22 Add optional feature to prevent system sleep during operation
+      #1183 closed 2026-04-13 Prevent standby while copying
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #65 closed 2017-02-14 Add --inplace option for syncing e.g. 15G files with small changes, trading away safety for speed
+      #927 merged 2023-05-27 Improve the TUI output when interrupted
+      #896 closed 2023-04-05 Configuration option to disable exponential backoff?
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #110 closed 2017-11-28 Add separate scan, scan, compare, act steps -- to workaround scaling problems
+      #812 closed 2022-10-27 Interrupting the text UI terminates the child process for `ssh` too early
+      #809 merged 2022-10-24 Improved parallel transport mechanism and improved cleanup
+      #762 closed 2022-07-03 Hangs on Windows when halfduplex=false
+      #656 merged 2022-03-01 More defensive initPrefs and refreshConnection
+      #369 closed 2020-08-29 Prepare release 2.52.0
+      #87 closed 2017-08-18 Unison chmod on partial transfers with "-dontchmod"
+  sigkill        1 hit(s) (all listed)
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+  sigint         7 hit(s) (all listed)
+      #833 open 2022-11-15 Graceful stop in repeat mode - part 2
+      #570 open 2021-08-01 Local sync does not resume partial transfer
+      #1015 merged 2024-04-01 Fix incorrect retry when SIGINT reaches ssh
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #812 closed 2022-10-27 Interrupting the text UI terminates the child process for `ssh` too early
+      #810 merged 2022-10-24 Make it possible to stop update propagation by user request
+  ctrl-c         8 hit(s) (all listed)
+      #570 open 2021-08-01 Local sync does not resume partial transfer
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #950 closed 2023-08-04 [BUG] unison does not return on "Nothing to do: replicas have not changed since last sync."
+      #812 closed 2022-10-27 Interrupting the text UI terminates the child process for `ssh` too early
+      #810 merged 2022-10-24 Make it possible to stop update propagation by user request
+      #762 closed 2022-07-03 Hangs on Windows when halfduplex=false
+      #284 closed 2019-09-07 Issues when removing / recreating huge dirs
+      #295 closed 2019-10-29 Unison freezes on sync
+  power          14 hit(s) (all listed)
+      #408 open 2020-10-22 Add optional feature to prevent system sleep during operation
+      #827 open 2022-11-09 Clarify and document the status of opam packages, and publish them in the opam repository
+      #1159 closed 2025-10-20 make_tools.ml set arch flag on Darwin in a fragile way, which breaks build on ppc/ppc64
+      #1143 closed 2025-09-19 fsmonitor on linux is triggered due to unison changes its fingerprint cache every second
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #1049 closed 2024-07-05 Xcode part misdetects the build arch
+      #265 closed 2019-05-11 crash on macOS 10.14.4  with large number of files
+      #617 closed 2021-12-27 Apple Silicon M1 ARM binaries ...
+      #899 merged 2023-04-12 Improve sync progress status display (mainly TUI)
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #657 closed 2022-03-01 %system can not be used to detect the system
+      #595 closed 2021-10-30 unison & thunderbird profile: very slow even when only tiny changes
+      #476 closed 2021-02-15 Compared to syncthing/syncthing ?
+      #161 closed 2018-02-19 why a profile?
+  outage         2 hit(s) (all listed)
+      #1009 open 2024-03-23 repeat mode lacks backoff
+      #705 open 2022-04-20 Reconsider project hosting
+  ENOSPC         2 hit(s) (all listed)
+      #564 merged 2021-07-06 fsmonitor: extend the error message about inotify ENOSPC
+      #280 closed 2019-08-31 "No space left on device" message not helpful
+  disk           46 hit(s) (all listed)
+      #1036 open 2024-05-07 Consider storing metadata (UNISONLOCALNAME, ar/fp files) within a replica
+      #571 open 2021-08-02 Resume partial transfers for local syncs
+      #777 open 2022-08-19 Add ability to use threads to parallelize various operations
+      #1199 open 2026-06-24 Fast check not working correctly due to pseudo inode number calculations
+      #447 open 2020-12-04 Enable customization of temporary file prefixes and suffixes
+      #1168 open 2025-11-30 Fix bug #1122 - mishandling of ExFAT filesystem
+      #816 open 2022-10-30 Progress calculator treats deletions as zero-cost (or only considers network transfers?)
+      #287 open 2019-09-28 unison should not invoke rsync with --append-verify
+      #871 open 2023-03-19 Remove external rsync support (as more complicated than useful)
+      #1112 open 2025-01-18 Incorrect mtime displayed for unchanged files/dirs in some cases
+      #1009 open 2024-03-23 repeat mode lacks backoff
+      #65 closed 2017-02-14 Add --inplace option for syncing e.g. 15G files with small changes, trading away safety for speed
+      #1169 closed 2025-12-09 Uncaught exception: Please report a bug....
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #1122 closed 2025-02-14 Unison (fastcheck=true) doesn't notice new files (written in exFAT by another computer running Windows)
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #1073 closed 2024-10-28 unison-gui: make '-times' default or add a gui option
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #888 closed 2023-03-30 2.53.2 on macOS Ventura 13.3 (22E252) hangs while looking for changes
+      #962 merged 2023-09-07 Use UTF-8 encoding-safe string truncation in UI
+  partial        33 hit(s) (all listed)
+      #571 open 2021-08-02 Resume partial transfers for local syncs
+      #570 open 2021-08-01 Local sync does not resume partial transfer
+      #287 open 2019-09-28 unison should not invoke rsync with --append-verify
+      #29 open 2016-07-13 symlink direction propagation is false if using -force newer or -force older
+      #1168 open 2025-11-30 Fix bug #1122 - mishandling of ExFAT filesystem
+      #942 open 2023-07-05 Windows directory symlinks copied as file symlinks
+      #816 open 2022-10-30 Progress calculator treats deletions as zero-cost (or only considers network transfers?)
+      #871 open 2023-03-19 Remove external rsync support (as more complicated than useful)
+      #1058 closed 2024-09-26 Fatal error uncaught exception after selecting default profile
+      #1056 closed 2024-09-20 Tool for updating a renamed source directory, retaining cache
+      #235 closed 2018-12-18 External copy program did not create target file (or bad length)
+      #1060 closed 2024-10-04 External copy program did not create target file (or bad length)
+      #982 closed 2023-11-30 call to external copyprog (rsync) mishandles IPv6 literal address, dropping []
+      #962 merged 2023-09-07 Use UTF-8 encoding-safe string truncation in UI
+      #950 closed 2023-08-04 [BUG] unison does not return on "Nothing to do: replicas have not changed since last sync."
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #865 closed 2023-03-09 rsync >= 3.2.4 quotes arguments itself, making unison fail when it quotes arguments
+      #443 closed 2020-11-29 Binary releases for Linux on ARM
+      #220 closed 2018-09-16 rsync --append-verify option not available on OS X 10.13.6 (High Sierra)
+      #262 closed 2019-05-05 Unmounting replica results in a directory delete
+  incomplete     25 hit(s) (all listed)
+      #293 open 2019-10-29 unison fails to propagate deletion if stat fails on (longer) temp file due to excessively long filename
+      #662 open 2022-03-06 Add workaround for macOS 12 not allowing rename(2) on 0500 mode directory (which is legal but strange and unhelpful)
+      #1106 closed 2025-01-03 Sync with MTP : Error in renaming : Input/output error
+      #1060 closed 2024-10-04 External copy program did not create target file (or bad length)
+      #988 closed 2024-01-10 file was incorrectly transferred (fingerprint mismatch in resource fork)
+      #982 closed 2023-11-30 call to external copyprog (rsync) mishandles IPv6 literal address, dropping []
+      #979 closed 2023-11-22 ssh URI parser objects to percent-encoded @ in username
+      #904 merged 2023-04-22 Fix incomplete sync when `maxthreads = 1`
+      #947 closed 2023-07-11 Input/output error rename with fuse jmtpfs
+      #894 merged 2023-04-03 Remove non-maintained make install target
+      #935 closed 2023-06-09 Best-effort synchronization: Damaged drive issue
+      #880 merged 2023-03-21 GHA: Fix Windows packaging (include missing DLLs)
+      #923 closed 2023-05-19  Filesync complains about lock files, but none are present
+      #865 closed 2023-03-09 rsync >= 3.2.4 quotes arguments itself, making unison fail when it quotes arguments
+      #798 closed 2022-09-23 work around macos 13 beta issue - Attribute not found setattrlist
+      #606 closed 2021-12-02 File corruption on macOS
+      #355 closed 2020-07-12 Possible race condition error when trying to rename/set permission/modification time of duplicate paths 
+      #350 closed 2020-06-19 `make test` fails on git master branch when compiled for GUI
+      #150 closed 2018-02-02 New preference 'mergenot'
+      #326 closed 2020-03-23 Ignore unison.log file by default?
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #884 merged 2023-03-27 Improve fsmonitor resilience some more
+      #63 closed 2017-01-26 Error in deleting directory causes repeated assertion failures
+  recovery       5 hit(s) (all listed)
+      #1009 open 2024-03-23 repeat mode lacks backoff
+      #809 merged 2022-10-24 Improved parallel transport mechanism and improved cleanup
+      #618 closed 2021-12-29 On Redhat, lost data with Unison
+      #616 closed 2021-12-27 On Linux, unison randomly deletes files issues
+      #251 closed 2019-02-19 Sync Behaviour Changes with "ignorearchives"
+  rollback       1 hit(s) (all listed)
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+  resume         8 hit(s) (all listed)
+      #571 open 2021-08-02 Resume partial transfers for local syncs
+      #570 open 2021-08-01 Local sync does not resume partial transfer
+      #816 open 2022-10-30 Progress calculator treats deletions as zero-cost (or only considers network transfers?)
+      #871 open 2023-03-19 Remove external rsync support (as more complicated than useful)
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #792 merged 2022-09-12 Improve GTK performance when clearing the list
+      #87 closed 2017-08-18 Unison chmod on partial transfers with "-dontchmod"
+      #63 closed 2017-01-26 Error in deleting directory causes repeated assertion failures
+  half-written   3 hit(s) (all listed)
+      #833 open 2022-11-15 Graceful stop in repeat mode - part 2
+      #65 closed 2017-02-14 Add --inplace option for syncing e.g. 15G files with small changes, trading away safety for speed
+      #1122 closed 2025-02-14 Unison (fastcheck=true) doesn't notice new files (written in exFAT by another computer running Windows)
+  wipe           3 hit(s) (all listed)
+      #1119 merged 2025-02-05 Enable manual path entry in the new profile assistant
+      #48 closed 2016-12-05 Unison segfaults on Fedora 25
+      #334 closed 2020-04-23 Fatal error: Lost connection with the server Ubuntu 20.04
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #888 closed 2023-03-30 2.53.2 on macOS Ventura 13.3 (22E252) hangs while looking for changes
+  erasing        1 hit(s) (all listed)
+      #888 closed 2023-03-30 2.53.2 on macOS Ventura 13.3 (22E252) hangs while looking for changes
+  erased         0 hit(s)
+  destroy        4 hit(s) (all listed)
+      #718 closed 2022-05-08 Can't change the default file creation permission
+      #629 merged 2022-02-06 GHA: Run self-tests over a socket
+      #425 merged 2020-11-06 uigtk2: Fix profile editing (lost user input)
+      #19 closed 2016-05-26 Gtk2 interface: Impossible to change integer/text values in profiles
+  destroys       1 hit(s) (all listed)
+      #718 closed 2022-05-08 Can't change the default file creation permission
+  overwrite      15 hit(s) (all listed)
+      #506 open 2021-05-07 Change GUI to be clearer about which side is local vs. remote.
+      #367 open 2020-08-23 Add pre/suffix option for temporary files so that other processes/systems will ignore them
+      #396 open 2020-10-14 text UI should query terminal width and scale output 
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #1073 closed 2024-10-28 unison-gui: make '-times' default or add a gui option
+      #981 closed 2023-11-28 Add the ability to ignore subdirectories.
+      #947 closed 2023-07-11 Input/output error rename with fuse jmtpfs
+      #885 closed 2023-03-28 unison-gtk waits 30 seconds when server sends text
+      #658 merged 2022-03-02 provide packages in dune-project
+      #575 merged 2021-08-13 Include archive name in unison.dump file name
+      #215 closed 2018-08-25 Overwriting a file instead of deleting and copying?
+      #427 merged 2020-11-08 Fix self-tests on Windows
+      #45 closed 2016-10-24 Is fastcheck reliable in all cases?
+      #6 closed 2016-04-01 copy-on-conflict fails when file is deleted
+  clobber        0 hit(s)
+  blank          4 hit(s) (all listed)
+      #711 open 2022-04-25 Reconsider mailing list host
+      #794 closed 2022-09-14 Unsion with OpenSSH on Windows shows empty prompt
+      #567 merged 2021-07-21 Improve capturing output from diff command
+      #328 closed 2020-03-27 Add workaround for buggy ssh password prompt behavior in macOS 10.15.4
+  unreadable     3 hit(s) (all listed)
+      #959 closed 2023-09-07 Part of the column headers of the comparison results are unreadable
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #620 closed 2022-01-06 Empty lockfile created when watching
+  garbage        8 hit(s) (all listed)
+      #1029 open 2024-04-28 Add feature to exclude symlinks based on where they point to
+      #1165 closed 2025-11-06 Memory leak in unison (text) and fs-monitor?
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #33 closed 2016-08-25 memory leak with sync, rescan, and inotifyd -- unclear exactly where
+      #561 merged 2021-06-29 uitext: Change terminal input - no more byte as a unit
+      #24 closed 2016-06-22 Limit the RAM memory
+      #48 closed 2016-12-05 Unison segfaults on Fedora 25
+      #221 closed 2018-09-18 Unison 2.51.2 (built from source) crashes on OS X 10.13.6
+  mangled        2 hit(s) (all listed)
+      #86 closed 2017-08-15 Q: Data Integrity with Multiple Syncs on the Same Dataset?
+      #166 closed 2018-03-01 failure syncing from windows: input_value_from_block: bad object
+  contents       67 hit(s) (all listed)
+      #495 open 2021-03-25 Add command to show archive/fingerprint files
+      #168 open 2018-03-02 Better default height
+      #571 open 2021-08-02 Resume partial transfers for local syncs
+      #937 open 2023-06-13 "Open profile on startup" not working on macOS 13.4.1 (perhaps macOS bug, perhaps Unison)
+      #1032 open 2024-05-05 document that unison's lwt is not an old bundled version of the newer thing also called lwt
+      #671 open 2022-03-08 dune-project multiple changes: required lablgtk version, generate opam files, update generated files
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #1161 closed 2025-10-26 Add ability to use arbitrarty environment variable(s) in .prf configuration files
+      #1122 closed 2025-02-14 Unison (fastcheck=true) doesn't notice new files (written in exFAT by another computer running Windows)
+      #1126 closed 2025-03-24 Version 2.53.3 - Uncaught exception Gpointer.Null  -- resolution use version 2.53.7
+      #1107 closed 2025-01-05 archive cache code is too complicated and wrong
+      #1098 merged 2024-12-17 Portable makefiles 8
+      #1038 closed 2024-05-18 Add days to ETA display (Nd hh:mm:ss instead of hh:mm:ss) to improve >>1h readability
+      #1073 closed 2024-10-28 unison-gui: make '-times' default or add a gui option
+      #981 closed 2023-11-28 Add the ability to ignore subdirectories.
+      #888 closed 2023-03-30 2.53.2 on macOS Ventura 13.3 (22E252) hangs while looking for changes
+      #209 closed 2018-07-20 Efficient change detection using NTFS USN numbers
+      #923 closed 2023-05-19  Filesync complains about lock files, but none are present
+      #885 closed 2023-03-28 unison-gtk waits 30 seconds when server sends text
+      #783 closed 2022-08-29 File contents are compared even with -fastcheck and -fastercheck enabled
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #552 open 2021-06-22 Enable placing archive files in a different directory than config files
+      #801 open 2022-09-25 Backups locations are mixed for backupcurr and backup, and shared across replicas (central)
+      #1009 open 2024-03-23 repeat mode lacks backoff
+      #172 open 2018-03-09 Add option to synchronize directory timestamp
+      #1029 open 2024-04-28 Add feature to exclude symlinks based on where they point to
+      #797 open 2022-09-21 When synchronizing with SSH, only the first line of a multi-line message from the server is marked as such
+      #1047 open 2024-06-10 Unison fails on first sync to synchronize directories covered by -atomic
+      #447 open 2020-12-04 Enable customization of temporary file prefixes and suffixes
+      #858 open 2023-02-18 CI: replace "uses" in GHA, unless needed for CI interaction
+      #506 open 2021-05-07 Change GUI to be clearer about which side is local vs. remote.
+      #445 open 2020-11-29 Github CI is proprietary and limiting
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #937 open 2023-06-13 "Open profile on startup" not working on macOS 13.4.1 (perhaps macOS bug, perhaps Unison)
+      #871 open 2023-03-19 Remove external rsync support (as more complicated than useful)
+      #396 open 2020-10-14 text UI should query terminal width and scale output 
+      #1170 closed 2026-01-15 wip: internationalization: languages module (PoC)
+      #1173 merged 2026-03-11 man page updates (both hosts need unison, 25 years)
+      #429 closed 2020-11-10 [WIP] docs ~ INSTALL updates
+      #65 closed 2017-02-14 Add --inplace option for syncing e.g. 15G files with small changes, trading away safety for speed
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+  unclean        2 hit(s) (all listed)
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #357 closed 2020-07-15 Windows paths with '\' are allowed as roots, but not as `-ignore` arguments
+  shutdown       4 hit(s) (all listed)
+      #833 open 2022-11-15 Graceful stop in repeat mode - part 2
+      #65 closed 2017-02-14 Add --inplace option for syncing e.g. 15G files with small changes, trading away safety for speed
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+  reboot         4 hit(s) (all listed)
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #716 closed 2022-05-06 Feature request: keys to force all conflicts in to one direction or the other
+      #328 closed 2020-03-27 Add workaround for buggy ssh password prompt behavior in macOS 10.15.4
+      #337 closed 2020-04-27 ubuntu 20.04 ocaml error and slow start
+  disk+full      13 hit(s) (all listed)
+      #777 open 2022-08-19 Add ability to use threads to parallelize various operations
+      #287 open 2019-09-28 unison should not invoke rsync with --append-verify
+      #1009 open 2024-03-23 repeat mode lacks backoff
+      #65 closed 2017-02-14 Add --inplace option for syncing e.g. 15G files with small changes, trading away safety for speed
+      #1122 closed 2025-02-14 Unison (fastcheck=true) doesn't notice new files (written in exFAT by another computer running Windows)
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #888 closed 2023-03-30 2.53.2 on macOS Ventura 13.3 (22E252) hangs while looking for changes
+      #379 closed 2020-09-19 macOS: failure to propagate changes when file extension is hidden
+      #443 closed 2020-11-29 Binary releases for Linux on ARM
+      #359 merged 2020-08-12 Add ACL synchronization support (NFSv4 ACL, limited POSIX-draft ACL and NTFS ACL)
+      #340 closed 2020-05-10 Protocol error on roots with 1.2E9 files (integer overflow, but x86-64??)
+      #472 closed 2021-01-28 When moving a file, sync on two local replicas does a copy from replica1 rather than from the file in replica2
+      #48 closed 2016-12-05 Unison segfaults on Fedora 25
+  data+loss      10 hit(s) (all listed)
+      #1168 open 2025-11-30 Fix bug #1122 - mishandling of ExFAT filesystem
+      #396 open 2020-10-14 text UI should query terminal width and scale output 
+      #993 closed 2024-02-04 unison-gui: Add quiet/auto mode, that only shows window/GUI when necessary.
+      #809 merged 2022-10-24 Improved parallel transport mechanism and improved cleanup
+      #628 merged 2022-02-04 Restore compatibility with 2.48
+      #664 closed 2022-03-07 Undetected write-delete conflict
+      #626 merged 2022-01-30 Umarshal - version-independent serialization format
+      #328 closed 2020-03-27 Add workaround for buggy ssh password prompt behavior in macOS 10.15.4
+      #165 closed 2018-03-01 Fixed String Pathspec Patterns
+      #51 closed 2016-12-14 Add config option to allow for a time difference between archive and file system
+  partial+write  4 hit(s) (all listed)
+      #571 open 2021-08-02 Resume partial transfers for local syncs
+      #816 open 2022-10-30 Progress calculator treats deletions as zero-cost (or only considers network transfers?)
+      #871 open 2023-03-19 Remove external rsync support (as more complicated than useful)
+      #166 closed 2018-03-01 failure syncing from windows: input_value_from_block: bad object
+  crash+safe     6 hit(s) (all listed)
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #1179 merged 2026-03-30 Make reading of fpcache file more robust
+      #1170 closed 2026-01-15 wip: internationalization: languages module (PoC)
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #990 closed 2024-01-19 propagation (of new files in a directory?) uses 6 stack frames per file, rather than iterating (NOT ABOUT ocaml 5.x!!)
+      #369 closed 2020-08-29 Prepare release 2.52.0
+  atomic+write   3 hit(s) (all listed)
+      #876 merged 2023-03-20 Use reflink copy API within rsync protocol
+      #1006 closed 2024-03-12 a recursive call is not 100% reliably tail recursive, perhaps provoked by Arch
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+  lock+file      24 hit(s) (all listed)
+      #1148 open 2025-10-08 macOS GUI invokes unison from multiple threads, leading to fpcache corruption
+      #1068 open 2024-10-21 Unison uses more memory than some people wish
+      #408 open 2020-10-22 Add optional feature to prevent system sleep during operation
+      #1047 open 2024-06-10 Unison fails on first sync to synchronize directories covered by -atomic
+      #636 open 2022-02-13 Tests leave fingerprint/archive files in ~/.unison
+      #1149 merged 2025-10-09 Remove (stale) locks at connection close and process exit
+      #1169 closed 2025-12-09 Uncaught exception: Please report a bug....
+      #1141 closed 2025-08-19 Error in Lock.acquire - quota exceeded
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #923 closed 2023-05-19  Filesync complains about lock files, but none are present
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #110 closed 2017-11-28 Add separate scan, scan, compare, act steps -- to workaround scaling problems
+      #917 closed 2023-05-06 unison-gui asks for SSH password without need
+      #762 closed 2022-07-03 Hangs on Windows when halfduplex=false
+      #774 closed 2022-08-10 problems with make -j8
+      #620 closed 2022-01-06 Empty lockfile created when watching
+      #669 closed 2022-03-08 Building with new version number fails (without cleaning)
+      #338 closed 2020-05-06 "Invalid argument: unquote" from lwt.ml, line 126, characters 16-23
+      #599 closed 2021-11-12 How to terminate unison gently when I'm logging-out (xsession shuts down)?
+      #74 closed 2017-03-25 Memory usage ~0.8kB/file
+  write+failure  11 hit(s) (all listed)
+      #662 open 2022-03-06 Add workaround for macOS 12 not allowing rename(2) on 0500 mode directory (which is legal but strange and unhelpful)
+      #636 open 2022-02-13 Tests leave fingerprint/archive files in ~/.unison
+      #1170 closed 2026-01-15 wip: internationalization: languages module (PoC)
+      #1128 merged 2025-05-25 add desktop file and install it with unison-gui
+      #996 closed 2024-02-14 Excessive failures logged when using `-repeat`
+      #554 closed 2021-06-23 Make SIGINT be more of a "graceful shutdown" than it is now
+      #866 merged 2023-03-10 Avoid problems with quoting arguments to copyprog
+      #782 closed 2022-08-29 Stale backup files accumulate over time
+      #166 closed 2018-03-01 failure syncing from windows: input_value_from_block: bad object
+      #380 merged 2020-09-29 Fix builds
+      #94 closed 2017-09-17 Uncaught exception Failure("input_value: bad bigarray kind")
+  file+contents  60 hit(s) (all listed)
+      #495 open 2021-03-25 Add command to show archive/fingerprint files
+      #571 open 2021-08-02 Resume partial transfers for local syncs
+      #671 open 2022-03-08 dune-project multiple changes: required lablgtk version, generate opam files, update generated files
+      #1161 closed 2025-10-26 Add ability to use arbitrarty environment variable(s) in .prf configuration files
+      #1122 closed 2025-02-14 Unison (fastcheck=true) doesn't notice new files (written in exFAT by another computer running Windows)
+      #576 merged 2021-08-17 Detect and propagate renames/moves instead of delete+create
+      #1126 closed 2025-03-24 Version 2.53.3 - Uncaught exception Gpointer.Null  -- resolution use version 2.53.7
+      #1098 merged 2024-12-17 Portable makefiles 8
+      #1038 closed 2024-05-18 Add days to ETA display (Nd hh:mm:ss instead of hh:mm:ss) to improve >>1h readability
+      #1073 closed 2024-10-28 unison-gui: make '-times' default or add a gui option
+      #981 closed 2023-11-28 Add the ability to ignore subdirectories.
+      #888 closed 2023-03-30 2.53.2 on macOS Ventura 13.3 (22E252) hangs while looking for changes
+      #923 closed 2023-05-19  Filesync complains about lock files, but none are present
+      #209 closed 2018-07-20 Efficient change detection using NTFS USN numbers
+      #885 closed 2023-03-28 unison-gtk waits 30 seconds when server sends text
+      #783 closed 2022-08-29 File contents are compared even with -fastcheck and -fastercheck enabled
+      #317 closed 2020-02-15 support dune properly, remove usage of c_names
+      #769 merged 2022-07-20 Fix potential fastcheck miss
+      #760 closed 2022-06-29 Windows download link in the Wiki
+      #359 merged 2020-08-12 Add ACL synchronization support (NFSv4 ACL, limited POSIX-draft ACL and NTFS ACL)
+
+== 51 terms run; 47 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
+== script exit rc=0

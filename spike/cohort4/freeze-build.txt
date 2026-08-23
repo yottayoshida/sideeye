@@ -1,0 +1,58 @@
+# freeze-build.txt: the freeze build's evidence, captured 2026-08-23 on the
+# arm64 build host. Raw command/output pairs. This is the transcript behind
+# PROTOCOL.md's Versions section and the install-plus--version pre-freeze
+# contact claim. The docker build ran --no-cache so every quoted line below
+# comes from this one build; the full log is artifacts/freeze-build-raw.log
+# (gitignored, regenerable in form though not byte-identical, the apt layer
+# being pinned by build), quoted here with its step numbers kept. The red
+# counterparts of the gates quoted green here are guard-reds.txt.
+
+$ shasum -a 256 artifacts/rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz
+ac9283184301aeed06ecc9f5aa4c1be7041e18a1b197b6cb6c5d162d98f566da  rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz
+
+$ sh fetch-artifacts.sh; echo rc=$?
+ok   rust-1.98.0-aarch64-unknown-linux-gnu.tar.xz (cached)
+ok   himalaya-src at ca88bee08ad2e92127b46dc6200d1e8201885156
+ok   vendor: 316 crate dirs (Cargo.lock names 317 packages; the difference is himalaya itself, which is not vendored)
+ok   himalaya-src.digest f036686dd970ec7a540c1049dcb5c33e2935ecb7a7e11228526b67d0ffb5459f
+ok   unison-src at b1a49141e7eb5334e31efcf4d08073c192d6c1ae
+ok   unison-src.digest 444928cf6fcce258a3ef76b9cd09437b28bfb41eb4a80307c818ba6a90abd2e5
+artifacts ready in /Users/i.yoshida/claude_workspace/sideeye/spike/cohort4/artifacts
+rc=0
+
+$ docker build --no-cache -t sideeye-cohort4 . > artifacts/freeze-build-raw.log 2>&1; echo "docker build --no-cache raw rc=$?" >> artifacts/freeze-build-raw.log
+(excerpts:)
+#10 0.183 /tmp/rust.tar.xz: OK
+#10 9.498 cargo 1.98.0 (797e8a9bc 2026-08-05)
+#10 9.503 rustc 1.98.0 (88d9e12ae 2026-08-18)
+#15 4.320 unison version 2.54.0 (ocaml 5.3.0)
+#17 100.2     Finished `release` profile [optimized] target(s) in 1m 40s
+#17 100.2 himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+#17 100.2 build: linux gnu aarch64
+#17 100.2 git: unknown, rev unknown
+#20 [stage-2 5/5] RUN himalaya --version     && ldd /usr/local/bin/himalaya     && ldd /usr/local/bin/himalaya | grep -q 'libc\.so\.6'     && unison -version     && ldd /usr/local/bin/unison     && ldd /usr/local/bin/unison | grep -q 'libc\.so\.6'
+#20 0.084 himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+#20 0.084 build: linux gnu aarch64
+#20 0.084 git: unknown, rev unknown
+#20 0.086 	linux-vdso.so.1 (0x0000ffff83a58000)
+#20 0.086 	libgcc_s.so.1 => /lib/aarch64-linux-gnu/libgcc_s.so.1 (0x0000ffff82e90000)
+#20 0.086 	libm.so.6 => /lib/aarch64-linux-gnu/libm.so.6 (0x0000ffff82de0000)
+#20 0.086 	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff82c20000)
+#20 0.086 	/lib/ld-linux-aarch64.so.1 (0x0000ffff83a10000)
+#20 0.090 unison version 2.54.0 (ocaml 5.3.0)
+#20 0.091 	linux-vdso.so.1 (0x0000ffff9928c000)
+#20 0.091 	libm.so.6 => /lib/aarch64-linux-gnu/libm.so.6 (0x0000ffff98bf0000)
+#20 0.091 	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff98a30000)
+#20 0.091 	/lib/ld-linux-aarch64.so.1 (0x0000ffff99250000)
+docker build --no-cache raw rc=0
+
+$ docker run --rm sideeye-cohort4 sh -c 'himalaya --version; unison -version; strace -V | head -1; python3 --version; ldd /usr/local/bin/himalaya | grep libc.so.6; ldd /usr/local/bin/unison | grep libc.so.6'; echo rc=$?
+himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+build: linux gnu aarch64
+git: unknown, rev unknown
+unison version 2.54.0 (ocaml 5.3.0)
+strace -- version 6.13
+Python 3.13.5
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffffb4730000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff8d920000)
+rc=0

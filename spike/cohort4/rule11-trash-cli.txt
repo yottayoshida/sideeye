@@ -1,0 +1,57 @@
+== rule 11/17 receipts: andreafrancia/trash-cli
+== gh api repos/andreafrancia/trash-cli/issues?state=all&sort=created&direction=desc&per_page=60  (pull_request filtered out)
+== gh api repos/andreafrancia/trash-cli/issues/<N>/comments?per_page=100  per issue
+== run at 2026-08-22T22:44:51Z
+
+== 60 items fetched, 24 are issues, showing the 12 most recent
+
+#413  2026-07-30T03:30:39Z  by=frostbane  labels=[-]  state=closed
+    title: Unusable in opensuse
+    FIRST RESPONSE: +4.6d [WITHIN-1-WEEK] by andreafrancia (OWNER) at 2026-08-03T18:42:55Z
+
+#412  2026-07-26T08:32:20Z  by=alex-1987  labels=[-]  state=open
+    title: trash-list ignores .Trash directories on virtiofs mounts
+    FIRST RESPONSE: +8.4d [OVER-1-WEEK] by andreafrancia (OWNER) at 2026-08-03T18:50:40Z
+
+#389  2026-05-10T22:48:39Z  by=curious-rabbit  labels=[-]  state=closed
+    title: Q: Project status?
+    FIRST RESPONSE: +18.5d [OVER-1-WEEK] by SOV710 (CONTRIBUTOR) at 2026-05-29T10:42:53Z
+
+#388  2026-05-10T00:33:16Z  by=Skyb0rg007  labels=[-]  state=open
+    title: Support for the Trash Specification's directorysizes cache
+    FIRST RESPONSE: +53.5d [OVER-1-WEEK] by andreafrancia (OWNER) at 2026-07-02T12:51:51Z
+
+#383  2026-04-19T05:49:25Z  by=abstract-official  labels=[-]  state=open
+    title: prompt before `trash-rm`
+    FIRST RESPONSE: +74.4d [OVER-1-WEEK] by andreafrancia (OWNER) at 2026-07-02T15:36:21Z
+
+#379  2026-03-22T12:35:05Z  by=dandrake  labels=[-]  state=open
+    title: `trash` and `trash-list` use inconsistent directories
+    FIRST RESPONSE: +102.0d [OVER-1-WEEK] by andreafrancia (OWNER) at 2026-07-02T13:42:53Z
+
+#378  2026-01-04T03:01:18Z  by=danielwerg  labels=[-]  state=open
+    title: Config file
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#377  2025-12-14T08:42:49Z  by=trkaplan  labels=[-]  state=open
+    title: Misleading "non existent" error for permission-denied files
+    FIRST RESPONSE: none (no comment from anyone other than the author)
+
+#376  2025-12-01T16:23:43Z  by=pkzc  labels=[-]  state=open
+    title: trash-restore terminates too eagerly
+    FIRST RESPONSE: +38.5d [OVER-1-WEEK] by chapmanjacobd (NONE) at 2026-01-09T04:29:47Z
+
+#375  2025-11-30T22:08:21Z  by=pkzc  labels=[-]  state=open
+    title: Unremovable files trashed
+    FIRST RESPONSE: +216.4d [OVER-1-WEEK] by andreafrancia (OWNER) at 2026-07-05T08:25:23Z
+
+#370  2025-08-18T23:42:29Z  by=NikNikovsky  labels=[-]  state=open
+    title: Seems to have deleted all of my trashed files
+    FIRST RESPONSE: +94.1d [OVER-1-WEEK] by nevakrien (NONE) at 2025-11-21T01:15:29Z
+
+#368  2025-07-26T18:41:20Z  by=markfaine  labels=[-]  state=closed
+    title: Use the recycle bin
+    FIRST RESPONSE: +37.2d [OVER-1-WEEK] by JacksonChen666 (NONE) at 2025-09-02T00:26:38Z
+
+== 1 of 12 recent issues answered within 1 week by someone other than the author
+== author_association is what distinguishes a maintainer reply from a passer-by; both are listed above

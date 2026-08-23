@@ -1,0 +1,28 @@
+{
+    "defaultAction": "SCMP_ACT_ALLOW",
+    "syscalls": [
+        {
+            "names": [
+                "copy_file_range",
+                "sendfile",
+                "sendfile64"
+            ],
+            "action": "SCMP_ACT_ERRNO",
+            "errnoRet": 38
+        },
+        {
+            "names": [
+                "ioctl"
+            ],
+            "action": "SCMP_ACT_ERRNO",
+            "errnoRet": 25,
+            "args": [
+                {
+                    "index": 1,
+                    "value": 1074041865,
+                    "op": "SCMP_CMP_EQ"
+                }
+            ]
+        }
+    ]
+}
