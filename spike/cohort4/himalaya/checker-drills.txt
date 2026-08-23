@@ -1,6 +1,10 @@
-== the two states the operation itself can leave (both must be green)
+== the operation itself: setup, the frozen argv, then the checker
+   operation rc=0: Message(s) successfully copied
+   the copy it left: 1787451722.#0M840838050P17.6c42edda9701:2,S (307 bytes)
+drill ok   live/operation-then-checker: checker green as required
+
+== the other state the operation can leave (killed before it created anything)
 drill ok   green/copy-absent: checker green as required
-drill ok   green/copy-present: checker green as required
 
 == guard
 drill ok   guard/missing-dir: red through the expected leg: checker(himalaya-copy): the store has lost its Archive/tmp directory
@@ -20,11 +24,15 @@ drill ok   legE/source-rewritten: red through the expected leg: checker(himalaya
 
 == leg C: the outside-root configuration is conserved
 drill ok   legC/config-changed: red through the expected leg: checker(himalaya-copy): leg C: the outside-root account configuration changed
+drill ok   legC/config-missing: red through the expected leg: checker(himalaya-copy): leg C: the outside-root account configuration is gone (it was outside the judged state, so the operation should not have been able to remove it)
 
 == leg R: himalaya's own reader agrees
 drill ok   legR/preconditions-green: checker green as required
-drill ok   legR/reader-lists-nothing: red through the expected leg: checker(himalaya-copy): leg R: the target folder holds one message but the reader lists 0
-drill ok   legR/reader-cannot-read: red through the expected leg: checker(himalaya-copy): leg R: the copy is on disk but the reader cannot read it back (rc=1): cannot read this message
+drill ok   legR/list-fails: red through the expected leg: checker(himalaya-copy): leg R: envelope list failed (rc=3): backend exploded
+drill ok   legR/lists-nothing: red through the expected leg: checker(himalaya-copy): leg R: the target folder holds one message but the reader lists 0
+drill ok   legR/cannot-read: red through the expected leg: checker(himalaya-copy): leg R: the copy is on disk but the reader cannot read it back (rc=1): cannot read this message
+drill ok   legR/body-missing: red through the expected leg: checker(himalaya-copy): leg R: the reader returned the copy without the source's body text
+drill ok   legR/counts-a-ghost: red through the expected leg: checker(himalaya-copy): leg R: the target folder is empty but the reader lists 1 message(s)
    (trial G in pre-define-trials.txt is the measurement that leg R
     cannot substitute for leg D: a zero-length copy lists as an
     ordinary envelope, 0 B and blank columns, rc 0.)

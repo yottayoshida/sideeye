@@ -1,18 +1,29 @@
 #!/bin/sh
-# Checker drills for the himalaya define: every leg seen red once, on its
-# own, and the whole checker green on the state the un-killed operation
-# leaves. The cohort rule is that an assertion nobody has watched fail is
-# not yet an assertion.
+# Checker drills for the himalaya define: the operation run once and
+# judged, every leg seen red once on its own, and the whole checker green
+# on the states the operation can actually leave. The cohort rule is that
+# an assertion nobody has watched fail is not yet an assertion.
 #
-# Each case builds a store, damages exactly one thing, runs the committed
-# check.sh against it through SIDEEYE_STATE_DIR, and requires the checker
-# to fail WITH THE EXPECTED LEG NAMED. A case that goes red through some
-# other leg is a failure of the drill, not a pass: it would mean the leg
-# under test is dead and another one is carrying it.
+# Each damage case builds a store, breaks exactly one thing, runs the
+# committed check.sh against it through SIDEEYE_STATE_DIR, and requires
+# the checker to fail WITH THE EXPECTED LEG NAMED. A case that goes red
+# through some other leg is a failure of the drill, not a pass: it would
+# mean the leg under test is dead and another one is carrying it.
 #
-# Engine-free: no kill, no engine, no shim. Only the checker runs.
+# HOW THE SCRIPTS ARE SPAWNED. setup.sh and check.sh run through their own
+# exec bit, never as `sh file`. That is CLAUDE.md's rule, bought when a 644
+# declaration script proved green under `sh` and then died with Permission
+# denied at the first sealed exploration. The first cut of this file broke
+# it and copied setup.sh's config-writing inline as well, which left the
+# define's own setup with no green run anywhere and would have kept these
+# drills green against a stale copy of it. Both fixed here: the ambient
+# comes from ops/setup.sh itself.
+#
+# Engine-free: no kill, no engine, no shim. The operation runs once,
+# normally, so the checker can be judged against what it really leaves.
 set -u
-CHECK=$(cd "$(dirname "$0")/ops" && pwd)/check.sh
+OPS=$(cd "$(dirname "$0")/ops" && pwd)
+CHECK="$OPS/check.sh"
 P=/tmp/cohort4/himalaya
 W=/tmp/drills-himalaya
 MSGID='1700000000.#0M0P1.probehost'
@@ -31,18 +42,6 @@ This is the existing message. Its bytes are part of the freeze.
 EOF
 }
 
-# The ambient the checker's leg C compares against, and the store shape
-# every case starts from.
-setup_ambient() {
-    rm -rf "${P:?}/store" "${P:?}/home" "${P:?}/xdg"
-    mkdir -p "$P/home" "$P/xdg"
-    cat > "$P/config.toml" <<EOF
-[accounts.probe]
-default = true
-maildir.root = "$P/store"
-EOF
-}
-
 build() { # dir with-copy(yes/no)
     d=$1
     rm -rf "${d:?}"
@@ -52,10 +51,10 @@ build() { # dir with-copy(yes/no)
     return 0
 }
 
-# run <name> <expect: green|leg-substring> <dir>
+# run <name> <expect: green|leg-substring> <dir> [command-prefix...]
 run() {
-    name=$1; expect=$2; d=$3
-    out=$(SIDEEYE_STATE_DIR="$d" sh "$CHECK" 2>&1); rc=$?
+    name=$1; expect=$2; d=$3; shift 3
+    out=$(SIDEEYE_STATE_DIR="$d" "$@" "$CHECK" 2>&1); rc=$?
     if [ "$expect" = green ]; then
         if [ "$rc" -eq 0 ]; then echo "drill ok   $name: checker green as required"
         else echo "drill FAIL $name: checker went red on a state it must accept: $out"; FAILS=$((FAILS+1)); fi
@@ -71,19 +70,42 @@ run() {
     esac
 }
 
-setup_ambient
-echo "== the two states the operation itself can leave (both must be green)"
+# ---- the operation itself, run once and judged ----------------------------
+# The state the checker must accept above all others is the one the
+# un-killed operation leaves: if the checker is red there, the engine
+# answers baseline_violates_invariant and the target loses its slot. That
+# state is produced here by the define's own setup and the toml's own argv,
+# rather than assembled by hand as the first cut of this file did.
+#
+# No seccomp profile is applied to this run and it does not need one: the
+# profile decides which kernel path fs::copy takes, not what the copy
+# leaves on disk, and both probe transcripts show a correct copy either way
+# (../probes/himalaya-bare.txt, where the unlifted copy succeeded through
+# copy_file_range, and ../probes/himalaya.txt, where it fell back).
+echo "== the operation itself: setup, the frozen argv, then the checker"
+"$OPS/setup.sh" || { echo "drill FAIL live/setup: the define's setup failed"; exit 1; }
+HOME="$P/home" XDG_CONFIG_HOME="$P/xdg" \
+    himalaya -c "$P/config.toml" maildir messages copy "$MSGID" \
+    --maildir . --target Archive > "$W.op.out" 2>&1
+oprc=$?
+echo "   operation rc=$oprc: $(head -1 "$W.op.out")"
+copy=$(ls -A "$P/store/Archive/cur")
+echo "   the copy it left: $copy ($(wc -c < "$P/store/Archive/cur/$copy" | tr -d ' ') bytes)"
+[ "$oprc" -eq 0 ] || { echo "drill FAIL live/operation: the operation itself failed"; FAILS=$((FAILS+1)); }
+run "live/operation-then-checker" green "$P/store"
+
+echo ""
+echo "== the other state the operation can leave (killed before it created anything)"
 build "$W/green-absent" no;  run "green/copy-absent"  green "$W/green-absent"
-build "$W/green-present" yes; run "green/copy-present" green "$W/green-present"
 
 echo ""
 echo "== guard"
 build "$W/g1" yes; rm -rf "$W/g1/Archive/tmp"
 run "guard/missing-dir" "has lost its Archive/tmp directory" "$W/g1"
 build "$W/g2" yes; : > "$W/g2/stray"
-run "guard/stray-root-entry" "entries this operation cannot produce" "$W/g2"
+run "guard/stray-root-entry" "the store root holds entries" "$W/g2"
 build "$W/g3" yes; : > "$W/g3/cur/another:2,S"
-run "guard/extra-source-message" "source folder holds entries" "$W/g3"
+run "guard/extra-source-message" "the source folder holds entries" "$W/g3"
 build "$W/g4" yes; : > "$W/g4/Archive/tmp/leftover"
 run "guard/staged-leftover" "new/ or tmp/ is not empty" "$W/g4"
 build "$W/g5" yes; msg_bytes > "$W/g5/Archive/cur/1767225600.#0M2P78.somehost:2,S"
@@ -111,57 +133,58 @@ echo "== leg C: the outside-root configuration is conserved"
 build "$W/c1" yes
 cp "$P/config.toml" "$W/config.saved"
 printf 'tampered\n' >> "$P/config.toml"
-run "legC/config-changed" "leg C: the outside-root account configuration changed" "$W/c1"
+run "legC/config-changed" "leg C: the outside-root account configuration" "$W/c1"
+rm -f "$P/config.toml"
+run "legC/config-missing" "leg C: the outside-root account configuration" "$W/c1"
 cp "$W/config.saved" "$P/config.toml"
 
 echo ""
 echo "== leg R: himalaya's own reader agrees"
 # Leg R cannot be reached by damaging the store: every state that makes
-# the reader disagree with the disk is caught by an earlier leg first
-# (a second message trips the guard's entry count, a torn copy trips leg
-# D's bytes). A leg nobody has watched fail is not an assertion, so its
-# predicate is exercised directly instead, by putting a reader in front
-# of the real one that answers wrongly on purpose. Same philosophy as the
-# decoy shim this repository uses to pin a phrase dyld will not produce.
-build "$W/r1" yes
-run "legR/preconditions-green" green "$W/r1"
+# the reader disagree with the disk is caught by an earlier leg first (a
+# second message trips the guard's entry count, a torn copy trips leg D's
+# bytes). Its five fail sites are therefore exercised directly, with a
+# reader put in front of the real one that answers wrongly on purpose:
+# the same synthetic pinning this repository uses for a dyld phrase it
+# cannot provoke. Every site the leg has, not only the two an accident
+# happened to suggest.
+build "$W/r0" yes
+run "legR/preconditions-green" green "$W/r0"
 
 mkdir -p "$W/fake"
-cat > "$W/fake/himalaya" <<'FAKE'
-#!/bin/sh
-# A reader that lists nothing, whatever is on disk.
-case "$*" in
-    *"envelope list"*) printf '┌──┐\n└──┘\n'; exit 0 ;;
-    *) exit 0 ;;
-esac
-FAKE
-chmod 755 "$W/fake/himalaya"
-build "$W/r2" yes
-out=$(SIDEEYE_STATE_DIR="$W/r2" PATH="$W/fake:$PATH" sh "$CHECK" 2>&1); rc=$?
-case "$rc:$out" in
-    0:*) echo "drill FAIL legR/reader-lists-nothing: checker stayed green"; FAILS=$((FAILS+1)) ;;
-    *"leg R: the target folder holds one message but the reader lists 0"*)
-        echo "drill ok   legR/reader-lists-nothing: red through the expected leg: $out" ;;
-    *) echo "drill FAIL legR/reader-lists-nothing: red through the WRONG leg: $out"; FAILS=$((FAILS+1)) ;;
-esac
+fake_reader() { # case-statement body
+    { echo '#!/bin/sh'; echo 'case "$*" in'; printf '%s\n' "$1"; echo 'esac'; } > "$W/fake/himalaya"
+    chmod 755 "$W/fake/himalaya"
+}
+row='│ 1767225600.#0M1P77.somehost ┆ x │'
 
-cat > "$W/fake/himalaya" <<'FAKE'
-#!/bin/sh
-# A reader that lists the message and then cannot read it back.
-case "$*" in
-    *"envelope list"*) printf '┌──┐\n│ 1767225600.#0M1P77.somehost ┆ x │\n└──┘\n'; exit 0 ;;
-    *"message read"*) echo "cannot read this message" >&2; exit 1 ;;
-    *) exit 0 ;;
-esac
-FAKE
+fake_reader '    *"envelope list"*) echo "backend exploded" >&2; exit 3 ;;
+    *) exit 0 ;;'
+build "$W/r1" yes
+run "legR/list-fails" "leg R: envelope list failed (rc=3)" "$W/r1" env "PATH=$W/fake:$PATH"
+
+fake_reader "    *\"envelope list\"*) printf '(empty listing)\n'; exit 0 ;;
+    *) exit 0 ;;"
+build "$W/r2" yes
+run "legR/lists-nothing" "leg R: the target folder holds one message but the reader lists 0" "$W/r2" env "PATH=$W/fake:$PATH"
+
+fake_reader "    *\"envelope list\"*) printf '$row\n'; exit 0 ;;
+    *\"message read\"*) echo \"cannot read this message\" >&2; exit 1 ;;
+    *) exit 0 ;;"
 build "$W/r3" yes
-out=$(SIDEEYE_STATE_DIR="$W/r3" PATH="$W/fake:$PATH" sh "$CHECK" 2>&1); rc=$?
-case "$rc:$out" in
-    0:*) echo "drill FAIL legR/reader-cannot-read: checker stayed green"; FAILS=$((FAILS+1)) ;;
-    *"leg R: the copy is on disk but the reader cannot read it back"*)
-        echo "drill ok   legR/reader-cannot-read: red through the expected leg: $out" ;;
-    *) echo "drill FAIL legR/reader-cannot-read: red through the WRONG leg: $out"; FAILS=$((FAILS+1)) ;;
-esac
+run "legR/cannot-read" "leg R: the copy is on disk but the reader cannot read it back" "$W/r3" env "PATH=$W/fake:$PATH"
+
+fake_reader "    *\"envelope list\"*) printf '$row\n'; exit 0 ;;
+    *\"message read\"*) echo 'Subject: something else'; exit 0 ;;
+    *) exit 0 ;;"
+build "$W/r4" yes
+run "legR/body-missing" "leg R: the reader returned the copy without the source's body text" "$W/r4" env "PATH=$W/fake:$PATH"
+
+fake_reader "    *\"envelope list\"*) printf '$row\n'; exit 0 ;;
+    *) exit 0 ;;"
+build "$W/r5" no
+run "legR/counts-a-ghost" "leg R: the target folder is empty but the reader lists 1" "$W/r5" env "PATH=$W/fake:$PATH"
+
 echo "   (trial G in pre-define-trials.txt is the measurement that leg R"
 echo "    cannot substitute for leg D: a zero-length copy lists as an"
 echo "    ordinary envelope, 0 B and blank columns, rc 0.)"

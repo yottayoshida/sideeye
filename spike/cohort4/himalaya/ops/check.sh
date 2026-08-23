@@ -24,9 +24,9 @@
 # NO DOCUMENTED RECOVERY IS APPLIED, and that is a measurement too. The
 # cohort rule asks for the target's documented repair step before the
 # assert. himalaya's command surface was enumerated (pre-define-trials.txt,
-# trial F): mailbox, envelope, flag, message, attachment, the four
-# backend-specific trees, configure, account, completion, manual,
-# json-schema. There is no doctor, repair, check, verify or fsck, and the
+# trial F): mailbox, envelope, flag, message, attachment, seven
+# backend-specific trees (imap, jmap, gmail, msgraph, maildir, m2dir,
+# smtp), configure, account, completion, manual, json-schema. There is no doctor, repair, check, verify or fsck, and the
 # maildir subtree offers create, rename, delete, list, messages and flags.
 # Nothing in it claims to repair a store, so there is nothing to run.
 #
@@ -95,10 +95,15 @@ empties=$(find "$S/new" "$S/tmp" "$S/Archive/new" "$S/Archive/tmp" -mindepth 1 |
 [ "$empties" = 0 ] \
     || fail "new/ or tmp/ is not empty: this operation stages nothing, so $empties entry/entries there is damage or a shape the define did not declare"
 
-copies=$(ls -A "$S/Archive/cur" | wc -l | tr -d ' ')
+# The listing's own exit status is read before its line count: a target
+# folder that cannot be read would otherwise count as zero entries and
+# skip leg D entirely, turning an unreadable store into a clean pass.
+ls -A "$S/Archive/cur" > "$T/archive-entries" 2> "$T/archive.err" \
+    || fail "the target folder could not be listed: $(head -c 200 "$T/archive.err")"
+copies=$(wc -l < "$T/archive-entries" | tr -d ' ')
 case "$copies" in
     0) copy_present=no ;;
-    1) copy_present=yes; copy_name=$(ls -A "$S/Archive/cur") ;;
+    1) copy_present=yes; copy_name=$(cat "$T/archive-entries") ;;
     *) fail "the target folder holds $copies entries; one copy operation cannot produce more than one" ;;
 esac
 
@@ -119,6 +124,8 @@ msg_bytes | cmp -s - "$S/cur/$MSGID:2,S" \
     || fail "leg E: the source message's bytes changed"
 
 # ---- leg C: conservation of the outside-root configuration ----------------
+[ -f "$P/config.toml" ] \
+    || fail "leg C: the outside-root account configuration is gone (it was outside the judged state, so the operation should not have been able to remove it)"
 printf '[accounts.probe]\ndefault = true\nmaildir.root = "%s"\n' "$P/store" | cmp -s - "$P/config.toml" \
     || fail "leg C: the outside-root account configuration changed"
 
