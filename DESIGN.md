@@ -1,6 +1,6 @@
 # Sideeye — Design Document
 
-**Status:** design finalized, pre-implementation
+**Status:** implemented and released through v0.13.0; the v1.0 contract freeze is tracked in [PRD.md](PRD.md)
 **Name:** Sideeye (confirmed 2026-08-10)
 **Tagline:** *Sideeye doesn't believe it.*
 **Initial focus:** process crash × persistent state consistency
@@ -366,7 +366,7 @@ The success metric for v0 is not feature count, fault-type count, or GitHub star
 
 These were high-risk blind targets, not a second average-target calibration; §18's calibration still stands on timewarrior alone.
 
-**Two selection cohorts followed (2026-08-21 #183, 2026-08-22 #209), and the primary criterion stays open.** Ten further targets under a freeze published before each ran, and ten outcomes plus one: **four walls that stood** (KeePassXC at the probe; Jujutsu on static linkage; Bun on threads; cargo on a raw-syscall rename), **one wall lifted** by declared apparatus and turned into a verdict (Borg, #200), and **six verdicts** — two null-with-verdicts where the tool's own documented contract held in every world (Mercurial 107/107, Borg 119/119), two reproduced checker-red FAILs already on their trackers, one FAIL whose earliest violating world is L0-only, and one PASS. Zero qualifying finds. The measurements are worth reading for what they say about the six conditions above rather than the count: "discovered automatically" and "reproducible" held throughout — from frozen define to reproduced verdict in minutes — while the gap that remains is a single finding that is novel, automatically discovered and provenance-clean at the same time. Records: `spike/cohort2/RESULTS.md`, `spike/cohort3/RESULTS.md`.
+**Three selection cohorts followed (2026-08-21 #183, 2026-08-22 #209, 2026-08-23), and the primary criterion stays open.** Twelve further targets under a freeze published before each ran, and twelve outcomes plus one: **five walls that stood** (KeePassXC at the probe; Jujutsu on static linkage; Bun on threads; cargo on a raw-syscall rename; unison at the probe, on determinism), **one wall lifted** by declared apparatus and turned into a verdict (Borg, #200), and **seven verdicts** — two null-with-verdicts where the tool's own documented contract held in every world (Mercurial 107/107, Borg 119/119), two reproduced checker-red FAILs already on their trackers, one FAIL whose earliest violating world is L0-only, one PASS, and one FAIL through a declared checker carrying `checker_earliest` (himalaya, cohort 4). The measurements are worth reading for what they say about the six conditions above rather than the count: "discovered automatically" and "reproducible" held throughout — from frozen define to reproduced verdict in minutes — and on 2026-08-23 the combination that had been missing arrived. **himalaya is novel, automatically discovered and provenance-clean at the same time**, the first finding to hold all three; what the criterion still lacks is the author's judgement, a fix, and a regression case that runs. Records: `spike/cohort2/RESULTS.md`, `spike/cohort3/RESULTS.md`, `spike/cohort4/himalaya-r2/RESULTS.md`.
 
 If the primary criterion holds, Sideeye has partially mechanized a human's way of doubting — not merely re-run existing tests.
 

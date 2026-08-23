@@ -139,7 +139,11 @@ How real tool classes have fared against these limits: [docs/target-classes.md](
 
 `sideeye mcp` is a stateless MCP server (stdio) with two tools: `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}`. The tools take *paths* inside `SIDEEYE_MCP_ROOT`, never raw commands — the config file is the trust boundary you vet. Operational settings come from `SIDEEYE_MCP_*` environment variables (ADR 0010 and 0011). The root confines which config may be named, not what that config's operation does: run the server inside a container, network-off where the target allows it.
 
-Measured here, not aspirations: a context-free agent, handed a counterexample and bug-blind replay plumbing, produced the fix — twice: once through the CLI, once through this MCP server (`spike/loop-closure-timew/`) — an LLM scout authored the defines for five real targets under a fixed protocol (`spike/assisted/`; the method: [docs/scouting.md](docs/scouting.md)), and a context-free agent set Sideeye up **from this README alone** — tarball to a real verdict on an external tool in under five minutes, protocol declared before the clock (`spike/onboarding-clock/`).
+Measured here, not aspirations: a context-free agent, handed a counterexample and bug-blind replay plumbing, produced the fix — twice: once through the CLI, once through this MCP server (`spike/loop-closure-timew/`) — an LLM scout authored the defines for five real targets under a fixed protocol (`spike/assisted/`; the method: [docs/scouting.md](docs/scouting.md)), and a context-free agent set Sideeye up **from the README alone** — tarball to a real verdict on an external tool in under five minutes, protocol declared before the clock (`spike/onboarding-clock/`, run 1, 2026-08-17; this page has changed since, and a re-run is owed before the v1.0 freeze).
+
+## What it is for after the first find
+
+The finding is not the durable artifact — the declaration is. A `sideeye.toml` and its checker are the question, not the answer, so re-asking it after the tool changes is `explore --config` again, and the report says what it looked at that time rather than assuming the last run still holds. A saved case is deliberately narrower: it names one crash point in one recording, and when the recording moves underneath it the answer is `case no longer applies` rather than a silent pass — which is what makes a case worth keeping in CI. This repository keeps its own oldest finding that way, re-recorded under the current trace contract on every push to main and every pull request (the `timew-regression` job in `.github/workflows/ci.yml`). And because a target Sideeye cannot fully observe is UNKNOWN and never exit 0, a machine caller can tell *checked and clean* from *not checked*, which is the distinction an unattended run has to get right. What none of that does is constrain what your declared operation may do — that boundary is the config you vet, as the MCP section above says.
 
 ## What Sideeye is not
 
@@ -160,7 +164,11 @@ Measured here, not aspirations: a context-free agent, handed a counterexample an
 | [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
 | [docs/scouting.md](docs/scouting.md) | Handing the repo-reading to an agent — and how capable that agent has to be |
 | [docs/target-classes.md](docs/target-classes.md) | Real tool classes against the constraint list, each row backed by a recorded run |
+| [docs/unknown-rate.md](docs/unknown-rate.md) | How often Sideeye refuses instead of judging — measured on a corpus frozen before the sweep ran, with the threshold set from the data |
+| [docs/kill-criteria-review.md](docs/kill-criteria-review.md) | The project's own conditions for abandoning it, scored against the collected data |
 | [docs/checker-cookbook.md](docs/checker-cookbook.md) | Annotated real checkers, and the failure patterns that taught them |
+| [docs/contract-freeze.md](docs/contract-freeze.md) | What v1.0 freezes, and what a break would cost — the normative list |
+| [docs/freeze-audit.md](docs/freeze-audit.md) | Every open issue classified against those frozen surfaces, held to a committed snapshot |
 | [docs/adr/](docs/adr/) | One record per irreversible decision |
 
 ## License

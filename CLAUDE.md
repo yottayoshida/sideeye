@@ -39,6 +39,16 @@ The contract:
   repeated here because this is the file that is open. Verify with `git check-attr`
   over the full tracked list, not a sample, and check the live harness comes back
   `unspecified`.
+- **A cohort close moves the top-level record too, in the same sitting.** The rows
+  belong in `docs/target-classes.md` (one per verdict, one per wall), the cohort
+  paragraph in `PRD.md`'s criterion-1 trail and `DESIGN.md` §17, and the new define
+  count in the as-of note of `docs/unknown-rate.md`. The revision that produced the
+  recorded outcome also leaves its `verify-transcript.txt` beside its artifacts, the
+  way cohorts 2 and 3 did — one per outcome, not one per define directory: cohort 2
+  holds nine define directories and four transcripts. Cohort 4 closed with none of that written and
+  `target-classes.md` still calling a closed issue open — one day after that same page
+  had been hand-backfilled for the two cohorts before it. Backfilling is the symptom;
+  the pages moving when the cohort does is the fix.
 - Acceptance (`spike/acceptance.sh`) runs in the Linux container; every new check must be
   seen red once (mutation or synthetic input) before it is trusted.
 - Unit tests never write to a fixed shared path: `zig build test` runs the same test in
