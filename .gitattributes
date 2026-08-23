@@ -22,6 +22,7 @@ spike/blind-hunt3/**         linguist-documentation
 spike/assisted/**            linguist-documentation
 spike/cohort2/**             linguist-documentation
 spike/cohort3/**             linguist-documentation
+spike/cohort4/**             linguist-documentation
 spike/loop-closure-timew/**  linguist-documentation
 spike/dogfood-watson/**      linguist-documentation
 spike/followup-*/**          linguist-documentation

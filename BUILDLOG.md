@@ -2,6 +2,21 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-23 — cohort 4 closes, and stops counting as Shell
+
+The slate is exhausted: himalaya reached a criterion-1 candidate and the
+finding is filed upstream as `pimalaya/himalaya#738`, and unison is a
+recorded named wall on determinism. `.gitattributes` says a closed cohort
+belongs in its list, so `spike/cohort4/**` joins it.
+
+That is 173,168 bytes of shell out of the 425,400 GitHub was still
+counting, about two fifths of the visible Shell in a Zig repository. The
+live harness stays out of the list on purpose, and the check that it did
+was a negative control rather than an assumption: `acceptance.sh`,
+`merge-gate.sh` and `campaign-driver.sh` all still report the attribute
+unspecified, while all 112 tracked files under `spike/cohort4` report it
+set.
+
 ## 2026-08-23 — the recovery paths outside the tool
 
 The last precondition the freeze's Reporting section puts in front of a
