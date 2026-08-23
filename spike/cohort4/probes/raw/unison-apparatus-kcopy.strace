@@ -1,5 +1,5 @@
-105   ioctl(1, TCGETS, 0xffffd1ba7dd0)  = -1 ENOTTY (Inappropriate ioctl for device)
-105   ioctl(1, TCGETS, 0xffffd1ba7dd0)  = -1 ENOTTY (Inappropriate ioctl for device)
+105   ioctl(1, TCGETS, 0xffffdd1bed10)  = -1 ENOTTY (Inappropriate ioctl for device)
+105   ioctl(1, TCGETS, 0xffffdd1bed10)  = -1 ENOTTY (Inappropriate ioctl for device)
 105   ioctl(8, BTRFS_IOC_CLONE or FICLONE, 7) = -1 ENOTTY (Inappropriate ioctl for device)
 105   copy_file_range(7, [0], 8, NULL, 73, 0) = -1 ENOSYS (Function not implemented)
 105   sendfile(8, 7, [0], 73)           = -1 ENOSYS (Function not implemented)

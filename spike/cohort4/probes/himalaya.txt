@@ -1,5 +1,5 @@
 # himalaya probe, apparatus mode. Captured by spike/cohort4/probes/capture.sh
-# on 2026-08-23T01:14:58Z, inside the frozen cohort-4 image.
+# on 2026-08-23T01:33:07Z, inside the frozen cohort-4 image.
 # APPARATUS is the accepted probe run: libfaketime via
 # /etc/ld.so.preload, pin-getpid.so via LD_PRELOAD on the target
 # invocations only, the container under seccomp-enosys.json. All
@@ -7,7 +7,7 @@
 
 $ docker run --rm --security-opt seccomp=/Users/i.yoshida/claude_workspace/sideeye/spike/cohort4/seccomp-enosys.json -v <repo>:/repo -e PROBE_OUT=/repo/spike/cohort4/probes/raw sideeye-cohort4 sh /repo/spike/cohort4/probes/run-himalaya.sh apparatus
 == apparatus (PROTOCOL, himalaya plan): ld.so.preload=/usr/lib/aarch64-linux-gnu/faketime/libfaketime.so.1; FAKETIME='@2026-01-01 00:00:00 x0' and pin-getpid.so on the TARGET invocations only, never on the harness. PLUMBING CORRECTION, recorded per the freeze's own rule: the plan said the apparatus rides /etc/ld.so.preload, but that file and an exported FAKETIME reach EVERY process the harness runs. pin-getpid there breaks strace, whose child management fails when its own getpid answers 4242 (measured in this probe session: 'strace: Unexpected wait status 0', empty log; faketime-only preload left strace healthy, pin-getpid-only broke it). The mechanism is unchanged: the libc getpid symbol is still interposed in the target, and only the delivery moves to the env var. A frozen clock there is worse: cp -a reads a faked stat and writes the frozen instant as the copy's REAL mtime, which is what hung the unison probe (unison-clock-diagnosis.txt). Both targets therefore carry the apparatus on the target invocations only. CONSEQUENCE FOR THE DEFINE, recorded now: any strace-based observation layer hits the same breakage if pin-getpid is global; the engine run needs the same target-only delivery or an engine-side pid pin.
-== himalaya probe (apparatus), himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp, 2026-08-23T01:14:59Z
+== himalaya probe (apparatus), himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp, 2026-08-23T01:33:08Z
 == condition 7, ambient: HOME and XDG_CONFIG_HOME are created FRESH PER RUN under <WS>/home-<run>; the account config is written per run (its maildir.root names that run's root copy) and passed explicitly with -c either way. Shown non-empty-or-empty after the runs.
 == run A
 reset: rootA is a fresh copy of the pre-state; home-A and config-A.toml are fresh
@@ -19,16 +19,16 @@ ok   1-exit-codes: run A rc=0, run B rc=0 (success convention: 0)
 ok   2-non-noop: the state root after run A differs from the pre-state
 ok   3-artifact-count: Archive/cur holds exactly one file (got 1); new/ and tmp/ everywhere hold zero (got 0)
 the minted copy's filename in run A:
-1767225600.#0M0P4242.1ff91af530d9:2,S
+1767225600.#0M0P4242.96c32d5720ed:2,S
 and in run B:
-1767225600.#0M0P4242.1ff91af530d9:2,S
+1767225600.#0M0P4242.96c32d5720ed:2,S
 ok   4-round-trip: copy body identical to the source; flag suffix preserved; source file untouched
 tool read-back of the target folder (envelope list -m Archive, informational):
 
 ┌───────────────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐
 │ ID                                ┆ FLAGS ┆ SUBJECT                       ┆ FROM         ┆ DATE                   ┆  SIZE │
 ╞═══════════════════════════════════╪═══════╪═══════════════════════════════╪══════════════╪════════════════════════╪═══════╡
-│ 1767225600.#0M0P4242.1ff91af530d9 ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
+│ 1767225600.#0M0P4242.96c32d5720ed ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
 == diff -r of the two state roots:
 ok   5-determinism: two runs >=2s apart leave byte-identical state roots (diff rc=0)
 == strace pass (fresh copy; raw log kept as himalaya-apparatus.strace)
@@ -37,27 +37,27 @@ strace'd run rc=0
 instrument control: python os.copy_file_range traced 1 line(s) (the attempt is visible even when seccomp answers ENOSYS)
 copy-mechanism run rc=0
 ok   seccomp-active: no SUCCESSFUL copy_file_range/sendfile in the dedicated pass, and the target did attempt it (successful: 0 of 3 attempts; zero attempts would mean the profile was never exercised, so it fails too; ENOSYS-failed attempts are the profile working): the copy fell back to the libc read/write loop
-68    copy_file_range(4, NULL, 5, NULL, 1073741824, 0) = -1 ENOSYS (Function not implemented)
-68    copy_file_range(-1, NULL, -1, NULL, 1, 0) = -1 ENOSYS (Function not implemented)
-68    sendfile(5, 4, NULL, 2147479552)  = -1 ENOSYS (Function not implemented)
+69    copy_file_range(4, NULL, 5, NULL, 1073741824, 0) = -1 ENOSYS (Function not implemented)
+69    copy_file_range(-1, NULL, -1, NULL, 1, 0) = -1 ENOSYS (Function not implemented)
+69    sendfile(5, 4, NULL, 2147479552)  = -1 ENOSYS (Function not implemented)
 == mutating paths (successful only, deduped):
-/dev/shm/faketime_shm_53
-/dev/shm/sem.faketime_sem_53
-WS/rootS/Archive/cur/1767225600.#0M0P4242.1ff91af530d9:2,S
+/dev/shm/faketime_shm_54
+/dev/shm/sem.faketime_sem_54
+WS/rootS/Archive/cur/1767225600.#0M0P4242.96c32d5720ed:2,S
 unattributed count: 0
 ok   6-closure: every successful mutating call attributed, every path under the declared prefixes
 == thread creations (successful CLONE_THREAD):
 0
-== conditions 8 and 9 run WITHOUT pin-getpid, recorded here rather than only in a comment: preflight installs its own visibility logger through LD_PRELOAD, and an env assignment on the target replaces that variable rather than adding to it, which would leave the run with no logger at all (measured once on unison, where it produced a wall whose own counts disagreed). The clock stays on. Pinning the pid changes generated NAMES, never which syscalls are interposable, so the two gates measure the same thing either way.
+== conditions 8 and 9 run WITHOUT pin-getpid, recorded here rather than only in a comment: preflight installs its own visibility logger through LD_PRELOAD, and an env assignment on the target replaces that variable rather than adding to it, which would leave the run with no logger at all (measured once on unison, where it produced a wall whose own counts disagreed). The clock stays on, and is passed the same way the operation gets it: when this note first appeared it was false for this target, because the move to per-invocation apparatus had converted the operation, strace and copy-mechanism calls and left these two still relying on the export it removed (caught by review, which read the minted names in the preflight roots and found a real clock and a real pid). Pinning the pid changes generated NAMES, never which syscalls are interposable, so the two gates measure the same thing either way.
 == condition 8, shim visibility agrees with the kernel (preflight, fresh copy)
-== artifacts: /tmp/preflight.100
+== artifacts: /tmp/preflight.101
 == target exit status: 0
-  open     kernel=1/1 in-root, interposed=18, unmatched=0
-  write    kernel=1/1 in-root, interposed=155, unmatched=0, 1 interposed call(s) had no resolvable path
+  open     kernel=1/1 in-root, interposed=12, unmatched=0
+  write    kernel=1/1 in-root, interposed=133, unmatched=0, 1 interposed call(s) had no resolvable path
 PASS every in-root mutation passed through an interposable function
 ok   8-visibility: preflight visibility rc=0 (0 = every in-root mutation matched an interposed call)
 == condition 9, the operation has an interior (preflight, fresh copy)
-== artifacts: /tmp/preflight.116
+== artifacts: /tmp/preflight.117
 == target exit status: 0
 INTERIOR kill points inside the state root: 2 (open=1, write=1)
   reading: 2 crash points; the operation has an interior

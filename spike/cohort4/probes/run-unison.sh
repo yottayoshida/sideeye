@@ -161,7 +161,7 @@ if [ "$MODE" = bare ]; then
     verdict "5-determinism-falsification" $ok "bare runs split as forecast (diff rc=$drc). Which term does the splitting is NOT asserted here: the diff above is the measurement, and unison-clock-diagnosis.txt is where the terms are separated one at a time"
 else
     [ "$drc" -eq 0 ] && ok=yes || ok=no
-    verdict "5-determinism" $ok "two runs >=2s apart leave byte-identical state roots (diff rc=$drc). If this is FAIL: the residue outlives every declared apparatus and is recorded unattributed (unison-clock-diagnosis.txt eliminates clock, pid, propagated mtime and inode separately); a nondeterministic-writer wall, recorded at probe time, costing no define"
+    verdict "5-determinism" $ok "two runs >=2s apart leave byte-identical state roots (diff rc=$drc). If this is FAIL: the residue outlives every declared apparatus and is recorded unattributed (unison-clock-diagnosis.txt eliminates clock, pid, inode and (in the -times variants only, which the frozen argv is not) the propagated mtime); a nondeterministic-writer wall, recorded at probe time, costing no define"
 fi
 
 note "strace pass (closure accounting; restored pre-state; raw log kept)"

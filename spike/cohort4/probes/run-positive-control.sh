@@ -11,7 +11,7 @@ set -u
 . "$(dirname "$0")/../../cohort2/probes/lib.sh"
 
 WS=/tmp/probe-positive
-rm -rf "$WS"; mkdir -p "$WS/pre/root"
+rm -rf "${WS:?}"; mkdir -p "$WS/pre/root"
 printf 'fixed pre-state byte\n' > "$WS/pre/root/base"
 
 note "positive control (synthetic wall-clock write), $(date -u +%Y-%m-%dT%H:%M:%SZ)"

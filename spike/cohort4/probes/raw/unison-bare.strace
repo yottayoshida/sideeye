@@ -1,170 +1,170 @@
-60    execve("/usr/bin/env", ["env", "LD_PRELOAD=", "FAKETIME=", "unison", "./a", "./b", "-batch", "-ignoreinodenumbers=true"], 0xffffcc80e368 /* 7 vars */) = 0
-60    faccessat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
-60    execve("/usr/local/sbin/unison", ["unison", "./a", "./b", "-batch", "-ignoreinodenumbers=true"], 0xaaaac121e400 /* 9 vars */) = -1 ENOENT (No such file or directory)
-60    execve("/usr/local/bin/unison", ["unison", "./a", "./b", "-batch", "-ignoreinodenumbers=true"], 0xaaaac121e400 /* 9 vars */) = 0
-60    faccessat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
-60    readlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/proc/self/exe", "/usr/local/bin/unison", 256) = 21
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/usr/local/bin/unison", {st_mode=S_IFREG|0755, st_size=7542200, ...}, 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default.prf", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default.prf", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default.prf", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-unison-bare/root/unison/default.prf>
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 5</usr/share/zoneinfo/Etc/UTC>
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\nUnison 2.54.0 (ocaml 5.3.0) log"..., 68) = 68
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Roots:\n", 7) = 7
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "  ", 2) = 2
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "./a", 3) = 3
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n", 1) = 1
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "  ", 2) = 2
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "./b", 3) = 3
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n", 1) = 1
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n", 1) = 1
-60    write(2</dev/null<char 1:3>>, "Unison 2.54.0 (ocaml 5.3.0): Con"..., 50) = 50
-60    getcwd("/tmp/probe-unison-bare/root", 4096) = 28
-60    chdir("./b")                      = 0
-60    getcwd("/tmp/probe-unison-bare/root/b", 4096) = 30
-60    chdir("/tmp/probe-unison-bare/root") = 0
-60    getcwd("/tmp/probe-unison-bare/root", 4096) = 28
-60    chdir("./a")                      = 0
-60    getcwd("/tmp/probe-unison-bare/root/a", 4096) = 30
-60    chdir("/tmp/probe-unison-bare/root") = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/DANGER.README", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/DANGER.README", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    write(2</dev/null<char 1:3>>, "Looking for changes\n", 20) = 20
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm59c9dac45c952ed9908d231c9e956860", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e956860", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm5e6f87bfbb8755d050bc324378a074c4", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c4", 0xffffe4f97fa8, 0) = -1 ENOENT (No such file or directory)
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/fp59c9dac45c952ed9908d231c9e956860", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/fp59c9dac45c952ed9908d231c9e956860>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 6</tmp/probe-unison-bare/root/a>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/a/notes.txt>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/stable.txt", {st_mode=S_IFREG|0644, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/fp59c9dac45c952ed9908d231c9e956860", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 6</tmp/probe-unison-bare/root/unison/fp59c9dac45c952ed9908d231c9e956860>
-60    write(6</tmp/probe-unison-bare/root/unison/fp59c9dac45c952ed9908d231c9e956860>, "Unison fingerprint cache format "..., 34) = 34
-60    write(6</tmp/probe-unison-bare/root/unison/fp59c9dac45c952ed9908d231c9e956860>, "\270HBR\270\236\352Z\207a\31\32\234Uxg\257\312g\30(VZ\272\n\30P\336e\210\371\232"..., 107) = 107
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/fp5e6f87bfbb8755d050bc324378a074c4", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/fp5e6f87bfbb8755d050bc324378a074c4>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 6</tmp/probe-unison-bare/root/b>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/stable.txt", {st_mode=S_IFREG|0644, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    write(2</dev/null<char 1:3>>, "Reconciling changes\n", 20) = 20
-60    write(1</dev/null<char 1:3>>, "changed  ---->            notes."..., 37) = 37
-60    write(1</dev/null<char 1:3>>, "\n", 1) = 1
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
-60    write(1</dev/null<char 1:3>>, "a            : changed file     "..., 190) = 190
-60    write(2</dev/null<char 1:3>>, "\n1 items will be synced, 0 skipp"..., 94) = 94
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n1 items will be synced, 0 skipp"..., 94) = 94
-60    write(2</dev/null<char 1:3>>, "Propagating updates\n", 20) = 20
-60    write(1</dev/null<char 1:3>>, "Starting...", 11) = 11
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
-60    write(1</dev/null<char 1:3>>, "\r           \r", 13) = 13
-60    write(2</dev/null<char 1:3>>, "Unison 2.54.0 (ocaml 5.3.0) star"..., 86) = 86
-60    write(1</dev/null<char 1:3>>, "Starting...", 11) = 11
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Unison 2.54.0 (ocaml 5.3.0) star"..., 86) = 86
-60    write(1</dev/null<char 1:3>>, "\r           \r", 13) = 13
-60    write(2</dev/null<char 1:3>>, "[BGN] Updating file notes.txt fr"..., 98) = 98
-60    write(1</dev/null<char 1:3>>, "Starting...", 11) = 11
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "[BGN] Updating file notes.txt fr"..., 98) = 98
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", 0xffffe4f97f98, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/a/notes.txt>
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7</tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp>
-60    write(1</dev/null<char 1:3>>, "\r           \r", 13) = 13
-60    write(1</dev/null<char 1:3>>, " 98%  0/1  (73 B of 73 B)  --:--"..., 36) = 36
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    fchmodat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", 0644) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/b/notes.txt>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
-60    renameat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.5e6f87bfbb8755d050bc324378a074c4.unison.tmp", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt") = 0
-60    write(1</dev/null<char 1:3>>, "\r                               "..., 38) = 38
-60    write(2</dev/null<char 1:3>>, "[END] Updating file notes.txt\n", 30) = 30
-60    write(1</dev/null<char 1:3>>, " 98%  0/1  (73 B of 73 B)  --:--"..., 36) = 36
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "[END] Updating file notes.txt\n", 30) = 30
-60    write(1</dev/null<char 1:3>>, "\r                               "..., 38) = 38
-60    write(1</dev/null<char 1:3>>, "100%  1/1  (73 B of 73 B)  00:00"..., 39) = 39
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
-60    write(1</dev/null<char 1:3>>, "\r                               "..., 41) = 41
-60    write(2</dev/null<char 1:3>>, "Unison 2.54.0 (ocaml 5.3.0) fini"..., 96) = 96
-60    write(1</dev/null<char 1:3>>, "100%  1/1  (73 B of 73 B)  00:00"..., 39) = 39
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Unison 2.54.0 (ocaml 5.3.0) fini"..., 96) = 96
-60    write(1</dev/null<char 1:3>>, "\r                               "..., 41) = 41
-60    write(2</dev/null<char 1:3>>, "Saving synchronizer state\n", 26) = 26
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e95686060", O_WRONLY|O_CREAT|O_EXCL, 0600) = 6</tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e95686060>
-60    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e95686060", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e956860", 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e95686060", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e95686060", 0) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c460", O_WRONLY|O_CREAT|O_EXCL, 0600) = 6</tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c460>
-60    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c460", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c4", 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c460", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c460", 0) = 0
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/sc59c9dac45c952ed9908d231c9e956860", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 6</tmp/probe-unison-bare/root/unison/sc59c9dac45c952ed9908d231c9e956860>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
-60    write(6</tmp/probe-unison-bare/root/unison/sc59c9dac45c952ed9908d231c9e956860>, "Unison archive format 23\nArchive"..., 821) = 821
-60    write(6</tmp/probe-unison-bare/root/unison/sc59c9dac45c952ed9908d231c9e956860>, "\0\0\0\0\0\0\2\31", 8) = 8
-60    write(6</tmp/probe-unison-bare/root/unison/sc59c9dac45c952ed9908d231c9e956860>, "irectory\1\1\0\1\5\1\10acl pref\0\1\20props "..., 277) = 277
-60    write(6</tmp/probe-unison-bare/root/unison/sc59c9dac45c952ed9908d231c9e956860>, "\0\0\0\0\0\0\1\r", 8) = 8
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/sc5e6f87bfbb8755d050bc324378a074c4", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 6</tmp/probe-unison-bare/root/unison/sc5e6f87bfbb8755d050bc324378a074c4>
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
-60    write(6</tmp/probe-unison-bare/root/unison/sc5e6f87bfbb8755d050bc324378a074c4>, "Unison archive format 23\nArchive"..., 821) = 821
-60    write(6</tmp/probe-unison-bare/root/unison/sc5e6f87bfbb8755d050bc324378a074c4>, "\0\0\0\0\0\0\2\31", 8) = 8
-60    write(6</tmp/probe-unison-bare/root/unison/sc5e6f87bfbb8755d050bc324378a074c4>, "`q\326\231\377\377\0\0\1\1\0\1\5\1\10acl pref\0\1\20props "..., 277) = 277
-60    write(6</tmp/probe-unison-bare/root/unison/sc5e6f87bfbb8755d050bc324378a074c4>, "\0\0\0\0\0\0\1\r", 8) = 8
-60    renameat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/sc59c9dac45c952ed9908d231c9e956860", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm59c9dac45c952ed9908d231c9e956860") = 0
-60    renameat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/sc5e6f87bfbb8755d050bc324378a074c4", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm5e6f87bfbb8755d050bc324378a074c4") = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860", 0) = 0
-60    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm59c9dac45c952ed9908d231c9e956860", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860", 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar59c9dac45c952ed9908d231c9e956860", {st_mode=S_IFREG|0600, st_size=1098, ...}, 0) = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4", 0) = 0
-60    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm5e6f87bfbb8755d050bc324378a074c4", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4", 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar5e6f87bfbb8755d050bc324378a074c4", {st_mode=S_IFREG|0600, st_size=1098, ...}, 0) = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm59c9dac45c952ed9908d231c9e956860", 0) = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm5e6f87bfbb8755d050bc324378a074c4", 0) = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk59c9dac45c952ed9908d231c9e956860", 0) = 0
-60    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk5e6f87bfbb8755d050bc324378a074c4", 0) = 0
-60    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
-60    write(2</dev/null<char 1:3>>, "Synchronization complete at 01:1"..., 80) = 80
-60    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
-60    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Synchronization complete at 01:1"..., 80) = 80
-60    +++ exited with 0 +++
+59    execve("/usr/bin/env", ["env", "LD_PRELOAD=", "FAKETIME=", "unison", "./a", "./b", "-batch", "-ignoreinodenumbers=true"], 0xfffffffb8ee8 /* 7 vars */) = 0
+59    faccessat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+59    execve("/usr/local/sbin/unison", ["unison", "./a", "./b", "-batch", "-ignoreinodenumbers=true"], 0xaaab21ea2400 /* 9 vars */) = -1 ENOENT (No such file or directory)
+59    execve("/usr/local/bin/unison", ["unison", "./a", "./b", "-batch", "-ignoreinodenumbers=true"], 0xaaab21ea2400 /* 9 vars */) = 0
+59    faccessat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+59    readlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/proc/self/exe", "/usr/local/bin/unison", 256) = 21
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/usr/local/bin/unison", {st_mode=S_IFREG|0755, st_size=7542200, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default.prf", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default.prf", {st_mode=S_IFREG|0600, st_size=26, ...}, 0) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/default.prf", O_RDONLY|O_CLOEXEC) = 5</tmp/probe-unison-bare/root/unison/default.prf>
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 5</usr/share/zoneinfo/Etc/UTC>
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\nUnison 2.54.0 (ocaml 5.3.0) log"..., 68) = 68
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Roots:\n", 7) = 7
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "  ", 2) = 2
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "./a", 3) = 3
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n", 1) = 1
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "  ", 2) = 2
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "./b", 3) = 3
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n", 1) = 1
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n", 1) = 1
+59    write(2</dev/null<char 1:3>>, "Unison 2.54.0 (ocaml 5.3.0): Con"..., 50) = 50
+59    getcwd("/tmp/probe-unison-bare/root", 4096) = 28
+59    chdir("./b")                      = 0
+59    getcwd("/tmp/probe-unison-bare/root/b", 4096) = 30
+59    chdir("/tmp/probe-unison-bare/root") = 0
+59    getcwd("/tmp/probe-unison-bare/root", 4096) = 28
+59    chdir("./a")                      = 0
+59    getcwd("/tmp/probe-unison-bare/root/a", 4096) = 30
+59    chdir("/tmp/probe-unison-bare/root") = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/DANGER.README", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/DANGER.README", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    write(2</dev/null<char 1:3>>, "Looking for changes\n", 20) = 20
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tmaab0f8a9dbea2bf5d5ab88fbfbdb0a11", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a11", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm47956f8ef895a7dd03e665345c042841", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c042841", 0xfffffdbc21e8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841", {st_mode=S_IFREG|0600, st_size=1090, ...}, 0) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/fpaab0f8a9dbea2bf5d5ab88fbfbdb0a11", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/fpaab0f8a9dbea2bf5d5ab88fbfbdb0a11>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 6</tmp/probe-unison-bare/root/a>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/a/notes.txt>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/stable.txt", {st_mode=S_IFREG|0644, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/fpaab0f8a9dbea2bf5d5ab88fbfbdb0a11", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 6</tmp/probe-unison-bare/root/unison/fpaab0f8a9dbea2bf5d5ab88fbfbdb0a11>
+59    write(6</tmp/probe-unison-bare/root/unison/fpaab0f8a9dbea2bf5d5ab88fbfbdb0a11>, "Unison fingerprint cache format "..., 34) = 34
+59    write(6</tmp/probe-unison-bare/root/unison/fpaab0f8a9dbea2bf5d5ab88fbfbdb0a11>, "\270HBR\270\236\352Z\207a\31\32\234Uxg\350B\240\\\36j\367\20\255\202\360\337I\374\266\31"..., 107) = 107
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/fp47956f8ef895a7dd03e665345c042841", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/unison/fp47956f8ef895a7dd03e665345c042841>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 6</tmp/probe-unison-bare/root/b>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/stable.txt", {st_mode=S_IFREG|0644, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    write(2</dev/null<char 1:3>>, "Reconciling changes\n", 20) = 20
+59    write(1</dev/null<char 1:3>>, "changed  ---->            notes."..., 37) = 37
+59    write(1</dev/null<char 1:3>>, "\n", 1) = 1
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
+59    write(1</dev/null<char 1:3>>, "a            : changed file     "..., 190) = 190
+59    write(2</dev/null<char 1:3>>, "\n1 items will be synced, 0 skipp"..., 94) = 94
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "\n1 items will be synced, 0 skipp"..., 94) = 94
+59    write(2</dev/null<char 1:3>>, "Propagating updates\n", 20) = 20
+59    write(1</dev/null<char 1:3>>, "Starting...", 11) = 11
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
+59    write(1</dev/null<char 1:3>>, "\r           \r", 13) = 13
+59    write(2</dev/null<char 1:3>>, "Unison 2.54.0 (ocaml 5.3.0) star"..., 86) = 86
+59    write(1</dev/null<char 1:3>>, "Starting...", 11) = 11
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Unison 2.54.0 (ocaml 5.3.0) star"..., 86) = 86
+59    write(1</dev/null<char 1:3>>, "\r           \r", 13) = 13
+59    write(2</dev/null<char 1:3>>, "[BGN] Updating file notes.txt fr"..., 98) = 98
+59    write(1</dev/null<char 1:3>>, "Starting...", 11) = 11
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "[BGN] Updating file notes.txt fr"..., 98) = 98
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", 0xfffffdbc21d8, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/a/notes.txt>
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7</tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp>
+59    write(1</dev/null<char 1:3>>, "\r           \r", 13) = 13
+59    write(1</dev/null<char 1:3>>, " 98%  0/1  (73 B of 73 B)  --:--"..., 36) = 36
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    fchmodat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", 0644) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/a/notes.txt", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", O_RDONLY|O_CLOEXEC) = 6</tmp/probe-unison-bare/root/b/notes.txt>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", {st_mode=S_IFREG|0644, st_size=73, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt", {st_mode=S_IFREG|0644, st_size=31, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    renameat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/.unison.notes.txt.47956f8ef895a7dd03e665345c042841.unison.tmp", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/b/notes.txt") = 0
+59    write(1</dev/null<char 1:3>>, "\r                               "..., 38) = 38
+59    write(2</dev/null<char 1:3>>, "[END] Updating file notes.txt\n", 30) = 30
+59    write(1</dev/null<char 1:3>>, " 98%  0/1  (73 B of 73 B)  --:--"..., 36) = 36
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "[END] Updating file notes.txt\n", 30) = 30
+59    write(1</dev/null<char 1:3>>, "\r                               "..., 38) = 38
+59    write(1</dev/null<char 1:3>>, "100%  1/1  (73 B of 73 B)  00:00"..., 39) = 39
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
+59    write(1</dev/null<char 1:3>>, "\r                               "..., 41) = 41
+59    write(2</dev/null<char 1:3>>, "Unison 2.54.0 (ocaml 5.3.0) fini"..., 96) = 96
+59    write(1</dev/null<char 1:3>>, "100%  1/1  (73 B of 73 B)  00:00"..., 39) = 39
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Unison 2.54.0 (ocaml 5.3.0) fini"..., 96) = 96
+59    write(1</dev/null<char 1:3>>, "\r                               "..., 41) = 41
+59    write(2</dev/null<char 1:3>>, "Saving synchronizer state\n", 26) = 26
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a1159", O_WRONLY|O_CREAT|O_EXCL, 0600) = 6</tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a1159>
+59    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a1159", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a11", 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a1159", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a1159", 0) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c04284159", O_WRONLY|O_CREAT|O_EXCL, 0600) = 6</tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c04284159>
+59    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c04284159", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c042841", 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c04284159", {st_mode=S_IFREG|0600, st_size=0, ...}, 0) = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c04284159", 0) = 0
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/scaab0f8a9dbea2bf5d5ab88fbfbdb0a11", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 6</tmp/probe-unison-bare/root/unison/scaab0f8a9dbea2bf5d5ab88fbfbdb0a11>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
+59    write(6</tmp/probe-unison-bare/root/unison/scaab0f8a9dbea2bf5d5ab88fbfbdb0a11>, "Unison archive format 23\nArchive"..., 821) = 821
+59    write(6</tmp/probe-unison-bare/root/unison/scaab0f8a9dbea2bf5d5ab88fbfbdb0a11>, "\0\0\0\0\0\0\2\31", 8) = 8
+59    write(6</tmp/probe-unison-bare/root/unison/scaab0f8a9dbea2bf5d5ab88fbfbdb0a11>, "l be aut\1\1\0\1\5\1\10acl pref\0\1\20props "..., 277) = 277
+59    write(6</tmp/probe-unison-bare/root/unison/scaab0f8a9dbea2bf5d5ab88fbfbdb0a11>, "\0\0\0\0\0\0\1\r", 8) = 8
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/sc47956f8ef895a7dd03e665345c042841", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 6</tmp/probe-unison-bare/root/unison/sc47956f8ef895a7dd03e665345c042841>
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
+59    write(6</tmp/probe-unison-bare/root/unison/sc47956f8ef895a7dd03e665345c042841>, "Unison archive format 23\nArchive"..., 821) = 821
+59    write(6</tmp/probe-unison-bare/root/unison/sc47956f8ef895a7dd03e665345c042841>, "\0\0\0\0\0\0\2\31", 8) = 8
+59    write(6</tmp/probe-unison-bare/root/unison/sc47956f8ef895a7dd03e665345c042841>, "0\267\36p\377\377\0\0\1\1\0\1\5\1\10acl pref\0\1\20props "..., 277) = 277
+59    write(6</tmp/probe-unison-bare/root/unison/sc47956f8ef895a7dd03e665345c042841>, "\0\0\0\0\0\0\1\r", 8) = 8
+59    renameat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/scaab0f8a9dbea2bf5d5ab88fbfbdb0a11", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tmaab0f8a9dbea2bf5d5ab88fbfbdb0a11") = 0
+59    renameat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/sc47956f8ef895a7dd03e665345c042841", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm47956f8ef895a7dd03e665345c042841") = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11", 0) = 0
+59    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tmaab0f8a9dbea2bf5d5ab88fbfbdb0a11", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11", 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/araab0f8a9dbea2bf5d5ab88fbfbdb0a11", {st_mode=S_IFREG|0600, st_size=1098, ...}, 0) = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841", 0) = 0
+59    linkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm47956f8ef895a7dd03e665345c042841", AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841", 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/ar47956f8ef895a7dd03e665345c042841", {st_mode=S_IFREG|0600, st_size=1098, ...}, 0) = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tmaab0f8a9dbea2bf5d5ab88fbfbdb0a11", 0) = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/tm47956f8ef895a7dd03e665345c042841", 0) = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lkaab0f8a9dbea2bf5d5ab88fbfbdb0a11", 0) = 0
+59    unlinkat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/lk47956f8ef895a7dd03e665345c042841", 0) = 0
+59    newfstatat(AT_FDCWD</tmp/probe-unison-bare/root>, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=114, ...}, 0) = 0
+59    write(2</dev/null<char 1:3>>, "Synchronization complete at 01:3"..., 80) = 80
+59    openat(AT_FDCWD</tmp/probe-unison-bare/root>, "/tmp/probe-unison-bare/root/unison/unison.log", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0600) = 5</tmp/probe-unison-bare/root/unison/unison.log>
+59    write(5</tmp/probe-unison-bare/root/unison/unison.log>, "Synchronization complete at 01:3"..., 80) = 80
+59    +++ exited with 0 +++

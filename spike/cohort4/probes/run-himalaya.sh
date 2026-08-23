@@ -188,13 +188,13 @@ note "thread creations (successful CLONE_THREAD):"
 thread_counts "$WS/strace.log"
 
 if [ "$MODE" = apparatus ]; then
-    note "conditions 8 and 9 run WITHOUT pin-getpid, recorded here rather than only in a comment: preflight installs its own visibility logger through LD_PRELOAD, and an env assignment on the target replaces that variable rather than adding to it, which would leave the run with no logger at all (measured once on unison, where it produced a wall whose own counts disagreed). The clock stays on. Pinning the pid changes generated NAMES, never which syscalls are interposable, so the two gates measure the same thing either way."
+    note "conditions 8 and 9 run WITHOUT pin-getpid, recorded here rather than only in a comment: preflight installs its own visibility logger through LD_PRELOAD, and an env assignment on the target replaces that variable rather than adding to it, which would leave the run with no logger at all (measured once on unison, where it produced a wall whose own counts disagreed). The clock stays on, and is passed the same way the operation gets it: when this note first appeared it was false for this target, because the move to per-invocation apparatus had converted the operation, strace and copy-mechanism calls and left these two still relying on the export it removed (caught by review, which read the minted names in the preflight roots and found a real clock and a real pid). Pinning the pid changes generated NAMES, never which syscalls are interposable, so the two gates measure the same thing either way."
     note "condition 8, shim visibility agrees with the kernel (preflight, fresh copy)"
     cp -a "$WS/pre/root" "$WS/rootV"
     mkdir -p "$WS/home-V/.config"
     printf '[accounts.probe]\ndefault = true\nmaildir.root = "%s"\n' "$WS/rootV" > "$WS/config-V.toml"
     PROBE_OUT="$WS" sh "$PREFLIGHT_SH" visibility "$WS/rootV" -- \
-        env "HOME=$WS/home-V" "XDG_CONFIG_HOME=$WS/home-V/.config" \
+        env "HOME=$WS/home-V" "XDG_CONFIG_HOME=$WS/home-V/.config" "FAKETIME=$FTV" \
         himalaya -c "$WS/config-V.toml" maildir messages copy "$MSGID" --maildir . --target Archive
     vrc=$?
     [ "$vrc" -eq 0 ] && ok=yes || ok=no
@@ -205,7 +205,7 @@ if [ "$MODE" = apparatus ]; then
     mkdir -p "$WS/home-I/.config"
     printf '[accounts.probe]\ndefault = true\nmaildir.root = "%s"\n' "$WS/rootI" > "$WS/config-I.toml"
     PROBE_OUT="$WS" sh "$PREFLIGHT_SH" interior "$WS/rootI" -- \
-        env "HOME=$WS/home-I" "XDG_CONFIG_HOME=$WS/home-I/.config" \
+        env "HOME=$WS/home-I" "XDG_CONFIG_HOME=$WS/home-I/.config" "FAKETIME=$FTV" \
         himalaya -c "$WS/config-I.toml" maildir messages copy "$MSGID" --maildir . --target Archive
     irc=$?
     [ "$irc" -eq 0 ] && ok=yes || ok=no

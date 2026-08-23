@@ -1,5 +1,5 @@
-97    ioctl(1, TCGETS, 0xffffc5e02720)  = -1 ENOTTY (Inappropriate ioctl for device)
-97    ioctl(1, TCGETS, 0xffffc5e02720)  = -1 ENOTTY (Inappropriate ioctl for device)
-97    ioctl(7, BTRFS_IOC_CLONE or FICLONE, 6) = -1 EOPNOTSUPP (Operation not supported)
-97    copy_file_range(6, [0], 7, NULL, 73, 0) = 73
-97    +++ exited with 0 +++
+96    ioctl(1, TCGETS, 0xffffd467a980)  = -1 ENOTTY (Inappropriate ioctl for device)
+96    ioctl(1, TCGETS, 0xffffd467a980)  = -1 ENOTTY (Inappropriate ioctl for device)
+96    ioctl(7, BTRFS_IOC_CLONE or FICLONE, 6) = -1 EOPNOTSUPP (Operation not supported)
+96    copy_file_range(6, [0], 7, NULL, 73, 0) = 73
+96    +++ exited with 0 +++
