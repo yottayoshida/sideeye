@@ -161,6 +161,122 @@ untouched, now standing on measurement instead of one sentence about
 one tool. Left explicitly unmeasured: fs_usage's drop behaviour under
 load, ktrace's --json output, and eslogger with FDA actually granted.
 
+## 2026-08-23 — the record catches up with cohort 4, and the denominators get a route
+
+Cohort 4 closed this morning; the top-level record did not move with it.
+`PRD.md`'s criterion-1 trail stops at cohort 3, `DESIGN.md`'s status line
+still reads "design finalized, pre-implementation" thirteen tags in,
+`docs/target-classes.md` carries neither the himalaya verdict nor the
+unison probe wall, and its git row cites `#35` as open although that
+issue closed 2026-08-17. That page was backfilled for cohorts 2 and 3
+yesterday and drifted again within a day, which says the fix is a habit
+at cohort close, not a bigger backfill.
+
+Two measurements shaped this change. Both were made while planning it,
+before this entry existed — the entry opened with the working tree, which
+is the first moment there was a tree to open it in.
+
+**The mini-seal transcript is missing for the one target that needs it
+most.** Cohort 2 commits four `verify-transcript.txt` files and cohort 3
+commits six — ten, and not one per target: the probe walls never spent a
+define and poetry carries two. Cohort 4 commits none:
+`git log --oneline --all --diff-filter=A -- 'spike/cohort4/**/verify*'`
+returns nothing, so the file was never added there. The check itself
+passes — `verify-assisted.sh spike/cohort4/himalaya-r2` returns ALL ORDER
+CHECKS PASSED, the define complete at `e445686` strictly preceding the
+first artifact at `1949c62`, all four define blobs byte-identical at both
+points. What is missing is the evidence, not the property, and it is
+missing on the first criterion-1 candidate in four cohorts — the target
+whose provenance leg the mini-seal exists to machine-check.
+
+**A hypothesis about severity died in the source, in the useful
+direction.** Planning this, I expected `maildir messages move` to be
+copy-then-delete, which would make the same crash window destroy mail
+outright rather than leave clutter behind. It is not:
+`io-maildir/src/entry/move.rs` runs
+`Locate → AwaitTime → AwaitPid → AwaitHostname → AwaitRename` and
+completes on the rename reply. One rename, no interior to crash inside.
+`copy` is the outlier among the crate's arms, which is the opposite of
+what I went looking for.
+
+**One correction to my own prose, caught before review.** Both this entry
+and the PRD paragraph first said the mini-seal ran on *every* target of
+cohorts 2 and 3 — ten transcripts, ten targets, which reads true and is
+not. KeePassXC spent no define and has none; poetry carries two. The
+count was right and the universal was wrong, and it only became visible
+when cohort 4 made the two numbers disagree: twelve targets, eleven
+transcripts. Both sentences now state the count and name the exceptions
+instead of quantifying over targets.
+
+**The review round, and what moved.** Five P1s, no P0. The reviewer
+re-derived every count here independently — eleven transcripts, twelve
+targets, thirteen outcomes, five standing walls, seven verdicts, eighteen
+post-sweep defines, thirteen release tags — and all of them held. Four
+sentences did not:
+
+- The criterion-6 note said the README had changed **twice** since run 1.
+  `git log --since=2026-08-17 -- README.md` says **seven** commits, and
+  this change is the eighth. Written from memory of what I had touched
+  rather than from the log, which is the failure the rule about writing
+  numbers from open sources exists to catch, committed inside a paragraph
+  whose whole subject is a stale document.
+- The same note said run 1 was "no longer the last run before the
+  freeze". It is: it is still the only run, and by the criterion's own
+  rule it is still the evidence. What moved is the document it measured,
+  not its standing, and the note now says that and declines to re-score.
+- The load-bearing sentence credited the mini-seal with showing that the
+  define "preceded any observed failure". `verify-assisted.sh`'s own
+  header says it audits the history as pushed and proves nothing about
+  what happened on a private disk first. The claim is now split: the
+  pushed ordering is machine-checked, and the protocol statement rests on
+  it with the public order as its witness.
+- The new README paragraph called the tool "safe to leave running
+  unattended", which collides with the MCP section three paragraphs
+  above, where this repository says plainly that the root confines which
+  config may be named and not what that config's operation does. Narrowed
+  to the exit-status distinction, with the boundary named rather than
+  implied.
+
+Also scoped, at the reviewer's prompting: criterion 4's status described
+the A-group as "every runnable committed define", which stopped being
+true when the eighteen later defines landed. It now carries its sweep
+date and a pointer to `#239`.
+
+**And the local check lied, in the documented way.** Rather than run the
+full acceptance suite outside its container, I re-implemented check 11's
+reference sweep to pre-check my own edits — and it reported
+`/bin/true` missing from the cookbook, a reference that has been there
+untouched all along. The real check skips absolute paths
+(`case "$r" in -*|/*) continue`); my copy did not. Nothing was wrong with
+the page and nothing needed fixing, which is the point: a check written
+by copying production instead of calling it produces findings that belong
+to the copy. The pre-check kept its value only as an existence test on
+the four references this change adds; the sweep itself is CI's.
+
+**The simplify pass changed the shape of the fix.** Two things came out of
+it. One was ordinary trimming: the same conclusion — that what criterion 1
+still lacks is no longer the search half — had been written three times in
+three consecutive PRD paragraphs, and now appears once where the argument
+is. The other is the reason this entry exists at all. Fixing the pages by
+hand is the same move that was made yesterday for cohorts 2 and 3, and it
+will be the same move again at cohort 5 unless something opens these files
+at the moment a cohort ends. `CLAUDE.md` already carries exactly that rule
+for `.gitattributes`, bought by exactly this failure; the record and the
+verify transcript now sit beside it. That is a scope addition to this
+change, deliberate and named here rather than slipped in.
+
+**Then the same class bit a third time, in the rule itself.** Running the
+diff through the universal-quantifier scan the claims rule asks for —
+before opening the PR, after the commits were already pushed — turned up
+the new `CLAUDE.md` sentence saying each define that reached an explore
+leaves a verify transcript. Cohort 2 holds nine define directories and
+four transcripts: hg's first three revisions and borg's first two all
+reached explores and left none, because the transcript belongs to the
+revision that produced the recorded outcome. Fixed forward rather than
+amended, since the branch was pushed. Three instances in one change —
+prose, then prose, then a rule written to prevent the first two — is the
+argument for running that scan before review rather than after.
+
 ## 2026-08-23 — the formula shipped and the README still said "download the tarball"
 
 `#180`'s whole thesis was that installing takes four steps and one thing

@@ -4,12 +4,14 @@ The README's constraint list says what a target must do; this page says how real
 
 Two vocabulary notes. A **verdict** is PASS or FAIL; everything else is a named refusal (UNKNOWN), never a silent pass. And a FAIL is a crash-consistency counterexample — a state the tool itself can be left in — not automatically an upstream bug: one recorded FAIL below stands withdrawn as a bug claim because the store's own recovery contract covers it.
 
-To be precise about "supported", since the v1.0 criterion hangs off it: **supported classes are exactly the rows of the first table below** (Measured, with verdicts). The refusal tables and the Rust narrative are not supported classes, whatever verdicts their stories contain. The UNKNOWN rate over supported-class targets — measured on a corpus frozen before it ran, with the threshold set from the data — is published in [docs/unknown-rate.md](unknown-rate.md).
+To be precise about "supported", since the v1.0 criterion hangs off it: **supported classes are exactly the rows of the first table below** (Measured, with verdicts). The refusal tables and the Rust narrative are not supported classes, whatever verdicts their stories contain. The UNKNOWN rate over supported-class targets — measured on a corpus frozen before it ran, with the threshold set from the data — is published in [docs/unknown-rate.md](unknown-rate.md). Note the two move at different speeds: this list grows whenever a cohort closes, while that rate is swept far less often, so they can be out of step — and are now (#239). The threshold itself is set from B-group data, which no cohort target enters, so the gap is in the published development-input rate rather than in the criterion's basis.
 
 *Backfill note (2026-08-22): the six cohort-2 and cohort-3 verdict rows below,
 and the refusal rows beneath them, were added together after both cohorts
 closed. `docs/unknown-rate.md`'s A-group sweep predates them — see the
-as-of note there.*
+as-of note there. Cohort 4's two rows (himalaya's verdict, unison's probe
+wall) landed 2026-08-23, the day that cohort closed, which is where this
+page is meant to be updated rather than backfilled.*
 
 ## Measured, with verdicts
 
@@ -32,6 +34,7 @@ as-of note there.*
 | Rust in-place formatter | rustfmt | **FAIL** 1/3, crash point 2 — the same shape in a second language, combined invariant (rustc E0601 on the empty bin crate), `oracle_verified`, reproduced twice. Measured with the novelty gate already closed before the define existed (`rust-lang/rustfmt#6041`, open since 2024-01-24); no claim, nothing filed | `spike/cohort3/rustfmt/RUNLOG.md` |
 | Python manifest + lock manager | poetry | **FAIL** 2/5, reproduced across three runs. Not a criterion-1 candidate: the earliest violating world is L0-only and the checker heals it, so the frozen claim rule refuses — while the checker-red world behind it (crash point 4 destroys a user-authored `pyproject.toml`) is real and was reported upstream as `python-poetry/poetry#11019`. A revision measuring the manifest-only operation reproduced the same wound under the FAIL-freeze rule, recorded and never claimed | `spike/cohort3/poetry/RUNLOG.md`, `spike/cohort3/poetry-r2/RUNLOG.md` |
 | Python personal-library store | papis | **PASS** 2/2 (one crash point plus the baseline), `oracle_verified`, single process, reproduced twice. `papis add` builds the document outside the library and moves it in with one `renameat`, so the only crash world the engine can produce is the library before the move — the cohort's contrast case | `spike/cohort3/papis/RUNLOG.md` |
+| Rust mail client over a maildir store | himalaya | **FAIL** 1/3, crash point 2 — after the destination is opened and before anything is written to it: a message file at its final path holding 0 bytes against the source's 307, which the tool then lists as an ordinary envelope. The violated invariant is the declared checker, not the built-in atomicity form, so the report carries `checker_earliest`; `oracle_verified`, single process, two runs agreeing on every judgement-carrying field, exhibit replayed. Reproduced with no apparatus at all under stock strace injection. **The first criterion-1 candidate**, reported upstream as `pimalaya/himalaya#738` | `spike/cohort4/himalaya-r2/RESULTS.md`, provenance `spike/cohort4/himalaya-r2/verify-transcript.txt` |
 
 ## Refusals that are the correct answer
 
@@ -39,7 +42,7 @@ as-of note there.*
 |---|---|---|---|
 | Nondeterministic writers | watson | `baseline_violates_invariant` — every run rewrites fresh uuids, so no invariant survives even a clean run; refusing is the honest verdict | `spike/dogfood-watson/`, `BUILDLOG.md` |
 | Shell CLIs over helper processes | pass | `child_touched_state_dir` — the dangerous slice runs in fork+exec children; judging it needs the multi-process slice (#123, open) | `spike/assisted/pass/explore-v10-transcript.txt` |
-| Tools with non-durable scratch files | git | the built-in atomicity form flags `COMMIT_EDITMSG`, a scratch file — a recorded precision limit (#35, open) | `BUILDLOG.md` |
+| Tools with non-durable scratch files | git | the built-in atomicity form flags `COMMIT_EDITMSG`, a scratch file — a recorded precision limit (#35, closed 2026-08-17 as documented) | `BUILDLOG.md` |
 
 | Statically linked release binaries | Jujutsu | `no_shim_marker` at recording — the v0.44.0 release binary is statically linked and cannot load an `LD_PRELOAD` shim. The measured binary is the latest stable, so the recheck is inherent (#201, after v1.0) | `spike/cohort2/jj/RUNLOG.md` |
 | Multi-threaded runtimes | Bun | `multiple_threads_detected` at recording — the probe's six threads. Single-threaded exploration is a v0.1 contract property; the measured binary is the latest stable, 1.4.0 (#202, after v1.0) | `spike/cohort2/bun/RUNLOG.md` |
@@ -54,6 +57,7 @@ below is a statement about what the judge would have said.
 | Class | Tool | The probe's refusal | Recorded in |
 |---|---|---|---|
 | Encrypted, memory-locked stores | KeePassXC 2.7.10 | conditions 5 and 6 of the probe gate: two `keepassxc-cli add` runs two seconds apart produce different `db.kdbx` bytes, and 7 successful mutating calls could not be attributed to a path (fail-closed). Latest stable rechecked at 2.7.12 | `spike/cohort2/probes/keepassxc.txt`, `spike/cohort2/probes/recheck-keepassxc.txt` |
+| Bidirectional file synchronizers | unison 2.54.0 | condition 5 of the probe gate, and only that one: two runs two seconds apart leave different bytes in the state root. Everything else was green — exit codes, non-noop, artifacts, round-trip, closure, the seccomp check, visibility and interior (62 kill points, so the operation does have an interior). The residue is recorded **unattributed**: clock, pid, inode and — in the `-times` variants only, which the frozen argv is not — the propagated mtime were each eliminated in turn and the archives still differed. A nondeterministic-writer wall, costing no define | `spike/cohort4/probes/unison.txt`, `spike/cohort4/probes/unison-clock-diagnosis.txt` |
 
 ## Walls, measured on toys
 

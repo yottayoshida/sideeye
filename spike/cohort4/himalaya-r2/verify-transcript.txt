@@ -1,0 +1,21 @@
+verify-assisted: spike/cohort4/himalaya-r2
+anchor: main (20294a1) — first-parent order, history as pushed
+disclosure: this script postdates the first cohort; on pre-rule targets this is a record, not a certification
+define    spike/cohort4/himalaya-r2/ops/check.sh  introduced @ e445686 (position 9)
+define    spike/cohort4/himalaya-r2/ops/himalaya-copy.toml  introduced @ e445686 (position 9)
+define    spike/cohort4/himalaya-r2/ops/setup.sh  introduced @ e445686 (position 9)
+define    spike/cohort4/himalaya-r2/ops/explore.sh  introduced @ e445686 (position 9)
+artifact  spike/cohort4/himalaya-r2/run1/explore-transcript.txt  introduced @ 1949c62 (position 8)
+artifact  spike/cohort4/himalaya-r2/run1/replay-transcript.txt  introduced @ 1949c62 (position 8)
+artifact  spike/cohort4/himalaya-r2/run1/report.json  introduced @ 1949c62 (position 8)
+artifact  spike/cohort4/himalaya-r2/run1/work/cases/000001.json  introduced @ 1949c62 (position 8)
+artifact  spike/cohort4/himalaya-r2/run2/explore-transcript.txt  introduced @ 1949c62 (position 8)
+artifact  spike/cohort4/himalaya-r2/run2/report.json  introduced @ 1949c62 (position 8)
+artifact  spike/cohort4/himalaya-r2/run2/work/cases/000001.json  introduced @ 1949c62 (position 8)
+ok   D1: define complete @ e445686 strictly precedes first artifact @ 1949c62
+ok   D2: spike/cohort4/himalaya-r2/ops/check.sh byte-identical at both points
+ok   D2: spike/cohort4/himalaya-r2/ops/himalaya-copy.toml byte-identical at both points
+ok   D2: spike/cohort4/himalaya-r2/ops/setup.sh byte-identical at both points
+ok   D2: spike/cohort4/himalaya-r2/ops/explore.sh byte-identical at both points
+
+ALL ORDER CHECKS PASSED for spike/cohort4/himalaya-r2
