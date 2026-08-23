@@ -17,6 +17,14 @@ was a negative control rather than an assumption: `acceptance.sh`,
 unspecified, while all 112 tracked files under `spike/cohort4` report it
 set.
 
+**Filing the report left a second thing owed, and it was nearly missed.**
+`upstream-report-status.sh` opens by saying it measures rather than
+remembers, but the list of reports it measures is hardcoded in the
+script. A new report that is not added there does not appear as missing:
+the table simply prints five rows and looks complete, which is the exact
+failure the file was written to prevent one level down. `#738` is
+registered now, and the table prints six.
+
 ## 2026-08-23 — the recovery paths outside the tool
 
 The last precondition the freeze's Reporting section puts in front of a
