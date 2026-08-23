@@ -50,7 +50,7 @@ R2. The one check-shaped command, run against the damage.
        maildir: OK
    it did not mention the damaged message
    positive control: the same grep does match text that is in that output
-   snapshot covers 2 file(s) in the store
+   snapshot covers 2 file(s); find rc before=0 after=0
    store unchanged across the check
    reading: the account is valid, so the tool's only check-shaped
    command passes over a mailbox that holds a message with no message
@@ -88,37 +88,37 @@ R4. The obvious recovery: the source survived, so do it again.
    source after the crash: 307 bytes, sha 654533e9d8aa08a0
    re-run rc=0
    what the target folder holds now:
-     1787456848.#0M54333169P2603.8c13ab3c8e3b:2,S -> 0 bytes
-     1787456848.#0M57499544P2617.8c13ab3c8e3b:2,S -> 307 bytes
+     1787457295.#0M348278091P2605.d03408a84c0b:2,S -> 0 bytes
+     1787457295.#0M351152383P2619.d03408a84c0b:2,S -> 307 bytes
    entries: 2
    and what the tool lists:
    envelope list rc=0
      
-     ┌──────────────────────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐
-     │ ID                                       ┆ FLAGS ┆ SUBJECT                       ┆ FROM         ┆ DATE                   ┆  SIZE │
-     ╞══════════════════════════════════════════╪═══════╪═══════════════════════════════╪══════════════╪════════════════════════╪═══════╡
-     │ 1787456848.#0M57499544P2617.8c13ab3c8e3b ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
-     │ 1787456848.#0M54333169P2603.8c13ab3c8e3b ┆       ┆                               ┆              ┆                        ┆   0 B │
-     └──────────────────────────────────────────┴───────┴───────────────────────────────┴──────────────┴────────────────────────┴───────┘
+     ┌───────────────────────────────────────────┬───────┬───────────────────────────────┬──────────────┬────────────────────────┬───────┐
+     │ ID                                        ┆ FLAGS ┆ SUBJECT                       ┆ FROM         ┆ DATE                   ┆  SIZE │
+     ╞═══════════════════════════════════════════╪═══════╪═══════════════════════════════╪══════════════╪════════════════════════╪═══════╡
+     │ 1787457295.#0M351152383P2619.d03408a84c0b ┆       ┆ Existing message, fixed bytes ┆ Probe Author ┆ 2026-03-01 09:00+00:00 ┆ 307 B │
+     │ 1787457295.#0M348278091P2605.d03408a84c0b ┆       ┆                               ┆              ┆                        ┆   0 B │
+     └───────────────────────────────────────────┴───────┴───────────────────────────────┴──────────────┴────────────────────────┴───────┘
 
 ==============================================================
 R5. Can the tool remove the damaged message?
 ==============================================================
    operation rc=137, target folder holds 1 entry, 0 bytes
    the maildir-specific API has no delete: save copy move help 
-   trying the shared command on the damaged entry, id 1787456848.#0M68317544P2641.8c13ab3c8e3b
+   trying the shared command on the damaged entry, id 1787457295.#0M360610008P2643.d03408a84c0b
    message delete rc=1
      Error: Cannot determine the trash mailbox; set `mailbox.alias.trash` in your config
      
      Suggestions:
       - Run with --log-level to enable more verbose logs
    target folder afterwards: 1 in cur, 0 in tmp, 0 in new
-     remaining: 1787456848.#0M68317544P2641.8c13ab3c8e3b:2,S (0 bytes)
+     remaining: 1787457295.#0M360610008P2643.d03408a84c0b:2,S (0 bytes)
    
    control: is that refusal about the damaged message, or about any
    message under this configuration? Same command, same folder, same
    config, on a HEALTHY copy produced by letting the operation finish:
-   healthy copy in Archive: 1787456848.#0M76483044P2682.8c13ab3c8e3b (307 bytes)
+   healthy copy in Archive: 1787457295.#0M367886133P2684.d03408a84c0b (307 bytes)
    message delete on it rc=1
      Error: Cannot determine the trash mailbox; set `mailbox.alias.trash` in your config
      
@@ -134,7 +134,7 @@ R5. Can the tool remove the damaged message?
    operation rc=137, target folder holds 1 entry, 0 bytes
    message delete rc=0
      Successfully moved 1 message(s) to the trash   Archive/cur now: 0 entry, Trash/cur: 1 entry
-     in Trash: 1787456848.#0M90339419P2722.8c13ab3c8e3b:2,S (0 bytes)
+     in Trash: 1787457295.#0M381728424P2724.d03408a84c0b:2,S (0 bytes)
    
    reading, and it is not 'the message can be deleted', which is what
    the first draft said. What was measured is a MOVE: two config keys

@@ -67,6 +67,24 @@ counts the strict walk. The number is a gift: 21 loose failures against
 21 dropped nodes is a second, independent confirmation that the dropped
 ones are not commands.
 
+R2 then found the one fix that had not actually landed. I had added a
+non-empty assertion to the store snapshot and treated the point as
+closed; the reviewer pointed out that `find`'s status was still going
+through a pipeline, so a **partial** read would give a short list rather
+than an empty one, two short lists would compare equal, and "store
+unchanged" would be a statement about an unknown subset. Recording the
+status per call fixes it, and drilling it is what turned the point from
+an argument into a measurement: with one subdirectory unreadable under a
+dropped uid, `find` returns rc 1 **with one file still listed**, which
+is exactly the shape the non-empty check cannot see.
+
+That drill is now a `--selftest` mode, because the same rule that says a
+define's checker legs must each be watched failing applies to the guards
+a measurement script carries. Five cases, all green, and the first
+attempt at the drill was written inline in nested shell and printed
+`drill ok` from a comparison against an empty string, which is the
+failure it exists to prevent.
+
 Left explicitly unmeasured, written into the transcript rather than kept
 in my head: whether an external syncer would carry the empty message
 outward to a server, whether any reader other than the one tried would

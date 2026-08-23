@@ -32,13 +32,28 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 SETUP="$here/ops/setup.sh"
 export HOME=/tmp/cohort4/himalaya/home XDG_CONFIG_HOME=/tmp/cohort4/himalaya/xdg
 W=/tmp/extrec
-rm -rf "$W"; mkdir -p "$W"
+# The selftest re-enters this script as an unprivileged user to drill the
+# snapshot guard. That re-entry must NOT reset the workspace: it would run
+# as nobody against a directory the drill has deliberately made writable,
+# and delete the very state the drill is measuring.
+if [ "${1:-}" != "--snapshot-probe" ]; then rm -rf "$W"; mkdir -p "$W"; fi
 FAILS=0
 note() { echo "   $*"; }
 bad()  { echo "   BROKEN: $*"; FAILS=$((FAILS+1)); }
 
-snapshot() { # dir -> path/size/sha per line, sorted
-    find "$1" -type f 2>/dev/null | LC_ALL=C sort | while IFS= read -r f; do
+snapshot() { # dir rcfile -> path/size/sha per line, sorted
+    # find's status is written to $2 instead of being swallowed by the
+    # pipeline. Without that, a find that failed partway would produce a
+    # SHORT list rather than an empty one, two short lists would compare
+    # equal, and "store unchanged" would be a statement about an unknown
+    # subset of the store. The non-empty check at the call site does not
+    # catch that case; this does.
+    # Scratch files are named after the status file, not shared: the
+    # selftest calls this once as root and once as nobody, and a shared
+    # path would leave the second call unable to write the first's file.
+    find "$1" -type f > "$2.find.out" 2>"$2.find.err"
+    echo $? > "$2"
+    LC_ALL=C sort "$2.find.out" | while IFS= read -r f; do
         printf '%s %s %s\n' "${f#$1/}" "$(wc -c < "$f" | tr -d ' ')" \
             "$(sha256sum < "$f" | cut -c1-16)"
     done
@@ -57,6 +72,68 @@ damage() { # produce the finding for real; leaves the crashed store in place
     [ "$n" = 1 ] && [ "$b" = 0 ] || { bad "the damage did not reproduce; the rest measures nothing"; return 1; }
     return 0
 }
+
+# --selftest: show this script's own new guards failing, once each, before
+# trusting a run in which they stay quiet. The cohort rule is that a check
+# nobody has watched fire is not yet a check, and it applies to the checks
+# a measurement script carries as much as to a define's checker.
+if [ "${1:-}" = "--selftest" ]; then
+    D=$W/selftest; mkdir -p "$D"; chmod 0777 "$W" "$D"
+    sfail=0
+    sf_ok()  { echo "selftest ok   $*"; }
+    sf_bad() { echo "selftest FAIL $*"; sfail=$((sfail+1)); }
+
+    echo "== guard: snapshot refuses when find could not read the whole store"
+    S=$D/store; mkdir -p "$S/a" "$S/b"; echo one > "$S/a/1"; echo two > "$S/b/2"
+    snapshot "$S" "$D/rc-healthy" > "$D/out-healthy"
+    hrc=$(cat "$D/rc-healthy"); hn=$(wc -l < "$D/out-healthy" | tr -d ' ')
+    [ "$hrc" -eq 0 ] && [ "$hn" -eq 2 ] \
+        && sf_ok "positive control: healthy store, find rc=$hrc, $hn files" \
+        || sf_bad "positive control: healthy store gave rc=$hrc, $hn files (wanted 0 and 2)"
+
+    # The failure this guard exists for is a PARTIAL read: find returns a
+    # short list, not an empty one, so the non-empty check cannot see it.
+    # Root ignores permission bits, so the drill has to drop privileges.
+    chmod 0777 "$S" "$S/a"; chmod 000 "$S/b"
+    setpriv --reuid=65534 --regid=65534 --clear-groups \
+        "$0" --snapshot-probe "$S" "$D/rc-partial" > "$D/out-partial" 2>"$D/err-partial"
+    prc=$(cat "$D/rc-partial" 2>/dev/null || echo MISSING)
+    pn=$(wc -l < "$D/out-partial" | tr -d ' ')
+    chmod 755 "$S/b"
+    case "$prc" in
+        MISSING|'') sf_bad "the drill never recorded a status, so it measured nothing" ;;
+        0) sf_bad "find reported success on a store it could not fully read" ;;
+        *) [ "$pn" -gt 0 ] \
+             && sf_ok "partial read: find rc=$prc with $pn file(s) listed, so the guard fires where the non-empty check cannot" \
+             || sf_bad "the list came back empty, which is the case the other check already covers; this drill needs a SHORT list" ;;
+    esac
+
+    echo ""
+    echo "== guard: the strict-walk --help counter"
+    printf 'loose: junk fragment\n' > "$D/helpfail"
+    [ "$(grep -c '^strict: ' "$D/helpfail")" -eq 0 ] \
+        && sf_ok "loose-only failures do not trip it" \
+        || sf_bad "loose failures trip a guard that is about the strict walk"
+    printf 'strict: maildir\n' >> "$D/helpfail"
+    [ "$(grep -c '^strict: ' "$D/helpfail")" -eq 1 ] \
+        && sf_ok "a strict failure is counted, and would stop the run" \
+        || sf_bad "a strict failure is not counted"
+
+    echo ""
+    echo "== guard: the dropped-node loop refuses an empty list"
+    : > "$D/empty"; t=0
+    while IFS= read -r p; do [ -n "$p" ] || continue; t=$((t+1)); done < "$D/empty"
+    [ "$t" -eq 0 ] \
+        && sf_ok "tried=0 over an empty list, which the run treats as BROKEN rather than as a clean 0" \
+        || sf_bad "the counter is not measuring the loop"
+
+    echo ""
+    echo "== selftest failures: $sfail"
+    [ "$sfail" -eq 0 ] || exit 1
+    exit 0
+fi
+# Re-entry point for the privilege-dropped half of the snapshot drill.
+if [ "${1:-}" = "--snapshot-probe" ]; then snapshot "$2" "$3"; exit 0; fi
 
 echo "himalaya: $(himalaya --version 2>&1 | head -1)"
 echo "apparatus absent: /etc/ld.so.preload $([ -e /etc/ld.so.preload ] && echo PRESENT || echo absent), LD_PRELOAD=${LD_PRELOAD:-<unset>}"
@@ -196,10 +273,10 @@ echo "=============================================================="
 echo "R2. The one check-shaped command, run against the damage."
 echo "=============================================================="
 damage || { echo "== BROKEN: $FAILS"; exit 1; }
-snapshot "$STORE" > "$W/before"
+snapshot "$STORE" "$W/rc-before" > "$W/before"
 himalaya -c "$CFG" account check > "$W/check.out" 2>&1
 crc=$?
-snapshot "$STORE" > "$W/after"
+snapshot "$STORE" "$W/rc-after" > "$W/after"
 note "account check rc=$crc"
 sed 's/^/     /' "$W/check.out" | head -6
 if grep -qiE '0 bytes|empty|corrupt|truncat|invalid message' "$W/check.out"; then
@@ -218,7 +295,9 @@ else
 fi
 sb=$(wc -l < "$W/before" | tr -d ' ')
 [ "$sb" -gt 0 ] || bad "the store snapshot is empty, so 'unchanged' would compare nothing"
-note "snapshot covers $sb file(s) in the store"
+frb=$(cat "$W/rc-before"); fra=$(cat "$W/rc-after")
+note "snapshot covers $sb file(s); find rc before=$frb after=$fra"
+[ "$frb" -eq 0 ] && [ "$fra" -eq 0 ] || bad "find failed while snapshotting, so 'unchanged' compares an unknown subset of the store"
 if cmp -s "$W/before" "$W/after"; then note "store unchanged across the check"
 else note "store CHANGED across the check:"; diff "$W/before" "$W/after" | sed 's/^/     /'; fi
 note "reading: the account is valid, so the tool's only check-shaped"

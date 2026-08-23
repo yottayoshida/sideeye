@@ -1,0 +1,12 @@
+== guard: snapshot refuses when find could not read the whole store
+selftest ok   positive control: healthy store, find rc=0, 2 files
+selftest ok   partial read: find rc=1 with 1 file(s) listed, so the guard fires where the non-empty check cannot
+
+== guard: the strict-walk --help counter
+selftest ok   loose-only failures do not trip it
+selftest ok   a strict failure is counted, and would stop the run
+
+== guard: the dropped-node loop refuses an empty list
+selftest ok   tried=0 over an empty list, which the run treats as BROKEN rather than as a clean 0
+
+== selftest failures: 0
