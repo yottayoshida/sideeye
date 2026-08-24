@@ -2,6 +2,164 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-24 — #286 route B opens: what FSEvents can verify, and the predictions made before measuring
+
+Entry opened at the start of the work, per the contract. The owner picked
+route B over route C today and scoped it to v1.0 (#286, comment of
+2026-08-24). The reason recorded there: every route in that issue buys a
+claim weaker than `oracle_verified`, and B is the only one whose failure
+modes are disjoint from the shim's, because a witness interposer and the
+shim ride the same injection.
+
+The plan's first draft was wrong in a way worth writing down. It treated
+"can FSEvents feed `oracle.compare`" as the whole question, so a negative
+answer would have been recorded as "route B is dead". The issue text asks
+something weaker: whether the mutations the shim reported are consistent
+with what the kernel says changed. Those are two hypotheses, and the
+first failing does not settle the second.
+
+- H1: a full OpClass sequence, good enough to drop into `oracle.compare`.
+- H2: an independent veto, catching a change the shim failed to report.
+
+This spike hunts counterexamples to H1 and builds the apparatus H2 would
+need. It does not judge H2.
+
+The asymmetry is the reason the work is cheap. One counterexample kills
+H1. No counterexample proves nothing, because `FSEvents.h` describes its
+flags as a hint, and a handful of agreeing runs is not a guarantee about
+future runs. False PASS is this project's worst failure, so the survival
+side of RESULTS is capped at "worth further study", never "it works".
+
+Two readings from the source shaped the measurement list. `shim/src/ops.zig`
+records each attempt *before* it runs, and says why: a failed attempt has
+to count on both sides or the two accounts desync. FSEvents reports
+changes to the filesystem, so an attempt that changed nothing has no
+event to report. That is the cheapest counterexample available and it is
+measured first. Separately, `src/oracle.zig` drops write-incapable opens
+from the comparison entirely, so the read-only open this plan originally
+listed as a measurement target was never relevant.
+
+The #181 toy is not reused. It performs `open, write, rename, open,
+write, unlink, mkdir, open, write`: nine operations across five classes,
+with no `fsync`, no `truncate`, no `rmdir`, no `link`, no `symlink` and
+no failing call. It was built to test token presence and first-appearance
+order, not class mapping. A mode-driven `probe.c` replaces it.
+
+### Predictions, written before any measurement
+
+Recorded so the misses are legible afterwards. Confidence is a guess, not
+a measurement.
+
+1. A failed attempt produces no event at all, in every configuration
+   tried (confidence 90%). This alone kills H1.
+2. `fsync` produces no event (confidence 85%).
+3. A truncate to the file's existing size produces no event, or one
+   indistinguishable from a write (confidence 70%).
+4. Even at latency 0 with `NoDefer`, a create immediately followed by a
+   write arrives as one entry with both bits set (confidence 65%).
+5. The probe and a neighbour performing the same operation on the same
+   path are indistinguishable in the output (confidence 90%).
+6. The watcher soundness control passes: a single file created after
+   READY yields at least one event for that path (confidence 95%). If
+   this one fails, nothing else in the run means anything.
+
+Prediction 4 is the one most likely to be wrong in an interesting
+direction, because the header's `NoDefer` description is about when a
+group is delivered rather than about whether same-path events within a
+group are merged.
+
+### What the measurement said
+
+H1 is dead, and the cheapest leg did it. Seven modes issue a call that fails
+and changes nothing; in each one the sentinel's event arrived and the
+operation's own path produced none. Delivery worked and there was nothing to
+deliver. The shim records those attempts, so `compare()` diverges there.
+`RESULTS.md` carries the detail and two corroborating findings.
+
+Scoring the predictions written above, before any of this ran:
+
+1. A failed attempt produces no event. **Right**, 7 modes out of 7.
+2. `fsync` produces no event. **Not decidable as stated.** No entry was
+   attributable to it in 32 runs, so the transcript cannot say whether it
+   produced one. The prediction assumed the answer would be visible.
+3. A same-size truncate produces no event, or one indistinguishable from a
+   write. **Wrong on the first half.** It produced an event carrying
+   `ItemInodeMetaMod` on top of `ItemModified`. The second half stands
+   unjudged; a create over an existing file carried the same extra flag.
+4. Create then write arrive as one entry even at latency 0 with `NoDefer`.
+   **Right in effect, wrong as written.** The L2 mode does not create: the
+   setup creates the file before the watcher starts and the run opens the
+   existing file `O_WRONLY` and writes. What collapsed was `open`+`write`
+   +`fsync`, not create-then-write. The prediction described an experiment
+   that is not the one that ran, which is its own small lesson about writing
+   predictions against a harness rather than against the code.
+5. The probe and a neighbour on the same path are indistinguishable.
+   **Right**, after two harness corrections.
+6. The soundness control passes. **Right.**
+
+And one finding no prediction covered: `link` reports on the new name only.
+The source path produced no event, while `src/contract.zig` treats `link` as
+one operation. `rename` likewise arrived as two entries for one call, so the
+entry count diverges from the operation count in both directions.
+
+That one was invisible until the judge was rewritten. The first version scored
+mapping as "any of this operation's paths was seen", which counted `link` as
+fully observed. An external review of the diff called the per-operation claim
+unsupportable; fixing the claim is what surfaced the finding.
+
+Five things went wrong in the apparatus. All five were caught, and the pattern
+across them is the point.
+
+The attribution leg was built wrong twice. First each side got its own parent
+directory, so the absolute paths differed and the judge said "distinguishable"
+for a reason with nothing to do with who acted. That is precisely the failure
+the plan review had named, reintroduced through the parent directory rather
+than the file name. Then, after the sentinel was added, clearing only `target`
+between runs left the first run's sentinel in place, so the second run's
+create became a truncate and picked up `ItemInodeMetaMod`. Both versions
+produced a confident wrong verdict.
+
+The first sweep reported 0 entries for `latency=1.0`, five times out of five,
+with a fixed 0.4s settle. That was the wait, not the platform: at 2.5s the
+same configuration delivered one entry in all five runs. A negative result
+from the harness reads exactly like a negative result from the subject, and
+this is the failure the sentinel now exists to make impossible.
+
+`SETTLE_OVERRIDE=$st capture ...` does not scope to the call. On this `/bin/sh`
+the assignment survives the function, so L3 onwards silently ran with the last
+L2 settle while the transcript stated the default. Measured with a three-line
+script rather than assumed from the standard.
+
+The always-reject control spliced from `v_mapping` to `j_mapping` and deleted
+the four functions in between, so the sabotaged judge died with a NameError
+and reported zero failures. Zero from a crash and zero from an ineffective
+control are the same string. The control now replaces one function body and
+the driver requires the sabotaged run to have completed, not merely to have
+exited.
+
+Counting `mapping: DEAD` across the whole transcript gives more than the
+measured count, because the judge's own selftest fixtures demonstrate DEAD
+verdicts and `v_coalescing` prints from inside the selftest too. Both the mode
+census and the entry distribution had to be counted inside section boundaries.
+Harvesting a gate's own red output as a finding is a known shape here and it
+presented itself twice in one afternoon.
+
+The coalescing distribution is not stable between sweeps: 29/1, 30/0, 28/3,
+26/5 and finally the committed 25/5, over the same 30 configurations. None of
+those is the property. The write-up says so rather than quoting whichever
+sweep is on disk.
+
+Beyond H1, two findings bear on H2 without settling it. The output cannot
+attribute: `MarkSelf` and `IgnoreSelf` separate exactly one process, the
+watcher itself, from an undifferentiated everyone-else, and `src/oracle.zig`
+needs `child_touched` to mean "some other process". And the flag word
+describes the path rather than the delivery window: in one measured run, a
+file created 3 seconds before the watcher started still contributed
+`ItemCreated` to the event for a later write.
+
+Route C keeps its measured foundation from #181 and is the one route in #286
+that is both measured and still standing.
+
 ## 2026-08-23 — the README still described a one-exhibit report
 
 v0.13.0 gave the FAIL report a second exhibit (#231, ADR 0020): when the
