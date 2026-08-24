@@ -52,6 +52,30 @@ criterion. Note also that the pinned v2.1.0 does not carry the fix, so
 any such leg means building against `io-maildir` 0.3.1, not against a
 newer himalaya tag.
 
+**Then acceptance check 11 went red on this very change, which is the
+part worth keeping.** The check extracts every backticked token
+containing a slash from the evidence-first pages and requires it to exist
+in the repository — its own comment warns that a backticked ratio like
+"3/7" is read as a path, filed as #85. Two of the tokens added here were
+neither paths nor ratios: an upstream commit reference, owner/repo@sha,
+and a directory named in prose. Both were extracted, neither exists here,
+and the page went red. The fix is to drop the backticks; the reference
+reads the same without them.
+
+The PR body claimed this change "adds nothing that needs verifying beyond
+what is quoted above" before CI said otherwise. It did: a documentation
+change has a machine-checked surface, and prose that names an external
+repository in the local path syntax lands on it. Corrected in the body
+rather than quietly.
+
+Reproducing the failure locally took one wrong turn first. Running the
+check's own loop under zsh reported one missing entry per page, including
+pages this change never touched — `for r in $refs` does not word-split in
+zsh, so the whole newline-joined blob arrived as a single item and every
+page looked broken in the same way. Under `sh`, which is what CI runs, the
+count is 2 before the fix and 0 after, and restoring one backtick puts it
+back to 1. A gate reproduced in the wrong shell measures the shell.
+
 ## 2026-08-24 — the sorted order `find` wants was never a property of the type
 
 `Snapshot.find` is a linear scan, called from inside loops in `classify` and
