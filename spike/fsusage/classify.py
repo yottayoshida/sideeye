@@ -35,6 +35,7 @@ Usage:
   classify.py p1-child    CAPTURE OPS
   classify.py p3-rename   CAPTURE OPS
   classify.py p3-depth    CAPTURE OPS
+  classify.py p2-fsync    CAPTURE OPS
   classify.py --selftest
 """
 import json
@@ -85,13 +86,15 @@ FD_RE = re.compile(r"\bF=(\d+)\b")
 
 
 def norm(path):
-    """fs_usage prints pathnames without their leading slash (measured, run
-    32687071111: `open ... private/tmp/...`), and /tmp is /private/tmp on
-    macOS. Matching goes through this so a state dir spelled either way and a
-    capture line spelled fs_usage's way meet."""
-    if path.startswith("/private/"):
-        path = path[len("/private"):]
-    return path.lstrip("/")
+    """One spelling for four. A path the target named through the /tmp symlink
+    prints as `private/tmp/...` with no leading slash (round 1); named
+    canonically it prints `/private/tmp/...` (round 2); the probe's account
+    and the shim's trace carry whichever spelling they were given. Strip the
+    slash first and the `private/` component second, so all four meet."""
+    path = path.lstrip("/")
+    if path.startswith("private/"):
+        path = path[len("private/"):]
+    return path
 
 
 def mentions(raw, path):
@@ -320,7 +323,16 @@ def _not_sentinel(rows, sents):
     grades the guard instead of the platform — the selftest caught exactly
     that before the first real capture was judged."""
     sp = _sentinel_paths(sents)
-    return [r for r in rows if not any(mentions(r["raw"], p) for p in sp)]
+    def is_sent(r):
+        if any(mentions(r["raw"], p) for p in sp):
+            return True
+        # A descriptor-resolved line carries no pathname in its raw text;
+        # its address lives in r["path"]. Round 2 (run 32687503436) counted
+        # both sentinels' writes against the shim's one because this branch
+        # was missing: "1 recorded write arrived as 3 lines".
+        rp = r.get("path")
+        return bool(rp) and any(norm(rp) == norm(p) for p in sp)
+    return [r for r in rows if not is_sent(r)]
 
 
 def v_p2_counts(buckets, sents, ops, trace_recs, statedir):
@@ -507,6 +519,32 @@ def v_p3_depth(buckets, sents, hello):
     return 0
 
 
+def v_p2_fsync(buckets, sents, ops, hello):
+    """Does fsync leave a syscall line? Judged on the probe's thread, by CALL
+    name, never by grepping the word — a leg named P2-fsync puts that word
+    in every path and a grep counted 18 false hits before this existed."""
+    require_liveness(buckets, sents)
+    fs_ops = [o for o in ops if o["syscall"] == "fsync"]
+    if not fs_ops:
+        raise Broken("p2-fsync needs an fsync in the ops account")
+    tid = hello.get("tid")
+    mine = [r for r in buckets.get("_all_probe", []) if r["tid"] == tid]
+    fsync_lines = [r for r in mine if r["call"].startswith(("fsync", "fdatasync", "F_FULLFSYNC"))]
+    sync_io = [r for r in mine if r["call"] in DISKIO_CALLS and "[S" in r["call_full"]]
+    print(f"  p2-fsync: shim/probe issued {len(fs_ops)} fsync; capture holds "
+          f"{len(fsync_lines)} fsync-named syscall line(s) and {len(sync_io)} "
+          f"synchronous disk-io line(s) (the [S] flag) on the probe's thread")
+    for r in (fsync_lines + sync_io)[:3]:
+        print(f"    | {r['raw'][:150]}")
+    if not fsync_lines:
+        print("  p2-fsync: DEAD — fsync has no syscall line; it shows only as a "
+              "synchronous disk write when there was dirty data to flush, and "
+              "the comparison carries fsync as its own class")
+        return 1
+    print("  p2-fsync: fsync is visible as a syscall line")
+    return 0
+
+
 # ---------------------------------------------------------------- selftest --
 
 FIX_STATE = "/tmp/fx/state"
@@ -597,6 +635,8 @@ def selftest():
         try:
             hello, sents, ops = load_ops(p)
             buckets = parse_capture(cap_text, FIX_STATE)
+            if vfn is v_p2_fsync:
+                return vfn(buckets, sents, ops, hello)
             if vfn is v_p2_counts:
                 return vfn(buckets, sents, ops, extra[0], FIX_STATE)
             if vfn in (v_p4, v_p2_order, v_p1_child, v_p3_rename):
@@ -666,9 +706,39 @@ def selftest():
              parse_capture("10:00:02.000100  unlink            [  2]           "
                            + FIX_STATE.lstrip("/") + "/missing"
                            + "   0.000010   probe.111\n", FIX_STATE)), 0)
+    case("four spellings of one path normalise to the same key",
+         lambda: 0 if len({norm(x) for x in ("/tmp/a/b", "/private/tmp/a/b",
+                                              "private/tmp/a/b", "tmp/a/b")}) == 1 else 1, 0)
     case("a /private-spelled state dir matches an fs_usage line",
          lambda: 0 if mentions("open  private/tmp/fx/state/target  0.1 probe.1",
                               "/private/tmp/fx/state/target") else 1, 0)
+
+    case("a descriptor-resolved write on a sentinel is excluded from p2 counts",
+         lambda: run(v_p2_counts, _fix_capture([
+             _cap_line("open", f"{FIX_STATE}/target", ts="10:00:02.000100"),
+             "10:00:02.000200  write             F=3    B=0x7                        0.000010   probe.111",
+             "10:00:02.000300  write             F=3    B=0x5                        0.000010   probe.111",
+         ]).replace(_cap_line("open", f"{FIX_STATE}/sentinel-start", tid=111),
+                    _cap_line("open", f"{FIX_STATE}/sentinel-start", tid=111)
+                    + "\n10:00:01.000200  write             F=3    B=0x5                        0.000010   probe.111"),
+                     _fix_ops([op_write]),
+                     parse_trace_bytes(_fix_trace([("write", f"{FIX_STATE}/target")]))), 1)
+
+    op_fsync = {"type": "op", "seq": 2, "pid": 42, "syscall": "fsync",
+                "class": "fsync", "path": f"{FIX_STATE}/target", "rc": 0,
+                "errno": 0, "errno_name": ""}
+    case("p2-fsync accepts an fsync-named line on the probe's thread",
+         lambda: run(v_p2_fsync, _fix_capture([
+             "10:00:02.000200  fsync             F=3                          0.000010   probe.111"]),
+             _fix_ops([op_write, op_fsync])), 0)
+    case("p2-fsync rejects a capture where fsync shows only as WrData[S]",
+         lambda: run(v_p2_fsync, _fix_capture([
+             _cap_line("WrData[ST1]", f"/dev/disk3s5  {FIX_STATE}/target", ts="10:00:02.000200")]),
+             _fix_ops([op_write, op_fsync])), 1)
+    case("p2-fsync is not fooled by the word in a path (the 18-hit grep)",
+         lambda: run(v_p2_fsync, _fix_capture([
+             _cap_line("stat64", f"{FIX_STATE}/P2-fsync/go", ts="10:00:02.000200")]),
+             _fix_ops([op_write, op_fsync])), 1)
 
     # metamorphic: mutations of the SAME fixture flip or break the verdict
     case("census flags an unknown state-touching CALL as other_state",
@@ -761,6 +831,8 @@ def main():
             sys.exit(v_p3_rename(buckets, sents, ops))
         if leg == "p3-depth":
             sys.exit(v_p3_depth(buckets, sents, hello))
+        if leg == "p2-fsync":
+            sys.exit(v_p2_fsync(buckets, sents, ops, hello))
         print(__doc__)
         sys.exit(2)
     except Broken as exc:

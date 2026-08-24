@@ -30,3 +30,4 @@ spike/unknown-rate/**        linguist-documentation
 spike/freeze-audit/**        linguist-documentation
 spike/onboarding-clock/**    linguist-documentation
 spike/fsevents/**            linguist-documentation
+spike/fsusage/**             linguist-documentation

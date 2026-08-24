@@ -79,6 +79,7 @@ capture() {
     grep -q '"type":"hello"' "$d/ops.jsonl" || { bad "$leg: probe never said hello"; kill "$ppid" 2>/dev/null; return 1; }
 
     case "$filter" in
+        all)    fs_usage -w            -t 25 "$ppid" > "$d/cap.txt" 2>&1 & ;;
         pid)    fs_usage -w -f filesys -t 25 "$ppid" > "$d/cap.txt" 2>&1 & ;;
         name)   fs_usage -w -f filesys -t 25 probe   > "$d/cap.txt" 2>&1 & ;;
         none)   fs_usage -w -f filesys -t 25         > "$d/cap.txt" 2>&1 & ;;
@@ -138,6 +139,14 @@ for m in write writes-small writes-two-fd write-large write-zero pwrite writev s
         judge census "$OUT/P2-$m.cap.txt" "$OUT/P2-$m.ops.jsonl"
     }
 done
+
+echo ""
+echo "== P2-fsync: does fsync leave a syscall line? (-f filesys, then no class filter at all)"
+judge p2-fsync "$OUT/P2-fsync.cap.txt" "$OUT/P2-fsync.ops.jsonl"
+capture P2SYNC-all fsync 30 "$W/P2SYNC-all-state" all yes && {
+    judge p2-fsync "$OUT/P2SYNC-all.cap.txt" "$OUT/P2SYNC-all.ops.jsonl"
+    judge census   "$OUT/P2SYNC-all.cap.txt" "$OUT/P2SYNC-all.ops.jsonl"
+}
 
 echo ""
 echo "== P2-order: does capture order carry operation order?"

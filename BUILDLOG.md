@@ -14,7 +14,7 @@ is written on top of it.
 
 One reframing changes who runs the privileged leg. The verified PASS matters
 most as a CI gate, and GitHub's macOS runners are documented to allow
-passwordless sudo — so the leg that needed a human yesterday may need none.
+passwordless sudo, so the leg that needed a human yesterday may need none.
 That claim is itself unmeasured here, so it is the first thing the apparatus
 checks, as a workflow that does nothing but try.
 
@@ -41,9 +41,53 @@ Confidence is a guess, not a measurement.
    honest: prediction 2 alone would do it.
 
 The ground truth for the comparison legs is the shim's own binary trace
-(SIDEEYE1 header, little-endian records), read directly by the judge — not
+(SIDEEYE1 header, little-endian records), read directly by the judge, not
 the probe's self-account. The probe knows what it asked for; the shim's
 record is the account the oracle would actually be compared against.
+
+### What round 1 said (run 32687071111, macOS 26.5.2 on the runner, SIP disabled there)
+
+The premise held: `sudo -n` exits 0, `fs_usage` runs, and two unfiltered
+seconds are 27,994 lines. Then all 25 legs ran and ten came back BROKEN,
+every one of them the apparatus, and the platform findings sat underneath.
+
+Apparatus, two holes. fs_usage prints `write F=3 B=0x7` with no pathname,
+so the judge scoped every write as off-state noise; the `open F=3 <path>`
+that preceded it on the same thread is the address, and resolving through
+the descriptor is what the strace oracle already does with its own
+annotations. And the shim recorded only opens, because the harness passed
+the state dir spelled `/tmp/...` while the shim resolves descriptors with
+`F_GETPATH`, which answers `/private/tmp/...`; without the alt spelling the
+engine sets, every descriptor-addressed op fell out of scope. That is not a
+shim bug (the engine passes both spellings, `contract.zig` says why) but it
+is a sharp edge for any adapter: the observer's spelling, the shim's
+spelling and the engine's spelling are three things, not one. fs_usage adds
+a fourth: a path the target named through the /tmp symlink comes back as
+`private/tmp/...` with no leading slash, while the same path named
+canonically prints as `/private/tmp/...` intact (round 2 measured both).
+
+Platform, what stood after the holes were accounted for:
+
+- P4: all seven failed attempts left a line, each with the errno in
+  brackets and the attempted path: `open [ 2]`, `mkdir [ 17]`, and so on.
+  The counterexample that killed FSEvents does not touch fs_usage.
+- P1: the pid filter kept one of two same-named processes and leaked
+  nothing (5 lines kept, 0 leaked). Under a name filter covering both, the
+  trailing number on every state-dir line was one of the two tids the probes
+  had reported through `pthread_threadid_np` (15741 and 15743, nothing
+  else). Prediction 4 said that mapping would not exist; it does. A forked
+  child is not followed under the parent's pid filter, as predicted.
+- P3: a rename line carries the old path only; the destination never
+  appears. Wide mode keeps the LAST ~153 characters of a pathname and cuts
+  the front, so a state dir deeper than that cannot be scoped by its own
+  path. Narrow mode prints full paths too (58 characters intact, so the man
+  page's 28-byte figure is not what this build does) but carries no thread
+  id at all, so nothing in narrow mode attributes a line. A directory name holding a space and
+  Japanese survived wide mode byte for byte.
+- The shim's own resolution shows through: every op is bracketed by
+  `fstat64 F=n` and `fcntl F=n <GETPATH>` on the target's thread, and the
+  shim's trace writes appear as `write F=900`. An adapter has to know those
+  are the observer's shadow, not the target's work.
 
 ## 2026-08-24 — three places where a failed measurement ends up shaped like a success
 
