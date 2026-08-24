@@ -23,6 +23,43 @@ pub const Entry = struct {
     content: []const u8,
 };
 
+/// Counts `rel` comparisons, so a test can assert the *cost* of a lookup rather than only
+/// its answer.
+///
+/// Every comparison `find` makes goes through `compareRel` below, which is also the
+/// primitive a linear scan would use. That matters: a counter placed only inside a binary
+/// search's comparator would read zero for a linear implementation, and the mutation that
+/// matters most here — putting the linear scan back — would pass a "comparisons are
+/// logarithmic" assertion by never incrementing it.
+var rel_comparisons: usize = 0;
+
+fn compareRel(key: []const u8, e: Entry) std.math.Order {
+    rel_comparisons += 1;
+    return std.mem.order(u8, key, e.rel);
+}
+
+/// What the entry list must satisfy for `find` to be a binary search: sorted by `rel`,
+/// and no `rel` twice.
+///
+/// A value rather than a panic. `find` is called from inside loops, so this cannot run
+/// there — an O(n) check per lookup restores the quadratic cost the binary search exists
+/// to remove, and `std.debug.assert` would not have made it free either, since it is
+/// generated in Debug *and* ReleaseSafe and the release artifacts are ReleaseSafe. It runs
+/// once at each producer boundary instead.
+pub const OrderProblem = enum { out_of_order, duplicate };
+
+pub fn validateSortedUnique(entries: []const Entry) ?OrderProblem {
+    if (entries.len < 2) return null;
+    for (entries[1..], 0..) |e, i| {
+        switch (std.mem.order(u8, entries[i].rel, e.rel)) {
+            .lt => {},
+            .eq => return .duplicate,
+            .gt => return .out_of_order,
+        }
+    }
+    return null;
+}
+
 pub const Snapshot = struct {
     arena: std.heap.ArenaAllocator,
     entries: std.ArrayList(Entry),
@@ -31,11 +68,18 @@ pub const Snapshot = struct {
         self.arena.deinit();
     }
 
+    /// Binary search over `entries`, which every producer sorts and validates.
+    ///
+    /// This was a linear scan, and it is called once per file from inside loops in
+    /// `classify` and both judges — quadratic in the entry count for every world explored
+    /// (#262). The order it now relies on is a module invariant maintained by the
+    /// producers, not something the type can enforce: `entries` is a public, mutable
+    /// `ArrayList`, so a caller that appends out of order gets a wrong answer rather than
+    /// a refusal. `validateSortedUnique` is what makes that a caught mistake at the two
+    /// places snapshots are built.
     pub fn find(self: Snapshot, rel: []const u8) ?Entry {
-        for (self.entries.items) |e| {
-            if (std.mem.eql(u8, e.rel, rel)) return e;
-        }
-        return null;
+        const idx = std.sort.binarySearch(Entry, self.entries.items, rel, compareRel) orelse return null;
+        return self.entries.items[idx];
     }
 };
 
@@ -78,7 +122,12 @@ test "firstUnsupportedEntry flags exactly the kinds restore cannot recreate" {
     try std.testing.expectEqualStrings("ghost", firstUnsupportedEntry(snap2).?);
 }
 
-pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed };
+/// `EntriesNotSortedUnique` means the snapshot came out of `walk` in a shape `find` cannot
+/// search: out of order, or holding the same `rel` twice. Neither should be reachable — the
+/// sort above guarantees the first and a directory traversal cannot produce the second — so
+/// this is the check refusing rather than letting a binary search answer from a list that
+/// does not satisfy its precondition (#262).
+pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique };
 
 const max_depth = 32;
 
@@ -192,10 +241,22 @@ pub fn takeSnapshot(gpa: Allocator, root: []const u8) SnapshotError!Snapshot {
 
     const arena = snap.arena.allocator();
     try walk(arena, &snap.entries, root, "", 0);
-    // Sorting makes restore create parents before children and makes two snapshots of
-    // the same tree compare equal regardless of directory iteration order.
-    std.mem.sort(Entry, snap.entries.items, {}, lessThanRel);
+    try finalizeEntries(&snap);
     return snap;
+}
+
+/// Sort, then check what `find` will assume. Both producers end here, so neither can
+/// acquire the ordering without the check that goes with it — the two used to be separate
+/// statements repeated in each, and deleting one of them left the other's test green.
+///
+/// Sorting also makes restore create parents before children, and makes two snapshots of
+/// the same tree compare equal regardless of directory iteration order. A duplicate `rel`
+/// would mean `walk` emitted the same path twice, which no directory traversal should
+/// produce — the sort would not catch it, and a binary search would silently pick either
+/// one (#262).
+fn finalizeEntries(snap: *Snapshot) error{EntriesNotSortedUnique}!void {
+    std.mem.sort(Entry, snap.entries.items, {}, lessThanRel);
+    if (validateSortedUnique(snap.entries.items)) |_| return error.EntriesNotSortedUnique;
 }
 
 pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeRoot };
@@ -1038,8 +1099,24 @@ test "assertSafeRoot rejects roots a mistake would produce" {
     try assertSafeRoot("/work/state");
 }
 
+/// A snapshot built from literal pairs, for tests.
+///
+/// Sorts, like `takeSnapshot` does. It did not, and that made the sorted order an
+/// accident of one producer rather than a property every `Snapshot` has — which is
+/// exactly what `find` now depends on. Ten of the call sites below pass their pairs in
+/// an order that is not lexicographic, so a `find` that assumed sorting would have
+/// returned wrong answers here rather than failing loudly (#262).
+///
+/// Sorting can change which violation a test observes: `classify` walks `pre.entries`
+/// in order into `plan.files`, and both judges return on the first violation in that
+/// list. Every fixture here arranges one violation at a time, so the reported answer
+/// does not move — but a fixture with two would be decided by this sort.
 fn testSnapshot(gpa: Allocator, pairs: []const [2][]const u8) !Snapshot {
     var snap: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    // As in `takeSnapshot`. Needed here from the moment this function grew a second way to
+    // fail: the validation below returns after the arena already holds the duped entries,
+    // and the caller has no snapshot to `deinit`.
+    errdefer snap.arena.deinit();
     const arena = snap.arena.allocator();
     for (pairs) |p| {
         try snap.entries.append(arena, .{
@@ -1048,6 +1125,9 @@ fn testSnapshot(gpa: Allocator, pairs: []const [2][]const u8) !Snapshot {
             .content = try arena.dupe(u8, p[1]),
         });
     }
+    // The same finalizer `takeSnapshot` uses, so a fixture cannot be built under weaker
+    // rules than a real snapshot.
+    try finalizeEntries(&snap);
     return snap;
 }
 
@@ -1217,7 +1297,13 @@ test "the post-success invariant judges the whole post snapshot (ADR 0008)" {
         .{ "receipt.txt", "" },
     });
     defer kind_swap.deinit();
-    kind_swap.entries.items[2].kind = .dir;
+    // By name, not by index. This was `items[2]`, meaning "the third one written above" —
+    // which stopped being the same thing the moment `testSnapshot` started sorting. It
+    // still lands on `receipt.txt` in lexicographic order, so the index would have kept
+    // passing; it would just have been passing by coincidence.
+    for (kind_swap.entries.items) |*e| {
+        if (std.mem.eql(u8, e.rel, "receipt.txt")) e.kind = .dir;
+    }
     try std.testing.expectEqualStrings("receipt.txt", judgeL1(plan, pre, post, kind_swap).?.not_durable);
 }
 
@@ -1798,4 +1884,120 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
     try std.testing.expect(!info.exec_chain_broken);
     try std.testing.expect(info.foreign_kill_point);
     _ = posix.unlink(fz);
+}
+
+/// A linear scan over the same entries, kept here as the oracle the binary search is
+/// checked against. It is deliberately the implementation `find` used to have, and it
+/// counts through the same primitive, so the "comparisons are logarithmic" test below
+/// measures both the same way.
+fn linearFind(snap: Snapshot, rel: []const u8) ?Entry {
+    for (snap.entries.items) |e| {
+        if (compareRel(rel, e) == .eq) return e;
+    }
+    return null;
+}
+
+test "find answers exactly as a linear scan does, present and absent" {
+    const gpa = std.testing.allocator;
+    var snap = try testSnapshot(gpa, &.{
+        .{ "audit.log", "a\n" },
+        .{ "key.json", "k\n" },
+        .{ "receipt.txt", "r\n" },
+        .{ "zz.bin", "z\n" },
+    });
+    defer snap.deinit();
+
+    // Every key that is present.
+    for (snap.entries.items) |e| {
+        const got = snap.find(e.rel) orelse return error.MissingEntry;
+        const want = linearFind(snap, e.rel) orelse return error.MissingEntry;
+        try std.testing.expectEqualStrings(want.rel, got.rel);
+        try std.testing.expectEqualStrings(want.content, got.content);
+    }
+
+    // Absent keys on all three sides of the range: below the first, between two, above
+    // the last. A binary search that mishandles its bounds typically fails at exactly one
+    // of these, so a single absent key would not be enough.
+    for ([_][]const u8{ "aaa", "kz.json", "zzzz" }) |missing| {
+        try std.testing.expect(snap.find(missing) == null);
+        try std.testing.expect(linearFind(snap, missing) == null);
+    }
+}
+
+test "find costs a logarithmic number of comparisons, not a linear one" {
+    const gpa = std.testing.allocator;
+
+    // 1024 entries, lexicographically ordered by construction ("e0000".."e1023").
+    var names: [1024][8]u8 = undefined;
+    var pairs: [1024][2][]const u8 = undefined;
+    for (0..1024) |i| {
+        _ = std.fmt.bufPrint(&names[i], "e{d:0>4}", .{i}) catch unreachable;
+        pairs[i] = .{ names[i][0..5], "x" };
+    }
+    var snap = try testSnapshot(gpa, &pairs);
+    defer snap.deinit();
+
+    // The worst-case present key and an absent one. log2(1024) = 10, so a correct binary
+    // search needs at most 11 comparisons; the linear scan this replaced needs 1024 for
+    // the last entry.
+    //
+    // The lower bound matters as much as the upper one. An upper bound alone is satisfied
+    // by zero, and zero is exactly what the implementation this replaced produces — it
+    // compared with `std.mem.eql` directly, never through the counted primitive. `find`
+    // reverting to that code would have passed a bare `<= 11` by never incrementing at
+    // all: measured, not reasoned about. Requiring at least one comparison over a
+    // non-empty snapshot is what makes this measure the lookup instead of its absence.
+    for ([_][]const u8{ "e1023", "e9999" }) |key| {
+        rel_comparisons = 0;
+        _ = snap.find(key);
+        try std.testing.expect(rel_comparisons > 0);
+        try std.testing.expect(rel_comparisons <= 11);
+    }
+
+    // The control: the same lookup through the linear oracle, counted the same way. If
+    // this did not blow past the bound, the counter would not be measuring anything.
+    rel_comparisons = 0;
+    _ = linearFind(snap, "e1023");
+    try std.testing.expect(rel_comparisons == 1024);
+}
+
+test "validateSortedUnique separates disorder from duplication" {
+    const gpa = std.testing.allocator;
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    const mk = struct {
+        fn f(a: Allocator, rels: []const []const u8) ![]Entry {
+            const out = try a.alloc(Entry, rels.len);
+            for (rels, 0..) |r, i| out[i] = .{ .rel = r, .kind = .file, .content = "" };
+            return out;
+        }
+    }.f;
+
+    // Sorted and unique: no problem.
+    try std.testing.expect(validateSortedUnique(try mk(arena, &.{ "a", "b", "c" })) == null);
+    // Fewer than two entries cannot violate either half.
+    try std.testing.expect(validateSortedUnique(try mk(arena, &.{"only"})) == null);
+    try std.testing.expect(validateSortedUnique(try mk(arena, &.{})) == null);
+
+    // The two failures are reported apart. A check that only asked "is this
+    // non-decreasing?" would pass the duplicate case, leaving the uniqueness half of the
+    // invariant unverified — and `std.mem.sort` does not remove duplicates, so that half
+    // is reachable.
+    try std.testing.expectEqual(OrderProblem.out_of_order, validateSortedUnique(try mk(arena, &.{ "b", "a" })).?);
+    try std.testing.expectEqual(OrderProblem.duplicate, validateSortedUnique(try mk(arena, &.{ "a", "a" })).?);
+    // Adjacent duplicates in the middle of an otherwise sorted list.
+    try std.testing.expectEqual(OrderProblem.duplicate, validateSortedUnique(try mk(arena, &.{ "a", "b", "b", "c" })).?);
+}
+
+test "the producers refuse a snapshot that violates the order find searches by" {
+    const gpa = std.testing.allocator;
+    // Reaches `testSnapshot`'s own boundary check: the pairs sort fine, but two of them
+    // carry the same rel. This is what catches a validator that exists but is never
+    // called from a producer.
+    try std.testing.expectError(
+        error.EntriesNotSortedUnique,
+        testSnapshot(gpa, &.{ .{ "dup.txt", "one\n" }, .{ "dup.txt", "two\n" } }),
+    );
 }
