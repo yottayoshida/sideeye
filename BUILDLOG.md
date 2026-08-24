@@ -2,6 +2,80 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-24 — upstream fixed himalaya#738 within hours, and the pages that score criterion 1 did not know
+
+The cohort-4 record says the report is "open with no response as of
+2026-08-23" and scores two of §17's six conditions open on that basis:
+*the author judges it a real bug* and *fixed*. Both were closed by the
+maintainer the same day the sentence was written. `pimalaya/himalaya#738`
+is CLOSED as completed, with one comment — "Bug fixed on `master`."
+
+Finding the fix took longer than it should have, and the wrong turn is
+worth recording. The issue timeline lists three referenced commits;
+asking `pimalaya/himalaya` about each returns 422, and the obvious
+reading — "no fix commit upstream" — is wrong twice over. Those three are
+this repository's own commits, which GitHub cross-references onto the
+issue, and himalaya's master carries only two commits in the window,
+neither a copy fix. The fix is not in himalaya at all: the maildir
+implementation lives in `io-maildir`, a separate crate, and the fix is
+`pimalaya/io-maildir@b4e9080`, "fix: clean tmp after copy", carrying
+`Refs: .../himalaya/issues/738`. himalaya's own history shows it only as
+`d507387c`, "build: bump deps", where `io-maildir` moves 0.3.0 -> 0.3.1
+in `Cargo.lock`. A repository is not the boundary of a project's code,
+and 422 from one repository is not absence.
+
+The fix is the staging the report named as missing: `copy` now lands in
+the target `tmp/` and renames into place, "as `MaildirEntryStore` writes
+them", so an interrupted copy leaves at worst a stray file in `tmp/`
+rather than a truncated message enumerated under its final name.
+Upstream's own CHANGELOG describes the failure in the same terms the
+report used — an entry every Maildir reader lists as an ordinary message,
+empty and unparsable, that copying again does not replace — and the
+commit adds a test.
+
+So criterion 1's remaining gap is one condition, not three, and it is a
+question of wording: *kept as a replayed regression case*. The exhibit
+replays today, against the version that has the bug. Nothing has replayed
+it against a build carrying the fix, and nothing in CI runs either leg —
+which is exactly the gap this page called "closed as hygiene" for
+timewarrior once `timew-regression` existed. A case that reproduces a bug
+is not yet a case that detects its return.
+
+**This change does not re-score the criterion.** Re-scoring inside a
+documentation change is the move this repository refuses, and it refused
+it once already when criterion 6's measured README moved underneath it.
+What this change does is remove the false premises: the pages no longer
+say a fixed bug is unfixed. The adjudication — whether "replayed
+regression case" means the committed transcript or a CI leg — is the
+owner's, and it is now the only thing between this finding and the
+criterion. Note also that the pinned v2.1.0 does not carry the fix, so
+any such leg means building against `io-maildir` 0.3.1, not against a
+newer himalaya tag.
+
+**Then acceptance check 11 went red on this very change, which is the
+part worth keeping.** The check extracts every backticked token
+containing a slash from the evidence-first pages and requires it to exist
+in the repository — its own comment warns that a backticked ratio like
+"3/7" is read as a path, filed as #85. Two of the tokens added here were
+neither paths nor ratios: an upstream commit reference, owner/repo@sha,
+and a directory named in prose. Both were extracted, neither exists here,
+and the page went red. The fix is to drop the backticks; the reference
+reads the same without them.
+
+The PR body claimed this change "adds nothing that needs verifying beyond
+what is quoted above" before CI said otherwise. It did: a documentation
+change has a machine-checked surface, and prose that names an external
+repository in the local path syntax lands on it. Corrected in the body
+rather than quietly.
+
+Reproducing the failure locally took one wrong turn first. Running the
+check's own loop under zsh reported one missing entry per page, including
+pages this change never touched — `for r in $refs` does not word-split in
+zsh, so the whole newline-joined blob arrived as a single item and every
+page looked broken in the same way. Under `sh`, which is what CI runs, the
+count is 2 before the fix and 0 after, and restoring one backtick puts it
+back to 1. A gate reproduced in the wrong shell measures the shell.
+
 ## 2026-08-24 — the sorted order `find` wants was never a property of the type
 
 `Snapshot.find` is a linear scan, called from inside loops in `classify` and

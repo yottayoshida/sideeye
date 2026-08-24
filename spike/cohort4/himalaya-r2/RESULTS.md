@@ -67,6 +67,15 @@ did not predict is in the metadata line, disclosed and unjudged: one
   to the one account configuration measured: a maildir account with no
   remote, on this build.
 
+  *(Later, and left here rather than rewritten above: the report did go
+  out under its own gate, as `pimalaya/himalaya#738`, and the maintainer
+  fixed and closed it the same day — `pimalaya/io-maildir@b4e9080`,
+  released as 0.3.1, moving `copy` to stage in `tmp/` and rename into
+  place. The sentence above was true when this file was written and is
+  kept as the record of that moment. Note that the fix lives in a
+  separate crate: himalaya's own history carries only the dependency
+  bump, `d507387c`.)*
+
   - **Two recovery paths work, and both need the user to notice first.**
     The source is byte-identical after the crash, so the copy can simply
     be repeated. The repeat does not remove the empty entry: the folder
