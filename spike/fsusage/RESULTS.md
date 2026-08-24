@@ -137,23 +137,51 @@ state-directory line whose CALL the judge does not know) was 0 in all 27;
 `unparsed` was 0 in all 27. A census is gated on both sentinels
 like every other verdict, so an empty capture cannot report zeroes.
 
+## Second machine: the owner's laptop, SIP enabled, not a VM
+
+Transcripts `survey-laptop.txt` and `sudo-survey-laptop.txt`, captures under
+`captures-laptop/`: macOS 15.3.1 (24D70), arm64, **SIP enabled**,
+`kern.hv_vmm_present` 0, APFS. `BROKEN checks: 0`, DEAD 2.
+
+Every capability finding reproduced: P4 7 of 7, P2 1:1 in all nine modes and
+fsync visible under both filters, P1's pid filter and thread-id mapping and
+the child control, census 27 with `other_state` and `unparsed` at 0. The two
+DEAD verdicts are the same two walls. The only number that moved is the
+display cap: 156 characters here against 144 and 153 on the runner, cut
+from the left in both.
+
+Two output shapes appeared here that the runner never produced, and the first
+pass of this leg reported both as findings before they were understood:
+
+- **A process name can contain spaces.** `Google Chrome He.64625821` broke a
+  grammar that read the process field as `\S+`, so those lines landed in
+  `unparsed` and the census refused the capture. The census was right to
+  refuse; the grammar was wrong. The runner simply had no such process.
+- **macOS 15.x pads a truncated pathname with `>`.** A failed `open` on a
+  long path printed `.../missing-d>>>>>>>>>>>>>>>>` with its errno present,
+  and exact-path matching missed it, so P4 read as DEAD on this machine.
+  The `>` are a truncation marker, not path bytes; what remains is a genuine
+  prefix, and `same_path` now accepts a stump against the path it was cut
+  from (and rejects a stump of a different path).
+
+Neither is a 15-versus-26 capability difference. Both are general properties
+of the format that 26.5.2 happened not to exercise, and both would have
+surfaced the first time an adapter ran on a laptop.
+
 ## What was not measured
 
-- The owner's own machine. Every number is one virtual runner on macOS
-  26.5.2 with SIP disabled; a laptop with SIP on is a different
-  measurement, and the transcript's environment block exists so the two
-  cannot be confused.
+- Any machine other than these two.
 - Behaviour under load (event drop), which #181 named and this survey did
   not attempt.
 - Non-APFS volumes, network mounts.
 - Whether the rename destination is available through any other fs_usage
   mode or flag. This invocation (`-w -f filesys`) does not show it.
-- Whether the depth cap moves with terminal width or any flag. 144 and 153
-  are what three runs of this invocation printed.
+- Whether the depth cap moves with terminal width or any flag. 144, 153 and
+  156 are what four runs of this invocation printed on two machines.
 
 ## Where this leaves #286
 
-Three of the four points hold on this machine: failed attempts are visible
+Three of the four points hold on both machines: failed attempts are visible
 with errno, the thread id fs_usage prints is the one a process can report
 about itself (external enumeration unmeasured), and write syscalls match the
 shim's records one for one. The

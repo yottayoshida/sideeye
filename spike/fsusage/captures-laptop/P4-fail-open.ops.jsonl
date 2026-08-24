@@ -1,0 +1,4 @@
+{"type":"hello","pid":58852,"tid":69816947,"mode":"fail-open"}
+{"type":"sentinel","which":"start","pid":58852,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-open-state/sentinel-start","rc":0,"errno":0,"start_ns":3059676885610375,"end_ns":3059676886792000}
+{"type":"op","seq":0,"pid":58852,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hgzdkh/P4-fail-open-state/missing-dir/leaf","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":3059676886829375,"end_ns":3059676886860125}
+{"type":"sentinel","which":"end","pid":58852,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-open-state/sentinel-end","rc":0,"errno":0,"start_ns":3059676886894125,"end_ns":3059676887604041}

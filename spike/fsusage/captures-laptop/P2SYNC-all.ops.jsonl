@@ -1,0 +1,6 @@
+{"type":"hello","pid":59378,"tid":69819564,"mode":"fsync"}
+{"type":"sentinel","which":"start","pid":59378,"path":"/private/tmp/se286f1.hgzdkh/P2SYNC-all-state/sentinel-start","rc":0,"errno":0,"start_ns":3059728993242833,"end_ns":3059728995111291}
+{"type":"op","seq":0,"pid":59378,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hgzdkh/P2SYNC-all-state/target","rc":0,"errno":0,"errno_name":"","start_ns":3059728995190458,"end_ns":3059728995973583}
+{"type":"op","seq":1,"pid":59378,"syscall":"write","class":"write","path":"/private/tmp/se286f1.hgzdkh/P2SYNC-all-state/target","rc":7,"errno":0,"errno_name":"","start_ns":3059729030064291,"end_ns":3059729030210250}
+{"type":"op","seq":2,"pid":59378,"syscall":"fsync","class":"fsync","path":"/private/tmp/se286f1.hgzdkh/P2SYNC-all-state/target","rc":0,"errno":0,"errno_name":"","start_ns":3059729062964458,"end_ns":3059729063284208}
+{"type":"sentinel","which":"end","pid":59378,"path":"/private/tmp/se286f1.hgzdkh/P2SYNC-all-state/sentinel-end","rc":0,"errno":0,"start_ns":3059729063463916,"end_ns":3059729064819583}

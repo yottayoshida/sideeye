@@ -1,0 +1,4 @@
+{"type":"hello","pid":58949,"tid":69817542,"mode":"fail-rmdir"}
+{"type":"sentinel","which":"start","pid":58949,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-rmdir-state/sentinel-start","rc":0,"errno":0,"start_ns":3059689729558416,"end_ns":3059689731573458}
+{"type":"op","seq":0,"pid":58949,"syscall":"rmdir","class":"rmdir","path":"/private/tmp/se286f1.hgzdkh/P4-fail-rmdir-state/missing","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":3059689731617791,"end_ns":3059689731642958}
+{"type":"sentinel","which":"end","pid":58949,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-rmdir-state/sentinel-end","rc":0,"errno":0,"start_ns":3059689731683375,"end_ns":3059689732901250}
