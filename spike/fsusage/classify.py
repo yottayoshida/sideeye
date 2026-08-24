@@ -33,6 +33,7 @@ Usage:
   classify.py p1-partition CAPTURE HELLO_A HELLO_B
   classify.py p1-pidfilter CAPTURE HELLO_KEPT HELLO_FILTERED
   classify.py p1-child    CAPTURE OPS
+  classify.py p1-child-control CAPTURE OPS
   classify.py p3-rename   CAPTURE OPS
   classify.py p3-depth    CAPTURE OPS
   classify.py p2-fsync    CAPTURE OPS
@@ -81,8 +82,26 @@ LINE_RE = re.compile(
     r"(?P<wflag>W\s+)?"
     r"(?P<proc>\S+)\.(?P<tid>\d+)\s*$")
 
+# Narrow mode (no -w): whole-second timestamps and NO thread id after the
+# process name. Measured in every round; a grammar that ignored it would
+# report every narrow line as unparsed and call that a census.
+LINE_RE_NARROW = re.compile(
+    r"^(?P<ts>\d{2}:\d{2}:\d{2})\s+"
+    r"(?P<call>\S+)\s+"
+    r"(?P<middle>.*?)\s*"
+    r"(?P<dur>\d+\.\d{6})\s+"
+    r"(?P<wflag>W\s+)?"
+    r"(?P<proc>\S+?)\s*$")
+
 ERRNO_RE = re.compile(r"\[\s*(\d+)\]")
 FD_RE = re.compile(r"\bF=(\d+)\b")
+FIELD_RE = re.compile(r"(\[\s*\d+\]|F=\d+|B=0x[0-9a-fA-F]+|D=0x[0-9a-fA-F]+|"
+                      r"O=0x[0-9a-fA-F]+|\([^)]*\)|<[^>]*>|/dev/\S+)")
+
+# The shim's trace format is versioned; the engine refuses a mismatch and so
+# does this judge. Fail-open here would let a stale trace be read as ground
+# truth.
+EXPECTED_TRACE_VERSION = 10
 
 
 def norm(path):
@@ -97,8 +116,24 @@ def norm(path):
     return path
 
 
-def mentions(raw, path):
-    return norm(path) in raw
+def same_path(a, b):
+    return a is not None and b is not None and norm(a) == norm(b)
+
+
+def inside(path, statedir):
+    """Component-boundary containment, the rule src/oracle.zig applies: the
+    state dir itself, or something under it. `/state-other/x` is not inside
+    `/state`, which a substring test would have said it was."""
+    if path is None:
+        return False
+    p, d = norm(path), norm(statedir)
+    return p == d or p.startswith(d + "/")
+
+
+def hits_path(rec, path):
+    """A parsed line addresses `path` exactly, by its own extracted or
+    descriptor-resolved pathname. Never a substring test on the raw text."""
+    return same_path(rec.get("path"), path)
 
 
 class Broken(Exception):
@@ -115,7 +150,6 @@ def parse_capture(text, statedir):
     the same thread. A descriptor nobody saw opened lands in fd_unresolved,
     reported rather than dropped: inherited stdio and the shim's own trace
     descriptor are the expected members of that bucket."""
-    key = norm(statedir)
     out = {"syscall_state": [], "diskio_state": [], "other_state": [],
            "offstate": 0, "unparsed": [], "blank": 0, "fd_unresolved": []}
     fdmap = {}   # (tid, fd) -> path as printed
@@ -125,12 +159,16 @@ def parse_capture(text, statedir):
             out["blank"] += 1
             continue
         m = LINE_RE.match(raw)
-        if not m:
-            out["unparsed"].append(raw)
-            continue
+        tid = None
+        if m:
+            tid = int(m.group("tid"))
+        else:
+            m = LINE_RE_NARROW.match(raw)
+            if not m:
+                out["unparsed"].append(raw)
+                continue
         call = m.group("call").split("[")[0]
         mid = m.group("middle")
-        tid = int(m.group("tid"))
         rec = {"raw": raw, "call": call, "call_full": m.group("call"),
                "middle": mid, "proc": m.group("proc"), "tid": tid,
                "ts": m.group("ts"), "path": None, "via_fd": False}
@@ -138,13 +176,18 @@ def parse_capture(text, statedir):
         rec["errno"] = int(e.group(1)) if e else None
         f = FD_RE.search(mid)
         fd = int(f.group(1)) if f else None
-        slash = mid.find("private/") if "private/" in mid else mid.find("/")
-        if slash >= 0 and call not in DISKIO_CALLS:
-            rec["path"] = mid[slash:].strip()
-        elif slash >= 0:
-            # disk-io lines: "D=... B=... /dev/diskNsM  <path>"
-            parts = mid.split("/dev/", 1)
-            rec["path"] = parts[1].split(None, 1)[1].strip() if len(parts) == 2 and len(parts[1].split(None, 1)) == 2 else mid[slash:].strip()
+        # The pathname is whatever remains of the middle once the known
+        # leading fields are stripped: [errno], F=, B=, D=, O=, the open
+        # flags in parentheses, <GETPATH>, and the device of a disk-io line.
+        # Finding the first slash instead mis-cut a relative-looking spelling
+        # ("tmp/x" became "/x"); this keeps paths with spaces whole too.
+        rest = mid.strip()
+        while True:
+            m2 = FIELD_RE.match(rest)
+            if not m2:
+                break
+            rest = rest[m2.end():].lstrip()
+        rec["path"] = rest if rest else None
         if call.startswith("open") and fd is not None and rec["path"] and rec["errno"] is None:
             fdmap[(tid, fd)] = rec["path"]
         elif fd is not None and rec["path"] is None:
@@ -157,7 +200,7 @@ def parse_capture(text, statedir):
         if call.startswith("close") and fd is not None:
             fdmap.pop((tid, fd), None)
         out["_all_probe"].append(rec)
-        in_state = (key in raw) or (rec["path"] is not None and key in rec["path"])
+        in_state = inside(rec["path"], statedir)
         if not in_state:
             out["offstate"] += 1
             continue
@@ -226,6 +269,9 @@ def parse_trace(path):
         raise Broken(f"trace {path}: bad or missing SIDEEYE1 header "
                      f"({len(b)} bytes) — the shim never initialised?")
     ver = struct.unpack_from("<I", b, 8)[0]
+    if ver != EXPECTED_TRACE_VERSION:
+        raise Broken(f"trace {path}: contract version {ver}, this judge reads "
+                     f"{EXPECTED_TRACE_VERSION}; refusing as the engine would")
     i, recs = 12, []
     while i < len(b):
         if i + 14 > len(b):
@@ -254,7 +300,7 @@ def parse_trace(path):
 def require_liveness(buckets, sents):
     for which in ("start", "end"):
         path = sents[which]["path"]
-        seen = any(mentions(r["raw"], path)
+        seen = any(hits_path(r, path)
                    for k in ("syscall_state", "diskio_state", "other_state")
                    for r in buckets[k])
         if not seen:
@@ -263,7 +309,12 @@ def require_liveness(buckets, sents):
                          f"unproven and its silence says nothing")
 
 
-def v_census(buckets):
+def v_census(buckets, sents=None):
+    # A census of an empty or half-delivered capture is a census of nothing;
+    # the contract at the top of this file says such a capture is never a
+    # measurement, so the census is gated on the sentinels like every verdict.
+    if sents is not None:
+        require_liveness(buckets, sents)
     print(f"  census: syscall_state={len(buckets['syscall_state'])} "
           f"diskio_state={len(buckets['diskio_state'])} "
           f"other_state={len(buckets['other_state'])} "
@@ -295,15 +346,20 @@ def v_p4(buckets, sents, ops):
     dead = []
     for o in fails:
         path = o["path"]
+        # The line has to be the SAME call, carry an errno, and address the
+        # attempted path exactly. A path hit alone passed a capture with the
+        # errno stripped and a capture where another call touched the path.
         hits = [r for k in ("syscall_state", "diskio_state", "other_state")
-                for r in buckets[k] if mentions(r["raw"], path)]
-        errno_hits = [r for r in hits if r["errno"] is not None]
+                for r in buckets[k] if hits_path(r, path)]
+        exact = [r for r in hits
+                 if r["call"].startswith(o["syscall"]) and r["errno"] is not None
+                 and r["errno"] == o.get("errno")]
         print(f"  p4 {o['syscall']}({o.get('errno_name') or o.get('errno')}): "
-              f"{len(hits)} line(s) mention the attempted path, "
-              f"{len(errno_hits)} with a bracketed errno")
+              f"{len(hits)} line(s) address the attempted path, {len(exact)} "
+              f"of them the same call with errno {o.get('errno')}")
         for r in hits[:4]:
             print(f"    | {r['raw'][:170]}")
-        if not hits:
+        if not exact:
             dead.append(o)
     if dead:
         print(f"  p4: DEAD — {len(dead)} failed attempt(s) left no line at all; "
@@ -323,24 +379,19 @@ def _not_sentinel(rows, sents):
     grades the guard instead of the platform — the selftest caught exactly
     that before the first real capture was judged."""
     sp = _sentinel_paths(sents)
-    def is_sent(r):
-        if any(mentions(r["raw"], p) for p in sp):
-            return True
-        # A descriptor-resolved line carries no pathname in its raw text;
-        # its address lives in r["path"]. Round 2 (run 32687503436) counted
-        # both sentinels' writes against the shim's one because this branch
-        # was missing: "1 recorded write arrived as 3 lines".
-        rp = r.get("path")
-        return bool(rp) and any(norm(rp) == norm(p) for p in sp)
-    return [r for r in rows if not is_sent(r)]
+    # Exact-path, through the parsed or descriptor-resolved address. Round 2
+    # (run 32687503436) counted both sentinels' writes against the shim's one
+    # because the exclusion looked only at the raw text, which a
+    # descriptor-resolved line does not carry a pathname in.
+    return [r for r in rows if not any(hits_path(r, p) for p in sp)]
 
 
 def v_p2_counts(buckets, sents, ops, trace_recs, statedir):
     require_liveness(buckets, sents)
     sp = _sentinel_paths(sents)
     shim_writes = [r for r in trace_recs
-                   if r["op"] == "write" and norm(r["path"]).startswith(norm(statedir))
-                   and norm(r["path"]) not in [norm(x) for x in sp]]
+                   if r["op"] == "write" and inside(r["path"], statedir)
+                   and not any(same_path(r["path"], x) for x in sp)]
     if not shim_writes:
         raise Broken("p2-counts needs write ops in the shim trace; none found "
                      "(did the shim load? DYLD stripped?)")
@@ -375,24 +426,28 @@ def v_p2_order(buckets, sents, ops):
     if not tail:
         raise Broken("p2-order needs a rename or unlink in the ops account")
     tail_path = tail[0]["path"]
+    # Syscall lines only. Disk-io lines are a separate account with their own
+    # timing, and folding them in let a capture with the write syscall line
+    # deleted pass on the strength of its WrData.
     order = []
-    for r in _not_sentinel(buckets["syscall_state"] + buckets["diskio_state"],
-                           sents):
-        if r["call"].startswith(("write", "pwrite", "Wr")):
-            order.append(("write-ish", r))
-        elif r["call"].startswith(("rename", "unlink")) and mentions(r["raw"], tail_path):
+    for r in _not_sentinel(buckets["syscall_state"], sents):
+        if r["call"].startswith(("write", "pwrite", "writev")):
+            order.append(("write", r))
+        elif r["call"].startswith(("rename", "unlink")) and hits_path(r, tail_path):
             order.append(("tail", r))
     order.sort(key=lambda t: t[1]["ts"])
     kinds = [k for k, _ in order]
-    print(f"  p2-order: sequence in capture: {kinds}")
-    if "write-ish" not in kinds or "tail" not in kinds:
-        raise Broken("p2-order: one side of the pair never appeared; order "
-                     "cannot be judged from an absent line")
-    if kinds.index("write-ish") < len(kinds) - 1 - kinds[::-1].index("tail"):
-        print("  p2-order: a write-ish line precedes the tail operation")
+    diskio = [r["call_full"] for r in _not_sentinel(buckets["diskio_state"], sents)]
+    print(f"  p2-order: syscall sequence in capture: {kinds}; disk-io lines "
+          f"kept apart: {diskio}")
+    if "write" not in kinds or "tail" not in kinds:
+        raise Broken("p2-order: one side of the pair never appeared as a "
+                     "syscall line; order cannot be judged from an absent line")
+    if kinds.index("write") < len(kinds) - 1 - kinds[::-1].index("tail"):
+        print("  p2-order: the write syscall line precedes the tail operation")
         return 0
-    print("  p2-order: DEAD — the tail operation appears before every "
-          "write-ish line; capture order does not carry operation order")
+    print("  p2-order: DEAD — the tail operation appears before every write "
+          "syscall line; capture order does not carry operation order")
     return 1
 
 
@@ -408,13 +463,16 @@ def v_p1_partition(buckets, hello_a, hello_b):
           f"capture tids on state dir: {sorted(tids.items())}")
     a_seen, b_seen = tid_a in tids, tid_b in tids
     others = [t for t in tids if t not in (tid_a, tid_b)]
-    if not a_seen and not b_seen:
-        print("  p1-partition: DEAD — neither self-reported tid appears; the "
-              "trailing number does not map to pthread_threadid_np, so nothing "
-              "in the output attributes a line to a process")
+    # The predicate is "both processes separable and every line attributed".
+    # One side missing, or a tid nobody reported, is a failure of exactly
+    # that, and an earlier version passed both.
+    if not (a_seen and b_seen) or others:
+        print(f"  p1-partition: DEAD — A seen={a_seen}, B seen={b_seen}, "
+              f"unattributed tids={others or 'none'}; the lines do not "
+              f"partition onto the two self-reported thread ids")
         return 1
-    print(f"  p1-partition: mapping holds (A seen={a_seen}, B seen={b_seen}, "
-          f"unattributed tids={others or 'none'})")
+    print(f"  p1-partition: both self-reported tids present and nothing "
+          f"else on the state dir")
     return 0
 
 
@@ -442,20 +500,32 @@ def v_p1_pidfilter(buckets, hello_kept, hello_filtered):
     return 0
 
 
-def v_p1_child(buckets, sents, ops):
+def v_p1_child(buckets, sents, ops, control=False):
+    """Under a pid filter: records whether the child was followed. As the
+    positive control (a name filter that covers a forked child too): the
+    child's file MUST appear, or "not followed" cannot be told apart from
+    "fs_usage never showed this child's line for some other reason"."""
     require_liveness(buckets, sents)
     child_ops = [o for o in ops if o.get("class") == "child"]
     if not child_ops:
         raise Broken("p1-child needs the child-write op in the account")
     path = child_ops[0]["path"]
     hits = [r for k in ("syscall_state", "diskio_state", "other_state")
-            for r in buckets[k] if mentions(r["raw"], path)]
-    print(f"  p1-child: the child's file produced {len(hits)} line(s) under "
-          f"the parent-scoped capture")
+            for r in buckets[k] if hits_path(r, path)]
+    label = "control (name filter)" if control else "parent-pid filter"
+    print(f"  p1-child [{label}]: the child's file produced {len(hits)} line(s)")
     for r in hits[:3]:
         print(f"    | {r['raw'][:170]}")
-    # Either answer is a measurement; the verdict records which one this is.
-    print(f"  p1-child: {'children FOLLOW the filter' if hits else 'children are NOT followed'}")
+    if control:
+        if not hits:
+            print("  p1-child [control]: DEAD — the child's write is invisible "
+                  "even under a filter that covers it, so the pid-filter leg "
+                  "measures nothing about following")
+            return 1
+        print("  p1-child [control]: the child's write is visible when the "
+              "filter covers it")
+        return 0
+    print(f"  p1-child: {'children FOLLOW the pid filter' if hits else 'children are NOT followed by the pid filter'}")
     return 0
 
 
@@ -467,8 +537,8 @@ def v_p3_rename(buckets, sents, ops):
     old, new = ren[0]["path"], ren[0].get("path2")
     rows = [r for k in ("syscall_state", "diskio_state", "other_state")
             for r in buckets[k]]
-    old_hits = [r for r in rows if mentions(r["raw"], old)]
-    new_hits = [r for r in rows if new and mentions(r["raw"], new)]
+    old_hits = [r for r in rows if hits_path(r, old)]
+    new_hits = [r for r in rows if new and hits_path(r, new)]
     print(f"  p3-rename: old path on {len(old_hits)} line(s), new path on "
           f"{len(new_hits)} line(s)")
     for r in (old_hits + new_hits)[:4]:
@@ -502,7 +572,7 @@ def v_p3_depth(buckets, sents, hello):
         raise Broken("p3-depth: a sentinel leaf never appeared on the probe's "
                      "thread; the window is unproven")
     longest = 0
-    full = any(mentions(r["raw"], start) for r in seen_start)
+    full = any(hits_path(r, start) for r in seen_start)
     for r in seen_start + seen_end:
         p = r.get("path") or ""
         longest = max(longest, len(p))
@@ -639,8 +709,10 @@ def selftest():
                 return vfn(buckets, sents, ops, hello)
             if vfn is v_p2_counts:
                 return vfn(buckets, sents, ops, extra[0], FIX_STATE)
-            if vfn in (v_p4, v_p2_order, v_p1_child, v_p3_rename):
+            if vfn in (v_p4, v_p2_order, v_p1_child, v_p3_rename) or not hasattr(vfn, "__name__") or vfn.__name__ == "<lambda>":
                 return vfn(buckets, sents, ops)
+            if vfn is v_census:
+                return vfn(buckets, sents)
             return vfn(buckets, sents)
         finally:
             os.unlink(p)
@@ -709,9 +781,9 @@ def selftest():
     case("four spellings of one path normalise to the same key",
          lambda: 0 if len({norm(x) for x in ("/tmp/a/b", "/private/tmp/a/b",
                                               "private/tmp/a/b", "tmp/a/b")}) == 1 else 1, 0)
-    case("a /private-spelled state dir matches an fs_usage line",
-         lambda: 0 if mentions("open  private/tmp/fx/state/target  0.1 probe.1",
-                              "/private/tmp/fx/state/target") else 1, 0)
+    case("a /private-spelled path and fs_usage's spelling of it are the same address",
+         lambda: 0 if same_path("private/tmp/fx/state/target",
+                                "/private/tmp/fx/state/target") else 1, 0)
 
     case("a descriptor-resolved write on a sentinel is excluded from p2 counts",
          lambda: run(v_p2_counts, _fix_capture([
@@ -739,6 +811,54 @@ def selftest():
          lambda: run(v_p2_fsync, _fix_capture([
              _cap_line("stat64", f"{FIX_STATE}/P2-fsync/go", ts="10:00:02.000200")]),
              _fix_ops([op_write, op_fsync])), 1)
+
+    # --- the review's adversarial cases (each passed before this round) ---
+    hA = {"tid": 111}
+    hB = {"tid": 222}
+    case("p4 rejects the attempted path without an errno",
+         lambda: run(v_p4,
+                     _fix_capture([_cap_line("unlink", f"{FIX_STATE}/missing")]),
+                     _fix_ops([op_fail])), 1)
+    case("p4 rejects another call touching the attempted path",
+         lambda: run(v_p4,
+                     _fix_capture([_cap_line("stat64", f"{FIX_STATE}/missing", errno=2)]),
+                     _fix_ops([op_fail])), 1)
+    case("p2-order rejects a capture whose write SYSCALL line is gone",
+         lambda: run(v_p2_order, _fix_capture([
+             _cap_line("WrData[A]", f"/dev/disk3s5  {FIX_STATE}/target", ts="10:00:02.000100"),
+             _cap_line("rename", f"{FIX_STATE}/target", ts="10:00:03.000100"),
+         ]), _fix_ops([op_write, op_ren])), "BROKEN")
+    case("p1-partition rejects one process missing",
+         lambda: v_p1_partition(parse_capture(_fix_capture(
+             [_cap_line("open", f"{FIX_STATE}/target", tid=111)]), FIX_STATE), hA, hB), 1)
+    case("p1-partition rejects an unattributed tid beside the two",
+         lambda: v_p1_partition(parse_capture(_fix_capture(
+             [_cap_line("open", f"{FIX_STATE}/target", tid=111),
+              _cap_line("open", f"{FIX_STATE}/target", tid=222),
+              _cap_line("open", f"{FIX_STATE}/target", tid=333)]), FIX_STATE), hA, hB), 1)
+    case("census of an empty capture is BROKEN, not all-zeroes",
+         lambda: run(v_census, "", _fix_ops([op_write])), "BROKEN")
+    case("a narrow-mode line (no thread id) parses and scopes",
+         lambda: (lambda b: 0 if len(b["syscall_state"]) == 1 and
+                  b["syscall_state"][0]["tid"] is None else 1)(
+             parse_capture("10:00:02  open              " + FIX_STATE
+                           + "/target                       0.000539   probe\n",
+                           FIX_STATE)), 0)
+    case("/state-other is not inside /state (component boundary)",
+         lambda: 0 if not inside(f"{FIX_STATE}-other/x", FIX_STATE)
+                 and inside(f"{FIX_STATE}/x", FIX_STATE) else 1, 0)
+    case("a trace with another contract version is BROKEN",
+         lambda: parse_trace_bytes(b"SIDEEYE1" + struct.pack("<I", 9)), "BROKEN")
+    op_child = {"type": "op", "seq": 0, "pid": 42, "syscall": "fork+child-write",
+                "class": "child", "path": f"{FIX_STATE}/child-file", "rc": 0,
+                "errno": 0}
+    case("p1-child control rejects an invisible child write",
+         lambda: run(lambda b, s, o: v_p1_child(b, s, o, control=True),
+                     _fix_capture([]), _fix_ops([op_child])), 1)
+    case("p1-child control accepts a visible child write",
+         lambda: run(lambda b, s, o: v_p1_child(b, s, o, control=True),
+                     _fix_capture([_cap_line("open", f"{FIX_STATE}/child-file", tid=555)]),
+                     _fix_ops([op_child])), 0)
 
     # metamorphic: mutations of the SAME fixture flip or break the verdict
     case("census flags an unknown state-touching CALL as other_state",
@@ -815,7 +935,7 @@ def main():
         sd = sents["start"]["path"].rsplit("/", 1)[0]
         buckets = parse_capture(cap_text, sd)
         if leg == "census":
-            sys.exit(v_census(buckets))
+            sys.exit(v_census(buckets, sents))
         if leg == "liveness":
             sys.exit(v_liveness(buckets, sents))
         if leg == "p4":
@@ -827,6 +947,8 @@ def main():
             sys.exit(v_p2_order(buckets, sents, ops))
         if leg == "p1-child":
             sys.exit(v_p1_child(buckets, sents, ops))
+        if leg == "p1-child-control":
+            sys.exit(v_p1_child(buckets, sents, ops, control=True))
         if leg == "p3-rename":
             sys.exit(v_p3_rename(buckets, sents, ops))
         if leg == "p3-depth":

@@ -1,0 +1,23 @@
+03:51:56  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000006   probe       
+03:51:56  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000008   probe       
+03:51:56  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000011   probe       
+03:51:57  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000011   probe       
+03:51:57  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000016   probe       
+03:51:57  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000010   probe       
+03:51:57  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000011   probe       
+03:51:57  stat64            /private/tmp/se286f1.UzbspX/P3-narrow/go                                         0.000027   probe       
+03:51:57  open              /private/tmp/se286f1.UzbspX/P3-narrow-state/sentinel-start                       0.000119   probe       
+03:51:57  write                                                                                              0.000038   probe       
+03:51:57  close                                                                                              0.000040   probe       
+03:51:57  write                                                                                              0.000007   probe       
+03:51:57  open              /private/tmp/se286f1.UzbspX/P3-narrow-state/target                               0.000038   probe       
+03:51:57  write                                                                                              0.000017   probe       
+03:51:57  close                                                                                              0.000001   probe       
+03:51:57    WrData[AT1]     /private/tmp/se286f1.UzbspX/P3-narrow-state/sentinel-start                       0.000121 W probe       
+03:51:57  open              /private/tmp/se286f1.UzbspX/P3-narrow-state/sentinel-end                         0.000058   probe       
+03:51:57  write                                                                                              0.000019   probe       
+03:51:57  close                                                                                              0.000018   probe       
+03:51:57  write                                                                                              0.000005   probe       
+03:51:57    WrData[AT1]     /private/tmp/se286f1.UzbspX/P3-narrow-state/sentinel-end                         0.000057 W probe       
+03:51:57  exit                                                                                               0.000031   probe       
+03:51:57    WrData[A]       /private/tmp/se286f1.UzbspX/P3-narrow/ops.jsonl                                  0.000045 W probe       

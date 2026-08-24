@@ -20,9 +20,10 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      # Pinned by commit: these actions run before a script that runs as root.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: mlugg/setup-zig@v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
           version: 0.16.0
 
@@ -35,7 +36,8 @@ jobs:
       - name: Privileged half (the four points, as root)
         run: |
           mkdir -p /tmp/fsu-out
-          sudo OUT=/tmp/fsu-out SHIM="$PWD/zig-out/lib/libsideeye_shim.dylib" \
+          # -n: refuse rather than prompt if the runner's sudo ever stops being passwordless
+          sudo -n OUT=/tmp/fsu-out SHIM="$PWD/zig-out/lib/libsideeye_shim.dylib" \
             sh spike/fsusage/sudo-survey.sh
           rc=$?
           echo "sudo-survey rc=$rc"
@@ -43,7 +45,7 @@ jobs:
 
       - name: Upload captures and accounts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: fsusage-survey
           path: /tmp/fsu-out/

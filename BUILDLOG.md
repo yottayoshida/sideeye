@@ -89,6 +89,62 @@ Platform, what stood after the holes were accounted for:
   shim's trace writes appear as `write F=900`. An adapter has to know those
   are the observer's shadow, not the target's work.
 
+### What rounds 2 and 3 said (runs 32687503436 and 32687827616)
+
+Round 2 fixed the two harness holes and came back BROKEN 0, DEAD 11. Nine
+of the eleven were the judge again: "1 recorded write arrived as 3 lines",
+every time by exactly two. The two were the sentinels. Their write lines
+carry no pathname in the raw text, and the exclusion that keeps the
+apparatus's own mutations out of the count only looked at the raw text.
+Beneath that sat a normaliser that stripped `/private` only after a leading
+slash, so round 1's `private/tmp/...` and round 2's `/private/tmp/...`
+never met. Round 3 carries both fixes; re-judged over round 2's own
+captures first, all nine P2 modes were 1:1 with the shim's count.
+
+One more near-miss, recorded because the shape is the one this workspace
+keeps meeting. Looking for fsync, a grep for the word returned 18 hits, all
+of them the leg's own name inside a pathname; a listing of the probe's
+thread cut at fourteen lines stopped just before the fsync line; and a
+`uniq -c | head -8` of CALL names dropped the one-count entry. Three
+truncated reads agreed that fsync was invisible. The verdict, judged by
+CALL name over the whole thread, found it at once: `fsync F=3`, one of one,
+beside the `WrData[ST1]` it caused. The number that nearly went into
+RESULTS was manufactured by the reads, not by the platform.
+
+Scoring the predictions written before any run:
+
+1. Runner sudo works, capture non-empty. **Right.**
+2. Write syscalls do not appear as their own lines. **Wrong.** They do,
+   as `write F=n B=k` with no pathname, and once placed through the
+   descriptor they are 1:1 with the shim's records in all nine modes:
+   three consecutive small writes are three lines, two interleaved fds are
+   four, a 4 MiB write is one, a zero-byte write is one, pwrite and writev
+   print under their own names, stdio's flush is one. The #181 capture that seeded the
+   prediction had been read through a path filter, which is exactly what
+   hides them.
+3. Failed attempts carry errno and path; failed open less certain.
+   **Right, and the uncertain half held too**: seven of seven, `open [ 2]`
+   with its path included.
+4. pid filter honoured (right); forked child not followed (right); tids
+   unmappable to a process (**wrong**: the trailing number IS the value
+   `pthread_threadid_np` reports, and two same-named processes on one file
+   separated cleanly by it).
+5. `-w` lifts the 28-byte limit. **Half right.** Narrow mode already prints
+   58-character paths intact; what wide mode changes is a cap of about 144
+   displayed characters, cut from the left, which narrow mode was not
+   pushed against.
+6. At least one point fails hard enough to deny the strict drop-in.
+   **Right, but not where expected.** P4 and P1 and P2 all hold. What
+   fails is P3: a rename line names only its old path, and a state
+   directory deeper than the display cap cannot be scoped by its own path.
+
+What this leaves. Three of the four points are clean on this machine.
+The fourth has two measured walls, neither of them the kind that killed
+FSEvents: the rename destination is a per-class gap (ADR 0006 counts
+either endpoint), and the depth cap is a constraint sideeye can enforce on
+the work directory it hands the target. Whether those are cheap enough to
+build an adapter behind is the next decision, and it is the owner's.
+
 ## 2026-08-24 — three places where a failed measurement ends up shaped like a success
 
 #264, #271 and #273 arrived as unrelated tickets and turned out to be one

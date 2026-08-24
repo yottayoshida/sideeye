@@ -1,0 +1,6 @@
+{"type":"hello","pid":5454,"tid":20110,"mode":"fsync"}
+{"type":"sentinel","which":"start","pid":5454,"path":"/private/tmp/se286f1.UzbspX/P2-fsync-state/sentinel-start","rc":0,"errno":0,"start_ns":312916717125,"end_ns":312917333250}
+{"type":"op","seq":0,"pid":5454,"syscall":"open","class":"open","path":"/private/tmp/se286f1.UzbspX/P2-fsync-state/target","rc":0,"errno":0,"errno_name":"","start_ns":312917379083,"end_ns":312917496583}
+{"type":"op","seq":1,"pid":5454,"syscall":"write","class":"write","path":"/private/tmp/se286f1.UzbspX/P2-fsync-state/target","rc":7,"errno":0,"errno_name":"","start_ns":313073672000,"end_ns":313073812333}
+{"type":"op","seq":2,"pid":5454,"syscall":"fsync","class":"fsync","path":"/private/tmp/se286f1.UzbspX/P2-fsync-state/target","rc":0,"errno":0,"errno_name":"","start_ns":313170914416,"end_ns":313172426791}
+{"type":"sentinel","which":"end","pid":5454,"path":"/private/tmp/se286f1.UzbspX/P2-fsync-state/sentinel-end","rc":0,"errno":0,"start_ns":313172473208,"end_ns":313172611291}
