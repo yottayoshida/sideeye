@@ -2,6 +2,49 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-24 — #286 route F1 opens: does fs_usage have the oracle's shape, measured before anything is built on it
+
+Entry opened at the start of the work, per the contract. Today's zero-base
+review killed three unprivileged routes three different ways (FSEvents by
+measurement, calibration by tense, the state-closure check by information
+content), which leaves two families: secure an observer, or build a recorder
+that needs none. This spike is the first family: fs_usage, measured at the
+four points the fsusage plan names, before any adapter or grant-once design
+is written on top of it.
+
+One reframing changes who runs the privileged leg. The verified PASS matters
+most as a CI gate, and GitHub's macOS runners are documented to allow
+passwordless sudo — so the leg that needed a human yesterday may need none.
+That claim is itself unmeasured here, so it is the first thing the apparatus
+checks, as a workflow that does nothing but try.
+
+### Predictions, written before any run
+
+Confidence is a guess, not a measurement.
+
+1. On the GitHub macOS runner, `sudo -n true` exits 0 and `sudo fs_usage`
+   produces a non-empty capture (confidence 90%).
+2. Write syscalls do NOT appear as their own lines under `-f filesys`: the
+   #181 capture shows `open`, `WrData[A]`, `rename`, `unlink`, `mkdir` for a
+   toy that called write() three times, and no `write` line. If that holds,
+   P2 kills the strict drop-in on its own (confidence 70%).
+3. A failed unlink/rename/mkdir appears with the errno in brackets and the
+   attempted path; a failed open is less certain to carry its path
+   (confidence 55%).
+4. fs_usage accepts a pid argument and restricts output to it (70%); a
+   forked child is not followed under the parent's pid (60%); two same-named
+   processes under a name filter are merged and separable only by thread id,
+   which nothing in the output maps to a pid (70%).
+5. `-w` lifts the 28-byte pathname limit to full paths (85%).
+6. At least one of P1-P4 fails hard enough that fs_usage is not a drop-in
+   oracle without lowering the contract's ambition (60%). The prior is
+   honest: prediction 2 alone would do it.
+
+The ground truth for the comparison legs is the shim's own binary trace
+(SIDEEYE1 header, little-endian records), read directly by the judge — not
+the probe's self-account. The probe knows what it asked for; the shim's
+record is the account the oracle would actually be compared against.
+
 ## 2026-08-24 — three places where a failed measurement ends up shaped like a success
 
 #264, #271 and #273 arrived as unrelated tickets and turned out to be one

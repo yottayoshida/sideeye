@@ -1,0 +1,72 @@
+# The privileged leg of the fs_usage survey (#286, route F1), run where sudo
+# needs no human: GitHub's macOS runner. This is a measurement apparatus, not
+# standing CI — it triggers only on its own spike branch and by hand, and it
+# must never be made a required check.
+#
+# The first step exists to falsify its own premise. "The runner's sudo is
+# passwordless" was written from documentation memory, and today's BUILDLOG
+# entry prices it at 90%; if `sudo -n true` refuses, everything below is
+# unreachable and the transcript says exactly where the premise died.
+name: spike-fsusage
+on:
+  push:
+    branches: [fsusage-oracle-probe]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sudo-fsusage:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: F12 fail-fast — can sudo run fs_usage at all?
+        run: |
+          set -u
+          echo "== environment (the transcript must say which machine concluded what)"
+          sw_vers
+          uname -rm
+          csrutil status || true
+          echo "uid: $(id -u), user: $(id -un)"
+          sysctl -n machdep.cpu.brand_string || true
+          echo "virtualization: $(sysctl -n kern.hv_vmm_present 2>/dev/null || echo unknown)"
+          shasum -a 256 "$(command -v fs_usage)" || true
+
+          echo "== does sudo prompt? (-n fails instead of hanging if it would)"
+          sudo -n true
+          echo "sudo -n rc=$?"
+
+          echo "== one bounded slice of fs_usage under sudo"
+          mkdir -p /tmp/f12/state
+          ( sleep 0.5; /usr/bin/touch /tmp/f12/state/f12-marker ) &
+          sudo fs_usage -w -f filesys -t 2 > /tmp/f12/cap.txt 2>&1
+          rc=$?
+          wait
+          echo "fs_usage rc=$rc"
+          echo "capture: $(wc -l < /tmp/f12/cap.txt | tr -d ' ') line(s), $(wc -c < /tmp/f12/cap.txt | tr -d ' ') bytes"
+          echo "-- head"
+          head -5 /tmp/f12/cap.txt
+          echo "-- did it see the marker touch?"
+          grep -c 'f12-marker' /tmp/f12/cap.txt || echo "0 (marker not seen)"
+          grep 'f12-marker' /tmp/f12/cap.txt | head -3 || true
+
+      - name: Full survey (present only after the apparatus lands)
+        run: |
+          if [ -x spike/fsusage/sudo-survey.sh ]; then
+            zig_missing=0
+            command -v zig >/dev/null 2>&1 || zig_missing=1
+            echo "survey present; zig missing=$zig_missing (build happens in a later step revision)"
+          else
+            echo "apparatus not on this ref yet — F12 fail-fast only"
+          fi
+
+      - name: Upload capture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f12-capture
+          path: /tmp/f12/
+          if-no-files-found: warn
