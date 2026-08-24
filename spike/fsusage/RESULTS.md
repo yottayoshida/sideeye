@@ -1,17 +1,19 @@
 # Route F1 measured: fs_usage at the four points (#286)
 
 Run on a GitHub Actions macOS runner: macOS 26.5.2 (25F84), arm64, SIP
-disabled there, uid 0, `kern.hv_vmm_present` 1 (a virtual machine). Every
+disabled there, uid 0, `kern.hv_vmm_present` 1 (a virtual machine), the
+state directories on APFS (`/dev/disk3s5` on `/System/Volumes/Data`). Every
 number below is that machine and that build; the owner's laptop (15.3.1) has
 not run this survey. Transcripts: `survey.txt` (unprivileged half) and
-`sudo-survey.txt` (privileged half, run 32687827616). Raw captures, probe
+`sudo-survey.txt` (privileged half, run 32689458393). Raw captures, probe
 accounts and shim traces for every leg are under `captures/`. `BROKEN checks:
 0`, measured DEAD verdicts 2.
 
-The survey ran three times. Rounds 1 and 2 (runs 32687071111 and
+The survey ran four times. Rounds 1 and 2 (runs 32687071111 and
 32687503436) returned ten and eleven failures respectively, every one of them
-the apparatus; the BUILDLOG entry of 2026-08-24 records what each was.
-Round 3 is the transcript committed here.
+the apparatus; round 3 (32687827616) was clean and then first-look review
+found seven verdicts greener than their predicates; the BUILDLOG entry of
+2026-08-24 records each. Round 4 is the transcript committed here.
 
 ## The premise held: the runner's sudo needs no human
 
@@ -45,7 +47,7 @@ pid. Two copies of the probe, same file name, same state directory, same
 operation, each reporting its own `pthread_threadid_np`:
 
 - Under a name filter covering both, every state-directory line carried one
-  of the two reported tids (21924 on 10 lines, 21926 on 10) and nothing
+  of the two reported tids (12015 on 10 lines, 12017 on 10) and nothing
   else. What this measures is that the number fs_usage prints and the one a
   process reads about itself through `pthread_threadid_np` are the same
   namespace. Whether a launcher can enumerate a *target's* threads from the
@@ -54,8 +56,10 @@ operation, each reporting its own `pthread_threadid_np`:
 - Under a pid filter naming one process, the other leaked nothing (10 lines
   kept, 0 leaked). The pid argument is honoured.
 - A forked child is not followed under its parent's pid filter (0 lines for
-  the child's file). An adapter that wants children must not filter by pid;
-  it can capture everything and scope by state path, attributing by tid.
+  the child's file), while the same child write under a name filter that
+  covers it produced 4 lines, so the absence is the filter's doing and not
+  the child's. An adapter that wants children must not filter by pid; it
+  can capture everything and scope by state path, attributing by tid.
 
 ## P2: write syscalls are visible, and 1:1 with the shim's records
 
@@ -77,7 +81,7 @@ shim's own trace in every mode:
 
 `pwrite` prints as `pwrite` and `writev` as `writev` (an earlier draft of
 this file said both print as `write`, from a listing cut at eight entries;
-the captures say otherwise). The 4 MiB write is one syscall line and five `WrData` disk-io lines;
+the captures say otherwise). The 4 MiB write is one syscall line and 2 `WrData` disk-io lines;
 the disk-io lines are a separate bucket and never counted as syscalls.
 
 `fsync` is its own line (`fsync F=3`), one of one, under `-f filesys` and
@@ -99,8 +103,9 @@ state directory and whose new name is inside it would be invisible to an
 fs_usage-based oracle, and a rename within the directory can be scoped but
 its destination not checked.
 
-**Wide mode displays at most about 144 characters of a pathname, cut from
-the left.** A state directory whose sentinel path was 259 characters printed
+**Wide mode displays at most about 153 characters of a pathname, cut from
+the left** (144 in round 3, 153 in round 4; the cap moves, the cut does not).
+A state directory whose sentinel path was 259 characters printed
 as `ted-component/nested-component/.../state/sentinel-start`; the state
 directory's own prefix was gone, so nothing in the capture could be scoped
 to it. The man page's "last 28 bytes" is not what this build does in narrow
@@ -121,9 +126,12 @@ target's work; it is classified, never dropped, in every capture here.
 
 ## Census
 
-18 captures were classified line by line. `other_state` (a state-directory
-line whose CALL the judge does not know) was 0 in all 18; `unparsed` was 0 in
-all 18. Nothing was silently dropped to reach any number above.
+All 27 captures were classified line by line, the narrow-mode one through
+its own grammar (no thread id) and the deep-path one excluded by construction
+(every path is cut below the state directory, which is what that leg shows).
+`other_state` (a state-directory line whose CALL the judge does not know) was 0
+in all 27; `unparsed` was 0 in all 27. A census is gated on both sentinels
+like every other verdict, so an empty capture cannot report zeroes.
 
 ## What was not measured
 
@@ -136,8 +144,8 @@ all 18. Nothing was silently dropped to reach any number above.
 - Non-APFS volumes, network mounts.
 - Whether the rename destination is available through any other fs_usage
   mode or flag. This invocation (`-w -f filesys`) does not show it.
-- Whether the depth cap moves with terminal width or any flag. 144 is what
-  this invocation printed.
+- Whether the depth cap moves with terminal width or any flag. 144 and 153
+  are what two runs of this invocation printed.
 
 ## Where this leaves #286
 

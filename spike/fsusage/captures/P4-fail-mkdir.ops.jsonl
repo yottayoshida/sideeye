@@ -1,4 +1,4 @@
-{"type":"hello","pid":4400,"tid":17031,"mode":"fail-mkdir"}
-{"type":"sentinel","which":"start","pid":4400,"path":"/private/tmp/se286f1.UzbspX/P4-fail-mkdir-state/sentinel-start","rc":0,"errno":0,"start_ns":272453600875,"end_ns":272453821041}
-{"type":"op","seq":0,"pid":4400,"syscall":"mkdir","class":"mkdir","path":"/private/tmp/se286f1.UzbspX/P4-fail-mkdir-state/subdir","rc":-1,"errno":17,"errno_name":"EEXIST","start_ns":272453845541,"end_ns":272453849125}
-{"type":"sentinel","which":"end","pid":4400,"path":"/private/tmp/se286f1.UzbspX/P4-fail-mkdir-state/sentinel-end","rc":0,"errno":0,"start_ns":272453871583,"end_ns":272453950041}
+{"type":"hello","pid":1789,"tid":8865,"mode":"fail-mkdir"}
+{"type":"sentinel","which":"start","pid":1789,"path":"/private/tmp/se286f1.pMu8vp/P4-fail-mkdir-state/sentinel-start","rc":0,"errno":0,"start_ns":111253322791,"end_ns":111253535458}
+{"type":"op","seq":0,"pid":1789,"syscall":"mkdir","class":"mkdir","path":"/private/tmp/se286f1.pMu8vp/P4-fail-mkdir-state/subdir","rc":-1,"errno":17,"errno_name":"EEXIST","start_ns":111253545458,"end_ns":111253548541}
+{"type":"sentinel","which":"end","pid":1789,"path":"/private/tmp/se286f1.pMu8vp/P4-fail-mkdir-state/sentinel-end","rc":0,"errno":0,"start_ns":111253558458,"end_ns":111253648541}

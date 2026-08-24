@@ -145,6 +145,31 @@ either endpoint), and the depth cap is a constraint sideeye can enforce on
 the work directory it hands the target. Whether those are cheap enough to
 build an adapter behind is the next decision, and it is the owner's.
 
+### What round 4 said (run 32689458393), after the diff's first-look review
+
+The review of round 3 reproduced four verdicts that returned green on an
+adversarial capture: p4 on a path hit with the errno stripped, p2-order on a
+capture with the write syscall line deleted (its WrData carried it),
+p1-partition with one process missing, and a census of an empty capture
+reporting all zeroes. Three more were found by reading: containment was a
+substring test where the engine's rule is component-boundary, the trace's
+contract version was read and discarded, and the child-follow leg had no
+positive control. Each is a selftest case now that failed before the fix.
+
+Round 4 with the tightened judge: BROKEN 0, DEAD the same 2 (rename's
+destination, the depth cap), census on all 27 captures with `other_state`
+and `unparsed` at 0 in every one, and the child write visible under a name
+filter (4 lines) while invisible under the parent's pid filter (0), so the
+"not followed" is the filter's and not the child's. The depth cap printed
+153 this run against 144 in round 3; the number moves, the left-cut does
+not.
+
+Two of the document's own claims were also wrong against the captures:
+pwrite and writev print under their own names (a `uniq -c | head -8` had
+dropped them, the same truncation that nearly hid fsync), and the
+attribution finding said more than a single-threaded probe reporting its
+own thread id can say. Both narrowed to what was measured.
+
 ## 2026-08-24 — three places where a failed measurement ends up shaped like a success
 
 #264, #271 and #273 arrived as unrelated tickets and turned out to be one

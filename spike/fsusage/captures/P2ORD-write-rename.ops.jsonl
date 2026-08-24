@@ -1,6 +1,6 @@
-{"type":"hello","pid":5749,"tid":21032,"mode":"write-rename"}
-{"type":"sentinel","which":"start","pid":5749,"path":"/private/tmp/se286f1.UzbspX/P2ORD-write-rename-state/sentinel-start","rc":0,"errno":0,"start_ns":320548118375,"end_ns":320553916291}
-{"type":"op","seq":0,"pid":5749,"syscall":"open","class":"open","path":"/private/tmp/se286f1.UzbspX/P2ORD-write-rename-state/target","rc":0,"errno":0,"errno_name":"","start_ns":320553993291,"end_ns":320554161958}
-{"type":"op","seq":1,"pid":5749,"syscall":"write","class":"write","path":"/private/tmp/se286f1.UzbspX/P2ORD-write-rename-state/target","rc":7,"errno":0,"errno_name":"","start_ns":320682921791,"end_ns":320682987916}
-{"type":"op","seq":2,"pid":5749,"syscall":"rename","class":"rename","path":"/private/tmp/se286f1.UzbspX/P2ORD-write-rename-state/target","path2":"/private/tmp/se286f1.UzbspX/P2ORD-write-rename-state/target2","rc":0,"errno":0,"errno_name":"","start_ns":320906532208,"end_ns":320906894458}
-{"type":"sentinel","which":"end","pid":5749,"path":"/private/tmp/se286f1.UzbspX/P2ORD-write-rename-state/sentinel-end","rc":0,"errno":0,"start_ns":320906944791,"end_ns":320907169000}
+{"type":"hello","pid":2523,"tid":11066,"mode":"write-rename"}
+{"type":"sentinel","which":"start","pid":2523,"path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-rename-state/sentinel-start","rc":0,"errno":0,"start_ns":159610523583,"end_ns":159610796541}
+{"type":"op","seq":0,"pid":2523,"syscall":"open","class":"open","path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-rename-state/target","rc":0,"errno":0,"errno_name":"","start_ns":159610812958,"end_ns":159610872416}
+{"type":"op","seq":1,"pid":2523,"syscall":"write","class":"write","path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-rename-state/target","rc":7,"errno":0,"errno_name":"","start_ns":159732553500,"end_ns":159732611583}
+{"type":"op","seq":2,"pid":2523,"syscall":"rename","class":"rename","path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-rename-state/target","path2":"/private/tmp/se286f1.pMu8vp/P2ORD-write-rename-state/target2","rc":0,"errno":0,"errno_name":"","start_ns":159821880166,"end_ns":159822056708}
+{"type":"sentinel","which":"end","pid":2523,"path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-rename-state/sentinel-end","rc":0,"errno":0,"start_ns":159822088250,"end_ns":159822235916}

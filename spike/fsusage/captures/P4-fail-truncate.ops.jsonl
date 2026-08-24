@@ -1,4 +1,4 @@
-{"type":"hello","pid":4589,"tid":17690,"mode":"fail-truncate"}
-{"type":"sentinel","which":"start","pid":4589,"path":"/private/tmp/se286f1.UzbspX/P4-fail-truncate-state/sentinel-start","rc":0,"errno":0,"start_ns":281677788291,"end_ns":281678147375}
-{"type":"op","seq":0,"pid":4589,"syscall":"truncate","class":"truncate","path":"/private/tmp/se286f1.UzbspX/P4-fail-truncate-state/missing","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":281678176583,"end_ns":281678188666}
-{"type":"sentinel","which":"end","pid":4589,"path":"/private/tmp/se286f1.UzbspX/P4-fail-truncate-state/sentinel-end","rc":0,"errno":0,"start_ns":281678227458,"end_ns":281678540625}
+{"type":"hello","pid":1942,"tid":9243,"mode":"fail-truncate"}
+{"type":"sentinel","which":"start","pid":1942,"path":"/private/tmp/se286f1.pMu8vp/P4-fail-truncate-state/sentinel-start","rc":0,"errno":0,"start_ns":120483730000,"end_ns":120484029625}
+{"type":"op","seq":0,"pid":1942,"syscall":"truncate","class":"truncate","path":"/private/tmp/se286f1.pMu8vp/P4-fail-truncate-state/missing","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":120484048833,"end_ns":120484065458}
+{"type":"sentinel","which":"end","pid":1942,"path":"/private/tmp/se286f1.pMu8vp/P4-fail-truncate-state/sentinel-end","rc":0,"errno":0,"start_ns":120484085291,"end_ns":120484175500}
