@@ -3,10 +3,9 @@
 # standing CI — it triggers only on its own spike branch and by hand, and it
 # must never be made a required check.
 #
-# The first step exists to falsify its own premise. "The runner's sudo is
-# passwordless" was written from documentation memory, and today's BUILDLOG
-# entry prices it at 90%; if `sudo -n true` refuses, everything below is
-# unreachable and the transcript says exactly where the premise died.
+# The F12 fail-fast (2026-08-24, run 32686422118) already measured the
+# premise: sudo -n rc=0, fs_usage rc=0, 27,994 lines in 2 seconds, the marker
+# touch visible. What follows is the full survey on top of that ground.
 name: spike-fsusage
 on:
   push:
@@ -19,54 +18,33 @@ permissions:
 jobs:
   sudo-fsusage:
     runs-on: macos-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - name: F12 fail-fast — can sudo run fs_usage at all?
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Build the shim (the trace it writes is the P2 ground truth)
+        run: zig build
+
+      - name: Unprivileged half (selftest, sabotage controls, the refusal)
+        run: sh spike/fsusage/survey.sh
+
+      - name: Privileged half (the four points, as root)
         run: |
-          set -u
-          echo "== environment (the transcript must say which machine concluded what)"
-          sw_vers
-          uname -rm
-          csrutil status || true
-          echo "uid: $(id -u), user: $(id -un)"
-          sysctl -n machdep.cpu.brand_string || true
-          echo "virtualization: $(sysctl -n kern.hv_vmm_present 2>/dev/null || echo unknown)"
-          shasum -a 256 "$(command -v fs_usage)" || true
-
-          echo "== does sudo prompt? (-n fails instead of hanging if it would)"
-          sudo -n true
-          echo "sudo -n rc=$?"
-
-          echo "== one bounded slice of fs_usage under sudo"
-          mkdir -p /tmp/f12/state
-          ( sleep 0.5; /usr/bin/touch /tmp/f12/state/f12-marker ) &
-          sudo fs_usage -w -f filesys -t 2 > /tmp/f12/cap.txt 2>&1
+          mkdir -p /tmp/fsu-out
+          sudo OUT=/tmp/fsu-out SHIM="$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            sh spike/fsusage/sudo-survey.sh
           rc=$?
-          wait
-          echo "fs_usage rc=$rc"
-          echo "capture: $(wc -l < /tmp/f12/cap.txt | tr -d ' ') line(s), $(wc -c < /tmp/f12/cap.txt | tr -d ' ') bytes"
-          echo "-- head"
-          head -5 /tmp/f12/cap.txt
-          echo "-- did it see the marker touch?"
-          grep -c 'f12-marker' /tmp/f12/cap.txt || echo "0 (marker not seen)"
-          grep 'f12-marker' /tmp/f12/cap.txt | head -3 || true
+          echo "sudo-survey rc=$rc"
+          exit "$rc"
 
-      - name: Full survey (present only after the apparatus lands)
-        run: |
-          if [ -x spike/fsusage/sudo-survey.sh ]; then
-            zig_missing=0
-            command -v zig >/dev/null 2>&1 || zig_missing=1
-            echo "survey present; zig missing=$zig_missing (build happens in a later step revision)"
-          else
-            echo "apparatus not on this ref yet — F12 fail-fast only"
-          fi
-
-      - name: Upload capture
+      - name: Upload captures and accounts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: f12-capture
-          path: /tmp/f12/
+          name: fsusage-survey
+          path: /tmp/fsu-out/
           if-no-files-found: warn
