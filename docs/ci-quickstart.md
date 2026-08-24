@@ -53,6 +53,12 @@ zig-out/bin/sideeye explore --config sideeye.toml \
 The demo workflow inverts the gate (`test "$rc" = 1`) because its target has a
 planted bug — the job proves detection. Your target gates on `= 0`.
 
+The four rows above are the verdicts a run can reach. Commands that produce no
+verdict are not in the table and are not gates: `version` and `help` exit 0
+because they did what was asked, and a `preflight` that accepts the recording
+exits 0 without claiming PASS. `docs/contract-freeze.md` §3 states which
+direction the promise runs.
+
 ## Notes
 
 - The demo toy finds its state through `TOY_STATE`, which sideeye itself

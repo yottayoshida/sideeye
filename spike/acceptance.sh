@@ -2838,6 +2838,111 @@ else
     fails=$((fails + 1))
 fi
 
+# ---- #273: the CLI can describe itself, and the description matches the parser ----
+#
+# Two things had drifted independently. `--help` was not a word the parser knew, so the
+# token fell through mode dispatch to usage()+exit 3 and `sideeye --help && ...` took the
+# failure branch. And the synopsis had lost a whole mode (`mcp`) plus most of the flags the
+# explore and replay lines accept.
+#
+# The help paths are checked by running them. The synopsis is checked against the parser's
+# own source, so a mode or flag added without documenting it fails here rather than in
+# someone's terminal.
+
+cli_fails=0
+
+# 1. All three spellings succeed, and all three print the same text.
+h1=$("$SIDEEYE" --help 2>&1); rc1=$?
+h2=$("$SIDEEYE" -h 2>&1);     rc2=$?
+h3=$("$SIDEEYE" help 2>&1);   rc3=$?
+for rc in "$rc1" "$rc2" "$rc3"; do
+    [ "$rc" = "0" ] || { echo "     a help spelling exited $rc, want 0"; cli_fails=$((cli_fails + 1)); }
+done
+if [ "$h1" != "$h2" ] || [ "$h2" != "$h3" ]; then
+    echo "     the three help spellings do not print the same text"
+    cli_fails=$((cli_fails + 1))
+fi
+
+# 2. Extras are refused rather than ignored, the way `version` and `mcp` refuse them.
+for spelling in --help -h help; do
+    "$SIDEEYE" "$spelling" extra >/dev/null 2>&1
+    rc=$?
+    if [ "$rc" != "3" ]; then
+        echo "     sideeye $spelling extra exited $rc, want 3 (extras must not be ignored)"
+        cli_fails=$((cli_fails + 1))
+    fi
+done
+
+# 3. The wrong-invocation path is unchanged: bare `sideeye` still prints the banner and
+#    still exits 3. This suite's own CANNOT-RUN probe greps that first line, so adding
+#    help must not have moved it.
+#
+#    The banner is read from the bare invocation's own output. Checking `$h1` instead
+#    would be checking the help path a second time: usage() could vanish from the bare
+#    branch and this would still pass, which is the "measured a different path than the
+#    one that changed" shape.
+bare_out=$("$SIDEEYE" 2>&1)
+rc=$?
+if [ "$rc" != "3" ]; then
+    echo "     bare sideeye exited $rc, want 3"
+    cli_fails=$((cli_fails + 1))
+fi
+printf '%s\n' "$bare_out" | head -1 | grep -q "^sideeye " || {
+    echo "     the bare invocation's first line no longer starts with 'sideeye '"
+    cli_fails=$((cli_fails + 1))
+}
+
+# 4. Every mode the parser dispatches on has a synopsis line. Read out of the source rather
+#    than from a list kept here: a list would be the second hand-synced copy this repo has
+#    already paid for (#65).
+#
+#    Matched broadly and then filtered, rather than matched narrowly: an `[a-z]+` pattern
+#    covers today's seven modes and would silently miss a `show-report` or an `mcp2`, which
+#    makes "every mode" a claim the check does not support. Only the flag spellings of help
+#    (--help, -h) are dropped — they are answered by the same branch as `help` and get no
+#    synopsis line of their own.
+# The string literals the parser compares one argv slot against. Both callers below
+# want the same thing out of `src/main.zig` and differ only in which slot.
+parser_literals() { # argv-index
+    grep -oE "eql\(u8, argv\[$1\], \"[^\"]+\"\)" "$ROOT/src/main.zig" |
+        sed -e 's/.*, "//' -e 's/")$//' | sort -u
+}
+
+for m in $(parser_literals 1 | grep -v '^-'); do
+    printf '%s\n' "$h1" | grep -qE "^  sideeye $m( |$)" || {
+        echo "     the parser accepts \`sideeye $m\` but the synopsis has no line for it"
+        cli_fails=$((cli_fails + 1))
+    }
+done
+
+# 5. Every flag the synopsis advertises is one the parser actually reads. This catches a
+#    misspelling in the usage text — the failure the six flags just added to the explore
+#    line could have introduced.
+#
+#    The reverse direction, a flag a mode accepts but its line omits, is deliberately NOT
+#    checked here. Which flags a mode accepts is decided by `if (mode == .preflight)
+#    setupError(...)` branches that grep cannot tell apart from acceptance, and driving it
+#    by execution needs a list of which flags take a value — a dummy argument after a
+#    no-value flag comes back as "unknown option" and reads as a refusal. That list would
+#    be another hand-synced copy, so the gap is filed rather than faked.
+#    Extracted broadly here too: a narrow `[a-z-]+` would treat a flag the parser reads
+#    under any other spelling as one it does not read, and report a drift that is not there.
+parsed_flags=$(parser_literals i | grep '^--')
+for f in $(printf '%s\n' "$h1" | grep -E '^  sideeye [^[:space:]]+ ' |
+           grep -oE '\-\-[A-Za-z0-9][A-Za-z0-9-]*' | sort -u); do
+    printf '%s\n' "$parsed_flags" | grep -qx -- "$f" || {
+        echo "     the synopsis advertises $f but no parser branch reads it"
+        cli_fails=$((cli_fails + 1))
+    }
+done
+
+if [ "$cli_fails" = "0" ]; then
+    echo "ok   help exits 0 in three spellings, refuses extras, and the synopsis covers every mode"
+else
+    echo "FAIL CLI self-description: $cli_fails problem(s)"
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

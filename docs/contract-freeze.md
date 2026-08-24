@@ -28,13 +28,22 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    check 4 — `oracle_verified` included (#94). The account fields' prose may
    improve between releases; their presence and the machine fields' meaning
    may not (a field would change name, never silently change meaning).
-3. **Exit codes.** 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is
-   never 0. **No evidence-strength split** (owner decision, 2026-08-17): an
+3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
+   fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
+   The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
+   is the success of whatever was asked for, and a command that produces no
+   verdict at all can use it. `version` always has; `help` does too (#273);
+   a preflight that accepts the recording exits 0 without claiming PASS. What
+   the freeze forbids is a verdict arriving under a different code than the
+   one named above, or exit 0 being read as proof that a check ran — which is
+   why UNKNOWN never takes it.
+   **No evidence-strength split** (owner decision, 2026-08-17): an
    unverified PASS keeps exit 0, rejected because the flag that produces it
    is the caller's own explicit consent, macOS — where no oracle exists —
    would lose exit-0 passes entirely, and the distinction already lives in
    the designed channel (`oracle_verified`). Declining now means declining
-   permanently; that is understood.
+   permanently; that is understood. That decision is about which code a PASS
+   carries, and is untouched by the paragraph above.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies` when the code changed underneath it,
    `contract_version_mismatch` across trace-contract versions — never a

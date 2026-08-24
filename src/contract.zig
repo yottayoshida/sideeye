@@ -285,6 +285,17 @@ pub const UnknownReason = enum {
     multiple_threads_detected,
     unresolvable_path,
     kill_did_not_land,
+    /// A child ran but its exit status could never be read: the wait was interrupted
+    /// repeatedly, or failed permanently (#264). Distinct from `kill_did_not_land`,
+    /// which is what this used to be reported as — `waitpid` writes `status` only on
+    /// success, so a discarded failure left the zero it was initialised with and a
+    /// killed world decoded as `exited 0`. That is the wrong reason twice over: it
+    /// names the kill when the kill was never observed either way.
+    ///
+    /// UNKNOWN rather than SETUP_ERROR wherever exploration has begun. Exit 3 means the
+    /// define did not run (DESIGN §"exit codes"), and by the recording run onward that
+    /// is no longer true — the same distinction `recording_run_failed` already draws.
+    child_wait_failed,
     /// The subject's kill-point records and its highest sequence number disagree —
     /// the numbering has gaps or duplicates. A restarted counter after an
     /// unobserved image change is exactly a duplicate (#123), and every address

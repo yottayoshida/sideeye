@@ -346,8 +346,13 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     const argv = argv_buf[0..argc];
     // Minimal-env self-exec with the child's stdout captured to a file — fd 1 (the MCP
     // transport) stays clean.
-    const term = posix.runChildCaptureMinimalEnv(gpa, argv, env, child_out) catch
-        return emitToolError(arena, id, "could not run sideeye");
+    const term = posix.runChildCaptureMinimalEnv(gpa, argv, env, child_out) catch |e|
+        return emitToolError(arena, id, if (e == error.WaitFailed)
+            // Distinct from "could not run": sideeye did run, and the exit code this
+            // handler is about to switch on was never read (#264).
+            "sideeye ran, but its exit status could never be read: the wait was interrupted repeatedly, or failed permanently. No result is reported for this call rather than one derived from a status that was never written"
+        else
+            "could not run sideeye");
     const exit_code: i64 = switch (term) {
         .exited => |c| c,
         else => -1,

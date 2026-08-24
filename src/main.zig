@@ -169,8 +169,11 @@ fn usage() void {
         \\usage:
         \\  sideeye demo [--shim <lib>]
         \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--expect-status <n>] [--shim <lib>] [--work <dir>]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified]
+        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified]
+        \\  sideeye mcp
+        \\  sideeye help
         \\  sideeye version
         \\
         \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
@@ -319,6 +322,43 @@ fn setupError(detail: []const u8) noreturn {
     std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
 }
 
+/// A `runChild*` failure, refused with the right name **and the right verdict**.
+///
+/// `WaitFailed` names itself rather than borrowing the caller's wording: the child ran,
+/// but its exit status was never read, so nothing can be said about how it ended. Every
+/// verdict downstream rests on that status, and the defect #264 was filed for is exactly
+/// what happens when the distinction is dropped — an unread status reads as `.exited = 0`,
+/// which in a design where every explored world dies by signal becomes a confident
+/// `kill_did_not_land`. The other two failures keep `doing`, which says what was starting.
+///
+/// `phase` decides the verdict, not just the wording. Exit 3 means the define did not run
+/// (DESIGN's exit-code table: "configuration or environment problem **before exploration
+/// began**"), so a wait that fails while worlds are being explored has to be UNKNOWN — the
+/// distinction `recording_run_failed` and `baseline_run_failed` already draw for the same
+/// phase. A first version of this fix sent every site to `setupError` and would have
+/// published `verdict: "SETUP_ERROR"` for a mid-exploration failure: honest about the
+/// failure, wrong about when it happened, and a silent change to the serialized shape.
+const SpawnPhase = enum {
+    /// Before any world runs: `--setup`, the demo's compiler probe. A failure here really
+    /// does mean the define never got started.
+    before_exploration,
+    /// The recording run onward. The define is running; refusing is UNKNOWN.
+    exploring,
+};
+
+fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
+    if (e == error.WaitFailed) {
+        const detail = "a child process ran, but its exit status could never be read: the wait was interrupted repeatedly, or failed permanently. Every verdict here rests on how that child ended, so the run refuses instead of deriving one from a status that was never written";
+        switch (phase) {
+            .before_exploration => setupError(detail),
+            .exploring => unknown(.child_wait_failed, detail),
+        }
+    }
+    // Fork and allocation failures are environment problems in either phase, and the
+    // caller's wording already says which step was starting.
+    setupError(doing);
+}
+
 /// Zig 0.16 passes the process's arguments and environment in; `std.process.argsAlloc`
 /// no longer exists. The shape of `Init.Minimal` comes from `std.start.callMain`.
 pub fn main(init: std.process.Init.Minimal) !void {
@@ -344,6 +384,35 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         mcp.runServer(gpa);
         return;
+    }
+
+    // `--help`, `-h` and `help` print the usage text and exit 0.
+    //
+    // The same text already reached stdout when the program was invoked wrongly, but that
+    // path exits 3, so `sideeye --help` was a SETUP ERROR and `sideeye --help && …` took
+    // the failure branch (#273). Asking to be told how to use the tool is not a failure.
+    //
+    // This adds no meaning to the exit codes: exit 0 is the success of whatever the command
+    // does, not PASS specifically, and `version` below already exits 0 without producing a
+    // verdict. docs/contract-freeze.md §3 says so explicitly.
+    //
+    // Only at top level. `sideeye explore --help` still reaches "unknown option" in the
+    // parse loop, which treats an unrecognised flag as one that takes a value; wiring help
+    // in there means touching the no-value flag branch and replay's positional argument,
+    // and the ticket's ask is satisfied here.
+    if (argv.len >= 2 and (std.mem.eql(u8, argv[1], "--help") or
+        std.mem.eql(u8, argv[1], "-h") or
+        std.mem.eql(u8, argv[1], "help")))
+    {
+        // Refused rather than ignored, the way `version` and `mcp` refuse extras: silently
+        // dropping them would answer a question the caller did not ask.
+        if (argv.len != 2) {
+            const msg = "sideeye help takes no arguments\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        }
+        usage();
+        std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
     // `version` prints the one line a release workflow needs to hold a tag against the
@@ -657,7 +726,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (setup_argv.len == 0) setupError("--setup is empty");
         const term = posix.runChild(gpa, setup_argv, &.{
             .{ "TOY_STATE", state_abs },
-        }) catch setupError("could not run --setup");
+        }) catch |e| spawnFailure(e, .before_exploration, "could not run --setup");
         switch (term) {
             .exited => |code| if (code != 0) setupError("--setup exited non-zero"),
             else => setupError("--setup did not exit normally"),
@@ -738,7 +807,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 list.append(arena, joined) catch setupError("out of memory");
             }
             for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
-            break :blk posix.runChildCapture(gpa, list.items, &.{}, rec_stdout) catch setupError("could not run --operation under the oracle");
+            break :blk posix.runChildCapture(gpa, list.items, &.{}, rec_stdout) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
         }
         break :blk posix.runChildCapture(gpa, op_argv, &.{
             .{ "TOY_STATE", state_abs },
@@ -748,7 +817,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Pinned empty: see the oracle-path pairs above.
             .{ contract.env.seq_base, "" },
             .{ preload_var, shim },
-        }, rec_stdout) catch setupError("could not run --operation");
+        }, rec_stdout) catch |e| spawnFailure(e, .exploring, "could not run --operation");
     };
     // The recording run's outcome decides whether its trace means anything.
     //
@@ -1169,7 +1238,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const probe = posix.runChildCaptureAll(gpa, cargv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
-        }, fal_out) catch setupError("could not run --check");
+        }, fal_out) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
         // and the gate's output is evidence in the refusal case too. Blank lines are
@@ -1255,7 +1324,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Pinned empty: see the recording pairs.
             .{ contract.env.seq_base, "" },
             .{ preload_var, shim },
-        }, world_stdout) catch setupError("could not run --operation");
+        }, world_stdout) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 
         var wtrace = engine.readTrace(gpa, world_trace) catch setupError("could not read a world trace");
         defer wtrace.deinit();
@@ -1340,7 +1409,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             const ct = posix.runChild(gpa, cargv, &.{
                 .{ "TOY_STATE", state_abs },
                 .{ contract.env.state_dir, state_abs },
-            }) catch setupError("could not run --check");
+            }) catch |e| spawnFailure(e, .exploring, "could not run --check");
             checks_run += 1;
             l2_failed = switch (ct) {
                 .exited => |code| code != 0,
@@ -1917,7 +1986,14 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
             for ([_][]const u8{ cc, "-O0", "-w", "-DBUGGY=1", "-o", tool, toy_src }) |a|
                 argv_l.append(arena, a) catch setupError("out of memory");
             if (with_pthread) argv_l.append(arena, "-lpthread") catch setupError("out of memory");
-            const term = posix.runChild(gpa, argv_l.items, &.{}) catch continue;
+            const term = posix.runChild(gpa, argv_l.items, &.{}) catch |e| {
+                // Trying the next candidate is right for a compiler that could not be
+                // started. It is wrong for a wait failure: swallowing that here ends the
+                // loop with "none of cc, gcc, clang worked", which diagnoses the machine's
+                // toolchain for what is actually an environment problem (#264).
+                if (e == error.WaitFailed) spawnFailure(e, .before_exploration, "");
+                continue;
+            };
             switch (term) {
                 .exited => |code| if (code == 0) {
                     chosen = cc;
