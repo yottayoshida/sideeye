@@ -44,6 +44,40 @@ cap) is also not in here — review pointed out that with #265 landing as an
 opt-in flag, the only bound that would actually apply by default was the
 lookup cost, which does not match a thesis about the engine refusing at its
 limits. Three tickets, three PRs.
+## 2026-08-24 — the laptop leg: two output shapes the runner never produced, and a judge that called them findings
+
+The fs_usage survey (#298) concluded on one machine, a GitHub runner, and
+said so. Running the same apparatus on the owner's laptop (15.3.1, SIP
+enabled, not a VM) reproduced every capability finding and turned up two
+things about the format instead.
+
+The first pass reported BROKEN 1 and DEAD 3, one more DEAD than the runner.
+Both were the judge.
+
+`Google Chrome He.64625821`: a process name with spaces in it. The grammar
+read that field as `\S+`, so those lines went to `unparsed` and the census
+refused the capture. The census was right and the grammar was wrong. The
+runner had no process with a space in its name, so nothing there exercised
+it.
+
+`.../missing-d>>>>>>>>>>>>>>>>`: macOS 15.x pads a truncated pathname with
+`>` to a fixed width. The failed `open` was in the capture, with its errno,
+and exact-path matching missed it, so P4 read DEAD on this machine only. The
+`>` are the truncation marker; what remains is a real prefix. `same_path`
+accepts a stump against the path it was cut from now, and rejects a stump of
+a different path.
+
+Neither is a version capability difference, which is the part worth keeping.
+Both are properties the format always had and 26.5.2 never happened to
+produce. Had the adapter been designed from the CI measurement alone, both
+would have arrived on the first laptop run, as a parser that reports nothing
+and a verdict that says a visible line is missing.
+
+After the fix, re-judging both machines' committed captures: the laptop's
+seven P4 modes pass, its census is clean, and the runner's numbers are
+unchanged in every leg. The second run on the laptop is BROKEN 0, DEAD 2,
+the same two walls, with the display cap at 156 against 144 and 153 there.
+
 ## 2026-08-24 — #286 route F1 opens: does fs_usage have the oracle's shape, measured before anything is built on it
 
 Entry opened at the start of the work, per the contract. Today's zero-base

@@ -1,0 +1,4 @@
+{"type":"hello","pid":58981,"tid":69817724,"mode":"fail-truncate"}
+{"type":"sentinel","which":"start","pid":58981,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-truncate-state/sentinel-start","rc":0,"errno":0,"start_ns":3059696044450458,"end_ns":3059696045531291}
+{"type":"op","seq":0,"pid":58981,"syscall":"truncate","class":"truncate","path":"/private/tmp/se286f1.hgzdkh/P4-fail-truncate-state/missing","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":3059696045573708,"end_ns":3059696045610041}
+{"type":"sentinel","which":"end","pid":58981,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-truncate-state/sentinel-end","rc":0,"errno":0,"start_ns":3059696045653208,"end_ns":3059696046463125}

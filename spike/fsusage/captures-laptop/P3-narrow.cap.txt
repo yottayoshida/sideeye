@@ -1,0 +1,28 @@
+18:52:06  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000021   probe       
+18:52:06  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000022   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000010   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000020   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000016   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000017   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000017   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000014   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000012   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000021   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000023   probe       
+18:52:07  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000052   probe       
+18:52:08  stat64            /private/tmp/se286f1.hgzdkh/P3-narrow/go                                         0.000080   probe       
+18:52:08  open              /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-start                       0.000723   probe       
+18:52:08  write                                                                                              0.000104   probe       
+18:52:08  close                                                                                              0.000085   probe       
+18:52:08    WrData[A]       /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-start                       0.000059 W probe       
+18:52:08  write                                                                                              0.000021   probe       
+18:52:08  open              /private/tmp/se286f1.hgzdkh/P3-narrow-state/target                               0.000372   probe       
+18:52:08  write                                                                                              0.000020   probe       
+18:52:08  close                                                                                              0.000009   probe       
+18:52:08  open              /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-end                         0.000266   probe       
+18:52:08  write                                                                                              0.000055   probe       
+18:52:08  close                                                                                              0.000078   probe       
+18:52:08  write                                                                                              0.000011   probe       
+18:52:08    WrData[A]       /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-end                         0.000068 W probe       
+18:52:08    WrData[A]       /private/tmp/se286f1.hgzdkh/P3-narrow/ops.jsonl                                  0.000050 W probe       
+18:52:08  exit                                                                                               0.000187   probe       

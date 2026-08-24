@@ -1,0 +1,4 @@
+{"type":"hello","pid":59488,"tid":69820099,"mode":"create"}
+{"type":"sentinel","which":"start","pid":59488,"path":"/private/tmp/se286f1.hgzdkh/P1b-state/sentinel-start","rc":0,"errno":0,"start_ns":3059741877227333,"end_ns":3059741878310791}
+{"type":"op","seq":0,"pid":59488,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hgzdkh/P1b-state/target","rc":0,"errno":0,"errno_name":"","start_ns":3059741878338958,"end_ns":3059741878771166}
+{"type":"sentinel","which":"end","pid":59488,"path":"/private/tmp/se286f1.hgzdkh/P1b-state/sentinel-end","rc":0,"errno":0,"start_ns":3059741878824833,"end_ns":3059741879375625}

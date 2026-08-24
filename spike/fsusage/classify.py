@@ -80,7 +80,7 @@ LINE_RE = re.compile(
     r"(?P<middle>.*?)\s*"
     r"(?P<dur>\d+\.\d{6})\s+"
     r"(?P<wflag>W\s+)?"
-    r"(?P<proc>\S+)\.(?P<tid>\d+)\s*$")
+    r"(?P<proc>.+)\.(?P<tid>\d+)\s*$")
 
 # Narrow mode (no -w): whole-second timestamps and NO thread id after the
 # process name. Measured in every round; a grammar that ignored it would
@@ -91,7 +91,7 @@ LINE_RE_NARROW = re.compile(
     r"(?P<middle>.*?)\s*"
     r"(?P<dur>\d+\.\d{6})\s+"
     r"(?P<wflag>W\s+)?"
-    r"(?P<proc>\S+?)\s*$")
+    r"(?P<proc>.+?)\s*$")
 
 ERRNO_RE = re.compile(r"\[\s*(\d+)\]")
 FD_RE = re.compile(r"\bF=(\d+)\b")
@@ -104,20 +104,43 @@ FIELD_RE = re.compile(r"(\[\s*\d+\]|F=\d+|B=0x[0-9a-fA-F]+|D=0x[0-9a-fA-F]+|"
 EXPECTED_TRACE_VERSION = 10
 
 
+TRUNC_RE = re.compile(r">{2,}$")
+
+
 def norm(path):
     """One spelling for four. A path the target named through the /tmp symlink
     prints as `private/tmp/...` with no leading slash (round 1); named
     canonically it prints `/private/tmp/...` (round 2); the probe's account
     and the shim's trace carry whichever spelling they were given. Strip the
     slash first and the `private/` component second, so all four meet."""
+    path = TRUNC_RE.sub("", path).rstrip()
     path = path.lstrip("/")
     if path.startswith("private/"):
         path = path[len("private/"):]
     return path
 
 
+def is_truncated(path):
+    return bool(path) and bool(TRUNC_RE.search(path.rstrip()))
+
+
 def same_path(a, b):
-    return a is not None and b is not None and norm(a) == norm(b)
+    """Equal, or one is the display-truncated stump of the other.
+
+    macOS 15.x cuts a long pathname and pads with '>'; what remains is a
+    genuine prefix, so a stump matches the path it was cut from. 26.x does
+    not truncate this way, and on both the non-truncated case is plain
+    equality."""
+    if a is None or b is None:
+        return False
+    na, nb = norm(a), norm(b)
+    if na == nb:
+        return True
+    if is_truncated(a) and nb.startswith(na):
+        return True
+    if is_truncated(b) and na.startswith(nb):
+        return True
+    return False
 
 
 def inside(path, statedir):
@@ -865,6 +888,31 @@ def selftest():
          lambda: run(lambda b, s, o: v_p1_child(b, s, o, control=True),
                      _fix_capture([_cap_line("open", f"{FIX_STATE}/child-file", tid=555)]),
                      _fix_ops([op_child])), 0)
+
+    # --- macOS 15.x output shapes (the laptop leg found both) ---
+    case("a process name containing spaces still parses and attributes",
+         lambda: (lambda b: 0 if len(b["_all_probe"]) == 3 and
+                  b["_all_probe"][1]["tid"] == 64625821 else 1)(
+             parse_capture(
+                 "10:00:01.000100  open              " + FIX_STATE + "/sentinel-start"
+                 + "   0.000100   probe.111\n"
+                 "10:00:02.000100    RdMeta[S]       D=0x1 B=0x1000  /dev/disk3  /dev/disk3"
+                 + "   0.000637 W Google Chrome He.64625821\n"
+                 "10:00:09.000100  open              " + FIX_STATE + "/sentinel-end"
+                 + "   0.000100   probe.111\n", FIX_STATE)), 0)
+    case("a '>'-padded truncated path matches the path it was cut from",
+         lambda: 0 if same_path(f"{FIX_STATE}/missing-d>>>>>>>>",
+                                f"{FIX_STATE}/missing-dir/leaf") else 1, 0)
+    case("a truncated stump does not match a different path",
+         lambda: 0 if not same_path(f"{FIX_STATE}/other-d>>>>>>>>",
+                                    f"{FIX_STATE}/missing-dir/leaf") else 1, 0)
+    case("p4 accepts a failed open whose path the platform truncated",
+         lambda: run(v_p4, _fix_capture([
+             "10:00:02.000100  open                   [  2] (_WC_T_______)  "
+             + FIX_STATE + "/missing-d>>>>>>>>>>>>>>>>"
+             + "                       0.000045   probe.111"]),
+             _fix_ops([{**op_fail, "syscall": "open", "class": "open",
+                        "path": f"{FIX_STATE}/missing-dir/leaf"}])), 0)
 
     # metamorphic: mutations of the SAME fixture flip or break the verdict
     case("census flags an unknown state-touching CALL as other_state",

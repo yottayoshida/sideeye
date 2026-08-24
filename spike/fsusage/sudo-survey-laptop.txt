@@ -1,0 +1,196 @@
+== environment (the transcript must say which machine concluded what)
+   ProductName:		macOS
+   ProductVersion:		15.3.1
+   BuildVersion:		24D70
+   24.3.0 arm64
+   System Integrity Protection status: enabled.
+   uid 0 (root); virtualization: 0
+   fs_usage: 4012329f8228d661... at /usr/bin/fs_usage
+   filesystem holding /private/tmp: /dev/disk3s5 on /System/Volumes/Data (apfs, local, journaled, nobrowse, protect, root data)
+
+== build (probe with cc; the shim is expected from zig build)
+   shim: /Users/i.yoshida/sideeye-lap/zig-out/lib/libsideeye_shim.dylib
+
+== L0: liveness — one create, pid-filtered, both sentinels must appear
+   L0: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 26 line(s)
+  liveness: both sentinels visible — the capture witnessed the window
+  census: syscall_state=8 diskio_state=2 other_state=0 offstate=16 unparsed=0 blank=0 fd_unresolved=3
+
+== P4: do failed attempts leave a line? (the counterexample that killed FSEvents)
+   P4-fail-open: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 27 line(s)
+  p4 open(ENOENT): 1 line(s) address the attempted path, 1 of them the same call with errno 2
+    | 18:50:50.229830  open                   [  2] (_WC_T_______)  /private/tmp/se286f1.hgzdkh/P4-fail-open-state/missing-dir>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                    
+  p4: every failed attempt left a visible line
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+   P4-fail-unlink: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 27 line(s)
+  p4 unlink(ENOENT): 1 line(s) address the attempted path, 1 of them the same call with errno 2
+    | 18:50:53.428243  unlink                 [  2]           /private/tmp/se286f1.hgzdkh/P4-fail-unlink-state/missing                                                          
+  p4: every failed attempt left a visible line
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+   P4-fail-rename: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 27 line(s)
+  p4 rename(ENOENT): 1 line(s) address the attempted path, 1 of them the same call with errno 2
+    | 18:50:56.572120  rename                 [  2]           /private/tmp/se286f1.hgzdkh/P4-fail-rename-state/missing                                                          
+  p4: every failed attempt left a visible line
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+   P4-fail-mkdir: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 27 line(s)
+  p4 mkdir(EEXIST): 1 line(s) address the attempted path, 1 of them the same call with errno 17
+    | 18:50:59.884869  mkdir                  [ 17]           /private/tmp/se286f1.hgzdkh/P4-fail-mkdir-state/subdir                                                            
+  p4: every failed attempt left a visible line
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+   P4-fail-rmdir: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 29 line(s)
+  p4 rmdir(ENOENT): 1 line(s) address the attempted path, 1 of them the same call with errno 2
+    | 18:51:03.074592  rmdir                  [  2]           /private/tmp/se286f1.hgzdkh/P4-fail-rmdir-state/missing                                                           
+  p4: every failed attempt left a visible line
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=20 unparsed=0 blank=0 fd_unresolved=3
+   P4-fail-link: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 27 line(s)
+  p4 link(ENOENT): 1 line(s) address the attempted path, 1 of them the same call with errno 2
+    | 18:51:06.236840  link                   [  2]           /private/tmp/se286f1.hgzdkh/P4-fail-link-state/missing                                                            
+  p4: every failed attempt left a visible line
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+   P4-fail-truncate: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 27 line(s)
+  p4 truncate(ENOENT): 1 line(s) address the attempted path, 1 of them the same call with errno 2
+    | 18:51:09.388549  truncate               [  2]  O=0x0120a800000004   /private/tmp/se286f1.hgzdkh/P4-fail-truncate-state/missing                                            
+  p4: every failed attempt left a visible line
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+
+== P2: write granularity, against the shim's own trace
+   P2-write: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 61 line(s)
+  p2-counts: shim recorded 1 write op(s); capture holds 1 write-syscall line(s) (1 placed through their descriptor) and 1 Wr* disk-io line(s) on the state dir; 13 descriptor line(s) nobody saw opened
+    | 18:51:12.769838  write             F=3    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-write-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=21 diskio_state=3 other_state=0 offstate=37 unparsed=0 blank=0 fd_unresolved=13
+   P2-writes-small: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 75 line(s)
+  p2-counts: shim recorded 3 write op(s); capture holds 3 write-syscall line(s) (3 placed through their descriptor) and 1 Wr* disk-io line(s) on the state dir; 17 descriptor line(s) nobody saw opened
+    | 18:51:16.002941  write             F=3    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writes-small-state/target
+    | 18:51:16.033486  write             F=3    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writes-small-state/target
+    | 18:51:16.065403  write             F=3    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writes-small-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=27 diskio_state=3 other_state=0 offstate=45 unparsed=0 blank=0 fd_unresolved=17
+   P2-writes-two-fd: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 93 line(s)
+  p2-counts: shim recorded 4 write op(s); capture holds 4 write-syscall line(s) (4 placed through their descriptor) and 2 Wr* disk-io line(s) on the state dir; 22 descriptor line(s) nobody saw opened
+    | 18:51:19.259605  write             F=3    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writes-two-fd-state/target
+    | 18:51:19.293831  write             F=4    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writes-two-fd-state/target2
+    | 18:51:19.324897  write             F=3    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writes-two-fd-state/target
+    | 18:51:19.359788  write             F=4    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writes-two-fd-state/target2
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=34 diskio_state=4 other_state=0 offstate=55 unparsed=0 blank=0 fd_unresolved=22
+   P2-write-large: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 66 line(s)
+  p2-counts: shim recorded 1 write op(s); capture holds 1 write-syscall line(s) (1 placed through their descriptor) and 4 Wr* disk-io line(s) on the state dir; 13 descriptor line(s) nobody saw opened
+    | 18:51:22.542060  write             F=3    B=0x400000                                                                      -> /private/tmp/se286f1.hgzdkh/P2-write-large-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=21 diskio_state=6 other_state=0 offstate=39 unparsed=0 blank=0 fd_unresolved=13
+   P2-write-zero: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 60 line(s)
+  p2-counts: shim recorded 1 write op(s); capture holds 1 write-syscall line(s) (1 placed through their descriptor) and 0 Wr* disk-io line(s) on the state dir; 13 descriptor line(s) nobody saw opened
+    | 18:51:25.787887  write             F=3    B=0x0                                                                           -> /private/tmp/se286f1.hgzdkh/P2-write-zero-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=21 diskio_state=2 other_state=0 offstate=37 unparsed=0 blank=0 fd_unresolved=13
+   P2-pwrite: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 61 line(s)
+  p2-counts: shim recorded 1 write op(s); capture holds 1 write-syscall line(s) (1 placed through their descriptor) and 1 Wr* disk-io line(s) on the state dir; 13 descriptor line(s) nobody saw opened
+    | 18:51:29.103392  pwrite            F=3    B=0x8        O=0x0800000000                                                     -> /private/tmp/se286f1.hgzdkh/P2-pwrite-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=21 diskio_state=3 other_state=0 offstate=37 unparsed=0 blank=0 fd_unresolved=13
+   P2-writev: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 61 line(s)
+  p2-counts: shim recorded 1 write op(s); capture holds 1 write-syscall line(s) (1 placed through their descriptor) and 1 Wr* disk-io line(s) on the state dir; 13 descriptor line(s) nobody saw opened
+    | 18:51:32.396960  writev            F=3    B=0xe                                                                           -> /private/tmp/se286f1.hgzdkh/P2-writev-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=21 diskio_state=3 other_state=0 offstate=37 unparsed=0 blank=0 fd_unresolved=13
+   P2-stdio: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 65 line(s)
+  p2-counts: shim recorded 1 write op(s); capture holds 1 write-syscall line(s) (1 placed through their descriptor) and 1 Wr* disk-io line(s) on the state dir; 14 descriptor line(s) nobody saw opened
+    | 18:51:35.757564  write             F=3    B=0xd                                                                           -> /private/tmp/se286f1.hgzdkh/P2-stdio-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=22 diskio_state=3 other_state=0 offstate=40 unparsed=0 blank=0 fd_unresolved=14
+   P2-fsync: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 68 line(s)
+  p2-counts: shim recorded 1 write op(s); capture holds 1 write-syscall line(s) (1 placed through their descriptor) and 1 Wr* disk-io line(s) on the state dir; 15 descriptor line(s) nobody saw opened
+    | 18:51:39.016489  write             F=3    B=0x7                                                                           -> /private/tmp/se286f1.hgzdkh/P2-fsync-state/target
+  p2-counts: write-syscall lines match the shim's count
+  census: syscall_state=24 diskio_state=3 other_state=0 offstate=41 unparsed=0 blank=0 fd_unresolved=15
+
+== P2-fsync: does fsync leave a syscall line? (-f filesys, then no class filter at all)
+  p2-fsync: shim/probe issued 1 fsync; capture holds 1 fsync-named syscall line(s) and 0 synchronous disk-io line(s) (the [S] flag) on the probe's thread
+    | 18:51:39.051575  fsync             F=3                                                                                                                
+  p2-fsync: fsync is visible as a syscall line
+   P2SYNC-all: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 68 line(s)
+  p2-fsync: shim/probe issued 1 fsync; capture holds 1 fsync-named syscall line(s) and 0 synchronous disk-io line(s) (the [S] flag) on the probe's thread
+    | 18:51:42.406171  fsync             F=3                                                                                                                
+  p2-fsync: fsync is visible as a syscall line
+  census: syscall_state=24 diskio_state=3 other_state=0 offstate=41 unparsed=0 blank=0 fd_unresolved=15
+
+== P2-order: does capture order carry operation order?
+   P2ORD-write-rename: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 33 line(s)
+  p2-order: syscall sequence in capture: ['write', 'tail']; disk-io lines kept apart: ['WrData[A]']
+  p2-order: the write syscall line precedes the tail operation
+  census: syscall_state=10 diskio_state=3 other_state=0 offstate=20 unparsed=0 blank=0 fd_unresolved=5
+   P2ORD-write-unlink: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 33 line(s)
+  p2-order: syscall sequence in capture: ['write', 'tail']; disk-io lines kept apart: ['WrData[A]']
+  p2-order: the write syscall line precedes the tail operation
+  census: syscall_state=10 diskio_state=3 other_state=0 offstate=20 unparsed=0 blank=0 fd_unresolved=5
+
+== P1: attribution — same-named binaries, same state dir, same file names
+-- P1a: pid filter names only A (59462); does B (59463) leak through?
+   probes rc=0/0, fs_usage rc=0, capture 28 line(s)
+  liveness: both sentinels visible — the capture witnessed the window
+  p1-pidfilter: kept-pid lines=10, filtered-pid lines=0
+  p1-pidfilter: the filter kept one process and excluded the other
+  census: syscall_state=8 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+-- P1b: name filter covers both; can the lines be attributed at all?
+   probes rc=0/0, fs_usage rc=0, capture 81 line(s)
+  liveness: both sentinels visible — the capture witnessed the window
+  liveness: both sentinels visible — the capture witnessed the window
+  p1-partition: probe A tid=69820097, probe B tid=69820099; capture tids on state dir: [(69820097, 10), (69820099, 10)]
+  p1-partition: both self-reported tids present and nothing else on the state dir
+  census: syscall_state=16 diskio_state=4 other_state=0 offstate=61 unparsed=0 blank=0 fd_unresolved=6
+-- P1c-control: the same child write under a NAME filter (fork keeps the name),
+   which must see it, or the pid-filtered leg below measures nothing
+   P1c-control: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 31 line(s)
+  p1-child [control (name filter)]: the child's file produced 4 line(s)
+    | 18:51:58.493446  open              F=3        (_WC_T_______)  /private/tmp/se286f1.hgzdkh/P1c-control-state/child-file                                                    
+    | 18:51:58.493503  write             F=3    B=0xa                                                                                                                           
+    | 18:51:58.493574  close             F=3                                                                                                                                    
+  p1-child [control]: the child's write is visible when the filter covers it
+  census: syscall_state=9 diskio_state=3 other_state=0 offstate=19 unparsed=0 blank=0 fd_unresolved=3
+-- P1c: is a forked child followed under the parent's pid filter?
+   P1c: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 26 line(s)
+  p1-child [parent-pid filter]: the child's file produced 0 line(s)
+  p1-child: children are NOT followed by the pid filter
+  census: syscall_state=6 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+
+== P3: path fidelity
+   P3-rename: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 27 line(s)
+  p3-rename: old path on 1 line(s), new path on 0 line(s)
+    | 18:52:04.868854  rename                                 /private/tmp/se286f1.hgzdkh/P3-state/target                                                                       
+  p3-rename: DEAD — the destination never appears; a rename whose new name is invisible cannot be checked for scope (either endpoint inside the state dir counts, ADR 0006)
+  census: syscall_state=7 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+-- P3-narrow: the same create WITHOUT -w (the 28-byte claim, seen verbatim)
+   P3-narrow: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 28 line(s)
+  liveness: both sentinels visible — the capture witnessed the window
+  census: syscall_state=3 diskio_state=2 other_state=0 offstate=23 unparsed=0 blank=0 fd_unresolved=0
+   state-scoped lines, narrow mode, verbatim (no thread id on any of them):
+   | 18:52:08  open              /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-start                       0.000723   probe       
+   | 18:52:08    WrData[A]       /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-start                       0.000059 W probe       
+   | 18:52:08  open              /private/tmp/se286f1.hgzdkh/P3-narrow-state/target                               0.000372   probe       
+   | 18:52:08  open              /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-end                         0.000266   probe       
+   | 18:52:08    WrData[A]       /private/tmp/se286f1.hgzdkh/P3-narrow-state/sentinel-end                         0.000068 W probe       
+-- P3-deep: a state dir nested past 180 characters, wide mode
+   P3-deep: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 28 line(s)
+  p3-depth: full state path NOT visible; longest displayed pathname 156 chars; real sentinel path 259 chars
+    | 18:52:11.229255  open              F=3        (_WC_T_______)  nested-component/nested-component/nested-component/nested-component/nested-component/nested-component/nested-component/nested-component/st
+    | 18:52:11.229686    WrData[A]       D=0x03e60afc  B=0x1000   /dev/disk3s5  nent/nested-component/nested-component/nested-component/nested-component/nested-component/nested-component/nested-component/st
+  p3-depth: DEAD — the displayed pathname is cut from the left at about 156 chars, so a state dir this deep cannot be scoped by its own path
+   (no census here by construction: every path is cut below the state
+    dir, so state-scoped classification is exactly what this leg shows failing)
+-- P3-weird: a directory name holding a space and non-ASCII
+   P3-weird: probe rc=0, fs_usage rc=0 (TERM after drain is expected), capture 28 line(s)
+  liveness: both sentinels visible — the capture witnessed the window
+  census: syscall_state=8 diskio_state=2 other_state=0 offstate=18 unparsed=0 blank=0 fd_unresolved=3
+   state-scoped lines, verbatim:
+   | 18:52:14.348178  open              F=3        (_WC_T_______)  /private/tmp/se286f1.hgzdkh/wei rd-ステート/state/sentinel-start                                                                                            0.001051   probe.69820663
+   | 18:52:14.348636    WrData[A]       D=0x03e60b06  B=0x1000   /dev/disk3s5  /private/tmp/se286f1.hgzdkh/wei rd-ステート/state/sentinel-start                                                                                0.000251 W probe.69820663
+   | 18:52:14.349058  open              F=3        (_WC_T_______)  /private/tmp/se286f1.hgzdkh/wei rd-ステート/state/target                                                                                                    0.000558   probe.69820663
+   | 18:52:14.349625  open              F=3        (_WC_T_______)  /private/tmp/se286f1.hgzdkh/wei rd-ステート/state/sentinel-end                                                                                              0.000490   probe.69820663
+
+== what this transcript does not answer
+   Behaviour under load (event drop), non-APFS volumes, network mounts,
+   and any macOS version other than the one self-reported above.
+
+== measured DEAD verdicts: 2 (a DEAD is a finding, not a failure)
+== BROKEN checks: 0

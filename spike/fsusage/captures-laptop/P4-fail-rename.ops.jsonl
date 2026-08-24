@@ -1,0 +1,4 @@
+{"type":"hello","pid":58912,"tid":69817276,"mode":"fail-rename"}
+{"type":"sentinel","which":"start","pid":58912,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-rename-state/sentinel-start","rc":0,"errno":0,"start_ns":3059683227509708,"end_ns":3059683229074041}
+{"type":"op","seq":0,"pid":58912,"syscall":"rename","class":"rename","path":"/private/tmp/se286f1.hgzdkh/P4-fail-rename-state/missing","path2":"/private/tmp/se286f1.hgzdkh/P4-fail-rename-state/target2","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":3059683229127291,"end_ns":3059683229160708}
+{"type":"sentinel","which":"end","pid":58912,"path":"/private/tmp/se286f1.hgzdkh/P4-fail-rename-state/sentinel-end","rc":0,"errno":0,"start_ns":3059683229205541,"end_ns":3059683230150708}

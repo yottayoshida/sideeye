@@ -1,0 +1,4 @@
+{"type":"hello","pid":59596,"tid":69820663,"mode":"create"}
+{"type":"sentinel","which":"start","pid":59596,"path":"/private/tmp/se286f1.hgzdkh/wei rd-ステート/state/sentinel-start","rc":0,"errno":0,"start_ns":3059761004288625,"end_ns":3059761005628541}
+{"type":"op","seq":0,"pid":59596,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hgzdkh/wei rd-ステート/state/target","rc":0,"errno":0,"errno_name":"","start_ns":3059761005661708,"end_ns":3059761006221166}
+{"type":"sentinel","which":"end","pid":59596,"path":"/private/tmp/se286f1.hgzdkh/wei rd-ステート/state/sentinel-end","rc":0,"errno":0,"start_ns":3059761006296291,"end_ns":3059761006968041}

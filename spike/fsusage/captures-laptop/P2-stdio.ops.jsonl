@@ -1,0 +1,6 @@
+{"type":"hello","pid":59281,"tid":69819224,"mode":"stdio"}
+{"type":"sentinel","which":"start","pid":59281,"path":"/private/tmp/se286f1.hgzdkh/P2-stdio-state/sentinel-start","rc":0,"errno":0,"start_ns":3059722341889041,"end_ns":3059722343372875}
+{"type":"op","seq":0,"pid":59281,"syscall":"fopen","class":"open","path":"/private/tmp/se286f1.hgzdkh/P2-stdio-state/target","rc":0,"errno":0,"errno_name":"","start_ns":3059722343430791,"end_ns":3059722344100625}
+{"type":"op","seq":1,"pid":59281,"syscall":"fprintf","class":"write","path":"/private/tmp/se286f1.hgzdkh/P2-stdio-state/target","rc":13,"errno":0,"errno_name":"","start_ns":3059722379202958,"end_ns":3059722379290375}
+{"type":"op","seq":2,"pid":59281,"syscall":"fflush","class":"write","path":"/private/tmp/se286f1.hgzdkh/P2-stdio-state/target","rc":0,"errno":0,"errno_name":"","start_ns":3059722414439958,"end_ns":3059722414666333}
+{"type":"sentinel","which":"end","pid":59281,"path":"/private/tmp/se286f1.hgzdkh/P2-stdio-state/sentinel-end","rc":0,"errno":0,"start_ns":3059722414872083,"end_ns":3059722415870625}
