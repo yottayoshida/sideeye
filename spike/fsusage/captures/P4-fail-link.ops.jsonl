@@ -1,0 +1,4 @@
+{"type":"hello","pid":8770,"tid":28563,"mode":"fail-link"}
+{"type":"sentinel","which":"start","pid":8770,"path":"/private/tmp/se286f1.hZYGRI/P4-fail-link-state/sentinel-start","rc":0,"errno":0,"start_ns":460834711208,"end_ns":460835034333}
+{"type":"op","seq":0,"pid":8770,"syscall":"link","class":"link","path":"/private/tmp/se286f1.hZYGRI/P4-fail-link-state/missing","path2":"/private/tmp/se286f1.hZYGRI/P4-fail-link-state/target2","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":460835057375,"end_ns":460835066125}
+{"type":"sentinel","which":"end","pid":8770,"path":"/private/tmp/se286f1.hZYGRI/P4-fail-link-state/sentinel-end","rc":0,"errno":0,"start_ns":460835097625,"end_ns":460835269791}

@@ -1,0 +1,6 @@
+{"type":"hello","pid":10076,"tid":31807,"mode":"write-rename"}
+{"type":"sentinel","which":"start","pid":10076,"path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-rename-state/sentinel-start","rc":0,"errno":0,"start_ns":505732763958,"end_ns":505732986083}
+{"type":"op","seq":0,"pid":10076,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-rename-state/target","rc":0,"errno":0,"errno_name":"","start_ns":505732998416,"end_ns":505733038666}
+{"type":"op","seq":1,"pid":10076,"syscall":"write","class":"write","path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-rename-state/target","rc":7,"errno":0,"errno_name":"","start_ns":505959721708,"end_ns":505959841208}
+{"type":"op","seq":2,"pid":10076,"syscall":"rename","class":"rename","path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-rename-state/target","path2":"/private/tmp/se286f1.hZYGRI/P2ORD-write-rename-state/target2","rc":0,"errno":0,"errno_name":"","start_ns":506109893291,"end_ns":506110230958}
+{"type":"sentinel","which":"end","pid":10076,"path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-rename-state/sentinel-end","rc":0,"errno":0,"start_ns":506110254583,"end_ns":506115940416}

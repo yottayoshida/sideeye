@@ -1,0 +1,22 @@
+04:31:43  stat64            /private/tmp/se286f1.hZYGRI/P3-narrow/go                                         0.000037   probe       
+04:31:44  stat64            /private/tmp/se286f1.hZYGRI/P3-narrow/go                                         0.000035   probe       
+04:31:44  stat64            /private/tmp/se286f1.hZYGRI/P3-narrow/go                                         0.000053   probe       
+04:31:44  stat64            /private/tmp/se286f1.hZYGRI/P3-narrow/go                                         0.000068   probe       
+04:31:44  stat64            /private/tmp/se286f1.hZYGRI/P3-narrow/go                                         0.000018   probe       
+04:31:44  stat64            /private/tmp/se286f1.hZYGRI/P3-narrow/go                                         0.000042   probe       
+04:31:45  stat64            /private/tmp/se286f1.hZYGRI/P3-narrow/go                                         0.000057   probe       
+04:31:45  open              /private/tmp/se286f1.hZYGRI/P3-narrow-state/sentinel-start                       0.000336   probe       
+04:31:45  write                                                                                              0.000134   probe       
+04:31:45  close                                                                                              0.000121   probe       
+04:31:45  write                                                                                              0.000030   probe       
+04:31:45  open              /private/tmp/se286f1.hZYGRI/P3-narrow-state/target                               0.000175   probe       
+04:31:45    WrData[AT1]     /private/tmp/se286f1.hZYGRI/P3-narrow-state/sentinel-start                       0.000363 W probe       
+04:31:45  write                                                                                              0.000027   probe       
+04:31:45  close                                                                                              0.000004   probe       
+04:31:45  open              /private/tmp/se286f1.hZYGRI/P3-narrow-state/sentinel-end                         0.000160   probe       
+04:31:45  write                                                                                              0.000066   probe       
+04:31:45  close                                                                                              0.000060   probe       
+04:31:45  write                                                                                              0.000024   probe       
+04:31:45    WrData[AT1]     /private/tmp/se286f1.hZYGRI/P3-narrow-state/sentinel-end                         0.000174 W probe       
+04:31:45  exit                                                                                               0.000121   probe       
+04:31:45    WrData[A]       /private/tmp/se286f1.hZYGRI/P3-narrow/ops.jsonl                                  0.000417 W probe       

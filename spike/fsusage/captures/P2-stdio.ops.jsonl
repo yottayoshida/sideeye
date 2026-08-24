@@ -1,0 +1,6 @@
+{"type":"hello","pid":9674,"tid":30886,"mode":"stdio"}
+{"type":"sentinel","which":"start","pid":9674,"path":"/private/tmp/se286f1.hZYGRI/P2-stdio-state/sentinel-start","rc":0,"errno":0,"start_ns":494209658416,"end_ns":494209923416}
+{"type":"op","seq":0,"pid":9674,"syscall":"fopen","class":"open","path":"/private/tmp/se286f1.hZYGRI/P2-stdio-state/target","rc":0,"errno":0,"errno_name":"","start_ns":494209941083,"end_ns":494210015125}
+{"type":"op","seq":1,"pid":9674,"syscall":"fprintf","class":"write","path":"/private/tmp/se286f1.hZYGRI/P2-stdio-state/target","rc":13,"errno":0,"errno_name":"","start_ns":494334641166,"end_ns":494334671958}
+{"type":"op","seq":2,"pid":9674,"syscall":"fflush","class":"write","path":"/private/tmp/se286f1.hZYGRI/P2-stdio-state/target","rc":0,"errno":0,"errno_name":"","start_ns":494459651208,"end_ns":494459742791}
+{"type":"sentinel","which":"end","pid":9674,"path":"/private/tmp/se286f1.hZYGRI/P2-stdio-state/sentinel-end","rc":0,"errno":0,"start_ns":494459809083,"end_ns":494459961500}

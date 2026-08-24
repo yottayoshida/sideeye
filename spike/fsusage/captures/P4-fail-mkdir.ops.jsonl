@@ -1,0 +1,4 @@
+{"type":"hello","pid":8446,"tid":27574,"mode":"fail-mkdir"}
+{"type":"sentinel","which":"start","pid":8446,"path":"/private/tmp/se286f1.hZYGRI/P4-fail-mkdir-state/sentinel-start","rc":0,"errno":0,"start_ns":454208283000,"end_ns":454208636416}
+{"type":"op","seq":0,"pid":8446,"syscall":"mkdir","class":"mkdir","path":"/private/tmp/se286f1.hZYGRI/P4-fail-mkdir-state/subdir","rc":-1,"errno":17,"errno_name":"EEXIST","start_ns":454208658875,"end_ns":454208664583}
+{"type":"sentinel","which":"end","pid":8446,"path":"/private/tmp/se286f1.hZYGRI/P4-fail-mkdir-state/sentinel-end","rc":0,"errno":0,"start_ns":454208699500,"end_ns":454208848333}

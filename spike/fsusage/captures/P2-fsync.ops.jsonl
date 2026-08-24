@@ -1,0 +1,6 @@
+{"type":"hello","pid":9808,"tid":31177,"mode":"fsync"}
+{"type":"sentinel","which":"start","pid":9808,"path":"/private/tmp/se286f1.hZYGRI/P2-fsync-state/sentinel-start","rc":0,"errno":0,"start_ns":497817902083,"end_ns":497823268916}
+{"type":"op","seq":0,"pid":9808,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hZYGRI/P2-fsync-state/target","rc":0,"errno":0,"errno_name":"","start_ns":497823339208,"end_ns":497823404208}
+{"type":"op","seq":1,"pid":9808,"syscall":"write","class":"write","path":"/private/tmp/se286f1.hZYGRI/P2-fsync-state/target","rc":7,"errno":0,"errno_name":"","start_ns":497928380750,"end_ns":497928521708}
+{"type":"op","seq":2,"pid":9808,"syscall":"fsync","class":"fsync","path":"/private/tmp/se286f1.hZYGRI/P2-fsync-state/target","rc":0,"errno":0,"errno_name":"","start_ns":497964406250,"end_ns":497964680583}
+{"type":"sentinel","which":"end","pid":9808,"path":"/private/tmp/se286f1.hZYGRI/P2-fsync-state/sentinel-end","rc":0,"errno":0,"start_ns":497964742625,"end_ns":497964922500}

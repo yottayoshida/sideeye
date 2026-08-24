@@ -2,6 +2,181 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-24 — #286 route F1 opens: does fs_usage have the oracle's shape, measured before anything is built on it
+
+Entry opened at the start of the work, per the contract. Today's zero-base
+review killed three unprivileged routes three different ways (FSEvents by
+measurement, calibration by tense, the state-closure check by information
+content), which leaves two families: secure an observer, or build a recorder
+that needs none. This spike is the first family: fs_usage, measured at the
+four points the fsusage plan names, before any adapter or grant-once design
+is written on top of it.
+
+One reframing changes who runs the privileged leg. The verified PASS matters
+most as a CI gate, and GitHub's macOS runners are documented to allow
+passwordless sudo, so the leg that needed a human yesterday may need none.
+That claim is itself unmeasured here, so it is the first thing the apparatus
+checks, as a workflow that does nothing but try.
+
+### Predictions, written before any run
+
+Confidence is a guess, not a measurement.
+
+1. On the GitHub macOS runner, `sudo -n true` exits 0 and `sudo fs_usage`
+   produces a non-empty capture (confidence 90%).
+2. Write syscalls do NOT appear as their own lines under `-f filesys`: the
+   #181 capture shows `open`, `WrData[A]`, `rename`, `unlink`, `mkdir` for a
+   toy that called write() three times, and no `write` line. If that holds,
+   P2 kills the strict drop-in on its own (confidence 70%).
+3. A failed unlink/rename/mkdir appears with the errno in brackets and the
+   attempted path; a failed open is less certain to carry its path
+   (confidence 55%).
+4. fs_usage accepts a pid argument and restricts output to it (70%); a
+   forked child is not followed under the parent's pid (60%); two same-named
+   processes under a name filter are merged and separable only by thread id,
+   which nothing in the output maps to a pid (70%).
+5. `-w` lifts the 28-byte pathname limit to full paths (85%).
+6. At least one of P1-P4 fails hard enough that fs_usage is not a drop-in
+   oracle without lowering the contract's ambition (60%). The prior is
+   honest: prediction 2 alone would do it.
+
+The ground truth for the comparison legs is the shim's own binary trace
+(SIDEEYE1 header, little-endian records), read directly by the judge, not
+the probe's self-account. The probe knows what it asked for; the shim's
+record is the account the oracle would actually be compared against.
+
+### What round 1 said (run 32687071111, macOS 26.5.2 on the runner, SIP disabled there)
+
+The premise held: `sudo -n` exits 0, `fs_usage` runs, and two unfiltered
+seconds are 27,994 lines. Then all 25 legs ran and ten came back BROKEN,
+every one of them the apparatus, and the platform findings sat underneath.
+
+Apparatus, two holes. fs_usage prints `write F=3 B=0x7` with no pathname,
+so the judge scoped every write as off-state noise; the `open F=3 <path>`
+that preceded it on the same thread is the address, and resolving through
+the descriptor is what the strace oracle already does with its own
+annotations. And the shim recorded only opens, because the harness passed
+the state dir spelled `/tmp/...` while the shim resolves descriptors with
+`F_GETPATH`, which answers `/private/tmp/...`; without the alt spelling the
+engine sets, every descriptor-addressed op fell out of scope. That is not a
+shim bug (the engine passes both spellings, `contract.zig` says why) but it
+is a sharp edge for any adapter: the observer's spelling, the shim's
+spelling and the engine's spelling are three things, not one. fs_usage adds
+a fourth: a path the target named through the /tmp symlink comes back as
+`private/tmp/...` with no leading slash, while the same path named
+canonically prints as `/private/tmp/...` intact (round 2 measured both).
+
+Platform, what stood after the holes were accounted for:
+
+- P4: all seven failed attempts left a line, each with the errno in
+  brackets and the attempted path: `open [ 2]`, `mkdir [ 17]`, and so on.
+  The counterexample that killed FSEvents does not touch fs_usage.
+- P1: the pid filter kept one of two same-named processes and leaked
+  nothing (5 lines kept, 0 leaked). Under a name filter covering both, the
+  trailing number on every state-dir line was one of the two tids the probes
+  had reported through `pthread_threadid_np` (15741 and 15743, nothing
+  else). Prediction 4 said that mapping would not exist; it does. A forked
+  child is not followed under the parent's pid filter, as predicted.
+- P3: a rename line carries the old path only; the destination never
+  appears. Wide mode keeps the LAST ~153 characters of a pathname and cuts
+  the front, so a state dir deeper than that cannot be scoped by its own
+  path. Narrow mode prints full paths too (58 characters intact, so the man
+  page's 28-byte figure is not what this build does) but carries no thread
+  id at all, so nothing in narrow mode attributes a line. A directory name holding a space and
+  Japanese survived wide mode byte for byte.
+- The shim's own resolution shows through: every op is bracketed by
+  `fstat64 F=n` and `fcntl F=n <GETPATH>` on the target's thread, and the
+  shim's trace writes appear as `write F=900`. An adapter has to know those
+  are the observer's shadow, not the target's work.
+
+### What rounds 2 and 3 said (runs 32687503436 and 32687827616)
+
+Round 2 fixed the two harness holes and came back BROKEN 0, DEAD 11. Nine
+of the eleven were the judge again: "1 recorded write arrived as 3 lines",
+every time by exactly two. The two were the sentinels. Their write lines
+carry no pathname in the raw text, and the exclusion that keeps the
+apparatus's own mutations out of the count only looked at the raw text.
+Beneath that sat a normaliser that stripped `/private` only after a leading
+slash, so round 1's `private/tmp/...` and round 2's `/private/tmp/...`
+never met. Round 3 carries both fixes; re-judged over round 2's own
+captures first, all nine P2 modes were 1:1 with the shim's count.
+
+One more near-miss, recorded because the shape is the one this workspace
+keeps meeting. Looking for fsync, a grep for the word returned 18 hits, all
+of them the leg's own name inside a pathname; a listing of the probe's
+thread cut at fourteen lines stopped just before the fsync line; and a
+`uniq -c | head -8` of CALL names dropped the one-count entry. Three
+truncated reads agreed that fsync was invisible. The verdict, judged by
+CALL name over the whole thread, found it at once: `fsync F=3`, one of one,
+beside the `WrData[ST1]` it caused. The number that nearly went into
+RESULTS was manufactured by the reads, not by the platform.
+
+Scoring the predictions written before any run:
+
+1. Runner sudo works, capture non-empty. **Right.**
+2. Write syscalls do not appear as their own lines. **Wrong.** They do,
+   as `write F=n B=k` with no pathname, and once placed through the
+   descriptor they are 1:1 with the shim's records in all nine modes:
+   three consecutive small writes are three lines, two interleaved fds are
+   four, a 4 MiB write is one, a zero-byte write is one, pwrite and writev
+   print under their own names, stdio's flush is one. The #181 capture that seeded the
+   prediction had been read through a path filter, which is exactly what
+   hides them.
+3. Failed attempts carry errno and path; failed open less certain.
+   **Right, and the uncertain half held too**: seven of seven, `open [ 2]`
+   with its path included.
+4. pid filter honoured (right); forked child not followed (right); tids
+   unmappable to a process (**wrong**: the trailing number IS the value
+   `pthread_threadid_np` reports, and two same-named processes on one file
+   separated cleanly by it).
+5. `-w` lifts the 28-byte limit. **Half right.** Narrow mode already prints
+   58-character paths intact; what wide mode changes is a cap of about 144
+   displayed characters, cut from the left, which narrow mode was not
+   pushed against.
+6. At least one point fails hard enough to deny the strict drop-in.
+   **Right, but not where expected.** P4 and P1 and P2 all hold. What
+   fails is P3: a rename line names only its old path, and a state
+   directory deeper than the display cap cannot be scoped by its own path.
+
+What this leaves. Three of the four points are clean on this machine.
+The fourth has two measured walls, neither of them the kind that killed
+FSEvents: the rename destination is a per-class gap (ADR 0006 counts
+either endpoint), and the depth cap is a constraint sideeye can enforce on
+the work directory it hands the target. Whether those are cheap enough to
+build an adapter behind is the next decision, and it is the owner's.
+
+### What round 4 said (run 32689458393), after the diff's first-look review
+
+The review of round 3 reproduced four verdicts that returned green on an
+adversarial capture: p4 on a path hit with the errno stripped, p2-order on a
+capture with the write syscall line deleted (its WrData carried it),
+p1-partition with one process missing, and a census of an empty capture
+reporting all zeroes. Three more were found by reading: containment was a
+substring test where the engine's rule is component-boundary, the trace's
+contract version was read and discarded, and the child-follow leg had no
+positive control. Each is a selftest case now that failed before the fix.
+
+Round 4 with the tightened judge: BROKEN 0, DEAD the same 2 (rename's
+destination, the depth cap), census on 27 of 28 captures (the deep-path leg
+is the one where state scoping fails by construction) with `other_state`
+and `unparsed` at 0 in every one, and the child write visible under a name
+filter (4 lines) while invisible under the parent's pid filter (0), so the
+"not followed" is the filter's and not the child's. The depth cap printed
+153 this run against 144 in round 3; the number moves, the left-cut does
+not.
+
+Round 5 (run 32690217527) carried the confirmation review's three fixes
+(exact call names in p4, sabotage at every indentation, the census said as
+27 of 28) and returned the same shape: BROKEN 0, DEAD 2, census 27 with
+both counts at 0, depth 153, always-accept sabotage 15. It is the transcript
+committed beside the code that produced it.
+
+Two of the document's own claims were also wrong against the captures:
+pwrite and writev print under their own names (a `uniq -c | head -8` had
+dropped them, the same truncation that nearly hid fsync), and the
+attribution finding said more than a single-threaded probe reporting its
+own thread id can say. Both narrowed to what was measured.
+
 ## 2026-08-24 — three places where a failed measurement ends up shaped like a success
 
 #264, #271 and #273 arrived as unrelated tickets and turned out to be one

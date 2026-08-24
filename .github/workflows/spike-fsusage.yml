@@ -1,0 +1,52 @@
+# The privileged leg of the fs_usage survey (#286, route F1), run where sudo
+# needs no human: GitHub's macOS runner. This is a measurement apparatus, not
+# standing CI — it triggers only on its own spike branch and by hand, and it
+# must never be made a required check.
+#
+# The F12 fail-fast (2026-08-24, run 32686422118) already measured the
+# premise: sudo -n rc=0, fs_usage rc=0, 27,994 lines in 2 seconds, the marker
+# touch visible. What follows is the full survey on top of that ground.
+name: spike-fsusage
+on:
+  push:
+    branches: [fsusage-oracle-probe]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sudo-fsusage:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      # Pinned by commit: these actions run before a script that runs as root.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: 0.16.0
+
+      - name: Build the shim (the trace it writes is the P2 ground truth)
+        run: zig build
+
+      - name: Unprivileged half (selftest, sabotage controls, the refusal)
+        run: sh spike/fsusage/survey.sh
+
+      - name: Privileged half (the four points, as root)
+        run: |
+          mkdir -p /tmp/fsu-out
+          # -n: refuse rather than prompt if the runner's sudo ever stops being passwordless
+          sudo -n OUT=/tmp/fsu-out SHIM="$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            sh spike/fsusage/sudo-survey.sh
+          rc=$?
+          echo "sudo-survey rc=$rc"
+          exit "$rc"
+
+      - name: Upload captures and accounts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: fsusage-survey
+          path: /tmp/fsu-out/
+          if-no-files-found: warn

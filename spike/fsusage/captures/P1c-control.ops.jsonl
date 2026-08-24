@@ -1,0 +1,4 @@
+{"type":"hello","pid":10549,"tid":32992,"mode":"child-write"}
+{"type":"sentinel","which":"start","pid":10549,"path":"/private/tmp/se286f1.hZYGRI/P1c-control-state/sentinel-start","rc":0,"errno":0,"start_ns":519835604250,"end_ns":519856552416}
+{"type":"op","seq":0,"pid":10549,"syscall":"fork+child-write","class":"child","path":"/private/tmp/se286f1.hZYGRI/P1c-control-state/child-file","rc":0,"errno":0,"errno_name":"","start_ns":519856600750,"end_ns":519866696458}
+{"type":"sentinel","which":"end","pid":10549,"path":"/private/tmp/se286f1.hZYGRI/P1c-control-state/sentinel-end","rc":0,"errno":0,"start_ns":519866744125,"end_ns":519866820458}
