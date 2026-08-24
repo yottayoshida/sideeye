@@ -249,7 +249,13 @@ pub fn decodeStatus(status: c_int) Term {
     return .{ .unknown = status };
 }
 
-pub const SpawnError = error{ ForkFailed, OutOfMemory };
+/// `WaitFailed` means the direct child's exit status could never be read — not that the
+/// child misbehaved. It exists because the alternative is worse: `waitpid` only writes
+/// `status` when it succeeds, so a discarded failure leaves the zero it was initialised
+/// with, `decodeStatus` reads that as a clean exit, and a world that was killed is
+/// reported `kill_did_not_land`. A refusal naming the wait is the honest answer; a
+/// confident wrong reason is not (#264).
+pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed };
 
 /// Run a command to completion with extra environment variables set, and leave nothing of
 /// it running.
@@ -344,6 +350,30 @@ fn runChildImpl(
     stdout_path: ?[]const u8,
     minimal_env: bool,
     capture_stderr: bool,
+) SpawnError!Term {
+    return runChildImplWithWait(gpa, argv, env_pairs, stdout_path, minimal_env, capture_stderr, waitpid);
+}
+
+/// `runChildImpl` with the wait call as a parameter, so a test can drive the retry
+/// decision without needing the OS to fail on demand. Production always passes the real
+/// `waitpid` (the wrapper above is the only non-test caller); the seam exists because the
+/// retry logic is the part that was wrong, and a test that only exercised a pure
+/// "did it succeed?" helper would pass against an implementation that ignored the real
+/// wait result entirely.
+///
+/// The group drain goes through the same seam, so a test can assert that the drain still
+/// runs when the direct child's wait failed — the early-return version of this fix skipped
+/// it and would have leaked the very child whose reaping had just failed. A fake is
+/// expected to delegate group waits (`pid < 0`) to the real `waitpid`, so the test's own
+/// children are still reaped while the direct wait is the part being driven.
+fn runChildImplWithWait(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    stdout_path: ?[]const u8,
+    minimal_env: bool,
+    capture_stderr: bool,
+    comptime wait_fn: anytype,
 ) SpawnError!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -441,20 +471,36 @@ fn runChildImpl(
 
     // Retried rather than assumed. `status` is only written when the call succeeds, so a
     // discarded failure leaves it zero, `decodeStatus` reads a killed world as a clean
-    // exit, and the world is reported as `kill_did_not_land` — the wrong reason. Bounded
-    // because there is no errno binding here to tell a retryable interruption from a
-    // permanent failure, and an unbounded loop on the permanent one would hang. Same class
+    // exit, and the world is reported as `kill_did_not_land` — the wrong reason. Same class
     // as the ordering defect above: a wait call's side effect trusted without checking that
     // the call happened.
+    //
+    // The retry is EINTR-only. This comment used to say there was "no errno binding here to
+    // tell a retryable interruption from a permanent failure", and spent the same eight
+    // attempts on both. That was wrong: `EINTR` is declared at the top of this file and
+    // `std.c._errno()` is already used in it. A permanent failure now refuses at once
+    // instead of being retried into the same wrong answer, and the bound stays for the
+    // interruption case so an unbounded loop cannot hang.
+    // Nine attempts: the call, plus eight retries for interruption. Counted by the loop
+    // rather than by hand — a hand-incremented version of this spent one attempt fewer,
+    // depending on whether the bound was tested before or after the increment, and a test
+    // is what noticed. `else` runs only when the range is exhausted without a `break`.
     var status: c_int = 0;
-    var tries: u8 = 0;
-    while (waitpid(pid, &status, 0) < 0 and tries < 8) : (tries += 1) {}
+    const wait_failed = for (0..9) |_| {
+        if (wait_fn(pid, &status, 0) >= 0) break false;
+        if (std.c._errno().* != EINTR) break true;
+    } else true;
 
     // Reap what is still ours. Usually nothing: grandchildren belong to init the moment
     // the direct child dies. The loop exists so the engine does not accumulate zombies
     // from a target that put several processes in the group directly.
-    while (waitpid(-pid, null, 0) > 0) {}
+    //
+    // This runs *before* the wait failure is returned. Returning early would skip the drain
+    // and leave behind the direct child itself — never reaped, since reaping it is exactly
+    // what just failed. A fix for a wrong verdict must not introduce a process leak.
+    while (wait_fn(-pid, null, 0) > 0) {}
 
+    if (wait_failed) return error.WaitFailed;
     return decodeStatus(status);
 }
 
@@ -467,6 +513,92 @@ test "exit status decoding distinguishes exit from signal" {
     try std.testing.expectEqual(Term{ .signaled = 9 }, decodeStatus(9));
     try std.testing.expect(decodeStatus(9).isSignal(9));
     try std.testing.expect(!decodeStatus(0x0000).isSignal(9));
+}
+
+/// A wait the tests can drive. The seam in `runChildImplWithWait` exists so the retry
+/// decision can be exercised without asking the OS to fail on demand — nine consecutive
+/// `waitpid` failures are not something a test can arrange for real.
+///
+/// Group waits (`pid < 0`) are delegated to the real `waitpid`, so the drain actually reaps
+/// this test's children; only the direct child's wait is faked. State is file-scope because
+/// the seam takes a plain function: `zig build test` runs this file in several concurrent
+/// *binaries*, but the tests inside one binary run in sequence, so resetting at the top of
+/// each test is enough (a shared *path* would not be — see #28 below).
+const FakeWait = struct {
+    /// Same value on Linux and Darwin, like `EINTR` at the top of this file.
+    const ECHILD: c_int = 10;
+
+    var direct_calls: u32 = 0;
+    var drain_calls: u32 = 0;
+    var eintr_budget: u32 = 0;
+    var permanent: bool = false;
+    var deliver_status: c_int = 0;
+
+    fn reset() void {
+        direct_calls = 0;
+        drain_calls = 0;
+        eintr_budget = 0;
+        permanent = false;
+        deliver_status = 0;
+    }
+
+    fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
+        if (pid < 0) {
+            drain_calls += 1;
+            return waitpid(pid, status, options);
+        }
+        direct_calls += 1;
+        if (permanent) {
+            std.c._errno().* = ECHILD;
+            return -1;
+        }
+        if (eintr_budget > 0) {
+            eintr_budget -= 1;
+            std.c._errno().* = EINTR;
+            return -1;
+        }
+        if (status) |s| s.* = deliver_status;
+        return 0;
+    }
+};
+
+test "a wait that fails permanently refuses instead of reporting a clean exit" {
+    FakeWait.reset();
+    FakeWait.permanent = true;
+    const r = runChildImplWithWait(std.testing.allocator, &.{"true"}, &.{}, null, false, false, FakeWait.wait);
+
+    // Before #264 this returned `.exited = 0`: `status` keeps the zero it was initialised
+    // with, and every explored world is expected to die by signal, so the engine reported
+    // `kill_did_not_land` — a confident wrong reason rather than a refusal.
+    try std.testing.expectError(error.WaitFailed, r);
+    // A permanent failure is not an interruption, so it is not retried into the same answer.
+    try std.testing.expectEqual(@as(u32, 1), FakeWait.direct_calls);
+    // The drain still ran: returning the error early would skip it and leave behind the
+    // child whose reaping is exactly what just failed.
+    try std.testing.expect(FakeWait.drain_calls >= 1);
+}
+
+test "an interrupted wait is retried and the status that finally arrives is the one decoded" {
+    FakeWait.reset();
+    FakeWait.eintr_budget = 3;
+    FakeWait.deliver_status = 0x0100; // exit(1)
+    const term = try runChildImplWithWait(std.testing.allocator, &.{"true"}, &.{}, null, false, false, FakeWait.wait);
+
+    // The status written by the call that succeeded — not the zero the loop started with.
+    try std.testing.expectEqual(Term{ .exited = 1 }, term);
+    // Three interruptions, then the call that worked.
+    try std.testing.expectEqual(@as(u32, 4), FakeWait.direct_calls);
+}
+
+test "an interruption that never stops is bounded rather than looping forever" {
+    FakeWait.reset();
+    FakeWait.eintr_budget = std.math.maxInt(u32);
+    const r = runChildImplWithWait(std.testing.allocator, &.{"true"}, &.{}, null, false, false, FakeWait.wait);
+
+    try std.testing.expectError(error.WaitFailed, r);
+    // The first call plus the eight retries the bound allows.
+    try std.testing.expectEqual(@as(u32, 9), FakeWait.direct_calls);
+    try std.testing.expect(FakeWait.drain_calls >= 1);
 }
 
 test "kindOfPathNoFollow classifies every kind without opening anything" {

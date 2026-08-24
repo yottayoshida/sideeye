@@ -2,6 +2,123 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-24 — three places where a failed measurement ends up shaped like a success
+
+#264, #271 and #273 arrived as unrelated tickets and turned out to be one
+class: a measurement that did not happen, reported in the form of one that
+did. The direct child's `waitpid` can exhaust its retries and leave `status`
+at the zero it was initialised with, so `decodeStatus` reads a killed world
+as a clean exit and the run is reported `kill_did_not_land` — a confident
+wrong reason, in a design where every explored world is expected to die by
+signal. `upstream-report-status.sh` increments `broken` inside a pipeline
+subshell, so nothing outside can read it and the script ends `exit 0` even
+when every row is BROKEN. And `--help` is not a word the CLI knows, while
+the usage text has drifted from the parser it is supposed to describe.
+
+Two of the three fixes are not the ones the tickets proposed, and the
+reasons are worth recording because both were wrong in the same direction —
+the proposed fix would have left the defect in place while looking done.
+
+For #271 the plan initially kept `exit 0` when rows are BROKEN, reasoning
+that the script's own header says it reports rather than judges. That was a
+misreading. The header assigns exit 2 to "could not measure", and a row that
+BROKE is precisely a report that could not be read; the same file already
+exits 2 when `gh` is missing. Printing "N of M could not be read" changes
+nothing for the machine reading the exit code. The check that went with the
+first design was worse than useless: it compared emitted row count against
+the list length, and six BROKEN rows still emit six lines, so a fully
+failed run would have passed it. The predicate is `broken > 0`, not a count.
+
+For #273 the ticket proposes pinning that every flag the parser reads
+appears in the usage text. Measured, the parser accepts 13 unique flags and
+the usage text names the same 13 — the pin is satisfied the day it is
+written. What has actually drifted is per-mode: `explore` omits six flags it
+accepts, `replay` omits one, `mcp` has no synopsis line at all, and
+`preflight` is already correct because the parser explicitly refuses the
+five flags its line leaves out. A pin that fills in `preflight` would
+advertise invocations the program rejects.
+
+The intended replacement was the full mode-by-flag acceptance matrix. That
+is **not** what shipped, and the reversal belongs here rather than only in
+the CHANGELOG. Driving the matrix by execution needs to know which flags
+take a value — a dummy argument after a no-value flag comes back as
+"unknown option", which is indistinguishable from a refusal — and that list
+would be the same hand-synced second copy the check exists to avoid. What
+shipped is the help paths by execution, plus two directions that need no
+such list: every mode the parser dispatches on has a synopsis line, and
+every flag the synopsis advertises has a parser branch. The reverse
+direction per mode is filed.
+
+Review moved the extractions after that, twice. They were `[a-z]+` and
+`[a-z-]+`, which cover today's seven modes and thirteen flags and would
+silently miss a `show-report` or an `mcp2` — a narrow pattern turns "every
+mode" into a claim the check cannot support. The first pass widened the two
+patterns that read `src/main.zig` and left a third: the *line selection* on
+the synopsis side, still `^  sideeye [a-z]+ `, which meant a `show-report`
+line's flags were never scanned at all. A synthesised
+`sideeye show-report --not-a-parser-flag` passed both checks. Three places
+had to move, not two — worth recording because the first fix was reported as
+complete and the claim in this file had to be walked back with it.
+
+The same round caught the banner assertion reading `--help`'s output instead
+of the bare invocation's, so `usage()` could have disappeared from the bare
+branch with the check still green: the defect the check was written to
+prevent, inside the check.
+
+One more from verifying the fix rather than the code. The `unknown_reason`
+addition was declared safe because `check-report-schema.py` reported no
+drift — except it had not checked. Run without report arguments the script
+exits at its verdict-coverage assertion, forty lines before the drift
+comparison, so deleting `child_wait_failed` from the doc produced the same
+output as leaving it in. Reaching the comparison needs four reports covering
+all four verdicts: three are committed fixtures, and SETUP_ERROR generates
+on macOS from `--setup /bin/false`. With those it prints "schema page, 4
+reports (all four verdicts), and the contract enum agree" — a success message
+that states what it covered — and the doc-minus-one-entry control fails with
+`enum-only: ['child_wait_failed']`. A bare exit code could not tell the two
+runs apart.
+
+Also recorded because the comment is load-bearing and wrong: `posix.zig`
+says the retry bound exists "because there is no errno binding here to tell
+a retryable interruption from a permanent failure". There is. `EINTR` is
+declared forty lines above it and `std.c._errno()` is already used in this
+same file. The retry can distinguish EINTR from a permanent failure instead
+of spending nine attempts on both.
+
+Review moved two more things. The first draft returned the wait failure with
+`try`, which would have skipped the process-group drain that follows and
+left the direct child unreaped — a new defect introduced by the fix, caught
+before it was written. And the seam was going to be a comptime default
+argument, which Zig has no syntax for; it is a wrapper function instead.
+
+The larger correction came from review of the finished code: every wait
+failure was being turned into a SETUP ERROR. Honest about the failure, wrong
+about when it happened. Exit 3 means the define did not run — DESIGN's
+exit-code table says "before exploration began", and `ci-quickstart.md`
+tells CI authors that exit 3 means the define itself did not run — so a wait
+that fails while worlds are being explored would have published
+`verdict: "SETUP_ERROR"` for something that happened well after the define
+started. A silent change to the serialized shape, in the same PR whose whole
+subject is failures that misreport themselves. The fix carries the phase:
+`--setup` and the demo's compiler probe stay SETUP ERROR, everything from
+the recording run onward is UNKNOWN with a new `child_wait_failed` reason.
+The distinction was already in the tree — `recording_run_failed` and
+`baseline_run_failed` are UNKNOWN for exactly this reason — and reading the
+existing classification first would have shown it. Adding to the
+`unknown_reason` set is a change to a frozen-at-1.0 surface, allowed
+pre-1.0; the doc-versus-enum gate in `check-report-schema.py` is what keeps
+the two lists from drifting, and it was run.
+
+The same-class scan for #271 was rebuilt three times and was wrong twice.
+`| while read` on one line found 8 sites, `while[[:space:]]+read` found 10,
+and both missed `while IFS= read -r`. Scanning for `read -r` finds 22 across
+13 files. The conclusion did not move — one counter defect, in the script the
+ticket names — but two of the three phrasings would have justified the same
+sentence with a smaller denominator. Worth noting that the correct shape is
+already in the tree twice: `blind-hunt2/verify-seals.sh` runs its loop with
+`done < "$voidfile"` so an in-loop `exit 2` survives, and `unknown-rate/
+sweep.sh` carries a comment calling pipes-hide-failures a measured class in
+this workspace.
 ## 2026-08-24 — #286 route B opens: what FSEvents can verify, and the predictions made before measuring
 
 Entry opened at the start of the work, per the contract. The owner picked
