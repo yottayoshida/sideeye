@@ -20,8 +20,13 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 OUT="${OUT:-$here/out}"
 SHIM="${SHIM:-$here/../../zig-out/lib/libsideeye_shim.dylib}"
 mkdir -p "$OUT"
-W=$(mktemp -d /tmp/se286f1.XXXXXX) || { echo "BROKEN: mktemp failed" >&2; exit 1; }
-case "$W" in /tmp/se286f1.*) : ;; *) echo "BROKEN: unexpected workdir '$W'" >&2; exit 1 ;; esac
+# Canonical spelling on purpose. Round 1 (run 32687071111) handed the shim a
+# state dir spelled /tmp/...; the shim resolves descriptors with F_GETPATH,
+# which answers /private/tmp/..., and without SIDEEYE_STATE_DIR_ALT it judged
+# every write out of scope and recorded only the opens. The engine passes both
+# spellings; this harness passes the resolved one.
+W=$(mktemp -d /private/tmp/se286f1.XXXXXX) || { echo "BROKEN: mktemp failed" >&2; exit 1; }
+case "$W" in /private/tmp/se286f1.*) : ;; *) echo "BROKEN: unexpected workdir '$W'" >&2; exit 1 ;; esac
 FAILS=0
 DEAD=0
 bad() { echo "BROKEN: $*"; FAILS=$((FAILS+1)); }
@@ -210,9 +215,7 @@ echo "-- P3-deep: a state dir nested past 180 characters, wide mode"
 DEEP="$W/p3deep"
 i=0; while [ "$i" -lt 12 ]; do DEEP="$DEEP/nested-component"; i=$((i+1)); done
 capture P3-deep create 0 "$DEEP/state" pid no && {
-    judge liveness "$OUT/P3-deep.cap.txt" "$OUT/P3-deep.ops.jsonl"
-    echo "   longest path line, verbatim:"
-    awk '{ print length, $0 }' "$OUT/P3-deep.state.txt" | sort -rn | head -1 | sed 's/^/   | /'
+    judge p3-depth "$OUT/P3-deep.cap.txt" "$OUT/P3-deep.ops.jsonl"
 }
 echo "-- P3-weird: a directory name holding a space and non-ASCII"
 capture P3-weird create 0 "$W/wei rd-ステート/state" pid no && {
