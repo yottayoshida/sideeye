@@ -165,6 +165,12 @@ filter (4 lines) while invisible under the parent's pid filter (0), so the
 153 this run against 144 in round 3; the number moves, the left-cut does
 not.
 
+Round 5 (run 32690217527) carried the confirmation review's three fixes
+(exact call names in p4, sabotage at every indentation, the census said as
+27 of 28) and returned the same shape: BROKEN 0, DEAD 2, census 27 with
+both counts at 0, depth 153, always-accept sabotage 15. It is the transcript
+committed beside the code that produced it.
+
 Two of the document's own claims were also wrong against the captures:
 pwrite and writev print under their own names (a `uniq -c | head -8` had
 dropped them, the same truncation that nearly hid fsync), and the

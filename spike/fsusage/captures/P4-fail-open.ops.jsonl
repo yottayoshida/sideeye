@@ -1,4 +1,4 @@
-{"type":"hello","pid":1588,"tid":8259,"mode":"fail-open"}
-{"type":"sentinel","which":"start","pid":1588,"path":"/private/tmp/se286f1.pMu8vp/P4-fail-open-state/sentinel-start","rc":0,"errno":0,"start_ns":102218371625,"end_ns":102218753208}
-{"type":"op","seq":0,"pid":1588,"syscall":"open","class":"open","path":"/private/tmp/se286f1.pMu8vp/P4-fail-open-state/missing-dir/leaf","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":102218775375,"end_ns":102218792500}
-{"type":"sentinel","which":"end","pid":1588,"path":"/private/tmp/se286f1.pMu8vp/P4-fail-open-state/sentinel-end","rc":0,"errno":0,"start_ns":102218815791,"end_ns":102218907375}
+{"type":"hello","pid":7998,"tid":26133,"mode":"fail-open"}
+{"type":"sentinel","which":"start","pid":7998,"path":"/private/tmp/se286f1.hZYGRI/P4-fail-open-state/sentinel-start","rc":0,"errno":0,"start_ns":443507948375,"end_ns":443508243958}
+{"type":"op","seq":0,"pid":7998,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hZYGRI/P4-fail-open-state/missing-dir/leaf","rc":-1,"errno":2,"errno_name":"ENOENT","start_ns":443508257083,"end_ns":443508263291}
+{"type":"sentinel","which":"end","pid":7998,"path":"/private/tmp/se286f1.hZYGRI/P4-fail-open-state/sentinel-end","rc":0,"errno":0,"start_ns":443508279125,"end_ns":443508347583}

@@ -1,6 +1,6 @@
-{"type":"hello","pid":2484,"tid":10912,"mode":"fsync"}
-{"type":"sentinel","which":"start","pid":2484,"path":"/private/tmp/se286f1.pMu8vp/P2SYNC-all-state/sentinel-start","rc":0,"errno":0,"start_ns":156124898333,"end_ns":156125232083}
-{"type":"op","seq":0,"pid":2484,"syscall":"open","class":"open","path":"/private/tmp/se286f1.pMu8vp/P2SYNC-all-state/target","rc":0,"errno":0,"errno_name":"","start_ns":156125252000,"end_ns":156125290000}
-{"type":"op","seq":1,"pid":2484,"syscall":"write","class":"write","path":"/private/tmp/se286f1.pMu8vp/P2SYNC-all-state/target","rc":7,"errno":0,"errno_name":"","start_ns":156180632750,"end_ns":156180798750}
-{"type":"op","seq":2,"pid":2484,"syscall":"fsync","class":"fsync","path":"/private/tmp/se286f1.pMu8vp/P2SYNC-all-state/target","rc":0,"errno":0,"errno_name":"","start_ns":156223992916,"end_ns":156224236750}
-{"type":"sentinel","which":"end","pid":2484,"path":"/private/tmp/se286f1.pMu8vp/P2SYNC-all-state/sentinel-end","rc":0,"errno":0,"start_ns":156224287875,"end_ns":156224485750}
+{"type":"hello","pid":9845,"tid":31310,"mode":"fsync"}
+{"type":"sentinel","which":"start","pid":9845,"path":"/private/tmp/se286f1.hZYGRI/P2SYNC-all-state/sentinel-start","rc":0,"errno":0,"start_ns":501709171708,"end_ns":501709484041}
+{"type":"op","seq":0,"pid":9845,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hZYGRI/P2SYNC-all-state/target","rc":0,"errno":0,"errno_name":"","start_ns":501709499541,"end_ns":501709531083}
+{"type":"op","seq":1,"pid":9845,"syscall":"write","class":"write","path":"/private/tmp/se286f1.hZYGRI/P2SYNC-all-state/target","rc":7,"errno":0,"errno_name":"","start_ns":501836720291,"end_ns":501836819291}
+{"type":"op","seq":2,"pid":9845,"syscall":"fsync","class":"fsync","path":"/private/tmp/se286f1.hZYGRI/P2SYNC-all-state/target","rc":0,"errno":0,"errno_name":"","start_ns":502012184250,"end_ns":502012785083}
+{"type":"sentinel","which":"end","pid":9845,"path":"/private/tmp/se286f1.hZYGRI/P2SYNC-all-state/sentinel-end","rc":0,"errno":0,"start_ns":502012852208,"end_ns":502013058875}

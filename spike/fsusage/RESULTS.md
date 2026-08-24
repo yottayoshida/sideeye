@@ -5,15 +5,17 @@ disabled there, uid 0, `kern.hv_vmm_present` 1 (a virtual machine), the
 state directories on APFS (`/dev/disk3s5` on `/System/Volumes/Data`). Every
 number below is that machine and that build; the owner's laptop (15.3.1) has
 not run this survey. Transcripts: `survey.txt` (unprivileged half) and
-`sudo-survey.txt` (privileged half, run 32689458393). Raw captures, probe
+`sudo-survey.txt` (privileged half, run 32690217527). Raw captures, probe
 accounts and shim traces for every leg are under `captures/`. `BROKEN checks:
 0`, measured DEAD verdicts 2.
 
-The survey ran four times. Rounds 1 and 2 (runs 32687071111 and
+The survey ran five times. Rounds 1 and 2 (runs 32687071111 and
 32687503436) returned ten and eleven failures respectively, every one of them
 the apparatus; round 3 (32687827616) was clean and then first-look review
-found seven verdicts greener than their predicates; the BUILDLOG entry of
-2026-08-24 records each. Round 4 is the transcript committed here.
+found seven verdicts greener than their predicates; round 4 (32689458393)
+carried those fixes and its confirmation review found three more; the
+BUILDLOG entry of 2026-08-24 records each. Round 5 is the transcript
+committed here, produced by the code beside it.
 
 ## The premise held: the runner's sudo needs no human
 
@@ -47,7 +49,7 @@ pid. Two copies of the probe, same file name, same state directory, same
 operation, each reporting its own `pthread_threadid_np`:
 
 - Under a name filter covering both, every state-directory line carried one
-  of the two reported tids (12015 on 10 lines, 12017 on 10) and nothing
+  of the two reported tids (32490 on 10 lines, 32491 on 10) and nothing
   else. What this measures is that the number fs_usage prints and the one a
   process reads about itself through `pthread_threadid_np` are the same
   namespace. Whether a launcher can enumerate a *target's* threads from the
@@ -104,7 +106,7 @@ fs_usage-based oracle, and a rename within the directory can be scoped but
 its destination not checked.
 
 **Wide mode displays at most about 153 characters of a pathname, cut from
-the left** (144 in round 3, 153 in round 4; the cap moves, the cut does not).
+the left** (144 in round 3, 153 in rounds 4 and 5; the cap moves, the cut does not).
 A state directory whose sentinel path was 259 characters printed
 as `ted-component/nested-component/.../state/sentinel-start`; the state
 directory's own prefix was gone, so nothing in the capture could be scoped
@@ -147,7 +149,7 @@ like every other verdict, so an empty capture cannot report zeroes.
 - Whether the rename destination is available through any other fs_usage
   mode or flag. This invocation (`-w -f filesys`) does not show it.
 - Whether the depth cap moves with terminal width or any flag. 144 and 153
-  are what two runs of this invocation printed.
+  are what three runs of this invocation printed.
 
 ## Where this leaves #286
 

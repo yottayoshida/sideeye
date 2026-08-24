@@ -26,6 +26,7 @@
     selftest ok: p2-fsync rejects a capture where fsync shows only as WrData[S]              -> 1 (wanted 1)
     selftest ok: p2-fsync is not fooled by the word in a path (the 18-hit grep)              -> 1 (wanted 1)
     selftest ok: p4 rejects the attempted path without an errno                              -> 1 (wanted 1)
+    selftest ok: p4 rejects a prefix-related call (openat for open) on the attempted path    -> 1 (wanted 1)
     selftest ok: p4 rejects another call touching the attempted path                         -> 1 (wanted 1)
     selftest ok: p2-order rejects a capture whose write SYSCALL line is gone                 -> 'BROKEN' (wanted 'BROKEN')
     selftest ok: p1-partition rejects one process missing                                    -> 1 (wanted 1)
@@ -44,19 +45,19 @@
     selftest ok: p1-partition rejects when no reported tid appears                           -> 1 (wanted 1)
     selftest ok: p1-pidfilter rejects a leak of the filtered pid                             -> 1 (wanted 1)
     selftest ok: p1-pidfilter accepts a clean partition                                      -> 0 (wanted 0)
-    selftest cases: 38, failures: 0
+    selftest cases: 39, failures: 0
 -- positive control: the selftest must kill a judge that always accepts
-   always-accept judge -> 12 selftest failure(s)
+   always-accept judge -> 15 selftest failure(s)
 -- positive control: and a judge that always rejects (one verdict body)
    always-reject judge -> 1 selftest failure(s)
 
 == the probe builds and self-accounts
    probe rc=0; account:
-     {"type":"hello","pid":1462,"tid":7874,"mode":"write"}
-     {"type":"sentinel","which":"start","pid":1462,"path":"/Users/runner/se286f1.m4RzQ8/state/sentinel-start","rc":0,"errno":0,"start_ns":96263101333,"end_ns":96263224541}
-     {"type":"op","seq":0,"pid":1462,"syscall":"open","class":"open","path":"/Users/runner/se286f1.m4RzQ8/state/target","rc":0,"errno":0,"errno_name":"","start_ns":96263231375,"end_ns":96263243958}
-     {"type":"op","seq":1,"pid":1462,"syscall":"write","class":"write","path":"/Users/runner/se286f1.m4RzQ8/state/target","rc":7,"errno":0,"errno_name":"","start_ns":96263259208,"end_ns":96263262083}
-     {"type":"sentinel","which":"end","pid":1462,"path":"/Users/runner/se286f1.m4RzQ8/state/sentinel-end","rc":0,"errno":0,"start_ns":96263282375,"end_ns":96263363875}
+     {"type":"hello","pid":7896,"tid":25778,"mode":"write"}
+     {"type":"sentinel","which":"start","pid":7896,"path":"/Users/runner/se286f1.1bRuxc/state/sentinel-start","rc":0,"errno":0,"start_ns":437615273041,"end_ns":437615364750}
+     {"type":"op","seq":0,"pid":7896,"syscall":"open","class":"open","path":"/Users/runner/se286f1.1bRuxc/state/target","rc":0,"errno":0,"errno_name":"","start_ns":437615370250,"end_ns":437615380000}
+     {"type":"op","seq":1,"pid":7896,"syscall":"write","class":"write","path":"/Users/runner/se286f1.1bRuxc/state/target","rc":7,"errno":0,"errno_name":"","start_ns":437615388500,"end_ns":437615390708}
+     {"type":"sentinel","which":"end","pid":7896,"path":"/Users/runner/se286f1.1bRuxc/state/sentinel-end","rc":0,"errno":0,"start_ns":437615408500,"end_ns":437615493083}
 
 == the refusal, verbatim (fs_usage asked once, no root)
    rc=1

@@ -1,6 +1,6 @@
-{"type":"hello","pid":2643,"tid":11521,"mode":"write-unlink"}
-{"type":"sentinel","which":"start","pid":2643,"path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-unlink-state/sentinel-start","rc":0,"errno":0,"start_ns":163614634833,"end_ns":163614819458}
-{"type":"op","seq":0,"pid":2643,"syscall":"open","class":"open","path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-unlink-state/target","rc":0,"errno":0,"errno_name":"","start_ns":163614839916,"end_ns":163614892500}
-{"type":"op","seq":1,"pid":2643,"syscall":"write","class":"write","path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-unlink-state/target","rc":7,"errno":0,"errno_name":"","start_ns":163732819041,"end_ns":163732907083}
-{"type":"op","seq":2,"pid":2643,"syscall":"unlink","class":"unlink","path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-unlink-state/target","rc":0,"errno":0,"errno_name":"","start_ns":163852579833,"end_ns":163857227333}
-{"type":"sentinel","which":"end","pid":2643,"path":"/private/tmp/se286f1.pMu8vp/P2ORD-write-unlink-state/sentinel-end","rc":0,"errno":0,"start_ns":163857709875,"end_ns":163862452416}
+{"type":"hello","pid":10143,"tid":31997,"mode":"write-unlink"}
+{"type":"sentinel","which":"start","pid":10143,"path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-unlink-state/sentinel-start","rc":0,"errno":0,"start_ns":509334675791,"end_ns":509334913375}
+{"type":"op","seq":0,"pid":10143,"syscall":"open","class":"open","path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-unlink-state/target","rc":0,"errno":0,"errno_name":"","start_ns":509334924541,"end_ns":509334975791}
+{"type":"op","seq":1,"pid":10143,"syscall":"write","class":"write","path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-unlink-state/target","rc":7,"errno":0,"errno_name":"","start_ns":509489081500,"end_ns":509489172708}
+{"type":"op","seq":2,"pid":10143,"syscall":"unlink","class":"unlink","path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-unlink-state/target","rc":0,"errno":0,"errno_name":"","start_ns":509676522958,"end_ns":509676757916}
+{"type":"sentinel","which":"end","pid":10143,"path":"/private/tmp/se286f1.hZYGRI/P2ORD-write-unlink-state/sentinel-end","rc":0,"errno":0,"start_ns":509676801666,"end_ns":509677043250}
