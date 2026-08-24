@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-24 — the sorted order `find` wants was never a property of the type
+
+`Snapshot.find` is a linear scan, called from inside loops in `classify` and
+both judges, so lookup is quadratic in the entry count for every world
+explored. The entries are already sorted by `rel`, so a binary search needs
+no new structure — that is what #262 lists first among the steps that touch
+no frozen surface.
+
+The sort is real, but it belongs to one producer rather than to the type.
+`takeSnapshot` sorts; `testSnapshot`, the helper the unit tests build
+snapshots with, does not. Ten of its forty-four call sites are not in
+lexicographic order. Swapping the search without fixing that would not have
+failed those tests — it would have returned wrong answers that happened to
+satisfy them, which is the worse outcome of the two.
+
+So the order is: both producers sort, a validator runs once at each producer
+boundary, and only then does the search change. The validator is not in
+`find`. Putting it there was the first draft, and review killed it: `find`
+is called n times per judge, so an O(n) check inside it restores the
+quadratic cost this issue exists to remove. The accompanying belief that a
+debug-only assert would not matter was also wrong — `std.debug.assert` is
+generated in Debug **and ReleaseSafe**, the release artifacts are
+ReleaseSafe, and ordinary CI runs Debug. It is optimised out under
+ReleaseFast and ReleaseSmall, neither of which this project ships or tests
+in, so the check would have been free in exactly the configurations nobody
+runs.
+
+Sorting `testSnapshot` can move an answer, and the path is worth recording
+because it is not obvious: `classify` walks `pre.entries` in order and
+appends to `plan.files`, and both judges return on the *first* violation
+they find in that list. Order therefore decides which violation is
+reported. It does not break the ten fixtures — each one arranges exactly one
+violation at a time — but "does not break today" is not "does not depend on
+it", and a future fixture with two violations would be decided by the sort.
+
+Scope: #262 stays open. Parallel exploration, differential restore and
+partial crash-point selection are the rest of it, and each needs a decision
+this PR is not making. The batch it arrived in (#263 timeout, #265 snapshot
+cap) is also not in here — review pointed out that with #265 landing as an
+opt-in flag, the only bound that would actually apply by default was the
+lookup cost, which does not match a thesis about the engine refusing at its
+limits. Three tickets, three PRs.
 ## 2026-08-24 — #286 route F1 opens: does fs_usage have the oracle's shape, measured before anything is built on it
 
 Entry opened at the start of the work, per the contract. Today's zero-base
