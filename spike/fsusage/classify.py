@@ -351,9 +351,11 @@ def v_p4(buckets, sents, ops):
         # errno stripped and a capture where another call touched the path.
         hits = [r for k in ("syscall_state", "diskio_state", "other_state")
                 for r in buckets[k] if hits_path(r, path)]
+        # Exact call name (fs_usage may print the _nocancel spelling of the
+        # same call); a prefix test let `openat` stand in for `open`.
         exact = [r for r in hits
-                 if r["call"].startswith(o["syscall"]) and r["errno"] is not None
-                 and r["errno"] == o.get("errno")]
+                 if r["call"] in (o["syscall"], o["syscall"] + "_nocancel")
+                 and r["errno"] is not None and r["errno"] == o.get("errno")]
         print(f"  p4 {o['syscall']}({o.get('errno_name') or o.get('errno')}): "
               f"{len(hits)} line(s) address the attempted path, {len(exact)} "
               f"of them the same call with errno {o.get('errno')}")
@@ -819,6 +821,10 @@ def selftest():
          lambda: run(v_p4,
                      _fix_capture([_cap_line("unlink", f"{FIX_STATE}/missing")]),
                      _fix_ops([op_fail])), 1)
+    case("p4 rejects a prefix-related call (openat for open) on the attempted path",
+         lambda: run(v_p4,
+                     _fix_capture([_cap_line("openat", f"{FIX_STATE}/missing", errno=2)]),
+                     _fix_ops([{**op_fail, "syscall": "open", "class": "open"}])), 1)
     case("p4 rejects another call touching the attempted path",
          lambda: run(v_p4,
                      _fix_capture([_cap_line("stat64", f"{FIX_STATE}/missing", errno=2)]),

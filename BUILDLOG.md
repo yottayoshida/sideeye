@@ -157,7 +157,8 @@ contract version was read and discarded, and the child-follow leg had no
 positive control. Each is a selftest case now that failed before the fix.
 
 Round 4 with the tightened judge: BROKEN 0, DEAD the same 2 (rename's
-destination, the depth cap), census on all 27 captures with `other_state`
+destination, the depth cap), census on 27 of 28 captures (the deep-path leg
+is the one where state scoping fails by construction) with `other_state`
 and `unparsed` at 0 in every one, and the child write visible under a name
 filter (4 lines) while invisible under the parent's pid filter (0), so the
 "not followed" is the filter's and not the child's. The depth cap printed

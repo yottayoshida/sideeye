@@ -126,11 +126,13 @@ target's work; it is classified, never dropped, in every capture here.
 
 ## Census
 
-All 27 captures were classified line by line, the narrow-mode one through
-its own grammar (no thread id) and the deep-path one excluded by construction
-(every path is cut below the state directory, which is what that leg shows).
-`other_state` (a state-directory line whose CALL the judge does not know) was 0
-in all 27; `unparsed` was 0 in all 27. A census is gated on both sentinels
+27 of the 28 captures were classified line by line, the narrow-mode one
+through its own grammar (no thread id). The 28th, the deep-path leg, is
+excluded by construction: every path in it is cut below the state directory,
+so state-scoped classification is exactly what that leg shows failing, and a
+census of it would report the sentinels missing. `other_state` (a
+state-directory line whose CALL the judge does not know) was 0 in all 27;
+`unparsed` was 0 in all 27. A census is gated on both sentinels
 like every other verdict, so an empty capture cannot report zeroes.
 
 ## What was not measured

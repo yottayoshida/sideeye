@@ -26,7 +26,10 @@ sed 's/^/  /' "$W/st.txt"
 [ "$strc" -eq 0 ] || bad "classify selftest failed (rc $strc)"
 
 echo "-- positive control: the selftest must kill a judge that always accepts"
-sed 's/^        return 1$/        return 0  # SABOTAGE/' "$here/classify.py" > "$W/ja.py"
+# Every `return 1` at any indentation, not only the eight-space ones: R2
+# found the deeper branches (child control, and the BROKEN guards) untouched
+# by the old pattern, so their selftest cases were never proven red.
+sed -E 's/^( +)return 1$/\1return 0  # SABOTAGE/' "$here/classify.py" > "$W/ja.py"
 python3 "$W/ja.py" --selftest > "$W/sa.txt" 2>&1
 grep -q 'selftest cases:' "$W/sa.txt" || bad "the always-accept control did not run to completion"
 n=$(grep -c 'selftest FAIL' "$W/sa.txt" || true)
