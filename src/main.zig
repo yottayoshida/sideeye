@@ -169,8 +169,11 @@ fn usage() void {
         \\usage:
         \\  sideeye demo [--shim <lib>]
         \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--expect-status <n>] [--shim <lib>] [--work <dir>]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified]
+        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified]
+        \\  sideeye mcp
+        \\  sideeye help
         \\  sideeye version
         \\
         \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
@@ -381,6 +384,35 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         mcp.runServer(gpa);
         return;
+    }
+
+    // `--help`, `-h` and `help` print the usage text and exit 0.
+    //
+    // The same text already reached stdout when the program was invoked wrongly, but that
+    // path exits 3, so `sideeye --help` was a SETUP ERROR and `sideeye --help && …` took
+    // the failure branch (#273). Asking to be told how to use the tool is not a failure.
+    //
+    // This adds no meaning to the exit codes: exit 0 is the success of whatever the command
+    // does, not PASS specifically, and `version` below already exits 0 without producing a
+    // verdict. docs/contract-freeze.md §3 says so explicitly.
+    //
+    // Only at top level. `sideeye explore --help` still reaches "unknown option" in the
+    // parse loop, which treats an unrecognised flag as one that takes a value; wiring help
+    // in there means touching the no-value flag branch and replay's positional argument,
+    // and the ticket's ask is satisfied here.
+    if (argv.len >= 2 and (std.mem.eql(u8, argv[1], "--help") or
+        std.mem.eql(u8, argv[1], "-h") or
+        std.mem.eql(u8, argv[1], "help")))
+    {
+        // Refused rather than ignored, the way `version` and `mcp` refuse extras: silently
+        // dropping them would answer a question the caller did not ask.
+        if (argv.len != 2) {
+            const msg = "sideeye help takes no arguments\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        }
+        usage();
+        std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
     // `version` prints the one line a release workflow needs to hold a tag against the
