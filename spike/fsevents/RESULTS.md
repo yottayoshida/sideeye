@@ -149,3 +149,154 @@ Route C, the one-time `sudo` calibration against `fs_usage`, still stands on
 the measurement `#181` gave it. Route B has now been measured and the
 measurement killed H1; route A remains a sketch. Route C is the one route in
 `#286` that is both measured and still standing.
+
+---
+
+# H2 measured: FSEvents as a veto rather than an oracle (#293)
+
+Added 2026-08-25. The section above killed H1 — a capture cannot be rebuilt
+into the `OpClass` sequence `src/oracle.zig` compares. `#293` asked the weaker
+question, and it needed a weaker relation. The one measured here is **path set
+containment**: every path FSEvents reports must be one the shim's account
+already names. Containment passes through coalescing and reordering by
+construction, because it never asks which event belongs to which operation —
+the two properties that killed H1.
+
+Both legs take their ground truth from the probe's own record of what it did,
+never from the shim. Judging FSEvents against the shim in an experiment about
+the shim's incompleteness is circular: an event with no matching operation is
+either a false alarm or a real miss, and that comparison cannot say which.
+
+`spike/fsevents/survey-veto-1.txt` through `-3` are the transcripts, each
+produced by the committed `survey.sh`, `judge.py` and `bypass.c`. Every number
+below is recomputable from them.
+
+## The planted mutation is invisible to the shim, measured rather than assumed
+
+The sensitivity leg needs a mutation the shim provably does not report. If that
+were wrong, a silent capture could not be told from a capture of something the
+shim already saw, and the leg would prove nothing in either direction.
+
+`clonefile(2)` is the one used. It creates a file and is absent from the 40
+symbols `shim/src/macos.zig` interposes. The table is read but not trusted: the
+probe runs **under the shim** first, and the trace is checked.
+
+    trace names:        seen-by-shim.txt, clone-src.txt
+    trace never names:  clone-dst.txt
+
+The control matters as much as the absence. A trace missing everything would
+"prove" the bypass for the wrong reason, so the leg requires the control file to
+be present before the absence is read.
+
+This is also a finding about sideeye rather than about FSEvents: `clonefile`
+creates a file in the state directory that the shim never reports. It is the
+macOS instance of the class `#244` named on Linux.
+
+## Sensitivity holds: the veto sees what the account misses
+
+5 of 5 runs in each of the three transcripts, 15 of 15. Each capture names `clone-dst.txt` with two events, against an
+account of two paths that does not contain it.
+
+## Containment does not hold on a clean run
+
+Three transcripts, each produced by the committed `survey.sh`, `judge.py` and
+`bypass.c`: `survey-veto-1.txt`, `-2`, `-3`. Each is 11 probe modes x 5 runs.
+
+| run | containment held | outside, `link` | outside, other 10 modes |
+|---|---|---|---|
+| 1 | 49/55 | 5/5 | 1/50 |
+| 2 | 47/55 | 5/5 | 3/50 |
+| 3 | 49/55 | 5/5 | 1/50 |
+
+Every outside path in all three is the **state directory itself** — an ancestor
+of paths the account names. Over the 165 runs the `unrelated` bucket saw
+nothing. (`/selftest-only/stranger` appears once per transcript: that is the
+judge's own selftest fixture, printed before any measurement. The prefix is
+there so a transcript-wide grep for "unrelated" does not need a reader who
+remembers which line was which.)
+
+`link` was outside on 15 of the 15 runs it had. The other ten modes were outside
+5 times in 150, spread over `mkdir`, `rmdir`, `symlink`, `truncate-same` and
+`truncate-shrink`, one each. **Which** modes is not a property worth reading:
+the three runs disagree about them, and two earlier sets of runs disagreed with
+these.
+
+The instability is the evidence. A low rate spread across modes is what makes
+different modes light up as more samples arrive; a property of one mode would
+keep selecting that mode. `link` never moved. The reading is:
+
+> Over three runs, `link` was outside on every run it had, the other ten modes
+> on 5 of 150, and which modes never do it is not measured.
+
+That is deliberately weaker than "`link` always reports the parent". 15 of 15 is
+an observation about 15 runs. This document measured elsewhere that an event
+cannot be attributed to an actor, so no mechanism is claimed either — only that
+the path reported was the parent directory.
+
+Five runs per mode answers "does this reproduce", not "how often". A behaviour
+appearing one run in five is missed entirely by five runs about a third of the
+time, so a mode reading 0/5 is not a mode that does not do it.
+
+**5 of 150 is a count, not a rate, and 150 runs does not determine one.** Two
+earlier sets of three runs, made while the leg was being built and not committed
+here, gave 6 and 23 with the same relation on the same machine. Three sets of
+150 runs: **5, 6, 23.** No percentage taken from one of them survives the other
+two, and quoting one would make the next reader call another a regression. What
+survives all three is `link`, outside on every run it had in each. The rest is
+"it happens, and how often is not measured".
+
+The middle set was misread once, which is why this is stated so flatly. A draft
+of this section had only two sets, called the first "a quiet stretch" and took
+the larger number as the real one. The third set put it back at the bottom of
+the range. Two samples were enough to notice that the number moves and not
+enough to say which way.
+
+**An earlier and much thinner version of this measurement is worth recording.**
+The first containment leg ran one mode, `write`, and reported 5/5 clean. Each
+run was 2 operations over **one path**: five repetitions of one path are five
+observations of one path, and the repetition bought nothing. `write` is outside
+zero times in the three runs above, so that 5/5 was not even a wrong answer
+about `write` — it was a true answer whose scope was then read as "containment
+holds". The predicate was too thin to be able to fail, and the failure was in
+the generalisation rather than in the measurement.
+
+## The two buckets are shapes, not causes
+
+An outside path is reported as an *ancestor of an account path* or as
+*unrelated to the account*. Both are facts about strings. Neither is a claim
+about what caused the event, and the tempting reading — ancestor means the
+relation is stated too tightly, unrelated means a neighbour wrote here — does
+not follow: **a neighbour touching the parent directory lands in the ancestor
+bucket too.** Attributing an event to an actor is what the section above
+measured FSEvents cannot do. That a neighbour writing into the parent directory
+would be filed as an ancestor is a property of the classifier, readable from its
+two lines of code; it is not measured here, and measuring it would only
+re-derive the definition.
+
+The `unrelated` bucket reading zero over the 165 measured runs is the number a working
+classifier gives in a directory only the probe uses, and also the number a
+classifier that never reaches that branch gives. A second actor is run for that
+reason: with the watcher live, `/usr/bin/touch` writes a path the account will
+never name. It lands in `unrelated`, and the state directory lands in
+`ancestor`, in the same capture. Both branches are reachable, so the zero above
+is a measurement.
+
+## Where this leaves #293
+
+Not settled, and not close-able on this evidence.
+
+Containment as stated does not hold on a clean run. Widening the relation to
+"an account path or an ancestor of one" would make every measured run pass, and that
+is a design decision rather than a measurement: it also excuses a real
+neighbour writing into the parent directory, which is precisely the case a veto
+exists to catch. The measurement gives both numbers and does not choose.
+
+What is still missing is the thing `#293` asked for and this does not build: a
+rate over a corpus. Sensitivity was measured on **one** planted mutation, and
+containment in a directory nothing else was using. A busier directory, an
+editor, a backup daemon or a second process would each be a path outside the
+account, and none of them was present here.
+
+No report vocabulary follows from any of this. Naming a claim weaker than
+`oracle_verified` reopens the contract (`#201`, `#202`, `#156`), and nothing
+measured here licenses that.

@@ -310,6 +310,109 @@ def v_attribution(ea, eb):
     return 0
 
 
+# ---- #293: is FSEvents usable as a veto rather than as an oracle? ----
+#
+# H1 asked whether a capture can be rebuilt into the OpClass sequence
+# src/oracle.zig compares, and #291 measured that it cannot. H2 is a weaker
+# question and needs a weaker relation, so the veto is defined here as PATH SET
+# CONTAINMENT: every path FSEvents reports changed must be a path the shim's
+# account already mentions. Containment survives coalescing and reordering by
+# construction — the two properties that killed H1 — because it never asks which
+# event corresponds to which operation.
+#
+# Both legs below take their ground truth from the probe's own record of what it
+# did, not from the shim. Judging FSEvents against the shim in an experiment
+# about the shim's incompleteness would be circular: an event with no matching
+# op is either a false alarm or a real miss, and nothing in that comparison can
+# say which.
+
+
+def planted_record(recs):
+    """The mutation the probe performed outside the account it emits."""
+    planted = [r for r in recs if r["type"] == "planted"]
+    if len(planted) != 1:
+        raise Broken(f"expected exactly one planted record, found {len(planted)}: "
+                     f"the sensitivity leg has nothing to look for")
+    pl = planted[0]
+    _need(pl, "path", str, "planted")
+    # Checked because v_veto_sensitivity prints it. Without this a record
+    # missing the field raised KeyError, which exits 1 — and rc 1 is the
+    # survey's code for "the hypothesis failed its test", not for a broken
+    # apparatus. A malformed transcript would have been counted as a veto
+    # that could not see, and the run would still have ended BROKEN 0.
+    _need(pl, "syscall", str, "planted")
+    if _need(pl, "rc", int, "planted") != 0:
+        raise Broken(f"the planted mutation itself failed (rc={pl['rc']}): its "
+                     f"absence from the capture would say nothing")
+    return pl
+
+
+def v_veto_containment(events, ops, sentinel):
+    """Every reported path is one the account already names."""
+    require_liveness(events, sentinel)
+    ev = measured_events(events, sentinel)
+    paths = set(op_paths(ops))
+    outside = [e for e in ev if e["path"] not in paths]
+    dis = disowned(events)
+    print(f"  containment: {len(ops)} operation(s) over {len(paths)} path(s); "
+          f"{len(ev)} event(s) besides the sentinel; "
+          f"{len(outside)} outside the account")
+    if dis:
+        raise Broken(f"the capture disowns itself ({', '.join(dis)}), so a count "
+                     f"over it is not a count over what happened")
+    if outside:
+        # Split by SHAPE, and named by shape. "Ancestor of a path the account
+        # names" is a fact about the two strings; it is not a claim about what
+        # caused the event. The tempting reading — ancestor means the relation
+        # is stated too tightly, unrelated means a neighbour wrote here — does
+        # not follow: a neighbour touching the parent directory lands in the
+        # ancestor bucket too, and would be excused by a label that had already
+        # decided the cause. Attributing an event to an operation is what #291
+        # measured FSEvents cannot do, so the cause is not available here. Any
+        # reading of these two numbers belongs in prose beside the transcript,
+        # where it can be argued with.
+        anc, unrelated = [], []
+        for pth in sorted({e["path"] for e in outside}):
+            pre = pth if pth.endswith("/") else pth + "/"
+            (anc if any(a.startswith(pre) for a in paths) else unrelated).append(pth)
+        for pth in anc:
+            print(f"  containment: outside, ancestor of an account path: {pth}")
+        for pth in unrelated:
+            print(f"  containment: outside, unrelated to the account: {pth}")
+        print(f"  containment: FAIL - {len(anc)} ancestor(s), {len(unrelated)} "
+              f"unrelated; a veto on this relation as stated fires on a clean run")
+        return 1
+    print("  containment: ok - nothing outside the account")
+    return 0
+
+
+def v_veto_sensitivity(events, ops, sentinel, planted):
+    """The planted mutation is visible to FSEvents and absent from the account.
+
+    Both halves are required. Without the second, a planted path the shim
+    happens to record would pass this leg while proving nothing: the veto would
+    have been shown to see something the account already covers.
+    """
+    require_liveness(events, sentinel)
+    if planted["path"] in set(op_paths(ops)):
+        raise Broken(f"the planted path {planted['path']} is inside the account, "
+                     f"so this leg cannot distinguish a veto that saw it from an "
+                     f"account that already had it")
+    dis = disowned(events)
+    if dis:
+        raise Broken(f"the capture disowns itself ({', '.join(dis)}), so its "
+                     f"silence about the planted path says nothing")
+    hit = [e for e in measured_events(events, sentinel) if e["path"] == planted["path"]]
+    print(f"  sensitivity: planted {planted['syscall']} at {planted['path']}, "
+          f"outside an account of {len(op_paths(ops))} path(s); "
+          f"{len(hit)} event(s) name it")
+    if not hit:
+        print("  sensitivity: FAIL - the veto cannot see a mutation the account misses")
+        return 1
+    print("  sensitivity: ok - the veto sees what the account does not")
+    return 0
+
+
 def j_soundness(e, o):
     _, ev, _ = split_events(load(e))
     ops, s = load_ops(load(o))
@@ -387,8 +490,12 @@ def selftest():
     def run(kind, ev_text, op_text):
         ev = split_events(load_str(ev_text, "events"))[1]
         ops, s = load_ops(load_str(op_text, "ops"))
+        if kind == "veto-sensitivity":
+            return v_veto_sensitivity(ev, ops, s,
+                                      planted_record(load_str(op_text, "ops")))
         return {"mapping": v_mapping, "soundness": v_soundness,
-                "coalescing": v_coalescing, "ordering": v_ordering}[kind](ev, ops, s)
+                "coalescing": v_coalescing, "ordering": v_ordering,
+                "veto-containment": v_veto_containment}[kind](ev, ops, s)
 
     def case(name, fn, want):
         nonlocal fails
@@ -406,6 +513,103 @@ def selftest():
                            _op(1, "write", "write", "/s/target"),
                            _op(2, "fsync", "fsync", "/s/target"),
                            _sent()])
+
+    # --- #293: both veto legs, each in both directions ---
+    #
+    # Every one of these drives the production v_* function, not a copy of its
+    # rule. The pairs matter more than the individual rows: a judge that always
+    # accepts dies on the reject rows, one that always rejects dies on the accept
+    # rows, and neither can be told apart by looking at one side.
+    planted_ops = "\n".join([_op(0, "open", "open", "/s/clone-src.txt"),
+                              '{"type":"planted","syscall":"clonefile",'
+                              '"path":"/s/clone-dst.txt","rc":0}',
+                              _sent()])
+
+    case("containment accepts a capture inside the account",
+         lambda: run("veto-containment",
+                     _cap([_ev("/s/target", ["ItemCreated"])]), one_op), 0)
+    # The fixture path is deliberately unmistakable. This line is printed into
+    # every transcript before any measurement starts, and a transcript-wide grep
+    # for "unrelated" returns it beside real findings. Telling them apart used to
+    # need a reader who remembered which was which; the prefix does it instead.
+    case("containment rejects one path the account never names",
+         lambda: run("veto-containment",
+                     _cap([_ev("/s/target", ["ItemCreated"]),
+                           _ev("/selftest-only/stranger", ["ItemCreated"], idx=1, eid=2)]),
+                     one_op), 1)
+    def containment_labels(ev_text, op_text):
+        """The verdict's own stdout, so the label is tested rather than assumed.
+
+        The ancestor/unrelated split does not change the return value, and a
+        case that only checked the return would pass with the two swapped. What
+        the reader acts on is the label, so that is what is read back."""
+        import io, contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            run("veto-containment", ev_text, op_text)
+        out = buf.getvalue()
+        return ("ancestor" if "ancestor of an account path" in out else "") + \
+               ("+unrelated" if "unrelated to the account" in out else "")
+
+    case("containment calls a parent directory an ancestor, not a stranger",
+         lambda: containment_labels(
+             _cap([_ev("/s/target", ["ItemCreated"]),
+                   _ev("/s", ["ItemIsDir"], idx=1, eid=2)]), one_op), "ancestor")
+    case("containment calls a sibling path unrelated, not an ancestor",
+         lambda: containment_labels(
+             _cap([_ev("/s/target", ["ItemCreated"]),
+                   _ev("/other/thing", ["ItemCreated"], idx=1, eid=2)]),
+             one_op), "+unrelated")
+    # The wiring, not just the arithmetic. Removing require_liveness from either
+    # new verdict, or the disowned check from sensitivity, left all of these
+    # green before these four cases existed: every fixture carried a sentinel
+    # and none of the sensitivity fixtures disowned itself, so the guards were
+    # present and never exercised.
+    case("containment is BROKEN when the sentinel produced no event",
+         lambda: run("veto-containment",
+                     _cap([_ev("/s/target", ["ItemCreated"])]),
+                     _op(0, "open", "open", "/s/target") + "\n"
+                     + '{"type":"sentinel","path":"/s/never-delivered","rc":0}'),
+         "BROKEN")
+    case("sensitivity is BROKEN when the sentinel produced no event",
+         lambda: run("veto-sensitivity",
+                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated"])]),
+                     "\n".join([_op(0, "open", "open", "/s/clone-src.txt"),
+                                 '{"type":"planted","syscall":"clonefile",'
+                                 '"path":"/s/clone-dst.txt","rc":0}',
+                                 '{"type":"sentinel","path":"/s/never","rc":0}'])),
+         "BROKEN")
+    case("sensitivity is BROKEN when the capture disowns itself",
+         lambda: run("veto-sensitivity",
+                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated", "KernelDropped"])]),
+                     planted_ops), "BROKEN")
+    case("a planted record without a syscall is BROKEN, not a blind veto",
+         lambda: run("veto-sensitivity",
+                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated"])]),
+                     "\n".join([_op(0, "open", "open", "/s/clone-src.txt"),
+                                 '{"type":"planted","path":"/s/clone-dst.txt","rc":0}',
+                                 _sent()])), "BROKEN")
+
+    case("containment is BROKEN when the capture disowns itself",
+         lambda: run("veto-containment",
+                     _cap([_ev("/s/target", ["ItemCreated", "UserDropped"])]),
+                     one_op), "BROKEN")
+    case("sensitivity accepts a planted path the capture names",
+         lambda: run("veto-sensitivity",
+                     _cap([_ev("/s/clone-src.txt", ["ItemCreated"]),
+                           _ev("/s/clone-dst.txt", ["ItemCreated"], idx=1, eid=2)]),
+                     planted_ops), 0)
+    case("sensitivity rejects a planted path the capture is silent about",
+         lambda: run("veto-sensitivity",
+                     _cap([_ev("/s/clone-src.txt", ["ItemCreated"])]),
+                     planted_ops), 1)
+    case("sensitivity is BROKEN when the planted path is inside the account",
+         lambda: run("veto-sensitivity",
+                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated"])]),
+                     "\n".join([_op(0, "open", "open", "/s/clone-dst.txt"),
+                                 '{"type":"planted","syscall":"clonefile",'
+                                 '"path":"/s/clone-dst.txt","rc":0}',
+                                 _sent()])), "BROKEN")
 
     # --- accept side: an always-reject judge dies here ---
     case("mapping accepts one op with one event",
@@ -524,13 +728,28 @@ def selftest():
     return 1 if fails else 0
 
 
+def j_veto_containment(e, o):
+    _, ev, _ = split_events(load(e))
+    ops, sen = load_ops(load(o))
+    return v_veto_containment(ev, ops, sen)
+
+
+def j_veto_sensitivity(e, o):
+    _, ev, _ = split_events(load(e))
+    recs = load(o)
+    ops, sen = load_ops(recs)
+    return v_veto_sensitivity(ev, ops, sen, planted_record(recs))
+
+
 def main():
     args = sys.argv[1:]
     if args == ["--selftest"]:
         sys.exit(selftest())
     table = {"soundness": j_soundness, "mapping": j_mapping,
              "coalescing": j_coalescing, "ordering": j_ordering,
-             "attribution": j_attribution}
+             "attribution": j_attribution,
+             "veto-containment": j_veto_containment,
+             "veto-sensitivity": j_veto_sensitivity}
     if not args or args[0] not in table or len(args) != 3:
         print(__doc__)
         sys.exit(2)

@@ -2,6 +2,153 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the veto's first measurement was clean because it only had one path to be clean about
+
+`#293` asked whether FSEvents can veto a mutation the shim never reported.
+H1 died in #291 because a capture cannot be rebuilt into the OpClass
+sequence `compare()` wants, so H2 gets a weaker relation: **path set
+containment**, every reported path being one the account already names.
+Containment passes through coalescing and reordering by construction,
+which is what killed H1.
+
+**The planted mutation was verified rather than assumed.** A sensitivity
+leg needs a mutation the shim provably misses, and "provably" is where it
+would have gone wrong: a planted operation the shim happens to record
+makes a silent capture unreadable in both directions. `clonefile(2)` is
+absent from the 40 symbols `shim/src/macos.zig` interposes, but the table
+is read, not trusted — the probe runs under the shim and the trace is
+checked. It names `seen-by-shim.txt` and `clone-src.txt` and never names
+`clone-dst.txt`. The control half matters as much: a trace missing
+everything would prove the bypass for the wrong reason. That check came
+from the session working on `#310`, which asked how the bypass was going
+to be established; the plan had only said "a mutation that bypasses the
+shim", with nothing saying who guaranteed it.
+
+`clonefile` creating an unreported file in the state directory is a
+finding about sideeye rather than about FSEvents. It is the macOS
+instance of the class `#244` named on Linux.
+
+**The first containment number was 5/5 and meant nothing.** It ran one
+probe mode, `write`, and each run was 2 operations over **1 path**. Five
+repetitions of one path are five observations of one path; the repetition
+was not buying width. That became visible while writing the result and
+looking for the subject of "containment held" — the sentence wanted a set
+of operations and the measurement had a file.
+
+Widened to 11 modes x 5 runs. Three transcripts, all from the committed
+code and all committed beside it:
+
+| run | held | `link` | other 10 modes |
+|---|---|---|---|
+| 1 | 49/55 | 5/5 | 1/50 |
+| 2 | 47/55 | 5/5 | 3/50 |
+| 3 | 49/55 | 5/5 | 1/50 |
+
+Every outside path is the state directory, an ancestor of an account
+path. `link` was outside on all 15 runs it had; the other ten modes on 5
+of 150. Which modes is not readable — the three runs disagree, and so do
+two earlier sets.
+
+**The reading was rewritten four times, and the rewrites are the
+evidence.** After the first widened run: "`link` is a systematic
+counterexample, the rest are clean". After the second: "and `create` is
+intermittent". After the third: neither, because `write` — the mode
+whose thin 5/5 started all this — failed three times in five. Then the
+pooled count moved twice more: three sets of 150 runs gave 6, then 23,
+then 5. A low rate spread across modes is
+exactly what produces a different mode each time five more samples
+arrive; a property of one mode would keep selecting that mode. `link`
+at 15/15 never moved, and that contrast is the whole reading.
+
+Five runs per mode answers "does this reproduce", not "how often": a
+1-in-5 behaviour is missed entirely by five runs about a third of the
+time. No per-mode rate is claimed.
+
+**Three `unrelated` entries were nearly recorded as a finding.** They
+were the judge's own selftest fixture, printed once per run before any
+measurement starts, and a transcript-wide grep for "unrelated" returns
+them beside real ones. Telling them apart needed a reader who remembered
+which was which, which is the kind of guard that works exactly until
+somebody reads the file three days later. The fixture path is
+`/selftest-only/stranger` now, so the prefix does the work. The measured
+runs saw zero, which is what the neighbour control exists to make
+readable.
+
+**And the pooled figure is a count, not a rate.** A draft of this entry
+called 23 of 150 about 15%, after an earlier draft called 6 of 150 about
+4%, and reasoned that the first set had been a quiet stretch and the
+larger number was the real one. A third set gave 5. Three sets of 150
+runs on the same machine and the same code: 5, 6, 23. Two samples were
+enough to notice the number moves and not enough to say which way, and
+picking the newer one over the older was the same error as quoting
+either as a percentage. `link` at 15/15 in every set is what survives;
+the rest is "it happens, and how often is not measured".
+
+**The two buckets name shapes, and an earlier comment named causes.** An
+outside path is reported as an ancestor of an account path or as
+unrelated to it. Both are facts about strings. The comment beside them
+said ancestor means the relation is too tight and unrelated means a
+neighbour wrote here, which does not follow: a real neighbour touching
+the parent directory lands in the ancestor bucket and would be excused by
+a label that had already decided the cause. Attributing an event to an
+actor is what #291 measured FSEvents cannot do. The labels stayed; the
+comment now says so, and the reading moved to RESULTS where it can be
+argued with.
+
+**The `unrelated` bucket had never been red.** Zero over 165 runs is what
+a working classifier gives in a directory only the probe uses, and also
+what a classifier that never reaches that branch gives; nothing in the
+leg told them apart. A second actor now runs with the watcher live —
+`/usr/bin/touch` on a path the account will never name — and it lands in
+`unrelated` while the state directory lands in `ancestor`, in one
+capture. Three outcomes are distinguished, including "the neighbour
+produced no outside path at all", because a silent control reads exactly
+like a passing one.
+
+**The outside review found four more, and the largest was about where
+the evidence lives.** A draft of this entry and of RESULTS reported three
+transcripts and committed one. The 50/55 and 49/55 sat in prose with
+nothing behind them, so the pooled figures could not be recomputed by a
+reader, and this file repeating the same numbers is transcription rather
+than a second source. The runs above replace them: three transcripts,
+one code version, all committed. The other three:
+
+- `L7a` ran `strings` twice — once for the control, once for the
+  absence. A failed second read is a non-zero grep, indistinguishable
+  from a real absence, and the leg would have called that a proven
+  bypass. It reads once, checks that the read worked, and tests all
+  three conditions against the saved output. The success line also
+  claimed `clone-src.txt` had been checked when only the control had.
+- A `planted` record without a `syscall` field raised `KeyError`, which
+  exits 1 — and rc 1 is this survey's code for "the hypothesis failed",
+  not for a broken apparatus. A malformed transcript could have ended
+  `BROKEN checks: 0` with the veto recorded as blind.
+- **The new verdicts' guards had never run.** Deleting `require_liveness`
+  from either, or the `disowned` check from sensitivity, left all 33
+  selftest cases green: every fixture carried a sentinel and none of the
+  sensitivity fixtures disowned itself. The guards existed and were
+  never exercised — the same shape as the `unrelated` bucket above, in
+  two more places in the same judge. Four cases added, each shown red by
+  removing its own guard.
+
+The last one generalises the reviewer's point rather than just fixing
+it: finding one branch that has never been red is a reason to count
+every branch of that judge, not to fix the one that was named.
+
+**An apparatus bug worth its own line.** The first version of the leg
+looped on `i`, and `wait_ready()` uses `i` as its own counter and resets
+it. The loop never terminated; 17234 lines came out before it was
+stopped. That is the collision fixed in #308 four hours earlier, where
+every block-local name took a prefix and the reason went into this file.
+The class was known, written down, and reproduced in the next file.
+Worth noting that the two instances differ in severity for reasons that
+have nothing to do with the class: #308's `line` was harmless because
+nothing after it read the variable, and this one was fatal because it was
+a loop bound. `mkfifo: File exists` was printed on every iteration and
+nobody read it — the signal existed and had no consumer, which is worse
+than no signal, because the output looks like observability. It is fatal
+now.
+
 ## 2026-08-25 — the same-class scan reached one of three ways a checker fails, and said it had covered them all
 
 The scan published in #303 and again in #307 opens with "scanned across every
@@ -42,6 +189,7 @@ file puts black at `fail=1, exit=2`, an outlier that says the scanner is not
 finished yet. The parallel case on the other side of this repo the same day was
 an ADR status scan whose `^Status:` pattern reached 4 of 21 files, the rest
 using a bold-bullet form; there the two-way count would have shown 4 against 21.
+
 
 ## 2026-08-25 — the synopsis check's third direction was not blocked, and the first draft of it compared a world the help text chose
 
