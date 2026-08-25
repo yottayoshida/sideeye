@@ -2,6 +2,109 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the synopsis check's third direction was not blocked, and the first draft of it compared a world the help text chose
+
+`#295` filed the missing direction — a flag a mode accepts whose synopsis
+line omits it — rather than faking it, and named two blockers. grep
+cannot tell `if (mode == .preflight) setupError(...)` from acceptance.
+Driving it by execution needs to know which flags take a value, since a
+dummy argument after a no-value flag comes back as "unknown option" and
+reads as a refusal; that list would be the hand-synced second copy `#65`
+is about.
+
+**The second blocker was not one.** Put the flag last and a value-taking
+one reaches the parse loop's own `i + 1 >= argv.len` guard while a
+no-value one is handled before that guard and fails elsewhere. Measured
+across all thirteen: eleven take a value, two do not, which is the split
+the source shows. No list, so nothing to go stale.
+
+Acceptance is then a differential — a base invocation that parses and
+then fails on the first thing after parsing, with an accepted flag
+leaving that failure untouched. Two things had to be measured before
+that worked.
+
+*The unit is the line, not the mode.* `--config` is mutually exclusive
+with the define-surface flags, which is why `explore` has two synopsis
+lines. A per-mode union would claim `--config` and `--state` are usable
+together. `#294` split that line for a display reason, and the split
+turns out to be the semantic one.
+
+*The residue is a value-shape table, not an arity table.* Nine of the
+eleven value-taking flags accept a path that cannot exist.
+`--expect-status` validates its value first, so a path there reads as a
+refusal of the flag; `--json` needs a writable path for the same reason.
+Three entries, and the direction they fail in is the useful part: an
+acceptance copy that goes stale makes the check quieter, while a
+value-shape entry that goes stale makes it report a drift that is not
+there. There is an assertion that every parser flag is accepted by at
+least one line, which is what turns a stale entry into a failure rather
+than a silent widening.
+
+**The first draft was green under the mutation that should have killed
+it.** Candidate flags were taken from the synopsis. Removing `--marker`
+from the explore line dropped the candidates from 13 to 12, so the flag
+was never probed and the two sides agreed about a smaller world:
+`cli_fails=0`. Not a tautology — a tautology dies under mutation — but a
+check whose population is chosen by the thing under test. The candidates
+come from `parser_literals` now, the same reader checks 4 and 5 use.
+
+That failure was discussed with the session working on `#303` about an
+hour before it was written, under the name "one side determines the
+population". Naming the shape did not prevent writing it.
+
+Five mutations, each red, each naming the right thing, and the block
+green before and after every one:
+
+- the explore line loses `--marker` → names `--marker`
+- the parser makes `preflight` refuse `--oracle`, which its line
+  advertises → names `--oracle`. **This is the direction that decides
+  the check.** A one-way "every accepted flag is advertised" stays green
+  here, because the refused flag leaves the accepted set too
+- the `demo` line loses `--shim` → names it. `demo` is parsed by
+  `runDemo` before the mode enum and drifts on its own; probing it with
+  the flag last never starts the demo
+- `help` stops refusing extras → names all thirteen flags it now accepts
+- the value-shape table is broken → three failures, including the
+  accepted-nowhere assertion
+
+The outside review found three more places where the check was weaker
+than its own description, and one of them is the same shape a third
+time.
+
+*A flag in the base was never acceptance-tested.* Flags in the base
+invocation were marked accepted because the base parsed. Make the parser
+refuse `--operation` in preflight and the base's own failure becomes
+that refusal — measured, and the result is not the pass the review
+predicted but something almost as bad: the check goes red naming the
+wrong thing, reporting that preflight "accepts" nine flags including
+`--allow-unverified` and `--config`, because every probe now compares
+equal to the refusal. The expected failure of each base is pinned now,
+so that mutation reports the base rather than the synopsis.
+
+*The candidates came from one parser.* `runDemo` compares against
+`rest[i]`, not `argv[i]`, so a demo-only flag contributes nothing to the
+candidate set and the claim that this check covers demo held only
+because `--shim` happens to appear in the shared loop as well. Adding a
+demo-only `--quiet` takes the candidates from 13 to 14 and is caught.
+
+*One key could match two lines.* Splitting the replay line in two makes
+the grep return both, and the advertised set becomes their union: each
+line could be missing half its flags and the union would still match.
+Exactly one line per key now.
+
+The same shape was also found one level up, in the same check, while
+writing this. The four bases are written in the check, so a synopsis
+line **added** to the usage text would not be tested at all: the check
+would be choosing which lines exist rather than the text. Counted from
+the text now and compared against what ran — adding a ninth line goes
+red naming the count, and the sixth mutation is that.
+
+Scan volume is in the output: 8 of 8 synopsis lines against 13 parser
+flags, 99 probes. That number counts acceptance probes only — the 47
+arity determinations and the 4 base runs are on top of it, for about 150
+invocations in total. A loop that silently covered nothing reports the
+same zero failures as one that covered everything.
+
 ## 2026-08-25 — the guard's reason is corrected in both copies, and the scan said the cheap change was not cheap
 
 #306 offered three ways to handle a guard whose failure message states a premise
@@ -76,6 +179,7 @@ across a line break here, and grep is line-based. A count of zero from a
 line-oriented search over hard-wrapped prose does not distinguish "absent" from
 "wrapped". Re-measured by flattening whitespace first: exactly one occurrence,
 in this file, which is the intended answer arrived at for the right reason.
+
 
 ## 2026-08-25 — the himalaya case refuses against the fixed build: a case pins an operation sequence, and this fix changed it
 
