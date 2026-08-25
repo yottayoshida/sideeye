@@ -1853,6 +1853,182 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2sc: a replayed case cannot point destruction outside --state-under (#266) ==========="
+# The case file names its own state directory, and replay empties (--fresh-state)
+# and rebuilds (restore, once per world) whatever it names. Leg A measures that
+# destruction for real — it is the red side the confinement exists for, kept in the
+# suite so the danger being guarded stays demonstrated, not remembered. Legs B-D pin
+# the confinement: outside refused (directory untouched), equal refused, inside
+# passing. Legs E-F pin the flag surface itself.
+VICTIM=/tmp/acc-victim
+rm -rf "$VICTIM" && mkdir -p "$VICTIM" && echo "survives" > "$VICTIM/sentinel.txt"
+python3 - "$case_file" /tmp/acc/outside-case.json "$VICTIM" <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = sys.argv[3]
+json.dump(c, open(sys.argv[2], "w"))
+PY
+# Leg A (the measured red side): without the flag, the same case empties the victim.
+o=$("$SIDEEYE" replay /tmp/acc/outside-case.json --fresh-state --shim "$SHIM" --work /tmp/acc/work-sca --oracle /usr/bin/strace 2>&1)
+if [ ! -e "$VICTIM/sentinel.txt" ]; then
+    echo "ok   without the flag, a case-named outside directory really is emptied (the danger is real)"
+else
+    echo "FAIL red side: the unconfined replay left the victim's sentinel in place — what is the confinement for?"
+    fails=$((fails + 1))
+fi
+# Leg B: with the flag, the same case refuses BEFORE anything destructive, and the
+# refusal names the range. The sentinel must survive.
+rm -rf "$VICTIM" && mkdir -p "$VICTIM" && echo "survives" > "$VICTIM/sentinel.txt"
+o=$("$SIDEEYE" replay /tmp/acc/outside-case.json --fresh-state --state-under /tmp/acc --shim "$SHIM" --work /tmp/acc/work-scb --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "outside the allowed range" && [ -s "$VICTIM/sentinel.txt" ]; then
+    echo "ok   an outside state refuses (exit 3, range named) and the outside directory is untouched"
+else
+    echo "FAIL state-under confinement: exit $rc, sentinel $([ -e "$VICTIM/sentinel.txt" ] && echo present || echo GONE)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# Leg C: equal to the range is refused too — strict inside, or a case naming the
+# range itself would make the whole workspace the sacrificial directory.
+o=$("$SIDEEYE" replay /tmp/acc/outside-case.json --fresh-state --state-under "$VICTIM" --shim "$SHIM" --work /tmp/acc/work-scc --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "outside the allowed range"; then
+    echo "ok   a state EQUAL to the range is refused (strict inside)"
+else
+    echo "FAIL equal-to-range: exit $rc (wanted 3 + range refusal)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# Leg D (positive control): the untouched case, whose state lives under /tmp, replays
+# to its usual reproduction under --state-under /tmp. The confinement must not turn
+# every replay into a refusal.
+o=$("$SIDEEYE" replay "$case_file" --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-scd --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "the case reproduced"; then
+    echo "ok   an inside state still replays to its verdict (positive control)"
+else
+    echo "FAIL positive control under --state-under: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# Leg E: the flag belongs to replay alone; explore refuses it by name (ADR 0007's
+# no-accepted-but-inert rule).
+o=$("$SIDEEYE" explore --state /tmp/acc/state --operation /bin/true --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-sce 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to replay only"; then
+    echo "ok   explore refuses --state-under by name"
+else
+    echo "FAIL explore accepted --state-under (exit $rc)"
+    fails=$((fails + 1))
+fi
+# Leg F: a confinement flag is not last-wins; a second spelling refuses.
+o=$("$SIDEEYE" replay "$case_file" --state-under /tmp --state-under /tmp/acc --shim "$SHIM" --work /tmp/acc/work-scf 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "given twice"; then
+    echo "ok   a duplicated --state-under refuses rather than letting the second spelling win"
+else
+    echo "FAIL duplicate --state-under: exit $rc"
+    fails=$((fails + 1))
+fi
+# Leg G: the refusal's cleanup, measured on its own predicate (security review,
+# Major-1): a case naming a NOT-YET-EXISTING outside state makes this invocation's
+# own mkdir succeed, so the refusal has something real to undo — and must leave
+# neither that directory nor the work dir behind. Legs B-F never create the state
+# dir (the victim exists), so without this leg the undo calls could all be deleted
+# and the suite would stay green.
+python3 - "$case_file" /tmp/acc/outside-case-g.json "$VICTIM/never-made" <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = sys.argv[3]
+json.dump(c, open(sys.argv[2], "w"))
+PY
+o=$("$SIDEEYE" replay /tmp/acc/outside-case-g.json --fresh-state --state-under /tmp/acc --shim "$SHIM" --work /tmp/acc/work-scg --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && [ ! -e "$VICTIM/never-made" ] && [ ! -e /tmp/acc/work-scg ]; then
+    echo "ok   a refusal leaves the filesystem as it found it: neither the state nor the work mkdir survives"
+else
+    echo "FAIL refusal cleanup: exit $rc, state $([ -e "$VICTIM/never-made" ] && echo LEFT || echo gone), work $([ -e /tmp/acc/work-scg ] && echo LEFT || echo gone)"
+    fails=$((fails + 1))
+fi
+# Leg H: "/" as a range would confine nothing — isStrictlyInsideDir answers true
+# for every absolute path under it — so the flag refuses the range itself. Without
+# this leg, deleting that one branch turns --state-under / into a silent no-op
+# (security review, Major-2: the one mutation that makes the feature fail open).
+o=$("$SIDEEYE" replay /tmp/acc/outside-case.json --fresh-state --state-under / --shim "$SHIM" --work /tmp/acc/work-sch 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "would confine nothing"; then
+    echo "ok   --state-under / refuses as a range that confines nothing"
+else
+    echo "FAIL state-under /: exit $rc (wanted 3 + confine-nothing refusal)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+# Leg E2: preflight refuses the flag by the same name explore does — measured, not
+# inferred from the shared predicate (security review, Minor-6).
+o=$("$SIDEEYE" preflight --state /tmp/acc/state --operation /bin/true --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-sce2 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to replay only"; then
+    echo "ok   preflight refuses --state-under by name"
+else
+    echo "FAIL preflight accepted --state-under (exit $rc)"
+    fails=$((fails + 1))
+fi
+rm -rf "$VICTIM"
+
+echo "=========== check 2sq: a shim that renumbers without re-announcing is refused (#270) ==========="
+# The recording-side numbering refusal (records vs highest sequence number) survived
+# with BOTH its asserts disabled — the structural double-announcement rule intercepts
+# every naturally occurring shape first (BUILDLOG 2026-08-16, R2's measured mutant).
+# The one shape that reaches it is a shim that renumbers without re-announcing, which
+# no interposed path produces on its own — so the apparatus builds it: the same shim
+# source with a compile-time gap (skips number 2), a separately named artifact that
+# plain `zig build` never produces.
+GAPSHIM=$ROOT/zig-out/lib/libsideeye_shim_testgap.so
+if [ ! -f "$GAPSHIM" ]; then
+    echo "FAIL gap-shim apparatus missing: build with zig build -Dtest-seq-gap (add -Dtarget=... for the container)"
+    fails=$((fails + 1))
+else
+    rm -rf /tmp/acc-gap && mkdir -p /tmp/acc-gap/state
+    o=$("$SIDEEYE" explore --state /tmp/acc-gap/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+        --shim "$GAPSHIM" --work /tmp/acc-gap/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "2" ] && echo "$o" | grep -q "sequence_numbering_broken"; then
+        echo "ok   the numbering net catches the one shape built to reach it (exit 2, sequence_numbering_broken)"
+    else
+        echo "FAIL gap shim: exit $rc (wanted 2 + sequence_numbering_broken)"
+        echo "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+    rm -rf /tmp/acc-gap
+fi
+
+echo "=========== check 2fc: a state file over the per-file cap refuses by name (#265) ==========="
+# The snapshot path was the one unbounded read in the engine; a big enough file
+# turned the judgment into an OOM kill with no report. The unit tests drive the
+# boundary with a small parameterized cap; this leg drives the SHIPPED constant
+# end to end — a real explore over a real 64MiB+1 file — so the production wiring
+# (cap value, diag, call-site message) is the thing measured. The file is sparse:
+# reads return zeros without paying 64 MiB of disk.
+rm -rf /tmp/acc-cap && mkdir -p /tmp/acc-cap/state
+python3 - <<'PY'
+with open("/tmp/acc-cap/state/huge.bin", "wb") as f:
+    f.seek(64 * 1024 * 1024)   # one byte past the cap
+    f.write(b"x")
+PY
+o=$("$SIDEEYE" explore --state /tmp/acc-cap/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-cap/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "too large for byte-level judgment" && echo "$o" | grep -q "huge.bin"; then
+    echo "ok   a file over the cap is a named SETUP ERROR, not an OOM kill"
+else
+    echo "FAIL per-file cap: exit $rc (wanted 3, naming huge.bin)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-cap
+
 echo "=========== check 2aa: the DESIGN §12 worked example, driven by the toml alone ==========="
 # The doctor cross-examination — the flagship L2 scenario — end to end with the define
 # coming entirely from a sideeye.toml: the file, one checker script, nothing else. The

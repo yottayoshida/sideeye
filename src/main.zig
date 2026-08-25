@@ -59,6 +59,10 @@ const Args = struct {
     check: ?config.Command = null,
     allow_unverified: bool = false,
     fresh_state: bool = false,
+    /// Replay only (#266): the directory the case's state must resolve strictly
+    /// inside. The MCP server passes its destruction range here; the case path being
+    /// vetted says nothing about where the case's OWN define points the deletion.
+    state_under: ?[]const u8 = null,
     json: ?[]const u8 = null,
     config: ?[]const u8 = null,
     marker: ?[]const u8 = null,
@@ -168,6 +172,38 @@ var violations: u32 = 0;
 /// PASS over a non-zero convention is machine-auditable (ADR 0014).
 var expected_status_val: u8 = 0;
 
+/// Snapshot with the per-file cap, or refuse naming the file (#265). `what` is the
+/// call site's existing message, kept byte-identical for every failure except the
+/// cap — there the refusal must name the file, its size and the cap, or the operator
+/// is told "could not snapshot" about a tree that snapshotted fine yesterday and
+/// has no way to learn what grew.
+fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) engine.Snapshot {
+    var diag: engine.FileTooLargeDiag = .{};
+    return engine.takeSnapshotCapped(gpa, root, engine.max_state_file_bytes, &diag) catch |e| {
+        if (e != error.FileTooLarge) setupError(what);
+        if (json_arena) |ja| {
+            if (diag.size) |sz|
+                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ diag.rel(), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment")
+            else
+                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ diag.rel(), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment");
+        }
+        // Unreachable in practice: json_arena is assigned unconditionally before the
+        // parse loop, ahead of every call site. Kept so this function's contract does
+        // not depend on that ordering — but do not read it as a covered "no arena"
+        // message path; nothing exercises it.
+        setupError("a state file is too large for byte-level judgment");
+    };
+}
+
+/// Undo the two mkdirs setup resolution needs (state, then work), so a refusal
+/// leaves the filesystem as it found it. Every vet between those mkdirs and the
+/// first destructive step shares this one helper: a refusal branch that forgets
+/// half of it would leave a 0755 directory at a path the run just refused to use.
+fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: bool, state_z: [*:0]const u8) void {
+    if (work_created) _ = posix.rmdir(work_z);
+    if (state_created) _ = posix.rmdir(state_z);
+}
+
 fn usage() void {
     say(
         \\sideeye {s} (trace contract v{d})
@@ -177,7 +213,7 @@ fn usage() void {
         \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
         \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
         \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
         \\  sideeye mcp
         \\  sideeye help
         \\  sideeye version
@@ -227,6 +263,14 @@ fn usage() void {
         \\               pristine directory themselves. The MCP server passes it on
         \\               every replay: it lives for the whole client session, and the
         \\               second replay used to die in the leftovers of the first
+        \\  --state-under
+        \\               (replay only) the directory the case's state must resolve
+        \\               strictly inside; anything else is refused before setup runs.
+        \\               The case file names its own state directory, and this flag is
+        \\               how a caller that only vetted the case's PATH bounds where the
+        \\               case may point the deletion. The MCP server passes its
+        \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
+        \\               replay
         \\  --allow-unverified
         \\               accept PASS with no completeness check. Needed on macOS: SIP
         \\               leaves DTrace's syscall provider with no probes even as root,
@@ -557,6 +601,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // below must not report the declaration as 0 (R1 finding).
             expected_status_val = args.expect_status.?;
         }
+        else if (std.mem.eql(u8, argv[i], "--state-under")) {
+            // #266. Replay only: an explore's config is the trust boundary and its
+            // state is part of what the operator vets (#96); accepting the flag there
+            // would be a second confinement feature nobody asked for, and preflight
+            // destroys nothing.
+            if (mode != .replay) setupError("--state-under applies to replay only: a config's state is part of what the operator vets, and preflight never destroys");
+            // A confinement flag must not be last-wins: two spellings in one argv is
+            // a caller bug, and silently taking the second would let a widened range
+            // ride behind a narrow-looking one.
+            if (args.state_under != null) setupError("--state-under was given twice; refusing rather than letting the second spelling win");
+            args.state_under = v;
+        }
         else if (std.mem.eql(u8, argv[i], "--config")) args.config = v
         else if (std.mem.eql(u8, argv[i], "--json")) {
             // Rejected before the removeFile below: a rejection that had already deleted
@@ -726,6 +782,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const state_created = posix.mkdir(state_z.ptr, 0o755) == 0;
     const state_abs = blk: {
         if (posix.realpath(state_z.ptr, &real_buf)) |p| break :blk std.mem.span(p);
+        // Reachable from a replayed case (ELOOP, a component raced away), not only
+        // from a broken environment — so the mkdir above is undone like every other
+        // refusal between it and the first destructive step (security review,
+        // Minor-3: this and the two --work refusals below predate the rule's helper
+        // and were the last three keeping their side effect).
+        if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
     };
 
@@ -746,24 +808,67 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // any --work under a root state directory, inside; the hand-rolled prefix test it
     // replaced answered "outside" for state `/`.
     var work_buf: [contract.max_path]u8 = undefined;
-    const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch setupError("--work is too long");
+    const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch {
+        if (state_created) _ = posix.rmdir(state_z.ptr);
+        setupError("--work is too long");
+    };
     const work_created = posix.mkdir(work_z.ptr, 0o755) == 0;
     {
         var work_real_buf: [contract.max_path]u8 = undefined;
         const work_abs = blk: {
             if (posix.realpath(work_z.ptr, &work_real_buf)) |p| break :blk std.mem.span(p);
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupError("--work could not be resolved to an absolute path");
         };
         if (contract.isInsideDir(work_abs, state_abs)) {
             // Remove only what this invocation just created: refusing while leaving
             // a fresh <state>/work behind would itself be the contamination the
-            // check exists to prevent.
-            if (work_created) _ = posix.rmdir(work_z.ptr);
-            // The state root too, if this invocation made it. `--state /opt/x --work
-            // /opt/x/work` creates both and used to leave the first behind, which is the
-            // contamination this branch exists to prevent, one directory up.
-            if (state_created) _ = posix.rmdir(state_z.ptr);
+            // check exists to prevent. (The state root too — `--state /opt/x --work
+            // /opt/x/work` creates both, one directory up.)
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupError("--work must not be the state directory or inside it: the engine's own captures and traces there would be observed as the target's state operations");
+        }
+    }
+
+    // The MCP adapter's state confinement, enforced where the value is read (#266).
+    //
+    // The server vets the CASE's path against SIDEEYE_MCP_ROOT, but the case file
+    // itself names the state directory the engine empties (`--fresh-state`) and
+    // deletes-and-rebuilds once per world (`restore`). Nothing about the case path
+    // says where that define points, so the server hands its destruction range down
+    // as a flag and the check runs here — on the same bytes the destruction will use,
+    // with no second parse and no check-to-use window.
+    //
+    // Strict inside, not equal: a case naming the range itself would make the
+    // operator's whole workspace the sacrificial directory. Both sides are compared
+    // realpath'd — state_abs already is, and the flag resolves here — or the /tmp
+    // and /private/tmp spellings of the same directory would split on macOS.
+    if (args.state_under) |su| {
+        var su_z_buf: [contract.max_path]u8 = undefined;
+        const su_z = std.fmt.bufPrintZ(&su_z_buf, "{s}", .{su}) catch {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError("--state-under is too long");
+        };
+        var su_real_buf: [contract.max_path]u8 = undefined;
+        const su_abs = blk: {
+            if (posix.realpath(su_z.ptr, &su_real_buf)) |p| break :blk std.mem.span(p);
+            // Fail-closed: an unresolvable range must refuse the run, not skip the
+            // confinement it was asked to apply. "Resolved" is all this checks — a
+            // regular file resolves and passes here; everything under it then fails
+            // strict-inside, so the outcome is refusal either way.
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError("--state-under could not be resolved; refusing rather than running unconfined");
+        };
+        // "/" satisfies isInsideDir for every absolute path — a range that confines
+        // nothing is a misconfiguration, not a wide range.
+        if (su_abs.len <= 1) {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError("--state-under / would confine nothing; name the directory the case's state may live under");
+        }
+        if (!contract.isStrictlyInsideDir(state_abs, su_abs)) {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            const arena = arena_state.allocator();
+            setupError(std.fmt.allocPrint(arena, "the case's state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Replay directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this case's state may live under", .{ state_abs, su_abs }) catch "the case's state directory resolves outside the allowed range (--state-under)");
         }
     }
 
@@ -786,8 +891,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // a refusal must leave the filesystem as it found it, and this one would otherwise
     // create the very directory it is refusing to use.
     engine.assertSafeRoot(state_abs) catch {
-        if (work_created) _ = posix.rmdir(work_z.ptr);
-        if (state_created) _ = posix.rmdir(state_z.ptr);
+        undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
         setupError("--state names a location nothing sacrificial belongs in: exploration empties and rebuilds this directory once per world, hundreds of times. Point it at a scratch directory the run owns");
     };
 
@@ -833,7 +937,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
     }
 
-    var initial = engine.takeSnapshot(gpa, state_abs) catch setupError("could not snapshot the initial state");
+    var initial = snapshotOrRefuse(gpa, state_abs, "could not snapshot the initial state");
     // #5, checked before anything runs: an unreproducible entry the setup left (or
     // that predates the run) fails fast — no recording, no worlds. Nothing competes
     // with this refusal here.
@@ -955,7 +1059,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var trace = engine.readTrace(gpa, rec_trace) catch setupError("could not read the trace");
     defer trace.deinit();
 
-    var final = engine.takeSnapshot(gpa, state_abs) catch setupError("could not snapshot the final state");
+    var final = snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
     defer final.deinit();
 
     // Classified before the structural detectors, so every exit below — including the
@@ -1199,7 +1303,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // writer still alive. Two equal samples do not prove a future writer cannot exist;
     // the report says "observed", never "proven".
     if (crossed_boundary) {
-        var final_again = engine.takeSnapshot(gpa, state_abs) catch setupError("could not re-snapshot the final state");
+        var final_again = snapshotOrRefuse(gpa, state_abs, "could not re-snapshot the final state");
         defer final_again.deinit();
         if (!snapshotsEqual(final, final_again))
             unknown(.state_not_quiescent, "the state directory changed between two samples taken after the recording run was contained: something is still writing");
@@ -1480,7 +1584,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally"),
         };
 
-        var crashed = engine.takeSnapshot(gpa, state_abs) catch setupError("could not snapshot a crashed state");
+        var crashed = snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
         defer crashed.deinit();
 
         // Same observation as after the recording run: when a boundary was crossed,
@@ -1503,7 +1607,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         var world_capture_first: ?CaptureObservation = null;
         if (world_armed) {
-            var crashed_again = engine.takeSnapshot(gpa, state_abs) catch setupError("could not re-snapshot a crashed state");
+            var crashed_again = snapshotOrRefuse(gpa, state_abs, "could not re-snapshot a crashed state");
             defer crashed_again.deinit();
             if (!snapshotsEqual(crashed, crashed_again))
                 unknown(.state_not_quiescent, "the crashed state changed between two samples: something the subject started is still writing");

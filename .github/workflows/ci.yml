@@ -30,6 +30,18 @@ jobs:
       - name: Build engine and shim
         run: zig build
 
+      # #270's apparatus, plus the guard on the apparatus itself: -Dtest-seq-gap must
+      # ADD libsideeye_shim_testgap and leave the shipped shim byte-identical. A build
+      # option that leaked into the shipped artifact would make every other acceptance
+      # leg measure the gap shim — a new guard silently blinding the old ones.
+      - name: Build the gap-shim apparatus, shipped shim unchanged (#270)
+        run: |
+          sha_before=$(sha256sum zig-out/lib/libsideeye_shim.so | cut -d' ' -f1)
+          zig build -Dtest-seq-gap
+          sha_after=$(sha256sum zig-out/lib/libsideeye_shim.so | cut -d' ' -f1)
+          test -f zig-out/lib/libsideeye_shim_testgap.so
+          test "$sha_before" = "$sha_after"
+
       - name: Install the completeness oracle
         run: sudo apt-get update && sudo apt-get install -y strace
 
