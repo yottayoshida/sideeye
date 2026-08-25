@@ -12,7 +12,7 @@ It has now.
 
 **The measurement.** himalaya built against `io-maildir` 0.3.1 — the release
 carrying `pimalaya/io-maildir@b4e9080` — installed into the cohort-4 image
-with nothing else changed. Five runs, in
+with nothing else changed. Six runs, in
 `spike/cohort4/himalaya-r2/upstream-fix/`:
 
 1. replay, stock target, frozen checker → FAIL, leg D, "the case reproduced"

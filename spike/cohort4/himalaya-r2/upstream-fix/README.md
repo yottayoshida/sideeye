@@ -69,7 +69,7 @@ fix commit (`AwaitCopy`/`AwaitRename`) and the 0.3.1 release (`Copy`/`Rename`),
 so grepping the commit's identifiers against the release reports a false absence.
 That happened once here before the assertion was written this way.
 
-## The five runs
+## The six runs
 
 | # | target | checker | verdict | transcript |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ committed run, and **leg C is not reachable**.
 part is a contrast between two cases, and nothing more: the timewarrior patch
 left the operation sequence intact and its case survived its own fix; the
 himalaya patch adds an operation and its case did not. That much is in the two
-CI legs and the five runs here.
+CI legs and the six runs here.
 
 The tempting generalisation — that fixes which change the operation sequence are
 the common kind, so cases routinely orphan themselves — is **a hypothesis, and
