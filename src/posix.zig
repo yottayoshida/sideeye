@@ -109,7 +109,24 @@ pub const O_WRONLY: c_int = 1;
 pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
-pub const O_NOFOLLOW: c_int = if (builtin.os.tag == .linux) 0o400000 else 0x100;
+/// Derived from `std.posix.O` rather than written out, and it is the only flag in this
+/// block that needs to be.
+///
+/// The value differs *within* Linux by architecture — 0o400000 on x86_64, 0o100000 on
+/// aarch64 — so the `os.tag == .linux` shape every neighbour above uses cannot express
+/// it. This declaration carried the x86_64 number for all of Linux, which left the one
+/// guard that used it inert on arm64: measured in an arm64 container, a symlink planted
+/// at a capture path was opened straight through. The comment at the top of this block
+/// already recorded three platform constants that were right on one side and quietly
+/// plausible on the other; the shape of the declaration is what allowed a fourth.
+///
+/// The test at the bottom of this file asks the kernel instead of asserting the number,
+/// because a test that spells the value out is satisfied by whatever the constant says.
+pub const O_NOFOLLOW: c_int = blk: {
+    var f: std.posix.O = .{};
+    f.NOFOLLOW = true;
+    break :blk @bitCast(f);
+};
 
 // Values of `dirent.type`, identical on Linux and the BSDs.
 pub const DT_UNKNOWN: u8 = 0;
@@ -648,4 +665,39 @@ test "kindOfPathNoFollow classifies every kind without opening anything" {
     _ = unlink(file_z.ptr);
     _ = rmdir(dir_z.ptr);
     _ = rmdir(base.ptr);
+}
+
+test "O_NOFOLLOW actually refuses a symlink" {
+    // Asks the kernel rather than asserting the number. A test spelling the value out is
+    // satisfied by whatever the constant happens to say, which is how this constant
+    // carried the x86_64 value for all of Linux and left its one caller inert on arm64.
+    var pb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-nofollow-{d}", .{getpid()}) catch unreachable;
+    _ = mkdir(base.ptr, 0o755);
+    var tb: [160]u8 = undefined;
+    const target_z = std.fmt.bufPrintZ(&tb, "{s}/target", .{base}) catch unreachable;
+    var lb: [160]u8 = undefined;
+    const link_z = std.fmt.bufPrintZ(&lb, "{s}/link", .{base}) catch unreachable;
+    defer {
+        _ = unlink(link_z.ptr);
+        _ = unlink(target_z.ptr);
+        _ = rmdir(base.ptr);
+    }
+
+    const tfd = open(target_z.ptr, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(tfd >= 0);
+    _ = close(tfd);
+    try std.testing.expect(symlink(target_z.ptr, link_z.ptr) == 0);
+
+    // Without the flag the link opens; with it the open must fail. Both directions,
+    // because "the open failed" alone would also be true of a path that does not exist.
+    const followed = open(link_z.ptr, O_WRONLY, @as(c_uint, 0));
+    try std.testing.expect(followed >= 0);
+    _ = close(followed);
+
+    const refused = open(link_z.ptr, O_WRONLY | O_NOFOLLOW, @as(c_uint, 0));
+    if (refused >= 0) {
+        _ = close(refused);
+        return error.NofollowDidNotRefuse;
+    }
 }
