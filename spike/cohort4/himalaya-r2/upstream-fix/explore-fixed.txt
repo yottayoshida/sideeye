@@ -1,0 +1,24 @@
+falsify: checker(himalaya-copy): leg E: the source message's bytes changed
+checker(himalaya-copy): new/ or tmp/ is not empty: this operation stages nothing, so 1 entry/entries there is damage or a shape the define did not declare
+checker(himalaya-copy): new/ or tmp/ is not empty: this operation stages nothing, so 1 entry/entries there is damage or a shape the define did not declare
+FAIL  2 of 4 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 2 of 3
+            after  open(/tmp/cohort4/himalaya/store/Archive/tmp/1787619292.#0M626702007P23.996c9a2ea347)
+            before write(/tmp/cohort4/himalaya/store/Archive/tmp/1787619292.#0M626702007P23.996c9a2ea347)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   8 path(s) judged pre-or-post
+oracle      agreed on 3 operations (141 syscall lines examined, 31 in scope of the judged state)
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+l1          no marker configured
+case        /tmp/sideeye-work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/cohort4/himalaya/store SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

@@ -1,0 +1,12 @@
+############ sideeye-cohort4:latest ############
+### target: himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+### binary: 86a1872f91da1980
+     source is 307 bytes
+     target holds 1787619302.#0M182610303P20.0c1971bb31f5:2,S (307 bytes)
+ok   un-killed, the operation lands exactly one complete copy and stages nothing
+############ sideeye-cohort4-fixed:latest ############
+### target: himalaya v2.1.0 +imap +maildir +gmail +jmap +pimdir +msgraph +m2dir +smtp +rustls-ring
+### binary: 8155dd56e9e31af5
+     source is 307 bytes
+     target holds 1787619302.#0M502218303P20.1c72a813073f:2,S (307 bytes)
+ok   un-killed, the operation lands exactly one complete copy and stages nothing

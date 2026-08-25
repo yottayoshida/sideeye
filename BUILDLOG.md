@@ -2,6 +2,158 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the himalaya case refuses against the fixed build: a case pins an operation sequence, and this fix changed it
+
+Yesterday's entry closed with a question left to the owner: does "kept as a
+replayed regression case" mean the committed transcript, or a CI leg in the
+timewarrior sense. That was framed as turning on wording rather than on
+evidence, because the fixed build had never been measured against the case.
+It has now.
+
+**The measurement.** himalaya built against `io-maildir` 0.3.1 — the release
+carrying `pimalaya/io-maildir@b4e9080` — installed into the cohort-4 image
+with nothing else changed. Six runs, in
+`spike/cohort4/himalaya-r2/upstream-fix/`:
+
+1. replay, stock target, frozen checker → FAIL, leg D, "the case reproduced"
+2. replay, **fixed** target, frozen checker → **`UNKNOWN case_no_longer_applies`**,
+   exit 2: "the recording now counts 3 state-changing operation(s); the case
+   was recorded over 2"
+3. explore, fixed target, frozen checker → FAIL 2 of 4, through the **guard**
+4. explore, fixed target, guard relaxed → **PASS 4/4**
+5. explore, stock target, guard relaxed → FAIL 1 of 3, leg D
+
+Run 1 is the positive control and its diff against the committed transcript is
+empty once the minted filename and the per-run work path are normalised. Run 5
+is the negative control and exists because a relaxation written by whoever
+wants the PASS can only confirm the breakage that person imagined; it shows the
+relaxed checker still catches the original defect.
+
+**Finding 1, and it is decidable rather than arguable.** The third operation is
+the rename the fix introduces. A case names a crash point inside a recorded
+sequence, so the sequence it addresses stopped existing. The refusal is the
+promised behaviour, not a defect — `docs/contract-freeze.md` §4 says so in
+those words. What makes it decidable is that this repository already wrote the
+bar down: `spike/dogfood-timew-replay.sh` leg C says "a `case_no_longer_applies`
+here is honest but does NOT meet the v0.4 acceptance". Legs A and B hold for
+himalaya; leg C is not reachable.
+
+The general shape is worth more than the instance, but only the structural half
+of it is measured. timewarrior's patch left the operation sequence intact and
+its case survived its own fix; himalaya's adds an operation and its case did
+not. **A case pins a crash point inside a recorded operation sequence, so any
+fix that changes that sequence orphans the case** — that needs no survey. The
+version I first wrote here went further, saying the fixes most likely to be made
+are the ones most likely to orphan their case, and review was right that n is
+two and nothing here samples repairs across targets. It stands as a hypothesis
+worth testing, not as a finding. Whether leg C needs a different shape for such
+fixes, or whether an unreachable leg C disqualifies a finding, is filed rather
+than decided here. The criterion is not re-scored in a measurement record.
+
+**Finding 2, which was not being looked for.** The frozen checker's guard
+asserts every staging directory is empty, and prints its reason in the failure:
+"this operation stages nothing". That was true of 0.3.0, where `messages copy`
+was the one arm that filled the destination in place — the cohort's own
+RESULTS.md says exactly that. The fix falsified it. So run 3 FAILs against a
+fixed target while asserting the premise the fix removed, and reads at a glance
+like the bug is still there and worse (2 of 4 rather than 1 of 3). It is not:
+the property asks for the old set or the old set plus a **complete** copy, and a
+stray file in the target's staging directory is not a message. Run 4 measures
+that — PASS 4/4, with the two non-empty worlds holding a 0-byte and a 307-byte
+staged file, the target folder empty in both. The frozen checker is not changed
+here; the relaxation is committed as a diff so it cannot be read as a second
+checker.
+
+Scanning the class across every committed cohort checker — 18 files, 14 hits in
+6 — turned up one thing the record would otherwise have missed: **the falsified
+guard is committed twice.** `spike/cohort4/himalaya/ops/check.sh` carries it
+identically, because r2's checker is r1's byte for byte. r1 never reached a
+verdict, so nothing was ever judged through it, but a premise stated twice is a
+premise that has to be corrected twice. papis's library-shape guard has the same
+construction with nothing upstream to falsify it, and the remaining hits assert
+the property or a parse rather than an implementation premise.
+
+**What went wrong, in order.**
+
+- The guard problem was spotted from the upstream diff before any build, and
+  then predicted for the wrong path. The prediction was that replay would
+  produce a misleading FAIL. Replay never reaches the checker — the engine
+  refuses first. The concern was real and the path was wrong, which is the
+  same shape as measuring something other than what changed.
+- `grep -c AwaitRename` against the vendored 0.3.1 source returned 0. Stopping
+  there would have concluded the fix is not in the release. The state variants
+  were renamed between the fix commit and the release (`AwaitCopy`/`AwaitRename`
+  became `Copy`/`Rename`); the semantics are identical. Identifiers taken from
+  a diff carry an unstated assumption that names do not move. The image build
+  now asserts on the semantics instead.
+- The first `cargo update -p io-maildir --precise 0.3.1` re-resolved the whole
+  lock and moved `windows-sys` in five places as a side effect. Irrelevant to a
+  Linux build, but it makes the delta larger than the fix. Discarded; the two
+  lines were edited by hand and `cargo vendor --locked` accepted the result,
+  which is the machine-checked statement that the dependency closure is
+  unchanged.
+- The first `Cargo.lock.diff` came out **0 bytes**, because `artifacts/` is
+  gitignored and absent from a fresh worktree, so the left-hand side did not
+  exist. A zero-byte diff reads as "no delta". Re-taken against the shared
+  checkout with a non-empty assertion in front of it.
+
+**What review found, and what fixing it turned up.** Eight findings, five of
+them P1, and none of them cosmetic. Four are worth carrying:
+
+- **There was no functional control, and the record did not know it.** Neither
+  the frozen checker nor the relaxed instrument pins the copy's *presence*: an
+  empty target folder is one of the two states the property allows. A build that
+  returned 0 while copying nothing would have produced PASS 4/4 and this record
+  would have called it a working fix. The falsification gate does not close that
+  gap either — it goes red through source conservation, which fires whether or
+  not a copy would ever be made. `functional-control.sh` closes it and was shown
+  red by replacing `himalaya` with a script that exits 0 and does nothing.
+- **The check I wrote to make the positive control reproducible was tautological.**
+  `norm "$original" | diff -u - /dev/stdin <<EOF …` redirects the same stdin the
+  pipe is writing to, so both operands read the here-document and diff compared
+  it with itself. It returned ok against a transcript whose verdict line had been
+  rewritten. **Found by running the red proof, not by reading the code** — and it
+  is the exact class this entry spends its length on, written fresh, by me, today.
+- **The fixed binary is not reproducible, so its hash was never a pin.** Two
+  builds from byte-identical inputs produced two different binaries. The pin
+  moved to the input side — a tree digest over everything except `Cargo.lock`,
+  matching the frozen tree, plus the lock's own sha256 — and every transcript
+  here was re-measured against the second build so the committed `Dockerfile` and
+  the committed evidence describe the same image.
+- **Writing the reproduction instructions was itself a check.** Both committed
+  diffs had been produced with the file headers stripped, so the `patch -p0` the
+  instructions call for could not have applied them. Regenerated with labels and
+  verified by applying each to a copy and comparing bytes.
+
+Two more, recorded without ceremony: the same-class regex missed `should not`
+and therefore missed leg C's conservation premise in both himalaya checkers
+(widened, 14 hits became 18); and the entry's headline generalisation was an
+n-of-2 claim about which fixes are common, which nothing here measures.
+
+**And the miss that stings.** Yesterday's entry named the class "a page states
+an external system's status as a fact, and the external system moved", and fixed
+`PRD.md` §17. Review found the same stale sentence three paragraphs further down
+in the same file — "what remains is an author's judgement, a fix, and a
+regression case that runs" — and again in `DESIGN.md` §17. Two of those three
+were closed by upstream on 2026-08-23. I scanned for the class and scoped the
+scan to checker failure messages; the class lives in the prose too. Scanning the
+prose afterwards turned up one more page to qualify (`docs/target-classes.md`)
+and one that is still accurate: `DESIGN.md` says timewarrior's report is not yet
+confirmed by its maintainers, and `GothenburgBitFactory/timewarrior#778` is
+still open with no comments, last touched 2026-08-12.
+
+**On the classification this directory lands in**, since the entry below it
+inverted the default the same day. `spike/cohort4/himalaya-r2/upstream-fix/`
+carries three executable scripts and falls to documentation without anyone
+naming it, which is the exact shape ADR 0021 says the check cannot catch: a
+live directory omitted from both `.gitattributes` and `exempt_dirs` is green
+because both sides agree on the wrong answer. Green was therefore not treated
+as the decision. `git check-attr` says these scripts sit where
+`spike/cohort4/himalaya-r2/ops/check.sh` sits — the cohort's own frozen define —
+and not where `spike/acceptance.sh` sits, which is the maintained harness. They
+are the apparatus of a frozen measurement, so documentation is the right side
+and no exemption is asked for.
+
 ## 2026-08-25 — the classification rule was missed on every closure it faced, so the closure moment was removed
 
 `#292` reported that `spike/macos-oracle/` never got its

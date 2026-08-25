@@ -1,0 +1,16 @@
+# The build that produced the fixed image measured here.
+# Extracted from 'docker build --progress=plain': the layers that assert
+# something, plus the version banner. The compile output is dropped.
+
+#13 [build-himalaya 7/9] RUN cd /build/himalaya-src     && got=$(find . -type f -not -path './.git/*' -not -name Cargo.lock -print0         | LC_ALL=C sort -z | xargs -0 -n 64 sha256sum | sha256sum | cut -d' ' -f1)     && want=1fc324cc27e3f30c4508a2d8736f0ec638f85b6e59b412f955b227b94efdd3d2     && { [ "$got" = "$want" ]         || { echo "tree-minus-lock digest mismatch: got $got wanted $want"; exit 1; }; }     && echo "cc703172bc9339e27711daccbd56c833c44fd6cbae02a15e88af878321483d2f  Cargo.lock"         | sha256sum -c -
+Cargo.lock: OK
+    Finished `release` profile [optimized] target(s) in 2m 39s
+himalaya v2.1.0 +imap +maildir +gmail +jmap +pimdir +msgraph +m2dir +smtp +rustls-ring
+build: linux gnu aarch64
+git: v2.1.0, rev ca88bee08ad2e92127b46dc6200d1e8201885156
+#15 [build-himalaya 9/9] RUN grep -q 'self.target.tmp().join' /build/vendor/io-maildir/src/entry/copy.rs     && grep -q 'MaildirYield::WantsRename' /build/vendor/io-maildir/src/entry/copy.rs     && echo "io-maildir 0.3.1: copy stages in the target tmp/ and renames into place"
+io-maildir 0.3.1: copy stages in the target tmp/ and renames into place
+himalaya v2.1.0 +imap +maildir +gmail +jmap +pimdir +msgraph +m2dir +smtp +rustls-ring
+build: linux gnu aarch64
+git: v2.1.0, rev ca88bee08ad2e92127b46dc6200d1e8201885156
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffffb9bc0000)
