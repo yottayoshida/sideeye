@@ -2,6 +2,47 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the same-class scan reached one of three ways a checker fails, and said it had covered them all
+
+The scan published in #303 and again in #307 opens with "scanned across every
+committed cohort checker" and reports 18 hits in 6 files. Both numbers are right
+about what they measured. What they measured is `fail "…"` calls in shell.
+
+Counting how a checker can fail turns up three idioms:
+
+| how | reached by the scan |
+|---|---|
+| `fail "…"` in shell | yes |
+| a bare `echo …; exit` | no — the four hg revisions, one message between them |
+| a message inside an embedded Python block | no — five checkers embed Python, three messages: two in black, one in papis |
+
+**The classification does not move,** and that is measured rather than assumed:
+the four unreached messages were read. hg's states a premise about its own setup
+script; black's two assert a parse and program identity; papis's asserts a
+document's shape. None is a premise an external system can falsify, so the two
+falsified premises are still the himalaya staging guard and nothing else.
+
+**The first draft of that table had the same defect it describes.** It said two
+Python messages, both in black. papis fails through `raise SystemExit(…)`, which
+`print(` does not match, and the pattern reaching for it also matched shell
+`printf` — so the counts were wrong in both directions at once. Re-derived before
+publishing rather than after, which is the only reason this paragraph is right.
+
+**What moves is the claim about reach**, and that is worth correcting because
+the paragraph publishes its own command — it is an entry point for reuse, and a
+reader who takes the scanner and the sentence together inherits a blind spot
+that the sentence denies having.
+
+**Measuring before writing would not have caught this.** The numbers were
+measured, and they were correct. The scanner was built around the first idiom
+found and that idiom was taken for the set, so the range was fixed before the
+first measurement ran. The cheap check is to **derive the denominator twice and
+look for disagreement**: `grep -c 'fail "'` beside `grep -cE '\bexit [1-9]'` per
+file puts black at `fail=1, exit=2`, an outlier that says the scanner is not
+finished yet. The parallel case on the other side of this repo the same day was
+an ADR status scan whose `^Status:` pattern reached 4 of 21 files, the rest
+using a bold-bullet form; there the two-way count would have shown 4 against 21.
+
 ## 2026-08-25 — the synopsis check's third direction was not blocked, and the first draft of it compared a world the help text chose
 
 `#295` filed the missing direction — a flag a mode accepts whose synopsis

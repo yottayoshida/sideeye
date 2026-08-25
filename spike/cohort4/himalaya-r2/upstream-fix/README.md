@@ -272,8 +272,8 @@ The instrument's own header still quotes the pre-correction wording, deliberatel
 ### Where else the same shape lives
 
 The class is "a checker's failure message states a premise about the target's
-implementation, and the target can change underneath it." Scanned across every
-committed cohort checker:
+implementation, and the target can change underneath it." Scanned over the
+**shell `fail` calls** of every committed cohort checker:
 
     grep -rn 'fail "' spike/cohort*/*/ops/check.sh |
         grep -iE 'this operation|does not|should not|cannot|never |always |stages|is not able|could not have'
@@ -283,7 +283,38 @@ The pattern was widened once, after review. A narrower first version omitted
 a premise about the operation, stated in a failure message, that the scan was
 supposed to reach. The count below is from the widened pattern.
 
-**18 checkers, 18 hits in 6 files**, classified rather than counted:
+**What this scan does not reach, measured on 2026-08-25 after it had already
+been published twice.** It enumerates one way a checker fails. There are three:
+
+| how a checker fails | reached |
+|---|---|
+| `fail "…"` in shell | yes — the 18 below |
+| a bare `echo …; exit` | **no** — 4 files, the hg revisions, one message between them |
+| a message inside an embedded Python block | **no** — 5 files embed Python; 3 messages, two in black and one in papis |
+
+The four unreached messages were read rather than counted past. hg's states a
+premise about **its own setup script**, not about the target. black's two assert
+a parse and program identity; papis's asserts a document's shape. None is a
+premise an external system can falsify, so **the classification below does not
+move** — but the sentence that used to head this paragraph said the scan covered
+every committed checker, and what it covered was every checker's `fail` calls.
+
+A first draft of this table said two Python messages, both in black. Counting
+them properly found three: `raise SystemExit(…)` in papis is a failure message
+that `print(` does not match, and the pattern used to look for it matched shell
+`printf` as well. **The correction to a scan's reach was itself written from a
+scan with the same defect**, and was caught only because the numbers were
+re-derived before being published rather than after.
+
+The gap was cheap to find once looked for, and the recipe is worth more than the
+fix: **count the denominator two ways and look for the disagreement.** Listing
+`grep -c 'fail "'` beside `grep -cE '\bexit [1-9]'` per file puts black at
+`fail=1, exit=2` — an outlier that says the scanner is not finished. Building
+the scanner around the first idiom found, and taking that idiom for the whole
+set, is the failure here; measuring before writing would not have caught it,
+because the numbers were measured and were right about what they measured.
+
+**18 checkers, 18 `fail`-call hits in 6 files**, classified rather than counted:
 
 - **Falsified, 2 lines.** The staging guard is in **two** files, not one:
   `spike/cohort4/himalaya/ops/check.sh:100` and `spike/cohort4/himalaya-r2/ops/check.sh:100`.
