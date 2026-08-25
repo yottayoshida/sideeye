@@ -3342,6 +3342,134 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 16: the destructive root is vetted before setup, and again before each delete (#267) ==========="
+
+# Two directions, and the second is the one that matters. A denylist in front of the
+# delete is easy to satisfy and easy to fool: the resolution it relies on happens before
+# --setup, so a setup command that leaves a symlink where the state directory was sends
+# the delete somewhere else with every list still satisfied. Leg (b) is that case.
+vet_fails=0
+vet_dir=/tmp/acc-vet
+rm -rf "$vet_dir"
+mkdir -p "$vet_dir/outside" "$vet_dir/state"
+
+# (a1) A system tree that EXISTS is refused by the vet, by name. /var/lib is present on
+#      both platforms this runs on, so the resolution ahead of the vet succeeds and the
+#      vet is what answers. A non-existent path under the same tree does not test this:
+#      whether the engine can create it decides which refusal fires first, and this leg
+#      is about the message.
+o=$("$SIDEEYE" explore --state /var/lib --operation /bin/true \
+    --shim "$SHIM" --work "$vet_dir/work-a" 2>&1) && vrc=0 || vrc=$?
+case "$o" in
+    *"nothing sacrificial belongs in"*) : ;;
+    *) echo "     denied root: wanted the sacrificial-root refusal, got: $(printf '%s' "$o" | head -1)"
+       vet_fails=$((vet_fails + 1)) ;;
+esac
+[ "$vrc" = "3" ] || { echo "     denied root: exit $vrc, wanted 3 (setup error)"; vet_fails=$((vet_fails + 1)); }
+
+# (a2) A refusal must leave the filesystem as it found it. The resolution needs a mkdir
+#      first, so the vet has to undo it. Only the refusal and the absence are asserted
+#      here, not the message: as root the vet answers, and without permission to create
+#      the directory the earlier resolution failure answers instead. Both are refusals,
+#      and which one arrives is a property of the machine rather than of this change.
+vet_denied=/var/lib/acc-vet-should-not-exist
+o=$("$SIDEEYE" explore --state "$vet_denied" --operation /bin/true \
+    --shim "$SHIM" --work "$vet_dir/work-a2" 2>&1) && vrc_a2=0 || vrc_a2=$?
+[ "$vrc_a2" = "3" ] || { echo "     denied root (absent): exit $vrc_a2, wanted 3"; vet_fails=$((vet_fails + 1)); }
+[ -d "$vet_denied" ] && { echo "     denied root (absent): the refusal created the directory it refused"; vet_fails=$((vet_fails + 1)); }
+
+# (b) A root replaced between the resolution and the exploration does not produce a
+#     verdict. Measured: what answers here is not the re-vet in front of the delete but
+#     the structural detector that runs before any world — the swap makes the state
+#     change with no recorded operation, and the run refuses at that point, so nothing is
+#     deleted either way. That is a pre-existing protection and this leg pins it as one.
+#
+#     The re-vet covers a different timing: the recorded operation, which runs hundreds
+#     of times, replacing the root between one world's resolution and the next world's
+#     delete. No define can stage that here, because the structural detectors see the
+#     first swap first. It is pinned instead at the call sites in src/engine.zig, where
+#     removing `assertRootUnchanged` from either `restore` or `freshDir` turns a test red.
+#
+#     Two earlier versions of this leg claimed to test the re-vet and did not. The first
+#     used a sentinel inside the link's target, which the snapshot copies and `restore`
+#     writes back — structurally unable to fail. The second used `/bin/true` as the
+#     operation, which records nothing, so no world ran at all.
+cat > "$vet_dir/swap.sh" <<SWAP
+#!/bin/sh
+rm -rf "$vet_dir/state"
+ln -s "$vet_dir/outside" "$vet_dir/state"
+SWAP
+chmod 755 "$vet_dir/swap.sh"
+# The operation has to write into the state directory. A define whose operation records
+# nothing (/bin/true) never produces a world, so `restore` is never reached and the
+# re-vet never runs — measured: this leg passed on one platform and reported
+# `completeness_not_verified` on the other, neither for the reason it claims to test.
+cat > "$vet_dir/op.sh" <<OP
+#!/bin/sh
+echo x > "$vet_dir/state/written"
+OP
+chmod 755 "$vet_dir/op.sh"
+o=$("$SIDEEYE" explore --state "$vet_dir/state" --setup "$vet_dir/swap.sh" \
+    --operation "$vet_dir/op.sh" --shim "$SHIM" --work "$vet_dir/work-b" 2>&1) && vrc2=0 || vrc2=$?
+case "$o" in
+    *state_changed_without_ops*) : ;;
+    *) echo "     root swap: wanted the structural refusal (state_changed_without_ops), got: $(printf '%s' "$o" | head -1)"
+       vet_fails=$((vet_fails + 1)) ;;
+esac
+case "$o" in
+    *PASS*) echo "     root swap: a state directory replaced by a link produced a PASS"
+            vet_fails=$((vet_fails + 1)) ;;
+    *) : ;;
+esac
+[ "$vrc2" = "0" ] && {
+    echo "     root swap: exit 0 over a state directory that had been replaced by a link"
+    vet_fails=$((vet_fails + 1)); }
+
+# Control for (b): the same define without the swap must still run. Without this, an
+# implementation that refuses every root at all passes the two assertions above.
+cat > "$vet_dir/noswap.sh" <<NOSWAP
+#!/bin/sh
+mkdir -p "$vet_dir/state2"
+: > "$vet_dir/state2/seed"
+NOSWAP
+chmod 755 "$vet_dir/noswap.sh"
+mkdir -p "$vet_dir/state2"
+cat > "$vet_dir/op2.sh" <<OP2
+#!/bin/sh
+echo x > "$vet_dir/state2/written"
+OP2
+chmod 755 "$vet_dir/op2.sh"
+o=$("$SIDEEYE" explore --state "$vet_dir/state2" --setup "$vet_dir/noswap.sh" \
+    --operation "$vet_dir/op2.sh" --shim "$SHIM" --work "$vet_dir/work-c" 2>&1) && vrc3=0 || vrc3=$?
+# The control has to show the define REACHED exploration, not merely that these two
+# messages are absent: any other refusal, or an UNKNOWN raised before the first world,
+# would satisfy an absence test. `atomicity ... path(s) judged` only appears once worlds
+# have been judged, so it is the line that says the vet let the run through.
+case "$o" in
+    *"nothing sacrificial belongs in"*|*"could not be confirmed as the one this run resolved"*)
+        echo "     control: an unswapped scratch root under /tmp was refused"
+        vet_fails=$((vet_fails + 1)) ;;
+    *) : ;;
+esac
+case "$o" in
+    *"path(s) judged"*) : ;;
+    *) echo "     control: the unswapped define never reached exploration: $(printf '%s' "$o" | head -1)"
+       vet_fails=$((vet_fails + 1)) ;;
+esac
+# No exit-code assertion here. Without --oracle the run is UNKNOWN and exits 2, which is
+# a different contract's business; pinning it in this check would make an unrelated policy
+# change look like a destructive-root regression. The line above is the discriminator.
+: "${vrc3:?}"
+
+rm -rf "$vet_dir" "$vet_denied" 2>/dev/null || true
+
+if [ "$vet_fails" = "0" ]; then
+    echo "ok   a system tree is refused without being created, and a root replaced after resolution refuses instead of producing a verdict"
+else
+    echo "FAIL destructive-root vet: $vet_fails problem(s)"
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
