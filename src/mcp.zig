@@ -320,12 +320,16 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     const oracle = if (posix.getenv("SIDEEYE_MCP_ORACLE")) |o| std.mem.span(o) else null;
     var argv_buf: [16][]const u8 = undefined;
     var argc: usize = 0;
+    // --stop-when-orphaned (#269): an agent host restarts MCP servers as ordinary
+    // lifecycle, and an orphaned explore keeps killing processes and rewriting its
+    // state directory with nobody left to report to. Why a flag and not an environment
+    // variable is measured and recorded in ADR 0010.
     const base: []const []const u8 = switch (kind) {
-        .explore => &.{ self, "explore", "--config", path },
+        .explore => &.{ self, "explore", "--config", path, "--stop-when-orphaned" },
         // --fresh-state (#69): this server lives for the whole client session, and
         // nobody else is positioned to provide the pristine state dir every CLI
         // caller provided by hand — without it the second replay dies in setup.
-        .replay => &.{ self, "replay", path, "--fresh-state" },
+        .replay => &.{ self, "replay", path, "--fresh-state", "--stop-when-orphaned" },
     };
     for (base) |a| {
         argv_buf[argc] = a;

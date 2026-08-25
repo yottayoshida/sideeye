@@ -365,6 +365,26 @@ pub const UnknownReason = enum {
     /// crash points were derived from the recording run (#5). Refusing is the honest
     /// answer; recreating the common cases later would be an additive relaxation.
     unsupported_state_entry,
+    /// The process that launched this exploration is gone (#269). Opt-in through
+    /// `--stop-when-orphaned`: the engine records `getppid()` once at process start and
+    /// refuses to begin another world once it changes — parentage only changes when the
+    /// parent dies. The MCP adapter passes the flag on every self-exec'd explore and
+    /// replay, because an agent host restarts MCP servers as ordinary lifecycle, and an
+    /// orphaned explore otherwise keeps killing processes and rewriting its state
+    /// directory with nobody left to report to.
+    ///
+    /// A flag rather than a channel that carries the parent's pid. Argv is per-invocation
+    /// and is not inherited, where an environment variable is both: the engine hands the
+    /// target its own environment on the non-minimal path, so a pid passed that way
+    /// reaches processes nobody set it for, and a stale copy refuses runs it was never
+    /// about (measured, both).
+    ///
+    /// UNKNOWN, not SETUP_ERROR: exploration had begun, and exit 3 means the define did
+    /// not run. The claim it supports is narrow — **the next world boundary that is
+    /// reached**. A setup, recording or checker run that hangs never reaches one, and a
+    /// launcher that dies between fork and the engine's first instruction is not seen
+    /// (the baseline is then already the reaper's pid).
+    parent_exited,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);

@@ -3470,6 +3470,111 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 17: --stop-when-orphaned stops at the next world boundary (#269) ==========="
+
+# The launcher is assassinated by the define's own setup. That staging is what makes this
+# deterministic: the launcher is provably alive when the engine records its getppid()
+# baseline (the engine is its direct child, forked a moment earlier), and provably dead
+# before the first world boundary (setup runs before the recording run). Three earlier
+# stagings all had timing windows or measured the wrong pid: `exec` keeps the pid so the
+# recorded pid WAS the engine; a forked launcher raced the sub-second exploration; and a
+# sleep wrapper on the operation created a process boundary that ended the run before any
+# world. Killing the parent from inside the run replaces every window with an ordering.
+#
+# "No world ran" is asserted on the REPORT's `explored` field, not on text. The text
+# `explored N worlds` appears only on the PASS/FAIL paths, so its absence under UNKNOWN
+# says nothing — an earlier assertion built on it stayed green when the guard was moved
+# after the first world. The JSON field is written on every path.
+ppid_fails=0
+ppid_dir=/tmp/acc-ppid
+rm -rf "$ppid_dir"
+mkdir -p "$ppid_dir/state" "$ppid_dir/work"
+
+cat > "$ppid_dir/assassin-setup.sh" <<PPSETUP
+#!/bin/sh
+kill -9 \$(cat "$ppid_dir/launcher.pid") 2>/dev/null
+$OUT/toy-bug init
+PPSETUP
+cat > "$ppid_dir/plain-setup.sh" <<PPSETUP2
+#!/bin/sh
+$OUT/toy-bug init
+PPSETUP2
+chmod 755 "$ppid_dir/assassin-setup.sh" "$ppid_dir/plain-setup.sh"
+
+ppid_field() { # json-path key
+    python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); v=r.get(sys.argv[2]); print("" if v is None else v)' "$1" "$2" 2>/dev/null
+}
+
+# Leg 1: flag + assassinated launcher -> parent_exited before ANY world.
+#
+# The trailing `; se_rc=$?; exit $se_rc` is load-bearing: POSIX permits a shell to exec
+# the last command of `sh -c`, and an exec'd engine IS the recorded pid — the assassin
+# would then shoot the engine instead of the launcher. Both dashes at hand fork here
+# (measured, bookworm and ubuntu), but the staging must not lean on unspecified
+# behaviour, and the 137 assert below turns any violation loud.
+sh -c "echo \$\$ > '$ppid_dir/launcher.pid'; '$SIDEEYE' explore --state '$ppid_dir/state' --setup '$ppid_dir/assassin-setup.sh' --operation '$OUT/toy-bug rotate' --shim '$SHIM' --work '$ppid_dir/work' --json '$ppid_dir/r1.json' --oracle /usr/bin/strace --stop-when-orphaned > '$ppid_dir/out1.txt' 2>&1; se_rc=\$?; exit \$se_rc" &
+ppid_lw=$!
+ppid_i=0
+while [ ! -s "$ppid_dir/r1.json" ] && [ "$ppid_i" -lt 100 ]; do sleep 0.1; ppid_i=$((ppid_i + 1)); done
+wait "$ppid_lw" 2>/dev/null
+ppid_lrc=$?
+# Staging precondition, same as mcp 9's: the launcher died by the assassin's SIGKILL.
+# Any other exit means the kill went somewhere else and nothing below measures what it
+# claims to.
+[ "$ppid_lrc" = "137" ] || {
+    echo "     leg 1 staging: the launcher exited $ppid_lrc, not 137 (SIGKILL) — the assassin did not shoot the launcher"
+    ppid_fails=$((ppid_fails + 1)); }
+[ "$(ppid_field "$ppid_dir/r1.json" unknown_reason)" = "parent_exited" ] || {
+    echo "     leg 1: wanted unknown_reason parent_exited, got '$(ppid_field "$ppid_dir/r1.json" unknown_reason)' (verdict '$(ppid_field "$ppid_dir/r1.json" verdict)')"
+    ppid_fails=$((ppid_fails + 1)); }
+[ "$(ppid_field "$ppid_dir/r1.json" explored)" = "0" ] || {
+    echo "     leg 1: explored=$(ppid_field "$ppid_dir/r1.json" explored), wanted 0 — worlds ran after the launcher died"
+    ppid_fails=$((ppid_fails + 1)); }
+
+# Leg 2: flag + living launcher (this shell) -> explores normally. Separates "reads the
+# flag" from "refuses whenever the flag is present".
+rm -rf "$ppid_dir/state" "$ppid_dir/work"; mkdir -p "$ppid_dir/state" "$ppid_dir/work"
+"$SIDEEYE" explore --state "$ppid_dir/state" --setup "$ppid_dir/plain-setup.sh" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$ppid_dir/work" \
+    --json "$ppid_dir/r2.json" --oracle /usr/bin/strace --stop-when-orphaned \
+    > "$ppid_dir/out2.txt" 2>&1
+ppid_rc2=$?
+[ "$ppid_rc2" = "1" ] || { echo "     leg 2: exit $ppid_rc2, wanted 1 (the buggy toy FAILs)"; ppid_fails=$((ppid_fails + 1)); }
+ppid_e2=$(ppid_field "$ppid_dir/r2.json" explored)
+[ -n "$ppid_e2" ] && [ "$ppid_e2" -gt 0 ] || {
+    echo "     leg 2: explored='$ppid_e2', wanted > 0 — a live launcher must not stop the run"
+    ppid_fails=$((ppid_fails + 1)); }
+
+# Leg 3: NO flag + assassinated launcher -> explores normally. This is the nohup pattern:
+# without the opt-in, an orphaned run keeps going, and it separates "gated by the flag"
+# from "checks unconditionally".
+rm -rf "$ppid_dir/state" "$ppid_dir/work"; mkdir -p "$ppid_dir/state" "$ppid_dir/work"
+sh -c "echo \$\$ > '$ppid_dir/launcher.pid'; '$SIDEEYE' explore --state '$ppid_dir/state' --setup '$ppid_dir/assassin-setup.sh' --operation '$OUT/toy-bug rotate' --shim '$SHIM' --work '$ppid_dir/work' --json '$ppid_dir/r3.json' --oracle /usr/bin/strace > '$ppid_dir/out3.txt' 2>&1; se_rc=\$?; exit \$se_rc" &
+ppid_lw=$!
+ppid_i=0
+while [ ! -s "$ppid_dir/r3.json" ] && [ "$ppid_i" -lt 100 ]; do sleep 0.1; ppid_i=$((ppid_i + 1)); done
+wait "$ppid_lw" 2>/dev/null
+ppid_lrc=$?
+[ "$ppid_lrc" = "137" ] || {
+    echo "     leg 3 staging: the launcher exited $ppid_lrc, not 137 (SIGKILL)"
+    ppid_fails=$((ppid_fails + 1)); }
+[ "$(ppid_field "$ppid_dir/r3.json" unknown_reason)" = "parent_exited" ] && {
+    echo "     leg 3: refused with parent_exited although the flag was not given"
+    ppid_fails=$((ppid_fails + 1)); }
+ppid_e3=$(ppid_field "$ppid_dir/r3.json" explored)
+[ -n "$ppid_e3" ] && [ "$ppid_e3" -gt 0 ] || {
+    echo "     leg 3: explored='$ppid_e3', wanted > 0 — an orphan without the flag must finish"
+    ppid_fails=$((ppid_fails + 1)); }
+
+rm -rf "$ppid_dir"
+
+if [ "$ppid_fails" = "0" ]; then
+    echo "ok   an assassinated launcher stops the run before any world; a live launcher and a flagless orphan both explore to the end"
+else
+    echo "FAIL stop-when-orphaned: $ppid_fails problem(s)"
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
