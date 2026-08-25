@@ -1,0 +1,27 @@
+### target: himalaya v2.1.0 +msgraph +imap +jmap +pimdir +rustls-ring +m2dir +gmail +maildir +smtp
+### binary: 86a1872f91da1980
+###
+note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds
+falsify: checker(himalaya-copy): leg E: the source message's bytes changed
+checker(himalaya-copy): leg D: the copy is present but its bytes are not the source's (0 bytes on disk against 307 in the source)
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 2 of 2
+            after  open(/tmp/cohort4/himalaya/store/Archive/cur/1787619291.#0M950833048P27.41568e2c3d5f:2,S)
+            before write(/tmp/cohort4/himalaya/store/Archive/cur/1787619291.#0M950833048P27.41568e2c3d5f:2,S)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   8 path(s) judged pre-or-post
+oracle      agreed on 2 operations (139 syscall lines examined, 30 in scope of the judged state)
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /work/spike/cohort4/himalaya-r2/run1/work/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/cohort4/himalaya/store SIDEEYE_TRACE_PATH=/tmp/sideeye-replay-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

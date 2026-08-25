@@ -1,0 +1,14 @@
+### target: himalaya v2.1.0 +imap +maildir +gmail +jmap +pimdir +msgraph +m2dir +smtp +rustls-ring
+### binary: 8155dd56e9e31af5
+###
+UNKNOWN  case_no_longer_applies
+         the recording now counts 3 state-changing operation(s); the case was recorded over 2
+
+atomicity   8 path(s) judged pre-or-post
+l1          no marker configured
+case        /work/spike/cohort4/himalaya-r2/run1/work/cases/000001.json
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -1,0 +1,22 @@
+falsify: checker(himalaya-copy): leg E: the source message's bytes changed
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      expected status: 0
+      atomicity: 8 path(s) judged pre-or-post
+      oracle: agreed on 3 operations (141 syscall lines examined, 31 in scope of the judged state)
+      metadata: 1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+
+=== what each checker invocation held ===
+falsification probe: Archive/tmp holds 0, Archive/cur holds 0
+invocation 2: Archive/tmp holds 0, Archive/cur holds 0
+invocation 3: Archive/tmp holds 1, Archive/cur holds 0
+  staged:    1787619301.#0M553229678P93.af770025d3f1 (0 bytes)
+invocation 4: Archive/tmp holds 1, Archive/cur holds 0
+  staged:    1787619301.#0M564614178P133.af770025d3f1 (307 bytes)
+invocation 5: Archive/tmp holds 0, Archive/cur holds 1
+  in target: 1787619301.#0M578209803P173.af770025d3f1:2,S (307 bytes)
