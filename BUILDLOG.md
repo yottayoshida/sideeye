@@ -2,6 +2,38 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the sentence saying an issue would stay open is what closed it
+
+#312 merged and closed #297, which the PR body said in three places should stay
+open. The commit message contains:
+
+    This does not close #297: forget an eighth report
+
+GitHub's closing-keyword parser matches `close #297` and does not read the
+negation in front of it. One clause of prose overrode three explicit statements
+of intent, plus a `Closes #296` that was deliberately the only closing line.
+
+Reopened with the reason recorded on the issue. Nothing about the ticket
+changed: #312 implements its option 3 (name the denominator), and the gap the
+issue is named for — a report filed without editing the literal is invisible —
+is untouched.
+
+**Scanned the last 30 commits** for the same shape, with a positive control to
+prove the pattern fires:
+
+    git log -30 --format='%b' | grep -icE '(not|never|without)[^.]{0,40}(close[sd]?|fixe[sd]?|resolve[sd]?) +#[0-9]+'
+    -> 1   (this one)
+
+**What that scan cannot answer, said here rather than left implied**: it only
+finds closing keywords preceded by a negation. An unintended `Closes #N` with no
+negation looks exactly like an intended one, so no scan over commit text can
+separate them — that distinction lives in whether the author meant it, which is
+not in the data.
+
+The practical rule this leaves: **do not write a closing keyword next to an
+issue number unless the intent is to close it, even inside a negation.** Say
+"#297 stays open" instead of "this does not close #297".
+
 ## 2026-08-25 — the veto's first measurement was clean because it only had one path to be clean about
 
 `#293` asked whether FSEvents can veto a mutation the shim never reported.
