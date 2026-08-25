@@ -69,6 +69,18 @@ the rest were denied only at the CLI layer, and none was ever attempted. The
 extractor has since been synced to the launcher's full list; re-projection of
 run 1 is unchanged by it (the run's tool calls were Bash and Write only).
 
+*Instrument note (2026-08-25, #160): the protocol has since gained its first
+amendment, so three present-tense sentences on this page are true of run 1's
+date rather than of the files beside it today. The protocol file is no longer
+byte-identical to its pre-run commit. The extractor's strict prefix check was
+replaced by a quote-aware predicate — the transfer pattern is still surfaced,
+never silent, now under the name `audit_adjudicate`. And re-projecting run 1's
+raw stream with the current extractor would yield the hardened classification
+and field names (the raw stream lives outside the repository, so that
+re-projection is not run or committed here); the extractor that produced the
+committed `meta.json` is the one at this run's own commit in history. The run count restarted per the
+protocol's rule; run 1's numbers and adjudication are unchanged.*
+
 ## What the driver said, verbatim
 
 Its closing report (the `result` event, in full):

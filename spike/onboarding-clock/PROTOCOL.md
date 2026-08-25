@@ -4,8 +4,10 @@ PRD v1.0 entry criterion 6: *a fresh machine reaches its first exploration in
 under ten minutes from the README.* Issue #87 fixed the strict reading — the
 clock measures an **external target**, not the embedded demo — and required
 this document to exist before any timed run. Everything below was written,
-committed and left unchanged before the first measurement; a change to this
-protocol after a run voids nothing retroactively but starts the run count over.
+committed and left unchanged before the first measurement *(sections amended
+since are dated in the Amendments section, under this paragraph's own rule)*;
+a change to this protocol after a run voids nothing retroactively but starts
+the run count over.
 
 ## What is measured
 
@@ -59,13 +61,15 @@ A fresh `claude --safe-mode -p` headless session (no CLAUDE.md, no hooks, no
 MCP, no skills — the loop-closure runs' isolation form, BUILDLOG 2026-08-13),
 launched by `run-clock.sh` with the prompt in `prompt.md`, verbatim. The
 driver is **not told it is being timed** — a driver racing a clock skims, and
-the criterion is about the documentation, not the driver's nerves. Tools: the
-Bash/Read/Edit/Write/Glob/Grep allowlist with the network and delegation
+the criterion is about the documentation, not the driver's nerves. Tools:
+Bash **scoped to `docker exec onboarding-box` invocations** (Amendments,
+2026-08-25) plus Read/Edit/Write/Glob/Grep, with the network and delegation
 tools denied by name, and one standing instruction — every command that
 touches the machine goes through `docker exec` to the box. The audit reads
-the transcript afterwards: a command that is not a `docker` invocation of the
-box, a read into this repository's checkout, or any denied-tool attempt voids
-the run.
+the transcript afterwards, independently of the permission layer: a read
+into this repository's checkout or any denied-tool attempt voids the run;
+every command the box predicate cannot pass clean is surfaced for
+adjudication (Amendments, 2026-08-25).
 
 ## Rehearsal boundary
 
@@ -82,3 +86,62 @@ One timed run is one measurement, not a distribution. A `met` says the path
 exists and was walked once; a `not met` or `DNF` names which door is
 load-bearing (issue #87's stated purpose for measuring early). Re-runs after
 doc changes use a fresh box and append — earlier numbers are never edited.
+
+## Amendments
+
+### 2026-08-25 — the escape paths close at the permission layer (#160)
+
+Per this protocol's own rule, these changes restart the run count. Run 1's
+evidence stands untouched as the measurement of its own date; the next timed
+run is run 2 — run directories continue the numbering, and each run's
+`meta.json` carries `protocol_version` naming the amendment date it ran
+under.
+
+1. **The driver's Bash is scoped, and the launcher refuses to start
+   nested.** The allowlist names `Bash(docker exec onboarding-box *)`; the
+   CLI's documentation says the pattern gates before execution (the trailing
+   ` *` binds at a word boundary, compound commands match per subcommand,
+   a newline is a separator). **The environment that was actually measured
+   is a different one**: launched from inside another Claude session
+   (2026-08-25), the scoped pattern refused none of the escape shapes, and
+   the one denial that occurred names the parent's auto-mode classifier —
+   it blocked the legitimate in-box heredoc author. So the
+   launcher now refuses outright when it detects a nested session, the
+   audit's predicate — independent of any permission layer — carries escape
+   detection in every environment, and **probing the pattern from a plain
+   terminal is a named precondition riding with run 2's preflight**. Run
+   1's transfer idiom (host-side `docker cp`, base64 pipelines) is outside
+   the declared scope either way; a driver authors files inside the box,
+   which run 1's driver also did (its heredoc form). Two documented CLI
+   bounds stay on the run-2 DNF suspect list: a command the permission
+   layer cannot parse, or longer than 10,000 characters, prompts — which a
+   headless run experiences as a refusal.
+2. **The audit reads quotes.** The extractor's box predicate is no longer a
+   string prefix: it tokenizes with quoting in force and flags a leading
+   token triple that is not exactly `docker exec onboarding-box`, any
+   top-level shell operator (`;`, `&&`, `|`, redirects), an unquoted
+   newline, and any command-substitution marker (`` ` `` / `$(`) wherever
+   it appears — a quoted substitution runs inside the box legitimately and
+   is still surfaced, because the audit cannot tell the two apart and
+   prefers a flag over silence. A command the tokenizer cannot parse is
+   flagged as unparseable rather than crashing the extraction mid-run.
+3. **The violation vocabulary splits.** `audit_void` carries what this
+   protocol voids outright: a denied tool attempted, a read into this
+   repository. `audit_adjudicate` carries everything the box predicate
+   surfaces — including shapes the permission layer legitimately allows,
+   such as a redirect into the driver's own empty scratch — for the
+   adjudication run 1's precedent established: a genuine escape voids;
+   driver-authored bytes moving into the box stand.
+4. **The target's installed version is a meta field** (`target_version`,
+   read from the box before the clock starts), which deviation 2 always
+   promised.
+5. **The launcher's scratch is actually removed** after the run, with any
+   leftover names echoed into the run log first; and the extractor's
+   selftest runs before every launch, so a predicate regression stops the
+   launch rather than surfacing at adjudication.
+
+One attribution note for reading run 2: the driver keeps its host-side
+Write tool, and a driver that reaches for run 1's transfer idiom will be
+refused until it re-derives in-box authoring. That detour is apparatus, not
+documentation. If run 2 runs slow, check the timeline for refused transfer
+attempts before reading the number as a README verdict.
