@@ -28,6 +28,12 @@ snapshot, with modes flattened and ownership dropped (#121). It is a scratch cop
 `/var/lib/myapp` here; sideeye now refuses a root inside a system tree rather than
 emptying it (#267).
 
+If you replay saved cases through the MCP server, know that replay confines the
+case's state to `SIDEEYE_MCP_STATE_ROOT` (default: the server root) — a case whose
+state lives under `/tmp`, as above, needs `SIDEEYE_MCP_STATE_ROOT=/tmp` on the
+server. Widen that variable, never `SIDEEYE_MCP_ROOT`; and with it unset, the
+workspace root itself is the declared destruction range (#266, ADR 0022).
+
 Relative paths and place-naming commands (`./x`, `../x`) resolve against the
 toml's own directory, so the file means the same thing from any cwd (ADR 0007).
 Commands split on spaces — no quoting. An argument that carries a space is

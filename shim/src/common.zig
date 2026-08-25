@@ -12,6 +12,12 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const contract = @import("contract");
+/// Build-time only (#270). `test_seq_gap` is false in every shipped shim — build.zig
+/// hardcodes false into libsideeye_shim's own options module regardless of any -D
+/// flag, and true only into the separately named libsideeye_shim_testgap that
+/// `-Dtest-seq-gap` additionally produces. There is no runtime knob: an environment
+/// variable that could bend the numbering would be a production backdoor.
+const shim_build_options = @import("shim_build_options");
 
 pub const c = struct {
     pub extern "c" fn dlsym(handle: ?*anyopaque, symbol: [*:0]const u8) ?*anyopaque;
@@ -749,6 +755,13 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
             (op.isTwoPath() and aux.len > 0 and contract.isInsideDir(aux, stateDir()));
         if (!in_scope) return;
         seq += 1;
+        // The test-apparatus gap (#270): skip number 2, so the second in-scope
+        // operation onward is numbered one high — records count n, highest number
+        // n+1, with the announcement untouched. This is the one shape the engine's
+        // sequence_numbering_broken refusal exists for and that no interposed path
+        // produces on its own: a shim that renumbers without re-announcing. Fixed at
+        // 2 so any target with two in-scope operations fires it deterministically.
+        if (shim_build_options.test_seq_gap and seq == 2) seq += 1;
         s = seq;
         // Only the process that initialised this shim instance may die here. A forked
         // child inherits `kill_at` and its own copy of `seq`, and without this guard it

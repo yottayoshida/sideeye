@@ -512,6 +512,45 @@ pub fn isInsideDir(path: []const u8, dir: []const u8) bool {
     return path[d.len] == '/';
 }
 
+/// Inside and strictly deeper (#266): equality is excluded. The confinement this
+/// serves treats `dir` as a range whose contents are sacrificial — a path EQUAL to
+/// the range would make the range itself the sacrificial directory, which for a
+/// workspace root is the accident the check exists to refuse. `dir` of "/" still
+/// answers true for any other absolute path; the caller refuses that range outright
+/// (a range that confines nothing is a misconfiguration, not a wide range).
+pub fn isStrictlyInsideDir(path: []const u8, dir: []const u8) bool {
+    const d = std.mem.trimEnd(u8, dir, "/");
+    // Both sides are trimmed: "/ws/" and "/ws" are the same directory, and trimming
+    // only `dir` would let a trailing slash on `path` defeat the equality exclusion
+    // this function exists for (isStrictlyInsideDir("/ws/", "/ws") must be false).
+    // Production callers pass realpath output, which never carries one — this guards
+    // the next caller who does not.
+    const p = std.mem.trimEnd(u8, path, "/");
+    return isInsideDir(p, d) and p.len > d.len;
+}
+
+test "isStrictlyInsideDir excludes equality and component-prefix lookalikes" {
+    const t = std.testing;
+    // The ordinary case, and the two accidents #266 refuses: state equal to the
+    // range, and a sibling whose name merely extends the range's last component.
+    try t.expect(isStrictlyInsideDir("/ws/state", "/ws"));
+    try t.expect(isStrictlyInsideDir("/ws/a/b", "/ws"));
+    try t.expect(!isStrictlyInsideDir("/ws", "/ws"));
+    try t.expect(!isStrictlyInsideDir("/wsother", "/ws"));
+    try t.expect(!isStrictlyInsideDir("/elsewhere", "/ws"));
+    // Trailing-slash spelling of the same range changes nothing — on either side:
+    // a slash on `path` must not smuggle the range itself past the equality
+    // exclusion (security review, Minor-2).
+    try t.expect(isStrictlyInsideDir("/ws/state", "/ws/"));
+    try t.expect(!isStrictlyInsideDir("/ws", "/ws/"));
+    try t.expect(!isStrictlyInsideDir("/ws/", "/ws"));
+    try t.expect(!isStrictlyInsideDir("/ws/", "/ws/"));
+    // "/" as a range answers true for everything else — the caller must refuse it
+    // before asking (documented above); this pins that the predicate alone is not
+    // the refusal.
+    try t.expect(isStrictlyInsideDir("/anything", "/"));
+}
+
 pub const max_components = 256;
 
 pub const NormalizeError = error{ BufferTooSmall, NotAbsolute, TooDeep };

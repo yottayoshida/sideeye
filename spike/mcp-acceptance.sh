@@ -351,6 +351,78 @@ if r.get("explored") != 0:
     sys.exit("explored=%r, wanted 0 - worlds ran after the server died" % r.get("explored"))
 PY10
 
+echo "=========== mcp 10: a case's state outside the range is refused; the directory survives (#266) ==========="
+# The server vets the CASE's path against the root, but the case itself names the
+# state directory the engine empties and rebuilds. With SIDEEYE_MCP_STATE_ROOT unset
+# the range falls back to the root; a case inside the root whose define.state points
+# outside must come back as a tool error, with the outside directory untouched.
+MCPVICTIM=/tmp/mcp-victim
+rm -rf "$MCPVICTIM"; mkdir -p "$MCPVICTIM"; echo "survives" > "$MCPVICTIM/sentinel.txt"
+python3 - "$WS2/work/cases/000001.json" "$WS2/evil.json" "$MCPVICTIM" <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = sys.argv[3]
+json.dump(c, open(sys.argv[2], "w"))
+PY
+REQ="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/evil.json\"}}}" \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
+  sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+if python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];(r["isError"] is True and "outside the allowed range" in r["content"][0]["text"]) or sys.exit(1)' 2>/dev/null \
+   && [ -s "$MCPVICTIM/sentinel.txt" ]; then
+    pass "an outside define.state is an isError naming the range, and the outside directory is untouched"
+else
+    fail "state confinement through the server: refusal or sentinel missing"
+fi
+
+echo "=========== mcp 11: SIDEEYE_MCP_STATE_ROOT widens the range without widening the root (#266) ==========="
+# The operator's knob, exercised for real: the SAME outside-state case that mcp 10
+# refused is replayable once the destruction range is explicitly widened to /tmp —
+# while the naming root stays the narrow workspace. This is the env branch's live
+# coverage; without it the fallback path alone ships measured.
+# Check 8's setup is deliberately non-idempotent (mkdir of a fixed `once` under the
+# ORIGINAL state dir — its own apparatus); clear that marker or this leg's setup
+# fails for check 8's reasons, not this check's.
+rm -rf "$MCPVICTIM" "$WS2/state/once"; mkdir -p "$MCPVICTIM"
+REQ="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/evil.json\"}}}" \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work SIDEEYE_MCP_STATE_ROOT=/tmp \
+  sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));sc=d["result"].get("structuredContent",{});sc.get("verdict")=="FAIL" or sys.exit(d)' \
+  && pass "with STATE_ROOT=/tmp the same case replays to its verdict (the knob widens destruction, not naming)" \
+  || fail "STATE_ROOT branch: the widened range did not let the case replay"
+rm -rf "$MCPVICTIM"
+
+echo "=========== mcp 12: a root nothing sacrificial belongs in refuses at startup (#266) ==========="
+# The confinement's fallback makes the root the destruction range, and the
+# resolveInsideRoot/isInsideDir unification made root=/ mean everything-inside where
+# the hand-rolled check meant nothing-inside. Both are why a root of / or /tmp is a
+# startup refusal, not a running server.
+for BADROOT in / /tmp; do
+    SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$BADROOT "$SIDEEYE" mcp </dev/null >/tmp/mcp.out 2>/tmp/mcp.err
+    rc=$?
+    if [ "$rc" = "3" ] && grep -q "must not be a workspace root" /tmp/mcp.err; then
+        pass "SIDEEYE_MCP_ROOT=$BADROOT refuses to start (exit 3)"
+    else
+        fail "SIDEEYE_MCP_ROOT=$BADROOT started or refused wrong (exit $rc)"
+    fi
+done
+# An unresolvable STATE_ROOT is fail-closed: refuse startup, never run unconfined.
+SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_STATE_ROOT=/nonexistent-$$ "$SIDEEYE" mcp </dev/null >/tmp/mcp.out 2>/tmp/mcp.err
+rc=$?
+if [ "$rc" = "3" ] && grep -q "STATE_ROOT is set but unresolvable" /tmp/mcp.err; then
+    pass "an unresolvable SIDEEYE_MCP_STATE_ROOT refuses startup (fail-closed)"
+else
+    fail "unresolvable STATE_ROOT: exit $rc (wanted 3 + refusal on stderr)"
+fi
+# STATE_ROOT=/ would confine nothing: the engine refuses it per replay, but a server
+# every one of whose replays is doomed says so once, at startup.
+SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_STATE_ROOT=/ "$SIDEEYE" mcp </dev/null >/tmp/mcp.out 2>/tmp/mcp.err
+rc=$?
+if [ "$rc" = "3" ] && grep -q "would confine nothing" /tmp/mcp.err; then
+    pass "SIDEEYE_MCP_STATE_ROOT=/ refuses startup (a range that confines nothing)"
+else
+    fail "STATE_ROOT=/: exit $rc (wanted 3 + confine-nothing refusal)"
+fi
+
 echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

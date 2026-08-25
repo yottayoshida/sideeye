@@ -15,6 +15,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const contract = @import("contract");
 const posix = @import("posix.zig");
+const engine = @import("engine.zig");
 
 const protocol_version = "2026-07-28";
 
@@ -67,13 +68,50 @@ pub fn runServer(gpa: std.mem.Allocator) void {
     };
     // The workspace root that config/case paths must resolve inside (R1 Critical: a
     // tool-supplied path must not reach outside a known root). Required.
-    const root = if (posix.getenv("SIDEEYE_MCP_ROOT")) |r| resolveDir(std.mem.span(r)) else null;
+    const root = if (posix.getenv("SIDEEYE_MCP_ROOT")) |r| resolveDirInto(&root_buf, std.mem.span(r)) else null;
     if (root == null) {
         const msg = "sideeye mcp: SIDEEYE_MCP_ROOT is not set or unresolvable; refusing to start\n";
         _ = posix.write(2, msg.ptr, msg.len);
         std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
     }
     server_root = root.?;
+    // The same predicate the engine runs before its first destructive step (#267),
+    // applied to the root at startup (#266): with SIDEEYE_MCP_STATE_ROOT unset the
+    // root doubles as the destruction range below, and a root of "/", "/tmp" or
+    // "$HOME"'s parents makes the naming boundary meaningless too. Refusing here also
+    // pins the isInsideDir unification in resolveInsideRoot: the hand-rolled check it
+    // replaced answered "outside" for everything under root "/", isInsideDir answers
+    // "inside" — this vet removes the input the two disagree on.
+    engine.assertSafeRoot(server_root) catch {
+        const msg = "sideeye mcp: SIDEEYE_MCP_ROOT names a location that must not be a workspace root (a system tree, a scratch parent like /tmp, /, or any single-component path like /work — the vet needs two path components; mount or place the workspace one level deeper); refusing to start\n";
+        _ = posix.write(2, msg.ptr, msg.len);
+        std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+    };
+    // The destruction range (#266): where a replayed case's `define.state` may
+    // resolve. Separate from the naming range on purpose — "which files may be
+    // named" and "which directories may be emptied" are different properties, and
+    // the operator who wants CLI-made cases (state under /tmp, the documented
+    // convention) replayable through this server widens THIS knob, never the root.
+    // Unset falls back to the root: the narrow default. Unresolvable refuses
+    // startup: a confinement knob that silently stopped confining would be worse
+    // than none. No assertSafeRoot here — "/tmp" as an umbrella is this knob's
+    // purpose, and the engine vets each actual state directory at first contact.
+    state_root = if (posix.getenv("SIDEEYE_MCP_STATE_ROOT")) |sr| blk: {
+        const resolved = resolveDirInto(&state_root_buf, std.mem.span(sr)) orelse {
+            const msg = "sideeye mcp: SIDEEYE_MCP_STATE_ROOT is set but unresolvable; refusing to start rather than running unconfined\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        };
+        // "/" as a range confines nothing. The engine refuses it per replay too, but
+        // a server every one of whose replays is doomed should say so at startup,
+        // not one tool error at a time (security review, Major-2).
+        if (resolved.len <= 1) {
+            const msg = "sideeye mcp: SIDEEYE_MCP_STATE_ROOT=/ would confine nothing; name the directory replayed cases' state may live under\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        }
+        break :blk resolved;
+    } else server_root;
     var buf: [256 * 1024]u8 = undefined;
     var filled: usize = 0;
     // While draining, the current line overflowed the buffer; everything up to and
@@ -210,7 +248,7 @@ fn toolsListBody() []const u8 {
         "\"description\":\"Explore crash-consistency for a target defined by a sideeye.toml (its path must be inside SIDEEYE_MCP_ROOT). Returns the verdict report. NOTE: the operation in the config is executed; the config is a trust boundary.\"," ++
         "\"inputSchema\":{\"type\":\"object\",\"properties\":{\"config_path\":{\"type\":\"string\",\"description\":\"Path to a sideeye.toml inside the server root\"}},\"required\":[\"config_path\"],\"additionalProperties\":false}}," ++
         "{\"name\":\"sideeye_replay_case\"," ++
-        "\"description\":\"Replay a saved counterexample case (its path must be inside SIDEEYE_MCP_ROOT). Returns the verdict, or 'case no longer applies' if the recording changed.\"," ++
+        "\"description\":\"Replay a saved counterexample case (its path must be inside SIDEEYE_MCP_ROOT). Returns the verdict, or 'case no longer applies' if the recording changed. NOTE: the case's setup/operation/check commands are executed; a case is a trust boundary, exactly like a config. The case's state directory is emptied and rebuilt on every explored world; it must resolve strictly inside SIDEEYE_MCP_STATE_ROOT (default: the server root).\"," ++
         "\"inputSchema\":{\"type\":\"object\",\"properties\":{\"case_path\":{\"type\":\"string\",\"description\":\"Path to a saved case JSON inside the server root\"}},\"required\":[\"case_path\"],\"additionalProperties\":false}}" ++
         "]";
 }
@@ -318,8 +356,19 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     // it comes from the environment like the shim, and completes the account so a real
     // FAIL (and its saved case) can be reached rather than always UNKNOWN.
     const oracle = if (posix.getenv("SIDEEYE_MCP_ORACLE")) |o| std.mem.span(o) else null;
-    var argv_buf: [16][]const u8 = undefined;
+    var argv_buf: [20][]const u8 = undefined;
     var argc: usize = 0;
+    // Every append goes through this bound: an argv table that outgrew its buffer
+    // must fail at the append that overflowed it, not by writing past the end (safe
+    // builds would panic there anyway, but this names the invariant at the site
+    // that grows).
+    const push = struct {
+        fn push(buf: [][]const u8, n: *usize, a: []const u8) void {
+            std.debug.assert(n.* < buf.len);
+            buf[n.*] = a;
+            n.* += 1;
+        }
+    }.push;
     // --stop-when-orphaned (#269): an agent host restarts MCP servers as ordinary
     // lifecycle, and an orphaned explore keeps killing processes and rewriting its
     // state directory with nobody left to report to. Why a flag and not an environment
@@ -329,23 +378,19 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         // --fresh-state (#69): this server lives for the whole client session, and
         // nobody else is positioned to provide the pristine state dir every CLI
         // caller provided by hand — without it the second replay dies in setup.
-        .replay => &.{ self, "replay", path, "--fresh-state", "--stop-when-orphaned" },
+        // --state-under (#266): the case path was vetted against the root, but the
+        // case's own define names the directory the engine empties and rebuilds;
+        // this hands the destruction range down to the one place that reads it.
+        .replay => &.{ self, "replay", path, "--fresh-state", "--state-under", state_root, "--stop-when-orphaned" },
     };
-    for (base) |a| {
-        argv_buf[argc] = a;
-        argc += 1;
-    }
+    for (base) |a| push(&argv_buf, &argc, a);
     // `--work` points at the server work dir so saved cases land under it (and, when
     // it is inside SIDEEYE_MCP_ROOT, are replayable through this same server). `--json`
     // is where this call's report goes.
-    for ([_][]const u8{ "--json", temp_json, "--shim", shim, "--work", work }) |a| {
-        argv_buf[argc] = a;
-        argc += 1;
-    }
+    for ([_][]const u8{ "--json", temp_json, "--shim", shim, "--work", work }) |a| push(&argv_buf, &argc, a);
     if (oracle) |o| {
-        argv_buf[argc] = "--oracle";
-        argv_buf[argc + 1] = o;
-        argc += 2;
+        push(&argv_buf, &argc, "--oracle");
+        push(&argv_buf, &argc, o);
     }
     const argv = argv_buf[0..argc];
     // Minimal-env self-exec with the child's stdout captured to a file — fd 1 (the MCP
@@ -471,12 +516,19 @@ fn appendJsonString(arena: std.mem.Allocator, out: *std.ArrayList(u8), s: []cons
 /// The realpath'd server root; tool paths must resolve inside it.
 var server_root: []const u8 = "";
 var root_buf: [contract.max_path]u8 = undefined;
+/// The realpath'd destruction range (#266); a replayed case's state must resolve
+/// strictly inside it. Defaults to `server_root` when SIDEEYE_MCP_STATE_ROOT is unset.
+var state_root: []const u8 = "";
+var state_root_buf: [contract.max_path]u8 = undefined;
 
-/// realpath a directory into a stable buffer; null if it does not resolve.
-fn resolveDir(dir: []const u8) ?[]const u8 {
+/// The buffer is a parameter because each resolved root needs its own stable home:
+/// a second call into one shared static would silently rewrite the first root's
+/// bytes — which is why no wrapper with a baked-in buffer exists (one did, briefly;
+/// a name that hides which buffer it writes is the exact footgun this comment names).
+fn resolveDirInto(buf: *[contract.max_path]u8, dir: []const u8) ?[]const u8 {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{dir}) catch return null;
-    if (posix.realpath(z.ptr, &root_buf)) |p| return std.mem.span(p);
+    if (posix.realpath(z.ptr, buf)) |p| return std.mem.span(p);
     return null;
 }
 
@@ -490,9 +542,12 @@ fn resolveInsideRoot(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     var rp: [contract.max_path]u8 = undefined;
     const resolved = posix.realpath(z.ptr, &rp) orelse return null; // must exist
     const r = std.mem.span(resolved);
-    if (!std.mem.startsWith(u8, r, server_root)) return null;
-    // Boundary: exactly the root, or the next byte is a path separator.
-    if (r.len != server_root.len and r[server_root.len] != '/') return null;
+    // The same predicate the engine's --work containment and the --state-under vet
+    // use (component-boundary inclusive of equality). The hand-rolled startsWith it
+    // replaced disagreed with isInsideDir on exactly one input — root "/" — where it
+    // rejected everything and isInsideDir accepts everything; the startup
+    // assertSafeRoot vet refuses that root before this function can ever see it.
+    if (!contract.isInsideDir(r, server_root)) return null;
     return arena.dupe(u8, r) catch null;
 }
 

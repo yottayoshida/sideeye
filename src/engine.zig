@@ -127,16 +127,51 @@ test "firstUnsupportedEntry flags exactly the kinds restore cannot recreate" {
 /// sort above guarantees the first and a directory traversal cannot produce the second — so
 /// this is the check refusing rather than letting a binary search answer from a list that
 /// does not satisfy its precondition (#262).
-pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique };
+pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge };
 
 const max_depth = 32;
+
+/// The per-FILE byte cap on snapshot reads (#265). Every other read in the pipeline
+/// is capped (the case file at 1 MiB, the MCP report at 4 MiB); the snapshot path
+/// runs hundreds of times per explore over target-sized data and was the unbounded
+/// one — a single multi-gigabyte state file turned the judgment into an OOM kill
+/// with no report. L0 judgment is byte-level comparison, so the tree is held in
+/// memory whole: pre and post coexist, and the crashed sequence holds three at once.
+/// 64 MiB per file bounds the largest single resident pair near 128 MiB.
+///
+/// Per file, deliberately: a tree's TOTAL stays unbounded, and this constant must
+/// not be read as a memory ceiling for the run.
+pub const max_state_file_bytes: usize = 64 * 1024 * 1024;
+
+/// Which file broke the cap, for the refusal that names it (#265). Zig errors carry
+/// no payload, and the snapshot's own arena dies with the error — so the caller
+/// hands this fixed-size, caller-owned box in and reads it back on error.FileTooLarge.
+pub const FileTooLargeDiag = struct {
+    rel_buf: [contract.max_path]u8 = undefined,
+    rel_len: usize = 0,
+    /// From lseek(SEEK_END) at the moment the cap broke; null when even that failed
+    /// (the refusal then says "over the cap" and no more — a size nobody measured
+    /// must not appear in the message).
+    size: ?u64 = null,
+
+    pub fn rel(self: *const FileTooLargeDiag) []const u8 {
+        return self.rel_buf[0..self.rel_len];
+    }
+};
 
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
     const s = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ a, b }) catch return error.PathTooLong;
     return s;
 }
 
-fn readWhole(arena: Allocator, path: [*:0]const u8) SnapshotError![]const u8 {
+/// The cap is a parameter for the same reason readLinkTarget's buffer is one: against
+/// the production constant a test would need a 64 MiB fixture to see the refusal fire,
+/// so the boundary would be a claim nobody falsifies — against a small cap the tests
+/// below fire it for real. `size_out`, when given, receives the file's size from
+/// lseek(SEEK_END) at the moment the cap breaks (null if even that fails): the
+/// refusal that names the file wants to name its size, and the read loop stopped
+/// before it could know.
+fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64) SnapshotError![]const u8 {
     const fd = posix.open(path, posix.O_RDONLY, @as(c_uint, 0));
     if (fd < 0) return error.ReadFailed;
     defer _ = posix.close(fd);
@@ -148,6 +183,13 @@ fn readWhole(arena: Allocator, path: [*:0]const u8) SnapshotError![]const u8 {
         if (n < 0) return error.ReadFailed;
         if (n == 0) break;
         try list.appendSlice(arena, chunk[0..@intCast(n)]);
+        if (list.items.len > max) {
+            if (size_out) |so| {
+                const end = posix.lseek(fd, 0, posix.SEEK_END);
+                so.* = if (end >= 0) @intCast(end) else null;
+            }
+            return error.FileTooLarge;
+        }
     }
     return list.items;
 }
@@ -158,6 +200,8 @@ fn walk(
     root: []const u8,
     rel_prefix: []const u8,
     depth: usize,
+    max_file: usize,
+    diag: ?*FileTooLargeDiag,
 ) SnapshotError!void {
     if (depth > max_depth) return error.TooDeep;
 
@@ -192,10 +236,18 @@ fn walk(
         switch (kind) {
             .dir => {
                 try entries.append(arena, .{ .rel = rel, .kind = .dir, .content = "" });
-                try walk(arena, entries, root, rel, depth + 1);
+                try walk(arena, entries, root, rel, depth + 1, max_file, diag);
             },
             .file => {
-                const content = try readWhole(arena, full.ptr);
+                var size: ?u64 = null;
+                const content = readWhole(arena, full.ptr, max_file, &size) catch |e| {
+                    if (e == error.FileTooLarge) if (diag) |d| {
+                        d.rel_len = @min(rel.len, d.rel_buf.len);
+                        @memcpy(d.rel_buf[0..d.rel_len], rel[0..d.rel_len]);
+                        d.size = size;
+                    };
+                    return e;
+                };
                 try entries.append(arena, .{ .rel = rel, .kind = .file, .content = content });
             },
             .symlink => {
@@ -233,6 +285,13 @@ fn lessThanRel(_: void, a: Entry, b: Entry) bool {
 }
 
 pub fn takeSnapshot(gpa: Allocator, root: []const u8) SnapshotError!Snapshot {
+    return takeSnapshotCapped(gpa, root, max_state_file_bytes, null);
+}
+
+/// The capped form (#265): production call sites pass `max_state_file_bytes` and a
+/// diag so the refusal can name the file; tests pass a small cap so the boundary is
+/// falsifiable without a 64 MiB fixture.
+pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, max_file: usize, diag: ?*FileTooLargeDiag) SnapshotError!Snapshot {
     var snap: Snapshot = .{
         .arena = std.heap.ArenaAllocator.init(gpa),
         .entries = .empty,
@@ -240,7 +299,7 @@ pub fn takeSnapshot(gpa: Allocator, root: []const u8) SnapshotError!Snapshot {
     errdefer snap.arena.deinit();
 
     const arena = snap.arena.allocator();
-    try walk(arena, &snap.entries, root, "", 0);
+    try walk(arena, &snap.entries, root, "", 0, max_file, diag);
     try finalizeEntries(&snap);
     return snap;
 }
@@ -663,7 +722,13 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
 
     // A missing trace file is not an error here: it is the observation that the shim
     // never ran, which the caller turns into `no_shim_marker`.
-    const bytes = readWhole(arena, path_z.ptr) catch return info;
+    //
+    // Deliberately uncapped (#265): every failure of this read — including a cap,
+    // if one were added — collapses into the empty TraceInfo above, which the
+    // caller reads as "the shim never initialised". An oversized trace surfacing
+    // as no_shim_marker would be a refusal with the wrong reason; the trace's
+    // unbounded read is real and tracked separately.
+    const bytes = readWhole(arena, path_z.ptr, std.math.maxInt(usize), null) catch return info;
     if (bytes.len == 0) return info;
 
     var off: usize = contract.decodeHeader(bytes) catch |err| switch (err) {
@@ -2292,4 +2357,50 @@ test "the producers refuse a snapshot that violates the order find searches by" 
         error.EntriesNotSortedUnique,
         testSnapshot(gpa, &.{ .{ "dup.txt", "one\n" }, .{ "dup.txt", "two\n" } }),
     );
+}
+
+test "the per-file cap refuses, names the file, and carries its size (#265)" {
+    const gpa = std.testing.allocator;
+
+    // Pid-unique root from the RESOLVED parent, the same way the symlink test above
+    // builds one and for the same reason (#28; macOS /tmp is itself a link).
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-filecap-test-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
+    var dbuf: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&dbuf, "{s}/state", .{base}) catch unreachable;
+    var rbuf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rbuf, "{s}", .{root}) catch unreachable;
+    _ = posix.mkdir(root_z.ptr, 0o755);
+    defer {
+        deleteTree(root, "", 0) catch {};
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    var fbuf: [contract.max_path]u8 = undefined;
+    const file_z = try joinZ(&fbuf, root, "grown.log");
+    const fd = posix.open(file_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    try std.testing.expectEqual(@as(isize, 9), posix.write(fd, "123456789", 9));
+    _ = posix.close(fd);
+
+    // Against a cap the file exceeds: the refusal fires and the diag names the file
+    // and its true size (from lseek, not from the truncated read).
+    var diag: FileTooLargeDiag = .{};
+    try std.testing.expectError(
+        error.FileTooLarge,
+        takeSnapshotCapped(gpa, root, 8, &diag),
+    );
+    try std.testing.expectEqualStrings("grown.log", diag.rel());
+    try std.testing.expectEqual(@as(?u64, 9), diag.size);
+
+    // Positive control, same tree: at the cap exactly, the read is not a breach —
+    // the boundary is "over", not "at" — and the snapshot succeeds.
+    var ok = try takeSnapshotCapped(gpa, root, 9, null);
+    defer ok.deinit();
+    try std.testing.expectEqual(@as(usize, 1), ok.entries.items.len);
+    try std.testing.expectEqualStrings("123456789", ok.entries.items[0].content);
 }

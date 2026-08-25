@@ -163,6 +163,11 @@ cfg = {"mcpServers": {"sideeye": {"command": "docker", "args": [
     "-e", "SIDEEYE_MCP_SHIM=%s/.harness/libsideeye_shim.so" % stage,
     "-e", "SIDEEYE_MCP_ORACLE=/usr/bin/strace",
     "-e", "SIDEEYE_MCP_WORK=/tmp/mcp-work",
+    # #266: the staged cases carry define.state=/tmp/loop-state, which is outside
+    # the stage root. Replay confines the case's state to SIDEEYE_MCP_STATE_ROOT
+    # (default: the root), so the destruction range is widened to /tmp explicitly —
+    # the root itself stays narrow.
+    "-e", "SIDEEYE_MCP_STATE_ROOT=/tmp",
     "-e", "SIDEEYE_MCP_CHILD_ENV=TIMEWARRIORDB",
     "-e", "TIMEWARRIORDB=/tmp/loop-state",
     "-e", "PATH=%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" % stage,
