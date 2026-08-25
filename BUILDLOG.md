@@ -2,6 +2,41 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the entry recording the accidental close caused a second one
+
+The entry below records an issue closed by a negated closing keyword in a commit
+message. The PR that shipped that entry closed the same issue again, by the same
+mechanism, because its commit message **quoted the offending clause**.
+
+The quote wrapped. The keyword ended one line and the number began the next.
+GitHub's parser treats a newline as whitespace and matched across it; the guard
+written for this an hour earlier used a regex whose space class matches within a
+line. So the check was line-oriented and the thing it checks is not.
+
+The clause was removed from the PR body and that was verified. The commit body
+was not re-checked with a pattern that can span lines. Which is the same defect
+this repository wrote down yesterday, in the entry about a same-class scan
+reaching one of three ways a checker fails: **flatten whitespace before searching
+prose for a multi-word phrase.** It was applied to somebody else's scan and not
+to this one.
+
+Reopened a second time, with the mechanism recorded on the issue.
+
+**The rule, now in three parts:**
+
+- Never put a closing keyword beside an issue number unless closing is the intent.
+- **Do not quote such a clause at all** — not to explain it, not in a commit
+  message, not in a PR body. Describe its shape instead. Reproducing it is how
+  it works.
+- When checking for one, flatten whitespace first. A line-oriented grep cannot
+  see a wrapped occurrence, and the wrap is invisible in a rendered view.
+
+**What was NOT changed.** Earlier entries in this file contain the same
+construction in ordinary prose (five of them, describing PRs that really did
+close what they name). They are inert: this file is history, and its text is not
+re-parsed by future merges. Rewriting them to satisfy a pattern would damage the
+record to protect against a mechanism that cannot reach them.
+
 ## 2026-08-25 — the sentence saying an issue would stay open is what closed it
 
 #312 merged and closed #297, which the PR body said in three places should stay
