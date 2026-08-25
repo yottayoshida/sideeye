@@ -30,15 +30,20 @@ The contract:
 - ADRs live in `docs/adr/` and are created `Proposed`, flipped to `Accepted` when the
   implementing PR merges.
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
-- **When a campaign or cohort closes, add its directory to `.gitattributes`.** Everything
-  under `spike/` that is a finished record rather than maintained code is marked
-  `linguist-documentation`, so the language bar reflects the engine instead of the
-  apparatus; the live harness is deliberately excluded from that list. The rule was
-  already written at the top of `.gitattributes`, and cohort 4 still closed without it
-  being applied, because nothing opens that file at the moment a cohort ends. It is
-  repeated here because this is the file that is open. Verify with `git check-attr`
-  over the full tracked list, not a sample, and check the live harness comes back
-  `unspecified`.
+- **A closing campaign or cohort needs nothing done to `.gitattributes`.** That rule used
+  to run the other way, and it was missed on every closure it faced — cohort 4, then
+  `spike/macos-oracle/`, then `spike/scout-model-comparison/` — because nothing opens
+  that file at the moment a record closes. The default is inverted now (ADR 0021):
+  `spike/**` is `linguist-documentation`, `spike/*` and `spike/toys/**` are code, so a
+  record is documentation from the day its directory exists and a new top-level script
+  is code without a line. **What still needs a decision is a new _live_ directory** — a
+  subdirectory of `spike/` holding maintained code — and it has to be named twice, in
+  `.gitattributes` and in `exempt_dirs` in `spike/check-gitattributes.sh`. Naming it in
+  only one of the two fails CI from either side; **naming it in neither is green**, and
+  that is the misclassification ADR 0021 takes deliberately, not something the check
+  catches. Verify with that script rather than by eye: it runs `git check-attr` over the
+  full tracked list, not a sample, and `unspecified` is a failure now rather than the
+  state the live harness sits in.
 - **A cohort close moves the top-level record too, in the same sitting.** The rows
   belong in `docs/target-classes.md` (one per verdict, one per wall), the cohort
   paragraph in `PRD.md`'s criterion-1 trail and `DESIGN.md` §17, and the new define

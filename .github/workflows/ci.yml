@@ -360,3 +360,17 @@ jobs:
             fi
           fi
           echo 'ok: BUILDLOG requirement satisfied'
+
+  # The language bar is a claim about what this repository is, and it was wrong three
+  # times: the rule said "register a record when its campaign closes" and nothing read
+  # .gitattributes at the moment one closed (ADR 0021). The direction is inverted now,
+  # and this holds it — over every tracked file under spike/, reading the attribute
+  # rather than the text, because a pattern can be syntactically fine and semantically
+  # dead. Its own job: it needs no toolchain, so a failure here is unambiguous.
+  classification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Every file under spike/ is classified, and the two directions hold
+        run: sh spike/check-gitattributes.sh

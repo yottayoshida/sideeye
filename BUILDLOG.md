@@ -2,6 +2,138 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the classification rule was missed on every closure it faced, so the closure moment was removed
+
+`#292` reported that `spike/macos-oracle/` never got its
+`linguist-documentation` line and called it the second miss after cohort
+4. Measuring the tree found a third it had not noticed:
+`spike/scout-model-comparison/` is unregistered too. Three closures,
+three misses. That is not a memory problem.
+
+Predictions were fixed in the plan before any of this was written, and
+they are quoted here with what happened.
+
+*A content predicate can replace the rule.* Wrong, and the way it failed
+is the useful part. Three candidates over all 20 directories under
+`spike/`: "has a committed transcript" disagreed with the current
+registration on 6, "is not referenced by live code" on 6, their
+conjunction on 10. The second fails because four registered records
+*are* read by live code, for four unrelated reasons —
+`check-sealed-campaigns.sh` checks one, `rehearse-campaign.sh` drives
+another, `acceptance.sh` consumes a third, `spike-fsusage.yml` re-runs a
+fourth. There is no predicate separating "a record something still
+reads" from "an apparatus still maintained", and those four reasons are
+why one is unlikely to be found.
+
+*The first design.* Every directory must appear in either the
+registration list or an explicit exemption list, and CI fails on one
+that appears in neither. The outside review killed it in a sentence: a
+directory created as live and later closed never changes either list, so
+the check is green forever. It verified that somebody classified a
+directory **when it was created**, which is not the predicate `#292` is
+about. Written into ADR 0021 rather than quietly dropped, because the
+draft was an instance of exactly the failure the ticket describes.
+
+*What shipped.* The default is inverted — `spike/**` is documentation,
+`spike/*` and `spike/toys/**` are code — so a record is documentation
+from the day its directory exists and there is no closing moment to
+notice. The trade is stated in the ADR: the one misclassification this
+direction can produce is a new **live directory** left as documentation,
+which understates Shell rather than counting a frozen transcript as
+code, and which happens while somebody is working in that directory.
+
+*Exactly 35 files change meaning and 27 change only their label.*
+Predicted from the file counts, then measured: `macos-oracle` (9) and
+`scout-model-comparison` (26) move to documentation; the 27 that were
+`unspecified` and correct — 22 top-level scripts and `spike/toys/` —
+become an explicit `unset`. Measured over the 1239 files tracked before
+this change: 1212 documentation, 27 code, 0 unspecified. Adding the
+checker itself makes it 1240 / 1212 / 28 / 0, and that it landed as code
+without a line of its own is the inversion working.
+
+Those two states are not the same thing, which the first draft of this
+entry and of the ADR both said they were. `unspecified` leaves
+linguist's own documentation heuristics in charge; `unset` overrides
+them to false. Of the 27, the one those heuristics do claim is
+`spike/README.md`, which moves from documentation to
+explicitly-not-documentation — and still leaves the bar unchanged, for a
+different reason: Markdown's type is `prose` and the bar counts
+`programming` and `markup`. The `.patch` is unchanged for that same
+reason (Diff is `data`), not because the heuristics claimed it; the
+second draft said they did, and they do not. Both steps are read from
+linguist's documented behaviour rather than measured here. The first
+draft said "linguist reads them identically", which is a claim about a
+tool nobody in this repository has run.
+
+The third number is still the point. Before the inversion 62 files came
+back `unspecified`, 35 of them the bug and 27 of them correct. A
+decision and an omission produced the same attribute value, which is why
+three misses in a row were invisible. `unspecified` is a failure now,
+and that is only assertable because there are none left.
+
+*The check reads the attribute, not the text.* Measured rather than
+argued. A minimal text-comparison checker — the shape the first draft
+implied — was run beside the real one against a mutation appending
+`spike/macos-oracle/** -linguist-documentation` to the end of the file.
+The text checker returns 0: the general registration line is still
+there, spelled correctly. The attribute checker returns 1 on nine files.
+A positive control confirms the text checker is not simply broken —
+delete the `spike/**` line outright and it goes red.
+
+*The apparatus lied first, in the usual direction.* The fold from
+`check-attr -z` was written as `awk 'BEGIN { RS = "\0" }'`. BSD awk,
+which is what macOS ships, does not accept a NUL record separator and
+read the whole 3717-record stream as one record, so the checker saw
+nothing. GNU awk on the Linux runner would have accepted it. That is a
+check which is green in CI and structurally blind on the machine you are
+standing at, and the only reason it did not ship that way is the
+empty-set guard borrowed from `check-sealed-campaigns.sh` — "finding no
+file at all is a failure, not a pass". The fold is `tr | paste` now,
+with a column-alignment assert on the attribute name and a scanned-count
+assert against `git ls-files`.
+
+Five mutations, each red, each with its count reconciling against a
+separately measured number, all against the final tree: the override
+above (9 files plus the summary, 10), a revert to the old direction (63
+unspecified, the stale exemption that revert also produces, and the
+summary, 65), dropping the `spike/*` line (23 top-level files plus the
+summary, 24), a typo in the live-directory pattern (5 toys files plus
+the summary, 6), and a stale literal in `exempt_dirs` (2). Unmutated is
+green before and after.
+
+**One of those counts was wrong, and refusing it found a real bug.** The
+stale-literal mutation reported 8 failures where 2 were expected, and
+the extra 6 said every file in `spike/toys/` was a record that came back
+`unset` — the exemption had stopped matching. The membership test was
+`for e in $exempt_dirs` inside the file loop, and that loop runs under
+`IFS=newline`, so a space-separated list is one word. With the single
+entry the repository has today that is indistinguishable from working.
+It breaks the first time a **second** live directory is added, which is
+the only occasion this list is ever edited: the check would have gone
+red on the toys files, pointing at the wrong thing entirely. Membership
+is a `case` match on a space-padded string now, which does not consult
+IFS, and the loop reads through `while IFS= read -r` off a here-document
+so there is no shell-wide IFS to save and restore at all — the form the
+other eleven IFS sites in this repository already use. A here-document
+rather than a pipe, because a pipe would put the counters in a subshell
+and report zero. Verified with two entries in both orders, and with two
+entries that both exist; that last one is the positive case, and it is
+green. Three shells (`sh`, `dash`, `bash`) give identical output.
+
+**The guard added for the review's second point was wrong in both
+directions on its first try.** Tab and newline in a path break the fold,
+so a guard was put in front of it that rejected any path `git ls-files`
+quotes. Measuring it: a Japanese filename is quoted under the default
+`core.quotePath`, so the guard rejected a perfectly legal path — and a
+repository with `core.quotePath=false` set quotes no non-ASCII at all,
+so the guard would have been reading the user's config to decide what to
+check. Forcing `-c core.quotePath=false` in the command separates the
+two: that setting governs non-ASCII and never control characters, so a
+tab stays quoted under both and a non-ASCII path is bare under the
+forced one. Verified three ways — non-ASCII alone is green, a tab is
+red, and a tab is still red with `core.quotePath=false` set in the
+repository config.
+
 ## 2026-08-24 — upstream fixed himalaya#738 within hours, and the pages that score criterion 1 did not know
 
 The cohort-4 record says the report is "open with no response as of
