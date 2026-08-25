@@ -113,4 +113,7 @@ target class. The rehearsal that preceded it found the aarch64-linux release
 artifacts of v0.9.0 and v0.10.0 broken on lesser CPUs than their builders'
 (measured on Apple-Silicon Docker; the x86_64 artifact shares the
 construction, presumed affected and unverified — BUILDLOG 2026-08-17); the
-clock ran against the repaired artifact, sha-pinned in the Dockerfile.
+clock ran against the repaired artifact, sha-pinned in the Dockerfile *(as it
+stood: the v0.10.0 tarball. The Dockerfile's pin moved to the current release
+on 2026-08-25 — PROTOCOL.md's second amendment that day — so this sentence's
+"the Dockerfile" is the file at run 1's commit, not the one beside it now.)*

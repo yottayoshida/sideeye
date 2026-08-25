@@ -4,11 +4,11 @@
 #
 #   docker build -f spike/onboarding-clock/Dockerfile -t sideeye-onboarding .
 #   docker run -d --rm --network=none --name onboarding-box sideeye-onboarding
-#   sh spike/onboarding-clock/run-clock.sh run1
+#   sh spike/onboarding-clock/run-clock.sh run2      # the next unused name
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-RUN=${1:?usage: run-clock.sh <run name, e.g. run1>}
+RUN=${1:?usage: run-clock.sh <run name; the next unused one, e.g. run2>}
 RESULTS="$SCRIPT_DIR/runs/$RUN"
 
 # The permission scope this launcher declares is only meaningful from a
@@ -27,7 +27,12 @@ RESULTS="$SCRIPT_DIR/runs/$RUN"
 mkdir -p "$RESULTS"
 
 command -v claude >/dev/null || { echo "claude CLI not found" >&2; exit 1; }
-[ -e "$RESULTS/transcript.jsonl" ] && { echo "a transcript already exists in $RESULTS; one run per name" >&2; exit 1; }
+# One run per name, keyed on whatever survives a clone. Keying on the
+# transcript could not hold: it is gitignored, so on any fresh checkout the
+# guard passed for a name whose committed meta.json and timeline.tsv were
+# sitting right there, and `mkdir -p` above would have sent the new run into
+# that directory to overwrite them.
+[ -n "$(ls -A "$RESULTS" 2>/dev/null)" ] && { echo "$RESULTS already holds a run; one run per name" >&2; exit 1; }
 
 # The extractor checks itself before anything burns a box: a predicate
 # regression stops the launch, not the adjudication three files later.
