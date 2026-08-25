@@ -10,7 +10,9 @@
 #   H1  FSEvents can produce a full OpClass sequence, good enough to drop into
 #       src/oracle.zig's compare(). This survey hunts counterexamples to H1.
 #   H2  FSEvents can act as an independent veto, catching a mutation the shim
-#       failed to report. This survey builds the apparatus and does NOT judge it.
+#       failed to report. Judged at two points in L7 (#293) and not settled:
+#       containment fails on a clean run and sensitivity holds. The rate over a
+#       corpus, which is what would settle it, is still not measured here.
 #
 # The asymmetry is why the work is cheap and why the wording is careful. One
 # counterexample kills H1. No counterexample proves nothing: FSEvents.h calls
@@ -127,6 +129,7 @@ echo "== build"
 /usr/bin/cc -O0 -Wall -Wextra -o "$BIN/watcher" "$here/watcher.c" -framework CoreServices \
     || bad "watcher build failed"
 /usr/bin/cc -O0 -Wall -Wextra -o "$BIN/probe" "$here/probe.c" || bad "probe build failed"
+/usr/bin/cc -O0 -Wall -Wextra -o "$BIN/bypass" "$here/bypass.c" || bad "bypass build failed"
 echo "   watcher: $(ls -l "$BIN/watcher" 2>/dev/null | awk '{print $5}') bytes"
 echo "   probe:   $(ls -l "$BIN/probe" 2>/dev/null | awk '{print $5}') bytes"
 
@@ -381,10 +384,203 @@ for wait_s in 0 3; do
 done
 
 echo ""
+echo "== L7: can this be a veto rather than an oracle? (#293)"
+echo "   H1 asked whether a capture rebuilds into the OpClass sequence"
+echo "   src/oracle.zig compares. L1-L4 measured that it does not. H2 is a"
+echo "   weaker question, so it gets a weaker relation: PATH SET CONTAINMENT."
+echo "   Every path FSEvents reports must be one the account already names."
+echo "   Containment passes through coalescing and reordering by construction,"
+echo "   because it never asks which event belongs to which operation."
+echo ""
+echo "   Both legs take their ground truth from the probe's own record, never"
+echo "   from the shim. Judging FSEvents against the shim in an experiment"
+echo "   about the shim's incompleteness is circular: an event with no matching"
+echo "   operation is either a false alarm or a real miss, and that comparison"
+echo "   cannot say which."
+
+L7="$W/L7"; mkdir -p "$L7"
+
+echo ""
+echo "-- L7a: the planted mutation is invisible to the shim, measured not assumed"
+echo "   The sensitivity leg below plants a clonefile(2), which is absent from"
+echo "   the 40 symbols shim/src/macos.zig interposes. If that were wrong, a"
+echo "   silent capture could not be told from a capture of something the shim"
+echo "   already saw, and the leg would prove nothing in either direction."
+SHIM="$repo/zig-out/lib/libsideeye_shim.dylib"
+if [ ! -f "$SHIM" ]; then
+    bad "L7a: no shim at $SHIM — build it before this leg can check anything"
+else
+    mkdir -p "$L7/shim/state"
+    DYLD_INSERT_LIBRARIES="$SHIM" \
+    SIDEEYE_STATE_DIR="$L7/shim/state" \
+    SIDEEYE_TRACE_PATH="$L7/shim/trace.bin" \
+        "$BIN/bypass" --run "$L7/shim/state" > "$L7/shim/ops.jsonl" 2> "$L7/shim/err"
+    l7_brc=$?
+    [ "$l7_brc" -eq 0 ] || bad "L7a: the bypass probe exited $l7_brc under the shim"
+    if [ ! -s "$L7/shim/trace.bin" ]; then
+        bad "L7a: the shim wrote no trace, so its silence about the clone means nothing"
+    else
+        # Read the trace ONCE, check that the read itself worked, and test every
+        # condition against the saved output. Running strings a second time for
+        # the absence made a failed read indistinguishable from a real absence:
+        # both come back as a non-zero grep, and the leg would have called that
+        # a proven bypass. The control has to be present before the absence is
+        # readable at all — a trace missing everything would "prove" the bypass
+        # for the wrong reason.
+        if LC_ALL=C strings -a "$L7/shim/trace.bin" > "$L7/shim/strings.txt" 2> "$L7/shim/strings.err"; then
+            l7_ctl=$(grep -c 'seen-by-shim\.txt' "$L7/shim/strings.txt")
+            l7_src=$(grep -c 'clone-src\.txt' "$L7/shim/strings.txt")
+            l7_dst=$(grep -c 'clone-dst\.txt' "$L7/shim/strings.txt")
+            if [ "$l7_ctl" -eq 0 ] || [ "$l7_src" -eq 0 ]; then
+                bad "L7a: the trace names the control $l7_ctl time(s) and the clone source $l7_src time(s); the shim did not record what it does interpose"
+            elif [ "$l7_dst" -ne 0 ]; then
+                bad "L7a: the shim DOES record the clone destination ($l7_dst mention(s)) — pick another mutation"
+            else
+                echo "   ok: the trace names seen-by-shim.txt ($l7_ctl) and clone-src.txt ($l7_src),"
+                echo "       and never names clone-dst.txt"
+            fi
+        else
+            bad "L7a: strings could not read the trace, so nothing in it has been checked"
+        fi
+    fi
+fi
+
+echo ""
+echo "-- L7b: containment on runs with nothing wrong"
+echo "   Over the probe's whole succeeding repertoire, not one mode. Repeating"
+echo "   a single mode raises the run count without widening what containment"
+echo "   was tested against: five runs of one write are five observations of"
+echo "   one path. The modes below reach files, directories, links and renames,"
+echo "   which is what makes 'stayed inside the account' a claim about the"
+echo "   account rather than about one file."
+L7B_MODES="create write fsync truncate-shrink truncate-same rename link symlink mkdir rmdir unlink"
+l7b_out=0
+l7b_runs=0
+l7b_paths=0
+l7b_events=0
+for l7_m in $L7B_MODES; do
+    l7_i=0
+    while [ "$l7_i" -lt "$REPS" ]; do
+        l7_d="$L7/b-$l7_m-$l7_i"; mkdir -p "$l7_d"
+        if capture "$l7_d" "$l7_m" 0 --file-events --latency 0 --no-defer; then
+            judge veto-containment "$l7_d/events.jsonl" "$l7_d/ops.jsonl"
+            l7_jrc=$?
+            l7b_runs=$((l7b_runs + 1))
+            case "$l7_jrc" in
+                1) l7b_out=$((l7b_out + 1)); echo "-- $l7_m run $l7_i"; sed 's/^/   /' "$JUDGE_OUT" ;;
+            esac
+            # Counted from the judge's own line rather than recomputed here: a
+            # second implementation of "how many paths" is the copy that drifts.
+            l7_np=$(sed -n 's/.*over \([0-9][0-9]*\) path(s).*/\1/p' "$JUDGE_OUT")
+            l7_ne=$(sed -n 's/.*; \([0-9][0-9]*\) event(s) besides.*/\1/p' "$JUDGE_OUT")
+            # The extraction has to have worked. Reading these out of the judge's
+            # line avoids a second implementation of "how many paths", but moves
+            # the dependency onto its wording: a reworded line makes sed return
+            # nothing, ${x:-0} turns that into a zero, and the totals below shrink
+            # without saying why. Asserted here rather than defaulted.
+            case "$l7_np" in ''|*[!0-9]*) bad "L7b $l7_m run $l7_i: could not read the path count out of the judge's output"; l7_np=0 ;; esac
+            case "$l7_ne" in ''|*[!0-9]*) bad "L7b $l7_m run $l7_i: could not read the event count out of the judge's output"; l7_ne=0 ;; esac
+            l7b_paths=$((l7b_paths + l7_np))
+            l7b_events=$((l7b_events + l7_ne))
+        else
+            bad "L7b $l7_m run $l7_i capture failed"
+        fi
+        l7_i=$((l7_i + 1))
+    done
+done
+echo "   $REPS runs per mode answers 'does this reproduce', not 'how often'."
+echo "   A behaviour appearing one run in five is missed entirely by five runs"
+echo "   about a third of the time, so a mode reading 0/$REPS here is not a mode"
+echo "   that does not do it. No rate is claimed below."
+echo "   containment held in $((l7b_runs - l7b_out))/$l7b_runs runs across"
+echo "   $(printf '%s\n' $L7B_MODES | wc -l | tr -d ' ') modes, over $l7b_paths path-observations and $l7b_events event(s)"
+echo "   besides the sentinels. A run reaching zero events would be counted"
+echo "   here as containment holding, which is why the event total is printed:"
+echo "   containment over nothing is not containment."
+
+echo ""
+echo "-- L7d: positive control for the unrelated bucket"
+echo "   L7b reported zero unrelated paths over 55 runs. That is the number a"
+echo "   working classifier gives in a directory only the probe uses, and it is"
+echo "   also the number a classifier that never reaches that branch gives."
+echo "   Nothing in L7b tells the two apart, so a second actor writes a path"
+echo "   the account will never name, and the branch has to say so."
+l7_d="$L7/d"; mkdir -p "$l7_d/state"
+mkfifo "$l7_d/ctl" || bad "L7d: mkfifo failed"
+"$BIN/watcher" --path "$l7_d/state" --file-events --latency 0 --no-defer \
+    < "$l7_d/ctl" > "$l7_d/events.jsonl" 2> "$l7_d/watcher.err" &
+wpid=$!
+exec 9> "$l7_d/ctl"
+wait_ready "$l7_d/events.jsonl" "L7d"
+"$BIN/probe" --setup "$l7_d/state" write 2> "$l7_d/setup.err" || bad "L7d setup failed"
+"$BIN/probe" --run "$l7_d/state" write > "$l7_d/ops.jsonl" 2> "$l7_d/probe.err"
+l7_prc=$?
+# The neighbour: a different process, a path the probe never touches and the
+# account therefore never names. /usr/bin/touch rather than the shell's own
+# redirection, so the writer is unambiguously not this script.
+/usr/bin/touch "$l7_d/state/written-by-a-neighbour" || bad "L7d: the neighbour could not write"
+sleep "$SETTLE"
+echo stop >&9; exec 9>&-
+wait "$wpid"; l7_wrc=$?
+[ "$l7_prc" -eq 0 ] || bad "L7d probe rc=$l7_prc"
+[ "$l7_wrc" -eq 0 ] || bad "L7d watcher rc=$l7_wrc"
+judge veto-containment "$l7_d/events.jsonl" "$l7_d/ops.jsonl"
+l7_jrc=$?
+sed 's/^/   /' "$JUDGE_OUT"
+if grep -q 'unrelated to the account.*written-by-a-neighbour' "$JUDGE_OUT"; then
+    echo "   ok: the neighbour's path reached the unrelated bucket, so that branch"
+    echo "       is reachable and L7b's zero is a measurement rather than a gap"
+elif grep -q 'ancestor of an account path.*written-by-a-neighbour' "$JUDGE_OUT"; then
+    bad "L7d: a neighbour's own file was classified as an ancestor — the split mislabels"
+else
+    bad "L7d: the neighbour's write produced no outside path at all; the unrelated branch is still unmeasured"
+fi
+
+echo ""
+echo "-- L7c: sensitivity — does the veto see what the account misses?"
+l7_i=0
+l7c_blind=0
+while [ "$l7_i" -lt "$REPS" ]; do
+    l7_d="$L7/c$l7_i"; mkdir -p "$l7_d/state"
+    mkfifo "$l7_d/ctl" || { bad "L7c run $l7_i: mkfifo failed — the loop is repeating a directory"; break; }
+    "$BIN/watcher" --path "$l7_d/state" --file-events --latency 0 --no-defer \
+        < "$l7_d/ctl" > "$l7_d/events.jsonl" 2> "$l7_d/watcher.err" &
+    wpid=$!
+    exec 9> "$l7_d/ctl"
+    wait_ready "$l7_d/events.jsonl" "L7c run $l7_i"
+    "$BIN/bypass" --run "$l7_d/state" > "$l7_d/ops.jsonl" 2> "$l7_d/probe.err"
+    prc=$?
+    sleep "$SETTLE"
+    echo stop >&9; exec 9>&-
+    wait "$wpid"; wrc=$?
+    [ "$prc" -eq 0 ] || bad "L7c run $l7_i bypass rc=$prc"
+    [ "$wrc" -eq 0 ] || bad "L7c run $l7_i watcher rc=$wrc"
+    judge veto-sensitivity "$l7_d/events.jsonl" "$l7_d/ops.jsonl"
+    l7_jrc=$?
+    sed 's/^/   /' "$JUDGE_OUT"
+    [ "$l7_jrc" -eq 1 ] && l7c_blind=$((l7c_blind + 1))
+    l7_i=$((l7_i + 1))
+done
+echo "   the veto saw the planted mutation in $((REPS - l7c_blind))/$REPS runs"
+
+echo ""
+echo "-- L7: what these two numbers do and do not settle"
+echo "   Containment holding says a veto on this relation does not fire on a"
+echo "   quiet run of THIS probe in a directory nothing else is using. It is"
+echo "   not a soundness proof: a busier directory, an editor, a backup daemon"
+echo "   or a second process would each be a path outside the account."
+echo "   Sensitivity holding says the veto sees ONE mutation the shim misses."
+echo "   The rate over a corpus is a different measurement and is not made"
+echo "   here. Neither number licenses a report vocabulary; naming a claim"
+echo "   weaker than oracle_verified reopens the contract (#201, #202, #156)."
+
+echo ""
 echo "== what this survey does not answer"
-echo "   H2 (an independent veto) is not judged here. The apparatus above is"
-echo "   what H2 would need, but 'what fraction of unreported mutations does"
-echo "   this catch' is a different measurement against a different corpus."
+echo "   H2 is measured at two points in L7, not settled. What is missing is"
+echo "   the rate: containment was measured on one probe in an idle directory,"
+echo "   and sensitivity on one planted mutation. 'What fraction of unreported"
+echo "   mutations does this catch, and how often does it fire on a clean run"
+echo "   of a real target' needs a corpus this survey does not build."
 echo "   Also unmeasured: behaviour under load, on non-APFS volumes, across"
 echo "   the network, and after a Full Disk Access grant (out of scope: a"
 echo "   grant would end the unprivileged premise)."
