@@ -28,13 +28,23 @@ set -u
 # The filed reports, one per line: <owner/repo> <number>. Additions here
 # are the only place the list lives.
 #
-# NOT CHECKED (#271): whether this list still matches the set of reports
-# actually filed. A report filed upstream without being added here is
-# invisible - the cohort-4 close depended on remembering to add himalaya by
+# NOT CHECKED (#297, split out of #271): whether this list still matches the
+# set of reports actually filed. A report filed upstream without being added
+# here is invisible - the cohort-4 close depended on remembering to add
+# himalaya by
 # hand (PR #253). Declaring an expected count beside the list does not fix
-# it: both would be forgotten together. Deriving the list from the tracker
-# needs a second network dependency with its own failure modes, so the gap
-# is left open and named rather than papered over.
+# it: both would be forgotten together.
+#
+# Deriving the list from the tracker was tried and does not work, which is a
+# stronger reason than the one first written here. The first candidate it
+# returns is a false positive: `alecthomas/devtodo#9` exists, was opened by
+# this account, and is absent from the list - because it was filed and
+# WITHDRAWN the same day, on the owner's judgement (spike/assisted/NOVELTY.md;
+# outcome-map.tsv and docs/target-classes.md agree). A withdrawn report and an
+# unlisted one have the same shape in the tracker. What separates them is a
+# judgement recorded in prose, which no derivation reads. So the gap stays
+# open and named; what changed (#297) is only that the closing line now says
+# whose denominator it is reporting.
 REPORTS='GothenburgBitFactory/timewarrior 778
 topydo/topydo 341
 aspiers/stow 139
@@ -81,9 +91,24 @@ if [ "${1:-}" = "--selftest" ]; then
     # put there, so deleting it by name cannot take anything else with it,
     # and it does not trip the recursive-delete guards some developers run
     # locally - one of which silently left the directory behind here.
-    trap 'rm -f "$st_dir/gh"; rmdir "$st_dir" 2>/dev/null' EXIT
+    trap 'rm -f "$st_dir/gh" "$st_dir/short.sh"; rmdir "$st_dir" 2>/dev/null' EXIT
 
+    # The short leg below reads this file with `sed`, which — unlike `sh "$self"` —
+    # does no PATH search. Readability is therefore checked first and PATH is only a
+    # fallback: `sh script.sh` from the directory holding it gives a $0 with no slash
+    # that sed opens perfectly well, and an earlier version of this block resolved
+    # through PATH unconditionally and turned that working invocation into a refusal.
+    #
+    # NOT a fix for an observed failure. A PATH invocation gives $0 as an absolute
+    # path — the shell resolves before exec — so the case this guards was never
+    # reachable through the documented usage. It is here because the short leg depends
+    # on reading this file, and it should say so where it fails rather than produce a
+    # confusing sed error.
     self=$0
+    [ -r "$self" ] || self=$(command -v -- "$self" 2>/dev/null) || self=""
+    [ -n "$self" ] && [ -r "$self" ] || {
+        echo "== self-test FAILED: cannot read this script (\$0 = $0) — the short leg needs to"
+        exit 2; }
     leg_out=""
 
     # Run this script with the fake gh in front, and require the exit code the
@@ -135,6 +160,39 @@ FAKE
     chmod +x "$st_dir/gh"
     leg 0 "green leg: every report readable must exit 0"
     leg_rows "$report_count" '^| `' "green leg emitted rows"
+    leg_rows 1 "read $report_count of $report_count reports listed in REPORTS" \
+        "green leg names its own denominator"
+
+    # The denominator has to come from the list, not from a number written beside
+    # it (#297). Checked by running a COPY of this script with one report row
+    # deleted: if the closing line still says the old count, the count is a
+    # constant pretending to be a measurement.
+    #
+    # A copy rather than an env override: an override would be a surface that
+    # exists only for the test, and the thing under test is what the committed
+    # script does with the committed list.
+    short_self="$st_dir/short.sh"
+    sed '/^topydo\/topydo 341$/d' "$self" > "$short_self" || {
+        echo "== self-test FAILED: could not build the shortened copy"; exit 2; }
+    short_count=$((report_count - 1))
+    if [ "$(grep -c '^topydo/topydo 341$' "$short_self")" != "0" ]; then
+        echo "== self-test FAILED: the shortened copy still carries the row it was meant to lose"
+        exit 2
+    fi
+    echo "== short leg: one row fewer must change the denominator"
+    leg_out=$(PATH="$st_dir:$PATH" sh "$short_self" 2>&1)
+    rc=$?
+    if [ "$rc" != "0" ]; then
+        echo "== self-test FAILED: short leg exited $rc, wanted 0"
+        printf '%s\n' "$leg_out" | sed 's/^/     | /'
+        rm -f "$short_self"; exit 2
+    fi
+    leg_rows "$short_count" '^| `' "short leg emitted rows"
+    leg_rows 1 "read $short_count of $short_count reports listed in REPORTS" \
+        "short leg denominator followed the list"
+    leg_rows 0 "read $report_count of $report_count reports listed in REPORTS" \
+        "short leg must not still claim the full count"
+    rm -f "$short_self"
 
     echo "== self-test ok"
     exit 0
@@ -168,13 +226,25 @@ EOF
 echo
 echo "measured $(date -u +%Y-%m-%dT%H:%M:%SZ) by spike/upstream-report-status.sh"
 
-# Every row is printed before this decides anything: a partial table is more
-# useful than none, and the caller asked for the standing state. The exit
-# code is what an unattended caller reads, and it has to distinguish
-# "measured, here it is" from "could not read $broken of $n of them".
+# The denominator is named, and it is named as this list's (#297). Until now the
+# success path printed no count at all, so a reader took completeness from the
+# table looking whole - and the table is whole with respect to REPORTS, which is
+# not the same as whole with respect to what was filed. A report filed without
+# editing the literal above is still invisible here; this line does not find it,
+# it only stops the output from implying there is nothing to find.
+#
+# NOT A FIX FOR #297. The claim shrank; the ability did not grow. Forget to add an
+# eighth report and this still says "N of N reports listed in REPORTS" and exits 0.
+# What it buys is that the sentence is true, and that the reader can see the
+# denominator is list-relative.
+#
+# $n rather than a constant: the count comes from the rows the loop actually
+# walked, so a row that stops being walked changes the number. A literal here
+# would agree with the list only until someone edited one of them.
 if [ "$broken" -gt 0 ]; then
     echo
-    echo "could not read $broken of $n reports - the rows above are incomplete"
+    echo "could not read $broken of $n reports listed in REPORTS - the rows above are incomplete"
     exit 2
 fi
+echo "read $n of $n reports listed in REPORTS (this list, not every report ever filed - #297)"
 exit 0

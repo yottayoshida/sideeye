@@ -149,6 +149,179 @@ nobody read it — the signal existed and had no consumer, which is worse
 than no signal, because the output looks like observability. It is fatal
 now.
 
+## 2026-08-25 — per-mode help, and a design that would have deleted the caller's report
+
+Opened when the work started, per the contract above. Grows as decisions land.
+
+**The two tickets.** `#296`: `sideeye --help` works since #273 but
+`sideeye explore --help` exits 3 — help is answered before the mode word and
+never reaches past it. `#297`: `spike/upstream-report-status.sh` cannot see a
+report that was never added to its hand-written list, and its output does not
+say whether "6" is all filings or all it knows about.
+
+**What planning turned up before any code.**
+
+The first design put help in the shared parse loop as a no-value flag. Review
+called it Critical and was right: `--json` calls `removeFile(v)` while parsing
+(`src/main.zig`), so `sideeye explore --state X --json existing.json --help`
+would have deleted an existing report to answer a question about usage. The
+comment beside that `removeFile` records the project already dodging this trap
+once — "rejected before the removeFile below: a rejection that had already
+deleted the caller's previous report would be a refusal with a side effect".
+The first design was building the second one.
+
+The shape that ships instead is an exact match on `argv == [sideeye, <mode>,
+--help|-h]`, handled before the mode dispatch. It never enters the parse loop,
+so it cannot reach `removeFile`; it fixes `replay` in the same place (the
+positional check rejects a leading `-` before the loop is reached); it leaves
+`--marker --help` alone because four elements do not match the shape; and it
+needs no change to the arg matrix #295 added, because `--help` never becomes a
+parse-loop literal.
+
+**A claim retracted during planning.** The draft said a report was missing from
+`REPORTS` — `alecthomas/devtodo#9`, which exists, is authored by this account,
+and is not in the list. It is not missing. `spike/assisted/NOVELTY.md` records
+it as filed and **withdrawn the same day** on the owner's judgement, and
+`outcome-map.tsv` and `docs/target-classes.md` agree. The measurement was
+right and the reading was wrong, and the step it produced would have added a
+withdrawn report to a list of standing ones.
+
+That is also what kills the ticket's option 1 (derive the list from the
+tracker): a withdrawn report and an unlisted one have the same shape in the
+tracker. What separates them is a judgement recorded in prose. Not "one more
+failure mode" — the distinction is not in the data the derivation reads.
+
+**The table of current behaviour was a reading, and it measured true.** Nine
+invocations, built and run before any edit:
+
+    --help / -h / help                 rc=0  usage banner
+    explore --help                     rc=3  SETUP ERROR  an option is missing its value
+    explore --help --state /tmp        rc=3  SETUP ERROR  unknown option
+    preflight --help                   rc=3  SETUP ERROR  an option is missing its value
+    replay --help                      rc=3  usage banner
+    demo --help                        rc=3  SETUP ERROR  demo takes only --shim <lib>...
+    mcp --help                         rc=3  sideeye mcp takes no arguments...
+
+Four distinct behaviours across the modes. **The ticket's own transcript is
+wrong**: it shows `sideeye explore --help` producing "unknown option", and the
+message is `an option is missing its value` — the arity guard, because `--help`
+is last and the loop treats every unrecognised flag as one that takes a value.
+"unknown option" is what the four-element form produces. The failure the ticket
+names is real; the transcript beside it is not what the binary prints.
+
+**The check went red before the branch existed, and two of its own assertions were
+wrong.** 15 failures across the four modes on the first run, which is the point of
+writing it first. Then:
+
+- The control for `--marker --help` expected "an option is missing its value". Wrong
+  message: `--marker` swallows `--help`, the loop ends, and the run dies on the
+  missing `--state`. Pinning that message would have tied this check to the ordering
+  of unrelated guards. It compares `--marker --help` against `--marker ZZZ` instead —
+  whatever `--marker` does with its value, it must do to both.
+- That comparison then passed **vacuously**: both files were empty, because
+  `setupError` writes to STDOUT in this program and the check captured only stderr.
+  The "both sides non-empty" guard written beside it is what caught that, on the same
+  day it was written. Fixed by capturing both streams.
+
+The stderr assertion on the help paths is weak for the same reason and says so in
+place: a failing help path also leaves stderr empty. The `cmp` against the canonical
+help text is what actually catches a broken help path.
+
+**Four mutations, each on a fresh copy, each red — and the attribution is the
+interesting part.**
+
+    1  delete the help branch          FAIL per-mode help: 14
+    2  keep --help, drop -h            FAIL per-mode help: 7
+    3  move help into the parse loop   FAIL per-mode help: 3
+    4  freeze the denominator to 6     selftest rc=2, short leg caught it
+
+Mutation 3 is the one worth keeping. Moving help into the loop makes the
+behaviour look FIXED — all eight invocations still exit 0 with the right text —
+and three assertions still go red: the source-shape one, and the two halves of
+the `--marker --help` control, because a loop-resident help swallows the value
+`--marker` was supposed to take. **The Critical design passes a behaviour-only
+test.** That is why the source-shape assertion is in there, and it is now
+measured rather than argued.
+
+The first mutation run had to be discarded: `rm -rf` on the scratch copy was
+refused by a local guard, so `cp -R` layered each mutation on the previous one.
+The verdicts happened to be identical when re-run with the copies actually
+cleared, but the first run could not have told the difference — a monotonically
+falling count is exactly what stacking would produce too. Re-run with
+`/usr/bin/trash` and an existence check that aborts rather than stacking.
+
+**Review broke the assertion that was supposed to protect the design, and the
+counterexample destroys a file.** The first version of the source-shape check
+grepped for `eql(u8, argv[i], "--help")` and the comment beside it claimed that
+moving help into the loop "in any form" would go red. It would not:
+`eql(u8, "--help", argv[i])` means the same thing and has a different shape.
+
+Measured rather than argued. A fifth mutation writes exactly that:
+
+    grep hits:                     0        (invisible to the old assertion)
+    explore --json X --help:       exit 0, sentinel DELETED
+    acceptance:                    FAIL per-mode help: 3 problem(s)
+
+So the evasion is real, it costs the caller their report, and the runtime probe
+added after review is what catches it. The probe uses a --json path under a
+parent that does not exist, so it cannot destroy anything itself whether or not
+the regression is present; a non-zero exit is the whole assertion. The grep is
+kept beside it as a cheap second opinion and now says in place that it knows one
+spelling and is not load-bearing.
+
+**Three more from the same review.** The `--marker` control compared output but
+not exit status, so a regression printing the same refusal and then exiting 0
+would have passed — both rc are compared now, and both must be non-zero. The
+top-level help comment in `src/main.zig` still said `explore --help` reaches
+"unknown option", which this change makes false and which was never the right
+message anyway. The script's own comment attributed the list-completeness gap to
+#271; it is #297, and the paragraph now carries the measured reason the
+derivation cannot work.
+
+**One review finding did not reproduce — and the defence written for it broke a
+form that worked.** `self=$0` was said to break the new short leg under a PATH
+invocation, because `sed "$self"` does no PATH search. Measured: a PATH
+invocation gives $0 as an absolute path (the shell resolves before exec), and the
+only slashless form is `sh script.sh` from the directory holding it, where sed
+opens it anyway. So the reported failure is not reachable through documented
+usage.
+
+The guard added anyway resolved through `command -v` **first**, which turned that
+working slashless form into a refusal whenever the script's own directory is not
+on PATH — `cd spike; PATH=/usr/bin:/bin sh upstream-report-status.sh --selftest`
+went from working to `could not resolve $0`. Round 2 caught it; reproduced before
+believing it, and the comment beside the guard still asserted the PATH scenario
+this entry had already retracted. Readability is checked first now and PATH is
+only a fallback. Four invocation forms measured after the fix — slashless with
+the directory off PATH, relative-with-slash, absolute, and PATH-from-elsewhere —
+all rc=0.
+
+The first attempt to reproduce the original failure also did not create the
+condition it needed (the copy sat in the directory that was on PATH), which is
+why it "passed" both before and after.
+
+**Same-class scan for the broken assertion.** The class is "a check reads the
+source and knows one spelling of the construct it looks for".
+
+    grep -nE 'grep.*($ROOT/src|src/main\.zig)' spike/acceptance.sh   ->  3 hits
+
+The scan itself had to be run twice. The first pattern carried a `[^|]*` between
+`grep` and the path — added for no reason beyond caution — and that excluded any
+line containing a pipe character, which is exactly the line under investigation
+(`(argv|rest)`). **The scan for this class missed its own instance of it.**
+
+The other two hits are `parser_literals()` and the `rest[i]` scan feeding
+`acc_flags`, both from #295. They share the fragility and **fail in the opposite
+direction**: a flag written with the operands swapped drops out of the candidate
+set, stays on its synopsis line, and the "every advertised flag has a parser
+branch" assertion goes red. Missing a spelling makes those checks loud, not
+quiet. The one removed here was the only fail-open member. Left as they are.
+
+**What this PR does not do**, stated here so the PR body is not the only place:
+`#297`'s output will name the denominator it knows, and nothing more. Forget to
+add an eighth report and the script will still say so honestly and exit 0. The
+claim shrinks; the ability does not grow. `#297` stays open.
+
 ## 2026-08-25 — the same-class scan reached one of three ways a checker fails, and said it had covered them all
 
 The scan published in #303 and again in #307 opens with "scanned across every

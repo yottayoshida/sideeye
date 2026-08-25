@@ -3189,6 +3189,159 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 15: help is answered per mode, and cannot reach the parser (#296) ==========="
+# `sideeye --help` has worked since #273, but only at the top level: the branch sits
+# before the mode dispatch, so once a mode word is consumed `--help` falls through to
+# the parse loop. Measured before this check was written, on the four modes that take
+# flags — four different failures, none of them help:
+#
+#   explore --help    an option is missing its value   (the arity guard: --help is last)
+#   preflight --help  an option is missing its value
+#   replay --help     the usage banner, exit 3         (dispatch rejects a leading '-')
+#   demo --help       demo takes only --shim <lib>...
+#
+# The ticket's own transcript says explore prints "unknown option"; it does not. That
+# is what the four-element form produces. The failure is real, the transcript is not.
+#
+# WHY THE SHAPE IS EXACT, and why this check does not ask for more. The obvious fix —
+# treat --help as a no-value flag inside the shared loop — deletes files. `--json`
+# calls removeFile() while parsing, so `explore --state X --json report.json --help`
+# would remove an existing report on the way to printing usage. Answering only
+# `[sideeye, <mode>, --help]`, before the dispatch, cannot reach the loop at all.
+# Late-position help is therefore NOT supported and NOT checked here: it needs the
+# parser split into a side-effect-free stage and a side-effecting one, which is a
+# larger change than this ticket.
+#
+# The mode list is read out of src/main.zig, never written here. A list here would let
+# the check pick its own population: add a mode and the check would keep passing over
+# the old set. Same reason #295 takes its flag candidates from the parser.
+help_fails=0
+
+# The modes that take flags, from the parser. mcp/help/version take no arguments and
+# keep refusing extras, so they are deliberately absent — their synopsis lines advertise
+# nothing and --help is an extra there in the literal sense.
+help_modes=$(parser_literals 1 | grep -v '^-' | grep -vE '^(mcp|help|version)$')
+help_mode_n=$(printf '%s\n' $help_modes | grep -c .)
+if [ "$help_mode_n" -lt 4 ]; then
+    echo "     only $help_mode_n flag-taking modes came out of the parser; expected at least 4"
+    help_fails=$((help_fails + 1))
+fi
+
+help_dir=/tmp/acc-help.$$
+mkdir -p "$help_dir"
+"$SIDEEYE" --help > "$help_dir/canonical" 2>"$help_dir/canonical.err"
+help_rc=$?
+if [ "$help_rc" != "0" ] || [ ! -s "$help_dir/canonical" ]; then
+    echo "     sideeye --help itself is not usable as the reference (rc=$help_rc)"
+    help_fails=$((help_fails + 1))
+fi
+
+# rc, stdout and stderr are three separate assertions, and stdout is compared with cmp
+# rather than in a shell variable: command substitution strips trailing newlines, so a
+# variable comparison cannot honestly be called byte-identical.
+for help_m in $help_modes; do
+    for help_spelling in --help -h; do
+        "$SIDEEYE" "$help_m" "$help_spelling" > "$help_dir/out" 2>"$help_dir/err"
+        help_rc=$?
+        [ "$help_rc" = "0" ] || {
+            echo "     sideeye $help_m $help_spelling exited $help_rc, want 0"
+            help_fails=$((help_fails + 1)); }
+        cmp -s "$help_dir/canonical" "$help_dir/out" || {
+            echo "     sideeye $help_m $help_spelling does not print what sideeye --help prints"
+            help_fails=$((help_fails + 1)); }
+        # Weak on its own: setupError writes to STDOUT in this program (measured), so a
+        # failing help path leaves stderr empty too. The cmp above is what catches that.
+        # This one catches a help path that starts writing to stderr at all.
+        if [ -s "$help_dir/err" ]; then
+            echo "     sideeye $help_m $help_spelling wrote to stderr: $(head -c 120 "$help_dir/err")"
+            help_fails=$((help_fails + 1))
+        fi
+    done
+
+    # Extras still refuse, the way the top level refuses them (#273). Without this the
+    # exact shape could quietly become a prefix match.
+    "$SIDEEYE" "$help_m" --help extra >/dev/null 2>&1
+    if [ "$?" = "0" ]; then
+        echo "     sideeye $help_m --help extra exited 0; the shape is meant to be exact"
+        help_fails=$((help_fails + 1))
+    fi
+done
+
+
+# The flag that takes a value still takes it. `--marker --help` means a marker whose
+# bytes are "--help", and a pre-scan for --help anywhere would have broken that.
+#
+# Compared against a control rather than against a fixed message. The first draft
+# expected "an option is missing its value" and was simply wrong about which failure
+# comes next — --marker swallows --help, the loop ends, and the run dies on the missing
+# --state. Asserting the message would have pinned this check to today's ordering of
+# unrelated guards. Asserting that --help and an ordinary value reach the SAME place
+# pins the property: whatever --marker does with its value, it does it to both.
+"$SIDEEYE" explore --marker --help > "$help_dir/marker.err" 2>&1
+help_marker_rc=$?
+"$SIDEEYE" explore --marker ZZZ > "$help_dir/control.err" 2>&1
+help_control_rc=$?
+# The exit status is compared too. Output alone would let a regression through that
+# prints the same refusal and then exits 0 — which is precisely what a help branch
+# reached at this position would do.
+if [ "$help_marker_rc" != "$help_control_rc" ] || [ "$help_marker_rc" = "0" ]; then
+    echo "     explore --marker --help exited $help_marker_rc against the control's $help_control_rc (both should be equal and non-zero)"
+    help_fails=$((help_fails + 1))
+fi
+if ! cmp -s "$help_dir/marker.err" "$help_dir/control.err"; then
+    echo "     explore --marker --help did not take the same path as --marker ZZZ; --help was not consumed as a value"
+    help_fails=$((help_fails + 1))
+fi
+# Both must be non-empty: two empty files compare equal, and would pass this vacuously.
+if [ ! -s "$help_dir/control.err" ]; then
+    echo "     the --marker control produced no output, so the comparison above measures nothing"
+    help_fails=$((help_fails + 1))
+fi
+
+# LATE-POSITION HELP MUST STILL REFUSE, and this is the assertion that protects the
+# design. `--json` calls removeFile() while parsing, so a help branch that lives in the
+# shared loop would answer `explore --state X --json report.json --help` with usage and
+# exit 0 — after deleting report.json. The shape that ships is answered before the loop
+# and cannot reach it.
+#
+# Checked by execution, with a --json path that does not exist and is not created: the
+# probe cannot destroy anything whether or not the regression is present. A non-zero
+# exit is the assertion. Do NOT relax this to "the file survived" — under the shipping
+# design the file is deleted by the normal parse anyway, so survival is not the property.
+#
+# The first version of this block was a grep for `eql(u8, argv[i], "--help")` and
+# claimed that moving help into the loop "in any form" would go red. It would not:
+# `eql(u8, "--help", argv[i])` has the same meaning and a different shape, and passes.
+# The grep is kept below as a cheap second opinion, but it is not the assertion.
+help_late_nx=/nonexistent-parent-for-help/report.json
+for help_m in $help_modes; do
+    case "$help_m" in demo) continue ;; esac   # demo has its own parser and no --json
+    "$SIDEEYE" "$help_m" --json "$help_late_nx" --help </dev/null >/dev/null 2>&1
+    help_rc=$?
+    if [ "$help_rc" = "0" ]; then
+        echo "     sideeye $help_m --json <path> --help exited 0; late-position help is answered inside the parse loop, which has already called removeFile on that path"
+        help_fails=$((help_fails + 1))
+    fi
+done
+
+# The cheap second opinion. Narrower than the check above by construction — it knows one
+# spelling of the comparison — so it is not load-bearing, and it is not described as if
+# it were. It costs nothing and names the design decision where a reader will look.
+help_loop=$(grep -cE 'eql\(u8, (argv|rest)\[i\], "(--help|-h)"\)' "$ROOT/src/main.zig")
+[ "$help_loop" = "0" ] || {
+    echo "     --help/-h appears as a parse-loop literal in src/main.zig ($help_loop site(s)); help must be answered before the loop, which calls removeFile for --json"
+    help_fails=$((help_fails + 1)); }
+
+rm -f "$help_dir"/canonical "$help_dir"/canonical.err "$help_dir"/out "$help_dir"/err "$help_dir"/marker.err "$help_dir"/control.err
+rmdir "$help_dir" 2>/dev/null || true
+
+if [ "$help_fails" = "0" ]; then
+    echo "ok   $help_mode_n modes answer --help and -h with the top-level text, exit 0, and no help path enters the parse loop"
+else
+    echo "FAIL per-mode help: $help_fails problem(s)"
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
