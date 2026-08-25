@@ -2936,8 +2936,254 @@ for f in $(printf '%s\n' "$h1" | grep -E '^  sideeye [^[:space:]]+ ' |
     }
 done
 
+# 6. Every flag a mode accepts is on that mode's synopsis line, and every flag the line
+#    advertises the mode accepts. This is the third direction, and the one that actually
+#    drifted before #273 — `explore` was missing six of the twelve flags it accepts and
+#    `replay` one of six, while the two directions above were both satisfied.
+#
+#    #295 filed it rather than faking it, because the two implementations available then
+#    both failed. grep cannot tell `if (mode == .preflight) setupError(...)` from
+#    acceptance. Driving it by execution needs to know which flags take a value, since a
+#    dummy argument after a no-value flag comes back as "unknown option" and reads as a
+#    refusal — and that list would be the hand-synced second copy #65 is about.
+#
+#    The second one turned out not to be blocked. Arity is measurable: put the flag LAST
+#    and a value-taking one reaches the parse loop's own `i + 1 >= argv.len` guard, while
+#    a no-value one is handled before that guard and fails elsewhere. Measured per flag
+#    here, so no list exists to go stale.
+#
+#    Acceptance is then a differential. Each line gets a base invocation that parses and
+#    fails on the first thing after parsing; an accepted flag leaves that failure
+#    untouched and a refused one replaces it. Both directions are compared, because only
+#    one of them catches a flag the parser starts refusing: such a flag leaves the
+#    accepted set too, so "every accepted flag is advertised" stays true and green.
+#
+#    The unit is the LINE, not the mode. `explore` has two because `--config` excludes
+#    the define-surface flags, so a per-mode union would claim `--config` and `--state`
+#    are usable together.
+
+acc_nx=/nonexistent-parent-for-acceptance/child
+acc_argjson=/tmp/acc/argmatrix.json
+mkdir -p /tmp/acc
+
+# Values that are merely well-formed for their flag. A path that cannot exist serves
+# nine of the eleven that take one; the two exceptions validate their value before anything else
+# can fail, so a path there produces a complaint about the value and reads as a refusal.
+# A stale entry fails loudly rather than quietly — the "accepted somewhere" assertion at
+# the end turns it into a flag that no line accepts.
+acc_dummy() {
+    case "$1" in
+        --expect-status) printf '0' ;;
+        --json)          printf '%s' "$acc_argjson" ;;
+        *)               printf '%s' "$acc_nx.dummy" ;;
+    esac
+}
+
+acc_takes_value() {
+    "$SIDEEYE" explore "$1" </dev/null 2>&1 | head -1 | grep -q 'an option is missing its value'
+}
+
+# Every probe reads from /dev/null. `mcp` starts a stdin-reading server once its
+# argument guard stops firing, so a regression in that guard would turn this check from
+# a red into a hang. With EOF on stdin the server ends instead of waiting. The demo has
+# no equivalent: if it ever accepts a no-value flag, the probe below builds and runs it,
+# which is slow rather than stuck, and the catch-all reports that as apparatus breakage.
+acc_first() { "$SIDEEYE" "$@" </dev/null 2>&1 | head -1; }
+
+# Empty in, empty out: an unset difference must not read as a single blank token.
+acc_sorted() { set -- $1; [ $# -gt 0 ] || return 0; printf '%s\n' "$@" | sort | tr '\n' ' '; }
+
+# The candidates come from the PARSER, never from the synopsis. Taking them from the help
+# text lets the text decide what gets compared: delete a flag from a line and it also
+# leaves the candidate set, so both sides agree about a smaller world and the check stays
+# green. Measured — removing --marker from the explore line dropped the candidates from 13
+# to 12 and an earlier draft of this check did not notice.
+# Both parsers, not just the shared loop: runDemo compares against rest[i] and would
+# otherwise contribute nothing, so a demo-only flag added without a synopsis line would
+# be invisible to a check that claims to cover demo. --shim is in the shared loop as well,
+# which is the only reason the first draft appeared to cover it.
+acc_flags=$( { parser_literals i
+    grep -oE 'eql\(u8, rest\[i\], "[^"]+"\)' "$ROOT/src/main.zig" |
+        sed -e 's/.*, "//' -e 's/")$//'
+  } | sort -u | grep '^--')
+
+# One base per synopsis line, written here rather than derived from the line. A derived
+# base would let the synopsis pick its own test: a line that dropped a required flag would
+# also stop being tested for it. The line's required part is asserted against the base
+# instead, so the two cannot drift apart silently.
+#
+# The expected failure is pinned too. Without it a base flag is only ever "parsed", not
+# "accepted": make the parser refuse --operation in preflight and the base's own failure
+# becomes that refusal, every other flag compares equal to it, and the matrix agrees with
+# the synopsis while the mode refuses a flag its line advertises. Pinning the message
+# turns that into a BROKEN rather than a pass.
+#
+#   key | base argv | flags the line's required part must name | expected failure
+acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|could not be resolved to an absolute path
+explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|could not be resolved to an absolute path
+explore-config|explore --config $acc_nx.toml|--config|--config could not be read
+replay|replay $acc_nx.json||the case file could not be read"
+
+acc_line_for() {
+    case "$1" in
+        preflight)      printf '%s\n' "$h1" | grep -E '^  sideeye preflight ' ;;
+        explore-define) printf '%s\n' "$h1" | grep -E '^  sideeye explore --state ' ;;
+        explore-config) printf '%s\n' "$h1" | grep -E '^  sideeye explore --config ' ;;
+        replay)         printf '%s\n' "$h1" | grep -E '^  sideeye replay ' ;;
+    esac
+}
+
+acc_seen=""
+acc_lines=0
+acc_probes=0
+
+while IFS='|' read -r acc_key acc_base acc_required acc_expect; do
+    [ -n "$acc_key" ] || continue
+    acc_line=$(acc_line_for "$acc_key")
+    if [ -z "$acc_line" ]; then
+        echo "     no synopsis line matches the base written here for $acc_key"
+        cli_fails=$((cli_fails + 1))
+        continue
+    fi
+    # Exactly one. Splitting a line in two makes the grep return both, and the advertised
+    # set becomes their union: each line could be missing half its flags and the union
+    # would still match what the mode accepts. The unit is the line.
+    if [ "$(printf '%s\n' "$acc_line" | wc -l | tr -d ' ')" != 1 ]; then
+        echo "     $acc_key matches more than one synopsis line; the unit of this check is the line"
+        cli_fails=$((cli_fails + 1))
+        continue
+    fi
+
+    # The base must survive argument handling. If it dies there, every flag below reads
+    # as refused and the check reports a drift of the entire matrix.
+    acc_base_out=$(eval "\"\$SIDEEYE\" $acc_base" </dev/null 2>&1 | head -1)
+    case "$acc_base_out" in
+        *"$acc_expect"*) ;;
+        *)
+            echo "     the $acc_key base should fail with [$acc_expect] and failed with: $acc_base_out"
+            cli_fails=$((cli_fails + 1))
+            continue
+            ;;
+    esac
+
+    acc_line_required=$(printf '%s' "$acc_line" | sed 's/\[.*//' |
+        grep -oE '\-\-[A-Za-z0-9][A-Za-z0-9-]*' | sort -u | tr '\n' ' ')
+    if [ "$acc_line_required" != "$(acc_sorted "$acc_required")" ]; then
+        echo "     the $acc_key line requires [$acc_line_required] but its base names [$(acc_sorted "$acc_required")]"
+        cli_fails=$((cli_fails + 1))
+        continue
+    fi
+
+    acc_advertised=$(printf '%s' "$acc_line" | grep -oE '\-\-[A-Za-z0-9][A-Za-z0-9-]*' | sort -u | tr '\n' ' ')
+
+    acc_accepted=""
+    for acc_f in $acc_flags; do
+        # A flag in the base parsed by definition — the base got past argument handling.
+        case " $acc_base " in
+            *" $acc_f "*) acc_accepted="$acc_accepted $acc_f"; continue ;;
+        esac
+        if acc_takes_value "$acc_f"; then
+            acc_out=$(eval "\"\$SIDEEYE\" $acc_base \"\$acc_f\" \"\$(acc_dummy \"\$acc_f\")\"" </dev/null 2>&1 | head -1)
+        else
+            acc_out=$(eval "\"\$SIDEEYE\" $acc_base \"\$acc_f\"" </dev/null 2>&1 | head -1)
+        fi
+        acc_probes=$((acc_probes + 1))
+        [ "$acc_out" = "$acc_base_out" ] && acc_accepted="$acc_accepted $acc_f"
+    done
+    acc_accepted=$(acc_sorted "$acc_accepted")
+
+    if [ "$acc_accepted" != "$acc_advertised" ]; then
+        echo "     $acc_key accepts [$acc_accepted] but its synopsis line names [$acc_advertised]"
+        cli_fails=$((cli_fails + 1))
+    fi
+    acc_seen="$acc_seen $acc_accepted"
+    acc_lines=$((acc_lines + 1))
+done <<ACC_SPECS
+$acc_specs
+ACC_SPECS
+
+# `demo` is parsed by runDemo, before the mode enum, so it drifts independently of
+# everything above. Probed with the flag LAST, which never starts the demo: --shim is its
+# only flag and it takes a value, so a hit is "missing its value" and everything else is
+# the refusal. A demo that actually ran would mean it gained a no-value flag, and that is
+# apparatus breakage rather than an answer.
+acc_demo_line=$(printf '%s\n' "$h1" | grep -E '^  sideeye demo')
+acc_demo_advertised=$(printf '%s' "$acc_demo_line" | grep -oE '\-\-[A-Za-z0-9][A-Za-z0-9-]*' | sort -u | tr '\n' ' ')
+acc_demo_accepted=""
+for acc_f in $acc_flags; do
+    acc_out=$(acc_first demo "$acc_f")
+    acc_probes=$((acc_probes + 1))
+    case "$acc_out" in
+        *"demo takes only"*) ;;
+        *"is missing its value"*) acc_demo_accepted="$acc_demo_accepted $acc_f" ;;
+        *)
+            echo "     the demo probe for $acc_f neither refused nor asked for a value: $acc_out"
+            cli_fails=$((cli_fails + 1))
+            ;;
+    esac
+done
+acc_demo_accepted=$(acc_sorted "$acc_demo_accepted")
+if [ "$acc_demo_accepted" != "$acc_demo_advertised" ]; then
+    echo "     demo accepts [$acc_demo_accepted] but its synopsis line names [$acc_demo_advertised]"
+    cli_fails=$((cli_fails + 1))
+fi
+acc_seen="$acc_seen $acc_demo_accepted"
+acc_lines=$((acc_lines + 1))
+
+# The three argument-free modes. Their lines advertise nothing, so the claim is that they
+# accept nothing — checked by execution rather than assumed, and the flag alone never
+# starts the MCP server because the refusal happens before anything else.
+for acc_m in mcp help version; do
+    acc_m_line=$(printf '%s\n' "$h1" | grep -E "^  sideeye $acc_m\$")
+    if [ -z "$acc_m_line" ]; then
+        echo "     the synopsis has no bare line for $acc_m"
+        cli_fails=$((cli_fails + 1))
+        continue
+    fi
+    for acc_f in $acc_flags; do
+        acc_out=$(acc_first "$acc_m" "$acc_f")
+        acc_probes=$((acc_probes + 1))
+        case "$acc_out" in
+            *"takes no arguments"*) ;;
+            *)
+                echo "     $acc_m accepts $acc_f, which its synopsis line does not advertise: $acc_out"
+                cli_fails=$((cli_fails + 1))
+                ;;
+        esac
+    done
+    acc_lines=$((acc_lines + 1))
+done
+
+# Every flag the parser reads has to be accepted by at least one line. A flag accepted
+# nowhere is either a real finding or a stale acc_dummy entry, and both need looking at;
+# without this, a dummy that stopped being well-formed would quietly turn its flag into a
+# refusal everywhere and the matrix would still be self-consistent.
+for acc_f in $acc_flags; do
+    case " $acc_seen " in
+        *" $acc_f "*) ;;
+        *)
+            echo "     $acc_f is accepted by no synopsis line — a real drift, or acc_dummy no longer gives it a well-formed value"
+            cli_fails=$((cli_fails + 1))
+            ;;
+    esac
+done
+
+# Every synopsis line has to have been covered. The four bases above are written here,
+# so a line added to the usage text would simply not be tested — the same shape as taking
+# the candidate flags from the synopsis, one level up: the check would choose which lines
+# exist rather than the text. Counted from the text and compared against what ran.
+acc_declared=$(printf '%s\n' "$h1" | grep -cE '^  sideeye ')
+if [ "$acc_declared" != "$acc_lines" ]; then
+    echo "     the synopsis has $acc_declared lines but this check covered $acc_lines — a line was added without a base"
+    cli_fails=$((cli_fails + 1))
+fi
+
+# The scan volume is part of the result: a loop that silently covered nothing reports the
+# same zero failures as one that covered everything.
+echo "     arg matrix: $acc_lines of $acc_declared synopsis lines x $(printf '%s\n' $acc_flags | wc -l | tr -d ' ') parser flags, $acc_probes probes"
+
 if [ "$cli_fails" = "0" ]; then
-    echo "ok   help exits 0 in three spellings, refuses extras, and the synopsis covers every mode"
+    echo "ok   help exits 0 in three spellings, refuses extras, and the synopsis and parser agree in all three directions"
 else
     echo "FAIL CLI self-description: $cli_fails problem(s)"
     fails=$((fails + 1))
