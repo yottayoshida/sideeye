@@ -31,4 +31,3 @@ __pycache__/
 # evidence is its mechanical projection (timeline.tsv + meta.json).
 spike/onboarding-clock/runs/*/transcript.jsonl
 spike/onboarding-clock/runs/*/*.log
-spike/onboarding-clock/runs/*/canary-out.txt
