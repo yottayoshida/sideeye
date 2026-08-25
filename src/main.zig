@@ -396,10 +396,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // does, not PASS specifically, and `version` below already exits 0 without producing a
     // verdict. docs/contract-freeze.md §3 says so explicitly.
     //
-    // Only at top level. `sideeye explore --help` still reaches "unknown option" in the
-    // parse loop, which treats an unrecognised flag as one that takes a value; wiring help
-    // in there means touching the no-value flag branch and replay's positional argument,
-    // and the ticket's ask is satisfied here.
+    // This branch is the top-level one. `<mode> --help` is answered by the branch below
+    // it (#296) — deliberately as a separate exact-shape match rather than by wiring help
+    // into the parse loop, which would let it run after `--json` has already called
+    // removeFile. What is still not answered anywhere is help in a late position
+    // (`explore --state X --help`); that needs the parser split into a side-effect-free
+    // stage and a side-effecting one.
     if (argv.len >= 2 and (std.mem.eql(u8, argv[1], "--help") or
         std.mem.eql(u8, argv[1], "-h") or
         std.mem.eql(u8, argv[1], "help")))
@@ -425,6 +427,46 @@ pub fn main(init: std.process.Init.Minimal) !void {
             std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
         }
         say("sideeye {s} (trace contract v{d})\n", .{ version, contract.contract_version });
+        std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    }
+
+    // `<mode> --help` and `<mode> -h`, answered here rather than in the parse loop.
+    //
+    // #273 wired help in at the top level only, so once a mode word was consumed the
+    // spelling fell through to whatever came next: `explore --help` and `preflight
+    // --help` reached the loop's arity guard ("an option is missing its value" — the
+    // loop treats every unrecognised flag as one that takes a value), `replay --help`
+    // reached the dispatch's `else` and printed the banner with exit 3, and `demo
+    // --help` hit runDemo's own refusal. Four modes, four different failures, none of
+    // them help (#296). The ticket's transcript reports "unknown option" for explore;
+    // that is the four-element form. Measured before this branch was written.
+    //
+    // WHY NOT IN THE PARSE LOOP. `--json` calls removeFile() while parsing, so a help
+    // branch inside the loop would let `explore --state X --json report.json --help`
+    // delete an existing report on its way to printing usage. The comment on that
+    // removeFile records this project avoiding the same trap once already — a refusal
+    // that had already deleted the caller's report is a refusal with a side effect.
+    // Matching the exact three-argument shape here never enters the loop, so it cannot
+    // reach any side effect at all.
+    //
+    // The shape is exact on purpose, and each part of it is load-bearing:
+    //   - `explore --marker --help` stays a marker whose bytes are "--help". Four
+    //     elements, no match, the loop consumes it as the value it is.
+    //   - `explore --help extra` stays a refusal, the way the top level refuses extras.
+    //   - Late-position help (`explore --state X --help`) is deliberately NOT answered.
+    //     It needs the parser split into a side-effect-free stage and a side-effecting
+    //     one, which is a larger change than this ticket.
+    //
+    // mcp, help and version are absent: they take no arguments, their synopsis lines
+    // advertise none, and their existing refusals already name what they refused on.
+    if (argv.len == 3 and
+        (std.mem.eql(u8, argv[2], "--help") or std.mem.eql(u8, argv[2], "-h")) and
+        (std.mem.eql(u8, argv[1], "demo") or
+            std.mem.eql(u8, argv[1], "preflight") or
+            std.mem.eql(u8, argv[1], "explore") or
+            std.mem.eql(u8, argv[1], "replay")))
+    {
+        usage();
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
