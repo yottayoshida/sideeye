@@ -34,8 +34,10 @@ A network-off Linux container (`docker run --network=none`), built by the
 `Dockerfile` beside this protocol. Inside, at `/home/user/onboarding`:
 
 - `README.md` — the repository's front page at the measured commit, verbatim.
-- `sideeye-v0.10.0-aarch64-linux.tar.gz` — the release tarball, fetched at
-  image build from the GitHub release and pinned by sha256 in the Dockerfile.
+- `sideeye-v0.13.0-aarch64-linux.tar.gz` — the current release tarball,
+  fetched at image build from the GitHub release and pinned by sha256 in the
+  Dockerfile *(v0.10.0 at run 1; moved with the second 2026-08-25 amendment
+  below, so the pinned artifact is the one a fresh machine downloads today)*.
 - The target, **jrnl** (selected by the owner 2026-08-16 under the standing
   bar: ≥500 stars, more than one contributor, activity within the last month;
   7,291 stars, pushed 2026-08-14, installed from PyPI at image build with the
@@ -145,3 +147,21 @@ Write tool, and a driver that reaches for run 1's transfer idiom will be
 refused until it re-derives in-box authoring. That detour is apparatus, not
 documentation. If run 2 runs slow, check the timeline for refused transfer
 attempts before reading the number as a README verdict.
+
+### 2026-08-25 (second, same day) — the artifact moves with the README
+
+The pinned tarball becomes the current release (v0.13.0, sha256-pinned in
+the Dockerfile as before). The reason is validity, not a defect: this
+criterion asks what a fresh machine does from the README, and a fresh
+machine today downloads the current release — pinning a three-releases-old
+artifact measures a pairing no real user has, and the gap widens with every
+release. **It is deliberately not claimed that the old artifact mismatched
+the README.** Measured before this amendment was written: v0.10.0 and
+v0.13.0 print identical usage text apart from the version string, the
+five README-documented flags exercised (`--oracle`, `--allow-unverified`,
+`--check`, `--marker`, `--fresh-state`) parse on both, and `demo`
+produces the same report on both. The README names thirteen long flags;
+the other eight were not exercised, and this sentence claims only the
+five that were. The run count is already restarted by the amendment above;
+this changes which binary run 2 measures, not the count. Run 1's evidence —
+measured against v0.10.0, named in its own transcript — is untouched.
