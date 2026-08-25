@@ -56,6 +56,13 @@ pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
 pub extern "c" fn symlink(target: [*:0]const u8, linkpath: [*:0]const u8) c_int;
 pub extern "c" fn getpid() c_int;
+/// The parent's pid — or, once the parent has died and this process has been reparented,
+/// the reaper's: pid 1 or the nearest subreaper on Linux, launchd on macOS. Parentage
+/// changes only when the parent dies, so "getppid() no longer answers what it answered at
+/// startup" is exactly "the process that launched this run is gone" (#269) — no
+/// descriptor to inherit, no signal to arrive at the wrong moment, the same meaning on
+/// both platforms.
+pub extern "c" fn getppid() c_int;
 pub extern "c" fn fork() c_int;
 pub extern "c" fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) c_int;
 /// Exec with an explicit environment, so a child can be given a *minimal* env rather

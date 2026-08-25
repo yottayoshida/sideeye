@@ -109,6 +109,12 @@ const ReplayCase = struct {
 /// `unknown_reason: checker_not_falsified` beside `checker: none configured`: the report
 /// contradicted itself about whether a checker existed. One variable each removes the
 /// possibility rather than fixing the two sites where it showed.
+/// #269, `--stop-when-orphaned`: refuse to start another world once `getppid()` stops
+/// answering what it answered at process start. `startup_ppid` is captured at the top of
+/// `main`, before anything else runs — parentage only changes when the parent dies, so
+/// the comparison needs no pid handed in from outside and nothing that could go stale.
+var stop_when_orphaned: bool = false;
+var startup_ppid: c_int = 0;
 var json_path: ?[]const u8 = null;
 var json_arena: ?std.mem.Allocator = null;
 var oracle_note: []const u8 = "not run (no --oracle given)";
@@ -169,9 +175,9 @@ fn usage() void {
         \\usage:
         \\  sideeye demo [--shim <lib>]
         \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified]
-        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
+        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
         \\  sideeye mcp
         \\  sideeye help
         \\  sideeye version
@@ -227,6 +233,13 @@ fn usage() void {
         \\               and the one candidate measured oracle-shaped (fs_usage)
         \\               requires root (#181). The report says so, and the claim it
         \\               makes is weaker.
+        \\  --stop-when-orphaned
+        \\               stop at the next world boundary if the process that launched
+        \\               this run exits (UNKNOWN, parent_exited). The MCP server passes
+        \\               it on every explore and replay: agent hosts restart MCP servers
+        \\               routinely, and an orphaned exploration otherwise keeps killing
+        \\               processes and rewriting its state directory with nobody left to
+        \\               report to. A run that hangs before a boundary is out of reach.
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\
@@ -362,6 +375,15 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
 /// Zig 0.16 passes the process's arguments and environment in; `std.process.argsAlloc`
 /// no longer exists. The shape of `Init.Minimal` comes from `std.start.callMain`.
 pub fn main(init: std.process.Init.Minimal) !void {
+    // The baseline for `--stop-when-orphaned` (#269), read at the top of the process.
+    //
+    // Position matters more than it looks. Captured immediately before the world loop,
+    // this would miss a launcher that died during `--setup` or the recording run — the
+    // baseline would already be the reaper's pid, which never changes. Captured here, the
+    // blind window shrinks to fork-to-exec: a launcher that dies before this line is not
+    // seen, and the flag's own documentation says so.
+    startup_ppid = posix.getppid();
+
     var gpa_state: std.heap.DebugAllocator(.{}) = .init;
     defer _ = gpa_state.deinit();
     const gpa = gpa_state.allocator();
@@ -508,6 +530,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (std.mem.eql(u8, argv[i], "--fresh-state")) {
             if (mode != .replay) setupError("--fresh-state applies to replay only (explore's state may be legitimately pre-populated)");
             args.fresh_state = true;
+            i += 1;
+            continue;
+        }
+        if (std.mem.eql(u8, argv[i], "--stop-when-orphaned")) {
+            // #269. A flag and not an environment variable, for reasons measured and
+            // recorded in ADR 0010 (argv is per-invocation and is not inherited).
+            if (mode == .preflight) setupError("preflight explores no worlds; --stop-when-orphaned belongs to explore and replay");
+            stop_when_orphaned = true;
             i += 1;
             continue;
         }
@@ -1376,6 +1406,20 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (only_k) |okk| {
             if (k != okk and k != n + 1) continue;
         }
+        // Stop if whoever launched this exploration is gone (#269, --stop-when-orphaned).
+        //
+        // The MCP adapter passes the flag on every self-exec: an agent host restarts MCP
+        // servers as ordinary lifecycle, and an orphaned explore keeps killing processes
+        // and rewriting the state directory with nobody left to report to. Checked before
+        // `restore`, so what happens instead of the deletion is the refusal rather than
+        // the deletion followed by one.
+        //
+        // The claim is narrow and the reason's own documentation says so: the next world
+        // boundary **that is reached**. A setup, recording or checker run that hangs
+        // never reaches one, and the process-group teardown that would help there runs at
+        // the end of a world, not the start.
+        if (stop_when_orphaned and posix.getppid() != startup_ppid)
+            unknown(.parent_exited, "the process that launched this exploration is gone; stopping at a world boundary rather than continuing to kill processes and rewrite the state directory with nobody to report to");
         engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory");
 
         var kbuf: [16]u8 = undefined;

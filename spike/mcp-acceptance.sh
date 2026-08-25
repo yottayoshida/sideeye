@@ -297,5 +297,60 @@ for tag, r in (("explore", r1), ("first replay", r2), ("second replay", r3)):
     if v!="FAIL": sys.exit("%s: %s"%(tag, v))
 PY
 
+echo "=========== mcp 9: a server killed mid-explore leaves an exploration that stops itself (#269) ==========="
+# The shipped path, end to end: the SERVER must pass --stop-when-orphaned to its
+# self-exec'd child, and the child must act on it. The staging kills the server from
+# inside the exploration — the config's setup reads the server's pid from a file and
+# SIGKILLs it — so there is no timing window: the server is alive when the engine starts
+# (it just forked it) and dead before the first world boundary (setup precedes the
+# recording run). Nobody answers on the transport afterwards, so the evidence is read
+# from the report the orphaned engine writes on its way out.
+#
+# Removing the flag from the server's argv makes this leg fail: the engine then explores
+# to the end as an orphan and the report says FAIL with explored > 0, not parent_exited.
+ORPHAN_WORK=/tmp/mcp-orphan-work
+rm -rf "$ORPHAN_WORK"
+mkdir -p "$WS/orphan-state"
+cat > "$WS/orphan-setup.sh" <<OSH
+#!/bin/sh
+kill -9 \$(cat /tmp/mcp-server.pid) 2>/dev/null
+$OUT/toy-bug init
+OSH
+chmod +x "$WS/orphan-setup.sh"
+cat > "$WS/orphan.toml" <<TOML
+[world]
+state = "./orphan-state"
+[define]
+setup     = "$WS/orphan-setup.sh"
+operation = "$OUT/toy-bug rotate"
+TOML
+
+req="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/orphan.toml\"}}}"
+printf '%s' "$req" | SIDEEYE_MCP_WORK=$ORPHAN_WORK "$SIDEEYE" mcp >/tmp/mcp.out 2>/tmp/mcp.err &
+srv=$!
+echo "$srv" > /tmp/mcp-server.pid
+wait "$srv" 2>/dev/null
+srv_rc=$?
+# Precondition of the staging itself: the server died by our SIGKILL (128+9), not by
+# finishing. A server that answered means the assassin never fired and nothing below
+# measures what it claims to.
+[ "$srv_rc" = "137" ] || fail "staging: the server exited $srv_rc, not 137 (SIGKILL) — the assassin setup did not fire"
+
+# The orphaned engine finishes on its own: poll for its report with a deadline.
+i=0
+while [ ! -s "$ORPHAN_WORK/report-1.json" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
+python3 - "$ORPHAN_WORK/report-1.json" <<'PY10' && pass "the server's child stopped itself: parent_exited before any world" || fail "the orphaned exploration did not stop (or stopped for the wrong reason)"
+import json, sys
+try:
+    r = json.load(open(sys.argv[1]))
+except Exception as e:
+    sys.exit("no readable report from the orphaned engine: %r" % e)
+if r.get("unknown_reason") != "parent_exited":
+    sys.exit("unknown_reason=%r verdict=%r" % (r.get("unknown_reason"), r.get("verdict")))
+if r.get("explored") != 0:
+    sys.exit("explored=%r, wanted 0 - worlds ran after the server died" % r.get("explored"))
+PY10
+
+echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

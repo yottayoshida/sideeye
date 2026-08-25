@@ -85,11 +85,11 @@ language, and made a hand-written Zig server small.
   credential-exfiltration surface.
 - **A `define` parse tool** — rejected: parse-only diverges from run-time resolution.
 - **Full cancellation / async Tasks** — deferred: v1 is synchronous, so a long
-  explore blocks the loop and `notifications/cancelled` is not read. **Parent-death
-  cleanup of the self-exec'd explore group is not implemented** (the child is a process
-  group, killed only when the direct child exits — if the server dies mid-explore the
-  target group can outlive it); tracked as a known limitation, not claimed as done. The
-  Tasks extension is future work.
+  explore blocks the loop and `notifications/cancelled` is not read. A server killed
+  mid-explore no longer strands its exploration indefinitely — see `--stop-when-orphaned`
+  under Consequences (#269) — but the stop is a world-boundary event, not a
+  cancellation: a run hung inside a world stays hung. The Tasks extension is future
+  work.
 
 ## Consequences
 
@@ -103,6 +103,28 @@ language, and made a hand-written Zig server small.
   operation may do: it is not an execution sandbox, and agent-driven deployments supply
   their own containment (a container or otherwise restricted workspace).
 - Long real-target explores block the single-threaded loop; small targets are the v1
-  assumption, with async deferred to the Tasks extension. A server killed mid-explore
-  can leave the target process group behind (parent-death cleanup unimplemented) — a
-  known limitation filed for the async work, not a claim of cleanliness.
+  assumption, with async deferred to the Tasks extension.
+- A server killed mid-explore stops its exploration **at the next world boundary it
+  reaches** (#269). The server passes `--stop-when-orphaned` on every self-exec'd
+  explore and replay; under that flag the engine records `getppid()` once at process
+  start and refuses to begin another world when it changes — parentage changes only
+  when the parent dies, so nothing has to hand a pid around. The run ends as UNKNOWN
+  `parent_exited`, before the next `restore`, so what replaces the deletion is the
+  refusal.
+
+  A flag, and deliberately not a pid-carrying environment variable, a signal, or a
+  pipe. An environment variable is inherited and outlives its sender — the engine hands
+  the target its own environment on the non-minimal path, so a pid passed that way
+  reaches processes nobody set it for, and a stale copy refuses runs it was never about
+  (both measured). `PR_SET_PDEATHSIG` is Linux-only and a signal arriving mid-world
+  leaves a half-written state directory. A liveness pipe works on both platforms but
+  needs the write end closed in the child, a fixed descriptor number, `FD_CLOEXEC`, a
+  non-blocking read, and an exemption from the minimal environment's descriptor sweep.
+  Argv is per-invocation, is not inherited, and appears in the synopsis like any other
+  flag.
+
+  **The bounds are real and stated rather than papered over**: a `--setup`, recording,
+  baseline or checker run that hangs never reaches a boundary, and a server that dies
+  between fork and the engine's first instruction is not seen (the baseline is then
+  already the reaper's pid). So the claim is "stops at the next boundary reached", not
+  "a killed server leaves nothing behind".

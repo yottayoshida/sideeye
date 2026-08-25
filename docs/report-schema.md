@@ -97,6 +97,7 @@ the case file — nothing else in the report was load-bearing for them.
 `completeness_not_verified`,
 `trace_truncated`, `checker_not_falsified`, `marker_never_observed`,
 `case_no_longer_applies`, `recording_run_failed`, `baseline_run_failed`,
+`parent_exited`,
 `baseline_violates_invariant`, `boundary_without_oracle`,
 `state_not_quiescent`, `unsupported_state_entry`.
 
