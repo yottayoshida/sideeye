@@ -8,26 +8,34 @@
 # counting them made Shell the repository's largest language at 52%, ahead of
 # the engine it exists to test.
 #
-# Marked linguist-documentation, which excludes a path from the language bar
-# without collapsing its diffs. The live harness is deliberately NOT listed:
-# acceptance.sh, mcp-acceptance.sh, campaign-driver.sh, rehearse-campaign.sh
-# and the toy builders are shell that is actually maintained, and hiding them
-# would overstate how much of this repository is Zig.
+# The rule used to run the other way: a directory counted as code until someone
+# remembered to register it here when its campaign closed. It was missed on
+# every closure it ever faced — cohort 4, then spike/macos-oracle/ (#181), then
+# spike/scout-model-comparison/ (#221) — because nothing reads this file at the
+# moment a record closes, which is by definition the moment attention leaves.
+# The direction is inverted so that there is no closing moment to notice: a
+# record is documentation from the day its directory is created.
 #
-# A closed cohort belongs here. Add its directory when it closes.
+#   spike/**       documentation.
+#   spike/*        code. The maintained harness lives at the top level:
+#                  acceptance.sh, mcp-acceptance.sh, campaign-driver.sh,
+#                  rehearse-campaign.sh, the toy builders and the rest are
+#                  shell that is actually maintained, and hiding them would
+#                  overstate how much of this repository is Zig.
+#   spike/toys/**  code. The only live directory: the planted-bug toys are
+#                  compiled by ci.yml and by `sideeye demo`.
+#
+# Position carries the meaning, so neither a new record directory nor a new
+# top-level script needs a line here. A new *live directory* still does — that
+# is the one misclassification this direction can produce, and it is the safer
+# one: it understates Shell rather than counting a frozen transcript as code,
+# and it happens while someone is working in that directory rather than as they
+# walk away from it. docs/adr/0021 records why that trade was taken.
+#
+# spike/check-gitattributes.sh holds this: every tracked file under spike/ must
+# resolve to set or unset — never unspecified — and both directions above are
+# checked over every file rather than a sample.
 
-spike/blind-hunt/**          linguist-documentation
-spike/blind-hunt2/**         linguist-documentation
-spike/blind-hunt3/**         linguist-documentation
-spike/assisted/**            linguist-documentation
-spike/cohort2/**             linguist-documentation
-spike/cohort3/**             linguist-documentation
-spike/cohort4/**             linguist-documentation
-spike/loop-closure-timew/**  linguist-documentation
-spike/dogfood-watson/**      linguist-documentation
-spike/followup-*/**          linguist-documentation
-spike/unknown-rate/**        linguist-documentation
-spike/freeze-audit/**        linguist-documentation
-spike/onboarding-clock/**    linguist-documentation
-spike/fsevents/**            linguist-documentation
-spike/fsusage/**             linguist-documentation
+spike/**        linguist-documentation
+spike/*        -linguist-documentation
+spike/toys/**  -linguist-documentation
