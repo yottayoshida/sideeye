@@ -158,14 +158,24 @@ choice between two readings of a sentence.
 ## Finding 2: the guard states a premise the fix falsified
 
 Run 3 is a fresh explore against the fixed build, through the frozen checker, and
-it FAILs:
+it FAILs. The message it printed, quoted from `explore-fixed.txt` as that file
+stands:
 
     new/ or tmp/ is not empty: this operation stages nothing, so 1
     entry/entries there is damage or a shape the define did not declare
 
-Read quickly, that says himalaya still fails, and worse than before — 2 of 4
-worlds rather than 1 of 3. It says no such thing. Separating what the guard
-looks at from why it looks:
+**That reason text has since been corrected** (#306, 2026-08-25). The guard now
+reports how many entries it found and scopes the premise to the version the
+define was measured against, instead of stating "this operation stages nothing"
+as a fact about the operation. The assertion is unchanged, so a re-run against
+the fixed build still FAILs 2 of 4 — with a message that no longer asserts what
+the fix removed. The transcripts here keep the old wording because they record
+runs that happened, and the quotation above is of the run rather than of the
+file as it stands today.
+
+Read quickly, the old message says himalaya still fails, and worse than before —
+2 of 4 worlds rather than 1 of 3. It says no such thing. Separating what the
+guard looks at from why it looks:
 
 - **What it checks:** every staging directory, the target's included, is empty.
 - **Why it checked that:** io-maildir 0.3.0's `messages copy` was the one arm
@@ -246,9 +256,18 @@ crash-consistency defect remains anywhere in io-maildir's copy path.
 
 `check-relaxed.diff` is a measurement instrument and is committed as a diff
 rather than as a file, so it cannot be mistaken for a second checker. **The
-frozen checker is not changed by this record.** Whether it should be, and what
-that costs against the freeze, is a separate decision — the define is frozen
-material and this is a measurement.
+frozen checker's assertions are not changed by this record.** Whether they
+should be, and what that costs against the freeze, is a separate decision — the
+define is frozen material and this is a measurement.
+
+**The diff was regenerated on 2026-08-25 and the instrument was not.** #306
+corrected the reason text the guard prints, which moved the lines this patch
+removes, so the patch stopped applying. What it produces is unchanged, and that
+is checked rather than asserted: applying the regenerated diff to the corrected
+`check.sh` yields a file byte-identical to the one the transcripts were produced
+with, reconstructed by applying the previous diff to the previous `check.sh`.
+The instrument's own header still quotes the pre-correction wording, deliberately
+— it describes what it was relaxing at the time it ran.
 
 ### Where else the same shape lives
 

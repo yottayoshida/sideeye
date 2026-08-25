@@ -93,11 +93,22 @@ src_entries=$(ls -A "$S/cur" | sort | tr '\n' ' ')
 
 # find's own status is read first: a failure here would otherwise count
 # as zero staged entries and pass the guard, the fail-open direction.
+#
+# THE REASON THIS GUARD GIVES WAS CORRECTED ON 2026-08-25 (#306); the assertion
+# was not, and no verdict this checker produced moves. r2's FAIL was measured
+# against io-maildir 0.3.0, where the copy genuinely staged nothing. What the
+# failure used to say was "this operation stages nothing", stated as a fact
+# about the operation rather than about the version measured, and upstream
+# falsified it in 0.3.1 by moving the copy through the target's tmp. A run
+# against a fixed build therefore failed here while asserting the premise the
+# fix had removed. The measurement is spike/cohort4/himalaya-r2/upstream-fix/,
+# whose committed transcripts still carry the old wording because they record
+# runs that happened.
 find "$S/new" "$S/tmp" "$S/Archive/new" "$S/Archive/tmp" -mindepth 1 > "$T/staged" 2> "$T/staged.err" \
     || fail "the staging directories could not be listed: $(head -c 200 "$T/staged.err")"
 empties=$(wc -l < "$T/staged" | tr -d ' ')
 [ "$empties" = 0 ] \
-    || fail "new/ or tmp/ is not empty: this operation stages nothing, so $empties entry/entries there is damage or a shape the define did not declare"
+    || fail "new/ or tmp/ is not empty: $empties entry/entries where this define expects none ($(tr '\n' ' ' < "$T/staged" | head -c 200)). The define was measured against io-maildir 0.3.0, whose copy fills the destination in place and stages nowhere; 0.3.1 stages ONE entry under the TARGET's tmp and renames it into position (#306), so exactly that is the fix working rather than damage. Anything under new/, tmp/ or Archive/new, and more than one entry anywhere, is damage under either version"
 
 # The listing's own exit status is read before its line count: a target
 # folder that cannot be read would otherwise count as zero entries and

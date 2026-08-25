@@ -2,6 +2,81 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-25 — the guard's reason is corrected in both copies, and the scan said the cheap change was not cheap
+
+#306 offered three ways to handle a guard whose failure message states a premise
+upstream falsified: leave it, correct the reason text, or relax the assertion.
+The owner picked the middle one. This is that, and what implementing it turned
+up is worth more than the edit.
+
+**What changed.** In both `spike/cohort4/himalaya/ops/check.sh` and
+`spike/cohort4/himalaya-r2/ops/check.sh` — byte-identical files, which is why
+this had to happen twice — the staging guard used to fail with:
+
+    new/ or tmp/ is not empty: this operation stages nothing, so N entry/entries
+    there is damage or a shape the define did not declare
+
+and now names the entries it found, scopes the premise to the version the define
+was measured against, and says which single state under a fixed build is the fix
+working rather than damage. **The assertion is untouched.**
+
+**The first version of that wording repeated the mistake it was fixing, in the
+other direction.** It said that against a build carrying the fix "this fires on
+correct behaviour rather than on damage" — unconditionally. The guard covers four
+directories and only one of them, the target's tmp, is where 0.3.1 legitimately
+stages. An entry in `new/`, in the store's own `tmp/`, or in `Archive/new/` is
+damage under either version, and so is a second entry anywhere; the new message
+would have called all of them correct. Review caught it. Replacing an
+over-general premise with an over-general exemption is the same failure with the
+sign flipped, and it took the same shape as everything else this entry is about:
+a sentence that is true of the case in front of you, written as though it were
+true of the category.
+
+**What the scan found before the edit, which contradicted the issue.** The issue
+called this "the cheapest thing that stops the misreading". Grepping for who
+quotes the string turned up seven files, and two of them are mechanical:
+
+- `spike/cohort4/himalaya/checker-drills.sh` and its r2 twin assert the substring
+  `new/ or tmp/ is not empty` — the first clause only. Keeping that clause is
+  what makes the drills survive, and it was a constraint on the new wording
+  rather than a happy accident.
+- `spike/cohort4/himalaya-r2/upstream-fix/check-relaxed.diff` **stops applying**,
+  because the lines it removes are the lines being edited. That is a reproduction
+  path verified to work yesterday and broken by today's change if nobody looks.
+
+The rest are records of runs — transcripts, drill output, this file — and they
+keep the old wording because they record what happened.
+
+**The diff was regenerated and the instrument was not, and that distinction is
+checked rather than claimed.** The relaxed checker was reconstructed by applying
+the *previous* diff to the *previous* `check.sh`; the new diff is taken against
+the corrected `check.sh`; applying it produces a file byte-identical to that
+reconstruction. The patch base moved and the measurement's instrument did not.
+
+**No verdict moves, and that is measured too.** The define was re-run against the
+stock target through the corrected checker and diffed against the committed r2
+transcript: every judgement-carrying field is identical — verdict, world counts,
+both crash-point classes and their paths, leg D's byte counts, the oracle's
+operation and syscall-line counts, atomicity, metadata, the checker line. The
+only differences are the per-run work paths, which is the property `RESULTS.md`
+already names. Against the fixed build the run still FAILs 2 of 4, with a message
+that no longer asserts what the fix removed. Both drill suites: 0 failures.
+
+**The mini-seal is unaffected, and that was read rather than assumed.**
+`spike/assisted/verify-assisted.sh` D2 compares `$def_commit:$p` against
+`$art_commit:$p` — two fixed historical commits. Editing the file today cannot
+change either blob. Checking that before editing was the difference between a
+safe change and finding out from CI. Run afterwards as well:
+`ALL ORDER CHECKS PASSED`.
+
+**One more, small and worth writing down.** Checking that the discarded first
+wording had not survived anywhere, `grep -rn` returned 0 for this file too — and
+this file is where it deliberately survives, quoted above. The phrase is wrapped
+across a line break here, and grep is line-based. A count of zero from a
+line-oriented search over hard-wrapped prose does not distinguish "absent" from
+"wrapped". Re-measured by flattening whitespace first: exactly one occurrence,
+in this file, which is the intended answer arrived at for the right reason.
+
 ## 2026-08-25 — the himalaya case refuses against the fixed build: a case pins an operation sequence, and this fix changed it
 
 Yesterday's entry closed with a question left to the owner: does "kept as a
