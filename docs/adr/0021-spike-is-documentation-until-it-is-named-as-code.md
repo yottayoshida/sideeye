@@ -1,7 +1,7 @@
 # 0021. Everything under spike/ is documentation until it is named as code
 
 Date: 2026-08-25
-Status: Proposed
+Status: Accepted
 
 ## Context
 
