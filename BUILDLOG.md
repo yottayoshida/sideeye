@@ -142,6 +142,18 @@ and one that is still accurate: `DESIGN.md` says timewarrior's report is not yet
 confirmed by its maintainers, and `GothenburgBitFactory/timewarrior#778` is
 still open with no comments, last touched 2026-08-12.
 
+**On the classification this directory lands in**, since the entry below it
+inverted the default the same day. `spike/cohort4/himalaya-r2/upstream-fix/`
+carries three executable scripts and falls to documentation without anyone
+naming it, which is the exact shape ADR 0021 says the check cannot catch: a
+live directory omitted from both `.gitattributes` and `exempt_dirs` is green
+because both sides agree on the wrong answer. Green was therefore not treated
+as the decision. `git check-attr` says these scripts sit where
+`spike/cohort4/himalaya-r2/ops/check.sh` sits — the cohort's own frozen define —
+and not where `spike/acceptance.sh` sits, which is the maintained harness. They
+are the apparatus of a frozen measurement, so documentation is the right side
+and no exemption is asked for.
+
 ## 2026-08-25 — the classification rule was missed on every closure it faced, so the closure moment was removed
 
 `#292` reported that `spike/macos-oracle/` never got its
