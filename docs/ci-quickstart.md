@@ -13,13 +13,20 @@ lives, how to produce it, and the one operation to explore.
 
 ```toml
 [world]
-state = "/var/lib/myapp"          # the directory sideeye watches
+state = "/tmp/myapp-state"        # scratch directory sideeye empties and rebuilds
 
 [define]
 setup     = "./ci/seed-state.sh"  # produces the initial state, runs once
 operation = "myapp commit"        # explored: killed before each state-changing op
 # check   = "./ci/verify.sh"      # optional L2: your own invariant, run after each crash
 ```
+
+**`state` is sacrificial.** Exploration empties and rebuilds that directory once per
+world — hundreds of times in one run — and what comes back is a restore from the
+snapshot, with modes flattened and ownership dropped (#121). It is a scratch copy your
+`setup` produces, never a directory anything else depends on. This page used to name
+`/var/lib/myapp` here; sideeye now refuses a root inside a system tree rather than
+emptying it (#267).
 
 Relative paths and place-naming commands (`./x`, `../x`) resolve against the
 toml's own directory, so the file means the same thing from any cwd (ADR 0007).

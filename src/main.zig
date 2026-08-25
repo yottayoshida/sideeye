@@ -693,7 +693,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // trace comes back empty, and the oracle cannot help because it is handed the same
     // wrong spelling and also finds nothing. Two views agreeing on nothing looks exactly
     // like two views agreeing.
-    _ = posix.mkdir(state_z.ptr, 0o755);
+    const state_created = posix.mkdir(state_z.ptr, 0o755) == 0;
     const state_abs = blk: {
         if (posix.realpath(state_z.ptr, &real_buf)) |p| break :blk std.mem.span(p);
         setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
@@ -729,9 +729,37 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // a fresh <state>/work behind would itself be the contamination the
             // check exists to prevent.
             if (work_created) _ = posix.rmdir(work_z.ptr);
+            // The state root too, if this invocation made it. `--state /opt/x --work
+            // /opt/x/work` creates both and used to leave the first behind, which is the
+            // contamination this branch exists to prevent, one directory up.
+            if (state_created) _ = posix.rmdir(state_z.ptr);
             setupError("--work must not be the state directory or inside it: the engine's own captures and traces there would be observed as the target's state operations");
         }
     }
+
+    // The destructive-root vet, here rather than only inside restore/freshDir.
+    //
+    // `engine.restore` calls `assertSafeRoot` too, but the first world is far downstream:
+    // `--setup` has already run by then, and a define whose operation records nothing
+    // never reaches a world at all. Refusing a system path only after running the
+    // target's setup command against it is not a refusal, so the same predicate runs
+    // here, on the resolved spelling, before anything else touches the state.
+    //
+    // It sits *after* the --work containment vet on purpose. Both are ahead of every
+    // destructive step, so the order does not change what is protected — but `--state /`
+    // is refused by both, and the containment vet's acceptance leg uses exactly that
+    // input to hold `isInsideDir`'s empty-prefix branch (the hand-rolled test it replaced
+    // answered "outside" for `/`). Vetting the root first would take that input away and
+    // leave the containment logic with no CLI-level case.
+    //
+    // Both mkdirs are undone on refusal, for the reason the vet above states for itself:
+    // a refusal must leave the filesystem as it found it, and this one would otherwise
+    // create the very directory it is refusing to use.
+    engine.assertSafeRoot(state_abs) catch {
+        if (work_created) _ = posix.rmdir(work_z.ptr);
+        if (state_created) _ = posix.rmdir(state_z.ptr);
+        setupError("--state names a location nothing sacrificial belongs in: exploration empties and rebuilds this directory once per world, hundreds of times. Point it at a scratch directory the run owns");
+    };
 
     // --fresh-state (#69): empty the case's state dir before setup runs. The dir is
     // sacrificial by contract — exploration kills processes mid-write into it — and
@@ -743,7 +771,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // the one destructive step, and the mkdir-then-resolve above already covers a
     // state dir that does not exist yet.
     if (args.fresh_state)
-        engine.freshDir(state_abs) catch setupError("--fresh-state could not empty the case's state directory");
+        engine.freshDir(state_abs) catch |e| restoreFailure(e, "--fresh-state could not empty the case's state directory");
 
     // The spelling the caller used, absolute but with symlinks left alone.
     //
@@ -1265,7 +1293,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (engine.countCorruptible(initial) == 0)
             unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested");
 
-        engine.restore(initial, state_abs) catch setupError("could not restore before falsifying the checker");
+        engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore before falsifying the checker");
         engine.corruptState(initial, state_abs) catch setupError("could not corrupt the state for the falsification probe");
 
         // The gate's child output is captured and re-emitted with a per-line
@@ -1348,7 +1376,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (only_k) |okk| {
             if (k != okk and k != n + 1) continue;
         }
-        engine.restore(initial, state_abs) catch setupError("could not restore the state directory");
+        engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory");
 
         var kbuf: [16]u8 = undefined;
         const kstr = std.fmt.bufPrint(&kbuf, "{d}", .{k}) catch unreachable;
@@ -2704,6 +2732,20 @@ fn writeJsonReport(
         _ = posix.unlink(tz.ptr);
         return jsonFailed("the finished document could not be moved into place");
     }
+}
+
+/// The destructive root stopped being the directory this run resolved.
+///
+/// Every `restore`/`freshDir` call site folds its errors into one message, which used to
+/// swallow the one error that says something different: `UnsafeRoot` from
+/// `assertRootResolvesToItself` means the state directory was replaced between the resolution
+/// and the delete, not that the delete failed. That is an actionable difference — a
+/// setup command or the recorded operation left a link there — and it is the case an
+/// acceptance check can assert on.
+fn restoreFailure(e: anyerror, doing: []const u8) noreturn {
+    if (e == error.UnsafeRoot)
+        setupError("the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), or it could not be read at all. Refusing to empty it");
+    setupError(doing);
 }
 
 fn removeFile(path: []const u8) void {

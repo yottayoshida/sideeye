@@ -261,12 +261,72 @@ fn finalizeEntries(snap: *Snapshot) error{EntriesNotSortedUnique}!void {
 
 pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeRoot };
 
-/// Refuses to operate on a root that is suspiciously shallow.
+/// Locations a destructive root must not name, nor sit inside.
+///
+/// A denylist, not a safety boundary: it stops the mistake that has a name — a system
+/// path where a scratch path was meant — and claims nothing about the ones that do not.
+/// The depth test below cannot carry this. Measured on this repository's own corpus of
+/// committed state paths, depth ranks danger backwards: `/tmp/quickstart-state` (the
+/// shipped quickstart define) is shallower than `/var/lib/myapp` (what the quickstart
+/// used to suggest), so any "at least N components" rule refuses the former while
+/// accepting the latter.
+///
+/// Entries are spelled the way a root arrives here. Both call sites hand over the
+/// realpath'd spelling, and on macOS `/etc` and `/var/lib` resolve through `/private`,
+/// so a list written in the pre-resolution spelling is silently inert on that platform.
+///
+/// `/var` itself is deliberately absent: `$TMPDIR` on macOS resolves to
+/// `/private/var/folders/...`, and denying that tree would refuse the platform's own
+/// scratch space.
+///
+/// `/opt` and `/srv` are absent for a different reason, and it is a judgement rather than
+/// a measurement. They are site-local trees an operator populates, so `/opt/myapp/state`
+/// is a plausible scratch copy in a way `/var/lib/myapp` is not — and there is no
+/// override flag here, so a wrong entry is a wall rather than a warning. The corpus this
+/// list was measured against contains nothing under either, which means that measurement
+/// says nothing about them in the direction that matters.
+///
+/// sunset: delete this list once the destructive path holds the root open by descriptor
+/// (openat/unlinkat), which closes the swap window that `assertRootResolvesToItself` below only
+/// narrows.
+const denied_trees = [_][]const u8{
+    "/usr",  "/etc",   "/bin", "/sbin", "/lib", "/lib64",
+    "/boot", "/dev",   "/proc", "/sys",
+    "/var/lib", "/var/db", "/var/spool",
+    // Linux resolves /var/run to /run and /var/lock to /run/lock, so the /var spellings
+    // never arrive here; both are listed because a distribution that keeps them real
+    // would send the other one. Same reason the /private entries below exist.
+    "/var/run", "/run",
+    "/System", "/Library", "/Applications",
+    "/private/etc", "/private/var/lib", "/private/var/db", "/private/var/spool",
+    "/private/var/run",
+};
+
+/// Scratch roots that are legitimate parents but never legitimate targets.
+///
+/// These are matched exactly, not as trees: `/tmp/x/state` is the ordinary case and must
+/// pass. The depth test already rejects `/tmp` and `/home` as typed, but both call sites
+/// hand over the resolved spelling, and on macOS `/tmp` arrives as `/private/tmp` with
+/// two components — deep enough to pass. Without these entries the guard's own stated
+/// intent ("`/tmp` is rejected") does not hold on the platform the tool is developed on.
+const denied_exact = [_][]const u8{
+    "/tmp",     "/private/tmp", "/var/tmp", "/private/var/tmp",
+    "/var/folders", "/private/var/folders",
+    "/home",    "/Users",       "/Volumes", "/mnt",
+    "/media",   "/root",
+};
+
+/// Refuses to operate on a root that is suspiciously shallow, or that names a location
+/// nothing sacrificial belongs in.
 ///
 /// restore() deletes the directory tree before rebuilding it. That is the one
 /// genuinely destructive thing the engine does, and it runs once per explored world,
 /// so a mistaken root would be applied hundreds of times before anyone noticed.
-fn assertSafeRoot(root: []const u8) RestoreError!void {
+///
+/// Lexical only, and the caller must hand over the resolved spelling: "/tmp/../etc"
+/// spells safe and resolves unsafe. `assertRootResolvesToItself` covers the other direction —
+/// a root that resolved safely and was then swapped.
+pub fn assertSafeRoot(root: []const u8) RestoreError!void {
     if (root.len == 0 or root[0] != '/') return error.UnsafeRoot;
     var slashes: usize = 0;
     for (root) |ch| {
@@ -275,6 +335,54 @@ fn assertSafeRoot(root: []const u8) RestoreError!void {
     // "/", "/tmp", "/home" and friends are rejected; "/tmp/x/state" is accepted.
     if (slashes < 2) return error.UnsafeRoot;
     if (std.mem.endsWith(u8, root, "/")) return error.UnsafeRoot;
+    for (denied_exact) |d| {
+        if (std.mem.eql(u8, root, d)) return error.UnsafeRoot;
+    }
+    // `isInsideDir` rather than `startsWith`: the latter refuses "/var/library" for
+    // naming "/var/lib", and a component-boundary test is already written here.
+    for (denied_trees) |d| {
+        if (contract.isInsideDir(root, d)) return error.UnsafeRoot;
+    }
+}
+
+/// Confirms the root still resolves to itself, immediately before it is emptied.
+///
+/// `assertSafeRoot` is lexical and the resolution behind it happens once, before
+/// `--setup` runs. Between those two moments the root can be replaced: a setup command
+/// (or the recorded operation, which runs hundreds of times) that leaves a symlink where
+/// the state directory was sends the delete somewhere else entirely. `deleteTree` refuses
+/// to recurse into a symlinked *entry*, but it reaches the root through `opendir`, which
+/// follows one.
+///
+/// One `realpath` covers the swaps that change the pathname's resolution: the root
+/// itself replaced by a link, any parent component replaced by one, or the root moved. A
+/// root that is simply gone is not a swap — `deleteTree` already returns silently for it
+/// — so ENOENT passes.
+///
+/// **This is resolution, not identity, and the name says so on purpose.** A replacement
+/// that leaves the canonical pathname alone is invisible here: a bind mount over the same
+/// path resolves to itself while naming a different tree, and in a privileged container
+/// that is a real move rather than a theoretical one. Comparing the device and inode
+/// captured at resolution time would cover it, and needs that pair threaded from the call
+/// site — filed rather than done.
+///
+/// Nor does this close the window it does cover: the check and the `opendir` are two
+/// syscalls, and a swap between them is not detected. Both gaps have the same fix, the
+/// root held open by descriptor for the whole delete (openat/unlinkat).
+fn assertRootResolvesToItself(root: []const u8) RestoreError!void {
+    var root_buf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
+    // No separate symlink test. An earlier version asked `isSymlink` first, justified as
+    // keeping two failures distinguishable — measured, deleting it left every test green,
+    // because the comparison below already refuses a linked root by the only thing that
+    // matters: it resolves somewhere else. The one case it could have added, a dangling
+    // link, never reaches here — `main.zig` cannot resolve such a `--state` at all.
+    var real_buf: [contract.max_path]u8 = undefined;
+    const resolved = posix.realpath(root_z.ptr, &real_buf) orelse {
+        if (std.c._errno().* == posix.ENOENT) return; // nothing there to delete
+        return error.UnsafeRoot; // cannot look: refuse rather than delete blind
+    };
+    if (!std.mem.eql(u8, std.mem.span(resolved), root)) return error.UnsafeRoot;
 }
 
 fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreError!void {
@@ -394,11 +502,13 @@ pub fn freshDir(root: []const u8) RestoreError!void {
     const probe = posix.opendir(root_z.ptr) orelse return error.DeleteFailed;
     _ = posix.closedir(probe);
     // Empties the children; the root directory itself stays in place.
+    try assertRootResolvesToItself(root);
     try deleteTree(root, "", 0);
 }
 
 pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
+    try assertRootResolvesToItself(root);
     try deleteTree(root, "", 0);
 
     var root_buf: [contract.max_path]u8 = undefined;
@@ -969,11 +1079,13 @@ test "#164 pin: restore goes loud when a directory cannot be created" {
     // with ENOENT, and restore must refuse — a silently absent directory
     // would let judgeL0 report a `missing` the tool itself manufactured.
     const gpa = std.testing.allocator;
-    var dbuf: [contract.max_path]u8 = undefined;
-    const parent = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-loud-dir-test-{d}", .{posix.getpid()}) catch unreachable;
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "{s}", .{parent}) catch unreachable;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-loud-dir-test-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
+    // The resolved parent: `restore` requires a root that resolves to itself, which is
+    // the spelling its call sites hand over. See the symlink test below for the same note.
+    var dbuf: [contract.max_path]u8 = undefined;
+    const parent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var rbuf: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&rbuf, "{s}/state", .{parent}) catch unreachable;
     var rzbuf: [contract.max_path]u8 = undefined;
@@ -1016,6 +1128,11 @@ pub const corruption_probe_target = "sideeye-corruption-probe-target";
 /// files in place breaks the agreement instead of removing the subject.
 pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
+    // Overwriting is destructive too: a root swapped since it was resolved sends every
+    // write below outside the state directory. The single call site runs this immediately
+    // after `restore`, which refuses the same way — but relying on the neighbour is how a
+    // guard ends up covering one entry point and not the next.
+    try assertRootResolvesToItself(root);
     for (snap.entries.items) |e| {
         if (e.kind == .symlink) {
             // Replace, not follow: opening the link would corrupt whatever it points
@@ -1097,6 +1214,176 @@ test "assertSafeRoot rejects roots a mistake would produce" {
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/tmp/x/"));
     try assertSafeRoot("/tmp/x/state");
     try assertSafeRoot("/work/state");
+}
+
+test "assertSafeRoot rejects the spellings production actually receives" {
+    // Both call sites hand over the realpath'd root, and on macOS every path in the
+    // three lines above arrives through /private. The cases above assert the depth rule
+    // on inputs production never evaluates: `--state /tmp` reaches the guard as
+    // "/private/tmp", which has two components and passed. This test is the reason the
+    // exact-match list exists.
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/tmp"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/var/tmp"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/Users"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/home"));
+
+    // Scratch under those roots is the ordinary case and must still pass — the entries
+    // above are exact, not trees.
+    try assertSafeRoot("/private/tmp/x/state");
+    try assertSafeRoot("/Users/someone/scratch/state");
+
+    // $TMPDIR on macOS. /var is absent from the tree list precisely so this passes; a
+    // list that denied /var wholesale would refuse the platform's own scratch space.
+    try assertSafeRoot("/private/var/folders/lm/abcdef/T/state");
+}
+
+test "assertSafeRoot rejects system trees, on component boundaries" {
+    // The paths this guard exists for. /var/lib/myapp is what docs/ci-quickstart.md
+    // suggested; it has three components, so a depth rule accepts it.
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/var/lib/myapp"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/var/lib/myapp"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/usr/local/share/x"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/etc/myapp"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/etc/myapp"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/Library/Application Support/x"));
+    // The tree itself, not only what is under it.
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/var/lib"));
+
+    // Component boundary: naming a denied prefix is not sitting inside it. A
+    // `startsWith` test would refuse both of these.
+    try assertSafeRoot("/var/library/state");
+    try assertSafeRoot("/optimism/state");
+}
+
+test "assertSafeRoot covers what each platform resolves the shorthand to" {
+    // Linux resolves /var/run to /run and /var/lock to /run/lock, so a list holding only
+    // the /var spellings is inert there in exactly the way the pre-/private list was
+    // inert on macOS. Measured in the CI container: /var/run -> /run.
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/run/myapp"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/run/lock/x"));
+    try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/var/run/myapp"));
+
+    // Site-local trees an operator populates are NOT denied, and that is a judgement
+    // rather than a measurement — there is no override flag, so a wrong entry is a wall.
+    // These two lines are the record of the decision, and they fail if someone adds
+    // either tree back without revisiting it.
+    try assertSafeRoot("/opt/myapp/state");
+    try assertSafeRoot("/srv/myapp/state");
+}
+
+test "assertRootResolvesToItself refuses a root swapped for a symlink after resolution" {
+    // The window this closes: assertSafeRoot and the resolution behind it run before
+    // --setup, and setup (or the recorded operation) can leave a link where the state
+    // directory was. deleteTree refuses symlinked ENTRIES but reaches the root through
+    // opendir, which follows one.
+    // Pid-unique parent (#28: zig build test runs test binaries concurrently), and the
+    // base is taken back through realpath: on macOS /tmp is itself a link, so a literal
+    // "/tmp/..." root never resolves to itself and every assertion below would be about
+    // the wrong thing.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-rootswap-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
+
+    var good_buf: [contract.max_path]u8 = undefined;
+    const good = std.fmt.bufPrint(&good_buf, "{s}/state", .{base}) catch unreachable;
+    var good_z: [contract.max_path]u8 = undefined;
+    const good_zs = std.fmt.bufPrintZ(&good_z, "{s}", .{good}) catch unreachable;
+    var other_buf: [contract.max_path]u8 = undefined;
+    const other = std.fmt.bufPrint(&other_buf, "{s}/elsewhere", .{base}) catch unreachable;
+    var other_z: [contract.max_path]u8 = undefined;
+    const other_zs = std.fmt.bufPrintZ(&other_z, "{s}", .{other}) catch unreachable;
+    defer {
+        _ = posix.unlink(good_zs.ptr);
+        _ = posix.rmdir(good_zs.ptr);
+        _ = posix.rmdir(other_zs.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    try std.testing.expect(posix.mkdir(good_zs.ptr, 0o755) == 0);
+    // Resolves to itself: accepted.
+    try assertRootResolvesToItself(good);
+
+    // Now the swap. The link points at a sibling, which is enough — what is refused is
+    // "this root no longer resolves to itself", not "the target is dangerous".
+    try std.testing.expect(posix.mkdir(other_zs.ptr, 0o755) == 0);
+    try std.testing.expect(posix.rmdir(good_zs.ptr) == 0);
+    try std.testing.expect(posix.symlink(other_zs.ptr, good_zs.ptr) == 0);
+
+    try std.testing.expectError(error.UnsafeRoot, assertRootResolvesToItself(good));
+    // Control: the sibling the link points at is itself fine, so the refusal above is
+    // about the swap and not about anything in this directory.
+    try assertRootResolvesToItself(other);
+
+    // A root that is simply absent is not a swap: deleteTree already returns silently
+    // for it, and refusing here would turn a tolerated state into a SETUP ERROR.
+    try std.testing.expect(posix.unlink(good_zs.ptr) == 0);
+    try assertRootResolvesToItself(good);
+}
+
+test "restore and freshDir refuse a swapped root — the guard is wired in front of the delete" {
+    // The test above drives assertRootResolvesToItself directly, which says nothing about
+    // whether the destructive path calls it. Deleting the call from `restore` left that
+    // test green (measured), so this one aims at the call sites instead: a guard that
+    // exists and never executes is the failure mode being ruled out here.
+    const gpa = std.testing.allocator;
+
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-wired-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
+
+    var rbuf: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&rbuf, "{s}/state", .{base}) catch unreachable;
+    var rzbuf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rzbuf, "{s}", .{root}) catch unreachable;
+    var obuf: [contract.max_path]u8 = undefined;
+    const outside = std.fmt.bufPrint(&obuf, "{s}/outside", .{base}) catch unreachable;
+    var ozbuf: [contract.max_path]u8 = undefined;
+    const outside_z = std.fmt.bufPrintZ(&ozbuf, "{s}", .{outside}) catch unreachable;
+    defer {
+        _ = posix.unlink(root_z.ptr); // the symlink, if the swap below happened
+        deleteTree(root, "", 0) catch {};
+        _ = posix.rmdir(root_z.ptr);
+        deleteTree(outside, "", 0) catch {};
+        _ = posix.rmdir(outside_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+    try std.testing.expect(posix.mkdir(outside_z.ptr, 0o755) == 0);
+
+    var snap: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer snap.deinit();
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "a", .kind = .file, .content = "x" });
+
+    // Control: the unswapped root restores. Without this the refusal below could be
+    // about anything in this directory rather than about the swap.
+    try restore(snap, root);
+
+    // A sentinel outside the state directory. If the guard is not wired in, the delete
+    // follows the link and this file goes with it.
+    var sbuf: [contract.max_path]u8 = undefined;
+    const sentinel_z = try joinZ(&sbuf, outside, "keep-me");
+    const fd = posix.open(sentinel_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    _ = posix.close(fd);
+
+    // The swap: what --setup or the recorded operation could leave behind.
+    deleteTree(root, "", 0) catch {};
+    try std.testing.expect(posix.rmdir(root_z.ptr) == 0);
+    try std.testing.expect(posix.symlink(outside_z.ptr, root_z.ptr) == 0);
+
+    try std.testing.expectError(error.UnsafeRoot, restore(snap, root));
+    try std.testing.expectError(error.UnsafeRoot, freshDir(root));
+    // corruptState writes rather than deletes, and its one call site sits directly after
+    // `restore`. Covering it here rather than leaning on that neighbour: the ordering at
+    // the call site is not a property of this function.
+    try std.testing.expectError(error.UnsafeRoot, corruptState(snap, root));
+
+    // The sentinel survived: the refusal happened before anything was removed.
+    try std.testing.expectEqual(posix.Kind.file, try posix.kindOfPathNoFollow(sentinel_z.ptr));
 }
 
 /// A snapshot built from literal pairs, for tests.
@@ -1568,12 +1855,17 @@ test "readLinkTarget is fail-closed at its own boundary (#122)" {
 test "snapshot, restore and corruptState carry symlinks as links (#122)" {
     const gpa = std.testing.allocator;
 
-    // Pid-unique root (#28: zig build test runs test binaries concurrently).
-    var dbuf: [contract.max_path]u8 = undefined;
-    const root = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-symlink-test-{d}/state", .{posix.getpid()}) catch unreachable;
+    // Pid-unique root (#28: zig build test runs test binaries concurrently), built from
+    // the RESOLVED parent: `restore` requires the root to resolve to itself
+    // (assertRootResolvesToItself), which is what the call sites hand it. A literal "/tmp/..."
+    // root satisfies that on Linux and fails on macOS, where /tmp is itself a link.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-symlink-test-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
+    var dbuf: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&dbuf, "{s}/state", .{base}) catch unreachable;
     var rbuf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&rbuf, "{s}", .{root}) catch unreachable;
     _ = posix.mkdir(root_z.ptr, 0o755);
