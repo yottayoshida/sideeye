@@ -1,0 +1,34 @@
+# Sweep generations for the #84 UNKNOWN-rate measurement. One row per sweep.
+#
+# A generation is one run of sweep.sh: one engine build, one set of images,
+# one artifacts directory. The rulebook's "one sweep, one engine build" rule
+# lives here rather than in prose, because A and B need not be measured in
+# the same generation — #239 re-sweeps A while leaving B's 2026-08-16
+# measurement in place, and the threshold is set from B alone.
+#
+# Columns (tab-separated):
+#   id  date  artifacts_dir  groups  status
+#
+# date: the sweep's date, or "-" when it has not run.
+# artifacts_dir: relative to spike/unknown-rate/.
+# groups: comma-separated, no spaces. The groups this generation measures.
+# status: exactly two values are accepted here.
+#   complete   the manifest exists and matches this generation's expected
+#              trial set exactly — every row with since <= id in a covered
+#              group, in corpus order.
+#   unstarted  no manifest. docs must carry the not-yet-measured placeholder.
+#
+# There is deliberately no third value for the state between them. A manifest
+# that covers some of its expected rows is a half-measured sweep, and a rate
+# computed from one is indistinguishable, once published, from a rate
+# computed from all of them — so that state is detected (count.py check
+# compares the manifest against the expected set and refuses) rather than
+# recorded. Writing "partial" here is itself an error: the point is that a
+# half-finished sweep has nowhere to be written down and therefore nowhere
+# to be published from.
+#
+# A generation is never edited after it goes complete. Re-measuring means a
+# new row here and a new artifacts directory; the old numbers stay published
+# beside the new ones with both dates, because the movement is the finding.
+g1	2026-08-16	artifacts	A,B,control	complete
+g2	-	artifacts-a2	A	unstarted

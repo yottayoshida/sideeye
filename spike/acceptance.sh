@@ -3070,8 +3070,21 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # tampered-manifest (a row deleted), tampered-define (define bytes edited after the
 # hash), tampered-reason (an unknown_reason outside the documented closed set) and
 # predata-no-placeholder (no artifacts and no placeholder line) must all fail — the
-# seen-red-once, kept red forever. Sunset: never fired by the v1.0 freeze -> removal
-# list (same rule as check 11).
+# seen-red-once, kept red forever. #239 added seven more, for the generation model
+# and the three cohort ledgers: gen-unstarted-with-manifest (a measured generation
+# recorded as unstarted), gen-complete-no-manifest (the reverse), ledger-missing (a
+# committed cohort define in none of the three ledgers), ledger-overlap (one define
+# claimed by two), ledger-successor (a supersession row whose replacement is in no
+# corpus), ledger-unrelated-successor (a replacement that is a different target) and
+# outcome-new-this-sweep (an already-triaged tool parked as untriaged).
+# The first of those seven was itself red for the wrong reason when it was written —
+# count.py read its reports before checking its status, so it died on a missing file
+# — which is what this loop's message-matching exists to catch. **Four predicates
+# added by #239 have no fixture yet** (the generation group closed set, the
+# since/group coverage rule, outcome-map's shape/uniqueness/enum, and the outcome
+# conservation assert): deleting any of them leaves this suite green, and that gap
+# is filed rather than left implied. Sunset: never fired by the v1.0 freeze ->
+# removal list (same rule as check 11).
 ur_fails=0
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
     echo "     the live page/artifacts disagree with recomputation"
@@ -3089,10 +3102,17 @@ fi
 # wrong reason).
 for pair in \
     "tampered-verdict:differs from recomputation" \
-    "tampered-manifest:!= corpus rows" \
+    "tampered-manifest:against its expected" \
     "tampered-define:define digest mismatch" \
     "tampered-reason:not in the documented closed set" \
-    "predata-no-placeholder:lacks the not-yet-measured placeholder"; do
+    "predata-no-placeholder:lacks the not-yet-measured placeholder" \
+    "gen-unstarted-with-manifest:marked unstarted but" \
+    "gen-complete-no-manifest:marked complete but has no manifest" \
+    "ledger-missing:in no ledger" \
+    "ledger-overlap:must be disjoint" \
+    "ledger-successor:which is not a corpus define" \
+    "ledger-unrelated-successor:which is a different target" \
+    "outcome-new-this-sweep:declaring an already-triaged tool untriaged"; do
     bad=${pair%%:*}; want=${pair#*:}
     out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
           --root "$ROOT/spike/unknown-rate/fixtures/$bad" 2>&1)
@@ -3107,7 +3127,7 @@ for pair in \
     fi
 done
 if [ "$ur_fails" = "0" ]; then
-    echo "ok   unknown-rate page in sync; gate red on all five tampered fixtures"
+    echo "ok   unknown-rate page in sync; gate red on all twelve tampered fixtures"
 else
     echo "FAIL unknown-rate drift gate: $ur_fails problem(s)"
     fails=$((fails + 1))

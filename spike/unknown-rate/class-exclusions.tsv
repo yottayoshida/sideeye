@@ -1,0 +1,27 @@
+# Defines whose target class is not a supported class (#239).
+#
+# docs/target-classes.md states the boundary the v1.0 criterion hangs off:
+# "supported classes are exactly the rows of the first table below
+# (Measured, with verdicts). The refusal tables and the Rust narrative are
+# not supported classes, whatever verdicts their stories contain."
+#
+# The A-group is a rate over supported-class targets, so a committed define
+# whose target sits in a refusal table is outside the corpus — not because
+# it refused, but because its class has no recorded verdict at all. That
+# distinction matters in both directions: watson also refuses and IS in the
+# corpus, because its class (Python CLI) is a first-table row. Refusal is
+# not the criterion; the class is.
+#
+# These targets were not superseded by anything — no later revision exists
+# that reaches a verdict — so they do not belong in supersession.tsv, and
+# count.py check keeps the two files from absorbing each other's rows.
+#
+# Columns (tab-separated):
+#   define  refusal_table_row  reason
+#
+# refusal_table_row is the Class cell of the docs/target-classes.md row
+# this define's target appears under, quoted verbatim.
+spike/cohort2/jj/ops	Statically linked release binaries	the v0.44.0 release binary is statically linked and cannot load an LD_PRELOAD shim (no_shim_marker at recording); #201, after v1.0
+spike/cohort2/bun/ops	Multi-threaded runtimes	multiple_threads_detected at recording — single-threaded exploration is a v0.1 contract property; #202, after v1.0
+spike/cohort3/cargo/ops	Tools whose state writes bypass libc	child_process_detected on the rustc -vV child's internal thread; the r1 half of the wall #217 records
+spike/cohort3/cargo-r2/ops	Tools whose state writes bypass libc	oracle_missed_operation — the manifest's atomic rename is a raw syscall past every function an LD_PRELOAD shim can interpose; #217, after v1.0

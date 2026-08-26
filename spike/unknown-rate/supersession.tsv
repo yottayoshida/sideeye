@@ -1,0 +1,31 @@
+# Defines superseded by a later revision of the same target (#239).
+#
+# spike/cohort3/PROTOCOL.md is explicit that "a define revision is a new
+# target directory", so every revision is a define in its own right and the
+# A-group's "every committed, runnable define" would admit all of them. This
+# file is the decision not to: for each target, the corpus carries the last
+# revision and the earlier ones are recorded here, by name, with what
+# replaced them.
+#
+# The criterion is narrow on purpose. A row belongs here only when a LATER
+# REVISION OF THE SAME TARGET exists and is in the corpus — count.py check
+# verifies the successor is a corpus row, so this file cannot be used to
+# park a define for any other reason. Defines excluded because their class
+# is not supported go in class-exclusions.tsv instead; those targets were
+# not replaced by anything, and recording them as superseded would be false.
+#
+# What this rule costs is recorded in BUILDLOG.md rather than here. A rule
+# file that argues about which way it moves the published number is evidence
+# that the number was in view when the rule was written.
+#
+# Columns (tab-separated):
+#   predecessor  successor  reason
+#
+# Paths are the define directory, repo-relative — the same unit as the
+# corpus's defines column.
+spike/cohort2/hg/ops	spike/cohort2/hg-r4/ops	r1 stopped at a SETUP ERROR (the state root did not exist before setup ran); r4 is the revision that reached a verdict
+spike/cohort2/hg-r2/ops	spike/cohort2/hg-r4/ops	r2 ended UNKNOWN; superseded within cohort 2's own revision chain
+spike/cohort2/hg-r3/ops	spike/cohort2/hg-r4/ops	r3 ended UNKNOWN; the sendfile fallback it introduced is carried forward into r4
+spike/cohort2/borg/ops	spike/cohort2/borg-r3/ops	r1 ended UNKNOWN; superseded within cohort 2's own revision chain
+spike/cohort2/borg-r2/ops	spike/cohort2/borg-r3/ops	r2 ended UNKNOWN; r3 is the revision that reached a verdict under declared clock and entropy pins
+spike/cohort4/himalaya/ops	spike/cohort4/himalaya-r2/ops	r1 ended UNKNOWN (unsupported_syscall_observed); r2 is the revision the cohort's FAIL and the criterion-1 finding rest on
