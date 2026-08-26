@@ -7,9 +7,16 @@
 # fresh roots, refuse-don't-overwrite, apparatus identity recorded per
 # trial, raw exit codes read before any pipe.
 #
-# Usage: sweep.sh            (refuses if artifacts/ already exists)
+# Usage: sweep.sh <generation-id>     (see generations.tsv)
 #
-# Manifest columns (tab-separated, artifacts/manifest.tsv):
+# The generation decides three things: which artifacts directory this sweep
+# writes, which groups it covers, and which corpus rows it expects. #239
+# re-measures A alone while B's 2026-08-16 numbers stand, so "one sweep, one
+# engine build" now holds per generation rather than across the page — and
+# the id is a required argument because a sweep that picks its own scope
+# could quietly cover less than the generation it publishes under.
+#
+# Manifest columns (tab-separated, <artifacts_dir>/manifest.tsv):
 #   trial_id group tool class judge image_id launcher_argv define_digest
 #   report_path launcher_rc
 # define_digest = sha256 over the sorted "sha256  path" lines of every file
@@ -19,7 +26,26 @@ set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$here/../.." && pwd)
-ARTS=$here/artifacts
+
+gen=${1:-}
+[ -n "$gen" ] || { echo "sweep: usage: sweep.sh <generation-id>   (see generations.tsv)" >&2; exit 2; }
+
+genrow=$(awk -F'\t' -v g="$gen" '!/^#/ && $1 == g {print; exit}' "$here/generations.tsv")
+[ -n "$genrow" ] || { echo "sweep: no generation '$gen' in generations.tsv" >&2; exit 2; }
+gen_dir=$(printf '%s\n' "$genrow" | cut -f3)
+gen_groups=$(printf '%s\n' "$genrow" | cut -f4)
+gen_status=$(printf '%s\n' "$genrow" | cut -f5)
+
+# A completed generation is a published measurement; re-running one in place
+# would replace numbers whose date is already in print. Re-measuring means a
+# new generation row and a new directory, which is also what keeps the old
+# figures available to publish beside the new ones.
+[ "$gen_status" = "unstarted" ] || {
+    echo "sweep: generation $gen is '$gen_status', not 'unstarted' — completed generations are never re-measured in place" >&2
+    exit 2
+}
+
+ARTS=$here/$gen_dir
 
 if [ -e "$ARTS" ]; then
     echo "sweep: $ARTS already exists — a sweep never overwrites its predecessor" >&2
@@ -36,10 +62,35 @@ fi
 echo "sweep: building the Linux engine + shim"
 (cd "$ROOT" && zig build -Dtarget=aarch64-linux-gnu) || exit 2
 
-echo "sweep: building the three images"
+echo "sweep: building the images"
 docker build -q -t sideeye-ur-campaign -f "$ROOT/spike/Dockerfile" "$ROOT/spike" || exit 2
 docker build -q -t sideeye-ur-assisted -f "$ROOT/spike/assisted/Dockerfile" "$ROOT/spike/assisted" || exit 2
 docker build -q -t sideeye-ur-extra -f "$here/Dockerfile" "$here" || exit 2
+# The cohort images each COPY a tarball or vendored tree out of their own
+# artifacts/ directory, which is gitignored. Each cohort ships the fetcher
+# for its own inputs — run spike/cohort<N>/fetch-artifacts.sh on the HOST
+# first (host-side on purpose: the sha256 pins live in that script and in
+# the Dockerfile, and the downloads stay out of the image). A fresh checkout
+# has none of them, so these builds fail until the fetch has run; that
+# failure is loud here rather than a missing trial later.
+#
+# Only the cohorts THIS generation reaches are built. Building all three
+# unconditionally would make a B-only generation — which this page promises
+# is possible — depend on artifacts no trial in it uses.
+needed=$(awk -F'\t' -v g="$gen" -v groups=",$gen_groups," '
+    FNR == NR { if ($0 !~ /^#/ && NF >= 5) { gidx[$1] = ++n; if ($1 == g) target = n } ; next }
+    /^#/ { next }
+    NF != 12 { next }
+    $6 != "cohort.sh" { next }
+    { if (index(groups, "," $2 ",") && ($11 in gidx) && gidx[$11] <= target) { split($7, a, " "); print a[1] } }
+' "$here/generations.tsv" "$here/corpus.tsv" | sort -u)
+for c in $needed; do
+    case "$c" in cohort2|cohort3|cohort4) ;; *) echo "sweep: unknown cohort '$c' in corpus args" >&2; exit 2 ;; esac
+    docker build -q -t "sideeye-ur-$c" -f "$ROOT/spike/$c/Dockerfile" "$ROOT/spike/$c" || {
+        echo "sweep: $c image build failed — run spike/$c/fetch-artifacts.sh on the host first" >&2
+        exit 2
+    }
+done
 
 # This mkdir is load-bearing for the ro mounts below: the artifacts dir is
 # the nested rw mountpoint inside the read-only /work bind, and docker
@@ -64,6 +115,17 @@ image_for() {
       campaign.sh) echo sideeye-ur-campaign ;;
       assisted.sh) echo sideeye-ur-assisted ;;
       watson.sh|dogfood.sh|bgroup.sh) echo sideeye-ur-extra ;;
+      # cohort.sh is the one launcher whose image depends on its arguments:
+      # its first argument names the cohort, and each cohort pins its own
+      # distribution of its own targets. Passing the args in keeps that
+      # mapping here rather than spreading it into the loop.
+      cohort.sh)
+          case "${2:-}" in
+            cohort2*) echo sideeye-ur-cohort2 ;;
+            cohort3*) echo sideeye-ur-cohort3 ;;
+            cohort4*) echo sideeye-ur-cohort4 ;;
+            *) return 1 ;;
+          esac ;;
       *) return 1 ;;
     esac
 }
@@ -93,9 +155,38 @@ ran=""   # invocation dedup: dogfood runs once, registers two trials
 # No pipeline around this loop: a `grep | while` subshell would swallow both
 # the dedup state and any `exit` (measured class in this workspace — pipes
 # hide failures).
+# The generation's expected trial set: every corpus row in a group this
+# generation covers whose `since` is this generation or an earlier one.
+# Generations.tsv's row order IS the generation order — the index comparison
+# below reads it that way, so a generation inserted out of order would
+# change which rows are expected rather than fail quietly.
 corpus_stripped=$ARTS/corpus-stripped.tsv
-grep -v '^#' "$here/corpus.tsv" > "$corpus_stripped"
-while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdir rpath defines; do
+awk -F'\t' -v g="$gen" -v groups=",$gen_groups," '
+    FNR == NR {
+        if ($0 !~ /^#/ && NF >= 5) { gidx[$1] = ++n; if ($1 == g) target = n }
+        next
+    }
+    /^#/ { next }
+    NF != 12 { next }
+    {
+        if (!($11 in gidx)) {
+            printf "sweep: corpus row %s has since=%s, which is not a generation\n", $1, $11 > "/dev/stderr"
+            bad = 1
+            next
+        }
+        if (index(groups, "," $2 ",") && gidx[$11] <= target) print
+    }
+    END { if (bad) exit 3 }
+' "$here/generations.tsv" "$here/corpus.tsv" > "$corpus_stripped" || exit 2
+
+[ -s "$corpus_stripped" ] || {
+    echo "sweep: generation $gen expects no trials — groups '$gen_groups' match nothing in corpus.tsv" >&2
+    exit 2
+}
+expected_rows=$(wc -l < "$corpus_stripped" | tr -d ' ')
+echo "sweep: generation $gen covers $gen_groups — $expected_rows trials"
+
+while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdir rpath defines since flags; do
     [ -n "$id" ] || continue
     if [ "$launcher" = "-" ]; then
         # Funnel wall: no engine run; the row still reaches the manifest so
@@ -105,7 +196,7 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
             "$id" "$group" "$tool" "$class" "$judge" "$args" "$d" >> "$manifest"
         continue
     fi
-    img=$(image_for "$launcher") || { echo "sweep: no image for $launcher" >&2; exit 2; }
+    img=$(image_for "$launcher" "$args") || { echo "sweep: no image for '$launcher $args'" >&2; exit 2; }
     imgid=$(docker images --no-trunc --format '{{.ID}}' "$img" | head -1)
     [ -n "$imgid" ] || { echo "sweep: no image id for $img — build failed upstream?" >&2; exit 2; }
     inv="$launcher $args"
@@ -141,8 +232,11 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
 done < "$corpus_stripped"
 rm -f "$corpus_stripped"
 
-rows=$(grep -cv '^#' "$here/corpus.tsv")
 mrows=$(wc -l < "$manifest" | tr -d ' ')
-echo "sweep: corpus rows=$rows manifest rows=$mrows"
-[ "$rows" = "$mrows" ] || { echo "sweep: manifest row count differs from corpus — incomplete sweep" >&2; exit 2; }
+echo "sweep: expected rows=$expected_rows manifest rows=$mrows"
+# Against THIS generation's expected set, not the whole corpus. Comparing to
+# every corpus row was correct while one sweep covered everything and is
+# wrong the moment a generation covers a subset: g2 selects 36 of 57 rows,
+# so a complete run of it would have failed here with all 36 trials present.
+[ "$expected_rows" = "$mrows" ] || { echo "sweep: manifest row count differs from generation $gen's expected set — incomplete sweep" >&2; exit 2; }
 echo "sweep: done — artifacts under $ARTS"

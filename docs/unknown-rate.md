@@ -31,17 +31,24 @@ threshold set from it would be satisfied by construction. So:
   rate is published **as the engine's development-input set**, and is *not*
   the threshold basis.
 
-  **As of 2026-08-16, and not re-swept since** (#239). Eighteen further
-  defines have been committed after this sweep ran — cohorts 2, 3 and 4
-  (`spike/cohort2/`, `spike/cohort3/`, `spike/cohort4/`; counted 2026-08-23
-  as the `ops/*.toml` files under each), several of which reach named
-  refusals rather than verdicts. The published rate below therefore
-  describes the corpus as it stood on the sweep date, not the repository as
-  it stands now, and re-running it would move the number. The **threshold**
-  is unaffected: it is set from B-group data only, and no cohort-2,
-  cohort-3 or cohort-4 target is in B-group. This note sits outside the
-  generated block on purpose — `count.py` owns everything between the
-  results markers and compares it byte for byte.
+  **Measured 2026-08-16 as generation g1, and not re-swept since** (#239).
+  Eighteen further defines were committed after that sweep ran — cohorts 2,
+  3 and 4 (`spike/cohort2/`, `spike/cohort3/`, `spike/cohort4/`; the
+  `ops/*.toml` directories under each). They are now sorted across the three
+  ledgers the rules describe: eight enter the corpus as generation **g2**,
+  six are recorded in `supersession.tsv` as earlier revisions of targets the
+  corpus carries, and four in `class-exclusions.tsv` as targets whose class
+  the first table of `docs/target-classes.md` does not list.
+
+  **g2 has not run.** The corpus, the ledgers and the apparatus for it merge
+  in this PR; the sweep and its numbers merge in another, so the
+  first-parent order shows the corpus was fixed before the figures moved —
+  the same two-merge discipline this page's opening describes. Until then
+  the published rate below is g1's, describing the corpus as it stood on
+  that date. The **threshold** is unaffected either way: it is set from
+  B-group data only, no cohort target is in B-group, and g2 does not cover
+  B. This note sits outside the generated block on purpose — `count.py` owns
+  everything between the results markers and compares it byte for byte.
 - **B-group** — targets this project has never run, selected mechanically
   (no hand-picking; see below). **The threshold is set from B-group data
   only.**
@@ -87,11 +94,66 @@ threshold set from it would be satisfied by construction. So:
   kept-unreported), so a low UNKNOWN rate cannot silently coexist with a
   high false-positive rate. Third-party-contributed targets (#87) are not
   part of this measurement; if #87 ever supplies any, they are a separate,
-  labeled sample — never pooled.
+  labeled sample — never pooled. A tool whose FAILs are not in that map
+  counts as `new-this-sweep` (pending triage) — and for a tool whose
+  disposition the repository already records, writing that value is an
+  error `count.py check` refuses, so the map cannot be satisfied by
+  declaring everything untriaged.
+- **Generations** (added with #239): a generation is one run of
+  `sweep.sh` — one engine build, one set of images, one artifacts
+  directory — enumerated in `spike/unknown-rate/generations.tsv`. The
+  "one sweep, one engine build" rule holds *per generation*, not across
+  the page: **A and B need not be measured in the same generation**, and
+  each published figure carries its generation's date and apparatus
+  identity. A generation's expected trial set is every corpus row whose
+  `since` is that generation or earlier, in a group it covers. A generation
+  is `complete` when its manifest matches that set exactly, or `unstarted`
+  when no manifest exists (the docs then carry the not-yet-measured
+  placeholder), and **those are the only two values the file accepts**.
+  There is no third one for the state between them: a manifest covering
+  some of its expected rows is a half-measured sweep, and a rate computed
+  from one is indistinguishable, once published, from a rate computed from
+  all of them — so that state is detected and refused rather than recorded.
+  A half-finished sweep has nowhere to be written down, and therefore
+  nowhere to be published from. Completed generations are never edited:
+  re-measuring means a new generation and a new artifacts directory, with
+  both dates published.
+- **Corpus membership is decided by three ledgers**, and every committed
+  cohort define appears in exactly one of them: `corpus.tsv` (measured),
+  `supersession.tsv` (a later revision of the same target is in the
+  corpus), and `class-exclusions.tsv` (the target's class is not a
+  supported class). `count.py check` holds their union to the set of
+  committed cohort defines on disk and holds them disjoint, so a define
+  cannot be dropped by being left out of all three, and each file's own
+  criterion is checked rather than trusted — a supersession row must name a
+  successor that exists in the corpus.
+- **Declared apparatus is marked, not judged** (`flags` in `corpus.tsv`):
+  `apparatus_declared` records that a define carries apparatus beyond its
+  toml, and `apparatus_superseded` that an engine change has overtaken it,
+  set only where a primary source says so. A superseded define is neither
+  rebuilt (that is a cohort re-run, not a re-sweep) nor dropped (dropping
+  deletes the finding). It runs as committed and its outcome is published
+  as measured, refusal included — and the flag reaches the arithmetic:
+  a marked row sits in the denominator, its slices and the outcome ratio
+  exactly once, like any other.
+- **Class membership follows `docs/target-classes.md`'s first table, and
+  one row predates that rule.** watson is in the A-group denominator as a
+  Python CLI, and that page lists watson under its refusal tables, which
+  it says are not supported classes. The two readings disagree. The
+  denominator keeps watson, which is the direction that does not lower the
+  rate — and this is disclosed rather than resolved: the choice was made
+  after the 2026-08-16 sweep had run, so it is a post-hoc inclusion, and
+  saying so does not make it otherwise. New rows do not follow it: they
+  take a first-table row or they go in `class-exclusions.tsv`.
+- **B-group is not re-swept by #239.** The A-group's corpus drifted; the
+  B-group's did not, and the threshold is set from B alone. Re-measuring B
+  would put a criterion whose margin is one trial back in play as a side
+  effect of correcting a published figure that is not its basis. A future
+  B measurement is its own decision, with its own generation.
 
 ## The corpus
 
-### A-group — 28 trials, 10 tools
+### A-group — entering at g1: 28 trials, 10 tools
 
 | tool | class | defines | trials |
 |---|---|---|---|
@@ -106,12 +168,37 @@ threshold set from it would be satisfied by construction. So:
 | todoman | Python CLI | `spike/dogfood-todoman.sh`, legs a/b | 2 |
 | watson | Python CLI | `spike/dogfood-watson/sideeye.toml` | 1 |
 
+### A-group — entering at g2: 8 further trials, 7 further tools
+
+The cohort defines the three ledgers assign to the corpus. Their classes are
+the behavioural rows of `docs/target-classes.md`'s first table, one slug per
+row (the mapping is written out in `corpus.tsv`'s header).
+
+| tool | class | define | trials |
+|---|---|---|---|
+| hg | DVCS with its own transaction engine | `spike/cohort2/hg-r4/ops` | 1 |
+| borg | Deduplicating backup with a repository format | `spike/cohort2/borg-r3/ops` | 1 |
+| black | Python in-place formatter | `spike/cohort3/black/ops` | 1 |
+| papis | Python personal-library store | `spike/cohort3/papis/ops` | 1 |
+| poetry | Python manifest + lock manager | `spike/cohort3/poetry/ops`, `poetry-r2/ops` | 2 |
+| rustfmt | Rust in-place formatter | `spike/cohort3/rustfmt/ops` | 1 |
+| himalaya | Rust mail client over a maildir store | `spike/cohort4/himalaya-r2/ops` | 1 |
+
+**These have not been measured.** They are the corpus g2 will sweep; until
+that generation runs, the published figures are g1's and cover g1's rows.
+The remaining ten cohort defines are in `supersession.tsv` (six) and
+`class-exclusions.tsv` (four).
+
 watson is **in** the denominator: "supported" is a class property
 (`docs/target-classes.md`), watson is a Python CLI, and its known refusal
 (`baseline_violates_invariant`) counts as an UNKNOWN — the honest
-direction. **pass** runs as the control trial, outside every denominator:
-its behavioral class (shell CLI over helper processes) has no recorded
-verdict, so it is not a supported class.
+direction. **That reading and `docs/target-classes.md` disagree**, because
+that page lists watson under its refusal tables and says those are not
+supported classes; the inclusion also postdates the sweep it affects, which
+makes it a post-hoc one. It stands, disclosed on both pages rather than
+settled on one (#239, ADR 0025). **pass** runs as the control trial, outside
+every denominator: its behavioral class (shell CLI over helper processes)
+has no recorded verdict, so it is not a supported class.
 
 ### Exclusions (every one named, with the reason)
 
@@ -176,12 +263,14 @@ strictly more, and `--json` lives there).
 
 ## Method
 
-The protocol: one sweep, one engine build (`zig build
--Dtarget=aarch64-linux-gnu` at the apparatus PR's merge), fresh containers
-per trial, driven by `spike/unknown-rate/sweep.sh` — the repo mounted
-read-only, with only the artifacts tree writable. Apparatus identity
-(engine version + sha256, shim sha256, image ids) goes into
-`artifacts/apparatus.txt` and per trial into `artifacts/manifest.tsv`; the
+The protocol: one sweep per generation, one engine build (`zig build
+-Dtarget=aarch64-linux-gnu` at that sweep's HEAD), fresh containers
+per trial, driven by `spike/unknown-rate/sweep.sh <generation>` — the repo
+mounted read-only, with only that generation's artifacts tree writable.
+Apparatus identity (engine version + sha256, shim sha256, image ids) goes
+into `<artifacts_dir>/apparatus.txt` and per trial into
+`<artifacts_dir>/manifest.tsv`, where `<artifacts_dir>` is the generation's
+own directory from `generations.tsv` — g1's is `artifacts/`; the
 manifest also records each trial's define digest, which `count.py check`
 recomputes from the checkout — that is how "the committed defines ran
 verbatim" becomes machine-checked once the artifacts exist. The images are
@@ -228,38 +317,40 @@ table:
 <!-- unknown-rate:results:begin -->
 _Generated by `spike/unknown-rate/count.py emit` — do not edit between the markers._
 
+### Generation g1 — measured 2026-08-16 (A,B,control)
+
 #### A-group (the engine's development input — not the threshold basis)
 
-| trial | tool | class | judge | verdict | unknown_reason |
-|---|---|---|---|---|---|
-| a-topydo-add | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-append | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-del | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-dep-add | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-dep-rm | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-depri | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-do | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-ls | topydo | python-cli | l0c | PASS (0 crash points) | - |
-| a-topydo-postpone | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-pri | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-revert | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-sort | topydo | python-cli | l0c | FAIL | - |
-| a-topydo-tag | topydo | python-cli | l0c | FAIL | - |
-| a-abook-import | abook | c-cli | l0c | PASS | - |
-| a-abook-export | abook | c-cli | l0c | PASS | - |
-| a-abook-refused | abook | c-cli | l0c | PASS | - |
-| a-khal-import | khal | python-cli | l0c | PASS | - |
-| a-khal-update | khal | python-cli | l0c | PASS | - |
-| a-khal-new | khal | python-cli | l0c | PASS | - |
-| a-buku-add | buku | python-sqlite | l0c | FAIL | - |
-| a-calcurse-purge | calcurse | c-cli | l0c | FAIL | - |
-| a-devtodo-remove | devtodo | cxx-cli | l0c | FAIL | - |
-| a-stow-unfold | stow | perl-cli | l0c | FAIL | - |
-| a-watson-add | watson | python-cli | l0c | UNKNOWN | baseline_violates_invariant |
-| a-timew-a | timewarrior | c-cpp-cli | l0 | PASS | - |
-| a-timew-b | timewarrior | c-cpp-cli | l0c | FAIL | - |
-| a-todoman-a | todoman | python-cli | l0 | PASS | - |
-| a-todoman-b | todoman | python-cli | l0c | PASS | - |
+| trial | tool | class | judge | verdict | unknown_reason | flags |
+|---|---|---|---|---|---|---|
+| a-topydo-add | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-append | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-del | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-dep-add | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-dep-rm | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-depri | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-do | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-ls | topydo | python-cli | l0c | PASS (0 crash points) | - | - |
+| a-topydo-postpone | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-pri | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-revert | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-sort | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-tag | topydo | python-cli | l0c | FAIL | - | - |
+| a-abook-import | abook | c-cli | l0c | PASS | - | - |
+| a-abook-export | abook | c-cli | l0c | PASS | - | - |
+| a-abook-refused | abook | c-cli | l0c | PASS | - | - |
+| a-khal-import | khal | python-cli | l0c | PASS | - | - |
+| a-khal-update | khal | python-cli | l0c | PASS | - | - |
+| a-khal-new | khal | python-cli | l0c | PASS | - | - |
+| a-buku-add | buku | python-sqlite | l0c | FAIL | - | - |
+| a-calcurse-purge | calcurse | c-cli | l0c | FAIL | - | - |
+| a-devtodo-remove | devtodo | cxx-cli | l0c | FAIL | - | - |
+| a-stow-unfold | stow | perl-cli | l0c | FAIL | - | - |
+| a-watson-add | watson | python-cli | l0c | UNKNOWN | baseline_violates_invariant | - |
+| a-timew-a | timewarrior | c-cpp-cli | l0 | PASS | - | - |
+| a-timew-b | timewarrior | c-cpp-cli | l0c | FAIL | - | - |
+| a-todoman-a | todoman | python-cli | l0 | PASS | - | - |
+| a-todoman-b | todoman | python-cli | l0c | PASS | - | - |
 
 UNKNOWN rate, per-trial: **1/28 (3.6%)**
 
@@ -290,9 +381,9 @@ UNKNOWN rate, per-trial: **1/28 (3.6%)**
 
 #### Control trials (outside every denominator)
 
-| trial | tool | class | judge | verdict | unknown_reason |
-|---|---|---|---|---|---|
-| ctl-pass-mv | pass | shell-helper | l0c | UNKNOWN | child_touched_state_dir |
+| trial | tool | class | judge | verdict | unknown_reason | flags |
+|---|---|---|---|---|---|---|
+| ctl-pass-mv | pass | shell-helper | l0c | UNKNOWN | child_touched_state_dir | - |
 
 UNKNOWN rate, per-trial: **1/1 (counts only, n<5)**
 
@@ -369,6 +460,10 @@ so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its o
 evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 11/28 (39.3%)
 - B-group derived UNKNOWN rate on macOS: 6/7 (85.7%)
+
+### Generation g2 — not yet measured (A)
+
+_Not yet measured: the sweep has not run. This line is asserted by count.py check._
 <!-- unknown-rate:results:end -->
 
 **Reading the B-group's three UNKNOWNs** (swept 2026-08-16, engine 0.9.0 /

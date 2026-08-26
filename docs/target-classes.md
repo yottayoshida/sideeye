@@ -40,7 +40,7 @@ page is meant to be updated rather than backfilled.*
 
 | Class | Tool | The named wall | Recorded in |
 |---|---|---|---|
-| Nondeterministic writers | watson | `baseline_violates_invariant` — every run rewrites fresh uuids, so no invariant survives even a clean run; refusing is the honest verdict | `spike/dogfood-watson/`, `BUILDLOG.md` |
+| Nondeterministic writers | watson | `baseline_violates_invariant` — every run rewrites fresh uuids, so no invariant survives even a clean run; refusing is the honest verdict. **This row and `docs/unknown-rate.md` disagree about watson**: the A-group counts it as a Python CLI, a first-table class, and it is that page's single UNKNOWN — while this table is the one that says refusal rows are not supported classes. The denominator keeps it, which is the direction that does not lower the rate; the choice postdates the sweep and both pages say so rather than settling it (#239, ADR 0025) | `spike/dogfood-watson/`, `BUILDLOG.md` |
 | Shell CLIs over helper processes | pass | `child_touched_state_dir` — the dangerous slice runs in fork+exec children; judging it needs the multi-process slice (#123, open) | `spike/assisted/pass/explore-v10-transcript.txt` |
 | Tools with non-durable scratch files | git | the built-in atomicity form flags `COMMIT_EDITMSG`, a scratch file — a recorded precision limit (#35, closed 2026-08-17 as documented) | `BUILDLOG.md` |
 

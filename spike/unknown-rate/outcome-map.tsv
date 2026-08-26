@@ -7,9 +7,28 @@
 #   reported-upstream  — filed on the target's tracker (actionable finding)
 #   withdrawn          — the bug claim was withdrawn (false-positive side)
 #   kept-unreported    — the finding stands in-repo, deliberately unreported
-timewarrior	reported-upstream
-topydo	reported-upstream
-calcurse	reported-upstream
-stow	reported-upstream
-buku	withdrawn
-devtodo	kept-unreported
+#   no-fail-recorded   — the record carries no FAIL for this tool; the row
+#                        exists so membership is complete rather than
+#                        inferred from absence
+#   new-this-sweep     — pending triage. NOT writable for a tool whose
+#                        disposition the record already states: count.py
+#                        check refuses it for any tool a corpus row enters
+#                        after generation g1, so the map cannot be satisfied
+#                        by declaring every new tool untriaged.
+#
+# Columns (tab-separated): tool  disposition  source
+# source names where the disposition is read from, so a reader can check the
+# classification rather than take it.
+timewarrior	reported-upstream	docs/target-classes.md — GothenburgBitFactory/timewarrior#778
+topydo	reported-upstream	docs/target-classes.md — topydo/topydo#341
+calcurse	reported-upstream	docs/target-classes.md — lfos/calcurse#529
+stow	reported-upstream	docs/target-classes.md — aspiers/stow#139
+buku	withdrawn	docs/target-classes.md — journalled store, recovery holds in every measured world
+devtodo	kept-unreported	docs/target-classes.md — kept here, deliberately unreported
+hg	kept-unreported	docs/target-classes.md — L0-only, hg's documented contract held in all 107 worlds; a precision-limit observation claimed as nothing
+borg	kept-unreported	docs/target-classes.md — L0-only, Borg's transactional contract held in all 119 worlds; a precision-limit observation claimed as nothing
+black	kept-unreported	docs/target-classes.md — not novel, psf/black#2479 reports the same surface; no criterion-1 claim and nothing filed
+rustfmt	kept-unreported	docs/target-classes.md — novelty gate closed before the define existed (rust-lang/rustfmt#6041); no claim, nothing filed
+poetry	reported-upstream	docs/target-classes.md — python-poetry/poetry#11019
+himalaya	reported-upstream	docs/target-classes.md — pimalaya/himalaya#738, fixed and closed by the maintainer
+papis	no-fail-recorded	docs/target-classes.md — PASS 2/2, oracle_verified, reproduced twice

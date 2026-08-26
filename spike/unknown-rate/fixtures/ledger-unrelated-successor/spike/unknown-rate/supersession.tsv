@@ -1,0 +1,3 @@
+# Superseded defines for this fixture. Empty: the fixture corpus has no
+# cohort defines, so the ledger partition is vacuously satisfied.
+spike/cohort2/fxa/ops	spike/cohort2/fxb/ops	different targets on purpose
