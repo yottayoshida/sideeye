@@ -6,6 +6,26 @@ const posix = @import("posix.zig");
 const oracle = @import("oracle.zig");
 const config = @import("config.zig");
 const mcp = @import("mcp.zig");
+const engine_build_options = @import("engine_build_options");
+
+/// The trace-read ceiling this binary uses (#324). Zero — the shipped value, written as
+/// a literal in build.zig rather than as a flag's default — means the engine's own
+/// constant. Any other value comes from `-Dtest-trace-cap`, which builds a SEPARATE
+/// artifact, so no invocation of the build can lower a released binary's cap. The shape
+/// `-Dtest-seq-gap` established, for the same reason: the shipped cap is unreachable by
+/// any fixture, and a branch nothing can reach is a branch nothing can check.
+const trace_cap: usize = if (engine_build_options.trace_cap_override == 0)
+    engine.max_trace_bytes
+else
+    engine_build_options.trace_cap_override;
+
+/// The same for the world read. Separate because the recording read happens first and
+/// exits: with one shared override the world branch is unreachable, so a test artifact
+/// that caps only this site is what lets the second branch fire at all.
+const trace_cap_world: usize = if (engine_build_options.trace_cap_override_world == 0)
+    engine.max_trace_bytes
+else
+    engine_build_options.trace_cap_override_world;
 
 /// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
 /// same number, and they had already drifted: the package said 0.1.0 while `--help` said
@@ -293,6 +313,49 @@ fn usage() void {
         \\never performs; v0.1 reports UNKNOWN rather than guess.
         \\
     , .{ version, contract.contract_version });
+}
+
+/// Read a trace, or refuse. Pairs with `answerForOversizedTrace`, which every caller
+/// must reach: forgetting the cap check at one site is the defect this exists to fix
+/// (#324) — the world loop's read has no shim-marker branch to catch the collapse, so a
+/// missed check there refused with `kill_did_not_land`, a claim about the engine's own
+/// kill drawn from a trace it declined to read.
+fn readTraceOrRefuse(gpa: std.mem.Allocator, path: []const u8, cap: usize, setup_msg: []const u8) engine.TraceInfo {
+    return engine.readTraceCapped(gpa, path, cap) catch setupError(setup_msg);
+}
+
+/// The cap's refusal, separate from the read so a caller can classify first. The
+/// recording site does exactly that: the comment above `engine.classify` promises every
+/// UNKNOWN below it reports the classification that existed rather than the placeholder,
+/// and L0 comes from the snapshots, which an oversized trace does not affect. Refusing
+/// at the read would have made this the one structural UNKNOWN reporting "not
+/// classified" — a regression a simplification pass introduced and review caught.
+///
+/// The cost of the split, stated because it is the defect this issue is about: nothing
+/// forces a caller to reach this. A third read site could read and never answer, which
+/// is exactly how the world loop came to refuse with `kill_did_not_land`. What holds it
+/// instead is the acceptance leg, which drives BOTH sites through lowered-cap engines
+/// and fails on the reason rather than the exit code; a site added without an answer
+/// has no leg and is caught in review, not by the compiler.
+fn answerForOversizedTrace(t: engine.TraceInfo, where: []const u8, cap: usize) void {
+    if (t.too_large) traceTooLarge(t.too_large_size, where, cap);
+}
+
+/// The trace read broke its cap (#324). Both read sites refuse the same way, so the
+/// wording lives once; `where` names which read it was. The size appears only when
+/// `lseek` measured it — a size nobody measured must not appear in the message, the
+/// rule the per-file cap's refusal already follows.
+fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
+    if (json_arena) |ja| {
+        if (size) |sz|
+            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read: {d} bytes against a {d}-byte cap; the shim's account is complete, but the engine declined to hold it", .{ where, sz, cap }) catch "the trace is larger than this engine will read")
+        else
+            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read (over the {d}-byte cap); the shim's account is complete, but the engine declined to hold it", .{ where, cap }) catch "the trace is larger than this engine will read");
+    }
+    // Unreachable in practice for the same reason snapshotOrRefuse's fallback is:
+    // json_arena is assigned before the parse loop, ahead of every call site. Kept so
+    // this function does not depend on that ordering; nothing exercises it.
+    unknown(.trace_too_large, "the trace is larger than this engine will read");
 }
 
 fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
@@ -1056,7 +1119,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
 
-    var trace = engine.readTrace(gpa, rec_trace) catch setupError("could not read the trace");
+    var trace = readTraceOrRefuse(gpa, rec_trace, trace_cap, "could not read the trace");
     defer trace.deinit();
 
     var final = snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
@@ -1069,6 +1132,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
     defer l0_plan.deinit();
     l0_history_count = l0_plan.history_count;
     l0_note = buildL0Note(arena, l0_plan);
+
+    // Now that the classification exists, not at the read: see the pairing above. Ahead
+    // of the version check below, and the two cannot both apply: a capped read returns
+    // before `decodeHeader`, so `version_mismatch` is always false when `too_large` is set.
+    answerForOversizedTrace(trace, "the recording run", trace_cap);
 
     // ---- structural detectors, before exploring anything --------------------------
     //
@@ -1544,7 +1612,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ preload_var, shim },
         }, world_stdout) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 
-        var wtrace = engine.readTrace(gpa, world_trace) catch setupError("could not read a world trace");
+        var wtrace = readTraceOrRefuse(gpa, world_trace, trace_cap_world, "could not read a world trace");
+        answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
         defer wtrace.deinit();
 
         // The second witness again, on every explored world and the baseline. A child's

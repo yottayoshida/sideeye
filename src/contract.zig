@@ -326,6 +326,15 @@ pub const UnknownReason = enum {
     /// like one that touched no files — and the structural detectors only catch that
     /// when the *whole* operation bypassed libc, not when part of it did.
     completeness_not_verified,
+    /// The trace was larger than the engine will read (#324). The reader's side of the
+    /// pair `trace_truncated` names the writer's: there the shim stopped mid-record,
+    /// here the shim's account is complete and the engine declined to hold it. Kept
+    /// apart because collapsing them loses which side stopped — and because the cap's
+    /// natural collapse, an empty TraceInfo, reads as `no_shim_marker`, which is a
+    /// third thing again (the shim never started). UNKNOWN rather than SETUP_ERROR:
+    /// both read sites are at or past the recording run, where exit 3's "the define
+    /// did not run" is no longer true — the line `child_wait_failed` draws above.
+    trace_too_large,
     /// The trace ended mid-record. Everything after that point is unknown, including
     /// how many operations there were.
     trace_truncated,

@@ -687,6 +687,16 @@ pub const TraceInfo = struct {
     /// that ran (#123, R1 C7: prefixHash misses duplicates, logicalAddress takes
     /// the last match; a verdict over renumbered ops is a verdict about nothing).
     primary_kill_records: u32 = 0,
+    /// The trace read broke its cap (#324). Distinct from `truncated`, which is the
+    /// writer's side: a record that ends mid-way says the shim stopped writing, while
+    /// this says the reader refused to hold what the shim did write. Without the
+    /// distinction both arrive as an empty TraceInfo, and the caller reads an empty
+    /// TraceInfo as "the shim never initialised".
+    too_large: bool = false,
+    /// The trace's size from `lseek(SEEK_END)` at the moment the cap broke; null when
+    /// even that failed, in which case the refusal names the cap and no more (#265's
+    /// rule: a size nobody measured must not appear in the message).
+    too_large_size: ?u64 = null,
 
     pub fn deinit(self: *TraceInfo) void {
         self.arena.deinit();
@@ -709,7 +719,29 @@ pub const TraceInfo = struct {
     }
 };
 
+/// The trace read's ceiling (#324). Sized against the largest exploration this
+/// repository has measured — 119 worlds (Borg, `spike/cohort2/borg-r3/RUNLOG.md`) — at
+/// the contract's worst-case record, `contract.max_record_len` = 8210 bytes (two
+/// `max_path` components plus headers): 976,990 bytes, which this cap clears 68 times
+/// over. Two things that comparison does NOT say: worlds are not records (a trace also
+/// carries seq-0 lifecycle, boundary and marker records, which nothing here counts), and
+/// at worst-case records the cap admits 8,174 of them — not the "million operations" an
+/// earlier draft claimed by silently switching to typical path lengths mid-argument.
+/// It shares its value with `max_state_file_bytes` and nothing else: the two bound
+/// different things and may move apart.
+pub const max_trace_bytes: usize = 64 * 1024 * 1024;
+
 pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
+    return readTraceCapped(gpa, path, max_trace_bytes);
+}
+
+/// The capped form, parameterized for the reason `takeSnapshotCapped` is (#265): the
+/// shipped cap cannot be reached by a fixture. The engine unlinks the trace before
+/// every run — the recording path and the world path both — so no oversized file can be
+/// planted, and the only writer is the shim. How many operations that takes depends on
+/// path lengths and is not claimed here; what is measured is that no committed define
+/// comes near it. Tests drive this with a small `max`.
+pub fn readTraceCapped(gpa: Allocator, path: []const u8, max: usize) SnapshotError!TraceInfo {
     var info: TraceInfo = .{
         .arena = std.heap.ArenaAllocator.init(gpa),
         .ops = .empty,
@@ -723,12 +755,21 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
     // A missing trace file is not an error here: it is the observation that the shim
     // never ran, which the caller turns into `no_shim_marker`.
     //
-    // Deliberately uncapped (#265): every failure of this read — including a cap,
-    // if one were added — collapses into the empty TraceInfo above, which the
-    // caller reads as "the shim never initialised". An oversized trace surfacing
-    // as no_shim_marker would be a refusal with the wrong reason; the trace's
-    // unbounded read is real and tracked separately.
-    const bytes = readWhole(arena, path_z.ptr, std.math.maxInt(usize), null) catch return info;
+    // Capped since #324, and the cap breaking is the one failure this read does NOT
+    // collapse. #265 left the read uncapped precisely because collapsing it would
+    // relabel an oversized trace as "the shim never initialised" — a refusal with the
+    // wrong reason, worse than no cap. That reasoning stands; what changed is that the
+    // cap now has a way to say what it is. Every OTHER failure still collapses, because
+    // for those the empty TraceInfo is the honest observation.
+    var too_large_size: ?u64 = null;
+    const bytes = readWhole(arena, path_z.ptr, max, &too_large_size) catch |err| switch (err) {
+        error.FileTooLarge => {
+            info.too_large = true;
+            info.too_large_size = too_large_size;
+            return info;
+        },
+        else => return info,
+    };
     if (bytes.len == 0) return info;
 
     var off: usize = contract.decodeHeader(bytes) catch |err| switch (err) {
@@ -2404,3 +2445,85 @@ test "the per-file cap refuses, names the file, and carries its size (#265)" {
     try std.testing.expectEqual(@as(usize, 1), ok.entries.items.len);
     try std.testing.expectEqualStrings("123456789", ok.entries.items[0].content);
 }
+
+/// A trace file of `n` bytes in a pid-unique directory, plus its cleanup. Built the
+/// way the per-file cap's test builds its root (#28: the resolved parent, because
+/// macOS `/tmp` is itself a link).
+fn traceFixture(tag: []const u8, bytes: []const u8, path_out: []u8) ?[]const u8 {
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return null);
+    const path = std.fmt.bufPrint(path_out, "{s}/trace.bin", .{base}) catch unreachable;
+    var fz: [contract.max_path]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+    const fd = posix.open(file_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    if (fd < 0) return null;
+    _ = posix.write(fd, bytes.ptr, bytes.len);
+    _ = posix.close(fd);
+    return path;
+}
+
+test "an oversized trace says so, instead of collapsing into the empty read (#324)" {
+    const gpa = std.testing.allocator;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const path = traceFixture("tracecap", "0123456789", &pbuf) orelse return error.SkipZigTest;
+    defer {
+        var fz: [contract.max_path]u8 = undefined;
+        const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+        _ = posix.unlink(file_z.ptr);
+        var dz: [contract.max_path]u8 = undefined;
+        const dir_z = std.fmt.bufPrintZ(&dz, "/tmp/sideeye-tracecap-{d}", .{posix.getpid()}) catch unreachable;
+        _ = posix.rmdir(dir_z.ptr);
+    }
+
+    // Over the cap: the flag is set and the size is the file's true length, read by
+    // lseek rather than counted from the truncated read.
+    var big = try readTraceCapped(gpa, path, 4);
+    defer big.deinit();
+    try std.testing.expect(big.too_large);
+    try std.testing.expectEqual(@as(?u64, 10), big.too_large_size);
+    // What makes this a distinct answer rather than a relabelled one: the flag the
+    // caller checks for "the shim never ran" is NOT set by a capped read. Were it the
+    // only signal, this trace would refuse as `no_shim_marker`.
+    try std.testing.expect(!big.saw_shim_ready);
+    try std.testing.expect(!big.truncated);
+
+    // At the cap exactly, no breach — the boundary is "over", not "at" (the per-file
+    // cap's boundary, kept identical so the two caps cannot drift in that detail).
+    var ok = try readTraceCapped(gpa, path, 10);
+    defer ok.deinit();
+    try std.testing.expect(!ok.too_large);
+}
+
+test "a cap breach and an unreadable trace are different observations (#324)" {
+    const gpa = std.testing.allocator;
+
+    // A trace that is not there at all: the empty TraceInfo, exactly as before this
+    // change — the honest observation that the shim never wrote anything.
+    var absent = try readTraceCapped(gpa, "/tmp/sideeye-no-such-trace-file-does-not-exist", 4);
+    defer absent.deinit();
+    try std.testing.expect(!absent.too_large);
+    try std.testing.expect(absent.too_large_size == null);
+    try std.testing.expect(!absent.saw_shim_ready);
+    try std.testing.expectEqual(@as(usize, 0), absent.ops.items.len);
+
+    // The contrast, from the same reader: a file that exists and breaks the cap does
+    // set the flag. Without this leg the assertions above pass for an implementation
+    // that never sets `too_large` at all.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const path = traceFixture("tracecap-contrast", "0123456789", &pbuf) orelse return error.SkipZigTest;
+    defer {
+        var fz: [contract.max_path]u8 = undefined;
+        const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+        _ = posix.unlink(file_z.ptr);
+        var dz: [contract.max_path]u8 = undefined;
+        const dir_z = std.fmt.bufPrintZ(&dz, "/tmp/sideeye-tracecap-contrast-{d}", .{posix.getpid()}) catch unreachable;
+        _ = posix.rmdir(dir_z.ptr);
+    }
+    var big = try readTraceCapped(gpa, path, 4);
+    defer big.deinit();
+    try std.testing.expect(big.too_large);
+}
+

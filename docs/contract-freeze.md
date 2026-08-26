@@ -28,6 +28,12 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    check 4 — `oracle_verified` included (#94). The account fields' prose may
    improve between releases; their presence and the machine fields' meaning
    may not (a field would change name, never silently change meaning).
+   Additive extension stays open (#320): a new optional field may appear in a
+   1.x release, so a consumer must tolerate fields it does not know — reading
+   this schema as "these fields and no others" is the one reading 1.x does not
+   promise. The `unknown_reason` closed set is **not** covered by that
+   allowance: it is closed by name, held to the code by a gate, and gaining a
+   member after the tag is a breaking change under either reading.
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
