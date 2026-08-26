@@ -1,0 +1,5 @@
+Note: 'beta' is a new tag.
+Recorded beta
+  Started 2020-01-02T10:00:00
+  Ended              11:00:00
+  Total               1:00:00

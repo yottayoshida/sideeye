@@ -1,0 +1,8 @@
+txn:
+  type: interval
+  before: 
+  after: {"id":0,"start":"20200101T100000Z","end":"20200101T110000Z","tags":["alpha"]}
+txn:
+  type: interval
+  before: 
+  after: {"id":0,"start":"20200102T100000Z","end":"20200102T110000Z","tags":["beta"]}

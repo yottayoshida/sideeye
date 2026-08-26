@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 12,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "oracle_verified": true,
+  "crash_points": 7,
+  "explored": 8,
+  "violations": 0,
+  "expected_status": 0,
+  "l0": "2 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "agreed on 7 operations (6680 syscall lines examined, 36 in scope of the judged state)",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 8 world(s)",
+  "processes": "1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

@@ -1,0 +1,34 @@
+falsify: checker(rustfmt-format): leg V: rustc rejected the crashed file (rc=1, 124 = timeout): error: expected one of `!` or `::`, found `-`
+falsify:  --> /tmp/cohort3/rustfmt/state/probe.rs:1:8
+falsify:   |
+falsify: 1 | sideeye-corruption-probe
+falsify:   |        ^ expected one of `!` or `::`
+falsify: error: aborting due to 1 previous 
+checker(rustfmt-format): leg V: rustc rejected the crashed file (rc=1, 124 = timeout): error[E0601]: `main` function not found in crate `probe`
+  |
+  = note: consider adding a `main` function to `/tmp/cohort3/rustfmt/state/probe.rs`
+
+error: aborting due to 1 previous error
+
+For more inf
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/tmp/cohort3/rustfmt/state/probe.rs)
+            before write(/tmp/cohort3/rustfmt/state/probe.rs)
+path        probe.rs
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (181 syscall lines examined, 24 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /tmp/sideeye-work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/cohort3/rustfmt/state SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

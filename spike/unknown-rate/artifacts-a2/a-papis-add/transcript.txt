@@ -1,0 +1,44 @@
+[INFO] importer: Merging data from importer 'yaml'.
+[INFO] database.cache: Indexing library. This might take a while...
+[INFO] document: Created reference 'Existing_Probe'.
+[INFO] commands.add: Copying 'existing.txt' to 'existing.txt'.
+[INFO] commands.add: Document folder is '/tmp/cohort3/papis/lib/existing-doc'.
+[INFO] commands.add: Checking if this document is already in the library. This uses the keys ['doi', 'isbn', 'isbn10', 'eprint', 'url', 'doc_url'] to determine uniqueness.
+[INFO] commands.add: No document matching the new metadata found in the 'probe' library.
+[INFO] commands.add: Moving document to '/tmp/cohort3/papis/lib/existing-doc'.
+[INFO] importer: Merging data from importer 'yaml'.
+[INFO] database.cache: Indexing library. This might take a while...
+[INFO] document: Created reference 'Probe_Probe_2026'.
+[INFO] commands.add: Copying 'fixture.txt' to 'fixture.txt'.
+[INFO] commands.add: Document folder is '/tmp/cohort3/papis/lib/probe-doc'.
+[INFO] commands.add: Checking if this document is already in the library. This uses the keys ['doi', 'isbn', 'isbn10', 'eprint', 'url', 'doc_url'] to determine uniqueness.
+[INFO] commands.add: No document matching the new metadata found in the 'probe' library.
+[INFO] commands.add: Moving document to '/tmp/cohort3/papis/lib/probe-doc'.
+falsify: checker(papis-add): leg E: the existing document's attachment changed
+[INFO] importer: Merging data from importer 'yaml'.
+[INFO] database.cache: Indexing library. This might take a while...
+[INFO] document: Created reference 'Probe_Probe_2026'.
+[INFO] commands.add: Copying 'fixture.txt' to 'fixture.txt'.
+[INFO] commands.add: Document folder is '/tmp/cohort3/papis/lib/probe-doc'.
+[INFO] commands.add: Checking if this document is already in the library. This uses the keys ['doi', 'isbn', 'isbn10', 'eprint', 'url', 'doc_url'] to determine uniqueness.
+[INFO] commands.add: No document matching the new metadata found in the 'probe' library.
+[INFO] commands.add: Moving document to '/tmp/cohort3/papis/lib/probe-doc'.
+[INFO] importer: Merging data from importer 'yaml'.
+[INFO] database.cache: Indexing library. This might take a while...
+[INFO] document: Created reference 'Probe_Probe_2026'.
+[INFO] commands.add: Copying 'fixture.txt' to 'fixture.txt'.
+[INFO] commands.add: Document folder is '/tmp/cohort3/papis/lib/probe-doc'.
+[INFO] commands.add: Checking if this document is already in the library. This uses the keys ['doi', 'isbn', 'isbn10', 'eprint', 'url', 'doc_url'] to determine uniqueness.
+[INFO] commands.add: No document matching the new metadata found in the 'probe' library.
+[INFO] commands.add: Moving document to '/tmp/cohort3/papis/lib/probe-doc'.
+PASS  2/2 explored worlds satisfied the built-in atomicity invariant
+      explored 2 worlds (crash points 1 + 1 baseline)
+      expected status: 0
+      atomicity: 3 path(s) judged pre-or-post
+      oracle: agreed on 1 operations (9302 syscall lines examined, 31 in scope of the judged state)
+      metadata: 1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes

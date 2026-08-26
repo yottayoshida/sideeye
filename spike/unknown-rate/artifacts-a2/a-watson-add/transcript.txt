@@ -1,0 +1,17 @@
+Adding project seeded, started 6 years ago and stopped 6 years ago. (id: f55a54d)
+falsify: Error: Invalid JSON file /tmp/bwatson/state/frames: Expecting value: line 1 column 1 (char 0)
+f55a54d
+f55a54d
+f55a54d
+dad495b
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -228,13 +228,24 @@ the data: A-group 1 of 28 (3.6%); B-group 3 of 7 (42.9%) against a two-part
 threshold — target-origin UNKNOWNs at most one of seven (measured zero) and
 overall at most 50% — both parts holding, criterion 4 met.
 
+**The A-group figure quoted above is g1's and is now one generation old**
+(2026-08-26, #239). The A-group was re-swept as generation g2 over a corpus
+of 36 trials and measured **2/36 (5.6%)**; both figures stay published with
+their dates. The B-group is unchanged — g2 does not cover it — so the
+threshold this row is scored against has not moved. **This row is not
+re-scored here.** Re-scoring a met criterion inside a measurement change is
+the move #240 exists to do deliberately, with every row's previous verdict
+quoted beside its new one; this note records that the quotation aged, and
+nothing more.
+
 The margins, out loud rather than in a footnote: the B-group margin is one
 trial — a single additional UNKNOWN reads four of seven (57.1%) and fails
 part 2. And the row's wording carries no platform qualifier, while the
 measurement does: on the only platform with real-target runs (Linux aarch64,
 in containers) UNKNOWN does not dominate; the macOS column is *derived* —
-39.3% A-group, 85.7% B-group, because no oracle exists there and every
-strict PASS derives to UNKNOWN. No macOS run exists, so the derivation is
+**39.3% A-group as derived from g1** (36.1% from g2, which this row is not
+scored against; see the generation note above), 85.7% B-group, because no
+oracle exists there and every strict PASS derives to UNKNOWN. No macOS run exists, so the derivation is
 not a trigger; it is this row's open flank, and a macOS-measured sweep would
 have to face this row again on its own numbers.
 

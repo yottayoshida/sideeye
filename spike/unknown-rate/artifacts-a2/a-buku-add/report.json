@@ -1,0 +1,29 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 12,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "oracle_verified": true,
+  "crash_points": 21,
+  "explored": 22,
+  "violations": 2,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 18,
+    "invariant": "built-in atomicity (L0)",
+    "after": {"op": "write", "path": "/tmp/assisted/buku/state/buku/bookmarks.db"},
+    "before": {"op": "write", "path": "/tmp/assisted/buku/state/buku/bookmarks.db"},
+    "subject": "buku/bookmarks.db",
+    "observed": "holding neither the old nor the new content"
+  },
+  "l0": "2 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/tmp/sideeye-work/cases/000001.json",
+  "replay": "sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 21 operations (4557 syscall lines examined, 123 in scope of the judged state)",
+  "metadata_writes": "1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 22 world(s)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

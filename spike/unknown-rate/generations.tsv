@@ -31,4 +31,4 @@
 # new row here and a new artifacts directory; the old numbers stay published
 # beside the new ones with both dates, because the movement is the finding.
 g1	2026-08-16	artifacts	A,B,control	complete
-g2	-	artifacts-a2	A	unstarted
+g2	2026-08-26	artifacts-a2	A	complete

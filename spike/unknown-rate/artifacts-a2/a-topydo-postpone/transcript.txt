@@ -1,0 +1,25 @@
+|  1| 2026-08-26 water-plants
+|  1| 2026-08-26 water-plants due:2026-09-01
+falsify: checker(postpone): task 'water-plants' is in neither todo.txt nor done.txt — lost
+checker(postpone): task 'water-plants' is in neither todo.txt nor done.txt — lost
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/tmp/blind/hunt/postpone/state/todo.txt)
+            before write(/tmp/blind/hunt/postpone/state/todo.txt)
+path        todo.txt
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (2018 syscall lines examined, 25 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /tmp/blind/hunt/postpone/work/cases/000001.json
+replay      sideeye replay /tmp/blind/hunt/postpone/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/blind/hunt/postpone/state SIDEEYE_TRACE_PATH=/tmp/blind/hunt/postpone/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
