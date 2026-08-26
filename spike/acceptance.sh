@@ -2029,6 +2029,105 @@ else
 fi
 rm -rf /tmp/acc-cap
 
+echo "=========== check 2vw: the vectored positional writes are counted (#256) ==========="
+# The oracle has classified pwritev since v0.1; the shim never exported it, so a
+# target writing this way was seen by one observer and not the other — measured
+# before the fix as `oracle_missed_operation`, naming the pwritev line the shim
+# had no record of. On macOS, where no oracle exists, the same write is invisible
+# to everything, which is why this is a PASS hole rather than an ergonomic gap.
+#
+# The leg asserts the BYTES as well as the verdict: the toy hands pwritev two
+# iovecs, so a wrapper with its arguments in the wrong order records the operation
+# correctly and still writes the wrong thing. Removing the export from
+# shim/src/linux.zig turns the verdict back into UNKNOWN.
+rm -rf /tmp/acc-vw && mkdir -p /tmp/acc-vw/state
+o=$("$SIDEEYE" explore --state /tmp/acc-vw/state \
+    --setup "$OUT/toy-pwritev init" --operation "$OUT/toy-pwritev rotate" \
+    --shim "$SHIM" --work /tmp/acc-vw/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+key_bytes=$(cat /tmp/acc-vw/state/key.json 2>/dev/null)
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && [ "$key_bytes" = "key=2" ]; then
+    echo "ok   a pwritev write reaches a verdict, and the bytes it wrote are right"
+else
+    echo "FAIL pwritev: exit $rc, key.json='$key_bytes' (wanted a verdict and key=2)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-vw
+# The LFS alias, walked rather than assumed. A `_FILE_OFFSET_BITS=64` build resolves
+# pwritev to glibc's pwritev64, which is a separate symbol: exporting one and not the
+# other leaves the alias path invisible to the shim exactly as the whole family was
+# before this batch. This leg is why the aliases are in the export list.
+rm -rf /tmp/acc-vwl && mkdir -p /tmp/acc-vwl/state
+o=$("$SIDEEYE" explore --state /tmp/acc-vwl/state \
+    --setup "$OUT/toy-pwritev-lfs init" --operation "$OUT/toy-pwritev-lfs rotate" \
+    --shim "$SHIM" --work /tmp/acc-vwl/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+key_bytes=$(cat /tmp/acc-vwl/state/key.json 2>/dev/null)
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && [ "$key_bytes" = "key=2" ]; then
+    echo "ok   the pwritev64 alias path is interposed too (LFS build reaches a verdict)"
+else
+    echo "FAIL pwritev64 alias: exit $rc, key.json='$key_bytes' (wanted a verdict and key=2)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-vwl
+
+echo "=========== check 2cp: a copy's scope is its destination, not its argument 0 (#244) ==========="
+# copy_file_range(fd_in, off_in, fd_out, …) puts the SOURCE first. Every other fd
+# syscall in the contract puts the descriptor it writes there, which is why the
+# oracle's scope test used to read argument 0 unconditionally. Reading it here is
+# wrong in both directions at once, so both directions are legs:
+#   into  — destination inside the state directory: a write that must be counted
+#   out   — source inside, destination outside: nothing in the state changes
+# An argument-0 reading answers each of these with the other one's answer.
+rm -rf /tmp/acc-cp && mkdir -p /tmp/acc-cp/state /tmp/acc-cp/outside
+o=$(TOY_OUTSIDE=/tmp/acc-cp/outside "$SIDEEYE" explore --state /tmp/acc-cp/state \
+    --setup "$OUT/toy-copy init" --operation "$OUT/toy-copy rotate" \
+    --shim "$SHIM" --work /tmp/acc-cp/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+# A verdict (0 or 1), and the copy actually became a crash point: "explored 0" would
+# mean the destination was scoped out — the miss an argument-0 reading produces.
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! echo "$o" | grep -q "explored 0 crash points"; then
+    echo "ok   a copy INTO the state directory is counted and reaches a verdict"
+else
+    echo "FAIL copy into state: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-cp2 && mkdir -p /tmp/acc-cp2/state /tmp/acc-cp2/outside
+o=$(TOY_OUTSIDE=/tmp/acc-cp2/outside "$SIDEEYE" explore --state /tmp/acc-cp2/state \
+    --setup "$OUT/toy-copy init" --operation "$OUT/toy-copy read-out" \
+    --shim "$SHIM" --work /tmp/acc-cp2/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+# Reading the state out changes nothing in it: no crash points, and the honest
+# answer is the 0-operation PASS. An argument-0 reading would count a write here.
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 0 crash points"; then
+    echo "ok   a copy OUT of the state directory counts nothing (0 crash points)"
+else
+    echo "FAIL copy out of state: exit $rc (wanted 0 with no crash points)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-cp /tmp/acc-cp2
+
+echo "=========== check 2sx: every classified syscall is interposed or explained (#256) ==========="
+# The structural half. `pwritev`, `pwritev2` and `renameat2` were classified by the
+# oracle and unexported by the shim from v0.1 until this batch, because nothing
+# compared the two lists. This runs the comparison the way it has to be run — not
+# as set equality — before this batch that comparison had 32 differences and 29 of
+# them were legitimate — but as "classified implies interposed or explained". CI runs
+# it too; here it sits beside the behaviour it protects.
+o=$(python3 "$ROOT/spike/check-shim-coverage.py" "$ROOT/src/oracle.zig" "$ROOT/shim/src/linux.zig" 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "interposed or explained"; then
+    echo "ok   the shim covers every syscall the oracle classifies (or says why not)"
+else
+    echo "FAIL shim coverage: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 2aa: the DESIGN §12 worked example, driven by the toml alone ==========="
 # The doctor cross-examination — the flagship L2 scenario — end to end with the define
 # coming entirely from a sideeye.toml: the file, one checker script, nothing else. The

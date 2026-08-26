@@ -39,6 +39,15 @@ const known = [_]Mapping{
     .{ .name = "writev", .class = .write },
     .{ .name = "pwritev", .class = .write },
     .{ .name = "pwritev2", .class = .write },
+    // The kernel's copy primitives (#244). Their EFFECT on the destination is a
+    // write — the bytes change, nothing else does — so they take `.write` rather
+    // than a class of their own; `link` and `symlink` earned new classes because
+    // they create directory entries, which is a different effect. Both are fd
+    // syscalls, and `copy_file_range` is the one whose destination is not argument
+    // 0 (see `fd_write_args`).
+    .{ .name = "copy_file_range", .class = .write },
+    .{ .name = "sendfile", .class = .write },
+    .{ .name = "sendfile64", .class = .write },
     .{ .name = "rename", .class = .rename },
     .{ .name = "renameat", .class = .rename },
     .{ .name = "renameat2", .class = .rename },
@@ -350,6 +359,27 @@ fn unlinkatRemovesDir(line: []const u8) bool {
     return (v & at_removedir_linux) != 0;
 }
 
+/// `renameat2` flag bits (Linux). Named here because the check below has to read the
+/// number as well as the symbol.
+const rename_exchange: u64 = 2;
+const rename_whiteout: u64 = 4;
+
+/// Whether `renameat2`'s flags argument carries one of the two that make it something
+/// other than a rename. Reads argument 4 rather than the line, so a FILENAME spelling
+/// a flag cannot refuse a plain rename — and falls back to the number, because
+/// `strace -X raw` and undecorated builds print `0x2` where a decoding strace prints
+/// `RENAME_EXCHANGE`. Reading only the symbol would fail OPEN there: the shim does not
+/// record these, so the run would end at `oracle_missed_operation` with a reason that
+/// names the wrong problem. `unlinkatRemovesDir` above has carried the same pair of
+/// readings since AT_REMOVEDIR.
+fn renameat2Flag(line: []const u8, symbol: []const u8, bit: u64) bool {
+    const flags = syscallArg(line, 4) orelse return false;
+    if (std.mem.indexOf(u8, flags, symbol) != null) return true;
+    const v = std.fmt.parseInt(u64, std.mem.trim(u8, flags, " "), 0) catch return false;
+    return (v & bit) != 0;
+}
+
+
 fn classify(name: []const u8) ?contract.OpClass {
     for (known) |m| {
         if (std.mem.eql(u8, m.name, name)) return m.class;
@@ -526,12 +556,38 @@ fn changesPersistentState(name: []const u8, line: []const u8) bool {
     return true;
 }
 
-/// Scope of an fd syscall, read from its descriptor's `<…>` annotation and never from
-/// the quoted arguments — a state-directory string that happens to sit in a write buffer
-/// must not scope it in. Every fd syscall carries its descriptor as argument 0.
-fn fdSyscallInScope(line: []const u8, state: []const u8, alt: []const u8) bool {
-    const arg0 = syscallArg(line, 0) orelse return false;
-    const p = argAnnotation(arg0) orelse return false;
+/// Which argument of an fd syscall names the descriptor being WRITTEN.
+///
+/// Argument 0 for every syscall that reached this file before #244: `write`, `fsync`,
+/// `close`, `ftruncate`, `pwritev` and the metadata pair all put their descriptor
+/// first, which is why the rule used to be stated as a fact about fd syscalls in
+/// general. `copy_file_range(fd_in, off_in, fd_out, …)` breaks it — argument 0 is the
+/// SOURCE. Reading it as the destination gets the answer wrong in both directions: a
+/// copy out of the state directory would count as a mutation (there is none), and a
+/// copy into it from elsewhere would be missed entirely.
+///
+/// `sendfile(out_fd, in_fd, …)` needs no entry: its destination is already first.
+/// Anything absent from this table keeps the argument-0 default, so adding it changes
+/// no existing verdict.
+const FdWriteArg = struct { name: []const u8, arg: usize };
+const fd_write_args = [_]FdWriteArg{
+    .{ .name = "copy_file_range", .arg = 2 },
+};
+
+fn fdWriteArg(name: []const u8) usize {
+    for (fd_write_args) |w| {
+        if (std.mem.eql(u8, w.name, name)) return w.arg;
+    }
+    return 0;
+}
+
+/// Scope of an fd syscall, read from the annotation of the descriptor it WRITES and
+/// never from the quoted arguments — a state-directory string that happens to sit in a
+/// write buffer must not scope it in. Which argument that is comes from
+/// `fd_write_args` above; the default is argument 0.
+fn fdSyscallInScope(line: []const u8, name: []const u8, state: []const u8, alt: []const u8) bool {
+    const arg = syscallArg(line, fdWriteArg(name)) orelse return false;
+    const p = argAnnotation(arg) orelse return false;
     return insideEither(p, state, alt);
 }
 
@@ -698,7 +754,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
         if (isMetadataFd(name)) {
-            if (fdSyscallInScope(line, state_dir, state_alt))
+            if (fdSyscallInScope(line, name, state_dir, state_alt))
                 try out.metadata_observed.append(arena, try arena.dupe(u8, name));
             continue;
         }
@@ -710,7 +766,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         const scope: Scope = if (pathSpec(name)) |spec|
             pathSyscallScope(spec, line, cwd, state_dir, state_alt)
         else if (isFdSyscall(name))
-            (if (fdSyscallInScope(line, state_dir, state_alt)) .inside else .outside)
+            (if (fdSyscallInScope(line, name, state_dir, state_alt)) .inside else .outside)
         else
             (if (touchesStateDir(line, state_dir, state_alt)) .inside else .outside);
 
@@ -756,6 +812,25 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         if (std.mem.eql(u8, name, "linkat") and argContains(line, 4, "AT_EMPTY_PATH")) {
             if (out.unsupported == null) out.unsupported = try arena.dupe(u8, "linkat(AT_EMPTY_PATH)");
             continue;
+        }
+        // `renameat2`'s flags decide what the call MEANS, and two of the three are not
+        // renames (#256). `RENAME_EXCHANGE` swaps two files atomically — both names
+        // survive, both contents move — and `RENAME_WHITEOUT` leaves a whiteout inode
+        // behind the source. Counting either as `.rename` would name an operation
+        // whose effect the restore model cannot reproduce, so they are refused here,
+        // by flag, the way `linkat(AT_EMPTY_PATH)` is above. `RENAME_NOREPLACE` is a
+        // plain rename that declines to clobber, and stays a `.rename`.
+        if (std.mem.eql(u8, name, "renameat2")) {
+            const exchange = renameat2Flag(line, "RENAME_EXCHANGE", rename_exchange);
+            const whiteout = renameat2Flag(line, "RENAME_WHITEOUT", rename_whiteout);
+            if (exchange or whiteout) {
+                if (out.unsupported == null)
+                    out.unsupported = try arena.dupe(u8, if (exchange)
+                        "renameat2(RENAME_EXCHANGE)"
+                    else
+                        "renameat2(RENAME_WHITEOUT)");
+                continue;
+            }
         }
         if (classify(name)) |cls| {
             // Neither of these enters the comparison (ADR 0003). A write-incapable open
@@ -1246,13 +1321,128 @@ test "arguments are split on top-level commas only" {
 test "a syscall v0.1 does not model is reported rather than skipped" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
+    // `mknod` stands where `copy_file_range` used to: a state-directory syscall that
+    // changes persistent state and has no class. The example had to move when #244
+    // classified copy_file_range — and the case it demonstrates has not, so the
+    // demonstration keeps a live subject rather than retiring with its old one.
+    // (`spike/acceptance.sh` drives the same syscall end to end for the same reason.)
     const text =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
-        \\copy_file_range(3</tmp/s/a>, NULL, 4</tmp/s/b>, NULL, 6, 0) = 6
+        \\mknod("/tmp/s/fifo", S_IFIFO|0644) = 0
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
-    try std.testing.expectEqualStrings("copy_file_range", p.unsupported.?);
+    try std.testing.expectEqualStrings("mknod", p.unsupported.?);
+}
+
+test "renameat2's flags decide whether it is a rename at all (#256)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+
+    // RENAME_NOREPLACE is a plain rename that declines to clobber — the shape a real
+    // target produced (`spike/cohort2/probes/raw/bun.strace`, bun's cache write).
+    const noreplace =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\renameat2(AT_FDCWD, "/tmp/s/key.json.tmp", AT_FDCWD, "/tmp/s/key.json", RENAME_NOREPLACE) = 0
+        \\
+    ;
+    const p_nr = try parse(a, noreplace, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 1), p_nr.classes.items.len);
+    try std.testing.expectEqual(contract.OpClass.rename, p_nr.classes.items[0]);
+    try std.testing.expectEqual(@as(?[]const u8, null), p_nr.unsupported);
+
+    // EXCHANGE swaps two files: both names survive and both contents move, which the
+    // snapshot/restore model does not reproduce. Refused by flag name rather than
+    // counted, so the report says which flag it refused on.
+    const exchange =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\renameat2(AT_FDCWD, "/tmp/s/a", AT_FDCWD, "/tmp/s/b", RENAME_EXCHANGE) = 0
+        \\
+    ;
+    const p_ex = try parse(a, exchange, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("renameat2(RENAME_EXCHANGE)", p_ex.unsupported.?);
+    try std.testing.expectEqual(@as(usize, 0), p_ex.classes.items.len);
+
+    const whiteout =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\renameat2(AT_FDCWD, "/tmp/s/a", AT_FDCWD, "/tmp/s/b", RENAME_WHITEOUT) = 0
+        \\
+    ;
+    const p_wo = try parse(a, whiteout, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("renameat2(RENAME_WHITEOUT)", p_wo.unsupported.?);
+
+    // The flag test reads argument 4, not the line: a FILENAME spelling a flag must
+    // not refuse a plain rename. Same trap the AT_REMOVEDIR test guards above.
+    const lookalike =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\renameat2(AT_FDCWD, "/tmp/s/RENAME_EXCHANGE.bak", AT_FDCWD, "/tmp/s/key.json", 0) = 0
+        \\
+    ;
+    const p_lk = try parse(a, lookalike, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(?[]const u8, null), p_lk.unsupported);
+    try std.testing.expectEqual(contract.OpClass.rename, p_lk.classes.items[0]);
+
+    // `strace -X raw` (and any build without the flag decoder) prints the number.
+    // Reading only the symbolic spelling would let EXCHANGE through as a plain
+    // rename — the same fail-open `unlinkatRemovesDir` already guards against.
+    const numeric =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\renameat2(AT_FDCWD, "/tmp/s/a", AT_FDCWD, "/tmp/s/b", 0x2) = 0
+        \\
+    ;
+    const p_num = try parse(a, numeric, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("renameat2(RENAME_EXCHANGE)", p_num.unsupported.?);
+}
+
+test "a copy's scope is decided by its destination, not its argument 0 (#244)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+
+    // Into the state directory: a write that counts. Argument 0 is the SOURCE and
+    // sits outside, so an argument-0 reading calls this out of scope and loses it.
+    const into =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\copy_file_range(3</other/a>, NULL, 4</tmp/s/key.json>, NULL, 6, 0) = 6
+        \\
+    ;
+    const p_in = try parse(a, into, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 1), p_in.classes.items.len);
+    try std.testing.expectEqual(contract.OpClass.write, p_in.classes.items[0]);
+    try std.testing.expectEqual(@as(?[]const u8, null), p_in.unsupported);
+
+    // Out of the state directory: the state is only read, so nothing is counted. An
+    // argument-0 reading calls this a write — the false FAIL side of the same bug.
+    const out_of =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\copy_file_range(3</tmp/s/key.json>, NULL, 4</other/b>, NULL, 6, 0) = 6
+        \\
+    ;
+    const p_out = try parse(a, out_of, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 0), p_out.classes.items.len);
+    try std.testing.expectEqual(@as(?[]const u8, null), p_out.unsupported);
+
+    // sendfile needs no table entry: its destination is already argument 0. Pinned
+    // here so a later "simplification" that drops the default cannot pass quietly.
+    const sf =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\sendfile(4</tmp/s/key.json>, 3</other/a>, NULL, 6) = 6
+        \\
+    ;
+    const p_sf = try parse(a, sf, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 1), p_sf.classes.items.len);
+    try std.testing.expectEqual(contract.OpClass.write, p_sf.classes.items[0]);
+
+    // The default itself: an ordinary fd write is still read from argument 0.
+    const w =
+        \\execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\pwritev(3</tmp/s/key.json>, [{iov_base="key=", iov_len=4}], 1, 0) = 4
+        \\
+    ;
+    const p_w = try parse(a, w, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 1), p_w.classes.items.len);
+    try std.testing.expectEqual(contract.OpClass.write, p_w.classes.items[0]);
 }
 
 test "read-only syscalls do not enter the comparison" {

@@ -37,6 +37,35 @@ gcc $cc_flags -static -DBUGGY=1 -o "$out/toy-static" "$root/spike/toys/toy.c" -l
 echo "building toy-mixed"
 gcc $cc_flags -o "$out/toy-mixed" "$root/spike/toys/toy_mixed.c"
 
+echo "building toy-pwritev"
+# Writes through the vectored positional calls the oracle classifies and the shim
+# did not export (#256). Two iovecs, so a wrapper with the arguments in the wrong
+# order writes visibly wrong bytes rather than merely mis-recording.
+gcc $cc_flags -o "$out/toy-pwritev" "$root/spike/toys/toy_pwritev.c"
+
+echo "building toy-pwritev-lfs"
+# The same toy with large-file support, so its pwritev is meant to resolve to glibc's
+# pwritev64 alias — the path `toy-lfs` walks for the stdio wrappers, and the reason
+# the batch exports the aliases at all. Whether the build actually took that path is
+# CHECKED rather than assumed: if _FILE_OFFSET_BITS stopped mattering here, the toy
+# would silently fall back to plain pwritev and the leg that drives it would turn
+# into a duplicate of the non-LFS one while still claiming to walk the alias.
+gcc $cc_flags -D_FILE_OFFSET_BITS=64 -o "$out/toy-pwritev-lfs" "$root/spike/toys/toy_pwritev.c"
+if nm -u "$out/toy-pwritev-lfs" | grep -q "pwritev64"; then
+    echo "ok   toy-pwritev-lfs references pwritev64 (the alias path is real)"
+else
+    echo "FAIL toy-pwritev-lfs does not reference pwritev64 — the LFS leg would measure"
+    echo "     the plain symbol while claiming to measure the alias"
+    exit 1
+fi
+
+echo "building toy-copy"
+# Calls copy_file_range directly, in both directions (destination inside the state
+# directory, and source inside with the destination outside). The C toy is the
+# primary leg for #244 precisely because it does not depend on any language
+# runtime's internal choice of copy primitive.
+gcc $cc_flags -o "$out/toy-copy" "$root/spike/toys/toy_copy.c"
+
 echo "building toy-rust"
 rustc -O -o "$out/toy-rust" "$root/spike/toys/toy_rust.rs"
 

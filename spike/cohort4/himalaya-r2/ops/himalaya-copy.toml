@@ -1,3 +1,27 @@
+# HISTORICAL AS OF trace contract v11 (2026-08-26, #244). This define and its
+# apparatus are kept as the record of what was measured under v10, and running
+# them again from a current tree does not reproduce that measurement:
+#
+#   - The apparatus is superseded. `no-accel-copy.so` answers copy_file_range,
+#     sendfile and sendfile64 in userspace so the oracle never meets a syscall
+#     it cannot model. v11 interposes those primitives in the shim and
+#     classifies them in the oracle, so the wall this revision was built to
+#     route around no longer stands.
+#   - The apparatus now COLLIDES with the shim. Measured: LD_PRELOAD wins over
+#     /etc/ld.so.preload, so the shim's wrapper records the copy and then calls
+#     through to this stub, which returns ENOSYS without issuing a syscall —
+#     the shim reports an operation the oracle never sees, which is a phantom
+#     and refuses.
+#   - `upstream-fix/run-replay.sh` replays a v10 case and therefore answers
+#     `contract_version_mismatch` from v11 on (the freeze's promised
+#     behaviour, `docs/contract-freeze.md` surface 4).
+#
+# Nothing here is retracted: the measurements stand as taken, on their date,
+# with the engine of that date. PRD's criterion-1 paragraph carries the same
+# note. Deleting the apparatus is deliberately NOT the answer — run2's
+# committed oracle transcript contains the preload lines, so removing the
+# source would leave a transcript nobody could account for.
+#
 # Cohort-4 himalaya, revision 2 (P1 unchanged): kill `maildir messages
 # copy` partway; the checker holds the store-holds-old-or-complete-new
 # property. The property, the checker, the setup and the fixtures are

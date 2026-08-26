@@ -42,6 +42,14 @@ jobs:
           test -f zig-out/lib/libsideeye_shim_testgap.so
           test "$sha_before" = "$sha_after"
 
+      # The gap #256 was: three syscalls the oracle classified and the shim never
+      # exported, sitting there since v0.1 because nothing compared the two lists.
+      # The check runs here rather than inside a cohort's preflight — the existing
+      # class-drift check lives in spike/cohort4/ and is reachable only from that
+      # cohort's own script, which is why it could not have caught this one.
+      - name: Every classified syscall is interposed or explained (#256)
+        run: python3 spike/check-shim-coverage.py src/oracle.zig shim/src/linux.zig
+
       - name: Install the completeness oracle
         run: sudo apt-get update && sudo apt-get install -y strace
 

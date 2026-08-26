@@ -8,7 +8,17 @@
 # python3 is not decoration: the acceptance suite reads the machine-readable report with
 # a real parser, because grep succeeds on a truncated document and that is exactly the
 # failure the check exists to catch.
-FROM rust:1-slim-bookworm
+# Pinned, not rolling (#244). `toy-rust` exists to measure what a real language
+# runtime actually calls rather than what its documentation says, and Rust std picks
+# its copy primitive internally — copy_file_range, then sendfile, then a read/write
+# loop. **No leg asserts that choice today**: the current toy writes with
+# `File::create` + `write_all` and never copies, so nothing here would notice a
+# change. The pin exists so that stays true by decision instead of by luck — a
+# `fs::copy` leg is the obvious next step for #244, and under a rolling tag it would
+# measure whichever primitive that day's std happened to choose. Pinned at the
+# version the batch measured against; raising it is a deliberate act that carries a
+# re-measurement with it.
+FROM rust:1.97.1-slim-bookworm
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \

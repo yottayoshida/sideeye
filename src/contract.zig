@@ -78,7 +78,26 @@ const std = @import("std");
 /// version guard turns that pairing into an explicit refusal. Measured motivation:
 /// the #118 cohort's pass run — a shell CLI whose first act is replacing itself
 /// with its interpreter — was refused at that first exec.
-pub const contract_version: u32 = 10;
+/// v11 widens the countable operation set (#244, #256), the same class of change as
+/// v5's stdio, v6's link, v7's remove and v9's symlink. The shim now exports the
+/// vectored positional writes (`pwritev`/`pwritev2` and their LFS aliases), the
+/// flag-checked `renameat2`, and the kernel copy primitives (`copy_file_range`,
+/// `sendfile`); the oracle has classified most of these since v0.1, so what changed
+/// is which side sees them, and therefore how many operations a run has. A v10 shim
+/// under a v11 engine would record no write where a `pwritev` happened, and every
+/// crash-point address after it would name a different operation — the version guard
+/// turns that pairing into an explicit refusal instead of a silent divergence.
+/// macOS widens too, by two: `pwritev` (which exists there) and `fdatasync` (which
+/// the oracle has always classified and the Linux shim has always exported, while the
+/// interpose table on this side did not list it). That platform has no oracle to
+/// refuse what the shim misses, so the same pairing hazard is worse there rather than
+/// milder — a v10 shim under a v11 engine records no write where either happened.
+///
+/// Measured motivation: a target writing through `pwritev` refused with
+/// `oracle_missed_operation`, and one copying through `copy_file_range` with
+/// `unsupported_syscall_observed` — the second being the wall that
+/// `spike/cohort4/himalaya-r2` was built to work around.
+pub const contract_version: u32 = 11;
 
 pub const magic = "SIDEEYE1";
 

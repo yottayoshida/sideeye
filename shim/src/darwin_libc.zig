@@ -22,6 +22,20 @@ pub const creat = @extern(*const fn ([*:0]const u8, c_uint) callconv(.c) c_int, 
 pub const write = @extern(*const fn (c_int, [*]const u8, usize) callconv(.c) isize, .{ .name = "write" });
 pub const pwrite = @extern(*const fn (c_int, [*]const u8, usize, i64) callconv(.c) isize, .{ .name = "pwrite" });
 pub const writev = @extern(*const fn (c_int, *const anyopaque, c_int) callconv(.c) isize, .{ .name = "writev" });
+/// `pwritev` is a BSD/Linux extension rather than POSIX, and macOS gained it in 11.0
+/// — measured present on this host (`/usr/lib/libSystem`), which is why it is taken
+/// here while `pwritev2` (Linux only) is not. One of the two members of #256 that
+/// narrow the macOS PASS hole, where no oracle exists to refuse what the shim cannot
+/// see; `fdatasync` below is the other.
+pub const pwritev = @extern(*const fn (c_int, *const anyopaque, c_int, i64) callconv(.c) isize, .{ .name = "pwritev" });
+/// `fdatasync` is in libSystem on macOS — measured by linking against an
+/// `extern int fdatasync(int)` declaration of our own — even though no public header
+/// declares it. The oracle has classified it as `.fsync` since v0.1 and the Linux shim has
+/// exported it just as long; this side never did, which is #256's shape exactly:
+/// a classified operation invisible to both observers on the platform that has no
+/// oracle to notice. Found by the first-look review of the batch that closed the
+/// Linux half, not by the check that batch added — that check reads linux.zig only.
+pub const fdatasync = @extern(*const fn (c_int) callconv(.c) c_int, .{ .name = "fdatasync" });
 pub const rename = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int, .{ .name = "rename" });
 pub const renameat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int, .{ .name = "renameat" });
 pub const unlink = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "unlink" });
