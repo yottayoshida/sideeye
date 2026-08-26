@@ -202,22 +202,38 @@ var expected_status_val: u8 = 0;
 /// name was spliced raw into the message, four lines of reasoning away from
 /// `refuseUnsupportedEntry`, which defangs. A Unix name may hold newlines and escape
 /// introducers; unlike the JSON side there is no second escaper behind the text.
+///
+/// The *verdict* the cap refuses with depends on `run_phase` (#330): SETUP_ERROR only at
+/// the initial snapshot, UNKNOWN `state_file_too_large` at the four sites at or past the
+/// recording run. The wording does not change with it — whichever of the three messages
+/// below applies, it applies on both sides of the split — so this reads as one refusal
+/// with two exits, not two refusals. The other snapshot failures still take `what` and
+/// exit 3 at every site; that is the same phase lie one class over, ruled to be its own
+/// change (#351) rather than smuggled in here.
 fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) engine.Snapshot {
     var diag: engine.FileTooLargeDiag = .{};
     return engine.takeSnapshotCapped(gpa, root, engine.max_state_file_bytes, &diag) catch |e| {
         if (e != error.FileTooLarge) setupError(what);
         if (json_arena) |ja| {
             if (diag.size) |sz|
-                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment")
+                capRefusal(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment")
             else
-                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment");
+                capRefusal(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment");
         }
         // Unreachable in practice: json_arena is assigned unconditionally before the
         // parse loop, ahead of every call site. Kept so this function's contract does
         // not depend on that ordering — but do not read it as a covered "no arena"
         // message path; nothing exercises it.
-        setupError("a state file is too large for byte-level judgment");
+        capRefusal("a state file is too large for byte-level judgment");
     };
+}
+
+/// The per-file cap's one exit, split by how far the run has got (#330).
+fn capRefusal(detail: []const u8) noreturn {
+    switch (run_phase) {
+        .before_exploration => setupError(detail),
+        .exploring => unknown(.state_file_too_large, detail),
+    }
 }
 
 /// Undo the two mkdirs setup resolution needs (state, then work), so a refusal
@@ -463,13 +479,36 @@ fn setupError(detail: []const u8) noreturn {
 /// phase. A first version of this fix sent every site to `setupError` and would have
 /// published `verdict: "SETUP_ERROR"` for a mid-exploration failure: honest about the
 /// failure, wrong about when it happened, and a silent change to the serialized shape.
+///
+/// How far the run has got. Two refusals read it and both ask the same question — did
+/// any of the define run before this failed? — so they share one vocabulary rather than
+/// growing a second: `spawnFailure` takes it as a parameter (the caller knows which step
+/// it was starting), and the per-file snapshot cap reads `run_phase` below (#330).
 const SpawnPhase = enum {
-    /// Before any world runs: `--setup`, the demo's compiler probe. A failure here really
-    /// does mean the define never got started.
+    /// Before any world runs: `--setup`, the demo's compiler probe, the initial
+    /// snapshot. A failure here really does mean the define never got started.
     before_exploration,
     /// The recording run onward. The define is running; refusing is UNKNOWN.
     exploring,
 };
+
+/// The phase the snapshot cap reads (#330). A *variable* rather than an argument
+/// threaded through `snapshotOrRefuse`, and the difference is what can be verified:
+/// `snapshotOrRefuse` has five call sites, one before the recording run and four at or
+/// past it, and an acceptance leg can only reach one of the four. Passed as an argument,
+/// the other three could name the wrong phase and every check in the tree would stay
+/// green. Assigned once, immediately before the recording run, a per-site mistake is not
+/// representable at all — what remains is where the single assignment sits, and the two
+/// legs bound that from both sides: move it above the initial snapshot and check 2fc goes
+/// red, delete it and check 2fd does. **They bound an interval, not a point** — measured,
+/// by moving the assignment down to just above the final snapshot, where both legs stay
+/// green because nothing between reads the variable. What is pinned is that the
+/// assignment lies after the initial snapshot and at or before the final one.
+///
+/// A *sixth* call site added above this assignment would be misread, and no check would
+/// say so — the same gap `answerForOversizedTrace` states for its own sites: caught in
+/// review, not by the compiler.
+var run_phase: SpawnPhase = .before_exploration;
 
 fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
     if (e == error.WaitFailed) {
@@ -1019,6 +1058,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
     defer initial.deinit();
 
     // ---- recording run -----------------------------------------------------------
+    // The last snapshot that can honestly say "the define did not run" is above this
+    // line; every one below it is at or past the recording run (#330).
+    //
+    // The define itself does not begin here — what follows, up to the recording run
+    // below, is still engine setup (path buffers, argv splitting, the oracle's
+    // executability check). Every refusal in that stretch exits 3, correctly: a
+    // missing `--operation` really is a configuration problem. They can, because they
+    // reach `setupError` directly and never consult this variable. The line is placed
+    // by what reads it, and the only reader is the snapshot cap.
+    run_phase = .exploring;
+
     var rec_trace_buf: [contract.max_path]u8 = undefined;
     const rec_trace = std.fmt.bufPrint(&rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError("path too long");
     removeFile(rec_trace);
