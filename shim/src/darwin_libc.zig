@@ -36,6 +36,32 @@ pub const pwritev = @extern(*const fn (c_int, *const anyopaque, c_int, i64) call
 /// oracle to notice. Found by the first-look review of the batch that closed the
 /// Linux half, not by the check that batch added — that check reads linux.zig only.
 pub const fdatasync = @extern(*const fn (c_int) callconv(.c) c_int, .{ .name = "fdatasync" });
+/// The clone family (v12, #333). All three are separate stubs at separate addresses in
+/// libsystem_kernel — interposing one covers none of the others — and their argument
+/// orders disagree: `clonefile`'s destination is argument 1, `clonefileat`'s is 3, and
+/// `fclonefileat`'s is 2 with a *source file descriptor* (not a dirfd) in argument 0.
+/// Rust std's `fs::copy` reaches `fclonefileat` first on this platform; `copyfile`'s
+/// `COPYFILE_CLONE` reaches `clonefileat` (measured in libcopyfile's import table).
+pub const clonefile = @extern(*const fn ([*:0]const u8, [*:0]const u8, u32) callconv(.c) c_int, .{ .name = "clonefile" });
+pub const clonefileat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, u32) callconv(.c) c_int, .{ .name = "clonefileat" });
+pub const fclonefileat = @extern(*const fn (c_int, c_int, [*:0]const u8, u32) callconv(.c) c_int, .{ .name = "fclonefileat" });
+/// macOS's spelling of `renameat2` (v12). The interpose table has named it as such
+/// since #256 closed the Linux half; it was named and not taken.
+pub const renamex_np = @extern(*const fn ([*:0]const u8, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "renamex_np" });
+pub const renameatx_np = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "renameatx_np" });
+/// Atomic contents swap — the mutation the restore model cannot reproduce, macOS's
+/// `RENAME_EXCHANGE`-shaped relative (v12). Interposed to refuse in scope, never to count.
+pub const exchangedata = @extern(*const fn ([*:0]const u8, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "exchangedata" });
+/// The attrlist family (v12): metadata writers, except that `ATTR_CMN_NAME` renames.
+/// The `options` word is declared `unsigned int` in one SDK header and `unsigned long`
+/// in another — declared wide here, matching the wider header, since arm64 passes both
+/// in a register and the wrapper only forwards it.
+pub const setattrlist = @extern(*const fn ([*:0]const u8, *anyopaque, ?*anyopaque, usize, c_ulong) callconv(.c) c_int, .{ .name = "setattrlist" });
+pub const fsetattrlist = @extern(*const fn (c_int, *anyopaque, ?*anyopaque, usize, c_ulong) callconv(.c) c_int, .{ .name = "fsetattrlist" });
+pub const setattrlistat = @extern(*const fn (c_int, [*:0]const u8, *anyopaque, ?*anyopaque, usize, u32) callconv(.c) c_int, .{ .name = "setattrlistat" });
+/// The open variant libcopyfile imports beside plain `open` (v12): same flag word in
+/// argument 1, two protection arguments before the variadic mode.
+pub const open_dprotected_np = @extern(*const fn ([*:0]const u8, c_int, c_int, c_int, ...) callconv(.c) c_int, .{ .name = "open_dprotected_np" });
 pub const rename = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int, .{ .name = "rename" });
 pub const renameat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int, .{ .name = "renameat" });
 pub const unlink = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "unlink" });

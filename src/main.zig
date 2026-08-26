@@ -1174,6 +1174,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.saw_unresolved)
         unknown(.unresolvable_path, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points");
 
+    // The shim's own `unsupported` refusal (v12). On Linux this arrives from the
+    // oracle instead — same reason, same spelling shape ("renamex_np(RENAME_SWAP)"
+    // here, "renameat2(RENAME_EXCHANGE)" there) — but macOS has no oracle, so the
+    // only observer the platform has issues it. The shim scope-gates the record the
+    // way the oracle scope-gates its refusal, so an out-of-scope swap refuses nothing.
+    if (trace.first_unsupported) |name|
+        unknown(.unsupported_syscall_observed, name);
+
     // The boundaries that stay refusals whatever an oracle says. exec replaces the
     // image the crash points were read from; a thread makes operation order
     // non-deterministic; a process that left the containment group is one the engine
@@ -1633,6 +1641,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // nothing else.
         if (wtrace.foreign_kill_point)
             unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation in an explored world");
+        // A world may take a branch the recording run did not (the kill changes what the
+        // target sees), so an unmodellable in-scope operation can first appear here.
+        if (wtrace.first_unsupported) |name|
+            unknown(.unsupported_syscall_observed, name);
         if (wtrace.hard_boundary) |hb| switch (hb) {
             .detached => unknown(.child_process_detected, "a process left the containment group in an explored world"),
             .thread => unknown(.multiple_threads_detected, "the target created a thread in an explored world"),

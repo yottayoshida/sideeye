@@ -73,6 +73,17 @@ pub const AT_REMOVEDIR: c_int = if (builtin.os.tag == .macos) 0x0080 else 0x200;
 /// because nothing branches on it — it IS a rename, so it takes the default path.
 pub const RENAME_EXCHANGE: c_uint = 2;
 pub const RENAME_WHITEOUT: c_uint = 4;
+/// Darwin's `renamex_np`/`renameatx_np` flags (v12). The NUMBERS collide with the
+/// Linux pair above and the MEANINGS do not: Darwin's 0x4 is `RENAME_EXCL` — the
+/// decline-to-clobber flag, `RENAME_NOREPLACE`'s relative, a plain rename this shim
+/// records — while Linux's 0x4 is `RENAME_WHITEOUT`, which is refused. Reusing the
+/// constants above by value would refuse the allowed flag. Named per-platform so the
+/// wrapper reads as the header does.
+pub const DARWIN_RENAME_SWAP: c_uint = 0x2;
+pub const DARWIN_RENAME_EXCL: c_uint = 0x4;
+/// `struct attrlist.commonattr` bit for the entry's name (v12): the one bit that turns
+/// a metadata call into a rename.
+pub const ATTR_CMN_NAME: u32 = 0x00000001;
 const SIGKILL: c_int = 9;
 
 // These differ between the two platforms and getting them wrong is quiet: the trace
@@ -839,6 +850,59 @@ pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
     observe(op, resolved, "");
 }
 
+/// Record that an operation the shim can place but not model touched the state
+/// directory (v12): a `RENAME_SWAP`, an `exchangedata`, a rename-via-attrlist. The
+/// engine refuses the run on this record (`unsupported_syscall_observed`), the way the
+/// oracle's flag refusal does on Linux — and like that refusal it is **scope-gated**:
+/// the oracle checks `scope == .outside` before it looks at flags (oracle.zig), so an
+/// out-of-scope swap must not refuse here either, or the two platforms answer the same
+/// scenario differently. Both endpoints count, per the two-path rule (ADR 0006): a swap
+/// with either side inside the state directory mutates it.
+///
+/// `noteUnresolved` is deliberately not this function: that one is unconditional, and
+/// its one caller class is justified in being so because the *path cannot be resolved*
+/// — there is nothing to scope-gate on. Here the paths resolve fine; the operation's
+/// meaning is what the model lacks. `label` is the syscall-and-flag spelling the
+/// refusal will show ("renamex_np(RENAME_SWAP)"), the same shape Linux's shows.
+pub fn noteUnsupportedInScope2(
+    label: [*:0]const u8,
+    dirfd: c_int,
+    path: [*:0]const u8,
+    adirfd: c_int,
+    apath: ?[*:0]const u8,
+) void {
+    if (!active or busy) return;
+    busy = true;
+    defer busy = false;
+
+    var buf: [contract.max_path]u8 = undefined;
+    var cbuf: [contract.max_path]u8 = undefined;
+    var unresolvable = false;
+    var in_scope = false;
+    if (resolveAt(&buf, dirfd, path, &unresolvable)) |resolved| {
+        in_scope = contract.isInsideDir(canonical(&cbuf, resolved), stateDir());
+    } else if (unresolvable) {
+        // Cannot place it, so cannot clear it: the unconditional channel is right
+        // exactly here, for the reason its own doc gives.
+        noteUnresolved(std.mem.span(path));
+        return;
+    }
+    if (!in_scope) {
+        if (apath) |ap| {
+            var abuf: [contract.max_path]u8 = undefined;
+            var acbuf: [contract.max_path]u8 = undefined;
+            var aunresolvable = false;
+            if (resolveAt(&abuf, adirfd, ap, &aunresolvable)) |ares| {
+                in_scope = contract.isInsideDir(canonical(&acbuf, ares), stateDir());
+            } else if (aunresolvable) {
+                noteUnresolved(std.mem.span(ap));
+                return;
+            }
+        }
+    }
+    if (in_scope) writeRecord(.unsupported, 0, std.mem.span(label), "");
+}
+
 pub fn note2(
     op: contract.OpClass,
     dirfd: c_int,
@@ -960,6 +1024,34 @@ fn noteUnresolvedFd(fd: c_int) void {
     var b: [16]u8 = undefined;
     const s = std.fmt.bufPrint(&b, "fd:{d}", .{fd}) catch "fd:?";
     noteUnresolved(s);
+}
+
+/// The fd-taking form of `noteUnsupportedInScope2` (v12): `fsetattrlist` names its file
+/// by descriptor. Resolution mirrors `noteFd` below — the same three-way answer, the
+/// same refusal on a measurement that failed — and the scope gate is the same one.
+pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
+    if (!active or busy) return;
+    if (fd < 0) return;
+    busy = true;
+    defer busy = false;
+
+    var deleted = false;
+    switch (fdKind(fd, &deleted)) {
+        .non_path => return,
+        .unresolvable => {
+            noteUnresolvedFd(fd);
+            return;
+        },
+        .path_backed => {},
+    }
+    var buf: [contract.max_path]u8 = undefined;
+    var link_deleted = false;
+    const resolved = fdPath(&buf, fd, &link_deleted) orelse {
+        noteUnresolvedFd(fd);
+        return;
+    };
+    if (!isInState(resolved)) return;
+    writeRecord(.unsupported, 0, std.mem.span(label), "");
 }
 
 pub fn noteFd(op: contract.OpClass, fd: c_int) void {
@@ -1094,6 +1186,52 @@ pub inline fn callSendfile(out_fd: c_int, in_fd: c_int, off: ?*i64, count: usize
 pub inline fn callRenameat2(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]const u8, flags: c_uint) c_int {
     const f = real.renameat2 orelse return optionalMissingInt();
     return f(olddirfd, old, newdirfd, new, flags);
+}
+
+// The macOS-only symbols (v12, #333). Darwin calls the real function directly, the way
+// every helper above does; the Linux arm is unreachable in practice — linux.zig never
+// exports these names, so nothing on that platform can call the wrappers — and answers
+// ENOSYS rather than trapping, so a future mistaken export fails loudly instead of
+// undefined.
+pub inline fn callClonefile(src: [*:0]const u8, dst: [*:0]const u8, flags: u32) c_int {
+    if (is_darwin) return darwin.clonefile(src, dst, flags);
+    return optionalMissingInt();
+}
+pub inline fn callClonefileat(sfd: c_int, src: [*:0]const u8, dfd: c_int, dst: [*:0]const u8, flags: u32) c_int {
+    if (is_darwin) return darwin.clonefileat(sfd, src, dfd, dst, flags);
+    return optionalMissingInt();
+}
+pub inline fn callFclonefileat(srcfd: c_int, dfd: c_int, dst: [*:0]const u8, flags: u32) c_int {
+    if (is_darwin) return darwin.fclonefileat(srcfd, dfd, dst, flags);
+    return optionalMissingInt();
+}
+pub inline fn callRenamexNp(old: [*:0]const u8, new: [*:0]const u8, flags: c_uint) c_int {
+    if (is_darwin) return darwin.renamex_np(old, new, flags);
+    return optionalMissingInt();
+}
+pub inline fn callRenameatxNp(od: c_int, old: [*:0]const u8, nd: c_int, new: [*:0]const u8, flags: c_uint) c_int {
+    if (is_darwin) return darwin.renameatx_np(od, old, nd, new, flags);
+    return optionalMissingInt();
+}
+pub inline fn callExchangedata(p1: [*:0]const u8, p2: [*:0]const u8, opts: c_uint) c_int {
+    if (is_darwin) return darwin.exchangedata(p1, p2, opts);
+    return optionalMissingInt();
+}
+pub inline fn callSetattrlist(path: [*:0]const u8, al: *anyopaque, buf: ?*anyopaque, n: usize, opts: c_ulong) c_int {
+    if (is_darwin) return darwin.setattrlist(path, al, buf, n, opts);
+    return optionalMissingInt();
+}
+pub inline fn callFsetattrlist(fd: c_int, al: *anyopaque, buf: ?*anyopaque, n: usize, opts: c_ulong) c_int {
+    if (is_darwin) return darwin.fsetattrlist(fd, al, buf, n, opts);
+    return optionalMissingInt();
+}
+pub inline fn callSetattrlistat(dirfd: c_int, path: [*:0]const u8, al: *anyopaque, buf: ?*anyopaque, n: usize, opts: u32) c_int {
+    if (is_darwin) return darwin.setattrlistat(dirfd, path, al, buf, n, opts);
+    return optionalMissingInt();
+}
+pub inline fn callOpenDprotectedNp(path: [*:0]const u8, flags: c_int, class: c_int, dpflags: c_int, mode: c_uint) c_int {
+    if (is_darwin) return darwin.open_dprotected_np(path, flags, class, dpflags, mode);
+    return optionalMissingInt();
 }
 pub inline fn callRename(old: [*:0]const u8, new: [*:0]const u8) c_int {
     if (is_darwin) return darwin.rename(old, new);

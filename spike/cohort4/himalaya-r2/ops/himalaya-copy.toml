@@ -13,7 +13,7 @@
 #     the shim reports an operation the oracle never sees, which is a phantom
 #     and refuses.
 #   - `upstream-fix/run-replay.sh` replays a v10 case and therefore answers
-#     `contract_version_mismatch` from v11 on (the freeze's promised
+#     `case_no_longer_applies` from v11 on (the freeze's promised
 #     behaviour, `docs/contract-freeze.md` surface 4).
 #
 # Nothing here is retracted: the measurements stand as taken, on their date,

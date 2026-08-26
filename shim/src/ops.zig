@@ -142,6 +142,110 @@ pub fn renameat2(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0
     return common.callRenameat2(olddirfd, old, newdirfd, new, flags);
 }
 
+// --- The macOS family (v12, #333) ------------------------------------------------
+//
+// Everything below is installed by macos.zig only. Linux never exports these names,
+// and the call helpers answer ENOSYS if a future mistake changes that.
+//
+// The clone family records a `.write` on the DESTINATION, one record: a clone is one
+// atomic syscall after which a name holds content, and its source is copy-on-write —
+// unchanged — so scope reads the destination alone (the same reasoning ADR 0023
+// applied to `copy_file_range`, whose written descriptor is not argument 0 either).
+// The record is an attempt, like every record this file writes: `clonefile` fails
+// when its destination exists, callers (Rust std, `copyfile(COPYFILE_CLONE)`) then
+// fall back to plain writes, and the failed attempt's crash point is a state-twin of
+// its successor — same state, same judgment (measured; the CI leg pins it).
+
+pub fn clonefile(src: [*:0]const u8, dst: [*:0]const u8, flags: u32) callconv(.c) c_int {
+    common.note1(.write, AT_FDCWD, dst);
+    return common.callClonefile(src, dst, flags);
+}
+
+pub fn clonefileat(src_dirfd: c_int, src: [*:0]const u8, dst_dirfd: c_int, dst: [*:0]const u8, flags: u32) callconv(.c) c_int {
+    common.note1(.write, dst_dirfd, dst);
+    return common.callClonefileat(src_dirfd, src, dst_dirfd, dst, flags);
+}
+
+/// Argument 0 is the SOURCE FILE's descriptor, not a dirfd — the destination is
+/// argument 2, relative to the dirfd in argument 1. Handing `srcfd` to `note1` would
+/// not fail loudly: `fdKind` answers `path_backed` for a regular file and the record
+/// would name a path under the source file. The CI leg drives exactly that swap.
+pub fn fclonefileat(srcfd: c_int, dst_dirfd: c_int, dst: [*:0]const u8, flags: u32) callconv(.c) c_int {
+    common.note1(.write, dst_dirfd, dst);
+    return common.callFclonefileat(srcfd, dst_dirfd, dst, flags);
+}
+
+// The rename extensions. `RENAME_EXCL` (0x4) declines to clobber — `RENAME_NOREPLACE`'s
+// relative, a plain rename, recorded. `RENAME_SWAP` (0x2) exchanges two files
+// atomically, which the restore model cannot reproduce; on Linux the ORACLE refuses
+// its relative (`renameat2(RENAME_EXCHANGE)`), scope-gated, and this platform has no
+// oracle — so the shim itself writes the scope-gated refusal record. The numeric
+// values collide with Linux's pair while the meanings do not (common.zig's constants
+// carry the warning).
+
+pub fn renamex_np(old: [*:0]const u8, new: [*:0]const u8, flags: c_uint) callconv(.c) c_int {
+    if (flags & common.DARWIN_RENAME_SWAP != 0)
+        common.noteUnsupportedInScope2("renamex_np(RENAME_SWAP)", AT_FDCWD, old, AT_FDCWD, new)
+    else
+        common.note2(.rename, AT_FDCWD, old, AT_FDCWD, new);
+    return common.callRenamexNp(old, new, flags);
+}
+
+pub fn renameatx_np(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]const u8, flags: c_uint) callconv(.c) c_int {
+    if (flags & common.DARWIN_RENAME_SWAP != 0)
+        common.noteUnsupportedInScope2("renameatx_np(RENAME_SWAP)", olddirfd, old, newdirfd, new)
+    else
+        common.note2(.rename, olddirfd, old, newdirfd, new);
+    return common.callRenameatxNp(olddirfd, old, newdirfd, new, flags);
+}
+
+/// Always the refusal: there is no flag under which an atomic contents swap fits the
+/// model. Scope-gated like the rest — swapping two files outside the state directory
+/// is none of this tool's business.
+pub fn exchangedata(p1: [*:0]const u8, p2: [*:0]const u8, opts: c_uint) callconv(.c) c_int {
+    common.noteUnsupportedInScope2("exchangedata", AT_FDCWD, p1, AT_FDCWD, p2);
+    return common.callExchangedata(p1, p2, opts);
+}
+
+/// The one bit that turns a metadata call into a rename. `struct attrlist` is
+/// fixed-layout: `bitmapcount` u16, `reserved` u16, then `commonattr` u32 at offset 4.
+/// Everything else this family sets (xattrs, ACLs, times) falls under the report's
+/// standing "metadata is not observable" declaration and records nothing.
+fn attrlistRenames(al: *anyopaque) bool {
+    const b: [*]const u8 = @ptrCast(al);
+    const common_attr = std.mem.bytesToValue(u32, b[4..8]);
+    return common_attr & common.ATTR_CMN_NAME != 0;
+}
+
+pub fn setattrlist(path: [*:0]const u8, al: *anyopaque, buf: ?*anyopaque, n: usize, opts: c_ulong) callconv(.c) c_int {
+    if (attrlistRenames(al))
+        common.noteUnsupportedInScope2("setattrlist(ATTR_CMN_NAME)", AT_FDCWD, path, AT_FDCWD, null);
+    return common.callSetattrlist(path, al, buf, n, opts);
+}
+
+pub fn fsetattrlist(fd: c_int, al: *anyopaque, buf: ?*anyopaque, n: usize, opts: c_ulong) callconv(.c) c_int {
+    if (attrlistRenames(al))
+        common.noteUnsupportedInScopeFd("fsetattrlist(ATTR_CMN_NAME)", fd);
+    return common.callFsetattrlist(fd, al, buf, n, opts);
+}
+
+pub fn setattrlistat(dirfd: c_int, path: [*:0]const u8, al: *anyopaque, buf: ?*anyopaque, n: usize, opts: u32) callconv(.c) c_int {
+    if (attrlistRenames(al))
+        common.noteUnsupportedInScope2("setattrlistat(ATTR_CMN_NAME)", dirfd, path, dirfd, null);
+    return common.callSetattrlistat(dirfd, path, al, buf, n, opts);
+}
+
+/// The open variant libcopyfile imports beside plain `open`: the same flag word in
+/// argument 1, two protection arguments in between, mode variadic — read only when
+/// O_CREAT asks for it, exactly as the `open` wrapper above does.
+pub fn open_dprotected_np(path: [*:0]const u8, flags: c_int, class: c_int, dpflags: c_int, ...) callconv(.c) c_int {
+    var ap = @cVaStart();
+    defer @cVaEnd(&ap);
+    const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
+    if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, path);
+    return common.callOpenDprotectedNp(path, flags, class, dpflags, mode);
+}
+
 // --- kill-point ops: unlink ------------------------------------------------------
 
 pub fn unlink(path: [*:0]const u8) callconv(.c) c_int {

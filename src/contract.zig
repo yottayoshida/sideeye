@@ -97,7 +97,20 @@ const std = @import("std");
 /// `oracle_missed_operation`, and one copying through `copy_file_range` with
 /// `unsupported_syscall_observed` — the second being the wall that
 /// `spike/cohort4/himalaya-r2` was built to work around.
-pub const contract_version: u32 = 11;
+///
+/// v12 closes the clone family on macOS (#333) — `clonefile`/`clonefileat`/
+/// `fclonefileat` record a `.write` on their destination, and `renamex_np`/
+/// `renameatx_np` join `rename` under the same flag discipline `renameat2` has on
+/// Linux — plus the new `.unsupported` marker, which is how the macOS shim refuses
+/// what it can see but not model (`RENAME_SWAP`, `exchangedata`): on Linux that
+/// refusal comes from the oracle, and this platform has no oracle to issue it.
+/// Measured motivation: a clone was invisible to both observers — zero operations
+/// recorded while a real file appeared with real content — and with any other
+/// recorded MUTATION present the run **PASSed** (the zero-ops guard counts
+/// mutations, so a mere open or fsync beside the clone kept the refusal); Rust
+/// std's `fs::copy` reaches `fclonefileat` first on this platform, so the silent
+/// route was the common one, not the exotic one.
+pub const contract_version: u32 = 12;
 
 pub const magic = "SIDEEYE1";
 
@@ -206,6 +219,16 @@ pub const OpClass = enum(u16) {
     /// is not the same as an operation that did not happen, and only the first of those
     /// is compatible with reporting PASS.
     unresolved = 902,
+    /// The shim saw an operation it can name and place but not model (v12): a
+    /// `RENAME_SWAP`, an `exchangedata` — mutations the restore model cannot
+    /// reproduce. On Linux the oracle issues this refusal
+    /// (`unsupported_syscall_observed`, by flag name); macOS has no oracle, so the
+    /// refusal has to originate in the only observer the platform has. The record's
+    /// path field carries the syscall-and-flag spelling, not a path — the same string
+    /// the Linux refusal shows — and the shim writes it only when the operation's
+    /// paths resolve inside the state directory, because the oracle's refusal is
+    /// scope-gated too and an out-of-scope swap is none of this tool's business.
+    unsupported = 903,
 
     pub fn isKillPoint(self: OpClass) bool {
         return switch (self) {
@@ -223,7 +246,7 @@ pub const OpClass = enum(u16) {
 
     pub fn isMarker(self: OpClass) bool {
         return switch (self) {
-            .shim_ready, .kill_landed, .unresolved => true,
+            .shim_ready, .kill_landed, .unresolved, .unsupported => true,
             else => false,
         };
     }
@@ -274,6 +297,7 @@ pub const OpClass = enum(u16) {
             .shim_ready => "shim_ready",
             .kill_landed => "kill_landed",
             .unresolved => "unresolved",
+            .unsupported => "unsupported",
         };
     }
 

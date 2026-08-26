@@ -74,8 +74,10 @@ divergence the contract exists to make loud.
 ## Consequences
 
 - Trace contract v11: the countable operation set widens, so saved
-  cases from v10 refuse with `contract_version_mismatch` (the freeze's
-  promised behaviour, surface 4). `spike/cohort4/himalaya-r2` and the
+  cases from v10 refuse with `case_no_longer_applies` (the freeze's
+  promised behaviour, surface 4 — an earlier revision of this line named
+  `contract_version_mismatch`, which is the shim/engine pairing refusal,
+  not the saved-case one). `spike/cohort4/himalaya-r2` and the
   PRD paragraph that cites its replay are annotated as measurements
   taken under v10 rather than silently left in the present tense.
 - `spike/cohort4/himalaya-r2`'s apparatus (`no-accel-copy.so`) is
