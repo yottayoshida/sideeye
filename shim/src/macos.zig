@@ -41,6 +41,12 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.write, libc.write),
     entry(&ops.pwrite, libc.pwrite),
     entry(&ops.writev, libc.writev),
+    // One of #256's two macOS members: `pwritev` exists here (11.0+), `pwritev2`
+    // does not, and `renameat2` is Linux's spelling of a call macOS names
+    // `renameatx_np`. The other is `fdatasync`, below. Without an oracle on this
+    // platform, a write the shim cannot see is invisible to everything, which is why
+    // each of the two is worth taking on its own.
+    entry(&ops.pwritev, libc.pwritev),
     entry(&ops.rename, libc.rename),
     entry(&ops.renameat, libc.renameat),
     entry(&ops.unlink, libc.unlink),
@@ -51,6 +57,10 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.symlink, libc.symlink),
     entry(&ops.symlinkat, libc.symlinkat),
     entry(&ops.fsync, libc.fsync),
+    // `fdatasync` was missing here while the oracle classified it and Linux exported
+    // it — the same gap #256 closed on the other side, on the platform where it
+    // costs more (no oracle to refuse what the shim cannot see).
+    entry(&ops.fdatasync, libc.fdatasync),
     entry(&ops.close, libc.close),
     // stdio, at flush granularity (ADR 0005). No 64-bit variants or fflush_unlocked on
     // this platform; fdopen needs no wrapper (no syscall happens there).

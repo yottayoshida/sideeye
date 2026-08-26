@@ -297,7 +297,14 @@ Three tiers, in increasing order of gate:
   `shutil._USE_CP_SENDFILE = False`) is pre-declared here for the Python
   targets, to be used only when the engine refuses on
   `unsupported_syscall_observed: sendfile` — the hg-r3/borg-r3 precedent,
-  approved in the implementation plan (2026-08-22). Any define using it
+  approved in the implementation plan (2026-08-22).
+  **Superseded from trace contract v11 (2026-08-26, #244): that refusal no
+  longer happens.** The shim interposes `sendfile` and `copy_file_range` and
+  the oracle classifies them, so a run reaching either is judged rather than
+  refused, and this apparatus has no triggering condition left. A cohort
+  running under v11 or later should not declare it; the paragraph stays
+  because hg-r3 and borg-r3 were run under it and their records cite it.
+  Any define using it
   says so.
 - **Clock or entropy interposition** (libfaketime, pins on
   `time.monotonic` / `os.urandom`) is a **per-target owner decision**,

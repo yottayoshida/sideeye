@@ -86,6 +86,36 @@ pub fn writev(fd: c_int, iov: *const anyopaque, iovcnt: c_int) callconv(.c) isiz
     return common.callWritev(fd, iov, iovcnt);
 }
 
+pub fn pwritev(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64) callconv(.c) isize {
+    common.noteFd(.write, fd);
+    return common.callPwritev(fd, iov, iovcnt, offset);
+}
+
+pub fn pwritev2(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64, flags: c_int) callconv(.c) isize {
+    common.noteFd(.write, fd);
+    return common.callPwritev2(fd, iov, iovcnt, offset, flags);
+}
+
+// --- kill-point ops: the kernel's copy primitives (#244) --------------------------
+
+/// The destination descriptor is the third argument, not the first — the one place in
+/// this file where the written descriptor is not `fd`. `src/oracle.zig`'s
+/// `fd_write_args` carries the same fact for the other observer; both must agree or
+/// the copy is counted on one side only.
+pub fn copy_file_range(fd_in: c_int, off_in: ?*i64, fd_out: c_int, off_out: ?*i64, len: usize, flags: c_uint) callconv(.c) isize {
+    common.noteFd(.write, fd_out);
+    return common.callCopyFileRange(fd_in, off_in, fd_out, off_out, len, flags);
+}
+
+/// `sendfile(out_fd, in_fd, …)` on Linux: the destination is already first, which is
+/// why it needs no `fd_write_args` entry. macOS spells a different call with the
+/// arguments the other way round and a socket destination, so this wrapper is
+/// installed on Linux only.
+pub fn sendfile(out_fd: c_int, in_fd: c_int, offset: ?*i64, count: usize) callconv(.c) isize {
+    common.noteFd(.write, out_fd);
+    return common.callSendfile(out_fd, in_fd, offset, count);
+}
+
 // --- kill-point ops: rename ------------------------------------------------------
 
 pub fn rename(old: [*:0]const u8, new: [*:0]const u8) callconv(.c) c_int {
@@ -96,6 +126,20 @@ pub fn rename(old: [*:0]const u8, new: [*:0]const u8) callconv(.c) c_int {
 pub fn renameat(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]const u8) callconv(.c) c_int {
     common.note2(.rename, olddirfd, old, newdirfd, new);
     return common.callRenameat(olddirfd, old, newdirfd, new);
+}
+
+/// `renameat2`'s flags decide what it means, the way `unlinkat`'s `AT_REMOVEDIR`
+/// does above (#256). `RENAME_NOREPLACE` is a plain rename that refuses to clobber,
+/// so it records as one. `RENAME_EXCHANGE` swaps two files and `RENAME_WHITEOUT`
+/// leaves a whiteout inode — effects the snapshot/restore model does not reproduce,
+/// so neither is recorded as a `.rename`. The oracle refuses them by flag name
+/// (`renameat2(RENAME_EXCHANGE)`), which is what the operator reads; recording a
+/// `.rename` here as well would put a phantom on the shim's side of an account that
+/// is already going to refuse.
+pub fn renameat2(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]const u8, flags: c_uint) callconv(.c) c_int {
+    if (flags & (common.RENAME_EXCHANGE | common.RENAME_WHITEOUT) == 0)
+        common.note2(.rename, olddirfd, old, newdirfd, new);
+    return common.callRenameat2(olddirfd, old, newdirfd, new, flags);
 }
 
 // --- kill-point ops: unlink ------------------------------------------------------

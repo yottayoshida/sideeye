@@ -68,6 +68,11 @@ pub const AT_FDCWD: c_int = if (builtin.os.tag == .macos) -2 else -100;
 /// a directory removal, and misreading it records `.unlink` where Linux records
 /// `.rmdir` — a parity claim that fails only for targets which remove directories.
 pub const AT_REMOVEDIR: c_int = if (builtin.os.tag == .macos) 0x0080 else 0x200;
+/// The two `renameat2` flags that make it something other than a rename (Linux only;
+/// values from `std.os.linux.RENAME`'s bit order). NOREPLACE has no constant here
+/// because nothing branches on it — it IS a rename, so it takes the default path.
+pub const RENAME_EXCHANGE: c_uint = 2;
+pub const RENAME_WHITEOUT: c_uint = 4;
 const SIGKILL: c_int = 9;
 
 // These differ between the two platforms and getting them wrong is quiet: the trace
@@ -132,8 +137,22 @@ pub const CreatFn = *const fn ([*:0]const u8, c_uint) callconv(.c) c_int;
 pub const WriteFn = *const fn (c_int, [*]const u8, usize) callconv(.c) isize;
 pub const PwriteFn = *const fn (c_int, [*]const u8, usize, i64) callconv(.c) isize;
 pub const WritevFn = *const fn (c_int, *const anyopaque, c_int) callconv(.c) isize;
+/// The vectored positional writes (#256). `pwritev2` differs only by its trailing
+/// flags argument; both keep the descriptor first, so scope reads argument 0 on
+/// either observer.
+pub const PwritevFn = *const fn (c_int, *const anyopaque, c_int, i64) callconv(.c) isize;
+pub const Pwritev2Fn = *const fn (c_int, *const anyopaque, c_int, i64, c_int) callconv(.c) isize;
+/// The kernel copy primitives (#244). `copy_file_range` is the one whose destination
+/// is not the first argument — src/oracle.zig's `fd_write_args` carries the same fact
+/// for the other observer.
+pub const CopyFileRangeFn = *const fn (c_int, ?*i64, c_int, ?*i64, usize, c_uint) callconv(.c) isize;
+pub const SendfileFn = *const fn (c_int, c_int, ?*i64, usize) callconv(.c) isize;
 pub const RenameFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int;
 pub const RenameatFn = *const fn (c_int, [*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int;
+/// `renameat2` adds flags, and the flags change what the call MEANS (#256):
+/// `RENAME_EXCHANGE` swaps two files atomically and `RENAME_WHITEOUT` creates a
+/// whiteout inode — neither is the plain rename `note2(.rename, …)` models.
+pub const Renameat2Fn = *const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_uint) callconv(.c) c_int;
 pub const UnlinkFn = *const fn ([*:0]const u8) callconv(.c) c_int;
 pub const UnlinkatFn = *const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int;
 pub const LinkFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int;
@@ -309,8 +328,13 @@ pub var real: struct {
     write: ?WriteFn = null,
     pwrite: ?PwriteFn = null,
     writev: ?WritevFn = null,
+    pwritev: ?PwritevFn = null,
+    pwritev2: ?Pwritev2Fn = null,
+    copy_file_range: ?CopyFileRangeFn = null,
+    sendfile: ?SendfileFn = null,
     rename: ?RenameFn = null,
     renameat: ?RenameatFn = null,
+    renameat2: ?Renameat2Fn = null,
     unlink: ?UnlinkFn = null,
     unlinkat: ?UnlinkatFn = null,
     link: ?LinkFn = null,
@@ -392,8 +416,20 @@ fn resolveAll() void {
     real.write = lookup(WriteFn, "write");
     real.pwrite = lookup(PwriteFn, "pwrite");
     real.writev = lookup(WritevFn, "writev");
+    // Optional symbols (#244, #256): unlike the wrappers above, these can genuinely
+    // be absent — pwritev2 needs glibc 2.26, copy_file_range 2.27, renameat2 2.28,
+    // and musl spells some of them differently. `optionalMissing` below turns a null
+    // into ENOSYS rather than a bare -1, because a target that reads errno to decide
+    // whether to fall back (Rust std's kernel_copy does exactly this) must see the
+    // reason. Of these five only `pwritev` exists on macOS, and only its helper has
+    // a darwin branch; the rest are Linux-only calls whose lookup is the only path.
+    real.pwritev = lookup(PwritevFn, "pwritev");
+    real.pwritev2 = lookup(Pwritev2Fn, "pwritev2");
+    real.copy_file_range = lookup(CopyFileRangeFn, "copy_file_range");
+    real.sendfile = lookup(SendfileFn, "sendfile");
     real.rename = lookup(RenameFn, "rename");
     real.renameat = lookup(RenameatFn, "renameat");
+    real.renameat2 = lookup(Renameat2Fn, "renameat2");
     real.unlink = lookup(UnlinkFn, "unlink");
     real.unlinkat = lookup(UnlinkatFn, "unlinkat");
     real.link = lookup(LinkFn, "link");
@@ -1015,6 +1051,50 @@ pub inline fn callWritev(fd: c_int, iov: *const anyopaque, cnt: c_int) isize {
     const f = real.writev orelse return -1;
     return f(fd, iov, cnt);
 }
+
+/// `ENOSYS`, for the optional symbols below. The wrappers above may return a bare -1
+/// when their lookup failed because their symbols cannot actually be missing — every
+/// one of them predates the C standard library's oldest supported version here. The
+/// symbols added by #244 and #256 can be missing, and a -1 with a stale errno is
+/// worse than the absence itself: Rust std's kernel_copy reads errno to decide
+/// whether to fall back to a read/write loop, so an unset errno turns "this shim
+/// cannot see the call" into "the target's copy failed".
+const ENOSYS: c_int = if (is_darwin) 78 else 38;
+
+fn optionalMissing() isize {
+    std.c._errno().* = ENOSYS;
+    return -1;
+}
+
+/// The same, for the wrappers that return `c_int`. Two shapes rather than one so
+/// neither call site open-codes the errno store — the version that did was the one
+/// that could be fixed on its own and drift.
+fn optionalMissingInt() c_int {
+    std.c._errno().* = ENOSYS;
+    return -1;
+}
+
+pub inline fn callPwritev(fd: c_int, iov: *const anyopaque, cnt: c_int, off: i64) isize {
+    if (is_darwin) return darwin.pwritev(fd, iov, cnt, off);
+    const f = real.pwritev orelse return optionalMissing();
+    return f(fd, iov, cnt, off);
+}
+pub inline fn callPwritev2(fd: c_int, iov: *const anyopaque, cnt: c_int, off: i64, flags: c_int) isize {
+    const f = real.pwritev2 orelse return optionalMissing();
+    return f(fd, iov, cnt, off, flags);
+}
+pub inline fn callCopyFileRange(fd_in: c_int, off_in: ?*i64, fd_out: c_int, off_out: ?*i64, len: usize, flags: c_uint) isize {
+    const f = real.copy_file_range orelse return optionalMissing();
+    return f(fd_in, off_in, fd_out, off_out, len, flags);
+}
+pub inline fn callSendfile(out_fd: c_int, in_fd: c_int, off: ?*i64, count: usize) isize {
+    const f = real.sendfile orelse return optionalMissing();
+    return f(out_fd, in_fd, off, count);
+}
+pub inline fn callRenameat2(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]const u8, flags: c_uint) c_int {
+    const f = real.renameat2 orelse return optionalMissingInt();
+    return f(olddirfd, old, newdirfd, new, flags);
+}
 pub inline fn callRename(old: [*:0]const u8, new: [*:0]const u8) c_int {
     if (is_darwin) return darwin.rename(old, new);
     const f = real.rename orelse return -1;
@@ -1061,8 +1141,14 @@ pub inline fn callFsync(fd: c_int) c_int {
     return f(fd);
 }
 pub inline fn callFdatasync(fd: c_int) c_int {
-    // Darwin has no fdatasync; fsync is the honest equivalent.
-    if (is_darwin) return darwin.fsync(fd);
+    // This used to say "Darwin has no fdatasync; fsync is the honest equivalent" and
+    // forward to fsync. Measured 2026-08-26: the symbol IS in libSystem — no public
+    // header declares it, which is what the older reading was about — so forwarding
+    // to fsync handed the target a stronger, slower call than the one it made. They
+    // are different contracts (fdatasync may skip the metadata flush), and a shim
+    // that substitutes one for the other changes what the target does rather than
+    // observing it.
+    if (is_darwin) return darwin.fdatasync(fd);
     const f = real.fdatasync orelse return -1;
     return f(fd);
 }

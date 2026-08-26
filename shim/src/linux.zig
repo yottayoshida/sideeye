@@ -23,9 +23,26 @@ comptime {
     @export(&ops.pwrite, .{ .name = "pwrite" });
     @export(&ops.pwrite, .{ .name = "pwrite64" });
     @export(&ops.writev, .{ .name = "writev" });
+    // The vectored positional writes (#256). The oracle has classified these since
+    // v0.1; only the export was missing, so a target using them was seen by one
+    // observer and not the other. The `64` spellings are glibc's LFS aliases, taken
+    // for the same reason `pwrite64` is above — a `_FILE_OFFSET_BITS=64` build
+    // resolves to them and would otherwise walk straight past the shim.
+    @export(&ops.pwritev, .{ .name = "pwritev" });
+    @export(&ops.pwritev, .{ .name = "pwritev64" });
+    @export(&ops.pwritev2, .{ .name = "pwritev2" });
+    @export(&ops.pwritev2, .{ .name = "pwritev64v2" });
+
+    // The kernel's copy primitives (#244). Linux only: macOS has no
+    // `copy_file_range`, and its `sendfile` is a different call (file to socket,
+    // arguments the other way round) that cannot write into a state directory.
+    @export(&ops.copy_file_range, .{ .name = "copy_file_range" });
+    @export(&ops.sendfile, .{ .name = "sendfile" });
+    @export(&ops.sendfile, .{ .name = "sendfile64" });
 
     @export(&ops.rename, .{ .name = "rename" });
     @export(&ops.renameat, .{ .name = "renameat" });
+    @export(&ops.renameat2, .{ .name = "renameat2" });
 
     @export(&ops.unlink, .{ .name = "unlink" });
     @export(&ops.unlinkat, .{ .name = "unlinkat" });

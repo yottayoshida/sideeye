@@ -1,4 +1,11 @@
 #!/bin/sh
+# HISTORICAL AS OF trace contract v11 (2026-08-26, #244): this script replays a
+# v10 case, so a current engine answers `contract_version_mismatch` before it
+# reaches anything else — the freeze's promised behaviour for a saved case across
+# a contract bump, not a regression. Re-running the measurement it recorded needs
+# the engine of that day. Its apparatus is superseded and now collides with the
+# shim as well; ../ops/himalaya-copy.toml carries the full note.
+#
 # Replay the frozen cohort-4 himalaya case inside the cohort image.
 #
 # The environment is himalaya-r2's ops/explore.sh, byte for byte in what it
