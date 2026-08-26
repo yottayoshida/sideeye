@@ -1,6 +1,6 @@
 #!/bin/sh
 # HISTORICAL AS OF trace contract v11 (2026-08-26, #244): this script replays a
-# v10 case, so a current engine answers `contract_version_mismatch` before it
+# v10 case, so a current engine answers `case_no_longer_applies` before it
 # reaches anything else — the freeze's promised behaviour for a saved case across
 # a contract bump, not a regression. Re-running the measurement it recorded needs
 # the engine of that day. Its apparatus is superseded and now collides with the

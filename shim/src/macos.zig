@@ -49,6 +49,31 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.pwritev, libc.pwritev),
     entry(&ops.rename, libc.rename),
     entry(&ops.renameat, libc.renameat),
+    // The rename extensions (v12). `renameatx_np` was NAMED in the comment above as
+    // Linux `renameat2`'s macOS spelling when #256 closed the Linux half — named and
+    // not taken, which is #333's shape in one line. `RENAME_EXCL` records as a plain
+    // rename; `RENAME_SWAP` writes the scope-gated refusal the oracle would have
+    // issued on Linux, because here there is no oracle to issue it.
+    entry(&ops.renamex_np, libc.renamex_np),
+    entry(&ops.renameatx_np, libc.renameatx_np),
+    // The clone family (v12, #333): three separate kernel stubs, none covering the
+    // others. Rust std's fs::copy reaches fclonefileat first; copyfile(COPYFILE_CLONE)
+    // reaches clonefileat. Measured invisible before this table row: zero operations
+    // recorded while a real file appeared with real content — and with any other
+    // recorded mutation present, the run PASSed.
+    entry(&ops.clonefile, libc.clonefile),
+    entry(&ops.clonefileat, libc.clonefileat),
+    entry(&ops.fclonefileat, libc.fclonefileat),
+    // Refused in scope, never counted: an atomic contents swap has no place in the
+    // restore model on either platform.
+    entry(&ops.exchangedata, libc.exchangedata),
+    // Metadata writers, except that ATTR_CMN_NAME renames — the one bit that turns
+    // these into mutations of the tree the verdict reads.
+    entry(&ops.setattrlist, libc.setattrlist),
+    entry(&ops.fsetattrlist, libc.fsetattrlist),
+    entry(&ops.setattrlistat, libc.setattrlistat),
+    // The open variant libcopyfile imports beside plain open.
+    entry(&ops.open_dprotected_np, libc.open_dprotected_np),
     entry(&ops.unlink, libc.unlink),
     entry(&ops.unlinkat, libc.unlinkat),
     entry(&ops.remove, libc.remove),

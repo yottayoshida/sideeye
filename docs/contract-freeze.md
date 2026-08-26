@@ -51,12 +51,17 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    permanently; that is understood. That decision is about which code a PASS
    carries, and is untouched by the paragraph above.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
-   honestly — `case_no_longer_applies` when the code changed underneath it,
-   `contract_version_mismatch` across trace-contract versions — never a
-   verdict about a shifted address (ADR 0009, 0014). Version and shape travel
-   together (a v1/v2 case cannot carry an argv command). A future trace-
-   contract bump is therefore *not* a broken promise: old cases refuse with
-   the mismatch named, and that refusal is the promised behavior.
+   honestly — `case_no_longer_applies`, whether the code changed underneath
+   it or the trace contract did (the refusal message names which) — never a
+   verdict about a shifted address (ADR 0009, 0014). An earlier revision of
+   this paragraph split the two conditions across two reason names; measured
+   against the code, both answer `case_no_longer_applies`, and
+   `contract_version_mismatch` is a different refusal entirely — a shim and
+   engine speaking different trace versions inside one run, nothing to do
+   with saved cases. Version and shape travel together (a v1/v2 case cannot
+   carry an argv command). A future trace-contract bump is therefore *not* a
+   broken promise: old cases refuse with the mismatch named, and that
+   refusal is the promised behavior.
 5. **The MCP surface** (decided 2026-08-13, recorded in #86, codified here).
    The two tool names — `sideeye_explore_config`, `sideeye_replay_case` —
    their input schemas, and the isError derivation rule (isError follows the

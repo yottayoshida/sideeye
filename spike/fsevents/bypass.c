@@ -6,11 +6,22 @@
  * a silent capture cannot be told from a capture of something the shim already
  * saw, and the leg proves nothing in either direction.
  *
- * clonefile(2) is the one used here. It is a libc entry point that creates a
- * file, and it is not in the shim's interpose table (shim/src/macos.zig lists 40
- * symbols; copyfile, clonefile, renamex_np and removefile are not among them).
- * That table is read rather than trusted: survey.sh runs this probe under the
- * shim first and refuses the leg if the cloned path appears in the trace.
+ * clonefile(2) is the one used here. At the time of the survey it was a libc
+ * entry point that creates a file and was not in the shim's interpose table
+ * (then 40 symbols; copyfile, clonefile, renamex_np and removefile were not
+ * among them). That table is read rather than trusted: survey.sh runs this
+ * probe under the shim first and refuses the leg if the cloned path appears in
+ * the trace.
+ *
+ * SUPERSEDED as a live probe by trace contract v12 (#333): the shim now
+ * interposes clonefile, clonefileat and fclonefileat, so this probe's planted
+ * mutation IS recorded and survey.sh's L7a precondition refuses — by design,
+ * with its own "pick another mutation" message. The recorded 15/15 sensitivity
+ * result (RESULTS.md) was measured under v11 and stands as taken, on its date;
+ * re-running the leg needs a mutation the v12 shim still cannot see (the
+ * mmap/msync class), which is filed with #293 rather than rebuilt here. The
+ * same supersession happened to cohort 4's no-accel-copy.so one contract
+ * version earlier — an apparatus built on a wall outliving the wall.
  *
  * Three files land in the state directory:
  *

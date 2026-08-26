@@ -177,9 +177,16 @@ The sensitivity leg needs a mutation the shim provably does not report. If that
 were wrong, a silent capture could not be told from a capture of something the
 shim already saw, and the leg would prove nothing in either direction.
 
-`clonefile(2)` is the one used. It creates a file and is absent from the 40
-symbols `shim/src/macos.zig` interposes. The table is read but not trusted: the
-probe runs **under the shim** first, and the trace is checked.
+`clonefile(2)` is the one used. It creates a file and, at the time of this
+survey, was absent from the then-40 symbols `shim/src/macos.zig` interposed. The
+table is read but not trusted: the probe runs **under the shim** first, and the
+trace is checked.
+
+> **Superseded as a live leg by trace contract v12 (#333, 2026-08-26):** the
+> shim now interposes the clone family, so the L7a precondition refuses with its
+> own "pick another mutation" message. Every number below was measured under
+> v11 and stands as taken, on its date. A re-run needs a mutation the v12 shim
+> still cannot see — the mmap/msync class — which is filed with #293.
 
     trace names:        seen-by-shim.txt, clone-src.txt
     trace never names:  clone-dst.txt
@@ -190,7 +197,8 @@ be present before the absence is read.
 
 This is also a finding about sideeye rather than about FSEvents: `clonefile`
 creates a file in the state directory that the shim never reports. It is the
-macOS instance of the class `#244` named on Linux.
+macOS instance of the class `#244` named on Linux. (Closed by v12: the shim now
+records the clone's destination, which is what retired this leg.)
 
 ## Sensitivity holds: the veto sees what the account misses
 

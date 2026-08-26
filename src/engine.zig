@@ -792,6 +792,11 @@ pub const TraceInfo = struct {
     /// The shim saw an operation it could not place. Any verdict computed from a trace
     /// containing one is a verdict about an incomplete picture.
     saw_unresolved: bool = false,
+    /// The syscall-and-flag spelling of the first in-scope operation the shim could
+    /// place but not model (v12, macOS: `RENAME_SWAP`, `exchangedata`). Borrows from
+    /// the trace buffer. On Linux this refusal comes from the oracle instead, and
+    /// this field stays null.
+    first_unsupported: ?[]const u8 = null,
     kill_landed_seq: ?u32 = null,
     /// Who wrote the kill_landed record. `seq == k` alone is not landing evidence: a
     /// child inheriting SIDEEYE_KILL_AT counts its own operations, and its k-th is not
@@ -987,6 +992,14 @@ pub fn readTraceCapped(gpa: Allocator, path: []const u8, max: usize) SnapshotErr
                 info.kill_landed_pid = op.pid;
             },
             .unresolved => info.saw_unresolved = true,
+            // The record's path field carries the syscall-and-flag spelling, not a
+            // path (v12). First one wins: the refusal names one operation, the way
+            // the oracle's `unsupported` does on Linux, and the slice borrows from
+            // the trace buffer the caller keeps alive — the same lifetime `Op.path`
+            // already lives with.
+            .unsupported => {
+                if (info.first_unsupported == null) info.first_unsupported = op.path;
+            },
             else => {},
         }
         const is_primary = info.primary_pid != null and op.pid == info.primary_pid.?;
