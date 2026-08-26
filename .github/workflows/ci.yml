@@ -42,6 +42,23 @@ jobs:
           test -f zig-out/lib/libsideeye_shim_testgap.so
           test "$sha_before" = "$sha_after"
 
+      # #324's apparatus, under the same guard as #270's above: -Dtest-trace-cap must
+      # ADD two engines with a lowered trace-read ceiling and leave the shipped engine
+      # byte-identical. Two artifacts because the recording read exits before the world
+      # read is reached, so one binary can only ever demonstrate the first branch. The
+      # shipped cap is unreachable by any fixture — the engine unlinks the trace before
+      # every run, and the only writer is the shim — so without these the refusal is
+      # untested: its branches live in main.zig, whose refusals exit the process, which
+      # no unit test can drive.
+      - name: Build the trace-cap apparatus, shipped engine unchanged (#324)
+        run: |
+          sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          zig build -Dtest-trace-cap
+          sha_after=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          test -x zig-out/bin/sideeye-testtracecap
+          test -x zig-out/bin/sideeye-testtracecap-world
+          test "$sha_before" = "$sha_after"
+
       # The gap #256 was: three syscalls the oracle classified and the shim never
       # exported, sitting there since v0.1 because nothing compared the two lists.
       # The check runs here rather than inside a cohort's preflight — the existing

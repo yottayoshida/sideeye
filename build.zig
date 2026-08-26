@@ -12,6 +12,20 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Test apparatus (#324), generation-gated the way `-Dtest-seq-gap` is below:
+    // `-Dtest-trace-cap` ADDITIONALLY builds `sideeye-testtracecap`, an engine whose
+    // trace-read ceiling is a few bytes instead of 64 MiB. The shipped cap cannot be
+    // reached by any fixture — the engine unlinks the trace before every run, so none
+    // can be planted, and the only writer is the shim — so without these artifacts the
+    // refusal is unreachable in acceptance, and no unit test can stand in: the check
+    // lives in main.zig, whose refusals exit the process. The shipped engine's value is
+    // a literal below, not this flag's default, so no invocation of this build can lower
+    // the cap of a released binary.
+    const test_trace_cap = b.option(bool, "test-trace-cap", "also build sideeye-testtracecap, an engine with a tiny trace-read cap used only by acceptance (#324)") orelse false;
+
+    const exe_opts = b.addOptions();
+    exe_opts.addOption(usize, "trace_cap_override", 0);
+    exe_opts.addOption(usize, "trace_cap_override_world", 0);
     const exe = b.addExecutable(.{
         .name = "sideeye",
         .root_module = b.createModule(.{
@@ -21,7 +35,10 @@ pub fn build(b: *std.Build) void {
             // The engine talks to the operating system through libc directly rather
             // than through std.Io — see src/posix.zig for why.
             .link_libc = true,
-            .imports = &.{.{ .name = "contract", .module = contract }},
+            .imports = &.{
+                .{ .name = "contract", .module = contract },
+                .{ .name = "engine_build_options", .module = exe_opts.createModule() },
+            },
         }),
     });
     // `sideeye demo` carries its own target: the planted-bug toy and its checker are
@@ -32,6 +49,54 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
     exe.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
     b.installArtifact(exe);
+
+    if (test_trace_cap) {
+        // 64 bytes: over the trace header, under any real recording, so the cap breaks
+        // on an ordinary toy run instead of needing a million operations.
+        // Two artifacts, because the two read sites cannot both fire in one run: the
+        // recording read happens first and exits, so a binary that caps both can only
+        // ever demonstrate the first branch. The second caps the world read alone,
+        // leaving the recording read at the shipped ceiling.
+        const cap_opts = b.addOptions();
+        cap_opts.addOption(usize, "trace_cap_override", 64);
+        cap_opts.addOption(usize, "trace_cap_override_world", 0);
+        const exe_cap = b.addExecutable(.{
+            .name = "sideeye-testtracecap",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/main.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .imports = &.{
+                    .{ .name = "contract", .module = contract },
+                    .{ .name = "engine_build_options", .module = cap_opts.createModule() },
+                },
+            }),
+        });
+        exe_cap.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
+        exe_cap.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        b.installArtifact(exe_cap);
+
+        const world_opts = b.addOptions();
+        world_opts.addOption(usize, "trace_cap_override", 0);
+        world_opts.addOption(usize, "trace_cap_override_world", 64);
+        const exe_cap_world = b.addExecutable(.{
+            .name = "sideeye-testtracecap-world",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/main.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .imports = &.{
+                    .{ .name = "contract", .module = contract },
+                    .{ .name = "engine_build_options", .module = world_opts.createModule() },
+                },
+            }),
+        });
+        exe_cap_world.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
+        exe_cap_world.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        b.installArtifact(exe_cap_world);
+    }
 
     // The shim is only built for targets whose interposition mechanism exists.
     // v0.1 covers Linux (LD_PRELOAD); macOS (DYLD_INSERT_LIBRARIES + __DATA,__interpose)

@@ -3850,6 +3850,82 @@ else
     fails=$((fails + 1))
 fi
 
+# The trace read's cap names itself at BOTH read sites (#324). Neither can be reached
+# by a fixture: the engine unlinks the trace before every run, so no oversized file can
+# be planted, and the shipped 64 MiB ceiling would need on the order of a million
+# recorded operations to reach through the only writer there is. So the apparatus lowers
+# the cap instead — two separately named engines that plain `zig build` never produces,
+# one capping the recording read and one capping the world read. Two, because the
+# recording read happens first and exits: a single binary capping both can only ever
+# demonstrate the first branch.
+#
+# What this pins is the WIRING, which no unit test can reach: the branches live in
+# main.zig, whose refusals exit the process. Disabling the check turns BOTH legs red at
+# once, each with the refusal its own collapse produces — `no_shim_marker` at the
+# recording read, `kill_did_not_land` at the world read, the latter a claim about the
+# engine's own kill drawn from a trace the engine declined to read. Reverting either
+# call site alone turns that site's leg red on the reason, not on the exit code: both
+# collapses still exit 2, so the grep is what does the work.
+CAPBIN=$ROOT/zig-out/bin/sideeye-testtracecap
+CAPBIN_W=$ROOT/zig-out/bin/sideeye-testtracecap-world
+if [ ! -x "$CAPBIN" ] || [ ! -x "$CAPBIN_W" ]; then
+    echo "FAIL trace-cap apparatus missing: build with zig build -Dtest-trace-cap (add -Dtarget=... for the container)"
+    fails=$((fails + 1))
+else
+    # One parent for all three runs, removed once at the end. Three separate
+    # /tmp/acc-* trees would follow the suite's usual shape, but this check is run
+    # repeatedly while its own mutations are measured, and each run left three more
+    # directories behind on any machine where the recursive remove is intercepted.
+    capdir=/tmp/acc-tracecap-$$
+    cap_fails=0
+    for site in recording world; do
+        case "$site" in
+            recording) bin=$CAPBIN;   want="the recording run" ;;
+            world)     bin=$CAPBIN_W; want="an explored world" ;;
+        esac
+        d=$capdir/$site
+        mkdir -p "$d/state"
+        o=$(TOY_STATE=$d/state "$bin" explore --state "$d/state" \
+            --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+            --shim "$SHIM" --work "$d/work" --allow-unverified 2>&1)
+        rc=$?
+        if [ "$rc" != "2" ]; then
+            echo "FAIL trace cap ($site): expected exit 2, got $rc"
+            cap_fails=$((cap_fails + 1))
+        elif ! echo "$o" | grep -q "trace_too_large"; then
+            echo "FAIL trace cap ($site): refused as something else — $(echo "$o" | head -2 | tr '\n' ' ')"
+            cap_fails=$((cap_fails + 1))
+        elif ! echo "$o" | grep -q "the trace from $want"; then
+            echo "FAIL trace cap ($site): the refusal does not name which read it was"
+            cap_fails=$((cap_fails + 1))
+        elif ! echo "$o" | grep -q "against a 64-byte cap"; then
+            # The cap in the message must be the one that fired, not the shipped
+            # constant. It said 67108864 once, on a run capped at 64.
+            echo "FAIL trace cap ($site): the message names a cap that did not fire"
+            cap_fails=$((cap_fails + 1))
+        fi
+    done
+    # The control: the shipped engine, same define, is nowhere near its ceiling and
+    # reaches a verdict. Without it, an engine that refused every trace would pass the
+    # two legs above.
+    d=$capdir/control
+    mkdir -p "$d/state"
+    TOY_STATE=$d/state "$SIDEEYE" explore --state "$d/state" \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work "$d/work" --allow-unverified >/dev/null 2>&1
+    rc=$?
+    if [ "$rc" != "0" ]; then
+        echo "FAIL trace cap (control): the shipped engine did not reach a verdict (exit $rc)"
+        cap_fails=$((cap_fails + 1))
+    fi
+    rm -rf "$capdir"
+    if [ "$cap_fails" = "0" ]; then
+        echo "ok   the trace cap names itself at both read sites, and the shipped cap is nowhere near"
+    else
+        fails=$((fails + 1))
+    fi
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
