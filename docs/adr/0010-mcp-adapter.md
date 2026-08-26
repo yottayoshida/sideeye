@@ -64,6 +64,21 @@ language, and made a hand-written Zig server small.
    the previous server's report as the current call's verdict. Under the precondition
    those stale files are the operator's own leftovers, and after the unlink whatever
    exists at the names was written by this call's child or by nobody.
+   **A third residual, and it is not closed by the precondition** (#326): the result
+   relays text the target influenced. That is not a defect to remove — a refusal that
+   cannot name the operation it refused on is not a diagnostic — so what ships is
+   attribution rather than sanitisation. In the text block the quoted bytes sit inside a
+   region whose **byte count** is stated at its start, and the count is the extent: a
+   closing token would be forgeable by the very thing being quoted, since an entry name
+   reaches the message verbatim. `structuredContent` is **not** marked: doing so would add
+   a report field, and surface 2 of the freeze is not this ADR's to move. Its
+   `earliest.*` paths carry names the target chose, JSON-escaped, so a parser hands the
+   control bytes back — unlike the text side, which defangs them. The tool descriptions
+   say both. The text block's 128 KiB ceiling bounds the digest, not the payload: the
+   structured half still carries up to `readFile`'s 4 MiB.
+   Separately, and often confused with the above: the check→open TOCTOU named earlier in
+   this paragraph is about the **config path**, and it stays open under the precondition.
+   The destructive path's own window is a different thing and is closed by ADR 0024.
 5. **isError distinguishes verdict from actionable failure.** A crash-consistency
    PASS/FAIL is a real verdict (`isError:false`); every other outcome — SETUP_ERROR and
    every UNKNOWN — is `isError:true`, read structurally from the report's `verdict`

@@ -197,15 +197,20 @@ var expected_status_val: u8 = 0;
 /// cap — there the refusal must name the file, its size and the cap, or the operator
 /// is told "could not snapshot" about a tree that snapshotted fine yesterday and
 /// has no way to learn what grew.
+/// The entry name goes through `textShown`, the same defang every other target-chosen
+/// string in a refusal takes (#26/#167). It did not when this function was written — the
+/// name was spliced raw into the message, four lines of reasoning away from
+/// `refuseUnsupportedEntry`, which defangs. A Unix name may hold newlines and escape
+/// introducers; unlike the JSON side there is no second escaper behind the text.
 fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) engine.Snapshot {
     var diag: engine.FileTooLargeDiag = .{};
     return engine.takeSnapshotCapped(gpa, root, engine.max_state_file_bytes, &diag) catch |e| {
         if (e != error.FileTooLarge) setupError(what);
         if (json_arena) |ja| {
             if (diag.size) |sz|
-                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ diag.rel(), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment")
+                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment")
             else
-                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ diag.rel(), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment");
+                setupError(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment");
         }
         // Unreachable in practice: json_arena is assigned unconditionally before the
         // parse loop, ahead of every call site. Kept so this function's contract does
@@ -931,7 +936,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (!contract.isStrictlyInsideDir(state_abs, su_abs)) {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             const arena = arena_state.allocator();
-            setupError(std.fmt.allocPrint(arena, "the case's state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Replay directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this case's state may live under", .{ state_abs, su_abs }) catch "the case's state directory resolves outside the allowed range (--state-under)");
+            // `state_abs` comes from the case file's `define.state`, and a case is a
+            // declared trust boundary — so this refusal, the one that fires *on* a hostile
+            // case, was splicing a hostile string into the console verbatim. Same class as
+            // `snapshotOrRefuse` above, same batch that introduced it (#266), found by the
+            // review that followed the first fix rather than by the scan that accompanied
+            // it. `su_abs` is operator-supplied and takes the same treatment for free.
+            setupError(std.fmt.allocPrint(arena, "the case's state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Replay directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this case's state may live under", .{ textShown(arena, state_abs), textShown(arena, su_abs) }) catch "the case's state directory resolves outside the allowed range (--state-under)");
         }
     }
 
@@ -2961,7 +2972,11 @@ fn writeJsonReport(
 /// acceptance check can assert on.
 fn restoreFailure(e: anyerror, doing: []const u8) noreturn {
     if (e == error.UnsafeRoot)
-        setupError("the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), or it could not be read at all. Refusing to empty it");
+        // Three causes now, not two: #327 added the third by moving a non-directory at the
+        // root from DeleteFailed to UnsafeRoot, which is the right class — the root is not
+        // a thing to empty — but the old wording named only a swap, and a refusal that
+        // states the wrong cause is worse than one that states none.
+        setupError("the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), it is not a directory, or it could not be read at all. Refusing to empty it");
     setupError(doing);
 }
 

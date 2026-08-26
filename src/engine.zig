@@ -345,9 +345,32 @@ pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeR
 /// list was measured against contains nothing under either, which means that measurement
 /// says nothing about them in the direction that matters.
 ///
-/// sunset: delete this list once the destructive path holds the root open by descriptor
-/// (openat/unlinkat), which closes the swap window that `assertRootResolvesToItself` below only
-/// narrows.
+/// sunset: **the condition that used to stand here was wrong, and #327 is what showed it.**
+/// It said to delete this list once the destructive path held the root open by descriptor,
+/// because that closes the swap window `assertRootResolvesToItself` only narrows. The walk
+/// now does hold the root open — and nothing about this list is discharged by it. Holding
+/// `/etc` by descriptor deletes `/etc` just as thoroughly; the swap window is about keeping
+/// a correct target, and this list is about being handed a wrong one. Two neighbouring
+/// defences, written as if one subsumed the other.
+///
+/// The list also has a second consumer that has no delete behind it at all: `mcp.zig` runs
+/// `assertSafeRoot` on `SIDEEYE_MCP_ROOT` at startup, where it vets a *name*. A sunset
+/// phrased around deletion would authorise removing the list while that vet still depends
+/// on it.
+///
+/// So: delete this list when **neither consumer can be handed a mistyped location** —
+/// (1) the destructive root stops being a hand-written value. It arrives from exactly two
+///     places — `--state` and a case's `define.state` — and both would have to become
+///     engine-derived. (`SIDEEYE_MCP_ROOT` and `--state-under` are deliberately not on
+///     that list: they *constrain* where a root may resolve and never supply one. Putting
+///     them here would repeat the conflation this note is being corrected for.); and
+/// (2) the startup vet in `mcp.zig` no longer needs a name-based refusal.
+///
+/// Rejected as conditions, both recorded because they are the tempting ones: an override
+/// flag arriving (the `/opt`/`/srv` paragraph above turns on there being no such flag, so
+/// its arrival is a reason to *list* those trees, not to drop the list), and measuring zero
+/// accidents in the corpus (a guard whose job is to make the accident impossible cannot be
+/// retired by the accident not happening — that measurement cannot tell the two apart).
 const denied_trees = [_][]const u8{
     "/usr",  "/etc",   "/bin", "/sbin", "/lib", "/lib64",
     "/boot", "/dev",   "/proc", "/sys",
@@ -426,8 +449,21 @@ pub fn assertSafeRoot(root: []const u8) RestoreError!void {
 /// site — filed rather than done.
 ///
 /// Nor does this close the window it does cover: the check and the `opendir` are two
-/// syscalls, and a swap between them is not detected. Both gaps have the same fix, the
-/// root held open by descriptor for the whole delete (openat/unlinkat).
+/// syscalls, and a swap between them is not detected.
+///
+/// **That sentence used to continue "Both gaps have the same fix, the root held open by
+/// descriptor for the whole delete", and it was wrong** — the twin of the denylist's
+/// sunset note, sitting in the function that note stands beside, and missed by the batch
+/// that corrected the other one (#327, ADR 0024). The descriptor fixes **neither** gap. It
+/// pins whatever tree is there at open time, so a bind mount established *before* the open
+/// is pinned wrong; and the check-to-open race is untouched, because the check and the open
+/// are still two syscalls. What the descriptor closes is a different window — open to
+/// end-of-walk — which is where every entry used to be re-resolved by name, once per entry
+/// and once per pass, giving a resident racer as many attempts as there are entries.
+///
+/// The fix for both gaps is the one named two paragraphs up, comparing device and inode,
+/// and the descriptor makes it cheap rather than redundant: one side of that comparison is
+/// now an open descriptor. Still filed rather than done (ADR 0024, Alternatives).
 fn assertRootResolvesToItself(root: []const u8) RestoreError!void {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
@@ -444,14 +480,64 @@ fn assertRootResolvesToItself(root: []const u8) RestoreError!void {
     if (!std.mem.eql(u8, std.mem.span(resolved), root)) return error.UnsafeRoot;
 }
 
-fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreError!void {
-    if (depth > max_depth) return error.DeleteFailed;
+/// What opening the destructive root found.
+///
+/// `absent` is a variant rather than an error because the two callers disagree about it:
+/// `deleteTree` has nothing to delete and is done, while `freshDir` has already failed its
+/// `mkdir`, so an absent root there means a missing parent — the silent no-op that flag
+/// exists to remove. One `open`, two meanings, and neither may be assumed by the other.
+const RootOpen = union(enum) { fd: c_int, absent };
 
-    var dir_buf: [contract.max_path]u8 = undefined;
-    const dir_path = if (rel_prefix.len == 0)
-        std.fmt.bufPrintZ(&dir_buf, "{s}", .{root}) catch return error.PathTooLong
-    else
-        try joinZ(&dir_buf, root, rel_prefix);
+/// Open a directory for the destructive walk, pinned by descriptor (#327).
+///
+/// Holding the descriptor is what closes the swap window: every delete below is relative
+/// to the inode opened here, so replacing the *pathname* afterwards redirects nothing.
+/// `O_NOFOLLOW` additionally refuses a root that is itself a link.
+///
+/// **This does not replace `assertRootResolvesToItself`, and the callers still run it.**
+/// `O_NOFOLLOW` is about the final component only: with root `/a/b/state`, replacing
+/// `/a/b` with a link to somewhere else opens *that* tree, and this function would then
+/// delete it race-free and thoroughly. Pinning identity is not the same property as
+/// picking the right target — the same distinction the denylist's note gets wrong above.
+///
+/// The errno map is caller-visible. `ENOTDIR` becoming `UnsafeRoot` is a deliberate
+/// reclassification: a regular file where the state directory should be used to arrive as
+/// `DeleteFailed` through the `opendir` probe this replaces.
+fn openRootDir(root: []const u8) RestoreError!RootOpen {
+    var root_buf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const fd = posix.open(
+        root_z.ptr,
+        posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC,
+        @as(c_uint, 0),
+    );
+    if (fd >= 0) return .{ .fd = fd };
+    return switch (std.c._errno().*) {
+        posix.ENOENT => .absent,
+        posix.ELOOP, posix.ENOTDIR => error.UnsafeRoot,
+        // Everything else — EACCES, EMFILE, ENFILE, EPERM under an LSM, ENAMETOOLONG —
+        // is loud. A default arm that fell through to `absent` would turn "cannot look"
+        // into "nothing there", which is the substitution this file keeps refusing.
+        else => error.DeleteFailed,
+    };
+}
+
+/// The path-taking entry to the walk: opens the root once, then everything is relative to
+/// that descriptor. An absent root is nothing to delete, which is what `opendir` returning
+/// null used to mean here.
+fn deleteTree(root: []const u8) RestoreError!void {
+    switch (try openRootDir(root)) {
+        .absent => return,
+        .fd => |fd| {
+            const r = deleteTreeAt(fd, 0);
+            _ = posix.close(fd);
+            return r;
+        },
+    }
+}
+
+fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
+    if (depth > max_depth) return error.DeleteFailed;
 
     // Removed in passes, reopening the directory each time.
     //
@@ -472,7 +558,28 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
         var buffer_full = false;
 
         {
-            const dirp = posix.opendir(dir_path.ptr) orelse return;
+            // `fdopendir` takes ownership of the descriptor it is handed and `closedir`
+            // closes it, so it cannot be given `dirfd` — that has to outlive the stream
+            // for the `unlinkat`s below.
+            //
+            // **And it cannot be given `dup(dirfd)` either**, which is what this loop tried
+            // first. A duplicate shares the open file description, *including the read
+            // offset*, and neither libc rewinds it in `fdopendir`. Pass two then resumed
+            // where pass one stopped, found nothing past the tail, and the `count == 0`
+            // branch below read that as an empty directory — returning success over a
+            // directory it had not drained. Measured on macOS: 144 of 400 entries left
+            // behind, no error. `removed < count` cannot catch it because every entry that
+            // was *collected* was removed; the loss is in the collection.
+            //
+            // `openat(dirfd, ".")` is a fresh description at offset zero, which is the
+            // property the pre-descriptor `opendir(path)` supplied and the only part of it
+            // this rewrite had to keep. No `O_NOFOLLOW`: "." is the directory itself.
+            const stream_fd = posix.openat(dirfd, ".", posix.O_RDONLY | posix.O_DIRECTORY | posix.O_CLOEXEC, @as(c_uint, 0));
+            if (stream_fd < 0) return error.DeleteFailed;
+            const dirp = posix.fdopendir(stream_fd) orelse {
+                _ = posix.close(stream_fd);
+                return error.DeleteFailed;
+            };
             defer _ = posix.closedir(dirp);
             // The entry type is collected with the name, because it is the only
             // description of the entry that has not followed a symlink yet.
@@ -501,14 +608,11 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
         var i: usize = 0;
         while (i < count) : (i += 1) {
             const name = names_buf[offsets[i].start..][0..offsets[i].len];
-            var child_rel_buf: [contract.max_path]u8 = undefined;
-            const child_rel = if (rel_prefix.len == 0)
-                std.fmt.bufPrint(&child_rel_buf, "{s}", .{name}) catch return error.PathTooLong
-            else
-                std.fmt.bufPrint(&child_rel_buf, "{s}/{s}", .{ rel_prefix, name }) catch return error.PathTooLong;
-
-            var full_buf: [contract.max_path]u8 = undefined;
-            const full = try joinZ(&full_buf, root, child_rel);
+            // The bare entry name, which is the only spelling that keeps `dirfd`
+            // meaningful: an absolute path makes the kernel ignore the descriptor,
+            // silently, on both platforms.
+            var name_buf: [contract.max_path]u8 = undefined;
+            const name_z = std.fmt.bufPrintZ(&name_buf, "{s}", .{name}) catch return error.PathTooLong;
 
             // Recurse only into a real directory, never into a symlink that points at one.
             //
@@ -517,17 +621,39 @@ fn deleteTree(root: []const u8, rel_prefix: []const u8, depth: usize) RestoreErr
             // have redirected this recursive delete out of the tree, once per explored
             // world. `assertSafeRoot` cannot see that — it only inspects the root string.
             // Unlinking a symlink removes the link itself, which is what is wanted here.
+            //
+            // The DT_UNKNOWN fallback asks `fstatat` and deliberately not an `openat`
+            // probe. `opendir` passes `O_NONBLOCK`; a hand-rolled open does not, and
+            // posix.zig records what that costs — "a FIFO with no writer blocks that open
+            // forever" is why the open-probe was retired from this project once already
+            // (#5 R1). The descriptor-relative form of that same classifier has the
+            // property this walk wants for free: it cannot follow a link and it cannot
+            // resolve outside `dirfd`.
             const dt = offsets[i].dtype;
             const recurse = switch (dt) {
                 posix.DT_DIR => true,
-                posix.DT_UNKNOWN => !posix.isSymlink(full.ptr) and posix.isDirPath(full.ptr),
+                posix.DT_UNKNOWN => (posix.kindAtNoFollow(dirfd, name_z.ptr) catch
+                    return error.DeleteFailed) == .dir,
                 else => false, // DT_REG, DT_LNK and everything else: remove the entry itself
             };
             if (recurse) {
-                try deleteTree(root, child_rel, depth + 1);
-                if (posix.rmdir(full.ptr) == 0) removed += 1;
+                // An entry that stopped being a directory between `readdir` and here fails
+                // this open and is left uncounted — `removed < count` below turns that
+                // into a loud refusal, the same outcome the old failed `rmdir` produced.
+                const child = posix.openat(
+                    dirfd,
+                    name_z.ptr,
+                    posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC,
+                    @as(c_uint, 0),
+                );
+                if (child >= 0) {
+                    const r = deleteTreeAt(child, depth + 1);
+                    _ = posix.close(child);
+                    try r;
+                    if (posix.unlinkat(dirfd, name_z.ptr, posix.AT_REMOVEDIR) == 0) removed += 1;
+                }
             } else {
-                if (posix.unlink(full.ptr) == 0) removed += 1;
+                if (posix.unlinkat(dirfd, name_z.ptr, 0) == 0) removed += 1;
             }
         }
 
@@ -555,28 +681,52 @@ pub fn freshDir(root: []const u8) RestoreError!void {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     if (posix.mkdir(root_z.ptr, 0o755) == 0) return; // did not exist: created empty
-    // mkdir failed, so the path holds something. It must be an openable directory:
-    // deleteTree's own opendir returns silently when it cannot look, and a missing
-    // parent, a regular file, or a permission wall must all be loud here.
-    const probe = posix.opendir(root_z.ptr) orelse return error.DeleteFailed;
-    _ = posix.closedir(probe);
-    // Empties the children; the root directory itself stays in place.
     try assertRootResolvesToItself(root);
-    try deleteTree(root, "", 0);
+    switch (try openRootDir(root)) {
+        // `mkdir` failed AND nothing is there: a missing parent. Loud, and this is the one
+        // place the two meanings of an absent root diverge — `deleteTree` treats it as
+        // "nothing to delete" and returns. A `--fresh-state` that could not do its job and
+        // said nothing is the exact silent no-op this flag exists to remove, so the shared
+        // open cannot be allowed to carry `deleteTree`'s reading here. A regular file or a
+        // permission wall stay loud too, through `openRootDir`'s map.
+        .absent => return error.DeleteFailed,
+        // Empties the children; the root directory itself stays in place.
+        .fd => |fd| {
+            const r = deleteTreeAt(fd, 0);
+            _ = posix.close(fd);
+            return r;
+        },
+    }
 }
 
 pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     try assertRootResolvesToItself(root);
-    try deleteTree(root, "", 0);
 
+    // Created *before* the descriptor is taken, not after the delete where it used to sit.
+    // Once the root is held open, a `mkdir` on the pathname makes a different directory
+    // than the one the walk and every creation below are pinned to, and each `mkdirat`
+    // would then run against an unlinked inode. Before the open there is nothing to
+    // disagree with: a root that is simply gone is recreated here, as it always was.
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     _ = posix.mkdir(root_z.ptr, 0o755);
 
+    // One descriptor for the whole call: the delete and the rebuild are pinned to the same
+    // inode, so a swap between them redirects neither. What it does not pin is the interior
+    // — `e.rel` is a multi-component path, and its intermediate components are still
+    // resolved by name below. Those directories were made by this loop moments earlier.
+    const fd = switch (try openRootDir(root)) {
+        .absent => return error.CreateFailed, // the mkdir above failed and nothing is there
+        .fd => |f| f,
+    };
+    defer _ = posix.close(fd);
+
+    try deleteTreeAt(fd, 0);
+
     for (snap.entries.items) |e| {
-        var full_buf: [contract.max_path]u8 = undefined;
-        const full = try joinZ(&full_buf, root, e.rel);
+        var rel_buf: [contract.max_path]u8 = undefined;
+        const rel_z = std.fmt.bufPrintZ(&rel_buf, "{s}", .{e.rel}) catch return error.PathTooLong;
         switch (e.kind) {
             // The only creation whose failure used to be silent — harmless exactly
             // while dir-to-dir pairs were unjudged, and a tool-manufactured
@@ -587,32 +737,32 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
             // (walk records children only), so an existing directory here has no
             // legitimate source — it is a leftover the delete failed to remove,
             // and accepting it would let world k judge world k-1's residue.
-            .dir => if (posix.mkdir(full.ptr, 0o755) != 0) return error.CreateFailed,
+            .dir => if (posix.mkdirat(fd, rel_z.ptr, 0o755) != 0) return error.CreateFailed,
             .symlink => {
                 // Recreate the link with the recorded target, verbatim. The target is
                 // a string, not a path this function resolves — a dangling link is
                 // restored dangling, which is what the snapshot recorded.
                 var tz_buf: [contract.max_path]u8 = undefined;
                 const tz = std.fmt.bufPrintZ(&tz_buf, "{s}", .{e.content}) catch return error.PathTooLong;
-                if (posix.symlink(tz.ptr, full.ptr) != 0) return error.CreateFailed;
+                if (posix.symlinkat(tz.ptr, fd, rel_z.ptr) != 0) return error.CreateFailed;
             },
             .file => {
-                const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
-                if (fd < 0) return error.CreateFailed;
+                const wfd = posix.openat(fd, rel_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC | posix.O_CLOEXEC, @as(c_uint, 0o644));
+                if (wfd < 0) return error.CreateFailed;
                 var off: usize = 0;
                 while (off < e.content.len) {
-                    const w = posix.write(fd, e.content[off..].ptr, e.content.len - off);
+                    const w = posix.write(wfd, e.content[off..].ptr, e.content.len - off);
                     // Breaking here and returning success would start the next world from
                     // a truncated file, and judgeL0 would then report a hybrid — a
                     // counterexample manufactured by the tool rather than found in the
                     // target. readWhole distinguishes these cases; this loop did not.
                     if (w <= 0) {
-                        _ = posix.close(fd);
+                        _ = posix.close(wfd);
                         return error.CreateFailed;
                     }
                     off += @intCast(w);
                 }
-                _ = posix.close(fd);
+                _ = posix.close(wfd);
             },
             // Unreachable from any explored path since #5's refusal fires on every
             // snapshot before restore runs — kept loud, not silent: an `.other` that
@@ -1239,23 +1389,35 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
     // after `restore`, which refuses the same way — but relying on the neighbour is how a
     // guard ends up covering one entry point and not the next.
     try assertRootResolvesToItself(root);
+    // Through the same held descriptor as `restore`, for the same reason: writing by
+    // pathname after the root has been vetted leaves the vet's window open, and this
+    // function's own comment above says relying on the neighbour is how a guard ends up
+    // covering one entry point and not the next.
+    const fd = switch (try openRootDir(root)) {
+        .absent => return error.CreateFailed,
+        .fd => |f| f,
+    };
+    defer _ = posix.close(fd);
     for (snap.entries.items) |e| {
+        // The corruptible kinds, named once and in the same terms `countCorruptible`
+        // uses. They were two separate conditions here — `== .symlink` and then
+        // `!= .file` — which is the same predicate said differently in two places, and
+        // the falsification gate reads the other one to decide whether corrupting is
+        // even possible.
+        if (e.kind != .file and e.kind != .symlink) continue;
+        var rel_buf: [contract.max_path]u8 = undefined;
+        const rel_z = std.fmt.bufPrintZ(&rel_buf, "{s}", .{e.rel}) catch return error.PathTooLong;
         if (e.kind == .symlink) {
             // Replace, not follow: opening the link would corrupt whatever it points
             // at, which may be outside the state directory entirely. A checker that
             // never notices every link in the state pointing at a nonexistent probe
             // name is not checking the links — the same argument as overwriting file
             // contents, applied to the only content a symlink has.
-            var full_buf: [contract.max_path]u8 = undefined;
-            const full = try joinZ(&full_buf, root, e.rel);
-            if (posix.unlink(full.ptr) != 0) return error.CreateFailed;
-            if (posix.symlink(corruption_probe_target, full.ptr) != 0) return error.CreateFailed;
+            if (posix.unlinkat(fd, rel_z.ptr, 0) != 0) return error.CreateFailed;
+            if (posix.symlinkat(corruption_probe_target, fd, rel_z.ptr) != 0) return error.CreateFailed;
             continue;
         }
-        if (e.kind != .file) continue;
-        var full_buf: [contract.max_path]u8 = undefined;
-        const full = try joinZ(&full_buf, root, e.rel);
-        const fd = posix.open(full.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        const wfd = posix.openat(fd, rel_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC | posix.O_CLOEXEC, @as(c_uint, 0o644));
         // A file that could not be overwritten leaves the state intact, and an intact
         // state is one the checker is right to accept. The run would then report
         // `checker_not_falsified` — "the checker accepted a state whose every file had
@@ -1263,17 +1425,17 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
         // blaming the caller's checker for the engine's own failed write. The same
         // silence was fixed in `restore` and `deleteTree`; the scan that found those
         // looked at the two functions named in the finding and missed this one.
-        if (fd < 0) return error.CreateFailed;
+        if (wfd < 0) return error.CreateFailed;
         var off: usize = 0;
         while (off < corruption_probe.len) {
-            const w = posix.write(fd, corruption_probe[off..].ptr, corruption_probe.len - off);
+            const w = posix.write(wfd, corruption_probe[off..].ptr, corruption_probe.len - off);
             if (w <= 0) {
-                _ = posix.close(fd);
+                _ = posix.close(wfd);
                 return error.CreateFailed;
             }
             off += @intCast(w);
         }
-        _ = posix.close(fd);
+        _ = posix.close(wfd);
     }
 }
 
@@ -1451,9 +1613,9 @@ test "restore and freshDir refuse a swapped root — the guard is wired in front
     const outside_z = std.fmt.bufPrintZ(&ozbuf, "{s}", .{outside}) catch unreachable;
     defer {
         _ = posix.unlink(root_z.ptr); // the symlink, if the swap below happened
-        deleteTree(root, "", 0) catch {};
+        deleteTree(root) catch {};
         _ = posix.rmdir(root_z.ptr);
-        deleteTree(outside, "", 0) catch {};
+        deleteTree(outside) catch {};
         _ = posix.rmdir(outside_z.ptr);
         _ = posix.rmdir(parent_z.ptr);
     }
@@ -1477,7 +1639,7 @@ test "restore and freshDir refuse a swapped root — the guard is wired in front
     _ = posix.close(fd);
 
     // The swap: what --setup or the recorded operation could leave behind.
-    deleteTree(root, "", 0) catch {};
+    deleteTree(root) catch {};
     try std.testing.expect(posix.rmdir(root_z.ptr) == 0);
     try std.testing.expect(posix.symlink(outside_z.ptr, root_z.ptr) == 0);
 
@@ -1489,6 +1651,132 @@ test "restore and freshDir refuse a swapped root — the guard is wired in front
     try std.testing.expectError(error.UnsafeRoot, corruptState(snap, root));
 
     // The sentinel survived: the refusal happened before anything was removed.
+    try std.testing.expectEqual(posix.Kind.file, try posix.kindOfPathNoFollow(sentinel_z.ptr));
+}
+
+test "the walk drains a directory past its collection bound, in one call (#327)" {
+    // The reopen loop exists because names must be collected before anything is deleted,
+    // and the collection buffers are finite: 256 entries or 4096 bytes of names, whichever
+    // runs out first. Each pass must therefore start reading the directory from the
+    // beginning — the pre-descriptor code got that from calling `opendir` fresh, a new
+    // open file description with its own offset at zero.
+    //
+    // `dup` does NOT give that: a duplicate shares the file description, offset included,
+    // and neither libc rewinds it in `fdopendir`. A walk built on `dup` resumes pass two
+    // where pass one stopped, finds nothing after the tail, and reads that as "empty" —
+    // returning success over a directory it did not drain. `removed < count` cannot see it:
+    // every entry that was collected was removed, and the loss is in the collection.
+    //
+    // Residue is the failure this whole function is written against: world k judged
+    // against world k-1's leftovers. 400 entries clears the 256 bound with room to spare.
+    var pb: [contract.max_path]u8 = undefined;
+    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-drain-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(base_z.ptr, &base_buf) orelse return error.SkipZigTest);
+    var rb: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&rb, "{s}/state", .{base}) catch unreachable;
+    var rzb: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rzb, "{s}", .{root}) catch unreachable;
+    defer {
+        deleteTree(root) catch {};
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(base_z.ptr);
+    }
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+
+    var i: usize = 0;
+    while (i < 400) : (i += 1) {
+        var nb: [contract.max_path]u8 = undefined;
+        const n_z = std.fmt.bufPrintZ(&nb, "{s}/entry-{d}", .{ root, i }) catch unreachable;
+        const fd = posix.open(n_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        try std.testing.expect(fd >= 0);
+        _ = posix.close(fd);
+    }
+
+    try deleteTree(root);
+
+    // Counted rather than sampled: "the first entry is gone" is true of a partial drain.
+    var snap = try takeSnapshot(std.testing.allocator, root);
+    defer snap.deinit();
+    try std.testing.expectEqual(@as(usize, 0), snap.entries.items.len);
+}
+
+test "freshDir on a missing parent stays loud; the shared open has two meanings (#327)" {
+    // One `open`, two readings of ENOENT. `deleteTree` reads it as "nothing to delete" and
+    // returns; `freshDir` has already failed its `mkdir` by the time it looks, so the same
+    // errno means a missing parent — and a --fresh-state that could not do its job and said
+    // nothing is the silent no-op the flag exists to remove. An implementation that let the
+    // walk's reading carry here is green everywhere else and wrong exactly here.
+    var pb: [contract.max_path]u8 = undefined;
+    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-noparent-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.rmdir(base_z.ptr); // must not exist; a leftover from a crashed run would hide the case
+    var rb: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&rb, "{s}/gone/state", .{base_z}) catch unreachable;
+
+    try std.testing.expectError(error.DeleteFailed, freshDir(root));
+
+    // Control: with the parent there, the same call succeeds — so the refusal above is
+    // about the missing parent and not about the path being rejected for some other reason.
+    var gb: [contract.max_path]u8 = undefined;
+    const gone_z = std.fmt.bufPrintZ(&gb, "{s}/gone", .{base_z}) catch unreachable;
+    var rzb: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rzb, "{s}", .{root}) catch unreachable;
+    defer {
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(gone_z.ptr);
+        _ = posix.rmdir(base_z.ptr);
+    }
+    try std.testing.expect(posix.mkdir(base_z.ptr, 0o755) == 0);
+    try std.testing.expect(posix.mkdir(gone_z.ptr, 0o755) == 0);
+    try freshDir(root);
+}
+
+test "the walk on its own follows a swapped root; the descriptor is what stops it (#327)" {
+    // The neighbour above proves the shipped entry points refuse a symlinked root, so it
+    // says nothing about the walk itself. This one removes the guard from the picture and
+    // asks what the walk supplies on its own — which is the only thing that answers a swap
+    // landing AFTER the guard has already run. Red before #327: `opendir` follows the link
+    // and the sentinel outside the tree is removed.
+    //
+    // Not a claim that the shipped entry points are vulnerable. They are guarded, and the
+    // neighbour above measures that.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-isolated-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
+
+    var rbuf: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&rbuf, "{s}/state", .{base}) catch unreachable;
+    var rzbuf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rzbuf, "{s}", .{root}) catch unreachable;
+    var obuf: [contract.max_path]u8 = undefined;
+    const outside = std.fmt.bufPrint(&obuf, "{s}/outside", .{base}) catch unreachable;
+    var ozbuf: [contract.max_path]u8 = undefined;
+    const outside_z = std.fmt.bufPrintZ(&ozbuf, "{s}", .{outside}) catch unreachable;
+    defer {
+        _ = posix.unlink(root_z.ptr); // the symlink planted below
+        deleteTree(root) catch {};
+        _ = posix.rmdir(root_z.ptr);
+        deleteTree(outside) catch {};
+        _ = posix.rmdir(outside_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+    try std.testing.expect(posix.mkdir(outside_z.ptr, 0o755) == 0);
+
+    var sbuf: [contract.max_path]u8 = undefined;
+    const sentinel_z = try joinZ(&sbuf, outside, "keep-me");
+    const fd = posix.open(sentinel_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    _ = posix.close(fd);
+
+    try std.testing.expect(posix.rmdir(root_z.ptr) == 0);
+    try std.testing.expect(posix.symlink(outside_z.ptr, root_z.ptr) == 0);
+
+    deleteTree(root) catch {};
+
     try std.testing.expectEqual(posix.Kind.file, try posix.kindOfPathNoFollow(sentinel_z.ptr));
 }
 
@@ -1976,7 +2264,7 @@ test "snapshot, restore and corruptState carry symlinks as links (#122)" {
     const root_z = std.fmt.bufPrintZ(&rbuf, "{s}", .{root}) catch unreachable;
     _ = posix.mkdir(root_z.ptr, 0o755);
     defer {
-        deleteTree(root, "", 0) catch {};
+        deleteTree(root) catch {};
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(parent_z.ptr);
     }
@@ -2115,7 +2403,7 @@ test "deleteTree refuses a PARTIAL failure instead of leaving residue (#121, R1)
     }
 
     // The sibling deletes, the locked directory cannot — the pass must refuse.
-    try std.testing.expectError(error.DeleteFailed, deleteTree(dir, "", 0));
+    try std.testing.expectError(error.DeleteFailed, deleteTree(dir));
 }
 
 test "a trace written against another contract version is a mismatch, not a short trace" {
@@ -2416,7 +2704,7 @@ test "the per-file cap refuses, names the file, and carries its size (#265)" {
     const root_z = std.fmt.bufPrintZ(&rbuf, "{s}", .{root}) catch unreachable;
     _ = posix.mkdir(root_z.ptr, 0o755);
     defer {
-        deleteTree(root, "", 0) catch {};
+        deleteTree(root) catch {};
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(parent_z.ptr);
     }
