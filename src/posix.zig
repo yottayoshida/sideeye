@@ -55,6 +55,36 @@ pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
 pub extern "c" fn symlink(target: [*:0]const u8, linkpath: [*:0]const u8) c_int;
+
+// The descriptor-relative half of the calls above (#327). The destructive walk opens its
+// root once and reaches every entry through these, so a swap of the root's *pathname*
+// after the open cannot redirect a delete.
+//
+/// Variadic for the reason `open` is, twenty lines up: a fixed four-argument declaration
+/// loses `mode` on arm64 macOS, where variadic arguments travel on the stack and fixed
+/// ones in registers. The walk only ever passes three, but a declaration that is wrong
+/// for the four-argument call is wrong the day somebody makes one.
+pub extern "c" fn openat(dirfd: c_int, path: [*:0]const u8, flags: c_int, ...) c_int;
+/// `flags` is 0 for a file, `AT_REMOVEDIR` for a directory — the `unlink`/`rmdir` split
+/// expressed as an argument.
+pub extern "c" fn unlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) c_int;
+pub extern "c" fn mkdirat(dirfd: c_int, path: [*:0]const u8, mode: c_uint) c_int;
+pub extern "c" fn symlinkat(target: [*:0]const u8, newdirfd: c_int, linkpath: [*:0]const u8) c_int;
+/// **Takes ownership of `fd`**: `closedir` closes it, so a descriptor the caller still
+/// needs afterwards cannot be handed over.
+///
+/// **Nor can a `dup` of one**, which is the shape this walk tried first. A duplicate
+/// shares the open file description *and its read offset*, so the stream starts wherever
+/// the original was left rather than at the beginning — measured on macOS, it cost the
+/// walk 144 of 400 entries and returned success. A caller that must read a directory it
+/// also holds open takes a fresh description instead: `openat(dirfd, ".", O_RDONLY |
+/// O_DIRECTORY)`.
+///
+/// Declared beside `opendir`/`readdir`, which carry the same pre-existing caveat: on
+/// x86-64 Darwin libc resolves these through `$INODE64` aliases, so the plain symbol is
+/// the arm64 spelling. Both the development host and the macOS runner are arm64.
+pub extern "c" fn fdopendir(fd: c_int) ?*anyopaque;
+
 pub extern "c" fn getpid() c_int;
 /// The parent's pid — or, once the parent has died and this process has been reparented,
 /// the reaper's: pid 1 or the nearest subreaper on Linux, launchd on macOS. Parentage
@@ -135,6 +165,48 @@ pub const O_NOFOLLOW: c_int = blk: {
     break :blk @bitCast(f);
 };
 
+/// Derived for the same reason `O_NOFOLLOW` is, and it is the flag that needs it most:
+/// `O_DIRECTORY` differs by architecture within Linux, and a wrong value here does not
+/// refuse loudly — it opens things the walk then treats as directories.
+pub const O_DIRECTORY: c_int = blk: {
+    var f: std.posix.O = .{};
+    f.DIRECTORY = true;
+    break :blk @bitCast(f);
+};
+
+/// Set on the root descriptor the destructive walk holds.
+///
+/// **Not load-bearing today**, and the honest reason to add it anyway: `runChild*` is only
+/// reached after `restore`/`freshDir` have returned, so no fork happens while a root
+/// descriptor is open. That ordering is what makes the absence safe, and it is written
+/// down nowhere — a descriptor on the state directory is precisely the one that must not
+/// survive an exec into the target.
+pub const O_CLOEXEC: c_int = blk: {
+    var f: std.posix.O = .{};
+    f.CLOEXEC = true;
+    break :blk @bitCast(f);
+};
+
+/// `AT_*` and `AT_FDCWD` differ **by operating system** rather than by architecture —
+/// `REMOVEDIR` is 0x0080 on Darwin against 0x200 on Linux, and `AT_FDCWD` is -2 against
+/// -100 — so unlike `O_DIRECTORY` the `os.tag` shape every neighbour uses could express
+/// them. Taken from std regardless: the block at the top of this file records three
+/// defects that were a platform constant right on one side and quietly plausible on the
+/// other, and a hand-written table is how a fourth would arrive.
+///
+/// A wrong `AT_REMOVEDIR` fails loudly — `deleteTree`'s `removed < count` catches it — so
+/// it is not in the same danger class as `O_DIRECTORY` above. The derivation is the same;
+/// the reason is not.
+pub const AT_FDCWD: c_int = std.posix.AT.FDCWD;
+pub const AT_REMOVEDIR: c_int = std.posix.AT.REMOVEDIR;
+
+/// The two errno values the destructive walk maps to a refusal of their own; everything
+/// else it can see falls to one loud default. `ELOOP` is 40 on Linux and 62 on Darwin, so
+/// it cannot be written out the way `EINTR` and `ENOENT` above are; `ENOTDIR` agrees
+/// across both but comes from the same place so the pair cannot drift apart.
+pub const ELOOP: c_int = @intFromEnum(std.posix.E.LOOP);
+pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
+
 // Values of `dirent.type`, identical on Linux and the BSDs.
 pub const DT_UNKNOWN: u8 = 0;
 pub const DT_DIR: u8 = 4;
@@ -206,10 +278,24 @@ pub fn isDirPath(path: [*:0]const u8) bool {
 pub const ClassifyError = error{Unclassifiable};
 
 pub fn kindOfPathNoFollow(path: [*:0]const u8) ClassifyError!Kind {
+    return kindAtNoFollow(AT_FDCWD, path);
+}
+
+/// The same classification, relative to an open directory (#327).
+///
+/// **`path` must be a bare entry name.** An absolute path makes `dirfd` irrelevant on both
+/// platforms — silently, with no error — which would leave the walk resolving names the
+/// descriptor was opened to pin. The one caller passes a name straight out of `readdir`.
+///
+/// This is the fd-relative form the walk needs, and deliberately not an `openat` probe:
+/// `opendir` passes `O_NONBLOCK`, a hand-rolled open does not, and #5 recorded what that
+/// costs — "a FIFO with no writer blocks that open forever" is why the open-probe was
+/// retired from this file in the first place.
+pub fn kindAtNoFollow(dirfd_: c_int, path: [*:0]const u8) ClassifyError!Kind {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
         var stx: lnx.Statx = undefined;
-        const rc = lnx.statx(lnx.AT.FDCWD, path, lnx.AT.SYMLINK_NOFOLLOW, .{ .TYPE = true }, &stx);
+        const rc = lnx.statx(@intCast(dirfd_), path, lnx.AT.SYMLINK_NOFOLLOW, .{ .TYPE = true }, &stx);
         switch (lnx.errno(rc)) {
             .SUCCESS => {},
             .NOENT => return .missing,
@@ -226,7 +312,7 @@ pub fn kindOfPathNoFollow(path: [*:0]const u8) ClassifyError!Kind {
         return .other;
     } else {
         var st: std.c.Stat = undefined;
-        if (std.c.fstatat(std.c.AT.FDCWD, path, &st, std.c.AT.SYMLINK_NOFOLLOW) != 0) {
+        if (std.c.fstatat(@intCast(dirfd_), path, &st, std.c.AT.SYMLINK_NOFOLLOW) != 0) {
             if (std.c._errno().* == ENOENT) return .missing;
             return error.Unclassifiable;
         }
@@ -707,4 +793,78 @@ test "O_NOFOLLOW actually refuses a symlink" {
         _ = close(refused);
         return error.NofollowDidNotRefuse;
     }
+}
+
+test "O_DIRECTORY actually refuses a regular file" {
+    // A regular file, deliberately, and not the symlink the neighbour above uses: on a
+    // symlink the open fails because of O_NOFOLLOW whatever O_DIRECTORY happens to say,
+    // so that shape cannot discriminate this constant at all. A wrong O_DIRECTORY does
+    // not refuse loudly either — it opens things the destructive walk then recurses into.
+    var pb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-odirectory-{d}", .{getpid()}) catch unreachable;
+    _ = mkdir(base.ptr, 0o755);
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/plain", .{base}) catch unreachable;
+    defer {
+        _ = unlink(file_z.ptr);
+        _ = rmdir(base.ptr);
+    }
+    const wfd = open(file_z.ptr, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(wfd >= 0);
+    _ = close(wfd);
+
+    // Both directions, and the errno: without the flag the file opens; with it the open
+    // must fail with ENOTDIR specifically. "It failed" alone is also true of a path that
+    // does not exist, which is what a zeroed flag plus a typo would look like.
+    const opened = open(file_z.ptr, O_RDONLY, @as(c_uint, 0));
+    try std.testing.expect(opened >= 0);
+    _ = close(opened);
+
+    const refused = open(file_z.ptr, O_RDONLY | O_DIRECTORY | O_NOFOLLOW, @as(c_uint, 0));
+    if (refused >= 0) {
+        _ = close(refused);
+        return error.ODirectoryDidNotRefuse;
+    }
+    try std.testing.expectEqual(ENOTDIR, std.c._errno().*);
+}
+
+test "kindAtNoFollow reads the descriptor it is given, not the name alone" {
+    // Same entry name under two directories, different kinds. A classifier that ignored
+    // its dirfd — or an absolute path, which makes the kernel ignore it — would answer
+    // identically for both, so this is the shape that catches the mistake the function's
+    // doc warns about.
+    var pb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-kindat-{d}", .{getpid()}) catch unreachable;
+    _ = mkdir(base.ptr, 0o755);
+    var ab: [160]u8 = undefined;
+    const a_z = std.fmt.bufPrintZ(&ab, "{s}/a", .{base}) catch unreachable;
+    var bb: [160]u8 = undefined;
+    const b_z = std.fmt.bufPrintZ(&bb, "{s}/b", .{base}) catch unreachable;
+    var afb: [160]u8 = undefined;
+    const a_x = std.fmt.bufPrintZ(&afb, "{s}/a/x", .{base}) catch unreachable;
+    var bdb: [160]u8 = undefined;
+    const b_x = std.fmt.bufPrintZ(&bdb, "{s}/b/x", .{base}) catch unreachable;
+    defer {
+        _ = unlink(a_x.ptr);
+        _ = rmdir(b_x.ptr);
+        _ = rmdir(a_z.ptr);
+        _ = rmdir(b_z.ptr);
+        _ = rmdir(base.ptr);
+    }
+    try std.testing.expect(mkdir(a_z.ptr, 0o755) == 0);
+    try std.testing.expect(mkdir(b_z.ptr, 0o755) == 0);
+    const fd_file = open(a_x.ptr, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd_file >= 0);
+    _ = close(fd_file);
+    try std.testing.expect(mkdir(b_x.ptr, 0o755) == 0);
+
+    const fa = open(a_z.ptr, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC, @as(c_uint, 0));
+    try std.testing.expect(fa >= 0);
+    defer _ = close(fa);
+    const fb2 = open(b_z.ptr, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC, @as(c_uint, 0));
+    try std.testing.expect(fb2 >= 0);
+    defer _ = close(fb2);
+
+    try std.testing.expectEqual(Kind.file, try kindAtNoFollow(fa, "x"));
+    try std.testing.expectEqual(Kind.dir, try kindAtNoFollow(fb2, "x"));
 }
