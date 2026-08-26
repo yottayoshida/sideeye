@@ -2029,6 +2029,39 @@ else
 fi
 rm -rf /tmp/acc-cap
 
+echo "=========== check 2fd: the same cap AFTER the recording run is UNKNOWN, not exit 3 (#330) ==========="
+# 2fc plants the file before anything runs, so exit 3 is true there. Here the
+# operation writes it itself — an ordinary thing for a target to do — and the cap
+# is hit at the final snapshot, past the recording run. Exit 3 would then say "the
+# define did not run" about a define that ran to completion, and a caller reading
+# that machine-readably retries the environment instead of reporting an unjudgeable
+# run. The two legs also bound where `run_phase`'s assignment may sit: assign it
+# before the initial snapshot and 2fc turns red; delete the assignment and this one
+# does. That bounds an interval, not a point — an assignment moved anywhere between
+# the two snapshots leaves both legs green, measured. `--json` is passed because the
+# closed-set gate only checks that the names in the enum and the doc agree — that a
+# member is ever REACHED is asserted here alone.
+rm -rf /tmp/acc-cap-late && mkdir -p /tmp/acc-cap-late/state
+# seek=67108864 count=1 writes byte 67,108,864, so the file is 67,108,865 bytes —
+# one past the cap, which the reader compares with a strict >. Sparse, like 2fc.
+o=$("$SIDEEYE" explore --state /tmp/acc-cap-late/state \
+    --operation "dd if=/dev/zero of=/tmp/acc-cap-late/state/huge.bin bs=1 seek=67108864 count=1" \
+    --shim "$SHIM" --work /tmp/acc-cap-late/work --oracle /usr/bin/strace \
+    --json /tmp/acc-cap-late/r.json 2>&1)
+rc=$?
+if [ "$rc" = "2" ] \
+    && echo "$o" | grep -q "state_file_too_large" \
+    && echo "$o" | grep -q "huge.bin" \
+    && grep -q '"unknown_reason": "state_file_too_large"' /tmp/acc-cap-late/r.json; then
+    echo "ok   a cap hit past the recording run is UNKNOWN state_file_too_large, in text and JSON"
+else
+    echo "FAIL late per-file cap: exit $rc (wanted 2 + state_file_too_large in text and JSON)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    sed 's/^/     json | /' /tmp/acc-cap-late/r.json 2>/dev/null | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-cap-late
+
 echo "=========== check 2vw: the vectored positional writes are counted (#256) ==========="
 # The oracle has classified pwritev since v0.1; the shim never exported it, so a
 # target writing this way was seen by one observer and not the other — measured

@@ -359,6 +359,15 @@ pub const UnknownReason = enum {
     /// both read sites are at or past the recording run, where exit 3's "the define
     /// did not run" is no longer true — the line `child_wait_failed` draws above.
     trace_too_large,
+    /// A state file was larger than the snapshot will read (#265), at a snapshot taken
+    /// at or past the recording run (#330). The initial snapshot hits the same cap and
+    /// stays SETUP_ERROR: it runs before anything of the define does, so exit 3's "the
+    /// define did not run" is true there and false here. A target that writes a big
+    /// file during its own operation reaches this without doing anything wrong, which
+    /// is why the late sites cannot borrow the early site's verdict. Whichever of the
+    /// refusal's message forms applies, it applies on both sides of that split — so what
+    /// differs between the two exits is the verdict alone, never the wording.
+    state_file_too_large,
     /// The trace ended mid-record. Everything after that point is unknown, including
     /// how many operations there were.
     trace_truncated,
