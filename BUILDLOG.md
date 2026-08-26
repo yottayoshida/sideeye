@@ -16,6 +16,46 @@ Part one froze the corpus and built the apparatus without measuring anything. Th
 
 *A guard that has only ever been red in a fixture.* Part one's partial-execution check has never fired on real data. It fires only for a generation marked complete, and a sweep that dies leaves the generation `unstarted` — so the failure path reaches a different message than the plan first claimed. Both are measured here on a scratch copy, whether or not the sweep completes, because the completing case is the ordinary one and would otherwise leave both unverified forever.
 
+**The first sweep was interrupted, and the interruption did that verification for real.** Contract v12 merged a few minutes into the run. Its Linux side is unchanged — `git diff 892276d..main -- shim/src/linux.zig src/oracle.zig` is empty, checked here rather than taken on report — so the numbers would have been identical either way. What is not identical is the record: `apparatus.txt` writes `head:` with the commit the sweep ran on, and rebasing afterwards leaves that sha pointing at a commit no longer in the history. **The run was stopped and restarted on the new base for provenance, not for arithmetic.** The sixteen trials it left behind became the real material for the check above, which had been planned as a synthetic one:
+
+- g2 still `unstarted`: `generation g2 is marked unstarted but artifacts-a2/manifest.tsv exists`
+- g2 flipped to `complete` on a symlink farm, production tree untouched: `manifest covers 16 trials against its expected 36 — a partially measured generation is not publishable`
+
+Part one's guard had only ever been red in fixtures. It is red on real data now.
+
+*The first attempt at that check was a hollow red.* The scratch tree was built by copying files instead of linking, so it lacked defines the corpus names, and `count.py` died on `define path missing from checkout: spike/dogfood-todoman.sh` — before reaching the predicate under test. Red, and about nothing. Precisely the shape check 12's message matching exists for, met while relying on it.
+
+**The sweep: 36 trials, 4 minutes 21 seconds** (17:03:14 to 17:07:35, base `6533681`, engine 0.13.0 on trace contract v12). Recorded because part one could not find the previous sweep's duration anywhere — not in the buildlog, not in a runlog — and the artifacts' mtimes are checkout times, so reading them naively says "36 reports in one second".
+
+**Gate before marking the generation complete**: 36 manifest rows, **zero SETUP_ERROR**, **rated denominator 36**, every verdict inside the closed set — FAIL 23, PASS 11, UNKNOWN 2. The row count alone would have passed with a `SETUP_ERROR` among them and a rate computed from thirty-five, which is why the denominator is what the gate counts.
+
+**What in this entry is re-derivable from the tree, and what is not.** The verdict counts, the rated denominator and the shared-subset comparison recompute from `artifacts-a2/` and `artifacts/` alone. The ledger arithmetic (eighteen defines as eight, six and four) needs more than the artifacts — it needs `corpus.tsv`, `supersession.tsv`, `class-exclusions.tsv` and the cohort directories on disk — so it is re-derivable from the **committed tree**, which is a wider claim than "from the artifacts" and was written as the narrower one until review separated them. **The rest is operator-observed and leaves no artifact**: the elapsed 4m21s (a wall clock read outside the tool, which records no timing), the sixteen-trial interrupted run and the two predicates measured on it (that tree was deleted before the real sweep, because `sweep.sh` refuses an existing artifacts directory), the scratch symlink farm, and the report-swap mutant, which was constructed in memory during review and never written. Those are claims about operations, not about committed evidence, and they are marked as such rather than left to read like the recomputable ones.
+
+**One review finding is deferred rather than fixed, and that is a waiver, not a repair.** The raw oracle logs this sweep commits carry absolute paths from the machine that ran it, operator username included — four files, 264 occurrences, the same shape and the same count as g1's committed logs. Normalising them means either rewriting evidence or changing what `sweep.sh` writes, and a measurement PR is the wrong place for either. **This PR adds new instances knowingly** and files the decision; it does not claim to have addressed it.
+
+**The difference between g1 and g2, separated once rather than left to a reading:**
+
+```
+=== A-group, shared trials (the 28 both generations measured) ===
+  g1: 1/28
+  g2: 1/28
+  trials whose verdict or reason changed: 0
+
+=== A-group, within g2 (same engine, same images, same run) ===
+  shared 28: 1/28
+  all 36:    2/36
+
+=== published ===
+  g1 (28 trials, 2026-08-16): 1/28
+  g2 (36 trials, 2026-08-26): 2/36
+```
+
+The plan called the difference multi-causal and warned against reducing it to two effects. **The first draft of this entry then reduced it to one**, writing that the other causes contributed nothing because the shared twenty-eight did not move. Review caught it, and the correction matters because the counter-example was three paragraphs away in the same entry. What the arithmetic supports is narrower: the same twenty-eight trials produced identical verdicts and identical reasons across an engine change and a rebuild, so **the movement is located in the eight that entered at g2** — and locating it there is not attributing it to their novelty. No run exists in which those eight faced g1's engine, so their being new and the engine having changed cannot be separated from each other the way the shared twenty-eight separate from both.
+
+**And the added UNKNOWN is, in fact, an engine effect.** #239 argued the rate would rise because several added defines reach named refusals, naming jj, Bun and cargo; all three sit outside the corpus by class and never entered the denominator. The one that did was himalaya — the single define carrying `apparatus_superseded`, whose `no-accel-copy.so` answers the copy primitives **the shim now interposes itself**, the two colliding into `oracle_saw_phantom`. It refused because the engine changed, on a define that happened to be new. Writing "the movement is the corpus addition" while also writing "the shim now interposes what the apparatus was answering" is a contradiction inside one entry, and it survived until someone read both sentences together.
+
+**A second pass at that sentence was still wrong, in a subtler way**: it called himalaya "the one trial that moved the rate", which confuses the numerator with the rate. Eight trials entered; one added an UNKNOWN and **seven added only to the denominator**. The shared twenty-eight plus himalaya alone read **2/29 (6.9%)**; the other seven bring it down to **2/36 (5.6%)**. So the added set pushed in both directions and the published rise is *smaller* than the new refusal alone would have produced. Two rounds of review to get from "the corpus did it" to "one of the eight refused for an engine reason and the other seven diluted it" — each correction sounded like a rewording and was a different claim.
+
 ## 2026-08-26 — the clone nobody saw, and the issue that named the wrong function (#333, #336)
 
 The issue was written by this project, at the end of the previous batch, from a scratchpad note — and its premise was never measured. It says macOS copies go through `fcopyfile`, which the shim does not interpose. Measured: `fcopyfile` and `copyfile` were **already visible** — libcopyfile binds plain `_open`/`_write`, which cross the interpose boundary — and what was invisible was selected by a *flag*: `COPYFILE_CLONE` routes to `clonefileat`, and the clone family (`clonefile`, `clonefileat`, `fclonefileat`) was interposed nowhere. A clone into the state directory recorded zero operations while a real file appeared with real content, and with one `unlink` beside it the run **PASSed** — `state_changed_without_ops` fires only at zero recorded mutations, a guard whose covered set is "targets that do nothing". Rust std's `fs::copy` reaches `fclonefileat` first, so the silent route was the common one. Same shape as `copy_file_range` one batch earlier: the abstraction "this function is visible" broke on an argument, and the real judgment lives one level down.

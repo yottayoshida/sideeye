@@ -1,6 +1,6 @@
 # 0025 — Three ledgers decide corpus membership, and the partition is checked
 
-Status: Proposed
+Status: Accepted (implementing PR merged as `f245f7d`, 2026-08-26; the ledgers carried their first sweep in generation g2 the same day)
 
 ## Context
 

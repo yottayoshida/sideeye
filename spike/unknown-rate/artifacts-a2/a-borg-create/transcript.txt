@@ -1,0 +1,137 @@
+falsify: checker(borg-create): leg V: borg check failed after crash (and lock removal, when one ran)
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+checker(borg-create): stale lock present; running the documented borg break-lock
+FAIL  3 of 119 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 94 of 118
+            after  open(/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/chunks)
+            before write(/tmp/cohort2/borg/state/ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/chunks)
+path        ambient/.cache/borg/5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/chunks
+observed    holding neither the old nor the new content
+explored    119 worlds (crash points 118 + 1 baseline)
+expected    exit 0
+atomicity   29 path(s) judged pre-or-post
+oracle      agreed on 118 operations (6548 syscall lines examined, 1046 in scope of the judged state)
+metadata    3 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x3. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 119 world(s)
+l1          no marker configured
+case        /tmp/sideeye-work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/cohort2/borg/state SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=94 SIDEEYE_SEQ_BASE= <operation>

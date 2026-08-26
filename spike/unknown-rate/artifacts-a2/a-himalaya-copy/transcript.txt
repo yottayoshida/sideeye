@@ -1,0 +1,11 @@
+UNKNOWN  oracle_saw_phantom
+         the shim recorded an operation the oracle did not see; divergence at operation 3: the oracle's account ends after 2 operation(s); the shim recorded: write("/tmp/cohort4/himalaya/store/Archive/cur/1787731655.#0M435335677P25.6c4e231a1ec0:2,S")
+
+atomicity   8 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -1,0 +1,24 @@
+falsify: checker(stow-unfold): A's grace.txt is not reachable at its target path (got: 'unreadable')
+checker(stow-unfold): A's grace.txt is not reachable at its target path (got: 'unreadable')
+checker(stow-unfold): A's grace.txt is not reachable at its target path (got: 'unreadable')
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 4
+            after  unlink(/tmp/assisted/stow/state/target/sub)
+            before mkdir(/tmp/assisted/stow/state/target/sub)
+path        target/sub
+observed    present before and after the operation, but gone from the crashed state
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   9 path(s) judged pre-or-post
+oracle      agreed on 4 operations (823 syscall lines examined, 68 in scope of the judged state)
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+l1          no marker configured
+case        /tmp/sideeye-work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/assisted/stow/state SIDEEYE_TRACE_PATH=/tmp/sideeye-work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

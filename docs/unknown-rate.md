@@ -31,23 +31,65 @@ threshold set from it would be satisfied by construction. So:
   rate is published **as the engine's development-input set**, and is *not*
   the threshold basis.
 
-  **Measured 2026-08-16 as generation g1, and not re-swept since** (#239).
-  Eighteen further defines were committed after that sweep ran — cohorts 2,
-  3 and 4 (`spike/cohort2/`, `spike/cohort3/`, `spike/cohort4/`; the
+  **Measured twice: generation g1 on 2026-08-16 and generation g2 on
+  2026-08-26** (#239). Eighteen further defines were committed between the
+  two — cohorts 2, 3 and 4 (`spike/cohort2/`, `spike/cohort3/`, `spike/cohort4/`; the
   `ops/*.toml` directories under each). They are now sorted across the three
   ledgers the rules describe: eight enter the corpus as generation **g2**,
   six are recorded in `supersession.tsv` as earlier revisions of targets the
   corpus carries, and four in `class-exclusions.tsv` as targets whose class
   the first table of `docs/target-classes.md` does not list.
 
-  **g2 has not run.** The corpus, the ledgers and the apparatus for it merge
-  in this PR; the sweep and its numbers merge in another, so the
-  first-parent order shows the corpus was fixed before the figures moved —
-  the same two-merge discipline this page's opening describes. Until then
-  the published rate below is g1's, describing the corpus as it stood on
-  that date. The **threshold** is unaffected either way: it is set from
-  B-group data only, no cohort target is in B-group, and g2 does not cover
-  B. This note sits outside the generated block on purpose — `count.py` owns
+  **g2 ran on 2026-08-26** and its figures are below beside g1's, both
+  dated. The corpus and the ledgers merged first and the results after, so
+  the first-parent order shows the corpus was fixed before the figures
+  moved. The **threshold** is untouched: it is set from B-group data only,
+  no cohort target is in B-group, and g2 does not cover B.
+
+  **What the difference between the two is, and is not.** A generation
+  re-measures every row it covers, so g2 re-ran the twenty-eight g1
+  measured as well as the eight that entered with it. That makes the
+  difference separable, and it was separated once rather than left to a
+  reading:
+
+  - **The twenty-eight shared trials: 1/28 in g1, 1/28 in g2, with no
+    trial changing verdict or reason.** Those two runs differ by engine
+    (v10 era to v12), by rebuilt images against mutable base tags, and by
+    ordinary run-to-run variation — and none of that moved a single
+    judgement among them. That is a measurement about those twenty-eight
+    and not a statement about the other causes generally.
+  - **Within g2, holding engine and images fixed: 1/28 over the shared
+    trials, 2/36 over all of them.** So the movement is **located in the
+    eight trials that entered at g2** — which is where the arithmetic ends.
+
+  **It does not follow that the corpus addition caused it**, and the next
+  paragraph is why that distinction is not pedantic. Locating the movement
+  in the new eight is not the same as attributing it to their being new:
+  no counterfactual exists in which those eight ran on g1's engine and
+  images, so their contribution and the engine's cannot be separated from
+  each other the way the shared twenty-eight separate from both.
+
+  **The eight moved the rate in both directions.** One added to the
+  numerator and seven added only to the denominator: the shared twenty-eight
+  plus himalaya alone would read 2/29 (6.9%), and the other seven bring it
+  to 2/36 (5.6%). So the published rise from 3.6% is smaller than the single
+  new UNKNOWN would have made it, and saying "the corpus addition raised the
+  rate" flattens a set that pushed both ways.
+
+  **The trial that added to the numerator is not the one the issue expected,
+  and it refused for an engine reason.** #239 reasoned that the rate would
+  rise because several added defines reach named refusals — jj, Bun and
+  cargo. All three are outside the corpus by class, so none of them entered
+  the denominator at all. The added UNKNOWN is himalaya, whose define
+  carries the `apparatus_superseded` flag: its `no-accel-copy.so` answers
+  the kernel copy primitives **the shim now interposes itself** (#244), and
+  the two collide into `oracle_saw_phantom`. That refusal is an engine
+  change meeting an older apparatus — a new trial exposed it, and the
+  engine is what made it refuse. The flag was set from `PRD.md`'s
+  instrument note before this sweep ran; the sweep is where it stopped
+  being a note and became a number.
+
+  This note sits outside the generated block on purpose — `count.py` owns
   everything between the results markers and compares it byte for byte.
 - **B-group** — targets this project has never run, selected mechanically
   (no hand-picking; see below). **The threshold is set from B-group data
@@ -184,10 +226,10 @@ row (the mapping is written out in `corpus.tsv`'s header).
 | rustfmt | Rust in-place formatter | `spike/cohort3/rustfmt/ops` | 1 |
 | himalaya | Rust mail client over a maildir store | `spike/cohort4/himalaya-r2/ops` | 1 |
 
-**These have not been measured.** They are the corpus g2 will sweep; until
-that generation runs, the published figures are g1's and cover g1's rows.
-The remaining ten cohort defines are in `supersession.tsv` (six) and
-`class-exclusions.tsv` (four).
+**Measured in g2 on 2026-08-26**: six FAIL, one PASS, and one UNKNOWN —
+himalaya, on `oracle_saw_phantom`, which is the `apparatus_superseded`
+flag turning into a measurement. The remaining ten cohort defines are in
+`supersession.tsv` (six) and `class-exclusions.tsv` (four).
 
 watson is **in** the denominator: "supported" is a class property
 (`docs/target-classes.md`), watson is a Python CLI, and its known refusal
@@ -461,9 +503,108 @@ evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 11/28 (39.3%)
 - B-group derived UNKNOWN rate on macOS: 6/7 (85.7%)
 
-### Generation g2 — not yet measured (A)
+### Generation g2 — measured 2026-08-26 (A)
 
-_Not yet measured: the sweep has not run. This line is asserted by count.py check._
+#### A-group (the engine's development input — not the threshold basis)
+
+| trial | tool | class | judge | verdict | unknown_reason | flags |
+|---|---|---|---|---|---|---|
+| a-topydo-add | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-append | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-del | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-dep-add | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-dep-rm | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-depri | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-do | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-ls | topydo | python-cli | l0c | PASS (0 crash points) | - | - |
+| a-topydo-postpone | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-pri | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-revert | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-sort | topydo | python-cli | l0c | FAIL | - | - |
+| a-topydo-tag | topydo | python-cli | l0c | FAIL | - | - |
+| a-abook-import | abook | c-cli | l0c | PASS | - | - |
+| a-abook-export | abook | c-cli | l0c | PASS | - | - |
+| a-abook-refused | abook | c-cli | l0c | PASS | - | - |
+| a-khal-import | khal | python-cli | l0c | PASS | - | - |
+| a-khal-update | khal | python-cli | l0c | PASS | - | - |
+| a-khal-new | khal | python-cli | l0c | PASS | - | - |
+| a-buku-add | buku | python-sqlite | l0c | FAIL | - | - |
+| a-calcurse-purge | calcurse | c-cli | l0c | FAIL | - | - |
+| a-devtodo-remove | devtodo | cxx-cli | l0c | FAIL | - | - |
+| a-stow-unfold | stow | perl-cli | l0c | FAIL | - | - |
+| a-watson-add | watson | python-cli | l0c | UNKNOWN | baseline_violates_invariant | - |
+| a-timew-a | timewarrior | c-cpp-cli | l0 | PASS | - | - |
+| a-timew-b | timewarrior | c-cpp-cli | l0c | FAIL | - | - |
+| a-todoman-a | todoman | python-cli | l0 | PASS | - | - |
+| a-todoman-b | todoman | python-cli | l0c | PASS | - | - |
+| a-hg-commit | hg | dvcs-transactional | l0c | FAIL | - | apparatus_declared |
+| a-borg-create | borg | dedup-backup-repo | l0c | FAIL | - | apparatus_declared |
+| a-black-format | black | python-inplace-formatter | l0c | FAIL | - | - |
+| a-papis-add | papis | python-library-store | l0c | PASS | - | - |
+| a-poetry-add | poetry | python-manifest-lock | l0c | FAIL | - | - |
+| a-poetry-version | poetry | python-manifest-lock | l0c | FAIL | - | - |
+| a-rustfmt-format | rustfmt | rust-inplace-formatter | l0c | FAIL | - | - |
+| a-himalaya-copy | himalaya | rust-maildir-client | l0c | UNKNOWN | oracle_saw_phantom | apparatus_declared;apparatus_superseded |
+
+UNKNOWN rate, per-trial: **2/36 (5.6%)**
+
+| slice | UNKNOWN |
+|---|---|
+| tool: abook | 0/3 (counts only, n<5) |
+| tool: black | 0/1 (counts only, n<5) |
+| tool: borg | 0/1 (counts only, n<5) |
+| tool: buku | 0/1 (counts only, n<5) |
+| tool: calcurse | 0/1 (counts only, n<5) |
+| tool: devtodo | 0/1 (counts only, n<5) |
+| tool: hg | 0/1 (counts only, n<5) |
+| tool: himalaya | 1/1 (counts only, n<5) |
+| tool: khal | 0/3 (counts only, n<5) |
+| tool: papis | 0/1 (counts only, n<5) |
+| tool: poetry | 0/2 (counts only, n<5) |
+| tool: rustfmt | 0/1 (counts only, n<5) |
+| tool: stow | 0/1 (counts only, n<5) |
+| tool: timewarrior | 0/2 (counts only, n<5) |
+| tool: todoman | 0/2 (counts only, n<5) |
+| tool: topydo | 0/13 (0.0%) |
+| tool: watson | 1/1 (counts only, n<5) |
+| class: c-cli | 0/4 (counts only, n<5) |
+| class: c-cpp-cli | 0/2 (counts only, n<5) |
+| class: cxx-cli | 0/1 (counts only, n<5) |
+| class: dedup-backup-repo | 0/1 (counts only, n<5) |
+| class: dvcs-transactional | 0/1 (counts only, n<5) |
+| class: perl-cli | 0/1 (counts only, n<5) |
+| class: python-cli | 1/19 (5.3%) |
+| class: python-inplace-formatter | 0/1 (counts only, n<5) |
+| class: python-library-store | 0/1 (counts only, n<5) |
+| class: python-manifest-lock | 0/2 (counts only, n<5) |
+| class: python-sqlite | 0/1 (counts only, n<5) |
+| class: rust-inplace-formatter | 0/1 (counts only, n<5) |
+| class: rust-maildir-client | 1/1 (counts only, n<5) |
+| judge: l0 | 0/2 (counts only, n<5) |
+| judge: l0c | 2/34 (5.9%) |
+
+| unknown_reason | count |
+|---|---|
+| baseline_violates_invariant | 1 |
+| oracle_saw_phantom | 1 |
+
+#### Outcome ratio (A-group, per the committed disposition map)
+
+| outcome | count |
+|---|---|
+| FAIL, reported-upstream | 17 |
+| FAIL, withdrawn | 1 |
+| FAIL, kept-unreported | 5 |
+| FAIL, new-this-sweep | 0 |
+| UNKNOWN | 2 |
+| PASS | 11 |
+
+#### macOS column (derived, not measured)
+
+Formula (mechanism: `requireCompleteness`, src/main.zig — no oracle exists on macOS,
+so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own
+evidence and is unchanged; a Linux UNKNOWN is not re-derived):
+- A-group derived UNKNOWN rate on macOS: 13/36 (36.1%)
 <!-- unknown-rate:results:end -->
 
 **Reading the B-group's three UNKNOWNs** (swept 2026-08-16, engine 0.9.0 /

@@ -1,0 +1,10 @@
+|  1| 2026-08-26 water-plants
+PASS  the operation performed nothing that can change the judged state
+      explored 0 crash points; nothing to kill before
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 0 operations (2047 syscall lines examined, 14 in scope of the judged state)
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      l1: no marker configured
+      case: (none)
+      not tested: power loss, torn writes, concurrent processes

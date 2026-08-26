@@ -1,0 +1,39 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 12,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "oracle_verified": true,
+  "crash_points": 2,
+  "explored": 3,
+  "violations": 1,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 2,
+    "invariant": "built-in atomicity, and the checker",
+    "after": {"op": "open", "path": "/tmp/blind/hunt/sort/state/todo.txt"},
+    "before": {"op": "write", "path": "/tmp/blind/hunt/sort/state/todo.txt"},
+    "subject": "todo.txt",
+    "observed": "holding neither the old nor the new content"
+  },
+  "checker_earliest": {
+    "crash_point": 2,
+    "invariant": "built-in atomicity, and the checker",
+    "after": {"op": "open", "path": "/tmp/blind/hunt/sort/state/todo.txt"},
+    "before": {"op": "write", "path": "/tmp/blind/hunt/sort/state/todo.txt"},
+    "subject": "todo.txt",
+    "observed": "holding neither the old nor the new content",
+    "case": "/tmp/blind/hunt/sort/work/cases/000001.json",
+    "replay": "sideeye replay /tmp/blind/hunt/sort/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so"
+  },
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/tmp/blind/hunt/sort/work/cases/000001.json",
+  "replay": "sideeye replay /tmp/blind/hunt/sort/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "oracle": "agreed on 2 operations (1986 syscall lines examined, 25 in scope of the judged state)",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 3 world(s)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

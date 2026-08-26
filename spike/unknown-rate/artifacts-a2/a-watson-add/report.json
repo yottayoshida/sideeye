@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 12,
+  "verdict": "UNKNOWN",
+  "exit_code": 2,
+  "oracle_verified": true,
+  "crash_points": 3,
+  "explored": 4,
+  "violations": 1,
+  "expected_status": 0,
+  "unknown_reason": "baseline_violates_invariant",
+  "message": "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first",
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "agreed on 3 operations (2170 syscall lines examined, 19 in scope of the judged state)",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed)",
+  "processes": "single process",
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}
