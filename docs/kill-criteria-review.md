@@ -23,7 +23,23 @@ Two framing notes before the rows:
   sweep (#84, `docs/unknown-rate.md`) — and row 2's only number comes from the
   same cohort. Row 3 stands on the separate loop-closure measurement and row 7
   is an adjudication. Eight verdicts below do not mean eight independent
-  confirmations.
+  confirmations. *(Re-checked 2026-08-26, and on the instrument the note
+  holds more firmly rather than less. The three selection cohorts that
+  arrived after this page was written are not the independent instrument they
+  look like: cohort 3 states that
+  "the probe gate of cohort 2 applies … with one substitution", and cohort 4
+  applies cohort 2's seven conditions "with their predicates **sourced in
+  place** (`spike/cohort2/probes/lib.sh`; no fork, no copy: the cohort-2
+  drills and this cohort's runs exercise the same lines)". They share engine,
+  observer, probe-gate predicates and the same owner and scout, so **they are
+  not three independent apparatuses**: a systematic error in the shared gate or
+  the engine would appear in all three alike. That is what the quotations
+  settle and the limit of it — twelve distinct targets, their own checkers and
+  their own explored verdicts are new information about the world whatever
+  instrument read them, and nothing here says otherwise. #240 expected this
+  note to weaken with the cohorts added; on the instrument axis it does the
+  opposite. Which rows their measurements reach is the re-review section
+  below.)*
 
 What holds this page: acceptance check 11 verifies that every repository path
 named here exists (path rot), and nothing more. The numbers are quotations
@@ -281,3 +297,153 @@ row's trigger side — a sweep where target-origin UNKNOWNs dominate, a
 false-positive class that isn't caught in-repo, a head-to-head that shows no
 difference — reopens this page, and per the PRD's own rule the analysis
 ships instead of the release.
+
+## Re-review (2026-08-26) — three selection cohorts
+
+**Current state of v1.0 entry criterion 3: reopened, re-score pending owner
+adjudication.** Everything above this line — the eight rows, the calibration
+note and the closing verdict of "none triggered" — is the review of
+2026-08-16 and is left exactly as it was written, including its date. This
+section sits after it rather than inside it, so that the historical
+conclusion stays legible as a conclusion and this one does not overwrite it.
+What follows is what has been measured since, row by row, and which rows it
+lands on.
+
+What has been measured since: **twelve targets across three selection
+cohorts** (#183 2026-08-21, #209 2026-08-22, cohort 4 2026-08-23), each
+under a freeze published before it ran, producing **thirteen outcomes** —
+five walls that stood (KeePassXC, Jujutsu, Bun, cargo, unison), one wall
+lifted by declared apparatus and turned into a verdict (Borg, #200), and
+**seven verdicts**. Borg appears twice because it produced both, which is
+why `spike/cohort2/RESULTS.md` records "five targets, six recorded
+outcomes" for that cohort rather than a single number. Records:
+`spike/cohort2/RESULTS.md`, `spike/cohort3/RESULTS.md`,
+`spike/cohort4/himalaya-r2/RESULTS.md`.
+
+**Two of the eight rows carry evidence on their trigger side** — rows 4
+and 6. Per the closing rule stated above, that reopens this page, and per
+the PRD's own rule the consequence for the release is the owner's. **This
+section does not re-score anything**; what the two rows gained is material,
+stated as location and counter-evidence separately, below the table.
+
+| Row | New evidence from the cohorts | Trigger-side? | Verdict (2026-08-16) | Re-review |
+|---|---|---|---|---|
+| 1 — bulk failure scenarios | Seven verdicts, each from a define carrying **exactly one** operation file — `spike/cohort2/hg-r4/ops`, `spike/cohort3/black/ops`, `spike/cohort4/himalaya-r2/ops` and the rest, one `.toml` apiece — against the thirteen the corpus's own topydo define carries (`spike/blind-hunt/declaration/topydo/ops`). No cohort target was given a scenario set | no | `not triggered.` Single-invariant, single-operation trials find real bugs; breadth widens the net but is not the precondition | Corroborated, unchanged — seven further single-invariant verdicts |
+| 2 — invariant cost vs ordinary failure tests | Authoring cost is now visible per target — black, rustfmt, papis and poetry all reached verdicts from their first frozen define (poetry's second define exists as a sealed manifest-only shape under the FAIL-freeze ruling, not to reach a verdict it already had: `spike/cohort3/poetry-r2/RUNLOG.md`), while Mercurial's took four revisions (`spike/cohort2/RESULTS.md`, `spike/cohort3/poetry/RUNLOG.md`) — but no cohort ran the comparison this condition names | no — the comparison is still unmeasured, as the row already records | `not triggered` (no supporting evidence; the comparison itself is named as unmeasured) | Unchanged; the cohorts add authoring data and do not close the gap the row names |
+| 3 — counterexample complexity | black's earliest violating world is the empty file between the truncating `open` and the single `write`; upstream fixed and closed himalaya from the filed report the same day (pimalaya/io-maildir@b4e9080, released as 0.3.1) (`spike/cohort3/RESULTS.md`, `spike/cohort4/himalaya-r2/RESULTS.md`) | no | `not triggered` — the counterexample alone was a sufficient input for a fix, twice, with no human translation | Corroborated — a third counterexample-to-fix, this one produced by upstream from the report rather than in-repo |
+| 4 — false positives / environment artifacts | Borg: FAIL 3/119, every violation L0-only, **all three in the relocated client cache's in-place rewrite** — "the client cache the apparatus itself relocated", moved inside the judged root by the define's r2 so worlds could run at all; Borg's documented transactional contract held in all 119 worlds (`spike/cohort2/RESULTS.md`, `spike/cohort2/borg-r3/RUNLOG.md`) | **yes** — the violating worlds sit inside a directory the measurement apparatus relocated, which is this row's subject; located below | `not triggered` — one understood class, caught by the project's own apparatus both times it appeared | **Reopened — re-score pending (owner adjudication)** |
+| 5 — reproducibility | **All seven** verdicts record an identical re-execution, each in its own ruling: Mercurial and Borg (`spike/cohort2/hg-r4/RUNLOG.md`, `spike/cohort2/borg-r3/RUNLOG.md`), black, rustfmt, poetry and papis (`spike/cohort3/black/RUNLOG.md` and its siblings — poetry across three explores with identical verdicts), and himalaya (`spike/cohort4/himalaya-r2/RESULTS.md`) | no | `not triggered.` | Corroborated on seven further targets, with nothing withheld: the first draft of this row claimed a gap at Mercurial, which came from scanning the cohort RESULTS pages and not the per-target rulings |
+| 6 — setup weight | Mercurial's define took four revisions to reach a verdict (r1 SETUP ERROR at state resolution, r2 sendfile, r3 utimensat, r4); Borg's wall fell only to a three-piece declared apparatus plus three define revisions. Against this, cohort 3's black and rustfmt each reached a reproduced verdict in minutes from their first frozen define, both passing their probes first time; papis is on neither side (below) (`spike/cohort2/RESULTS.md`, `spike/cohort3/RESULTS.md`) | **yes** — arrival cost on two in-domain targets was four define revisions and a three-piece apparatus, against this row's basis of three small files and minutes per target; located below | `not triggered` — with W1's two-in-twenty install failures counted against this row explicitly rather than absorbed into the walls | **Reopened — re-score pending (owner adjudication)** |
+| 7 — UX difference | None bearing on the condition. No head-to-head against an existing crash-consistency tool was run in any cohort; the absence the 2026-08-16 adjudication disclosed persists across twelve further targets | no new data either way; an absence continuing is not a new measurement | `Adjudicated by the project owner, 2026-08-16: not triggered.` | Unchanged; the missing head-to-head is still missing, and is still disclosed rather than argued around |
+| 8 — UNKNOWN dominates | The cohort verdict targets **are** the eight defines that entered the A-group at generation g2 (hg, borg, black, papis, poetry twice, rustfmt, himalaya): the A-group rate reads **2/36 (5.6%)** against g1's **1/28 (3.6%)**, the added refusal being himalaya's `oracle_saw_phantom`. The walls did not enter the denominator — jj, Bun and cargo are class-excluded, KeePassXC and unison produced no committed define. B-group is unchanged at 3/7 (`docs/unknown-rate.md`, `spike/unknown-rate/class-exclusions.tsv`) | no — the threshold is evaluated on B-group data alone and g2 covered A only, so neither part moved; and a wall is not a run, which is what this row's wording counts | `not triggered` on the measured platform, with the one-trial margin and the macOS flank both named | The figure is already in the row's own g2 note (#239); what this adds is where those eight defines came from. Verdict unchanged, and the one-trial margin on B stands untouched |
+
+**One inherited expectation, settled here rather than left dangling.** Row 8's
+own g2 note (added by #239) says that re-scoring a met criterion inside a
+measurement change "is the move #240 exists to do deliberately, with every
+row's previous verdict quoted beside its new one". This section quotes every
+previous verdict as that note anticipated, and stops there: the re-score
+itself is raised as pending because two rows turn out to carry trigger-side
+evidence, and adjudicating those inside a documentation change is the move the
+note was guarding against in the first place.
+
+One observation from row 8 that belongs on the record without being scored
+here: the A-group's two refusals split as one target-origin (watson's own
+nondeterministic writer) and one **apparatus collision** — himalaya's
+declared `no-accel-copy.so` answering the copy primitives the shim
+interposes as of #244. The threshold's origin classification has two
+categories, target-origin and define-budget, and an apparatus superseded
+by the engine is neither. The threshold is unaffected (it is set from
+B-group data only), and this is noted as a gap in the classification's
+coverage rather than as a movement in this row.
+
+### Row 4's trigger-side evidence, located
+
+**Location.** Borg's verdict is FAIL in 3 of 119 explored worlds, every
+violation L0-only, and `spike/cohort2/borg-r3/RUNLOG.md` records where all
+three are: `ambient/.cache/borg/<repo-id>/chunks`, the client cache's
+in-place rewrite caught mid-write. The cache is inside the judged root
+because the define's second revision put it there — at r1 it lived outside
+the state root, so every world met a cache newer than its rolled-back
+repository and refused before the kill could land on any operation. The
+measurement could not run until the cache moved, and the violations are in
+the thing that moved. The ruling's own words are "the client cache the
+apparatus itself relocated" and "the multi-write shape, #35's class,
+tinted further by our own apparatus".
+
+**Counter-evidence, from the same record.** Three items, all in the ruling
+rather than added afterwards. Borg's documented transactional contract
+held in all 119 worlds — stale-lock removal exactly when a lock existed
+(14 worlds, all succeeded), `borg check`, byte-identical conservation of
+the pre-existing `base` archive, old-or-new listing, new-side content; the
+checker ran everywhere and failed nowhere. The file the violations sit in
+is not repository state and is explicitly rebuildable: deletion is Borg's
+own documented handling, and the checker's leg R0 exercises exactly that
+in every world. And nothing was claimed — no criterion-1 candidate,
+recorded as a precision-limit observation under the claim rule frozen
+before any cohort explore ran, with the apparatus notes requiring any
+finding to reproduce against stock borg under strace fault injection
+before it could be reported. None was.
+
+What separates this from the row's existing "one understood class" is the
+source. buku and bogofilter-sqlite were the *target's* journal contract
+being judged by file bytes. Here the judged bytes are in a directory the
+apparatus moved to make the measurement possible at all. Whether that is
+the same class, a second class, or an artifact tinting a verdict — the
+distinction the row draws when it says refusals with named reasons are the
+UNKNOWN discipline working, "not artifacts minting verdicts" — is the
+adjudication this section leaves open.
+
+### Row 6's trigger-side evidence, located
+
+**Location.** This row's supporting basis is that for a target inside the
+domain the measured cost of arrival is small — "the uniform define is
+three small files, and authoring ran minutes per target". Two cohort-2
+targets measured otherwise. Mercurial's define took four revisions to
+reach a verdict, each refusal committed as evidence: r1 a SETUP ERROR at
+state resolution, r2 a `sendfile` refusal worked around by a declared
+`sitecustomize`, r3 a `utimensat` refusal that ripened #190, then r4.
+Borg's wall did not fall to a define at all — it fell to a three-piece
+declared apparatus (libfaketime realtime-x0 plus sitecustomize pins on
+`time.monotonic` and `os.urandom`), and the define then took three
+revisions on top of that.
+
+**Counter-evidence.** Cohort 3's black and rustfmt each reached a
+reproduced verdict from their first frozen define, in minutes — the record
+says so for both in those words — and both passed their probes on the first
+attempt. That is this row's basis holding as written, on two targets of a
+later cohort.
+
+papis is deliberately not offered as a third, though counting define
+revisions alone would put it there. Its define is a single revision, but its
+*plan* was amended after target contact and before its accepted probe: the
+original `--set` form made a purely local `papis add` depend on the network,
+because papis 0.16's arxiv importer treats the local path as a candidate
+identifier and validates it over HTTPS, so the plan was rewritten to carry
+the same metadata through a frozen YAML fixture and `--from yaml`
+(`spike/cohort3/RESULTS.md`, "The papis amendment"). No minutes figure is
+recorded for it either. Which unit this row is scored in — define revisions,
+or arrival cost as the records describe it — is part of what is being left
+open, and papis is the target that makes the two units disagree. The two heavy targets are also the two
+whose walls this project chose to attack deliberately (#200 reopened
+Borg's determinism wall as its own decision), so the arrival cost is
+partly a consequence of target selection rather than a property of
+ordinary software.
+
+The open question the row's wording turns on is whether declared apparatus
+counts as setup. Apparatus is the instrument's cost, not the target's; the
+row is about the target's. Both readings are available on the same
+measurement, and choosing between them moves a v1.0 entry criterion, which
+is why it is not chosen here.
+
+### What this section does not do
+
+- **No verdict above is changed**, and no wording in rows 1–8 is edited.
+- **`PRD.md`'s criterion-3 status is not rewritten.** Its "met
+  (2026-08-16)" stands as the dated statement it was; a dated reopen note
+  is appended beside it.
+- **The re-score is pending owner adjudication**, recorded here, in
+  `PRD.md` and in `DESIGN.md` §18 — the three places that carry the reopen
+  rule — so that no one of them can read as settled while another reads as
+  open.
+- **#240 stays open.** It asked for a re-scored review; what this delivers
+  is the material for one.
