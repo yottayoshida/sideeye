@@ -2062,6 +2062,78 @@ else
 fi
 rm -rf /tmp/acc-cap-late
 
+echo "=========== check 2fg: a tree under the per-file cap but over the TREE ceiling refuses before anything runs (#323) ==========="
+# The per-file cap bounds one read and the tree's total was unbounded, so files each
+# comfortably under it summed into an OOM kill with no report. Eight sparse files of
+# 32 MiB are each half of max_state_file_bytes (64 MiB) and together reach 396 MiB of
+# arena against a 256 MiB ceiling — measured, not sized by eye, because the arena's cost
+# is not the tree's size. A green here that came from the per-file cap would be the wrong
+# rule, which is why the per-file wording is asserted ABSENT rather than left to chance.
+# Sparse: reads return zeros without paying the disk.
+#
+# Both legs drive the SHIPPED constants end to end. The unit tests drive small caps and
+# can say things these cannot (the arena's reach at the break, an all-empty tree); these
+# say the thing the unit tests cannot, which is that the production wiring — constant,
+# diag, call-site message, JSON field — is connected.
+rm -rf /tmp/acc-tree && mkdir -p /tmp/acc-tree/state
+python3 - <<'PY'
+for i in range(8):
+    with open("/tmp/acc-tree/state/big%d.bin" % i, "wb") as f:
+        f.truncate(32 * 1024 * 1024)
+PY
+o=$("$SIDEEYE" explore --state /tmp/acc-tree/state \
+    --operation "/bin/true" \
+    --shim "$SHIM" --work /tmp/acc-tree/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] \
+    && echo "$o" | grep -q "the state tree is too large to snapshot" \
+    && echo "$o" | grep -q "byte ceiling" \
+    && ! echo "$o" | grep -q "a state file is too large"; then
+    echo "ok   a tree over the ceiling is a named SETUP ERROR, and not the per-file cap firing"
+else
+    echo "FAIL tree ceiling (early): exit $rc (wanted 3, the tree wording, and NOT the per-file wording)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-tree
+
+echo "=========== check 2fh: the same ceiling AFTER the recording run is UNKNOWN, not exit 3 (#323) ==========="
+# 2fg plants the tree before anything runs, so exit 3 is true there. Here the state starts
+# empty and the operation brings the tree in itself — an ordinary thing for a target to do
+# — and the ceiling breaks at the final snapshot, past the recording run, where exit 3
+# would say "the define did not run" about a define that ran to completion.
+#
+# `cp -r` rather than a shell one-liner: --operation is split on spaces with no quoting, and
+# a shell would put the writes in a child process, which the engine refuses for its own
+# reasons before any snapshot is taken. One process, many files.
+rm -rf /tmp/acc-tree-late && mkdir -p /tmp/acc-tree-late/state /tmp/acc-tree-late/staged
+python3 - <<'PY'
+for i in range(8):
+    with open("/tmp/acc-tree-late/staged/big%d.bin" % i, "wb") as f:
+        f.truncate(32 * 1024 * 1024)
+PY
+o=$("$SIDEEYE" explore --state /tmp/acc-tree-late/state \
+    --operation "/bin/cp -r /tmp/acc-tree-late/staged /tmp/acc-tree-late/state/copied" \
+    --shim "$SHIM" --work /tmp/acc-tree-late/work --oracle /usr/bin/strace \
+    --json /tmp/acc-tree-late/r.json 2>&1)
+rc=$?
+# Every clause the success line claims, asserted: the verdict, the reason in the text, the
+# reason in the JSON, and that the JSON says UNKNOWN rather than carrying a reason beside
+# some other verdict.
+if [ "$rc" = "2" ] \
+    && echo "$o" | grep -q "state_tree_too_large" \
+    && echo "$o" | grep -q "the state tree is too large to snapshot" \
+    && grep -q '"unknown_reason": "state_tree_too_large"' /tmp/acc-tree-late/r.json \
+    && grep -q '"verdict": "UNKNOWN"' /tmp/acc-tree-late/r.json; then
+    echo "ok   a ceiling break past the recording run is UNKNOWN state_tree_too_large, in text and JSON"
+else
+    echo "FAIL tree ceiling (late): exit $rc (wanted 2 + state_tree_too_large in text and JSON, verdict UNKNOWN)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    sed 's/^/     json | /' /tmp/acc-tree-late/r.json 2>/dev/null | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-tree-late
+
 echo "=========== check 2an: the destructive vet refuses an ancestor of a denied tree (#358) ==========="
 # #329 gave the naming vet an outward read of the denied lists and left the destructive
 # one inward-only, so a root that is a PARENT of somewhere denied passed the predicate

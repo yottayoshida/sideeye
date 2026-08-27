@@ -211,8 +211,8 @@ var expected_status_val: u8 = 0;
 /// refusals. `OutOfMemory` is the one failure that stays SETUP_ERROR at every site, on the
 /// rule `spawnFailure` states — see the guard below.
 fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) engine.Snapshot {
-    var diag: engine.FileTooLargeDiag = .{};
-    return engine.takeSnapshotCapped(gpa, root, engine.max_state_file_bytes, &diag) catch |e| {
+    var diag: engine.SnapshotDiag = .{};
+    return engine.takeSnapshotCapped(gpa, root, engine.SnapshotCaps.shipped, &diag) catch |e| {
         // An allocation failure is an environment problem in either phase, the rule
         // `spawnFailure` already states. Routing it to UNKNOWN would leave a seam one
         // statement wide: this snapshot exiting 2 for OOM while the `classify` that
@@ -228,8 +228,37 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // rejected a per-site parameter to avoid. Computed here, the mistake has no
         // shape to take, and inverting this line reddens the cap leg and the non-cap
         // leg together — one expression cannot be half-broken.
-        const reason: contract.UnknownReason =
-            if (e == error.FileTooLarge) .state_file_too_large else .state_unsnapshotable;
+        // **Exhaustive over `SnapshotError` on purpose**, like `snapshotDetail` below and
+        // for the same reason: an error member added later must not silently take a
+        // neighbour's reason. The `if` this replaced would have handed `TreeTooLarge` the
+        // catch-all with nothing to notice (#323).
+        //
+        // The reason and the no-arena wording are decided **together, in one switch**.
+        // They were two, listing the same five errors twice, and the pairing between a
+        // reason and the sentence that goes with it was then a thing two lists had to
+        // agree about — with only one of them reachable, so a disagreement would sit
+        // there unobserved. One arm cannot disagree with itself.
+        const answer: struct { reason: contract.UnknownReason, bare: []const u8 } = switch (e) {
+            error.FileTooLarge => .{
+                .reason = .state_file_too_large,
+                .bare = "a state file is too large for byte-level judgment",
+            },
+            error.TreeTooLarge => .{
+                .reason = .state_tree_too_large,
+                .bare = "the state tree is too large to snapshot",
+            },
+            error.ReadFailed,
+            error.TooDeep,
+            error.PathTooLong,
+            error.ClassifyFailed,
+            error.EntriesNotSortedUnique,
+            => .{
+                .reason = .state_unsnapshotable,
+                .bare = "the state tree could not be snapshotted",
+            },
+            error.OutOfMemory => unreachable, // refused above
+        };
+        const reason = answer.reason;
 
         if (json_arena) |ja| snapshotRefusal(reason, snapshotDetail(ja, e, what, &diag));
 
@@ -239,10 +268,12 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // message path; nothing exercises it, including the split below. It is a split
         // rather than one string because the first draft let a `TooDeep` failure fall
         // through to the cap's wording here, which nothing would have caught.
-        snapshotRefusal(reason, switch (reason) {
-            .state_file_too_large => "a state file is too large for byte-level judgment",
-            else => "the state tree could not be snapshotted",
-        });
+        //
+        // The wording comes from the same arm the reason did. As `switch (reason) { ...
+        // else }` over `UnknownReason` it was not compiler-covered at all, and a new
+        // reason silently took the catch-all sentence — the mistake the switch above is
+        // exhaustive to prevent, one level down and on the path nothing exercises (#323).
+        snapshotRefusal(reason, answer.bare);
     };
 }
 
@@ -268,12 +299,19 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
 /// above still builds, and the arm would then be reached at run time on a real allocation
 /// failure. Nothing in the tree can produce that, so the carve-out is unfalsified — said
 /// here rather than left for someone to assume the type checked it.
-fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const u8, diag: *engine.FileTooLargeDiag) []const u8 {
+fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const u8, diag: *engine.SnapshotDiag) []const u8 {
     return switch (e) {
-        error.FileTooLarge => if (diag.size) |sz|
-            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment"
+        error.FileTooLarge => if (diag.file.size) |sz|
+            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment"
         else
-            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment",
+            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment",
+        // Says which of two things the numbers describe, because they are the prefix the
+        // walk had read when the ceiling broke and not the tree — `TreeTooLargeDiag`
+        // records why the honest answer is to point at `du`/`find` rather than to keep
+        // walking for the real figures. No entry name appears: the walk stops at whatever
+        // `readdir` happened to reach, so a "largest so far" would be a different name on
+        // a different filesystem.
+        error.TreeTooLarge => std.fmt.allocPrint(ja, "the state tree is too large to snapshot: holding it reached {d} bytes of memory against a {d}-byte ceiling, after reading {d} bytes of content across {d} entries; the walk stopped there, so those count what was read and not the tree — `du -sb <state>` and `find <state> -mindepth 1 | wc -l` show the whole of it", .{ diag.tree.reached, engine.max_state_tree_bytes, diag.tree.content, diag.tree.entries }) catch "the state tree is too large to snapshot",
         // "deeper than", not "cap": the walk compares with a strict `>`, so a tree of
         // exactly this many levels passes and the next one does not.
         error.TooDeep => std.fmt.allocPrint(ja, "{s}: the state tree is nested deeper than the {d} levels the snapshot walks", .{ what, engine.max_depth }) catch what,
