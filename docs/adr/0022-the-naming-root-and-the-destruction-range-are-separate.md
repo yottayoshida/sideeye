@@ -40,7 +40,8 @@ Two knobs, two properties:
   always depth ≥ 2 and individually vetted, so exempting the naming
   root from the depth rule is a coherent future loosening — filed, not
   done, and the refusal message tells a container operator to mount one
-  level deeper in the meantime.
+  level deeper in the meantime. (Both were superseded on 2026-08-27; see
+  the Amendment below. The message no longer says that.)
 - `SIDEEYE_MCP_STATE_ROOT` confines **which directories a replayed
   case may destroy**. The server passes it to the engine as a
   replay-only flag, `--state-under <dir>`; the engine checks it where
@@ -95,6 +96,58 @@ it concludes; the honest claim is the one above.
   failure above: the wall teaches operators to widen the wrong variable.
 - **Equal-to-range allowed** (`isInsideDir`'s ordinary meaning) —
   rejected; see Decision.
+
+## Amendment, 2026-08-27 (#329): the naming root loses the depth rule
+
+The Decision above called exempting the naming root from the depth rule "a
+coherent future loosening — filed, not done". This is that, with a correction
+the filing did not anticipate.
+
+**What changed.** `mcp.zig` now calls `engine.assertSafeNamingRoot`, which keeps
+every check `assertSafeRoot` has except the depth rule, and adds one it does not
+have: both denylists are read **outwards** as well as inwards, so a root that is
+an *ancestor* of a denied entry refuses along with a root inside one. A
+single-component mount — `/work`, `/opt` — starts.
+
+**The ruling was made twice.** The first, on 2026-08-26, exempted the depth rule
+only when `SIDEEYE_MCP_STATE_ROOT` is set, reasoning that the root doubles as
+the destruction range when it is unset. Review then measured that the condition
+is nearly always satisfied in practice (this repository's README, quickstart and
+sweep apparatus all set that variable, and nothing requires it to differ from the
+root), and that a conditional couples the two knobs this ADR exists to separate —
+"set the destruction range and the naming vet relaxes" is the same shape as the
+wall rejected above. The ruling was changed to an unconditional exemption on
+2026-08-27.
+
+**The argument that made the depth rule indefensible was a measurement.**
+`SIDEEYE_MCP_ROOT=/var` **started the server**, rc=0, before this change: realpath
+turns it into `/private/var` on macOS and two components pass. The rule was a
+proxy for danger and the proxy had a hole on the platform the tool is developed
+on. The lists name the danger directly; reading them outwards is the same
+statement without the proxy.
+
+**This is a trade and the boundary moves both ways.** Enumerated over both lists,
+the outward read closes exactly `/var`, `/private` and `/private/var`. Dropping
+the depth rule opens every depth-1 path in neither list: `/opt`, `/cores`,
+`/nix`, `/srv`, whatever a host has at `/`. The relaxation rests on ADR 0010's
+operational precondition — the root is the operator's own workspace and not
+attacker-writable — not on a claim that less is now reachable.
+
+**What is closed here is not closed on the destructive side.** `assertSafeRoot`
+is unchanged, so `sideeye explore --state /var` still passes the destructive vet
+and empties `/private/var` once per explored world. Confining one PR to the
+naming consumer is a scope decision; it is recorded here because ADR 0024 exists
+to correct exactly the inversion of describing two neighbouring defences as if
+one covered the other. Filed as #358.
+
+**And what the naming vet admits is not confined to naming.** With
+`SIDEEYE_MCP_STATE_ROOT` unset the fallback above makes the root the
+destruction range, so every depth-1 path this now accepts is a directory
+whose children a replayed case may empty. `/work` and `/repo` are the
+intended shape; `/opt` also passes the vet and is where installed software
+lives. The relaxation rests on ADR 0010's precondition — the root is the
+operator's own workspace — and the README carries the part no denylist can:
+name a directory whose contents are yours to lose.
 
 ## Consequences
 

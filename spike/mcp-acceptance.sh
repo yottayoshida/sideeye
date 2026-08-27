@@ -452,6 +452,62 @@ else
     fail "STATE_ROOT=/: exit $rc (wanted 3 + confine-nothing refusal)"
 fi
 
+# The naming vet stopped measuring depth and started measuring distance from the denied
+# lists (#329). Two directions, and neither is worth much without the other: the first
+# is a red-to-green flip, the second is red on both sides of the change and counts only
+# because the mutation that deletes the ancestor read turns it green.
+#
+# Both roots must EXIST: resolveDirInto is realpath, so a missing directory refuses
+# through a different branch with the same exit code. That would make the /var leg pass
+# vacuously (the /opt leg would fail instead, since it wants rc=0). /opt and /var are both
+# present and realpath-stable on ubuntu, measured in a container.
+#
+# This suite runs on ubuntu only. The engine's unit tests pin /private and /private/var
+# on both platforms, but they are lexical string comparisons — what they do NOT cover is
+# the composition that actually failed: realpath("/var") == "/private/var" on macOS, then
+# a refusal. That composition is measured by hand and is unmeasured by CI.
+if [ -d /opt ] && [ -d /var ]; then
+    # Was refused before #329, by the depth rule alone: /opt is in neither denylist and
+    # is not an ancestor of anything in them (engine.zig keeps a positive assertion for
+    # /opt/myapp/state saying so). tools/list is driven, not just the exit code — a
+    # server that starts and dies on its first message would otherwise pass.
+    req="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{$META}}"
+    printf '%s' "$req" | env SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=/opt SIDEEYE_MCP_WORK=$WORK \
+        "$SIDEEYE" mcp >/tmp/mcp.out 2>/tmp/mcp.err
+    rc=$?
+    # Parsed, not grepped: this file's header says why, and a truncated document
+    # containing the tool name would pass a grep — the transport failure the suite
+    # exists to catch.
+    if [ "$rc" = "0" ] && python3 - <<'PY'
+import json, sys
+lines = [l for l in open("/tmp/mcp.out") if l.strip()]
+if len(lines) != 1: sys.exit("wanted 1 response line, got %d" % len(lines))
+d = json.loads(lines[0])
+names = [t["name"] for t in d["result"]["tools"]]
+if "sideeye_explore_config" not in names: sys.exit("tools: %r" % names)
+PY
+    then
+        pass "a single-component root starts and serves tools/list (#329)"
+    else
+        fail "SIDEEYE_MCP_ROOT=/opt: exit $rc (wanted 0 + a parseable tools/list response)"
+    fi
+
+    # /var contains /var/lib, /var/db and /var/spool. On ubuntu it is depth-1, so before
+    # #329 the depth rule refused it; the ancestor read is what refuses it now. On macOS
+    # it resolves to /private/var and the depth rule did NOT refuse it — that platform is
+    # where this leg's subject actually started a server, which is why the check exists.
+    env SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=/var SIDEEYE_MCP_WORK=$WORK \
+        "$SIDEEYE" mcp </dev/null >/tmp/mcp.out 2>/tmp/mcp.err
+    rc=$?
+    if [ "$rc" = "3" ] && grep -q "must not be a workspace root" /tmp/mcp.err; then
+        pass "a root that CONTAINS a denied tree refuses at startup (#329)"
+    else
+        fail "SIDEEYE_MCP_ROOT=/var: exit $rc (wanted 3 + the workspace-root refusal)"
+    fi
+else
+    fail "#329 legs need /opt and /var to exist; one is missing on this host"
+fi
+
 echo "=========== mcp 13: a target-spelled closing banner does not move the region boundary (#326) ==========="
 # The region's extent is the byte COUNT at its start, not the closing line, and this is the
 # case that tells those two apart. A state entry *named* like the closing line reaches the
