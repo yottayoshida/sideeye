@@ -8,43 +8,81 @@ filed is a broken promise. "Defer and freeze anyway" is the one outcome this
 page exists to prevent.
 
 **Snapshot.** The classification below covers the open-issue set captured by
-`gh issue list --state open` at the **pre-tag re-sweep, 2026-08-18** —
-thirteen issues, committed verbatim as
-`spike/freeze-audit/snapshot-2026-08-18.tsv`, replacing the original sweep's
-twenty-six-issue snapshot of 2026-08-17 (the gate's `SNAPSHOT` name moved
-with the file, in the same commit — the two are one trust root). Everything
-resolved between the sweeps — and the four issues filed *and* resolved
-between them (#164, its accidental duplicate #165, #167, #169), which a
-final-state capture alone cannot see — moved to the struck rows under
-"Resolved before the tag", which the gate deliberately does not count; the
-filed-and-resolved set was enumerated by a closed-issue query over the
-inter-sweep window, not recalled. The
-table is **generated** from `spike/freeze-audit/audit.tsv` by
+`gh issue list --state open --limit 1000` at the **pre-tag re-sweep,
+2026-08-27** — fifty-five issues, committed verbatim as
+`spike/freeze-audit/snapshot-2026-08-27.tsv`, replacing the 2026-08-18
+snapshot of thirteen (which replaced the original sweep's twenty-six of
+2026-08-17). The gate's `SNAPSHOT` name moved with the file, in the same
+commit — the two are one trust root. Every query carries `--limit 1000` and
+asserts the returned count is strictly below it, because `gh issue list`
+defaults to thirty, exactly its page size, so a truncated result is
+indistinguishable from a complete one.
+
+**The accounting is recomputable, which it was not before.** The window from
+the previous snapshot to this one is `2026-08-18T04:06:57Z` (the commit that
+installed it) to the capture, and the whole acquisition — number, state,
+`createdAt`, `closedAt`, `updatedAt` and title for every issue the tracker
+holds — is committed as
+`spike/freeze-audit/capture-2026-08-27-raw.json` with its query, its limit
+and its instant. Every count on this page is recomputable from that
+file — the gate recomputes the population, the window's closed set and the
+measured closed-set additions on every run, and a reader can derive the rest (the
+class tallies, the forecast count, the volume figure below) from the same file.
+None is quoted from a transcript: fifty-five open (ten surviving
+from the previous snapshot, forty-five filed since), three previous-snapshot
+issues since closed, and **thirty-eight issues opened *and* closed inside the
+window** — which a final-state capture cannot see at all, and which is why
+this page has always carried a resolved section enumerated by a closed-issue
+query. The previous sweep's equivalent set was four.
+
+The tables are **generated** from `spike/freeze-audit/audit.tsv` by
 `spike/freeze-audit/render-audit.sh` (ADR 0027) — the manifest is the trust
-root and a hand edit to the table below is a check failure. Completeness,
-row shape and the render are all checked by
+root for row content and a hand edit to either table is a check failure. What
+moved on a frozen surface is *not* in that manifest: it is one row per change
+in `spike/freeze-audit/surface-changes.tsv`, measured by
+`spike/freeze-audit/surface-drift.sh` (ADR 0028), because a change is
+(surface, item, kind, before, after, commit, issues, legality) and issues and
+changes are many-to-many. Completeness, row shape, both renders, both ledger
+directions and the measured closed set are checked by
 `spike/freeze-audit/check-freeze-audit.sh`, **run at each sweep, not wired
 into CI** — this page retires at the v1.0 tag, and a permanent gate for a
-retiring page is a layer this repo declines; the run's output is quoted
-below. The gate proves on every run that it can go red: it deletes one
-classification row from a run-time copy of this page and requires that copy
-to fail (the copy is generated, never committed — a committed fixture rots
-silently after a re-sweep, and an absent one must not read as a passed
-falsification; both failure shapes were measured in review). The snapshot
-itself is the gate's trust root **for the population** — which issues belong
-in the table — while `audit.tsv` is the trust root **for row content**; nothing
-machine-checks the snapshot itself — commit
-review does. The sweep was run, not recalled: the set includes issues filed
-the same day, some only minutes before the capture, and excludes #87, closed
-seventeen seconds before it.
+retiring page is a layer this repo declines. The gate proves on every run
+that it can go red: it deletes one active row from a run-time copy of this
+page and requires that copy to fail (the copy is generated, never committed —
+a committed fixture rots silently after a re-sweep, and an absent one must
+not read as a passed falsification; both failure shapes were measured).
 
-Gate output, 2026-08-18 (re-sweep): `ok: the table covers all 13 snapshot
-issues, and the gate goes red on a one-row-deleted copy` — the original
-sweep's run (2026-08-17, 26 issues) measured the same shape, with the
-reverse also measured once (a forged snapshot row makes it fail, naming the
-row), and the re-sweep additionally measured that restoring one struck row
-to active form makes the gate fail — the strike separation is load-bearing,
-not typographic.
+Two sentences that stood here for two sweeps have been corrected. The claim
+that the sweep "excludes #87, closed seventeen seconds before it" belongs to
+the **original** sweep of 2026-08-17 — `#87` closed at
+`2026-08-17T00:32:58Z` — and was carried into the re-sweep's paragraph, where
+it read as a statement about a capture taken a day later. And nothing
+machine-checked the snapshot's own completeness; the gate now recomputes it
+from the committed capture, which bounds the claim to what that capture can
+support.
+
+Gate output, 2026-08-27 (re-sweep): `ok: 113 rows (53 active, 60 resolved)
+cover the 55 snapshot issues; both tables are byte-identical renders of the
+manifest; every enum, the class-dependent disposition rule and both ledger
+directions hold; the 5 measured closed-set additions match
+surface-changes.tsv; the declaration is at the revision this sweep read; and
+the gate goes red on a one-row-deleted copy.` The two earlier sweeps measured
+the same shape on smaller sets, with the reverse measured once (a forged
+snapshot row makes it fail, naming the row) and the strike separation seen red
+once.
+
+**`--live`'s predicate changed, and the reason is measured.** It used to be
+"the snapshot IS the tracker's open set". A sweep closes its own obligation
+issue, so that equality breaks the moment a sweep lands — `#86` closed at
+`2026-08-18T04:06:58Z`, **one second after** the snapshot commit at
+`04:06:57Z`, and it has been false ever since. "Run it green before the tag"
+was therefore unachievable rather than strict. The predicate is now: every
+snapshot issue the tracker still shows open has an active row, and every one
+it shows closed has a resolved row. That is what "the page has caught up with
+the tracker" means, and it survives a sweep closing its own issues. It also
+fixes the older inconsistency the old predicate hid: `#86` sat in the
+*active* table while closed, and this sweep's own issues (`#281`, `#353`) are
+resolved rows rather than active ones.
 
 **The rule this declaration carries.** It takes effect at the v1.0 tag, not
 today. Before tagging, the sweep is re-run and this page updated for any
@@ -56,18 +94,13 @@ when the next two filings proved why it exists (below). The declaration's
 permanent home is `docs/contract-freeze.md` — this page retires at the tag,
 the promise does not.
 
-**Filed after this snapshot** (2026-08-18, hours after it was taken, which is
-the drift the rule above exists to catch): `#180` (one-command install — a
-Homebrew formula, measured to need no code change) and `#181` (the "macOS has
-no oracle" claim rests on `dtruss` alone; `fs_usage`, `ktrace`, OpenBSM and
-Endpoint Security were never measured, and ADR 0001 still says "to be
-measured"). Read against the five surfaces, neither touches one — `#180` is
-release engineering, the same class as `#161`; `#181` would add capability
-through channels that are already frozen and already accommodate it (the
-`--oracle` flag and the `oracle_verified` field). That reading is this page's
-author's, recorded so the next sweep confirms or corrects it rather than
-rediscovering the issues; the formal classification is the next sweep's, and
-the gate below counts neither until then.
+**The previous sweep's informal reading has been formalised.** That sweep
+noted `#180` and `#181` as filed hours after its snapshot, read them against
+the five surfaces itself, and deferred the formal classification to "the next
+sweep". This is that sweep: both closed inside the window and both carry
+resolved rows below, and the earlier reading held — `#180` was release
+engineering and `#181` added capability through channels already frozen and
+already accommodating it.
 
 ## The declaration: what freezes at v1.0
 
@@ -106,108 +139,345 @@ clauses:
    anything is exactly the "prose alone" this refuses.
 
 **What the gate checks, and what it does not.** The check holds the *form* of
-every row — the surface and class enumerations, the class-dependent disposition
-rule, one row per snapshot issue, and byte-equality between this table and a
-fresh render. It does **not** verify that an adjudication was executed: an A row
-saying `narrow` with nothing behind it passes. Both clauses above are therefore
-human-reviewed assertions carried by the manifest's rationale column, held by
-review the way the numbers on this page always have been — not machine
-guarantees. Saying otherwise would be the overclaim this page exists to catch.
+every row — the surface, class and state enumerations, the class-dependent
+disposition rule, one row per snapshot issue, byte-equality between both tables
+and a fresh render, referential integrity in both directions between the two
+ledgers, and the window's accounting recomputed from the committed capture. It
+also holds the one thing this sweep could measure outright: the `unknown_reason`
+closed set's additions must be exactly what `surface-changes.tsv` records.
+
+Three things it does **not** hold, each stated because a reader could reasonably
+assume otherwise:
+
+- **It does not verify that an adjudication was executed.** An A row saying
+  `narrow` with nothing behind it passes. Both clauses above are human-reviewed
+  assertions carried by the rationale column, held by review the way the numbers
+  on this page always have been.
+- **It holds the enumerated half of each frozen surface, not the behavioural
+  half.** See the measurement section below for which clauses are which. This is
+  a measured limit, not a cautious one: `#273` moved the exit-code surface inside
+  this window while the `ExitCode` enum stayed byte-identical.
+- **It cannot check a forecast.** An active row's surface entry says what
+  resolving the issue as filed *would* move. Only the next sweep's measurement
+  can confirm or correct it, which is the same standing the previous sweep's
+  informal reading of `#180` and `#181` had — and that one held.
 
 **Two axes, not one** (owner ruling, 2026-08-27; ADR 0027 carries the mechanism).
-`surface` names which of the five frozen surfaces a row touches, or `none`, read
-strictly against [`docs/contract-freeze.md`](contract-freeze.md). `class` is
-about PASS soundness and applies to **every** row, toucher or not. The two were
-one column until this sweep, and conflating them is why thirteen rows carried
-four different shapes for one rule — three touchers with classes, six
-non-touchers with class C, three non-touchers with none, and the amendment issue
-itself with neither.
+The surface a row bears on and the failure direction of its gap are different
+questions. They were one column until the previous sweep, and conflating them is
+why thirteen rows carried four different shapes for one rule — three touchers
+with classes, six non-touchers with class C, three non-touchers with none, and
+the amendment issue itself with neither. `class` applies to **every** row,
+toucher or not.
 
-Read against the strict enumeration, **no row in the 2026-08-18 snapshot touches
-a frozen surface**: #39's subject is observation reach, which is not one of the
-five; #123's is a trace-contract bump, which surface 4 says in as many words is
-not a broken promise; #156's is CLI acceptance semantics, which surface 1 does
-not cover (it freezes the toml keys and the two command spellings). Clause 1 is
-therefore vacuous on this snapshot, and clause 2 — #39's executed narrowing — is
-what the gate actually rests on. That is a narrower and more accurate statement
-than the page carried before, not a weaker one.
+**And the surface axis has two tenses, which this sweep separates** (ADR 0028).
+For an open issue the question is a forecast: would resolving it as filed move a
+frozen surface? For a closed one it is a measurement: did its resolution move
+one? Holding both in a single column is what hid the sharpest finding of this
+sweep — `#324`'s body names neither `unknown_reason` nor the closed set (measured
+zero occurrences of each, raw and whitespace-normalised, in
+`spike/freeze-audit/capture-2026-08-27-issue-324-body.json`, which commits the
+body because the sweep's raw capture excludes bodies), and its resolution added
+`trace_too_large` to that set. The surface moved in the
+resolution, not in the issue text, so a page that decides surfaces by reading
+issues returns `none` for it however carefully it reads. Four of this window's
+five closed-set additions were lost that way in this schema's first draft.
+
+Read against the strict enumeration, sixteen of the fifty-three active rows now
+carry a forecast other than `none`, against zero on the previous sweep's
+thirteen. The clause-1 reading is no longer vacuous, and the three rows that
+name a still-owed pre-tag decision are called out under the table.
+
+## What moved on the frozen surfaces
+
+Measured, not read (ADR 0028). `sh spike/freeze-audit/surface-drift.sh` compares
+the five surfaces between the commit that installed the previous snapshot and
+this one, and its committed output is
+`spike/freeze-audit/surface-drift-2026-08-27.txt`. It reports in three rungs,
+separately, because they support different claims:
+
+1. **Blob identity.** If *every* file a surface is defined by is byte-identical
+   across the window, the surface did not move — enumerated names *and*
+   behavioural clauses, because the behaviour lives in those files too. This is
+   the only rung that can settle a surface outright, and **on this window it
+   settles none of the five.** `src/config.zig` is byte-identical, so surface 1's
+   six accepted keys, its parse and its named line-numbered refusals did not
+   move — but `src/main.zig` changed, and that is where the rest of surface 1
+   lives: `splitArgs` (the string form's split-on-spaces rule), the argv form's
+   verbatim passing, and `resolvePathAgainst` (relative paths against the toml's
+   directory, ADR 0007). Those clauses are rung-3 residue for this window. An
+   earlier draft of this page claimed surface 1 settled outright on
+   `src/config.zig` alone; review measured that the clauses it named are in
+   another file, which is the same overclaim this ladder exists to prevent, one
+   level down.
+2. **The enumerated diff**, for files that did change, with each extraction
+   defined in the script rather than described in prose. It answers "which names
+   appeared or disappeared" and nothing else.
+3. **The named residue**, printed as unmeasured. Field presence rules and
+   meanings, which call site returns which exit code, the two MCP input schemas,
+   the `isError` rule, and the shape of an old case's refusal. These are held by
+   review and by `spike/acceptance.sh`; mapping each clause to the check that
+   pins it is filed rather than done.
+
+**What rung 2 found, all of it legal, and all of it previously unrecorded:**
+
+| surface | movement | legality |
+|---|---|---|
+| 1 config format | keys and parse unmoved (rung 1 on `src/config.zig`); the spelling and path-resolution clauses are residue, since `src/main.zig` changed | — |
+| 2 report schema | **five `unknown_reason` members added**, none removed | pre-tag only: the closed set is excluded from the additive allowance by name |
+| 2 report schema | one field, `checker_earliest` | additive, permitted in any 1.x |
+| 3 exit codes | four codes, values unchanged | — (but see rung 3: the surface moved anyway) |
+| 4 replay compatibility | `contract_version` 10 → 11 → 12 | declared not a broken promise |
+| 5 MCP surface | two tool names, unchanged | — (schemas and `isError` are rung 3) |
+
+Thirteen changes are recorded one per row in
+`spike/freeze-audit/surface-changes.tsv` with the commit, the causing issue and
+the evidence. Attribution is a human judgement recorded per change, not a parse:
+`git log -G` answers "which commits contain a matching diff", never "which issue
+required this line", and the commit-subject convention is not uniform enough to
+be a rule. Of the nine commits this sweep attributes changes to, three carry no
+trailing parenthetical at all, and among those that do it is sometimes the pull
+request (`8b75ad7` ends `(#231) (#241)`, where #231 is the issue and #241 the PR)
+and sometimes the issue itself (`7ed5c97` ends `(#269)`, an issue). A parser cannot
+tell which without looking each number up, which is the definition of not a rule.
+One change names no causing issue at all, because attributing it to the issue
+that rode the same commit would be association rather than cause.
+
+**The yardstick moved too, three times, and no sweep had ever recorded that.**
+`docs/contract-freeze.md` is the declaration every reading here is taken strictly
+against, and inside this window it was amended by `0e035eb` (surface 2 gained the
+additive allowance *and* the closed-set exemption), `9f04932` (surface 3 rewritten
+from a flat code list into a one-way verdict-to-code promise, legalising `#273`'s
+`--help` change) and `975e2fd` (surface 4's previous text measured against the
+code and found **wrong** — it had split one refusal across two reason names).
+
+Two consequences worth stating plainly. First, **the additive allowance most of
+this sweep's readings lean on did not exist when the snapshot being replaced was
+taken**; it was written on 2026-08-26, eight days into the window. Second, twice
+in this window a surface's declaration was amended by the same commit that
+changed the surface. Before reading circularity into that: in both cases the
+amendment constrained the change rather than excusing it — `0e035eb` wrote the
+sentence that binds its own closed-set addition to pre-tag, and `9f04932`
+narrowed what a verdict may return. The audit records the pattern; it does not
+allege a fault. What it does now insist on is that a sweep pin the revisions
+it read, which the gate enforces twice: it **fails** if
+`docs/contract-freeze.md` has moved since, naming both shas, and it reports
+**drift** (exit 3) if `src/contract.zig`'s closed set has moved since. The second
+is the one no earlier mechanism could reach — a frozen surface can move without
+any issue changing state, so every population check is blind to it by
+construction.
 
 ## Every open issue, classified
 
-Classes, per #86's amendment and no longer restricted to touchers (see the invariant above): **A** — the gap can make PASS
-overclaim (prose alone cannot retire one; resolution is fix, demote to a
-refusal, or narrow the stated promise); **B** — FAIL-side noise or precision
-(fix or document); **C** — ergonomics and diagnostics (fix, defer to 1.x
-with a note, or `tracked` — held open deliberately, which is what #118, #140
-and #147 do and is distinct from deferring a decision). Class-A resolutions below are the owner's adjudication
-(2026-08-17), taken with the recommendation visible before deciding.
+Classes, per #86's amendment and no longer restricted to touchers (see the
+invariant above): **A** — the gap can make PASS overclaim (prose alone cannot
+retire one; resolution is fix, demote to a refusal, or narrow the stated
+promise); **B** — FAIL-side noise or precision; **C** — ergonomics and
+diagnostics; **D** — an adversarial surface: the gap hands an attacker a
+capability against a consumer of the output or against the operator's
+filesystem, and its own resolution `contain` means the exposure is bounded by
+a stated operational precondition rather than removed.
+
+**D is new in this sweep (owner ruling, 2026-08-27), and the enumeration had
+already been strained twice before it.** Five open issues here come from
+threat-model runs — `#325`, `#328`, `#337`, `#338`, `#339` — and fit none of
+A, B or C: a channel that carries attacker-chosen text into a reading agent's
+context is not PASS overclaim, not FAIL-side noise, and calling it
+"ergonomics and diagnostics" would be this page misdescribing its own
+content. The historical rows had already reached for `A-adjacent` (`#10`) and
+`C-shaped` (`#167`) rather than pick one of three, and three more carried no
+class at all; migrating them is what made the gap impossible to keep
+deferring. Those hedged values are mapped to A and C in the manifest with the
+original word kept in the row's rationale.
+
+**The disposition sets were also written from too small a sample.** They came
+from the thirteen active rows of the previous sweep, and the seventeen
+historical resolved rows do not fit them: `#12` closed as documented on a
+class-C row, `#6` and `#13` were measured already-fixed outside class A, and
+`#165` was a duplicate. Class A keeps the restricted set, because it is the
+class prose cannot retire; B, C and D share a wider one. Class-A resolutions
+below are the owner's adjudication (2026-08-17), taken with the recommendation
+visible before deciding.
 
 <!-- BEGIN generated: freeze-audit classification (render-audit.sh) -->
 _Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between the markers._
 
 | # | what it is | surface | class | resolution |
 |---|---|---|---|---|
-| #39 | libc conveniences that mutate state behind the PLT (mkstemp family) | none — observation reach is not one of the five; what it bears on is PASS soundness, which is why this row carries a class without touching a surface | A | **narrow**: on Linux the class fails closed through the oracle (sound today); the narrowing itself is written in docs/target-classes.md under "Internal libc calls that mutate state" (measured 2026-08-22 on spike/toys/toy_mkstemp.c), and the issue stays open as the mkstemp family's lookout post |
-| #62 | loop-closure stage clones the full upstream | none — apparatus weight | C | **defer** |
-| #63 | the agent-side seal has never been seen red | none — experiment apparatus | C | **defer** |
-| #64 | secondary observations lack a committed generator | none — apparatus | C | **defer** |
-| #65 | invariant and leg-C predicate hand-synced across spike/ | none — apparatus | C | **defer** |
-| #86 | this audit, and the amendment that added the MCP surface | none — criterion 5's own obligation issue, not a gap in a surface: the MCP-surface decision was recorded in it, which is not the same as touching that surface | C | **fix**: the pre-tag re-sweep ran 2026-08-18 (that snapshot); the declaration moved to docs/contract-freeze.md carrying all five surfaces normatively, and this issue closed with that merge |
-| #118 | assisted-discovery product thesis | none — product tracking, open by owner ruling | C | **tracked**: stays open |
-| #123 | the judge cannot follow a target across execve | none — implementing it is a trace-contract event, and surface 4 says in as many words that a future trace-contract bump is not a broken promise | C | **defer**: with the recorded reading: the single-pid exec chain is already judged under the contract of its day, and a bump refuses old cases with the mismatch named |
-| #140 | criterion 1's search half | none — process criterion | C | **tracked**: stays open, upstream-gated |
-| #147 | outcome-map.tsv overcounts reported-upstream rows | none — evidence-page correction | C | **tracked**: stays open; the fix is independent of any frozen surface |
-| #156 | `--oracle` + `--allow-unverified` accepted and inert | none — CLI acceptance semantics are not surface 1, which freezes the toml keys and the two command spellings | C | **defer**: with the note said out loud: freezing means the inert acceptance is permanent, and making the combo refuse after the tag would be the breaking change |
-| #160 | onboarding-clock hardening before run 2 | none — apparatus | C | **defer**: to run 2 |
-| #161 | release glibc floor inherited, not chosen | none — release engineering, outside the five surfaces | C | **defer**: worth deciding before 1.0, not contract-bound |
+| #39 | libc conveniences that mutate state behind the PLT (mkstemp family) | forecast: none — observation reach is not one of the five; what it bears on is PASS soundness, which is why this row carries a class without touching a surface | A | **narrow**: on Linux the class fails closed through the oracle (sound today); the narrowing itself is written in docs/target-classes.md under "Internal libc calls that mutate state" (measured 2026-08-22 on spike/toys/toy_mkstemp.c), and the issue stays open as the mkstemp family's lookout post |
+| #62 | loop-closure stage clones the full upstream | forecast: none — apparatus weight | C | **defer** |
+| #63 | the agent-side seal has never been seen red | forecast: none — experiment apparatus | C | **defer** |
+| #64 | secondary observations lack a committed generator | forecast: none — apparatus | C | **defer** |
+| #65 | invariant and leg-C predicate hand-synced across spike/ | forecast: none — apparatus | C | **defer** |
+| #118 | assisted-discovery product thesis | forecast: none — product tracking, open by owner ruling | C | **tracked**: stays open |
+| #123 | the judge cannot follow a target across execve | forecast: none — implementing it is a trace-contract event, and surface 4 says in as many words that a future trace-contract bump is not a broken promise | C | **defer**: with the recorded reading: the single-pid exec chain is already judged under the contract of its day, and a bump refuses old cases with the mismatch named |
+| #147 | outcome-map.tsv overcounts reported-upstream rows | forecast: none — evidence-page correction | C | **tracked**: stays open; the fix is independent of any frozen surface |
+| #156 | `--oracle` + `--allow-unverified` accepted and inert | forecast: none — CLI acceptance semantics are not surface 1, which freezes the toml keys and the two command spellings | C | **defer**: with the note said out loud: freezing means the inert acceptance is permanent, and making the combo refuse after the tag would be the breaking change |
+| #161 | release glibc floor inherited, not chosen | forecast: none — release engineering, outside the five surfaces | C | **defer**: worth deciding before 1.0, not contract-bound |
+| #199 | preflight cannot see nondeterminism: a property of two runs, from one observed run | forecast: none — a new preflight mode or subcommand is CLI surface, which surface 1 does not freeze (it freezes the toml keys and the define's two command spellings); the issue says so itself and states that no change to the recording contract, the report schema or the closed set is required | C | **defer**: The cheapest fact about a target is currently learned the most expensive way. |
+| #201 | statically-linked targets: the oracle sees them, the kill injector cannot reach them | forecast: report-schema — implementing it would add refusal vocabulary to the closed set, which the issue names as reopening the frozen contract | C | **defer**: Owner scheduling ruling 2026-08-21: after v1.0. The tag makes it a breaking change, accepted deliberately rather than overlooked. |
+| #202 | threaded targets: kill points lose their address under interleaving | forecast: report-schema — same family as #201 by the issue's own text: a contract redesign with new refusal vocabulary | C | **defer**: Owner scheduling ruling 2026-08-21: after v1.0, the deepest of the three reach walls. |
+| #217 | targets whose file I/O bypasses libc: the shim loads and hears nothing | forecast: report-schema replay-compatibility — the issue names an engine-architecture change touching the recording model, crash-point addressing and likely the trace contract | C | **defer**: Filed after-1.0 deliberately, at the same standing as #201 and #202. |
+| #257 | determinism apparatus is rebuilt by hand per target; no declared-apparatus surface exists | forecast: config-format report-schema — a define naming its apparatus is an additive config key and the report carrying the declaration is an additive field; both sit inside the allowances surfaces 1 and 2 state | C | **defer**: Nothing here is tag-blocking, but the issue is right that the shape is cheaper to decide before the tag than after. |
+| #258 | wall roadmap ordering: encounter frequency and contract cost disagree | forecast: none — a scheduling question about other issues, not a gap in a surface | C | **defer**: Asks for an explicit owner decision on post-tag order with the encounter table in front of it. |
+| #259 | every cohort rewrites its probe, drill and transcript harness | forecast: none — spike apparatus, outside the five surfaces | C | **defer**: The re-derivations re-import bug classes review then has to re-find; three have recurred across cohorts. |
+| #260 | selection rule 5 misses user-side recoverability: the poetry lesson | forecast: none — a selection rule for future cohorts, not a surface | C | **defer**: To settle before cohort 5 selects, per the issue. |
+| #261 | the define cannot declare non-durable paths, and the L0 precision limit keeps consuming targets | forecast: config-format report-schema — either candidate shape — an ignore list in the define, or an L1 durability marker — adds a config key and a report field, both additive | B | **defer**: Four recorded shapes have already spent a target, a claim or an engine PR on this limit. |
+| #262 | exploration is strictly sequential and every world pays the full state size | forecast: none — the cheap steps (binary search in find, a hash-first compare) touch no frozen surface; parallelism would, and the issue defers that | C | **defer**: Labelled after-1.0. The tracked home for the throughput bound. |
+| #263 | no timeout exists anywhere: one hung world stalls an explore forever, silently | forecast: report-schema — a named refusal for a wall-clock breach needs a new closed-set member, and the closed set is excluded from surface 2's additive allowance — so the naming, if that is the shape, can only land before the tag | C | **defer**: PRE-TAG DECISION OWED: the issue says the naming belongs before the tag even if the default stays off. Undecided as of this sweep. |
+| #272 | the himalaya report's severity ceiling rests on three points the record marks unmeasured | forecast: none — measurement of an external system's behaviour, outside the five surfaces | C | **defer**: Owner-gated: the issue covers producing the measurements, not sending anything upstream. |
+| #274 | refusals help unevenly: the commonest detectors ship one word | forecast: none — enriching a refusal's message text, or a new diagnose subcommand, is CLI and message prose rather than a frozen field's meaning | C | **defer**: The refusal a new user hits first carries the least help; the discrimination it declines is cheap outside the engine. |
+| #275 | sideeye.toml cannot carry oracle or work: a committed define stops one flag short | forecast: config-format — an oracle key is an additive config key, and surface 1 says in as many words that additive keys remain possible | C | **defer**: Not tag-blocking. The issue's own precedent (#95, the argv form) landed pre-freeze for convenience, not necessity. |
+| #276 | the checker cookbook contains no checkers: four recipes, all pointers into spike/ | forecast: none — documentation, outside the five surfaces | C | **defer**: The page's own premise is that the checker is the layer that fails quietest. |
+| #279 | a contract bump orphans every saved case: three re-records paid by hand | forecast: replay-compatibility — surface 4 says a future trace-contract bump is not a broken promise, so what this issue asks for is a migration story about cost, not a change to the promise | C | **defer**: Labelled after-1.0, but the issue is right that CI's regression-case story should name the helper before the first post-tag bump improvises it. |
+| #280 | hand-synced pairs and untested cores inside src/ | forecast: none — internal duplication with nothing pinning the copies together; no frozen surface | C | **defer**: Test weight sits away from the sharpest code, measured per file in the issue. |
+| #286 | macOS verification without per-run root: three routes, none measured | forecast: report-schema — each route buys a verification claim weaker than oracle_verified, and the issue names the report vocabulary as the real contract surface | C | **defer**: The owner priority recorded in the issue argues against defaulting it to after-1.0; the vocabulary decision is still open. |
+| #293 | can FSEvents veto a mutation the shim never reported? | forecast: report-schema — any veto is a claim weaker than oracle_verified and needs its own name in the report, which the issue names as the contract-reopening half | C | **defer**: H1 measured and dead; H2 not judged. The apparatus is committed and reusable; what is missing is the corpus. |
+| #297 | upstream-report-status.sh cannot see a report that was never added to its list | forecast: none — spike tooling, outside the five surfaces | C | **defer**: The failure mode is an absent row, not a wrong one, and the script's output cannot distinguish six-of-six from six-of-seven. |
+| #299 | the other family: a recorder whose coverage is complete by construction | forecast: report-schema — a generated interposer would need its own claim vocabulary if it ever became a verification route | C | **defer**: Filed so it is not lost, explicitly not as a commitment. |
+| #318 | an empty-diff claim drops its normalisation, and the record miscounts its own | forecast: none — committed prose, outside the five surfaces | C | **defer**: The class is at three instances, which is this repository's own full-sweep threshold. |
+| #323 | the state tree's TOTAL is unbounded: the per-file cap is not a memory ceiling | forecast: report-schema — the issue asks for a refusal naming the total and the largest contributors, and the sibling per-file cap (#330) needed a new closed-set member to say so honestly. The decision is taken: a new member, state_tree_too_large, which the closed set's exemption from the additive allowance means can only land before the tag | C | **defer**: PRE-TAG DECISION TAKEN, NOT YET LANDED (2026-08-27): the owner ruled for a new member rather than riding on state_unsnapshotable, on the ground that a failure with a limit reports its limit. It is implemented and unmerged as this sweep ships, so the closed set this sweep measured is the pre-#323 one and the gate reports the sixth member as post-sweep drift when it lands, by design. |
+| #325 | a relative define.state in a case file resolves against the invoker's cwd, unlike a config's | forecast: replay-compatibility — refusing a relative state in a case file changes which case shapes the engine accepts, which is the travel-together half of surface 4 | D | **defer**: Found during #266's security review. Fail-closed today under --state-under, and cases the engine writes always carry absolute state, so the hole needs a hand-written case to reach. |
+| #328 | what #266's close did not close: the hostile-case residue, tracked | forecast: none — the residue is about what a case's commands DO on replay, which ADR 0010 places outside the engine's containment; no frozen surface | D | **tracked**: Held open deliberately. Movement means the ADR 0010 posture changing — sandboxed execution, or a declared non-goal with the deployment guidance strengthened — which is an owner decision with its own cost line. |
+| #337 | relay the oracle's decomposition, not the raw strace line | forecast: report-schema — the issue states the blocker itself: message is a report field, so its MEANING is frozen surface 2, and changing what it carries is a breaking change rather than an additive one | D | **defer**: The sharpest self-declared toucher in this sweep. Blocked by the freeze rather than handled by #326's marking, and the issue exists because only the second of those had been written down. |
+| #338 | compare device and inode across the check and the open | forecast: none — an internal hardening of the destructive path; no frozen surface | D | **defer**: #335 changed the cost: one side of the comparison is already an open descriptor. Closes the check-to-open race outright; the pre-existing bind mount stays open and cannot be closed this way. |
+| #339 | acceptance plants a forged closing banner; the opening banner is the untested half | forecast: none — an acceptance leg and one clause of a tool description; the isError rule and the tool names are untouched | D | **defer**: A counting reader is structurally unaffected because everything before the real banner comes from closed sets; a scanning reader is not. |
+| #341 | four of #239's new predicates have no fixture | forecast: none — spike gate internals, outside the five surfaces | C | **defer**: The predicates are live today; what is missing is the proof that they stay live. |
+| #342 | the ledger sizes are prose outside the generated block, and nothing recomputes them | forecast: none — a generated-docs bookkeeping question, outside the five surfaces | C | **defer**: The files cannot drift from each other; what can drift is the page's description of them, and a reader checking completeness reads the prose. |
+| #344 | the fsevents sensitivity leg needs an msync-class mutation | forecast: none — spike apparatus for a route that is itself undecided | C | **defer**: Belongs to #293's owner: whether the apparatus is rebuilt at all is part of the route-B decision. |
+| #345 | what no in-file check can see: a watched name deleted from every list at once | forecast: none — a limit of a spike ratchet, outside the five surfaces | C | **tracked**: The ratchet's falsification found its own boundary. The current state — documented limit, partial anchor, review ownership — may be the honest optimum. |
+| #347 | a generation can be marked complete with a SETUP_ERROR in it | forecast: none — spike measurement tooling, outside the five surfaces | C | **defer**: A hand-run gate is not a gate; the reasoning that kept the check out of the measurement PR expires with that PR. |
+| #348 | apparatus.txt is written and never read, and a flagged trial is checked in one place | forecast: none — spike measurement tooling, outside the five surfaces | C | **defer**: The conservation check is what catches a renderer dropping rows from an aggregate, which the flag guard cannot see. |
+| #349 | reports carry no generation or run identity: a swapped report passes every check | forecast: none — the cheapest fix is a sha in the sweep manifest, which is spike tooling; the alternative (a run identifier the engine is told) would be a config surface question, and the issue says so rather than assuming it | C | **defer**: Measured, not supposed: twenty-eight shared reports copied byte-for-byte between generations produced a green check. |
+| #350 | committed oracle logs carry the sweep machine's absolute paths | forecast: none — committed evidence and a spike capture step; no frozen surface | C | **defer**: No keys or tokens are present, checked. What the paths do is put a machine layout into a public record permanently, and every re-sweep adds more. |
+| #352 | a refusal before the oracle block says no oracle was given, on runs that gave one | forecast: report-schema — the oracle string is an account field, and surface 2 says the account fields' prose may improve between releases — so correcting it is inside the promise, not against it | B | **defer**: The machine-readable surface stays honest (oracle_verified: false is correct for every one of these); what is wrong is the prose a human reads in the same document. |
+| #356 | the three documents that carry criterion 3's reopen rule can drift apart unchecked | forecast: none — release-gate bookkeeping across three documents, outside the five surfaces | C | **defer**: The predicate is written out in the issue. #240 ran it as a throwaway script deliberately; that reasoning expired with the PR. |
+| #357 | a quoted figure is checked for existence in a source, not for being the right figure | forecast: none — an acceptance check over committed prose, outside the five surfaces | C | **defer**: The issue records the honest weighing itself: this failure mode has one measured instance (a mutant) and the one review caught has three. |
+| #359 | where the root denylists live: engine.zig hosts a rule two consumers share | forecast: none — an internal placement question; both entry points keep their names and signatures | D | **defer**: The issue also records that #329's plan gave a false reason for not doing it, so that reason is not inherited. |
+| #360 | four ADRs still say Proposed after their implementing PRs merged | forecast: none — repository bookkeeping, outside the five surfaces | C | **defer**: This PR flips 0027 and lands 0028 Accepted, which does not touch the four the issue names (0022, 0023, 0024, 0026). |
+| #363 | eight non-snapshot refusals still exit 3 after the define has run | forecast: exit-codes report-schema — the exits themselves are surface 3's behavioural half; whether a NEW closed-set member is needed depends on the resolution shape, and the issue states both branches — a new member could only land before the tag, and reusing existing members carries no deadline | C | **defer**: PRE-TAG DECISION OWED, conditionally, by the issue's own wording. This row records the conditionality rather than assuming either branch. |
+| #365 | the trace-cap CI step's sha comparison cannot see an edit to the shipped value | forecast: none — a CI differential check; one candidate resolution would have the binary report its ceiling, which the issue flags as a public-surface decision rather than assuming it | C | **defer**: Measured: a released engine with a 64-byte trace-read ceiling would go out green. Not urgent — the flag path is covered and nothing edits that literal. |
 <!-- END generated: freeze-audit classification -->
 
-Thirteen active rows at the re-sweep (twenty-six at the original sweep;
-seventeen struck rows below — thirteen from the original snapshot, four
-filed and resolved between the sweeps). Every class-A adjudication executed
-before the tag: fix (#46, #164, #169), demote (#5), measured already-fixed
-(#27), narrow (#39 — executed 2026-08-17, its row *active* because the
-issue stays open as the mkstemp family's lookout post by owner decision);
-the A-adjacent #10 narrowed with its diagnostic clause and CI pin, and the
-class-B #150 fixed on both verdict headlines — none resolved by leaving
-the PASS claim intact over a documented hole, which is the outcome class A
-forbids. What stays open is class C and process apparatus (#62–#65, #123,
-#147, #160, #161), the deliberate deferrals with their trades recorded
-(#39's lookout post, #156's flag-acceptance permanence), the
-product-thesis and process trackers (#118, #140), and
-this audit itself (#86, which closes when the re-sweep's PR merges).
+Fifty-three active rows at this re-sweep, against thirteen at the previous one
+and twenty-six at the original; sixty resolved rows below, of which
+seventeen are migrated from the two earlier sweeps, forty-one closed inside
+this window, and two close with this merge.
+
+**Sixteen active rows now carry a surface forecast other than `none`, where
+the previous sweep's page said no row touched a frozen surface at all.** That
+is not a change of standard; it is a larger population read against the same
+declaration. The sharpest is `#337`, which states the blocker itself — the
+report's `message` field is frozen surface 2, so shrinking what it carries is
+a breaking change rather than an additive one — and is deliberately after-1.0
+for that reason. Three more name a **pre-tag decision that is still owed**,
+because the `unknown_reason` closed set is excluded from surface 2's additive
+allowance and can therefore only gain a member before the tag: `#263` (a
+timeout refusal), `#323` (a tree-total refusal) and `#363` (eight refusals
+that exit 3 after the define has run). Two of those three are conditional by
+their own wording — if the resolution reuses an existing member there is no
+deadline — and the rows record the conditionality rather than assuming a
+branch. Every remaining forecast falls inside an allowance the declaration
+states: additive config keys (`#275`, `#257`), additive report fields
+(`#257`, `#261`), a trace-contract bump, which surface 4 says in as many
+words is not a broken promise (`#279`), or account-field prose, which surface
+2 permits to improve (`#352`).
+
+Class A holds eleven rows: ten resolved — fix (`#46`, `#164`, `#169`, `#244`,
+`#256`, `#264`, `#333`), demote (`#5`), measured already-fixed (`#27`) and
+narrow (`#10`) — and one active, `#39`, whose narrowing was executed on
+2026-08-17 while the issue stays open as the mkstemp family's lookout post by
+owner decision. That is the whole point of the invariant's first clause: what
+the gate asks is whether a ruling has been carried out, not whether the issue
+is shut. Not one of the eleven was resolved by leaving a PASS claim intact over a
+documented hole, which is the outcome class A forbids.
 
 ## Resolved before the tag
 
-Every row below was an open issue in a sweep's snapshot (or was filed and
-resolved between the sweeps — #164, its duplicate #165, #167, #169 —
-enumerated by a closed-issue query over the window, since a final-state
-capture cannot see an issue that opened and closed inside it) and closed
-before the tag; the struck rows keep their adjudication history. The gate
-counts active rows only — a struck row's leading cell no longer matches its
-anchor — so this section is record, not obligation; that the strikes are
-genuine (each issue really closed) is commit review's job, stated here the
-same way the snapshot's own trust is.
+Every row below was an open issue in some sweep's snapshot, or was filed and
+resolved between sweeps — thirty-eight such issues in this window against
+four in the last, enumerated by a closed-issue query over it, since a
+final-state capture cannot see an issue that opened and closed inside it. The
+struck rows keep their adjudication history, and the table is now **generated
+from the manifest** like the active one: until this sweep it was hand-written
+and the gate counted active rows only, so seventeen rows of adjudication
+history were held by nothing.
 
-| issue | what it says | touches a frozen surface? | class | resolution |
+**Read the surface column carefully — it says which question it answers.**
+A row measured by this sweep's surface diff says so, and names the change ids
+in `surface-changes.tsv` when its resolution moved something. A row that
+closed *before* this window says **not measured by this sweep** and carries
+the reading the earlier sweeps took, because a diff over this window supports
+no claim about it. The first draft of this migration wrote `none` for those
+rows too, and the render then read "measured: no frozen surface moved — yes —
+verdict soundness" on a row the earlier sweep had recorded as touching one.
+
+<!-- BEGIN generated: freeze-audit resolved rows (render-audit.sh) -->
+_Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between the markers._
+
+| issue | what it says | surface | class | resolution |
 |---|---|---|---|---|
-| ~~#5~~ | restore drops FIFOs/sockets/devices; worlds differ from the recorded tree (symlinks fixed in #122) | yes — verdict soundness | A | **demote**: detect a non-regular, non-symlink entry at snapshot time and refuse (UNKNOWN) rather than explore a tree that cannot be reproduced. Fix lands before the tag. **Landed 2026-08-17**: `unsupported_state_entry` fires at all three snapshots (initial, final, crashed — the last catching entries no syscall witness saw born), and the demotion's own review first forced the entrance repair: the `DT_UNKNOWN` fallback used to probe by opening, which hangs on a FIFO and misclassifies sockets and devices — classification is by `statx`/`fstatat` now, no open, no follow |
-| ~~#6~~ | the oracle reads any quoted string on a strace line as a path; a target that *prints* a state path draws a false refusal | no — internal parsing precision, fails closed, fix is non-breaking | — | ~~stays open; fixable in any 1.x~~ **Closed 2026-08-18, measured already-fixed**: the issue predates ADR 0006 (2026-08-11), whose typed resolver names this false-positive verbatim in its Context and closed it — a classified `write` is an fd syscall, scoped from its descriptor annotation only, and the named unit pin exists ("a state-directory string inside a write buffer is not scope"; mutation-checked once with attribution fixed by `--test-filter`). The close is scoped to the named case: the conservative whole-line net remains for *unclassified* syscalls and only ever refuses — deliberate fail-closed residue |
-| ~~#10~~ | macOS Apple platform binaries can never be observed; the docs imply a narrower limit | yes — the stated promise | A-adjacent | **narrow**: `docs/target-classes.md` states plainly that a macOS target must be self-built or self-installed, never an Apple-shipped binary. The README stays under its cut-only order. **Landed 2026-08-18, wider than adjudicated here by owner decision**: the report's macOS build also names an Apple-shipped platform binary as *one possible cause* on the `no_shim_marker` detail line — never the cause; the review killed the attributing form, since the marker proves only that `shim_ready` never appeared — with the refusal shape (exit 2, token, clause, the JSON `message` contained verbatim in the text) pinned permanently in the macOS CI job, each check predicate seen red once. The Linux wording is byte-identical |
-| ~~#12~~ | the omamori dogfood cannot be agent-driven | no — internal tooling | C | ~~defer to 1.x~~ **Closed 2026-08-18, owner decision**: the by-design account was already on the record — PRD's v0.4 status carries the full account (the guards fire for a human at a terminal exactly as for an agent; measuring one would need break-glass, which removes the defence under test), and DESIGN says "not measured either way". Closed as documented, not as fixed; the audience-assumption generalisation went to `docs/scouting.md` as one sentence |
-| ~~#13~~ | stdio (fopen/fwrite) invisible to the shim | **stale** — fixed by ADR 0005 (flush-granularity observation), pinned by acceptance check 2u | — | **close as fixed**; the unmeasured reach note (Go, raw syscalls) already lives on the target-classes page |
-| ~~#26~~ | target-chosen paths reach the text report unescaped | yes — report surface (text) | B | ~~document~~ **Corrected 2026-08-17, owner decision**: fixed ahead of the adjudicated minimum — the forged line was demonstrated on the pre-fix binary, the three target-chosen operands now reach the text defanged while the JSON keeps the exact bytes, and the acceptance suite pins both sides. Closes with the fix's merge |
-| ~~#27~~ | standard-form L0 misses a file replaced by a directory when pre or post content is empty — a real false-PASS window | yes — the meaning of PASS | A | ~~fix before the tag~~ **Corrected 2026-08-17, measured**: the issue predates #122, whose (kind, content) pair rule already closed the named window **for pairs that enter the plan** — the issue's own scenario, both empty sides, now lands as one unit pin per case through the real classify+judge path, and a kind-blind mutation reds each pin test individually while sparing the non-empty control. Closes as measured when the pin change merges. The measurement also found the adjacent gap *outside* the plan — the dir-to-dir pair exclusion — filed as #164 and fixed in the same change; #164 joins this table at the pre-tag re-sweep per the snapshot rule |
-| ~~#35~~ | L0 flags git's COMMIT_EDITMSG scratch file | yes — FAIL-side precision | B | document as a named precision limit on non-durable files — **executed 2026-08-17**: the scratch-file pattern joined the checker cookbook's failure-patterns list with the measured run cited. Closes as documented with that change's merge |
-| ~~#46~~ | no quiescence observation on the stdout capture under a tolerated boundary — a marker could silently vanish and skip L1 | yes — PASS-side miss window | A | **fix** before the tag: include the capture file in the same two-sample quiescence observation the state directory already gets (the issue's own fix shape). **Landed 2026-08-17** (PR #170): the capture joins the two-sample observation on both the recording and every world, arming extends to world-local boundary evidence, and the one open follow-on — whether a world-only boundary should refuse outright — is #169, deliberately out of this audit's scope because deciding it changes verdicts |
-| ~~#58~~ | acceptance asserts vs PYTHONOPTIMIZE | no — test infra | C | ~~defer~~ **Corrected 2026-08-17, owner decision**: fixed ahead of the adjudicated deferral — every judgment `assert` across both acceptance suites and the quickstart workflow replaced by explicit exits, the assert-version hole demonstrated once on falsified input, and both suites run entirely green under `PYTHONOPTIMIZE=1`. Closes with the fix's merge |
-| ~~#150~~ | the FAIL headline counts the baseline under "crash worlds" | yes — reader-facing verdict label | B | **fix** before the tag (relabel to explored worlds; sweep acceptance greps first). Machine fields are already correct. **Landed 2026-08-18**, wider than filed: the PASS headline carried the same mislabel (the issue never named it; the plan review did) and both verdicts now say explored worlds, with the printed numbers pinned against the same run's JSON `violations`/`explored` — a wording-only pin would have passed a wrongly-changed denominator |
-| ~~#157~~ | value pins cannot see a bool-vs-string type regression | no — test infra | C | ~~defer~~ **Corrected 2026-08-18, owner decision**: fixed ahead of the adjudicated deferral — the seven oracle_verified pins go through one typed predicate (`type is bool` with the value), self-falsified on every call against an in-memory string-"True" document through the same predicate. Closes with the fix's merge |
-| ~~#159~~ | README never introduces `--shim`/`--work` outside the Example | no — docs under the cut-only order | C | ~~awaiting the owner's call~~ **Resolved 2026-08-18, owner decision**: a minimal Usage addition — `--shim` and `--work` introduced in the README's flag list (PR #177); criterion 6's evidence stays the pre-change README's run, deliberately not re-measured |
-| ~~#164~~ | a dir-to-dir pair is excluded from judgment entirely | yes — adjacent to #27's false-PASS window | A | **Fixed 2026-08-17, by the same measurement that closed #27** (filed between the sweeps; #27's row promised this row would join at the re-sweep): the pair-rule exclusion #27's measurement surfaced *outside* the plan, closed in the same change with per-case unit pins |
-| ~~#165~~ | (accidental duplicate of #164) | — | — | **Closed 2026-08-17 as a duplicate**: a shell precedence slip in the filing command created the same issue twice; #164 is canonical |
-| ~~#167~~ | the text defang stops at 0x7f; raw C1 bytes pass through | no — display hardening, outside the five surfaces | C-shaped | **Fixed 2026-08-18 ahead of any deferral, owner decision** (filed after the 08-17 snapshot; classified at the re-sweep): one UTF-8-aware classifier behind both text-side predicates — plan review found the second, `sanitizeForReport` — C1 defanged in both encodings, invalid bytes one at a time, real multi-byte sequences spared, both routes pinned with a byte-wise mutation seen red (PR #177) |
-| ~~#169~~ | a world-only process boundary is tolerated with no account of that world | yes — what a verdict means over a boundary nobody accounted for | A | **Fixed 2026-08-18, owner decision** (filed after the 08-17 snapshot; classified at the re-sweep): refuses under `boundary_without_oracle` — the issue's own per-world analog, so the schema's closed set does not move; the world-story `processes` account precedes the refusal; the existing tolerate check inverted as the red/green pair; ADR 0002 superseded in part, its knowingly-open recording-crossed window now stated to cover the whole remaining exposure (PR #176) |
+| ~~#5~~ | restore drops FIFOs/sockets/devices; worlds differ from the recorded tree (symlinks fixed in #122) | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — verdict soundness | A | **demote**: detect a non-regular, non-symlink entry at snapshot time and refuse (UNKNOWN) rather than explore a tree that cannot be reproduced. Fix lands before the tag. **Landed 2026-08-17**: `unsupported_state_entry` fires at all three snapshots (initial, final, crashed — the last catching entries no syscall witness saw born), and the demotion's own review first forced the entrance repair: the `DT_UNKNOWN` fallback used to probe by opening, which hangs on a FIFO and misclassifies sockets and devices — classification is by `statx`/`fstatat` now, no open, no follow |
+| ~~#6~~ | the oracle reads any quoted string on a strace line as a path; a target that *prints* a state path draws a false refusal | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: no — internal parsing precision, fails closed, fix is non-breaking | B | **measured-already-fixed**: ~~stays open; fixable in any 1.x~~ **Closed 2026-08-18, measured already-fixed**: the issue predates ADR 0006 (2026-08-11), whose typed resolver names this false-positive verbatim in its Context and closed it — a classified `write` is an fd syscall, scoped from its descriptor annotation only, and the named unit pin exists ("a state-directory string inside a write buffer is not scope"; mutation-checked once with attribution fixed by `--test-filter`). The close is scoped to the named case: the conservative whole-line net remains for *unclassified* syscalls and only ever refuses — deliberate fail-closed residue The page left this row's class blank, from the era before class applied to every row. Assigned B: internal parsing precision, fails closed, and the fix was non-breaking. |
+| ~~#10~~ | macOS Apple platform binaries can never be observed; the docs imply a narrower limit | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — the stated promise | A | **narrow**: `docs/target-classes.md` states plainly that a macOS target must be self-built or self-installed, never an Apple-shipped binary. The README stays under its cut-only order. **Landed 2026-08-18, wider than adjudicated here by owner decision**: the report's macOS build also names an Apple-shipped platform binary as *one possible cause* on the `no_shim_marker` detail line — never the cause; the review killed the attributing form, since the marker proves only that `shim_ready` never appeared — with the refusal shape (exit 2, token, clause, the JSON `message` contained verbatim in the text) pinned permanently in the macOS CI job, each check predicate seen red once. The Linux wording is byte-identical Recorded on the page as class 'A-adjacent', which was not one of the three values the page defined; mapped to A here and the original word kept. |
+| ~~#12~~ | the omamori dogfood cannot be agent-driven | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: no — internal tooling | C | **document**: ~~defer to 1.x~~ **Closed 2026-08-18, owner decision**: the by-design account was already on the record — PRD's v0.4 status carries the full account (the guards fire for a human at a terminal exactly as for an agent; measuring one would need break-glass, which removes the defence under test), and DESIGN says "not measured either way". Closed as documented, not as fixed; the audience-assumption generalisation went to `docs/scouting.md` as one sentence |
+| ~~#13~~ | stdio (fopen/fwrite) invisible to the shim | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: **stale** — fixed by ADR 0005 (flush-granularity observation), pinned by acceptance check 2u | B | **measured-already-fixed**: **close as fixed**; the unmeasured reach note (Go, raw syscalls) already lives on the target-classes page The page left this row's class blank. Assigned B: an observation-reach precision limit, stale and already fixed by ADR 0005. |
+| ~~#26~~ | target-chosen paths reach the text report unescaped | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — report surface (text) | B | **fix**: ~~document~~ **Corrected 2026-08-17, owner decision**: fixed ahead of the adjudicated minimum — the forged line was demonstrated on the pre-fix binary, the three target-chosen operands now reach the text defanged while the JSON keeps the exact bytes, and the acceptance suite pins both sides. Closes with the fix's merge |
+| ~~#27~~ | standard-form L0 misses a file replaced by a directory when pre or post content is empty — a real false-PASS window | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — the meaning of PASS | A | **measured-already-fixed**: ~~fix before the tag~~ **Corrected 2026-08-17, measured**: the issue predates #122, whose (kind, content) pair rule already closed the named window **for pairs that enter the plan** — the issue's own scenario, both empty sides, now lands as one unit pin per case through the real classify+judge path, and a kind-blind mutation reds each pin test individually while sparing the non-empty control. Closes as measured when the pin change merges. The measurement also found the adjacent gap *outside* the plan — the dir-to-dir pair exclusion — filed as #164 and fixed in the same change; #164 joins this table at the pre-tag re-sweep per the snapshot rule |
+| ~~#35~~ | L0 flags git's COMMIT_EDITMSG scratch file | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — FAIL-side precision | B | **document**: document as a named precision limit on non-durable files — **executed 2026-08-17**: the scratch-file pattern joined the checker cookbook's failure-patterns list with the measured run cited. Closes as documented with that change's merge |
+| ~~#46~~ | no quiescence observation on the stdout capture under a tolerated boundary — a marker could silently vanish and skip L1 | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — PASS-side miss window | A | **fix**: before the tag: include the capture file in the same two-sample quiescence observation the state directory already gets (the issue's own fix shape). **Landed 2026-08-17** (PR #170): the capture joins the two-sample observation on both the recording and every world, arming extends to world-local boundary evidence, and the one open follow-on — whether a world-only boundary should refuse outright — is #169, deliberately out of this audit's scope because deciding it changes verdicts |
+| ~~#58~~ | acceptance asserts vs PYTHONOPTIMIZE | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: no — test infra | C | **fix**: ~~defer~~ **Corrected 2026-08-17, owner decision**: fixed ahead of the adjudicated deferral — every judgment `assert` across both acceptance suites and the quickstart workflow replaced by explicit exits, the assert-version hole demonstrated once on falsified input, and both suites run entirely green under `PYTHONOPTIMIZE=1`. Closes with the fix's merge |
+| ~~#86~~ | this audit, and the amendment that added the MCP surface | no attributed enumerated change — criterion 5's own obligation issue, not a gap in a surface: the MCP-surface decision was recorded in it, which is not the same as touching that surface | C | **fix**: Closed 2026-08-18 by the re-sweep merge (PR #178) that installed the snapshot this sweep replaces. It sat in the ACTIVE table while closed, which is the inconsistency the gate's new predicate fixes. |
+| ~~#140~~ | criterion 1's search half | no attributed enumerated change — a process criterion, not a surface: it asks for a qualifying find under the provenance gate | C | **fix**: Closed 2026-08-25 (PR #319). Its close is what made #305 filable: the himalaya finding's fix changes the operation sequence, so leg C of the replay bar is structurally unreachable for it. |
+| ~~#150~~ | the FAIL headline counts the baseline under "crash worlds" | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — reader-facing verdict label | B | **fix**: before the tag (relabel to explored worlds; sweep acceptance greps first). Machine fields are already correct. **Landed 2026-08-18**, wider than filed: the PASS headline carried the same mislabel (the issue never named it; the plan review did) and both verdicts now say explored worlds, with the printed numbers pinned against the same run's JSON `violations`/`explored` — a wording-only pin would have passed a wrongly-changed denominator |
+| ~~#157~~ | value pins cannot see a bool-vs-string type regression | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: no — test infra | C | **fix**: ~~defer~~ **Corrected 2026-08-18, owner decision**: fixed ahead of the adjudicated deferral — the seven oracle_verified pins go through one typed predicate (`type is bool` with the value), self-falsified on every call against an in-memory string-"True" document through the same predicate. Closes with the fix's merge |
+| ~~#159~~ | README never introduces `--shim`/`--work` outside the Example | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: no — docs under the cut-only order | C | **fix**: ~~awaiting the owner's call~~ **Resolved 2026-08-18, owner decision**: a minimal Usage addition — `--shim` and `--work` introduced in the README's flag list (PR #177); criterion 6's evidence stays the pre-change README's run, deliberately not re-measured |
+| ~~#160~~ | onboarding-clock hardening before run 2 | no attributed enumerated change — experiment apparatus, outside the five surfaces | C | **fix**: Closed 2026-08-25 (PR #321), hardening the onboarding clock's instrument before any run 2. |
+| ~~#164~~ | a dir-to-dir pair is excluded from judgment entirely | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — adjacent to #27's false-PASS window | A | **fix**: **Fixed 2026-08-17, by the same measurement that closed #27** (filed between the sweeps; #27's row promised this row would join at the re-sweep): the pair-rule exclusion #27's measurement surfaced *outside* the plan, closed in the same change with per-case unit pins |
+| ~~#165~~ | (accidental duplicate of #164) | not measured by this sweep (closed before its window) — the 2026-08-17/18 sweeps recorded no reading for this row | C | **duplicate**: **Closed 2026-08-17 as a duplicate**: a shell precedence slip in the filing command created the same issue twice; #164 is canonical The page left this row's class blank. Assigned C: an accidental duplicate carries no failure direction of its own. |
+| ~~#167~~ | the text defang stops at 0x7f; raw C1 bytes pass through | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: no — display hardening, outside the five surfaces | C | **fix**: **Fixed 2026-08-18 ahead of any deferral, owner decision** (filed after the 08-17 snapshot; classified at the re-sweep): one UTF-8-aware classifier behind both text-side predicates — plan review found the second, `sanitizeForReport` — C1 defanged in both encodings, invalid bytes one at a time, real multi-byte sequences spared, both routes pinned with a byte-wise mutation seen red (PR #177) Recorded on the page as class 'C-shaped', which was not one of the three values the page defined; mapped to C here and the original word kept. |
+| ~~#169~~ | a world-only process boundary is tolerated with no account of that world | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — what a verdict means over a boundary nobody accounted for | A | **fix**: **Fixed 2026-08-18, owner decision** (filed after the 08-17 snapshot; classified at the re-sweep): refuses under `boundary_without_oracle` — the issue's own per-world analog, so the schema's closed set does not move; the world-story `processes` account precedes the refusal; the existing tolerate check inverted as the red/green pair; ADR 0002 superseded in part, its knowingly-open recording-crossed window now stated to cover the whole remaining exposure (PR #176) |
+| ~~#180~~ | installing is four steps where the ecosystem's answer is one | no attributed enumerated change — release engineering, the same class as #161 | C | **fix**: Closed 2026-08-23 through an external repository (yottayoshida/homebrew-tap#58); no commit or PR in THIS repository names it. The measurement in the issue held: the shim search needed no code change. |
+| ~~#181~~ | the macOS-has-no-oracle claim rested on one tool | no attributed enumerated change — a measurement of platform observers; it would add capability through channels already frozen and already accommodating it (the --oracle flag and oracle_verified) | C | **fix**: Closed 2026-08-23 (PR #285). The survey measured every candidate: no unprivileged oracle exists, SIP leaves DTrace without probes even as root, fs_usage works root-gated. |
+| ~~#183~~ | criterion 1, second cohort: five targets frozen at selection | no attributed enumerated change — a cohort selection freeze, outside the five surfaces | C | **fix**: Closed 2026-08-21. Two null-with-verdicts and three walls, all under pre-frozen rules. |
+| ~~#190~~ | widen the metadata exclusion to the timestamp family | no attributed enumerated change — the report prose widened from ownership/permission to name timestamps and docs/report-schema.md followed; the schema SHAPE was unchanged (metadata_writes already existed) and the closed set was untouched, so the surface diff attributes nothing here | B | **fix**: Owner-approved 2026-08-21. The issue calls its own change pre-tag-legal under the freeze's rules: a verdict-reaching behaviour change, recorded in the CHANGELOG. |
+| ~~#200~~ | freeze the monotonic clock and re-ask the Borg question | no attributed enumerated change — declared apparatus around a target, outside the five surfaces | C | **fix**: Closed 2026-08-21 (PR #208). Owner scheduling ruling: before v1.0, because Borg was the only wall whose mechanism was incidental to the product. |
+| ~~#209~~ | criterion 1, third cohort: sweet-spot selection frozen with bench refill | no attributed enumerated change — a cohort selection freeze, outside the five surfaces | C | **fix**: Closed 2026-08-22. The bench refill rule means the cohort cannot end in 'we could not measure'. |
+| ~~#221~~ | scout model sensitivity: does the method hold with a smaller scout? | no attributed enumerated change — measures question quality, and by construction the judge never consults the scout | C | **fix**: Closed 2026-08-22. Explicitly not a verdict-soundness question. |
+| ~~#231~~ | select the earliest checker-red world, not the earliest violation | measured: sc-06 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | B | **fix**: Closed 2026-08-22. Added checker_earliest to the report, the one additive field this window gained, and checked it against docs/contract-freeze.md before landing it. The poetry record is the demonstration: a precision-limit L0 world structurally precedes the world where the declared checker actually breaks. |
+| ~~#239~~ | the A-group UNKNOWN rate predates two cohorts | no attributed enumerated change — a published number about the engine's own development inputs; criterion 4's threshold rests on B-group data, which this does not touch | C | **fix**: Closed 2026-08-26 (PR #346). Settled 'runnable' in writing before the sweep ran, which is the order that keeps the answer from being chosen after seeing its effect. |
+| ~~#240~~ | criterion 3's kill-criteria review predates two cohorts | no attributed enumerated change — a scoring judgement about kill criteria, outside the five surfaces | C | **fix**: Closed 2026-08-27 (PR #362). Re-scored row by row with the previous verdict quoted beside the new one; two rows reopened and were adjudicated. |
+| ~~#244~~ | the shim cannot see Rust std's fs::copy, and the libc-bypass class has three mechanisms | measured: sc-07 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | A | **fix**: Closed 2026-08-26 (PR #332). Exporting the weak-lookup symbols was sufficient for a whole class of Rust tools; the bump to v11 is the declared-not-a-break kind. Class A because a write the shim cannot see is a PASS-side hole wherever no oracle refuses it. |
+| ~~#256~~ | the shim omits three wrappers the oracle already classifies | measured: sc-07 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | A | **fix**: Closed 2026-08-26 (PR #332). renameat2, pwritev, pwritev2 — real glibc symbols that were simply never written. Same bump as #244. |
+| ~~#264~~ | a failed waitpid decodes as exit 0: the wrong-reason path was shipped | measured: sc-01 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | A | **fix**: Closed 2026-08-24 (PR #294). Eight consecutive failures produced a confident wrong reason; the fix refuses with child_wait_failed instead, which is why the closed set gained a member. |
+| ~~#265~~ | snapshot reads whole files with no size cap | no attributed enumerated change — the cap landed as a SETUP_ERROR at the initial snapshot, which needed no new vocabulary; the post-recording sites are #330's row | B | **fix**: Closed 2026-08-25 (PR #322). The one unbounded read in the engine, over target-controlled data, hundreds of times per explore. |
+| ~~#266~~ | MCP replay trusts define.state inside the case file | no attributed enumerated change — the confinement changed which states a replay may name, which is MCP behaviour rather than the frozen tool names, input schemas or isError rule | D | **fix**: Closed 2026-08-25 (PR #322). Scoped close: what closed is the accident and received-case class. The residue is tracked in #328 rather than re-litigated inside a closed issue. |
+| ~~#267~~ | assertSafeRoot accepts any absolute path two slashes deep | no attributed enumerated change — a guard in front of deleteTree; no frozen surface | D | **fix**: Closed 2026-08-25 (PR #315). /var/lib, /usr/local and /home/user all passed the only guard in front of a delete that runs once per explored world. |
+| ~~#268~~ | the default work dir is one fixed world-writable path | no attributed enumerated change — a default path and open flags; no frozen surface | D | **fix**: Closed 2026-08-25 (PR #316). The MCP side had already met this shape and fixed it for itself; the general case had not. |
+| ~~#269~~ | the MCP server has no parent-death cleanup | measured: sc-02 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | C | **fix**: Closed 2026-08-25 (PR #317). An agent host restarts servers routinely, so orphaned explores happen at some background rate. The stop needed a reason of its own, which is why the closed set gained parent_exited. |
+| ~~#270~~ | the numbering-assert wiring has no live acceptance coverage | no attributed enumerated change — acceptance coverage of an internal assert; no frozen surface | C | **fix**: Closed 2026-08-25 (PR #322). The recorded both-asserts-off mutant survived the suite; a second net no test can reach is indistinguishable from dead code. |
+| ~~#271~~ | upstream-report-status.sh cannot fail: the BROKEN counter dies in a subshell | no attributed enumerated change — spike tooling, outside the five surfaces | B | **fix**: Closed 2026-08-24 (PR #294). A table whose every row was BROKEN exited 0 under a header promising 'Exit 0 measured'. The list half stayed open as #297. |
+| ~~#273~~ | --help is not a word the CLI knows, and the usage text drifted from the parser | measured: sc-09 sc-12 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | C | **fix**: Closed 2026-08-24 (PR #294). This is the row that proves an enumerated diff is not a measurement of surface 3: the ExitCode enum never moved, and the declaration was rewritten in the same commit to state the promise as a one-way verdict-to-code mapping. |
+| ~~#277~~ | top-level docs lag the record | no attributed enumerated change — documentation currency, outside the five surfaces | C | **fix**: Closed 2026-08-23 (PR #283). The same page had been backfilled the day before and drifted again within a day, which is why the issue asks for a checklist hook rather than a bigger backfill. |
+| ~~#278~~ | the README never routes a skeptic to the denominators | no attributed enumerated change — documentation navigation, outside the five surfaces | C | **fix**: Closed 2026-08-23 (PR #283, squash-merged as c16501b). Four rows added, including one to this audit page, plus the standing-value section the issue held open. |
+| ~~#281~~ | this re-sweep, and the standing obligation that the audit is a gate rather than a ceremony | no attributed enumerated change — the audit's own obligation issue, the same shape #86 had: recording a sweep is not touching a surface | C | **fix**: Closed by this merge. What it asked for is the sweep this manifest is: the snapshot replaced, every issue opened or closed since the last one classified, and the resolved accounting enumerated by a closed-issue query rather than recalled. |
+| ~~#292~~ | spike/macos-oracle/ is not registered in .gitattributes, and the rule has been missed twice | no attributed enumerated change — repository metadata, outside the five surfaces | C | **fix**: Closed 2026-08-25. Two misses out of two closures is the shape of a rule that needs a check rather than more emphasis; the issue records deciding not to add one as a legitimate answer with a sunset note. |
+| ~~#295~~ | the synopsis check covers two directions of three | no attributed enumerated change — acceptance coverage of the parser-versus-usage pair; no frozen surface | C | **fix**: Closed 2026-08-25. The unchecked direction is the one that actually drifted before #273. |
+| ~~#296~~ | sideeye explore --help is a SETUP ERROR: help is answered before the mode word | measured: sc-10 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | C | **fix**: Closed 2026-08-25. The second movement of the exit-code surface's behavioural half in this window, and equally invisible to an enumerated diff. |
+| ~~#305~~ | a fix that changes the operation sequence orphans its own case | no attributed enumerated change — surface 4 promises exactly this refusal (case_no_longer_applies when the code changed underneath), so the promise is kept, not moved; what the issue questions is a criterion's bar | C | **fix**: Closed 2026-08-25 (PR #319). Structural, and stated without overreaching: a case pins a crash point inside a recorded sequence, so any fix that changes that sequence orphans it. How common such fixes are is explicitly not claimed — n is two. |
+| ~~#306~~ | the himalaya guard states a premise the upstream fix falsified, and it is committed twice | no attributed enumerated change — a committed checker's message text, outside the five surfaces | B | **fix**: Closed 2026-08-25. Found by scanning the class across all 18 committed cohort checkers: 18 hits in 6 files, two falsified, eight measured still true, one unmeasured and named as such. |
+| ~~#320~~ | the report-schema surface has no additive rule: whether a new field is breaking is a reading | measured: sc-11 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | C | **fix**: Closed 2026-08-26 (PR #334). This is the row that makes the yardstick's motion visible: the rule most of this sweep's readings lean on was written INSIDE the window being audited, and did not exist when the snapshot being replaced was taken. |
+| ~~#324~~ | readTrace is the other uncapped read, and capping it naively would relabel the failure | measured: sc-03 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | B | **fix**: Closed 2026-08-26 (PR #334). The issue whose body names neither unknown_reason nor the closed set while its resolution added trace_too_large to that set. It is the measured reason this audit stopped deciding surfaces by reading issues. |
+| ~~#326~~ | the MCP tool result relays target-controlled report text into the agent's context | no attributed enumerated change — marking the target-derived region changed the text block's content, not the frozen tool names, input schemas or isError rule | D | **fix**: Closed 2026-08-26. Escaping already prevented breaking the transport; what passed through untouched was the MEANING. The salience half became #336 and the shrink-the-channel half #337. |
+| ~~#327~~ | hold the destructive root by descriptor | no attributed enumerated change — an internal change to how the destructive walk addresses the root; no frozen surface | D | **fix**: Closed 2026-08-26. Under #266's threat model the swap window was not a one-shot race: restore runs once per world, so the attacker owns the retry count. |
+| ~~#329~~ | should the naming root be subject to the depth rule? | no attributed enumerated change — the startup vet's predicate; no frozen surface | D | **fix**: Closed 2026-08-27. The depth rule refused every single-component root, which is the ordinary shape of a container mount the README recommends. Resolved by vetting distance from danger rather than depth. |
+| ~~#330~~ | a post-recording cap breach reports exit 3 though exploration began | measured: sc-04 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | B | **fix**: Closed 2026-08-26. Exit 3 means the define did not run; here exploration had begun. The same shape #264 refused for wait failures, and it cost a closed-set member for the same reason. |
+| ~~#333~~ | macOS copies through fcopyfile, which v11 does not interpose | measured: sc-08 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | A | **fix**: Closed 2026-08-26. Class A on the platform where it costs most: SIP leaves no usable oracle, so a write the shim cannot see is refused by nothing. The bump to v12 is the declared-not-a-break kind. |
+| ~~#336~~ | the provenance advisory is read once at tools/list, not when a region is present | no attributed enumerated change — the advisory is emitted in the result text; the frozen tool names, input schemas and isError rule are untouched | D | **fix**: Closed 2026-08-26. #326's precision argument was correct about a different goal; salience at the moment of consumption is satisfied by one conditional. |
+| ~~#351~~ | a post-recording snapshot failure that is not the cap still says the define did not run | measured: sc-05 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | B | **fix**: Closed 2026-08-27. Owner ruling recorded in the issue: add state_unsnapshotable to the closed set before the tag. Six error values behind one member, with the message separating them. |
+| ~~#353~~ | the audit's post-snapshot section has aged past four frozen-surface issues | no attributed enumerated change — the audit's own obligation issue, the same shape as #86 and #281 | C | **fix**: Closed by this merge. Its own text says the fix is a re-sweep rather than an edit, and it was right about more than it knew: the window held five closed-set additions rather than the four issues it named, and two of those five were counted by nobody until this sweep measured the enum. |
+| ~~#358~~ | the predicate that deletes and the one that names read outward differently | no attributed enumerated change — an internal predicate alignment; no frozen surface | D | **fix**: Closed 2026-08-27 (main 4655363). Landed while this sweep was being measured, which is why this manifest sits on top of it. |
+<!-- END generated: freeze-audit resolved rows -->
 
 ## What remains before the tag
 
@@ -225,32 +495,72 @@ same way the snapshot's own trust is.
    with #27's measurement; #165, its duplicate) with #159's held call
    resolved alongside, resolved rows struck, gate re-run green
    with the strike separation seen red once.
+4. ~~Re-run the sweep again~~ — done 2026-08-27, this sweep: snapshot
+   replaced (55 issues, gate path and declaration pin moved in the same
+   commit), thirty-eight issues filed and resolved inside the window
+   accounted by a closed-issue query, seventeen historical rows migrated into
+   the manifest, and the five surfaces measured rather than read for the first
+   time.
 
-Nothing on this list remains, and criterion 5 is met — #86 closed with the
-re-sweep (2026-08-18). One standing obligation is not on the list and never
-leaves it: the rule above. Whatever is filed between now and the tag gets
-swept and classified before the tag, however many times that takes; two such
-filings already exist (`#180`, `#181`, noted at the top). "Criterion 5 is
-met" is a statement about the audit that ran, not a promise that the tracker
-stopped moving.
+**Three items are on this list now, and that is new.** The previous two sweeps
+ended with it empty. Each of these is a decision the tag forecloses, because
+the `unknown_reason` closed set is excluded from surface 2's additive allowance
+and can therefore only gain a member *before* the tag:
 
-**Since 2026-08-27 the last-moment check is mechanical**:
-`sh spike/freeze-audit/check-freeze-audit.sh --live` compares the committed
-snapshot against the tracker, refuses a query that could have been truncated,
-and exits 3 on any drift — so the sweep immediately before the tag is a command
-rather than a memory. Run it **after** the final classification merge and
-require it green: a snapshot taken before that merge is stale by the merge
-itself, because closing the sweep's own issues moves the tracker. There is no
-committed tag procedure to hook this into — the ceremony lives in
-`.github/workflows/release.yml`'s header comment and runs *after* the tag is
-published — so the obligation is recorded here, on the page whose gate it is. The declaration's permanent home is
-`docs/contract-freeze.md` — the freeze survives this page's retirement at
-the tag.
+1. **`#263`** — a per-world timeout. No timeout exists anywhere today, so one
+   hung world stalls an explore forever with no diagnostic. A named refusal
+   needs a closed-set member; the issue says the naming belongs before the tag
+   even if the default stays off.
+2. **`#323`** — a tree-total cap. The per-file cap bounds one read; the tree's
+   total is unbounded, and by the issue's own measurement 60 MiB across a thousand
+   files passes every per-file check and still ends in an OOM kill with no report. Whether the refusal needs
+   a new member or can reuse one is undecided.
+3. **`#363`** — eight refusals that still exit 3 after the define has run.
+   Conditional by the issue's own wording: reusing existing members carries no
+   deadline, a new member does.
+
+Two of the three are conditional, and this page deliberately does not assume a
+branch for either — recording a member that has not landed would be exactly the
+association this audit refuses. **Criterion 5's status is the owner's call given
+this list**, recorded in `PRD.md` with its date, not adjusted here.
+
+The standing obligation is unchanged and never leaves the list: whatever is
+filed between now and the tag gets swept and classified before the tag, however
+many times that takes. "Criterion 5 is met" is a statement about the audit that
+ran, not a promise that the tracker stopped moving — and this sweep is the
+measurement of how much it moves, at eighty-three issues in nine days.
+
+**The last-moment check is mechanical, and since this sweep it is achievable**:
+`sh spike/freeze-audit/check-freeze-audit.sh --live` asks the tracker whether
+every snapshot issue still open has an active row and every one now closed has
+a resolved row, refuses a query that could have been truncated, and exits 3 on
+any drift. Run it immediately before the tag and require it green.
+
+The predicate had to change for that instruction to mean anything. The previous
+one — "the snapshot IS the tracker's open set" — went false one second after the
+snapshot it was written for was committed, because that sweep's own obligation
+issue closed with the same merge. Green was reachable for an instant and never
+again, so requiring it before the tag was requiring the impossible. Under the
+new predicate a sweep that closes its own issues and records them as resolved
+stays green, which is the state this page ships in.
+
+There is still no committed tag procedure to hook this into — the ceremony lives
+in `.github/workflows/release.yml`'s header comment and runs *after* the tag is
+published — so the obligation is recorded here, on the page whose gate it is.
+A surface can also move after a sweep without any issue changing state, which
+`--live` structurally cannot see — it asks about issues. **The offline gate now
+asks about surfaces**: it pins the `src/contract.zig` revision this sweep measured
+and reports any later movement of the closed set as drift, exit 3, after every
+other leg has passed so a stale audit never masks a malformed one. Both directions
+were seen red before shipping — the addition side against a synthetic blob
+carrying the very member a peer session's unmerged work will add, which is
+therefore the first firing this leg is expected to have. The declaration's permanent
+home is [`docs/contract-freeze.md`](contract-freeze.md) — the freeze survives
+this page's retirement at the tag.
 
 #26 and #35 resolve as "document", and their rows above *are* the record —
 no further page is owed.
 
-Also retired by this audit's sweep: `src/main.zig`'s preflight refusal still
-promised a machine-readable form "arriving with issue #84" — a future that
-already happened without it. The text now states the standing constraint
-instead of a stale promise (this PR).
+Also retired by the 2026-08-18 sweep: `src/main.zig`'s preflight refusal
+promised a machine-readable form "arriving with issue #84" — a future that had
+already happened without it. The text states the standing constraint instead.
