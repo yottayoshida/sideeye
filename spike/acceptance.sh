@@ -2062,6 +2062,60 @@ else
 fi
 rm -rf /tmp/acc-cap-late
 
+echo "=========== check 2fe: a snapshot failure that is NOT the cap also stops claiming setup (#351) ==========="
+# #330 gave the cap an honest verdict at the post-recording sites and left the other six
+# SnapshotError values on exit 3. TooDeep is the reachable one: the walk refuses at
+# max_depth = 32 with a strict >, and a target makes directories during its own
+# operation. Both legs also assert the DETAIL, not only the verdict — before #351 the
+# message was the call site's `what` and nothing else, so the text assertion is what
+# makes each of these red on the commit before this one. Asserting the exit code alone
+# would have made the initial leg green from birth, which checks nothing.
+#
+# The depth and the "32 levels" wording both pin engine.max_depth's VALUE, deliberately:
+# changing the constant reddens these loudly rather than letting the message drift away
+# from what the walk does. 40 is comfortably past it either way.
+DEEP=$(python3 -c "print('/'.join('d%d' % i for i in range(40)))")
+
+rm -rf /tmp/acc-deep-late && mkdir -p /tmp/acc-deep-late/state
+o=$("$SIDEEYE" explore --state /tmp/acc-deep-late/state \
+    --operation "/bin/mkdir -p /tmp/acc-deep-late/state/$DEEP" \
+    --shim "$SHIM" --work /tmp/acc-deep-late/work --oracle /usr/bin/strace \
+    --json /tmp/acc-deep-late/r.json 2>&1)
+rc=$?
+if [ "$rc" = "2" ] \
+    && echo "$o" | grep -q "state_unsnapshotable" \
+    && echo "$o" | grep -q "nested deeper than the 32 levels" \
+    && echo "$o" | grep -q "final state" \
+    && grep -q '"unknown_reason": "state_unsnapshotable"' /tmp/acc-deep-late/r.json; then
+    echo "ok   a non-cap snapshot failure past the recording run is UNKNOWN state_unsnapshotable, naming the limit"
+else
+    echo "FAIL late non-cap snapshot: exit $rc (wanted 2 + state_unsnapshotable + the depth limit)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-deep-late
+
+# Planted from the shell, the way 2fc plants its oversized file — routing it through
+# --setup would add a second way to fail (setup exiting non-zero) that this leg would
+# then have to tell apart from the one it is about. No --setup and no --oracle here for
+# the same reason: the plant alone reaches the initial snapshot, which runs before the
+# oracle's executability check, so both would only add ways to fail that are not this.
+rm -rf /tmp/acc-deep-init && mkdir -p "/tmp/acc-deep-init/state/$DEEP"
+o=$("$SIDEEYE" explore --state /tmp/acc-deep-init/state \
+    --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-deep-init/work 2>&1)
+rc=$?
+if [ "$rc" = "3" ] \
+    && echo "$o" | grep -q "nested deeper than the 32 levels" \
+    && echo "$o" | grep -q "initial state"; then
+    echo "ok   the same failure before the recording run stays a SETUP ERROR, and still names the limit"
+else
+    echo "FAIL initial non-cap snapshot: exit $rc (wanted 3 + the depth limit, naming the initial state)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-deep-init
+
 echo "=========== check 2vw: the vectored positional writes are counted (#256) ==========="
 # The oracle has classified pwritev since v0.1; the shim never exported it, so a
 # target writing this way was seen by one observer and not the other — measured

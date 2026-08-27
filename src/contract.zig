@@ -368,6 +368,31 @@ pub const UnknownReason = enum {
     /// refusal's message forms applies, it applies on both sides of that split — so what
     /// differs between the two exits is the verdict alone, never the wording.
     state_file_too_large,
+    /// The state tree could not be snapshotted at all, at a snapshot taken at or past the
+    /// recording run (#351). The sibling of `state_file_too_large`: that one names a file,
+    /// its size and a limit the operator can act on, this one covers the walk's other
+    /// reported failures — every one except `OutOfMemory`, which stays SETUP_ERROR (see
+    /// below). Kept apart from the cap for the reason `trace_too_large` and
+    /// `trace_truncated` are — collapsing them would lose which happened.
+    ///
+    /// **One member, five kinds of cause**, which the message separates because the closed
+    /// set does not: a tree deeper than the walk descends, or a path whose whole spelling
+    /// reaches the limit the snapshot can hold (the operator's tree); a file or link that
+    /// could not be read, or an entry that could not be classified as file, directory or
+    /// symlink (the environment); and an entry list that came out unsorted or duplicated —
+    /// that last one is a defect in sideeye, not in the state tree, and its message says
+    /// so rather than sending the operator to inspect their files.
+    ///
+    /// **`OutOfMemory` is deliberately NOT here**: `spawnFailure` states the rule that
+    /// allocation failures are environment problems in either phase, and a snapshot that
+    /// exits 2 for OOM while the `classify` on that same snapshot exits 3 would put the
+    /// seam one statement wide. It stays SETUP_ERROR.
+    ///
+    /// **Not every unreadable tree reaches this.** The walk skips a directory it cannot
+    /// open (`engine.zig`'s `opendir … orelse return`), so a tree that is unreadable that
+    /// way snapshots as if the directory were empty. This member covers the failures the
+    /// walk reports, not every failure it could in principle notice.
+    state_unsnapshotable,
     /// The trace ended mid-record. Everything after that point is unknown, including
     /// how many operations there were.
     trace_truncated,
