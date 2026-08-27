@@ -8,7 +8,7 @@ The engine's one genuinely destructive act is emptying the state directory, and 
 once per explored world — hundreds of times in a single run. Three defences stand in front
 of it, and they were written at different times:
 
-- **`assertSafeRoot`** (a depth rule plus two denylists, read inwards) refuses a root that *names* a place
+- **`assertSafeRoot`** (a depth rule plus two denylists, read inwards — and outwards as well since #358) refuses a root that *names* a place
   nothing sacrificial belongs in. Lexical only.
 - **`assertRootResolvesToItself`** (#267) re-resolves the root immediately before the delete
   and requires it to resolve to itself. Its own doc says it narrows the swap window to the

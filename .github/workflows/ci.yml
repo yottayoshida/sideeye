@@ -59,6 +59,31 @@ jobs:
           test -x zig-out/bin/sideeye-testtracecap-world
           test "$sha_before" = "$sha_after"
 
+      # The ancestor probe (#358) needs its own invocation — folding it into the step
+      # above would leave the new option unexercised — and asserts a property rather than
+      # a difference. Both options keep their shipped value as a separate literal in
+      # build.zig, so neither flag's default can reach a released binary; what a sha
+      # comparison cannot see is an edit to that literal, which lands in both arms and
+      # leaves them matching. Grepping the shipped artifact does see it. (Measured both
+      # ways: flipping the flag's default leaves the shipped binary clean; editing the
+      # literal puts the entry in it.)
+      #
+      # `grep -a` is belt and braces, not a fix for a measured failure: GNU grep and BSD
+      # grep both exit 0 on a binary match, so plain `-q` would work on the runner. It is
+      # here because some grep replacements (ugrep with `-I`, for one) skip binaries and
+      # exit 1 on a match, which would make the shipped-side assertion pass for the wrong
+      # reason. An earlier version of this comment claimed the plain form fails on the
+      # runner and called that measured; the measurement had been taken through such a
+      # replacement, not through the grep CI runs.
+      - name: Build the ancestor probe, synthetic entry absent from the shipped engine (#358)
+        run: |
+          zig build
+          ! grep -qa se-anc-probe zig-out/bin/sideeye
+          zig build -Dtest-ancestor-probe
+          test -x zig-out/bin/sideeye-ancprobe
+          grep -qa se-anc-probe zig-out/bin/sideeye-ancprobe
+          ! grep -qa se-anc-probe zig-out/bin/sideeye
+
       # The gap #256 was: three syscalls the oracle classified and the shim never
       # exported, sitting there since v0.1 because nothing compared the two lists.
       # The check runs here rather than inside a cohort's preflight — the existing
