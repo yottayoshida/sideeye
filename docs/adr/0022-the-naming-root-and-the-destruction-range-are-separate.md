@@ -134,10 +134,13 @@ operational precondition — the root is the operator's own workspace and not
 attacker-writable — not on a claim that less is now reachable.
 
 **What is closed here is not closed on the destructive side.** `assertSafeRoot`
-is unchanged, so `sideeye explore --state /var` still passes the destructive vet
-and empties `/private/var` once per explored world. Confining one PR to the
-naming consumer is a scope decision; it is recorded here because ADR 0024 exists
-to correct exactly the inversion of describing two neighbouring defences as if
+is unchanged, so `sideeye --state /var` still passes the destructive vet.
+*(Superseded by #358, which closed it. This paragraph also said the root is
+"emptied once per explored world"; implementing #358 measured that wrong —
+`restore` puts the initial snapshot back, leaving what was already there, and
+`freshDir` behind replay's `--fresh-state` is what empties.)* Confining one PR
+to the naming consumer is a scope decision; it is recorded here because ADR 0024
+exists to correct exactly the inversion of describing two neighbouring defences as if
 one covered the other. Filed as #358.
 
 **And what the naming vet admits is not confined to naming.** With

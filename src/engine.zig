@@ -10,6 +10,8 @@
 const std = @import("std");
 const contract = @import("contract");
 const posix = @import("posix.zig");
+/// Read for the ancestor-probe entry below (#358); zero effect on a shipped build.
+const build_options = @import("engine_build_options");
 
 const Allocator = std.mem.Allocator;
 
@@ -370,12 +372,14 @@ pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeR
 /// range (`mcp.zig`'s fallback), so what that vet admits is what a replayed case may
 /// then empty, one level down.
 ///
-/// That consumer now depends on the list **twice over** (#329). It reads the entries
-/// outwards as well as inwards, so deleting the list would not merely stop refusing roots
-/// inside these trees — it would also stop refusing their ancestors, silently, since no
-/// separate ancestor rule exists to survive. It would additionally remove one of the three
-/// checks that currently refuse a root of "/", which is the fail-open case. None of that
-/// changes the conditions below; it changes how much goes with the list when they are met.
+/// **Both consumers now depend on the list twice over** (#329 for the naming vet, #358 for
+/// the destructive one). The entries are read outwards as well as inwards, so deleting the
+/// list would not merely stop refusing roots inside these trees — it would also stop
+/// refusing their ancestors, silently, since no separate ancestor rule exists to survive.
+/// On the destructive side that means a root one level above a system tree becomes
+/// something the engine will empty. It would additionally remove one of the three checks
+/// that currently refuse a root of "/", which is the fail-open case. None of that changes
+/// the conditions below; it changes how much goes with the list when they are met.
 ///
 /// So: delete this list when **neither consumer can be handed a mistyped location** —
 /// (1) the destructive root stops being a hand-written value. It arrives from exactly two
@@ -390,7 +394,9 @@ pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeR
 /// its arrival is a reason to *list* those trees, not to drop the list), and measuring zero
 /// accidents in the corpus (a guard whose job is to make the accident impossible cannot be
 /// retired by the accident not happening — that measurement cannot tell the two apart).
-const denied_trees = [_][]const u8{
+const denied_trees = shipped_denied_trees ++ probe_denied_trees;
+
+const shipped_denied_trees = [_][]const u8{
     "/usr",  "/etc",   "/bin", "/sbin", "/lib", "/lib64",
     "/boot", "/dev",   "/proc", "/sys",
     "/var/lib", "/var/db", "/var/spool",
@@ -402,6 +408,24 @@ const denied_trees = [_][]const u8{
     "/private/etc", "/private/var/lib", "/private/var/db", "/private/var/spool",
     "/private/var/run",
 };
+
+/// Empty in every shipped build; one synthetic entry under `-Dtest-ancestor-probe` (#358).
+///
+/// The outward read refuses a root that is an ancestor of a denied entry. The only such
+/// root the destructive predicate did not already refuse by depth is `/private/var` —
+/// root-owned and macOS-only, so acceptance cannot plant a sentinel in it and watch the
+/// sentinel die. This entry manufactures the same shape somewhere acceptance can write:
+/// its parent `/tmp/se-anc-probe` is an ancestor with two components.
+///
+/// **Both spellings, because the root arrives resolved.** On macOS `/tmp/se-anc-probe`
+/// resolves to `/private/tmp/se-anc-probe`, and a list written only in the pre-resolution
+/// spelling is silently inert there — the failure the `/private/*` entries above exist
+/// for. The leg itself runs on Linux only; the list does not depend on that.
+const probe_denied_trees: [if (build_options.ancestor_probe) 2 else 0][]const u8 =
+    if (build_options.ancestor_probe)
+        .{ "/tmp/se-anc-probe/x", "/private/tmp/se-anc-probe/x" }
+    else
+        .{};
 
 /// Scratch roots that are legitimate parents but never legitimate targets.
 ///
@@ -435,17 +459,25 @@ pub fn assertSafeRoot(root: []const u8) RestoreError!void {
     }
     // "/", "/tmp", "/home" and friends are rejected; "/tmp/x/state" is accepted.
     if (slashes < 2) return error.UnsafeRoot;
-    try assertRootNotDenied(root);
+    try assertRootNotDeniedOrAncestor(root);
 }
 
-/// The checks both roots share: shape, and the two denylists read inwards.
+/// The checks both roots share: shape, and the two denylists read **in both directions**.
 ///
 /// Split out for `assertSafeNamingRoot`, which needs all of these and not the depth
 /// rule above. **Both clauses of the first test stay here**: the naming side happens to
 /// guarantee a non-empty root before calling, the destructive side does not, and
 /// dropping `root.len == 0` on the strength of the caller that does not need it turns
 /// `assertSafeRoot("")` from a refusal into an out-of-bounds index.
-fn assertRootNotDenied(root: []const u8) RestoreError!void {
+///
+/// **The outward read lives here rather than in one predicate (#358).** #329 added it to
+/// the naming side alone, because removing the depth rule there left ancestors uncovered.
+/// The destructive side kept its depth rule — which catches `/private` and `/var` but not
+/// `/private/var`, the one ancestor deep enough to pass it. So the predicate that only
+/// names files refused a location the predicate that empties directories accepted. Put in
+/// the shared helper, the asymmetry is not a thing anyone has to remember: neither
+/// predicate can be given the read without the other getting it.
+fn assertRootNotDeniedOrAncestor(root: []const u8) RestoreError!void {
     if (root.len == 0 or root[0] != '/') return error.UnsafeRoot;
     if (std.mem.endsWith(u8, root, "/")) return error.UnsafeRoot;
     for (denied_exact) |d| {
@@ -455,6 +487,16 @@ fn assertRootNotDenied(root: []const u8) RestoreError!void {
     // naming "/var/lib", and a component-boundary test is already written here.
     for (denied_trees) |d| {
         if (contract.isInsideDir(root, d)) return error.UnsafeRoot;
+    }
+    // Outward: is the root a parent of somewhere denied? One loop over both lists, not
+    // one per list — written as two, each half's marginal covered set is empty **for the
+    // shipped lists**, because there every entry has a sibling in the other list under the
+    // same parent, so deleting either loop alone left every test green (measured during
+    // #329). That symmetry is a property of those lists and not of the code: the
+    // ancestor-probe build adds an entry with no `denied_exact` sibling. A single loop
+    // cannot be half deleted either way.
+    for (denied_exact ++ denied_trees) |d| {
+        if (contract.isInsideDir(d, root)) return error.UnsafeRoot;
     }
 }
 
@@ -478,9 +520,10 @@ fn assertRootNotDenied(root: []const u8) RestoreError!void {
 /// operator's own workspace, not attacker-writable — and not on any claim that the
 /// boundary got narrower.
 ///
-/// The destructive predicate keeps the depth rule and does **not** get the outward read:
-/// `sideeye explore --state /var` still passes `assertSafeRoot`. Closing the ancestor hole
-/// here and not there is a scope decision recorded rather than implied (filed).
+/// The destructive predicate keeps the depth rule and, **since #358, has the outward read
+/// too** — it lives in the shared helper now, so neither predicate can be given it alone.
+/// This paragraph used to say `--state /var` still passed `assertSafeRoot`, which was the
+/// gap #358 closed.
 ///
 /// **What this admits is not confined to naming.** With `SIDEEYE_MCP_STATE_ROOT` unset the
 /// server hands the root to the engine as the destruction range, so every depth-1 path
@@ -497,7 +540,7 @@ fn assertRootNotDenied(root: []const u8) RestoreError!void {
 pub fn assertSafeNamingRoot(root: []const u8) RestoreError!void {
     // "/" — and "" only incidentally, which is worth stating precisely because the first
     // draft of this comment got it wrong. `""` never reaches the outward read at all:
-    // `assertRootNotDenied` returns at its `root.len == 0` clause, and `endsWith("", "/")`
+    // `assertRootNotDeniedOrAncestor` returns at its `root.len == 0` clause, and `endsWith("", "/")`
     // is false. `""` is carried by that clause, as the note on the helper says. What this
     // line covers on top of the checks below is therefore **"/" alone, and even that is
     // already covered twice** — the trailing-slash test catches it, and so does the
@@ -511,17 +554,9 @@ pub fn assertSafeNamingRoot(root: []const u8) RestoreError!void {
     // weaken the naming boundary, it removes it (`contract.isInsideDir(x, "/")` is true
     // for every absolute path — the input `mcp.zig`'s startup vet exists to eliminate).
     if (root.len <= 1) return error.UnsafeRoot;
-    try assertRootNotDenied(root);
-    // One loop over both lists, not one per list. Written as two, each half's marginal
-    // covered set is empty — every entry in either list has a sibling in the other under
-    // the same parent, so the proper ancestors of `denied_exact` and of `denied_trees` are
-    // the same three paths, and deleting either loop alone leaves every test green
-    // (measured in review; only deleting both is caught). A single loop cannot be half
-    // deleted, which is the same reason this file's other guards are written the way they
-    // are: prefer the shape a mutation cannot survive over the shape a comment explains.
-    for (denied_exact ++ denied_trees) |d| {
-        if (contract.isInsideDir(d, root)) return error.UnsafeRoot;
-    }
+    // The outward read moved into the shared helper in #358, so it is no longer written
+    // here. Both predicates now get it from one place.
+    try assertRootNotDeniedOrAncestor(root);
 }
 
 /// Confirms the root still resolves to itself, immediately before it is emptied.
@@ -1681,11 +1716,53 @@ test "assertSafeNamingRoot drops the depth rule and refuses ancestors instead (#
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/Users"));
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/var/lib/myapp"));
 
-    // The two predicates disagree, and each direction is the point of the split: the
-    // destructive side still refuses a depth-1 root, and it still accepts an ancestor
-    // of a denied tree. The second line is the hole this PR does not close (filed).
+    // The predicates still differ in one direction, which is the point of the split: the
+    // destructive side refuses a depth-1 root that the naming side accepts. They no
+    // longer differ in the other — #358 gave the destructive side the outward read, so
+    // the line below used to read `try assertSafeRoot("/private/var")` and was the hole
+    // being tracked.
     try t.expectError(error.UnsafeRoot, assertSafeRoot("/work"));
-    try assertSafeRoot("/private/var");
+    try t.expectError(error.UnsafeRoot, assertSafeRoot("/private/var"));
+}
+
+test "assertSafeRoot refuses the ancestor a typed /var resolves to (#358)" {
+    const t = std.testing;
+
+    // The composition, not the spelling. Every call site hands over the realpath'd root,
+    // so on macOS a typed `/var` arrives here as `/private/var` — deep enough for the
+    // depth rule, and an ancestor of `/private/var/lib`. A lexical assertion cannot carry
+    // this claim: it is about what the resolver produces. #329's note in mcp-acceptance
+    // describes the same shape one surface over — the naming vet's composition through the
+    // MCP startup path — and that gap is still open; this test borrows its form, not its
+    // coverage.
+    //
+    // On Linux `realpath("/var")` is `/var`, one component, refused by the depth rule
+    // before and after this change — so a green here proves nothing on that platform and
+    // is not counted. The assertion below is the macOS job's.
+    var buf: [contract.max_path]u8 = undefined;
+    const resolved_z = posix.realpath("/var", &buf) orelse {
+        // A failure, not a skip: a host without /var would otherwise make this vacuous
+        // and nobody would learn that the check stopped looking.
+        return error.TestUnexpectedResult;
+    };
+    const resolved = std.mem.span(resolved_z);
+    try t.expectError(error.UnsafeRoot, assertSafeRoot(resolved));
+
+    // The refusal above is not enough on its own: on Linux the resolver returns `/var`,
+    // which the depth rule refuses, so a green there says nothing about the outward read.
+    // Count the components and assert which rule is doing the work. Two or more means the
+    // depth rule passed it and something else refused it — on this repository's lists,
+    // only the outward read can. One component means the platform never composes the
+    // shape this test is about, and the assertion above is the depth rule's.
+    var slashes: usize = 0;
+    for (resolved) |ch| {
+        if (ch == '/') slashes += 1;
+    }
+    if (slashes >= 2) {
+        // The composition macOS produces: /var -> /private/var, deep enough to pass the
+        // depth rule and an ancestor of /private/var/lib. Before #358 this was accepted.
+        try t.expect(std.mem.eql(u8, resolved, "/private/var"));
+    }
 }
 
 test "assertRootResolvesToItself refuses a root swapped for a symlink after resolution" {

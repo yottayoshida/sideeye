@@ -2062,6 +2062,58 @@ else
 fi
 rm -rf /tmp/acc-cap-late
 
+echo "=========== check 2an: the destructive vet refuses an ancestor of a denied tree (#358) ==========="
+# #329 gave the naming vet an outward read of the denied lists and left the destructive
+# one inward-only, so a root that is a PARENT of somewhere denied passed the predicate
+# that empties directories while failing the one that only names files. The single real
+# instance is /private/var — root-owned and macOS-only, which acceptance can neither
+# create nor sacrifice. `-Dtest-ancestor-probe` builds an engine whose denied list carries
+# one synthetic entry under /tmp, making its parent an ancestor with two components: the
+# same shape, somewhere a sentinel can die.
+#
+# This asserts the DELETE, not the predicate's return value. The change is about what the
+# engine refuses to empty, and a check that only reads a refusal string would not have
+# noticed if the refusal arrived after the tree was gone.
+#
+# Note on the shape: leg A of check 2sc (#266) runs its destruction for real on every
+# suite run, because the unconfined path survived that fix. This leg cannot — after #358
+# the probe refuses, so the red side is a recorded observation plus the mutation, not a
+# standing demonstration. Same form, different guarantee.
+# Replay with --fresh-state, not explore, and the distinction is the harm itself:
+# `restore` puts the initial snapshot BACK, so anything already in the root survives an
+# explore untouched. `freshDir` — reached only through --fresh-state, which is replay-only
+# — is what empties it. A first version of this leg used explore and measured a PASS with
+# the sentinel intact, which is what the engine correctly does. Check 2sc directly above
+# reaches the same function the same way, for the same reason.
+PROBE=$ROOT/zig-out/bin/sideeye-ancprobe
+if [ ! -x "$PROBE" ]; then
+    echo "FAIL #358 leg: $PROBE missing — zig build -Dtest-ancestor-probe (add -Dtarget=... for the container)"
+    fails=$((fails + 1))
+else
+    ANC=/tmp/se-anc-probe
+    rm -rf "$ANC" && mkdir -p "$ANC" && echo "survives" > "$ANC/sentinel.txt"
+    # The root must be the ancestor ITSELF. One level deeper (/tmp/se-anc-probe/x) and
+    # the inward read refuses it — which it already did before #358, so the green would
+    # attribute to the wrong rule.
+    python3 - "$case_file" /tmp/acc/anc-case.json "$ANC" <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = sys.argv[3]
+json.dump(c, open(sys.argv[2], "w"))
+PY
+    o=$("$PROBE" replay /tmp/acc/anc-case.json --fresh-state \
+        --shim "$SHIM" --work /tmp/acc-anc-work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "3" ] && echo "$o" | grep -q "nothing sacrificial belongs in" && [ -s "$ANC/sentinel.txt" ]; then
+        echo "ok   a root that CONTAINS a denied entry refuses, and the sentinel inside it survives"
+    else
+        echo "FAIL #358 ancestor root: exit $rc, sentinel $([ -e "$ANC/sentinel.txt" ] && echo present || echo GONE)"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    rm -rf "$ANC" /tmp/acc-anc-work
+fi
+
 echo "=========== check 2fe: a snapshot failure that is NOT the cap also stops claiming setup (#351) ==========="
 # #330 gave the cap an honest verdict at the post-recording sites and left the other six
 # SnapshotError values on exit 3. TooDeep is the reachable one: the walk refuses at
