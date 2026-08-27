@@ -1,0 +1,28 @@
+{
+  "body_verbatim": "## Measured\n\n`readTrace` (`src/engine.zig`) reads the whole trace file with no cap \u2014 after PR #322 it passes an explicit `maxInt(usize)` to the now-capped `readWhole`, with a comment saying why: every failure of that read collapses into an empty `TraceInfo`, which the caller reports as `no_shim_marker` (\"the shim never initialised\"). A cap added naively would relabel an oversized trace as a shim that never ran \u2014 a refusal with the wrong reason, worse than none.\n\nThe trace's size is target-controlled (it grows with the operation count), so the unbounded read is real; #265's text called the snapshot path \"the one unbounded read in the engine\", and this measurement says there were two.\n\n## Proposal\n\nCap the trace read with its own honest outcome \u2014 `trace_truncated` already exists and is closer to the truth than `no_shim_marker`, but \"truncated by the reader\" and \"truncated by the writer\" are different facts and the report should not conflate them. Needs a small plumbing change so the cap failure is distinguishable from an unreadable file before any refusal is worded.\n",
+  "captured_at_utc": "2026-08-27T05:38:21Z",
+  "command": "gh issue view 324 --json number,title,body,createdAt,closedAt,state",
+  "issue": {
+    "closedAt": "2026-08-26T02:35:10Z",
+    "createdAt": "2026-08-25T12:54:18Z",
+    "number": 324,
+    "state": "CLOSED",
+    "title": "readTrace is the other uncapped read, and capping it naively would relabel the failure as no_shim_marker"
+  },
+  "note": "Both counts are recorded because a phrase that wraps across a line break is invisible to a line-oriented search \u2014 a mistake made twice during this sweep, in both directions. The change this issue's resolution caused is sc-03 in surface-changes.tsv.",
+  "purpose": "Committed evidence for the negative claim ADR 0028 rests on: #324's body names neither the report schema's closed set nor any of its members, while the resolution attributed to it added trace_too_large to that set. The claim is a statement about an issue body, and the sweep's raw capture deliberately excludes bodies, so without this file the counterexample could not be checked by a reader (review P1-9).",
+  "term_counts_raw": {
+    "UnknownReason": 0,
+    "closed set": 0,
+    "closed-set": 0,
+    "trace_too_large": 0,
+    "unknown_reason": 0
+  },
+  "term_counts_whitespace_normalised": {
+    "UnknownReason": 0,
+    "closed set": 0,
+    "closed-set": 0,
+    "trace_too_large": 0,
+    "unknown_reason": 0
+  }
+}

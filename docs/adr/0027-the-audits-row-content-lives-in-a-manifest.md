@@ -1,6 +1,6 @@
 # 0027 — The audit's row content lives in a manifest, and the page renders it
 
-Status: Proposed
+Status: Accepted (implementing PR merged as `9e7a4d5`, 2026-08-27; the manifest carried its first migration — the thirteen rows of the 2026-08-18 snapshot — in that PR, and its first full sweep of 113 rows the same day, which is where the schema's real gaps surfaced: a single-valued surface column could not hold a many-to-many change record, and the disposition enum had been written from thirteen active rows and did not fit seventeen historical resolved ones)
 
 ## Context
 
