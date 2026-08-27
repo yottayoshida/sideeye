@@ -307,7 +307,10 @@ note and the closing verdict of "none triggered" — is the review of
 section sits after it rather than inside it, so that the historical
 conclusion stays legible as a conclusion and this one does not overwrite it.
 What follows is what has been measured since, row by row, and which rows it
-lands on.
+lands on. *(Superseded 2026-08-27 — both rows were adjudicated in the section
+at the end of this page: neither is triggered and criterion 3 stays met. This
+paragraph and everything under it are the state as it stood on 2026-08-26,
+left as written.)*
 
 What has been measured since: **twelve targets across three selection
 cohorts** (#183 2026-08-21, #209 2026-08-22, cohort 4 2026-08-23), each
@@ -447,3 +450,160 @@ is why it is not chosen here.
   open.
 - **#240 stays open.** It asked for a re-scored review; what this delivers
   is the material for one.
+
+## Adjudication (2026-08-27)
+
+The two rows the section above put on a trigger side were adjudicated by the
+project owner on 2026-08-27, under #240. **Neither is triggered, and v1.0
+entry criterion 3 stays met.** **No dated text above this line is overwritten.** The 2026-08-16 review, its
+closing verdict, and the 2026-08-26 re-review with its `pending` cells are all
+left as the dated records they are; the one edit above is a superseded note
+appended to the 2026-08-26 section's opening paragraph, which adds a pointer
+and removes nothing. This section is what supersedes them.
+
+Both rulings are recorded the way the criterion-1 adjudication of #305 was —
+the reading taken, the readings rejected and why, and what the chosen reading
+gives up. Row 6's ruling is a definition that binds future cohorts, so its
+normative wording lives in `DESIGN.md` §18, where criterion 3's conditions
+are defined; this page carries the reasoning.
+
+### Row 4 — the reading taken
+
+**Borg's case is a second example of a class this repository already carries,
+not a new one, and the row is not triggered.** The class is "tools with
+non-durable scratch files" (`docs/target-classes.md`), recorded from git's
+`COMMIT_EDITMSG` as precision limit #35, with the recipe already written:
+"A scratch file is not a counterexample — and only a checker knows which is
+which" (`docs/checker-cookbook.md`). Borg's own ruling had already classified
+it that way — "the multi-write shape, #35's class, tinted further by our own
+apparatus" — which the re-review above did not notice.
+
+What Borg adds to the class is one property it did not have before: **the
+scratch path is one the target creates, relocated into the judged root by the
+measurement setup.** Borg still chooses and creates
+`ambient/.cache/borg/<repo-id>/chunks`; what the define's r2 changed is where
+`BORG_BASE_DIR` points, which brought that path inside the state root the
+engine rolls back. The class now records that a scratch file can enter the
+judged set that way, and not only by sitting there from the start.
+
+Three things carry the not-triggered reading, and the order matters because
+only the third is about this project's discipline:
+
+1. **The violating file is outside the durable repository state Borg's
+   transactional claim covers.** It is a client cache, not repository state,
+   and deletion is Borg's own documented handling for it — the cache is not
+   uncovered by every Borg contract, it is uncovered by the one the verdict
+   was judged against. That is a property of the product under test, not of
+   how it was measured.
+2. **A checker carrying that transactional claim ran in all 119 worlds and
+   held in all of them** — stale-lock removal exactly when a lock existed (14
+   worlds, all succeeded), `borg check`, byte-identical conservation of the
+   pre-existing `base` archive, old-or-new listing, new-side content. What
+   covers this case is a check, not a judgement made afterwards.
+3. **The claim rule then kept it out of the numerator** — recorded as a
+   precision-limit observation, no criterion-1 candidate, nothing reported.
+
+**What support 2 does not include, said here rather than left to a reader.**
+The checker also attempts the documented deletion-and-rebuild before its legs
+(`spike/cohort2/borg-r3/ops/check.sh`), and an earlier draft of this section
+offered that as the support. It does not carry the weight: the `rm -rf` is
+unchecked, and the committed drill transcript records it failing on
+permissions in a scratch run while execution continued
+(`spike/cohort2/borg-r3/checker-drills.txt`). The transcript proves the
+checker ran 119 times and that its legs held; it does not prove that leg's
+deletion succeeded each time. The support above is therefore the contract
+legs, which the transcript does measure.
+
+**Rejected: that this is the same class as buku and bogofilter-sqlite.** That
+class is a journaled store whose mid-transaction bytes its own journal
+recovers — the strictness comes from judging the *target's* contract by file
+bytes. Here the bytes are in a path the apparatus placed inside the judged
+root. Same remedy, different cause, and folding them together would lose the
+apparatus property that is the only new thing in the record.
+
+**Rejected: that the row is triggered.** The row asks whether false positives
+or environment artifacts make the tool untrustworthy. An artifact did reach a
+verdict, and that is why this row was reopened at all — but the verdict was
+covered by a checker leg, disclosed by its own ruling, and never turned into
+a claim. Untrustworthy is what happens when an artifact reaches a *claim*.
+
+**What this reading gives up.** It accepts that a FAIL verdict can carry a
+world tinted by the measurement setup without the row moving, provided a
+checker carrying the target's own integrity claim ran and held. Two things it
+does not buy. It does not establish that the relocated file's documented
+recovery was exercised successfully — that leg is unchecked, as above — so a
+future case whose only defence is "the target documents a recovery" is not
+covered by this reading. And if a relocated path is ever judged by the
+built-in form with no checker carrying the target's claim at all, the row
+reopens.
+
+### Row 6 — the reading taken
+
+**Declared apparatus is the instrument's cost, not the target's setup, and
+the row is not triggered.** The condition asks whether setup is too heavy for
+ordinary software; clock pins, entropy pins and userspace answers to kernel
+copy primitives are what the measurement needs in order to observe anything,
+not what a user must do to their software. The binding definition, including
+what it excludes, is in `DESIGN.md` §18.
+
+**Rejected: that declared apparatus counts as setup.** Counting it turns the
+condition into a measure of this tool's instrumentation cost, which is a real
+thing worth measuring and is not what §18's condition says. Note which sense of
+the word is being excluded: Borg's cache relocation, which the row-4 ruling above
+calls "the apparatus itself relocated" after the record's own phrasing, was the
+define's r2 rather than a protocol declaration — so it is **not** declared
+apparatus under §18's definition and is **not** excluded by this ruling. It is a
+define revision, and the next rejection is what disposes of it. The definition in
+DESIGN is deliberately narrow so that the exclusion cannot be widened later:
+apparatus must be declared in the public protocol before the define ran and
+must constrain the environment, and anything touching the target's own
+installation, configuration or state is setup.
+
+**Rejected: that define-revision cost belongs to this row.** Excluding
+apparatus still leaves it — Mercurial's define took four revisions to reach a
+verdict, Borg's three on top of the apparatus — so the question does not
+disappear with the first ruling and is answered on its own: **the owner
+excludes it from this row.** Row 6 is the cost of getting ordinary software
+into a state where it can be measured at all, and its own funnel evidence is
+installation walls.
+
+**Where that cost does belong is left open, because the record does not
+support the obvious answer.** It is tempting to send it to row 2, the cost of
+declaring invariants, and an earlier draft of this section did. Borg's own
+record refuses that: r2 changed where the client state sits and what leg R0
+does, r3 added the `sendfile` workaround, and `spike/cohort2/borg-r3/proposals.md`
+says in as many words that the question bytes were unchanged. These are
+measurement and define-packaging costs, not invariant-authoring costs, so
+they are not evidence for row 2's comparison either. They are excluded from
+row 6 by adjudication and recorded here as unallocated, which is the honest
+state rather than a tidy one.
+
+**What this row's basis actually measured, since the re-review above cites
+it.** The sentence "the uniform define is three small files, and authoring
+ran minutes per target" places two measurements side by side, from two
+populations: the three-file shape is the #84 B-group's uniform define (its
+operation file is spelled `op.txt` in some targets and `op.sh` in others),
+and the minutes are the assisted cohort's 1m25s–5m02s across five targets,
+which row 2 cites as its source. The cohort arrival costs belong to neither
+population — they are define revisions, which the ruling above excludes from
+this row and leaves unallocated.
+
+**What this reading gives up.** From the outside, a user who must set up
+libfaketime and two interpreter pins before getting a verdict has done work,
+whatever it is called. This reading says that work is the instrument's and
+does not score against the target's setup weight — so if the apparatus burden
+ever becomes the reason a target cannot be reached at all, that is a fact
+about this tool which this row will not record. #257 tracks promoting a
+declared-apparatus bundle so the burden is paid once rather than per target.
+
+### Where this leaves criterion 3
+
+**All eight rows: none triggered.** The 2026-08-16 review stands as written,
+the 2026-08-26 re-review stands as the record of what three cohorts added and
+which rows it reached, and this section records the two rulings that closed
+what the re-review opened. `PRD.md` carries the criterion's status line and
+`DESIGN.md` §18 carries the definition row 6's ruling establishes.
+
+The closing rule is unchanged and still applies: none of the rows closes
+permanently, and a future measurement landing on a row's trigger side reopens
+this page again.
