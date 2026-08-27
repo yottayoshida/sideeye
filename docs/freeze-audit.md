@@ -19,7 +19,10 @@ final-state capture alone cannot see — moved to the struck rows under
 "Resolved before the tag", which the gate deliberately does not count; the
 filed-and-resolved set was enumerated by a closed-issue query over the
 inter-sweep window, not recalled. The
-table's completeness is checked against that snapshot by
+table is **generated** from `spike/freeze-audit/audit.tsv` by
+`spike/freeze-audit/render-audit.sh` (ADR 0027) — the manifest is the trust
+root and a hand edit to the table below is a check failure. Completeness,
+row shape and the render are all checked by
 `spike/freeze-audit/check-freeze-audit.sh`, **run at each sweep, not wired
 into CI** — this page retires at the v1.0 tag, and a permanent gate for a
 retiring page is a layer this repo declines; the run's output is quoted
@@ -28,7 +31,9 @@ classification row from a run-time copy of this page and requires that copy
 to fail (the copy is generated, never committed — a committed fixture rots
 silently after a re-sweep, and an absent one must not read as a passed
 falsification; both failure shapes were measured in review). The snapshot
-itself is the gate's trust root and nothing machine-checks it — commit
+itself is the gate's trust root **for the population** — which issues belong
+in the table — while `audit.tsv` is the trust root **for row content**; nothing
+machine-checks the snapshot itself — commit
 review does. The sweep was run, not recalled: the set includes issues filed
 the same day, some only minutes before the capture, and excludes #87, closed
 seventeen seconds before it.
@@ -74,30 +79,88 @@ compatibility, the MCP surface — live there verbatim, with their owner
 decisions (#94's exit-code split declined permanently among them). PRD
 criterion 5 names all five and points the same way.
 
+## What this gate guarantees
+
+Stated here because it was never stated precisely in one place. It has been
+written three ways: #86's own title says "every open issue touching a frozen
+surface gets fixed or documented before the freeze"; #353 says "no open
+frozen-surface issue at the freeze"; `PRD.md` says "none left as a documented
+hole under an intact PASS claim". The first two make touching-and-open the
+condition, and that is measurably not it.
+Three issues in the 2026-08-18 snapshot are open, carry classes, and criterion 5
+is met. `PRD.md`'s wording is the operative one — "none left as a documented hole
+under an intact PASS claim" — and the owner's ruling of 2026-08-27 makes it two
+clauses:
+
+1. **No issue whose adjudication is unexecuted.** Whether the issue is open is
+   not the question; whether its ruling has been carried out is. #39 stays open
+   as the mkstemp family's lookout post with its narrowing executed, and that is
+   why the gate passes over it.
+2. **No class-A gap left documented under an intact PASS claim.** Note that this
+   is tighter than #86's "fixed **or documented**": the class definitions below
+   settled later that class A is the one class prose cannot retire, and where the
+   two disagree the class definition is the operative one. Class A's resolutions
+   are therefore: the resolutions are fix, demote to a refusal,
+   or narrow the stated promise. Narrowing counts because it *changes the
+   promise*, not because writing counts — explaining a gap without narrowing
+   anything is exactly the "prose alone" this refuses.
+
+**What the gate checks, and what it does not.** The check holds the *form* of
+every row — the surface and class enumerations, the class-dependent disposition
+rule, one row per snapshot issue, and byte-equality between this table and a
+fresh render. It does **not** verify that an adjudication was executed: an A row
+saying `narrow` with nothing behind it passes. Both clauses above are therefore
+human-reviewed assertions carried by the manifest's rationale column, held by
+review the way the numbers on this page always have been — not machine
+guarantees. Saying otherwise would be the overclaim this page exists to catch.
+
+**Two axes, not one** (owner ruling, 2026-08-27; ADR 0027 carries the mechanism).
+`surface` names which of the five frozen surfaces a row touches, or `none`, read
+strictly against [`docs/contract-freeze.md`](contract-freeze.md). `class` is
+about PASS soundness and applies to **every** row, toucher or not. The two were
+one column until this sweep, and conflating them is why thirteen rows carried
+four different shapes for one rule — three touchers with classes, six
+non-touchers with class C, three non-touchers with none, and the amendment issue
+itself with neither.
+
+Read against the strict enumeration, **no row in the 2026-08-18 snapshot touches
+a frozen surface**: #39's subject is observation reach, which is not one of the
+five; #123's is a trace-contract bump, which surface 4 says in as many words is
+not a broken promise; #156's is CLI acceptance semantics, which surface 1 does
+not cover (it freezes the toml keys and the two command spellings). Clause 1 is
+therefore vacuous on this snapshot, and clause 2 — #39's executed narrowing — is
+what the gate actually rests on. That is a narrower and more accurate statement
+than the page carried before, not a weaker one.
+
 ## Every open issue, classified
 
-Classes for touchers, per #86's amendment: **A** — the gap can make PASS
+Classes, per #86's amendment and no longer restricted to touchers (see the invariant above): **A** — the gap can make PASS
 overclaim (prose alone cannot retire one; resolution is fix, demote to a
 refusal, or narrow the stated promise); **B** — FAIL-side noise or precision
-(fix or document); **C** — ergonomics and diagnostics (fix, or defer to 1.x
-with a note). Class-A resolutions below are the owner's adjudication
+(fix or document); **C** — ergonomics and diagnostics (fix, defer to 1.x
+with a note, or `tracked` — held open deliberately, which is what #118, #140
+and #147 do and is distinct from deferring a decision). Class-A resolutions below are the owner's adjudication
 (2026-08-17), taken with the recommendation visible before deciding.
 
-| # | what it is | touches | class | resolution |
+<!-- BEGIN generated: freeze-audit classification (render-audit.sh) -->
+_Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between the markers._
+
+| # | what it is | surface | class | resolution |
 |---|---|---|---|---|
-| #39 | libc conveniences that mutate state behind the PLT (mkstemp family) | yes — observation reach = PASS meaning | A | **narrow**: on Linux the class fails closed through the oracle (sound today). The macOS narrowing must say *this class*, not only #10's platform-binary limit: target-classes will state that on macOS libc-internal mutations are invisible with no oracle to catch them, so a macOS PASS carries only the `--allow-unverified` weaker claim the README already spells. The interpose-on-first-contact policy (PR #38) stands. **Executed 2026-08-17**: the sentence is on target-classes' Not-yet-measured section with the three measurement tiers distinguished (stdio probed on both platforms per ADR 0005, remove measured on Linux, the family itself unmeasured); the issue stays open as the family's lookout post by owner decision |
-| #62 | loop-closure stage clones the full upstream | no — apparatus weight | C | defer |
-| #63 | the agent-side seal has never been seen red | no — experiment apparatus | C | defer |
-| #64 | secondary observations lack a committed generator | no — apparatus | C | defer |
-| #65 | invariant and leg-C predicate hand-synced across spike/ | no — apparatus | C | defer |
-| #86 | this audit | — | — | the pre-tag re-sweep ran 2026-08-18 (this snapshot); every fix-adjudicated issue has landed, the declaration moved to its permanent home — closes when the re-sweep's PR merges, meeting criterion 5 |
-| #118 | assisted-discovery product thesis | no — product tracking, open by owner ruling | — | stays open |
-| #123 | the judge cannot follow a target across execve | yes — implementing it is a trace-contract event | C | defer with the recorded reading: the single-pid exec chain is already judged under contract v10 (ADR 0018); what remains — true multi-process — refuses today (fail-closed). The hold and reopen condition are on the issue (2026-08-16), and a post-1.0 implementation bumps the contract *honestly* under surface 4's refusal promise |
-| #140 | criterion 1's search half | no — process criterion | — | stays open, upstream-gated |
-| #147 | outcome-map.tsv overcounts reported-upstream rows | no — evidence-page correction | — | stays open; fix is independent of any frozen surface |
-| #156 | `--oracle` + `--allow-unverified` accepted and inert | yes — CLI acceptance semantics | C | defer with the note said out loud: freezing means the inert acceptance is permanent — making the combo refuse after 1.0 would be a breaking change, and that trade is accepted (the report's bit is honest either way) |
-| #160 | onboarding-clock hardening before run 2 | no — apparatus | C | defer to run 2 |
-| #161 | release glibc floor inherited, not chosen | no — release engineering, outside the five surfaces | C | worth deciding before 1.0, not contract-bound |
+| #39 | libc conveniences that mutate state behind the PLT (mkstemp family) | none — observation reach is not one of the five; what it bears on is PASS soundness, which is why this row carries a class without touching a surface | A | **narrow**: on Linux the class fails closed through the oracle (sound today); the narrowing itself is written in docs/target-classes.md under "Internal libc calls that mutate state" (measured 2026-08-22 on spike/toys/toy_mkstemp.c), and the issue stays open as the mkstemp family's lookout post |
+| #62 | loop-closure stage clones the full upstream | none — apparatus weight | C | **defer** |
+| #63 | the agent-side seal has never been seen red | none — experiment apparatus | C | **defer** |
+| #64 | secondary observations lack a committed generator | none — apparatus | C | **defer** |
+| #65 | invariant and leg-C predicate hand-synced across spike/ | none — apparatus | C | **defer** |
+| #86 | this audit, and the amendment that added the MCP surface | none — criterion 5's own obligation issue, not a gap in a surface: the MCP-surface decision was recorded in it, which is not the same as touching that surface | C | **fix**: the pre-tag re-sweep ran 2026-08-18 (that snapshot); the declaration moved to docs/contract-freeze.md carrying all five surfaces normatively, and this issue closed with that merge |
+| #118 | assisted-discovery product thesis | none — product tracking, open by owner ruling | C | **tracked**: stays open |
+| #123 | the judge cannot follow a target across execve | none — implementing it is a trace-contract event, and surface 4 says in as many words that a future trace-contract bump is not a broken promise | C | **defer**: with the recorded reading: the single-pid exec chain is already judged under the contract of its day, and a bump refuses old cases with the mismatch named |
+| #140 | criterion 1's search half | none — process criterion | C | **tracked**: stays open, upstream-gated |
+| #147 | outcome-map.tsv overcounts reported-upstream rows | none — evidence-page correction | C | **tracked**: stays open; the fix is independent of any frozen surface |
+| #156 | `--oracle` + `--allow-unverified` accepted and inert | none — CLI acceptance semantics are not surface 1, which freezes the toml keys and the two command spellings | C | **defer**: with the note said out loud: freezing means the inert acceptance is permanent, and making the combo refuse after the tag would be the breaking change |
+| #160 | onboarding-clock hardening before run 2 | none — apparatus | C | **defer**: to run 2 |
+| #161 | release glibc floor inherited, not chosen | none — release engineering, outside the five surfaces | C | **defer**: worth deciding before 1.0, not contract-bound |
+<!-- END generated: freeze-audit classification -->
 
 Thirteen active rows at the re-sweep (twenty-six at the original sweep;
 seventeen struck rows below — thirteen from the original snapshot, four
@@ -169,7 +232,18 @@ leaves it: the rule above. Whatever is filed between now and the tag gets
 swept and classified before the tag, however many times that takes; two such
 filings already exist (`#180`, `#181`, noted at the top). "Criterion 5 is
 met" is a statement about the audit that ran, not a promise that the tracker
-stopped moving. The declaration's permanent home is
+stopped moving.
+
+**Since 2026-08-27 the last-moment check is mechanical**:
+`sh spike/freeze-audit/check-freeze-audit.sh --live` compares the committed
+snapshot against the tracker, refuses a query that could have been truncated,
+and exits 3 on any drift — so the sweep immediately before the tag is a command
+rather than a memory. Run it **after** the final classification merge and
+require it green: a snapshot taken before that merge is stale by the merge
+itself, because closing the sweep's own issues moves the tracker. There is no
+committed tag procedure to hook this into — the ceremony lives in
+`.github/workflows/release.yml`'s header comment and runs *after* the tag is
+published — so the obligation is recorded here, on the page whose gate it is. The declaration's permanent home is
 `docs/contract-freeze.md` — the freeze survives this page's retirement at
 the tag.
 

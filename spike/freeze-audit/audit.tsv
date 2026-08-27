@@ -1,0 +1,38 @@
+# The freeze audit's trust root (ADR 0027). One row per issue in the committed
+# snapshot; docs/freeze-audit.md's classification table is GENERATED from this file
+# by render-audit.sh and check-freeze-audit.sh fails if the two diverge. Do not edit
+# the page's table by hand.
+#
+# Columns (tab-separated):
+#   number              bare issue number, no '#'
+#   tracker_updated_at  the issue's updatedAt from the tracker, ISO 8601 UTC
+#   what_it_is          the row's one-line description
+#   surface             exactly one of the five frozen surfaces, or 'none':
+#                         config-format | report-schema | exit-codes
+#                         | replay-compatibility | mcp-surface | none
+#   surface_reason      why that surface, or why none. Never empty.
+#   class               A | B | C, on PASS-soundness grounds. Applies to every row,
+#                       not only to touchers (owner ruling 2026-08-27; see the page's
+#                       invariant section for why the two axes are separate).
+#   disposition         fix | demote | narrow | measured-already-fixed | document
+#                       | defer | tracked. Allowed values depend on class:
+#                         A -> fix, demote, narrow, measured-already-fixed
+#                         B -> fix, document
+#                         C -> fix, defer, tracked
+#   rationale           the prose that follows the disposition. May be empty for a
+#                       bare 'defer' or 'tracked'; write '-' for none, never an
+#                       empty trailing field (no other TSV here carries one).
+number	tracker_updated_at	what_it_is	surface	surface_reason	class	disposition	rationale
+39	2026-08-22T07:56:45Z	libc conveniences that mutate state behind the PLT (mkstemp family)	none	observation reach is not one of the five; what it bears on is PASS soundness, which is why this row carries a class without touching a surface	A	narrow	on Linux the class fails closed through the oracle (sound today); the narrowing itself is written in docs/target-classes.md under "Internal libc calls that mutate state" (measured 2026-08-22 on spike/toys/toy_mkstemp.c), and the issue stays open as the mkstemp family's lookout post
+62	2026-08-13T05:59:53Z	loop-closure stage clones the full upstream	none	apparatus weight	C	defer	-
+63	2026-08-13T05:59:56Z	the agent-side seal has never been seen red	none	experiment apparatus	C	defer	-
+64	2026-08-13T05:59:58Z	secondary observations lack a committed generator	none	apparatus	C	defer	-
+65	2026-08-13T06:00:00Z	invariant and leg-C predicate hand-synced across spike/	none	apparatus	C	defer	-
+86	2026-08-18T04:07:14Z	this audit, and the amendment that added the MCP surface	none	criterion 5's own obligation issue, not a gap in a surface: the MCP-surface decision was recorded in it, which is not the same as touching that surface	C	fix	the pre-tag re-sweep ran 2026-08-18 (that snapshot); the declaration moved to docs/contract-freeze.md carrying all five surfaces normatively, and this issue closed with that merge
+118	2026-08-23T06:09:59Z	assisted-discovery product thesis	none	product tracking, open by owner ruling	C	tracked	stays open
+123	2026-08-23T06:09:57Z	the judge cannot follow a target across execve	none	implementing it is a trace-contract event, and surface 4 says in as many words that a future trace-contract bump is not a broken promise	C	defer	with the recorded reading: the single-pid exec chain is already judged under the contract of its day, and a bump refuses old cases with the mismatch named
+140	2026-08-25T09:53:20Z	criterion 1's search half	none	process criterion	C	tracked	stays open, upstream-gated
+147	2026-08-23T06:09:55Z	outcome-map.tsv overcounts reported-upstream rows	none	evidence-page correction	C	tracked	stays open; the fix is independent of any frozen surface
+156	2026-08-23T06:09:53Z	`--oracle` + `--allow-unverified` accepted and inert	none	CLI acceptance semantics are not surface 1, which freezes the toml keys and the two command spellings	C	defer	with the note said out loud: freezing means the inert acceptance is permanent, and making the combo refuse after the tag would be the breaking change
+160	2026-08-25T12:02:18Z	onboarding-clock hardening before run 2	none	apparatus	C	defer	to run 2
+161	2026-08-23T06:09:49Z	release glibc floor inherited, not chosen	none	release engineering, outside the five surfaces	C	defer	worth deciding before 1.0, not contract-bound
