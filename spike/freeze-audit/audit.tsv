@@ -56,6 +56,16 @@
 #                         D       -> the same as B and C, plus 'contain' (the
 #                                    exposure is bounded by a stated operational
 #                                    precondition rather than removed)
+#                       'after-1.0' means the owner scheduled the work outside
+#                       v1.0's scope, so the tag does not leave a frozen surface
+#                       broken by it. NOTE THE ASYMMETRY: class A cannot take it.
+#                       Scheduling a PASS-overclaim gap out of the release IS the
+#                       outcome class A forbids, and an enum that accepted it there
+#                       would let the one clause with teeth be satisfied by a
+#                       calendar. It replaced 'defer' on the four open after-1.0
+#                       rows because 'defer' is defined as deferral to 1.x, and
+#                       these are deferred PAST the frozen contract's life --
+#                       seven issues with one adjudication were carrying two words.
 #                       Migrating the seventeen historical resolved rows is what
 #                       showed this set had been written from the thirteen active
 #                       ones alone: it had no room for 'document' on a C row
@@ -70,7 +80,7 @@ number	state	what_it_is	surface_forecast	surface_change_ids	surface_reason	class
 64	active	secondary observations lack a committed generator	none	-	apparatus	C	defer	-
 65	active	invariant and leg-C predicate hand-synced across spike/	none	-	apparatus	C	defer	-
 118	active	assisted-discovery product thesis	none	-	product tracking, open by owner ruling	C	tracked	stays open
-123	active	the judge cannot follow a target across execve	none	-	implementing it is a trace-contract event, and surface 4 says in as many words that a future trace-contract bump is not a broken promise	C	defer	with the recorded reading: the single-pid exec chain is already judged under the contract of its day, and a bump refuses old cases with the mismatch named
+123	active	the judge cannot follow a target across execve	none	-	implementing it is a trace-contract event, and surface 4 says in as many words that a future trace-contract bump is not a broken promise	C	after-1.0	with the recorded reading: the single-pid exec chain is already judged under the contract of its day, and a bump refuses old cases with the mismatch named
 147	active	outcome-map.tsv overcounts reported-upstream rows	none	-	evidence-page correction	C	tracked	stays open; the fix is independent of any frozen surface
 156	active	`--oracle` + `--allow-unverified` accepted and inert	none	-	CLI acceptance semantics are not surface 1, which freezes the toml keys and the two command spellings	C	defer	with the note said out loud: freezing means the inert acceptance is permanent, and making the combo refuse after the tag would be the breaking change
 161	active	release glibc floor inherited, not chosen	none	-	release engineering, outside the five surfaces	C	defer	worth deciding before 1.0, not contract-bound
@@ -83,15 +93,15 @@ number	state	what_it_is	surface_forecast	surface_change_ids	surface_reason	class
 259	active	every cohort rewrites its probe, drill and transcript harness	none	-	spike apparatus, outside the five surfaces	C	defer	The re-derivations re-import bug classes review then has to re-find; three have recurred across cohorts.
 260	active	selection rule 5 misses user-side recoverability: the poetry lesson	none	-	a selection rule for future cohorts, not a surface	C	defer	To settle before cohort 5 selects, per the issue.
 261	active	the define cannot declare non-durable paths, and the L0 precision limit keeps consuming targets	config-format report-schema	-	either candidate shape — an ignore list in the define, or an L1 durability marker — adds a config key and a report field, both additive	B	defer	Four recorded shapes have already spent a target, a claim or an engine PR on this limit.
-262	active	exploration is strictly sequential and every world pays the full state size	none	-	the cheap steps (binary search in find, a hash-first compare) touch no frozen surface; parallelism would, and the issue defers that	C	defer	Labelled after-1.0. The tracked home for the throughput bound.
+262	active	exploration is strictly sequential and every world pays the full state size	none	-	the cheap steps (binary search in find, a hash-first compare) touch no frozen surface; parallelism would, and the issue defers that	C	after-1.0	Labelled after-1.0. The tracked home for the throughput bound.
 263	active	no timeout exists anywhere: one hung world stalls an explore forever, silently	report-schema	-	a named refusal for a wall-clock breach needs a new closed-set member, and the closed set is excluded from surface 2's additive allowance — so the naming, if that is the shape, can only land before the tag	C	defer	PRE-TAG DECISION OWED: the issue says the naming belongs before the tag even if the default stays off. Undecided as of this sweep.
 272	active	the himalaya report's severity ceiling rests on three points the record marks unmeasured	none	-	measurement of an external system's behaviour, outside the five surfaces	C	defer	Owner-gated: the issue covers producing the measurements, not sending anything upstream.
 274	active	refusals help unevenly: the commonest detectors ship one word	none	-	enriching a refusal's message text, or a new diagnose subcommand, is CLI and message prose rather than a frozen field's meaning	C	defer	The refusal a new user hits first carries the least help; the discrimination it declines is cheap outside the engine.
 275	active	sideeye.toml cannot carry oracle or work: a committed define stops one flag short	config-format	-	an oracle key is an additive config key, and surface 1 says in as many words that additive keys remain possible	C	defer	Not tag-blocking. The issue's own precedent (#95, the argv form) landed pre-freeze for convenience, not necessity.
 276	active	the checker cookbook contains no checkers: four recipes, all pointers into spike/	none	-	documentation, outside the five surfaces	C	defer	The page's own premise is that the checker is the layer that fails quietest.
-279	active	a contract bump orphans every saved case: three re-records paid by hand	replay-compatibility	-	surface 4 says a future trace-contract bump is not a broken promise, so what this issue asks for is a migration story about cost, not a change to the promise	C	defer	Labelled after-1.0, but the issue is right that CI's regression-case story should name the helper before the first post-tag bump improvises it.
+279	active	a contract bump orphans every saved case: three re-records paid by hand	replay-compatibility	-	surface 4 says a future trace-contract bump is not a broken promise, so what this issue asks for is a migration story about cost, not a change to the promise	C	after-1.0	Labelled after-1.0, but the issue is right that CI's regression-case story should name the helper before the first post-tag bump improvises it.
 280	active	hand-synced pairs and untested cores inside src/	none	-	internal duplication with nothing pinning the copies together; no frozen surface	C	defer	Test weight sits away from the sharpest code, measured per file in the issue.
-286	active	macOS verification without per-run root: three routes, none measured	report-schema	-	each route buys a verification claim weaker than oracle_verified, and the issue names the report vocabulary as the real contract surface	C	defer	The owner priority recorded in the issue argues against defaulting it to after-1.0; the vocabulary decision is still open.
+286	active	macOS verification without per-run root: three routes, none measured	report-schema	-	each route buys a verification claim weaker than oracle_verified, and the issue names the report vocabulary as the real contract surface	C	after-1.0	The owner priority recorded in the issue argues against defaulting it to after-1.0; the vocabulary decision is still open.
 293	active	can FSEvents veto a mutation the shim never reported?	report-schema	-	any veto is a claim weaker than oracle_verified and needs its own name in the report, which the issue names as the contract-reopening half	C	defer	H1 measured and dead; H2 not judged. The apparatus is committed and reusable; what is missing is the corpus.
 297	active	upstream-report-status.sh cannot see a report that was never added to its list	none	-	spike tooling, outside the five surfaces	C	defer	The failure mode is an absent row, not a wrong one, and the script's output cannot distinguish six-of-six from six-of-seven.
 299	active	the other family: a recorder whose coverage is complete by construction	report-schema	-	a generated interposer would need its own claim vocabulary if it ever became a verification route	C	defer	Filed so it is not lost, explicitly not as a commitment.

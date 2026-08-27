@@ -189,10 +189,14 @@ awk -F'\t' '
     BEGIN {
         split("config-format report-schema exit-codes replay-compatibility mcp-surface none", s, " ")
         for (i in s) surf[s[i]] = 1
+        # after-1.0 is deliberately ABSENT from class A. Scheduling a
+        # PASS-overclaim gap out of the release is the outcome class A forbids, so
+        # accepting it there would let the one clause with teeth be satisfied by a
+        # calendar rather than by a fix, a demotion or a narrowing.
         allowed["A"] = " fix demote narrow measured-already-fixed duplicate "
-        allowed["B"] = " fix document defer tracked measured-already-fixed duplicate "
-        allowed["C"] = " fix document defer tracked measured-already-fixed duplicate "
-        allowed["D"] = " fix contain document defer tracked measured-already-fixed duplicate "
+        allowed["B"] = " fix document defer tracked after-1.0 measured-already-fixed duplicate "
+        allowed["C"] = " fix document defer tracked after-1.0 measured-already-fixed duplicate "
+        allowed["D"] = " fix contain document defer tracked after-1.0 measured-already-fixed duplicate "
     }
     {
         n = $1
