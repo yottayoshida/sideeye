@@ -8,7 +8,7 @@ The engine's one genuinely destructive act is emptying the state directory, and 
 once per explored world — hundreds of times in a single run. Three defences stand in front
 of it, and they were written at different times:
 
-- **`assertSafeRoot`** (a depth rule plus two denylists) refuses a root that *names* a place
+- **`assertSafeRoot`** (a depth rule plus two denylists, read inwards) refuses a root that *names* a place
   nothing sacrificial belongs in. Lexical only.
 - **`assertRootResolvesToItself`** (#267) re-resolves the root immediately before the delete
   and requires it to resolve to itself. Its own doc says it narrows the swap window to the
@@ -53,7 +53,8 @@ name — a system path where a scratch path was meant". Holding `/etc` by descri
 treated one as the other.
 
 A second consumer makes this structural rather than a judgement call: `src/mcp.zig` runs
-`assertSafeRoot` on `SIDEEYE_MCP_ROOT` at startup, where it vets a **name** and no delete
+`assertSafeNamingRoot` on `SIDEEYE_MCP_ROOT` at startup (it ran `assertSafeRoot` until
+#329 split the two predicates), where it vets a **name** and no delete
 follows it at all. A sunset phrased around deletion would have authorised removing a guard
 that a naming boundary still depends on.
 

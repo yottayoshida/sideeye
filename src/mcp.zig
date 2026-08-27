@@ -75,15 +75,21 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
     }
     server_root = root.?;
-    // The same predicate the engine runs before its first destructive step (#267),
-    // applied to the root at startup (#266): with SIDEEYE_MCP_STATE_ROOT unset the
-    // root doubles as the destruction range below, and a root of "/", "/tmp" or
-    // "$HOME"'s parents makes the naming boundary meaningless too. Refusing here also
-    // pins the isInsideDir unification in resolveInsideRoot: the hand-rolled check it
-    // replaced answered "outside" for everything under root "/", isInsideDir answers
-    // "inside" — this vet removes the input the two disagree on.
-    engine.assertSafeRoot(server_root) catch {
-        const msg = "sideeye mcp: SIDEEYE_MCP_ROOT names a location that must not be a workspace root (a system tree, a scratch parent like /tmp, /, or any single-component path like /work — the vet needs two path components; mount or place the workspace one level deeper); refusing to start\n";
+    // The engine's denied locations, read at startup against the root (#266), and since
+    // #329 read in both directions with no depth rule: a system tree, a scratch parent,
+    // an ANCESTOR of either, or "/" refuses; a single-component mount like /work or /opt
+    // does not. With SIDEEYE_MCP_STATE_ROOT unset the root doubles as the destruction
+    // range below, and a root of "/" or "$HOME"'s parents makes the naming boundary
+    // meaningless too. Refusing here also pins the isInsideDir unification in
+    // resolveInsideRoot: the hand-rolled check it replaced answered "outside" for
+    // everything under root "/", isInsideDir answers "inside" — this vet removes the
+    // input the two disagree on.
+    //
+    // The phrase "must not be a workspace root" is load-bearing: two legs of mcp
+    // acceptance check 12 grep stderr for it. Reword the rest freely; keep those five
+    // words.
+    engine.assertSafeNamingRoot(server_root) catch {
+        const msg = "sideeye mcp: SIDEEYE_MCP_ROOT names a location that must not be a workspace root (/, a system tree like /usr or /var/lib, a scratch parent like /tmp, or a directory that CONTAINS one of those — /var and /private are refused for that reason); name a workspace of your own, not a system location and not a directory above one; refusing to start\n";
         _ = posix.write(2, msg.ptr, msg.len);
         std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
     };
@@ -565,7 +571,7 @@ fn resolveInsideRoot(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     // use (component-boundary inclusive of equality). The hand-rolled startsWith it
     // replaced disagreed with isInsideDir on exactly one input — root "/" — where it
     // rejected everything and isInsideDir accepts everything; the startup
-    // assertSafeRoot vet refuses that root before this function can ever see it.
+    // assertSafeNamingRoot vet refuses that root before this function can ever see it.
     if (!contract.isInsideDir(r, server_root)) return null;
     return arena.dupe(u8, r) catch null;
 }

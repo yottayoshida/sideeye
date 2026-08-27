@@ -32,7 +32,11 @@ If you replay saved cases through the MCP server, know that replay confines the
 case's state to `SIDEEYE_MCP_STATE_ROOT` (default: the server root) — a case whose
 state lives under `/tmp`, as above, needs `SIDEEYE_MCP_STATE_ROOT=/tmp` on the
 server. Widen that variable, never `SIDEEYE_MCP_ROOT`; and with it unset, the
-workspace root itself is the declared destruction range (#266, ADR 0022).
+workspace root itself is the declared destruction range (#266, ADR 0022) — so with
+it unset, choose a root whose contents you can afford to lose. Since #329 the root
+may be a single-component mount (`/work`), but what the vet refuses is a system
+location or a directory containing one, never a directory merely because it is
+shallow.
 
 Relative paths and place-naming commands (`./x`, `../x`) resolve against the
 toml's own directory, so the file means the same thing from any cwd (ADR 0007).
