@@ -129,7 +129,7 @@ test "firstUnsupportedEntry flags exactly the kinds restore cannot recreate" {
 /// sort above guarantees the first and a directory traversal cannot produce the second — so
 /// this is the check refusing rather than letting a binary search answer from a list that
 /// does not satisfy its precondition (#262).
-pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge };
+pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge, TreeTooLarge };
 
 /// How deep the snapshot walk descends before refusing — **and how deep `deleteTreeAt`
 /// descends before refusing to delete**, which is the reason to think twice before tuning
@@ -146,13 +146,111 @@ pub const max_depth = 32;
 /// is capped (the case file at 1 MiB, the MCP report at 4 MiB); the snapshot path
 /// runs hundreds of times per explore over target-sized data and was the unbounded
 /// one — a single multi-gigabyte state file turned the judgment into an OOM kill
-/// with no report. L0 judgment is byte-level comparison, so the tree is held in
-/// memory whole: pre and post coexist, and the crashed sequence holds three at once.
-/// 64 MiB per file bounds the largest single resident pair near 128 MiB.
+/// with no report. L0 judgment is byte-level comparison, so the tree is held in memory
+/// whole: pre and post coexist, and **four snapshots are live at once** where the crashed
+/// sequence re-samples (`main.zig`'s `initial`, `final`, `crashed`, `crashed_again`).
+/// One file at exactly this cap leaves the arena holding **100,663,448 bytes** (96.0 MiB),
+/// so the largest resident pair is near 192 MiB.
 ///
-/// Per file, deliberately: a tree's TOTAL stays unbounded, and this constant must
-/// not be read as a memory ceiling for the run.
+/// **Both of those numbers replace wrong ones, measured by #323.** The count said three;
+/// `crashed_again` predates this comment by a fortnight, so it was wrong when written
+/// rather than gone stale. And the pair was given as "near 128 MiB", which reasoned from
+/// file size straight to memory — the arena costs 1.50x what it holds, which is
+/// `ArenaAllocator`'s own node growth factor and not a property of the tree.
+///
+/// Per file. The tree's total is bounded separately, by `max_state_tree_bytes` — this
+/// constant is not that ceiling and never was, which is what the sentence here used to
+/// say when there was no other ceiling to point at.
 pub const max_state_file_bytes: usize = 64 * 1024 * 1024;
+
+/// The whole-snapshot ceiling (#323). `max_state_file_bytes` bounds one read; nothing
+/// bounded the sum, so a tree of files each comfortably under the per-file cap — 60 MiB
+/// a thousand times over — passed every check and ended in an OOM kill with no report,
+/// which is the failure the per-file cap exists to remove. Under Linux's overcommit the
+/// allocator's own `OutOfMemory` never arrives to be handled: the pages are touched, so
+/// the kernel kills the process. This ceiling is what makes running out of memory
+/// reportable at all on that platform. (macOS is unmeasured here; `mmap` may fail first
+/// and reach `error.OutOfMemory`.)
+///
+/// **What is measured is the arena, not the tree.** The count is
+/// `ArenaAllocator.queryCapacity()` — the backing memory the snapshot has actually taken —
+/// rather than a sum of file sizes. A sum has no term for what an entry costs beside its
+/// content, and the shape that exposes that is not exotic: **50,000 empty files hold
+/// 12,959,676 bytes against a content sum of zero**. Asking the allocator also covers,
+/// without naming any of them, the symlink target dupe, the `rel` that `.missing`
+/// allocates and drops, and the entry list's own growth.
+///
+/// The check runs once per directory entry. It is not throttled: `ArenaAllocator` sizes
+/// each node at least 1.5x its predecessor, so the node count is logarithmic in the total
+/// and `queryCapacity` is a walk of tens of pointers, not thousands.
+///
+/// **What the arena costs above the content, measured.** With `readWhole` reserving from
+/// the file's own length, one file costs a flat **1.50x** — 100,663,448 bytes for 64 MiB,
+/// 50,331,800 for 32 MiB, 1,573,016 for 1 MiB — which is the node growth factor and
+/// nothing else. Several large files cost more, because a request that does not fit the
+/// current node takes a new one sized 1.5x *(node + request)*: two 64 MiB files reach
+/// 336 MiB. So the ceiling is not a statement about how many bytes of files a tree may
+/// hold, and the refusal says which of the two it is reporting.
+///
+/// **That term still orders trees by something other than their size, and the reservation
+/// did not remove it.** It removed the stranding term, which had two 32 MiB files costing
+/// more than two 64 MiB ones. What is left inverts a different pair: at this ceiling,
+/// **two 50 MiB files (100 MiB of content) are refused at 262 MiB while four 32 MiB files
+/// (128 MiB) are accepted at 168 MiB** — a strictly smaller tree, in files and in bytes,
+/// refused where a larger one passes. Fewer, larger reads cost more than more, smaller
+/// ones, and the ceiling counts the cost.
+///
+/// **The value, and what it accepts, measured rather than derived.** At 256 MiB every
+/// 128 MiB-of-content shape tried is accepted — 4x32, 8x16, 16x8, 64x2 MiB — while in the
+/// two-file family the boundary is far lower: **2x48 MiB (96 MiB) is accepted and 2x49 MiB
+/// (98 MiB) is refused**, so "128 MiB of content fits" is not a rule that can be read off
+/// the shapes above. 256 MiB of content is refused in every shape tried.
+///
+/// **What selected this value is that table, not a contradiction argument.** A ceiling
+/// must clear one file at the per-file cap, or it would refuse a tree holding exactly what
+/// the other ceiling permits — 256 MiB clears that at 96 MiB with room, and so would 128.
+/// **It does not clear two such files** (336 MiB), and no value below that could; the
+/// criterion is about n=1 and says nothing about n=2. 128 MiB was rejected on the table
+/// instead: there two 32 MiB files (64 MiB of content, 168 MiB of arena) are refused, and
+/// refusing a 64 MiB tree is further from what an operator expects than refusing a 98 MiB
+/// one.
+///
+/// It is not derived from the corpus, which would put it five orders of magnitude lower;
+/// the corpus is the check that it refuses nothing real. Four defines can be built on the
+/// machine this was measured on, and their snapshots cost **888, 846, 846 and 544 bytes**
+/// (`cargo` and `cargo-r2` build the same tree, which is why three numbers cover four
+/// defines). That is **4 of the 45** files matching `grep -rl '^state = ' --include='*.toml'`
+/// — the count includes the quickstart and dogfood defines, not only `spike/**/ops/`, and
+/// counts define files rather than distinct state trees. The rest need tools this machine
+/// does not have (borg, hg, jj, poetry, black, papis, himalaya, topydo, abook, khal, stow,
+/// pass, buku, calcurse, devtodo, watson), and what was measured is the pre-state each
+/// `setup.sh` builds, not the tree after the operation has run.
+///
+/// Four snapshots are live at once at the widest point (`main.zig`'s `initial`, `final`,
+/// `crashed`, `crashed_again`), so a completed run's resident judgement data is bounded
+/// by four times this, plus the two trace arenas. The run that refuses may hold more, for
+/// the node-growth reason above, and then exits. Raising this value is not the safe
+/// direction: here a refusal is the good outcome, and the alternative to refusing is the
+/// unreported death above.
+pub const max_state_tree_bytes: usize = 256 * 1024 * 1024;
+
+/// Both ceilings, together, so a call site cannot supply one without the other.
+///
+/// **A tree can break both, and which one is reported depends on `readdir` order.** The
+/// per-file cap wins for whatever entry the walk reaches first, because `readWhole` returns
+/// before the entry is appended and the tree accounting never sees it. Both refusals are
+/// honest and both produce the same verdict, so this is a property rather than a defect —
+/// recorded because it is the same order-dependence `TreeTooLargeDiag` cites when it
+/// declines to name a largest contributor, and leaving it unsaid in one place while relying
+/// on it in the other is how a codebase ends up arguing with itself.
+pub const SnapshotCaps = struct {
+    file: usize,
+    tree: usize,
+
+    /// What production passes. Every non-test call site uses this rather than spelling
+    /// the constants, so the shipped pair has one definition.
+    pub const shipped: SnapshotCaps = .{ .file = max_state_file_bytes, .tree = max_state_tree_bytes };
+};
 
 /// Which file broke the cap, for the refusal that names it (#265). Zig errors carry
 /// no payload, and the snapshot's own arena dies with the error — so the caller
@@ -168,6 +266,36 @@ pub const FileTooLargeDiag = struct {
     pub fn rel(self: *const FileTooLargeDiag) []const u8 {
         return self.rel_buf[0..self.rel_len];
     }
+};
+
+/// What the whole-tree refusal can say (#323), filled at the moment the ceiling broke.
+///
+/// **Every field describes what the walk had read, not the tree.** The walk stops at the
+/// break, so `content` and `entries` are a prefix in directory-iteration order and the
+/// tree is larger than both by an unmeasured amount. Continuing in an accounting-only
+/// mode would make them the tree's real figures, and was rejected: the continuation still
+/// runs `TooDeep`, `PathTooLong`, `ClassifyFailed` and `readLinkTarget`'s `ReadFailed`,
+/// and `walk`'s `opendir(...) orelse return` treats an unopenable directory as empty — so
+/// either a later failure replaces this refusal or the "real" total silently omits a
+/// subtree. `FileTooLargeDiag.size` above settles the same question the other way: a size
+/// nobody measured must not appear in the message. The message says which of the two
+/// these are, and points at `du`/`find` for the rest.
+pub const TreeTooLargeDiag = struct {
+    /// `ArenaAllocator.queryCapacity()` when the ceiling broke — the quantity capped.
+    reached: usize = 0,
+    /// File and symlink content bytes appended before the break. Reproducible with `du`
+    /// only for the prefix that was read, which is why the message says so.
+    content: u64 = 0,
+    /// Entries appended before the break, `.dir` and `.other` included.
+    entries: u64 = 0,
+};
+
+/// The caller-owned box both snapshot refusals report through. One struct rather than two
+/// optional pointers so a call site that wants either gets both: the walk decides which
+/// ceiling broke, and a caller cannot be in a position to have passed only the other one.
+pub const SnapshotDiag = struct {
+    file: FileTooLargeDiag = .{},
+    tree: TreeTooLargeDiag = .{},
 };
 
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
@@ -189,6 +317,41 @@ fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64
 
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
+
+    // Ask the file how long it is and take that much at once, instead of doubling the way
+    // there (#323). The size is a HINT and nothing below trusts it: the loop still reads
+    // to EOF, so a file that grows keeps growing the list and one that shrinks just
+    // over-reserved. What it changes is the arena.
+    //
+    // `ArenaAllocator` never frees, and its resize fast path only extends the allocation
+    // sitting at the end of the current node — so a doubling list that outgrows its node
+    // is copied into a new one (sized 1.5x its predecessor) and the old copy is stranded
+    // there for the life of the snapshot. Measured before this: one 64 MiB file left the
+    // arena holding 113,780,014 bytes, and — because where the growth falls relative to a
+    // node boundary decides how much is stranded — the cost was not even monotonic in the
+    // tree, with two 32 MiB files costing more than two 64 MiB ones. A ceiling read off
+    // the arena inherits both, and "a tree that fits and a bigger tree that does not"
+    // stops being a property an operator can predict. After: 100,663,448 for the same
+    // file, a flat 1.50x that is the arena's node growth factor and nothing else.
+    //
+    // Reserved exactly, never `max + chunk` on a small file: over-reserving 64 KiB per
+    // entry is the shape a state tree of many small files is made of.
+    const reserve_from = posix.lseek(fd, 0, posix.SEEK_END);
+    if (reserve_from > 0) {
+        if (posix.lseek(fd, 0, posix.SEEK_SET) < 0) return error.ReadFailed;
+        const len: usize = @intCast(reserve_from);
+        // Past the cap the read stops one chunk over it, so that is all it can need.
+        //
+        // **A failed reservation is not an error.** The other caller of this function is
+        // `readTraceCapped`, whose catch collapses everything except `FileTooLarge` into
+        // an empty `TraceInfo` — which the engine reads as `no_shim_marker`. Returning
+        // `OutOfMemory` from here would turn "the trace is larger than this engine will
+        // read" into "the shim never initialised" whenever the reservation could not be
+        // met, which is the exact relabelling the cap's own comment says is worse than
+        // having no cap. Dropping it leaves the read loop to grow as it did before this
+        // reservation existed, so the failure path is the one that was there already.
+        list.ensureTotalCapacityPrecise(arena, if (len <= max) len else max +| chunk.len) catch {};
+    }
     while (true) {
         const n = posix.read(fd, &chunk, chunk.len);
         if (n < 0) return error.ReadFailed;
@@ -205,22 +368,48 @@ fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64
     return list.items;
 }
 
-fn walk(
-    arena: Allocator,
+/// What the walk carries down the recursion unchanged. It was seven parameters before the
+/// tree ceiling needed an arena handle and a second diag, which would have made ten; the
+/// reason for the struct is that plain, not a claim that it makes a mistake unbuildable.
+const WalkCtx = struct {
+    /// The arena *state*, not just its allocator: the ceiling is read off it.
+    arena_state: *std.heap.ArenaAllocator,
     entries: *std.ArrayList(Entry),
     root: []const u8,
-    rel_prefix: []const u8,
-    depth: usize,
-    max_file: usize,
-    diag: ?*FileTooLargeDiag,
-) SnapshotError!void {
+    caps: SnapshotCaps,
+    diag: ?*SnapshotDiag,
+    content: u64 = 0,
+    seen: u64 = 0,
+
+    fn arena(self: *const WalkCtx) Allocator {
+        return self.arena_state.allocator();
+    }
+
+    /// Charge one entry and refuse if the snapshot's arena has passed its ceiling.
+    ///
+    /// Called once per directory entry, after everything that entry allocates — so the
+    /// overshoot is one entry's allocations rather than a batch's, and `.missing`, which
+    /// allocates `rel` and appends nothing, is charged like the rest because the arena
+    /// still holds it.
+    fn charge(self: *WalkCtx, content_len: usize) SnapshotError!void {
+        self.content += content_len;
+        self.seen += 1;
+        const reached = self.arena_state.queryCapacity();
+        if (reached <= self.caps.tree) return;
+        if (self.diag) |d| d.tree = .{ .reached = reached, .content = self.content, .entries = self.seen };
+        return error.TreeTooLarge;
+    }
+};
+
+fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void {
     if (depth > max_depth) return error.TooDeep;
 
+    const arena = ctx.arena();
     var dir_buf: [contract.max_path]u8 = undefined;
     const dir_path = if (rel_prefix.len == 0)
-        std.fmt.bufPrintZ(&dir_buf, "{s}", .{root}) catch return error.PathTooLong
+        std.fmt.bufPrintZ(&dir_buf, "{s}", .{ctx.root}) catch return error.PathTooLong
     else
-        try joinZ(&dir_buf, root, rel_prefix);
+        try joinZ(&dir_buf, ctx.root, rel_prefix);
 
     const dirp = posix.opendir(dir_path.ptr) orelse return;
     defer _ = posix.closedir(dirp);
@@ -235,7 +424,7 @@ fn walk(
             try std.fmt.allocPrint(arena, "{s}/{s}", .{ rel_prefix, name });
 
         var full_buf: [contract.max_path]u8 = undefined;
-        const full = try joinZ(&full_buf, root, rel);
+        const full = try joinZ(&full_buf, ctx.root, rel);
         var kind = posix.kindFromDirent(ent);
         // Some filesystems leave dirent.type unset; ask the path directly then —
         // without opening it (a FIFO would block) and without following links (#5).
@@ -244,37 +433,50 @@ fn walk(
             // vanish from the snapshot — that would route it around #5's refusal.
             return error.ClassifyFailed;
 
+        // Bytes this entry added to the arena's content, for the refusal's account.
+        var charged: usize = 0;
         switch (kind) {
             .dir => {
-                try entries.append(arena, .{ .rel = rel, .kind = .dir, .content = "" });
-                try walk(arena, entries, root, rel, depth + 1, max_file, diag);
+                try ctx.entries.append(arena, .{ .rel = rel, .kind = .dir, .content = "" });
+                // Charged before descending, so the ceiling is not reached only on the
+                // way back up out of a deep subtree.
+                try ctx.charge(0);
+                try walk(ctx, rel, depth + 1);
+                continue;
             },
             .file => {
                 var size: ?u64 = null;
-                const content = readWhole(arena, full.ptr, max_file, &size) catch |e| {
-                    if (e == error.FileTooLarge) if (diag) |d| {
-                        d.rel_len = @min(rel.len, d.rel_buf.len);
-                        @memcpy(d.rel_buf[0..d.rel_len], rel[0..d.rel_len]);
-                        d.size = size;
+                const content = readWhole(arena, full.ptr, ctx.caps.file, &size) catch |e| {
+                    if (e == error.FileTooLarge) if (ctx.diag) |d| {
+                        d.file.rel_len = @min(rel.len, d.file.rel_buf.len);
+                        @memcpy(d.file.rel_buf[0..d.file.rel_len], rel[0..d.file.rel_len]);
+                        d.file.size = size;
                     };
                     return e;
                 };
-                try entries.append(arena, .{ .rel = rel, .kind = .file, .content = content });
+                try ctx.entries.append(arena, .{ .rel = rel, .kind = .file, .content = content });
+                charged = content.len;
             },
             .symlink => {
                 // The link itself, never what it points at: readlink, no following.
                 var tbuf: [contract.max_path]u8 = undefined;
                 const target = readLinkTarget(full.ptr, &tbuf) orelse return error.ReadFailed;
-                try entries.append(arena, .{ .rel = rel, .kind = .symlink, .content = try arena.dupe(u8, target) });
+                const held = try arena.dupe(u8, target);
+                try ctx.entries.append(arena, .{ .rel = rel, .kind = .symlink, .content = held });
+                charged = held.len;
             },
             // Sockets, FIFOs and devices are recorded as present but opaque — so the
             // engine can refuse honestly: restore cannot recreate them, and since #5
             // any snapshot carrying one stops the run (`unsupported_state_entry`)
             // instead of exploring a tree the recording never had. (Symlinks left
             // this bucket in #122: they are first-class above.)
-            .other => try entries.append(arena, .{ .rel = rel, .kind = .other, .content = "" }),
+            .other => try ctx.entries.append(arena, .{ .rel = rel, .kind = .other, .content = "" }),
+            // Nothing is appended — but `rel` was allocated above and the arena keeps it,
+            // so this is charged too. A tree that churns temporary files (which is most
+            // of what this engine watches) reaches here often.
             .missing => {},
         }
+        try ctx.charge(charged);
     }
 }
 
@@ -296,21 +498,27 @@ fn lessThanRel(_: void, a: Entry, b: Entry) bool {
 }
 
 pub fn takeSnapshot(gpa: Allocator, root: []const u8) SnapshotError!Snapshot {
-    return takeSnapshotCapped(gpa, root, max_state_file_bytes, null);
+    return takeSnapshotCapped(gpa, root, SnapshotCaps.shipped, null);
 }
 
-/// The capped form (#265): production call sites pass `max_state_file_bytes` and a
-/// diag so the refusal can name the file; tests pass a small cap so the boundary is
-/// falsifiable without a 64 MiB fixture.
-pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, max_file: usize, diag: ?*FileTooLargeDiag) SnapshotError!Snapshot {
+/// The capped form (#265, widened to the tree total by #323): production call sites pass
+/// `SnapshotCaps.shipped` and a diag so the refusal can name what broke; tests pass small
+/// caps so both boundaries are falsifiable without 64 MiB fixtures.
+pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, caps: SnapshotCaps, diag: ?*SnapshotDiag) SnapshotError!Snapshot {
     var snap: Snapshot = .{
         .arena = std.heap.ArenaAllocator.init(gpa),
         .entries = .empty,
     };
     errdefer snap.arena.deinit();
 
-    const arena = snap.arena.allocator();
-    try walk(arena, &snap.entries, root, "", 0, max_file, diag);
+    var ctx: WalkCtx = .{
+        .arena_state = &snap.arena,
+        .entries = &snap.entries,
+        .root = root,
+        .caps = caps,
+        .diag = diag,
+    };
+    try walk(&ctx, "", 0);
     try finalizeEntries(&snap);
     return snap;
 }
@@ -2944,20 +3152,218 @@ test "the per-file cap refuses, names the file, and carries its size (#265)" {
 
     // Against a cap the file exceeds: the refusal fires and the diag names the file
     // and its true size (from lseek, not from the truncated read).
-    var diag: FileTooLargeDiag = .{};
+    var diag: SnapshotDiag = .{};
     try std.testing.expectError(
         error.FileTooLarge,
-        takeSnapshotCapped(gpa, root, 8, &diag),
+        takeSnapshotCapped(gpa, root, onlyFileCap(8), &diag),
     );
-    try std.testing.expectEqualStrings("grown.log", diag.rel());
-    try std.testing.expectEqual(@as(?u64, 9), diag.size);
+    try std.testing.expectEqualStrings("grown.log", diag.file.rel());
+    try std.testing.expectEqual(@as(?u64, 9), diag.file.size);
 
     // Positive control, same tree: at the cap exactly, the read is not a breach —
     // the boundary is "over", not "at" — and the snapshot succeeds.
-    var ok = try takeSnapshotCapped(gpa, root, 9, null);
+    var ok = try takeSnapshotCapped(gpa, root, onlyFileCap(9), null);
     defer ok.deinit();
     try std.testing.expectEqual(@as(usize, 1), ok.entries.items.len);
     try std.testing.expectEqualStrings("123456789", ok.entries.items[0].content);
+}
+
+/// Caps for a test that is about ONE ceiling. The other is put out of reach, so a
+/// refusal cannot be attributed to the ceiling the test is not about — and so the
+/// per-file tests above keep meaning what they meant before there were two (#323).
+fn onlyFileCap(n: usize) SnapshotCaps {
+    return .{ .file = n, .tree = std.math.maxInt(usize) };
+}
+
+fn onlyTreeCap(n: usize) SnapshotCaps {
+    return .{ .file = std.math.maxInt(usize), .tree = n };
+}
+
+/// A pid-unique `<parent>/state` built from the RESOLVED parent, plus the paths needed
+/// to tear it down. Three tests below built this by hand; macOS `/tmp` is itself a link,
+/// so the realpath step is load-bearing rather than tidiness (#28).
+const TreeFixture = struct {
+    parent_z: [contract.max_path]u8 = undefined,
+    root_buf: [contract.max_path]u8 = undefined,
+    root: []const u8 = &.{},
+
+    fn init(self: *TreeFixture, tag: []const u8) ?[]const u8 {
+        const parent_z = std.fmt.bufPrintZ(&self.parent_z, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+        _ = posix.mkdir(parent_z.ptr, 0o755);
+        var base_buf: [contract.max_path]u8 = undefined;
+        // Every caller does `init(...) orelse return error.SkipZigTest`, which is BEFORE
+        // its `defer deinit()` — so a failure here has to take the parent back out itself
+        // or leave a directory behind for the rest of the machine's life.
+        const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse {
+            _ = posix.rmdir(parent_z.ptr);
+            return null;
+        });
+        self.root = std.fmt.bufPrint(&self.root_buf, "{s}/state", .{base}) catch unreachable;
+        var rz: [contract.max_path]u8 = undefined;
+        const root_z = std.fmt.bufPrintZ(&rz, "{s}", .{self.root}) catch unreachable;
+        _ = posix.mkdir(root_z.ptr, 0o755);
+        return self.root;
+    }
+
+    fn deinit(self: *TreeFixture) void {
+        deleteTree(self.root) catch {};
+        var rz: [contract.max_path]u8 = undefined;
+        const root_z = std.fmt.bufPrintZ(&rz, "{s}", .{self.root}) catch unreachable;
+        _ = posix.rmdir(root_z.ptr);
+        var pz: [contract.max_path]u8 = undefined;
+        const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{std.mem.sliceTo(&self.parent_z, 0)}) catch unreachable;
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    /// `n` empty directories. The shape that has no content and no file entries at all,
+    /// which is the only way to reach the `.dir` branch's own charge.
+    fn fillDirs(self: *TreeFixture, n: usize) !void {
+        var i: usize = 0;
+        while (i < n) : (i += 1) {
+            var dbuf: [contract.max_path]u8 = undefined;
+            var nbuf: [32]u8 = undefined;
+            const name = std.fmt.bufPrint(&nbuf, "d{d:0>5}", .{i}) catch unreachable;
+            const dz = try joinZ(&dbuf, self.root, name);
+            if (posix.mkdir(dz.ptr, 0o755) != 0) return error.SkipZigTest;
+        }
+    }
+
+    /// `n` files of `bytes` bytes each, named `f0000`, `f0001`, … — equal sizes on
+    /// purpose where a test wants the break to be independent of `readdir` order.
+    fn fill(self: *TreeFixture, n: usize, bytes: usize) !void {
+        var chunk: [4096]u8 = @splat('x');
+        var i: usize = 0;
+        while (i < n) : (i += 1) {
+            var fbuf: [contract.max_path]u8 = undefined;
+            var nbuf: [32]u8 = undefined;
+            const name = std.fmt.bufPrint(&nbuf, "f{d:0>5}", .{i}) catch unreachable;
+            const fz = try joinZ(&fbuf, self.root, name);
+            const fd = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+            if (fd < 0) return error.SkipZigTest;
+            defer _ = posix.close(fd);
+            var left = bytes;
+            while (left > 0) {
+                const take = @min(left, chunk.len);
+                if (posix.write(fd, &chunk, take) != @as(isize, @intCast(take))) return error.SkipZigTest;
+                left -= take;
+            }
+        }
+    }
+};
+
+test "the tree ceiling stops the walk where it breaks, rather than after reading everything (#323)" {
+    const gpa = std.testing.allocator;
+    var fx: TreeFixture = .{};
+    _ = fx.init("treecap-stop") orelse return error.SkipZigTest;
+    defer fx.deinit();
+
+    // 40 x 64 KiB = 2.5 MiB of content against a 256 KiB ceiling: ten times over, so a
+    // walk that stops when it breaks and one that reads the tree and compares afterwards
+    // are far apart in what they hold.
+    const files = 40;
+    const each = 64 * 1024;
+    const cap = 256 * 1024;
+    try fx.fill(files, each);
+
+    // What reading the whole tree costs, measured on the same tree through the same
+    // production function — this is the number the refusal must NOT reach. Taken first,
+    // so it is an observation rather than a bound reasoned from the arena's growth rule.
+    var full = try takeSnapshotCapped(gpa, fx.root, onlyTreeCap(std.math.maxInt(usize)), null);
+    const full_capacity = full.arena.queryCapacity();
+    try std.testing.expectEqual(@as(usize, files), full.entries.items.len);
+    full.deinit();
+
+    var diag: SnapshotDiag = .{};
+    try std.testing.expectError(
+        error.TreeTooLarge,
+        takeSnapshotCapped(gpa, fx.root, onlyTreeCap(cap), &diag),
+    );
+
+    // The ceiling was passed — otherwise the refusal is reporting something else.
+    try std.testing.expect(diag.tree.reached > cap);
+
+    // **This is the assertion the whole check exists for.** An implementation that sums
+    // during the walk and compares once after it returns still refuses, still names the
+    // reason, still emits the JSON — every acceptance leg stays green. What it cannot do
+    // is hold less than the whole tree: `reached` equals `full_capacity` exactly. (It
+    // reddens two more lines below as well, since its account is the whole tree rather
+    // than a prefix; only this test fails, not three, and this is the line Zig stops at.)
+    try std.testing.expect(diag.tree.reached < full_capacity);
+
+    // The operator-visible half of the same fact: the account is a prefix.
+    try std.testing.expect(diag.tree.entries < files);
+    try std.testing.expect(diag.tree.entries > 0);
+
+    // **The two counters pinned against each other, not just bounded.** Every file here
+    // is the same size, so the product is exact — and a bound alone does not hold them:
+    // review measured that deleting `charged = content.len` from the `.file` branch left
+    // the whole suite green, because `0 < files * each` is true and the empty-tree test
+    // below wants `content == 0` anyway. The operator-facing half of the refusal could
+    // have been permanently zero with nothing noticing.
+    try std.testing.expectEqual(diag.tree.entries * each, diag.tree.content);
+
+    // Positive control on the same tree: above its footprint, the snapshot succeeds and
+    // carries every entry. **It also pins "over, not at"** — the ceiling passed here is
+    // `full_capacity` exactly, so tightening `charge`'s `reached <= caps.tree` to `<`
+    // reddens this line. What no fixture can do is land `queryCapacity` on a *chosen*
+    // value, because `ArenaAllocator` hands out whole nodes sized 1.5x their predecessor;
+    // taking the boundary from the tree's own measured cost is the way around that, and
+    // it is why this control is not the decoration it looks like.
+    var ok = try takeSnapshotCapped(gpa, fx.root, onlyTreeCap(full_capacity), null);
+    defer ok.deinit();
+    try std.testing.expectEqual(@as(usize, files), ok.entries.items.len);
+}
+
+test "the tree ceiling charges directories too, which is the only entry kind with its own charge (#323)" {
+    const gpa = std.testing.allocator;
+    var fx: TreeFixture = .{};
+    _ = fx.init("treecap-dirs") orelse return error.SkipZigTest;
+    defer fx.deinit();
+
+    // Directories are charged inside the `.dir` branch, before it descends, rather than
+    // by the shared charge at the end of the loop — the branch `continue`s past that one
+    // so `seen` is not counted twice. **That makes the `.dir` charge the only one nothing
+    // else can cover**, and first-look review measured that deleting it leaves every other
+    // test in this file green while a tree of directories walks to completion holding
+    // 174x the ceiling. A tree with no files at all is the shape that reaches it.
+    try fx.fillDirs(500);
+
+    var diag: SnapshotDiag = .{};
+    try std.testing.expectError(
+        error.TreeTooLarge,
+        takeSnapshotCapped(gpa, fx.root, onlyTreeCap(32 * 1024), &diag),
+    );
+    // No content anywhere, and it still refuses — as in the empty-files test below, but
+    // through a different branch of `walk`.
+    try std.testing.expectEqual(@as(u64, 0), diag.tree.content);
+    // And it refused early rather than after walking the lot, which is what deleting the
+    // charge would turn into.
+    try std.testing.expect(diag.tree.entries < 500);
+}
+
+test "the tree ceiling counts what the snapshot holds, not the bytes it read (#323)" {
+    const gpa = std.testing.allocator;
+    var fx: TreeFixture = .{};
+    _ = fx.init("treecap-metric") orelse return error.SkipZigTest;
+    defer fx.deinit();
+
+    // Two thousand empty files: zero content bytes, and an arena carrying two thousand
+    // `rel` strings, two thousand `Entry` values and the entry list's own growth.
+    try fx.fill(2000, 0);
+
+    var diag: SnapshotDiag = .{};
+    try std.testing.expectError(
+        error.TreeTooLarge,
+        takeSnapshotCapped(gpa, fx.root, onlyTreeCap(32 * 1024), &diag),
+    );
+
+    // **A ceiling that sums file content cannot produce this line.** Zero content read,
+    // and the refusal fired anyway — which is the difference between capping the tree and
+    // capping what holding the tree costs. Measured at scale on this shape: 50,000 empty
+    // files hold 12,959,676 bytes against a content sum of zero.
+    try std.testing.expectEqual(@as(u64, 0), diag.tree.content);
+    try std.testing.expect(diag.tree.entries > 0);
+    try std.testing.expect(diag.tree.reached > 32 * 1024);
 }
 
 /// A trace file of `n` bytes in a pid-unique directory, plus its cleanup. Built the
@@ -2977,6 +3383,81 @@ fn traceFixture(tag: []const u8, bytes: []const u8, path_out: []u8) ?[]const u8 
     _ = posix.write(fd, bytes.ptr, bytes.len);
     _ = posix.close(fd);
     return path;
+}
+
+/// An allocator that refuses any single request over `ceiling` and passes the rest
+/// through. `std.testing.FailingAllocator` cannot express this: its `alloc_index` only
+/// advances on success, so a `fail_index` that catches the first request catches every
+/// request after it too — which tests "nothing can be allocated", a different thing from
+/// "this one large reservation could not be met".
+const RefuseLargeAllocator = struct {
+    backing: Allocator,
+    ceiling: usize,
+
+    fn allocator(self: *RefuseLargeAllocator) Allocator {
+        return .{ .ptr = self, .vtable = &.{ .alloc = alloc, .resize = resize, .remap = remap, .free = free } };
+    }
+
+    fn alloc(ctx: *anyopaque, len: usize, a: std.mem.Alignment, ra: usize) ?[*]u8 {
+        const self: *RefuseLargeAllocator = @ptrCast(@alignCast(ctx));
+        if (len > self.ceiling) return null;
+        return self.backing.rawAlloc(len, a, ra);
+    }
+    fn resize(ctx: *anyopaque, m: []u8, a: std.mem.Alignment, n: usize, ra: usize) bool {
+        const self: *RefuseLargeAllocator = @ptrCast(@alignCast(ctx));
+        if (n > self.ceiling) return false;
+        return self.backing.rawResize(m, a, n, ra);
+    }
+    fn remap(ctx: *anyopaque, m: []u8, a: std.mem.Alignment, n: usize, ra: usize) ?[*]u8 {
+        const self: *RefuseLargeAllocator = @ptrCast(@alignCast(ctx));
+        if (n > self.ceiling) return null;
+        return self.backing.rawRemap(m, a, n, ra);
+    }
+    fn free(ctx: *anyopaque, m: []u8, a: std.mem.Alignment, ra: usize) void {
+        const self: *RefuseLargeAllocator = @ptrCast(@alignCast(ctx));
+        self.backing.rawFree(m, a, ra);
+    }
+};
+
+test "a reservation that cannot be met does not relabel an oversized trace (#323)" {
+    // #323 gave `readWhole` a reservation taken from the file's own length. This test is
+    // about what happens when that reservation FAILS, and it is aimed at the call site
+    // rather than the function: `readTraceCapped`'s catch collapses every error except
+    // `FileTooLarge` into an empty `TraceInfo`, which the engine reads as
+    // `no_shim_marker`. A reservation that returned `OutOfMemory` would therefore turn
+    // "the trace is larger than this engine will read" into "the shim never initialised"
+    // — the relabelling `max_trace_bytes`' own comment calls worse than having no cap.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const path = traceFixture("tracecap-reserve", "0123456789", &pbuf) orelse return error.SkipZigTest;
+    defer {
+        var fz: [contract.max_path]u8 = undefined;
+        const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+        _ = posix.unlink(file_z.ptr);
+        var dz: [contract.max_path]u8 = undefined;
+        const dir_z = std.fmt.bufPrintZ(&dz, "/tmp/sideeye-tracecap-reserve-{d}", .{posix.getpid()}) catch unreachable;
+        _ = posix.rmdir(dir_z.ptr);
+    }
+
+    // Past a cap of 4 the reservation asks for `4 + one chunk`; the read loop's own
+    // requests are a few hundred bytes. A ceiling between the two fails exactly the
+    // reservation and nothing else, which is what separates "the reservation is a hint"
+    // from "the reservation is load-bearing".
+    var refuser: RefuseLargeAllocator = .{ .backing = std.testing.allocator, .ceiling = 16 * 1024 };
+    var info = try readTraceCapped(refuser.allocator(), path, 4);
+    defer info.deinit();
+
+    // The answer is the cap's, not the empty read's — which is the whole point.
+    try std.testing.expect(info.too_large);
+    try std.testing.expect(!info.saw_shim_ready);
+
+    // Positive control, same fixture and same allocator, under the cap: the read
+    // completes. Without it, an allocator that broke every read would satisfy the line
+    // above for the wrong reason — "nothing can be allocated at all" is a different
+    // failure that would otherwise pass as correct here.
+    var ok = try readTraceCapped(refuser.allocator(), path, 4096);
+    defer ok.deinit();
+    try std.testing.expect(!ok.too_large);
+    try std.testing.expectEqual(@as(usize, 0), ok.ops.items.len);
 }
 
 test "an oversized trace says so, instead of collapsing into the empty read (#324)" {

@@ -368,11 +368,29 @@ pub const UnknownReason = enum {
     /// refusal's message forms applies, it applies on both sides of that split — so what
     /// differs between the two exits is the verdict alone, never the wording.
     state_file_too_large,
+    /// Holding the state tree in memory reached the snapshot's ceiling (#323), at a
+    /// snapshot taken at or past the recording run. The initial snapshot hits the same
+    /// ceiling and stays SETUP_ERROR, the split `state_file_too_large` above describes.
+    ///
+    /// **Its own member rather than a share of `state_file_too_large`**, because a caller
+    /// reading that one goes looking for a single oversized file and there is none: every
+    /// file here can be comfortably under the per-file cap. And **not a share of
+    /// `state_unsnapshotable`** either — that member is the residue for failures with no
+    /// limit behind them, and this one has a limit the operator can act on, which is the
+    /// line `snapshotDetail` already draws when it decides which refusals report a number.
+    ///
+    /// What the message counts is what the walk had read when the ceiling broke, not what
+    /// the tree holds; `engine.TreeTooLargeDiag` records why continuing the walk to learn
+    /// the real figures was rejected.
+    state_tree_too_large,
     /// The state tree could not be snapshotted at all, at a snapshot taken at or past the
     /// recording run (#351). The sibling of `state_file_too_large`: that one names a file,
     /// its size and a limit the operator can act on, this one covers the walk's other
     /// reported failures — every one except `OutOfMemory`, which stays SETUP_ERROR (see
-    /// below). Kept apart from the cap for the reason `trace_too_large` and
+    /// below), and `TreeTooLarge`, which has a limit of its own and so took a member of
+    /// its own (#323; this sentence said "every one except `OutOfMemory`" until then, and
+    /// the member above is what made it false). Kept apart from the cap for the reason
+    /// `trace_too_large` and
     /// `trace_truncated` are — collapsing them would lose which happened.
     ///
     /// **One member, five kinds of cause**, which the message separates because the closed
