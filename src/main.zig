@@ -203,36 +203,103 @@ var expected_status_val: u8 = 0;
 /// `refuseUnsupportedEntry`, which defangs. A Unix name may hold newlines and escape
 /// introducers; unlike the JSON side there is no second escaper behind the text.
 ///
-/// The *verdict* the cap refuses with depends on `run_phase` (#330): SETUP_ERROR only at
-/// the initial snapshot, UNKNOWN `state_file_too_large` at the four sites at or past the
-/// recording run. The wording does not change with it — whichever of the three messages
-/// below applies, it applies on both sides of the split — so this reads as one refusal
-/// with two exits, not two refusals. The other snapshot failures still take `what` and
-/// exit 3 at every site; that is the same phase lie one class over, ruled to be its own
-/// change (#351) rather than smuggled in here.
+/// The *verdict* every snapshot failure refuses with depends on `run_phase`: SETUP_ERROR
+/// only at the initial snapshot, UNKNOWN at the four sites at or past the recording run —
+/// `state_file_too_large` for the cap (#330), `state_unsnapshotable` for the rest (#351).
+/// The wording does not change with the verdict; whichever message applies, it applies on
+/// both sides of the split, so this reads as one refusal with two exits rather than two
+/// refusals. `OutOfMemory` is the one failure that stays SETUP_ERROR at every site, on the
+/// rule `spawnFailure` states — see the guard below.
 fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) engine.Snapshot {
     var diag: engine.FileTooLargeDiag = .{};
     return engine.takeSnapshotCapped(gpa, root, engine.max_state_file_bytes, &diag) catch |e| {
-        if (e != error.FileTooLarge) setupError(what);
-        if (json_arena) |ja| {
-            if (diag.size) |sz|
-                capRefusal(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment")
-            else
-                capRefusal(std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment");
-        }
+        // An allocation failure is an environment problem in either phase, the rule
+        // `spawnFailure` already states. Routing it to UNKNOWN would leave a seam one
+        // statement wide: this snapshot exiting 2 for OOM while the `classify` that
+        // consumes it exits 3 for the same cause. The ruling on #351 listed it among the
+        // errors to move; this is the deviation, taken deliberately and approved.
+        if (e == error.OutOfMemory) setupError(what);
+
+        // **Decided once, for every exit below.** Threading the reason through as a
+        // parameter was the first design, and review counted what could then go wrong:
+        // of the four sites that refuse here, two — the no-measured-size branch and the
+        // no-arena fallback — are reached by nothing, so either could have named the
+        // wrong reason with every check in the tree still green. That is what #330
+        // rejected a per-site parameter to avoid. Computed here, the mistake has no
+        // shape to take, and inverting this line reddens the cap leg and the non-cap
+        // leg together — one expression cannot be half-broken.
+        const reason: contract.UnknownReason =
+            if (e == error.FileTooLarge) .state_file_too_large else .state_unsnapshotable;
+
+        if (json_arena) |ja| snapshotRefusal(reason, snapshotDetail(ja, e, what, &diag));
+
         // Unreachable in practice: json_arena is assigned unconditionally before the
         // parse loop, ahead of every call site. Kept so this function's contract does
         // not depend on that ordering — but do not read it as a covered "no arena"
-        // message path; nothing exercises it.
-        capRefusal("a state file is too large for byte-level judgment");
+        // message path; nothing exercises it, including the split below. It is a split
+        // rather than one string because the first draft let a `TooDeep` failure fall
+        // through to the cap's wording here, which nothing would have caught.
+        snapshotRefusal(reason, switch (reason) {
+            .state_file_too_large => "a state file is too large for byte-level judgment",
+            else => "the state tree could not be snapshotted",
+        });
     };
 }
 
-/// The per-file cap's one exit, split by how far the run has got (#330).
-fn capRefusal(detail: []const u8) noreturn {
+/// What the operator is told, beyond which snapshot failed.
+///
+/// Sentences rather than error names: `@errorName` appears nowhere in this codebase, and
+/// `ClassifyFailed` tells an operator nothing. It would also tie an acceptance leg's text
+/// to a Zig identifier, so a rename would redden the suite for no behavioural reason.
+///
+/// The two failures with a limit behind them report it, because a limit is something the
+/// operator can act on — the same reason the cap names its own. The rest do not have one.
+///
+/// **Typed to `SnapshotError`, with no `else`, on purpose.** Taking `anyerror` and
+/// defaulting to `what` would compile cleanly when a member is added to that error set,
+/// and the new member would then produce the bare call-site wording — the pre-#351
+/// behaviour this function exists to remove — while still being classified
+/// `state_unsnapshotable` whether or not that is the right reason for it. Exhaustiveness
+/// turns that silent regression into a build failure — measured: deleting the `TooDeep`
+/// arm now fails to compile, where before it left every check green and the message bare.
+///
+/// `OutOfMemory` is `unreachable` here rather than absent, which states the carve-out at
+/// the point a reader meets the switch. **It does not enforce it**: deleting the guard
+/// above still builds, and the arm would then be reached at run time on a real allocation
+/// failure. Nothing in the tree can produce that, so the carve-out is unfalsified — said
+/// here rather than left for someone to assume the type checked it.
+fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const u8, diag: *engine.FileTooLargeDiag) []const u8 {
+    return switch (e) {
+        error.FileTooLarge => if (diag.size) |sz|
+            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment"
+        else
+            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment",
+        // "deeper than", not "cap": the walk compares with a strict `>`, so a tree of
+        // exactly this many levels passes and the next one does not.
+        error.TooDeep => std.fmt.allocPrint(ja, "{s}: the state tree is nested deeper than the {d} levels the snapshot walks", .{ what, engine.max_depth }) catch what,
+        // The buffer holds the state root, a separator and the entry's relative path, so
+        // a long `--state` prefix reaches this with a short name inside the tree — saying
+        // "a path inside the state tree" would send the operator to look at the wrong
+        // half. And the bound is on the whole spelling INCLUDING its terminator, so a
+        // path of exactly this many bytes already fails: "at least", not "longer than",
+        // for the same reason `max_depth`'s message says "deeper than" and not "cap".
+        error.PathTooLong => std.fmt.allocPrint(ja, "{s}: the state root and an entry inside it spell a path of at least {d} bytes, which is the limit the snapshot can hold", .{ what, contract.max_path }) catch what,
+        error.ReadFailed => std.fmt.allocPrint(ja, "{s}: a file or symlink inside the state tree could not be read", .{what}) catch what,
+        error.ClassifyFailed => std.fmt.allocPrint(ja, "{s}: an entry inside the state tree could not be classified as a file, directory or symlink", .{what}) catch what,
+        // Not the operator's tree. Say so, or they go looking through their own files for
+        // a broken invariant of ours.
+        error.EntriesNotSortedUnique => std.fmt.allocPrint(ja, "{s}: the snapshot's own entry list came out unsorted or holding duplicates — that is a defect in sideeye, not in the state tree", .{what}) catch what,
+        // Refused above, before this function is called. If that guard goes, this stops
+        // being unreachable and the compiler says so.
+        error.OutOfMemory => unreachable,
+    };
+}
+
+/// A snapshot refusal's one exit, split by how far the run has got (#330, widened by #351).
+fn snapshotRefusal(reason: contract.UnknownReason, detail: []const u8) noreturn {
     switch (run_phase) {
         .before_exploration => setupError(detail),
-        .exploring => unknown(.state_file_too_large, detail),
+        .exploring => unknown(reason, detail),
     }
 }
 

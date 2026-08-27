@@ -129,7 +129,16 @@ test "firstUnsupportedEntry flags exactly the kinds restore cannot recreate" {
 /// does not satisfy its precondition (#262).
 pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge };
 
-const max_depth = 32;
+/// How deep the snapshot walk descends before refusing — **and how deep `deleteTreeAt`
+/// descends before refusing to delete**, which is the reason to think twice before tuning
+/// it: raising this widens what `restore` will empty, not only what the snapshot will
+/// read. ADR 0024 cites it as the descriptor bound for the same reason.
+///
+/// `pub` because the refusal names it (#351): an operator told only "could not snapshot"
+/// has no way to learn what to change. Compared with a strict `>`, so a tree of exactly
+/// this many levels is fine and one level more is not — measured at 32 passing and 33
+/// refusing, and refusal text must say "deeper than N", never "cap N".
+pub const max_depth = 32;
 
 /// The per-FILE byte cap on snapshot reads (#265). Every other read in the pipeline
 /// is capped (the case file at 1 MiB, the MCP report at 4 MiB); the snapshot path
