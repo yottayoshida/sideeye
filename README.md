@@ -169,7 +169,7 @@ The finding is not the durable artifact — the declaration is. A `sideeye.toml`
 | [docs/kill-criteria-review.md](docs/kill-criteria-review.md) | The project's own conditions for abandoning it, scored against the collected data |
 | [docs/checker-cookbook.md](docs/checker-cookbook.md) | Annotated real checkers, and the failure patterns that taught them |
 | [docs/contract-freeze.md](docs/contract-freeze.md) | What v1.0 freezes, and what a break would cost — the normative list |
-| [docs/freeze-audit.md](docs/freeze-audit.md) | Every open issue classified against those frozen surfaces, held to a committed snapshot |
+| [docs/freeze-audit.md](docs/freeze-audit.md) | Every open issue classified against those frozen surfaces, generated from a committed manifest and held to a committed snapshot |
 | [docs/adr/](docs/adr/) | One record per irreversible decision |
 
 ## License

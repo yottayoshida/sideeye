@@ -1,0 +1,14 @@
+{
+  "captured_at_utc": "2026-08-27T02:45:53Z",
+  "claim": "gh issue list truncates silently at its default page size, so a count taken without --limit is indistinguishable from a complete one",
+  "dropped": 25,
+  "note": "The limited count moves as the tracker does: it read 56 during this PR's planning and 55 after #351 closed. The default count did not move, which is the point \u2014 it is the page size, not a measurement of the tracker.",
+  "with_limit_1000": {
+    "command": "gh issue list --state open --json number --limit 1000",
+    "returned": 55
+  },
+  "without_limit": {
+    "command": "gh issue list --state open --json number",
+    "returned": 30
+  }
+}

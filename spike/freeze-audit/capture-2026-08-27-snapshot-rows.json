@@ -1,0 +1,75 @@
+{
+  "captured_at_utc": "2026-08-27T02:26:58Z",
+  "limit": 1000,
+  "purpose": "provenance for audit.tsv's tracker_updated_at column: the 13 rows of snapshot-2026-08-18.tsv, captured with an explicit limit and the below-limit assert that the unlimited form cannot give",
+  "query": "gh issue list --state all --limit 1000 --json number,updatedAt,state",
+  "returned": 151,
+  "returned_below_limit": true,
+  "rows": [
+    {
+      "number": 39,
+      "state": "OPEN",
+      "updatedAt": "2026-08-22T07:56:45Z"
+    },
+    {
+      "number": 62,
+      "state": "OPEN",
+      "updatedAt": "2026-08-13T05:59:53Z"
+    },
+    {
+      "number": 63,
+      "state": "OPEN",
+      "updatedAt": "2026-08-13T05:59:56Z"
+    },
+    {
+      "number": 64,
+      "state": "OPEN",
+      "updatedAt": "2026-08-13T05:59:58Z"
+    },
+    {
+      "number": 65,
+      "state": "OPEN",
+      "updatedAt": "2026-08-13T06:00:00Z"
+    },
+    {
+      "number": 86,
+      "state": "CLOSED",
+      "updatedAt": "2026-08-18T04:07:14Z"
+    },
+    {
+      "number": 118,
+      "state": "OPEN",
+      "updatedAt": "2026-08-23T06:09:59Z"
+    },
+    {
+      "number": 123,
+      "state": "OPEN",
+      "updatedAt": "2026-08-23T06:09:57Z"
+    },
+    {
+      "number": 140,
+      "state": "CLOSED",
+      "updatedAt": "2026-08-25T09:53:20Z"
+    },
+    {
+      "number": 147,
+      "state": "OPEN",
+      "updatedAt": "2026-08-23T06:09:55Z"
+    },
+    {
+      "number": 156,
+      "state": "OPEN",
+      "updatedAt": "2026-08-23T06:09:53Z"
+    },
+    {
+      "number": 160,
+      "state": "CLOSED",
+      "updatedAt": "2026-08-25T12:02:18Z"
+    },
+    {
+      "number": 161,
+      "state": "OPEN",
+      "updatedAt": "2026-08-23T06:09:49Z"
+    }
+  ]
+}
