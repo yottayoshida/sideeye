@@ -339,6 +339,35 @@ pub const UnknownReason = enum {
     /// define did not run (DESIGN §"exit codes"), and by the recording run onward that
     /// is no longer true — the same distinction `recording_run_failed` already draws.
     child_wait_failed,
+    /// A world's operation was still running when its `--world-timeout` budget expired,
+    /// as measured by a final successful observation after the deadline, and was sent
+    /// SIGKILL (#263).
+    /// The message names the budget, because the operator can move it — the rule
+    /// `state_file_too_large`, `state_tree_too_large` and `state_rewrite_failed` all
+    /// ship under. Off by default: no budget, no member, not one bit of changed
+    /// behaviour.
+    ///
+    /// The name is deliberately wider than today's mechanism. Only the world
+    /// operation's spawn carries a budget — a recording run, a setup command or a
+    /// checker that hangs still hangs, and the flag's help text says so — but this set
+    /// freezes at 1.0 while the mechanism does not, so a member named for worlds would
+    /// become a lie the day a 1.x release budgets the recording run, with no new name
+    /// available until 2.0. `child_*` is the family it joins.
+    ///
+    /// What the refusal does NOT claim: that the child is gone. SIGKILL was sent, not
+    /// observed delivered: the reap runs under a bounded grace, and a child in
+    /// uninterruptible sleep — or one whose credentials the group signal cannot
+    /// reach — is left behind as a stray for the quiescence check, so the path that
+    /// exists to end a hang cannot itself hang. Setting the budget also resets
+    /// SIGCHLD to its default disposition once for the whole run (the kill-safety
+    /// basis: unreaped children stay zombies, pinning their pids), so every child of
+    /// the run sees the same signal environment.
+    /// The timed-out world is not counted in `explored`, like every refusal raised
+    /// inside the world loop — which inherits, rather than resolves, the standing gap
+    /// between that counter's name ("worlds actually run") and a world that ran only
+    /// to be refused. MCP callers cannot set the budget today; the wiring is 1.x work
+    /// and touches no frozen surface.
+    child_timed_out,
     /// The subject's kill-point records and its highest sequence number disagree —
     /// the numbering has gaps or duplicates. A restarted counter after an
     /// unobserved image change is exactly a duplicate (#123), and every address

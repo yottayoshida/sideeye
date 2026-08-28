@@ -79,6 +79,10 @@ const Args = struct {
     check: ?config.Command = null,
     allow_unverified: bool = false,
     fresh_state: bool = false,
+    /// The per-world wall-clock budget in seconds (#263). Null — the default — means
+    /// no budget anywhere: the flag is opt-in, and turning it on is the operator's
+    /// explicit choice, never a shipped default that could move a verdict.
+    world_timeout_s: ?u32 = null,
     /// Replay only (#266): the directory the case's state must resolve strictly
     /// inside. The MCP server passes its destruction range here; the case path being
     /// vetted says nothing about where the case's OWN define points the deletion.
@@ -357,9 +361,9 @@ fn usage() void {
         \\usage:
         \\  sideeye demo [--shim <lib>]
         \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
-        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye mcp
         \\  sideeye help
         \\  sideeye version
@@ -430,6 +434,15 @@ fn usage() void {
         \\               routinely, and an orphaned exploration otherwise keeps killing
         \\               processes and rewriting its state directory with nobody left to
         \\               report to. A run that hangs before a boundary is out of reach.
+        \\  --world-timeout <s>
+        \\               wall-clock budget per explored world, in seconds (1..86400,
+        \\               off by default). A world's operation still running when the
+        \\               budget expires is sent SIGKILL and refused UNKNOWN
+        \\               child_timed_out, with the budget in the message. Worlds only: a
+        \\               recording run, setup command or checker that hangs still hangs —
+        \\               this flag is not a promise of a hang-free run. Setting it also
+        \\               resets SIGCHLD to its default disposition for the whole run.
+        \\               Not settable over MCP today.
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\
@@ -813,6 +826,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Mirrored immediately: a refusal between here and the canonical binding
             // below must not report the declaration as 0 (R1 finding).
             expected_status_val = args.expect_status.?;
+        }
+        else if (std.mem.eql(u8, argv[i], "--world-timeout")) {
+            // #263. Worlds only — the recording run, setup and checkers have no
+            // budget, and the help text says so: the flag must not read as a promise
+            // of a hang-free run.
+            if (mode == .preflight) setupError("preflight explores no worlds; --world-timeout belongs to explore and replay");
+            args.world_timeout_s = parseWorldTimeout(v);
+            // The budget's kill-safety and its bounded teardown both stand on
+            // unreaped children staying zombies, so SIGCHLD goes to its default
+            // disposition here — once, for the whole run, before any fork. An
+            // inherited SIG_IGN survives exec and would let the kernel auto-reap;
+            // resetting per-world instead would hand the first world a different
+            // signal environment than every later one, and leave a window between
+            // its fork and the reset. Every child of the run — recording, worlds,
+            // checkers — now inherits the same default. Idempotent, so a repeated
+            // flag is harmless. Documented in the flag's help text.
+            _ = posix.signal(posix.SIGCHLD, posix.SIG_DFL);
         }
         else if (std.mem.eql(u8, argv[i], "--state-under")) {
             // #266. Replay only: an explore's config is the trust boundary and its
@@ -1782,7 +1812,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         removeFile(world_trace);
         removeFile(world_stdout);
 
-        const term = posix.runChildCapture(gpa, op_argv, &.{
+        const term = posix.runChildCaptureWorld(gpa, op_argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
@@ -1791,7 +1821,29 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Pinned empty: see the recording pairs.
             .{ contract.env.seq_base, "" },
             .{ preload_var, shim },
-        }, world_stdout) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+        }, world_stdout, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null) catch |e| switch (e) {
+            // Received here, at the one site that passes a budget, so the refusal can
+            // name the limit that fired — the rule #323 and #351 shipped under:
+            // a failure with a limit reports the limit, because the operator can move
+            // it. `spawnFailure` never sees TimedOut; every other call site's error
+            // type says so at compile time.
+            error.TimedOut => {
+                // The format below is a fixed string plus at most five digits
+                // (parseWorldTimeout caps the value at 86400), so 320 bytes holds it
+                // with margin — measured, after the first sizing of this buffer read
+                // as provable and panicked on the very first firing. `catch
+                // unreachable` on a bound someone eyeballed is just a deferred crash;
+                // it stays only because the bound is now arithmetic.
+                var tbuf: [320]u8 = undefined;
+                const detail = std.fmt.bufPrint(
+                    &tbuf,
+                    "a world's operation was still running after the --world-timeout budget of {d} second(s) expired; it was sent SIGKILL, and the remaining worlds cannot be judged. Raise the budget, or investigate what the operation waits on",
+                    .{args.world_timeout_s.?},
+                ) catch unreachable;
+                unknown(.child_timed_out, detail);
+            },
+            error.ForkFailed, error.OutOfMemory, error.WaitFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
+        };
 
         var wtrace = readTraceOrRefuse(gpa, world_trace, trace_cap_world, "could not read a world trace");
         answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
@@ -2196,6 +2248,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
 /// two spellings of the same declaration cannot drift into accepting different
 /// grammars — the value they produce governs the recording check, the baseline
 /// world, the saved case, and the report alike (ADR 0014).
+/// `--world-timeout` in seconds: 1..86400, digits only (#263). Zero is refused rather
+/// than read as "no budget" — an operator who typed a number meant a bound, and the
+/// spelling for "no bound" is omitting the flag. The ceiling is a day: any larger value
+/// is more plausibly a unit mistake than an intent, and the bound is what keeps the
+/// millisecond conversion trivially inside u64.
+fn parseWorldTimeout(s: []const u8) u32 {
+    const msg = "--world-timeout must be a whole number of seconds, 1..86400";
+    if (s.len == 0 or s.len > 5) setupError(msg);
+    var v: u32 = 0;
+    for (s) |ch| {
+        if (ch < '0' or ch > '9') setupError(msg);
+        v = v * 10 + (ch - '0');
+    }
+    if (v == 0 or v > 86400) setupError(msg);
+    return v;
+}
+
 fn parseExpectStatus(s: []const u8, msg: []const u8) u8 {
     if (s.len == 0 or s.len > 3) setupError(msg);
     var v: u32 = 0;

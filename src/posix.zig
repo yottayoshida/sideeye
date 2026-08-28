@@ -105,10 +105,14 @@ pub extern "c" fn setpgid(pid: c_int, pgid: c_int) c_int;
 pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
 /// Waits without reaping, which `waitpid` cannot do. See `runChild` for why that matters.
 ///
-/// The `siginfo_t` out-parameter is written but never read here, so it is passed as an
-/// opaque buffer rather than described: the struct differs between the platforms and
-/// nothing in this file needs a field of it.
+/// The out-parameter is typed `std.c.siginfo_t` at the call sites (the type, per this
+/// file's policy, comes from std.c) but crosses the ABI as an opaque pointer here: the
+/// blocking path never reads it, and the budget path reads exactly one field of it,
+/// through `siPid` below.
 pub extern "c" fn waitid(idtype: c_int, id: c_int, infop: *anyopaque, options: c_int) c_int;
+pub extern "c" fn clock_gettime(clockid: c_int, tp: *std.c.timespec) c_int;
+pub extern "c" fn nanosleep(req: *const std.c.timespec, rem: ?*std.c.timespec) c_int;
+pub extern "c" fn signal(sig: c_int, handler: usize) usize;
 pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
 pub extern "c" fn getenv(name: [*:0]const u8) ?[*:0]u8;
 pub extern "c" fn _exit(status: c_int) noreturn;
@@ -140,6 +144,28 @@ pub const SIGKILL: u8 = 9;
 pub const P_PID: c_int = 1;
 pub const WEXITED: c_int = 4;
 pub const WNOWAIT: c_int = if (builtin.os.tag == .linux) 0x01000000 else 0x00000020;
+/// Same value on both sides (glibc `bits/waitflags.h`, macOS `sys/wait.h`) — said
+/// explicitly, per the rule the comment above states for the agreeing constants.
+pub const WNOHANG: c_int = 1;
+/// The clock the world budget reads. The number differs per platform — glibc
+/// `bits/time.h` says 1, the macOS SDK's `time.h` says 6 — the same shape as WNOWAIT.
+pub const CLOCK_MONOTONIC: c_int = if (builtin.os.tag == .linux) 1 else 6;
+/// SIGCHLD differs too: 17 on Linux, 20 on Darwin.
+pub const SIGCHLD: c_int = if (builtin.os.tag == .linux) 17 else 20;
+pub const SIG_DFL: usize = 0;
+
+/// The one siginfo field the budget path reads, behind the one comptime switch that
+/// knows the two platforms spell it differently: a flat `pid` on Darwin, nested under
+/// `fields.common.first.piduid` in glibc's layout. POSIX pins the semantic this relies
+/// on: with WNOHANG and no child ready, a successful `waitid` leaves `si_pid` zero —
+/// which is why the struct is zeroed before every call rather than trusted.
+pub fn siPid(info: *const std.c.siginfo_t) std.c.pid_t {
+    return switch (builtin.os.tag) {
+        .macos => info.pid,
+        .linux => info.fields.common.first.piduid.pid,
+        else => @compileError("unsupported OS"),
+    };
+}
 
 pub const O_RDONLY: c_int = 0;
 pub const O_WRONLY: c_int = 1;
@@ -426,6 +452,35 @@ pub fn runChildCapture(
     return runChildImpl(gpa, argv, env_pairs, stdout_path, false, false);
 }
 
+/// `runChildCapture` with a wall-clock budget: the one entry point that can answer
+/// `error.TimedOut`, used by the world loop alone (#263). Everything else keeps the
+/// plain `SpawnError`, so a caller that never passes a budget cannot receive a timeout
+/// by type — the containment that an `unreachable` arm in the caller's error switch
+/// would only have checked at run time.
+///
+/// The budget is a measurement rule, not a physical claim: a child a successful
+/// post-deadline observation still sees running is sent SIGKILL and reported TimedOut;
+/// one an observation sees exited is accepted as in-budget. What TimedOut promises
+/// about waiting is bounded too — the kill's reap runs under a fixed grace, after which
+/// the child (uninterruptible sleep, or credentials the group signal cannot reach) is
+/// left as a stray for the quiescence check, and the budget path has no unbounded call
+/// in it.
+///
+/// A caller that passes a budget must have reset SIGCHLD to its default disposition
+/// first (main does, once for the whole run, when the flag parses): both the kill's
+/// safety and the boundedness of the exited-side reap stand on unreaped children
+/// staying zombies, and an inherited SIG_IGN — which survives exec — would let the
+/// kernel auto-reap them instead.
+pub fn runChildCaptureWorld(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    stdout_path: []const u8,
+    budget_ms: ?u64,
+) (SpawnError || error{TimedOut})!Term {
+    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, false, false, budget_ms, RealOps);
+}
+
 /// `runChildCapture`, with the child's stderr sent to the same file. The
 /// falsification gate uses this (#134): its child's output must not reach the
 /// transcript unlabeled, and a checker reports through both streams — the target's
@@ -461,30 +516,69 @@ fn runChildImpl(
     minimal_env: bool,
     capture_stderr: bool,
 ) SpawnError!Term {
-    return runChildImplWithWait(gpa, argv, env_pairs, stdout_path, minimal_env, capture_stderr, waitpid);
+    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, minimal_env, capture_stderr, null, RealOps) catch |e| switch (e) {
+        // A null budget never takes the timeout branch — see the budget block below,
+        // which is the only producer of this error and is gated on `budget_ms != null`.
+        error.TimedOut => unreachable,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed => |narrow| narrow,
+    };
 }
 
-/// `runChildImpl` with the wait call as a parameter, so a test can drive the retry
-/// decision without needing the OS to fail on demand. Production always passes the real
-/// `waitpid` (the wrapper above is the only non-test caller); the seam exists because the
-/// retry logic is the part that was wrong, and a test that only exercised a pure
-/// "did it succeed?" helper would pass against an implementation that ignored the real
-/// wait result entirely.
+/// How long the timeout path waits for its own SIGKILL to produce a reapable child
+/// before it stops waiting and leaves a stray (#263). Not a second budget on the
+/// target — SIGKILL delivery is the kernel's promise and normally lands in
+/// microseconds — but the bound that keeps "the budget path never waits without
+/// bound" true when the promise fails: a child pinned in uninterruptible sleep, or
+/// one whose credentials the group signal could not reach.
+const world_kill_grace_ms: u64 = 5000;
+
+/// The operations the wait-and-teardown section performs, as a comptime seam (#264
+/// added the wait; #263 widened it to the whole budget vocabulary). Production always
+/// passes `RealOps`; a test passes a type that fakes the parts being driven and
+/// delegates the rest. A fake `wait` is expected to delegate group waits (`pid < 0`)
+/// to the real `waitpid`, so the test's own children are still reaped while the
+/// direct wait is the part being driven.
 ///
-/// The group drain goes through the same seam, so a test can assert that the drain still
-/// runs when the direct child's wait failed — the early-return version of this fix skipped
-/// it and would have leaked the very child whose reaping had just failed. A fake is
-/// expected to delegate group waits (`pid < 0`) to the real `waitpid`, so the test's own
-/// children are still reaped while the direct wait is the part being driven.
-fn runChildImplWithWait(
+/// The seam exists because the retry and deadline logic is the part that has been
+/// wrong — a test that only exercised a pure "did it succeed?" helper would pass
+/// against an implementation that ignored the real wait result entirely — and because
+/// nine consecutive failures, an interruption storm, or a clock crossing a deadline
+/// are not things a test can arrange for real.
+const RealOps = struct {
+    fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
+        return waitpid(pid, status, options);
+    }
+    fn waitidPoll(pid: c_int, info: *std.c.siginfo_t, options: c_int) c_int {
+        return waitid(P_PID, pid, @ptrCast(info), options);
+    }
+    fn killGroup(pid: c_int) void {
+        _ = kill(-pid, SIGKILL);
+    }
+    fn nowMs() u64 {
+        var ts: std.c.timespec = undefined;
+        // A compile-time-constant, valid clockid cannot produce EINVAL, and a stack
+        // pointer cannot produce EFAULT (POSIX clock_gettime). The same shape as the
+        // world loop's `bufPrint … catch unreachable`: a cannot-happen made loud
+        // rather than a garbage value read silently.
+        if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) unreachable;
+        return @as(u64, @intCast(ts.sec)) * 1000 + @as(u64, @intCast(ts.nsec)) / 1_000_000;
+    }
+    fn sleepMs(ms: u64) void {
+        var ts: std.c.timespec = .{ .sec = @intCast(ms / 1000), .nsec = @intCast((ms % 1000) * 1_000_000) };
+        _ = nanosleep(&ts, null);
+    }
+};
+
+fn runChildImplWithOps(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
     stdout_path: ?[]const u8,
     minimal_env: bool,
     capture_stderr: bool,
-    comptime wait_fn: anytype,
-) SpawnError!Term {
+    budget_ms: ?u64,
+    comptime Ops: type,
+) (SpawnError || error{TimedOut})!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
@@ -507,6 +601,12 @@ fn runChildImplWithWait(
         break :blk list.ptr;
     } else null;
     const stdout_z: ?[*:0]const u8 = if (stdout_path) |sp| (try arena.dupeZ(u8, sp)).ptr else null;
+
+    // The budget clock starts before the fork: the child is runnable the moment fork
+    // returns, and time the parent spends unscheduled between fork and its first poll
+    // belongs to the world's wall-clock budget, not to nobody. Guarded, so a null
+    // budget still never reads the clock.
+    const budget_t0: u64 = if (budget_ms != null) Ops.nowMs() else 0;
 
     const pid = fork();
     if (pid < 0) return error.ForkFailed;
@@ -570,14 +670,131 @@ fn runChildImplWithWait(
 
     // Wait for the child to finish, but leave it reapable so its pid — and therefore the
     // group id about to be signalled — cannot be handed to anything else.
-    var info: [256]u8 align(16) = undefined;
-    if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) {
-        // Everything the target left behind, in one signal, while the id is still pinned.
-        _ = kill(-pid, SIGKILL);
+    if (budget_ms) |budget| {
+        // The bounded wait (#263). Same WNOWAIT discipline as the blocking branch
+        // below, plus WNOHANG and a monotonic deadline. Every path out of this block
+        // returns from inside it — the blocking reap-and-drain below belongs to the
+        // null-budget branch alone — and none of them contains an unbounded call.
+        const deadline = budget_t0 + budget;
+        var interval: u64 = 1;
+        var eintr_streak: u32 = 0;
+        var past_deadline = false;
+        const outcome: enum { exited, timed_out, waitid_broke } = poll: while (true) {
+            var info: std.c.siginfo_t = std.mem.zeroes(std.c.siginfo_t);
+            const rc = Ops.waitidPoll(pid, &info, WEXITED | WNOWAIT | WNOHANG);
+            if (rc != 0) {
+                // An interruption is retried — bounded by the same nine-attempt
+                // discipline as the blocking reap below, because a storm of them
+                // would otherwise poll forever without ever reaching the clock, and
+                // "the budget path never waits without bound" has to hold against
+                // the storm too. Exhaustion joins every other failure in the
+                // permanent arm, and the permanent arm does NOT kill: ECHILD here
+                // can mean an inherited SIGCHLD disposition auto-reaped the child,
+                // and a reaped child's pid may already name a stranger. The
+                // conservative rule of the blocking branch holds — nothing is
+                // signalled on an unpinned id. A failed call is not an observation
+                // of "still running" either, so it can never answer .timed_out.
+                if (std.c._errno().* == EINTR) {
+                    eintr_streak += 1;
+                    if (eintr_streak < 9) continue :poll;
+                }
+                break :poll .waitid_broke;
+            }
+            eintr_streak = 0;
+            if (siPid(&info) == pid) break :poll .exited;
+            const now = Ops.nowMs();
+            if (now >= deadline) {
+                // The deadline has passed and this successful poll saw the child
+                // running. One more successful observation is taken — immediately,
+                // no sleep — before the verdict, so a child that exited between the
+                // last sleep and the deadline check is accepted: the boundary race
+                // classifies toward the child. This is the measurement rule the
+                // member's doc promises, not a proof the child finished its work
+                // inside the budget. Only a *successful* post-deadline observation
+                // can answer .timed_out; a failing one lands above in .waitid_broke
+                // and kills nothing.
+                if (past_deadline) break :poll .timed_out;
+                past_deadline = true;
+                continue :poll;
+            }
+            // Adaptive: a fast world pays ~1ms, a hung one converges to 10ms polls.
+            Ops.sleepMs(@min(interval, deadline - now));
+            interval = @min(interval * 2, 10);
+        };
+        switch (outcome) {
+            .exited => {
+                // The successful observation pinned the id (WNOWAIT consumed
+                // nothing, and with SIGCHLD at default an exited child is a zombie,
+                // not a recycled pid), so the group signal is safe — the blocking
+                // branch's own argument.
+                Ops.killGroup(pid);
+                // The direct reap may block: the child was observed exited and the
+                // default disposition holds it zombie, so the wait returns without
+                // waiting. The group drain may NOT block — the target can have put
+                // other processes in the group directly, and if the SIGKILL failed
+                // to land on one of them (uninterruptible sleep, changed
+                // credentials) a blocking drain would hang the very path that
+                // promises not to. Survivors are strays for the quiescence check.
+                var status: c_int = 0;
+                const wait_failed = for (0..9) |_| {
+                    if (Ops.wait(pid, &status, 0) >= 0) break false;
+                    if (std.c._errno().* != EINTR) break true;
+                } else true;
+                while (Ops.wait(-pid, null, WNOHANG) > 0) {}
+                if (wait_failed) return error.WaitFailed;
+                return decodeStatus(status);
+            },
+            .timed_out => {
+                // The observation one line up saw the child alive, and the default
+                // SIGCHLD disposition holds it zombie once it dies, so the id is
+                // pinned here too.
+                Ops.killGroup(pid);
+                // Reap under a grace, not without bound: SIGKILL normally produces a
+                // reapable child in microseconds, and when it cannot — uninterruptible
+                // sleep, or credentials the group signal does not reach — the child is
+                // left as a stray for the quiescence check rather than hanging the
+                // very path that exists to end a hang. The kill's rc is deliberately
+                // not consulted for the verdict: the budget expiry was measured, and
+                // a group-kill rc of 0 would not prove delivery to the direct child
+                // anyway.
+                const grace_deadline = Ops.nowMs() + world_kill_grace_ms;
+                var ginterval: u64 = 1;
+                reap: while (true) {
+                    const wrc = Ops.wait(pid, null, WNOHANG);
+                    if (wrc == pid) break :reap;
+                    if (wrc < 0 and std.c._errno().* != EINTR) break :reap;
+                    const gnow = Ops.nowMs();
+                    if (gnow >= grace_deadline) break :reap;
+                    Ops.sleepMs(@min(ginterval, grace_deadline - gnow));
+                    ginterval = @min(ginterval * 2, 10);
+                }
+                // The drain still runs before the error is returned — the discipline
+                // the blocking branch states — but non-blocking here, for the same
+                // reason as the grace above.
+                while (Ops.wait(-pid, null, WNOHANG) > 0) {}
+                return error.TimedOut;
+            },
+            .waitid_broke => {
+                // Nothing was signalled (see the loop comment), so nothing here may
+                // block on a child that might still be running: one non-blocking reap
+                // attempt, a non-blocking drain, and the same refusal the blocking
+                // branch gives a broken wait. A live child this leaves behind is a
+                // stray; the stray is what the quiescence check is for.
+                _ = Ops.wait(pid, null, WNOHANG);
+                while (Ops.wait(-pid, null, WNOHANG) > 0) {}
+                return error.WaitFailed;
+            },
+        }
+    } else {
+        var info: [256]u8 align(16) = undefined;
+        if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) {
+            // Everything the target left behind, in one signal, while the id is still pinned.
+            _ = kill(-pid, SIGKILL);
+        }
+        // If `waitid` failed the id is not pinned, so nothing is signalled: sending SIGKILL to
+        // a group that may have been recycled is worse than leaving a stray process. The stray
+        // is what the quiescence check is for.
     }
-    // If `waitid` failed the id is not pinned, so nothing is signalled: sending SIGKILL to
-    // a group that may have been recycled is worse than leaving a stray process. The stray
-    // is what the quiescence check is for.
 
     // Retried rather than assumed. `status` is only written when the call succeeds, so a
     // discarded failure leaves it zero, `decodeStatus` reads a killed world as a clean
@@ -597,7 +814,7 @@ fn runChildImplWithWait(
     // is what noticed. `else` runs only when the range is exhausted without a `break`.
     var status: c_int = 0;
     const wait_failed = for (0..9) |_| {
-        if (wait_fn(pid, &status, 0) >= 0) break false;
+        if (Ops.wait(pid, &status, 0) >= 0) break false;
         if (std.c._errno().* != EINTR) break true;
     } else true;
 
@@ -608,7 +825,7 @@ fn runChildImplWithWait(
     // This runs *before* the wait failure is returned. Returning early would skip the drain
     // and leave behind the direct child itself — never reaped, since reaping it is exactly
     // what just failed. A fix for a wrong verdict must not introduce a process leak.
-    while (wait_fn(-pid, null, 0) > 0) {}
+    while (Ops.wait(-pid, null, 0) > 0) {}
 
     if (wait_failed) return error.WaitFailed;
     return decodeStatus(status);
@@ -625,13 +842,12 @@ test "exit status decoding distinguishes exit from signal" {
     try std.testing.expect(!decodeStatus(0x0000).isSignal(9));
 }
 
-/// A wait the tests can drive. The seam in `runChildImplWithWait` exists so the retry
-/// decision can be exercised without asking the OS to fail on demand — nine consecutive
-/// `waitpid` failures are not something a test can arrange for real.
+/// An Ops whose direct wait the tests can drive, everything else real (see `RealOps`).
+/// Nine consecutive `waitpid` failures are not something a test can arrange for real.
 ///
 /// Group waits (`pid < 0`) are delegated to the real `waitpid`, so the drain actually reaps
 /// this test's children; only the direct child's wait is faked. State is file-scope because
-/// the seam takes a plain function: `zig build test` runs this file in several concurrent
+/// the seam takes plain functions: `zig build test` runs this file in several concurrent
 /// *binaries*, but the tests inside one binary run in sequence, so resetting at the top of
 /// each test is enough (a shared *path* would not be — see #28 below).
 const FakeWait = struct {
@@ -670,12 +886,19 @@ const FakeWait = struct {
         if (status) |s| s.* = deliver_status;
         return 0;
     }
+
+    // The rest of the Ops surface, real: these three tests drive the retry decision
+    // only, and a null budget never touches the clock or sleep (a fourth test pins that).
+    const waitidPoll = RealOps.waitidPoll;
+    const killGroup = RealOps.killGroup;
+    const nowMs = RealOps.nowMs;
+    const sleepMs = RealOps.sleepMs;
 };
 
 test "a wait that fails permanently refuses instead of reporting a clean exit" {
     FakeWait.reset();
     FakeWait.permanent = true;
-    const r = runChildImplWithWait(std.testing.allocator, &.{"true"}, &.{}, null, false, false, FakeWait.wait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeWait);
 
     // Before #264 this returned `.exited = 0`: `status` keeps the zero it was initialised
     // with, and every explored world is expected to die by signal, so the engine reported
@@ -692,7 +915,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
     FakeWait.reset();
     FakeWait.eintr_budget = 3;
     FakeWait.deliver_status = 0x0100; // exit(1)
-    const term = try runChildImplWithWait(std.testing.allocator, &.{"true"}, &.{}, null, false, false, FakeWait.wait);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeWait);
 
     // The status written by the call that succeeded — not the zero the loop started with.
     try std.testing.expectEqual(Term{ .exited = 1 }, term);
@@ -703,12 +926,228 @@ test "an interrupted wait is retried and the status that finally arrives is the 
 test "an interruption that never stops is bounded rather than looping forever" {
     FakeWait.reset();
     FakeWait.eintr_budget = std.math.maxInt(u32);
-    const r = runChildImplWithWait(std.testing.allocator, &.{"true"}, &.{}, null, false, false, FakeWait.wait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeWait);
 
     try std.testing.expectError(error.WaitFailed, r);
     // The first call plus the eight retries the bound allows.
     try std.testing.expectEqual(@as(u32, 9), FakeWait.direct_calls);
     try std.testing.expect(FakeWait.drain_calls >= 1);
+}
+
+/// An Ops whose whole budget vocabulary the tests script (#263): the waitid poll
+/// answers from a play-list, the clock advances a fixed step per read, sleeps and
+/// kills are counted rather than performed — except that the group kill and group
+/// waits delegate to the real calls so the test's own forked child is still cleaned
+/// up. What this buys over `FakeWait`: a deadline crossing, an interruption storm at
+/// the poll, and a SIGKILL that never lands are all drivable in zero real time.
+const FakeBudget = struct {
+    const Poll = union(enum) { running, exited, err: c_int };
+
+    var script: []const Poll = &.{};
+    var script_i: usize = 0;
+    var direct_waits: []const c_int = &.{};
+    var direct_wait_i: usize = 0;
+    var deliver_status: c_int = 0;
+    var now: u64 = 0;
+    var now_step: u64 = 0;
+    var kill_calls: u32 = 0;
+    var sleep_calls: u32 = 0;
+    var clock_calls: u32 = 0;
+    var blocking_direct_waits: u32 = 0;
+    var blocking_group_waits: u32 = 0;
+    var drain_calls: u32 = 0;
+
+    fn reset() void {
+        script = &.{};
+        script_i = 0;
+        direct_waits = &.{};
+        direct_wait_i = 0;
+        deliver_status = 0;
+        now = 0;
+        now_step = 0;
+        kill_calls = 0;
+        sleep_calls = 0;
+        clock_calls = 0;
+        blocking_direct_waits = 0;
+        blocking_group_waits = 0;
+        drain_calls = 0;
+    }
+
+    fn setSiPid(info: *std.c.siginfo_t, pid: std.c.pid_t) void {
+        switch (builtin.os.tag) {
+            .macos => info.pid = pid,
+            .linux => info.fields.common.first.piduid.pid = pid,
+            else => unreachable,
+        }
+    }
+
+    fn waitidPoll(pid: c_int, info: *std.c.siginfo_t, options: c_int) c_int {
+        _ = options;
+        const step = if (script_i < script.len) script[script_i] else script[script.len - 1];
+        script_i += 1;
+        switch (step) {
+            .running => return 0,
+            .exited => {
+                setSiPid(info, @intCast(pid));
+                return 0;
+            },
+            .err => |e| {
+                std.c._errno().* = e;
+                return -1;
+            },
+        }
+    }
+    fn killGroup(pid: c_int) void {
+        kill_calls += 1;
+        // Delegated, so the real forked child's group is genuinely signalled and the
+        // real drain below finds only corpses.
+        _ = kill(-pid, SIGKILL);
+    }
+    fn nowMs() u64 {
+        clock_calls += 1;
+        now += now_step;
+        return now;
+    }
+    fn sleepMs(ms: u64) void {
+        _ = ms;
+        sleep_calls += 1;
+    }
+    fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
+        if (pid < 0) {
+            drain_calls += 1;
+            if (options == 0) blocking_group_waits += 1;
+            return waitpid(pid, status, options);
+        }
+        if (options == 0) blocking_direct_waits += 1;
+        if (direct_wait_i < direct_waits.len) {
+            const rc = direct_waits[direct_wait_i];
+            direct_wait_i += 1;
+            if (rc > 0) {
+                if (status) |s| s.* = deliver_status;
+                return pid;
+            }
+            if (rc < 0) std.c._errno().* = FakeWait.ECHILD;
+            return rc;
+        }
+        if (status) |s| s.* = deliver_status;
+        return pid;
+    }
+};
+
+test "a world over budget is sent SIGKILL after a final observation, reaped under the grace, and refused TimedOut (#263)" {
+    FakeBudget.reset();
+    // First poll: alive, past the deadline. Second (final) observation: still alive
+    // → timeout. The clock's first read is the pre-fork budget_t0.
+    FakeBudget.script = &.{ .running, .running };
+    FakeBudget.direct_waits = &.{1}; // the grace reap succeeds at once
+    FakeBudget.now_step = 100;
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, FakeBudget);
+
+    try std.testing.expectError(error.TimedOut, r);
+    try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
+    // The drain ran before the error was returned, and nothing in the path blocked.
+    try std.testing.expect(FakeBudget.drain_calls >= 1);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_group_waits);
+}
+
+test "si_pid zero is 'still running', not 'exited': the poll keeps polling until the field names the child (#263)" {
+    FakeBudget.reset();
+    // Two honest not-yet answers, then the child. rc==0 alone must not be read as exit.
+    FakeBudget.script = &.{ .running, .running, .exited };
+    FakeBudget.deliver_status = 0; // exit(0) once the shared reap runs
+    FakeBudget.now_step = 1; // deadline 1000 is never approached
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, FakeBudget);
+
+    try std.testing.expectEqual(Term{ .exited = 0 }, term);
+    // All three polls were consumed: an implementation that treated the first rc==0
+    // as an exit would have stopped at one.
+    try std.testing.expectEqual(@as(usize, 3), FakeBudget.script_i);
+    try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
+    try std.testing.expectEqual(@as(u32, 2), FakeBudget.sleep_calls);
+    // The exited side of the budget path drains without blocking too: the target can
+    // have put other processes in the group directly, and one of them surviving the
+    // SIGKILL must not hang the path that promises not to wait without bound.
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_group_waits);
+}
+
+test "a null budget never touches the budget vocabulary: no clock, no sleep, no poll (#263)" {
+    FakeBudget.reset();
+    FakeBudget.deliver_status = 0;
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeBudget);
+
+    try std.testing.expectEqual(Term{ .exited = 0 }, term);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.clock_calls);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.sleep_calls);
+    try std.testing.expectEqual(@as(usize, 0), FakeBudget.script_i);
+}
+
+test "a child the final observation sees exited is accepted, not timed out — the boundary race classifies toward the child (#263)" {
+    FakeBudget.reset();
+    // Alive at the poll, deadline crossed, exited by the final observation.
+    FakeBudget.script = &.{ .running, .exited };
+    FakeBudget.deliver_status = 0;
+    FakeBudget.now_step = 100;
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, FakeBudget);
+
+    try std.testing.expectEqual(Term{ .exited = 0 }, term);
+    try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.sleep_calls);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_group_waits);
+}
+
+test "a poll interruption retries under the same deadline; a permanent poll failure kills nothing and refuses without blocking (#263)" {
+    FakeBudget.reset();
+    FakeBudget.script = &.{ .{ .err = EINTR }, .{ .err = EINTR }, .{ .err = FakeWait.ECHILD } };
+    FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
+    FakeBudget.now_step = 1;
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, FakeBudget);
+
+    try std.testing.expectError(error.WaitFailed, r);
+    // ECHILD can mean an inherited SIGCHLD disposition auto-reaped the child, and a
+    // reaped child's pid may already name a stranger: nothing may be signalled on an
+    // unpinned id.
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.kill_calls);
+    // Interruptions retried without sleeping, and nothing in the path blocked.
+    try std.testing.expectEqual(@as(usize, 3), FakeBudget.script_i);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.sleep_calls);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
+    try std.testing.expect(FakeBudget.drain_calls >= 1);
+}
+
+test "an interruption storm cannot poll forever: the ninth consecutive interruption refuses WaitFailed and kills nothing (#263)" {
+    FakeBudget.reset();
+    // One step that repeats: a poll interrupted every single time. Without the bound
+    // this loop never reaches the clock, and the budget silently stops existing.
+    FakeBudget.script = &.{.{ .err = EINTR }};
+    FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
+    FakeBudget.now_step = 1;
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, FakeBudget);
+
+    try std.testing.expectError(error.WaitFailed, r);
+    // Nine attempts — the blocking reap's own discipline — then refusal, no kill:
+    // an interrupted call is not an observation, so it must never become .timed_out.
+    try std.testing.expectEqual(@as(usize, 9), FakeBudget.script_i);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.kill_calls);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_group_waits);
+}
+
+test "a SIGKILL that never lands exhausts the grace, drains without blocking, and still answers TimedOut (#263)" {
+    FakeBudget.reset();
+    FakeBudget.script = &.{ .running, .running };
+    // The direct child never becomes reapable — uninterruptible sleep, or credentials
+    // the group signal could not reach.
+    FakeBudget.direct_waits = &.{ 0, 0, 0, 0, 0, 0, 0, 0 };
+    FakeBudget.now_step = 3000;
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, FakeBudget);
+
+    try std.testing.expectError(error.TimedOut, r);
+    try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
+    // The stray is left behind; nothing blocked waiting for it.
+    try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
+    try std.testing.expect(FakeBudget.drain_calls >= 1);
+    try std.testing.expect(FakeBudget.sleep_calls >= 1);
 }
 
 test "kindOfPathNoFollow classifies every kind without opening anything" {
