@@ -585,10 +585,11 @@ fn setupError(detail: []const u8) noreturn {
 /// published `verdict: "SETUP_ERROR"` for a mid-exploration failure: honest about the
 /// failure, wrong about when it happened, and a silent change to the serialized shape.
 ///
-/// How far the run has got. Two refusals read it and both ask the same question — did
-/// any of the define run before this failed? — so they share one vocabulary rather than
-/// growing a second: `spawnFailure` takes it as a parameter (the caller knows which step
-/// it was starting), and the per-file snapshot cap reads `run_phase` below (#330).
+/// How far the run has got. Three refusals share this one vocabulary rather than
+/// growing a second, and all ask the same question — did any of the define run before
+/// this failed? `spawnFailure` takes it as a parameter (the caller knows which step it
+/// was starting); the per-file snapshot cap (#330) and the rewrite disposition (#363)
+/// read `run_phase` below.
 const SpawnPhase = enum {
     /// Before any world runs: `--setup`, the demo's compiler probe, the initial
     /// snapshot. A failure here really does mean the define never got started.
@@ -1171,7 +1172,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // executability check). Every refusal in that stretch exits 3, correctly: a
     // missing `--operation` really is a configuration problem. They can, because they
     // reach `setupError` directly and never consult this variable. The line is placed
-    // by what reads it, and the only reader is the snapshot cap.
+    // by what reads it: the snapshot cap (#330) and the rewrite disposition (#363).
     run_phase = .exploring;
 
     var rec_trace_buf: [contract.max_path]u8 = undefined;
@@ -1670,7 +1671,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
             unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested");
 
         engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore before falsifying the checker");
-        engine.corruptState(initial, state_abs) catch setupError("could not corrupt the state for the falsification probe");
+        // Through the same disposition as the restore one line up, not setupError:
+        // corruption is the other rewrite of the recorded tree, its errors are the
+        // same RestoreError set (UnsafeRoot included — engine.zig's own comment on
+        // corruptState says why it re-checks the root rather than trusting its
+        // neighbour), and by this line the define has run, so exit 3 would claim
+        // it never did (#363).
+        engine.corruptState(initial, state_abs) catch |e| restoreFailure(e, "could not corrupt the state for the falsification probe");
 
         // The gate's child output is captured and re-emitted with a per-line
         // `falsify: ` marker (#134). By design this step produces exactly the output
@@ -3131,20 +3138,83 @@ fn writeJsonReport(
 
 /// The destructive root stopped being the directory this run resolved.
 ///
-/// Every `restore`/`freshDir` call site folds its errors into one message, which used to
-/// swallow the one error that says something different: `UnsafeRoot` from
-/// `assertRootResolvesToItself` means the state directory was replaced between the resolution
-/// and the delete, not that the delete failed. That is an actionable difference — a
-/// setup command or the recorded operation left a link there — and it is the case an
-/// acceptance check can assert on.
-fn restoreFailure(e: anyerror, doing: []const u8) noreturn {
-    if (e == error.UnsafeRoot)
-        // Three causes now, not two: #327 added the third by moving a non-directory at the
-        // root from DeleteFailed to UnsafeRoot, which is the right class — the root is not
-        // a thing to empty — but the old wording named only a swap, and a refusal that
-        // states the wrong cause is worse than one that states none.
-        setupError("the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), it is not a directory, or it could not be read at all. Refusing to empty it");
-    setupError(doing);
+/// Two decisions live here, deliberately in one pure function so they cannot drift.
+///
+/// **The error decides the wording.** Every `restore`/`freshDir`/`corruptState` call
+/// site folds its errors into one message, which used to swallow the one error that
+/// says something different: `UnsafeRoot` from `assertRootResolvesToItself` means the
+/// state directory was replaced between the resolution and the destructive step, not
+/// that the step failed. That is an actionable difference — a setup command or the
+/// recorded operation left a link there — and it is the case an acceptance check can
+/// assert on.
+///
+/// **The phase decides the verdict** (#330's discipline, third application after
+/// `spawnFailure` and `snapshotRefusal`): before the recording run a rewrite that
+/// fails really is a setup problem, and from the recording run onward the define is
+/// running, so exit 3 would claim it never did (#363).
+///
+/// Typed and exhaustive on purpose: a new member of `engine.RestoreError` must stop
+/// compilation here rather than inherit `state_rewrite_failed` unexamined — the same
+/// containment the snapshot's spawn-error switch keeps.
+const RewriteDisposition = struct { exit: enum { setup, unknown }, detail: []const u8 };
+
+fn rewriteFailureDisposition(
+    phase: SpawnPhase,
+    e: engine.RestoreError,
+    doing: []const u8,
+) RewriteDisposition {
+    const detail: []const u8 = switch (e) {
+        // Three causes, not two: #327 added the third by moving a non-directory at the
+        // root from DeleteFailed to UnsafeRoot, which is the right class — the root is
+        // not a thing to rewrite — but the old wording named only a swap, and a refusal
+        // that states the wrong cause is worse than one that states none. "Destructive
+        // access", not "empty": the same refusal now serves the falsification probe's
+        // corruption (#363), which overwrites rather than empties.
+        error.UnsafeRoot => "the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), it is not a directory, or it could not be read at all. Refusing destructive access to it",
+        error.DeleteFailed, error.CreateFailed, error.PathTooLong => doing,
+    };
+    return .{
+        .exit = switch (phase) {
+            .before_exploration => .setup,
+            .exploring => .unknown,
+        },
+        .detail = detail,
+    };
+}
+
+fn restoreFailure(e: engine.RestoreError, doing: []const u8) noreturn {
+    const d = rewriteFailureDisposition(run_phase, e, doing);
+    switch (d.exit) {
+        .setup => setupError(d.detail),
+        .unknown => unknown(.state_rewrite_failed, d.detail),
+    }
+}
+
+test "a failed rewrite is SETUP_ERROR before exploration and UNKNOWN after, UnsafeRoot keeping its safety wording in both (#363)" {
+    const doing = "could not restore the state directory";
+    // Every member, both phases. The production switch is exhaustive, so a fifth
+    // RestoreError member stops compilation there; this count keeps the TEST honest
+    // about having covered the whole set when that day comes.
+    const errs = [_]engine.RestoreError{
+        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed, error.PathTooLong,
+    };
+    try std.testing.expectEqual(@as(usize, 4), @typeInfo(engine.RestoreError).error_set.?.len);
+    for (errs) |e| {
+        for ([_]SpawnPhase{ .before_exploration, .exploring }) |phase| {
+            const d = rewriteFailureDisposition(phase, e, doing);
+            // The phase alone decides the exit.
+            try std.testing.expectEqual(phase == .exploring, d.exit == .unknown);
+            // The error alone decides the wording, phase-invariantly: what to tell
+            // the operator does not change with when it happened.
+            if (e == error.UnsafeRoot) {
+                try std.testing.expect(
+                    std.mem.indexOf(u8, d.detail, "Refusing destructive access") != null,
+                );
+            } else {
+                try std.testing.expectEqualStrings(doing, d.detail);
+            }
+        }
+    }
 }
 
 fn removeFile(path: []const u8) void {
