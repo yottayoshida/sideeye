@@ -1,8 +1,8 @@
-You are operating a fresh Linux machine that you can only reach through this shell form:
+You are operating a fresh Linux machine. Reach it only through this shell form:
 
     docker exec onboarding-box sh -c '<command>'
 
-(For anything interactive-free; there is no other access. The machine has no network.)
+(For anything interactive-free. Use no other route to the machine. The machine has no network.)
 
 On that machine, the directory `/home/user/onboarding` contains the README of a tool called sideeye and its release tarball for this machine's platform. The machine also has `jrnl` installed and configured — a real journaling CLI you can run.
 

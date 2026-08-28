@@ -81,6 +81,28 @@ re-projection is not run or committed here); the extractor that produced the
 committed `meta.json` is the one at this run's own commit in history. The run count restarted per the
 protocol's rule; run 1's numbers and adjudication are unchanged.*
 
+*Instrument note (2026-08-28): **one parenthetical above is withdrawn**, and the
+sentence it supported is narrower than it reads. "(the run's tool calls were
+Bash and Write only)" is not supported by anything committed. The extractor of
+this run's date wrote **one row per event** and **overwrote that row's note with
+each content block**, so a tool census taken from `timeline.tsv` counts the last
+block of each of the 145 events, not the calls made — a `Bash` call followed by
+another call in the same event leaves only the second in the record. The same
+bound applies to "short enough to verify by eye": an eye reading 145 rows sees
+at most one call per event, and the raw stream those rows project from is
+gitignored and no longer on disk, so "the full commands re-project from the raw
+stream" is no longer available for this run. The predicates themselves did run
+per content block, so run 1's audit was not blind — but it had no notion of a
+tool outside the declared allow-set, and the amendment of this note's date
+records why that matters: `--allowedTools` was measured that day to grant rather
+than confine. **Whether run 1's driver stayed inside its allow-set is unmeasured
+and, without the raw stream, no longer measurable.** What is unaffected: the
+wall-clock arithmetic, the stop candidate, and the adjudication of the three
+flagged commands, all of which read fields the overwrite never touched. Also
+superseded: "the extractor has since been synced to the launcher's full list" —
+the extractor no longer keeps a list to sync, since the launcher passes the
+strings it gave the CLI. run 1's numbers and adjudication are unchanged.*
+
 ## What the driver said, verbatim
 
 Its closing report (the `result` event, in full):

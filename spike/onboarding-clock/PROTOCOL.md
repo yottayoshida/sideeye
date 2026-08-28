@@ -20,7 +20,11 @@ the wall-clock of the **first** qualifying exploration.
 
 - **Start**: the timestamp of the driver session's init event in its
   transcript. The README is the first thing the driver is pointed at, so
-  session start and "README open" coincide to within seconds.
+  session start and "README open" coincide to within seconds. *(Amended
+  2026-08-28: run 1's init event carried no timestamp, so what was actually
+  derived was the first timestamped event — the first assistant turn. The
+  launcher now stamps its own start as well, and the amendment names which
+  of the two the criterion reads.)*
 - **Stop**: the timestamp of the tool result carrying the qualifying
   exploration's exit. Both timestamps come from the committed transcript —
   the wall-clock is derived, never hand-written.
@@ -67,11 +71,19 @@ the criterion is about the documentation, not the driver's nerves. Tools:
 Bash **scoped to `docker exec onboarding-box` invocations** (Amendments,
 2026-08-25) plus Read/Edit/Write/Glob/Grep, with the network and delegation
 tools denied by name, and one standing instruction — every command that
-touches the machine goes through `docker exec` to the box. The audit reads
-the transcript afterwards, independently of the permission layer: a read
-into this repository's checkout or any denied-tool attempt voids the run;
-every command the box predicate cannot pass clean is surfaced for
-adjudication (Amendments, 2026-08-25).
+touches the machine goes through `docker exec` to the box.
+
+**The permission flags are not a seal, and the audit is the detector**
+(Amendments, 2026-08-28). What the audit promises is bounded and exact:
+**a tool call outside the run's declared allow-set is recorded in that run's
+evidence with its name and its whole input — serialised, unabridged, with the
+host home directory spelled `~`.** Those three words are the whole
+transformation; nothing is dropped, shortened or summarised. A path into this repository's
+checkout, or a denied tool attempted, voids the run; everything else the audit
+surfaces without being able to judge — a command the box predicate cannot pass
+clean, a tool nobody declared — is carried for adjudication. The audit does not
+claim to detect escape: a declared tool used badly is inside the allow-set and
+outside what any predicate here can see.
 
 ## Rehearsal boundary
 
@@ -165,3 +177,127 @@ the other eight were not exercised, and this sentence claims only the
 five that were. The run count is already restarted by the amendment above;
 this changes which binary run 2 measures, not the count. Run 1's evidence —
 measured against v0.10.0, named in its own transcript — is untouched.
+
+### 2026-08-28 — the confinement never existed, and the audit stops enumerating what to fear
+
+The 2026-08-25 amendment named one precondition for run 2: **probing the
+scoped pattern from a plain terminal.** That probe ran on 2026-08-28, four
+pairs, `CLAUDECODE` unset, and returned a negative answer. Two sentences of
+that amendment are withdrawn below, and the instrument they described is
+rebuilt. Per this protocol's own rule the run count restarts again; no run has
+been taken since run 1, so **the next timed run is still `run2`** — the count
+that restarts is the number of measurements standing under the current
+protocol, which is zero, not the directory numbering.
+
+**What was measured, from a plain terminal.** `--allowedTools` grants; it does
+not confine — a command outside the declared scope runs. `--permission-mode
+manual` does not change that. The only restriction observed at all was a
+working-directory sandbox, which refuses a read outside the launcher's scratch
+and does not stop a host command from running. `--disallowedTools` does remove
+the tools it names, and that much works — but removing one execution tool
+relocates execution rather than ending it: with `Bash` denied, the driver
+reached for `Monitor`, a tool on neither the allow list nor the deny list, and
+ran the same host command through it. **Run 1 is not evidence either way**: its
+allow-set was the bare `Bash`, and the scoping arrived with the first
+2026-08-25 amendment.
+
+**Two withdrawn sentences.**
+
+1. *"the audit's predicate — independent of any permission layer — carries
+   escape detection in every environment"* (2026-08-25, item 1). False as
+   written. Two of the three predicates enumerated what to reject: denied
+   tools by name, and this repository's root under two specific input keys.
+   `Monitor` matched neither, and its host command was invisible to all three.
+   Replaced by the bounded promise in **The driver** above.
+2. *"the launcher refuses when it detects a nested session [because] the scoped
+   pattern refused none of the escape shapes [there]"* (2026-08-25, item 1) —
+   the **diagnosis** is withdrawn, not the guard. Nesting was never the cause;
+   the pattern refuses nothing from a plain terminal either. The guard stays on
+   the other half of that measurement, which still holds: the parent session's
+   own permission classifier refused a **legitimate** in-box command, so a
+   nested run times the parent's configuration rather than this repository's
+   README.
+
+**What changed in the instrument.**
+
+1. **The audit enumerates what was allowed, not what to fear.** A tool call
+   whose name is not in the run's declared allow-set is surfaced with its name
+   and input. The list of names to fear cannot be written in advance — that is
+   what 2026-08-28 measured — while the launcher knows the allowed names
+   exactly. Off-allowlist calls are **adjudicated, not voided**: a benign tool
+   the CLI grants without asking should not destroy a run that costs a box,
+   and a real escape is still a human's call to void. This is the rule
+   `spike/loop-closure-timew/judge.sh` already applied ("recorded, not void");
+   this instrument was the one that had not.
+2. **Classification is ordered, and the order is load-bearing.** Denied by name
+   voids; then not-allowed adjudicates; then an allowed tool meets its own
+   predicate. Without the order a denied tool is demoted to adjudication. And
+   the allow spec must reduce to a tool **name** — the launcher declares
+   `Bash(docker exec onboarding-box *)` while the transcript says `Bash` — or
+   every legitimate box call lands off-allowlist and never reaches the box
+   predicate, a failure that still satisfies item 1's promise. The selftest
+   asserts that a legitimate box invocation carries no finding at all.
+3. **A finding carries the whole input**, serialised and home-spelled and
+   otherwise untouched. Findings were truncated at 160 characters, and the raw
+   transcript is not committed, so anything past that was unrecoverable at
+   adjudication time. The record is a **string**, not a structure: rewriting a
+   structure key by key can collide — an input holding both `<HOME>/k` and
+   `~/k` normalised to one key and lost a value — and a record that silently
+   drops part of what it is recording is worse than the leak it was closing.
+4. **The timeline carries every tool call.** The previous projection wrote one
+   row per event and overwrote its note with each content block, so only the
+   last call in an event survived into the committed record; a call carried
+   anywhere but `message.content` was absent from the record entirely. Both are
+   fixed, and the collector now walks the event recursively. **Run 1's
+   `timeline.tsv` is the older projection and is not edited** — it has no
+   `protocol_version` field either, since that field arrived on 2026-08-25.
+   Read it as one row per event, with the extractor at its own commit.
+   A consequence for anything ever said about run 1: a census taken from that
+   file counts **the last content block of each event**, not the calls made.
+5. **A transcript with no tool calls is `unauditable`, not clean**, and refuses
+   to publish; so does a policy that names no tool. Nothing-to-see is not
+   clean.
+6. **The policy has one definition.** The launcher's `ALLOWED` and `DISALLOWED`
+   strings go to the CLI and, unchanged, to the audit, which records them in
+   `meta.json`. The extractor's own copy of the denied list is deleted — it had
+   already drifted from the launcher by run 1, which `RESULTS.md` records.
+7. **The audit publishes its own scan volume**: lines read and rejected, events,
+   content blocks, tool calls, timeline rows, and a per-name census of the tools
+   used, beside the inventory the init event reports as available. Zero findings
+   over zero examined calls and zero findings over four hundred read identically
+   before this.
+8. **The repository void covers reach in either direction, and only what the
+   audit can attribute.** A path-shaped key **at the top level of a call's
+   input** — the call's own parameters — pointing at or into this checkout
+   voids the run. The finding does not say "read": `Write` and `Edit` carry
+   `file_path` too, so the direction is not determined, and writing into this
+   repository is not the lighter half. This repository's root appearing
+   anywhere *else*, nested payload included, is adjudicated rather than voided:
+   a call carrying a path is not a call reaching it, and the audit cannot
+   assume the input schema of a tool it could not enumerate. Both matches
+   require a path boundary — stated as the complement of a delimiter set, since
+   nearly any byte is legal in a filename — so neither `<root>-old` nor
+   `<root>+backup` is this checkout.
+9. **The launcher stamps its own start.** `meta.json` carries both
+   `launch_started_at` and the transcript-derived `clock_start`. **The
+   criterion reads `clock_start`**, as it always did; `launch_started_at`
+   exists so the gap between the two is visible rather than assumed to be
+   nothing. At run 1's 4:22 the gap did not matter; near ten minutes it decides
+   the outcome.
+10. **`prompt.md`'s access sentence becomes normative.** It said the driver
+    *can only* reach the machine through `docker exec` to the box. Run 1
+    disproved that in its own transcript — it reached the box with host-side
+    `docker cp`. The sentence now instructs rather than describes. This changes
+    the stimulus, deliberately and on the record: what run 2 measures is a
+    driver told to use one form, not a driver discovering that a false
+    statement was false.
+
+**On confinement, so this is not re-attempted.** The driver is an API client;
+it cannot be network-isolated while it works at all. The box is sealed
+(`--network=none`); the driver is not, and no combination of tool allow and
+deny lists will seal it — denying one execution tool leaves the others.
+Confining the driver would mean running it inside its own container with the
+CLI and its credentials, which is a different apparatus and would restart the
+count again. **The audit as detector is not a fallback here; it is the only
+design available**, and the promise in **The driver** is written to claim
+exactly what it delivers.
