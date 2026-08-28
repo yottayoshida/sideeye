@@ -93,7 +93,7 @@ the case file — nothing else in the report was load-bearing for them.
 `unsupported_syscall_observed`, `oracle_missed_operation`,
 `oracle_saw_phantom`, `oracle_saw_nothing`, `child_process_detected`,
 `child_touched_state_dir`, `multiple_threads_detected`, `unresolvable_path`,
-`kill_did_not_land`, `child_wait_failed`, `sequence_numbering_broken`,
+`kill_did_not_land`, `child_wait_failed`, `child_timed_out`, `sequence_numbering_broken`,
 `completeness_not_verified`,
 `trace_truncated`, `trace_too_large`, `state_file_too_large`,
 `state_tree_too_large`,

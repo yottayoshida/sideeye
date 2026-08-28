@@ -3479,9 +3479,10 @@ mkdir -p /tmp/acc
 # the end turns it into a flag that no line accepts.
 acc_dummy() {
     case "$1" in
-        --expect-status) printf '0' ;;
-        --json)          printf '%s' "$acc_argjson" ;;
-        *)               printf '%s' "$acc_nx.dummy" ;;
+        --expect-status)  printf '0' ;;
+        --world-timeout)  printf '1' ;;
+        --json)           printf '%s' "$acc_argjson" ;;
+        *)                printf '%s' "$acc_nx.dummy" ;;
     esac
 }
 
@@ -4249,6 +4250,96 @@ else
 fi
 chmod 755 /tmp/acc-rw-case/planted/pin 2>/dev/null
 rm -rf /tmp/acc-rw-case
+
+echo "=========== check: a world over its --world-timeout budget is sent SIGKILL and named (#263) ==========="
+# child_timed_out: a world's operation still running after the budget expires is
+# sent SIGKILL and refused UNKNOWN with the budget in the message. The contrast leg
+# drives the same flag with a budget the run cannot reach — it pins "fires on
+# measurement, not on presence"; the no-flag path is what every other check in this
+# suite runs under. The fixture is a single-process C helper
+# — the command string is split on whitespace with no quote handling, so a shell
+# one-liner cannot carry `sh -c '...'`, and a shell `sleep` would be a child process
+# tangled with the boundary detectors. It writes one state file always, and sleeps
+# only when SIDEEYE_KILL_AT is set: the recording run (no kill_at) is instant, every
+# crash world dies at the write before reaching the sleep, and only the un-killed
+# baseline sleeps into the budget.
+rm -rf /tmp/acc-wt && mkdir -p /tmp/acc-wt/state
+cat > /tmp/acc-wt/sleeper.c <<'EOF'
+/* Write-tmp-then-rename, toy-fixed's own crash-consistent shape: the scratch file
+ * is in neither the pre nor the post snapshot, and the rename is atomic, so every
+ * crash world satisfies the built-in invariant and the contrast leg can PASS. The
+ * first version wrote the file in place — truncate then write, the classic torn
+ * write — and turned the contrast into a genuine FAIL. */
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main(void) {
+    const char *dir = getenv("TOY_STATE");
+    if (!dir) return 1;
+    char tmp[512], fin[512];
+    snprintf(tmp, sizeof tmp, "%s/f.tmp", dir);
+    snprintf(fin, sizeof fin, "%s/f", dir);
+    FILE *f = fopen(tmp, "w");
+    if (!f) return 1;
+    fputs("t\n", f);
+    fclose(f);
+    if (rename(tmp, fin) != 0) return 1;
+    if (getenv("SIDEEYE_KILL_AT")) {
+        const char *s = getenv("TOY_SLEEP");
+        sleep(s ? (unsigned)atoi(s) : 30);
+    }
+    return 0;
+}
+EOF
+cc -O0 -o /tmp/acc-wt/sleeper /tmp/acc-wt/sleeper.c || { echo "FAIL world-timeout: fixture did not compile"; fails=$((fails + 1)); }
+# The outer `timeout 60` is the leg's own net: the acceptance step in CI has no
+# timeout of its own. A budget that silently never fires shows up as exit 0 after
+# the fixture's natural 30s sleep — the elapsed check below catches that — and a
+# budget path that itself hangs is cut at 60s and shows up as 124 instead of
+# hanging the job for hours.
+wt_t0=$(date +%s)
+o=$(TOY_SLEEP=30 timeout 60 "$SIDEEYE" explore --state /tmp/acc-wt/state \
+    --operation /tmp/acc-wt/sleeper \
+    --world-timeout 1 \
+    --shim "$SHIM" --work /tmp/acc-wt/work --allow-unverified \
+    --json /tmp/acc-wt/r.json 2>&1)
+rc=$?
+wt_elapsed=$(( $(date +%s) - wt_t0 ))
+# The elapsed bound is what separates "the budget cut the 30s sleep short" from
+# "the fixture finished on its own and something else produced the refusal": a
+# 1-second budget that takes 29 seconds to act is not the shipped promise.
+if [ "$rc" = "2" ] \
+    && [ "$wt_elapsed" -le 10 ] \
+    && echo "$o" | grep -q "child_timed_out" \
+    && echo "$o" | grep -q "budget of 1 second" \
+    && grep -q '"unknown_reason": "child_timed_out"' /tmp/acc-wt/r.json \
+    && grep -q '"verdict": "UNKNOWN"' /tmp/acc-wt/r.json \
+    && ! grep -q '"earliest"' /tmp/acc-wt/r.json; then
+    echo "ok   a world outliving its budget is refused UNKNOWN child_timed_out in ${wt_elapsed}s, naming the budget"
+else
+    echo "FAIL world over budget: exit $rc in ${wt_elapsed}s (wanted 2 + child_timed_out + the budget named, within 10s; ~30s+exit 0 = the budget never fired; 124 = the budget path itself hung)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# The contrast: the same operation under a budget it cannot reach passes — an
+# implementation that fires regardless of the budget, or whenever the flag is
+# present, dies here. TOY_SLEEP trims the baseline's sleep to 2s so the leg costs
+# seconds, not the fixture's full 30; the budget of a day is the "cannot reach"
+# value, not a guess.
+rm -rf /tmp/acc-wt/work /tmp/acc-wt/r.json
+o=$(TOY_SLEEP=2 timeout 90 "$SIDEEYE" explore --state /tmp/acc-wt/state \
+    --operation /tmp/acc-wt/sleeper \
+    --world-timeout 86400 \
+    --shim "$SHIM" --work /tmp/acc-wt/work --allow-unverified 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "PASS"; then
+    echo "ok   the same define under a generous budget still passes — the budget fires on measurement, not presence"
+else
+    echo "FAIL world-timeout contrast: exit $rc (wanted 0 PASS)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-wt
 
 reached_end=1
 echo ""
