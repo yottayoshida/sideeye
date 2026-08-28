@@ -572,3 +572,60 @@ jobs:
 
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
+
+  # The onboarding clock's audit is criterion 6's instrument: it decides whether a
+  # timed run's evidence stands. Until 2026-08-28 nothing here ran it — the launcher
+  # ran its selftest, and runs are rare, so a broken instrument could sit on main for
+  # weeks and surface only when someone burned a box on it. Its own job for the same
+  # reason as the one above: no toolchain, so a failure here names the instrument and
+  # nothing else.
+  onboarding-clock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The clock's audit still holds its own predicates
+        run: python3 spike/onboarding-clock/clock-audit.py --selftest
+
+      # --selftest returns before the argument handling, the file writes and the
+      # exit codes, which is the half the launcher depends on. This drives the
+      # real entry point twice and reads what it wrote. The `ok` fixture carries
+      # BOTH an off-allowlist call and a legitimate box invocation, so exactly one
+      # finding is the assertion that the scoped `Bash(...)` spec still reduces to
+      # the name `Bash` — if it stopped reducing there would be two.
+      - name: The clock's audit holds its exit codes and its policy wiring end to end
+        run: |
+          set -eu
+          d=$(mktemp -d)
+          mon='{"timestamp":"T1","type":"assistant","message":{"content":[{"type":"tool_use","id":"m","name":"Monitor","input":{"command":"echo off-allowlist"}}]}}'
+          box='{"timestamp":"T2","type":"assistant","message":{"content":[{"type":"tool_use","id":"b","name":"Bash","input":{"command":"docker exec onboarding-box true"}}]}}'
+          printf '%s\n%s\n' "$mon" "$box" > "$d/ok.jsonl"
+          printf '%s\n%s\nbroken {\n' "$mon" "$box" > "$d/broken.jsonl"
+          audit() {
+            rc=0
+            python3 spike/onboarding-clock/clock-audit.py \
+              --transcript "$1" --outdir "$d" --cli-version ci --prompt-sha x \
+              --agent-rc 0 --repo-root "$PWD" --target-version v \
+              --allowed 'Bash(docker exec onboarding-box *),Read,Edit,Write,Glob,Grep' \
+              --disallowed 'WebFetch,WebSearch,Task' \
+              --launch-started-at T0 || rc=$?
+            echo "exit=$rc"
+          }
+          # Read the JSON rather than grepping it: a count of `"kind"` lines is a
+          # count of occurrences of a word, and a tool input carrying its own
+          # `kind` key would inflate it. One physical line on purpose — a
+          # multi-line `python3 -c` here cannot be indented (module statements
+          # start at column 0) and so escapes this block scalar, which broke the
+          # workflow file in a way the shell alone could not show.
+          expect() {
+            python3 -c "import json,sys; m=json.load(open('$d/meta.json')); n=len(m['audit_void'])+len(m['audit_adjudicate']); t=sorted({f['tool'] for f in m['audit_void']+m['audit_adjudicate']}); print('verdict=%s findings=%d tools=%s' % (m['verdict'], n, t)); sys.exit(0 if (m['verdict']=='$1' and n==$2) else 'expected verdict $1 with $2 finding(s)')"
+          }
+          audit "$d/ok.jsonl"
+          test "$rc" = 0 || { echo '::error::an auditable run must exit 0'; exit 1; }
+          expect 'needs adjudication' 1 \
+            || { echo '::error::the scoped Bash spec may have stopped reducing to a name — a legitimate box call would then be flagged too'; exit 1; }
+          grep -q '"tool": "Monitor"' "$d/meta.json"
+          audit "$d/broken.jsonl"
+          test "$rc" != 0 || { echo '::error::a transcript with an unreadable line must not exit 0'; exit 1; }
+          expect 'unauditable' 1
+          echo 'ok: the real entry point holds its exit codes, its policy wiring and its writes'
