@@ -1,3 +1,6 @@
+*This page holds every run, appended in order and never edited. Run 2
+(2026-08-28) is below run 1.*
+
 # The onboarding clock — run 1 (2026-08-17)
 
 **4 minutes 22 seconds, README open to a real verdict. Criterion 6: met, on
@@ -139,3 +142,134 @@ clock ran against the repaired artifact, sha-pinned in the Dockerfile *(as it
 stood: the v0.10.0 tarball. The Dockerfile's pin moved to the current release
 on 2026-08-25 — PROTOCOL.md's second amendment that day — so this sentence's
 "the Dockerfile" is the file at run 1's commit, not the one beside it now.)*
+
+---
+
+# The onboarding clock — run 2 (2026-08-28)
+
+The first run under the 2026-08-28 protocol, and the first taken with an audit
+that enumerates the allowed tool names rather than a list of denied ones.
+
+## The number and where it comes from
+
+**2 minutes 55.707 seconds**, from the session's first timestamped event
+(`05:02:01.672Z`) to the tool result carrying a real PASS on jrnl
+(`05:04:57.379Z`). Both timestamps are in the committed `runs/run2/timeline.tsv`;
+the wall-clock is their difference and is not hand-written. Under the
+criterion's ten minutes, so: **met**.
+
+The launcher's own stamp, new in this protocol, reads `05:01:59Z` — **2.672
+seconds** before the first timestamped event. Run 1 had no way to see that gap
+at all, because its init event carried no timestamp either and nothing else
+recorded a start. At this size the gap changes nothing; the field exists so that
+at nine minutes it would not have to be assumed.
+
+The session ran on for another 37 seconds after the qualifying exploration
+(`duration_ms` 212931, 24 turns) to write its closing paragraph. The criterion's
+number is the first qualifying exploration, not the session.
+
+The exploration: `./sideeye explore --config /tmp/se/sideeye.toml --oracle
+/usr/bin/strace …` against jrnl v4.6, returning **PASS over 4 of 4 explored
+worlds** — and the checker falsified first, in the same output: `falsify:
+committed entry lost or mangled: 'seedalpha keeps its whole body' missing;
+journal now holds ['sideeye-corruption-probe']`. A check that cannot fail is not
+a check, and this one was shown failing before it passed.
+
+Driver: `claude --safe-mode -p`, model `claude-opus-5[1m]`, CLI `2.1.250`,
+prompt sha256 `f3252339585270854af97f5175ccb0c8757ff2598fc68b89adf8b8ba3b4174af`
+(the prompt's access sentence became normative in the same amendment, so this
+differs from run 1's).
+
+## The audit, including what it flagged
+
+`audit_void` is **empty**: no denied tool was attempted, and nothing reached
+this repository. `audit_adjudicate` holds **four findings over two commands**,
+both surfaced by the box predicate rather than by the new closed-world one.
+
+1. `05:02:39.704Z` — a plain `docker exec onboarding-box sh -c '…'` whose
+   argument contains `$(python3 -c …)`. The substitution expands **inside the
+   box**. Surfaced because the audit cannot tell an inside substitution from an
+   outside one and the protocol prefers a flag over silence. Inside the seal.
+2. `05:04:39.495Z` — three findings for one command: the driver authored its
+   `setup.sh`, `check.sh` and `sideeye.toml` **on the host** under `/tmp/sedef`,
+   then moved each into the box with `base64 … | docker exec … base64 -d > …`.
+   That is run 1's transfer idiom, character for character, and run 1's
+   adjudication governs it: driver-authored bytes moving *into* the box are
+   inside the seal; nothing flowed the other way.
+
+**A prediction in the 2026-08-25 amendment was wrong, and this run is where it
+shows.** That amendment expected a driver reaching for the transfer idiom to be
+*refused* by the scoped allowlist until it re-derived in-box authoring, and told
+a reader of run 2 to look for refused transfer attempts before treating a slow
+number as a README verdict. There were none: the allowlist refuses nothing, as
+the 2026-08-28 amendment records. The number is a README verdict with no
+apparatus detour in it.
+
+The other 21 of 23 commands are plain box invocations. Reads of jrnl's own
+installed source under `/usr/local/lib/python3.11/dist-packages/jrnl/` are what
+the prompt calls fair game — jrnl is the driver's tool.
+
+## What the permission layer actually granted
+
+New in this protocol, and the reason it was added: `meta.json` now records the
+tool inventory the CLI reported at init, beside the policy the launcher
+declared. They do not match.
+
+| | |
+|---|---|
+| Declared allowed | **6** — `Bash`, `Edit`, `Glob`, `Grep`, `Read`, `Write` |
+| Actually granted | **18** |
+| Granted but never declared | `CronList`, `DesignSync`, `EnterWorktree`, `ExitWorktree`, `ListAgents`, `Monitor`, `NotebookEdit`, `ReportFindings`, `Skill`, `TaskOutput`, `TaskStop`, `ToolSearch` |
+| Declared but not granted | none |
+| Denied names that were granted | **none — all 11 absent** |
+
+The `Cron` family splits exactly on the deny list: `CronList` was granted,
+`CronCreate` and `CronDelete` were not. So `--disallowedTools` removes what it
+names, and `--allowedTools` does not confine what it omits — measured from a
+plain terminal on 2026-08-28, and now visible inside a run's own evidence
+without anyone probing anything.
+
+**The driver used only `Bash`, 23 times.** Twelve undeclared tools sat available
+and none was touched, so nothing here needed the new predicate. That the
+predicate exists is what makes the sentence checkable rather than hopeful.
+
+## The box was not newly created, and what was measured about that
+
+`docker run` **failed** — `Conflict. The container name "/onboarding-box" is
+already in use` — and the run proceeded against a container created at
+`02:10:51Z`, two hours and fifty-one minutes earlier. The launcher's own checks
+(running, `--network=none`) passed, because they ask about the box's state
+rather than its age. This is a departure from "re-runs use a fresh box" and is
+recorded as one.
+
+What was measured, rather than assumed:
+
+- **Zero files inside the box changed** between its start (`02:10:52`) and the
+  run (`05:01:59`). The control for that scan: **47 files** changed after
+  `05:01:59`, so the query was live rather than vacuously empty. The box's clock
+  is UTC, so the window means what it says.
+- The driver's own first command, `ls -la /home/user/onboarding`, shows the
+  directory at `Aug 28 02:10` — image build time, untouched.
+- `README.md`, the release tarball, `jrnl --version` and jrnl's configuration
+  are **byte-identical** between this box and a container started fresh from the
+  current image, compared by sha256 after the run.
+- The box's `README.md` is byte-identical to `README.md` at the commit this run
+  measures.
+
+The image *ID* differs from the current tag's — the same-day rebuild was fully
+cached and still exported a new manifest — but the contents that matter are the
+four above, and they match. **Adjudication: the box was not new and was
+materially untouched, so the run stands.** The literal deviation is on the page
+because a reader should not have to reconstruct it from a failed `docker run`
+line in someone's terminal.
+
+## What this measurement is not
+
+One run is one measurement. It is not a distribution, and it does not say the
+README is good — it says one context-free driver got from that README to a real
+verdict on an external target in under three minutes, once, on this date.
+
+It is also not comparable to run 1's 4:22 as a trend. Between them the protocol
+was amended twice, the pinned artifact moved from v0.10.0 to v0.13.0, the prompt
+gained a normative sentence, and the README changed across thirteen commits.
+Two numbers under four different conditions are two measurements, not a series.
