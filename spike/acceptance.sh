@@ -4157,6 +4157,99 @@ else
     fi
 fi
 
+echo "=========== check: a rewrite the engine cannot perform refuses in its own phase (#363 Group B) ==========="
+# state_rewrite_failed: after the define has run, the engine failing to rewrite the
+# state tree it recorded is UNKNOWN with that name, never a SETUP ERROR; before the
+# define, the same failure honestly stays exit 3. The plant is a subdirectory the
+# snapshot can read (r-x) but whose entries cannot be unlinked (no write bit on the
+# directory), so it survives the initial snapshot and kills the first rewrite that
+# tries to delete through it. Planted from the shell for 2fc's reason. Non-root only:
+# root ignores permission bits, so the plant does not fire there (this suite's CI
+# runner is non-root; spike/Dockerfile run bare is root, and there these legs FAIL
+# loudly rather than skip).
+#
+# Leg A: the world loop's restore, the first rewrite a checkerless run reaches.
+rm -rf /tmp/acc-rw && mkdir -p /tmp/acc-rw/state/pin
+echo x > /tmp/acc-rw/state/pin/f
+chmod 555 /tmp/acc-rw/state/pin
+o=$(TOY_STATE=/tmp/acc-rw/state "$SIDEEYE" explore --state /tmp/acc-rw/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-rw/work --allow-unverified \
+    --json /tmp/acc-rw/r.json 2>&1)
+rc=$?
+if [ "$rc" = "2" ] \
+    && echo "$o" | grep -q "state_rewrite_failed" \
+    && echo "$o" | grep -q "could not restore the state directory" \
+    && grep -q '"unknown_reason": "state_rewrite_failed"' /tmp/acc-rw/r.json \
+    && grep -q '"verdict": "UNKNOWN"' /tmp/acc-rw/r.json \
+    && ! grep -q '"earliest"' /tmp/acc-rw/r.json; then
+    echo "ok   a restore the engine cannot perform past the recording run is UNKNOWN state_rewrite_failed"
+else
+    echo "FAIL rewrite failure at a world boundary: exit $rc (wanted 2 + state_rewrite_failed + UNKNOWN verdict with no earliest)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# Leg B: the falsification probe's restore — the earlier rewrite a checkered run
+# reaches first. Distinguishes an implementation that rerouted only the world loop.
+# /bin/true stands in for the checker: the probe's restore fails before any checker
+# would run, so its content is irrelevant by construction.
+rm -f /tmp/acc-rw/r.json
+o=$(TOY_STATE=/tmp/acc-rw/state "$SIDEEYE" explore --state /tmp/acc-rw/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /bin/true \
+    --shim "$SHIM" --work /tmp/acc-rw/work-b --allow-unverified \
+    --json /tmp/acc-rw/r.json 2>&1)
+rc=$?
+if [ "$rc" = "2" ] \
+    && echo "$o" | grep -q "state_rewrite_failed" \
+    && echo "$o" | grep -q "before falsifying the checker" \
+    && grep -q '"unknown_reason": "state_rewrite_failed"' /tmp/acc-rw/r.json; then
+    echo "ok   the falsification probe's restore refuses with the same name, at its own site"
+else
+    echo "FAIL rewrite failure at the probe: exit $rc (wanted 2 + state_rewrite_failed + the probe's wording)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+chmod 755 /tmp/acc-rw/state/pin 2>/dev/null
+rm -rf /tmp/acc-rw
+# Leg C, the contrast: the same plant, reached BEFORE the define runs — replay's
+# --fresh-state emptying (the flag is replay-only) — honestly stays a SETUP ERROR
+# with no unknown_reason. Without this pair, an implementation answering UNKNOWN
+# unconditionally would pass legs A and B. The case comes from a fresh explore
+# (2z's recipe) with its state pointer rewritten to the planted directory (2sc's
+# recipe): exit 3 alone would also fit a case parse error, which is why the
+# message, the verdict and the reason's absence are all required.
+rm -rf /tmp/acc-rw-case && mkdir -p /tmp/acc-rw-case/state
+"$SIDEEYE" explore --state /tmp/acc-rw-case/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-rw-case/work --oracle /usr/bin/strace >/dev/null 2>&1
+rwcase=/tmp/acc-rw-case/work/cases/000001.json
+mkdir -p /tmp/acc-rw-case/planted/pin
+echo x > /tmp/acc-rw-case/planted/pin/f
+chmod 555 /tmp/acc-rw-case/planted/pin
+python3 - "$rwcase" /tmp/acc-rw-case/case.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = "/tmp/acc-rw-case/planted"
+json.dump(c, open(sys.argv[2], "w"))
+PY
+o=$("$SIDEEYE" replay /tmp/acc-rw-case/case.json --fresh-state \
+    --shim "$SHIM" --work /tmp/acc-rw-case/work-c --oracle /usr/bin/strace \
+    --json /tmp/acc-rw-case/r.json 2>&1)
+rc=$?
+if [ "$rc" = "3" ] \
+    && echo "$o" | grep -q "fresh-state could not empty" \
+    && grep -q '"verdict": "SETUP_ERROR"' /tmp/acc-rw-case/r.json \
+    && ! grep -q '"unknown_reason"' /tmp/acc-rw-case/r.json; then
+    echo "ok   the same failure before the define runs honestly stays a SETUP ERROR, with no reason claimed"
+else
+    echo "FAIL rewrite failure before the define: exit $rc (wanted 3 + fresh-state wording + no unknown_reason)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+chmod 755 /tmp/acc-rw-case/planted/pin 2>/dev/null
+rm -rf /tmp/acc-rw-case
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

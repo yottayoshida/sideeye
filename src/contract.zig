@@ -411,6 +411,28 @@ pub const UnknownReason = enum {
     /// way snapshots as if the directory were empty. This member covers the failures the
     /// walk reports, not every failure it could in principle notice.
     state_unsnapshotable,
+    /// The engine could not rewrite the state tree it recorded: the restore that opens
+    /// every world (delete the tree, rebuild it from the snapshot), the falsification
+    /// probe's restore, or that probe's deliberate corruption. Either way the run can
+    /// no longer judge anything, for two different reasons the message separates: a
+    /// failed RESTORE means no world can be given its starting tree, and a failed
+    /// CORRUPTION means the checker was never shown failing over a broken store, so
+    /// nothing it later accepts can be trusted (worlds never start from the corrupted
+    /// tree — it exists only to test the checker).
+    ///
+    /// The write-side sibling of `state_unsnapshotable`: that one is the walk failing
+    /// to READ the tree, this one is the engine failing to put it back. Named
+    /// "rewrite", not "restore", deliberately — the probe corrupts immediately after a
+    /// restore that SUCCEEDED, so a member named for restore would claim the opposite
+    /// of what the engine had just demonstrated. One member, three sites; the message
+    /// names which rewrite failed, the shape #351 established (the closed set stays
+    /// coarse, the message separates).
+    ///
+    /// **Not every failed rewrite reaches this.** Replay's `--fresh-state` emptying
+    /// runs before the define, where SETUP_ERROR is the honest answer, and it stays
+    /// there: the phase decides, not the operation (#330's discipline, third
+    /// application after `spawnFailure` and the snapshot refusals).
+    state_rewrite_failed,
     /// The trace ended mid-record. Everything after that point is unknown, including
     /// how many operations there were.
     trace_truncated,
