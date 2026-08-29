@@ -95,6 +95,15 @@ pub extern "c" fn getpid() c_int;
 pub extern "c" fn getppid() c_int;
 pub extern "c" fn fork() c_int;
 pub extern "c" fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) c_int;
+/// Called in the child between fork and exec, so it moves the command being spawned and
+/// nothing else. The engine's own cwd stays put, and `--work`, `--json` and `--state` are
+/// still read against it — they are the engine's arguments, not the define's.
+///
+/// The oracle is the one reader that has to be told separately: it resolves the subject's
+/// relative paths from a trace, after the fact, so the engine hands it the same directory
+/// it handed this call (`src/main.zig`, the recording run's parse site). The shim needs no
+/// telling — it reads the cwd inside the child.
+pub extern "c" fn chdir(path: [*:0]const u8) c_int;
 /// Exec with an explicit environment, so a child can be given a *minimal* env rather
 /// than inheriting the parent's (the MCP server must not hand its credentials to a
 /// config's operation). Requires an absolute path — no PATH search — which pairs with
@@ -432,12 +441,19 @@ pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed };
 /// `waitpid` returning `ECHILD` says nothing about it. The group signal is the strongest
 /// thing available here; confirming the state directory has actually stopped moving is a
 /// separate step, and it is an observation rather than a proof.
+/// `cwd` — where the child starts, `null` for the engine's own. It is a parameter on
+/// every wrapper a define's commands reach rather than a field somewhere, so a new spawn
+/// site has to say which it wants: a site that silently inherited the engine's cwd would
+/// be a define running somewhere its author did not declare, and nothing downstream can
+/// see that. `runChildCaptureMinimalEnv` is the one wrapper without it, on purpose — its
+/// child is the engine, not a define's command.
 pub fn runChild(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
+    cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, null, false, false);
+    return runChildImpl(gpa, argv, env_pairs, null, false, false, cwd);
 }
 
 /// `runChild`, with the child's stdout sent to a file. What a target says on stdout
@@ -448,8 +464,9 @@ pub fn runChildCapture(
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
     stdout_path: []const u8,
+    cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, false);
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, false, cwd);
 }
 
 /// `runChildCapture` with a wall-clock budget: the one entry point that can answer
@@ -477,8 +494,9 @@ pub fn runChildCaptureWorld(
     env_pairs: []const [2][]const u8,
     stdout_path: []const u8,
     budget_ms: ?u64,
+    cwd: ?[]const u8,
 ) (SpawnError || error{TimedOut})!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, false, false, budget_ms, RealOps);
+    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, false, false, budget_ms, cwd, RealOps);
 }
 
 /// `runChildCapture`, with the child's stderr sent to the same file. The
@@ -491,8 +509,9 @@ pub fn runChildCaptureAll(
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
     stdout_path: []const u8,
+    cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, true);
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, true, cwd);
 }
 
 /// Like `runChildCapture`, but the child receives *only* `env_pairs` as its whole
@@ -505,7 +524,11 @@ pub fn runChildCaptureMinimalEnv(
     env_pairs: []const [2][]const u8,
     stdout_path: []const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, true, false);
+    // No `cwd` parameter, and `null` here rather than a pass-through: this child is the
+    // engine re-executing itself, and the engine's own cwd is what `--work`, `--json` and
+    // the oracle's path resolution are all read against. A define's `cwd` is applied one
+    // level down, by that engine, to the commands it runs.
+    return runChildImpl(gpa, argv, env_pairs, stdout_path, true, false, null);
 }
 
 fn runChildImpl(
@@ -515,8 +538,9 @@ fn runChildImpl(
     stdout_path: ?[]const u8,
     minimal_env: bool,
     capture_stderr: bool,
+    cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, minimal_env, capture_stderr, null, RealOps) catch |e| switch (e) {
+    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, minimal_env, capture_stderr, null, cwd, RealOps) catch |e| switch (e) {
         // A null budget never takes the timeout branch — see the budget block below,
         // which is the only producer of this error and is gated on `budget_ms != null`.
         error.TimedOut => unreachable,
@@ -596,11 +620,18 @@ fn runChildImplWithOps(
     minimal_env: bool,
     capture_stderr: bool,
     budget_ms: ?u64,
+    cwd: ?[]const u8,
     comptime Ops: type,
 ) (SpawnError || error{TimedOut})!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
+
+    // Duplicated before the fork: after it, the child is in the one place where an
+    // allocation must not happen (a malloc lock held by another thread at fork time is
+    // held forever in the child), and this is the same rule the argv and env arrays
+    // above already follow.
+    const cwd_z: ?[*:0]const u8 = if (cwd) |c| (try arena.dupeZ(u8, c)).ptr else null;
 
     const argv_z = try arena.alloc(?[*:0]const u8, argv.len + 1);
     for (argv, 0..) |a, i| argv_z[i] = (try arena.dupeZ(u8, a)).ptr;
@@ -670,6 +701,18 @@ fn runChildImplWithOps(
                 var fd: c_int = 3;
                 while (fd < 256) : (fd += 1) _ = close(fd);
             }
+        }
+        // After the descriptor work above and before exec. Placed here so a capture the
+        // child could not open still reports 126 rather than being pre-empted by a cwd
+        // that also failed — one refusal per cause, and the earlier one wins.
+        //
+        // 125 is its own code: 126 already carries two meanings the engine cannot tell
+        // apart (`checker_not_falsified` says so at the checker probe), and adding a
+        // third would make the ambiguity structural rather than local. The parent
+        // resolves and vets this path before the fork, so reaching here means the
+        // directory went away between the vet and the exec.
+        if (cwd_z) |cz| {
+            if (chdir(cz) != 0) _exit(125);
         }
         if (envp) |ep| {
             // execve replaces the whole environment: no inheritance. argv[0] must be an
@@ -917,7 +960,7 @@ const FakeWait = struct {
 test "a wait that fails permanently refuses instead of reporting a clean exit" {
     FakeWait.reset();
     FakeWait.permanent = true;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
 
     // Before #264 this returned `.exited = 0`: `status` keeps the zero it was initialised
     // with, and every explored world is expected to die by signal, so the engine reported
@@ -934,7 +977,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
     FakeWait.reset();
     FakeWait.eintr_budget = 3;
     FakeWait.deliver_status = 0x0100; // exit(1)
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeWait);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
 
     // The status written by the call that succeeded — not the zero the loop started with.
     try std.testing.expectEqual(Term{ .exited = 1 }, term);
@@ -945,12 +988,34 @@ test "an interrupted wait is retried and the status that finally arrives is the 
 test "an interruption that never stops is bounded rather than looping forever" {
     FakeWait.reset();
     FakeWait.eintr_budget = std.math.maxInt(u32);
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
 
     try std.testing.expectError(error.WaitFailed, r);
     // The first call plus the eight retries the bound allows.
     try std.testing.expectEqual(@as(u32, 9), FakeWait.direct_calls);
     try std.testing.expect(FakeWait.drain_calls >= 1);
+}
+
+test "a declared cwd is where the child starts; null leaves it at the engine's" {
+    // Read out of the child rather than asserted about the parent: the whole point of
+    // the chdir is that it happens in the forked process and nowhere else, and a test
+    // that checked this process's cwd would pass against an implementation that moved
+    // the engine — the one outcome the design refuses.
+    //
+    // `/usr` rather than a scratch directory: it exists on both target platforms and is
+    // not a symlink on either, so `pwd` answers the same bytes that went in. A path that
+    // resolves elsewhere (macOS `/tmp` → `/private/tmp`) would fail this for a reason
+    // that has nothing to do with the chdir.
+    const at_usr = [_][]const u8{ "/bin/sh", "-c", "[ \"$(pwd)\" = /usr ]" };
+
+    const moved = try runChild(std.testing.allocator, &at_usr, &.{}, "/usr");
+    try std.testing.expectEqual(@as(u8, 0), moved.exited);
+
+    // The control. Without it, an implementation that chdir'd to /usr unconditionally —
+    // ignoring the parameter entirely — would satisfy the assertion above. This test
+    // process does not run in /usr, so the same command must now answer non-zero.
+    const stayed = try runChild(std.testing.allocator, &at_usr, &.{}, null);
+    try std.testing.expect(stayed.exited != 0);
 }
 
 /// An Ops whose whole budget vocabulary the tests script (#263): the waitid poll
@@ -1060,7 +1125,7 @@ test "a world over budget is sent SIGKILL after a final observation, reaped unde
     FakeBudget.script = &.{ .running, .running };
     FakeBudget.direct_waits = &.{1}; // the grace reap succeeds at once
     FakeBudget.now_step = 100;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, null, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -1076,7 +1141,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
     FakeBudget.script = &.{ .running, .running, .exited };
     FakeBudget.deliver_status = 0; // exit(0) once the shared reap runs
     FakeBudget.now_step = 1; // deadline 1000 is never approached
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     // All three polls were consumed: an implementation that treated the first rc==0
@@ -1093,7 +1158,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
 test "a null budget never touches the budget vocabulary: no clock, no sleep, no poll (#263)" {
     FakeBudget.reset();
     FakeBudget.deliver_status = 0;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.clock_calls);
@@ -1107,7 +1172,7 @@ test "a child the final observation sees exited is accepted, not timed out — t
     FakeBudget.script = &.{ .running, .exited };
     FakeBudget.deliver_status = 0;
     FakeBudget.now_step = 100;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -1120,7 +1185,7 @@ test "a poll interruption retries under the same deadline; a permanent poll fail
     FakeBudget.script = &.{ .{ .err = EINTR }, .{ .err = EINTR }, .{ .err = FakeWait.ECHILD } };
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     // ECHILD can mean an inherited SIGCHLD disposition auto-reaped the child, and a
@@ -1141,7 +1206,7 @@ test "an interruption storm cannot poll forever: the ninth consecutive interrupt
     FakeBudget.script = &.{.{ .err = EINTR }};
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     // Nine attempts — the blocking reap's own discipline — then refusal, no kill:
@@ -1159,7 +1224,7 @@ test "a SIGKILL that never lands exhausts the grace, drains without blocking, an
     // the group signal could not reach.
     FakeBudget.direct_waits = &.{ 0, 0, 0, 0, 0, 0, 0, 0 };
     FakeBudget.now_step = 3000;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, null, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);

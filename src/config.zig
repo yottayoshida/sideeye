@@ -49,6 +49,18 @@ pub const Define = struct {
     /// are validated by the same routine that validates the flag spelling, so the two
     /// cannot drift into accepting different grammars.
     expected_status: ?[]const u8 = null,
+    /// The directory the define's three commands run in. Absent means the engine's own
+    /// cwd, which is what every define recorded before this key existed ran under.
+    ///
+    /// It has no flag. A caller at a terminal can `cd` before invoking, and the two
+    /// launchers this repo committed to reproduce cohort 3 do exactly that; the caller
+    /// that cannot is the MCP server's, which is handed a config path and starts the
+    /// engine itself. The knob exists for the caller with no other way to say it, and
+    /// for the committed define that has to mean the same run on another machine.
+    ///
+    /// Relative spellings resolve against the toml's own directory, like `state`
+    /// (ADR 0007): the same file means the same thing from any cwd.
+    cwd: ?[]const u8 = null,
 };
 
 pub const Fault = struct {
@@ -75,6 +87,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var check: ?Command = null;
     var marker: ?[]const u8 = null;
     var expected_status: ?[]const u8 = null;
+    var cwd: ?[]const u8 = null;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     var line_no: usize = 0;
@@ -119,8 +132,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 Slot{ .str = &marker }
             else if (std.mem.eql(u8, key, "expected_status"))
                 Slot{ .str = &expected_status }
+            else if (std.mem.eql(u8, key, "cwd"))
+                Slot{ .str = &cwd }
             else
-                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker` and `expected_status` exist"),
+                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status` and `cwd` exist"),
         };
         switch (slot) {
             .str => |p| {
@@ -152,7 +167,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd } };
 }
 
 /// The byte discipline both value shapes share. A NUL truncates at the C boundary,
@@ -319,6 +334,32 @@ test "the non-command keys refuse the array form by name" {
     try t.expect(std.mem.indexOf(u8, mk.fault.what, "belongs to the commands") != null);
     const es = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\nexpected_status = [\"1\"]\n");
     try t.expect(std.mem.indexOf(u8, es.fault.what, "belongs to the commands") != null);
+}
+
+test "cwd parses as one string, stays optional, and refuses the array form by name" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const base = "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\n";
+    // Absent is a value, not a hole: every define written before this key existed says
+    // "the engine's own cwd" by saying nothing, and must keep saying it.
+    const none = parseFor(a, base);
+    try t.expect(none.ok.cwd == null);
+    const one = parseFor(a, base ++ "cwd = \"/work/repo\"\n");
+    try t.expectEqualStrings("/work/repo", one.ok.cwd.?);
+    // A relative spelling is carried through untouched — resolving it is the caller's
+    // job, against the toml's own directory, and this parser never sees that directory.
+    const rel = parseFor(a, base ++ "cwd = \"sub/dir\"\n");
+    try t.expectEqualStrings("sub/dir", rel.ok.cwd.?);
+    // It is a non-command key, so it lands in the same refusal as `marker` and
+    // `expected_status` rather than growing a third value shape.
+    const arr = parseFor(a, base ++ "cwd = [\"/a\", \"/b\"]\n");
+    try t.expectEqual(@as(usize, 5), arr.fault.line);
+    try t.expect(std.mem.indexOf(u8, arr.fault.what, "belongs to the commands") != null);
+    const dup = parseFor(a, base ++ "cwd = \"/a\"\ncwd = \"/b\"\n");
+    try t.expect(std.mem.indexOf(u8, dup.fault.what, "duplicate key") != null);
+    const empty = parseFor(a, base ++ "cwd = \"\"\n");
+    try t.expect(std.mem.indexOf(u8, empty.fault.what, "the value is empty") != null);
 }
 
 test "Command.jsonParse reads the bare-value shapes and refuses the rest" {

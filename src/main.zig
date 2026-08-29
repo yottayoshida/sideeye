@@ -107,6 +107,11 @@ const Args = struct {
     /// "not declared", which behaves as 0 — kept apart from an explicit 0 so the
     /// preflight hint and the saved case can carry exactly what the caller said.
     expect_status: ?u8 = null,
+    /// Where the define's commands run. It arrives from a toml or a saved case and has
+    /// no flag: a caller at a terminal can `cd`, and the caller that cannot — the MCP
+    /// server's, handed a config path and starting the engine itself — has no other way
+    /// to say it. Absolute by the time anything reads it.
+    cwd: ?[]const u8 = null,
 };
 
 /// A saved counterexample (ADR 0009): the resolved define it was found against, the
@@ -127,6 +132,11 @@ const ReplayCase = struct {
         // Absent in a case_version 1 file; absent means "exit 0 was the contract",
         // which is exactly what every v1 case was recorded under (ADR 0014).
         expected_status: ?u8 = null,
+        /// Present exactly when the case is version 4, the way the argv form is present
+        /// exactly in a version 3 or later file: the version moves because the field
+        /// arrived, so a define that declared no cwd still saves as the version its other
+        /// fields ask for. Always the resolved spelling.
+        cwd: ?[]const u8 = null,
     },
     k: u32,
     ops_total: u32,
@@ -373,8 +383,8 @@ fn usage() void {
         \\
         \\usage:
         \\  sideeye demo [--shim <lib>]
-        \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--oracle <strace>] [--work <dir>] [--twice]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>] [--twice]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye mcp
@@ -405,6 +415,9 @@ fn usage() void {
         \\               mutually exclusive with --state/--setup/--operation/--check.
         \\               Relative paths in the file resolve against its own directory
         \\  --state      directory whose contents define the target's state
+        \\  --cwd        directory the define's commands run in (default: this process's).
+        \\               The engine's own cwd does not move: --work, --json and --state
+        \\               are still read against it
         \\  --setup      command that produces the initial state (run once)
         \\  --operation  command to explore; killed before each operation that can change state
         \\  --expect-status  the exit status that means the operation completed (0..255,
@@ -707,6 +720,11 @@ fn runOperationObserved(
     oracle_out: []const u8,
     trace_path: []const u8,
     stdout_path: []const u8,
+    /// Where the define declared its commands run, `null` for the engine's own. Passed
+    /// through to both spawns below, including the oracle's: the cwd goes on the strace
+    /// invocation and the operation strace execs starts there too, because strace does
+    /// not chdir between its own start and the exec.
+    cwd: ?[]const u8,
 ) posix.Term {
     if (oracle_path) |strace_path| {
         // Environment goes to the target via strace's -E, not through our own
@@ -739,7 +757,7 @@ fn runOperationObserved(
             list.append(arena, joined) catch setupError("out of memory");
         }
         for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
-        return posix.runChildCapture(gpa, list.items, &.{}, stdout_path) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
+        return posix.runChildCapture(gpa, list.items, &.{}, stdout_path, cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
     }
     return posix.runChildCapture(gpa, op_argv, &.{
         .{ "TOY_STATE", state_abs },
@@ -749,7 +767,7 @@ fn runOperationObserved(
         // Pinned empty: see the oracle-path pairs above.
         .{ contract.env.seq_base, "" },
         .{ preload_var, shim },
-    }, stdout_path) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+    }, stdout_path, cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 }
 
 /// Zig 0.16 passes the process's arguments and environment in; `std.process.argsAlloc`
@@ -942,6 +960,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
         else if (std.mem.eql(u8, argv[i], "--check")) args.check = .{ .str = v }
         else if (std.mem.eql(u8, argv[i], "--marker")) args.marker = v
+        // Taken as spelled, unlike the toml's, which resolves against the file's own
+        // directory: a flag is typed at a cwd, so a relative one already means what the
+        // caller meant. It is absolutized with the rest of them further down.
+        else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v
         else if (std.mem.eql(u8, argv[i], "--expect-status")) {
             args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
             // Mirrored immediately: a refusal between here and the canonical binding
@@ -1011,7 +1033,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (mode == .replay) {
         if (args.state != null or args.setup != null or args.operation != null or
             args.check != null or args.marker != null or args.expect_status != null or
-            args.config != null)
+            args.cwd != null or args.config != null)
             setupError("replay takes its define from the case file; the define-surface flags and --config do not apply");
         const rarena = arena_state.allocator();
         const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024) orelse setupError(
@@ -1022,8 +1044,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const c = parsed.value;
         if (!std.mem.eql(u8, c.schema, "sideeye/case"))
             setupError("the file does not declare itself a sideeye case");
-        if (c.case_version != 1 and c.case_version != 2 and c.case_version != 3)
-            setupError("this binary understands case schema versions 1, 2 and 3 only");
+        if (c.case_version != 1 and c.case_version != 2 and c.case_version != 3 and c.case_version != 4)
+            setupError("this binary understands case schema versions 1, 2, 3 and 4 only");
         // The same travel-together law, extended to the command shape (ADR 0019): the
         // argv form arrived with version 3, so an older file carrying it is not an
         // older file — it is malformed, and reading it under a guessed contract would
@@ -1044,13 +1066,27 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (c.case_version == 1 and c.define.expected_status != null)
             setupError("a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
         if (c.case_version >= 2 and c.define.expected_status == null)
-            setupError("a case_version 2 or 3 file must carry define.expected_status; the case freezes the declaration");
+            setupError("a case_version 2, 3 or 4 file must carry define.expected_status; the case freezes the declaration");
+        // The same law again, for the directory the define declared it runs in. A cwd is
+        // part of what the counterexample was found against — replaying the same commands
+        // somewhere else is replaying a different define — so the version moves with it.
+        // Both directions, for the reason the two above give: a v3 file carrying a cwd is
+        // malformed rather than old, and a v4 file without one has lost the fact the
+        // version exists to freeze.
+        if (c.case_version < 4 and c.define.cwd != null)
+            setupError("a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4");
+        if (c.case_version == 4 and c.define.cwd == null)
+            setupError("a case_version 4 file must carry define.cwd; the version exists to freeze it");
         args.state = c.define.state;
         args.setup = c.define.setup;
         args.operation = c.define.operation;
         args.check = c.define.check;
         args.marker = c.define.marker;
         args.expect_status = c.define.expected_status;
+        // Taken as stored: a saved case always carries the resolved spelling, so there is
+        // nothing here for a toml directory to resolve against. The vet below still runs
+        // — the directory may be gone by replay time, which is a refusal, not a verdict.
+        args.cwd = c.define.cwd;
         // Mirrored into the report before any refusal below can fire: a contract
         // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
         expected_status_val = c.define.expected_status orelse 0;
@@ -1071,8 +1107,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
     if (args.config) |cfg_path| {
-        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null)
-            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status) are mutually exclusive: the define lives in one place or the other");
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null)
+            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         const text = readFileAlloc(arena, cfg_path) orelse setupError(
             std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
@@ -1094,6 +1130,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 args.operation = resolveCommand(arena, dir, d.operation);
                 args.check = if (d.check) |c| resolveCommand(arena, dir, c) else null;
                 args.marker = d.marker;
+                args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
                 if (d.expected_status) |es| {
                     args.expect_status = parseExpectStatus(es, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -1113,7 +1150,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     const state = args.state orelse setupError("--state is required");
     const operation = args.operation orelse setupError("--operation is required");
-    const shim = args.shim orelse findShim(arena_state.allocator());
     // One declared value, resolved once, governs every un-killed run of the operation:
     // the recording run and the baseline world are the same command over the same
     // state, so they answer to the same success status (ADR 0014). Killed worlds are
@@ -1127,6 +1163,70 @@ pub fn main(init: std.process.Init.Minimal) !void {
         l1_configured = true;
         l1_note = "marker configured; the recording run has not been scanned yet";
     }
+
+    // The declared cwd is resolved and vetted here, ahead of the state directory's mkdir
+    // below: a define naming a directory that is not there must refuse before anything on
+    // disk has moved, and exit 3 is true of it — nothing of the define has run.
+    //
+    // Resolved rather than passed through. The oracle is handed this same string to
+    // resolve the subject's relative paths against (see the recording run), and a
+    // resolved path is also what a saved case stores as the run's identity — an
+    // unresolved one would name a different directory from every other cwd, which is
+    // exactly what ADR 0007 exists to remove.
+    if (args.cwd) |declared| {
+        var cwd_z_buf: [contract.max_path]u8 = undefined;
+        const cwd_z = std.fmt.bufPrintZ(&cwd_z_buf, "{s}", .{declared}) catch setupError("the declared cwd is too long");
+        var cwd_real: [contract.max_path]u8 = undefined;
+        // Both refusals print a string that arrived from a config or a case file, and
+        // both are declared trust boundaries — so both go through `textShown`, the way
+        // the `--state-under` refusal below already does for `define.state`. Same class,
+        // same batch that found it (#266): a refusal firing *on* a hostile declaration is
+        // exactly where a forged control sequence would reach the console.
+        const cwd_abs = posix.realpath(cwd_z.ptr, &cwd_real) orelse setupError(
+            std.fmt.allocPrint(arena_state.allocator(), "the declared cwd could not be resolved: {s}", .{textShown(arena_state.allocator(), declared)}) catch "the declared cwd could not be resolved",
+        );
+        const cwd_span = std.mem.span(cwd_abs);
+        // A regular file resolves fine and then fails at `chdir` in the child, which
+        // reads as the operation exiting 125 — a diagnosis about the target for what is
+        // a fault in the declaration. Refused by name here instead.
+        if (!posix.isDirPath(cwd_abs)) setupError(
+            std.fmt.allocPrint(arena_state.allocator(), "the declared cwd is not a directory: {s}", .{textShown(arena_state.allocator(), cwd_span)}) catch "the declared cwd is not a directory",
+        );
+        args.cwd = arena_state.allocator().dupe(u8, cwd_span) catch setupError("out of memory");
+
+        // The engine's own paths are pinned here, and only here, because only a declared
+        // cwd can move them. `--work`, `--shim` and `--oracle` name things the ENGINE
+        // chose, but three of their uses are opened by the child *after* it has chdir'd:
+        // the shim opens `SIDEEYE_TRACE_PATH` from the environment, strace opens its `-o`
+        // capture, and the loader resolves the shim library. Spelled relatively, each
+        // would land in the declared directory instead — measured before this pin as a
+        // run whose traces were never written, reported as `no_shim_marker` and blamed on
+        // the target's linking and on macOS SIP, and as an oracle that vanished after the
+        // parent's own `access(X_OK)` guard had confirmed it (that guard's comment says
+        // it exists to stop exactly the report it then produced).
+        //
+        // Joined against the engine's directory by `resolvePathAgainst` — the same helper
+        // the toml route uses on `state`, rather than a second spelling of it (#65 is
+        // about the copies this repo has already paid for). Lexical on purpose: `--work`
+        // legitimately does not exist yet here, and the pin is about which directory the
+        // name is read against, not about following symlinks. Nothing happens when no cwd
+        // is declared, so a run without the key keeps the report text it has always
+        // printed — these paths appear in the `case` and `reproduce` lines exactly as the
+        // caller spelled them.
+        var pin_cwd_buf: [contract.max_path]u8 = undefined;
+        const pin_base = if (posix.getcwd(&pin_cwd_buf, pin_cwd_buf.len)) |p| std.mem.span(p) else "/";
+        const pin_arena = arena_state.allocator();
+        args.work = resolvePathAgainst(pin_arena, pin_base, args.work);
+        if (args.shim) |s| args.shim = resolvePathAgainst(pin_arena, pin_base, s);
+        if (args.oracle) |o| args.oracle = resolvePathAgainst(pin_arena, pin_base, o);
+    }
+
+    // Bound after the pin above, not before it: `findShim`'s own answer is already
+    // absolute, but an explicit `--shim ./lib.dylib` is the caller's spelling, and the
+    // loader resolves it in the child — after the chdir. Read too early, this const would
+    // hold the unpinned string and the run would die in dyld naming the declared
+    // directory, which is how the review found it.
+    const shim = args.shim orelse findShim(arena_state.allocator());
 
     // Resolve the state directory once, so every later comparison is against one
     // spelling of the path. The shim resolves what it sees the same way.
@@ -1300,7 +1400,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (setup_argv.len == 0) setupError("--setup is empty");
         const term = posix.runChild(gpa, setup_argv, &.{
             .{ "TOY_STATE", state_abs },
-        }) catch |e| spawnFailure(e, .before_exploration, "could not run --setup");
+        }, args.cwd) catch |e| spawnFailure(e, .before_exploration, "could not run --setup");
         switch (term) {
             .exited => |code| if (code != 0) setupError("--setup exited non-zero"),
             else => setupError("--setup did not exit normally"),
@@ -1365,7 +1465,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // apart"), and a mark taken after this run returned would measure the gap between
     // its end and the next one's beginning instead.
     const rec_started_ms = posix.monotonicMs();
-    const rec_term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, args.oracle, oracle_out, rec_trace, rec_stdout);
+    const rec_term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, args.oracle, oracle_out, rec_trace, rec_stdout, args.cwd);
     // The recording run's outcome decides whether its trace means anything.
     //
     // This used to be discarded. An operation that failed immediately — a bad argument,
@@ -1530,12 +1630,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // file itself cannot be read, and until #363's adjudication its message
         // claimed the other condition.
         const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
-        // The oracle resolves relative paths against the subject's cwd (ADR 0006). The
-        // subject inherits the engine's cwd — `runChild` does not chdir — so that is the
-        // starting value; the subject's own chdir/fchdir move it from there. The alt
+        // The oracle resolves relative paths against the subject's cwd (ADR 0006). Where
+        // the subject starts is the define's `cwd` when it declared one and the engine's
+        // own otherwise; the subject's own chdir/fchdir move it from there. The alt
         // spelling is passed only when it genuinely differs, so containment accepts both.
+        //
+        // This line is the whole reason `cwd` is not a one-line feature. The shim reads
+        // the cwd inside the child, so it follows the chdir on its own; the oracle reads
+        // a trace after the fact and has to be told. Left at the engine's cwd, the two
+        // observers would resolve the same relative path to two different files — and the
+        // completeness check that compares them reports that as the shim having missed an
+        // operation, or as a containment decision about a file nothing touched. A verdict
+        // drawn from that is wrong in a way neither observer can see.
         var oracle_cwd_buf: [contract.max_path]u8 = undefined;
-        const oracle_cwd = if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
+        const oracle_cwd = args.cwd orelse
+            if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
         const parsed = oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError("out of memory");
 
         // Set before any exit below, like oracle_note: an UNKNOWN raised by this
@@ -1747,7 +1856,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // unchecked; with it, the second run happens here and the report carries what
         // the comparison found — including, when they differ, the refusal to accept.
         const repeat: ?Repeat = if (args.twice)
-            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms)
+            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd)
         else
             null;
         preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.expect_status, repeat);
@@ -1817,7 +1926,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const probe = posix.runChildCaptureAll(gpa, cargv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
-        }, fal_out) catch |e| spawnFailure(e, .exploring, "could not run --check");
+        }, fal_out, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
         // and the gate's output is evidence in the refusal case too. Blank lines are
@@ -1917,7 +2026,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Pinned empty: see the recording pairs.
             .{ contract.env.seq_base, "" },
             .{ preload_var, shim },
-        }, world_stdout, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null) catch |e| switch (e) {
+        }, world_stdout, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null, args.cwd) catch |e| switch (e) {
             // Received here, at the one site that passes a budget, so the refusal can
             // name the limit that fired — the rule #323 and #351 shipped under:
             // a failure with a limit reports the limit, because the operator can move
@@ -2029,7 +2138,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             const ct = posix.runChild(gpa, cargv, &.{
                 .{ "TOY_STATE", state_abs },
                 .{ contract.env.state_dir, state_abs },
-            }) catch |e| spawnFailure(e, .exploring, "could not run --check");
+            }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
             checks_run += 1;
             l2_failed = switch (ct) {
                 .exited => |code| code != 0,
@@ -2469,6 +2578,10 @@ fn observeAgain(
     work: []const u8,
     expect_status: u8,
     first_started_ms: u64,
+    /// The define's declared directory, carried through so the second observation runs
+    /// where the first did — a repeatability comparison between two different working
+    /// directories would be measuring the directories.
+    cwd: ?[]const u8,
 ) Repeat {
     // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
     // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
@@ -2499,7 +2612,7 @@ fn observeAgain(
     removeFile(oracle_out_b);
 
     const started = posix.monotonicMs();
-    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, oracle_path, oracle_out_b, trace_b, stdout_b);
+    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, oracle_path, oracle_out_b, trace_b, stdout_b, cwd);
 
     // The same question the recording run's own status check asks, and the same reason
     // it matters: a second run that failed says nothing about repeatability, and
@@ -2924,7 +3037,8 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
             for ([_][]const u8{ cc, "-O0", "-w", "-DBUGGY=1", "-o", tool, toy_src }) |a|
                 argv_l.append(arena, a) catch setupError("out of memory");
             if (with_pthread) argv_l.append(arena, "-lpthread") catch setupError("out of memory");
-            const term = posix.runChild(gpa, argv_l.items, &.{}) catch |e| {
+            // No cwd: this child is the demo's own compiler, not a define's command.
+            const term = posix.runChild(gpa, argv_l.items, &.{}, null) catch |e| {
                 // Trying the next candidate is right for a compiler that could not be
                 // started. It is wrong for a wait failure: swallowing that here ends the
                 // loop with "none of cc, gcc, clang worked", which diagnoses the machine's
@@ -3828,7 +3942,10 @@ fn writeCase(
     const carries_argv = (args.operation.? == .argv) or
         (args.setup != null and args.setup.? == .argv) or
         (args.check != null and args.check.? == .argv);
-    const case_version: u32 = if (carries_argv) 3 else 2;
+    // A declared cwd is part of what the counterexample was found against, so it moves
+    // the version the same way — and it takes precedence over the argv rule because a
+    // version-3 reader would drop the field and replay the commands somewhere else.
+    const case_version: u32 = if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
     w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
@@ -3850,6 +3967,14 @@ fn writeCase(
     if (args.marker) |m| {
         w.appendSlice(arena, ",\n    \"marker\": ") catch return null;
         jsonString(w, arena, m) catch return null;
+    }
+    // Written only when it was declared, unlike `expected_status` above: an absent cwd
+    // is not a default value the reader has to be told, it is the engine's own cwd — and
+    // writing it anyway would push every case to version 4 and make every v2 and v3
+    // reader refuse files whose defines are unchanged.
+    if (args.cwd) |c| {
+        w.appendSlice(arena, ",\n    \"cwd\": ") catch return null;
+        jsonString(w, arena, c) catch return null;
     }
     // Written even at the default (case_version 2): a case is a frozen contract, and
     // "0 because nothing was declared" and "0 by declaration" must replay identically
