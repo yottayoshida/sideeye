@@ -87,6 +87,41 @@ frozen, and additive fields are allowed but cost a `surface-changes.tsv` row and
 Keeping the observation in the detail prose moves no frozen surface: the member, the
 verdict and the exit are unchanged.
 
+## Owner ruling: this is not the signpost that was rejected the same day
+
+Hours before this decision, a plan proposing that the refusal name the interpreter the
+kernel actually launched was rejected — "putting a sign on the wall does not solve the
+root cause" — and its successor removed the reason to wrap an operation at all
+(`[define] cwd`, #395). Both are about this same message, on the same day, so whether
+that ruling reaches this decision was put to the owner. **It does not** (2026-08-29).
+
+The argument on the other side is worth recording, because it is the stronger half and
+it is true: **this change gives a blocked user no way forward.** Nobody can measure the
+Command Line Tools git after it than they could before; Apple's signature is not
+removable, and #391 says so itself. Judged by "can the user now proceed", this is a
+signpost and the rejection reaches it.
+
+The ruling rests on a different axis: what the shipped product may assert. The rejected
+plan proposed replacing one description with a better description of a wall that had a
+removable cause — the wrap was self-inflicted, so the root fix existed and the signpost
+was a way of not doing it. Here the wall is terminal and there is no fix behind the sign,
+which makes the defect the *guessing* rather than the wall. Two things follow that a
+better description alone would not have bought:
+
+- The three causes the message offered were checked by a real user against a real binary
+  and all three were false. Removing them removes a wrong answer, not a missing one.
+- The walls become countable. A `no_shim_marker` is a bucket — static linking, library
+  validation, hardened runtime, an unreadable trace — and a sweep that counts by
+  `unknown_reason` cannot separate them. The measurement running alongside this decision
+  hit exactly that: two targets stopped at the same token, one a shell script whose
+  interpreter carries `platform=16` and one an Apple-signed binary carrying
+  `flags=0x2000`, and they had been counted as one wall until the fields were read.
+
+The order in #258's closing comment (the macOS verification stack first, "not a wall
+lift") is not disturbed by this: it lifts no wall, and the first step of that stack
+consumed it. Recorded here rather than argued again, so the next sweep of this surface
+finds the answer instead of the question.
+
 ## Consequences
 
 The engine gains a parser for two executable formats, reading files the target's own
