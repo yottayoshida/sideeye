@@ -1,0 +1,77 @@
+Go target, both platforms: gh 2.97.0
+Measured 2026-08-29 for #390, against the working tree of the branch that adds the
+measured refusal detail (#391). Recorded because docs/target-classes.md's Go clause
+labelled itself a prediction: "that is a statement about linking, not a measured Go run".
+
+The answer differs between the two artifacts: the same tool version, obtained two ways,
+meets two different walls. Which axis does it is not measured here — OS, toolchain,
+CGO_ENABLED, imports, buildmode and packaging all differ between them at once — so what
+this records is that the language alone does not decide the wall.
+
+Operation on both: `gh config set git_protocol ssh` against a scratch GH_CONFIG_DIR.
+
+
+== Linux ==
+
+Host        ubuntu:24.04 container, aarch64, running on this laptop's Docker.
+Binary      the official release tarball gh_2.97.0_linux_arm64.tar.gz
+            sha256 73ea440ecad9c9e284429997ee6f93577bc6f7bc6fba357ef62c53ad8fb641a5
+            (downloaded from github.com/cli/cli/releases/download/v2.97.0/)
+Version     gh version 2.97.0 (2026-07-31)
+
+$ file /opt/gh/bin/gh
+/opt/gh/bin/gh: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=by0k8_Jm8RMnjFiaXHNc/sgUMU
+
+$ ldd /opt/gh/bin/gh
+	not a dynamic executable
+
+$ sideeye preflight --state /tmp/ghcfg --operation "/opt/gh/bin/gh config set git_protocol ssh"
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; measured on /opt/gh/bin/gh as the run started: it names no interpreter, so it is statically linked and no preloaded library can reach it
+
+exit 2.
+
+The predicted outcome, now measured — and the refusal says which fact it read rather
+than listing linkage as one candidate among several.
+
+
+== macOS ==
+
+Host        macOS on Apple silicon (arm64), this laptop.
+Binary      Homebrew: /opt/homebrew/bin/gh -> ../Cellar/gh/2.97.0/bin/gh
+            sha256 6a2ab5fa89553eac1f0df50a26a5eaeea9a665d8971f5a51b32487b72c708f5c
+            (of the resolved file, not the symlink)
+Version     gh version 2.97.0 (2026-07-31)
+
+$ codesign -dv --verbose=2 /opt/homebrew/bin/gh
+Identifier=a.out
+CodeDirectory v=20400 size=302302 flags=0x20002(adhoc,linker-signed) hashes=9444+0 location=embedded
+TeamIdentifier=not set
+
+$ otool -L /opt/homebrew/bin/gh
+	/usr/lib/libSystem.B.dylib
+	/usr/lib/libresolv.9.dylib
+	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+	(and Security)
+
+$ sideeye preflight --state <scratch GH_CONFIG_DIR> --operation "/opt/homebrew/bin/gh config set git_protocol ssh"
+UNKNOWN  multiple_threads_detected
+         the target created a thread; operation order would not be deterministic
+
+exit 2, one path judged pre-or-post.
+
+The shim loads here — this build is dynamically linked and ad-hoc signed, so nothing on
+its image keeps a library out — and the run reaches the next wall instead, the threads
+row two lines below the static one in docs/target-classes.md.
+
+
+== What this does and does not establish ==
+
+It establishes what these two artifacts of this version do on these two hosts. It is not
+a statement about Go: linkage there moves with the OS, CGO_ENABLED, the imports actually
+reached, buildmode and whether an external linker ran, so a differently built gh — or any
+other Go tool — has to be measured rather than inferred from this row.
+
+What it does show is that "Go tools are refused for static linking" is wrong as a class
+claim, and wrong in a way that costs a reader a real run: on macOS a Homebrew-built Go
+tool gets one wall further, and the wall it meets has a different fix path.

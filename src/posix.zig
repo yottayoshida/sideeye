@@ -34,6 +34,10 @@ pub extern "c" fn closedir(dirp: *anyopaque) c_int;
 /// Calling a variadic function correctly needs no `@cVaStart`; only receiving does.
 pub extern "c" fn open(path: [*:0]const u8, flags: c_int, ...) c_int;
 pub extern "c" fn read(fd: c_int, buf: [*]u8, n: usize) isize;
+/// Positional read. `image.zig` walks a handful of fixed-width header fields scattered
+/// across an executable and never wants the whole file, so it reads by offset rather
+/// than seeking: no cursor to leave in the wrong place between two field reads.
+pub extern "c" fn pread(fd: c_int, buf: [*]u8, n: usize, off: i64) isize;
 pub extern "c" fn write(fd: c_int, buf: [*]const u8, n: usize) isize;
 pub extern "c" fn close(fd: c_int) c_int;
 pub extern "c" fn dup2(old_fd: c_int, new_fd: c_int) c_int;
@@ -181,6 +185,13 @@ pub const O_WRONLY: c_int = 1;
 pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
+/// Opening a FIFO with no writer blocks forever, which #5 recorded when an open-probe
+/// was used to classify paths and was retired from this file for it (see
+/// `kindAtNoFollow`). `image.zig` opens a path the target's own define named, so it
+/// carries the same exposure and opens with this flag: on a FIFO the open returns
+/// immediately and the `lseek` that follows fails, which is the answer that path
+/// deserves. Regular files are unaffected.
+pub const O_NONBLOCK: c_int = if (builtin.os.tag == .linux) 0o4000 else 0x0004;
 /// Derived from `std.posix.O` rather than written out, and it is the only flag in this
 /// block that needs to be.
 ///
