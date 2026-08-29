@@ -3502,6 +3502,9 @@ acc_dummy() {
         --expect-status)  printf '0' ;;
         --world-timeout)  printf '1' ;;
         --json)           printf '%s' "$acc_argjson" ;;
+        # A directory that exists: --cwd is vetted before anything runs, so the
+        # nonexistent default below would make the flag read as refused everywhere.
+        --cwd)            printf '/' ;;
         *)                printf '%s' "$acc_nx.dummy" ;;
     esac
 }
@@ -4360,6 +4363,130 @@ else
     fails=$((fails + 1))
 fi
 rm -rf /tmp/acc-wt
+
+echo "=========== check 2cw: a define declares where it runs, and the case freezes it ==========="
+# The three legs are one fixture on purpose: the same define, moved. A pair that built a
+# separate define per leg would let a typo in one fixture read as a cwd result.
+#
+# The operation reaches its state through a RELATIVE path, which is the only shape that
+# can tell the two directories apart — an absolute one would pass from anywhere and the
+# check would be measuring nothing. Scripts are 755 because the engine execs them
+# directly (CLAUDE.md: a 644 script green under `sh` died at the first sealed run).
+cwd_fails=0
+cd=/tmp/acc-cwd
+rm -rf $cd && mkdir -p $cd/state $cd/elsewhere
+cat > $cd/op.sh <<'OP'
+#!/bin/sh
+echo committed > state/written
+OP
+cat > $cd/check.sh <<'CK'
+#!/bin/sh
+grep -q seed state/seed || exit 1
+if [ -e state/written ]; then grep -q committed state/written || exit 1; fi
+CK
+chmod 755 $cd/op.sh $cd/check.sh
+printf 'seed\n' > $cd/state/seed
+write_toml() { # $1 = the cwd value to declare
+    printf '[world]\nstate = "%s/state"\n\n[define]\noperation = "%s/op.sh"\ncheck     = "%s/check.sh"\ncwd       = "%s"\n' \
+        "$cd" "$cd" "$cd" "$1" > $cd/sideeye.toml
+}
+
+# Leg 1: declared, and the run reaches a verdict.
+write_toml "$cd"
+o=$("$SIDEEYE" explore --config $cd/sideeye.toml --shim "$SHIM" --work $cd/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && echo "$o" | grep -q "explored"; then
+    echo "ok   a declared cwd puts the operation where its relative path resolves"
+else
+    echo "FAIL declared cwd: exit $rc (wanted a verdict)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    cwd_fails=$((cwd_fails + 1))
+fi
+
+# Leg 2: the control. The same define pointed one directory over, where `state/` does not
+# exist, must NOT reach a verdict. Without this, an implementation that ignored the key
+# entirely would satisfy leg 1 whenever the engine happened to run in the right place.
+write_toml "$cd/elsewhere"
+o=$("$SIDEEYE" explore --config $cd/sideeye.toml --shim "$SHIM" --work $cd/work2 --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] || [ "$rc" = "3" ]; then
+    echo "ok   the same define one directory over does not reach a verdict"
+else
+    echo "FAIL cwd control: exit $rc (wanted a refusal, not a verdict)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    cwd_fails=$((cwd_fails + 1))
+fi
+
+# Leg 3: a relative spelling resolves against the toml's own directory, not the caller's
+# (ADR 0007). Run from `/`, which is where leg 1 and 2 were NOT run from.
+write_toml "."
+o=$(cd / && "$SIDEEYE" explore --config $cd/sideeye.toml --shim "$SHIM" --work $cd/work3 --oracle /usr/bin/strace 2>&1)
+rc=$?
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && echo "$o" | grep -q "explored"; then
+    echo "ok   a relative cwd resolves against the toml's directory, from any caller's"
+else
+    echo "FAIL relative cwd: exit $rc (wanted the same verdict as leg 1)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    cwd_fails=$((cwd_fails + 1))
+fi
+
+# Leg 5: the engine's own paths do not travel with the child. `--work` and `--shim`
+# spelled relatively are read against the engine's directory, not the declared one —
+# three of their uses are opened after the chdir (the shim opens SIDEEYE_TRACE_PATH, the
+# oracle opens its -o capture, the loader resolves the library), so before the pin this
+# combination produced a run with no traces at all, reported as `no_shim_marker` and
+# blamed on the target's linking. Run from a third directory so the two can differ.
+write_toml "$cd"
+cp "$SHIM" $cd/elsewhere/shim.so
+o=$(cd $cd/elsewhere && "$SIDEEYE" explore --config $cd/sideeye.toml --shim ./shim.so --work relwork --oracle /usr/bin/strace 2>&1)
+rc=$?
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && [ -f "$cd/elsewhere/relwork/trace-record.bin" ]; then
+    echo "ok   a relative --work and --shim stay with the engine, not with the declared cwd"
+else
+    echo "FAIL relative engine paths under a declared cwd: exit $rc, traces in the engine's work dir: $(ls $cd/elsewhere/relwork 2>/dev/null | grep -c trace)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    cwd_fails=$((cwd_fails + 1))
+fi
+
+# Leg 4: the version and the shape travel together. A case saved from a define carrying a
+# cwd is version 4 and carries it; a file that says one without the other is malformed in
+# both directions. Nothing else in this suite reaches version 4, so without this leg the
+# law ships with no check at all — every existing case_version assertion stays green
+# because no other fixture declares the key.
+write_toml "$cd"
+rm -rf $cd/work4 && "$SIDEEYE" explore --config $cd/sideeye.toml --shim "$SHIM" --work $cd/work4 --oracle /usr/bin/strace >/dev/null 2>&1
+csv=$(find $cd/work4/cases -name '*.json' 2>/dev/null | head -1)
+if [ -n "$csv" ] && grep -q '"case_version": 4' "$csv" && grep -q '"cwd"' "$csv"; then
+    echo "ok   a case saved from a define with a cwd is version 4 and carries it"
+    python3 - "$csv" "$cd" <<'EOF'
+import json, sys
+c = json.load(open(sys.argv[1])); d = sys.argv[2]
+three = dict(c); three["case_version"] = 3
+json.dump(three, open(d + "/case-v3.json", "w"))
+four = json.loads(json.dumps(c)); four["define"].pop("cwd")
+json.dump(four, open(d + "/case-v4.json", "w"))
+EOF
+    for pair in "case-v3.json:cannot carry a cwd" "case-v4.json:must carry define.cwd"; do
+        f=${pair%%:*}; want=${pair#*:}
+        o=$("$SIDEEYE" replay $cd/$f --shim "$SHIM" --work $cd/work-r 2>&1)
+        rc=$?
+        if [ "$rc" = "3" ] && echo "$o" | grep -q "$want"; then
+            echo "ok   $f refuses by name (exit 3)"
+        else
+            echo "FAIL $f: exit $rc, wanted 3 naming '$want'"
+            echo "$o" | sed 's/^/     | /' | head -3
+            cwd_fails=$((cwd_fails + 1))
+        fi
+    done
+else
+    echo "FAIL no case_version 4 file was written (nothing to check the law against)"
+    cwd_fails=$((cwd_fails + 1))
+fi
+rm -rf $cd
+if [ "$cwd_fails" != "0" ]; then
+    fails=$((fails + cwd_fails))
+    reasons="$reasons cwd"
+fi
 
 reached_end=1
 echo ""

@@ -63,9 +63,10 @@ operation = "mytool rotate-key"
 check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + restart
 marker    = "Recorded"          # optional: the operation's own success claim
 expected_status = "3"           # optional: the exit status that means "completed" (default "0")
+cwd       = "./repo"            # optional: where the three commands run (default: sideeye's own cwd)
 ```
 
-- The same define works as flags: `--state` / `--setup` / `--operation` / `--check` / `--marker` / `--expect-status`.
+- The same define works as flags: `--state` / `--setup` / `--operation` / `--check` / `--marker` / `--expect-status` / `--cwd`.
 - `--shim` names the interposition library when it is not beside the binary (the tarball and zig-out layouts are found on their own); `--work` moves the scratch directory for traces and cases (default `/tmp/sideeye-work`).
 - `--json <path>` writes the same report as JSON, for a machine to branch on.
 - `--fresh-state` (replay only) empties and recreates the case's state directory before setup, for a caller that cannot hand over a pristine one — a second replay in the same directory would otherwise die in the leftovers of the first.

@@ -580,6 +580,40 @@ if ai < txt.rfind("--- end target-influenced text, "):
     sys.exit("the advisory sits before the closing banner: inside or above the region, where the target can forge it")
 PY
 
+echo "=========== mcp 14: the define's cwd reaches the operation through the server ==========="
+# The caller here has no other way to say it. A terminal caller can `cd` before invoking;
+# this one hands over a config path and the server starts the engine, so the directory is
+# the define's to declare or nobody's. That makes this the one check that measures the
+# reason the key exists — a CLI-only wiring would be green everywhere else.
+#
+# Absolute state, relative operation: the relative path is what tells the declared
+# directory apart from the server's, and the state must not depend on the thing under
+# test. The script is 755 because the engine execs it directly.
+cwdws=$WS/cwdcase
+mkdir -p $cwdws/state
+cat > $cwdws/op.sh <<'OP'
+#!/bin/sh
+pwd > /tmp/mcp-cwd-seen.txt
+echo committed > state/written
+OP
+chmod 755 $cwdws/op.sh
+printf 'seed\n' > $cwdws/state/seed
+printf '[world]\nstate = "%s/state"\n\n[define]\noperation = "%s/op.sh"\ncwd       = "%s"\n' \
+    "$cwdws" "$cwdws" "$cwdws" > $WS/cwd.toml
+rm -f /tmp/mcp-cwd-seen.txt
+drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/cwd.toml\"}}}"
+if [ ! -f /tmp/mcp-cwd-seen.txt ]; then
+    # No file means the operation never ran, so the claim was never exercised. Saying
+    # "ok" here would be the shape mcp 4's comment warns about: a check that cannot look
+    # must not report what it did not see.
+    fail "the operation never ran through the server — the cwd claim was not exercised"
+elif [ "$(cat /tmp/mcp-cwd-seen.txt)" = "$cwdws" ]; then
+    pass "the operation started in the directory the define declared, with no caller able to cd"
+else
+    echo "FAIL the operation ran in $(cat /tmp/mcp-cwd-seen.txt), not the declared $cwdws"
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

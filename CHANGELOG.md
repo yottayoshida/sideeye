@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- **A define declares the directory its commands run in**: `[define] cwd` in `sideeye.toml`, and `--cwd` beside the other define-surface flags. Relative spellings in the file resolve against the file's own directory (ADR 0007), so the same toml means the same run from any caller. The engine's own working directory does not move — `--work`, `--json` and `--state` are still read against it. This is the first additive key since the v1.0 tag, taken under the allowance stated in `docs/contract-freeze.md` surface 1, which now names it in the frozen list. The caller it exists for is the MCP server's: it is handed a config path and starts the engine itself, so before this there was no way for a config-driven run to say where the operation should start.
+- **Saved cases carry it, at `case_version` 4.** A case whose define declares a cwd is version 4 and carries the resolved directory; an older file carrying the field, or a version-4 file without it, is refused by name rather than replayed under a guessed contract — the rule `expected_status` and the argv form already follow.
+
+### Changed
+- The completeness oracle is given the define's declared directory to resolve the subject's relative paths against, instead of the engine's own. The shim reads the working directory inside the child and follows a `chdir` on its own; the oracle reads a trace afterwards and has to be told, so without this the two observers could resolve one relative path against two directories. **No observable difference has been measured**: with the strace and architecture this repository's Linux job uses, relative paths arrive carrying an `AT_FDCWD` annotation that already names the child's directory, and the report is byte-identical with and without the change.
+
 ## [1.0.0] - 2026-08-29
 
 **Summary**: The contract-freeze release. All six v1.0 entry criteria carry `met` rulings in `PRD.md`; the five surfaces of `docs/contract-freeze.md` — config format, report schema, exit codes, replay compatibility, the MCP surface — are frozen from this tag on, with the `unknown_reason` closed set at 32 members, sealed against addition until 2.0.

@@ -16,7 +16,10 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
 ## The five surfaces
 
 1. **Config format.** `[world] state`; `[define] setup`, `operation`,
-   `check`, `marker`, `expected_status`. Both command spellings: the string
+   `check`, `marker`, `expected_status`, `cwd` — the last added after the tag
+   under the additive allowance this paragraph ends with, and named here rather
+   than left to the code so the frozen surface and the accepted set stay the
+   same list. Both command spellings: the string
    form with its split-on-spaces, no-quoting rule, and the argv form — one
    line, double-quoted elements, passed verbatim (ADR 0019). Unknown keys,
    malformed values and the array form on non-command keys refuse with named,
