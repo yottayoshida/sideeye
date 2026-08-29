@@ -124,6 +124,237 @@ test "firstUnsupportedEntry flags exactly the kinds restore cannot recreate" {
     try std.testing.expectEqualStrings("ghost", firstUnsupportedEntry(snap2).?);
 }
 
+/// One way two snapshots of the same root disagree.
+///
+/// `rel` borrows from whichever snapshot holds the entry, so a `Difference` is only
+/// valid while both snapshots are: the caller renders it before either is deinited.
+pub const Difference = struct {
+    rel: []const u8,
+    how: How,
+
+    pub const How = enum {
+        /// Present in the first snapshot, absent from the second.
+        only_in_first,
+        /// Present in the second, absent from the first — the direction `classify`
+        /// structurally cannot report, because it walks the pre-side only.
+        only_in_second,
+        kind_differs,
+        content_differs,
+    };
+};
+
+/// How many differences exist, and how many the caller's buffer could hold.
+pub const DiffCount = struct {
+    /// Written into `out`, in sorted `rel` order.
+    stored: usize,
+    /// Every difference found, whether or not it fit. A caller that reports `stored`
+    /// as if it were the total would understate a split on any tree that overflows
+    /// the buffer — the counting continues past the buffer for exactly that reason.
+    total: usize,
+
+    pub fn equal(self: DiffCount) bool {
+        return self.total == 0;
+    }
+};
+
+/// Every way two snapshots of the same root disagree, bounded by the caller's buffer.
+///
+/// A linear merge, not a lookup loop: both producers sort and validate
+/// (`validateSortedUnique`), so one pass answers in O(n+m) and — unlike `classify`,
+/// which iterates the pre-side and asks `find` for its partner — an entry present in
+/// only the *second* snapshot is reported rather than skipped. That direction is the
+/// whole point here: `classify` skipping it is correct for L0 (a file the operation
+/// created has no pre-image to be judged hybrid against), and wrong for a
+/// repeatability question, where a file only the second run wrote is the split.
+pub fn diffSnapshots(first: Snapshot, second: Snapshot, out: []Difference) DiffCount {
+    var count: DiffCount = .{ .stored = 0, .total = 0 };
+    var i: usize = 0;
+    var j: usize = 0;
+    const fs = first.entries.items;
+    const ss = second.entries.items;
+    while (i < fs.len or j < ss.len) {
+        const how: Difference.How, const rel: []const u8 = blk: {
+            if (i >= fs.len) {
+                defer j += 1;
+                break :blk .{ .only_in_second, ss[j].rel };
+            }
+            if (j >= ss.len) {
+                defer i += 1;
+                break :blk .{ .only_in_first, fs[i].rel };
+            }
+            switch (std.mem.order(u8, fs[i].rel, ss[j].rel)) {
+                .lt => {
+                    defer i += 1;
+                    break :blk .{ .only_in_first, fs[i].rel };
+                },
+                .gt => {
+                    defer j += 1;
+                    break :blk .{ .only_in_second, ss[j].rel };
+                },
+                .eq => {
+                    const f = fs[i];
+                    const s = ss[j];
+                    i += 1;
+                    j += 1;
+                    // Kind before content: a directory that became a file has an empty
+                    // `content` on one side, and reporting that as a content difference
+                    // would describe the smaller half of what happened.
+                    if (f.kind != s.kind) break :blk .{ .kind_differs, f.rel };
+                    if (!std.mem.eql(u8, f.content, s.content)) break :blk .{ .content_differs, f.rel };
+                    continue;
+                },
+            }
+        };
+        count.total += 1;
+        if (count.stored < out.len) {
+            out[count.stored] = .{ .rel = rel, .how = how };
+            count.stored += 1;
+        }
+    }
+    return count;
+}
+
+test "diffSnapshots reports both directions, kind and content" {
+    const gpa = std.testing.allocator;
+    const Pair = struct { rel: []const u8, kind: posix.Kind, content: []const u8 };
+    const build = struct {
+        fn f(a: std.mem.Allocator, items: []const Pair) !Snapshot {
+            var snap = Snapshot{ .arena = std.heap.ArenaAllocator.init(a), .entries = .empty };
+            const arena = snap.arena.allocator();
+            for (items) |it| try snap.entries.append(arena, .{ .rel = it.rel, .kind = it.kind, .content = it.content });
+            return snap;
+        }
+    }.f;
+
+    var buf: [8]Difference = undefined;
+
+    // Equal: the control. An implementation that reported every entry as a difference
+    // would pass every other leg below and die here.
+    var a1 = try build(gpa, &.{
+        .{ .rel = "a", .kind = .file, .content = "1" },
+        .{ .rel = "d", .kind = .dir, .content = "" },
+    });
+    defer a1.deinit();
+    var b1 = try build(gpa, &.{
+        .{ .rel = "a", .kind = .file, .content = "1" },
+        .{ .rel = "d", .kind = .dir, .content = "" },
+    });
+    defer b1.deinit();
+    try std.testing.expect(diffSnapshots(a1, b1, &buf).equal());
+
+    // only_in_first and only_in_second in one comparison, so a merge that advances the
+    // wrong cursor cannot pass by reporting the right count with the wrong sides.
+    var a2 = try build(gpa, &.{
+        .{ .rel = "gone", .kind = .file, .content = "x" },
+        .{ .rel = "same", .kind = .file, .content = "s" },
+    });
+    defer a2.deinit();
+    var b2 = try build(gpa, &.{
+        .{ .rel = "same", .kind = .file, .content = "s" },
+        .{ .rel = "new", .kind = .file, .content = "y" },
+    });
+    defer b2.deinit();
+    // `new` sorts before `same`, `gone` before both: the merge must not assume the
+    // caller's construction order.
+    std.mem.sort(Entry, b2.entries.items, {}, lessThanRel);
+    const c2 = diffSnapshots(a2, b2, &buf);
+    try std.testing.expectEqual(@as(usize, 2), c2.total);
+    try std.testing.expectEqual(@as(usize, 2), c2.stored);
+    try std.testing.expectEqualStrings("gone", buf[0].rel);
+    try std.testing.expectEqual(Difference.How.only_in_first, buf[0].how);
+    try std.testing.expectEqualStrings("new", buf[1].rel);
+    try std.testing.expectEqual(Difference.How.only_in_second, buf[1].how);
+
+    // kind before content: the pre-side is an empty directory, the post-side a file
+    // with bytes. Reporting `content_differs` here would name the smaller half.
+    var a3 = try build(gpa, &.{.{ .rel = "x", .kind = .dir, .content = "" }});
+    defer a3.deinit();
+    var b3 = try build(gpa, &.{.{ .rel = "x", .kind = .file, .content = "bytes" }});
+    defer b3.deinit();
+    const c3 = diffSnapshots(a3, b3, &buf);
+    try std.testing.expectEqual(@as(usize, 1), c3.total);
+    try std.testing.expectEqual(Difference.How.kind_differs, buf[0].how);
+
+    var a4 = try build(gpa, &.{.{ .rel = "x", .kind = .file, .content = "one" }});
+    defer a4.deinit();
+    var b4 = try build(gpa, &.{.{ .rel = "x", .kind = .file, .content = "two" }});
+    defer b4.deinit();
+    const c4 = diffSnapshots(a4, b4, &buf);
+    try std.testing.expectEqual(@as(usize, 1), c4.total);
+    try std.testing.expectEqual(Difference.How.content_differs, buf[0].how);
+}
+
+test "diffSnapshots keeps counting past the caller's buffer" {
+    const gpa = std.testing.allocator;
+    var a = Snapshot{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer a.deinit();
+    var b = Snapshot{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer b.deinit();
+    const ba = b.arena.allocator();
+    // Five entries only the second snapshot has, into a buffer that holds two. A
+    // `total` that stopped at the buffer would report a two-path split for a
+    // five-path one — the understatement this field exists to prevent.
+    for ([_][]const u8{ "a", "b", "c", "d", "e" }) |rel|
+        try b.entries.append(ba, .{ .rel = rel, .kind = .file, .content = "z" });
+    var small: [2]Difference = undefined;
+    const c = diffSnapshots(a, b, &small);
+    try std.testing.expectEqual(@as(usize, 5), c.total);
+    try std.testing.expectEqual(@as(usize, 2), c.stored);
+    try std.testing.expect(!c.equal());
+}
+
+test "a Difference that escapes its snapshot must own its bytes" {
+    // The ownership rule this file's `Difference` doc states, held by a test rather than
+    // by a comment. `only_in_second` is the only kind that borrows from the SECOND
+    // snapshot, and a caller that frees that snapshot before rendering reads freed
+    // memory — which is exactly what `main.zig`'s `observeAgain` did until review found
+    // it (reproduced there as a segfault).
+    //
+    // The overwrite below is the whole trick. Without it a freed arena's pages are
+    // usually still readable and the assertion passes by luck — measured: the shell
+    // acceptance leg that drives this same path stayed green against the defect. Taking
+    // the pages back and filling them with 0xAA turns the bug into an ordinary string
+    // mismatch a CI log can show, instead of a segfault or a silent pass.
+    const gpa = std.testing.allocator;
+    var caller = std.heap.ArenaAllocator.init(gpa);
+    defer caller.deinit();
+    const arena = caller.allocator();
+
+    var first = Snapshot{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer first.deinit();
+
+    const diffs = blk: {
+        // Same shape as `observeAgain`: the second snapshot is a local, released by
+        // this block's own `defer`, while the differences outlive it.
+        var second = Snapshot{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+        defer second.deinit();
+        const sa = second.arena.allocator();
+        const owned = try sa.dupe(u8, "only-in-second.txt");
+        try second.entries.append(sa, .{ .rel = owned, .kind = .file, .content = "x" });
+
+        const out = try arena.alloc(Difference, 4);
+        const count = diffSnapshots(first, second, out);
+        try std.testing.expectEqual(@as(usize, 1), count.total);
+        try std.testing.expectEqual(Difference.How.only_in_second, out[0].how);
+        // The copy under test. Deleting these two lines is the defect, and the
+        // assertion below then reads 0xAA.
+        for (out[0..count.stored]) |*d| d.rel = try arena.dupe(u8, d.rel);
+        break :blk out[0..count.stored];
+    };
+
+    var claims: [8][]u8 = undefined;
+    var claimed: usize = 0;
+    defer {
+        for (claims[0..claimed]) |c| gpa.free(c);
+    }
+    while (claimed < claims.len) : (claimed += 1) {
+        claims[claimed] = try gpa.alloc(u8, 64 * 1024);
+        @memset(claims[claimed], 0xAA);
+    }
+
+    try std.testing.expectEqualStrings("only-in-second.txt", diffs[0].rel);
+}
+
 /// `EntriesNotSortedUnique` means the snapshot came out of `walk` in a shape `find` cannot
 /// search: out of order, or holding the same `rel` twice. Neither should be reachable — the
 /// sort above guarantees the first and a directory traversal cannot produce the second — so
