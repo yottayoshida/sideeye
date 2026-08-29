@@ -7,33 +7,36 @@ frozen surface gets resolved *before* the freeze, because after it, a fix as
 filed is a broken promise. "Defer and freeze anyway" is the one outcome this
 page exists to prevent.
 
-**Snapshot.** The classification below covers the open-issue set captured by
-`gh issue list --state open --limit 1000` at the **pre-tag re-sweep,
-2026-08-27** — fifty-five issues, committed verbatim as
-`spike/freeze-audit/snapshot-2026-08-27.tsv`, replacing the 2026-08-18
-snapshot of thirteen (which replaced the original sweep's twenty-six of
-2026-08-17). The gate's `SNAPSHOT` name moved with the file, in the same
-commit — the two are one trust root. Every query carries `--limit 1000` and
+**Snapshot.** The classification below covers the open-issue set captured at
+the **fourth sweep, 2026-08-29** — fifty-six issues, committed verbatim as
+`spike/freeze-audit/snapshot-2026-08-29.tsv`, replacing the 2026-08-27
+snapshot of fifty-five (which replaced the 2026-08-18 snapshot of thirteen,
+which replaced the original sweep's twenty-six of 2026-08-17). The gate's
+`SNAPSHOT` name moved with the file, in the same commit — the two are one
+trust root. Every query carries `--limit 1000` and
 asserts the returned count is strictly below it, because `gh issue list`
 defaults to thirty, exactly its page size, so a truncated result is
 indistinguishable from a complete one.
 
 **The accounting is recomputable, which it was not before.** The window from
-the previous snapshot to this one is `2026-08-18T04:06:57Z` (the commit that
-installed it) to the capture, and the whole acquisition — number, state,
-`createdAt`, `closedAt`, `updatedAt` and title for every issue the tracker
-holds — is committed as
-`spike/freeze-audit/capture-2026-08-27-raw.json` with its query, its limit
+the previous snapshot to this one is `2026-08-27T05:54:56Z` (the commit that
+installed it, 33049a9) to the capture, and the whole acquisition — number,
+state, `createdAt`, `closedAt`, `updatedAt` and title for every issue the
+tracker holds — is committed as
+`spike/freeze-audit/capture-2026-08-29-raw.json` with its query, its limit
 and its instant. Every count on this page is recomputable from that
 file — the gate recomputes the population, the window's closed set and the
 measured closed-set additions on every run, and a reader can derive the rest (the
 class tallies, the forecast count, the volume figure below) from the same file.
-None is quoted from a transcript: fifty-five open (ten surviving
-from the previous snapshot, forty-five filed since), three previous-snapshot
-issues since closed, and **thirty-eight issues opened *and* closed inside the
-window** — which a final-state capture cannot see at all, and which is why
-this page has always carried a resolved section enumerated by a closed-issue
-query. The previous sweep's equivalent set was four.
+None is quoted from a transcript: fifty-six open (forty-seven surviving
+from the previous snapshot, nine filed since), eight previous-snapshot issues
+since closed — six of them landing or scheduling the window's pre-tag work
+(#323, #363, the sweep's own #281 and #353, and the after-1.0 pair's third,
+#217, beside #201 and #202) plus the measured #272 — and **zero issues opened
+and closed inside the window**, the set a final-state capture cannot see at
+all, and which is why this page carries a resolved section enumerated by a
+closed-issue query (the previous two sweeps' equivalents were thirty-eight
+and four).
 
 The tables are **generated** from `spike/freeze-audit/audit.tsv` by
 `spike/freeze-audit/render-audit.sh` (ADR 0027) — the manifest is the trust
@@ -60,6 +63,15 @@ it read as a statement about a capture taken a day later. And nothing
 machine-checked the snapshot's own completeness; the gate now recomputes it
 from the committed capture, which bounds the claim to what that capture can
 support.
+
+Gate output, 2026-08-29 (fourth sweep): `ok: 122 rows (56 active, 66
+resolved) cover the 56 snapshot issues; both tables are byte-identical
+renders of the manifest; every enum, the class-dependent disposition rule and
+both ledger directions hold; the 8 measured closed-set additions match
+surface-changes.tsv; the declaration is at the revision this sweep read; and
+the gate goes red on a one-row-deleted copy.` `--live` the same day: no
+drift — every snapshot issue still open has an active row, every one now
+closed has a resolved row, and nothing has been filed since.
 
 Gate output, 2026-08-27 (re-sweep): `ok: 113 rows (53 active, 60 resolved)
 cover the 55 snapshot issues; both tables are byte-identical renders of the
@@ -183,18 +195,32 @@ resolution, not in the issue text, so a page that decides surfaces by reading
 issues returns `none` for it however carefully it reads. Four of this window's
 five closed-set additions were lost that way in this schema's first draft.
 
-Read against the strict enumeration, sixteen of the fifty-three active rows now
-carry a forecast other than `none`, against zero on the previous sweep's
-thirteen. The clause-1 reading is no longer vacuous, and the three rows that
-name a still-owed pre-tag decision are called out under the table.
+Read against the strict enumeration, eleven of the fifty-six active rows
+carry a forecast other than `none` (sixteen of fifty-three at the third
+sweep; the drop is the three foreclosed-decision rows resolving and the nine
+new rows all forecasting `none`). No active row names a still-owed pre-tag
+decision — the list under the table is empty again, and the section below
+records how it emptied.
 
 ## What moved on the frozen surfaces
 
 Measured, not read (ADR 0028). `sh spike/freeze-audit/surface-drift.sh` compares
 the five surfaces between the commit that installed the previous snapshot and
 this one, and its committed output is
-`spike/freeze-audit/surface-drift-2026-08-27.txt`. It reports in three rungs,
-separately, because they support different claims:
+`spike/freeze-audit/surface-drift-2026-08-29.txt` (the third sweep's window is
+`surface-drift-2026-08-27.txt`). **This window's result**: the closed set grew
+29 → 32 (`state_tree_too_large`, `state_rewrite_failed`, `child_timed_out` —
+sc-14, sc-15, sc-17), one semantic exit-code movement rode #363's resolution
+(three post-define rewrite-failure sites, 3 → 2, sc-16), and every other
+enumerated set is unmoved: config keys 6, report fields 21, exit-code values 4,
+`contract_version` 12, MCP tool names 2. `docs/contract-freeze.md` is
+byte-identical across this window — the fourth sweep read the same yardstick
+the third did — and all four changes were already in the ledger before this
+sweep ran, recorded through the gate's own drift path (extend the ledger, move
+the pin, same commit) when each landed. The narrative below is the third
+sweep's window, kept as its record; the rung ladder it explains is how both
+windows were measured. It reports in three rungs, separately, because they
+support different claims:
 
 1. **Blob identity.** If *every* file a surface is defined by is byte-identical
    across the window, the surface did not move — enumerated names *and*
@@ -328,9 +354,6 @@ _Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between th
 | #156 | `--oracle` + `--allow-unverified` accepted and inert | forecast: none — CLI acceptance semantics are not surface 1, which freezes the toml keys and the two command spellings | C | **defer**: with the note said out loud: freezing means the inert acceptance is permanent, and making the combo refuse after the tag would be the breaking change |
 | #161 | release glibc floor inherited, not chosen | forecast: none — release engineering, outside the five surfaces | C | **defer**: worth deciding before 1.0, not contract-bound |
 | #199 | preflight cannot see nondeterminism: a property of two runs, from one observed run | forecast: none — a new preflight mode or subcommand is CLI surface, which surface 1 does not freeze (it freezes the toml keys and the define's two command spellings); the issue says so itself and states that no change to the recording contract, the report schema or the closed set is required | C | **defer**: The cheapest fact about a target is currently learned the most expensive way. |
-| #201 | statically-linked targets: the oracle sees them, the kill injector cannot reach them | forecast: report-schema — implementing it would add refusal vocabulary to the closed set, which the issue names as reopening the frozen contract | C | **defer**: Owner scheduling ruling 2026-08-21: after v1.0. The tag makes it a breaking change, accepted deliberately rather than overlooked. |
-| #202 | threaded targets: kill points lose their address under interleaving | forecast: report-schema — same family as #201 by the issue's own text: a contract redesign with new refusal vocabulary | C | **defer**: Owner scheduling ruling 2026-08-21: after v1.0, the deepest of the three reach walls. |
-| #217 | targets whose file I/O bypasses libc: the shim loads and hears nothing | forecast: report-schema replay-compatibility — the issue names an engine-architecture change touching the recording model, crash-point addressing and likely the trace contract | C | **defer**: Filed after-1.0 deliberately, at the same standing as #201 and #202. |
 | #257 | determinism apparatus is rebuilt by hand per target; no declared-apparatus surface exists | forecast: config-format report-schema — a define naming its apparatus is an additive config key and the report carrying the declaration is an additive field; both sit inside the allowances surfaces 1 and 2 state | C | **defer**: Nothing here is tag-blocking, but the issue is right that the shape is cheaper to decide before the tag than after. |
 | #258 | wall roadmap ordering: encounter frequency and contract cost disagree | forecast: none — a scheduling question about other issues, not a gap in a surface | C | **defer**: Asks for an explicit owner decision on post-tag order with the encounter table in front of it. |
 | #259 | every cohort rewrites its probe, drill and transcript harness | forecast: none — spike apparatus, outside the five surfaces | C | **defer**: The re-derivations re-import bug classes review then has to re-find; three have recurred across cohorts. |
@@ -338,7 +361,6 @@ _Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between th
 | #261 | the define cannot declare non-durable paths, and the L0 precision limit keeps consuming targets | forecast: config-format report-schema — either candidate shape — an ignore list in the define, or an L1 durability marker — adds a config key and a report field, both additive | B | **defer**: Four recorded shapes have already spent a target, a claim or an engine PR on this limit. |
 | #262 | exploration is strictly sequential and every world pays the full state size | forecast: none — the cheap steps (binary search in find, a hash-first compare) touch no frozen surface; parallelism would, and the issue defers that | C | **after-1.0**: Labelled after-1.0. The tracked home for the throughput bound. |
 | #263 | no timeout exists anywhere: one hung world stalls an explore forever, silently | forecast: report-schema — a named refusal for a wall-clock breach needs a new closed-set member, and the closed set is excluded from surface 2's additive allowance — so the naming, if that is the shape, can only land before the tag | C | **defer**: PRE-TAG DECISION OWED: the issue says the naming belongs before the tag even if the default stays off. Undecided as of this sweep. |
-| #272 | the himalaya report's severity ceiling rests on three points the record marks unmeasured | forecast: none — measurement of an external system's behaviour, outside the five surfaces | C | **defer**: Owner-gated: the issue covers producing the measurements, not sending anything upstream. |
 | #274 | refusals help unevenly: the commonest detectors ship one word | forecast: none — enriching a refusal's message text, or a new diagnose subcommand, is CLI and message prose rather than a frozen field's meaning | C | **defer**: The refusal a new user hits first carries the least help; the discrimination it declines is cheap outside the engine. |
 | #275 | sideeye.toml cannot carry oracle or work: a committed define stops one flag short | forecast: config-format — an oracle key is an additive config key, and surface 1 says in as many words that additive keys remain possible | C | **defer**: Not tag-blocking. The issue's own precedent (#95, the argv form) landed pre-freeze for convenience, not necessity. |
 | #276 | the checker cookbook contains no checkers: four recipes, all pointers into spike/ | forecast: none — documentation, outside the five surfaces | C | **defer**: The page's own premise is that the checker is the layer that fails quietest. |
@@ -368,6 +390,15 @@ _Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between th
 | #359 | where the root denylists live: engine.zig hosts a rule two consumers share | forecast: none — an internal placement question; both entry points keep their names and signatures | D | **defer**: The issue also records that #329's plan gave a false reason for not doing it, so that reason is not inherited. |
 | #360 | four ADRs still say Proposed after their implementing PRs merged | forecast: none — repository bookkeeping, outside the five surfaces | C | **defer**: This PR flips 0027 and lands 0028 Accepted, which does not touch the four the issue names (0022, 0023, 0024, 0026). |
 | #365 | the trace-cap CI step's sha comparison cannot see an edit to the shipped value | forecast: none — a CI differential check; one candidate resolution would have the binary report its ceiling, which the issue flags as a public-surface decision rather than assuming it | C | **defer**: Measured: a released engine with a 64-byte trace-read ceiling would go out green. Not urgent — the flag path is covered and nothing edits that literal. |
+| #369 | rung 3's residue has no clause-to-check map: 'held by a check' and 'held by nobody' read the same | forecast: none — the audit's own rung-3 bookkeeping — a clause-to-check map is coverage documentation, and building it moves no surface | C | **defer**: Filed 2026-08-28 from the sweep's own three-rung report. The map is owed to readers of the drift report; until it exists the page says the residue is held by review, which is true and unverifiable. |
+| #370 | the v7-case acceptance leg claims 'never a verdict' and does not assert it | forecast: none — an acceptance leg's assertion strength over surface 4's promised refusal; strengthening the check moves no surface | C | **defer**: Filed 2026-08-28. The engine refuses correctly today; the gap is that the leg would stay green on a regression that answers a verdict with the mismatch message in the output. Same family as #341's fixture gap. |
+| #371 | the drift message tells the wrong actor to move the pin, and a pin asserts a reading nobody did | forecast: none — the audit gate's own diagnostics and pin semantics, outside the five surfaces | C | **defer**: Filed 2026-08-28, measured by a coordination failure it caused. This sweep re-pins with the reading actually taken (surface-drift-2026-08-29.txt committed beside it); the message's audience question stays open. |
+| #373 | docs/adr/ numbering has no exclusion, and a collision merges green | forecast: none — repository hygiene over docs/adr/ filenames, outside the five surfaces | C | **defer**: Filed 2026-08-28 after two sessions each created an 0028 on the same day and only conversation caught it. The proposed check is three lines beside an existing spike check. |
+| #374 | entries in the [Unreleased] block invalidate each other, and the stale ones stay | forecast: none — release-notes prose hygiene, outside the five surfaces | C | **defer**: Filed 2026-08-28 with a measured claim family (the memory-bound wording) where a later entry falsifies an earlier one and both stand. The release checklist rewrites the heading, not the entries. |
+| #375 | state_tree_too_large reports what it read, not what the tree holds | forecast: none — refusal-message detail inside an existing member; the member, the verdict and the exit are unchanged by any resolution the issue entertains | C | **defer**: Filed 2026-08-28 and adjudicated in its own text: continuing the walk past the break was rejected on four measurements, and the refusal already names the two commands that answer exactly. Open only if an operator asks. |
+| #376 | SnapshotError types a reader that cannot raise half of it | forecast: none — internal error-set precision; every consumer already catches the whole set, so no behaviour or surface moves | C | **defer**: Filed 2026-08-28. The cost is that snapshotDetail's exhaustiveness covers a wider set than each producer can raise, which weakens the new-member-is-a-compile-error mechanism's precision, not its soundness. |
+| #377 | max_trace_bytes is per-read, the way the per-file cap was before #323 | forecast: none — a bounded-by-counting property of the engine's own memory, outside the five surfaces; the issue names no new member and the existing refusal covers each read | C | **tracked**: Filed 2026-08-28 so the property lives somewhere other than an argument: the total is bounded by there being two read sites in one function, and a third would move the bound with nothing noticing. Lower urgency than #323 was — neither read is target-controlled in size. |
+| #383 | the onboarding clock's launcher can silently reuse a stale box | forecast: none — criterion 6's spike apparatus (run-clock.sh preflight), outside the five surfaces | C | **defer**: Filed 2026-08-28 from run 2, which was taken against a box started 2h51m earlier after a name-conflict docker run failure. The run stands — zero files changed inside the box between its start and the run, measured with a 47-file control — and the preflight's missing age check is the filed gap. |
 <!-- END generated: freeze-audit classification -->
 
 Fifty-three active rows at this re-sweep, against thirteen at the previous one
@@ -381,14 +412,14 @@ is not a change of standard; it is a larger population read against the same
 declaration. The sharpest is `#337`, which states the blocker itself — the
 report's `message` field is frozen surface 2, so shrinking what it carries is
 a breaking change rather than an additive one — and is deliberately after-1.0
-for that reason. Three more name a **pre-tag decision that is still owed**,
-because the `unknown_reason` closed set is excluded from surface 2's additive
-allowance and can therefore only gain a member before the tag: `#263` (a
-timeout refusal), `#323` (a tree-total refusal) and `#363` (eight refusals
-that exit 3 after the define has run). Two of those three are conditional by
-their own wording — if the resolution reuses an existing member there is no
-deadline — and the rows record the conditionality rather than assuming a
-branch. Every remaining forecast falls inside an allowance the declaration
+for that reason. The three rows that named a **still-owed pre-tag decision** at the third
+sweep — `#263`, `#323`, `#363`, foreclosed because the `unknown_reason`
+closed set is excluded from surface 2's additive allowance — have all
+resolved inside this window, each with its member landed before the tag:
+`state_tree_too_large` (#323, sc-14), `state_rewrite_failed` plus the three
+exit-path movements (#363, sc-15 and sc-16), and `child_timed_out` (#263's
+first half, sc-17; the issue stays open on its stdin question, which reuses
+nothing frozen and carries no deadline). Every remaining forecast falls inside an allowance the declaration
 states: additive config keys (`#275`, `#257`), additive report fields
 (`#257`, `#261`), a trace-contract bump, which surface 4 says in as many
 words is not a broken promise (`#279`), or account-field prose, which surface
@@ -406,9 +437,10 @@ documented hole, which is the outcome class A forbids.
 ## Resolved before the tag
 
 Every row below was an open issue in some sweep's snapshot, or was filed and
-resolved between sweeps — thirty-eight such issues in this window against
-four in the last, enumerated by a closed-issue query over it, since a
-final-state capture cannot see an issue that opened and closed inside it. The
+resolved between sweeps — zero such issues in this window, against
+thirty-eight in the third sweep's and four in the second's, enumerated by a
+closed-issue query over the window, since a final-state capture cannot see an
+issue that opened and closed inside it. The
 struck rows keep their adjudication history, and the table is now **generated
 from the manifest** like the active one: until this sweep it was hand-written
 and the gate counted active rows only, so seventeen rows of adjudication
@@ -428,6 +460,10 @@ _Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between th
 
 | issue | what it says | surface | class | resolution |
 |---|---|---|---|---|
+| ~~#201~~ | statically-linked targets: the oracle sees them, the kill injector cannot reach them | no attributed enumerated change — an after-1.0 scheduling ruling; the wall record lives in docs/target-classes.md, outside the five surfaces | C | **after-1.0**: Closed 2026-08-27 as scheduled out of v1.0, not as resolved (state reason not-planned). The owner's 2026-08-21 ruling is in the issue's own text and the after-1.0 label; the statically-linked wall row (Jujutsu, no_shim_marker) stays in docs/target-classes.md and does not close with the issue. |
+| ~~#202~~ | threaded targets: kill points lose their address under interleaving | no attributed enumerated change — an after-1.0 scheduling ruling; the wall record lives in docs/target-classes.md, outside the five surfaces | C | **after-1.0**: Closed 2026-08-27 as scheduled out of v1.0, not as resolved (state reason not-planned). The owner's 2026-08-21 ruling called it the deepest of the three reach walls, touching the determinism contract's core; the multi-threaded wall row (Bun, multiple_threads_detected) stays in docs/target-classes.md. |
+| ~~#217~~ | targets whose file I/O bypasses libc: the shim loads and hears nothing | no attributed enumerated change — an after-1.0 scheduling ruling; the wall record lives in docs/target-classes.md, outside the five surfaces | C | **after-1.0**: Closed 2026-08-27 as scheduled out of v1.0, not as resolved (state reason not-planned). The after-1.0 label and the title both carry the ruling; the raw-syscall wall row (cargo, the rename diagnosis in spike/cohort3/) stays in docs/target-classes.md. |
+| ~~#272~~ | the himalaya report's severity ceiling rests on three points the record marks unmeasured | no attributed enumerated change — three severity-ceiling measurements committed as cohort records (outward-reach.txt), outside the five surfaces | C | **fix**: Closed 2026-08-28 as completed: the three measurements the record marked unmeasured exist, committed in 37278fe as spike/cohort4/himalaya-r2/outward-reach.txt with a positive control beside each; RESULTS.md:115 and the CHANGELOG entry (#272, #288) are its index. |
 | ~~#323~~ | the state tree's TOTAL is unbounded: the per-file cap is not a memory ceiling | measured: sc-14 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | C | **fix**: Closed 2026-08-27. The owner ruled for a new member rather than riding on state_unsnapshotable — a failure with a limit reports its limit — and the ceiling landed as state_tree_too_large, naming the total read and the largest contributors. Its active row forecast this exact shape: the member was implemented and unmerged when the sweep shipped, so the gate reported it as post-sweep drift when it landed, by design. |
 | ~~#363~~ | eight non-snapshot refusals still exit 3 after the define has run | measured: sc-15 sc-16 — the surface diff attributes a measured change to this issue's resolution; see surface-changes.tsv for the item, the legality and the evidence | C | **fix**: Closed 2026-08-28. Group B: the engine failing to rewrite the state tree it recorded, after the define has run, answers UNKNOWN state_rewrite_failed instead of exit 3 at the two restore sites and the corruption site — one closed-set member, three exit paths moved from 3 to 2. Group A's five apparatus reads stay exit 3 under the spawnFailure adjudication recorded on the issue; the remaining :1413 wording fix carries no tag deadline and left the tracker with the close. |
 | ~~#5~~ | restore drops FIFOs/sockets/devices; worlds differ from the recorded tree (symlinks fixed in #122) | not measured by this sweep (closed before its window) — reading taken by the 2026-08-17/18 sweeps: yes — verdict soundness | A | **demote**: detect a non-regular, non-symlink entry at snapshot time and refuse (UNKNOWN) rather than explore a tree that cannot be reproduced. Fix lands before the tag. **Landed 2026-08-17**: `unsupported_state_entry` fires at all three snapshots (initial, final, crashed — the last catching entries no syscall witness saw born), and the demotion's own review first forced the entrance repair: the `DT_UNKNOWN` fallback used to probe by opening, which hangs on a FIFO and misclassifies sockets and devices — classification is by `statx`/`fstatat` now, no open, no follow |
@@ -508,40 +544,46 @@ _Generated by `sh spike/freeze-audit/render-audit.sh` — do not edit between th
    with #27's measurement; #165, its duplicate) with #159's held call
    resolved alongside, resolved rows struck, gate re-run green
    with the strike separation seen red once.
-4. ~~Re-run the sweep again~~ — done 2026-08-27, this sweep: snapshot
+4. ~~Re-run the sweep again~~ — done 2026-08-27, third sweep: snapshot
    replaced (55 issues, gate path and declaration pin moved in the same
    commit), thirty-eight issues filed and resolved inside the window
    accounted by a closed-issue query, seventeen historical rows migrated into
    the manifest, and the five surfaces measured rather than read for the first
    time.
+5. ~~Re-run before the tag~~ — done 2026-08-29, fourth sweep: snapshot
+   replaced (56 issues), zero issues opened-and-closed inside the window, the
+   three foreclosed pre-tag decisions all landed and measured into the ledger
+   before the sweep ran (sc-14..sc-17), and the declaration byte-identical
+   across the window.
 
-**Three items are on this list now, and that is new.** The previous two sweeps
-ended with it empty. Each of these is a decision the tag forecloses, because
-the `unknown_reason` closed set is excluded from surface 2's additive allowance
-and can therefore only gain a member *before* the tag:
+**The list is empty again.** The third sweep put three items on it — the
+first sweeps to end with it non-empty — and all three resolved inside this
+window, each decision taken and landed *before* the tag, which is the only
+order the closed set's exemption from the additive allowance permits:
 
-1. **`#263`** — a per-world timeout. No timeout exists anywhere today, so one
-   hung world stalls an explore forever with no diagnostic. A named refusal
-   needs a closed-set member; the issue says the naming belongs before the tag
-   even if the default stays off.
-2. **`#323`** — a tree-total cap. The per-file cap bounds one read; the tree's
-   total is unbounded, and by the issue's own measurement 60 MiB across a thousand
-   files passes every per-file check and still ends in an OOM kill with no report. Whether the refusal needs
-   a new member or can reuse one is undecided.
-3. **`#363`** — eight refusals that still exit 3 after the define has run.
-   Conditional by the issue's own wording: reusing existing members carries no
-   deadline, a new member does.
+1. **`#263`** — resolved as a new member: `child_timed_out`, behind
+   `--world-timeout` (off by default, worlds only). Landed 2026-08-28
+   (sc-17); the issue stays open on its stdin question, which reuses nothing
+   frozen and carries no deadline.
+2. **`#323`** — resolved as a new member: `state_tree_too_large`, the owner
+   ruling for a name over riding on `state_unsnapshotable` because a failure
+   with a limit reports its limit. Landed 2026-08-27 (sc-14).
+3. **`#363`** — resolved on both of its own branches: one new member,
+   `state_rewrite_failed`, for the engine's own rewrite failures after the
+   define has run (sc-15), and three exit paths moved 3 → 2 under the
+   declaration's existing clause (sc-16). The five apparatus reads stay
+   exit 3 by the adjudication recorded on the issue. Landed 2026-08-28.
 
-Two of the three are conditional, and this page deliberately does not assume a
-branch for either — recording a member that has not landed would be exactly the
-association this audit refuses. **Criterion 5's status is the owner's call given
-this list**, recorded in `PRD.md` with its date, not adjusted here.
+Every landing was measured into `surface-changes.tsv` through the gate's own
+drift path when it happened, not recorded by this sweep after the fact.
+**Criterion 5's status is the owner's call given this record**, recorded in
+`PRD.md` with its date, not adjusted here.
 
 The standing obligation is unchanged and never leaves the list: whatever is
 filed between now and the tag gets swept and classified before the tag, however
 many times that takes. "Criterion 5 is met" is a statement about the audit that
-ran, not a promise that the tracker stopped moving — and this sweep is the
-measurement of how much it moves, at eighty-three issues in nine days.
+ran, not a promise that the tracker stopped moving — the third sweep measured
+eighty-three issues moved in nine days; this window, seventeen in two.
 
 **The last-moment check is mechanical, and since this sweep it is achievable**:
 `sh spike/freeze-audit/check-freeze-audit.sh --live` asks the tracker whether
