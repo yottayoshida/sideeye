@@ -1,0 +1,65 @@
+surface drift: 33049a9 -> 33f0a73
+  base names the commit that installed the snapshot being replaced.
+
+== rung 1: blob identity (the only rung that settles a surface outright) ==
+  IDENTICAL  src/config.zig
+  CHANGED    src/main.zig  (16ddb4d -> a020461)
+  CHANGED    src/contract.zig  (845de0c -> 02c0cfa)
+  IDENTICAL  src/mcp.zig
+  CHANGED    docs/report-schema.md  (7c17717 -> dbdbeca)
+  IDENTICAL  docs/contract-freeze.md
+
+  surface 1 (config format): PARTLY settled by rung 1, and NOT settled overall.
+    src/config.zig is byte-identical, so the accepted key set and the parse did
+    not move. But src/main.zig CHANGED, and it carries the rest of surface 1:
+    splitArgs (the string form's split-on-spaces rule), the argv form's verbatim
+    passing, and resolvePathAgainst (relative paths against the toml's
+    directory, ADR 0007). Those clauses are rung-3 residue for this window.
+
+== rung 2: enumerated diffs (which names appeared or disappeared) ==
+  surface 1  config accepted keys   : 6 -> 6, unmoved
+  surface 2  unknown_reason closed set: 29 -> 32
+      added:   child_timed_out state_rewrite_failed state_tree_too_large 
+  surface 2  report schema fields    : 21 -> 21, unmoved
+  surface 3  exit codes (name=value) : 4 -> 4, unmoved
+  surface 4  contract_version        : 1 -> 1, unmoved
+  surface 5  MCP tool names          : 2 -> 2, unmoved
+
+== candidate commits for each moved item ==
+  These are candidates. The issue an item is attributed to is recorded in
+  surface-changes.tsv with its evidence; neither -S nor -G answers causation.
+  -S is right for a NAME appearing (the occurrence count changes with it) and
+  wrong for a VALUE edit on a line whose text is otherwise unchanged, which is
+  rule 3 above: the two contract_version bumps below are invisible to -S.
+  unknown_reason/child_timed_out: 75e8003
+  unknown_reason/state_rewrite_failed: 42434cc
+  unknown_reason/state_tree_too_large: ab8c688
+  contract_version (value edit — -S returns nothing here):
+
+== the yardstick: revisions of docs/contract-freeze.md inside the window ==
+  The declaration every reading is taken 'strictly against' is not a fixed
+  yardstick. A sweep must pin the revision it read.
+  declaration blob: b7902d6 -> b7902d6
+
+== rung 3: NOT MEASURED by anything above (read, not measured) ==
+  Each line is a clause of docs/contract-freeze.md that no extraction here
+  covers. These are held by review and by spike/acceptance.sh. Mapping each
+  clause to the check that pins it is filed as its own issue, not done here.
+  surface 1  the string form's split-on-spaces and no-quoting rule; the argv
+             form's verbatim passing; relative path resolution against the
+             toml's directory. These live in src/main.zig, NOT src/config.zig,
+             so rung 1 settles them only when src/main.zig is also identical.
+  surface 2  field presence rules, field types, and the meaning of every
+             machine field. A field keeping its name while changing meaning is
+             exactly what surface 2 forbids and exactly what rung 2 cannot see
+  surface 3  which call site returns which code. #273 moved this while the
+             enum stayed identical — the measured proof that rung 2 is not
+             a measurement of surface 3
+  surface 4  that an old case refuses with the mismatch named and returns no
+             verdict. NOTE: the acceptance leg for a v7 case asserts exit 2
+             and a message string; it does not assert the unknown_reason value
+             and does not assert the absence of a verdict line, though its own
+             success message says 'never a verdict'. Filed.
+  surface 5  the two input schemas and the isError derivation rule
+
+ok   surface drift measured; rung 3 residue named above is not measured by this script

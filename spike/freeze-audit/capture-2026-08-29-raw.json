@@ -1,0 +1,1301 @@
+{
+ "captured_at_utc": "2026-08-29T01:56:34Z",
+ "command": "gh issue list --state all --limit 1000 --json number,state,createdAt,closedAt,updatedAt,title",
+ "issues": [
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-28T05:20:50Z",
+   "number": 383,
+   "state": "OPEN",
+   "title": "The onboarding clock's launcher can silently reuse a stale box",
+   "updatedAt": "2026-08-28T05:20:50Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T06:18:58Z",
+   "number": 377,
+   "state": "OPEN",
+   "title": "max_trace_bytes is per-read, the way the per-file cap was before #323",
+   "updatedAt": "2026-08-27T06:18:58Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T06:18:44Z",
+   "number": 376,
+   "state": "OPEN",
+   "title": "SnapshotError types a reader that cannot raise half of it",
+   "updatedAt": "2026-08-27T06:18:44Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T06:18:42Z",
+   "number": 375,
+   "state": "OPEN",
+   "title": "state_tree_too_large reports what it read, not what the tree holds",
+   "updatedAt": "2026-08-27T06:18:42Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T06:18:23Z",
+   "number": 374,
+   "state": "OPEN",
+   "title": "Entries in the [Unreleased] block invalidate each other, and the stale ones stay",
+   "updatedAt": "2026-08-27T06:18:23Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T06:18:08Z",
+   "number": 373,
+   "state": "OPEN",
+   "title": "docs/adr/ numbering has no exclusion, and a collision merges green",
+   "updatedAt": "2026-08-27T06:18:08Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T06:07:11Z",
+   "number": 371,
+   "state": "OPEN",
+   "title": "The drift message tells the wrong actor to move the pin, and a pin asserts a reading nobody did",
+   "updatedAt": "2026-08-27T07:58:57Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T05:56:34Z",
+   "number": 370,
+   "state": "OPEN",
+   "title": "The v7-case acceptance leg claims 'never a verdict' and does not assert it",
+   "updatedAt": "2026-08-27T05:56:34Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T05:56:16Z",
+   "number": 369,
+   "state": "OPEN",
+   "title": "Rung 3's residue has no clause-to-check map: a reader cannot tell 'held by a check' from 'held by nobody'",
+   "updatedAt": "2026-08-27T05:56:16Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T03:04:26Z",
+   "number": 365,
+   "state": "OPEN",
+   "title": "The trace-cap CI step's sha comparison cannot see an edit to the shipped value",
+   "updatedAt": "2026-08-27T03:04:26Z"
+  },
+  {
+   "closedAt": "2026-08-28T06:46:12Z",
+   "createdAt": "2026-08-27T01:12:57Z",
+   "number": 363,
+   "state": "CLOSED",
+   "title": "Eight non-snapshot refusals still exit 3 after the define has run",
+   "updatedAt": "2026-08-28T06:46:44Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T00:03:56Z",
+   "number": 360,
+   "state": "OPEN",
+   "title": "Four ADRs still say Proposed after their implementing PRs merged",
+   "updatedAt": "2026-08-27T00:03:56Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-27T00:03:55Z",
+   "number": 359,
+   "state": "OPEN",
+   "title": "Where the root denylists live: engine.zig hosts a rule two consumers share",
+   "updatedAt": "2026-08-27T00:03:55Z"
+  },
+  {
+   "closedAt": "2026-08-27T03:09:15Z",
+   "createdAt": "2026-08-27T00:03:32Z",
+   "number": 358,
+   "state": "CLOSED",
+   "title": "The destructive vet still accepts an ancestor of a denied tree, which the naming vet now refuses",
+   "updatedAt": "2026-08-27T03:09:15Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T23:36:43Z",
+   "number": 357,
+   "state": "OPEN",
+   "title": "A quoted figure is checked for existence in a source, not for being the right figure",
+   "updatedAt": "2026-08-26T23:36:43Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T23:36:37Z",
+   "number": 356,
+   "state": "OPEN",
+   "title": "The three documents that carry criterion 3's reopen rule can drift apart unchecked",
+   "updatedAt": "2026-08-27T00:52:20Z"
+  },
+  {
+   "closedAt": "2026-08-27T05:55:46Z",
+   "createdAt": "2026-08-26T11:48:50Z",
+   "number": 353,
+   "state": "CLOSED",
+   "title": "The freeze audit's post-snapshot section has aged past four frozen-surface issues",
+   "updatedAt": "2026-08-27T05:55:46Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T11:48:38Z",
+   "number": 352,
+   "state": "OPEN",
+   "title": "A refusal before the oracle block says no oracle was given, on runs that gave one",
+   "updatedAt": "2026-08-26T11:48:38Z"
+  },
+  {
+   "closedAt": "2026-08-27T01:41:48Z",
+   "createdAt": "2026-08-26T11:32:38Z",
+   "number": 351,
+   "state": "CLOSED",
+   "title": "A post-recording snapshot failure that is not the cap still says the define did not run",
+   "updatedAt": "2026-08-27T01:41:48Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T08:40:47Z",
+   "number": 350,
+   "state": "OPEN",
+   "title": "Committed oracle logs carry the sweep machine's absolute paths, and every re-sweep adds more",
+   "updatedAt": "2026-08-26T08:40:47Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T08:40:46Z",
+   "number": 349,
+   "state": "OPEN",
+   "title": "Reports carry no generation or run identity: a swapped report passes every check (measured)",
+   "updatedAt": "2026-08-26T08:40:46Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T08:40:45Z",
+   "number": 348,
+   "state": "OPEN",
+   "title": "apparatus.txt is written and never read, and a flagged trial is checked into the rated set and nowhere else",
+   "updatedAt": "2026-08-26T08:40:45Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T08:40:43Z",
+   "number": 347,
+   "state": "OPEN",
+   "title": "A generation can be marked complete with a SETUP_ERROR in it, and the rate is published from what remains",
+   "updatedAt": "2026-08-26T08:40:43Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T07:29:52Z",
+   "number": 345,
+   "state": "OPEN",
+   "title": "What no in-file check can see: a watched name deleted from every list at once",
+   "updatedAt": "2026-08-26T07:29:52Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T07:29:51Z",
+   "number": 344,
+   "state": "OPEN",
+   "title": "The fsevents sensitivity leg needs an msync-class mutation: v12 records the clone it planted",
+   "updatedAt": "2026-08-26T07:29:51Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T06:46:56Z",
+   "number": 342,
+   "state": "OPEN",
+   "title": "The ledger sizes are prose outside the generated block, and nothing recomputes them",
+   "updatedAt": "2026-08-26T06:46:56Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T06:46:55Z",
+   "number": 341,
+   "state": "OPEN",
+   "title": "Four of #239's new predicates have no fixture: deleting them leaves check 12 green",
+   "updatedAt": "2026-08-26T06:46:55Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T05:35:21Z",
+   "number": 339,
+   "state": "OPEN",
+   "title": "Acceptance plants a forged closing banner; the opening banner is the half the design argument never discusses",
+   "updatedAt": "2026-08-26T05:35:21Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T05:35:19Z",
+   "number": 338,
+   "state": "OPEN",
+   "title": "Compare device and inode across the check and the open: #327 made the filed fix cheap",
+   "updatedAt": "2026-08-26T05:35:19Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-26T05:35:01Z",
+   "number": 337,
+   "state": "OPEN",
+   "title": "Relay the oracle's decomposition, not the raw strace line \u2014 the control that shrinks the channel rather than describing it",
+   "updatedAt": "2026-08-26T05:35:01Z"
+  },
+  {
+   "closedAt": "2026-08-26T07:29:24Z",
+   "createdAt": "2026-08-26T05:34:59Z",
+   "number": 336,
+   "state": "CLOSED",
+   "title": "The provenance advisory is read once at tools/list; emit it in the result when a region is actually present",
+   "updatedAt": "2026-08-26T07:29:24Z"
+  },
+  {
+   "closedAt": "2026-08-26T07:29:21Z",
+   "createdAt": "2026-08-26T01:18:47Z",
+   "number": 333,
+   "state": "CLOSED",
+   "title": "macOS copies through fcopyfile, which v11 does not interpose \u2014 and macOS has no oracle to refuse what the shim misses",
+   "updatedAt": "2026-08-26T07:29:21Z"
+  },
+  {
+   "closedAt": "2026-08-26T11:59:44Z",
+   "createdAt": "2026-08-25T12:54:32Z",
+   "number": 330,
+   "state": "CLOSED",
+   "title": "A post-recording cap breach reports exit 3 though exploration began: the phase is wrong, the same shape #264 fixed for waits",
+   "updatedAt": "2026-08-26T11:59:44Z"
+  },
+  {
+   "closedAt": "2026-08-27T00:29:09Z",
+   "createdAt": "2026-08-25T12:54:30Z",
+   "number": 329,
+   "state": "CLOSED",
+   "title": "Should the naming root be subject to the depth rule? Single-component SIDEEYE_MCP_ROOT refuses since the startup vet",
+   "updatedAt": "2026-08-27T00:29:09Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-25T12:54:29Z",
+   "number": 328,
+   "state": "OPEN",
+   "title": "What #266's close did not close: the hostile-case residue, tracked",
+   "updatedAt": "2026-08-26T05:34:39Z"
+  },
+  {
+   "closedAt": "2026-08-26T05:33:58Z",
+   "createdAt": "2026-08-25T12:54:28Z",
+   "number": 327,
+   "state": "CLOSED",
+   "title": "Hold the destructive root by descriptor: openat/unlinkat closes the window assertRootUnchanged only narrows",
+   "updatedAt": "2026-08-26T05:33:58Z"
+  },
+  {
+   "closedAt": "2026-08-26T05:34:19Z",
+   "createdAt": "2026-08-25T12:54:20Z",
+   "number": 326,
+   "state": "CLOSED",
+   "title": "The MCP tool result relays target-controlled report text into the calling agent's context",
+   "updatedAt": "2026-08-26T05:34:19Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-25T12:54:19Z",
+   "number": 325,
+   "state": "OPEN",
+   "title": "A relative define.state in a case file resolves against the invoker's cwd, unlike a config's",
+   "updatedAt": "2026-08-25T12:54:19Z"
+  },
+  {
+   "closedAt": "2026-08-26T02:35:10Z",
+   "createdAt": "2026-08-25T12:54:18Z",
+   "number": 324,
+   "state": "CLOSED",
+   "title": "readTrace is the other uncapped read, and capping it naively would relabel the failure as no_shim_marker",
+   "updatedAt": "2026-08-26T02:35:10Z"
+  },
+  {
+   "closedAt": "2026-08-27T06:22:08Z",
+   "createdAt": "2026-08-25T12:54:16Z",
+   "number": 323,
+   "state": "CLOSED",
+   "title": "The state tree's TOTAL is unbounded: the per-file cap is not a memory ceiling",
+   "updatedAt": "2026-08-27T06:22:09Z"
+  },
+  {
+   "closedAt": "2026-08-26T02:35:10Z",
+   "createdAt": "2026-08-25T10:08:25Z",
+   "number": 320,
+   "state": "CLOSED",
+   "title": "The freeze's report-schema surface has no additive rule: whether a new field is breaking is a reading, not a sentence",
+   "updatedAt": "2026-08-26T02:35:10Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-25T09:49:34Z",
+   "number": 318,
+   "state": "OPEN",
+   "title": "An \"empty diff\" claim drops its normalisation, and the record miscounts its own: the class is at three instances",
+   "updatedAt": "2026-08-25T09:49:34Z"
+  },
+  {
+   "closedAt": "2026-08-25T01:50:59Z",
+   "createdAt": "2026-08-25T01:24:20Z",
+   "number": 306,
+   "state": "CLOSED",
+   "title": "The cohort-4 himalaya guard states a premise the upstream fix falsified, and it is committed twice",
+   "updatedAt": "2026-08-25T01:50:59Z"
+  },
+  {
+   "closedAt": "2026-08-25T09:53:20Z",
+   "createdAt": "2026-08-25T01:24:13Z",
+   "number": 305,
+   "state": "CLOSED",
+   "title": "A fix that changes the operation sequence orphans its own case: leg C's bar is unreachable for the himalaya finding",
+   "updatedAt": "2026-08-25T09:53:20Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-24T04:45:07Z",
+   "number": 299,
+   "state": "OPEN",
+   "title": "The other family: a recorder whose coverage is complete by construction",
+   "updatedAt": "2026-08-24T04:45:07Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-24T02:15:25Z",
+   "number": 297,
+   "state": "OPEN",
+   "title": "upstream-report-status.sh cannot see a report that was never added to its list",
+   "updatedAt": "2026-08-25T05:42:36Z"
+  },
+  {
+   "closedAt": "2026-08-25T05:36:28Z",
+   "createdAt": "2026-08-24T02:15:20Z",
+   "number": 296,
+   "state": "CLOSED",
+   "title": "sideeye explore --help is a SETUP ERROR: help is answered before the mode word, not after it",
+   "updatedAt": "2026-08-25T05:36:28Z"
+  },
+  {
+   "closedAt": "2026-08-25T02:01:12Z",
+   "createdAt": "2026-08-24T02:15:14Z",
+   "number": 295,
+   "state": "CLOSED",
+   "title": "The synopsis check covers two directions of three: a flag a mode accepts but its line omits is still unchecked",
+   "updatedAt": "2026-08-25T02:01:12Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-24T01:39:04Z",
+   "number": 293,
+   "state": "OPEN",
+   "title": "Route B's second hypothesis: can FSEvents veto a mutation the shim never reported?",
+   "updatedAt": "2026-08-25T03:55:24Z"
+  },
+  {
+   "closedAt": "2026-08-25T01:16:37Z",
+   "createdAt": "2026-08-24T01:39:02Z",
+   "number": 292,
+   "state": "CLOSED",
+   "title": "spike/macos-oracle/ is not registered in .gitattributes, and the rule has now been missed twice",
+   "updatedAt": "2026-08-25T01:16:37Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T09:22:56Z",
+   "number": 286,
+   "state": "OPEN",
+   "title": "macOS verification without per-run root: a calibration ceremony, a witness interposer, an FSEvents corroborator",
+   "updatedAt": "2026-08-25T10:08:33Z"
+  },
+  {
+   "closedAt": "2026-08-27T05:54:59Z",
+   "createdAt": "2026-08-23T06:09:16Z",
+   "number": 281,
+   "state": "CLOSED",
+   "title": "Freeze-audit standing obligation: seven issues filed since the snapshot are unclassified, and the 2026-08-23 batch adds 25 more",
+   "updatedAt": "2026-08-27T05:54:59Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:09:15Z",
+   "number": 280,
+   "state": "OPEN",
+   "title": "Hand-synced pairs and untested cores inside src/: detector order, the notTested twins, OpClass.name, and the kill path",
+   "updatedAt": "2026-08-23T06:09:15Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:09:14Z",
+   "number": 279,
+   "state": "OPEN",
+   "title": "A contract bump orphans every saved case: three re-records paid by hand, no migration story",
+   "updatedAt": "2026-08-23T06:09:14Z"
+  },
+  {
+   "closedAt": "2026-08-23T08:49:03Z",
+   "createdAt": "2026-08-23T06:09:12Z",
+   "number": 278,
+   "state": "CLOSED",
+   "title": "The README never routes a skeptic to the denominators: no path to unknown-rate, kill-criteria-review, contract-freeze or freeze-audit",
+   "updatedAt": "2026-08-23T08:49:03Z"
+  },
+  {
+   "closedAt": "2026-08-23T08:45:06Z",
+   "createdAt": "2026-08-23T06:09:10Z",
+   "number": 277,
+   "state": "CLOSED",
+   "title": "Top-level docs lag the record: PRD stops at cohort 3, DESIGN says pre-implementation, target-classes cites '#35, open'",
+   "updatedAt": "2026-08-23T08:45:06Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:09:08Z",
+   "number": 276,
+   "state": "OPEN",
+   "title": "The checker cookbook contains no checkers: four recipes, all pointers into spike/",
+   "updatedAt": "2026-08-23T06:09:08Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:09:07Z",
+   "number": 275,
+   "state": "OPEN",
+   "title": "sideeye.toml cannot carry oracle or work: a committed define stops one flag short of a reproducible invocation",
+   "updatedAt": "2026-08-23T06:09:07Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:09:05Z",
+   "number": 274,
+   "state": "OPEN",
+   "title": "Refusals help unevenly: the commonest detectors ship one word while completeness_not_verified ships a paste-ready command",
+   "updatedAt": "2026-08-23T06:09:05Z"
+  },
+  {
+   "closedAt": "2026-08-24T02:10:59Z",
+   "createdAt": "2026-08-23T06:09:04Z",
+   "number": 273,
+   "state": "CLOSED",
+   "title": "--help is not a word the CLI knows, and the usage text has drifted from the parser",
+   "updatedAt": "2026-08-24T02:10:59Z"
+  },
+  {
+   "closedAt": "2026-08-28T00:06:40Z",
+   "createdAt": "2026-08-23T06:09:02Z",
+   "number": 272,
+   "state": "CLOSED",
+   "title": "The himalaya report's severity ceiling rests on three points the record marks unmeasured",
+   "updatedAt": "2026-08-28T00:06:40Z"
+  },
+  {
+   "closedAt": "2026-08-24T02:10:59Z",
+   "createdAt": "2026-08-23T06:09:01Z",
+   "number": 271,
+   "state": "CLOSED",
+   "title": "upstream-report-status.sh cannot fail: the BROKEN counter dies in a pipeline subshell, and REPORTS is a hand-grown literal",
+   "updatedAt": "2026-08-24T02:10:59Z"
+  },
+  {
+   "closedAt": "2026-08-25T12:52:09Z",
+   "createdAt": "2026-08-23T06:09:00Z",
+   "number": 270,
+   "state": "CLOSED",
+   "title": "The numbering-assert wiring has no live acceptance coverage: the both-asserts-off mutant survives the suite",
+   "updatedAt": "2026-08-25T12:52:09Z"
+  },
+  {
+   "closedAt": "2026-08-25T08:59:39Z",
+   "createdAt": "2026-08-23T06:08:58Z",
+   "number": 269,
+   "state": "CLOSED",
+   "title": "The MCP server has no parent-death cleanup: killed mid-explore, it leaves the target's process group running",
+   "updatedAt": "2026-08-25T08:59:39Z"
+  },
+  {
+   "closedAt": "2026-08-25T07:56:02Z",
+   "createdAt": "2026-08-23T06:08:57Z",
+   "number": 268,
+   "state": "CLOSED",
+   "title": "The default work dir is one fixed world-writable path: concurrent runs collide and non-MCP opens follow symlinks",
+   "updatedAt": "2026-08-25T07:56:38Z"
+  },
+  {
+   "closedAt": "2026-08-25T07:37:17Z",
+   "createdAt": "2026-08-23T06:08:55Z",
+   "number": 267,
+   "state": "CLOSED",
+   "title": "assertSafeRoot accepts any absolute path two slashes deep: /var/lib passes the only guard in front of deleteTree",
+   "updatedAt": "2026-08-25T07:37:17Z"
+  },
+  {
+   "closedAt": "2026-08-25T12:52:08Z",
+   "createdAt": "2026-08-23T06:08:54Z",
+   "number": 266,
+   "state": "CLOSED",
+   "title": "MCP replay trusts define.state inside the case file: root confinement stops at the case path, and --fresh-state empties what the field names",
+   "updatedAt": "2026-08-25T12:52:08Z"
+  },
+  {
+   "closedAt": "2026-08-25T12:52:08Z",
+   "createdAt": "2026-08-23T06:08:52Z",
+   "number": 265,
+   "state": "CLOSED",
+   "title": "snapshot reads whole files with no size cap while every other read in the pipeline is capped",
+   "updatedAt": "2026-08-25T12:52:08Z"
+  },
+  {
+   "closedAt": "2026-08-24T02:10:58Z",
+   "createdAt": "2026-08-23T06:08:51Z",
+   "number": 264,
+   "state": "CLOSED",
+   "title": "A failed waitpid decodes as exit 0: the wrong-reason path is documented in a comment and still shipped",
+   "updatedAt": "2026-08-24T02:10:58Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:08:49Z",
+   "number": 263,
+   "state": "OPEN",
+   "title": "No timeout exists anywhere: one hung world stalls an explore forever, without a diagnostic",
+   "updatedAt": "2026-08-28T08:49:54Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:08:48Z",
+   "number": 262,
+   "state": "OPEN",
+   "title": "Exploration is strictly sequential and every world pays the full state size",
+   "updatedAt": "2026-08-23T06:08:48Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:08:46Z",
+   "number": 261,
+   "state": "OPEN",
+   "title": "The L0 precision limit keeps consuming targets and claims: the define cannot declare non-durable paths",
+   "updatedAt": "2026-08-23T06:08:46Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:08:45Z",
+   "number": 260,
+   "state": "OPEN",
+   "title": "Selection rule 5 misses user-side recoverability: the poetry lesson, to settle before cohort 5 selects",
+   "updatedAt": "2026-08-23T06:08:45Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:08:43Z",
+   "number": 259,
+   "state": "OPEN",
+   "title": "Every cohort rewrites its probe, drill and transcript harness: extract the shared spike library",
+   "updatedAt": "2026-08-23T06:08:43Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:08:42Z",
+   "number": 258,
+   "state": "OPEN",
+   "title": "Wall roadmap ordering: encounter frequency puts the accelerated-copy family first, and no issue decides the post-tag order",
+   "updatedAt": "2026-08-23T06:08:42Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-23T06:08:40Z",
+   "number": 257,
+   "state": "OPEN",
+   "title": "Determinism apparatus is rebuilt by hand per target: promote a declared-apparatus kit to the product surface",
+   "updatedAt": "2026-08-26T01:18:15Z"
+  },
+  {
+   "closedAt": "2026-08-26T01:17:13Z",
+   "createdAt": "2026-08-23T06:08:39Z",
+   "number": 256,
+   "state": "CLOSED",
+   "title": "The shim omits three wrappers the oracle already classifies: renameat2, pwritev, pwritev2",
+   "updatedAt": "2026-08-26T01:17:13Z"
+  },
+  {
+   "closedAt": "2026-08-26T01:17:13Z",
+   "createdAt": "2026-08-22T23:05:49Z",
+   "number": 244,
+   "state": "CLOSED",
+   "title": "The shim cannot see Rust std's fs::copy, and the libc-bypass class has three mechanisms, not one",
+   "updatedAt": "2026-08-26T01:17:44Z"
+  },
+  {
+   "closedAt": "2026-08-27T00:51:51Z",
+   "createdAt": "2026-08-22T07:51:05Z",
+   "number": 240,
+   "state": "CLOSED",
+   "title": "Criterion 3's kill-criteria review predates two cohorts: ten measured targets, zero mentions, and a margin it names as one trial",
+   "updatedAt": "2026-08-27T00:51:51Z"
+  },
+  {
+   "closedAt": "2026-08-26T08:42:48Z",
+   "createdAt": "2026-08-22T07:45:18Z",
+   "number": 239,
+   "state": "CLOSED",
+   "title": "The A-group UNKNOWN rate predates two cohorts: 16 committed defines are outside a corpus defined as 'every committed, runnable define'",
+   "updatedAt": "2026-08-26T08:42:48Z"
+  },
+  {
+   "closedAt": "2026-08-22T08:22:08Z",
+   "createdAt": "2026-08-22T05:26:22Z",
+   "number": 231,
+   "state": "CLOSED",
+   "title": "Next-campaign claim reading: select the earliest checker-red world, not the earliest violation",
+   "updatedAt": "2026-08-22T08:22:08Z"
+  },
+  {
+   "closedAt": "2026-08-22T04:20:02Z",
+   "createdAt": "2026-08-22T03:10:51Z",
+   "number": 221,
+   "state": "CLOSED",
+   "title": "Scout model sensitivity: does the scouting method hold up when the scout is a smaller model?",
+   "updatedAt": "2026-08-22T04:20:02Z"
+  },
+  {
+   "closedAt": "2026-08-27T08:01:19Z",
+   "createdAt": "2026-08-22T02:27:30Z",
+   "number": 217,
+   "state": "CLOSED",
+   "title": "After 1.0: a ptrace-grade observer for targets whose file I/O bypasses libc",
+   "updatedAt": "2026-08-27T08:01:19Z"
+  },
+  {
+   "closedAt": "2026-08-22T06:40:21Z",
+   "createdAt": "2026-08-21T23:20:53Z",
+   "number": 209,
+   "state": "CLOSED",
+   "title": "criterion 1, third cohort: sweet-spot selection frozen (cargo, black, rustfmt, poetry, papis) with bench refill",
+   "updatedAt": "2026-08-22T06:40:21Z"
+  },
+  {
+   "closedAt": "2026-08-27T08:01:17Z",
+   "createdAt": "2026-08-21T11:17:56Z",
+   "number": 202,
+   "state": "CLOSED",
+   "title": "After v1.0: threaded targets \u2014 kill-point addressing under interleaving",
+   "updatedAt": "2026-08-27T08:01:17Z"
+  },
+  {
+   "closedAt": "2026-08-27T08:00:59Z",
+   "createdAt": "2026-08-21T11:17:54Z",
+   "number": 201,
+   "state": "CLOSED",
+   "title": "After v1.0: statically-linked targets \u2014 the oracle already sees them; only the kill injector is missing",
+   "updatedAt": "2026-08-27T08:00:59Z"
+  },
+  {
+   "closedAt": "2026-08-21T12:11:04Z",
+   "createdAt": "2026-08-21T11:17:26Z",
+   "number": 200,
+   "state": "CLOSED",
+   "title": "Before v1.0: freeze the monotonic clock and re-ask the Borg question (cohort-2 wall follow-up)",
+   "updatedAt": "2026-08-21T12:11:18Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-21T11:09:53Z",
+   "number": 199,
+   "state": "OPEN",
+   "title": "Preflight cannot see nondeterminism: the one question a single observed run structurally cannot answer",
+   "updatedAt": "2026-08-23T06:09:44Z"
+  },
+  {
+   "closedAt": "2026-08-21T09:30:28Z",
+   "createdAt": "2026-08-21T09:17:22Z",
+   "number": 190,
+   "state": "CLOSED",
+   "title": "Widen the metadata exclusion to the timestamp family (utimensat/utimes/futimesat/utime)",
+   "updatedAt": "2026-08-21T09:30:28Z"
+  },
+  {
+   "closedAt": "2026-08-21T10:14:37Z",
+   "createdAt": "2026-08-21T06:05:19Z",
+   "number": 183,
+   "state": "CLOSED",
+   "title": "criterion 1, second cohort: five targets frozen at selection (KeePassXC, Borg, Mercurial, Jujutsu, Bun)",
+   "updatedAt": "2026-08-21T10:14:37Z"
+  },
+  {
+   "closedAt": "2026-08-23T09:12:50Z",
+   "createdAt": "2026-08-18T06:31:33Z",
+   "number": 181,
+   "state": "CLOSED",
+   "title": "\"macOS has no oracle\" rests on one tool: fs_usage, ktrace, OpenBSM and Endpoint Security were never measured",
+   "updatedAt": "2026-08-23T09:13:47Z"
+  },
+  {
+   "closedAt": "2026-08-23T06:11:38Z",
+   "createdAt": "2026-08-18T06:31:25Z",
+   "number": 180,
+   "state": "CLOSED",
+   "title": "Installing is four steps where the ecosystem's answer is one: nothing blocks a Homebrew formula",
+   "updatedAt": "2026-08-23T06:11:38Z"
+  },
+  {
+   "closedAt": "2026-08-18T02:34:59Z",
+   "createdAt": "2026-08-17T04:22:02Z",
+   "number": 169,
+   "state": "CLOSED",
+   "title": "A world-only process boundary is tolerated with no oracle account of that world",
+   "updatedAt": "2026-08-18T02:35:13Z"
+  },
+  {
+   "closedAt": "2026-08-18T02:50:25Z",
+   "createdAt": "2026-08-17T03:17:35Z",
+   "number": 167,
+   "state": "CLOSED",
+   "title": "The text defang stops at 0x7f: raw C1 bytes (0x80-0x9F) pass through, and 8-bit-CSI terminals read them as escapes",
+   "updatedAt": "2026-08-18T02:50:25Z"
+  },
+  {
+   "closedAt": "2026-08-17T02:16:38Z",
+   "createdAt": "2026-08-17T02:16:27Z",
+   "number": 165,
+   "state": "CLOSED",
+   "title": "A dir-to-dir pair is excluded from judgment entirely: an empty directory can become a file or vanish in a crash world, unseen",
+   "updatedAt": "2026-08-17T02:16:38Z"
+  },
+  {
+   "closedAt": "2026-08-17T03:03:54Z",
+   "createdAt": "2026-08-17T02:16:26Z",
+   "number": 164,
+   "state": "CLOSED",
+   "title": "A dir-to-dir pair is excluded from judgment entirely: an empty directory can become a file or vanish in a crash world, unseen",
+   "updatedAt": "2026-08-17T03:03:55Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-17T00:23:57Z",
+   "number": 161,
+   "state": "OPEN",
+   "title": "Release targets inherit Zig's default glibc floor; consider pinning it explicitly",
+   "updatedAt": "2026-08-23T06:09:49Z"
+  },
+  {
+   "closedAt": "2026-08-25T12:02:18Z",
+   "createdAt": "2026-08-17T00:23:53Z",
+   "number": 160,
+   "state": "CLOSED",
+   "title": "Onboarding-clock apparatus hardening before any run 2",
+   "updatedAt": "2026-08-25T12:02:18Z"
+  },
+  {
+   "closedAt": "2026-08-18T02:50:26Z",
+   "createdAt": "2026-08-17T00:07:43Z",
+   "number": 159,
+   "state": "CLOSED",
+   "title": "README Usage never introduces --shim and --work; the Example is the only place they appear",
+   "updatedAt": "2026-08-18T02:50:26Z"
+  },
+  {
+   "closedAt": "2026-08-18T00:14:10Z",
+   "createdAt": "2026-08-16T14:44:46Z",
+   "number": 157,
+   "state": "CLOSED",
+   "title": "Acceptance value pins compare python repr, so a JSON string \"true\" would pass where a bool is promised",
+   "updatedAt": "2026-08-18T00:14:10Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-16T14:44:40Z",
+   "number": 156,
+   "state": "OPEN",
+   "title": "--oracle with --allow-unverified is accepted and inert \u2014 should the combo refuse?",
+   "updatedAt": "2026-08-23T06:09:53Z"
+  },
+  {
+   "closedAt": "2026-08-18T00:14:10Z",
+   "createdAt": "2026-08-16T09:19:15Z",
+   "number": 150,
+   "state": "CLOSED",
+   "title": "The FAIL headline's denominator counts the baseline world under the label \"crash worlds\"",
+   "updatedAt": "2026-08-18T00:14:10Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-16T07:40:15Z",
+   "number": 147,
+   "state": "OPEN",
+   "title": "outcome-map.tsv classifies all 12 topydo FAIL rows as reported-upstream, but the record shows one filing",
+   "updatedAt": "2026-08-23T06:09:55Z"
+  },
+  {
+   "closedAt": "2026-08-16T07:10:57Z",
+   "createdAt": "2026-08-16T04:39:23Z",
+   "number": 144,
+   "state": "CLOSED",
+   "title": "Triage the bogofilter-sqlite counterexample from the #84 sweep",
+   "updatedAt": "2026-08-16T07:10:57Z"
+  },
+  {
+   "closedAt": "2026-08-16T07:10:57Z",
+   "createdAt": "2026-08-16T01:39:41Z",
+   "number": 141,
+   "state": "CLOSED",
+   "title": "Re-run the omamori surface probes under the current contract before citing the v8-era refusals",
+   "updatedAt": "2026-08-16T07:10:57Z"
+  },
+  {
+   "closedAt": "2026-08-25T09:53:20Z",
+   "createdAt": "2026-08-15T13:23:04Z",
+   "number": 140,
+   "state": "CLOSED",
+   "title": "v1.0 criterion 1 (search half): one qualifying find under the provenance gate (ADR 0017)",
+   "updatedAt": "2026-08-25T09:53:20Z"
+  },
+  {
+   "closedAt": "2026-08-15T11:26:51Z",
+   "createdAt": "2026-08-15T08:22:21Z",
+   "number": 134,
+   "state": "CLOSED",
+   "title": "Label falsification-gate child output in the transcript so a harvested line cannot read as a world's",
+   "updatedAt": "2026-08-15T11:26:51Z"
+  },
+  {
+   "closedAt": "2026-08-15T10:22:06Z",
+   "createdAt": "2026-08-15T05:01:30Z",
+   "number": 130,
+   "state": "CLOSED",
+   "title": "Assisted runs need a verify-seals equivalent: machine-check that the define precedes the report",
+   "updatedAt": "2026-08-15T10:22:06Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-15T00:47:21Z",
+   "number": 123,
+   "state": "OPEN",
+   "title": "Exec image replacement: the judge cannot follow a target across execve",
+   "updatedAt": "2026-08-23T06:09:57Z"
+  },
+  {
+   "closedAt": "2026-08-15T02:59:21Z",
+   "createdAt": "2026-08-15T00:47:20Z",
+   "number": 122,
+   "state": "CLOSED",
+   "title": "symlink/symlinkat is a missing class \u2014 symlink-farm targets are unreachable",
+   "updatedAt": "2026-08-15T03:41:46Z"
+  },
+  {
+   "closedAt": "2026-08-15T03:27:13Z",
+   "createdAt": "2026-08-15T00:47:19Z",
+   "number": 121,
+   "state": "CLOSED",
+   "title": "Ownership and permission writes are outside the trace contract \u2014 sqlite-backed targets go UNKNOWN as root",
+   "updatedAt": "2026-08-15T03:41:48Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-14T13:32:54Z",
+   "number": 118,
+   "state": "OPEN",
+   "title": "Assisted discovery: bring your own scout \u2014 Sideeye remains the judge",
+   "updatedAt": "2026-08-23T06:09:59Z"
+  },
+  {
+   "closedAt": "2026-08-15T11:28:16Z",
+   "createdAt": "2026-08-13T08:31:00Z",
+   "number": 96,
+   "state": "CLOSED",
+   "title": "README: say plainly that MCP root confinement is not a sandbox",
+   "updatedAt": "2026-08-15T11:28:16Z"
+  },
+  {
+   "closedAt": "2026-08-16T09:27:19Z",
+   "createdAt": "2026-08-13T08:30:58Z",
+   "number": 95,
+   "state": "CLOSED",
+   "title": "sideeye.toml needs an argv-native command form before the freeze \u2014 split-on-space cannot spell a quoted argument",
+   "updatedAt": "2026-08-16T09:27:19Z"
+  },
+  {
+   "closedAt": "2026-08-16T14:50:40Z",
+   "createdAt": "2026-08-13T08:30:57Z",
+   "number": 94,
+   "state": "CLOSED",
+   "title": "PASS needs a machine-readable evidence level: verified vs --allow-unverified is invisible to callers",
+   "updatedAt": "2026-08-16T14:50:40Z"
+  },
+  {
+   "closedAt": "2026-08-15T11:28:15Z",
+   "createdAt": "2026-08-13T08:30:56Z",
+   "number": 93,
+   "state": "CLOSED",
+   "title": "README overclaims \"smallest reproducible counterexample\" \u2014 what ships is the earliest failing crash point",
+   "updatedAt": "2026-08-15T11:28:15Z"
+  },
+  {
+   "closedAt": "2026-08-17T00:32:58Z",
+   "createdAt": "2026-08-13T05:55:44Z",
+   "number": 87,
+   "state": "CLOSED",
+   "title": "v1.0 criterion 6: the timed clean-room measurement \u2014 README to a first external-target exploration in under ten minutes",
+   "updatedAt": "2026-08-17T00:32:58Z"
+  },
+  {
+   "closedAt": "2026-08-18T04:06:58Z",
+   "createdAt": "2026-08-13T05:17:55Z",
+   "number": 86,
+   "state": "CLOSED",
+   "title": "v1.0 criterion 5: contract-freeze audit \u2014 every open issue touching a frozen surface gets fixed or documented before the freeze",
+   "updatedAt": "2026-08-18T04:07:14Z"
+  },
+  {
+   "closedAt": "2026-08-16T07:45:20Z",
+   "createdAt": "2026-08-13T05:17:50Z",
+   "number": 85,
+   "state": "CLOSED",
+   "title": "v1.0 criterion 3: the \u00a718 kill-criteria review against collected data, written down",
+   "updatedAt": "2026-08-16T07:45:20Z"
+  },
+  {
+   "closedAt": "2026-08-16T04:38:56Z",
+   "createdAt": "2026-08-13T05:17:46Z",
+   "number": 84,
+   "state": "CLOSED",
+   "title": "v1.0 criterion 4: measure and publish the UNKNOWN rate on supported targets; set the threshold from the data",
+   "updatedAt": "2026-08-16T04:39:52Z"
+  },
+  {
+   "closedAt": "2026-08-15T13:23:15Z",
+   "createdAt": "2026-08-13T05:17:41Z",
+   "number": 83,
+   "state": "CLOSED",
+   "title": "v1.0 criterion 1 (search half): close the \"discovered automatically\" gap \u2014 one find whose checker was declared before the bug was known",
+   "updatedAt": "2026-08-15T13:23:15Z"
+  },
+  {
+   "closedAt": "2026-08-16T06:30:08Z",
+   "createdAt": "2026-08-13T05:17:37Z",
+   "number": 82,
+   "state": "CLOSED",
+   "title": "v1.0 criterion 1 (mechanical half): the timewarrior finding must live in CI as a replayed regression case, not a recipe",
+   "updatedAt": "2026-08-16T06:30:08Z"
+  },
+  {
+   "closedAt": "2026-08-16T08:03:19Z",
+   "createdAt": "2026-08-13T05:01:34Z",
+   "number": 81,
+   "state": "CLOSED",
+   "title": "README: an agent-led onboarding path \u2014 the one setup flow this repo has actually measured end to end",
+   "updatedAt": "2026-08-16T08:03:19Z"
+  },
+  {
+   "closedAt": "2026-08-15T13:12:26Z",
+   "createdAt": "2026-08-13T05:01:33Z",
+   "number": 80,
+   "state": "CLOSED",
+   "title": "Docs: a checker cookbook \u2014 the L2 lessons are in the BUILDLOG, not in front of users",
+   "updatedAt": "2026-08-15T13:12:26Z"
+  },
+  {
+   "closedAt": "2026-08-15T13:12:26Z",
+   "createdAt": "2026-08-13T05:01:06Z",
+   "number": 79,
+   "state": "CLOSED",
+   "title": "Docs: a \"works well on this class of tool\" page, so visitors self-select before their first refusal",
+   "updatedAt": "2026-08-15T13:12:26Z"
+  },
+  {
+   "closedAt": "2026-08-15T13:12:25Z",
+   "createdAt": "2026-08-13T05:01:05Z",
+   "number": 78,
+   "state": "CLOSED",
+   "title": "The shim and oracle should be found, not plumbed: default --shim to the binary's sibling, auto-detect strace",
+   "updatedAt": "2026-08-15T13:12:25Z"
+  },
+  {
+   "closedAt": "2026-08-13T06:19:57Z",
+   "createdAt": "2026-08-13T05:00:43Z",
+   "number": 77,
+   "state": "CLOSED",
+   "title": "sideeye preflight: answer \"will it work on my tool?\" in one command, before the define exists",
+   "updatedAt": "2026-08-13T06:19:57Z"
+  },
+  {
+   "closedAt": "2026-08-13T06:19:57Z",
+   "createdAt": "2026-08-13T05:00:42Z",
+   "number": 76,
+   "state": "CLOSED",
+   "title": "sideeye demo: a sixty-second first success that needs nothing written",
+   "updatedAt": "2026-08-13T06:19:57Z"
+  },
+  {
+   "closedAt": "2026-08-13T06:19:57Z",
+   "createdAt": "2026-08-13T05:00:41Z",
+   "number": 75,
+   "state": "CLOSED",
+   "title": "Prebuilt binaries on releases: the install wall is the first cliff of v1.0's ten-minute criterion",
+   "updatedAt": "2026-08-13T06:19:57Z"
+  },
+  {
+   "closedAt": "2026-08-13T05:01:36Z",
+   "createdAt": "2026-08-13T04:38:52Z",
+   "number": 73,
+   "state": "CLOSED",
+   "title": "The contract-version unit test races itself across concurrent 'zig build test' runs",
+   "updatedAt": "2026-08-13T05:01:36Z"
+  },
+  {
+   "closedAt": "2026-08-13T02:59:35Z",
+   "createdAt": "2026-08-13T02:25:02Z",
+   "number": 69,
+   "state": "CLOSED",
+   "title": "MCP surface has no per-call state freshness: the second replay in one server session dies in setup",
+   "updatedAt": "2026-08-13T02:59:35Z"
+  },
+  {
+   "closedAt": "2026-08-13T02:59:35Z",
+   "createdAt": "2026-08-13T02:25:01Z",
+   "number": 68,
+   "state": "CLOSED",
+   "title": "MCP surface cannot replay env-located-state targets: the minimal-env child drops TIMEWARRIORDB-class variables",
+   "updatedAt": "2026-08-13T02:59:35Z"
+  },
+  {
+   "closedAt": "2026-08-13T04:48:57Z",
+   "createdAt": "2026-08-13T02:10:28Z",
+   "number": 67,
+   "state": "CLOSED",
+   "title": "Docs catch-up riding the 0.5.0 bump: README still introduces the tool as v0.1",
+   "updatedAt": "2026-08-13T04:48:57Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-13T01:59:50Z",
+   "number": 65,
+   "state": "OPEN",
+   "title": "The declared invariant and the leg-C predicate live in multiple hand-synced copies across spike/",
+   "updatedAt": "2026-08-13T06:00:00Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-13T01:42:58Z",
+   "number": 64,
+   "state": "OPEN",
+   "title": "Secondary observations of the loop-closure run have no committed generator",
+   "updatedAt": "2026-08-13T05:59:58Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-13T01:42:57Z",
+   "number": 63,
+   "state": "OPEN",
+   "title": "The agent-side seal has never been seen red",
+   "updatedAt": "2026-08-13T05:59:56Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-13T01:42:56Z",
+   "number": 62,
+   "state": "OPEN",
+   "title": "Loop-closure stage carries a full upstream clone; fetch only the pin",
+   "updatedAt": "2026-08-13T05:59:53Z"
+  },
+  {
+   "closedAt": "2026-08-17T04:54:22Z",
+   "createdAt": "2026-08-12T11:28:47Z",
+   "number": 58,
+   "state": "CLOSED",
+   "title": "Acceptance python judgments use assert, which PYTHONOPTIMIZE silently disables",
+   "updatedAt": "2026-08-17T04:54:22Z"
+  },
+  {
+   "closedAt": "2026-08-17T04:41:06Z",
+   "createdAt": "2026-08-12T03:19:24Z",
+   "number": 46,
+   "state": "CLOSED",
+   "title": "Under a tolerated process boundary, the stdout capture has no quiescence observation",
+   "updatedAt": "2026-08-17T04:41:06Z"
+  },
+  {
+   "closedAt": "2026-08-12T02:37:05Z",
+   "createdAt": "2026-08-12T01:02:29Z",
+   "number": 41,
+   "state": "CLOSED",
+   "title": "v0.3: a refusal names the operation it refused on \u2014 oracle_missed_operation prints the divergence",
+   "updatedAt": "2026-08-12T02:37:05Z"
+  },
+  {
+   "closedAt": "2026-08-12T09:06:19Z",
+   "createdAt": "2026-08-12T01:02:28Z",
+   "number": 40,
+   "state": "CLOSED",
+   "title": "v0.5: an MCP adapter over the Define contract \u2014 define/explore/replay/explain as agent tools",
+   "updatedAt": "2026-08-12T09:06:19Z"
+  },
+  {
+   "closedAt": null,
+   "createdAt": "2026-08-12T00:45:24Z",
+   "number": 39,
+   "state": "OPEN",
+   "title": "libc convenience functions that mutate state behind the PLT: mkstemp family, mkdtemp, tmpfile, dprintf",
+   "updatedAt": "2026-08-22T07:56:45Z"
+  },
+  {
+   "closedAt": "2026-08-17T03:23:53Z",
+   "createdAt": "2026-08-11T08:13:27Z",
+   "number": 35,
+   "state": "CLOSED",
+   "title": "L0 flags git's COMMIT_EDITMSG scratch file: a precision limit on non-durable files",
+   "updatedAt": "2026-08-17T03:23:53Z"
+  },
+  {
+   "closedAt": "2026-08-11T08:13:16Z",
+   "createdAt": "2026-08-11T05:36:44Z",
+   "number": 31,
+   "state": "CLOSED",
+   "title": "A relative-path mutation with no returned fd is invisible to the oracle: git's linkat slips past both witnesses",
+   "updatedAt": "2026-08-11T08:13:25Z"
+  },
+  {
+   "closedAt": "2026-08-11T06:45:29Z",
+   "createdAt": "2026-08-11T04:00:50Z",
+   "number": 30,
+   "state": "CLOSED",
+   "title": "stdio bypasses the interposed syscall wrappers: the second real target is invisible above its fdatasync",
+   "updatedAt": "2026-08-11T06:45:40Z"
+  },
+  {
+   "closedAt": "2026-08-14T05:19:04Z",
+   "createdAt": "2026-08-11T03:52:43Z",
+   "number": 28,
+   "state": "CLOSED",
+   "title": "Contract-version unit test races on a fixed /tmp path across concurrent test binaries",
+   "updatedAt": "2026-08-14T05:19:04Z"
+  },
+  {
+   "closedAt": "2026-08-17T03:03:55Z",
+   "createdAt": "2026-08-11T03:52:42Z",
+   "number": 27,
+   "state": "CLOSED",
+   "title": "Standard-form L0 misses a file replaced by a directory when pre or post content is empty",
+   "updatedAt": "2026-08-17T03:03:55Z"
+  },
+  {
+   "closedAt": "2026-08-17T03:23:53Z",
+   "createdAt": "2026-08-11T03:52:41Z",
+   "number": 26,
+   "state": "CLOSED",
+   "title": "Target-chosen paths reach the text report unescaped (FAIL block after/before/path)",
+   "updatedAt": "2026-08-17T03:23:53Z"
+  },
+  {
+   "closedAt": "2026-08-11T03:52:30Z",
+   "createdAt": "2026-08-11T02:44:02Z",
+   "number": 24,
+   "state": "CLOSED",
+   "title": "Non-deterministic operations defeat L0's byte comparison: the first real target's true remaining wall",
+   "updatedAt": "2026-08-11T03:52:39Z"
+  },
+  {
+   "closedAt": "2026-08-11T02:44:04Z",
+   "createdAt": "2026-08-11T01:12:14Z",
+   "number": 19,
+   "state": "CLOSED",
+   "title": "rustix-backed targets bypass the shim: the first dogfood target is now blocked on a raw directory open",
+   "updatedAt": "2026-08-11T02:44:04Z"
+  },
+  {
+   "closedAt": "2026-08-11T01:11:46Z",
+   "createdAt": "2026-08-10T23:17:42Z",
+   "number": 16,
+   "state": "CLOSED",
+   "title": "The crashed state is signalled quiet, not observed quiet",
+   "updatedAt": "2026-08-11T01:11:46Z"
+  },
+  {
+   "closedAt": "2026-08-11T01:11:44Z",
+   "createdAt": "2026-08-10T23:17:28Z",
+   "number": 15,
+   "state": "CLOSED",
+   "title": "Containment: a descendant that calls setsid or setpgid escapes the group, undetected",
+   "updatedAt": "2026-08-11T01:11:44Z"
+  },
+  {
+   "closedAt": "2026-08-17T01:21:09Z",
+   "createdAt": "2026-08-10T10:33:06Z",
+   "number": 13,
+   "state": "CLOSED",
+   "title": "A target using stdio (fopen/fwrite) is invisible to the shim, on both platforms",
+   "updatedAt": "2026-08-17T01:21:09Z"
+  },
+  {
+   "closedAt": "2026-08-18T01:33:38Z",
+   "createdAt": "2026-08-10T10:20:57Z",
+   "number": 12,
+   "state": "CLOSED",
+   "title": "The v0.4 dogfood cannot be driven by an agent: omamori blocks its own stateful subcommands",
+   "updatedAt": "2026-08-18T01:34:34Z"
+  },
+  {
+   "closedAt": "2026-08-11T01:11:42Z",
+   "createdAt": "2026-08-10T10:20:44Z",
+   "number": 11,
+   "state": "CLOSED",
+   "title": "A target that does its file work and then execs is refused, although the work was fully observed",
+   "updatedAt": "2026-08-11T01:11:42Z"
+  },
+  {
+   "closedAt": "2026-08-18T01:33:37Z",
+   "createdAt": "2026-08-10T10:20:09Z",
+   "number": 10,
+   "state": "CLOSED",
+   "title": "macOS: Apple platform binaries can never be observed, and the report does not say so",
+   "updatedAt": "2026-08-18T01:34:33Z"
+  },
+  {
+   "closedAt": "2026-08-10T08:42:20Z",
+   "createdAt": "2026-08-10T07:41:42Z",
+   "number": 7,
+   "state": "CLOSED",
+   "title": "DESIGN section 12's L0 wording does not match the implementation",
+   "updatedAt": "2026-08-10T08:42:20Z"
+  },
+  {
+   "closedAt": "2026-08-18T01:33:37Z",
+   "createdAt": "2026-08-10T07:41:41Z",
+   "number": 6,
+   "state": "CLOSED",
+   "title": "touchesStateDir reads any quoted string on the strace line as a path",
+   "updatedAt": "2026-08-18T01:34:32Z"
+  },
+  {
+   "closedAt": "2026-08-17T06:08:11Z",
+   "createdAt": "2026-08-10T07:41:27Z",
+   "number": 5,
+   "state": "CLOSED",
+   "title": "restore does not recreate symlinks and other non-regular entries",
+   "updatedAt": "2026-08-17T06:08:11Z"
+  },
+  {
+   "closedAt": "2026-08-13T10:20:10Z",
+   "createdAt": "2026-08-10T07:41:26Z",
+   "number": 4,
+   "state": "CLOSED",
+   "title": "noteFd skips fd 0/1/2, so a state file dup2'd onto stdout is invisible",
+   "updatedAt": "2026-08-13T10:20:10Z"
+  },
+  {
+   "closedAt": "2026-08-13T11:31:42Z",
+   "createdAt": "2026-08-10T07:41:12Z",
+   "number": 3,
+   "state": "CLOSED",
+   "title": "A target that legitimately exits non-zero cannot be explored",
+   "updatedAt": "2026-08-13T11:31:42Z"
+  }
+ ],
+ "limit": 1000,
+ "note": "PRs are excluded by gh issue list itself; state ALL so the window's closed set is recomputable.",
+ "purpose": "The freeze audit's raw acquisition: the population every count on docs/freeze-audit.md is recomputed from (fourth sweep, 2026-08-29).",
+ "returned": 161,
+ "returned_below_limit": true,
+ "window_opens_at_commit": "33049a9847aa4b06d77acca1075f74404693da2e",
+ "window_opens_at_utc": "2026-08-27T05:54:56Z"
+}

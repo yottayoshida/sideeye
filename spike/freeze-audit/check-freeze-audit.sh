@@ -29,26 +29,27 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 # The snapshot is this gate's trust root for the POPULATION — which issues belong
 # in the tables. A re-sweep replaces the file and this name together.
-SNAPSHOT="$ROOT/spike/freeze-audit/snapshot-2026-08-27.tsv"
+SNAPSHOT="$ROOT/spike/freeze-audit/snapshot-2026-08-29.tsv"
 # The raw acquisition is the trust root for the ACCOUNTING — the window's open set,
 # what closed inside it, and every count on the page. Before this sweep those
 # numbers came from a transcript and could not be recomputed by a reader.
-RAW="$ROOT/spike/freeze-audit/capture-2026-08-27-raw.json"
+RAW="$ROOT/spike/freeze-audit/capture-2026-08-29-raw.json"
 MANIFEST="$ROOT/spike/freeze-audit/audit.tsv"
 CHANGES="$ROOT/spike/freeze-audit/surface-changes.tsv"
 PAGE="$ROOT/docs/freeze-audit.md"
 DECLARATION="docs/contract-freeze.md"
 # The revision of the normative declaration this sweep's readings were taken
-# against. It is pinned because the declaration MOVED three times inside the window
-# this sweep audits: surface 2 gained the additive allowance and the closed-set
-# exemption (0e035eb), surface 3 was rewritten (9f04932), and surface 4's previous
-# text was measured against the code and found wrong (975e2fd). A sweep that does
-# not say which yardstick it used has not said what it measured.
+# against. Pinned because the declaration MOVED three times inside the 08-18..08-27
+# window (the additive allowance, the exit-code rewrite, the surface-4 correction);
+# in the 2026-08-27..08-29 window it is byte-identical (rung 1 of
+# surface-drift-2026-08-29.txt), so the fourth sweep reads the same yardstick the
+# third did. A sweep that does not say which yardstick it used has not said what
+# it measured.
 DECLARATION_PIN="b7902d641b95cfea4150790b9948ea1d5b4c844f"
 # The window this sweep covers. Its opening is the commit that installed the
-# snapshot being replaced: the snapshot and the declaration it was read against
-# are one trust root.
-WINDOW_OPENS="2026-08-18T04:06:57Z"
+# snapshot being replaced (33049a9, the third sweep): the snapshot and the
+# declaration it was read against are one trust root.
+WINDOW_OPENS="2026-08-27T05:54:56Z"
 
 TMP=$(mktemp -d) || { echo "FAIL: cannot create a temp directory"; exit 1; }
 # Cleanup is non-recursive on purpose: `rm -rf` on a directory is intercepted by
@@ -317,7 +318,7 @@ orphans=$(grep -c . "$TMP/orphans" || true)
 # Each is a blob sha rather than a commit: a blob is what the extraction actually
 # read, and it survives history rewrites of everything else.
 PIN_config="c5fa9f6cf6abef5471cf215fddfa59f6094743cc"       # src/config.zig
-PIN_contract="02c0cfad41c45b1b1ffde4004f2b0034a895eb5a"     # src/contract.zig (moved 2026-08-29 with sc-14..sc-17, the path the gate names for post-sweep drift)
+PIN_contract="02c0cfad41c45b1b1ffde4004f2b0034a895eb5a"     # src/contract.zig (read by the fourth sweep, 2026-08-29; first moved with sc-14..sc-17)
 PIN_mcp="10f025316fd5190ef59aaea1a7219a46895d8c4a"          # src/mcp.zig
 PIN_schema="7c177179a92ba12049969f3e32f22cd22c51fd34"       # docs/report-schema.md
 
@@ -370,8 +371,12 @@ done || exit 1
 
 # The one invariant that reproduces forever: over the sweep's own window, the
 # measured closed-set additions must be exactly what the ledger records.
+# 8feae88 is the LEDGER's origin (the commit that installed the 2026-08-18
+# snapshot, where surface-changes.tsv starts counting), not the current window's
+# base: the ledger is cumulative across sweeps, so this invariant keeps covering
+# every recorded closed-set addition rather than only the newest window's.
 base_contract=$(git -C "$ROOT" rev-parse '8feae88:src/contract.zig' 2>/dev/null) \
-    || { echo "FAIL: cannot resolve src/contract.zig at the window's base"; exit 1; }
+    || { echo "FAIL: cannot resolve src/contract.zig at the ledger's origin"; exit 1; }
 extract_set unknown_reason "$base_contract" > "$TMP/enum_base"
 extract_set unknown_reason "$PIN_contract"  > "$TMP/enum_pin"
 for f in enum_base enum_pin; do
