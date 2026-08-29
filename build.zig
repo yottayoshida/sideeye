@@ -234,6 +234,7 @@ pub fn build(b: *std.Build) void {
         "src/engine.zig",
         "src/posix.zig",
         "src/oracle.zig",
+        "src/fsusage.zig",
         "src/main.zig",
         "src/config.zig",
         "src/mcp.zig",

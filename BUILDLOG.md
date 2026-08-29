@@ -2,6 +2,70 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-29 (ninth) - macOS gets an oracle, and the design that was supposed to avoid paying root did not survive its own review
+
+The starting question was #286's: what verification can macOS buy without demanding root on every run. The answer this entry records is that it should demand root on every run after all, because the design that avoided it could not be made sound.
+
+**What was tried first, and why it is gone.** Route C from #286 — a calibration ceremony. Pay root once, compare the shim's account against `fs_usage` for one binary, write a receipt, and let later unprivileged runs present the receipt for a claim stronger than `--allow-unverified`. External review rejected it on a single sentence that no amount of binding repairs: *an agreement observed in run A does not establish that run B's shim trace is complete.* Same binary, different argv, environment or initial state, different code path — a target that reaches `open(2)` through libc under one mode and a raw syscall under another agrees in the calibration run and is invisible in the judged one, with the SHA-256 matching throughout. The counter-argument offered in defence, that coverage is a property of the program rather than of a run, is wrong in exactly the way that matters: coverage is a property of *the paths actually taken*.
+
+**Three things were measured before the replacement was chosen, and one of them contradicted the premise the whole ceremony rested on.** `--oracle` observes the recording run only, not each crash world (`--help`, and the code path around `runOperationObserved`), so "root on every run" costs one authentication per `explore`, not one per world. The CI runners already run `sudo -n` unattended (27 times, PR #298). And the shipped `--help` names `fs_usage` as "the one candidate measured oracle-shaped". The expensive thing the ceremony existed to avoid was not as expensive as #286 assumed, and the product's own text was already pointing at the alternative.
+
+So `fs_usage` goes where `strace` goes: an oracle backend producing `oracle.Parsed`, compared by the existing `oracle.compare`, reported through the existing `oracle_verified`. No new report field, no new `unknown_reason`, nothing added to a frozen surface. The evidence is about the run that is being judged.
+
+**The PID filter had to go, and the measurement that killed it is now #405.** The first draft of the backend filtered `fs_usage` by the subject's pid and declared the backend single-process-only, on the reasoning that a child would be caught by the existing boundary refusals. Review called that circular, and it is: the boundary refusal depends on the shim seeing the child. A probe was written to check. A target that creates a child with `syscall(SYS_fork)` and has the child write into the state directory through raw syscalls reaches **PASS, exit 0** on the shipped 1.0.0, with `processes: single process` in the account, because the parent's own libc write keeps `state_changed_without_ops` from firing. That is a defect in what ships today, not only a gap in the proposed backend, and it is filed separately.
+
+Two details of that probe are worth keeping. `syscall(SYS_fork)` returns the pid in *both* processes on arm64, and `getpid()` is cached in libc and not invalidated by the raw path, so a raw fork written the obvious way leaves the child unable to discover that it is the child — it takes `syscall(SYS_getpid)` to discriminate. Both were measured by watching the naive versions do nothing at all. The hole is reachable, but not by accident.
+
+The fix is the one this repository had already written down and not yet used: `spike/fsusage/RESULTS.md` says an adapter that wants children must not filter by pid, and should capture everything and scope by state path, attributing by tid. So the capture is unfiltered, scope is the state root, and a write by any process into that root appears whether or not the shim ever heard of it. This also dissolves the reviewer's other finding — that a sentinel issued by the engine cannot prove *the target's* pid filter took effect — because there is no per-target filter left to prove.
+
+**Identifying the subject without a contract bump.** `fs_usage` prints a process name and a thread id, not a pid, so with the filter gone something has to say which lines are the subject's. Adding a tid to the trace would be a contract bump, and a bump orphans every saved case (#279). It is not needed: the shim writes its trace to `SIDEEYE_TRACE_PATH`, and only the subject carries the shim, so **the tid that writes to the trace path is the subject**. The identification is self-checking — if no tid writes there, the run refuses rather than guessing — and a second tid writing there means a shimmed child, which the shim's own account already reports.
+
+**What the capture has to prove about itself.** A start sentinel alone establishes that `fs_usage` began, not that it was still running at the end, and `oracle_verified: true` now rests on the capture. Four conditions, all required: a start sentinel read out of the capture before the subject is allowed to run; an end sentinel required after the recording; `fs_usage` ended by an explicit kill rather than by its own `-t` expiry; and the pipe at EOF before the comparison reads anything. Dropped lines in between are fail-safe in the direction that matters — a line the shim recorded and the kernel lost becomes a divergence and a refusal, never a false agreement — with one residue, disclosed rather than closed: a drop that coincides exactly with an operation the shim also missed. The `-t` bound stays as insurance against a root observer outliving its parent and holding kdebug, which `SIGPIPE` alone cannot deliver, since a process that has stopped writing never notices the reader is gone.
+
+**The first end-to-end run refused, and every reason was mine.** Three defects in the
+lifecycle, none of which any unit test could have produced, because each was a property
+of the real machine rather than of a fixture. `fs_usage` buffers when its stdout is not
+a terminal, so a signal that is not the one it handles kills it with the buffer
+unwritten — and the signal was going to `sudo` rather than to the observer it forked, so
+the capture ended cleanly at a flush boundary sixty-four milliseconds in and read
+exactly like a complete capture of a short window. The handshake had passed on a raw
+substring search that matched `fseventsd`'s `lstat64` of the sentinel, a different
+process entirely: a gate looser than the check behind it is not a gate, and it is now
+the reader's own predicate. And every path in a real capture under `$HOME` arrives as
+`/System/Volumes/Data/...`, because the data volume is firmlinked — so the first version
+of the reader scoped precisely zero lines.
+
+The closing sentinel is what refused. That is the one part of this that worked: the
+integrity conditions caught a defect in the lifecycle they were written for, rather than
+reporting an agreement over a capture that stopped early.
+
+**Review then found eleven more, and the sharpest was that the flag opened nothing.**
+`requireCompleteness` was still reading `args.oracle != null`, so a comparison could run,
+agree, set `oracle_verified` — and the PASS gate would still demand
+`--allow-unverified`. The promise was false in the one line that decides it, through two
+end-to-end runs that failed earlier for other reasons and never reached it.
+
+Four more were mine in the same shape — asserting from the man page or from my own
+reasoning what a committed measurement in this repository already answered. The
+truncation test read the `>` padding macOS 15 adds and missed the cut itself, which
+`spike/fsusage/captures/P3-deep.cap.txt` shows leaving a path with no root at all. The
+rename fail-closed that ADR 0031 describes was not implemented; out-of-scope renames
+were dropped, which is the exact hole the ADR says it closes. `fs_usage` excludes the
+shells by default and the launch did not say otherwise. And failed syscalls were being
+discarded as "changed nothing", when the shim records the attempt and `oracle.zig`
+consults success only to follow `chdir` — a normalisation mismatch that would have made
+every failing target a phantom divergence. A test asserting the wrong half of that had
+to be rewritten rather than kept.
+
+The rest were narrower and are fixed the same way: `fcntl` classified by command instead
+of waved through as a class (`F_FULLFSYNC` was walking past the unknown-call gate), the
+sentinels made collision-proof with `O_EXCL` and the engine's pid rather than fixed
+names that could truncate a state file, a size bound on a capture that is system-wide by
+construction, the handshake's polls no longer accumulating the whole growing file in the
+run's arena, and `stopSidecar` no longer treating `ECHILD` as "still running" — which,
+with a privileged signal on an unpinned pid, is this repository's own documented hazard
+wearing root.
+
 ## 2026-08-29 (eighth) - the refusal stops guessing, and what the promise had to be lowered to
 
 `no_shim_marker`'s detail line lists four candidate causes and the engine has measured none of them. README's own sentence about the limits opens "Sideeye refuses to guess", so the message contradicts the page it implements. #391 is the report: a user checked all three named causes against the Command Line Tools git, found none applied, and was left with no next step — the real mechanism, library validation, is named in `DESIGN.md:152` and ADR 0001 and nowhere the user looks.

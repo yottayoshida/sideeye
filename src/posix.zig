@@ -146,6 +146,9 @@ pub const X_OK: c_int = 1;
 /// Typed `u8` so the same constant serves both users — `kill` widens it to `c_int`, and
 /// `Term.isSignal` compares it directly. `main.zig` was spelling it as a bare `9`.
 pub const SIGKILL: u8 = 9;
+/// 15 on both platforms. Sent before SIGKILL to a sidecar so an observer that buffers
+/// its capture gets the chance to flush it; the capture is the whole point of the child.
+pub const SIGINT: u8 = 2;
 
 /// `waitid` selectors and flags, taken from the platform headers rather than from memory.
 ///
@@ -540,6 +543,123 @@ pub fn runChildCaptureMinimalEnv(
     // the oracle's path resolution are all read against. A define's `cwd` is applied one
     // level down, by that engine, to the commands it runs.
     return runChildImpl(gpa, argv, env_pairs, stdout_path, true, false, null);
+}
+
+/// A child the caller does not wait for: started, left running, stopped later.
+///
+/// Every other spawn here runs a child to completion, because everything else the
+/// engine starts is something it is measuring. The macOS oracle is not — `fs_usage`
+/// runs *beside* the subject rather than wrapping it (`src/fsusage.zig`), so its
+/// lifetime is the caller's to bound, and the caller has to hold the pid to bound it.
+///
+/// stdout goes to `stdout_path`, opened `O_NOFOLLOW|O_EXCL` regardless of caller:
+/// this one runs under `sudo`, so the file it truncates is chosen with root's
+/// authority and a pre-planted symlink there is an arbitrary-file overwrite rather
+/// than a spoiled capture. The child leaves the engine's process group for the same
+/// reason every other spawn does — a terminal SIGINT must not reach it before the
+/// caller has read what it captured.
+pub fn spawnSidecar(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    stdout_path: []const u8,
+) SpawnError!c_int {
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    const cargv = try arena.alloc(?[*:0]const u8, argv.len + 1);
+    for (argv, 0..) |a, i| cargv[i] = (try arena.dupeZ(u8, a)).ptr;
+    cargv[argv.len] = null;
+    const stdout_z = (try arena.dupeZ(u8, stdout_path)).ptr;
+
+    const pid = fork();
+    if (pid < 0) return error.ForkFailed;
+    if (pid == 0) {
+        _ = setpgid(0, 0);
+        const cfd = open(stdout_z, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_EXCL, @as(c_uint, 0o600));
+        if (cfd < 0) _exit(126);
+        if (cfd != 1) {
+            if (dup2(cfd, 1) < 0) _exit(126);
+            _ = close(cfd);
+        }
+        _ = execvp(cargv[0].?, cargv.ptr);
+        _exit(127);
+    }
+    return pid;
+}
+
+/// Stop a sidecar and reap it, reporting whether it was still running when asked.
+///
+/// The answer matters: an observer that had already exited when the recording finished
+/// ran out of its own bound, and its capture describes a window that closed early. The
+/// caller turns that into a refusal rather than comparing against a truncated account.
+///
+/// **The signal goes to the process group, and it is SIGINT.** Both were paid for by a
+/// measured failure. `spawnSidecar` starts `sudo`, which forks the real observer, so
+/// signalling the returned pid reaches the privilege helper and not the process holding
+/// the capture. And `fs_usage` buffers its output when stdout is not a terminal: killed
+/// on any other signal it dies with the buffer unwritten, leaving a capture that ends
+/// cleanly at a flush boundary tens of milliseconds in — which reads exactly like a
+/// complete capture of a short window. SIGINT is the disposition that tool is built to
+/// handle, since it is meant to be stopped from a terminal.
+///
+/// A caller signalling a privileged sidecar needs `signal_helper` — the group is root's
+/// and an unprivileged parent cannot reach it. It is invoked as
+/// `<helper...> kill -<sig> -<pgid>`.
+pub const SidecarEnd = enum { was_running, had_exited, would_not_die };
+
+pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []const u8, grace_ms: u64) SidecarEnd {
+    // WNOHANG first: this is the observation that separates "we stopped it" from
+    // "it was already gone", and it has to happen before any signal is sent.
+    //
+    // A `-1` here is not "still running". `ECHILD` means there is no such child to
+    // wait for, which an inherited `SIGCHLD=SIG_IGN` produces by auto-reaping — and a
+    // reaped pid may already name a stranger, whose process group this function would
+    // then signal *as root*. The repository already holds that rule for the world
+    // budget's teardown ("nothing may be signalled on an unpinned id"); it matters more
+    // here, because the signal is privileged.
+    var st: c_int = 0;
+    const first = waitpid(pid, &st, WNOHANG);
+    if (first == pid) return .had_exited;
+    if (first < 0) return .had_exited;
+
+    signalGroup(gpa, pid, "-INT", signal_helper);
+    var waited: u64 = 0;
+    while (waited < grace_ms) {
+        const w = waitpid(pid, &st, WNOHANG);
+        if (w == pid) return .was_running;
+        if (w < 0) return .was_running; // reaped underneath us; the id is no longer ours
+        sleepForMs(10);
+        waited += 10;
+    }
+    signalGroup(gpa, pid, "-KILL", signal_helper);
+    waited = 0;
+    while (waited < grace_ms) {
+        const w = waitpid(pid, &st, WNOHANG);
+        if (w == pid) return .was_running;
+        if (w < 0) return .was_running;
+        sleepForMs(10);
+        waited += 10;
+    }
+    return .would_not_die;
+}
+
+fn signalGroup(gpa: std.mem.Allocator, pgid: c_int, sig: []const u8, helper: []const []const u8) void {
+    // The unprivileged attempt first: it is free, and it is the whole story when the
+    // sidecar is not privileged.
+    const raw: u8 = if (std.mem.eql(u8, sig, "-KILL")) SIGKILL else SIGINT;
+    _ = kill(-pgid, @as(c_int, raw));
+    if (helper.len == 0) return;
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var list: std.ArrayList([]const u8) = .empty;
+    for (helper) |h| list.append(arena, h) catch return;
+    list.append(arena, "/bin/kill") catch return;
+    list.append(arena, sig) catch return;
+    const target = std.fmt.allocPrint(arena, "-{d}", .{pgid}) catch return;
+    list.append(arena, target) catch return;
+    _ = runChildCapture(gpa, list.items, &.{}, "/dev/null", null) catch return;
 }
 
 fn runChildImpl(
