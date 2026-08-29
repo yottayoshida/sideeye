@@ -80,7 +80,23 @@ def read_corpus(root):
         if len(f) != len(CORPUS_COLS):
             die(f"corpus.tsv row does not have {len(CORPUS_COLS)} columns: {line!r}")
         rows.append(dict(zip(CORPUS_COLS, f)))
+    _reject_duplicate_ids(rows)
     return rows
+
+def _reject_duplicate_ids(rows):
+    """A trial id names one row. Nothing downstream survives two.
+
+    `by_id` and `reports` are dicts, so a duplicate collapses silently there
+    while `expected_for` keeps both — the two then disagree about how many
+    trials a generation has. The retired flag guard caught this for the three
+    flagged rows; this catches it for all 57.
+    """
+    seen = {}
+    for r in rows:
+        if r["id"] in seen:
+            die(f"corpus.tsv names {r['id']!r} twice — a trial id is one row")
+        seen[r["id"]] = True
+
 
 def read_generations(root):
     rows = []
@@ -283,13 +299,236 @@ def tabulate(manifest, reports, by_id):
                            "cp0": r["verdict"] == "PASS" and r["crash_points"] == 0})
     return trials, walls, setup_errors
 
+# The headings emit_generation prints, in its own order. Kept as data beside the
+# emitter rather than re-derived by the parser: a parser that keys on prose is
+# one wording edit away from selecting the wrong table shape, and a mis-shaped
+# parse yields zero rows — which reads as green unless something counts.
+GROUP_HEADINGS = (
+    ("A", "A-group (the engine's development input — not the threshold basis)"),
+    ("control", "Control trials (outside every denominator)"),
+    ("B", "B-group (mechanically selected; the threshold basis)"),
+)
+OUTCOME_HEADING = "Outcome ratio (A-group, per the committed disposition map)"
+DETAIL_WIDE = "| trial | tool | class | judge | verdict | unknown_reason | flags |"
+DETAIL_FUNNEL = "| target | class | funnel stage | verdict | unknown_reason |"
+
+
+def parse_k_n(cell):
+    """`0/13 (0.0%)` and `1/1 (counts only, n<5)` both mean (k, n)."""
+    k, _, n = cell.split(" ")[0].partition("/")
+    return int(k), int(n)
+
+
+def split_published(published):
+    """The published block as {(generation, group): section text}.
+
+    Located by heading, never by counting tables: the same slice label appears
+    under several groups — `class: c-cli` sits in g1's A, g1's B and g2's A — so
+    anything that aggregates across the whole block sums to a number that
+    matches no denominator (72 against 28/1/7/36, measured).
+    """
+    out, gid, cur = {}, None, None
+    for line in published.splitlines():
+        if line.startswith("### Generation "):
+            gid, cur = line[len("### Generation "):].split(" ")[0], None
+        elif line.startswith("#### "):
+            head, cur = line[len("#### "):], None
+            if head == OUTCOME_HEADING:
+                cur = (gid, "outcome")
+                out[cur] = []
+            else:
+                for group, name in GROUP_HEADINGS:
+                    if head == name:
+                        cur = (gid, group)
+                        out[cur] = []
+                        break
+        elif cur is not None:
+            out[cur].append(line)
+    return {k: "\n".join(v) for k, v in out.items()}
+
+
+def parse_section(text):
+    """One section as (detail rows, slices, reason counts, rate).
+
+    A detail row carries only the columns its own header declares: the wide
+    table has `judge`, the funnel table does not, so the caller cannot
+    reconstruct that axis for a funnel section and has to say so.
+
+    SETUP_ERROR rows are dropped, and wall rows with them: both are published
+    and neither belongs to a denominator. An implementation that forgets the
+    exclusion is green on the live tree and on `fixtures/good` — neither
+    contains a SETUP_ERROR row — which is why that exclusion carries a fixture.
+    """
+    detail, slices, reasons, rate, shape = [], {}, {}, None, None
+    for line in text.splitlines():
+        if line == DETAIL_WIDE:
+            shape = "wide"
+        elif line == DETAIL_FUNNEL:
+            shape = "funnel"
+        elif line.startswith("UNKNOWN rate, per-trial: **"):
+            rate = parse_k_n(line.split("**")[1])
+        elif line.startswith("| ") and not line.startswith("|---"):
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if len(cells) == 2 and cells[0].partition(":")[0] in ("tool", "class", "judge"):
+                axis, _, value = cells[0].partition(": ")
+                if (axis, value) in slices:
+                    # Not a new detection: the renderer builds slices from sets, so
+                    # it cannot emit a duplicate without also drifting from the
+                    # recomputation, and the byte-compare already refuses that. What
+                    # this converts is the diagnosis — a generic drift becomes the
+                    # specific reason — and it stops the scan volume this check
+                    # reports from silently undercounting, since a duplicate would
+                    # otherwise collapse into one dict entry.
+                    die(f"the published block repeats slice {axis}: {value} — a duplicated row "
+                        f"collapses into one and would be counted once by every check here")
+                slices[(axis, value)] = parse_k_n(cells[1])
+            elif len(cells) == 2 and cells[1].isdigit():
+                reasons[cells[0]] = int(cells[1])
+            elif shape == "wide" and len(cells) == 7 and cells[0] != "trial":
+                if not cells[4].startswith("SETUP_ERROR"):
+                    detail.append({"tool": cells[1], "cls": cells[2], "judge": cells[3],
+                                   "v": cells[4].split(" (")[0]})
+            elif shape == "funnel" and len(cells) == 5 and cells[0] != "target":
+                if cells[2] == "explored":
+                    detail.append({"tool": cells[0], "cls": cells[1],
+                                   "v": cells[3].split(" (")[0]})
+    return detail, slices, reasons, rate
+
+
+AXES = (("tool", "tool"), ("class", "cls"), ("judge", "judge"))
+
+
+def check_attribution(tables, published):
+    """Every rated row reaches every published aggregate exactly once.
+
+    `docs/unknown-rate.md` promises a marked row "sits in the denominator, its
+    slices and the outcome ratio exactly once"; before this, only the
+    denominator was checked, and `tabulate`'s own docstring says why that is not
+    enough — a renderer that prints a row and skips it when aggregating looks
+    right in both places. The byte-compare cannot see it either: both sides come
+    from the same renderer.
+
+    Named attribution, not conservation, because `check` already has an assert
+    called that (the disposition one below) and `spike/acceptance.sh` names it in
+    the sentence listing predicates without fixtures.
+
+    Two things this deliberately does NOT do, each for a measured reason:
+
+      * It sums nothing. A total is preserved by a renderer that counts a row
+        twice under one label and drops another — and the row that mutation can
+        hide is `a-himalaya-copy`, which carries `apparatus_declared`, i.e. the
+        very subject of the sentence. Attribution is per label, not in aggregate.
+
+      * It takes denominators from the measurement and numerators from the
+        published detail rows, never the reverse. Only one fixture
+        (`tampered-verdict`) reaches the docs comparison at all, and it moves a
+        verdict — a numerator. Binding numerators to `trials` here would fire on
+        it first and turn its pinned message into a hollow red. Denominators
+        carry no such constraint. The numerator IS bound to the measurement,
+        after the byte-compare, where that displacement cannot happen.
+
+    Returns (sections, detail rows, slice rows, axes measured by denominator
+    alone) so the caller can name its own scan volume: this walks the
+    measurement and demands the published side match it, so an empty parse
+    fails on the first section rather than passing over nothing.
+    """
+    sections = split_published(published)
+    n_sec = n_detail = n_slice = n_outcome = 0
+    sum_only = []
+    for gen, _exp, _man, trials, _walls, _serr in tables:
+        gid = gen["id"]
+        for group, name in GROUP_HEADINGS:
+            g = [t for t in trials if t["group"] == group]
+            if not g:
+                continue
+            if (gid, group) not in sections:
+                die(f"{gid}/{group}: {len(g)} rated trials, but the published block has no "
+                    f"section headed {name!r}")
+            detail, slices, reasons, rate = parse_section(sections[(gid, group)])
+            n_sec, n_detail, n_slice = n_sec + 1, n_detail + len(detail), n_slice + len(slices)
+
+            # The denominator, first: it is what every later comparison is
+            # relative to, and a fixture that perturbs it must die here rather
+            # than on a slice that disagrees for a downstream reason.
+            if rate is None:
+                die(f"{gid}/{group}: the published section carries no per-trial rate line")
+            k_pub, n_pub = rate
+            if n_pub != len(g):
+                die(f"{gid}/{group}: the published denominator is {n_pub} against {len(g)} rated "
+                    f"trials — the table and the measurement disagree about how many ran")
+            if len(detail) != len(g):
+                die(f"{gid}/{group}: the published per-trial table carries {len(detail)} rated "
+                    f"rows against {len(g)} rated trials")
+
+            # Family presence, before attribution: a family the renderer dropped
+            # entirely leaves nothing to compare, and a loop over the families
+            # that happen to be present would pass over it.
+            for axis, field in AXES:
+                want = sorted({t[field] for t in g})
+                got = sorted({v for (a, v) in slices if a == axis})
+                if want != got:
+                    die(f"{gid}/{group}: the {axis} slices name {got} against {want} in the "
+                        f"measurement — a slice family that loses a label loses its rows with it")
+
+            funnel = any("judge" not in d for d in detail)
+            for axis, field in AXES:
+                for value in sorted({t[field] for t in g}):
+                    k_s, n_s = slices[(axis, value)]
+                    want_n = sum(1 for t in g if t[field] == value)
+                    if n_s != want_n:
+                        die(f"{gid}/{group}: slice {axis}: {value} counts {n_s} against {want_n} "
+                            f"rated trials — a row reaches its slice exactly once or not at all")
+                    if funnel and axis == "judge":
+                        sum_only.append(f"{gid}/{group}/judge")
+                        continue
+                    want_k = sum(1 for d in detail if d[field] == value and d["v"] == "UNKNOWN")
+                    if k_s != want_k:
+                        die(f"{gid}/{group}: slice {axis}: {value} claims {k_s} UNKNOWN against "
+                            f"{want_k} in the published rows — the table disagrees with itself "
+                            f"(the measurement-bound comparison runs after the byte-compare)")
+
+            # A biconditional, not a sum: the table is emitted only when the
+            # numerator is non-zero, so "sum it when present" is green for a
+            # renderer that drops it while rows remain.
+            if bool(reasons) != (k_pub > 0):
+                die(f"{gid}/{group}: the reason table is "
+                    f"{'present' if reasons else 'absent'} with a published numerator of {k_pub}")
+            if reasons and sum(reasons.values()) != k_pub:
+                die(f"{gid}/{group}: the reason counts sum to {sum(reasons.values())} against a "
+                    f"published numerator of {k_pub}")
+
+        # The third thing the sentence names, and the one a section-shaped loop
+        # walks past: the outcome table is emitted once per generation, after the
+        # group loop, under its own heading — so a check that iterates group
+        # sections never reaches it. It partitions the A-group by verdict (FAIL
+        # split by disposition, then UNKNOWN, then PASS), which makes it the one
+        # aggregate whose rows must sum to a denominator rather than match a
+        # slice: every A-group trial lands in exactly one row.
+        ga = [t for t in trials if t["group"] == "A"]
+        if ga:
+            if (gid, "outcome") not in sections:
+                die(f"{gid}: {len(ga)} A-group trials, but the published block has no outcome "
+                    f"table — the ratio the promise names is not there to check")
+            _d, _s, rows, _r = parse_section(sections[(gid, "outcome")])
+            n_outcome += len(rows)
+            if sum(rows.values()) != len(ga):
+                die(f"{gid}: the outcome rows sum to {sum(rows.values())} against {len(ga)} "
+                    f"A-group trials — a row leaves the ratio without leaving a trace")
+            # The per-row comparison is NOT here: it reads verdicts, which makes it
+            # numerator-side, and `tampered-verdict` reaches this point. Measured:
+            # placing it here takes that fixture's pinned message. It runs after
+            # the byte-compare with the rate numerator, for the same reason.
+    return n_sec, n_detail, n_slice, n_outcome, sorted(set(sum_only))
+
+
 def emit_generation(gen, trials, walls, setup_errors, outcome):
     L = []
     L.append("")
     L.append(f"### Generation {gen['id']} — measured {gen['date']} ({gen['groups']})")
-    for group, gname in (("A", "A-group (the engine's development input — not the threshold basis)"),
-                         ("control", "Control trials (outside every denominator)"),
-                         ("B", "B-group (mechanically selected; the threshold basis)")):
+    # The headings come from GROUP_HEADINGS, not a literal here: `check` locates
+    # its sections by these strings, so two copies means a wording edit silently
+    # stops the attribution check finding anything to check.
+    for group, gname in GROUP_HEADINGS:
         g = [t for t in trials if t["group"] == group]
         gw = [w for w in walls if w["group"] == group]
         gs = [s for s in setup_errors if s["group"] == group]
@@ -343,7 +582,7 @@ def emit_generation(gen, trials, walls, setup_errors, outcome):
     ga = [t for t in trials if t["group"] == "A"]
     if ga:
         L.append("")
-        L.append("#### Outcome ratio (A-group, per the committed disposition map)")
+        L.append(f"#### {OUTCOME_HEADING}")
         L.append("")
         L.append("| outcome | count |")
         L.append("|---|---|")
@@ -585,21 +824,26 @@ def check(root):
                 die(f"{gid}/{row['id']}: define digest mismatch — the defines in the checkout are "
                     f"not the bytes the sweep hashed")
 
-        # A flag on a corpus row has to reach the arithmetic, not only the
-        # table: a marked trial sits in its group's denominator exactly once,
-        # like any other. An implementation that renders the mark and then
-        # skips the row when counting would print something true and compute
-        # something else.
-        rated = [t["id"] for t in trials]
-        for c in exp:
-            if c["flags"] == "-" or c["launcher"] == "-":
-                continue
-            r = reports[c["id"]]
-            if "wall" in r or r["verdict"] == "SETUP_ERROR":
-                continue
-            if rated.count(c["id"]) != 1:
-                die(f"{gid}/{c['id']} carries flags {c['flags']!r} and appears {rated.count(c['id'])} "
-                    f"times in the rated set — a flagged trial counts exactly once")
+        # The flagged-trial guard that stood here is gone. It asked whether a
+        # marked row reached the rated set exactly once, and could only fire on a
+        # duplicate corpus id: `:543` pins the manifest id list to the expected one
+        # order-included, `tabulate` puts each manifest row in exactly one bucket,
+        # and the guard re-derived its skip conditions from the same `reports`
+        # mapping `tabulate` branches on. Measured before deleting it — a corpus
+        # with a duplicated id made it fire with its own message, and nothing else
+        # did — and that input is now covered more widely by `_reject_duplicate_ids`,
+        # which applies to all 57 corpus rows rather than the 3 that carry flags.
+        #
+        # What a flagged row reaches is checked where the promise lives:
+        # `check_attribution`, against every published aggregate.
+        #
+        # A partition assert over `tabulate`'s output stood here briefly and was
+        # removed on review. `tabulate` performs exactly one unconditional append
+        # per manifest row (if/elif/else, no filter), so the assert was unsatisfiable
+        # for every input — true by construction, which is the same reason the guard
+        # above was deleted. Falsifying it required mutating `tabulate` itself, i.e.
+        # asserting an invariant about code rather than about data, and this file's
+        # own standard is that a new guard is falsified once against its predicate.
 
         # Conservation: every A-group FAIL lands in one of the four rows the
         # outcome table prints. A disposition outside that set — a tool
@@ -632,11 +876,70 @@ def check(root):
     if len(pub_rows) < measured:
         die(f"published tables carry {len(pub_rows)} rows for {measured} measured trials — "
             f"an empty or truncated table cannot stand in for the measurement")
+    n_sec, n_detail, n_slice, n_outcome, sum_only = check_attribution(tables, published)
     computed = block.split(MARK_BEGIN)[1].split(MARK_END)[0]
     if published != computed:
         die("published results block differs from recomputation (drift)")
+
+    # The numerator, bound to the measurement — and it has to sit HERE, after the
+    # byte-compare, not with the rest of attribution. Before it, this fires on
+    # `tampered-verdict` (the only fixture that reaches the block) and displaces
+    # its pinned message. After it, it is still live: the byte-compare proves
+    # published == computed, and computed came from the renderer, so recomputing
+    # k from `trials` directly is the one comparison a renderer bug in the
+    # numerator cannot survive. Unlike `pub_rows` above, this is not dead here.
+    #
+    # No data-only fixture can make it red — a fixture that perturbs the number
+    # dies earlier — so it is named in acceptance.sh's list of predicates
+    # carrying no fixture rather than pretending to have one.
+    pub_sections = split_published(published)
+    for gen, _e, _m, trials, _w, _s in tables:
+        for group, _name in GROUP_HEADINGS:
+            g = [t for t in trials if t["group"] == group]
+            if not g:
+                continue
+            _d, _sl, _r, rate = parse_section(pub_sections[(gen["id"], group)])
+            want_k = sum(1 for t in g if t["v"] == "UNKNOWN")
+            if rate[0] != want_k:
+                die(f"{gen['id']}/{group}: the published numerator is {rate[0]} against {want_k} "
+                    f"UNKNOWN in the measurement")
+            # Per slice, and against the measurement — not against the published
+            # detail rows. Reconciling a slice numerator with the detail table is
+            # published-against-published: both come from the renderer, which is
+            # the defect this whole check exists to close, and the first version
+            # of it reproduced that defect one level down. Measured: a renderer
+            # that reports the flagged row as PASS in the detail table AND drops
+            # it from every slice numerator, while leaving the rate line honest,
+            # passed everything until this ran.
+            funnel = any("judge" not in d for d in _d)
+            for axis, field in AXES:
+                if funnel and axis == "judge":
+                    continue
+                for value in sorted({t[field] for t in g}):
+                    k_s, _n = _sl[(axis, value)]
+                    wk = sum(1 for t in g if t[field] == value and t["v"] == "UNKNOWN")
+                    if k_s != wk:
+                        die(f"{gen['id']}/{group}: slice {axis}: {value} claims {k_s} UNKNOWN "
+                            f"against {wk} in the measurement")
+        ga = [t for t in trials if t["group"] == "A"]
+        if ga:
+            _d, _s, rows, _r = parse_section(pub_sections[(gen["id"], "outcome")])
+            for label, want in (("UNKNOWN", sum(1 for t in ga if t["v"] == "UNKNOWN")),
+                                ("PASS", sum(1 for t in ga if t["v"] == "PASS"))):
+                if rows.get(label) != want:
+                    die(f"{gen['id']}: the outcome table puts {rows.get(label)} in {label} "
+                        f"against {want} in the measurement")
+            fails = sum(1 for t in ga if t["v"] == "FAIL")
+            pub_fails = sum(v for k, v in rows.items() if k.startswith("FAIL, "))
+            if pub_fails != fails:
+                die(f"{gen['id']}: the outcome table's FAIL rows sum to {pub_fails} against "
+                    f"{fails} A-group FAILs")
+
+    weaker = f"; {len(sum_only)} axis measured by denominator alone ({', '.join(sum_only)})" if sum_only else ""
     print(f"count.py check: OK — {len(corpus)} corpus rows across {len(generations)} generations, "
-          f"{measured} measured, digests verified, docs in sync")
+          f"{measured} measured, digests verified, docs in sync; attribution reconciled "
+          f"{n_detail} published rows against {n_slice} slices and {n_outcome} outcome rows "
+          f"across {n_sec} sections{weaker}")
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check"):
