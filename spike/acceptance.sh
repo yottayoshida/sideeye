@@ -4361,6 +4361,157 @@ else
 fi
 rm -rf /tmp/acc-wt
 
+# Check 19 — preflight --twice (#199): the second observation, both directions.
+#
+# Sensitivity and specificity in one leg, because either alone passes a constant
+# answer: TOY_NONDET_REWRITE rewrites its file with different bytes every run and must
+# split; TOY_APPEND_REWRITE reaches the same final content by a path that kills the
+# history form, and must not. The equal side is also the restore mutant's grave — an
+# implementation that skipped `engine.restore` before the second run would let the
+# append land on top of the first run's output and report a split here.
+#
+# Exit codes are pinned exactly, not as "non-zero". A build without --twice implemented
+# refuses the unknown flag with exit 3 (or "an option is missing its value" when it
+# lands last on the command line), so a check that accepted any non-zero result would
+# pass against an empty implementation.
+rm -rf /tmp/acc-tw && mkdir -p /tmp/acc-tw/state /tmp/acc-tw/state2 /tmp/acc-tw/state3
+o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-tw/work 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "1" ] || ok=0
+echo "$o" | grep -q "not accepted — the two observed runs left different state" || ok=0
+echo "$o" | grep -q "^difference .*nondet.txt (content differs)" || ok=0
+echo "$o" | grep -q "repeatability .*differed under --state" || ok=0
+# The scope line is part of the claim, not decoration: without it the reader is left to
+# assume the comparison covered metadata it never looked at.
+echo "$o" | grep -q "not compared, and two runs are not all runs" || ok=0
+# Neither refusal shape may be what produced the non-zero exit.
+echo "$o" | grep -q "SETUP ERROR" && ok=0
+echo "$o" | grep -q "^UNKNOWN" && ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   --twice names the split, and exits 1 without claiming a verdict"
+else
+    echo "FAIL --twice split leg: exit $rc (wanted exactly 1)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+o=$(TOY_APPEND_REWRITE=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw/state2 \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-tw/work2 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "0" ] || ok=0
+echo "$o" | grep -q "recording accepted" || ok=0
+echo "$o" | grep -q "repeatability .*left equal state under --state" || ok=0
+echo "$o" | grep -q "^difference" && ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   --twice accepts a target whose two runs agree (and the restore before run B happened)"
+else
+    echo "FAIL --twice equal leg: exit $rc (wanted 0)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+# Check 20 — run B passes the gates run A did.
+#
+# The second observation is not "spawn it and diff the tree": a run that ended abnormally
+# says nothing about repeatability, and comparing its wreckage against a successful run
+# would report the failure as a split. An implementation that dropped the exit-status
+# check would reach exit 0 or 1 here; the existing refusal is the only correct answer.
+#
+# toy-twice succeeds once and fails after; its counter lives OUTSIDE the state root
+# deliberately, because restore rebuilds the state between the observations and a
+# counter inside it would reset. Two shell-based fixtures were tried first and neither
+# reached run B: one spawned a real target and refused as child_touched_state_dir, the
+# other used its own redirections and refused as state_changed_without_ops.
+o=$(TOY_TWICE_COUNTER=/tmp/acc-tw/count "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw/state3 \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" \
+    --shim "$SHIM" --work /tmp/acc-tw/work3 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "2" ] || ok=0
+echo "$o" | grep -q "recording_run_failed" || ok=0
+echo "$o" | grep -q "the second observed run exited 7" || ok=0
+# Not a split, and not an acceptance: both would mean the status went unchecked.
+echo "$o" | grep -q "not accepted — the two observed runs" && ok=0
+echo "$o" | grep -q "recording accepted" && ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   a second run that fails refuses by name rather than being compared"
+else
+    echo "FAIL --twice run-B gate: exit $rc (wanted 2, recording_run_failed)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+# Check 21a — the only_in_second direction, which no other leg reaches.
+#
+# `classify` walks the pre-side and cannot report a path only the second snapshot has;
+# `diffSnapshots` exists to add exactly that direction. It is also the only kind whose
+# `rel` is borrowed from the SECOND snapshot — the other three borrow from the first —
+# and review found the engine returning those borrowed paths after freeing the snapshot
+# that owned them, reproduced as a segfault. Every leg written before that review went
+# through `content_differs` and survived. This is the leg that fails on it.
+mkdir -p /tmp/acc-tw/state5
+o=$(TOY_TWICE_COUNTER=/tmp/acc-tw/count5 TOY_TWICE_EXTRA_ON_SECOND=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw/state5 \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" \
+    --shim "$SHIM" --work /tmp/acc-tw/work5 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "1" ] || ok=0
+echo "$o" | grep -q "^difference .*only-in-second.txt (only after the second run)" || ok=0
+echo "$o" | grep -q "not accepted — the two observed runs left different state" || ok=0
+# WHAT THIS LEG DOES NOT CATCH, said out loud because the first draft claimed it did:
+# the use-after-free that motivated it. Removing the arena copy in `observeAgain` and
+# running this exact case printed the path correctly and exited 1 — a freed arena whose
+# pages nobody reused reads back intact, so the leg stayed green against the defect.
+# It covers the DIRECTION (`only_in_second`, which no other leg reaches and which
+# `classify` structurally cannot produce); the ownership rule is held by the comment at
+# the copy and by review, not by this.
+if [ "$ok" = "1" ]; then
+    echo "ok   a path only the second run created is named (direction covered; ownership is not)"
+else
+    echo "FAIL --twice only_in_second leg: exit $rc (wanted 1 naming only-in-second.txt)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+# Check 21 — a differing path cannot forge a report line.
+#
+# Paths in the split report are target-chosen, and a Unix file name may hold a newline.
+# Printed raw, "a\nb" would read as two lines and the second could impersonate any
+# field the reader trusts. The l0 note has defanged control bytes since #26; this check
+# exists because that guard's own test does not cover the new site — an implementation
+# that printed `d.rel` instead of `textShown(arena, d.rel)` would leave every existing
+# test green.
+mkdir -p /tmp/acc-tw/state4
+o=$(TOY_TWICE_COUNTER=/tmp/acc-tw/count4 TOY_TWICE_HOSTILE_NAME=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw/state4 \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" \
+    --shim "$SHIM" --work /tmp/acc-tw/work4 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "1" ] || ok=0
+# One defanged unit per control byte: the name reads as a?b on one line.
+echo "$o" | grep -q "^difference .*a?b (content differs)" || ok=0
+# The forged half must not appear as a line of its own. Anchored, because the
+# sanitised name legitimately contains the letter b.
+echo "$o" | grep -qE '^b[[:space:]]' && ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   a newline in a differing path is defanged instead of splitting the report"
+else
+    echo "FAIL --twice report safety: exit $rc (wanted 1 with a?b on one line)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-tw
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

@@ -59,6 +59,11 @@ else
     exit 1
 fi
 
+echo "building toy-twice"
+# Succeeds once, then fails: the only target shape that shows whether `preflight
+# --twice` applies its gates to the SECOND observation as well as the first (#199).
+gcc $cc_flags -o "$out/toy-twice" "$root/spike/toys/toy_twice.c"
+
 echo "building toy-copy"
 # Calls copy_file_range directly, in both directions (destination inside the state
 # directory, and source inside with the destination outside). The C toy is the

@@ -47,6 +47,8 @@ $ sideeye preflight --state <dir> --operation "<cmd>"
 
 One observed run: either `recording accepted` (exit 0) or a refusal naming the same detector a real run would use (exit 2).
 
+Add `--twice` and it observes a second run from the restored pre-state, at least two seconds later, and compares the two. Byte repeatability is a property of two runs — one observation structurally cannot see it, and a tool that rewrites a timestamp on every run passes everything else preflight asks and is refused only once a full define has been written and explored. Equal post-states: exit 0. Different: the differing paths are named and the command exits 1, which is the negative answer to the question `--twice` asked, not a FAIL verdict — preflight produces none. What it does not establish is that the target is deterministic: the comparison covers file bytes, entry kinds and symlink targets under `--state`, and two runs are not all runs.
+
 **3. Explore** — the real thing, with the whole define in one file:
 
 ```

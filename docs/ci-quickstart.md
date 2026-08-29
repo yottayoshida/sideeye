@@ -76,6 +76,16 @@ because they did what was asked, and a `preflight` that accepts the recording
 exits 0 without claiming PASS. `docs/contract-freeze.md` §3 states which
 direction the promise runs.
 
+`preflight --twice` uses one more code, and the same reading applies: exit 1
+means the two observed runs left different state under `--state` (#199). It is
+not a FAIL — no counterexample was found, and none was looked for — it is the
+negative answer to the identity question the flag asked, with the differing
+paths named. A job that gates on `preflight --twice` therefore treats 0 as "go
+ahead and write the define", 1 as "pin what differs first", and 2 as the
+detector refusals it already handled. Reading exit 1 from *this* command as a
+crash-consistency failure would report a repeatability problem as a bug in the
+target's crash behaviour, which is a different claim entirely.
+
 ## Notes
 
 - The demo toy finds its state through `TOY_STATE`, which sideeye itself
