@@ -477,6 +477,11 @@ fn usage() void {
         \\               two runs are not all runs. The two-second gap is what
         \\               epoch-second stamping needs to move — not a measured
         \\               sufficiency threshold for nondeterminism in general.
+        \\               It also REWRITES --state: the directory is restored from the
+        \\               pre-run snapshot before the second run, so the first run's
+        \\               output is gone and file modes come back as 0644/0755. A
+        \\               preflight without this flag leaves the directory as the run
+        \\               left it.
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
         \\            (preflight produces no verdict: it exits 0 when it accepts, 1 when
@@ -2395,12 +2400,16 @@ fn commandArgv(arena: std.mem.Allocator, cmd: config.Command) ![]const []const u
 /// that survives it is repeatable.
 const repeat_gap_ms: u64 = 2000;
 
-/// How many differing paths the split report names before folding the rest.
+/// The rendered-byte ceiling for the split report's list of paths.
 ///
-/// The cap is bytes, not paths: a single `rel` can approach `max_path`, and ten of them
-/// would overrun the report buffer that every other line shares. Paths are
-/// target-chosen, so each one goes through the same neutralisation the l0 note uses —
-/// an unescaped newline in a file name would let a target forge report lines.
+/// It exists for the pathological input, not the ordinary one: a single `rel` can
+/// approach `contract.max_path` (4096), and a handful of those would overrun the report
+/// buffer every other line shares. **On ordinary input the binding limit is
+/// `repeat_diff_slots` below** — short paths fill 64 slots long before they fill a
+/// kilobyte — which is the opposite of what an earlier version of this comment implied
+/// (review). Paths are target-chosen, so each goes through the same neutralisation the
+/// l0 note uses: an unescaped newline in a file name would let a target forge report
+/// lines. The first path is exempt from the ceiling; see `preflightReport`.
 const repeat_diff_byte_budget: usize = 1024;
 
 /// How many differences are collected before `DiffCount.total` carries the rest.
@@ -2428,11 +2437,25 @@ const Repeat = struct {
 /// would leave the freshly rebuilt pre-state exposed for the whole gap to anything the
 /// first run left running.
 ///
-/// Run B passes the gates run A did, applied explicitly here rather than by reusing the
-/// recording path wholesale: that path writes the report globals as it goes, so a
-/// second pass through it would overwrite what the first run reported. What is checked
-/// is exit status, the trace's readability and version, the process boundary, and
-/// quiescence — the same four questions, asked again of the second run.
+/// Run B is gated explicitly here rather than by reusing the recording path wholesale:
+/// that path writes the report globals as it goes, so a second pass through it would
+/// overwrite what the first run reported.
+///
+/// **Not every gate run A passes.** Nine of the fifteen a preflight can reach:
+/// exit status, oversized trace, shim initialisation, truncation, the shim-side foreign
+/// writer, trace-contract version, the hard boundaries (exec / thread / detached),
+/// the soft boundary without an oracle, and quiescence of the state tree.
+///
+/// What run B does NOT get, listed because an earlier draft of this comment claimed it
+/// got everything (review, P1): `unresolvable_path`, `unsupported_syscall_observed`,
+/// `sequence_numbering_broken`, the oracle comparison, stdout quiescence, and
+/// `state_changed_without_ops`. The first three and the last read from analysis run A
+/// performs on its own trace and snapshots, and reproducing them here would be the
+/// wholesale reuse this function exists to avoid; the oracle comparison is disclosed in
+/// the report's `scope` line. The ones that WERE added are those whose absence would
+/// make the property's own words false — "the two runs observed" is not true of a run
+/// whose shim never loaded, and a comparison against a run something else wrote into is
+/// not a comparison of this operation.
 fn observeAgain(
     gpa: std.mem.Allocator,
     arena: std.mem.Allocator,
@@ -2447,7 +2470,17 @@ fn observeAgain(
     expect_status: u8,
     first_started_ms: u64,
 ) Repeat {
-    posix.sleepForMs(repeat_gap_ms);
+    // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
+    // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
+    // the README and the CHANGELOG all promise "at least two seconds". Without this
+    // loop the command could print `two runs 47 ms apart left equal state` and
+    // contradict its own help (review, P2). The clock is monotonic, so each pass
+    // shortens the remainder and the loop terminates.
+    while (true) {
+        const elapsed = posix.monotonicMs() -| first_started_ms;
+        if (elapsed >= repeat_gap_ms) break;
+        posix.sleepForMs(repeat_gap_ms - elapsed);
+    }
     engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory before the second observed run");
 
     var trace_buf: [contract.max_path]u8 = undefined;
@@ -2458,6 +2491,12 @@ fn observeAgain(
     const oracle_out_b = std.fmt.bufPrint(&oracle_buf, "{s}/oracle-2.txt", .{work}) catch setupError("path too long");
     removeFile(trace_b);
     removeFile(stdout_b);
+    // The oracle capture too, for the same reason the recording run removes its own:
+    // a stale file from a previous invocation must not be mistaken for this run's.
+    // Nothing reads `oracle-2.txt` today (the report's `scope` line says so), and
+    // strace truncates on open regardless — the symmetry is the point, so a future
+    // reader of that file inherits the same guarantee run A's has.
+    removeFile(oracle_out_b);
 
     const started = posix.monotonicMs();
     const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, oracle_path, oracle_out_b, trace_b, stdout_b);
@@ -2484,6 +2523,19 @@ fn observeAgain(
     // is this comment and review. Without the answer the cap would return an empty
     // `TraceInfo` and every gate below would go vacuously green.
     answerForOversizedTrace(trace, "the second observed run", trace_cap);
+    // The property says "the two runs OBSERVED in this invocation". A run whose shim
+    // never initialised was not observed, and reporting it as one half of a comparison
+    // would make that word false — the flag exists for targets that take a different
+    // path the second time, so a second run that loads nothing is not hypothetical.
+    if (!trace.saw_shim_ready)
+        unknown(.no_shim_marker, "the shim never initialised in the second observed run, although it did in the first: statically linked, hardened, or not injected at all");
+    // A trace that ends mid-record leaves the operation count unknown for run B, which
+    // is the same reason run A refuses on it.
+    if (trace.truncated)
+        unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown");
+    // The shim-side witness for a foreign writer, and it does not depend on an oracle.
+    if (trace.foreign_kill_point)
+        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the second observed run");
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run");
     // The boundaries that stay refusals whatever an oracle says, applied to the second
@@ -2578,9 +2630,15 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             // can approach max_path on its own.
             var used: usize = 0;
             var shown: usize = 0;
-            for (r.diffs) |d| {
+            for (r.diffs, 0..) |d, i| {
                 const rel = textShown(arena, d.rel);
-                if (used + rel.len > repeat_diff_byte_budget) break;
+                // The FIRST path is always named, whatever it costs: `--help`, the
+                // README and the headline all say the differing paths are named, and a
+                // single path over the budget — `contract.max_path` is 4096 — would
+                // otherwise print nothing but "… and 1 more" (review, P3). Truncating
+                // it instead would risk cutting a UTF-8 sequence mid-character, so the
+                // budget yields here rather than the promise.
+                if (i > 0 and used + rel.len > repeat_diff_byte_budget) break;
                 used += rel.len;
                 shown += 1;
                 const how = switch (d.how) {
@@ -2675,11 +2733,18 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             \\             world, after a full define had been written
             \\
         , .{});
-        // Exit 1 here is not FAIL. `docs/ci-quickstart.md` states the rule this rests
-        // on: the four verdict rows "are the verdicts a run can reach", and commands
-        // that produce no verdict are not in that table and are not gates. preflight
-        // produces no verdict; this is the command-level negative for the identity
-        // question `--twice` asked, and the frozen verdict-to-code mapping is untouched.
+        // Exit 1 here is not FAIL. `docs/ci-quickstart.md` states the rule: the four
+        // verdict rows are "the verdicts a run can reach", and commands producing no
+        // verdict are not in that table. preflight produces none, and the frozen
+        // verdict-to-code mapping is untouched by this.
+        //
+        // Said plainly because review asked for it: **this is an interpretation, not a
+        // quotation.** `docs/contract-freeze.md` §3 spells out the freedom of non-verdict
+        // commands for exit 0 only ("Exit 0 is not reserved to PASS"); the same reading
+        // extended to 1 is what this line rests on. It violates neither thing §3
+        // forbids — a verdict arriving under a different code, or exit 0 read as proof a
+        // check ran — but if the owner wants that reading written into §3, this comment
+        // is the place that owes the reference.
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
     say(

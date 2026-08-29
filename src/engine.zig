@@ -303,6 +303,58 @@ test "diffSnapshots keeps counting past the caller's buffer" {
     try std.testing.expect(!c.equal());
 }
 
+test "a Difference that escapes its snapshot must own its bytes" {
+    // The ownership rule this file's `Difference` doc states, held by a test rather than
+    // by a comment. `only_in_second` is the only kind that borrows from the SECOND
+    // snapshot, and a caller that frees that snapshot before rendering reads freed
+    // memory — which is exactly what `main.zig`'s `observeAgain` did until review found
+    // it (reproduced there as a segfault).
+    //
+    // The overwrite below is the whole trick. Without it a freed arena's pages are
+    // usually still readable and the assertion passes by luck — measured: the shell
+    // acceptance leg that drives this same path stayed green against the defect. Taking
+    // the pages back and filling them with 0xAA turns the bug into an ordinary string
+    // mismatch a CI log can show, instead of a segfault or a silent pass.
+    const gpa = std.testing.allocator;
+    var caller = std.heap.ArenaAllocator.init(gpa);
+    defer caller.deinit();
+    const arena = caller.allocator();
+
+    var first = Snapshot{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer first.deinit();
+
+    const diffs = blk: {
+        // Same shape as `observeAgain`: the second snapshot is a local, released by
+        // this block's own `defer`, while the differences outlive it.
+        var second = Snapshot{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+        defer second.deinit();
+        const sa = second.arena.allocator();
+        const owned = try sa.dupe(u8, "only-in-second.txt");
+        try second.entries.append(sa, .{ .rel = owned, .kind = .file, .content = "x" });
+
+        const out = try arena.alloc(Difference, 4);
+        const count = diffSnapshots(first, second, out);
+        try std.testing.expectEqual(@as(usize, 1), count.total);
+        try std.testing.expectEqual(Difference.How.only_in_second, out[0].how);
+        // The copy under test. Deleting these two lines is the defect, and the
+        // assertion below then reads 0xAA.
+        for (out[0..count.stored]) |*d| d.rel = try arena.dupe(u8, d.rel);
+        break :blk out[0..count.stored];
+    };
+
+    var claims: [8][]u8 = undefined;
+    var claimed: usize = 0;
+    defer {
+        for (claims[0..claimed]) |c| gpa.free(c);
+    }
+    while (claimed < claims.len) : (claimed += 1) {
+        claims[claimed] = try gpa.alloc(u8, 64 * 1024);
+        @memset(claims[claimed], 0xAA);
+    }
+
+    try std.testing.expectEqualStrings("only-in-second.txt", diffs[0].rel);
+}
+
 /// `EntriesNotSortedUnique` means the snapshot came out of `walk` in a shape `find` cannot
 /// search: out of order, or holding the same `rel` twice. Neither should be reachable — the
 /// sort above guarantees the first and a directory traversal cannot produce the second — so

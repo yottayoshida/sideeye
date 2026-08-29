@@ -80,11 +80,15 @@ direction the promise runs.
 means the two observed runs left different state under `--state` (#199). It is
 not a FAIL — no counterexample was found, and none was looked for — it is the
 negative answer to the identity question the flag asked, with the differing
-paths named. A job that gates on `preflight --twice` therefore treats 0 as "go
-ahead and write the define", 1 as "pin what differs first", and 2 as the
-detector refusals it already handled. Reading exit 1 from *this* command as a
-crash-consistency failure would report a repeatability problem as a bug in the
-target's crash behaviour, which is a different claim entirely.
+paths named. A script that *branches* on `preflight --twice` (it is still not a
+gate, by the paragraph above) reads 0 as "go ahead and write the define", 1 as
+"pin what differs first", and 2 as the detector refusals it already handled.
+
+The caution runs the other way: a wrapper that shares one `rc == 1 → a
+counterexample was found` branch across sideeye commands will mislabel a split.
+Reading exit 1 from *this* command as a crash-consistency failure reports a
+repeatability problem as a bug in the target's crash behaviour, which is a
+different claim entirely. Give preflight its own branch, or read the headline.
 
 ## Notes
 

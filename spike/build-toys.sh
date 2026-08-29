@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build the five toy targets. Runs inside the spike container.
+# Build the toy targets. Runs inside the spike container.
 #
 # Each one exists to make sideeye answer a different question honestly:
 #   toy-bug     supported target with a real crash-consistency bug -> expect FAIL

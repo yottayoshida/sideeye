@@ -4417,7 +4417,12 @@ else
     fails=$((fails + 1))
 fi
 
-# Check 20 — run B passes the gates run A did.
+# Check 20 — run B's exit status is checked, not assumed.
+#
+# The heading used to read "run B passes the gates run A did", which is false as a
+# universal: run B gets nine of the fifteen gates a preflight can reach, and the
+# function's own doc comment now lists both halves. What this leg drives is one of
+# them — the exit status.
 #
 # The second observation is not "spawn it and diff the tree": a run that ended abnormally
 # says nothing about repeatability, and comparing its wreckage against a successful run
@@ -4507,6 +4512,36 @@ if [ "$ok" = "1" ]; then
     echo "ok   a newline in a differing path is defanged instead of splitting the report"
 else
     echo "FAIL --twice report safety: exit $rc (wanted 1 with a?b on one line)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+# Check 22 — --twice under an oracle.
+#
+# The suite's own rule at the top: every case runs with an oracle where one exists. The
+# first four --twice legs did not, and that is the direct reason a review found run B's
+# boundary check gated on `oracle_path == null` — passing an oracle REMOVED it. This
+# leg drives the oracle path so the combination is exercised at all.
+#
+# What it does NOT catch: that same boundary regression. The toys here cross no process
+# boundary, so a build that dropped run B's hard-boundary check stays green. Catching
+# that needs a target whose SECOND run creates a thread, which no fixture produces yet.
+mkdir -p /tmp/acc-tw/state6
+o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw/state6 \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --oracle /usr/bin/strace \
+    --shim "$SHIM" --work /tmp/acc-tw/work6 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "1" ] || ok=0
+echo "$o" | grep -q "^difference .*nondet.txt (content differs)" || ok=0
+# The asymmetry is disclosed, not silent: run B's capture is written and never parsed.
+echo "$o" | grep -q "the second run's oracle capture is written but not" || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   --twice runs under an oracle and discloses that run B's capture is not compared"
+else
+    echo "FAIL --twice oracle leg: exit $rc (wanted 1 with the scope disclosure)"
     echo "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
