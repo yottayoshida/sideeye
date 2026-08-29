@@ -2,6 +2,20 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-29 (seventh) - two issues closed as documented, and the gate that was already red
+
+A sweep of the tracker for issues whose subject had stopped being true. Sixty open, and the honest answer is two, both closed without writing anything new.
+
+**#375 (`state_tree_too_large` reports what it read).** Its own text ends "Open only if an operator asks", and the adjudication it summarises is already in ADR 0029: continuing the walk past the break, rejected on four measurements, with contributor-naming filed separately to be built if operators ask. The issue and that ADR section carried one ruling between them and the ADR is the durable half. Closed as documented, the shape #12 and #35 used.
+
+**#156 (`--oracle` with `--allow-unverified`).** Its closing condition was self-executing and written in the issue: if the freeze audit closed without the change, the accepted-but-inert behaviour freezes as-is. #86 closed, v1.0.0 was tagged, so it did.
+
+**What the second one nearly cost, and the reason it cost nothing.** The plan was to write one sentence saying the inert acceptance is now permanent, then close. Two measurements changed that. First, the sentence already existed: this row's rationale has said it since the row was written, and `docs/freeze-audit.md` publishes the rationale, so the note was on a public page before the close was considered. Second, and the reason it matters beyond this issue: the natural home for such a sentence is surface 3 of `docs/contract-freeze.md`, beside the evidence-strength-split decision it is a sibling of, and that file is pinned by `DECLARATION_PIN`. Editing it means either leaving the pin stale, which the gate reports as a malformation rather than staleness, or moving it, which claims a five-surface reading nobody performed. That is #371's subject exactly, and #371 recommends the author do nothing. So the ledger row is where the close is recorded, which is what resolved rows are for.
+
+**Measured while doing it: the freeze-audit gate does not pass on main, and has not since #395.** `check-freeze-audit.sh` exits 1 at the declaration check, because #395 added `cwd` to surface 1's frozen list in `docs/contract-freeze.md` and left `DECLARATION_PIN` at the fourth sweep's revision. Past that check, with the pin pointed at the current blob in a throwaway copy, the surface leg reports drift as well: `config_keys` gained `cwd` with no row in `surface-changes.tsv`. Neither is caused by the change here and neither is fixed here. The author of #395 behaved the way #371 recommends, and the gate has no way to say so, which is the argument #371 makes for its option A. Nothing caught this earlier because the gate runs by hand: it is wired into neither CI nor `spike/acceptance.sh`.
+
+The manifest and page legs were run against this change with the pin patched in a temporary copy, and pass: 122 rows, 54 active and 68 resolved, covering the 56 snapshot issues, with both generated blocks byte-identical to a fresh render.
+
 ## 2026-08-29 (sixth) — the two gates that were excluded for the wrong reason, and the branch no fixture reached
 
 Follow-up to the `--twice` merge, from the last round of the same review. Both items are about a criterion applied inconsistently rather than about new behaviour.
