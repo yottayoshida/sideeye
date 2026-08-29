@@ -317,7 +317,7 @@ orphans=$(grep -c . "$TMP/orphans" || true)
 # Each is a blob sha rather than a commit: a blob is what the extraction actually
 # read, and it survives history rewrites of everything else.
 PIN_config="c5fa9f6cf6abef5471cf215fddfa59f6094743cc"       # src/config.zig
-PIN_contract="845de0ca3cc28b91e98db1f70ef912d4c0e7050b"     # src/contract.zig
+PIN_contract="02c0cfad41c45b1b1ffde4004f2b0034a895eb5a"     # src/contract.zig (moved 2026-08-29 with sc-14..sc-17, the path the gate names for post-sweep drift)
 PIN_mcp="10f025316fd5190ef59aaea1a7219a46895d8c4a"          # src/mcp.zig
 PIN_schema="7c177179a92ba12049969f3e32f22cd22c51fd34"       # docs/report-schema.md
 
