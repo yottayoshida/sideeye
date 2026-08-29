@@ -96,6 +96,18 @@ int main(int argc, char **argv) {
      * the recording — but it is written the same way for one less difference. */
     if (write_file(counter, nbuf) != 0) return 2;
 
+    /* Under TOY_TWICE_SLOW_FIRST the FIRST run takes longer than the inter-run gap.
+     *
+     * `--twice` promises at least two seconds between the two starts and enforces it by
+     * re-reading the clock, so a run A that already exceeds the gap must produce NO
+     * sleep at all and a reported interval of its own duration. Two things ride on this:
+     * the branch that skips the sleep is otherwise never taken (every other fixture
+     * finishes in milliseconds, so only the sleeping half of that loop has ever run),
+     * and an implementation that printed the constant instead of the measured value
+     * would report 2000 here where the truth is above 3000. A grep for a four-digit
+     * figure starting at 3 separates them; a few milliseconds of overshoot never could. */
+    if (getenv("TOY_TWICE_SLOW_FIRST") && n == 1) sleep(3);
+
     /* The state write is unconditional and identical every run: if this toy ever
      * reaches a comparison, the two post-states agree. What differs is the exit
      * status, so a leg that reports a "split" here is naming the wrong thing. */
@@ -116,6 +128,11 @@ int main(int argc, char **argv) {
         if (write_file(extra, "second\n") != 0) return 2;
         return 0;
     }
+
+    /* Both runs succeed in the slow-first mode. The interval this leg reads is printed
+     * by the repeatability line, and that line only exists when the comparison is
+     * reached — a refusal on run B's status exits before it. */
+    if (getenv("TOY_TWICE_SLOW_FIRST")) return 0;
 
     if (hostile_mode) {
         /* Different bytes every run, so this path is what the comparison reports. The

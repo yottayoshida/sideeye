@@ -2,6 +2,15 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-29 (sixth) — the two gates that were excluded for the wrong reason, and the branch no fixture reached
+
+Follow-up to the `--twice` merge, from the last round of the same review. Both items are about a criterion applied inconsistently rather than about new behaviour.
+
+**`state_changed_without_ops` was excluded on cost, and the cost reason was wrong.** The doc comment justified leaving six gates out of run B as "analysis run A performs on its own trace and snapshots", which is true of five of them and false of this one: it needs `trace.mutation_count`, already read, and the two snapshots, already taken. One line. Worse, the criterion the same paragraph states for what goes *in* — whether its absence makes the property's own words false — selects it: "the two runs observed" is not true of a run whose operations went unrecorded, and `no_shim_marker`, which was added under exactly that reasoning, is the total version of what this one catches partially. It is in now, and the doc says the criterion is the property rather than the cost.
+
+**The enforcement loop had a branch nothing had ever taken.** `--twice` promises at least two seconds between starts and enforces it by re-reading the monotonic clock rather than trusting `sleepForMs`, which its own doc calls best effort. Every fixture in the suite finishes in milliseconds, so the loop always slept and the "already past the floor, sleep zero" path had never executed — a new guard falsified on one side only. `TOY_TWICE_SLOW_FIRST` makes run A take three seconds, and the same leg closes a mutant nothing else could: an implementation printing the constant instead of the measured interval is invisible everywhere else, because 2000-plus-overshoot and 2000 differ by a few milliseconds. Here the truth is over 3000 and the constant is 2000. Measured: `two runs 3036 ms apart left equal state`.
+
+Neither was found by the checks written for this feature. Both came from the reviewer reading the exclusion list against the criterion beside it, which is the audit the tests do not perform.
 ## 2026-08-29 (fifth) — a define declares where it runs, and the first key added after the freeze
 
 `[define] cwd`, plus the `--cwd` that keeps the file and the flags saying the same thing. The first additive key since the tag, taken under the allowance `docs/contract-freeze.md` surface 1 states in its own last sentence; the frozen list there now names it, so the declaration and the accepted set stay one list rather than two.

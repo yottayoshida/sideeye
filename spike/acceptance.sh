@@ -4577,7 +4577,40 @@ else
     echo "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
-rm -rf /tmp/acc-tw
+# Check 23 — the reported gap is measured, and a slow first run skips the sleep.
+#
+# Two things at once, both of which the other --twice legs structurally cannot reach.
+#
+# The gap is enforced by re-reading the monotonic clock until it passes the two-second
+# floor, so a run A that already takes longer must take the branch that sleeps ZERO. No
+# other fixture reaches it: they finish in milliseconds, so only the sleeping half of
+# that loop has ever executed. TOY_TWICE_SLOW_FIRST makes run A take three seconds.
+#
+# It also kills the mutant that prints the constant instead of the measured interval.
+# Everywhere else the two are within milliseconds of each other — 2000 plus overshoot
+# versus 2000 — and no grep can separate them. Here the truth is above 3000 and the
+# constant is 2000, so a four-digit figure starting at 3 or more is decisive.
+mkdir -p /tmp/acc-tw2/state
+o=$(TOY_TWICE_COUNTER=/tmp/acc-tw2/count TOY_TWICE_SLOW_FIRST=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw2/state \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" \
+    --shim "$SHIM" --work /tmp/acc-tw2/work 2>&1)
+rc=$?
+ok=1
+# Both runs succeed in this mode, so the comparison is reached and the repeatability
+# line exists to be read. A refusal would exit before it.
+[ "$rc" = "0" ] || ok=0
+echo "$o" | grep -qE 'two runs [3-9][0-9]{3} ms apart left equal state' || ok=0
+# The constant mutant prints exactly 2000; the measured value here cannot be under 3000.
+echo "$o" | grep -q 'two runs 2[0-9][0-9][0-9] ms' && ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   the reported gap is measured, and a first run past the floor sleeps not at all"
+else
+    echo "FAIL --twice slow-first leg: exit $rc (wanted 0 with a gap over 3000 ms)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-tw2 /tmp/acc-tw
 
 echo "=========== check 2cw: a define declares where it runs, and the case freezes it ==========="
 # The three legs are one fixture on purpose: the same define, moved. A pair that built a
