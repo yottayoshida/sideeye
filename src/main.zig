@@ -2550,21 +2550,26 @@ const Repeat = struct {
 /// that path writes the report globals as it goes, so a second pass through it would
 /// overwrite what the first run reported.
 ///
-/// **Not every gate run A passes.** Nine of the fifteen a preflight can reach:
-/// exit status, oversized trace, shim initialisation, truncation, the shim-side foreign
-/// writer, trace-contract version, the hard boundaries (exec / thread / detached),
-/// the soft boundary without an oracle, and quiescence of the state tree.
+/// **Not every gate run A passes.** Ten of the fifteen a preflight can reach: exit
+/// status, oversized trace, shim initialisation, truncation, the shim-side foreign
+/// writer, trace-contract version, the hard boundaries (exec / thread / detached), the
+/// soft boundary without an oracle, quiescence of the state tree, and a state that moved
+/// while nothing was recorded.
 ///
 /// What run B does NOT get, listed because an earlier draft of this comment claimed it
-/// got everything (review, P1): `unresolvable_path`, `unsupported_syscall_observed`,
-/// `sequence_numbering_broken`, the oracle comparison, stdout quiescence, and
-/// `state_changed_without_ops`. The first three and the last read from analysis run A
-/// performs on its own trace and snapshots, and reproducing them here would be the
-/// wholesale reuse this function exists to avoid; the oracle comparison is disclosed in
-/// the report's `scope` line. The ones that WERE added are those whose absence would
-/// make the property's own words false — "the two runs observed" is not true of a run
-/// whose shim never loaded, and a comparison against a run something else wrote into is
-/// not a comparison of this operation.
+/// got everything (review): `unresolvable_path`, `unsupported_syscall_observed`,
+/// `sequence_numbering_broken`, the oracle comparison, and stdout quiescence. The first
+/// three walk the trace's records — a second copy of that analysis is the wholesale
+/// reuse this function exists to avoid — and the oracle comparison is disclosed in the
+/// report's `scope` line. Stdout quiescence guards the capture the marker is read from,
+/// which run B has no claim resting on.
+///
+/// The ones that WERE added are those whose absence would make the property's own words
+/// false: "the two runs observed" is not true of a run whose shim never loaded or whose
+/// operations went unrecorded, and a comparison against a run something else wrote into
+/// is not a comparison of this operation. **That criterion, not the cost of the check,
+/// is what decides the split** — `state_changed_without_ops` was excluded on cost in the
+/// first revision and review showed the cost reason was wrong for it, so it moved.
 fn observeAgain(
     gpa: std.mem.Allocator,
     arena: std.mem.Allocator,
@@ -2691,6 +2696,22 @@ fn observeAgain(
     var quiesce_buf: [1]engine.Difference = undefined;
     if (!engine.diffSnapshots(second, again, &quiesce_buf).equal())
         unknown(.state_not_quiescent, "two samples of the state directory taken back to back after the second observed run disagreed: something was still writing, so the comparison would describe a moment nobody chose");
+
+    // The partial version of `no_shim_marker`, and it belongs on the same side.
+    //
+    // That one says nothing was observed because the shim never loaded; this one says
+    // the shim loaded and still missed operations — the tree moved while zero mutating
+    // calls were recorded. Both make "the two runs observed" false, and comparing a
+    // post-state nobody accounted for against one that was accounted for is not a
+    // comparison of this operation.
+    //
+    // An earlier revision left this out and justified it, in the doc above, as "analysis
+    // run A performs on its own trace and snapshots". Review measured that reason wrong
+    // for this one member: it needs one field of the trace already in hand and the two
+    // snapshots already taken, which is why it is a single line rather than the
+    // wholesale reuse the exclusion was about.
+    if (!snapshotsEqual(initial, second) and trace.mutation_count == 0)
+        unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed");
 
     const diffs = arena.alloc(engine.Difference, repeat_diff_slots) catch setupError("out of memory");
     const count = engine.diffSnapshots(first, second, diffs);
