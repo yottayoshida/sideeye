@@ -1441,7 +1441,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // raised by the oracle having run and disagreed; a report saying "not run" beside
         // `unknown_reason: oracle_missed_operation` contradicts itself.
         oracle_note = "ran; the comparison did not complete";
-        const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle produced no output");
+        // "could not be read", not "produced no output": an oracle that ran and
+        // recorded nothing leaves a readable empty file, which the lines-seen check
+        // below answers with oracle_saw_nothing. This site fires when the capture
+        // file itself cannot be read, and until #363's adjudication its message
+        // claimed the other condition.
+        const text = readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
         // The oracle resolves relative paths against the subject's cwd (ADR 0006). The
         // subject inherits the engine's cwd — `runChild` does not chdir — so that is the
         // starting value; the subject's own chdir/fchdir move it from there. The alt
