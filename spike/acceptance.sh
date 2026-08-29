@@ -1021,6 +1021,26 @@ else
 fi
 
 echo ""
+echo "=========== check 2k2: an oracle capture that cannot be read is a SETUP ERROR that says so (#363) ==========="
+# The third corner of 2d/2k: 2d reads a real capture, 2k reads a readable-but-empty
+# one (UNKNOWN oracle_saw_nothing), and here the capture cannot be read at all. The
+# refusal must name what was measured — the capture file could not be read — not
+# "produced no output", which is 2k's condition and was this message's wording until
+# #363's adjudication caught the mismatch.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle "$ROOT/spike/vanishing-oracle.sh" 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "capture file could not be read"; then
+    echo "ok   a vanished oracle capture refuses as SETUP ERROR, naming the unreadable capture"
+else
+    echo "FAIL vanished oracle capture: exit $rc (wanted 3 + the unreadable-capture wording)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2ac: a hostile file name cannot forge text-report lines (#26) ==========="
 # A Unix file name may carry newlines, and the FAIL block prints target-chosen
 # paths. Measured red on the pre-fix binary: this exact scenario printed the
