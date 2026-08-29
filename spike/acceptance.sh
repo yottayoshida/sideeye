@@ -3310,12 +3310,24 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # outcome-new-this-sweep (an already-triaged tool parked as untriaged).
 # The first of those seven was itself red for the wrong reason when it was written —
 # count.py read its reports before checking its status, so it died on a missing file
-# — which is what this loop's message-matching exists to catch. **Four predicates
-# added by #239 have no fixture yet** (the generation group closed set, the
-# since/group coverage rule, outcome-map's shape/uniqueness/enum, and the outcome
-# conservation assert): deleting any of them leaves this suite green, and that gap
-# is filed rather than left implied. Sunset: never fired by the v1.0 freeze ->
-# removal list (same rule as check 11).
+# — which is what this loop's message-matching exists to catch. **Predicates with no
+# fixture, named so nobody reads this list as complete.** From #239: the generation
+# group closed set, the since/group coverage rule, outcome-map's
+# shape/uniqueness/enum, and the *disposition* conservation assert — an A-group FAIL
+# whose tool carries a disposition the outcome table does not print, count.py's block
+# headed `Conservation:`. That is NOT the attribution checks pinned below: those are a
+# different predicate, and they are named attribution precisely so this sentence can
+# tell the two apart. From the attribution work: the two post-byte-compare numerator
+# bindings — the rate line's, and the outcome table's per-row comparison. Both read
+# verdicts, so both would take `tampered-verdict`'s pinned message if they ran before
+# the byte-compare; that is measured rather than reasoned, because the outcome one
+# was written there first and did exactly that. No data-only fixture reaches either:
+# one that perturbs the number dies earlier. Also the (B, judge) axis, which the
+# funnel table cannot express because it
+# has no judge column, so that family is measured by its denominator alone and the
+# check says so in its own success line. Deleting any of these leaves this suite
+# green, and that gap is filed rather than left implied. Sunset: never fired by the
+# v1.0 freeze -> removal list (same rule as check 11).
 ur_fails=0
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
     echo "     the live page/artifacts disagree with recomputation"
@@ -3323,6 +3335,15 @@ if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
 fi
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/good" >/dev/null 2>&1; then
     echo "     fixture good failed — the gate cannot pass its own known-good input"
+    ur_fails=$((ur_fails + 1))
+fi
+# A second green fixture, and the only place a SETUP_ERROR row exists at all: the
+# live page has none and neither does `good`, so the rule that keeps such a row out
+# of every denominator was reachable by nothing. Green here proves the exclusion
+# holds; removing it from count.py turns THIS fixture red on the attribution row
+# count while good and the live tree stay green (measured before shipping).
+if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/setup-error-present" >/dev/null 2>&1; then
+    echo "     fixture setup-error-present failed — the SETUP_ERROR exclusion has no other reachable input"
     ur_fails=$((ur_fails + 1))
 fi
 # Each tampered fixture must die on ITS OWN predicate's message, not merely
@@ -3343,7 +3364,15 @@ for pair in \
     "ledger-overlap:must be disjoint" \
     "ledger-successor:which is not a corpus define" \
     "ledger-unrelated-successor:which is a different target" \
-    "outcome-new-this-sweep:declaring an already-triaged tool untriaged"; do
+    "outcome-new-this-sweep:declaring an already-triaged tool untriaged" \
+    "attribution-slice-denominator:a row reaches its slice exactly once" \
+    "attribution-slice-numerator:in the published rows" \
+    "attribution-family-missing:a slice family that loses a label" \
+    "attribution-denominator-drift:the table and the measurement disagree" \
+    "attribution-detail-row-missing:rated rows against" \
+    "attribution-reason-table:the reason table is" \
+    "attribution-reason-sum:the reason counts sum to" \
+    "attribution-outcome-sum:a row leaves the ratio without leaving a trace"; do
     bad=${pair%%:*}; want=${pair#*:}
     out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
           --root "$ROOT/spike/unknown-rate/fixtures/$bad" 2>&1)
