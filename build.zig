@@ -237,6 +237,7 @@ pub fn build(b: *std.Build) void {
         "src/main.zig",
         "src/config.zig",
         "src/mcp.zig",
+        "src/image.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.

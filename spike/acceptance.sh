@@ -112,6 +112,32 @@ echo "=========== check 2: outside the boundary ==========="
 run_case "toy-raw is UNKNOWN"    "$OUT/toy-raw"    2 "oracle_missed_operation"
 run_case "toy-static is UNKNOWN" "$OUT/toy-static" 2 "no_shim_marker"
 
+# The refusal above names the machine token; this names what it measured (#391). The
+# static toy has no PT_INTERP, so the line must say the linkage it read off the file
+# rather than offering it as one of several guesses. Both halves matter: the presence of
+# the observation, and the absence of the old list — a grep for the observation alone
+# would pass against a build that still appended the guesses after it.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-static init" --operation "$OUT/toy-static rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+# The detail line, not the whole run's output. Matching against everything the command
+# printed would let any other line satisfy the assertion — including, in a later change,
+# a line that is not this refusal at all. The report prints the reason and then its
+# detail indented beneath it, so take the line after the token.
+detail=$(echo "$o" | grep -A1 "^UNKNOWN  no_shim_marker$" | tail -1)
+if [ "$rc" = "2" ] &&
+   echo "$detail" | grep -q "statically linked and no preloaded library can reach it" &&
+   echo "$detail" | grep -q "read before the run started" &&
+   ! echo "$detail" | grep -q "statically linked, hardened, or not injected at all"; then
+    echo "ok   the static toy's refusal states the linkage it read, and offers no unmeasured cause"
+else
+    echo "FAIL the static toy's refusal does not state a measured linkage (exit $rc)"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
 # And the oracle-independent layer has to work on its own, because macOS may not have
 # an oracle at all. Same target, no --oracle: a different detector must catch it.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state

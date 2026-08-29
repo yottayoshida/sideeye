@@ -157,13 +157,19 @@ jobs:
       # (recording_run_failed) — so the platform binary pins only the refusal
       # fact, exit 2 and never a verdict. (A hardened-runtime ad-hoc binary was
       # tried as the clause carrier and is OS-dependent in the other direction:
-      # macOS 15 ignores the insertion, macOS 26 lets it through.) The macOS
-      # clause (#10) is therefore pinned on the deterministic synthesis of
-      # "the shim never initialised": a decoy dylib that never writes
-      # shim_ready, handed to --shim — whether dyld loads it or not, the marker
-      # cannot appear, on any OS. Predicates: exit 2, the machine token, the
-      # macOS clause, and the JSON message appearing verbatim in the text.
-      # Each predicate seen red once (BUILDLOG 2026-08-18).
+      # macOS 15 ignores the insertion, macOS 26 lets it through.) The prose is
+      # therefore pinned on the deterministic synthesis of a missing marker: a
+      # decoy dylib that never writes shim_ready, handed to --shim — whether
+      # dyld loads it or not, the marker cannot appear, on any OS.
+      #
+      # What the prose says changed with #391. The line used to name four
+      # candidate causes on every macOS refusal, including this one, where the
+      # operation is a binary built on the runner seconds earlier and the actual
+      # cause is the decoy. So the assertion is now two-sided: the observation
+      # that was measured must be present, and the old guess must be ABSENT.
+      # A containment-only check would pass against the old build too, which is
+      # what the first draft of this step got wrong.
+      # Each predicate seen red once (BUILDLOG 2026-08-18, 2026-08-29).
       - name: The macOS refusal keeps its shape, and the clause is pinned
         run: |
           set +e
@@ -193,13 +199,27 @@ jobs:
           if r.get("unknown_reason") != "no_shim_marker":
               sys.exit("unknown_reason is %r, wanted no_shim_marker" % r.get("unknown_reason"))
           msg = r.get("message")
-          if not isinstance(msg, str) or "Apple-shipped platform binary" not in msg:
-              sys.exit("the macOS clause is missing from the JSON message: %r" % msg)
+          if not isinstance(msg, str):
+              sys.exit("the JSON report carries no message: %r" % msg)
+          # The operation is a binary this job compiled a moment ago: ad-hoc signed,
+          # dynamically linked, nothing on its image keeping a library out. The marker
+          # is missing because the shim handed to --shim never writes one.
+          if "read before the run started" not in msg:
+              sys.exit("the refusal does not say what it read, or when: %r" % msg)
+          if "another cause" not in msg:
+              sys.exit("the refusal does not place the cause off the image: %r" % msg)
+          # The guesses this replaced. Their absence is the half a containment-only
+          # assertion would miss, because the old build emitted the first of them on
+          # every macOS refusal regardless of the target.
+          for guess in ("Apple-shipped platform binary",
+                        "statically linked, hardened, or not injected at all"):
+              if guess in msg:
+                  sys.exit("the refusal still offers a guess it did not measure: %r" % guess)
           text = open(d + "/text.out").read()
           if msg not in text:
               sys.exit("the text report does not carry the JSON message verbatim")
           EOF
-          echo "ok   the platform-binary refusal keeps its shape: exit 2, the token, the macOS clause, JSON message verbatim in the text"
+          echo "ok   the refusal keeps its shape and states an observation: exit 2, the token, a measured path, no unmeasured guess, JSON message verbatim in the text"
 
       # No oracle here: SIP leaves DTrace's syscall provider with no probes even as
       # root, and the one candidate measured oracle-shaped, fs_usage, is root-gated

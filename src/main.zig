@@ -3,6 +3,7 @@ const builtin = @import("builtin");
 const contract = @import("contract");
 const engine = @import("engine.zig");
 const posix = @import("posix.zig");
+const image = @import("image.zig");
 const oracle = @import("oracle.zig");
 const config = @import("config.zig");
 const mcp = @import("mcp.zig");
@@ -198,6 +199,11 @@ var l1_configured: bool = false;
 var l0_note: []const u8 = "not classified (the run was refused before L0 classification)";
 /// Non-zero once any file is judged by the history form; widens `not tested`.
 var l0_history_count: u32 = 0;
+/// What the operation's executable looked like immediately before the recording run
+/// started. Read there and not at the refusal, because after the child has exited the
+/// same name may resolve somewhere else entirely; see `image.zig`'s header for why a
+/// match is still never reported as identity. Null on every path that never spawned.
+var rec_image: ?image.Observation = null;
 /// The case/replay story (ADR 0009), one variable each read by text and JSON alike
 /// (the checker_note pattern). A FAIL sets them to the saved case and its replay
 /// command; a replay sets the case to what it was asked to re-verify the moment the
@@ -1464,6 +1470,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // runs' STARTS (the cohort protocol's definition, PROTOCOL.md "two or more seconds
     // apart"), and a mark taken after this run returned would measure the gap between
     // its end and the next one's beginning instead.
+    // Before the mark, not between it and the spawn. After the run returns, the name in
+    // `op_argv[0]` may resolve to a different file than the one the kernel executed, so
+    // the reading has to happen on this side of the spawn — but it walks a file the
+    // target named and its cost is not bounded by anything this engine controls, and
+    // `--twice` promises the two runs *start* at least two seconds apart (README,
+    // `--help`, CHANGELOG). Sitting between the mark and the spawn, a slow reading is
+    // spent out of that gap, and two starts closer than two seconds would satisfy a wait
+    // computed from a mark taken before it. Taken once per run rather than per world:
+    // this is a cold-path detail, not an observer, and must not join the exploration's
+    // loop.
+    rec_image = image.observe(arena, op_argv[0], args.cwd);
     const rec_started_ms = posix.monotonicMs();
     const rec_term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, args.oracle, oracle_out, rec_trace, rec_stdout, args.cwd);
     // The recording run's outcome decides whether its trace means anything.
@@ -1527,15 +1544,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim was built against a different trace contract than this engine");
 
-    // The macOS clause names a cause, not the cause: this branch proves only that
-    // `shim_ready` never appeared, and an Apple-shipped platform binary is one way
-    // that happens — alongside the three the message always listed (#10). The Linux
-    // wording stays byte-identical so no existing pin moves.
+    // One line for both platforms now, because the difference between them was never
+    // the platform: it was which facts had been looked at. The old macOS clause named a
+    // cause it had not measured and the old Linux clause named three (#10, #391); both
+    // are replaced by what the image actually shows. `no_shim_marker` itself, the
+    // verdict and the exit are unchanged, so no frozen surface moves.
     if (!trace.saw_shim_ready)
-        unknown(.no_shim_marker, if (builtin.os.tag == .macos)
-            "the shim never initialised: statically linked, hardened, or not injected at all — on macOS, an Apple-shipped platform binary is one possible cause (the system refuses injection for platform binaries, and copying the binary elsewhere does not change its signature)"
-        else
-            "the shim never initialised: statically linked, hardened, or not injected at all");
+        unknown(.no_shim_marker, noShimDetail(arena));
 
     if (trace.truncated)
         unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown");
@@ -2646,7 +2661,7 @@ fn observeAgain(
     // would make that word false — the flag exists for targets that take a different
     // path the second time, so a second run that loads nothing is not hypothetical.
     if (!trace.saw_shim_ready)
-        unknown(.no_shim_marker, "the shim never initialised in the second observed run, although it did in the first: statically linked, hardened, or not injected at all");
+        unknown(.no_shim_marker, noShimDetailSecondRun(arena));
     // A trace that ends mid-record leaves the operation count unknown for run B, which
     // is the same reason run A refuses on it.
     if (trace.truncated)
@@ -3207,6 +3222,114 @@ fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase
         ) catch "the state directory holds an entry that restore cannot recreate (a FIFO, socket or device)";
         unknown(.unsupported_state_entry, detail);
     }
+}
+
+/// The `no_shim_marker` detail line, built from what was observed rather than from a
+/// list of things that might have been true.
+///
+/// The old line named four candidate causes and the engine had looked at none of them.
+/// A user who checked all of them honestly — #391 did, against an Apple-signed git —
+/// found every one false and was left with nothing to do next, because the mechanism
+/// that applied was a fifth the message never mentioned. README opens the limits
+/// section with "Sideeye refuses to guess", which is the sentence this rebuilds toward.
+///
+/// Three rules hold the line, and each of them is a thing this function does NOT say:
+///
+///   - **The observation comes first, and it is small.** The marker's absence is all
+///     this detector proves. It is not even proof that injection was refused: a trace
+///     that could not be read collapses to an empty `TraceInfo` and arrives here too
+///     (`engine.zig` says so at three call sites). So the first clause reports the
+///     absence, and when nothing was found on the image the line says the cause lies
+///     elsewhere instead of falling back to the old guesses.
+///   - **Fields, not blame.** "carries the library-validation flag" — never "library
+///     validation refused the insertion". The bit can be lifted by entitlement and a
+///     non-zero platform byte is not Apple's full definition of a platform binary.
+///   - **No time, no identity.** When the second reading disagrees with the first the
+///     line says the two readings disagree. It does not say the file was replaced
+///     *after* the run: a swap before the spawn produces the same disagreement, and
+///     nothing here can tell them apart.
+///
+/// The path is target-derived and goes through `textShown`, like every other
+/// target-controlled string that reaches the text report.
+fn noShimDetail(arena: std.mem.Allocator) []const u8 {
+    const opening = "the trace carries no shim marker";
+    const obs = rec_image orelse return arena.dupe(u8, opening ++
+        "; the operation's image was not examined") catch opening;
+
+    const path = obs.path orelse return arena.dupe(u8, opening ++
+        "; the operation's first word names no path, so the OS resolved it through PATH and Sideeye did not") catch opening;
+    const shown = textShown(arena, path);
+
+    // "the two readings do not agree", and nothing further. Not "the content differs":
+    // losing read permission after the run, or a transient failure, moves the answer
+    // without moving a byte. Not "it was replaced after the run" either — a swap before
+    // the spawn produces the same disagreement.
+    const moved = !image.sameAnswer(obs, image.reobserve(arena, path));
+    const drift = if (moved)
+        " — and reading that path again now does not agree with the reading above, so the two observations are not of one thing"
+    else
+        "";
+
+    const body: []const u8 = switch (obs.facts) {
+        .not_resolved => "the OS resolved it through PATH and Sideeye did not",
+        .unreadable => |u| switch (u) {
+            .no_such_file => "nothing is there now",
+            .permission_denied => "it cannot be opened for reading",
+            .not_a_regular_file => "it is not a regular file",
+            .read_failed => "it could not be read",
+        },
+        .unrecognised => "it is neither ELF nor Mach-O, so nothing was read from it",
+        .undecidable => |u| switch (u) {
+            .slice_not_unique => "it is a universal binary and which slice this machine runs is not decided here, so nothing was read from it",
+            .code_directories_disagree => "its signature carries code directories that disagree, so nothing was read from it",
+            .structure_out_of_range => "its structure runs outside the file, so nothing was read from it",
+        },
+        .elf => |e| if (e.has_interp)
+            "it names an interpreter, so it is dynamically linked and the marker's absence has another cause"
+        else
+            "it names no interpreter, so it is statically linked and no preloaded library can reach it",
+        .macho => |m| blk: {
+            const s = m.signing orelse break :blk if (m.dyldlink)
+                "it is dynamically linked and carries no code signature"
+            else
+                "it carries no code signature and is not linked against dyld";
+            if (s.platformNamed())
+                break :blk "its code directory names a platform, the marker an Apple-shipped binary carries";
+            if (s.libraryValidation())
+                break :blk "its code directory carries the library-validation flag, which admits only libraries signed by the same team";
+            if (s.hardenedRuntime())
+                break :blk "its code directory carries the hardened-runtime flag";
+            break :blk "its code directory carries no flag this build looks for and names no platform, so the marker's absence has another cause";
+        },
+    };
+
+    // "before the run started", not "as it started". The reading is taken ahead of the
+    // spawn and nothing pins it to the instant of exec; the honest upper bound on what
+    // the observation supports is that it happened first.
+    return std.fmt.allocPrint(arena, "{s}; read before the run started, on {s}: {s}{s}", .{
+        opening, shown, body, drift,
+    }) catch opening;
+}
+
+/// The second observed run's version, and deliberately a different line.
+///
+/// The first run's marker is a counterexample to every signing or linkage story about
+/// this file: the shim did initialise from it, minutes ago. Repeating those fields here
+/// would be reporting facts that the run itself has already answered — so the only
+/// observation worth making is whether the path still reads the same as it did before
+/// the first run, and even that is stated as a disagreement between two readings rather
+/// than as a replacement with a time on it.
+fn noShimDetailSecondRun(arena: std.mem.Allocator) []const u8 {
+    const opening = "the second observed run carries no shim marker, although the first one did";
+    const obs = rec_image orelse return opening;
+    const path = obs.path orelse return opening;
+
+    if (image.sameAnswer(obs, image.reobserve(arena, path))) return opening;
+    return std.fmt.allocPrint(
+        arena,
+        "{s}; reading {s} again now does not agree with the reading taken before the first run, so the two observations are not of one thing",
+        .{ opening, textShown(arena, path) },
+    ) catch opening;
 }
 
 fn textShown(arena: std.mem.Allocator, s: []const u8) []const u8 {
