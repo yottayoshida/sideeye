@@ -288,6 +288,8 @@ This is where §4.5 stops being prose:
 
 UNKNOWN is never 0. A caller that treats UNKNOWN as success has to do so deliberately, in its own code, against the contract.
 
+The table maps **verdicts** to codes. Commands that reach no verdict are outside it: `version`, `help` and an accepting `preflight` all exit 0 for doing what was asked. `preflight --twice` (#199) adds the one negative that shape needs — exit 1 when the two observed runs left different state — which is the answer to an identity question, not a crash-consistency FAIL. The verdict-to-code mapping the freeze pins is untouched by it.
+
 ## 14. Functional Requirements for v0
 
 1. Define one stateful operation as the verification target.

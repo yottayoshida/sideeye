@@ -579,19 +579,38 @@ const RealOps = struct {
         _ = kill(-pid, SIGKILL);
     }
     fn nowMs() u64 {
-        var ts: std.c.timespec = undefined;
-        // A compile-time-constant, valid clockid cannot produce EINVAL, and a stack
-        // pointer cannot produce EFAULT (POSIX clock_gettime). The same shape as the
-        // world loop's `bufPrint … catch unreachable`: a cannot-happen made loud
-        // rather than a garbage value read silently.
-        if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) unreachable;
-        return @as(u64, @intCast(ts.sec)) * 1000 + @as(u64, @intCast(ts.nsec)) / 1_000_000;
+        return monotonicMs();
     }
     fn sleepMs(ms: u64) void {
-        var ts: std.c.timespec = .{ .sec = @intCast(ms / 1000), .nsec = @intCast((ms % 1000) * 1_000_000) };
-        _ = nanosleep(&ts, null);
+        sleepForMs(ms);
     }
 };
+
+/// Monotonic milliseconds, on the clock a deadline can trust.
+///
+/// Public because two callers want it for unrelated reasons and neither should own a
+/// second copy: the wait loop's deadline reaches it through `RealOps` (a seam a test
+/// substitutes), and preflight's `--twice` reads it directly to report the interval it
+/// actually observed between the two runs (#199) — a reported gap derived from the
+/// sleep it asked for rather than the clock would be the measurement describing its
+/// own intent.
+pub fn monotonicMs() u64 {
+    var ts: std.c.timespec = undefined;
+    // A compile-time-constant, valid clockid cannot produce EINVAL, and a stack
+    // pointer cannot produce EFAULT (POSIX clock_gettime). The same shape as the
+    // world loop's `bufPrint … catch unreachable`: a cannot-happen made loud
+    // rather than a garbage value read silently.
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) unreachable;
+    return @as(u64, @intCast(ts.sec)) * 1000 + @as(u64, @intCast(ts.nsec)) / 1_000_000;
+}
+
+/// Sleep, best effort: a signal that interrupts the wait leaves it short, and no
+/// caller here re-arms it. Both callers tolerate that — the wait loop re-reads the
+/// clock, and preflight measures the interval rather than assuming it.
+pub fn sleepForMs(ms: u64) void {
+    var ts: std.c.timespec = .{ .sec = @intCast(ms / 1000), .nsec = @intCast((ms % 1000) * 1_000_000) };
+    _ = nanosleep(&ts, null);
+}
 
 fn runChildImplWithOps(
     gpa: std.mem.Allocator,

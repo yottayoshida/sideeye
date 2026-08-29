@@ -79,6 +79,19 @@ const Args = struct {
     check: ?config.Command = null,
     allow_unverified: bool = false,
     fresh_state: bool = false,
+    /// Preflight only (#199): observe the operation a second time from the restored
+    /// pre-state and compare the two post-snapshots. Opt-in, because it doubles the
+    /// wall time and adds the inter-run gap — a caller who did not ask for a second
+    /// observation keeps the single-run answer this command has always given.
+    ///
+    /// What it can conclude is bounded by the Snapshot model, not by the word
+    /// "deterministic": `Entry` carries `rel`, `kind` and `content`, so modes,
+    /// ownership, timestamps, inode identity, a symlink's target and everything
+    /// outside the declared root are all outside the comparison. `engine.restore`
+    /// rebuilds the pre-state at fixed modes, so run B does not even start from a
+    /// byte-identical directory — it starts from the same *snapshot*. The help text
+    /// states both limits rather than leaving them to be discovered.
+    twice: bool = false,
     /// The per-world wall-clock budget in seconds (#263). Null — the default — means
     /// no budget anywhere: the flag is opt-in, and turning it on is the operator's
     /// explicit choice, never a shipped default that could move a verdict.
@@ -370,7 +383,7 @@ fn usage() void {
         \\
         \\usage:
         \\  sideeye demo [--shim <lib>]
-        \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>]
+        \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>] [--twice]
         \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace>] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
@@ -384,11 +397,13 @@ fn usage() void {
         \\smoke test of this binary and its shim.
         \\
         \\preflight answers "does the recording phase accept this target?" before a
-        \\define exists: it runs the operation once under observation and either accepts
+        \\define exists: it runs the operation under observation and either accepts
         \\the recording (exit 0) or refuses with the same named detector a real run
-        \\would use (exit 2). What only a real exploration can check — kill landing,
-        \\world-side process boundaries, baseline behavior, checker falsification — is
-        \\listed as not checked, never silently claimed.
+        \\would use (exit 2). With --twice it observes a second run and compares the
+        \\two, adding one outcome: the runs left different state (exit 1, and no
+        \\verdict — see --twice below). What only a real exploration can check — kill
+        \\landing, world-side process boundaries, baseline behavior, checker
+        \\falsification — is listed as not checked, never silently claimed.
         \\
         \\replay re-runs one saved counterexample: the same pipeline as explore — the
         \\oracle comparison, the structural detectors, checker falsification, landing
@@ -456,8 +471,34 @@ fn usage() void {
         \\               this flag is not a promise of a hang-free run. Setting it also
         \\               resets SIGCHLD to its default disposition for the whole run.
         \\               Not settable over MCP today.
+        \\  --twice
+        \\               (preflight only) observe the operation a SECOND time from the
+        \\               restored pre-state, at least two seconds after the first start,
+        \\               and compare the two post-states. Byte repeatability is a
+        \\               property of two runs, so one observation structurally cannot
+        \\               see it. Equal: exit 0. Different: the differing paths are named
+        \\               and the command exits 1 — not a FAIL verdict, which preflight
+        \\               never produces, but the negative answer to the question --twice
+        \\               asked. A second run that ends abnormally refuses by name
+        \\               instead, the way the first one would.
+        \\               What this does NOT establish: that the target is
+        \\               deterministic. The comparison covers file bytes, entry kinds
+        \\               and symlink targets under --state; modes, ownership,
+        \\               timestamps, inode identity, a symlink's destination and
+        \\               everything outside --state are not compared, the pre-state
+        \\               run B starts from is rebuilt rather than byte-identical, and
+        \\               two runs are not all runs. The two-second gap is what
+        \\               epoch-second stamping needs to move — not a measured
+        \\               sufficiency threshold for nondeterminism in general.
+        \\               It also REWRITES --state: the directory is restored from the
+        \\               pre-run snapshot before the second run, so the first run's
+        \\               output is gone and file modes come back as 0644/0755. A
+        \\               preflight without this flag leaves the directory as the run
+        \\               left it.
         \\
         \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
+        \\            (preflight produces no verdict: it exits 0 when it accepts, 1 when
+        \\             --twice found a split, 2 when a detector refused, 3 on setup)
         \\
         \\--operation must exit its declared success status when it is not being killed
         \\(--expect-status, default 0). The crash points are read off the recording run,
@@ -655,6 +696,80 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
     setupError(doing);
 }
 
+/// Spawn the operation under observation, the way the recording run does.
+///
+/// Extracted when `--twice` (#199) needed a second observation that cannot drift from
+/// the first. Everything that decides what the run *sees* — the oracle wrapper and its
+/// trace filter, the environment the child inherits, which failure wording a spawn
+/// error gets — lives at one site now, so a second caller cannot quietly observe under
+/// different conditions and have its snapshot compared as if it had not.
+///
+/// The trace and stdout paths are parameters because each observation needs its own: a
+/// second run writing over the first's trace would leave a snapshot being compared
+/// against an account that no longer describes it.
+fn runOperationObserved(
+    gpa: std.mem.Allocator,
+    arena: std.mem.Allocator,
+    op_argv: []const []const u8,
+    state_abs: []const u8,
+    state_alt: []const u8,
+    shim: []const u8,
+    // `oracle_path`, not `oracle`: the module imports `oracle.zig` under that name and
+    // Zig refuses the shadowing rather than letting the parameter win silently.
+    oracle_path: ?[]const u8,
+    oracle_out: []const u8,
+    trace_path: []const u8,
+    stdout_path: []const u8,
+    /// Where the define declared its commands run, `null` for the engine's own. Passed
+    /// through to both spawns below, including the oracle's: the cwd goes on the strace
+    /// invocation and the operation strace execs starts there too, because strace does
+    /// not chdir between its own start and the exec.
+    cwd: ?[]const u8,
+) posix.Term {
+    if (oracle_path) |strace_path| {
+        // Environment goes to the target via strace's -E, not through our own
+        // setenv: LD_PRELOAD applied here would load the shim into strace itself,
+        // and strace's own file operations would land in the trace as if the
+        // target had produced them.
+        var list: std.ArrayList([]const u8) = .empty;
+        list.append(arena, strace_path) catch setupError("out of memory");
+        // `-f` follows children and `%process` covers clone/fork/execve. Without
+        // both, a target that creates a child through a raw clone is invisible to
+        // the oracle as well as to the shim, and the child's work on the state
+        // directory never appears anywhere. setsid/setpgid are named explicitly
+        // because `%process` does not include them (measured), and an *unshimmed*
+        // child detaching from the containment group is visible nowhere else.
+        for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid", "-o", oracle_out }) |a|
+            list.append(arena, a) catch setupError("out of memory");
+        const pairs = [_][2][]const u8{
+            .{ "TOY_STATE", state_abs },
+            .{ contract.env.state_dir, state_abs },
+            .{ contract.env.state_dir_alt, state_alt },
+            .{ contract.env.trace_path, trace_path },
+            // Pinned empty so an ambient value in the operator's shell cannot
+            // become the first image's numbering base (R1; parseU32("") is 0).
+            .{ contract.env.seq_base, "" },
+            .{ preload_var, shim },
+        };
+        for (pairs) |kv| {
+            list.append(arena, "-E") catch setupError("out of memory");
+            const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError("out of memory");
+            list.append(arena, joined) catch setupError("out of memory");
+        }
+        for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
+        return posix.runChildCapture(gpa, list.items, &.{}, stdout_path, cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
+    }
+    return posix.runChildCapture(gpa, op_argv, &.{
+        .{ "TOY_STATE", state_abs },
+        .{ contract.env.state_dir, state_abs },
+        .{ contract.env.state_dir_alt, state_alt },
+        .{ contract.env.trace_path, trace_path },
+        // Pinned empty: see the oracle-path pairs above.
+        .{ contract.env.seq_base, "" },
+        .{ preload_var, shim },
+    }, stdout_path, cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+}
+
 /// Zig 0.16 passes the process's arguments and environment in; `std.process.argsAlloc`
 /// no longer exists. The shape of `Init.Minimal` comes from `std.start.callMain`.
 pub fn main(init: std.process.Init.Minimal) !void {
@@ -821,6 +936,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // recorded in ADR 0010 (argv is per-invocation and is not inherited).
             if (mode == .preflight) setupError("preflight explores no worlds; --stop-when-orphaned belongs to explore and replay");
             stop_when_orphaned = true;
+            i += 1;
+            continue;
+        }
+        if (std.mem.eql(u8, argv[i], "--twice")) {
+            // #199. The refusal runs the other way from the flags above: this one is
+            // preflight's alone, because explore and replay already observe the
+            // operation a second time — the un-killed baseline world is that run, and
+            // `baseline_run_failed` is what they say when the re-run disagrees. What
+            // preflight lacks is any second observation at all.
+            if (mode != .preflight) setupError("--twice belongs to preflight; explore and replay already re-run the operation in the un-killed baseline world, and a divergent re-run refuses there as baseline_run_failed");
+            args.twice = true;
             i += 1;
             continue;
         }
@@ -1334,52 +1460,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
             setupError("--oracle is not an executable file; the completeness check cannot run");
     }
 
-    const rec_term = blk: {
-        if (args.oracle) |strace_path| {
-            // Environment goes to the target via strace's -E, not through our own
-            // setenv: LD_PRELOAD applied here would load the shim into strace itself,
-            // and strace's own file operations would land in the trace as if the
-            // target had produced them.
-            var list: std.ArrayList([]const u8) = .empty;
-            list.append(arena, strace_path) catch setupError("out of memory");
-            // `-f` follows children and `%process` covers clone/fork/execve. Without
-            // both, a target that creates a child through a raw clone is invisible to
-            // the oracle as well as to the shim, and the child's work on the state
-            // directory never appears anywhere. setsid/setpgid are named explicitly
-            // because `%process` does not include them (measured), and an *unshimmed*
-            // child detaching from the containment group is visible nowhere else.
-            for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid", "-o", oracle_out }) |a|
-                list.append(arena, a) catch setupError("out of memory");
-            const pairs = [_][2][]const u8{
-                .{ "TOY_STATE", state_abs },
-                .{ contract.env.state_dir, state_abs },
-                .{ contract.env.state_dir_alt, state_alt },
-                .{ contract.env.trace_path, rec_trace },
-                // Pinned empty so an ambient value in the operator's shell cannot
-                // become the first image's numbering base (R1; parseU32("") is 0).
-                .{ contract.env.seq_base, "" },
-                .{ preload_var, shim },
-            };
-            for (pairs) |kv| {
-                list.append(arena, "-E") catch setupError("out of memory");
-                const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError("out of memory");
-                list.append(arena, joined) catch setupError("out of memory");
-            }
-            for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
-            // The cwd goes on the strace invocation, so the operation strace execs starts
-            // there too — strace does not chdir between its own start and the exec.
-            break :blk posix.runChildCapture(gpa, list.items, &.{}, rec_stdout, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
-        }
-        break :blk posix.runChildCapture(gpa, op_argv, &.{
-            .{ "TOY_STATE", state_abs },
-            .{ contract.env.state_dir, state_abs },
-            .{ contract.env.state_dir_alt, state_alt },
-            .{ contract.env.trace_path, rec_trace },
-            // Pinned empty: see the oracle-path pairs above.
-            .{ contract.env.seq_base, "" },
-            .{ preload_var, shim },
-        }, rec_stdout, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation");
-    };
+    // Read before the spawn, not after: `--twice` reports the interval between the two
+    // runs' STARTS (the cohort protocol's definition, PROTOCOL.md "two or more seconds
+    // apart"), and a mark taken after this run returned would measure the gap between
+    // its end and the next one's beginning instead.
+    const rec_started_ms = posix.monotonicMs();
+    const rec_term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, args.oracle, oracle_out, rec_trace, rec_stdout, args.cwd);
     // The recording run's outcome decides whether its trace means anything.
     //
     // This used to be discarded. An operation that failed immediately — a bad argument,
@@ -1765,7 +1851,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .str => |x| x,
             .argv => setupError(pf_msg),
         };
-        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.expect_status);
+        // #199: the second observation, opt-in. Without `--twice` this is the answer
+        // preflight has always given from one run, and the report names determinism as
+        // unchecked; with it, the second run happens here and the report carries what
+        // the comparison found — including, when they differ, the refusal to accept.
+        const repeat: ?Repeat = if (args.twice)
+            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd)
+        else
+            null;
+        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.expect_status, repeat);
     }
 
     if (n == 0) {
@@ -2407,6 +2501,218 @@ fn commandArgv(arena: std.mem.Allocator, cmd: config.Command) ![]const []const u
 
 // ---- preflight ---------------------------------------------------------------------
 
+/// The gap the cohort-2 protocol asks for between the two runs' starts.
+///
+/// Two seconds is what epoch-second stamping needs to move, and it is the interval one
+/// unpinned `borg create` split at — it is **not** a measured sufficiency threshold for
+/// nondeterminism in general, and the help text says so rather than implying a target
+/// that survives it is repeatable.
+const repeat_gap_ms: u64 = 2000;
+
+/// The rendered-byte ceiling for the split report's list of paths.
+///
+/// It exists for the pathological input, not the ordinary one: a single `rel` can
+/// approach `contract.max_path` (4096), and a handful of those would overrun the report
+/// buffer every other line shares. **On ordinary input the binding limit is
+/// `repeat_diff_slots` below** — short paths fill 64 slots long before they fill a
+/// kilobyte — which is the opposite of what an earlier version of this comment implied
+/// (review). Paths are target-chosen, so each goes through the same neutralisation the
+/// l0 note uses: an unescaped newline in a file name would let a target forge report
+/// lines. The first path is exempt from the ceiling; see `preflightReport`.
+const repeat_diff_byte_budget: usize = 1024;
+
+/// How many differences are collected before `DiffCount.total` carries the rest.
+///
+/// A separate bound from the byte budget above, and deliberately so: this one limits
+/// what is *held*, the other limits what is *printed*. Collapsing them would tie the
+/// allocation to a rendering decision — and `total` keeps counting past both, so a
+/// tree that overflows either still reports its real size rather than the cap's.
+const repeat_diff_slots: usize = 64;
+
+/// What the second observation found.
+const Repeat = struct {
+    /// Measured between the two runs' STARTS, on the monotonic clock — not the sleep
+    /// that was requested. A reported gap derived from the request would be the
+    /// measurement describing its own intent.
+    gap_ms: u64,
+    count: engine.DiffCount,
+    diffs: []const engine.Difference,
+};
+
+/// Observe the operation a second time and compare the two post-states (#199).
+///
+/// Order is the cohort harness's, not the obvious one: **sleep, then restore**. The
+/// protocol defines the gap between the two runs' starts, and restoring before the wait
+/// would leave the freshly rebuilt pre-state exposed for the whole gap to anything the
+/// first run left running.
+///
+/// Run B is gated explicitly here rather than by reusing the recording path wholesale:
+/// that path writes the report globals as it goes, so a second pass through it would
+/// overwrite what the first run reported.
+///
+/// **Not every gate run A passes.** Nine of the fifteen a preflight can reach:
+/// exit status, oversized trace, shim initialisation, truncation, the shim-side foreign
+/// writer, trace-contract version, the hard boundaries (exec / thread / detached),
+/// the soft boundary without an oracle, and quiescence of the state tree.
+///
+/// What run B does NOT get, listed because an earlier draft of this comment claimed it
+/// got everything (review, P1): `unresolvable_path`, `unsupported_syscall_observed`,
+/// `sequence_numbering_broken`, the oracle comparison, stdout quiescence, and
+/// `state_changed_without_ops`. The first three and the last read from analysis run A
+/// performs on its own trace and snapshots, and reproducing them here would be the
+/// wholesale reuse this function exists to avoid; the oracle comparison is disclosed in
+/// the report's `scope` line. The ones that WERE added are those whose absence would
+/// make the property's own words false — "the two runs observed" is not true of a run
+/// whose shim never loaded, and a comparison against a run something else wrote into is
+/// not a comparison of this operation.
+fn observeAgain(
+    gpa: std.mem.Allocator,
+    arena: std.mem.Allocator,
+    initial: engine.Snapshot,
+    first: engine.Snapshot,
+    state_abs: []const u8,
+    state_alt: []const u8,
+    op_argv: []const []const u8,
+    shim: []const u8,
+    oracle_path: ?[]const u8,
+    work: []const u8,
+    expect_status: u8,
+    first_started_ms: u64,
+    /// The define's declared directory, carried through so the second observation runs
+    /// where the first did — a repeatability comparison between two different working
+    /// directories would be measuring the directories.
+    cwd: ?[]const u8,
+) Repeat {
+    // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
+    // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
+    // the README and the CHANGELOG all promise "at least two seconds". Without this
+    // loop the command could print `two runs 47 ms apart left equal state` and
+    // contradict its own help (review, P2). The clock is monotonic, so each pass
+    // shortens the remainder and the loop terminates.
+    while (true) {
+        const elapsed = posix.monotonicMs() -| first_started_ms;
+        if (elapsed >= repeat_gap_ms) break;
+        posix.sleepForMs(repeat_gap_ms - elapsed);
+    }
+    engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory before the second observed run");
+
+    var trace_buf: [contract.max_path]u8 = undefined;
+    const trace_b = std.fmt.bufPrint(&trace_buf, "{s}/trace-record-2.bin", .{work}) catch setupError("path too long");
+    var stdout_buf: [contract.max_path]u8 = undefined;
+    const stdout_b = std.fmt.bufPrint(&stdout_buf, "{s}/stdout-record-2.txt", .{work}) catch setupError("path too long");
+    var oracle_buf: [contract.max_path]u8 = undefined;
+    const oracle_out_b = std.fmt.bufPrint(&oracle_buf, "{s}/oracle-2.txt", .{work}) catch setupError("path too long");
+    removeFile(trace_b);
+    removeFile(stdout_b);
+    // The oracle capture too, for the same reason the recording run removes its own:
+    // a stale file from a previous invocation must not be mistaken for this run's.
+    // Nothing reads `oracle-2.txt` today (the report's `scope` line says so), and
+    // strace truncates on open regardless — the symmetry is the point, so a future
+    // reader of that file inherits the same guarantee run A's has.
+    removeFile(oracle_out_b);
+
+    const started = posix.monotonicMs();
+    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, oracle_path, oracle_out_b, trace_b, stdout_b, cwd);
+
+    // The same question the recording run's own status check asks, and the same reason
+    // it matters: a second run that failed says nothing about repeatability, and
+    // comparing its wreckage against a successful run would report the failure as a
+    // split. `recording_run_failed` is the existing member for "the run this account
+    // rests on did not complete" — no new closed-set name, which the v1.0 freeze
+    // forbids until 2.0.
+    switch (term) {
+        .exited => |code| if (code != expect_status)
+            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the second observed run exited {d} where {d} was expected, although the first run of the same command succeeded: the two runs cannot be compared", .{ code, expect_status }) catch "the second observed run exited with an unexpected status"),
+        else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded"),
+    }
+
+    var trace = readTraceOrRefuse(gpa, trace_b, trace_cap, "could not read the second observed run's trace");
+    defer trace.deinit();
+    // #324's pairing: every site that reads with a cap must answer for it. Forgetting
+    // this at one site is the defect that issue exists to fix, and its own doc warns
+    // that a third read site would have no acceptance leg holding it — **this is that
+    // third site**, and it has no leg: the `-Dtest-trace-cap` engines cap the shared
+    // constant, so run A's read fires first and run B is never reached. What holds it
+    // is this comment and review. Without the answer the cap would return an empty
+    // `TraceInfo` and every gate below would go vacuously green.
+    answerForOversizedTrace(trace, "the second observed run", trace_cap);
+    // The property says "the two runs OBSERVED in this invocation". A run whose shim
+    // never initialised was not observed, and reporting it as one half of a comparison
+    // would make that word false — the flag exists for targets that take a different
+    // path the second time, so a second run that loads nothing is not hypothetical.
+    if (!trace.saw_shim_ready)
+        unknown(.no_shim_marker, "the shim never initialised in the second observed run, although it did in the first: statically linked, hardened, or not injected at all");
+    // A trace that ends mid-record leaves the operation count unknown for run B, which
+    // is the same reason run A refuses on it.
+    if (trace.truncated)
+        unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown");
+    // The shim-side witness for a foreign writer, and it does not depend on an oracle.
+    if (trace.foreign_kill_point)
+        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the second observed run");
+    if (trace.version_mismatch)
+        unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run");
+    // The boundaries that stay refusals whatever an oracle says, applied to the second
+    // run exactly as run A applies them. Read from `hard_boundary` for the same reason
+    // run A does: the first boundary in a trace can be a tolerable fork written before
+    // the record that must refuse.
+    //
+    // The first version of this function had only the check below it, gated on
+    // `oracle_path == null` — so passing `--oracle` REMOVED run B's boundary checking
+    // instead of strengthening it, the reverse of what an oracle does for run A. A run
+    // B that created a thread, replaced its image, or left the containment group was
+    // reported as "left equal state" (review, P1).
+    if (trace.hard_boundary) |b| switch (b) {
+        .exec => unknown(.child_process_detected, "the second observed run replaced its own image, so the two runs did not execute the same program to completion and cannot be compared"),
+        .thread => unknown(.multiple_threads_detected, "the second observed run created a thread; operation order would not be deterministic, so a comparison against the first run describes an ordering nobody chose"),
+        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid) during the second observed run; the engine cannot claim to have stopped it, so what touched the state afterwards is unaccounted for"),
+        else => {},
+    };
+    // A soft boundary in run B and not run A is still a boundary: the shim only sees
+    // what loads it, and "was not seen" must not read as "did nothing" here either.
+    //
+    // What this does NOT do is compare run B's oracle capture against its shim account.
+    // `oracle-2.txt` is written — run B executes under the same wrapper run A did, so
+    // that the two runs differ in nothing the caller controls — and it is not parsed.
+    // The comparison run A performs (`oracle.compare`, reporting
+    // `oracle_missed_operation` / `oracle_saw_phantom` / `child_touched_state_dir`) is
+    // about the completeness of the *account*, which the property this flag establishes
+    // does not rest on: the post-states are read from the filesystem, not from either
+    // witness. The report's `scope` line says so, and widening it is a separate promise.
+    if ((trace.boundary != null or trace.foreign_pid_seen) and oracle_path == null)
+        unknown(.boundary_without_oracle, "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)");
+
+    var second = snapshotOrRefuse(gpa, state_abs, "could not snapshot the state after the second observed run");
+    defer second.deinit();
+    // Quiescence, the same way the exploration path asks it: two samples back to back.
+    // A tree still being written would otherwise be compared at a moment nobody chose,
+    // and the difference reported as the target's nondeterminism.
+    var again = snapshotOrRefuse(gpa, state_abs, "could not re-sample the state after the second observed run");
+    defer again.deinit();
+    var quiesce_buf: [1]engine.Difference = undefined;
+    if (!engine.diffSnapshots(second, again, &quiesce_buf).equal())
+        unknown(.state_not_quiescent, "two samples of the state directory taken back to back after the second observed run disagreed: something was still writing, so the comparison would describe a moment nobody chose");
+
+    const diffs = arena.alloc(engine.Difference, repeat_diff_slots) catch setupError("out of memory");
+    const count = engine.diffSnapshots(first, second, diffs);
+    // `Difference.rel` borrows from whichever snapshot holds the entry, and `second` is
+    // freed by this function's own `defer`. An `only_in_second` row therefore points
+    // into a released arena the moment this returns — read-after-free in
+    // `preflightReport`, measured as a segfault in review. The other three kinds borrow
+    // from `first`, which outlives this call, which is why every run measured before
+    // review survived: all of them were `content_differs`.
+    //
+    // Copying into `arena` — the caller's, which outlives both snapshots — is the fix
+    // rather than lifting `second` out, because the borrow rule belongs to the value:
+    // a `Difference` that escapes its snapshots has to own its bytes.
+    for (diffs[0..count.stored]) |*d|
+        d.rel = arena.dupe(u8, d.rel) catch setupError("out of memory");
+    return .{
+        .gap_ms = started -| first_started_ms,
+        .count = count,
+        .diffs = diffs[0..count.stored],
+    };
+}
+
 /// The preflight verdict, on the accepted side. Refusals never reach here — they exit
 /// through `unknown()` upstream with the same detector names a real run uses.
 ///
@@ -2415,11 +2721,51 @@ fn commandArgv(arena: std.mem.Allocator, cmd: config.Command) ![]const []const u
 /// behavior, checker falsification) have not run, and the fixed `not checked` list
 /// names them. The acceptance suite pins this wording — the claim cannot quietly grow
 /// back into one this command does not earn.
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8) noreturn {
-    if (n == 0) {
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, repeat: ?Repeat) noreturn {
+    // "not accepted", not "accepted but split". `docs/contract-freeze.md` says a
+    // preflight that ACCEPTS the recording exits 0; under `--twice` the caller asked a
+    // second question, so acceptance means the recording held *and* the two runs
+    // agreed. Calling a split "accepted" and returning a non-zero code would contradict
+    // the frozen sentence; narrowing what acceptance means under this flag does not.
+    const split = if (repeat) |r| !r.count.equal() else false;
+    if (split) {
+        say("PREFLIGHT  not accepted — the two observed runs left different state\n\n", .{});
+    } else if (n == 0) {
         say("PREFLIGHT  recording accepted, but nothing to explore — 0 state-changing operations observed\n\n", .{});
     } else {
         say("PREFLIGHT  recording accepted — {d} state-changing operation(s) observed\n\n", .{n});
+    }
+    if (repeat) |r| {
+        if (split) {
+            // Paths are target-chosen: a file name may hold a newline, and unescaped it
+            // would let a target forge report lines. Same neutralisation the l0 note
+            // uses, and the budget is bytes rather than a path count because one `rel`
+            // can approach max_path on its own.
+            var used: usize = 0;
+            var shown: usize = 0;
+            for (r.diffs, 0..) |d, i| {
+                const rel = textShown(arena, d.rel);
+                // The FIRST path is always named, whatever it costs: `--help`, the
+                // README and the headline all say the differing paths are named, and a
+                // single path over the budget — `contract.max_path` is 4096 — would
+                // otherwise print nothing but "… and 1 more" (review, P3). Truncating
+                // it instead would risk cutting a UTF-8 sequence mid-character, so the
+                // budget yields here rather than the promise.
+                if (i > 0 and used + rel.len > repeat_diff_byte_budget) break;
+                used += rel.len;
+                shown += 1;
+                const how = switch (d.how) {
+                    .only_in_first => "only after the first run",
+                    .only_in_second => "only after the second run",
+                    .kind_differs => "kind differs",
+                    .content_differs => "content differs",
+                };
+                say("difference   {s} ({s})\n", .{ rel, how });
+            }
+            if (r.count.total > shown)
+                say("             … and {d} more\n", .{r.count.total - shown});
+            say("\n", .{});
+        }
     }
     say(
         \\atomicity    {s}
@@ -2431,6 +2777,34 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         \\
         \\
     , .{ l0_note, oracle_note, boundary_note });
+    if (repeat) |r| {
+        // Reported whether the runs agreed or split, and worded as an observation
+        // rather than a property: two samples cannot establish that a target is
+        // deterministic, and `not checked` above still carries determinism for exactly
+        // that reason. The interval is the measured one — a gap printed from the sleep
+        // that was requested would be the measurement describing its own intent.
+        const verdict = if (split) "differed" else "left equal state";
+        say(
+            \\repeatability  two runs {d} ms apart {s} under --state
+            \\scope          file bytes, entry kinds and symlink targets only; modes,
+            \\               ownership, timestamps, and anything outside --state are
+            \\               not compared, and two runs are not all runs
+            \\
+        , .{ r.gap_ms, verdict });
+        // Stated only when an oracle ran, because otherwise it describes nothing. The
+        // second run executes under the same wrapper the first did, so its capture
+        // exists; what it does not get is the account comparison run A performs. The
+        // post-states this line is about are read from the filesystem, not from either
+        // witness — but a reader who passed --oracle would otherwise assume the second
+        // run was checked the way the first was.
+        if (oracle_path != null)
+            say(
+                \\               the second run's oracle capture is written but not
+                \\               compared; only the first run's account was checked
+                \\
+            , .{});
+        say("\n", .{});
+    }
     if (oracle_path == null)
         say(
             \\note         no oracle checked the shim's account against a second witness;
@@ -2461,6 +2835,31 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         std.fmt.allocPrint(arena, " --expect-status {d}", .{es}) catch " --expect-status <n>"
     else
         "";
+    if (split) {
+        // No graduation hint on a split: the next step is not `explore` — that command
+        // would reach the same divergence in its un-killed baseline and refuse there,
+        // after the caller had written a full define. Naming the paths is the useful
+        // answer, and one of them is often pinnable (a timestamp file, a temp name).
+        say(
+            \\next         pin or relocate what differs, then re-run this command;
+            \\             explore would reach the same divergence in its baseline
+            \\             world, after a full define had been written
+            \\
+        , .{});
+        // Exit 1 here is not FAIL. `docs/ci-quickstart.md` states the rule: the four
+        // verdict rows are "the verdicts a run can reach", and commands producing no
+        // verdict are not in that table. preflight produces none, and the frozen
+        // verdict-to-code mapping is untouched by this.
+        //
+        // Said plainly because review asked for it: **this is an interpretation, not a
+        // quotation.** `docs/contract-freeze.md` §3 spells out the freedom of non-verdict
+        // commands for exit 0 only ("Exit 0 is not reserved to PASS"); the same reading
+        // extended to 1 is what this line rests on. It violates neither thing §3
+        // forbids — a verdict arriving under a different code, or exit 0 read as proof a
+        // check ran — but if the owner wants that reading written into §3, this comment
+        // is the place that owes the reference.
+        std.process.exit(@intFromEnum(contract.ExitCode.fail));
+    }
     say(
         \\next         sideeye explore --state {s}{s} --operation "{s}"{s} \
         \\               --check <your-invariant.sh> --shim {s}{s}
@@ -3738,14 +4137,18 @@ test "divergence detail escapes a control byte a target put in a path" {
     try std.testing.expect(std.mem.indexOf(u8, detail, "divergence at operation 1") != null);
 }
 
+/// Two snapshots agree, on the same three fields `diffSnapshots` compares.
+///
+/// One implementation, not two. This was a length check plus a `find` per entry until
+/// `--twice` (#199) needed the differences themselves rather than a yes/no, and keeping
+/// both would leave two answers to one question free to drift — the shape #65 is about.
+/// The merge is also cheaper: linear in the two lengths rather than a binary search per
+/// entry, and it stops counting the moment a caller only wants `equal()`… which it does
+/// not, so the buffer is one slot and the count runs to completion. Callers that need
+/// the yes/no keep reading exactly that.
 fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
-    if (a.entries.items.len != b.entries.items.len) return false;
-    for (a.entries.items) |ae| {
-        const be = b.find(ae.rel) orelse return false;
-        if (ae.kind != be.kind) return false;
-        if (!std.mem.eql(u8, ae.content, be.content)) return false;
-    }
-    return true;
+    var one: [1]engine.Difference = undefined;
+    return engine.diffSnapshots(a, b, &one).equal();
 }
 
 test "the l0 note neutralises control bytes in target-chosen file names" {
