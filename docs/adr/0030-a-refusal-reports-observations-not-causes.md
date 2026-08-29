@@ -1,6 +1,6 @@
 # 0030 — A refusal reports what was observed, not what it thinks caused the failure
 
-Status: Proposed
+Status: Accepted
 
 Numbering note: taken as the highest existing number plus one, which is not exclusion.
 `docs/adr/` has no reservation mechanism and two sessions produced an 0028 on the same
