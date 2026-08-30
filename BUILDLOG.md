@@ -75,6 +75,40 @@ proximity rather than by lifetime. The capture is now registered like the observ
 dropped once the comparison holds the bytes and inside the two refusal exits, and
 nowhere else.
 
+**What broke the one-fix-per-rerun loop was reading a real capture end to end before
+asking for another run.** `spike/fsusage/scan.zig` calls the shipped reader over a
+committed-shape capture — 3,386 lines from a run in which the toy actually executed —
+and the refusals it produced were the next four that acceptance would have found one
+rerun at a time.
+
+*A `stat64` of a framework path, cut by the display width, refused the run.* 353 of
+those in one capture and one `access`, all from the subject's own thread, all read-only:
+dyld probing `/System/Volumes/Preboot/Cryptexes/...` at start-up. A read-only call
+cannot be a hole in the account of the judged directory whatever happened to its path,
+so read-only calls (and read-only opens) are dropped before the truncation check. The
+control is kept beside it: the same cut on an `unlink` still refuses.
+
+*The subject was `fseventsd`.* The first rule took any line naming the trace path, and
+the last such line was the daemon's `lstat64` of the file — with a security agent's
+read-only opens before it. The subject is now the thread that opened the trace *for
+writing* (`(_WCA_______X)` on disk, the shim's `O_WRONLY|O_CREAT|O_APPEND`), and two
+such threads refuse rather than pick one.
+
+*The shim's own trace writes were "a descriptor nobody opened".* The shim moves its
+trace descriptor out of the target's way — `fcntl(F_DUPFD, 900)` fails `[22]`, then
+`F_DUPFD, 200` succeeds, `close(3)`, and every write goes to 200. `fs_usage` prints the
+dup's source and never its result; the result is the next descriptor the thread touches
+that the table has not seen, `fcntl F=200 <SETFD>` on disk. Two orderings in the reader
+each hid this: the `fcntl` handling sat below the scope decision, so a pathless dup on a
+known out-of-scope descriptor never reached it, and the observer-shadow skip for the
+trace path ran before the descriptor bookkeeping, so `open F=3 trace.bin` was never in
+the table for the dup to inherit from. Both moved.
+
+*Two classes, not three.* The reader's own unit test asserted `open, write, close` for
+the toy and was wrong: `oracle.zig` drops `close` from the compared sequence, and the two
+accounts have to be shaped alike. The real capture said two first; the strace reader
+said why.
+
 The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
 the probe's `fs_usage` never started, because the previous binary's orphan still held
 kdebug for another two minutes, and the probe alone did not clear leftovers before
