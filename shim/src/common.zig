@@ -17,6 +17,11 @@ const contract = @import("contract");
 /// flag, and true only into the separately named libsideeye_shim_testgap that
 /// `-Dtest-seq-gap` additionally produces. There is no runtime knob: an environment
 /// variable that could bend the numbering would be a production backdoor.
+///
+/// Since #365 that hardcoded `false` is held by a test at the bottom of this file rather
+/// than by this paragraph alone. CI's sha comparison covers the FLAG leaking into the
+/// shipped shim; an edit to the literal itself lands in both arms of that comparison and
+/// leaves it green.
 const shim_build_options = @import("shim_build_options");
 
 pub const c = struct {
@@ -1569,4 +1574,29 @@ test "with one spelling, canonical is the identity" {
     try std.testing.expectEqualStrings("/tmp/x/state/k", canonical(&buf, "/tmp/x/state/k"));
     try std.testing.expect(isInState("/tmp/x/state/k"));
     try std.testing.expect(!isInState("/private/tmp/x/state/k"));
+}
+
+// Split by role for the same reason the engine's options tests are: a failing assertion
+// aborts its test, so a mutation that breaks the first one would leave the second's state
+// unrecorded.
+
+test "the shipped shim options carry the shipped value (#365)" {
+    // Weaker than its counterpart in src/main.zig, and kept anyway for stated reasons.
+    // `test_seq_gap` is a bool, so the only edit to build.zig's literal is false -> true,
+    // and that edit is loud: a shim skipping number 2 fails every acceptance leg with two
+    // in-scope operations. There is no quiet mutation here for this test to be the only
+    // net against, unlike the trace caps, which are numbers with a wide quiet range.
+    //
+    // What it does buy: the promise is universal over the shipped build values, so leaving
+    // one of them held by nothing would make it false for a reader who checked; the
+    // failure arrives at `zig build test` instead of minutes later in acceptance; and it
+    // runs on macOS, where the acceptance suite does not.
+    try std.testing.expect(!shim_build_options.test_seq_gap);
+}
+
+test "no second shim build option arrives unchecked (#365)" {
+    // The ratchet, as in the engine's: a second option added later with no assertion above
+    // would leave the promise false while CI stayed green.
+    const decls = @typeInfo(shim_build_options).@"struct".decls;
+    try std.testing.expectEqual(@as(usize, 1), decls.len);
 }
