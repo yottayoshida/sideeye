@@ -547,6 +547,16 @@ pub fn read(
         const cls_opt = classOf(ln.call);
         const is_relevant = relevant(ln.tid, subject, state_tids.items);
 
+        // A call that cannot change state is not a hole whatever happened to its path.
+        // Decided before the truncation check, because the truncation check is where a
+        // real run refused: dyld's `stat64` of a framework path under
+        // `/System/Volumes/Preboot/Cryptexes/...` is longer than the display width, and
+        // every process issues hundreds of them at start-up — 353 in one measured
+        // capture of the subject, plus one `access`, and not a single mutating call.
+        // Refusing on those refused every macOS run.
+        if (isReadOnlyCall(ln.call) or isDiskIo(ln.call)) continue;
+        if (cls_opt == .open and !openIsWriteCapable(ln.middle)) continue;
+
         if (isTruncated(ln.middle) and is_relevant) {
             out.defect = .{ .truncated = raw };
             return out;
@@ -580,11 +590,8 @@ pub fn read(
         // written must resolve to "not in scope", not to "unknown".
         if (cls_opt) |cls| {
             if (cls == .open) {
-                // A read-only open changes nothing and is not an observed operation on
-                // either side (ADR 0003). Skipped before the descriptor bookkeeping so
-                // a pathless one — `fs_usage` prints six of them in a real capture,
-                // all reads — is not mistaken for a hole.
-                if (!openIsWriteCapable(ln.middle)) continue;
+                // Read-only opens were dropped above, before the truncation check
+                // (ADR 0003: not an observed operation on either side).
                 // Only descriptors whose later use could matter are remembered. The
                 // capture is system-wide: one measured run held 5,558,556 lines,
                 // 26,228 distinct (tid, fd) pairs — and 22 lines touching the judged
@@ -672,8 +679,6 @@ pub fn read(
             out.defect = .{ .unknown_call = raw };
             return out;
         }
-        if (isReadOnlyCall(ln.call) or isDiskIo(ln.call)) continue;
-
         const cls = cls_opt orelse {
             out.defect = .{ .unknown_call = raw };
             return out;
@@ -806,6 +811,41 @@ test "an open whose path cannot be read is a hole, not a descriptor to trust lat
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolved_fd => {},
+        else => return error.WrongDefect,
+    }
+}
+
+test "a truncated read-only line from the subject is not a hole" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // Verbatim from the run that refused: dyld probing a framework path longer than the
+    // display width, from the subject's own thread. 353 of these in one capture.
+    const text =
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:23:17.677297  stat64                 [  2]           /System/Volumes/Preboot/Cryptexes/OS/System/Library/Frameworks/CoreServices.framework>>>                                                                              0.000001   subj.111\n" ++
+        "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    try testing.expect(r.defect == null);
+    try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
+}
+
+test "a truncated mutating line from the subject still refuses" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // The control for the test above: the same cut on a call that CAN change state is
+    // the hole the rule exists for.
+    const text =
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  unlink                                 /System/Volumes/Data/Users/x/some/very/long/dir/na>>>                                     0.000001   subj.111\n" ++
+        "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    try testing.expect(r.defect != null);
+    switch (r.defect.?) {
+        .truncated => {},
         else => return error.WrongDefect,
     }
 }
