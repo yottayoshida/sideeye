@@ -6,8 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- **The `processes` account stops answering a question nothing looked at** (#405, report half). The field defaulted to the string `"single process"` and three sites overwrote it wholesale, so every path that reached a report without evidence published an assertion about the target. Measured on the shipped build: a target that forks with `syscall(SYS_fork)` and has the child write into the judged directory reaches PASS, exit 0, `processes: single process`, with the child's file still there — the shim interposes libc `fork`/`spawn`/`thread` and a raw syscall is invisible to it, so nothing that could have seen the boundary had looked. Two further paths were found while fixing it and are closed by the same change: a run refused before its trace was read (an operation exiting the wrong status, say) published the same assertion with no account of any kind, and a run whose shim recorded a boundary while `strace` saw no other process published it while the two witnesses disagreed — reproduced with a `vfork` failed by `RLIMIT_NPROC` (`spike/toys/toy_vfork_fail.c`; PASS, exit 0, two crash points, unchanged by the fix). The account is now rendered from evidence: what each witness looked at, what it structurally cannot see, and where they disagree, both sides. `fs_usage`'s silence is not the assertion either, because its exclusion list drops whole processes by name (ADR 0031 §2a). **`strace` seeing no other process still reads `single process`**, which is what the README's example report and the cohort rows record. **The verdict, the exit code and the crash-point count are unchanged on every path** — this is what a run says about itself, not what it decides. Rendering also closes a disclosure loss the old shape carried: the world-only site overwrote the whole sentence and dropped the self-exec image disclosure (#123) the recording had set, which its acceptance check could not see. The field had no unit test at all; it now has a table over the reachable evidence states.
+
 ### Added
 
+- The acceptance leg for a case recorded under an older trace contract asserts what its success line claims (#370). It printed "refuses as a contract mismatch, never a verdict" behind two conditions — exit 2 and a message substring — so neither the refusal's reason nor the absence of a verdict was checked. The substring is not specific to the subject either: two sites emit `different trace contract`, one for a saved case under an older contract and one for a shim and engine speaking different trace versions in one run, and `docs/contract-freeze.md` surface 4 states that the second "is a different refusal entirely … nothing to do with saved cases". The reason name is what separates them. The leg now asserts exit 2, `^UNKNOWN  case_no_longer_applies$` matched whole, exactly one `UNKNOWN` headline, no `PASS`/`FAIL` line, and the message. Three mutations were built and run one at a time — the reason changed to `contract_version_mismatch` (which the old predicate accepted, message unchanged), a `PASS` line printed beside the refusal, and the message reworded — and each dies to a different clause. The headline count is defensive rather than demonstrated: `unknown()` is `noreturn` and the sole writer of that line, so no reachable mutation of this path produces a second one.
+- `spike/check-adr-numbering.sh`, wired into CI: `docs/adr/` holds nothing but ADR files,
+  every name is `NNNN-slug.md`, and the four digits are unique (#373). Numbering is
+  highest-plus-one and reserves nothing — on 2026-08-27 two sessions each wrote an
+  `0028-*.md`, the slugs differed so the filenames differed, and git merged both without a
+  conflict; the only thing that noticed was the two sessions telling each other. **The
+  population assertion is the load-bearing half**: the first draft scanned
+  `-type f -name '*.md'` and called that "every filename", so a symlink, a directory named
+  `0031-x.md`, an uppercase `.MD` and a plain `notes` were each invisible — four ways to
+  collide that reported `every number unique`, all four measured in review. Two
+  independent counts stand behind the walk for the same reason: comparing a walked count
+  against a file count taken from the same `find` expression let a narrowing of `-name`
+  walk 29 of 31 and report `ok`. Contiguity is deliberately unchecked — renumbering the
+  second 0028 to 0029 leaves 0028 a gap until the other side lands, which is the correct
+  state during exactly the window the check matters. It **reports** a collision rather than
+  preventing one: no status check is required here, so a branch cut from a `main` that
+  already holds the number goes red on its PR, but two branches from the same base can each
+  carry a unique number and both merge, surfacing on the post-merge run. A `--selftest` leg
+  runs first in CI and proves the check can go red on every run, because the uniqueness
+  pass is a pipeline with no `set -e` behind it and breaking its `sed` reports a directory
+  holding a real duplicate as unique.
 - `--oracle-fs-usage`: on macOS the recording run can now be compared against
   `fs_usage`, giving `oracle_verified` the same meaning it has on Linux instead of
   leaving every PASS on `--allow-unverified` (#286, ADR 0031). Needs root, so sudo

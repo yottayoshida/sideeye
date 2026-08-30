@@ -603,6 +603,28 @@ jobs:
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
 
+  # ADR numbers are allocated as "the highest existing number plus one", which
+  # reserves nothing. On 2026-08-27 two sessions each wrote a docs/adr/0028-*.md;
+  # the slugs differed, so git merged both without a conflict and only the two
+  # sessions telling each other noticed (#373). Its own job for the same reason
+  # as the one above: no toolchain, so a failure here names the allocation and
+  # nothing else. What it can and cannot do is written on the script — it reports
+  # a collision that reached main, and cannot stop the merge that creates one,
+  # because no status check is required on this repository.
+  adr-numbering:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # First, because a green from a check that cannot go red says nothing. The
+      # uniqueness pass is a pipeline with no `set -e` behind it: break its sed and
+      # a directory holding a real duplicate reports every number unique (measured).
+      - name: The check proves it can go red
+        run: sh spike/check-adr-numbering.sh --selftest
+
+      - name: ADR numbers are unique
+        run: sh spike/check-adr-numbering.sh
+
   # The onboarding clock's audit is criterion 6's instrument: it decides whether a
   # timed run's evidence stands. Until 2026-08-28 nothing here ran it — the launcher
   # ran its selftest, and runs are rare, so a broken instrument could sit on main for
