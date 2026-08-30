@@ -35,8 +35,8 @@
 #   - `none` renders as "no attributed enumerated change", NOT as "no frozen
 #     surface moved". It says only that no change in surface-changes.tsv is
 #     attributed to this row, and the measurement covers the enumerated sets alone
-#     — the input schemas, the isError rule and every field meaning are rung-3
-#     residue. The first version rendered `none` as "measured: no frozen surface
+#     — the input schemas and every field meaning are rung-3 residue (the isError
+#     rule is pinned there by mcp-acceptance.sh; see clause-checks.tsv). The first version rendered `none` as "measured: no frozen surface
 #     moved", which converted "not measured" into "unchanged" on rows whose
 #     subject is exactly what the measurement does not reach (review P1-3).
 set -u

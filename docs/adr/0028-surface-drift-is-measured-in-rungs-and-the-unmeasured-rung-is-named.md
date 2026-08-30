@@ -72,6 +72,21 @@ kept separate because they support different claims.**
    code, the two MCP input schemas, the `isError` derivation rule, and the shape of
    an old case's refusal. These are held by review and by `spike/acceptance.sh`.
 
+   **Amended 2026-08-30 (#369): per clause, not per surface.** The paragraph above
+   named five paragraphs' worth of residue and left the reader unable to tell, for
+   any one clause, whether a check watched it or nobody did — "held by review and by
+   `spike/acceptance.sh`" is true of the set and says nothing about a member.
+   `spike/freeze-audit/clause-checks.tsv` now answers that per clause, and this rung
+   prints only what is unpinned plus the leftover half of what is pinned in part.
+   Three consequences follow. The output shrinks as checks are written rather than
+   staying a fixed five paragraphs. `held` has three values, because two would
+   force every partially covered clause to read as covered — the misreading that
+   prompted #369. And **this rung retires itself**: when the file holds no unpinned
+   and no partial row, the run says so and the ladder collapses to two rungs.
+   What stays unmeasured is whether the enumeration is complete; a clause is one
+   independently checkable assertion, which matches no boundary in the declaration,
+   so no check can find a row that was never written. The output says that too.
+
 **Two revisions are pinned beside the snapshot, and they fail differently.** The
 declaration's revision is pinned and the gate **fails** (exit 1) if it has moved: a
 reading taken against another revision is a reading of another promise, so the

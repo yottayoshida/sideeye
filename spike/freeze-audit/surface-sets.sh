@@ -18,7 +18,8 @@
 # set", nothing more. Behavioural clauses — which call site returns which exit code,
 # a field's meaning or presence rule, the MCP input schemas, the isError rule, the
 # split-on-spaces rule — are NOT here and are not measured by anything that uses
-# this file. They are rung 3 in ADR 0028's ladder and the page says so. The proof
+# this file. They are rung 3 in ADR 0028's ladder, and since #369 that rung names
+# which check pins each of them, or that nothing does. The proof
 # that this distinction is load-bearing rather than cautious is in the window these
 # scripts audit: #273 moved the exit-code surface while `ExitCode` stayed
 # byte-identical.
