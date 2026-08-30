@@ -1,6 +1,6 @@
 # ADR 0031 — The macOS oracle is fs_usage, and what it cannot scope refuses
 
-- **Status:** Proposed (2026-08-29)
+- **Status:** Accepted (2026-08-30) — implementing PR #406 merged as 94ca450
 - **Supersedes:** nothing. Answers the question #286 asked and #181 measured the
   ground for.
 - **Scope:** the completeness oracle on macOS; `--oracle-fs-usage`; the capture's
