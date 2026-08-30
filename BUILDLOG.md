@@ -61,6 +61,16 @@ not touched here; the rate above is unaffected because `L7b` and `L7a` share no
 state. Recorded rather than fixed, because the boundary of this change was
 declared before the defect was found and moving it quietly is how a scope
 becomes unfalsifiable.
+## 2026-08-30 (twenty-second) - the ledger row I called a debt was the design, and this file already said so
+
+#431 shipped a sentence in `docs/contract-freeze.md` claiming its `surface-changes.tsv` row "lands in the follow-up audit commit, which is where a row naming its own merge sha can be written — **the same follow-up the first break is still waiting for**". Both halves were wrong, and the second one was wrong about somebody else's work: it read `sc-18`'s absence as an unpaid debt from #405.
+
+**Measured by trying it.** The follow-up branch added `sc-18` for `trace_budget_exhausted` with the real merge sha `48fd7db`, moved #377's audit row to `resolved`, and regenerated the page. `render-audit.sh --check` went green — and `check-freeze-audit.sh` failed: *"over this sweep's own window the measured closed-set additions and surface-changes.tsv disagree"*, with the new member present in the ledger and absent from the measurement. The measurement side reads `$PIN_contract`, a blob pinned to the 2026-08-29 snapshot, **not HEAD**. A row for a change made after the pin cannot agree with a reading taken before it.
+
+The script says this outright, in the text it prints on exit 3: *"if your own change is what moved the surface, that is not your job either — the ledger records what a sweep measured, and the pin asserts a reading you have not taken. Leave both alone."* And this file already carried the same lesson from the other direction — the 2026-08-30 (eleventh) entry, "the freeze ledger row was a PR too early", where `sc-18` was written with `PENDING` in the sha column and reverted for the same gate. **I wrote a paragraph about that gap without reading the entry that explains it**, in a repository whose first rule is that this journal is where the reversals live.
+
+Exit 3 is not a gate failure — "an age, not a gate failure (that is exit 1)". Both rows arrive when a sweep re-reads the surfaces and moves the pin in one commit, and #377's audit row moves then too. What this change does is correct the sentence and say where the row actually comes from.
+
 
 ## 2026-08-30 (twenty-first) - the shim's coverage was never compared to the oracle's, and the family that fell through the gap is the one SQLite uses
 
