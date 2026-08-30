@@ -1,0 +1,42 @@
+# Every upstream report this project has filed, one per line. This file is the
+# record; spike/upstream-report-status.sh reads it rather than carrying a list
+# of its own, and spike/check-upstream-ledger.sh holds it to the markers in
+# docs/target-classes.md in both directions (#297).
+#
+# Before this file existed, the status script carried a hand-written literal and
+# a report filed without editing that literal was invisible: the table looked
+# whole, every row read fine, and the script exited 0. The cohort-4 close
+# depended on remembering to add himalaya by hand (PR #253).
+#
+# Columns (tab-separated, exactly four, TABS not spaces):
+#
+#   owner/repo  number  status  finding
+#
+#   status   standing   the report stands on the tracker; the status script
+#                       measures it
+#            withdrawn  filed and then withdrawn. It is still something that was
+#                       filed, so it belongs here - a withdrawn report and an
+#                       unlisted one look identical on a tracker, and this column
+#                       is what separates them
+#   finding  the tool's name as docs/target-classes.md spells it in the second
+#            column of its row. Not free text: the checker uses it to require
+#            that the marker sits on that tool's row rather than merely
+#            somewhere in the file
+#
+# All four of those are checked, and each was a way to lose a row quietly before
+# it was: a row with three fields, or written with spaces, parsed to nothing and
+# vanished from both scripts saying nothing; a status typo dropped a standing
+# report and the table still printed "N of N"; a marker could sit on any row at
+# all. The checker refuses on each rather than skipping the row.
+#
+# WHAT THIS CANNOT SEE: a report filed without being written here AND without a
+# marker in docs/target-classes.md. Prose in that file naming a filing is not
+# enough - only a marker is. The check holds these two records to each other;
+# nothing in it reaches a tracker. That gap is named rather than closed.
+GothenburgBitFactory/timewarrior	778	standing	timewarrior
+topydo/topydo	341	standing	topydo
+lfos/calcurse	529	standing	calcurse
+aspiers/stow	139	standing	GNU Stow
+alecthomas/devtodo	9	withdrawn	devtodo
+python-poetry/poetry	11019	standing	poetry
+pimalaya/himalaya	738	standing	himalaya

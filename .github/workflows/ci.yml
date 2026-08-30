@@ -639,6 +639,28 @@ jobs:
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
 
+  # What this project filed upstream lived in a hand-written literal, and a report
+  # filed without editing it was invisible: the status table looked whole, every
+  # row read fine, and it exited 0 whether it held six of six or six of seven
+  # (#297). The ledger and the markers in docs/target-classes.md are now held to
+  # each other, so forgetting one of the two is red instead of quiet. Its own job
+  # for the same reason as the one above: no toolchain, so a failure here names
+  # the records and nothing else.
+  #
+  # The selftest runs first, and not as a formality. A checker nobody has seen red
+  # is a checker whose predicates are untested, and this one's empty-versus-empty
+  # leg is the exact shape that would otherwise pass as agreement.
+  upstream-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The ledger checker can still see its own predicates fail
+        run: sh spike/check-upstream-ledger.sh --selftest
+
+      - name: The ledger and the target table hold in both directions (#297)
+        run: sh spike/check-upstream-ledger.sh
+
   # ADR numbers are allocated as "the highest existing number plus one", which
   # reserves nothing. On 2026-08-27 two sessions each wrote a docs/adr/0028-*.md;
   # the slugs differed, so git merged both without a conflict and only the two
