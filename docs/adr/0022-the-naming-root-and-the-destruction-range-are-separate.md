@@ -1,7 +1,7 @@
 # 0022. The naming root and the destruction range are separate knobs
 
 Date: 2026-08-25
-Status: Proposed
+Status: Accepted (implementing PR merged as `6ef40a4`, 2026-08-25)
 
 ## Context
 
