@@ -324,7 +324,15 @@ recomputes from the checkout — that is how "the committed defines ran
 verbatim" becomes machine-checked once the artifacts exist. The images are
 pinned by build, not by manifest (the base tags are mutable — the same
 honesty note `spike/assisted/Dockerfile` carries), so environmental
-identity with past runs is recorded, never claimed.
+identity with past runs is recorded, never claimed. `count.py check`
+refuses a complete generation whose `apparatus.txt` is absent, or which
+lacks any of: both digest lines, a `head:` resolved to a commit id, and a
+line naming each image the manifest uses. Those are the four things asked
+for, rather than "not truncated" — a record that lost only image lines the
+manifest never used still passes, and the sweep lists every
+`sideeye-ur-*` on the host rather than the ones it ran, so what this
+establishes is that the record is intact, never which images the trials
+ran under.
 
 The campaign declarations run through
 `spike/unknown-rate/launchers/campaign.sh`, **not** through the sealed
