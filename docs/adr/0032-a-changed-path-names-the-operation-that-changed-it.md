@@ -1,6 +1,6 @@
 # ADR 0032 — A changed path names the operation that changed it, and the freeze is broken once to say so
 
-- **Status:** Proposed (2026-08-30)
+- **Status:** Accepted (2026-08-30)
 - **Supersedes:** nothing. Generalises the detector ADR 0003 describes in passing and
   `src/contract.zig`'s `isMutation` doc comment defines.
 - **Scope:** the reconciliation of the judged state's differences against the recorded
@@ -95,15 +95,24 @@ operation matched on its literal spelling, which is the refusing side.
 One record, and the difference holds the directory plus every descendant. Attributing the
 descendants to the move is the only rule that does not refuse a committed PASS.
 
-**Both halves of "moved in" are load-bearing, and the first revision checked neither.**
-`rel` is taken from either end of a two-path record, and the exemption tested only that
-the class was `rename` — so a rename entirely inside the root (`mv a b`, an ordinary
-generation swap) and one moving a subtree *out* both took the umbrella. Neither needs it:
-for those the source is in `initial`, so the descendants are reconcilable, and absorbing
-them hides exactly what this detector exists to find. The exemption now requires the
-matched end to be the destination *and* the source to resolve under neither spelling of
-the root. That also makes the disclosure sentence true — it asserts the source subtree
-was never snapshotted, which was false for the two shapes above.
+**"From outside" is load-bearing, and the first revision did not check it.** `rel` is
+taken from either end of a two-path record, and the exemption tested only that the class
+was `rename` — so a rename entirely inside the root (`mv a b`, an ordinary generation
+swap) and one moving a subtree *out* both took the umbrella. Neither needs it: for those
+the source is in `initial`, so the descendants are reconcilable, and absorbing them hides
+exactly what this detector exists to find. The exemption now requires the source to
+resolve under neither spelling of the root, which also makes the disclosure sentence true
+— it asserts the source subtree was never snapshotted, which was false for both shapes
+above.
+
+A second revision paired that with "and the matched end is the destination", and this
+paragraph said both halves were required. **They are not.** Reaching the test means this
+end resolved under the root, so if the source does not, this end cannot be the source —
+measured, widening it to either end left the suite green. The clause is deleted, for the
+same reason the `rel.len > 0` guard one revision earlier was: a condition that cannot
+change an answer reads as protection that is not there. The sentence claiming otherwise
+outlived the code by one commit, in this file only — the code comment and the buildlog
+were corrected and this was not, which is what a same-class sweep is for.
 
 **This is a window, and it is the same window this ADR closes, at directory granularity.**
 An unrecorded writer can add to that subtree after the move and be attributed to it. It
