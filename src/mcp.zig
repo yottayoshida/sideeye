@@ -775,9 +775,22 @@ fn minifyJson(arena: std.mem.Allocator, src: []const u8) ?[]const u8 {
 fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return null;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    // #400's shape, and this call site was nearly excluded from that sweep on the
+    // grounds that the server reads only a file it just wrote itself. Three things in
+    // this file say otherwise: the report is written by the *child* (`--json temp_json`
+    // on the self-exec below), the directory is `SIDEEYE_MCP_WORK` — `/tmp/sideeye-mcp`
+    // by default, and its creation tolerates EEXIST, so a pre-existing directory is
+    // adopted — and `unlinkPath` discards its result, which is how a previous run's
+    // report was once read back as this call's verdict (the incident recorded above).
+    // A FIFO planted at that path would hold the server with the client's request
+    // outstanding, and there is no timeout anywhere around this read.
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
+    // Read before classified, for the reason the flag's own comment gives: a FIFO with
+    // no writer answers EOF, so the flag alone would turn "the report could not be read"
+    // into "the run produced an empty report".
+    if ((posix.kindOfFd(fd) catch return null) != .file) return null;
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
     while (true) {

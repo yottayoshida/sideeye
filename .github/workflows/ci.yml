@@ -30,6 +30,16 @@ jobs:
       - name: Build engine and shim
         run: zig build
 
+      # The deadline has to be outside the process it measures: #400's defect is a run
+      # that never returns, a unit test cannot bound its own runtime, and the unit-test
+      # step above carries no timeout-minutes — so the same defect inside `zig build
+      # test` would hold this runner for the GitHub default of six hours instead of
+      # failing. Asserts which refusal fires, not only the exit code: with O_NONBLOCK
+      # and without the descriptor check the run still exits 3, blaming the JSON for a
+      # file it read as empty. Both halves seen red (BUILDLOG 2026-08-30 third).
+      - name: A case path that is not a regular file is refused, and the run returns (#400)
+        run: python3 spike/case-path-deadline.py zig-out/bin/sideeye
+
       # #270's apparatus, plus the guard on the apparatus itself: -Dtest-seq-gap must
       # ADD libsideeye_shim_testgap and leave the shipped shim byte-identical. A build
       # option that leaked into the shipped artifact would make every other acceptance
@@ -155,6 +165,13 @@ jobs:
 
       - name: Build engine and shim
         run: zig build
+
+      # Runs on both platforms deliberately: the FIFO measurements behind #400 were
+      # taken here on macOS, and the Linux leg is where the statx branch of `kindOfFd`
+      # is exercised at all — the Darwin branch uses fstat and neither compiles the
+      # other. See the Linux job for why the deadline is outside the process.
+      - name: A case path that is not a regular file is refused, and the run returns (#400)
+        run: python3 spike/case-path-deadline.py zig-out/bin/sideeye
 
       # The demo is also the release workflow's smoke test; macOS is where its
       # no-oracle path lives (a FAIL stands on its own evidence, so the demo needs

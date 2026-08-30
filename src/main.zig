@@ -1016,9 +1016,14 @@ const Appended = struct { text: []const u8, end: u64 };
 fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usize) ?Appended {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
+    // The `lseek` below already refuses a FIFO with ESPIPE, and that is not the reason
+    // this is here: seekability and regular-file-ness are different properties, and the
+    // day someone reaches the bytes another way the `lseek` stops being the guard
+    // without anything saying so (#400).
+    if ((posix.kindOfFd(fd) catch return null) != .file) return null;
     const size = posix.lseek(fd, 0, posix.SEEK_END);
     if (size < 0) return null;
     const usize_size: u64 = @intCast(size);
@@ -1515,8 +1520,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             args.cwd != null or args.config != null)
             setupError("replay takes its define from the case file; the define-surface flags and --config do not apply");
         const rarena = arena_state.allocator();
-        const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024) orelse setupError(
-            std.fmt.allocPrint(rarena, "the case file could not be read (missing, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
+        const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, true) orelse setupError(
+            std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
         );
         const parsed = std.json.parseFromSlice(ReplayCase, rarena, ctext, .{}) catch
             setupError("the case file could not be parsed as a sideeye case");
@@ -2217,7 +2222,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // file itself cannot be read, and until #363's adjudication its message
         // claimed the other condition.
         const text = if (args.oracle_fs_usage)
-            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap) orelse
+            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, false) orelse
                 unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read")
         else
             readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
@@ -2568,7 +2573,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // dropped — an empty line carries nothing harvestable and a bare marker is
         // noise. A capture that cannot be read back is said out loud rather than
         // silently swallowed.
-        if (readFileAllocCapped(arena, fal_out, 1024 * 1024)) |fal_text| {
+        if (readFileAllocCapped(arena, fal_out, 1024 * 1024, false)) |fal_text| {
             var lines = std.mem.splitScalar(u8, fal_text, '\n');
             while (lines.next()) |line| {
                 if (line.len == 0) continue;
@@ -4050,9 +4055,13 @@ const CaptureObservation = struct {
 fn observeCapture(path: []const u8, needle: ?[]const u8) error{Unreadable}!CaptureObservation {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return error.Unreadable;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return error.Unreadable;
     defer _ = posix.close(fd);
+    // Same reasoning as `readFileFrom`: the `lseek` refuses a FIFO today, but what this
+    // path needs is that the capture is an ordinary file, which is a different sentence
+    // (#400).
+    if ((posix.kindOfFd(fd) catch return error.Unreadable) != .file) return error.Unreadable;
     const end = posix.lseek(fd, 0, posix.SEEK_END);
     if (end < 0) return error.Unreadable;
     if (posix.lseek(fd, 0, posix.SEEK_SET) != 0) return error.Unreadable;
@@ -4090,6 +4099,98 @@ fn observeCapture(path: []const u8, needle: ?[]const u8) error{Unreadable}!Captu
     var out: CaptureObservation = .{ .measured = bound, .bytes = total, .digest = undefined, .marker_seen = seen };
     hasher.final(&out.digest);
     return out;
+}
+
+test "the readers ask what the descriptor is before reading it, at every call site (#400)" {
+    // A FIFO **with a live writer and bytes already in it**. That shape is chosen so the
+    // test measures the classification without reaching through the hang it guards: with
+    // a writer present the open returns whether or not `O_NONBLOCK` is passed, so
+    // removing the flag leaves this test fast rather than hanging a CI runner for six
+    // hours. Removing the *classification* is what turns it red — the read would then
+    // succeed and hand back the writer's bytes, which is the "could not be read becomes
+    // was empty" defect in its readable form.
+    //
+    // The flag's own wiring cannot be tested here for the same reason: it only shows
+    // itself when there is no writer, and that is the hang. `spike/case-path-deadline.py`
+    // measures it from outside the process, at the one call site the CLI reaches.
+    var bb: [128]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-fifo400-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base.ptr, @as(c_uint, 0o755));
+    var fb: [160]u8 = undefined;
+    const fifo_z = std.fmt.bufPrintZ(&fb, "{s}/pipe", .{base}) catch unreachable;
+    _ = posix.unlink(fifo_z.ptr);
+    try std.testing.expect(posix.mkfifo(fifo_z.ptr, @as(c_uint, 0o644)) == 0);
+
+    // Reader first: the write end of a FIFO with no reader fails ENXIO.
+    const rfd = posix.open(fifo_z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    try std.testing.expect(rfd >= 0);
+    defer _ = posix.close(rfd);
+    const wfd = posix.open(fifo_z.ptr, posix.O_WRONLY, @as(c_uint, 0));
+    try std.testing.expect(wfd >= 0);
+    defer _ = posix.close(wfd);
+    const payload = "{\"schema\":\"sideeye/case\"}\n";
+    try std.testing.expect(posix.write(wfd, payload.ptr, payload.len) == @as(isize, @intCast(payload.len)));
+
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const fifo_path = std.mem.span(@as([*:0]const u8, fifo_z.ptr));
+
+    // **This first assertion does not measure the classification, and saying so is the
+    // point.** `readFileAllocCapped` reads in a loop and returns one bit, so a
+    // non-regular descriptor, an unreadable one and a file over the cap all arrive as
+    // `null`: with the guard deleted the FIFO's payload is read and then the next read
+    // fails EAGAIN, which is `null` again. Measured — that mutation survives this line.
+    // What kills it is `spike/case-path-deadline.py`, from outside the process, where
+    // the refusal *message* separates "could not be read" from "could not be parsed".
+    // The line stays because it pins the behaviour; it is not evidence of wiring.
+    try std.testing.expect(readFileAllocCapped(arena, fifo_path, 1024 * 1024, true) == null);
+    try std.testing.expect(readFileFrom(arena, fifo_path, 0, 64 * 1024) == null);
+    try std.testing.expectError(error.Unreadable, observeCapture(fifo_path, null));
+
+    // `/dev/zero`, which is the input that separates this guard from the `lseek` that
+    // happens to sit next to it. Measured: it is `S_IFCHR`, both `lseek`s **succeed**
+    // (returning 0) and `read` returns bytes — so every reader whose refusal rests on a
+    // failed seek accepts it. `readFileFrom` would answer an empty `Appended` rather
+    // than null, and `observeCapture` a zero-length observation rather than an error.
+    // Deleting either classification with only the FIFO above in the test leaves both
+    // green, which is how these two call sites were left unguarded on the first attempt.
+    const devzero = "/dev/zero";
+    // First, that the device is there and answers what this test assumes. `null` and
+    // `error.Unreadable` are also the answers to a failed open, so on a host without
+    // `/dev/zero` the two assertions below would pass while measuring nothing at all.
+    var dzb: [16]u8 = undefined;
+    const dz_z = std.fmt.bufPrintZ(&dzb, "{s}", .{devzero}) catch unreachable;
+    const dzfd = posix.open(dz_z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    try std.testing.expect(dzfd >= 0);
+    try std.testing.expectEqual(posix.Kind.other, try posix.kindOfFd(dzfd));
+    _ = posix.close(dzfd);
+
+    try std.testing.expect(readFileFrom(arena, devzero, 0, 64 * 1024) == null);
+    try std.testing.expectError(error.Unreadable, observeCapture(devzero, null));
+
+    // The control, with the same bytes in an ordinary file. Without it, readers that
+    // refused everything — a `kindOfFd` stuck on `.other`, or a classification inverted
+    // — would satisfy every assertion above.
+    var rb: [160]u8 = undefined;
+    const reg_z = std.fmt.bufPrintZ(&rb, "{s}/f", .{base}) catch unreachable;
+    const ofd = posix.open(reg_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(ofd >= 0);
+    try std.testing.expect(posix.write(ofd, payload.ptr, payload.len) == @as(isize, @intCast(payload.len)));
+    _ = posix.close(ofd);
+    const reg_path = std.mem.span(@as([*:0]const u8, reg_z.ptr));
+
+    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, true) != null);
+    try std.testing.expect(readFileFrom(arena, reg_path, 0, 64 * 1024) != null);
+    _ = try observeCapture(reg_path, null);
+
+    // And the case read still accepts an ordinary file when it is not asked to classify,
+    // which is the half `--config` depends on.
+    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, false) != null);
+
+    _ = posix.unlink(fifo_z.ptr);
+    _ = posix.unlink(reg_z.ptr);
+    _ = posix.rmdir(base.ptr);
 }
 
 test "observeCapture finds a straddling marker and fingerprints the same bytes" {
@@ -4184,12 +4285,58 @@ test "a shrink observed inside one sample is its own evidence, not the next comp
 /// `readFileAlloc` with a ceiling: a case file is caller-supplied input, and reading
 /// until EOF from something that never ends (a device, a fifo) would hang the run
 /// before any refusal could fire. Over the cap answers like unreadable.
-fn readFileAllocCapped(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 {
+///
+/// **That sentence was written for a hazard the cap cannot reach, which is #400.** A
+/// FIFO does not hang the read the cap guards — it hangs the `open` in front of it, and
+/// the loop is never entered to be capped. So the open takes `O_NONBLOCK`. That alone
+/// then buys a second defect: past the open, a FIFO with no writer returns 0 from the
+/// first read, so the file arrives *empty* and successful. Measured on macOS against a
+/// real FIFO: `open` ok, `fstat` S_IFIFO, `lseek` ESPIPE, `read` n=0 with errno
+/// untouched. Hence the descriptor is classified before anything is read.
+///
+/// `require_regular` switches **both** halves — the flag and the classification — and it
+/// is the caller's to decide, because the callers differ in who names the path and in
+/// what the answer may be. The case file is named by whoever runs `replay`, and a case
+/// file is an ordinary file or it is not a case file. The capture and the falsify gate's
+/// output are made by this process or its child inside the work directory, so demanding
+/// regularity of them would refuse nothing that happens. `--config` is the one that
+/// decides the coupling: it is operator-named, it is *not* in the work directory, and it
+/// is legitimately not a regular file — `--config /dev/stdin` and a process substitution
+/// both work today. Passing the flag there without the classification is what makes the
+/// pair inseparable: the read below calls every negative return unreadable, so a
+/// non-blocking read of a pipe whose writer has not written yet refuses a config that
+/// would have arrived a moment later.
+fn readFileAllocCapped(
+    arena: std.mem.Allocator,
+    path: []const u8,
+    cap: usize,
+    require_regular: bool,
+) ?[]const u8 {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    // The flag travels with the classification, and only with it. `O_NONBLOCK` exists
+    // here to hold the open open long enough for `kindOfFd` to be asked; where nothing
+    // is going to ask, it buys nothing and takes something — the read below treats every
+    // negative return as unreadable, so a non-blocking read of a pipe whose writer has
+    // not written yet fails instead of waiting. Measured against the version of this
+    // change that passed the flag unconditionally: `{ sleep 1; cat sideeye.toml; } |
+    // sideeye explore --config /dev/stdin` went from reading the config to
+    // `--config could not be read`, an exit 2 turning into an exit 3 on an unchanged
+    // command line, depending only on which of the two processes got there first.
+    const flags: c_int = if (require_regular)
+        posix.O_RDONLY | posix.O_NONBLOCK
+    else
+        posix.O_RDONLY;
+    const fd = posix.open(z.ptr, flags, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
+    if (require_regular) {
+        // Asked of the descriptor rather than of the name. A name classified before the
+        // open can change kind before the read, and the probe that classified names by
+        // opening them is what #5 retired — for hanging on exactly this input.
+        const kind = posix.kindOfFd(fd) catch return null;
+        if (kind != .file) return null;
+    }
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
     while (true) {
@@ -4206,7 +4353,7 @@ fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     // A read error is not end of file (the shared loop returns null for it): treating
     // them alike once turned a truncated oracle file into a complete one, and the
     // comparison that followed was against however much happened to arrive.
-    return readFileAllocCapped(arena, path, std.math.maxInt(usize));
+    return readFileAllocCapped(arena, path, std.math.maxInt(usize), false);
 }
 
 /// A define command as a bare JSON value, mirroring `config.Command.jsonParse`:

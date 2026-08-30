@@ -1,0 +1,264 @@
+#!/usr/bin/env python3
+"""#400: a case path that is not a regular file is refused, and the run returns.
+
+Why this is not a `zig build test` case. The defect being guarded is a process that
+never returns, and a unit test cannot bound its own runtime. The unit-test steps in
+CI carry no `timeout-minutes`, so a regression would hold a runner for the GitHub
+default of six hours instead of failing. The deadline has to live outside the process
+it is measuring.
+
+Three legs. The case leg asserts both halves of the fix, the `--config` leg asserts that
+the first half is not applied where it does not belong, and the control keeps the case
+leg from passing vacuously:
+
+  case path is a FIFO
+    1. the run returns inside the deadline  <- O_NONBLOCK on the open
+    2. it exits 3 (SETUP ERROR)
+    3. it says the case could not be READ   <- the descriptor is classified first
+  --config on a FIFO whose writer is late
+    4. the config is not declared unreadable
+    5. the config's contents arrive         <- the flag is NOT on this open
+    6. the run gets past setup
+  control: a regular file with invalid contents
+    7-9. exit 3, the PARSE message, not the read message
+
+Legs 4-6 are the only thing in the repository that catches passing `O_NONBLOCK`
+unconditionally: that mutation leaves `zig build test` fully green.
+
+Without (3) the run still returns and still exits 3: a FIFO with no writer answers EOF
+on the first read, the empty buffer fails to parse as JSON, and the next refusal catches
+it with the wrong reason. The control at the bottom pins that difference by feeding a
+real file whose contents are invalid and requiring the *other* message — so a change
+that deleted the classification would turn the FIFO case's message into the control's
+and be caught here rather than passing as "still exits 3".
+
+Usage: case-path-deadline.py [path-to-sideeye]
+"""
+
+import os
+import shutil
+import subprocess
+import sys
+import time
+import tempfile
+
+# Measured cost of the refusal on a warm local run: 0.26 s. Five seconds is ~20x that,
+# which leaves room for a cold CI runner without letting a multi-second regression pass
+# as "returned". The defect this bounds is unbounded, not slow, so the margin does not
+# need to be generous.
+DEADLINE = 5.0
+
+READ_MSG = "could not be read"
+PARSE_MSG = "could not be parsed"
+CONFIG_UNREADABLE = "--config could not be read"
+
+# How long the config's writer waits before writing. It must outlast the binary's
+# start-up and its attempt to read, or the writer wins the race and the pipe already
+# holds the config — which is how the first version of that leg passed against a build
+# with the defect in it.
+WRITER_DELAY = 1.0
+
+
+class Failure(Exception):
+    """The thing under test misbehaved."""
+
+
+class Apparatus(Exception):
+    """The harness could not run the thing under test at all.
+
+    Kept distinct from Failure because it must not read as a defect in the binary.
+    The precheck below cannot catch every case: `os.access(X_OK)` is true for a
+    binary built for another architecture, and running one raises OSError from
+    `Popen` rather than producing an exit code. That exact accident happened during
+    development — a Linux cross-build left in `zig-out` on a macOS host — and a
+    traceback exiting 1 was indistinguishable from a real failure.
+    """
+
+
+def run(binary, case_path):
+    """Return (rc, combined output). Raises on a deadline or a dead apparatus."""
+    try:
+        p = subprocess.run(
+            [binary, "replay", case_path],
+            capture_output=True,
+            text=True,
+            timeout=DEADLINE,
+        )
+    except subprocess.TimeoutExpired:
+        raise Failure(
+            f"`sideeye replay` did not return within {DEADLINE}s for {case_path!r}. "
+            "This is the #400 defect: the open waits for a writer that never comes."
+        )
+    except OSError as e:
+        raise Apparatus(f"could not execute {binary!r}: {e}")
+    return p.returncode, (p.stdout or "") + (p.stderr or "")
+
+
+def check(label, cond, detail):
+    if cond:
+        print(f"  ok   {label}")
+        return True
+    print(f"  FAIL {label}: {detail}")
+    return False
+
+
+def main():
+    binary = sys.argv[1] if len(sys.argv) > 1 else "zig-out/bin/sideeye"
+    if not os.path.isfile(binary) or not os.access(binary, os.X_OK):
+        print(f"not an executable: {binary}", file=sys.stderr)
+        return 2
+
+    # $HOME rather than the system temp dir: on macOS the temp prefix is blocked for
+    # some of the tooling around this repo, and a FIFO there is awkward to clean up.
+    work = tempfile.mkdtemp(prefix="sideeye-400-", dir=os.path.expanduser("~"))
+    ok = True
+    try:
+        fifo = os.path.join(work, "case.json")
+        os.mkfifo(fifo)
+
+        print(f"case path is a FIFO with no writer ({fifo}):")
+        try:
+            rc, out = run(binary, fifo)
+        except Apparatus as e:
+            print(f"  APPARATUS {e}")
+            return 2
+        except Failure as e:
+            print(f"  FAIL {e}")
+            return 1
+        ok &= check("returned inside the deadline", True, "")
+        ok &= check("exit 3 (SETUP ERROR)", rc == 3, f"exit was {rc}")
+        ok &= check(
+            f"the refusal says {READ_MSG!r}",
+            READ_MSG in out,
+            f"output was: {out.strip()[:300]}",
+        )
+        ok &= check(
+            f"and not {PARSE_MSG!r}",
+            PARSE_MSG not in out,
+            "the run read the FIFO as an empty file and blamed the JSON — "
+            "the descriptor was not classified before reading",
+        )
+
+        # The control. A real file that is unreadable-as-a-case must reach the OTHER
+        # refusal; without this, an implementation that answered "could not be read" for
+        # every input would pass everything above.
+        bad = os.path.join(work, "not-a-case.json")
+        with open(bad, "w") as f:
+            f.write("this is not json\n")
+
+        # The other half of the fix, and the reason it is here rather than in a unit
+        # test: the correct behaviour is *waiting*. `O_NONBLOCK` belongs only where the
+        # descriptor is about to be classified; passed unconditionally it reaches
+        # `--config`, whose read then fails EAGAIN on a pipe the writer has not filled
+        # yet. The right implementation blocks and the wrong one returns fast, so an
+        # in-process assertion cannot separate them — the deadline can.
+        cfg_text = (
+            '[world]\nstate = "%s"\n\n[define]\nsetup = "true"\n'
+            'operation = "true"\ncheck = "true"\n' % os.path.join(work, "state")
+        )
+        print("\n--config on a pipe whose writer is slow (the P0 regression's own test):")
+        # A named FIFO, not an inherited descriptor and not a shell pipeline. Both of
+        # those were tried and neither reproduces the regression on macOS: `/dev/stdin`
+        # and `/dev/fd/N` are resolved there as a dup of the existing description, so a
+        # fresh `O_NONBLOCK` never reaches the pipe and the broken build passes. A FIFO
+        # opened by name gets its own description on both platforms, which is what the
+        # flag acts on.
+        #
+        # The shape is the regression's own: the reader arrives first and the config is
+        # written a second later. Blocking, that waits and then reads; non-blocking, the
+        # first read fails EAGAIN and the config is declared unreadable.
+        cfg_fifo = os.path.join(work, "cfg.fifo")
+        os.mkfifo(cfg_fifo)
+        out3 = ""
+        rc3 = None
+        try:
+            p3 = subprocess.Popen(
+                [os.path.abspath(binary), "explore", "--config", cfg_fifo],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+        except OSError as e:
+            print(f"  APPARATUS could not start the config run: {e}")
+            return 2
+        try:
+            # Long enough to lose the race deliberately: the binary has to reach its read
+            # before anything is written. With the writer immediate, the broken build
+            # passes this leg — which is how the first version of it measured nothing.
+            time.sleep(WRITER_DELAY)
+            # Non-blocking on the write end too: against a build with the defect the
+            # child has already given up and closed its descriptor, and a blocking open
+            # here would then wait for a reader that is never coming — the harness would
+            # hang on the very build it exists to catch. ENXIO means exactly that, and
+            # the assertions below read the child's own output rather than this.
+            try:
+                wfd = os.open(cfg_fifo, os.O_WRONLY | os.O_NONBLOCK)
+            except OSError:
+                wfd = -1
+            if wfd != -1:
+                with os.fdopen(wfd, "w") as wf:
+                    wf.write(cfg_text)
+            out3 = p3.communicate(timeout=DEADLINE)[0] or ""
+            rc3 = p3.returncode
+        except subprocess.TimeoutExpired:
+            p3.kill()
+            p3.communicate()
+            print(f"  FAIL the config read did not return within {DEADLINE}s")
+            return 1
+        # Two symptoms, because the defect has two faces depending on whether a writer
+        # has opened the FIFO yet. With one open and nothing sent, a non-blocking read
+        # fails EAGAIN and the config is declared unreadable. With none open, the same
+        # read gets EOF and the config arrives *empty* — which parses, and then fails on
+        # a missing key. Measured: this harness's own writer opens late, so the mutant
+        # takes the second path, and an assertion that only looked for the first would
+        # have passed against it.
+        ok &= check(
+            "the config is not declared unreadable",
+            CONFIG_UNREADABLE not in out3,
+            "a non-blocking read of a pipe with a writer but no bytes yet failed. "
+            f"Output: {out3.strip()[:200]}",
+        )
+        ok &= check(
+            "the config's contents actually arrived",
+            "state is required" not in out3,
+            "the config was read as EMPTY — the same 'could not be read becomes was "
+            "empty' shape as #400, reached through a flag that should not be on this "
+            f"open. Output: {out3.strip()[:200]}",
+        )
+        ok &= check(
+            "and the run got past setup (exit is not 3)",
+            rc3 != 3,
+            f"exit was 3; output: {out3.strip()[:200]}",
+        )
+
+        print(f"\ncontrol — a regular file with invalid contents ({bad}):")
+        try:
+            rc2, out2 = run(binary, bad)
+        except Apparatus as e:
+            print(f"  APPARATUS {e}")
+            return 2
+        except Failure as e:
+            print(f"  FAIL {e}")
+            return 1
+        ok &= check("exit 3 (SETUP ERROR)", rc2 == 3, f"exit was {rc2}")
+        ok &= check(
+            f"the refusal says {PARSE_MSG!r}",
+            PARSE_MSG in out2,
+            f"output was: {out2.strip()[:300]}",
+        )
+        ok &= check(
+            f"and not {READ_MSG!r}",
+            READ_MSG not in out2,
+            "a readable regular file was reported as unreadable — the classification "
+            "is refusing ordinary files",
+        )
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+    print()
+    print("PASS" if ok else "FAIL")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
