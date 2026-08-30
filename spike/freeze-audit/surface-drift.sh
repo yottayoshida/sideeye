@@ -27,10 +27,13 @@
 #   rung 2  enumerated diff    For files that changed: the named sets, with each
 #                              extraction defined below. Answers "which names
 #                              appeared or disappeared", nothing else.
-#   rung 3  named residue      The clauses of the declaration that neither rung
-#                              can see. Printed as unmeasured. They are held by
-#                              review and by spike/acceptance.sh, and mapping each
-#                              clause to the check that pins it is filed, not done.
+#   rung 3  per-clause residue  The clauses of the declaration that neither rung
+#                              can see, read from clause-checks.tsv. Printed:
+#                              only the ones nothing asserts, plus the leftover
+#                              half of the ones a check covers in part. A clause
+#                              held in full is not printed, so the list shrinks
+#                              as checks are written and an empty list retires
+#                              this rung (#369).
 #
 # FOUR RULES THIS SCRIPT FOLLOWS BECAUSE THE INSTRUMENTS LIED DURING ITS WRITING,
 # every one of them in the direction of "everything changed":
@@ -224,30 +227,112 @@ note ""
 # ---------------------------------------------------------------------------
 # rung 3 — what neither rung above can see
 # ---------------------------------------------------------------------------
-note "== rung 3: NOT MEASURED by anything above (read, not measured) =="
-note "  Each line is a clause of docs/contract-freeze.md that no extraction here"
-note "  covers. These are held by review and by spike/acceptance.sh. Mapping each"
-note "  clause to the check that pins it is filed as its own issue, not done here."
-note "  surface 1  the string form's split-on-spaces and no-quoting rule; the argv"
-note "             form's verbatim passing; relative path resolution against the"
-note "             toml's directory. These live in src/main.zig, NOT src/config.zig,"
-note "             so rung 1 settles them only when src/main.zig is also identical."
-note "  surface 2  field presence rules, field types, and the meaning of every"
-note "             machine field. A field keeping its name while changing meaning is"
-note "             exactly what surface 2 forbids and exactly what rung 2 cannot see"
-note "  surface 3  which call site returns which code. #273 moved this while the"
-note "             enum stayed identical — the measured proof that rung 2 is not"
-note "             a measurement of surface 3"
-note "  surface 4  that an old case refuses with the mismatch named and returns no"
-note "             verdict. NOTE: the acceptance leg for a v7 case asserts exit 2"
-note "             and a message string; it does not assert the unknown_reason value"
-note "             and does not assert the absence of a verdict line, though its own"
-note "             success message says 'never a verdict'. Filed."
-note "  surface 5  the two input schemas and the isError derivation rule"
+note "== rung 3: what no extraction above covers, per clause =="
+note "  Read from spike/freeze-audit/clause-checks.tsv. Printed here are the clauses"
+note "  nothing asserts, and the part left over where something asserts only some of"
+note "  it. A clause held by a check in full is NOT printed — that is the point of"
+note "  the file: this list shrinks as checks are written, and an empty list is the"
+note "  condition under which ADR 0028's third rung can be retired (#369)."
+note ""
+
+clause_file="$ROOT/spike/freeze-audit/clause-checks.tsv"
+if [ ! -f "$clause_file" ]; then
+    note "FAIL: $clause_file is missing — rung 3 has nothing to read"
+    fails=$((fails + 1))
+else
+    # Two counts from two expressions, as elsewhere in this audit: the row count
+    # comes from the file, the walked count from the loop. A narrowing applied to
+    # one cannot reach the other, so a partial read shows up as a mismatch rather
+    # than as a shorter clean list.
+    rows=$(grep -cv '^#\|^clause_id\|^$' "$clause_file" || true)
+    walked=0
+    anchor_bad=0
+    unpinned_n=0
+    partial_n=0
+    while IFS="$(printf '\t')" read -r cid csurface cclause cheld cby cgap; do
+        case "$cid" in \#*|clause_id|"") continue ;; esac
+        walked=$((walked + 1))
+
+        # The anchor is checked for existence, not for meaning. That a heading is
+        # still in its suite is machine-knowable; that the check under it pins the
+        # clause is a reading, and stays one. Without this, a heading that was
+        # renamed or deleted leaves a row quietly claiming a check that is gone —
+        # the failure mode of naming a check at all instead of saying "held by
+        # review", which is what this file replaced.
+        if [ "$cby" != "-" ]; then
+            _suite=${cby%%::*}
+            _head=${cby#*::}
+            if [ ! -f "$ROOT/$_suite" ]; then
+                note "  ANCHOR GONE  $cid names $_suite, which does not exist"
+                anchor_bad=$((anchor_bad + 1))
+            elif ! grep -qF -- "$_head" "$ROOT/$_suite"; then
+                note "  ANCHOR GONE  $cid names a heading no longer in $_suite:"
+                note "               $_head"
+                anchor_bad=$((anchor_bad + 1))
+            fi
+        fi
+
+        # A held value this loop does not recognise, or a row claiming a check
+        # without naming one, must fail rather than fall through. Without these
+        # two the `case` below is fail-OPEN: `Unpinned` with a capital letter, or
+        # `pinned` with `by` set to `-`, drops the row from the residue and skips
+        # the anchor test, turning "nobody holds this" into "a check holds this"
+        # with no output at all. Measured in review, one token per mutation.
+        case "$cheld" in
+            pinned|partial|unpinned) ;;
+            *)
+                note "  BAD held  $cid has held=\"$cheld\", which is not pinned/partial/unpinned"
+                anchor_bad=$((anchor_bad + 1))
+                ;;
+        esac
+        if [ "$cheld" != "unpinned" ] && [ "$cby" = "-" ]; then
+            note "  BAD by    $cid is $cheld but names no check"
+            anchor_bad=$((anchor_bad + 1))
+        fi
+
+        case "$cheld" in
+            unpinned)
+                unpinned_n=$((unpinned_n + 1))
+                note "  surface $csurface  $cid — nothing asserts this"
+                note "             \"$cclause\""
+                ;;
+            partial)
+                partial_n=$((partial_n + 1))
+                note "  surface $csurface  $cid — asserted in part"
+                note "             \"$cclause\""
+                note "             left over: $cgap"
+                ;;
+        esac
+    done < "$clause_file"
+
+    note ""
+    if [ "$walked" != "$rows" ]; then
+        note "FAIL: read $walked clause row(s) but the file holds $rows — the read is partial"
+        fails=$((fails + 1))
+    fi
+    if [ "$anchor_bad" -gt 0 ]; then
+        note "FAIL: $anchor_bad row(s) name a check heading that is no longer there"
+        fails=$((fails + 1))
+    fi
+    if [ "$unpinned_n" = "0" ] && [ "$partial_n" = "0" ]; then
+        note "  residue is empty: every clause is pinned by a check."
+        note "  ADR 0028's third rung has nothing left to report and can be retired (#369)."
+    else
+        note "  $walked clause(s) total: $unpinned_n unpinned, $partial_n partial."
+        # From 0, not 1: the preamble carries a clause that spans the five surfaces,
+        # and a loop starting at 1 drops it from the tally while the rows above still
+        # print it — a per-surface count that does not sum to the total.
+        note "  Per surface (all rows, not just the residue): $(awk -F'\t' '!/^#/ && $1!="clause_id" && NF>=4{c[$2]++; t++} END{for(i=0;i<=5;i++) if(c[i]) printf "s%d=%d ", i, c[i]; printf "(sums to %d)", t}' "$clause_file")"
+        note "  Completeness of the enumeration is NOT machine-checked — a clause is one"
+        note "  independently checkable assertion, which matches no boundary in the"
+        note "  declaration. The clause column is verbatim, so no row can describe text"
+        note "  that is not there; the reverse direction is held by review."
+    fi
+fi
 note ""
 
 if [ "$fails" -gt 0 ]; then
     note "FAIL: $fails extraction(s) could not be reported"
     exit 1
 fi
-note "ok   surface drift measured; rung 3 residue named above is not measured by this script"
+note "ok   surface drift measured; rung 3's residue is read from clause-checks.tsv, and what it leaves unpinned is named above"
