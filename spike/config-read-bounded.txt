@@ -70,7 +70,7 @@ Engine deadline 2s, byte ceiling 1 MiB:
 
     --config <FIFO, no writer>              rc=3   2.20s   --config could not be read
     --config <FIFO, writer open, no data>   rc=3   2.01s   --config could not be read
-    --config <FIFO, writer writes at t=1>   rc=2   1.02s   no_shim_marker (config was read)
+    --config <FIFO, writer writes at t=1>   rc=2   1.02s   UNKNOWN (config was read)
     --config /dev/zero                      rc=3   0.00s   --config could not be read
     --config /dev/null                      rc=3   0.00s   [world] state is required
     --config <empty regular file>           rc=3   0.00s   [world] state is required

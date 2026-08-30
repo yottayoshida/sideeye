@@ -401,9 +401,14 @@ def config_legs(binary, work, cfg_text):
             return
 
     threading.Thread(target=late_writer, daemon=True).start()
-    # Past the config stage: exit 2 with a verdict-side refusal means the config parsed.
+    # Past the config stage. What is asserted is that a *verdict-side* refusal was
+    # reached — exit 2, UNKNOWN — not which one. An earlier version named
+    # `no_shim_marker`, which is what this host happens to answer when the shim is not
+    # injected; CI answers `completeness_not_verified` on the same input because the
+    # shim works there and no oracle was given. Both mean the config was read; only one
+    # of them is a property of the machine.
     before = ok
-    probe("FIFO, writer late -> config read", f3, 2, "no_shim_marker", READ_MSG)
+    probe("FIFO, writer late -> config read", f3, 2, "UNKNOWN", READ_MSG)
     if "ok" not in wrote and before == ok:
         # Same guard as the idle leg: a writer that gave up silently turns an apparatus
         # failure into what reads as a defect in the binary. Only reported when the probe
