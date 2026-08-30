@@ -457,16 +457,24 @@ jobs:
       # The guarded family, end to end. Six state-changing calls SQLite reaches and the
       # shim did not see until #299: without the interposers this operation writes two
       # files the account never mentions, which the engine reports as
-      # `state_changed_without_ops`. Six crash points is the number the five KILL-POINT
-      # calls produce plus the baseline world, so it pins those five. It does NOT reach
-      # `guarded_close_np`: close is lifecycle, contributes no crash point, and removing
-      # its interposer leaves this leg green (measured). That one is held by
-      # check-fsusage-coverage.py instead, which refuses when the classifier names a
-      # call the interpose table does not carry.
+      # `state_changed_without_ops`. The crash-point count is the KILL-POINT calls plus
+      # the baseline world, so it pins them. It does NOT reach `guarded_close_np`: close
+      # is lifecycle, contributes no crash point, and removing its interposer leaves this
+      # leg green (measured). That one is held by check-fsusage-coverage.py instead,
+      # which refuses when the classifier names a call the interpose table does not carry.
+      #
+      # The expected count comes from the toy rather than from a constant here, because
+      # `guarded_open_dprotected_np` needs a data protection class and that is a property
+      # of the volume: this laptop's APFS accepts it (six crash points) and the runner's
+      # volume returns ENOTSUP (four). Both are normal; a hard-coded 6 turned the runner's
+      # normal answer into a red build. The toy reports which half it exercised and the
+      # count is derived from that, so neither answer can pass with the wrong number and
+      # a toy that reports neither fails the leg.
       #
       # Their signatures are transcribed from XNU — no public header declares them — so
       # this leg is also the only thing standing between a wrong arity and a shim that
-      # reads a register the caller never wrote.
+      # reads a register the caller never wrote. ENOTSUP is the only errno excused: a
+      # wrong transcription produces EINVAL, which still fails here.
       - name: The guarded-descriptor family is recorded end to end (#299)
         run: |
           set -eu
@@ -475,7 +483,21 @@ jobs:
 
           # Unshimmed first: if the transcription is wrong, this fails on its own and
           # the failure names which of the six calls came back with what errno.
-          /tmp/ci-guarded/toy-guarded /tmp/ci-guarded/plain
+          set +e
+          plain=$(/tmp/ci-guarded/toy-guarded /tmp/ci-guarded/plain 2>&1)
+          prc=$?
+          set -e
+          echo "$plain"
+          [ "$prc" = "0" ] || {
+            echo "the unshimmed run failed: a transcribed signature or arity is wrong"
+            exit 1; }
+
+          case "$plain" in
+            *"dprotected: yes"*) want=6 ;;
+            *"dprotected: no"*)  want=4 ;;
+            *) echo "the toy reported neither answer for dprotected support"; exit 1 ;;
+          esac
+          echo "expecting $want crash points"
 
           set +e
           out=$(./zig-out/bin/sideeye explore \
@@ -491,8 +513,9 @@ jobs:
           echo "$out" | grep -q 'state_changed_without_ops' && {
             echo "the guarded writes went unrecorded — the interposers are not reached"
             exit 1; }
-          echo "$out" | grep -q 'crash points 6' || {
-            echo "expected 6 crash points from the six guarded calls"; exit 1; }
+          echo "$out" | grep -q "crash points $want" || {
+            echo "expected $want crash points from the guarded calls the toy exercised"
+            exit 1; }
           [ "$rc" = "0" ] || { echo "expected PASS (exit 0), got $rc"; exit 1; }
 
       # The clone family is counted, the swap family refuses, and both are scope-

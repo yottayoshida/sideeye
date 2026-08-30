@@ -10,13 +10,18 @@
 //
 // It is deliberately not a crash-consistency target: no bug, no interesting ordering.
 // It writes three bytes through three different guarded writers, then closes. The
-// acceptance leg runs it twice — unshimmed, where every call must report success, and
-// then through `explore`, where the engine must report six crash points. It does not
-// read the trace; the crash-point count is the proxy, and it reaches five of the six
-// calls (close is lifecycle and produces none).
+// acceptance leg runs it twice — unshimmed, where every supported call must report
+// success, and then through `explore`, where the engine must report a crash-point count
+// this toy's own last line determines. It does not read the trace; the crash-point count
+// is the proxy, and close is lifecycle and produces none.
+//
+// The last line says whether the volume supports a data protection class, because the
+// answer changes what was exercised and therefore what the engine should report:
+// `dprotected: yes` for six crash points, `dprotected: no` for four (measured, both).
+// A caller that ignores that line cannot tell a full run from a half one.
 //
 //   usage: toy-guarded <path>
-//   exit 0 all six calls succeeded, 1 one of them did not, 2 usage
+//   exit 0 every supported call succeeded, 1 one of them did not, 2 usage
 
 #include <errno.h>
 #include <fcntl.h>
@@ -85,9 +90,21 @@ int main(int argc, char **argv) {
     snprintf(second, sizeof second, "%s.dp", argv[1]);
     int dfd = guarded_open_dprotected_np(second, &guard, GUARD_CLOSE | GUARD_DUP,
                                          O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 1, 0, 0644);
+    // A data protection class is a property of the volume, not of libc: a filesystem
+    // without it refuses the class before the call reaches any guard logic, and returns
+    // ENOTSUP rather than the EINVAL a wrong transcription produces. That distinction is
+    // the whole reason this is not just `if (dfd < 0) fail`. Measured: this laptop's APFS
+    // accepts it and the GitHub macOS runner's volume does not, so both answers are
+    // normal and the caller is told which one it got — a run that silently exercised half
+    // the family would report the same success as one that exercised all of it.
+    if (dfd < 0 && (errno == ENOTSUP || errno == EOPNOTSUPP)) {
+        printf("dprotected: no\n");
+        return 0;
+    }
     if (dfd < 0) return fail("guarded_open_dprotected_np");
     if (guarded_write_np(dfd, &guard, "d", 1) != 1) return fail("guarded_write_np(dp)");
     if (guarded_close_np(dfd, &guard) != 0) return fail("guarded_close_np(dp)");
 
+    printf("dprotected: yes\n");
     return 0;
 }

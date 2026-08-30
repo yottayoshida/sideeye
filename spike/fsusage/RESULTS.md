@@ -285,9 +285,22 @@ own before anything else is judged.
 ## End to end
 
     sideeye explore --operation "toy-guarded <state>/g" --allow-unverified
-    → PASS, explored 7 worlds (crash points 6 + 1 baseline)
+    → PASS, explored 7 worlds (crash points 6 + 1 baseline)     [macOS 15.3.1, APFS]
 
 Six crash points is the number the six calls produce: two opens and four
 writes are kill points, the two closes are lifecycle. Before the interposers,
 the same operation reports `state_changed_without_ops` — the state moved and
 the account is empty.
+
+**The count is a property of the volume, not of the family.** A data protection
+class is refused with `ENOTSUP` by a filesystem that does not carry one, and the
+GitHub macOS runner's volume is such a filesystem, so `guarded_open_dprotected_np`
+never runs there. Measured with the dprotected pair removed:
+
+    → PASS, explored 5 worlds (crash points 4 + 1 baseline)
+
+which is the same run minus the two kill points that pair contributes. The toy's
+last line says which of the two it exercised (`dprotected: yes` / `dprotected: no`)
+and the acceptance leg takes its expected count from that line. `ENOTSUP` is the
+only errno the toy excuses: a wrong transcription produces `EINVAL`, measured, and
+that still fails the unshimmed run.
