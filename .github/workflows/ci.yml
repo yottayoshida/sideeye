@@ -685,6 +685,23 @@ jobs:
       - name: ADR numbers are unique
         run: sh spike/check-adr-numbering.sh
 
+      # The Status line, for the same reason and in the same shape (#360). Five
+      # ADRs sat at `Proposed` after their implementing PRs merged, because the
+      # old convention asked for a flip that no single PR can perform: the ADR
+      # arrives with the work it decides, so the flip is always a second commit.
+      # The default is inverted now — written Accepted, refused otherwise.
+      #
+      # Selftest first, and here it carries negative controls as well as red
+      # cases: an over-matching check reddens, which is indistinguishable from
+      # working until it reddens on a file that is correct. Two such files exist
+      # (0002 has `proposed` inside a parenthetical, 0030 says `Proposed by
+      # external review` in its body), so the fixture holds both shapes.
+      - name: The status check proves it can go red, and stays green where it must
+        run: sh spike/check-adr-status.sh --selftest
+
+      - name: Every ADR says whether its decision shipped
+        run: sh spike/check-adr-status.sh
+
   # The onboarding clock's audit is criterion 6's instrument: it decides whether a
   # timed run's evidence stands. Until 2026-08-28 nothing here ran it — the launcher
   # ran its selftest, and runs are rare, so a broken instrument could sit on main for

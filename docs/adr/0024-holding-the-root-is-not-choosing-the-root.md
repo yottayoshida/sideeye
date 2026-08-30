@@ -1,6 +1,6 @@
 # 0024 — Holding the root is not choosing the root
 
-Status: Proposed
+Status: Accepted (implementing PR merged as `892276d`, 2026-08-26)
 
 ## Context
 
