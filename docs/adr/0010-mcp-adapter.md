@@ -48,7 +48,21 @@ language, and made a hand-written Zig server small.
    `SIDEEYE_MCP_ROOT` (a component-boundary prefix check, after realpath collapses
    `..`/symlinks). Operational settings — the shim, an optional oracle, the work dir —
    come from the environment (`SIDEEYE_MCP_SHIM`, `SIDEEYE_MCP_ORACLE`,
-   `SIDEEYE_MCP_WORK`), not from tool input. **The config is a trust boundary**: its
+   `SIDEEYE_MCP_WORK`), not from tool input. The load-bearing half of that sentence is
+   **not from tool input**; two of the three have defaults, which is a different question
+   and always was. `SIDEEYE_MCP_WORK` has had one since this ADR was written, and since
+   #389 the shim falls back to the search `README.md` describes for the whole product —
+   beside the binary, then `../lib` — because demanding the variable made this the one
+   command that did not do what that page says. Neither default takes a value from the
+   caller of a tool.
+   **What the shim fallback does add is a trust in the install directory**, and the
+   precondition below does not cover it: whoever can write `bin/` or `../lib` of the
+   installed prefix chooses the library injected into the target, and a symlink placed
+   there is followed (measured). This is the CLI's behaviour since #78, so the exposure
+   belongs to the product rather than to this adapter — what changed is that the adapter
+   no longer sits outside it. Closing it product-wide is a separate decision (#423), because it
+   would change how a shipped command resolves its own library. **The config is a trust
+   boundary**: its
    operation is executed; the confinement bounds *which* config, not what it may do.
    **Operational precondition:** `SIDEEYE_MCP_ROOT` and the work dir are user-owned and
    **not attacker-writable** — the operator sets them to their own workspace. Two

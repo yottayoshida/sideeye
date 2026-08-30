@@ -3585,18 +3585,19 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
 const demo_toy_c = @embedFile("toy_c");
 const demo_check_sh = @embedFile("check_sh");
 
-const shim_basename = if (builtin.os.tag == .macos) "libsideeye_shim.dylib" else "libsideeye_shim.so";
-
 /// Where the shim is looked for when --shim is not given: next to the binary
 /// (the release-tarball layout) first, then ../lib relative to it (the zig-out
 /// layout). One list serves demo, preflight, explore and replay (#78) — the demo
 /// proved the order before the flag learned to default.
+///
+/// The list itself moved to `mcp.zig`, beside `canonicalSelf`, when `sideeye mcp`
+/// became its fifth caller (#389): the server used to demand `SIDEEYE_MCP_SHIM` and
+/// refuse without it, which made it the one command that did not do what `README.md`
+/// says the product does. Two copies of a search order is how the two ends of that
+/// sentence drift apart again.
+const shim_basename = mcp.shim_basename;
 fn shimCandidates(arena: std.mem.Allocator, self: []const u8) [2][]const u8 {
-    const dir = std.fs.path.dirname(self) orelse "/";
-    return .{
-        std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, shim_basename }) catch setupError("out of memory"),
-        std.fmt.allocPrint(arena, "{s}/../lib/{s}", .{ dir, shim_basename }) catch setupError("out of memory"),
-    };
+    return mcp.shimCandidates(arena, self) catch setupError("out of memory");
 }
 
 test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
@@ -3615,20 +3616,17 @@ test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
 /// reproduce line name the real file rather than a bin/../lib spelling.
 /// Absence stays loud, both looked-at paths named; argv[0] is never consulted
 /// (a PATH name or a wrapper must not decide which library gets injected).
+/// The probe is `mcp.findShimBeside`, not a second copy of it. Sharing only the
+/// candidate list left the two ends of the search free to disagree, and they did within
+/// the hour: on an allocation failure one answered the un-normalised candidate and the
+/// other aborted the process. This function now owns exactly what is different about the
+/// CLI — that absence is fatal here and answerable there.
 fn findShim(arena: std.mem.Allocator) []const u8 {
     const self = mcp.canonicalSelf() orelse setupError("could not resolve the canonical path of this binary to look beside it for the shim; pass --shim <path>");
     const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
+    if (mcp.findShimBeside(arena, self_owned)) |found| return found;
     const cands = shimCandidates(arena, self_owned);
-    for (cands) |c| {
-        var zb: [contract.max_path]u8 = undefined;
-        const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
-        if (posix.access(z.ptr, 0) != 0) continue;
-        var rb: [contract.max_path]u8 = undefined;
-        if (posix.realpath(z.ptr, &rb)) |p|
-            return arena.dupe(u8, std.mem.span(p)) catch setupError("out of memory");
-        return c;
-    }
-    setupError(std.fmt.allocPrint(arena, "the shim is half the product, and none was found beside this binary; looked at {s} and {s} — pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found beside this binary; pass --shim");
+    setupError(std.fmt.allocPrint(arena, "the shim is half the product, and none was found at either place this looks — {s} and {s}. Pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found beside this binary; pass --shim");
 }
 
 /// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete

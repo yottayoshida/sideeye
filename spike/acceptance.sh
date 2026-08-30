@@ -3273,7 +3273,15 @@ o=$(/tmp/acc9/pack/sideeye explore --state /tmp/acc9/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --work /tmp/acc9/work 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q "looked at /tmp/acc9/pack/libsideeye_shim.so" && echo "$o" | grep -q "pass --shim"; then
+# Both candidates, not one. The message names two places and this used to check the
+# first, so half of what it claims was unmeasured. The wording moved in #389 — from
+# "looked at X and Y" to "at either place this looks" — because two failure paths reach
+# this refusal without probing at all (an unbuildable candidate list, a candidate past
+# `max_path`), and "looked at" would name a probe that never happened.
+if [ "$rc" = "3" ] &&
+   echo "$o" | grep -q "/tmp/acc9/pack/libsideeye_shim.so" &&
+   echo "$o" | grep -q "/tmp/acc9/pack/../lib/libsideeye_shim.so" &&
+   echo "$o" | grep -qi "pass --shim"; then
     echo "ok   no shim beside the binary: a loud error names both candidates"
 else
     echo "FAIL shim absence: exit $rc"
