@@ -1,0 +1,9 @@
+# Apparatus failures that could not be fixed (fixture). Same shape as the real
+# spike/unknown-rate/exclusions.tsv; see that file for the rules count.py holds.
+#
+# The reason carries a pipe. It is published verbatim into a markdown row, so the
+# pipe adds a cell: the seven-column table renders eight, and the row stops being
+# the shape every reader and parser expects.
+#
+# id	reason
+fx-toyE	build fails | vendor withdrew it

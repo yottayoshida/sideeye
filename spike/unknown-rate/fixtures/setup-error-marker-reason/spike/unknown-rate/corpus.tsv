@@ -1,0 +1,6 @@
+# fixture corpus — a B-only generation with no rated trial: one wall and one
+# SETUP_ERROR. The funnel detail table is the last thing the page publishes, so
+# an end marker injected into the excluded row truncates the compared region and
+# nothing downstream notices.
+fx-toyC	B	toyC	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines/toyC	g1	-
+fx-toyD	B	toyD	perl-cli	l0	fake.sh	toyD	t4	report.json	spike/unknown-rate/defines/toyD	g1	-
