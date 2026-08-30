@@ -76,6 +76,13 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.setattrlistat, libc.setattrlistat),
     // The open variant libcopyfile imports beside plain open.
     entry(&ops.open_dprotected_np, libc.open_dprotected_np),
+    // The guarded family (#299): SQLite's writers, invisible to this shim until now.
+    entry(&ops.guarded_open_np, libc.guarded_open_np),
+    entry(&ops.guarded_open_dprotected_np, libc.guarded_open_dprotected_np),
+    entry(&ops.guarded_write_np, libc.guarded_write_np),
+    entry(&ops.guarded_pwrite_np, libc.guarded_pwrite_np),
+    entry(&ops.guarded_writev_np, libc.guarded_writev_np),
+    entry(&ops.guarded_close_np, libc.guarded_close_np),
     entry(&ops.unlink, libc.unlink),
     entry(&ops.unlinkat, libc.unlinkat),
     entry(&ops.remove, libc.remove),

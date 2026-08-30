@@ -192,3 +192,128 @@ on the work directory it hands the target.
 Whether an adapter is worth building behind those two walls, and whether it
 goes before v1.0, is the owner's decision. The measurement that decision
 needed is now on disk.
+
+---
+
+# The classifier measured against the shim (#299, 2026-08-30)
+
+Added after ADR 0031 shipped. Route F1 gave macOS an oracle; this asks what the
+two observers disagree about, which is the question `check-shim-coverage.py`
+has answered on Linux since #256 and said in the same breath that macOS could
+not ("a syscall the oracle classifies and macOS does not interpose is exactly
+the #256 shape and this check cannot see it").
+
+Every number below is from Darwin 24.3.0 / arm64 / `system_cmds-1012.80.2`.
+The CI runner is a different OS build, and the two are not assumed equal — the
+check reads the runner's own `fs_usage`, and a name table that disagrees with
+this one shows up as a failure there rather than as a silent difference.
+
+## fs_usage carries its own syscall table, in plain text
+
+`/usr/bin/fs_usage` holds the labels it can print as a run of identifiers in
+its binary. Reading them needs no root and no run:
+
+    strings -a /usr/bin/fs_usage        # the run from `exit` to `guarded_writev_np`
+
+142 entries under `strings`' default minimum length of 4 — the run holds 143 when
+that floor is lowered, because `dup` is three characters. The number is therefore a
+property of the tool as much as of the table; no classified call is shorter than four
+characters today, so the check reads the default. `exit` occurs exactly once in the
+whole binary, which is what makes it usable as an anchor;
+an earlier measurement addressed the run by line number, which is not portable
+across builds.
+
+**This is what makes the spelling derivable rather than transcribed.** fs_usage
+prints its own label for a call, which is not always the libc name — it prints
+`open_dprotected` where libc exports `open_dprotected_np`. Cross-referencing
+the table against the SDK's `sys/syscall.h` by number resolves that without
+anyone writing a mapping down. A first design carried a hand-written spelling
+table and review broke it in two lines: adding a row turned a real uninterposed
+write green, no reason required.
+
+## Three classified calls this fs_usage cannot print
+
+`renamex_np`, `renameatx_np` and `pwritev`. The table is a **curated subset,
+not a dense array of syscall numbers** — `SYS_renamex_np` (473) is inside its
+range and still absent, while `SYS_renameatx_np` (488) and `SYS_pwritev` (541)
+are past its last entry (`guarded_writev_np`, 487). They are recorded as
+unprintable rather than removed, and the check refuses if a later fs_usage
+prints one, because an excuse nothing can contradict is an exclusion list.
+
+Two further tables carry rows this fs_usage cannot print — `isReadOnlyCall`
+five, `isMetadataCall` three — and `src/fsusage.zig`'s `chdir` tracking names
+`__pthread_chdir` / `__pthread_fchdir` while fs_usage prints those without the
+leading underscores, so both branches are unreachable and the reachable
+spelling falls to `unknown_call`. None of those are state changes, so they are
+outside #299's promise; they are recorded here rather than fixed.
+
+## The gap: the guarded-descriptor family
+
+Six calls, all exported by libSystem, all printable by fs_usage, none
+interposed by the shim before this change:
+
+    guarded_open_np   guarded_open_dprotected_np   guarded_close_np
+    guarded_write_np  guarded_pwrite_np            guarded_writev_np
+
+`/usr/lib/libsqlite3.dylib` imports five of them, non-weak
+(`dyld_info -arch arm64e -imports`), and several corpus targets keep a SQLite
+store. On the default path — no `--oracle-fs-usage`, which is what a run
+without root gets — the shim is the only observer, so a target writing through
+these produced a file with zero recorded operations, and any other recorded
+mutation carried the run to PASS. That is #333's shape one family over.
+
+## What it took to call them correctly
+
+No public header declares these: `sys/guarded.h` is not in the SDK and neither
+is `guardid_t`. The signatures are transcribed from XNU, and transcription was
+wrong three times before it was right — none of which a compiler could see:
+
+| attempt | result |
+|---|---|
+| arity as declared in XNU | correct, and never in question afterwards |
+| `guardflags = GUARD_CLOSE\|GUARD_DUP`, no `O_CLOEXEC` | EINVAL, every combination |
+| `O_CLOEXEC` added | five of six calls succeed |
+| `guarded_open_dprotected_np` with `dpclass = 0` | EINVAL; 1..4 are accepted |
+
+The kernel requires `O_CLOEXEC`, requires `GUARD_DUP` (it is `GUARD_REQUIRED`),
+rejects guard flags outside `GUARD_ALL`, and rejects a zero guard value. The
+unguarded `open_dprotected_np` the shim already interposed has the same
+`dpclass` constraint. `spike/toys/toy_guarded.c` is the program that measured
+this and is what CI runs, unshimmed first so a wrong transcription fails on its
+own before anything else is judged.
+
+## End to end
+
+    sideeye explore --operation "toy-guarded <state>/g" --allow-unverified
+    → PASS, explored 7 worlds (crash points 6 + 1 baseline)     [macOS 15.3.1, APFS]
+
+Six crash points is the number the six calls produce: two opens and four
+writes are kill points, the two closes are lifecycle. Before the interposers,
+the same operation reports `state_changed_without_ops` — the state moved and
+the account is empty.
+
+**The count is a property of the volume, not of the family.** A data protection
+class is refused with `ENOTSUP` by a filesystem that does not carry one, and the
+GitHub macOS runner's volume is such a filesystem, so `guarded_open_dprotected_np`
+is refused there. Measured on the runner:
+
+    → PASS, explored 6 worlds (crash points 5 + 1 baseline)     [GitHub macOS runner]
+
+**Five, not four, and the difference is what a careless synthetic hides.** Every
+open wrapper in `ops.zig` records the operation *before* it makes the call —
+`open_dprotected_np` and `fopen` are written the same way — so an open the kernel
+refuses is still an operation the account names, and it carries a crash point on
+its own. Only the write and the close behind it are skipped. Two synthetics were
+run and they do not agree, which is the whole lesson:
+
+| synthetic | what it did | count |
+|---|---|---|
+| removed the call | `int dfd = -1; errno = ENOTSUP;` | 4 |
+| kept the call | invalid `dpclass`, errno overwritten to `ENOTSUP` | **5** |
+
+The first was written first, and 4 went into the acceptance leg as the expected
+value; CI reported 5 and was right. The second reproduces what the runner does,
+because the interposer runs either way. The toy's last line says which half it
+exercised (`dprotected: yes` / `dprotected: no`) and the leg takes its expected
+count from that line. `ENOTSUP` is the only errno the toy excuses: a wrong
+transcription produces `EINVAL`, measured, and that still fails the unshimmed run.

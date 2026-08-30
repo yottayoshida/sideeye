@@ -290,6 +290,14 @@ fn classOf(call_in: []const u8) ?contract.OpClass {
     const table = [_]struct { name: []const u8, class: contract.OpClass }{
         .{ .name = "open", .class = .open },
         .{ .name = "guarded_open_np", .class = .open },
+        // The rest of the guarded family (#299). SQLite writes through these, and the
+        // shim interposes all six as of that change; classifying them here is what
+        // makes the oracle able to contradict the shim's account of them.
+        .{ .name = "guarded_open_dprotected_np", .class = .open },
+        .{ .name = "guarded_write_np", .class = .write },
+        .{ .name = "guarded_pwrite_np", .class = .write },
+        .{ .name = "guarded_writev_np", .class = .write },
+        .{ .name = "guarded_close_np", .class = .close },
         .{ .name = "openat", .class = .open },
         .{ .name = "open_dprotected", .class = .open },
         .{ .name = "write", .class = .write },

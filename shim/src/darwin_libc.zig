@@ -98,3 +98,27 @@ pub const fseek = @extern(*const fn (*anyopaque, c_long, c_int) callconv(.c) c_i
 pub const fseeko = @extern(*const fn (*anyopaque, i64, c_int) callconv(.c) c_int, .{ .name = "fseeko" });
 pub const rewind = @extern(*const fn (*anyopaque) callconv(.c) void, .{ .name = "rewind" });
 pub const fsetpos = @extern(*const fn (*anyopaque, *const anyopaque) callconv(.c) c_int, .{ .name = "fsetpos" });
+
+// The guarded-descriptor family (#299). SQLite reaches five of these — every one but
+// `guarded_writev_np`, measured with `dyld_info -imports /usr/lib/libsqlite3.dylib`,
+// and not weakly (`libobjc.A.dylib` shows a weak row, so the absent marker is a
+// reading rather than a gap in the tool) — and several corpus targets
+// keep a SQLite store, so a target writing through one of these was writing where the
+// only observer this platform has by default could not see it.
+//
+// These signatures are TRANSCRIBED, which is the thing this project otherwise refuses
+// to do. There is no alternative: `sys/guarded.h` is not in the SDK (nor is
+// `guardid_t`), and a symbol carries no type, so `dyld_info` and `nm` can confirm the
+// name exists and nothing more. They are taken from XNU's own `bsd/sys/guarded.h`, and
+// the acceptance leg that calls each one is what checks the transcription — a wrong
+// arity here would not fail to compile, it would read a register the caller never
+// wrote, which is exactly the failure the `open` comment above describes.
+//
+// `guardid_t` is `__uint64_t`, passed by pointer. Only the two open variants are
+// variadic, and only when O_CREAT asks for a mode.
+pub const guarded_open_np = @extern(*const fn ([*:0]const u8, *const u64, c_uint, c_int, ...) callconv(.c) c_int, .{ .name = "guarded_open_np" });
+pub const guarded_open_dprotected_np = @extern(*const fn ([*:0]const u8, *const u64, c_uint, c_int, c_int, c_int, ...) callconv(.c) c_int, .{ .name = "guarded_open_dprotected_np" });
+pub const guarded_close_np = @extern(*const fn (c_int, *const u64) callconv(.c) c_int, .{ .name = "guarded_close_np" });
+pub const guarded_write_np = @extern(*const fn (c_int, *const u64, [*]const u8, usize) callconv(.c) isize, .{ .name = "guarded_write_np" });
+pub const guarded_pwrite_np = @extern(*const fn (c_int, *const u64, [*]const u8, usize, i64) callconv(.c) isize, .{ .name = "guarded_pwrite_np" });
+pub const guarded_writev_np = @extern(*const fn (c_int, *const u64, *const anyopaque, c_int) callconv(.c) isize, .{ .name = "guarded_writev_np" });

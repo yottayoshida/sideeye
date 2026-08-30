@@ -246,6 +246,61 @@ pub fn open_dprotected_np(path: [*:0]const u8, flags: c_int, class: c_int, dpfla
     return common.callOpenDprotectedNp(path, flags, class, dpflags, mode);
 }
 
+/// The guarded-descriptor family (#299). `/usr/lib/libsqlite3.dylib` imports FIVE of
+/// the six — every one but `guarded_writev_np` — and not weakly (measured with
+/// `dyld_info -imports`, with a positive control: `libobjc.A.dylib` shows a weak row,
+/// so an absent marker means something). The sixth is here because the unit is the
+/// family: interposing the opens and leaving a writer out would make the account
+/// silent about writes on a descriptor it did report. Until now the shim saw none: a
+/// guarded open created a file the account never mentioned, and with any other recorded
+/// mutation present the run PASSed. That is the #333 shape one family over — and worse
+/// on the default path, where the shim is the only observer there is.
+///
+/// Each notes what its unguarded twin notes. The guard changes who may touch the
+/// descriptor, not what the call does to the file.
+pub fn guarded_open_np(path: [*:0]const u8, guard: *const u64, gflags: c_uint, flags: c_int, ...) callconv(.c) c_int {
+    var ap = @cVaStart();
+    defer @cVaEnd(&ap);
+    const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
+    if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, path);
+    return common.callGuardedOpenNp(path, guard, gflags, flags, mode);
+}
+
+pub fn guarded_open_dprotected_np(path: [*:0]const u8, guard: *const u64, gflags: c_uint, flags: c_int, class: c_int, dpflags: c_int, ...) callconv(.c) c_int {
+    var ap = @cVaStart();
+    defer @cVaEnd(&ap);
+    const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
+    if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, path);
+    return common.callGuardedOpenDprotectedNp(path, guard, gflags, flags, class, dpflags, mode);
+}
+
+pub fn guarded_write_np(fd: c_int, guard: *const u64, buf: [*]const u8, count: usize) callconv(.c) isize {
+    common.noteFd(.write, fd);
+    return common.callGuardedWriteNp(fd, guard, buf, count);
+}
+
+pub fn guarded_pwrite_np(fd: c_int, guard: *const u64, buf: [*]const u8, count: usize, offset: i64) callconv(.c) isize {
+    common.noteFd(.write, fd);
+    return common.callGuardedPwriteNp(fd, guard, buf, count, offset);
+}
+
+pub fn guarded_writev_np(fd: c_int, guard: *const u64, iov: *const anyopaque, iovcnt: c_int) callconv(.c) isize {
+    common.noteFd(.write, fd);
+    return common.callGuardedWritevNp(fd, guard, iov, iovcnt);
+}
+
+/// Not a state change, and here for two reasons that are not about state. `classOf`
+/// maps it to `.close`, so the promise this check makes requires it. And it has to
+/// reach `noteTraceClose`, which is how the shim notices a target retiring the trace
+/// descriptor itself — SQLite closes guarded descriptors with this and *cannot* fall
+/// back to `close`, because the guard fires. (There is no descriptor ledger to keep
+/// in step: `noteFd` asks the kernel where a descriptor points every time.)
+pub fn guarded_close_np(fd: c_int, guard: *const u64) callconv(.c) c_int {
+    common.noteFd(.close, fd);
+    common.noteTraceClose(fd);
+    return common.callGuardedCloseNp(fd, guard);
+}
+
 // --- kill-point ops: unlink ------------------------------------------------------
 
 pub fn unlink(path: [*:0]const u8) callconv(.c) c_int {
