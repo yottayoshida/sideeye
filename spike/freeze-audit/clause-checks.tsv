@@ -41,6 +41,16 @@
 # row cannot describe text that is not there; the reverse direction is held by
 # review. Read the per-surface counts in rung 3's output with that in mind.
 #
+# That is not a theoretical limit, and the first delivery measured it. The file
+# shipped at 26 rows and was three short: the declaration's claim that the listed
+# keys and the code's accepted set "stay the same list", `sc-18`'s legality
+# reading `freeze-broken`, and `contract_version_mismatch` being a different
+# refusal from a saved case's. All three are normative and mechanically
+# checkable, all three were found by a second reader walking the declaration
+# sentence by sentence against the rows, and none of the gates went red. A fourth
+# row, `s1-string-form`, named a check that drives half of its clause. If you are
+# adding a clause here, the walk is the only instrument there is.
+#
 # Two suites are consulted: spike/acceptance.sh (69 checks) and
 # spike/mcp-acceptance.sh. Surface 5 lives entirely in the second — reading only
 # the first would have marked all four of its clauses unpinned, which is the same
@@ -49,7 +59,8 @@
 clause_id	surface	clause	held	by	gap
 s0-breaking	0	from then on, changing any of them is a breaking change	partial	spike/freeze-audit/check-freeze-audit.sh::legality %s is not one of the five recorded	the gate holds the legality column to a closed set of values; whether a given movement really was breaking is an adjudication recorded per change, not something a check decides
 s1-keys	1	`[world] state`; `[define] setup`, `operation`,	partial	spike/acceptance.sh::check 2x: sideeye.toml is the define surface, and it fails closed	the check drives the boundary of the accepted set (unknown keys refuse); it does not exercise each accepted key in turn
-s1-string-form	1	the string	pinned	spike/acceptance.sh::check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019)	-
+s1-same-list	1	than left to the code so the frozen surface and the accepted set stay the	unpinned	-	-
+s1-string-form	1	form with its split-on-spaces, no-quoting rule	partial	spike/acceptance.sh::check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019)	the negative control drives the split-on-spaces half: the string form cannot spell a spaced argument, and the recording run fails. No case anywhere in either suite gives the string form an embedded quote, so the no-quoting half of the same sentence is never exercised
 s1-argv-form	1	the argv form — one	pinned	spike/acceptance.sh::check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019)	-
 s1-refusals	1	Unknown keys,	pinned	spike/acceptance.sh::check 2x: sideeye.toml is the define surface, and it fails closed	-
 s1-relative-paths	1	relative paths resolve against the toml's directory	partial	spike/acceptance.sh::check 2x: sideeye.toml is the define surface, and it fails closed	the check writes `state = "./state"` beside the toml and requires the same verdict as the flag form, which a cwd-relative resolution would not produce; it does not exercise a toml outside the working directory, which is where the two rules visibly diverge
@@ -59,6 +70,7 @@ s2-prose-may-move	2	The account fields' prose may	unpinned	-	-
 s2-additive	2	Additive extension stays open (#320): a new optional field may appear in a	unpinned	-	-
 s2-closed-set	2	The `unknown_reason` closed set is **not** covered by that	pinned	spike/acceptance.sh::check 4: the report schema page is held to the generated reports	-
 s2-amendment	2	`state_changed_unaccounted` was added after the tag, taking the set	partial	spike/acceptance.sh::check 2af: a change no operation names is refused (#405)	the check exercises the new member's refusal; that the rule for 1.x is unchanged, and that the next member needs its own ruling, are claims about future decisions and are held by review
+s2-sc18-legality	2	`sc-18`'s `legality` reads `freeze-broken` for exactly that	unpinned	-	-
 s3-verdict-codes	3	fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR	partial	spike/acceptance.sh::check 2: outside the boundary	the named check asserts rc 2 for UNKNOWN and nothing else; PASS=0, FAIL=1 and SETUP_ERROR=3 are each driven elsewhere in the suite, so no single check holds the mapping as a whole
 s3-unknown-never-zero	3	and UNKNOWN is never 0	pinned	spike/acceptance.sh::check 2: outside the boundary	-
 s3-zero-users	3	`version` always has; `help` does too (#273);	partial	spike/acceptance.sh::check 15: help is answered per mode, and cannot reach the parser (#296)	help is driven per mode; the preflight-accepts-recording case is exercised by check 6, and `version` by neither — one row cannot name all three, and the clause is one sentence
@@ -67,6 +79,7 @@ s3-no-evidence-split	3	**No evidence-strength split**	unpinned	-	-
 s4-replay-or-refuse	4	A saved case replays across 1.x or refuses	pinned	spike/acceptance.sh::check 2z: a saved case replays honestly (ADR 0009)	-
 s4-message-names-which	4	the refusal message names which	unpinned	-	-
 s4-never-verdict	4	never a	pinned	spike/acceptance.sh::check 2z: a saved case replays honestly (ADR 0009)	-
+s4-mismatch-is-different	4	`contract_version_mismatch` is a different refusal entirely	partial	spike/acceptance.sh::check 2z: a saved case replays honestly (ADR 0009)	the v7 leg asserts the reason name is exactly case_no_longer_applies, which is the half of this clause that separates a saved case from this refusal; nothing drives the other half, that an engine and shim speaking different trace versions inside one run are what produce it
 s4-version-shape-travel	4	Version and shape travel together (a v1/v2 case cannot	pinned	spike/acceptance.sh::check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019)	-
 s4-bump-not-broken	4	A future trace-contract bump is therefore *not* a	unpinned	-	-
 s5-tool-names	5	The two tool names — `sideeye_explore_config`, `sideeye_replay_case`	pinned	spike/mcp-acceptance.sh::mcp 1: every stdout line is exactly one JSON-RPC message	-
