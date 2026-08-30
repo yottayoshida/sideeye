@@ -121,7 +121,7 @@ report refuses to be reassuring without an account.
 | `oracle` | string | The completeness account: how many operations the two witnesses agreed on, or that no oracle ran. |
 | `metadata_writes` | string | Ownership/permission/timestamp writes on the state directory (#121, #190): observed by the oracle and excluded from judgement — the chown/chmod and utime families change none of the judged state (names, bytes, link targets). Without an oracle the note says they are not observable at all (the shim does not interpose them); absence of a note is never absence of writes. |
 | `checker` | string | The declared invariant's account (`"none configured"` when unused). |
-| `processes` | string | The process-boundary account: what else was observed and whether it touched the state. |
+| `processes` | string | The process-boundary account: what each witness observed, and whether anything else touched the state. The shim sees only libc's own entry points (`fork`, `vfork`, `posix_spawn`, the `exec` family, `pthread_create`, `setsid`, `setpgid`), so a child created through a raw syscall is not observable to it at all; where nothing that could have seen a boundary looked, the note says the question was not established rather than answering it. `fs_usage` drops whole processes by name (ADR 0031), so its silence is not an observation of absence either, and where the two witnesses disagree the note reports both rather than preferring one. Absence of a boundary from the note is never absence of a boundary. |
 | `not_tested` | array of strings | Fault classes this run does not claim to have tested (power loss, torn writes, concurrent processes, …). Read it before trusting a PASS. |
 
 ## Reading it from the MCP surface

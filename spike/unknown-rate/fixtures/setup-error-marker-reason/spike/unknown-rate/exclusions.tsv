@@ -1,0 +1,10 @@
+# Apparatus failures that could not be fixed (fixture). Same shape as the real
+# spike/unknown-rate/exclusions.tsv; see that file for the rules count.py holds.
+#
+# The reason carries the results block's own end marker. check finds the block by
+# splitting the page on that string, so an injected one shortens the compared
+# region on BOTH sides: the byte-compare passes over a prefix and everything after
+# the injection — including the rest of this reason — stops being compared.
+#
+# id	reason
+fx-toyD	the pinned image has no perl <!-- unknown-rate:results:end --> and anything at all after this point

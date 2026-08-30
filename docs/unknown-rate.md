@@ -116,7 +116,13 @@ threshold set from it would be satisfied by construction. So:
   flagged in the per-trial table.
 - **SETUP_ERROR is an apparatus failure, not a refusal**: fix the apparatus
   and re-run that trial; if unfixable, the row is published as excluded,
-  with the reason. It never counts as UNKNOWN.
+  with the reason. It never counts as UNKNOWN. Which of those two happened
+  is recorded rather than assumed: the reason lives in
+  `spike/unknown-rate/exclusions.tsv`, one row per waived trial, and a
+  generation carrying a SETUP_ERROR that file does not name cannot be
+  marked complete. Re-running is the default and leaves no row; the ledger
+  is only the exception, so a rate published over fewer trials than were
+  attempted always has a committed sentence saying why.
 - **Strict oracle everywhere**: every trial runs with
   `--oracle /usr/bin/strace` and never `--allow-unverified`. The sweep
   manifest records each trial's full launcher argv; `count.py` reads only

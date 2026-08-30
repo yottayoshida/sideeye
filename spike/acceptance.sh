@@ -338,7 +338,9 @@ p = d.get("processes")
 if not isinstance(p, str) or "refused" not in p or "explored world" not in p:
     sys.exit("the processes account still tells the recording story: %r" % p)
 if "observed for quiescence only" in p:
-    sys.exit("the pre-#169 tolerate wording survives in the processes account")'; then
+    sys.exit("the pre-#169 tolerate wording survives in the processes account")
+if p.startswith("single process;"):
+    sys.exit("the recording clause lost its scope: %r" % p)'; then
     echo "ok   a world-only boundary refuses under the recording-time reason (exit 2)"
 else
     echo "FAIL world-only boundary refusal: exit $rc"
@@ -1039,6 +1041,22 @@ fi
 # #94: this is the "--oracle was given, the oracle ran, and the comparison did not
 # complete" path — the evidence bit must stay false here, not only where no oracle
 # exists at all. The total rule has one true-point; this pins one of its elsewheres.
+# …and the boundary account must not turn that empty capture into an observation.
+# An account of nothing parses to zero children, and zero children read as "nobody
+# else was there" until #405's report half. Measured on the pre-change binary here:
+# `processes: single process` beside `unknown_reason: oracle_saw_nothing`.
+if python3 -c "
+import json, sys
+d = json.load(open('/tmp/acc/report.json'))
+p = d.get('processes')
+if 'single process' in p: sys.exit('an empty capture was published as an observation: %r' % p)
+if 'capture was empty' not in p: sys.exit('the account does not say the capture was empty: %r' % p)
+"; then
+    echo "ok   an empty capture is reported as an empty capture, not as a single process"
+else
+    echo "FAIL the empty-oracle boundary account"
+    fails=$((fails + 1))
+fi
 if ov_pin /tmp/acc/report.json false >/dev/null; then
     echo "ok   oracle_verified stays false (as a JSON bool) when the oracle ran but nothing was compared"
 else
@@ -2905,11 +2923,31 @@ json.dump(c, open(sys.argv[2], "w"))
 PY
 o=$("$SIDEEYE" replay /tmp/acc/v7-case.json --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "different trace contract"; then
-    echo "ok   a v7-recorded case refuses as a contract mismatch, never a verdict"
+# The success line used to claim "never a verdict" while the predicate was exit 2
+# plus a message substring — neither half of that claim was asserted (#370). The
+# substring is also not specific to this leg's subject: `different trace contract`
+# appears in TWO refusals in src/main.zig, and docs/contract-freeze.md surface 4
+# states that the other one, `contract_version_mismatch`, "is a different refusal
+# entirely ... nothing to do with saved cases". So the reason NAME is what
+# separates this leg's subject from its neighbour; the message alone cannot.
+# Asserted here, and stronger than the prefix-insertion leg above rather than the same
+# shape as it: that leg stops at the exit code, an UNANCHORED substring and the absence
+# of a verdict. Two of the five clauses below are its verbatim; the anchored headline is
+# a strictly tighter form of its substring; the headline count and the message clause
+# have no analogue there. Of the five, three are each solely responsible for killing a
+# mutant — the reason name, the verdict clause, and the message. The count is defensive:
+# `unknown()` is `noreturn` and the only writer of a `^UNKNOWN ` line, so on this path no
+# reachable mutation produces a second headline, and no mutant demonstrates its necessity.
+v7_unknowns=$(printf '%s\n' "$o" | grep -cE '^UNKNOWN ' || true)
+if [ "$rc" = "2" ] \
+    && printf '%s\n' "$o" | grep -qE '^UNKNOWN  case_no_longer_applies$' \
+    && [ "$v7_unknowns" = "1" ] \
+    && ! printf '%s\n' "$o" | grep -qE '^(PASS|FAIL)' \
+    && printf '%s\n' "$o" | grep -q "different trace contract"; then
+    echo "ok   a v7-recorded case refuses as case_no_longer_applies, naming the trace contract as the cause, with no verdict"
 else
-    echo "FAIL v7 case handling: exit $rc"
-    echo "$o" | sed 's/^/     | /' | head -4
+    echo "FAIL v7 case handling: exit $rc, UNKNOWN headlines $v7_unknowns"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
 
@@ -3334,6 +3372,25 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # claimed by two), ledger-successor (a supersession row whose replacement is in no
 # corpus), ledger-unrelated-successor (a replacement that is a different target) and
 # outcome-new-this-sweep (an already-triaged tool parked as untriaged).
+# #347 adds six more, for the two sides of the page's SETUP_ERROR rule and for the
+# shape of the ledger that records them: setup-error-unwaived (a SETUP_ERROR nobody
+# waived — the generation is marked complete and the rate publishes over what
+# remains), setup-error-orphan-waiver (a waiver whose trial is not a SETUP_ERROR,
+# which is what a waiver becomes once the apparatus it excused is repaired), and
+# setup-error-empty-reason / setup-error-piped-reason / setup-error-duplicate-waiver
+# / setup-error-marker-reason for read_exclusions' own four rules. Those four refuse
+# inside the reader, so they fire in `emit` as well as `check` — that is the
+# fail-closed direction, and it is why the message each carries names the ledger
+# rather than whatever downstream thing would have tripped over the bad row.
+# Each of the six is red for its own predicate and green without it: the first three
+# shape fixtures were written against `good`, waiving a trial that is not a
+# SETUP_ERROR, so removing the rule under test left them red on the orphan message
+# instead — right rc, right text, wrong reason. They waive a real SETUP_ERROR now,
+# and their published blocks are what the guard-less emitter renders, because a
+# fixture whose docs do not match that is caught by the byte-compare instead.
+# marker-reason needs a generation covering B alone with no rated trial: that is the
+# only shape where nothing the attribution checks read comes after a detail table,
+# and it is the shape the page contemplates for a future B measurement.
 # The first of those seven was itself red for the wrong reason when it was written —
 # count.py read its reports before checking its status, so it died on a missing file
 # — which is what this loop's message-matching exists to catch. **Predicates with no
@@ -3355,6 +3412,10 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # green, and that gap is filed rather than left implied. Sunset: never fired by the
 # v1.0 freeze -> removal list (same rule as check 11).
 ur_fails=0
+# Counted by the loop rather than written here: the sentence said "twelve" while the
+# list below held twenty, because nothing recomputes a number kept in prose beside
+# the thing it counts.
+ur_red=0
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
     echo "     the live page/artifacts disagree with recomputation"
     ur_fails=$((ur_fails + 1))
@@ -3367,7 +3428,13 @@ fi
 # live page has none and neither does `good`, so the rule that keeps such a row out
 # of every denominator was reachable by nothing. Green here proves the exclusion
 # holds; removing it from count.py turns THIS fixture red on the attribution row
-# count while good and the live tree stay green (measured before shipping).
+# count while good and the live tree stay green (measured before shipping). It
+# carries one SETUP_ERROR per published table shape — fx-toyE in the wide A-group
+# table and fx-toyD in the B-group funnel table, whose excluded cell sits in a
+# different column — because with only the A-group row the funnel half of that
+# renderer was covered by reading the code and nothing else. Both are waived in
+# exclusions.tsv, so this is also where a waived reason is proven to reach the
+# published table rather than only to pass the ledger's own shape rules.
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/setup-error-present" >/dev/null 2>&1; then
     echo "     fixture setup-error-present failed — the SETUP_ERROR exclusion has no other reachable input"
     ur_fails=$((ur_fails + 1))
@@ -3398,7 +3465,14 @@ for pair in \
     "attribution-detail-row-missing:rated rows against" \
     "attribution-reason-table:the reason table is" \
     "attribution-reason-sum:the reason counts sum to" \
-    "attribution-outcome-sum:a row leaves the ratio without leaving a trace"; do
+    "attribution-outcome-sum:a row leaves the ratio without leaving a trace" \
+    "setup-error-unwaived:SETUP_ERROR with no row in exclusions.tsv" \
+    "setup-error-orphan-waiver:a waiver outliving its trial excuses nothing" \
+    "setup-error-empty-reason:is waived with no reason" \
+    "setup-error-piped-reason:reason contains a pipe" \
+    "setup-error-duplicate-waiver:twice — the later row would win in silence" \
+    "setup-error-marker-reason:carries the results block's end marker"; do
+    ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
           --root "$ROOT/spike/unknown-rate/fixtures/$bad" 2>&1)
@@ -3413,7 +3487,7 @@ for pair in \
     fi
 done
 if [ "$ur_fails" = "0" ]; then
-    echo "ok   unknown-rate page in sync; gate red on all twelve tampered fixtures"
+    echo "ok   unknown-rate page in sync; gate red on all $ur_red tampered fixtures"
 else
     echo "FAIL unknown-rate drift gate: $ur_fails problem(s)"
     fails=$((fails + 1))
@@ -4761,6 +4835,108 @@ if [ "$cwd_fails" != "0" ]; then
     fails=$((fails + cwd_fails))
     reasons="$reasons cwd"
 fi
+
+echo ""
+echo "=========== check 2ad: two witnesses that disagree are both reported (#405) ==========="
+# The shim records a boundary; strace, which follows children, sees none. Measured
+# reachable with a failed `vfork` (spike/toys/toy_vfork_fail.c): the shim's wrapper
+# records before the call, so the record survives the failure. The shipped build
+# answered `processes: single process` here — an assertion drawn from one witness's
+# silence while the other had spoken — and that is what this leg is for.
+#
+# Seen red once, on the pre-change binary built from main 62875eb and run against this
+# exact toy: PASS exit 0, crash_points 2, `processes: single process` (BUILDLOG
+# 2026-08-30). The verdict and the count are unchanged by the fix; only the account moved.
+vf_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+# The compiler the rest of the suite's toys use, with the same fallback, and its
+# stderr kept: swallowing it left "could not build" as the only thing a broken build
+# could say (review).
+( cc -O0 -o /tmp/acc/toy-vfork-fail "$ROOT/spike/toys/toy_vfork_fail.c" 2>/tmp/acc/vf-build.log ||
+  gcc -O0 -o /tmp/acc/toy-vfork-fail "$ROOT/spike/toys/toy_vfork_fail.c" 2>>/tmp/acc/vf-build.log ) || {
+    echo "FAIL could not build toy_vfork_fail"; sed 's/^/     | /' /tmp/acc/vf-build.log | head -5; vf_fails=1; }
+if [ "$vf_fails" = "0" ]; then
+    PROBE_STATE=/tmp/acc/state PROBE_OUTCOME=/tmp/acc/outcome "$SIDEEYE" explore \
+        --state /tmp/acc/state --operation /tmp/acc/toy-vfork-fail \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+        --json /tmp/acc/vfork.json > /tmp/acc/vfork.txt 2>&1
+    rc=$?
+    # The toy says which branch it took. Without this the leg passes vacuously on any
+    # machine where the vfork succeeds (root ignores RLIMIT_NPROC — measured) or where
+    # setrlimit is refused: both leave a run with no disagreement to report.
+    outcome=$(cat /tmp/acc/outcome 2>/dev/null || echo "(none)")
+    if [ "$outcome" != "vfork-failed" ]; then
+        echo "FAIL the toy did not reach the shape this leg measures: $outcome"
+        [ "$outcome" = "vfork-succeeded" ] && echo "     (RLIMIT_NPROC is ignored for root; this suite has to run unprivileged for this leg)"
+        vf_fails=$((vf_fails + 1))
+    elif [ "$rc" != "0" ]; then
+        echo "FAIL wanted PASS (exit 0), got exit $rc"
+        head -4 /tmp/acc/vfork.txt | sed 's/^/     | /'
+        vf_fails=$((vf_fails + 1))
+    else
+        python3 - <<'PYEOF' || vf_fails=$((vf_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/vfork.json"))
+p = d.get("processes")
+if not isinstance(p, str):
+    sys.exit("processes is not a string: %r" % p)
+if "single process" in p:
+    sys.exit("the account resolved a disagreement by asserting one witness: %r" % p)
+for needle in ("the shim recorded a process boundary", "strace observed no other process", "disagree"):
+    if needle not in p:
+        sys.exit("the account does not report %r: %r" % (needle, p))
+if d.get("verdict") != "PASS" or d.get("exit_code") != 0:
+    sys.exit("the verdict moved: %r/%r" % (d.get("verdict"), d.get("exit_code")))
+PYEOF
+    fi
+fi
+if [ "$vf_fails" = "0" ]; then
+    echo "ok   the shim's record and strace's silence are both reported, neither preferred"
+else
+    fails=$((fails + vf_fails))
+    reasons="$reasons vfork-disagreement"
+fi
+
+
+echo ""
+echo "=========== check 2ae: a boundary only the oracle saw is in the account (#405) ==========="
+# `clone(CLONE_THREAD)` crosses a process boundary and emits no second pid, so the child
+# count stays zero and the witness matrix would read the run as single-process. The
+# engine refuses it (`child_process_detected`, from `parsed.boundary`), and on the
+# pre-change binary the report for that refusal said `processes: single process`
+# — measured, and the red this leg exists to show.
+oe_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle "$ROOT/spike/thread-oracle.sh" \
+    --json /tmp/acc/thread.json 2>&1)
+rc=$?
+if [ "$rc" != "2" ]; then
+    echo "FAIL wanted UNKNOWN (exit 2), got exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    oe_fails=$((oe_fails + 1))
+else
+    python3 - <<'PYEOF' || oe_fails=$((oe_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/thread.json"))
+if d.get("unknown_reason") != "child_process_detected":
+    sys.exit("wanted child_process_detected, got %r — a refusal for another reason "
+             "would leave this leg green over a parser failure" % d.get("unknown_reason"))
+p = d.get("processes")
+if "single process" in p:
+    sys.exit("a boundary the oracle reported was published as a single process: %r" % p)
+if "crosses a process boundary" not in p:
+    sys.exit("the account does not carry the oracle's boundary: %r" % p)
+PYEOF
+fi
+if [ "$oe_fails" = "0" ]; then
+    echo "ok   a boundary only the oracle saw reaches the account"
+else
+    fails=$((fails + oe_fails))
+    reasons="$reasons oracle-only-boundary"
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

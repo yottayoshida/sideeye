@@ -235,11 +235,222 @@ var rec_image: ?image.Observation = null;
 /// refused — the JSON consumer is the §17 audience and must not need the text.
 var case_note: []const u8 = "(none)";
 var replay_note: []const u8 = "-";
-/// What the run knows about process boundaries. "single process" until evidence says
-/// otherwise; a tolerated boundary replaces it with what was observed and what that
-/// limits — the reader of a FAIL must be able to see that the window is attributed to
-/// the subject only.
-var boundary_note: []const u8 = "single process";
+/// What the run has *established* about process boundaries, as it establishes it.
+///
+/// Evidence, not prose. The sentence is rendered at report time by `boundaryAccount()`,
+/// so a refusal raised at any depth reports what this run actually looked at instead of
+/// a claim nobody checked. This field used to be the prose itself, defaulting to
+/// `"single process"` — an assertion about the target published on every path where no
+/// witness had been able to look, which is the confusion `metadata_note`'s own comment
+/// forbids thirty lines above: "was not seen" must not read as "did not happen" here any
+/// more than anywhere else in this tool. On macOS with no oracle nothing can see a raw
+/// `fork(2)`, and the account said "single process" while a child's file sat in the
+/// judged directory (#405).
+///
+/// Rendering also removes the wholesale-replacement hazard the old shape carried: three
+/// assignment sites each overwrote the whole sentence, and the world-only one dropped the
+/// image-replacement disclosure the recording had set (#123) with nothing to catch it.
+var boundary_ev: BoundaryEvidence = .{};
+
+const BoundaryEvidence = struct {
+    /// The completeness observer, and how far it got. Named is not the same as read.
+    witness: Witness = .none,
+    /// Whether the shim's trace has been read yet. A run refused before that — the
+    /// operation exiting the wrong status, the state moving under it — has no account of
+    /// its boundaries at all, and the two situations are told apart because "refused
+    /// before anyone looked" and "looked and the shim was not there" are different facts.
+    trace_read: bool = false,
+    /// Whether the shim announced itself in that trace. Until it does, no witness looked.
+    shim_reported: bool = false,
+    /// The shim's account of the recording run: a boundary record, or a record from a
+    /// pid that is not the subject's.
+    shim_boundary: bool = false,
+    /// A boundary that stays a refusal whatever an oracle says, by its own name.
+    shim_hard: ?[]const u8 = null,
+    /// A kill-point record from another process: its operations have no crash-point
+    /// address, and the run refuses on it.
+    shim_foreign_touch: bool = false,
+    /// Subject execs whose chain was proven unbroken (#123).
+    exec_continuations: u32 = 0,
+    /// The oracle saw a non-subject operation on the judged directory.
+    oracle_child_touched: bool = false,
+    /// What the oracle's *own* account called a boundary — a `clone` carrying
+    /// `CLONE_THREAD` or `CLONE_FS`, an `unshare`, a non-primary `setsid`/`setpgid`
+    /// (`src/oracle.zig`). The child count cannot express this: a thread emits no pid of
+    /// its own, so a run refusing `child_process_detected` on the oracle's evidence had
+    /// `children == 0` and read as a single process until review measured it.
+    oracle_boundary: ?[]const u8 = null,
+    /// A boundary in an explored world. Worlds run with no oracle at all, so nothing
+    /// accounts for what the other process did whichever of these applies.
+    world_boundary: bool = false,
+    /// The subset the recording never crossed, which is the one that refuses (#169).
+    world_only: bool = false,
+    /// A kill-point record from another process inside an explored world.
+    world_foreign_touch: bool = false,
+    /// What the shim recorded in preflight's second observed run (#199), if anything.
+    /// That run's oracle capture is written and deliberately never parsed, so whatever
+    /// it shows is unaccounted for — and with `--oracle` the soft check below does not
+    /// even refuse. The report used to print run A's account beside it, unchanged, as
+    /// though the second run had not happened.
+    second_run: ?[]const u8 = null,
+
+    const Kind = enum {
+        strace,
+        fs_usage,
+
+        fn name(self: Kind) []const u8 {
+            return switch (self) {
+                .strace => "strace",
+                .fs_usage => "fs_usage",
+            };
+        }
+    };
+
+    /// A union rather than a kind beside a child count, so "no oracle ran and it saw
+    /// three other processes" cannot be written down at all.
+    const Witness = union(enum) {
+        /// No completeness oracle was asked for.
+        none,
+        /// One was named, and its account never became readable — the capture was
+        /// unreadable or defective, or the run refused before the comparison.
+        unread: Kind,
+        /// Its account was parsed. `children` is the number of other processes in it,
+        /// and `lines` how much of it there was — an empty capture parses into an
+        /// account of nothing, which is not an observation that there was nothing. The
+        /// engine refuses it as `oracle_saw_nothing`, and until review measured it the
+        /// account for that refusal read `single process`.
+        read: struct { kind: Kind, children: usize, lines: usize },
+    };
+};
+
+/// Rendered fresh on each call; single-threaded, and no format string reads it twice.
+var boundary_buf: [1024]u8 = undefined;
+
+/// The `processes` account. Two clauses at most: what the recording established, and
+/// what an explored world added, followed by the image disclosure when one applies.
+///
+/// Three substrings are load-bearing for checks that hold this code to its behaviour:
+/// `spike/acceptance.sh:338` requires "refused" and "explored world" in the world-only
+/// account and forbids the pre-#169 "observed for quiescence only"; `spike/acceptance.sh:629`
+/// requires "image replaced" in a FAIL that carried a self-exec chain.
+fn boundaryAccount() []const u8 {
+    var scratch: [512]u8 = undefined;
+    const world: []const u8 = if (boundary_ev.world_foreign_touch)
+        "; a process other than the subject operated on the judged directory in an explored world"
+    else if (boundary_ev.world_only)
+        "; a process boundary appeared in an explored world — refused: nothing accounts for what it did"
+    else if (boundary_ev.world_boundary)
+        "; a process boundary appeared in an explored world, which runs with no oracle"
+    else
+        "";
+    const recording = blk: {
+        const c = boundaryRecordingClause(&scratch);
+        // The bare assertion has to stay scoped when something follows it: the pre-#405
+        // string said "single process in the recording" for exactly this reason, and
+        // dropping the qualifier would let a sentence that goes on to disclose a world
+        // boundary open by claiming the run had one process.
+        if (std.mem.eql(u8, c, "single process") and
+            (world.len > 0 or boundary_ev.second_run != null))
+            break :blk "single process in the recording";
+        break :blk c;
+    };
+    var second_buf: [256]u8 = undefined;
+    const second: []const u8 = if (boundary_ev.second_run) |what|
+        std.fmt.bufPrint(&second_buf, "; the second observed run recorded {s}, and that run's capture is never parsed, so nothing accounts for it", .{what}) catch
+            "; the second observed run recorded a boundary that nothing accounts for"
+    else
+        "";
+    if (boundary_ev.exec_continuations > 0) {
+        return std.fmt.bufPrint(
+            &boundary_buf,
+            "{s}{s}{s}; the subject's image replaced {d} time(s), chain unbroken (#123)",
+            .{ recording, world, second, boundary_ev.exec_continuations },
+        ) catch "the subject's image replaced, chain unbroken";
+    }
+    // Not `catch recording`: that slice points into `scratch`, a stack local of this
+    // frame, and returning it would hand the caller a dangling pointer on the one path
+    // where the buffer is too small. Unreachable at the current lengths — the longest
+    // combination measured is 494 of 1024 bytes — but "unreachable" is not a lifetime.
+    return std.fmt.bufPrint(&boundary_buf, "{s}{s}{s}", .{ recording, world, second }) catch
+        "the process-boundary account did not fit its buffer; treat it as not established";
+}
+
+/// The tolerated-children sentence, kept verbatim from before this field became
+/// evidence: a FAIL's reader has to see that the window is attributed to the subject
+/// alone, and 12 committed report artifacts hold this exact string.
+fn toleratedChildrenClause(scratch: []u8, children: usize) []const u8 {
+    return std.fmt.bufPrint(scratch, "{d} other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only", .{children}) catch
+        "other process(es) observed; none touched the state directory";
+}
+
+/// What the recording run established, in priority order: an operation by another
+/// process outranks the question of whether a boundary was crossed, and a boundary the
+/// shim named outranks the witness matrix.
+fn boundaryRecordingClause(scratch: []u8) []const u8 {
+    const ev = boundary_ev;
+    if (!ev.trace_read)
+        return "not established: this run was refused before the shim's account of it was read";
+    if (!ev.shim_reported)
+        return "not established: the shim never announced itself in this run, so nothing observed process boundaries";
+    if (ev.shim_foreign_touch or ev.oracle_child_touched)
+        return "a process other than the subject operated on the judged directory; its operations have no crash-point address";
+    if (ev.shim_hard) |name|
+        return std.fmt.bufPrint(scratch, "the shim recorded {s}", .{name}) catch "the shim recorded a boundary that is refused by name";
+    // The oracle's own boundary, which the child count cannot carry: a thread emits no
+    // pid, so `children` stays 0 and the witness matrix below would read this as an
+    // observation of a single process. Measured by review on a `CLONE_THREAD` capture.
+    if (ev.oracle_boundary) |name| return switch (ev.witness) {
+        .read => |r| std.fmt.bufPrint(scratch, "the {s} account reports {s}, which crosses a process boundary the shim did not record", .{ r.kind.name(), name }) catch
+            "the oracle's account reports a call that crosses a process boundary",
+        else => "the oracle's account reports a call that crosses a process boundary",
+    };
+    // An account of nothing is not an observation that there was nothing. The engine
+    // refuses this as `oracle_saw_nothing`; before review measured it, the refusal's
+    // report said `single process`, because a capture with no lines parses to zero
+    // children and zero children read as an observation of none.
+    switch (ev.witness) {
+        .read => |r| if (r.lines == 0) return if (ev.shim_boundary)
+            std.fmt.bufPrint(scratch, "not established: the shim recorded a process boundary and the {s} capture was empty, so nothing was compared", .{r.kind.name()}) catch
+                "not established: the oracle's capture was empty, so nothing was compared"
+        else
+            std.fmt.bufPrint(scratch, "not established: the {s} capture was empty, so nothing was compared and no other process was looked for", .{r.kind.name()}) catch
+                "not established: the oracle's capture was empty, so nothing was compared",
+        else => {},
+    }
+    if (ev.shim_boundary) return switch (ev.witness) {
+        .none => "the shim recorded a process boundary and no second witness ran",
+        .unread => |k| std.fmt.bufPrint(scratch, "the shim recorded a process boundary; the {s} account was not read, so nothing accounts for what the other process did", .{k.name()}) catch
+            "the shim recorded a process boundary and the oracle's account was not read",
+        .read => |r| if (r.children > 0)
+            // Kept verbatim from before this field became evidence: a FAIL's reader has
+            // to see that the window is attributed to the subject alone.
+            toleratedChildrenClause(scratch, r.children)
+        else
+            // The two witnesses disagree. Neither is preferred here: a `vfork` that
+            // failed leaves a boundary record with no child, and a child the oracle
+            // lost leaves the same shape. The run says so rather than picking.
+            std.fmt.bufPrint(scratch, "the shim recorded a process boundary and {s} observed no other process; the two accounts disagree and this run does not resolve them", .{r.kind.name()}) catch
+                "the shim and the oracle disagree about whether a process boundary happened",
+    };
+    return switch (ev.witness) {
+        // #405: the one assertion the old default made on every unwitnessed run.
+        .none => "not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran",
+        .unread => |k| std.fmt.bufPrint(scratch, "not established: no boundary was recorded by the shim, and the {s} account was not read", .{k.name()}) catch
+            "not established: no boundary was recorded by the shim, and the oracle's account was not read",
+        .read => |r| switch (r.kind) {
+            // strace follows children (`-f`), so no other pid in its account is an
+            // observation that there was none.
+            .strace => if (r.children > 0)
+                toleratedChildrenClause(scratch, r.children)
+            else
+                "single process",
+            // fs_usage cannot establish the same thing: its default exclusion list drops
+            // whole processes by name, `-e` does not lift it (measured), and ADR 0031 §2a
+            // is the ruling that a boundary is therefore never tolerated under it.
+            .fs_usage => "no other process mutated the judged directory in the fs_usage capture; fs_usage excludes some processes by name, so a child that execs one of them would not appear (ADR 0031)",
+        },
+    };
+}
 /// Progress, so an UNKNOWN raised mid-exploration reports what had been explored rather
 /// than zero. A caller aggregating coverage reads these.
 var crash_points: u32 = 0;
@@ -777,14 +988,6 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
     setupError(doing);
 }
 
-/// Start `fs_usage` beside the run, or refuse with the reason.
-///
-/// Everything that can fail about the observer fails *here*, before the first child of
-/// the measured run exists: the credential check, the launch, and the proof that the
-/// capture is live. That placement is not a preference — `docs/contract-freeze.md`
-/// fixes exit 3 to "before exploration started" and closes the `unknown_reason` set
-/// until 2.0, so a new way to fail that arrives after the recording has begun would
-/// have no honest code to leave under.
 /// How much fs_usage capture the engine will hold.
 ///
 /// The capture is system-wide (`src/fsusage.zig` explains why it cannot be filtered),
@@ -840,10 +1043,13 @@ fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usiz
 ///
 /// Everything that can fail about the observer fails *here*, before the first child of
 /// the measured run exists: the credential check, the launch, and the proof that the
-/// capture is live. That placement is not a preference — `docs/contract-freeze.md`
-/// fixes exit 3 to "before exploration started" and closes the `unknown_reason` set
-/// until 2.0, so a new way to fail that arrives after the recording has begun would
-/// have no honest code to leave under.
+/// capture is live. That placement is not a preference — **DESIGN's exit-code table**
+/// gives exit 3 as "configuration or environment problem before exploration began", and
+/// `docs/contract-freeze.md` closes the `unknown_reason` set until 2.0, so a new way to
+/// fail that arrives after the recording has begun would have no honest code to leave
+/// under. (An earlier revision of this paragraph attributed the exit-3 phrasing to the
+/// freeze page too; surface 3 fixes which code a verdict carries and says nothing about
+/// phase. Caught by a reader, #406 follow-up.)
 fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: []const u8, sentinel: []const u8, limit_s: u32) c_int {
     // `sudo -n`: never prompt. A prompt here would block a run nobody is watching, and
     // the caller who *is* watching gets a message naming the one command to run first.
@@ -1283,6 +1489,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (args.oracle != null and args.oracle_fs_usage)
         setupError("--oracle and --oracle-fs-usage both name a completeness oracle; pass one");
     args.has_oracle = args.oracle != null or args.oracle_fs_usage;
+    // Named, not yet read. The account distinguishes the two: an oracle whose capture
+    // never parsed establishes nothing about other processes, and a run refused before
+    // the comparison must not report as though it had one.
+    if (args.oracle_fs_usage)
+        boundary_ev.witness = .{ .unread = .fs_usage }
+    else if (args.oracle != null)
+        boundary_ev.witness = .{ .unread = .strace };
 
     if (mode == .preflight) {
         if (args.oracle_fs_usage) setupError("--oracle-fs-usage belongs to explore and replay; preflight asks whether the recording phase accepts this target, and answers that without a second witness");
@@ -1870,6 +2083,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // cannot be trusted only multiplies the untrustworthiness — and every one of those
     // worlds would produce a verdict that looks just as confident.
 
+    // The trace has been read. Whatever it says about boundaries is the account from
+    // here on; before this point there is no account, which is a different fact from
+    // "there was no boundary" and the report now tells them apart.
+    boundary_ev.trace_read = true;
+
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim was built against a different trace contract than this engine");
 
@@ -1880,6 +2098,28 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // verdict and the exit are unchanged, so no frozen surface moves.
     if (!trace.saw_shim_ready)
         unknown(.no_shim_marker, noShimDetail(arena));
+
+    // The shim's half of the boundary evidence, recorded the moment the trace is known
+    // to be the shim's — before every refusal below, because each of them writes a
+    // report and the account has to say what had been observed by then. The order is the
+    // rule `metadata_note` states and this field used to break: publish what was seen,
+    // never a default standing in for it.
+    boundary_ev.shim_reported = true;
+    boundary_ev.shim_boundary = trace.boundary != null or trace.foreign_pid_seen;
+    boundary_ev.shim_foreign_touch = trace.foreign_kill_point;
+    boundary_ev.exec_continuations = trace.exec_continuations;
+    if (trace.hard_boundary) |b| boundary_ev.shim_hard = switch (b) {
+        // The engine says of the other .exec shape "refusing is the safe misreading"
+        // (below), so the account must not assert breakage it did not establish. The
+        // two wordings split on the same field the refusal splits on.
+        .exec => if (trace.exec_chain_broken)
+            "an image replacement whose chain of observation broke"
+        else
+            "an image replacement before the subject announced itself",
+        .thread => "a thread",
+        .detached => "a process leaving the containment group",
+        else => null,
+    };
 
     if (trace.truncated)
         unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown");
@@ -1920,19 +2160,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.primary_kill_records != trace.kill_point_count)
         unknown(.sequence_numbering_broken, "the subject's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted");
 
-    // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid
-    // count reads "single process" while the crash points span more than one image,
-    // and every other note in this report says what the judgement covered — this
-    // one must too. Placed here, right after the trace is trusted, so the JSON's
-    // processes field is already honest on the oracle-refusal paths below (R2);
-    // the children note later appends around it when both apply.
-    if (trace.exec_continuations > 0) {
-        boundary_note = std.fmt.allocPrint(
-            arena,
-            "{s}; the subject's image replaced {d} time(s), chain unbroken (#123)",
-            .{ boundary_note, trace.exec_continuations },
-        ) catch "single process; image replaced, chain unbroken";
-    }
+    // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid count
+    // would otherwise read as one process while the crash points span more than one
+    // image, and every other note in this report says what the judgement covered — this
+    // one must too. The disclosure now rides in the evidence (set above, with the rest of
+    // the shim's account) and `boundaryAccount()` appends it to whatever clause applies,
+    // so no later assignment can drop it. One did: the world-only site overwrote the
+    // whole sentence and lost this.
 
     // The shim-side second witness, on the recording run. Crash points are numbered per
     // process; an operation by anyone else has no unique address and cannot be judged.
@@ -1953,7 +2187,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // Mutable: the oracle can reveal children the shim never saw (a raw clone whose
     // child loads nothing), and every consequence of having crossed a boundary — the
     // quiescence sampling above all — must engage for those too.
-    var crossed_boundary = trace.boundary != null or trace.foreign_pid_seen;
+    var crossed_boundary = boundary_ev.shim_boundary;
     if (crossed_boundary and !args.has_oracle)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)");
     // The fs_usage oracle cannot account for other processes the way strace does, so a
@@ -2022,6 +2256,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
             };
             break :blk r.parsed;
         } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError("out of memory");
+
+        // The witness has now looked, and what it saw is part of the account from here
+        // on — including on the refusals immediately below, which are exactly the runs
+        // where a stale "single process" used to be published.
+        boundary_ev.witness = .{ .read = .{
+            .kind = if (args.oracle_fs_usage) .fs_usage else .strace,
+            .children = parsed.children,
+            .lines = parsed.lines_seen,
+        } };
+        boundary_ev.oracle_child_touched = parsed.child_touched;
+        boundary_ev.oracle_boundary = parsed.boundary;
 
         // Set before any exit below, like oracle_note: an UNKNOWN raised by this
         // block must still carry what the oracle saw being excluded (#121).
@@ -2147,25 +2392,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else
             std.fmt.allocPrint(arena, "{s}, witness strace", .{agreed}) catch agreed;
 
-        if (parsed.children > 0) {
-            crossed_boundary = true;
-            const children_note = std.fmt.allocPrint(
-                arena,
-                "{d} other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only",
-                .{parsed.children},
-            ) catch "crossed, tolerated";
-            // This assignment replaces the note wholesale, so the image-change
-            // disclosure set earlier must ride along or a run with both children
-            // and a self-exec would lose it.
-            boundary_note = if (trace.exec_continuations > 0)
-                std.fmt.allocPrint(
-                    arena,
-                    "{s}; the subject's image replaced {d} time(s), chain unbroken (#123)",
-                    .{ children_note, trace.exec_continuations },
-                ) catch children_note
-            else
-                children_note;
-        }
+        // The oracle can reveal children the shim never saw (a raw clone whose child
+        // loads nothing), and every consequence of having crossed a boundary — the
+        // quiescence sampling below above all — must engage for those too. The account
+        // itself needs no assignment here: the child count is in the evidence, and the
+        // image disclosure rides beside it rather than having to be copied along, which
+        // is what the wholesale replacement this replaced had to remember to do.
+        if (parsed.children > 0) crossed_boundary = true;
     }
 
 
@@ -2456,6 +2689,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
         answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
         defer wtrace.deinit();
 
+        // The world's own boundary evidence, before the refusals that read it. Without
+        // this the account for a world-side refusal is the *recording's* clause, which
+        // review measured saying "no boundary was recorded" on a run refused because a
+        // world's child wrote into the judged directory. The world-only site further
+        // down was generalised and these four siblings were not; same class, same file.
+        boundary_ev.world_boundary = boundary_ev.world_boundary or
+            wtrace.boundary != null or wtrace.foreign_pid_seen;
+        boundary_ev.world_foreign_touch = boundary_ev.world_foreign_touch or wtrace.foreign_kill_point;
+
         // The second witness again, on every explored world and the baseline. A child's
         // behaviour is allowed to differ between worlds — the parent dying earlier
         // changes which path the child takes — so clearing the recording run clears
@@ -2515,7 +2757,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // BEFORE the refusal so the report's processes field tells the world's
         // story, never the recording's "single process".
         if (!crossed_boundary and world_armed) {
-            boundary_note = "single process in the recording; a process boundary appeared in an explored world — refused: nothing accounts for what it did";
+            boundary_ev.world_only = true;
             unknown(.boundary_without_oracle, "a process boundary appeared in an explored world that the recording never crossed; explored worlds run without an oracle, so nothing accounts for what the other process did");
         }
         var world_capture_first: ?CaptureObservation = null;
@@ -2804,7 +3046,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} SIDEEYE_SEQ_BASE= <operation>
             \\
         , .{
-            boundary_note,
+            boundaryAccount(),
             notTestedText(),
             state_abs, alt_env, repro_trace, preload_var, shim, f.k,
         });
@@ -2836,7 +3078,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundary_note, notTestedText() });
+    , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -3043,6 +3285,23 @@ fn observeAgain(
     // is this comment and review. Without the answer the cap would return an empty
     // `TraceInfo` and every gate below would go vacuously green.
     answerForOversizedTrace(trace, "the second observed run", trace_cap);
+    // Recorded here, above every refusal below, for the same reason run A's evidence is
+    // recorded above its own: each of them writes a report, and the account has to name
+    // the run it is about. An earlier revision of this said "before the refusals" while
+    // sitting after four of them (`no_shim_marker`, `trace_truncated`,
+    // `child_touched_state_dir`, `contract_version_mismatch`) — harmless today, because
+    // preflight refuses `--json` and the UNKNOWN text block carries no `processes` line,
+    // and wrong for whoever builds on the claim next. Caught by review.
+    if (trace.hard_boundary) |b| boundary_ev.second_run = switch (b) {
+        .exec => "an image replacement",
+        .thread => "a thread",
+        .detached => "a process leaving the containment group",
+        else => null,
+    };
+    if (boundary_ev.second_run == null and (trace.boundary != null or trace.foreign_pid_seen))
+        boundary_ev.second_run = "a process boundary";
+    if (boundary_ev.second_run == null and trace.foreign_kill_point)
+        boundary_ev.second_run = "an operation by a process other than the subject";
     // The property says "the two runs OBSERVED in this invocation". A run whose shim
     // never initialised was not observed, and reporting it as one half of a comparison
     // would make that word false — the flag exists for targets that take a different
@@ -3199,7 +3458,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         \\             checker falsification — only a real exploration runs these
         \\
         \\
-    , .{ l0_note, oracle_note, boundary_note });
+    , .{ l0_note, oracle_note, boundaryAccount() });
     if (repeat) |r| {
         // Reported whether the runs agreed or split, and worded as an observation
         // rather than a property: two samples cannot establish that a target is
@@ -4181,7 +4440,7 @@ fn buildJson(
     try w.appendSlice(arena, ",\n  \"checker\": ");
     try jsonString(w, arena, checker_note);
     try w.appendSlice(arena, ",\n  \"processes\": ");
-    try jsonString(w, arena, boundary_note);
+    try jsonString(w, arena, boundaryAccount());
     // Stated in the report itself, not only in the documentation: a PASS that does not
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": ");
@@ -4765,4 +5024,184 @@ test "no fourth engine build option arrives unchecked (#365)" {
     // above and the OpClass enumeration in contract.zig.
     const decls = @typeInfo(engine_build_options).@"struct".decls;
     try std.testing.expectEqual(@as(usize, 3), decls.len);
+}
+
+/// The reachable boundary-evidence states, written out rather than generated as a
+/// product of the fields: most of the product is unreachable (a witness that never ran
+/// cannot have counted children, and `oracle_child_touched` needs one that read), and a
+/// table of shapes the engine cannot produce measures the renderer against fiction. Each
+/// row names the run that reaches it and pins a phrase, so a mutation that empties a
+/// clause is caught rather than passing the entitlement bit.
+const boundary_cases = [_]struct {
+    what: []const u8,
+    ev: BoundaryEvidence,
+    /// Whether this state is entitled to say the words "single process" at all.
+    may_say_single: bool,
+    /// A phrase the rendered account must contain. One bit per state is not coverage:
+    /// review found that a mutation blanking a clause passed a table that only asked
+    /// whether "single process" appeared.
+    pins: []const u8,
+}{
+    .{ .what = "refused before the trace was read (a wrong exit status, say)", .ev = .{}, .may_say_single = false, .pins = "refused before the shim's account" },
+    .{ .what = "the shim never announced itself (no_shim_marker)", .ev = .{ .trace_read = true }, .may_say_single = false, .pins = "never announced itself" },
+    // #405, and the reason this table exists.
+    .{ .what = "no boundary recorded, no oracle asked for (#405)", .ev = .{ .trace_read = true, .shim_reported = true }, .may_say_single = false, .pins = "raw syscall" },
+    .{ .what = "no boundary recorded, the strace account never read", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .unread = .strace } }, .may_say_single = false, .pins = "strace account was not read" },
+    .{ .what = "no boundary recorded, the fs_usage account never read", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .unread = .fs_usage } }, .may_say_single = false, .pins = "fs_usage account was not read" },
+    // The one entitled state: both witnesses looked and neither saw another process.
+    .{ .what = "no boundary recorded, strace read and saw no other process", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } } }, .may_say_single = true, .pins = "single process" },
+    .{ .what = "no boundary recorded, strace read and saw two other processes", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 2, .lines = 400 } } }, .may_say_single = false, .pins = "2 other process(es) observed" },
+    // fs_usage drops whole processes by name, so its zero is not an observation of none.
+    .{ .what = "no boundary recorded, fs_usage read and saw no other process", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 0, .lines = 3858 } } }, .may_say_single = false, .pins = "excludes some processes by name" },
+    // An account of nothing is not an observation that there was nothing: the run
+    // refuses `oracle_saw_nothing`, and this used to report a single process (review).
+    .{ .what = "the strace capture was empty (oracle_saw_nothing)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 0 } } }, .may_say_single = false, .pins = "capture was empty" },
+    .{ .what = "the fs_usage capture was empty (oracle_saw_nothing)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 0, .lines = 0 } } }, .may_say_single = false, .pins = "capture was empty" },
+    .{ .what = "the shim recorded a boundary and the empty capture was all there was", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 0 } } }, .may_say_single = false, .pins = "capture was empty" },
+    .{ .what = "the shim recorded a boundary and no oracle ran", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true }, .may_say_single = false, .pins = "no second witness ran" },
+    .{ .what = "the shim recorded a boundary and the strace account was not read", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .unread = .strace } }, .may_say_single = false, .pins = "nothing accounts for what the other process did" },
+    // The two accounts disagree: a failed vfork leaves this shape, and so does a child
+    // the oracle lost. Neither is preferred.
+    .{ .what = "the shim recorded a boundary and strace saw no other process", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } } }, .may_say_single = false, .pins = "disagree" },
+    .{ .what = "the shim recorded a boundary and strace accounted for two children", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .read = .{ .kind = .strace, .children = 2, .lines = 400 } } }, .may_say_single = false, .pins = "attributed to the subject only" },
+    // The oracle's own boundary. A thread emits no pid, so `children` stays 0 and this
+    // read as a single process until review measured a CLONE_THREAD capture.
+    .{ .what = "strace reported a clone that crosses a boundary the shim missed", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 120 } }, .oracle_boundary = "clone" }, .may_say_single = false, .pins = "crosses a process boundary the shim did not record" },
+    .{ .what = "another process performed a kill-point operation (shim)", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_foreign_touch = true }, .may_say_single = false, .pins = "no crash-point address" },
+    .{ .what = "another process touched the judged directory (oracle)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 1, .lines = 900 } }, .oracle_child_touched = true }, .may_say_single = false, .pins = "no crash-point address" },
+    .{ .what = "the shim recorded a thread", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_hard = "a thread" }, .may_say_single = false, .pins = "the shim recorded a thread" },
+    .{ .what = "the shim recorded a broken image-replacement chain", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_hard = "an image replacement whose chain of observation broke" }, .may_say_single = false, .pins = "chain of observation broke" },
+    // The engine calls refusing here "the safe misreading", so the account must not
+    // assert breakage either (review).
+    .{ .what = "the shim recorded an image replacement before the subject announced itself", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_hard = "an image replacement before the subject announced itself" }, .may_say_single = false, .pins = "before the subject announced itself" },
+    .{ .what = "the shim recorded a process leaving the containment group", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_hard = "a process leaving the containment group" }, .may_say_single = false, .pins = "leaving the containment group" },
+    // World-side states. The recording half keeps its words where it earned them, and
+    // the qualifier "in the recording" is what stops the sentence opening with a claim
+    // about a run that went on to cross a boundary.
+    .{ .what = "a world-only boundary after a witnessed single-process recording", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } }, .world_boundary = true, .world_only = true }, .may_say_single = true, .pins = "single process in the recording" },
+    .{ .what = "a world-only boundary after an unwitnessed recording", .ev = .{ .trace_read = true, .shim_reported = true, .world_boundary = true, .world_only = true }, .may_say_single = false, .pins = "explored world" },
+    .{ .what = "a world crossed a boundary the recording had also crossed", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .read = .{ .kind = .strace, .children = 1, .lines = 400 } }, .world_boundary = true }, .may_say_single = false, .pins = "appeared in an explored world" },
+    .{ .what = "a world's child operated on the judged directory", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } }, .world_boundary = true, .world_foreign_touch = true }, .may_say_single = true, .pins = "operated on the judged directory in an explored world" },
+    .{ .what = "preflight's second observed run crossed a boundary (#199)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } }, .second_run = "a process boundary" }, .may_say_single = true, .pins = "the second observed run recorded a process boundary" },
+};
+
+test "the processes account says 'single process' only where a witness able to see a boundary looked and saw none" {
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    var checked: usize = 0;
+    for (boundary_cases) |c| {
+        boundary_ev = c.ev;
+        const got = boundaryAccount();
+        const says = std.mem.indexOf(u8, got, "single process") != null;
+        if (says != c.may_say_single) {
+            std.debug.print("\nstate: {s}\n  rendered: {s}\n  wanted single-process wording: {}\n", .{ c.what, got, c.may_say_single });
+            return error.WrongEntitlement;
+        }
+        // One bit per state is not coverage: a clause emptied by a mutation keeps the
+        // bit and loses the sentence.
+        if (std.mem.indexOf(u8, got, c.pins) == null) {
+            std.debug.print("\nstate: {s}\n  rendered: {s}\n  missing: {s}\n", .{ c.what, got, c.pins });
+            return error.ClauseLost;
+        }
+        checked += 1;
+    }
+    // The loop is the assertion; an empty table would pass it silently.
+    try std.testing.expectEqual(boundary_cases.len, checked);
+    try std.testing.expect(checked > 20);
+}
+
+test "a bare single-process claim is scoped the moment anything follows it" {
+    // The pre-#405 string said "single process in the recording" on the world-only path
+    // for this reason. Rendering it from parts nearly dropped the qualifier: review
+    // caught the sentence opening with an unscoped claim about a run that went on to
+    // disclose a boundary.
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    const witnessed: BoundaryEvidence = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } } };
+    boundary_ev = witnessed;
+    try std.testing.expectEqualStrings("single process", boundaryAccount());
+    boundary_ev = witnessed;
+    boundary_ev.world_boundary = true;
+    boundary_ev.world_only = true;
+    try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
+    boundary_ev = witnessed;
+    boundary_ev.second_run = "a thread";
+    try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
+}
+
+test "the image-replacement disclosure survives every evidence state (#123)" {
+    // The regression this pins is real and was in the shipped build: the world-only site
+    // assigned the whole sentence and dropped the disclosure the recording had set. Its
+    // acceptance check matches "refused" and "explored world" only, so it stayed green.
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    var applied: usize = 0;
+    for (boundary_cases) |c| {
+        // `exec_continuations` is written beside `shim_reported`, so a state that never
+        // read the trace cannot carry one. Forcing it there would measure a shape the
+        // engine does not produce (review).
+        if (!c.ev.shim_reported) continue;
+        boundary_ev = c.ev;
+        boundary_ev.exec_continuations = 2;
+        const got = boundaryAccount();
+        if (std.mem.indexOf(u8, got, "image replaced") == null) {
+            std.debug.print("\nstate: {s}\n  rendered: {s}\n", .{ c.what, got });
+            return error.DisclosureLost;
+        }
+        applied += 1;
+    }
+    try std.testing.expect(applied > 20);
+}
+
+test "two witnesses that disagree are both reported and neither is preferred" {
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    boundary_ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } } };
+    const got = boundaryAccount();
+    try std.testing.expect(std.mem.indexOf(u8, got, "the shim recorded a process boundary") != null);
+    try std.testing.expect(std.mem.indexOf(u8, got, "strace observed no other process") != null);
+    try std.testing.expect(std.mem.indexOf(u8, got, "disagree") != null);
+    // Control: the same shape with the shim silent is the one entitled state, so the
+    // difference above is the shim's record and not the renderer refusing on principle.
+    boundary_ev.shim_boundary = false;
+    try std.testing.expectEqualStrings("single process", boundaryAccount());
+}
+
+test "the world-only account keeps the substrings its acceptance check matches (#169)" {
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    boundary_ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } }, .world_boundary = true, .world_only = true };
+    const got = boundaryAccount();
+    // spike/acceptance.sh:338 reads the JSON field and requires both of these.
+    try std.testing.expect(std.mem.indexOf(u8, got, "refused") != null);
+    try std.testing.expect(std.mem.indexOf(u8, got, "explored world") != null);
+    // …and rejects the pre-#169 tolerate wording surviving anywhere in it.
+    try std.testing.expect(std.mem.indexOf(u8, got, "observed for quiescence only") == null);
+}
+
+test "an unwitnessed run reports what could not have been seen, not that it did not happen (#405)" {
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    boundary_ev = .{ .trace_read = true, .shim_reported = true };
+    const got = boundaryAccount();
+    try std.testing.expect(std.mem.indexOf(u8, got, "not established") != null);
+    try std.testing.expect(std.mem.indexOf(u8, got, "raw syscall") != null);
+    try std.testing.expect(std.mem.indexOf(u8, got, "single process") == null);
+}
+
+test "a run refused before the trace is read says so, rather than reporting the shim's silence" {
+    // Measured: a toy whose operation exited the wrong status refused as
+    // `recording_run_failed`, and the shipped build published `processes: single process`
+    // into the JSON for it. The trace had not been read at that point; neither had
+    // anything else. The two absences are different and the account names which one.
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    boundary_ev = .{};
+    try std.testing.expectEqualStrings(
+        "not established: this run was refused before the shim's account of it was read",
+        boundaryAccount(),
+    );
+    // Control: once the trace is read, the same all-false evidence is a different fact.
+    boundary_ev.trace_read = true;
+    try std.testing.expect(std.mem.indexOf(u8, boundaryAccount(), "never announced itself") != null);
 }
