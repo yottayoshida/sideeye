@@ -87,8 +87,14 @@ state.
 
 Drops inside the window are fail-safe in the direction that matters: a line the shim
 recorded and the kernel lost becomes a divergence and a refusal, never a false
-agreement. One residue is disclosed rather than closed — a drop coinciding exactly
-with an operation the shim also missed.
+agreement. Two residues are disclosed rather than closed. A drop coinciding exactly
+with an operation the shim also missed. And a neighbouring process that held a
+write-capable descriptor into the judged directory from before the capture began: its
+writes on that descriptor carry no path and no open the capture saw, and a reader that
+refused on every such write refused on Microsoft Defender's log writes (measured), so a
+neighbour is held to account only for what it opened under the root during the window.
+The setup that populates the directory runs before the observer starts, which is where
+that window sits.
 
 ### 5. Everything unresolvable refuses
 

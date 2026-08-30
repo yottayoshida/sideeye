@@ -422,6 +422,16 @@ fn physical(path: []const u8) []const u8 {
     return path;
 }
 
+/// Could this line have changed the directory it names? Write-capable opens, mutating
+/// classes and metadata writes; not reads, not `close`.
+fn mutatingTouch(ln: Line) bool {
+    if (isMetadataCall(ln.call)) return true;
+    const cls = classOf(ln.call) orelse return false;
+    if (cls == .close) return false;
+    if (cls == .open) return openIsWriteCapable(ln.middle);
+    return true;
+}
+
 /// Append unless it is already there. Two copies of this loop had drifted apart inside
 /// one function — one with a `break`, one without — which is what a third copy would
 /// have cost.
@@ -525,7 +535,14 @@ pub fn read(
         }
         if (sentinel_start.len != 0 and samePath(path, sentinel_start)) saw_start = true;
         if (sentinel_end.len != 0 and samePath(path, sentinel_end)) saw_end = true;
-        if (inState(path, state_root, state_alt)) {
+        // A thread counts as having touched the judged directory only when it could have
+        // changed it: a write-capable open, a mutating call, or a metadata write under
+        // the root. A read-only open does not qualify — and that distinction is what a
+        // real run refused on. Microsoft Defender (`wdavdaemon_enterprise`) had opened
+        // the toy's file read-only to scan it, which made every later write it issued on
+        // its own log descriptors "a hole in the account of the judged directory".
+        // A reader that only read the root cannot have altered it through what it read.
+        if (inState(path, state_root, state_alt) and mutatingTouch(ln)) {
             try appendUnique(arena, &state_tids, ln.tid);
         }
     }
@@ -950,6 +967,44 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
     try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
+}
+
+test "a neighbour that only read the judged directory is not made relevant by it" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // Verbatim shape of the refusal: a security agent opens a state file read-only to
+    // scan it, then writes to a log descriptor it held before the capture began.
+    const text =
+        "10:36:22.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:36:22.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:36:22.000003  open              F=17       (R___________)  /tmp/st/keep                      0.000072   wdavdaemon_enterprise.555\n" ++
+        "10:36:22.388237  write             F=22  B=0xad                                                 0.000071   wdavdaemon_enterprise.555\n" ++
+        "10:36:22.000005  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    try testing.expect(r.defect == null);
+    try testing.expect(!r.parsed.child_touched);
+}
+
+test "a neighbour that opened the judged directory for writing is relevant, and its unknown write is a hole" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // The control: the same neighbour, but the open under the root was write-capable.
+    // That descriptor is tracked; a second, unknown one it then writes on is exactly the
+    // descriptor-into-the-root-we-never-saw-opened that the rule exists for.
+    const text =
+        "10:36:22.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:36:22.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:36:22.000003  open              F=17       (_W__________)  /tmp/st/keep                      0.000072   neighbour.555\n" ++
+        "10:36:22.388237  write             F=22  B=0xad                                                 0.000071   neighbour.555\n" ++
+        "10:36:22.000005  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    try testing.expect(r.defect != null);
+    switch (r.defect.?) {
+        .unresolved_fd => {},
+        else => return error.WrongDefect,
+    }
 }
 
 test "a missing sentinel refuses before anything is compared" {
