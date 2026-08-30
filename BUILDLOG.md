@@ -172,6 +172,17 @@ between polls — at the measured 200 MB/s burst rate 4 MiB is 20 ms of capture.
 four checks passed on timing. The handshake now reads what was appended since its last
 read, cut at the last newline, which cannot miss a line however fast the file grows.
 
+**Second run: the macOS job passed all five checks; the Linux job kept one failure, and
+the per-platform synopsis was the wrong fix for it.** The CLI self-description check
+holds a stronger rule than "advertise only what you accept": every flag the parser knows
+must be accepted by *some* synopsis line on the machine running the check, and "accepted"
+means the flag does not change the base command's first line of output. A parse-time
+refusal on Linux therefore reads as a flag no mode accepts, whatever the synopsis says.
+The flag is now parsed everywhere and refused on Linux after the state path has been
+resolved — still before setup, still exit 3 — and the synopsis advertises it on both
+platforms, which is also the honest text: the flag exists, and the refusal says why it
+does not apply here.
+
 The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
 the probe's `fs_usage` never started, because the previous binary's orphan still held
 kdebug for another two minutes, and the probe alone did not clear leftovers before

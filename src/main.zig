@@ -403,12 +403,6 @@ fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: boo
     if (state_created) _ = posix.rmdir(state_z);
 }
 
-/// The oracle clause of the synopsis lines, per platform. `--oracle-fs-usage` is refused
-/// on Linux at parse time, and spike/acceptance.sh's synopsis check holds each line to
-/// exactly the flags that mode accepts on the machine running the check — so a Linux
-/// binary must not advertise a flag its own parser turns away (CI, first run of #406).
-const oracle_synopsis: []const u8 = if (builtin.os.tag == .macos) "[--oracle <strace> | --oracle-fs-usage]" else "[--oracle <strace>]";
-
 fn usage() void {
     say(
         \\sideeye {s} (trace contract v{d})
@@ -416,9 +410,9 @@ fn usage() void {
         \\usage:
         \\  sideeye demo [--shim <lib>]
         \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>] [--twice]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] {s} [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] {s} [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] {s} [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye mcp
         \\  sideeye help
         \\  sideeye version
@@ -547,7 +541,7 @@ fn usage() void {
         \\so a target that fails partway through would be explored against a sequence it
         \\never performs; v0.1 reports UNKNOWN rather than guess.
         \\
-    , .{ version, contract.contract_version, oracle_synopsis, oracle_synopsis, oracle_synopsis });
+    , .{ version, contract.contract_version });
 }
 
 /// Read a trace, or refuse. Pairs with `answerForOversizedTrace`, which every caller
@@ -1153,7 +1147,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
             continue;
         }
         if (std.mem.eql(u8, argv[i], "--oracle-fs-usage")) {
-            if (builtin.os.tag != .macos) setupError("--oracle-fs-usage is macOS only; on Linux the completeness oracle is --oracle <strace>, which needs no privilege");
+            // Parsed on every platform; refused on Linux further down, after the state
+            // path has been resolved. spike/acceptance.sh's CLI self-description check
+            // requires every flag the parser knows to be accepted by some synopsis line
+            // on the machine running the check, and it decides "accepted" by whether the
+            // flag changes the base command's first line of output — so a parse-time
+            // refusal on Linux read as a flag no mode accepts (CI, #406, twice).
             args.oracle_fs_usage = true;
             i += 1;
             continue;
@@ -1496,6 +1495,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
     };
+
+    // Still before setup runs, so the refusal is a configuration error and nothing has
+    // been touched. See the flag's parse site for why this is not raised there.
+    if (args.oracle_fs_usage and builtin.os.tag != .macos)
+        setupError("--oracle-fs-usage is macOS only; on Linux the completeness oracle is --oracle <strace>, which needs no privilege");
 
     // With no descriptor number exempt from observation (contract v8), the engine's
     // own artifacts under --work — every operation's stdout capture rides the target's
