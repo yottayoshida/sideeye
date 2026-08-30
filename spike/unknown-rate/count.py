@@ -303,6 +303,64 @@ def read_exclusions(root):
     return m
 
 
+def read_apparatus(root, gen_dir):
+    """The apparatus record a completed generation was swept under.
+
+    `sweep.sh` writes this file (its apparatus block) and nothing has ever read
+    it, so a truncated or absent record passed every rate check that exists
+    (#348). Four rules answer that, three of them here and the fourth — that the
+    manifest's images are named — in `check`, where the manifest is in hand. They
+    sit in the order truncation reaches: a write that stops partway loses the image
+    lines, then `head:`, then the digests. The banner is the one line truncation
+    can never take alone, which
+    is why no rule below asks for it — a banner-only deletion is a targeted edit,
+    not the accident this file is here for, and it is indistinguishable in value
+    from the targeted edits nothing here catches (rewriting one character of a
+    digest, say).
+
+    Two of the three answer failures the producer does not guard. `sweep.sh`
+    checks the rc of its docker run and greps for the banner, but nothing looks
+    at `git rev-parse HEAD` (a failure writes `head: ` with no value and the
+    sweep continues) or at `docker images | grep`, whose empty result writes no
+    image lines at all.
+
+    Returns the ids named by image lines, and how many such lines there were. The
+    ids come from the image lines only, not from every token in the file: taking
+    the whole file lets an id satisfy the rule from anywhere in it, and the page
+    promises "a line naming every image the manifest used". Measured before
+    narrowing it — deleting all three image lines and appending their ids to the
+    banner passed.
+
+    That set is a SUPERSET of what the sweep used: the producer lists every
+    `sideeye-ur-*` on the host rather than the ones it ran, so a match establishes
+    that the record is intact, never that these are the images the trials ran under.
+    The count is returned for the same reason the waiver count above is — the
+    obvious alternative, how many distinct images the manifest names, is derivable
+    from the manifest alone, so an implementation that opened nothing here would
+    print an identical number.
+    """
+    p = root / "spike/unknown-rate" / gen_dir / "apparatus.txt"
+    if not p.exists():
+        die(f"{gen_dir}/apparatus.txt is missing — the generation is marked complete but "
+            f"records no apparatus, and every rate check below would pass over that")
+    lines = p.read_text().splitlines()
+    digests = [l for l in lines if re.match(r"^[0-9a-f]{64}\s\s", l)]
+    if len(digests) != 2:
+        die(f"{gen_dir}/apparatus.txt carries {len(digests)} digest lines, not the engine's "
+            f"and the shim's — a record that lost them cannot say which binaries ran")
+    if not any(re.match(r"^head: [0-9a-f]{40}$", l) for l in lines):
+        die(f"{gen_dir}/apparatus.txt has no resolved head: line — `git rev-parse` failing "
+            f"during the sweep writes the key with no value and the sweep continues, so the "
+            f"empty form is the one this catches")
+    named, n_images = set(), 0
+    for l in lines:
+        m = re.match(r"^sideeye-ur-\S+\s+(\S+)$", l)
+        if m:
+            named.add(m.group(1))
+            n_images += 1
+    return named, n_images
+
+
 def excluded_cell(trial_id, exclusions):
     """The cell that reports an excluded row, carrying its reason when one is waived.
 
@@ -837,6 +895,15 @@ def check(root):
     # predicates look at nothing, and a success line that does not say so cannot be
     # told apart from one that checked something. The live tree is that tree today.
     waived, seen_waivers = 0, set()
+    # Both halves are reported, and the wording says "covered by" rather than
+    # "against" on purpose: every other pair on the success line is a comparison this
+    # check enforces, and this one is not. The record lists every `sideeye-ur-*` on
+    # the sweep host, so its count can exceed what the manifests use without anything
+    # being wrong. The apparatus side is here because it cannot be derived from
+    # anything else in the tree — that is what separates a run that read the records
+    # from one that opened nothing. Neither is asserted non-zero: a generation whose
+    # trials are all walls names no images, and zero is the honest count.
+    apparatus_images, manifest_images = 0, 0
 
     for gen, exp, manifest, trials, walls, setup_errors in tables:
         gid = gen["id"]
@@ -849,6 +916,19 @@ def check(root):
         if manifest is None:
             die(f"generation {gid} is marked complete but has no manifest at "
                 f"{gen['dir']}/manifest.tsv")
+        # After the unstarted `continue` and the missing-manifest die on purpose: a
+        # generation with no manifest has no images to bind, and an unstarted one has
+        # no apparatus to record. Not in `generation_tables` either — that is shared
+        # with `emit`, and moving the refusal there would change which surface says no.
+        apparatus, n_img = read_apparatus(root, gen["dir"])
+        used = {row["image"] for row in manifest if not row["argv"].startswith("wall:")}
+        unlisted = sorted(used - apparatus)
+        if unlisted:
+            die(f"{gid}: manifest names images the apparatus record does not: {unlisted} — "
+                f"the record is short of the run it is supposed to describe")
+        apparatus_images += n_img
+        manifest_images += len(used)
+
         ids_e = [c["id"] for c in exp]
         ids_m = [m["id"] for m in manifest]
         if ids_m != ids_e:
@@ -1040,7 +1120,8 @@ def check(root):
           f"{measured} measured, digests verified, docs in sync; attribution reconciled "
           f"{n_detail} published rows against {n_slice} slices and {n_outcome} outcome rows "
           f"across {n_sec} sections{weaker}; {waived} SETUP_ERROR rows against "
-          f"{len(exclusions)} waivers")
+          f"{len(exclusions)} waivers; {manifest_images} manifest images covered by "
+          f"{apparatus_images} apparatus image lines read")
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check"):
