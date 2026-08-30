@@ -28,7 +28,26 @@ The contract:
 ## Other conventions
 
 - ADRs live in `docs/adr/` and are created `Proposed`, flipped to `Accepted` when the
-  implementing PR merges.
+  implementing PR merges. **The directory holds nothing but ADR files, every name is
+  `NNNN-slug.md`, and the four digits are unique** — reported by
+  `spike/check-adr-numbering.sh`, which runs on pull requests and on `main`. Numbering is
+  highest-plus-one, which reserves nothing: on 2026-08-27 two sessions each wrote an
+  `0028-*.md`, the slugs differed so the filenames differed, and git merged both without a
+  conflict — the only thing that noticed was the two sessions telling each other (#373;
+  ADR 0030 records it). **Nothing checks contiguity**, deliberately: renumbering 0028 to
+  0029 leaves 0028 a gap until the other side lands, and that gap is the correct state
+  during exactly the window the check matters.
+  What the check does **not** do is stop the merge that creates a collision. No status
+  check is required on this repository, so a branch cut from a `main` that already holds
+  your number goes red on your PR, but two branches taken from the same base can each
+  carry a unique number, both go green, and both merge — that case surfaces only on the
+  post-merge run. Closing it needs a required up-to-date check or a merge queue, which is
+  a repository setting and a separate call.
+  If your number collides, renumber yours — **and do it before anything cites the path**.
+  Several tracked documents hardcode `docs/adr/NNNN-slug.md`, and only `spike/acceptance.sh`
+  sweeps any of them (three pages, for slashed backtick references). Bare `ADR NNNN` prose
+  citations are checked by nothing and break semantically rather than loudly: after a
+  renumber they point at a different decision.
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
 - **A closing campaign or cohort needs nothing done to `.gitattributes`.** That rule used
   to run the other way, and it was missed on every closure it faced — cohort 4, then
