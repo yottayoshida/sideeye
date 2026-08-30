@@ -2,6 +2,16 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-30 (fifteenth) - #345 was a record, and the record already exists
+
+#345 says what no in-file check can see: a watched name deleted from the interpose table, the declaration file and the watch list in one edit is invisible to a check living in those same files. That is true, and it is not news to anyone reading the check — `spike/check-macos-coverage.py`'s docstring carries it, with the measurement that found it (dropping `clonefile` from the interposed set stayed green, because the watched set is its own universe) and with what covers the rest: the `darwin_libc.zig` cross-check as a partial anchor, and review for the all-at-once deletion. The issue asked for that record to exist. It exists, in the file a reader reaches when they wonder what "watched" promises.
+
+**Closed as documented rather than fixed, and the audit row moves with it.** The row read `tracked` with a rationale saying the current state — documented limit, partial anchor, review ownership — may be the honest optimum. That reading has not changed. What changed is the question asked of it: `tracked` is not `defer`, so nothing was scheduled, and an issue that records a limit already recorded elsewhere is two places holding one fact. The alternative the issue sketches (a pinned snapshot of the curated set, diffed in CI) is one its own text calls moving the delete-everything problem one file over.
+
+**What was nearly done instead.** The first reading of this treated the audit's `tracked` classification as a reason the issue could not close. It is not — it is a constraint on *how*: closing an issue the manifest carries means moving its row, because `check-freeze-audit.sh --live` reports a closed issue with no resolved row as drift. That distinction had already cost something once: as the 2026-08-30 (thirteenth) entry records, #347 sat in exactly that state from the moment its PR merged, because the same conflation left the row untouched, and the check that would have said so is not wired into CI.
+
+The row is now `resolved` / `document`, `surface_forecast` `-`, `surface_change_ids` `none`, and `docs/freeze-audit.md` is regenerated — `--check` reports both blocks byte-identical to a fresh render, 49 active and 73 resolved. Reopening condition, written into the rationale rather than left implied: an out-of-repo reference for "write-capable" — a pinned curated set, or the semantic enumeration re-run per OS release.
+
 ## 2026-08-30 (fourteenth) - the MCP surface had fourteen checks and none of them was the documentation
 
 #389: driving `sideeye mcp` from the README alone, on the shipped v1.0.0, is refused four times, and three of the four are recoverable only by reading `src/mcp.zig`. The sharpest is `SIDEEYE_MCP_SHIM` — required for every `tools/call`, named in no operating document, while the section around it explains two other variables in depth and so **reads as complete**.
