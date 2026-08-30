@@ -205,16 +205,24 @@ pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 /// **And it is not free, so it does not go everywhere.** A non-blocking read of a pipe
 /// whose writer has not written yet fails EAGAIN, and a reader that treats a negative
 /// return as unreadable then refuses input that would have arrived. So the flag belongs
-/// only where a classification follows it. Who carries it, as of #400:
+/// only where the reader is prepared for that — by classifying the descriptor and
+/// refusing, or by recognising EAGAIN and waiting. Who carries it, and which of the two
+/// they do:
 ///
 /// - `image.zig` (#398): flag, then `lseek` — ESPIPE ends it there.
 /// - `engine.zig`'s `readWhole`, `main.zig`'s `readFileFrom` and `observeCapture`,
 ///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`. All four read paths the engine
 ///   itself produced, so nothing legitimate is refused.
-/// - `main.zig`'s `readFileAllocCapped`: **both, or neither.** The case read classifies
-///   and carries the flag; `--config` does neither, because an operator may legitimately
-///   name a pipe there and a non-blocking read would refuse it. Measured — passing the
-///   flag there unconditionally broke `--config` on a slow pipe (BUILDLOG 2026-08-30).
+/// - `main.zig`'s `readFileAllocCapped`: the flag comes with **either** half of its
+///   `ReadMode`, and the two halves answer the same question differently. The case read
+///   *classifies*: it needs the open to return so it can ask what the descriptor is, and
+///   refuses anything but a regular file. The `--config` read is *bounded*: it may not
+///   refuse a pipe — an operator can legitimately name one — so it needs `EAGAIN` where
+///   a blocking read would sit somewhere no deadline can see it, and it retries while a
+///   peer might still arrive. A reader that asks for neither keeps the blocking open it
+///   had; the flag is not free, and a non-blocking read of a pipe whose writer has not
+///   written yet fails where waiting would have succeeded (measured — that is exactly
+///   how an earlier draft broke `--config`; BUILDLOG 2026-08-30).
 ///
 /// Listing the callers here is deliberate, and so is listing what each does *after* the
 /// open: the previous version of this comment named one file and said nothing about the
@@ -282,6 +290,13 @@ pub const AT_REMOVEDIR: c_int = std.posix.AT.REMOVEDIR;
 /// across both but comes from the same place so the pair cannot drift apart.
 pub const ELOOP: c_int = @intFromEnum(std.posix.E.LOOP);
 pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
+/// Taken from `std.posix.E` for the same reason as its two neighbours, and with more at
+/// stake: this one differs **between operating systems** — 11 on Linux, 35 on Darwin —
+/// and it is compared against, not passed in. A wrong value here does not fail loudly;
+/// it makes "the peer has not written yet" unrecognisable, so the reader treats it as
+/// unreadable and refuses a config that was about to arrive. Every other test stays
+/// green while it does that.
+pub const EAGAIN: c_int = @intFromEnum(std.posix.E.AGAIN);
 
 // Values of `dirent.type`, identical on Linux and the BSDs.
 pub const DT_UNKNOWN: u8 = 0;
@@ -441,6 +456,35 @@ pub fn kindOfFd(fd: c_int) ClassifyError!Kind {
         if (std.c.S.ISDIR(m)) return .dir;
         if (std.c.S.ISREG(m)) return .file;
         return .other;
+    }
+}
+
+/// Whether the descriptor is a FIFO. Asked separately from `kindOfFd`, deliberately.
+///
+/// `Kind` has no FIFO member: a FIFO and a character device both answer `.other`. Giving
+/// it one would touch a classifier that the snapshot walk, `kindFromDirent` and the
+/// case-path read all share, and every `else => .other` arm would have to be re-read.
+/// The one caller that needs the distinction is the bounded read, where the two mean
+/// opposite things: a FIFO's zero-length read is "no peer has written **yet**, ask
+/// again", while `/dev/null`'s is "empty, and it will stay empty". Retrying the second
+/// spends a whole deadline waiting for an answer that arrived at once — measured, that
+/// is `--config /dev/null` going from 0.01 s to the full deadline with a different
+/// refusal on the end.
+///
+/// Failure answers false rather than an error: the caller uses this to decide whether to
+/// retry, and "could not tell" must fall to the side that terminates.
+pub fn isFifoFd(fd: c_int) bool {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .TYPE = true }, &stx);
+        if (lnx.errno(rc) != .SUCCESS) return false;
+        if (!stx.mask.TYPE) return false;
+        return lnx.S.ISFIFO(@as(u32, stx.mode));
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstat(fd, &st) != 0) return false;
+        return std.c.S.ISFIFO(st.mode);
     }
 }
 
@@ -796,12 +840,13 @@ const RealOps = struct {
 
 /// Monotonic milliseconds, on the clock a deadline can trust.
 ///
-/// Public because two callers want it for unrelated reasons and neither should own a
-/// second copy: the wait loop's deadline reaches it through `RealOps` (a seam a test
-/// substitutes), and preflight's `--twice` reads it directly to report the interval it
+/// Public because its callers want it for unrelated reasons and none should own a second
+/// copy: the wait loop's deadline reaches it through `RealOps` (a seam a test
+/// substitutes), preflight's `--twice` reads it directly to report the interval it
 /// actually observed between the two runs (#199) — a reported gap derived from the
 /// sleep it asked for rather than the clock would be the measurement describing its
-/// own intent.
+/// own intent — and the bounded config read uses it to stop waiting for a peer that is
+/// not coming (#400 follow-up).
 pub fn monotonicMs() u64 {
     var ts: std.c.timespec = undefined;
     // A compile-time-constant, valid clockid cannot produce EINVAL, and a stack
@@ -813,8 +858,9 @@ pub fn monotonicMs() u64 {
 }
 
 /// Sleep, best effort: a signal that interrupts the wait leaves it short, and no
-/// caller here re-arms it. Both callers tolerate that — the wait loop re-reads the
-/// clock, and preflight measures the interval rather than assuming it.
+/// caller here re-arms it. Every caller tolerates that — the wait loop re-reads the
+/// clock, preflight measures the interval rather than assuming it, and the bounded
+/// config read (#400 follow-up) re-reads the clock on each pass as well.
 pub fn sleepForMs(ms: u64) void {
     var ts: std.c.timespec = .{ .sec = @intCast(ms / 1000), .nsec = @intCast((ms % 1000) * 1_000_000) };
     _ = nanosleep(&ts, null);
@@ -1489,6 +1535,43 @@ test "kindOfPathNoFollow classifies every kind without opening anything" {
     _ = unlink(file_z.ptr);
     _ = rmdir(dir_z.ptr);
     _ = rmdir(base.ptr);
+}
+
+test "EAGAIN is what the kernel returns for a non-blocking read with a peer and no data" {
+    // Asks the kernel rather than asserting the number, the same way the O_NOFOLLOW test
+    // below does and for the same reason: the value differs by operating system (11 on
+    // Linux, 35 on Darwin) and is only ever compared against. A wrong constant does not
+    // fail — it makes "the writer has not written yet" unrecognisable, and the reader
+    // that depends on it stops retrying while every other test stays green.
+    var bb: [128]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-eagain-{d}", .{getpid()}) catch unreachable;
+    _ = mkdir(base.ptr, @as(c_uint, 0o755));
+    var fb: [160]u8 = undefined;
+    const fifo_z = std.fmt.bufPrintZ(&fb, "{s}/p", .{base}) catch unreachable;
+    _ = unlink(fifo_z.ptr);
+    try std.testing.expect(mkfifo(fifo_z.ptr, @as(c_uint, 0o644)) == 0);
+    defer {
+        _ = unlink(fifo_z.ptr);
+        _ = rmdir(base.ptr);
+    }
+
+    const rfd = open(fifo_z.ptr, O_RDONLY | O_NONBLOCK, @as(c_uint, 0));
+    try std.testing.expect(rfd >= 0);
+    defer _ = close(rfd);
+
+    // Before the writer exists the same read answers 0 — end of file — which is the
+    // *other* branch of the retry rule. Pinning both here keeps the two apart: they look
+    // identical to a caller that only checks "did I get bytes".
+    var buf: [16]u8 = undefined;
+    try std.testing.expectEqual(@as(isize, 0), read(rfd, &buf, buf.len));
+
+    const wfd = open(fifo_z.ptr, O_WRONLY, @as(c_uint, 0));
+    try std.testing.expect(wfd >= 0);
+    defer _ = close(wfd);
+
+    const n = read(rfd, &buf, buf.len);
+    try std.testing.expect(n < 0);
+    try std.testing.expectEqual(EAGAIN, std.c._errno().*);
 }
 
 test "O_NOFOLLOW actually refuses a symlink" {
