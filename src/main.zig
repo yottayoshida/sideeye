@@ -1959,7 +1959,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const oracle_cwd = args.cwd orelse
             if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
         const parsed = if (args.oracle_fs_usage) blk: {
-            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b) catch setupError("out of memory");
+            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd) catch setupError("out of memory");
             // A capture with a hole in it is not an account to compare against. Each
             // of these says the witness itself is unreadable, which is a different
             // statement from "the two witnesses disagreed" — and only the second one
@@ -1968,6 +1968,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 .unparsed => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "a line of the fs_usage capture did not match the grammar, so the account has a hole: {s}", .{textShown(arena, l)}) catch "a line of the fs_usage capture did not match the grammar"),
                 .truncated => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "fs_usage cut a pathname at its display width, so the line cannot be scoped to the state directory either way: {s}", .{textShown(arena, l)}) catch "fs_usage cut a pathname at its display width"),
                 .unresolved_fd => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation on a descriptor it never saw opened, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation on a descriptor it never saw opened"),
+                .unresolvable_path => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation whose path this reader could not read or place, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation whose path could not be read or placed"),
                 .unknown_call => |l| unknown(.unsupported_syscall_observed, std.fmt.allocPrint(arena, "fs_usage reported a call on the state directory that this version does not model: {s}", .{textShown(arena, l)}) catch "fs_usage reported a call this version does not model"),
                 .no_subject => unknown(.oracle_saw_nothing, "no thread in the fs_usage capture wrote to the shim's trace file, so the capture cannot say which lines are the subject's"),
                 .missing_sentinel => |sp| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the fs_usage capture is missing a sentinel the engine placed ({s}), so nothing establishes that the observer covered the whole recording", .{textShown(arena, sp)}) catch "the fs_usage capture is missing a sentinel the engine placed"),

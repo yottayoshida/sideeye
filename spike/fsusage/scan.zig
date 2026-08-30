@@ -39,7 +39,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     }
     const text = list.items;
 
-    const r = try fsusage.read(arena, text, args[2], "", args[3], args[4], args[5]);
+    const r = try fsusage.read(arena, text, args[2], "", args[3], args[4], args[5], "");
 
     std.debug.print("lines_seen={d} in_scope={d} classes={d} child_touched={} children={d} subject_tid={s}\n", .{
         r.parsed.lines_seen,
@@ -54,6 +54,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         .truncated => |l| std.debug.print("DEFECT truncated: {s}\n", .{l}),
         .unresolved_fd => |l| std.debug.print("DEFECT unresolved_fd: {s}\n", .{l}),
         .unknown_call => |l| std.debug.print("DEFECT unknown_call: {s}\n", .{l}),
+        .unresolvable_path => |l| std.debug.print("DEFECT unresolvable_path: {s}\n", .{l}),
         .no_subject => std.debug.print("DEFECT no_subject\n", .{}),
         .missing_sentinel => |p| std.debug.print("DEFECT missing_sentinel: {s}\n", .{p}),
     } else std.debug.print("no defect\n", .{});

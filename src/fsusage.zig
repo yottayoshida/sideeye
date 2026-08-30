@@ -49,6 +49,10 @@ pub const Defect = union(enum) {
     unresolved_fd: []const u8,
     /// A CALL touching the state root that this module does not map to an OpClass.
     unknown_call: []const u8,
+    /// A directory-relative operand this reader could not place: `[N]/rel` on a
+    /// descriptor never seen opened, `[-2]/rel` with no cwd to resolve against, or a
+    /// `..` in the operand, on a call that could change state.
+    unresolvable_path: []const u8,
     /// No tid wrote to the trace path, so the subject could not be identified.
     no_subject,
     /// A sentinel the caller placed was not in the capture.
@@ -205,16 +209,65 @@ fn fdOf(middle: []const u8) ?[]const u8 {
     return null;
 }
 
-/// The pathname is the last whitespace-separated field that starts with `/`.
-/// Directory names hold spaces and non-ASCII (`wei rd-ステート` printed byte for byte,
-/// measured), so this takes everything from the first `/`-leading token to the end
-/// rather than tokenising the path itself.
-fn pathOf(middle: []const u8) ?[]const u8 {
+/// `AT_FDCWD` as fs_usage prints it in a directory-descriptor annotation.
+const at_fdcwd: i64 = -2;
+
+/// The operand of a line: a pathname, possibly relative to a directory descriptor.
+///
+/// Two spellings, both measured. Plain: the last whitespace-separated field starting
+/// with `/`. Directory-relative: `[N]` immediately followed by `/` and then the operand
+/// — `[69]/libsideeye_shim.so` is relative to descriptor 69, and `[-2]//Users/x/f` is
+/// `openat(AT_FDCWD, "/Users/x/f")`, the separator fs_usage inserts sitting in front of
+/// an operand that is itself absolute. `mkstemp` on macOS opens through exactly that
+/// second form, which is how the reader met it: the one line it exists to catch was the
+/// one it could not read.
+///
+/// Errno brackets (`[  2]`) are followed by spaces, never by `/`, so they do not match.
+const Operand = struct { dirfd: ?i64, text: []const u8 };
+
+fn operandOf(middle: []const u8) ?Operand {
+    var from: usize = 0;
+    while (std.mem.indexOfScalarPos(u8, middle, from, '[')) |lb| {
+        const rb = std.mem.indexOfScalarPos(u8, middle, lb, ']') orelse break;
+        const inner = std.mem.trim(u8, middle[lb + 1 .. rb], " ");
+        if (rb + 1 < middle.len and middle[rb + 1] == '/' and isSignedInt(inner)) {
+            const dirfd = std.fmt.parseInt(i64, inner, 10) catch break;
+            return .{ .dirfd = dirfd, .text = std.mem.trim(u8, middle[rb + 2 ..], " \t") };
+        }
+        from = rb + 1;
+    }
     const slash = std.mem.indexOfScalar(u8, middle, '/') orelse return null;
     // A `/dev/...` in an annotation field is not the operand; annotations are
     // parenthesised or `KEY=value` shaped and never start the tail.
     if (slash > 0 and middle[slash - 1] != ' ') return null;
-    return std.mem.trim(u8, middle[slash..], " \t");
+    return .{ .dirfd = null, .text = std.mem.trim(u8, middle[slash..], " \t") };
+}
+
+fn isSignedInt(t: []const u8) bool {
+    if (t.len == 0) return false;
+    const digits = if (t[0] == '-') t[1..] else t;
+    if (digits.len == 0) return false;
+    for (digits) |c| if (!std.ascii.isDigit(c)) return false;
+    return true;
+}
+
+fn joinPath(arena: std.mem.Allocator, dir: []const u8, rel: []const u8) ![]const u8 {
+    const d = std.mem.trimEnd(u8, dir, "/");
+    return std.fmt.allocPrint(arena, "{s}/{s}", .{ d, rel });
+}
+
+/// An absolute pathname for the line, when one can be had without the descriptor table:
+/// the plain form, a directory-relative form whose operand is itself absolute, or an
+/// `AT_FDCWD`-relative operand joined to `cwd`. Null for anything that needs a
+/// descriptor to resolve. Used where the table does not exist yet (the first pass) and
+/// by the handshake.
+fn pathOf(arena: std.mem.Allocator, middle: []const u8, cwd: []const u8) ?[]const u8 {
+    const op = operandOf(middle) orelse return null;
+    if (op.text.len != 0 and op.text[0] == '/') return op.text;
+    if (op.dirfd) |d| {
+        if (d == at_fdcwd and cwd.len != 0) return joinPath(arena, cwd, op.text) catch null;
+    }
+    return null;
 }
 
 /// CALL name to the class the shim would have recorded. Only calls that can change
@@ -471,7 +524,9 @@ pub fn capturesPath(text: []const u8, path: []const u8) bool {
     while (it.next()) |raw| {
         if (raw.len == 0) continue;
         const ln = parseLine(raw) orelse continue;
-        const p = pathOf(ln.middle) orelse continue;
+        // Sentinels are absolute, so no cwd and no table are needed here.
+        const op = operandOf(ln.middle) orelse continue;
+        const p = if (op.text.len != 0 and op.text[0] == '/') op.text else continue;
         if (samePath(p, path)) return true;
     }
     return false;
@@ -489,6 +544,10 @@ pub fn read(
     trace_path: []const u8,
     sentinel_start: []const u8,
     sentinel_end: []const u8,
+    /// Where the subject started, for `openat(AT_FDCWD, relative)`. The strace reader
+    /// takes the same thing as `initial_cwd`. Empty means a relative operand cannot be
+    /// placed and refuses if it could have changed state.
+    cwd: []const u8,
 ) !Reading {
     var out: Reading = .{ .parsed = .{ .classes = .empty, .lines = .empty, .metadata_observed = .empty } };
     var fds: FdTable = .{};
@@ -521,7 +580,7 @@ pub fn read(
     while (it0.next()) |raw| {
         if (raw.len == 0) continue;
         const ln = parseLine(raw) orelse continue;
-        const path = pathOf(ln.middle) orelse continue;
+        const path = pathOf(arena, ln.middle, cwd) orelse continue;
         // The subject is the thread that opened the trace FOR WRITING. Any line naming
         // the path was the first rule, and on a real capture the last such line was
         // `fseventsd`'s `lstat64` of the file — with a security agent's read-only
@@ -594,12 +653,6 @@ pub fn read(
         // capture measured at 5,558,556 lines pays for every extra ask.
         const cls_opt = classOf(ln.call);
         const is_relevant = relevant(ln.tid, subject, state_tids.items);
-
-        // Descriptor first, before any line can be skipped: a dup's result shows up on
-        // the NEXT line this thread issues on a new number, and on a real capture that
-        // line was `fcntl F=200 <SETFD>` — a call the earlier ordering skipped as inert
-        // before the table ever saw the number, so the shim's own trace writes on 200
-        // were "a descriptor nobody opened" and every run refused.
         const fd = fdOf(ln.middle);
 
         // Complete a pending dup: the first descriptor this thread touches that the
@@ -639,6 +692,29 @@ pub fn read(
             // command on a descriptor outside the root is nobody's business.
         }
 
+        // Where does this line point? Resolved before anything can skip it, so a
+        // read-only open of a directory still enters the table for the
+        // directory-relative operations that follow it.
+        var path: ?[]const u8 = null; // absolute
+        var dir_scope: ?bool = null; // placed through a directory descriptor
+        var path_unresolvable = false;
+        if (operandOf(ln.middle)) |op| {
+            if (op.text.len != 0 and op.text[0] == '/') {
+                path = op.text;
+            } else if (op.dirfd) |d| {
+                if (d == at_fdcwd) {
+                    if (cwd.len != 0) path = try joinPath(arena, cwd, op.text) else path_unresolvable = true;
+                } else if (std.mem.indexOf(u8, op.text, "..") != null) {
+                    // `..` can leave the directory the descriptor names; the table
+                    // holds a scope bit, not a path, so this cannot be placed.
+                    path_unresolvable = true;
+                } else {
+                    const key = try std.fmt.allocPrint(arena, "{d}", .{d});
+                    if (fds.get(.{ .tid = ln.tid, .fd = key })) |in| dir_scope = in else path_unresolvable = true;
+                }
+            } else path_unresolvable = true;
+        }
+        const scope_known: ?bool = if (path) |p| inState(p, state_root, state_alt) else dir_scope;
 
         // A call that cannot change state is not a hole whatever happened to its path.
         // Decided before the truncation check, because the truncation check is where a
@@ -646,62 +722,48 @@ pub fn read(
         // `/System/Volumes/Preboot/Cryptexes/...` is longer than the display width, and
         // every process issues hundreds of them at start-up — 353 in one measured
         // capture of the subject, plus one `access`, and not a single mutating call.
-        // Refusing on those refused every macOS run.
         if (isReadOnlyCall(ln.call) or isDiskIo(ln.call)) continue;
-        if (cls_opt == .open and !openIsWriteCapable(ln.middle)) continue;
+        if (cls_opt == .open and !openIsWriteCapable(ln.middle)) {
+            // Not an operation (ADR 0003), but a directory opened read-only is what
+            // later `openat([N], ...)` lines resolve through, so it is remembered when
+            // it can be placed. Unplaceable read-only opens are simply not remembered;
+            // whatever resolves through them later refuses on its own.
+            if (fd) |f| {
+                if (scope_known) |in| {
+                    if (is_subject or in) try fds.set(arena, .{ .tid = ln.tid, .fd = f }, in);
+                }
+            }
+            continue;
+        }
 
         if (isTruncated(ln.middle) and is_relevant) {
             out.defect = .{ .truncated = raw };
             return out;
         }
 
-        // A failed call is NOT dropped. The shim records the attempt — it places the
-        // kill immediately before the effect, so an attempt that fails is still an
-        // address — and `oracle.zig` only consults success to track chdir's cwd, never
-        // to decide whether a line is an operation. Dropping them here would make every
-        // failing target a phantom divergence against an account that has them.
-        //
-        // The observation that a failed call carries its errno and its path — measured,
-        // seven failing modes of seven — is what makes the two accounts line up, not a
-        // licence to discard the line. Nothing here reads the errno bracket: the helper
-        // that did was removed with the branch that used it.
-
-        const path = pathOf(ln.middle);
-
-
         // Descriptor bookkeeping runs for every line that carries one, whether or not
         // the line is in scope: a descriptor opened outside the state root and later
         // written must resolve to "not in scope", not to "unknown".
         if (cls_opt) |cls| {
             if (cls == .open) {
-                // Read-only opens were dropped above, before the truncation check
-                // (ADR 0003: not an observed operation on either side).
                 // Only descriptors whose later use could matter are remembered. The
                 // capture is system-wide: one measured run held 5,558,556 lines,
                 // 26,228 distinct (tid, fd) pairs — and 22 lines touching the judged
-                // directory. Recording every pair to answer questions about those 22
-                // is what made this table quadratic in a file this size.
-                //
-                // Two kinds are kept: anything the subject opens (its own descriptors
+                // directory. Anything the subject opens is kept (its own descriptors
                 // decide its account), and anything under the root whoever opened it
-                // (that is what `child_touched` is read from). A neighbour's descriptor
-                // outside the root is dropped — a later write on it resolves to nothing
-                // and is then dismissed by `relevant`, which is the same answer the
-                // table would have given.
-                const keep = std.mem.eql(u8, ln.tid, subject) or blk: {
-                    const pp = path orelse break :blk false;
-                    break :blk inState(pp, state_root, state_alt);
-                };
-                if (!keep) continue;
-                if (fd) |f| {
-                    const p = path orelse {
-                        if (is_relevant) {
-                            out.defect = .{ .unresolved_fd = raw };
+                // (that is what `child_touched` is read from).
+                const keep = is_subject or (scope_known orelse false);
+                if (keep) {
+                    if (fd) |f| {
+                        if (scope_known) |in| {
+                            try fds.set(arena, .{ .tid = ln.tid, .fd = f }, in);
+                        } else if (is_relevant) {
+                            // A write-capable open this reader cannot place, by a thread
+                            // whose account matters: a descriptor into who-knows-where.
+                            out.defect = .{ .unresolvable_path = raw };
                             return out;
                         }
-                        continue;
-                    };
-                    try fds.set(arena, .{ .tid = ln.tid, .fd = f }, inState(p, state_root, state_alt));
+                    }
                 }
             } else if (cls == .close) {
                 if (fd) |f| fds.clear(.{ .tid = ln.tid, .fd = f });
@@ -710,11 +772,9 @@ pub fn read(
         }
 
         // The shim's own trace writes and the sentinels are the observer's shadow, not
-        // the target's work — skipped here, AFTER the descriptor bookkeeping above. The
-        // first version skipped them before it, so the shim's `open F=3 trace.bin` never
-        // entered the table, the dup to 200 had no source to inherit from, and the very
-        // first `write F=200` was "a descriptor nobody opened". The line still counts
-        // toward `lines_seen`.
+        // the target's work — skipped here, AFTER the descriptor bookkeeping above, so
+        // the shim's `open F=3 trace.bin` is in the table for the dup to inherit from.
+        // The line still counts toward `lines_seen`.
         if (path) |p| {
             if (samePath(p, trace_path)) continue;
             if (sentinel_start.len != 0 and samePath(p, sentinel_start)) continue;
@@ -723,8 +783,18 @@ pub fn read(
 
         // Is this line about the judged directory?
         var in_scope = false;
-        if (path) |p| {
-            in_scope = inState(p, state_root, state_alt);
+        if (scope_known) |in| {
+            in_scope = in;
+        } else if (path_unresolvable) {
+            if (is_relevant) {
+                if (cls_opt) |c| {
+                    if (c != .close) {
+                        out.defect = .{ .unresolvable_path = raw };
+                        return out;
+                    }
+                }
+            }
+            continue;
         } else if (fd) |f| {
             // Pathless: `write F=3 B=0x7`. Resolve through the open, or refuse.
             const known = fds.get(.{ .tid = ln.tid, .fd = f }) orelse {
@@ -823,10 +893,24 @@ test "both measured truncation shapes are stumps, and a whole path is not" {
 }
 
 
-test "fd and path come out of the middle" {
+test "fd and operand come out of the middle, in both spellings" {
     const ln = parseLine(cap_line).?;
     try testing.expectEqualStrings("3", fdOf(ln.middle).?);
-    try testing.expectEqualStrings("/tmp/st/load", pathOf(ln.middle).?);
+    const plain = operandOf(ln.middle).?;
+    try testing.expect(plain.dirfd == null);
+    try testing.expectEqualStrings("/tmp/st/load", plain.text);
+    // The directory-relative spelling, verbatim: AT_FDCWD and an absolute operand.
+    const rel = operandOf("F=3        (RWC__E______)  [-2]//tmp/st/tmp-oepJXu").?;
+    try testing.expectEqual(@as(i64, -2), rel.dirfd.?);
+    try testing.expectEqualStrings("/tmp/st/tmp-oepJXu", rel.text);
+    // A descriptor-relative operand keeps its relative text.
+    const viafd = operandOf("F=6        (_WC_T_______)  [5]/inside").?;
+    try testing.expectEqual(@as(i64, 5), viafd.dirfd.?);
+    try testing.expectEqualStrings("inside", viafd.text);
+    // An errno bracket is not a directory descriptor.
+    const err = operandOf("[  2]           /tmp/st/missing").?;
+    try testing.expect(err.dirfd == null);
+    try testing.expectEqualStrings("/tmp/st/missing", err.text);
 }
 
 test "underRoot does not accept a sibling whose name shares the prefix" {
@@ -869,7 +953,7 @@ test "a write on a descriptor nobody opened is a hole, not a skipped line" {
         "10:00:00.000003  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n" ++
         "10:00:00.000005  write             F=7   B=0x1                                 0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolved_fd => {},
@@ -890,10 +974,11 @@ test "an open whose path cannot be read is a hole, not a descriptor to trust lat
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  open              F=6   (_WC_T_______)                        0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
-        .unresolved_fd => {},
+        // A write-capable open with no operand at all: nothing to place it by.
+        .unresolvable_path => {},
         else => return error.WrongDefect,
     }
 }
@@ -909,7 +994,7 @@ test "a truncated read-only line from the subject is not a hole" {
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:23:17.677297  stat64                 [  2]           /System/Volumes/Preboot/Cryptexes/OS/System/Library/Frameworks/CoreServices.framework>>>                                                                              0.000001   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
 }
@@ -925,7 +1010,7 @@ test "a truncated mutating line from the subject still refuses" {
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  unlink                                 /System/Volumes/Data/Users/x/some/very/long/dir/na>>>                                     0.000001   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .truncated => {},
@@ -956,7 +1041,7 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
         "21:03:21.588001  write             F=3   B=0x3                                                  0.000004   subj.111\n" ++
         "21:03:21.588002  close             F=3                                                          0.000002   subj.111\n" ++
         "21:03:21.588100  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expectEqualStrings("111", r.subject_tid.?);
     try testing.expect(!r.parsed.child_touched);
@@ -981,7 +1066,7 @@ test "a neighbour that only read the judged directory is not made relevant by it
         "10:36:22.000003  open              F=17       (R___________)  /tmp/st/keep                      0.000072   wdavdaemon_enterprise.555\n" ++
         "10:36:22.388237  write             F=22  B=0xad                                                 0.000071   wdavdaemon_enterprise.555\n" ++
         "10:36:22.000005  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expect(!r.parsed.child_touched);
 }
@@ -999,12 +1084,69 @@ test "a neighbour that opened the judged directory for writing is relevant, and 
         "10:36:22.000003  open              F=17       (_W__________)  /tmp/st/keep                      0.000072   neighbour.555\n" ++
         "10:36:22.388237  write             F=22  B=0xad                                                 0.000071   neighbour.555\n" ++
         "10:36:22.000005  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolved_fd => {},
         else => return error.WrongDefect,
     }
+}
+
+test "openat through AT_FDCWD with an absolute operand is the mkstemp line, and it is an operation" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // Verbatim from the run that refused: the creation mkstemp issues past the shim.
+    // `[-2]` is AT_FDCWD and the `//` is fs_usage's separator before an absolute operand.
+    const text =
+        "10:39:10.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:39:10.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:39:10.143604  openat            F=3        (RWC__E______)  [-2]//tmp/st/tmp-oepJXu                0.000360   subj.111\n" ++
+        "10:39:10.143700  write             F=3   B=0x3                                                  0.000004   subj.111\n" ++
+        "10:39:10.143701  close             F=3                                                          0.000002   subj.111\n" ++
+        "10:39:10.200000  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    try testing.expect(r.defect == null);
+    try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
+    try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
+    try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
+}
+
+test "a directory opened read-only places the openat that follows through it" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        "10:00:00.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5        (R___________)  /tmp/st                           0.000010   subj.111\n" ++
+        "10:00:00.000004  openat            F=6        (_WC_T_______)  [5]/inside                        0.000010   subj.111\n" ++
+        "10:00:00.000005  write             F=6   B=0x3                                                  0.000004   subj.111\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    try testing.expect(r.defect == null);
+    try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
+}
+
+test "a relative operand with no cwd, on a call that could change state, refuses" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        "10:00:00.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:00:00.000003  openat            F=6        (_WC_T_______)  [-2]/relative/file                0.000010   subj.111\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    try testing.expect(r.defect != null);
+    switch (r.defect.?) {
+        .unresolvable_path => {},
+        else => return error.WrongDefect,
+    }
+    // With a cwd it resolves, and lands outside the root.
+    const r2 = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/elsewhere");
+    try testing.expect(r2.defect == null);
+    try testing.expectEqual(@as(usize, 0), r2.parsed.classes.items.len);
 }
 
 test "a missing sentinel refuses before anything is compared" {
@@ -1014,7 +1156,7 @@ test "a missing sentinel refuses before anything is compared" {
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000003  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .missing_sentinel => |p| try testing.expectEqualStrings("/tmp/st/sentinel-b", p),
@@ -1029,7 +1171,7 @@ test "no tid writes the trace: the subject cannot be named and the run refuses" 
     const text =
         "10:00:00.000003  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .no_subject => {},
@@ -1051,7 +1193,7 @@ test "a second tid mutating the judged directory sets child_touched" {
         "10:00:00.000005  open              F=4   /tmp/st/from-raw-child                0.000100   subj.222\n" ++
         "10:00:00.000006  write             F=4   B=0x9                                 0.000100   subj.222\n" ++
         "10:00:00.000007  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expect(r.parsed.child_touched);
     try testing.expectEqual(@as(usize, 1), r.parsed.children);
@@ -1070,7 +1212,7 @@ test "an unknown CALL inside the judged directory refuses rather than being igno
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  exchangedata            /tmp/st/thing                         0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unknown_call => {},
@@ -1091,7 +1233,7 @@ test "a failed call in the judged directory is still an operation, as it is for 
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  unlink            [  2]  /tmp/st/missing                      0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 1), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.unlink, r.parsed.classes.items[0]);
@@ -1107,7 +1249,7 @@ test "work outside the judged directory is not the subject's account" {
         "10:00:00.000003  open              F=5   /somewhere/else                       0.000100   subj.111\n" ++
         "10:00:00.000004  write             F=5   B=0x7                                 0.000100   subj.111\n" ++
         "10:00:00.000005  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
 }
