@@ -295,12 +295,25 @@ the account is empty.
 **The count is a property of the volume, not of the family.** A data protection
 class is refused with `ENOTSUP` by a filesystem that does not carry one, and the
 GitHub macOS runner's volume is such a filesystem, so `guarded_open_dprotected_np`
-never runs there. Measured with the dprotected pair removed:
+is refused there. Measured on the runner:
 
-    → PASS, explored 5 worlds (crash points 4 + 1 baseline)
+    → PASS, explored 6 worlds (crash points 5 + 1 baseline)     [GitHub macOS runner]
 
-which is the same run minus the two kill points that pair contributes. The toy's
-last line says which of the two it exercised (`dprotected: yes` / `dprotected: no`)
-and the acceptance leg takes its expected count from that line. `ENOTSUP` is the
-only errno the toy excuses: a wrong transcription produces `EINVAL`, measured, and
-that still fails the unshimmed run.
+**Five, not four, and the difference is what a careless synthetic hides.** Every
+open wrapper in `ops.zig` records the operation *before* it makes the call —
+`open_dprotected_np` and `fopen` are written the same way — so an open the kernel
+refuses is still an operation the account names, and it carries a crash point on
+its own. Only the write and the close behind it are skipped. Two synthetics were
+run and they do not agree, which is the whole lesson:
+
+| synthetic | what it did | count |
+|---|---|---|
+| removed the call | `int dfd = -1; errno = ENOTSUP;` | 4 |
+| kept the call | invalid `dpclass`, errno overwritten to `ENOTSUP` | **5** |
+
+The first was written first, and 4 went into the acceptance leg as the expected
+value; CI reported 5 and was right. The second reproduces what the runner does,
+because the interposer runs either way. The toy's last line says which half it
+exercised (`dprotected: yes` / `dprotected: no`) and the leg takes its expected
+count from that line. `ENOTSUP` is the only errno the toy excuses: a wrong
+transcription produces `EINVAL`, measured, and that still fails the unshimmed run.

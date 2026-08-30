@@ -466,10 +466,18 @@ jobs:
       # The expected count comes from the toy rather than from a constant here, because
       # `guarded_open_dprotected_np` needs a data protection class and that is a property
       # of the volume: this laptop's APFS accepts it (six crash points) and the runner's
-      # volume returns ENOTSUP (four). Both are normal; a hard-coded 6 turned the runner's
+      # volume returns ENOTSUP (five). Both are normal; a hard-coded 6 turned the runner's
       # normal answer into a red build. The toy reports which half it exercised and the
       # count is derived from that, so neither answer can pass with the wrong number and
       # a toy that reports neither fails the leg.
+      #
+      # Five, not four, and the difference is the point: every open wrapper in ops.zig
+      # records before it calls — `open_dprotected_np` and `fopen` do the same — so the
+      # refused open is still an operation the account names, and it contributes a crash
+      # point on its own. Only the write and close behind it are skipped. The first
+      # attempt at this leg expected four, because the synthetic check that produced that
+      # number removed the call instead of letting it run and fail. Measured both ways:
+      # call removed → 4, call made and refused → 5, which is what CI reported.
       #
       # Their signatures are transcribed from XNU — no public header declares them — so
       # this leg is also the only thing standing between a wrong arity and a shim that
@@ -494,7 +502,7 @@ jobs:
 
           case "$plain" in
             *"dprotected: yes"*) want=6 ;;
-            *"dprotected: no"*)  want=4 ;;
+            *"dprotected: no"*)  want=5 ;;
             *) echo "the toy reported neither answer for dprotected support"; exit 1 ;;
           esac
           echo "expecting $want crash points"

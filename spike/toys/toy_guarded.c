@@ -17,8 +17,12 @@
 //
 // The last line says whether the volume supports a data protection class, because the
 // answer changes what was exercised and therefore what the engine should report:
-// `dprotected: yes` for six crash points, `dprotected: no` for four (measured, both).
+// `dprotected: yes` for six crash points, `dprotected: no` for five (measured, both).
 // A caller that ignores that line cannot tell a full run from a half one.
+//
+// Five rather than four on the `no` path: the shim records an open before it makes the
+// call, so the refused open is still an operation and still a crash point — only the
+// write and the close behind it are skipped.
 //
 //   usage: toy-guarded <path>
 //   exit 0 every supported call succeeded, 1 one of them did not, 2 usage
