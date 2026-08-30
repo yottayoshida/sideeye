@@ -34,6 +34,8 @@ One honesty fix rode along, found while writing it rather than in review: the di
 
 **And both refusals stopped claiming a probe they may not have made.** "looked at X and Y" is false when the candidate list could not be built or a candidate exceeded `max_path`, because neither is a probe that came back empty; the wording is "either place this looks" now. Same class as the `_meta` refusal this change is fixing one file over.
 
+**CI caught the honesty fix, which is the fixed-string guard doing its job rather than failing at it.** `spike/acceptance.sh` check 9 pinned the old refusal verbatim — `looked at …` and `pass --shim` — and both moved when the wording did. This project writes down that a fixed-string guard is void the day its string is absent; the failure mode it warns about is the string disappearing *unnoticed*, and here the leg went red the first time the message moved. Updated to the new wording, and widened while open: it asserted **one** of the two candidate paths the message names, so half of what the refusal claims had never been measured.
+
 **What this does not close.** The report's item 3 — `initialize` answering `-32601` — is the schema showing through, and no leg can measure "a caller was not surprised". It is closed by one sentence naming the schema date, and by nothing else.
 ## 2026-08-30 (thirteenth) - The apparatus record was written every sweep and read by nothing
 
