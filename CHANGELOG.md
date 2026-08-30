@@ -12,6 +12,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `spike/check-adr-numbering.sh`, wired into CI: `docs/adr/` holds nothing but ADR files,
+  every name is `NNNN-slug.md`, and the four digits are unique (#373). Numbering is
+  highest-plus-one and reserves nothing — on 2026-08-27 two sessions each wrote an
+  `0028-*.md`, the slugs differed so the filenames differed, and git merged both without a
+  conflict; the only thing that noticed was the two sessions telling each other. **The
+  population assertion is the load-bearing half**: the first draft scanned
+  `-type f -name '*.md'` and called that "every filename", so a symlink, a directory named
+  `0031-x.md`, an uppercase `.MD` and a plain `notes` were each invisible — four ways to
+  collide that reported `every number unique`, all four measured in review. Two
+  independent counts stand behind the walk for the same reason: comparing a walked count
+  against a file count taken from the same `find` expression let a narrowing of `-name`
+  walk 29 of 31 and report `ok`. Contiguity is deliberately unchecked — renumbering the
+  second 0028 to 0029 leaves 0028 a gap until the other side lands, which is the correct
+  state during exactly the window the check matters. It **reports** a collision rather than
+  preventing one: no status check is required here, so a branch cut from a `main` that
+  already holds the number goes red on its PR, but two branches from the same base can each
+  carry a unique number and both merge, surfacing on the post-merge run. A `--selftest` leg
+  runs first in CI and proves the check can go red on every run, because the uniqueness
+  pass is a pipeline with no `set -e` behind it and breaking its `sed` reports a directory
+  holding a real duplicate as unique.
 - `--oracle-fs-usage`: on macOS the recording run can now be compared against
   `fs_usage`, giving `oracle_verified` the same meaning it has on Linux instead of
   leaving every PASS on `--allow-unverified` (#286, ADR 0031). Needs root, so sudo
