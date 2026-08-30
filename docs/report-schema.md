@@ -67,6 +67,7 @@ declared invariant itself broke:
 |---|---|---|
 | `checker_earliest` | object | The earliest crash world whose violation includes the declared checker — the claim exhibit. |
 | `checker_earliest.crash_point` | int | As `earliest.crash_point`, for this world. |
+| `paths_attributed_to_rename` | integer | How many differences were attributed wholesale to a directory a recorded `rename` moved in from outside the judged tree, rather than named individually (#405, ADR 0032). That source subtree was never snapshotted, so what arrived with the move cannot be told from what an unrecorded writer added afterwards — this is the width of that gap. **Zero is the common case and says the run has none**, which is why it is a number in every report rather than a sentence that appears only sometimes: the absence of a phrase is not a reading a caller can rely on. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 | `checker_earliest.after` | object | `{op, path}` — as `earliest.after`, for this world. |
 | `checker_earliest.before` | object | `{op, path}` — as `earliest.before`, for this world. |
 | `checker_earliest.invariant` | string | One of the checker-bearing forms only: `"the checker (L2)"`, `"built-in atomicity, and the checker"`, `"the post-success invariant, and the checker"`. |
@@ -101,7 +102,7 @@ the case file — nothing else in the report was load-bearing for them.
 `case_no_longer_applies`, `recording_run_failed`, `baseline_run_failed`,
 `parent_exited`,
 `baseline_violates_invariant`, `boundary_without_oracle`,
-`state_not_quiescent`, `unsupported_state_entry`.
+`state_not_quiescent`, `unsupported_state_entry`, `state_changed_unaccounted`.
 
 A new refusal joins this list in the change that introduces it, and the
 acceptance check above holds this page to that.

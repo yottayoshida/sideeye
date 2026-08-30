@@ -214,6 +214,716 @@ pub fn diffSnapshots(first: Snapshot, second: Snapshot, out: []Difference) DiffC
     return count;
 }
 
+/// A path the judged state changed at, which no recorded operation accounts for.
+pub const Unaccounted = struct {
+    rel: []const u8,
+    how: Difference.How,
+};
+
+/// What the reconciliation found, beside the unaccounted paths themselves.
+pub const Reconciled = struct {
+    /// Written into the caller's buffer, in `rel` order.
+    stored: usize,
+    /// Every unaccounted path, whether or not it fit.
+    total: usize,
+    /// Paths attributed to a directory a recorded `rename` moved in, rather than to an
+    /// operation naming them. The engine never saw the source subtree — for a rename
+    /// from outside the judged root there is nothing to have seen — so what came with
+    /// the move and what a later unrecorded writer added are indistinguishable. The
+    /// count is reported rather than hidden: a run with zero here has no such window.
+    by_rename_prefix: usize,
+
+    pub fn clean(self: Reconciled) bool {
+        return self.total == 0;
+    }
+};
+
+/// Strip either spelling of the judged root off an absolute path, yielding the same
+/// relative form `Entry.rel` uses. Null when the path is under neither.
+///
+/// Two spellings because a caller can name the root through a symlink: the shim records
+/// under the canonical one, but a target that resolves a descriptor gets the other back
+/// (`SIDEEYE_STATE_DIR_ALT`, and macOS's `/tmp` → `/private/tmp`). A join that knew only
+/// one of them would count half the operations as naming nothing.
+fn relUnderRoot(path: []const u8, root: []const u8, alt: []const u8) ?[]const u8 {
+    for ([_][]const u8{ root, alt }) |r| {
+        if (r.len == 0) continue;
+        if (!contract.isInsideDir(path, r)) continue;
+        const d = std.mem.trimEnd(u8, r, "/");
+        if (path.len <= d.len + 1) return "";
+        return path[d.len + 1 ..];
+    }
+    return null;
+}
+
+/// A symlink the judged tree holds, exactly as the snapshot recorded it: `rel` is the
+/// link's own path and `target` the bytes it points at (`Entry.content` of a `.symlink`
+/// entry — the link is never followed, so the target is stored rather than resolved).
+pub const Link = struct { rel: []const u8, target: []const u8 };
+
+/// Substitutions `resolveThroughLinks` will make before giving up. A cycle (`a -> b`,
+/// `b -> a`) is legal on disk and has to terminate; eight is past any real layout.
+const max_link_hops = 8;
+
+/// Append `piece` to `buf` at `n`, returning the new length or null if it would not fit.
+fn appendInto(buf: []u8, n: usize, piece: []const u8) ?usize {
+    if (n + piece.len > buf.len) return null;
+    @memcpy(buf[n .. n + piece.len], piece);
+    return n + piece.len;
+}
+
+/// Resolve one symlinked prefix of `rel`, writing the result into `scratch`.
+///
+/// Null when no link applies, when the result would not fit, or when the link points
+/// outside the judged root — in that last case nothing under it can be a difference
+/// either, because the snapshot does not follow links, so leaving `rel` alone is right.
+fn substituteOnce(
+    rel: []const u8,
+    links: []const Link,
+    root: []const u8,
+    alt: []const u8,
+    scratch: []u8,
+) ?[]const u8 {
+    // Longest match: `a` and `a/b` may both be links, and the deeper one is the one the
+    // path actually crossed last.
+    // Exactly one link, or none. Within one snapshot at most one can match: the walk does
+    // not descend into a symlink, so a link's ancestor is never itself a link. Two can
+    // only both appear because the tree changed shape between the samples — `a` a
+    // directory holding `a/b` in one and a link in the other — and then the substitution
+    // has no ordering to pick with, the same bind a retargeted link puts it in. An
+    // earlier revision took the longest match, which is a rule that answers rather than
+    // an answer, and could not be tested with a tree that can exist.
+    var chosen: ?Link = null;
+    for (links) |l| {
+        if (l.rel.len == 0 or l.rel.len > rel.len) continue;
+        if (!std.mem.startsWith(u8, rel, l.rel)) continue;
+        if (rel.len != l.rel.len and rel[l.rel.len] != '/') continue;
+        if (chosen != null) return null;
+        chosen = l;
+    }
+    const link = chosen orelse return null;
+
+    // One folding pass for both spellings of a target. An absolute one starts empty and
+    // contributes its root-relative remainder; a relative one starts at the link's own
+    // directory. The segments are then folded the same way either way — an earlier
+    // revision folded only the relative branch, and `cur -> /tmp/s/v1/../v2` came out as
+    // `v1/../v2`, which matches no snapshot `rel` because those are built by walking the
+    // tree and never contain `..`. The shim normalises what it records
+    // (`contract.normalizePath`), so the two sides only meet if this side folds too.
+    var n: usize = 0;
+    var segments = link.target;
+    if (link.target.len > 0 and link.target[0] == '/') {
+        segments = relUnderRoot(link.target, root, alt) orelse return null;
+    } else {
+        const parent = if (std.mem.lastIndexOfScalar(u8, link.rel, '/')) |i| link.rel[0..i] else "";
+        n = appendInto(scratch, n, parent) orelse return null;
+    }
+    var it = std.mem.tokenizeScalar(u8, segments, '/');
+    while (it.next()) |seg| {
+        if (std.mem.eql(u8, seg, ".")) continue;
+        if (std.mem.eql(u8, seg, "..")) {
+            // Above the root is outside the judged tree, and is treated the way an
+            // absolute target pointing outside is: no substitution at all.
+            if (n == 0) return null;
+            n = std.mem.lastIndexOfScalar(u8, scratch[0..n], '/') orelse 0;
+            continue;
+        }
+        if (n != 0) n = appendInto(scratch, n, "/") orelse return null;
+        n = appendInto(scratch, n, seg) orelse return null;
+    }
+
+    const tail = rel[link.rel.len..];
+    if (tail.len != 0) {
+        if (n != 0) n = appendInto(scratch, n, "/") orelse return null;
+        n = appendInto(scratch, n, std.mem.trimStart(u8, tail, "/")) orelse return null;
+    }
+    if (std.mem.eql(u8, scratch[0..n], rel)) return null;
+    return scratch[0..n];
+}
+
+/// The physical spelling of a path the shim recorded lexically.
+///
+/// The shim normalises path arguments lexically (`contract.normalizePath`), so an
+/// operation on `cur/f` where `cur -> v1` is recorded as `cur/f` while the snapshot,
+/// which never follows a link, holds the difference at `v1/f`. Joining the two spellings
+/// without this turned a fully observed run into a refusal naming a path nothing had
+/// gone wrong with — measured: one `unlink` through an interior symlink, PASS on the
+/// shipped 1.0.0 and UNKNOWN here, with a control on the same file spelled directly
+/// still passing.
+///
+/// The substitution reads the snapshots, never the filesystem: the tree at reconcile
+/// time is not the tree the operation ran against, and resolving live would answer about
+/// the wrong one.
+fn resolveThroughLinks(
+    rel: []const u8,
+    links: []const Link,
+    root: []const u8,
+    alt: []const u8,
+    scratch: []u8,
+) []const u8 {
+    if (links.len == 0) return rel;
+    // Two halves, used alternately: `cur` is a slice into the half written last, and
+    // `substituteOnce` reads it while writing the result. Handing it the same half would
+    // have it overwrite its own input — the chain `a -> b -> c` is where that shows up,
+    // and a single-hop test would not have caught it.
+    const half = scratch.len / 2;
+    if (half == 0) return rel;
+    const halves = [2][]u8{ scratch[0..half], scratch[half..] };
+    var cur = rel;
+    var hops: usize = 0;
+    while (hops < max_link_hops) : (hops += 1) {
+        cur = substituteOnce(cur, links, root, alt, halves[hops % 2]) orelse return cur;
+    }
+    return cur;
+}
+
+/// Every path the state changed at that no recorded operation names.
+///
+/// The general form of the zero-ops detector: that one asks whether the state moved
+/// while *nothing* was counted, which stays silent the moment one operation is
+/// recorded — a target whose libc write is seen and whose raw write is not looks
+/// exactly like one that was fully observed (#405, measured). This asks the same
+/// question per path.
+///
+/// The direction is deliberate and one-way. "No operation names this path" is evidence
+/// the account is incomplete; "every path is named" is NOT evidence it is complete —
+/// a failed syscall leaves a record with no change behind it, and a subtree renamed in
+/// from outside is accounted for wholesale. The caller refuses on the first, and must
+/// not read the absence of the first as the second.
+///
+/// `ops` should be every recorded operation, not only the subject's mutating ones: a
+/// child that left a record has explained its change, and *who* performed it is a
+/// different detector's question (`child_touched_state_dir`). `open` counts as naming
+/// a path for the same reason — excluding it makes the zero-ops form stricter and this
+/// form wrong, since a create-then-write pair would otherwise refuse on its own file.
+pub fn reconcile(
+    diffs: []const Difference,
+    ops: []const Op,
+    links: []const Link,
+    root: []const u8,
+    alt: []const u8,
+    scratch: []u8,
+    out: []Unaccounted,
+) Reconciled {
+    var res: Reconciled = .{ .stored = 0, .total = 0, .by_rename_prefix = 0 };
+    for (diffs) |d| {
+        var named = false;
+        var by_prefix = false;
+        for (ops) |op| {
+            if (op.class.isMarker()) continue;
+            const ends = [2][]const u8{ op.path, op.aux };
+            for (ends) |p| {
+                if (p.len == 0) continue;
+                const lexical = relUnderRoot(p, root, alt) orelse continue;
+                const rel = resolveThroughLinks(lexical, links, root, alt, scratch);
+                // BOTH spellings, because a path can name a link or name through it and
+                // the two answers are different objects. `unlink("cur")` removes the link
+                // and the difference is at `cur`; `unlink("cur/f")` removes a file and the
+                // difference is at `v1/f`. Comparing only the substituted form erased the
+                // first — measured after the substitution was added: `unlink(cur)` and a
+                // `symlink`+`rename` generation swap both went PASS exit 0 → UNKNOWN,
+                // naming `cur`. That is the same regression the substitution was written
+                // to fix, one level up, and the second revision of this code introduced it.
+                if (std.mem.eql(u8, lexical, d.rel) or std.mem.eql(u8, rel, d.rel)) {
+                    named = true;
+                    break;
+                }
+                // A directory the target moved IN carries its children with it, and one
+                // record is all there is to carry them: the source subtree lived outside
+                // the judged root, so it was never snapshotted and which descendants
+                // arrived with the move cannot be recovered. Attributing them to the move
+                // is the only rule that does not refuse `papis add`, whose whole shape is
+                // building a document folder outside the root and renaming it in.
+                //
+                // The source test carries the whole condition. An earlier revision paired
+                // it with "and the matched end is the destination", which reads well and
+                // decides nothing: reaching here means this end resolved under the root,
+                // so if the *source* does not, this end cannot be the source. Measured —
+                // widening it to either end left the suite green. It is deleted rather
+                // than kept as documentation, for the same reason the `rel.len > 0` guard
+                // one revision earlier was: a condition that cannot change an answer is
+                // read as protection that is not there.
+                if (op.class == .rename and
+                    relUnderRoot(op.path, root, alt) == null and
+                    d.rel.len > rel.len and std.mem.startsWith(u8, d.rel, rel) and
+                    d.rel[rel.len] == '/')
+                {
+                    by_prefix = true;
+                }
+            }
+            if (named) break;
+        }
+        if (named) continue;
+        if (by_prefix) {
+            res.by_rename_prefix += 1;
+            continue;
+        }
+        res.total += 1;
+        if (res.stored < out.len) {
+            out[res.stored] = .{ .rel = d.rel, .how = d.how };
+            res.stored += 1;
+        }
+    }
+    return res;
+}
+
+/// Collect the judged tree's symlinks for `reconcile`.
+///
+/// Both snapshots, because a link the operation crossed may have been removed before the
+/// final sample or created after the initial one, and either way the path the shim
+/// recorded went through it.
+///
+/// **A link whose target changed during the run contributes nothing.** Neither answer is
+/// right and the reconciliation has no way to pick: it holds no ordering between the
+/// retarget and the operations, so first-wins and last-wins each excuse a path the target
+/// never touched under the other reading. Measured with `cur` moving `v1 -> v2`: reading
+/// the initial spelling made an unrecorded write to `v1/f` come out accounted-for, and
+/// reading the final one made it a refusal — from the same records. Dropping the link
+/// means operations spelled through it fall back to their literal path, match nothing,
+/// and refuse. That is the fail-closed side, and it is the side a detector belongs on.
+pub fn collectLinks(a: Allocator, first: Snapshot, second: Snapshot, out: *std.ArrayList(Link)) !void {
+    for ([_]Snapshot{ first, second }) |snap| {
+        for (snap.entries.items) |e| {
+            if (e.kind != .symlink) continue;
+            var seen = false;
+            for (out.items, 0..) |l, i| {
+                if (!std.mem.eql(u8, l.rel, e.rel)) continue;
+                seen = true;
+                if (!std.mem.eql(u8, l.target, e.content)) _ = out.orderedRemove(i);
+                break;
+            }
+            if (!seen) try out.append(a, .{ .rel = e.rel, .target = e.content });
+        }
+    }
+}
+
+/// Every reconcile test goes through this so the scratch buffer is one decision, and so
+/// a signature change lands in one place rather than in fifteen call sites.
+fn reconcileIn(
+    diffs: []const Difference,
+    ops: []const Op,
+    links: []const Link,
+    root: []const u8,
+    alt: []const u8,
+    out: []Unaccounted,
+) Reconciled {
+    var scratch: [2048]u8 = undefined;
+    return reconcile(diffs, ops, links, root, alt, &scratch, out);
+}
+
+test "reconcile: a change no operation names is unaccounted (#405)" {
+    // The measured shape. The parent's libc write is recorded and names `from-parent`;
+    // the raw-forked child's write is recorded nowhere at all. Before this, one recorded
+    // mutation was enough to silence the zero-ops detector and the run PASSed with the
+    // child's file in the judged directory.
+    const root = "/tmp/s";
+    const diffs = [_]Difference{
+        .{ .rel = "from-parent", .how = .only_in_second },
+        .{ .rel = "from-raw-child", .how = .only_in_second },
+    };
+    const ops = [_]Op{
+        .{ .class = .open, .seq = 1, .pid = 7, .path = "/tmp/s/from-parent", .aux = "" },
+        .{ .class = .write, .seq = 2, .pid = 7, .path = "/tmp/s/from-parent", .aux = "" },
+    };
+    var buf: [4]Unaccounted = undefined;
+    const r = reconcileIn(&diffs, &ops, &.{}, root, "", &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqual(@as(usize, 1), r.stored);
+    try std.testing.expectEqualStrings("from-raw-child", buf[0].rel);
+    try std.testing.expectEqual(@as(usize, 0), r.by_rename_prefix);
+    try std.testing.expect(!r.clean());
+}
+
+test "reconcile: an open with no write still names the path it created" {
+    // `isMutation` excludes `open` on purpose — it makes the zero-ops form stricter.
+    // Here the same exclusion would be wrong: a file created by open and never written
+    // is a change its own record explains, and refusing on it is a false refusal.
+    const diffs = [_]Difference{.{ .rel = "made", .how = .only_in_second }};
+    const ops = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .path = "/tmp/s/made", .aux = "" }};
+    var buf: [2]Unaccounted = undefined;
+    try std.testing.expect(reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: only a rename grants a subtree, and only from outside the root" {
+    // Three shapes that differ ONLY in the operation, against one difference under a
+    // directory. The umbrella exists because a subtree moved in from outside was never
+    // snapshotted; each of the other two has its source in `initial`, so absorbing them
+    // would hide exactly what this detector is for. The first revision of this code
+    // checked neither the class-plus-end nor the source, and an outside review's mutation
+    // deleting `op.class == .rename` survived the whole suite.
+    const diffs = [_]Difference{
+        .{ .rel = "d", .how = .only_in_second },
+        .{ .rel = "d/child", .how = .only_in_second },
+    };
+    var buf: [4]Unaccounted = undefined;
+
+    // Moved in from outside: the umbrella applies, and the child is counted, not refused.
+    const moved_in = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/staging", .aux = "/tmp/s/d" }};
+    const r_in = reconcileIn(&diffs, &moved_in, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expect(r_in.clean());
+    try std.testing.expectEqual(@as(usize, 1), r_in.by_rename_prefix);
+
+    // Renamed within the root: the source subtree IS in the snapshot, so nothing is
+    // absorbed and the unnamed child is refused.
+    const within = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/s/old", .aux = "/tmp/s/d" }};
+    const r_within = reconcileIn(&diffs, &within, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 1), r_within.total);
+    try std.testing.expectEqualStrings("d/child", buf[0].rel);
+    try std.testing.expectEqual(@as(usize, 0), r_within.by_rename_prefix);
+
+    // Not a rename at all: an `open` on the directory names the directory and nothing
+    // below it.
+    const opened = [_]Op{
+        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/staging", .aux = "/tmp/s/elsewhere" },
+        .{ .class = .open, .seq = 2, .pid = 7, .path = "/tmp/s/d", .aux = "" },
+    };
+    const r_open = reconcileIn(&diffs, &opened, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 1), r_open.total);
+    try std.testing.expectEqualStrings("d/child", buf[0].rel);
+    try std.testing.expectEqual(@as(usize, 0), r_open.by_rename_prefix);
+}
+
+test "reconcile: a rename whose destination is the root itself absorbs nothing" {
+    // `relUnderRoot` answers `""` for the root, and `""` is a prefix of every path. What
+    // stops it covering the whole run is the separator test — the character after the
+    // prefix has to be `/`, and a relative `rel` never starts with one. Pinned here
+    // because the first revision leaned on a `rel.len > 0` guard instead, which was
+    // unreachable for the same reason and so could be deleted with no test turning red.
+    const diffs = [_]Difference{
+        .{ .rel = "a", .how = .only_in_second },
+        .{ .rel = "a/b", .how = .only_in_second },
+    };
+    const ops = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/x", .aux = "/tmp/s" }};
+    var buf: [4]Unaccounted = undefined;
+    const r = reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 2), r.total);
+    try std.testing.expectEqual(@as(usize, 0), r.by_rename_prefix);
+}
+
+test "reconcile: a rename is read at both ends (papis, TOY_LINK_IN)" {
+    // `path` is the old name and `aux` the new one. Reading only `path` refuses every
+    // target that builds outside the judged root and moves the result in — measured on
+    // `spike/cohort3/papis`, whose single recorded operation is exactly that renameat,
+    // with the source under /tmp and outside the library.
+    const diffs = [_]Difference{
+        .{ .rel = "probe-doc", .how = .only_in_second },
+        .{ .rel = "linked-in", .how = .only_in_second },
+    };
+    const ops = [_]Op{
+        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/outside/staging", .aux = "/tmp/s/probe-doc" },
+        .{ .class = .link, .seq = 2, .pid = 7, .path = "/tmp/outside/src", .aux = "/tmp/s/linked-in" },
+    };
+    var buf: [4]Unaccounted = undefined;
+    const r = reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expect(r.clean());
+    try std.testing.expectEqual(@as(usize, 0), r.by_rename_prefix);
+    // Control: the same records with the `aux` end blanked leave both differences
+    // unaccounted, so the leg above measures the aux read and not a join that accepts
+    // everything.
+    //
+    // The control this replaced swapped the two ends, and was declared and then
+    // discarded (`_ = swapped;`). Running it — after an outside review read the test
+    // rather than its comment — showed it would not have measured anything: swapping
+    // moves the in-root spelling from `aux` to `path`, where an exact match names the
+    // difference just the same. A control that cannot fail is the same evidence as no
+    // control, and only running it tells the two apart.
+    const path_only = [_]Op{
+        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/outside/staging", .aux = "" },
+        .{ .class = .link, .seq = 2, .pid = 7, .path = "/tmp/outside/src", .aux = "" },
+    };
+    const r_control = reconcileIn(&diffs, &path_only, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 2), r_control.total);
+    try std.testing.expectEqual(@as(usize, 0), r_control.by_rename_prefix);
+}
+
+test "reconcile: a renamed-in directory carries its children, and the count says so" {
+    // The residue this cannot close. `papis add` renames a folder in from outside the
+    // judged root; the engine never snapshotted the source, so which descendants came
+    // with the move is unknowable. They are attributed to the move — and counted, so a
+    // run with a window says how wide it is instead of hiding it.
+    const diffs = [_]Difference{
+        .{ .rel = "probe-doc", .how = .only_in_second },
+        .{ .rel = "probe-doc/info.yaml", .how = .only_in_second },
+        .{ .rel = "probe-doc/paper.pdf", .how = .only_in_second },
+    };
+    const ops = [_]Op{
+        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/outside/staging", .aux = "/tmp/s/probe-doc" },
+    };
+    var buf: [4]Unaccounted = undefined;
+    const r = reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expect(r.clean());
+    try std.testing.expectEqual(@as(usize, 2), r.by_rename_prefix);
+    // Control: a sibling that is NOT under the renamed directory stays unaccounted, so
+    // the prefix rule absorbs the subtree and not the whole run.
+    const with_sibling = [_]Difference{
+        .{ .rel = "probe-doc", .how = .only_in_second },
+        .{ .rel = "probe-doc/info.yaml", .how = .only_in_second },
+        .{ .rel = "probe-docs-elsewhere", .how = .only_in_second },
+    };
+    const r2 = reconcileIn(&with_sibling, &ops, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 1), r2.total);
+    try std.testing.expectEqualStrings("probe-docs-elsewhere", buf[0].rel);
+    try std.testing.expectEqual(@as(usize, 1), r2.by_rename_prefix);
+}
+
+test "reconcile: the alt spelling of the root joins the same paths" {
+    // A caller can name the root through a symlink; macOS resolves /tmp to /private/tmp.
+    // A join that knew one spelling would count operations under the other as naming
+    // nothing, and refuse a fully observed run.
+    const diffs = [_]Difference{.{ .rel = "key.json", .how = .content_differs }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/private/tmp/s/key.json", .aux = "" }};
+    var buf: [2]Unaccounted = undefined;
+    try std.testing.expect(reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "/private/tmp/s", &buf).clean());
+    // Control: with no alt spelling the same operation names nothing.
+    try std.testing.expect(!reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: an operation naming the root itself is a name, not a skip" {
+    // `relUnderRoot` returns `""` rather than null when the path IS the root. Answering
+    // null instead reads as "this operation is outside the judged tree", and the change
+    // at the root would be refused with the record that explains it sitting right there.
+    const diffs = [_]Difference{.{ .rel = "", .how = .kind_differs }};
+    const ops = [_]Op{.{ .class = .rmdir, .seq = 1, .pid = 7, .path = "/tmp/s", .aux = "" }};
+    var buf: [2]Unaccounted = undefined;
+    try std.testing.expect(reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).clean());
+    // Control: the same difference with the operation one level up is outside the tree.
+    const outside = [_]Op{.{ .class = .rmdir, .seq = 1, .pid = 7, .path = "/tmp", .aux = "" }};
+    try std.testing.expect(!reconcileIn(&diffs, &outside, &.{}, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: markers and out-of-scope operations never name a path" {
+    // A marker's path field is not a path the target operated on: `shim_ready` carries
+    // the state directory, `unsupported` a syscall spelling, `kill_landed` and
+    // `unresolved` the path the engine was talking about. Any of them accepted as a name
+    // attributes a change to a record that describes no change.
+    //
+    // Every marker class gets a decoy UNDER the root that would name a difference if the
+    // class test let it through. An earlier version used `unsupported` with a syscall
+    // spelling for its path, which is outside the root and therefore dropped for the
+    // wrong reason — narrowing the marker test to `shim_ready` alone left the suite green.
+    const diffs = [_]Difference{
+        .{ .rel = "", .how = .content_differs },
+        .{ .rel = "decoy-a", .how = .only_in_second },
+        .{ .rel = "decoy-b", .how = .only_in_second },
+        .{ .rel = "decoy-c", .how = .only_in_second },
+    };
+    const ops = [_]Op{
+        .{ .class = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .class = .unsupported, .seq = 0, .pid = 7, .path = "/tmp/s/decoy-a", .aux = "" },
+        .{ .class = .kill_landed, .seq = 0, .pid = 7, .path = "/tmp/s/decoy-b", .aux = "" },
+        .{ .class = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/decoy-c", .aux = "" },
+        .{ .class = .write, .seq = 1, .pid = 7, .path = "/elsewhere/f", .aux = "" },
+    };
+    var buf: [8]Unaccounted = undefined;
+    try std.testing.expectEqual(@as(usize, 4), reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).total);
+}
+
+test "reconcile: a path recorded through an interior symlink names what the snapshot holds" {
+    // Measured, not reasoned: one `unlink` through `cur -> v1` PASSed on the shipped
+    // 1.0.0 and refused here, naming `v1/f` — a fully observed run turned into UNKNOWN by
+    // a spelling. The shim normalises path arguments lexically and records `cur/f`; the
+    // snapshot never follows a link and holds the difference at `v1/f`.
+    const diffs = [_]Difference{.{ .rel = "v1/f", .how = .only_in_first }};
+    const ops = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    var buf: [4]Unaccounted = undefined;
+
+    // Absolute link target, and the relative spelling of the same link.
+    const abs = [_]Link{.{ .rel = "cur", .target = "/tmp/s/v1" }};
+    try std.testing.expect(reconcileIn(&diffs, &ops, &abs, "/tmp/s", "", &buf).clean());
+    const rel_target = [_]Link{.{ .rel = "cur", .target = "v1" }};
+    try std.testing.expect(reconcileIn(&diffs, &ops, &rel_target, "/tmp/s", "", &buf).clean());
+    const dotted = [_]Link{.{ .rel = "links/cur", .target = "../v1" }};
+    const via_dotted = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/links/cur/f", .aux = "" }};
+    try std.testing.expect(reconcileIn(&diffs, &via_dotted, &dotted, "/tmp/s", "", &buf).clean());
+
+    // Control: with no link recorded, the same operation names nothing — so the leg above
+    // measures the substitution and not a join that accepts any path.
+    try std.testing.expect(!reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).clean());
+    // Control: a link that points somewhere else does not launder the path either.
+    const wrong = [_]Link{.{ .rel = "cur", .target = "/tmp/s/v2" }};
+    try std.testing.expect(!reconcileIn(&diffs, &ops, &wrong, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: link substitution follows a chain and survives a cycle" {
+    // The chain is where a single scratch buffer would have had `substituteOnce`
+    // overwrite its own input; the cycle is why the hop count is bounded. Neither shape
+    // is exotic — `latest -> stable -> v1` is an ordinary release layout.
+    const diffs = [_]Difference{.{ .rel = "v1/f", .how = .content_differs }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/latest/f", .aux = "" }};
+    const chain = [_]Link{
+        .{ .rel = "latest", .target = "stable" },
+        .{ .rel = "stable", .target = "v1" },
+    };
+    var buf: [4]Unaccounted = undefined;
+    try std.testing.expect(reconcileIn(&diffs, &ops, &chain, "/tmp/s", "", &buf).clean());
+
+    // A cycle terminates and refuses rather than spinning: reaching here at all is the
+    // assertion.
+    const cyc = [_]Link{
+        .{ .rel = "a", .target = "b" },
+        .{ .rel = "b", .target = "a" },
+    };
+    const cyc_ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a/f", .aux = "" }};
+    try std.testing.expect(!reconcileIn(&diffs, &cyc_ops, &cyc, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: an operation on the link itself names the link, not its target" {
+    // The second regression the substitution introduced, and the mirror of the one it
+    // fixed. `unlink("cur")` removes the LINK; the difference is at `cur`. Substituting
+    // first and comparing only the result rewrote the record's `cur` to `v1` and left the
+    // difference at `cur` named by nobody. Measured end to end: PASS exit 0 on the merge
+    // base, UNKNOWN exit 2 naming `cur` after the substitution was added.
+    const links = [_]Link{.{ .rel = "cur", .target = "v1" }};
+    var buf: [4]Unaccounted = undefined;
+
+    const removed = [_]Difference{.{ .rel = "cur", .how = .only_in_first }};
+    const unlink_link = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur", .aux = "" }};
+    try std.testing.expect(reconcileIn(&removed, &unlink_link, &links, "/tmp/s", "", &buf).clean());
+
+    // The generation swap ADR 0032 names as the motivating layout: build the new link
+    // beside the old one, then rename it over. Both records are on the link itself.
+    const swapped = [_]Difference{.{ .rel = "cur", .how = .content_differs }};
+    const swap_ops = [_]Op{
+        .{ .class = .symlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur.tmp", .aux = "" },
+        .{ .class = .rename, .seq = 2, .pid = 7, .path = "/tmp/s/cur.tmp", .aux = "/tmp/s/cur" },
+    };
+    try std.testing.expect(reconcileIn(&swapped, &swap_ops, &links, "/tmp/s", "", &buf).clean());
+
+    // Control: the substituted spelling still works alongside it, so accepting the
+    // literal one has not replaced the resolution with a join that ignores links.
+    const through = [_]Difference{.{ .rel = "v1/f", .how = .only_in_first }};
+    const unlink_through = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    try std.testing.expect(reconcileIn(&through, &unlink_through, &links, "/tmp/s", "", &buf).clean());
+    // Control: accepting both spellings is not accepting everything.
+    const other = [_]Difference{.{ .rel = "v2/f", .how = .only_in_first }};
+    try std.testing.expect(!reconcileIn(&other, &unlink_through, &links, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: only a rename grants a subtree — a link into the root does not" {
+    // The class test's own falsification. An earlier version of the leg above used an
+    // `.open` for its not-a-rename case, and `.open` carries no `aux`, so it never
+    // reached the class test at all: deleting `op.class == .rename` left the suite green.
+    // `.link` is the class that does reach it — two paths, destination inside the root,
+    // source outside — and it must not take the umbrella.
+    const diffs = [_]Difference{
+        .{ .rel = "d", .how = .only_in_second },
+        .{ .rel = "d/child", .how = .only_in_second },
+    };
+    var buf: [4]Unaccounted = undefined;
+    const linked = [_]Op{.{ .class = .link, .seq = 1, .pid = 7, .path = "/outside/src", .aux = "/tmp/s/d" }};
+    const r = reconcileIn(&diffs, &linked, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("d/child", buf[0].rel);
+    try std.testing.expectEqual(@as(usize, 0), r.by_rename_prefix);
+    // Control: the same shape as a rename does take it, so the leg measures the class and
+    // not something both records fail.
+    const renamed = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/src", .aux = "/tmp/s/d" }};
+    try std.testing.expectEqual(@as(usize, 1), reconcileIn(&diffs, &renamed, &.{}, "/tmp/s", "", &buf).by_rename_prefix);
+}
+
+test "reconcile: a link matches whole components, and never picks between two" {
+    // Two shapes one prefix test away from each other. `cur` must not match `current`,
+    // and where `a` and `a/b` are both links the deeper one is the one the path crossed
+    // last. Both branches were reachable and neither was measured.
+    var buf: [4]Unaccounted = undefined;
+    // `cur -> v1` must leave `current/f` alone. The difference is the one a partial-
+    // component substitution WOULD produce — `current/f` minus `cur` plus `v1` — so a
+    // record on `current/f` must not name it. Asserting instead that `current/f` itself
+    // stays clean measures nothing: the literal spelling names it either way, which is
+    // exactly what the first version of this leg did and why the mutation survived it.
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/current/f", .aux = "" }};
+    const near = [_]Link{.{ .rel = "cur", .target = "v1" }};
+    const mangled = [_]Difference{.{ .rel = "v1/rent/f", .how = .content_differs }};
+    try std.testing.expect(!reconcileIn(&mangled, &ops, &near, "/tmp/s", "", &buf).clean());
+    // Control: the run whose record names the path literally is still clean.
+    const diffs = [_]Difference{.{ .rel = "current/f", .how = .content_differs }};
+    try std.testing.expect(reconcileIn(&diffs, &ops, &near, "/tmp/s", "", &buf).clean());
+
+    // Two links on one path can only come from the tree changing shape between the two
+    // samples — `a` a directory holding `a/b` in one, a link in the other. There is no
+    // ordering to pick with, so nothing is substituted and the run refuses.
+    // The difference is what picking one of them lands on, so choosing names it and
+    // refusing to choose does not.
+    //
+    // The targets are absolute for a reason the first two versions of this leg missed. A
+    // relative target is joined to its link's own directory, so a result under `a/…` gets
+    // rewritten again by the `a` link on the next hop, and both readings end up somewhere
+    // neither difference is — which makes a chooser and a refuser agree, and lets the
+    // mutation live. Absolute targets land outside the links' reach and the two readings
+    // stay apart.
+    const ambiguous = [_]Link{
+        .{ .rel = "a", .target = "/tmp/s/x" },
+        .{ .rel = "a/b", .target = "/tmp/s/y" },
+    };
+    const deep_ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a/b/f", .aux = "" }};
+    const one_reading = [_]Difference{.{ .rel = "y/f", .how = .content_differs }};
+    try std.testing.expect(!reconcileIn(&one_reading, &deep_ops, &ambiguous, "/tmp/s", "", &buf).clean());
+    // Control: on its own that link does resolve to exactly this spelling, so the leg
+    // measures the refusal to choose and not a substitution that could not have produced
+    // the difference anyway.
+    const only_deep = [_]Link{.{ .rel = "a/b", .target = "/tmp/s/y" }};
+    try std.testing.expect(reconcileIn(&one_reading, &deep_ops, &only_deep, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: a link retargeted mid-run is not used to name anything" {
+    // Neither reading is right, so neither is taken. With `cur` moving `v1 -> v2`, the
+    // same records excuse `v1/f` under the initial spelling and refuse it under the final
+    // one — the reconciliation holds no ordering between the retarget and the operations,
+    // so any choice invents one. Dropping the link refuses, which is the side a detector
+    // belongs on.
+    const diffs = [_]Difference{.{ .rel = "v1/f", .how = .only_in_second }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    var buf: [4]Unaccounted = undefined;
+
+    var links: std.ArrayList(Link) = .empty;
+    defer links.deinit(std.testing.allocator);
+
+    var before = Snapshot{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
+    defer before.deinit();
+    try before.entries.append(before.arena.allocator(), .{ .rel = "cur", .kind = .symlink, .content = "v1" });
+    var after = Snapshot{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
+    defer after.deinit();
+    try after.entries.append(after.arena.allocator(), .{ .rel = "cur", .kind = .symlink, .content = "v2" });
+
+    try collectLinks(std.testing.allocator, before, after, &links);
+    try std.testing.expectEqual(@as(usize, 0), links.items.len);
+    try std.testing.expect(!reconcileIn(&diffs, &ops, links.items, "/tmp/s", "", &buf).clean());
+
+    // Control: a link that did NOT move survives collection and does name the path, so
+    // the leg measures the retarget and not collection failing on every input.
+    var steady: std.ArrayList(Link) = .empty;
+    defer steady.deinit(std.testing.allocator);
+    try collectLinks(std.testing.allocator, before, before, &steady);
+    try std.testing.expectEqual(@as(usize, 1), steady.items.len);
+    try std.testing.expect(reconcileIn(&diffs, &ops, steady.items, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: an absolute link target is folded like a relative one" {
+    // `.` and `..` were folded on the relative branch only, so `cur -> /tmp/s/v1/../v2`
+    // resolved to `v1/../v2/f` — a spelling no snapshot `rel` can hold, because those are
+    // built by walking the tree. A refusal on a run whose record names the path.
+    const diffs = [_]Difference{.{ .rel = "v2/f", .how = .content_differs }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    var buf: [4]Unaccounted = undefined;
+    const dotted = [_]Link{.{ .rel = "cur", .target = "/tmp/s/v1/../v2" }};
+    try std.testing.expect(reconcileIn(&diffs, &ops, &dotted, "/tmp/s", "", &buf).clean());
+    // Control: a target that climbs out of the judged root substitutes nothing.
+    const escaping = [_]Link{.{ .rel = "cur", .target = "../outside" }};
+    try std.testing.expect(!reconcileIn(&diffs, &ops, &escaping, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: the buffer bounds what is stored, never what is counted" {
+    const diffs = [_]Difference{
+        .{ .rel = "a", .how = .only_in_second },
+        .{ .rel = "b", .how = .only_in_second },
+        .{ .rel = "c", .how = .only_in_second },
+    };
+    var buf: [1]Unaccounted = undefined;
+    const r = reconcileIn(&diffs, &[_]Op{}, &.{}, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 3), r.total);
+    try std.testing.expectEqual(@as(usize, 1), r.stored);
+}
+
 test "diffSnapshots reports both directions, kind and content" {
     const gpa = std.testing.allocator;
     const Pair = struct { rel: []const u8, kind: posix.Kind, content: []const u8 };
@@ -542,9 +1252,20 @@ fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u
 /// refusal that names the file wants to name its size, and the read loop stopped
 /// before it could know.
 fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64) SnapshotError![]const u8 {
-    const fd = posix.open(path, posix.O_RDONLY, @as(c_uint, 0));
+    const fd = posix.open(path, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return error.ReadFailed;
     defer _ = posix.close(fd);
+
+    // Nothing that is not a regular file may reach the loop below (#400). The loop reads
+    // to EOF, and a FIFO with no writer answers EOF on the first read — so the flag
+    // above, alone, would turn a path that used to hang into one that succeeds empty.
+    // For the trace this is worse than the hang it replaces: an empty read collapses to
+    // an empty `TraceInfo`, which the engine reports as `no_shim_marker` — the shim
+    // declared never to have run, on evidence nobody read. The failed `lseek` is not the
+    // guard here, because this function deliberately ignores one (see the reservation
+    // below); the walk's kind check is not it either, since `readTraceCapped` does not
+    // go through the walk.
+    if ((posix.kindOfFd(fd) catch return error.ReadFailed) != .file) return error.ReadFailed;
 
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
@@ -3649,6 +4370,48 @@ const RefuseLargeAllocator = struct {
         self.backing.rawFree(m, a, ra);
     }
 };
+
+test "readWhole classifies the descriptor before the loop, and /dev/zero is what separates that from a failed seek (#400)" {
+    // Aimed at the guard's own predicate rather than at the accident that motivated it.
+    // A FIFO would prove nothing here: this function ignores a failed `lseek` by design
+    // (the reservation below is optional), so a FIFO reaches the read loop and stops at
+    // its immediate EOF whether or not the classification runs — which is the same empty
+    // success the guard exists to prevent, arriving by a different door.
+    //
+    // `/dev/zero` is the separating input. Measured: S_IFCHR, both `lseek`s succeed
+    // returning 0, and `read` yields bytes without end. With the classification deleted
+    // this call therefore runs the loop to `max` and answers `FileTooLarge` — a refusal
+    // that names a size problem for a character device.
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // That the device exists and answers what this test assumes, before relying on it:
+    // `error.ReadFailed` is also what a failed open returns from this function, so on a
+    // host without `/dev/zero` the assertion below would pass while measuring nothing.
+    const dzfd = posix.open("/dev/zero", posix.O_RDONLY, @as(c_uint, 0));
+    try std.testing.expect(dzfd >= 0);
+    try std.testing.expectEqual(posix.Kind.other, try posix.kindOfFd(dzfd));
+    _ = posix.close(dzfd);
+
+    try std.testing.expectError(
+        error.ReadFailed,
+        readWhole(arena_state.allocator(), "/dev/zero", 4096, null),
+    );
+
+    // The control. Without it a classification stuck on "refuse" — or a `kindOfFd` that
+    // answered `.other` for everything — would satisfy the assertion above while
+    // refusing every state file in every snapshot.
+    var bb: [128]u8 = undefined;
+    const path_z = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-readwhole400-{d}", .{posix.getpid()}) catch unreachable;
+    const fd = posix.open(path_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    const bytes = "abc\n";
+    try std.testing.expect(posix.write(fd, bytes.ptr, bytes.len) == @as(isize, @intCast(bytes.len)));
+    _ = posix.close(fd);
+    const got = try readWhole(arena_state.allocator(), path_z.ptr, 4096, null);
+    try std.testing.expectEqualStrings(bytes, got);
+    _ = posix.unlink(path_z.ptr);
+}
 
 test "a reservation that cannot be met does not relabel an oversized trace (#323)" {
     // #323 gave `readWhole` a reservation taken from the file's own length. This test is

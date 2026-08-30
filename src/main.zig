@@ -221,6 +221,12 @@ var l1_configured: bool = false;
 /// an UNKNOWN raised before the snapshots exist never carries an invented
 /// classification; set from the L0Plan the moment it is built.
 var l0_note: []const u8 = "not classified (the run was refused before L0 classification)";
+
+/// How many differences were attributed wholesale to a directory a recorded rename moved
+/// in from outside the judged root (#405, ADR 0032). Zero means the run has no such
+/// window — which is the point of carrying it as a number: "no window" is then something
+/// a caller reads, not something it infers from the absence of a sentence.
+var attributed_to_rename: usize = 0;
 /// Non-zero once any file is judged by the history form; widens `not tested`.
 var l0_history_count: u32 = 0;
 /// What the operation's executable looked like immediately before the recording run
@@ -1003,6 +1009,23 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
 /// a refusal is recoverable where that is not.
 const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 
+/// How long `--config` may wait for a peer that has not written yet before refusing.
+///
+/// **This number is pinned between three constants in another file and nothing checks
+/// the coupling**, so the inequality is written here rather than left to be rediscovered.
+/// `spike/case-path-deadline.py` carries `WRITER_DELAY = 1.0` (how late its writer
+/// opens), `min_s = 1.5` on the two deadline legs (the floor they assert this wait
+/// against), and `DEADLINE = 5.0` (when it kills sideeye). **`min_s` is the binding
+/// lower bound, not `WRITER_DELAY`** — measured: 1200 ms satisfies "above 1.0, below
+/// 5.0" and still fails both legs at 1.21 s. So: `min_s < this << DEADLINE`. Move any of
+/// the three and this has to move with them.
+const config_read_deadline_ms: u64 = 2000;
+
+/// Between attempts while a peer might still arrive. Small enough to pick up a config
+/// that lands mid-wait, large enough not to spin — the measured late-writer case takes
+/// around eighty reads to cover a second on both platforms.
+const config_read_poll_ms: u64 = 10;
+
 /// Bytes appended to a file since `from`, cut at the last newline so a half-written
 /// line is read whole next time; `end` is where the next read starts.
 ///
@@ -1016,9 +1039,14 @@ const Appended = struct { text: []const u8, end: u64 };
 fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usize) ?Appended {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
+    // The `lseek` below already refuses a FIFO with ESPIPE, and that is not the reason
+    // this is here: seekability and regular-file-ness are different properties, and the
+    // day someone reaches the bytes another way the `lseek` stops being the guard
+    // without anything saying so (#400).
+    if ((posix.kindOfFd(fd) catch return null) != .file) return null;
     const size = posix.lseek(fd, 0, posix.SEEK_END);
     if (size < 0) return null;
     const usize_size: u64 = @intCast(size);
@@ -1515,8 +1543,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             args.cwd != null or args.config != null)
             setupError("replay takes its define from the case file; the define-surface flags and --config do not apply");
         const rarena = arena_state.allocator();
-        const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024) orelse setupError(
-            std.fmt.allocPrint(rarena, "the case file could not be read (missing, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
+        const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, .{ .require_regular = true }) orelse setupError(
+            std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
         );
         const parsed = std.json.parseFromSlice(ReplayCase, rarena, ctext, .{}) catch
             setupError("the case file could not be parsed as a sideeye case");
@@ -1589,7 +1617,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null)
             setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
-        const text = readFileAlloc(arena, cfg_path) orelse setupError(
+        // Bounded, and the only reader that is. The path is operator-named and may
+        // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
+        // cannot be refused by kind the way a case path is (#400), and it cannot be
+        // waited on forever either. A ceiling comes with it: the largest config in this
+        // repository is 4.5 KiB, and an unbounded read was one of the three ways this
+        // call used not to return (`/dev/zero`; the other two were the open waiting for
+        // a peer, and a read waiting for one that had opened but sent nothing).
+        const text = readFileAllocCapped(arena, cfg_path, 1024 * 1024, .{ .bounded = true }) orelse setupError(
             std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
         );
         switch (config.parse(arena, text) catch setupError("out of memory")) {
@@ -2217,7 +2252,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // file itself cannot be read, and until #363's adjudication its message
         // claimed the other condition.
         const text = if (args.oracle_fs_usage)
-            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap) orelse
+            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{}) orelse
                 unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read")
         else
             readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
@@ -2432,6 +2467,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // place an unreproducible entry could otherwise slip into the worlds.
     refuseUnsupportedEntry(arena, final, "appeared during the recording run");
 
+    // The general form of the zero-ops detector above (#405). That one asks whether the
+    // state moved while *nothing* was counted, and goes silent the moment one operation
+    // is recorded: a target whose libc write is seen and whose raw write is not looks
+    // exactly like one that was fully observed. Measured on the shipped build — a
+    // raw-forked child's file sat in the judged directory under a PASS.
+    //
+    // Placed after `refuseUnsupportedEntry` on purpose. A `mknod`'d FIFO is a change no
+    // operation names — the shim interposes no `mknod` anywhere — so running first would
+    // take three acceptance legs' refusals and answer them under this name instead of
+    // the one that says what is actually wrong with the entry.
+    //
+    // After the oracle comparison too: where an oracle ran, `oracle_missed_operation`
+    // names the specific syscall that went unseen, which is strictly more than "this
+    // path is unexplained". This is the detector for the runs that have no second
+    // witness at all, which is every macOS run that does not pay root.
+    reconcileOrRefuse(gpa, arena, initial, final, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
+
     const n = trace.kill_point_count;
     crash_points = n;
 
@@ -2568,7 +2620,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // dropped — an empty line carries nothing harvestable and a bare marker is
         // noise. A capture that cannot be read back is said out loud rather than
         // silently swallowed.
-        if (readFileAllocCapped(arena, fal_out, 1024 * 1024)) |fal_text| {
+        if (readFileAllocCapped(arena, fal_out, 1024 * 1024, .{})) |fal_text| {
             var lines = std.mem.splitScalar(u8, fal_text, '\n');
             while (lines.next()) |line| {
                 if (line.len == 0) continue;
@@ -3557,18 +3609,19 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
 const demo_toy_c = @embedFile("toy_c");
 const demo_check_sh = @embedFile("check_sh");
 
-const shim_basename = if (builtin.os.tag == .macos) "libsideeye_shim.dylib" else "libsideeye_shim.so";
-
 /// Where the shim is looked for when --shim is not given: next to the binary
 /// (the release-tarball layout) first, then ../lib relative to it (the zig-out
 /// layout). One list serves demo, preflight, explore and replay (#78) — the demo
 /// proved the order before the flag learned to default.
+///
+/// The list itself moved to `mcp.zig`, beside `canonicalSelf`, when `sideeye mcp`
+/// became its fifth caller (#389): the server used to demand `SIDEEYE_MCP_SHIM` and
+/// refuse without it, which made it the one command that did not do what `README.md`
+/// says the product does. Two copies of a search order is how the two ends of that
+/// sentence drift apart again.
+const shim_basename = mcp.shim_basename;
 fn shimCandidates(arena: std.mem.Allocator, self: []const u8) [2][]const u8 {
-    const dir = std.fs.path.dirname(self) orelse "/";
-    return .{
-        std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, shim_basename }) catch setupError("out of memory"),
-        std.fmt.allocPrint(arena, "{s}/../lib/{s}", .{ dir, shim_basename }) catch setupError("out of memory"),
-    };
+    return mcp.shimCandidates(arena, self) catch setupError("out of memory");
 }
 
 test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
@@ -3587,20 +3640,17 @@ test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
 /// reproduce line name the real file rather than a bin/../lib spelling.
 /// Absence stays loud, both looked-at paths named; argv[0] is never consulted
 /// (a PATH name or a wrapper must not decide which library gets injected).
+/// The probe is `mcp.findShimBeside`, not a second copy of it. Sharing only the
+/// candidate list left the two ends of the search free to disagree, and they did within
+/// the hour: on an allocation failure one answered the un-normalised candidate and the
+/// other aborted the process. This function now owns exactly what is different about the
+/// CLI — that absence is fatal here and answerable there.
 fn findShim(arena: std.mem.Allocator) []const u8 {
     const self = mcp.canonicalSelf() orelse setupError("could not resolve the canonical path of this binary to look beside it for the shim; pass --shim <path>");
     const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
+    if (mcp.findShimBeside(arena, self_owned)) |found| return found;
     const cands = shimCandidates(arena, self_owned);
-    for (cands) |c| {
-        var zb: [contract.max_path]u8 = undefined;
-        const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
-        if (posix.access(z.ptr, 0) != 0) continue;
-        var rb: [contract.max_path]u8 = undefined;
-        if (posix.realpath(z.ptr, &rb)) |p|
-            return arena.dupe(u8, std.mem.span(p)) catch setupError("out of memory");
-        return c;
-    }
-    setupError(std.fmt.allocPrint(arena, "the shim is half the product, and none was found beside this binary; looked at {s} and {s} — pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found beside this binary; pass --shim");
+    setupError(std.fmt.allocPrint(arena, "the shim is half the product, and none was found at either place this looks — {s} and {s}. Pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found beside this binary; pass --shim");
 }
 
 /// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete
@@ -3870,6 +3920,105 @@ fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase
     }
 }
 
+/// How many unaccounted paths the refusal names before it stops counting out loud.
+/// The count itself is never truncated — a caller reading three names must still be
+/// told the run had thirty.
+const unaccounted_shown = 4;
+
+/// Refuse when the judged state changed at a path no recorded operation names (#405).
+///
+/// The account this rests on is the shim's, and the shim sees only what crosses the
+/// libc boundary it interposes. A raw syscall is invisible to it — so was a raw-forked
+/// child's write, measured on the shipped build reaching PASS with the child's file
+/// still in the directory. The existing zero-ops detector cannot see that: it asks
+/// whether *nothing* was counted, and the parent's own recorded write answers no.
+///
+/// Returns only when every difference is accounted for, or is inside a subtree a
+/// recorded `rename` moved in. That second clause is a window, not a proof, and the
+/// report says how wide it is rather than leaving it to a comment: the source of such a
+/// rename was never snapshotted (for `papis add` it lives outside the judged root
+/// entirely), so which descendants arrived with the move cannot be recovered from
+/// anything this run holds.
+fn reconcileOrRefuse(
+    gpa: std.mem.Allocator,
+    arena: std.mem.Allocator,
+    initial: engine.Snapshot,
+    final: engine.Snapshot,
+    ops: []const engine.Op,
+    root: []const u8,
+    alt: []const u8,
+) void {
+    // The differences are walked a second time here — `snapshotsEqual` above already
+    // asked whether there were any — and that duplication is deliberate. Folding the two
+    // would mean the zero-ops detector and this one shared a computation, and the first
+    // is a frozen member whose firing condition must not move because the second wanted
+    // a value. The cost is one linear merge over a tree whose largest committed instance
+    // holds twenty-nine entries.
+    //
+    // Sized from the tree rather than fixed: a bound smaller than the difference count
+    // would still report `total` correctly, but the names it printed would be an
+    // arbitrary prefix of the problem.
+    const cap = initial.entries.items.len + final.entries.items.len + 1;
+    const diffs = gpa.alloc(engine.Difference, cap) catch setupError("out of memory");
+    defer gpa.free(diffs);
+    const dc = engine.diffSnapshots(initial, final, diffs);
+    if (dc.equal()) return;
+
+    const found = gpa.alloc(engine.Unaccounted, dc.stored + 1) catch setupError("out of memory");
+    defer gpa.free(found);
+
+    // The tree's own symlinks, from the snapshots rather than from the filesystem. The
+    // shim normalises path arguments lexically, so an operation on `cur/f` under
+    // `cur -> v1` is recorded as `cur/f` while the difference sits at `v1/f`; joining the
+    // two spellings without this turned a fully observed run into a refusal (measured:
+    // one unlink through an interior symlink, PASS on the shipped 1.0.0, UNKNOWN here).
+    // Reading the live tree instead would answer about the tree after the run, not the
+    // one the operation crossed.
+    var links: std.ArrayList(engine.Link) = .empty;
+    engine.collectLinks(arena, initial, final, &links) catch setupError("out of memory");
+    const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError("out of memory");
+    defer gpa.free(scratch);
+
+    const r = engine.reconcile(diffs[0..dc.stored], ops, links.items, root, alt, scratch, found);
+
+    // Disclosed on every run that has one, not only on the refusals: a reader deciding
+    // what a PASS covers needs to know a subtree went unexamined. Twice, on purpose — the
+    // number is the machine's copy and cannot be lost to an allocation failure, and the
+    // sentence rides `l0_note`, the line that already says what the judgement covered.
+    attributed_to_rename = r.by_rename_prefix;
+    if (r.by_rename_prefix > 0)
+        l0_note = std.fmt.allocPrint(
+            arena,
+            "{s}; {d} path(s) attributed to a directory a recorded rename moved in from outside the judged root, and not individually accounted for — that source subtree was never snapshotted, so what arrived with the move and what an unrecorded writer added afterwards cannot be told apart",
+            .{ l0_note, r.by_rename_prefix },
+        ) catch l0_note;
+
+    if (r.clean()) return;
+
+    // `written` rather than `shown`: an allocation failure mid-list leaves a shorter one,
+    // and a count computed from what was *intended* would then describe a list that was
+    // never printed — the detail would read "incomplete: a and 3 more" with two names
+    // missing and nothing saying so.
+    var names: std.ArrayList(u8) = .empty;
+    var written: usize = 0;
+    for (found[0..@min(r.stored, unaccounted_shown)]) |u| {
+        if (written > 0) names.appendSlice(arena, ", ") catch break;
+        names.appendSlice(arena, textShown(arena, u.rel)) catch break;
+        written += 1;
+    }
+    if (written == 0) names.appendSlice(arena, "(the names could not be rendered)") catch {};
+    const more = if (r.total > written)
+        std.fmt.allocPrint(arena, " and {d} more", .{r.total - written}) catch ""
+    else
+        "";
+    const detail = std.fmt.allocPrint(
+        arena,
+        "the judged state changed at {d} path(s) that no recorded operation names, so the account of this run is incomplete: {s}{s}. The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all",
+        .{ r.total, names.items, more },
+    ) catch "the judged state changed at a path that no recorded operation names";
+    unknown(.state_changed_unaccounted, detail);
+}
+
 /// The `no_shim_marker` detail line, built from what was observed rather than from a
 /// list of things that might have been true.
 ///
@@ -4050,9 +4199,13 @@ const CaptureObservation = struct {
 fn observeCapture(path: []const u8, needle: ?[]const u8) error{Unreadable}!CaptureObservation {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return error.Unreadable;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return error.Unreadable;
     defer _ = posix.close(fd);
+    // Same reasoning as `readFileFrom`: the `lseek` refuses a FIFO today, but what this
+    // path needs is that the capture is an ordinary file, which is a different sentence
+    // (#400).
+    if ((posix.kindOfFd(fd) catch return error.Unreadable) != .file) return error.Unreadable;
     const end = posix.lseek(fd, 0, posix.SEEK_END);
     if (end < 0) return error.Unreadable;
     if (posix.lseek(fd, 0, posix.SEEK_SET) != 0) return error.Unreadable;
@@ -4090,6 +4243,98 @@ fn observeCapture(path: []const u8, needle: ?[]const u8) error{Unreadable}!Captu
     var out: CaptureObservation = .{ .measured = bound, .bytes = total, .digest = undefined, .marker_seen = seen };
     hasher.final(&out.digest);
     return out;
+}
+
+test "the readers ask what the descriptor is before reading it, at every call site (#400)" {
+    // A FIFO **with a live writer and bytes already in it**. That shape is chosen so the
+    // test measures the classification without reaching through the hang it guards: with
+    // a writer present the open returns whether or not `O_NONBLOCK` is passed, so
+    // removing the flag leaves this test fast rather than hanging a CI runner for six
+    // hours. Removing the *classification* is what turns it red — the read would then
+    // succeed and hand back the writer's bytes, which is the "could not be read becomes
+    // was empty" defect in its readable form.
+    //
+    // The flag's own wiring cannot be tested here for the same reason: it only shows
+    // itself when there is no writer, and that is the hang. `spike/case-path-deadline.py`
+    // measures it from outside the process, at the one call site the CLI reaches.
+    var bb: [128]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-fifo400-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base.ptr, @as(c_uint, 0o755));
+    var fb: [160]u8 = undefined;
+    const fifo_z = std.fmt.bufPrintZ(&fb, "{s}/pipe", .{base}) catch unreachable;
+    _ = posix.unlink(fifo_z.ptr);
+    try std.testing.expect(posix.mkfifo(fifo_z.ptr, @as(c_uint, 0o644)) == 0);
+
+    // Reader first: the write end of a FIFO with no reader fails ENXIO.
+    const rfd = posix.open(fifo_z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    try std.testing.expect(rfd >= 0);
+    defer _ = posix.close(rfd);
+    const wfd = posix.open(fifo_z.ptr, posix.O_WRONLY, @as(c_uint, 0));
+    try std.testing.expect(wfd >= 0);
+    defer _ = posix.close(wfd);
+    const payload = "{\"schema\":\"sideeye/case\"}\n";
+    try std.testing.expect(posix.write(wfd, payload.ptr, payload.len) == @as(isize, @intCast(payload.len)));
+
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const fifo_path = std.mem.span(@as([*:0]const u8, fifo_z.ptr));
+
+    // **This first assertion does not measure the classification, and saying so is the
+    // point.** `readFileAllocCapped` reads in a loop and returns one bit, so a
+    // non-regular descriptor, an unreadable one and a file over the cap all arrive as
+    // `null`: with the guard deleted the FIFO's payload is read and then the next read
+    // fails EAGAIN, which is `null` again. Measured — that mutation survives this line.
+    // What kills it is `spike/case-path-deadline.py`, from outside the process, where
+    // the refusal *message* separates "could not be read" from "could not be parsed".
+    // The line stays because it pins the behaviour; it is not evidence of wiring.
+    try std.testing.expect(readFileAllocCapped(arena, fifo_path, 1024 * 1024, .{ .require_regular = true }) == null);
+    try std.testing.expect(readFileFrom(arena, fifo_path, 0, 64 * 1024) == null);
+    try std.testing.expectError(error.Unreadable, observeCapture(fifo_path, null));
+
+    // `/dev/zero`, which is the input that separates this guard from the `lseek` that
+    // happens to sit next to it. Measured: it is `S_IFCHR`, both `lseek`s **succeed**
+    // (returning 0) and `read` returns bytes — so every reader whose refusal rests on a
+    // failed seek accepts it. `readFileFrom` would answer an empty `Appended` rather
+    // than null, and `observeCapture` a zero-length observation rather than an error.
+    // Deleting either classification with only the FIFO above in the test leaves both
+    // green, which is how these two call sites were left unguarded on the first attempt.
+    const devzero = "/dev/zero";
+    // First, that the device is there and answers what this test assumes. `null` and
+    // `error.Unreadable` are also the answers to a failed open, so on a host without
+    // `/dev/zero` the two assertions below would pass while measuring nothing at all.
+    var dzb: [16]u8 = undefined;
+    const dz_z = std.fmt.bufPrintZ(&dzb, "{s}", .{devzero}) catch unreachable;
+    const dzfd = posix.open(dz_z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    try std.testing.expect(dzfd >= 0);
+    try std.testing.expectEqual(posix.Kind.other, try posix.kindOfFd(dzfd));
+    _ = posix.close(dzfd);
+
+    try std.testing.expect(readFileFrom(arena, devzero, 0, 64 * 1024) == null);
+    try std.testing.expectError(error.Unreadable, observeCapture(devzero, null));
+
+    // The control, with the same bytes in an ordinary file. Without it, readers that
+    // refused everything — a `kindOfFd` stuck on `.other`, or a classification inverted
+    // — would satisfy every assertion above.
+    var rb: [160]u8 = undefined;
+    const reg_z = std.fmt.bufPrintZ(&rb, "{s}/f", .{base}) catch unreachable;
+    const ofd = posix.open(reg_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(ofd >= 0);
+    try std.testing.expect(posix.write(ofd, payload.ptr, payload.len) == @as(isize, @intCast(payload.len)));
+    _ = posix.close(ofd);
+    const reg_path = std.mem.span(@as([*:0]const u8, reg_z.ptr));
+
+    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, .{ .require_regular = true }) != null);
+    try std.testing.expect(readFileFrom(arena, reg_path, 0, 64 * 1024) != null);
+    _ = try observeCapture(reg_path, null);
+
+    // And the case read still accepts an ordinary file when it is not asked to classify,
+    // which is the half `--config` depends on.
+    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, .{}) != null);
+
+    _ = posix.unlink(fifo_z.ptr);
+    _ = posix.unlink(reg_z.ptr);
+    _ = posix.rmdir(base.ptr);
 }
 
 test "observeCapture finds a straddling marker and fingerprints the same bytes" {
@@ -4181,23 +4426,136 @@ test "a shrink observed inside one sample is its own evidence, not the next comp
     try std.testing.expect(!during.fingerprintEql(honest));
 }
 
-/// `readFileAlloc` with a ceiling: a case file is caller-supplied input, and reading
-/// until EOF from something that never ends (a device, a fifo) would hang the run
-/// before any refusal could fire. Over the cap answers like unreadable.
-fn readFileAllocCapped(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 {
+/// What the caller wants of the read, beyond the byte ceiling.
+///
+/// A struct rather than two positional booleans: `(…, true, false)` and `(…, false,
+/// true)` are both well-typed and mean opposite things, Zig has no named arguments, and
+/// this codebase already carries an incident about an argument arriving silently in the
+/// wrong place (`open`'s variadic `mode`, wrong on one architecture and plausible on the
+/// other).
+const ReadMode = struct {
+    /// Refuse a descriptor that is not a regular file, before reading a byte (#400).
+    require_regular: bool = false,
+    /// Bound the read in wall-clock time as well as in bytes: keep asking while a peer
+    /// might still arrive, and refuse at the deadline rather than waiting forever.
+    bounded: bool = false,
+};
+
+/// `readFileAlloc` with a ceiling: a caller-named file is input, and reading until EOF
+/// from something that never ends (a device, a fifo) would hang the run before any
+/// refusal could fire. Over the cap answers like unreadable.
+///
+/// **That sentence was written for a hazard the cap cannot reach, which is #400.** A
+/// FIFO does not hang the read the cap guards — it hangs the `open` in front of it, and
+/// the loop is never entered to be capped. So the open takes `O_NONBLOCK` where either
+/// mode asks for it. That alone then buys a second defect: past the open, a FIFO with no
+/// writer returns 0 from the first read, so the file arrives *empty* and successful.
+/// Measured on macOS against a real FIFO: `open` ok, `fstat` S_IFIFO, `lseek` ESPIPE,
+/// `read` n=0 with errno untouched.
+///
+/// The two `ReadMode` halves are the caller's to choose, because the callers differ in
+/// who names the path and in what may be refused.
+///
+/// **`require_regular`** is the case read's. A case file is named by whoever runs
+/// `replay`, and it is an ordinary file or it is not a case file — so a descriptor that
+/// is anything else is refused before a byte is read.
+///
+/// **`bounded`** is `--config`'s, and it exists because that path cannot take the other
+/// half. `--config` is operator-named and may legitimately be a pipe (`--config
+/// /dev/stdin`, a process substitution), so refusing by kind would break spellings that
+/// work today. What it can do is refuse to wait forever: keep asking while a peer might
+/// still arrive, and stop at a deadline. Three inputs made that necessary, and each one
+/// used to be a run with no exit code — a FIFO with no writer (the open), a pipe whose
+/// writer opened and sent nothing (the read), and `/dev/zero` (a read that never ends).
+///
+/// **What `bounded` costs.** The deadline is absolute, not idle-based: a producer slower
+/// than it, or a config that streams across it, is refused with the partial read
+/// discarded. And a pipe whose writer opened, wrote nothing and closed is indisputably
+/// *empty*, but reads exactly like one whose writer has not arrived — POSIX offers no
+/// way to tell them apart — so it waits out the deadline and is reported unreadable
+/// rather than empty. Both are measured and disclosed in the CHANGELOG.
+///
+/// The two captures ask for neither. They are written by this process or its child
+/// inside the work directory: demanding regularity would refuse nothing that happens,
+/// and a deadline would bound something the run already bounds.
+fn readFileAllocCapped(
+    arena: std.mem.Allocator,
+    path: []const u8,
+    cap: usize,
+    mode: ReadMode,
+) ?[]const u8 {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
-    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    // Both modes need the open to return, for different reasons: classification has to
+    // get a descriptor before it can ask what it is, and the bounded read needs `EAGAIN`
+    // where a blocking read would sit somewhere the deadline cannot see. Plain readers
+    // keep the blocking open they had — the flag is not free, and a non-blocking read of
+    // a pipe whose writer has not written yet fails where waiting would have succeeded.
+    const flags: c_int = if (mode.require_regular or mode.bounded)
+        posix.O_RDONLY | posix.O_NONBLOCK
+    else
+        posix.O_RDONLY;
+    const fd = posix.open(z.ptr, flags, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
+    if (mode.require_regular) {
+        // Asked of the descriptor rather than of the name. A name classified before the
+        // open can change kind before the read, and the probe that classified names by
+        // opening them is what #5 retired — for hanging on exactly this input.
+        const kind = posix.kindOfFd(fd) catch return null;
+        if (kind != .file) return null;
+    }
+    // Asked once. The answer cannot change for an open descriptor, and asking per read
+    // would cost an fstat on every empty pass — around eighty of them in the measured
+    // late-writer case.
+    const peer_may_arrive = mode.bounded and posix.isFifoFd(fd);
+    const deadline_at: u64 = if (mode.bounded) posix.monotonicMs() + config_read_deadline_ms else 0;
+
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
+    var eintr_left: u32 = 8;
     while (true) {
         const n = posix.read(fd, &chunk, chunk.len);
-        if (n < 0) return null;
-        if (n == 0) break;
-        list.appendSlice(arena, chunk[0..@intCast(n)]) catch return null;
-        if (list.items.len > cap) return null;
+        if (n > 0) {
+            list.appendSlice(arena, chunk[0..@intCast(n)]) catch return null;
+            if (list.items.len > cap) return null;
+            continue;
+        }
+
+        // Everything past here is a pass that produced no bytes, and the deadline is
+        // consulted **only** here. A 300 KiB regular file finishes in six reads without
+        // touching this branch, so a slow disk cannot spend the budget — which is the
+        // false positive that made an earlier draft reject a time bound outright.
+        if (n == 0) {
+            // End of file — unless a peer might still show up. A FIFO with no writer
+            // answers 0 exactly as an empty regular file does, and the only difference
+            // is whether waiting could change the answer. `/dev/null` is not a FIFO, so
+            // it takes this break and stays as fast as it is today.
+            if (!peer_may_arrive or list.items.len != 0) break;
+        } else {
+            const e = std.c._errno().*;
+            if (e == posix.EINTR) {
+                // The repo's shape for this: an EINTR-only bounded retry, counted by the
+                // loop rather than by hand (`posix.zig`'s wait). It applies to every
+                // mode, and it is the plain readers — the ones without the flag, whose
+                // read *does* block — that can actually reach it; for them this changes
+                // a first-interruption `null` into eight retries. Unreachable in
+                // practice on all of them today (no handler is installed anywhere), and
+                // folding an interruption into "unreadable" would be a wrong answer
+                // rather than a slow one.
+                if (eintr_left == 0) return null;
+                eintr_left -= 1;
+                continue;
+            }
+            if (!(mode.bounded and e == posix.EAGAIN)) return null;
+        }
+
+        // Only `bounded` reaches here: the `n == 0` arm above needs `peer_may_arrive`
+        // and the `n < 0` arm needs `mode.bounded` explicitly. Reading the clock
+        // unconditionally rather than re-testing the mode keeps that from reading as a
+        // case someone still has to think about.
+        if (posix.monotonicMs() >= deadline_at) return null;
+        posix.sleepForMs(config_read_poll_ms);
     }
     return list.items;
 }
@@ -4206,7 +4564,7 @@ fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     // A read error is not end of file (the shared loop returns null for it): treating
     // them alike once turned a truncated oracle file into a complete one, and the
     // comparison that followed was against however much happened to arrive.
-    return readFileAllocCapped(arena, path, std.math.maxInt(usize));
+    return readFileAllocCapped(arena, path, std.math.maxInt(usize), .{});
 }
 
 /// A define command as a bare JSON value, mirroring `config.Command.jsonParse`:
@@ -4441,6 +4799,10 @@ fn buildJson(
     try jsonString(w, arena, checker_note);
     try w.appendSlice(arena, ",\n  \"processes\": ");
     try jsonString(w, arena, boundaryAccount());
+    // Additive under the report-schema allowance the freeze keeps open (surface 2). A
+    // number rather than a sentence in `l0`, so "this run has no unexamined subtree" is
+    // machine-readable instead of being the absence of a phrase.
+    try w.print(arena, ",\n  \"paths_attributed_to_rename\": {d}", .{attributed_to_rename});
     // Stated in the report itself, not only in the documentation: a PASS that does not
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": ");

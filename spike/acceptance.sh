@@ -3273,7 +3273,15 @@ o=$(/tmp/acc9/pack/sideeye explore --state /tmp/acc9/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --work /tmp/acc9/work 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q "looked at /tmp/acc9/pack/libsideeye_shim.so" && echo "$o" | grep -q "pass --shim"; then
+# Both candidates, not one. The message names two places and this used to check the
+# first, so half of what it claims was unmeasured. The wording moved in #389 — from
+# "looked at X and Y" to "at either place this looks" — because two failure paths reach
+# this refusal without probing at all (an unbuildable candidate list, a candidate past
+# `max_path`), and "looked at" would name a probe that never happened.
+if [ "$rc" = "3" ] &&
+   echo "$o" | grep -q "/tmp/acc9/pack/libsideeye_shim.so" &&
+   echo "$o" | grep -q "/tmp/acc9/pack/../lib/libsideeye_shim.so" &&
+   echo "$o" | grep -qi "pass --shim"; then
     echo "ok   no shim beside the binary: a loud error names both candidates"
 else
     echo "FAIL shim absence: exit $rc"
@@ -3391,6 +3399,31 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # marker-reason needs a generation covering B alone with no rated trial: that is the
 # only shape where nothing the attribution checks read comes after a detail table,
 # and it is the shape the page contemplates for a future B measurement.
+# #348 adds four more, for the apparatus record a completed generation is swept
+# under: apparatus-missing (no record at all), apparatus-digest-missing (one digest
+# line instead of two), apparatus-head-empty (`head: ` with no value — what
+# sweep.sh writes when `git rev-parse` fails, since nothing there checks its rc) and
+# apparatus-image-unlisted (no image lines — what it writes when `docker images |
+# grep` returns nothing). The first three read only the file; the last is the one
+# predicate that holds the record against the generation's own manifest.
+# **apparatus-missing's red-once is defined differently from every other fixture
+# here.** Removing its guard does not turn the fixture green: the read that follows
+# raises instead, so what the removal changes is the KIND of red — a refusal with a
+# pinned message becomes a traceback, which this loop reports as "died, but not on
+# its predicate". That difference is the measurement.
+# Two apparatus checks were considered and left out, named here so the omission is
+# not read as an oversight. **The banner line** is not checked: truncation eats from
+# the end, so a record can lose its images, then its head, then its digests, but a
+# banner-only loss cannot be produced that way — it takes a targeted edit, which is
+# equally invisible to every other rule here (rewriting one character of a digest,
+# say). The search behind that was one probe deep: no generation in the current
+# corpus leaves the image predicate covering an empty set (non-wall rows are A 36/36,
+# B 7/20, control 1/1). "No shape was found" rather than "no shape exists".
+# **Whether `head:` names a commit in this history** is not checked either: it would
+# catch a real accident (a sweep interrupted and rebased left a head: pointing at a
+# commit no longer reachable), but count.py calls neither git nor subprocess today,
+# and bringing a git dependency into a tool that runs in the sweep container is its
+# own decision.
 # The first of those seven was itself red for the wrong reason when it was written —
 # count.py read its reports before checking its status, so it died on a missing file
 # — which is what this loop's message-matching exists to catch. **Predicates with no
@@ -3471,7 +3504,11 @@ for pair in \
     "setup-error-empty-reason:is waived with no reason" \
     "setup-error-piped-reason:reason contains a pipe" \
     "setup-error-duplicate-waiver:twice — the later row would win in silence" \
-    "setup-error-marker-reason:carries the results block's end marker"; do
+    "setup-error-marker-reason:carries the results block's end marker" \
+    "apparatus-missing:apparatus.txt is missing" \
+    "apparatus-digest-missing:digest lines, not the engine's" \
+    "apparatus-head-empty:no resolved head: line" \
+    "apparatus-image-unlisted:the apparatus record does not"; do
     ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
@@ -4935,6 +4972,235 @@ if [ "$oe_fails" = "0" ]; then
 else
     fails=$((fails + oe_fails))
     reasons="$reasons oracle-only-boundary"
+fi
+
+
+echo ""
+echo "=========== check 2af: a change no operation names is refused (#405) ==========="
+# The parent writes through libc and is recorded; the raw-forked child writes through raw
+# syscalls and is recorded nowhere. `state_changed_without_ops` stays quiet — one mutation
+# WAS counted — and before the per-path reconciliation this reached PASS, exit 0, with the
+# child's file in the judged directory. Measured on the shipped 1.0.0 and again on main.
+#
+# Seen red once, on the pre-change binary against this exact toy: PASS exit 0, both files
+# present (BUILDLOG 2026-08-30). The message must name the path: a detector that refused
+# without saying which path is unexplained sends the reader nowhere.
+ra_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-rawchild" \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified \
+    --json /tmp/acc/rawchild.json 2>&1)
+rc=$?
+if [ "$rc" != "2" ]; then
+    echo "FAIL wanted UNKNOWN (exit 2), got exit $rc"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+    ra_fails=$((ra_fails + 1))
+elif [ ! -f /tmp/acc/state/from-raw-child ]; then
+    echo "FAIL the toy did not reach the shape this leg measures: the child wrote nothing"
+    ra_fails=$((ra_fails + 1))
+else
+    python3 - <<'PYEOF' || ra_fails=$((ra_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/rawchild.json"))
+if d.get("unknown_reason") != "state_changed_unaccounted":
+    sys.exit("wanted state_changed_unaccounted, got %r — a refusal for another reason "
+             "would leave this leg green over a reconciliation that never ran"
+             % d.get("unknown_reason"))
+m = d.get("message") or ""
+if "from-raw-child" not in m:
+    sys.exit("the refusal does not name the unexplained path: %r" % m)
+if "from-parent" in m:
+    sys.exit("the refusal names a path a record DOES explain: %r" % m)
+PYEOF
+fi
+if [ "$ra_fails" = "0" ]; then
+    echo "ok   a path no record names is refused, and the refusal says which path"
+else
+    fails=$((fails + ra_fails))
+    reasons="$reasons state_changed_unaccounted"
+fi
+
+echo ""
+echo "=========== check 2ag: a directory renamed in is accounted for, and counted ==========="
+# The control for 2af, and the residue ADR 0032 discloses. `papis add` builds a document
+# folder outside the judged root and moves it in with one renameat — one record, and the
+# difference holds the directory plus every descendant. Attributing them to the move is
+# the only rule that does not refuse a committed PASS (spike/cohort3/papis). The window
+# that opens is reported as a number rather than left to a comment.
+rn_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/outside
+cat > /tmp/acc/renamein.c <<'EOC'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
+static void put(const char *p, const char *s) {
+    int fd = open(p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    if (fd < 0) { perror(p); exit(1); }
+    write(fd, s, 4); close(fd);
+}
+int main(void) {
+    const char *d = getenv("TOY_STATE"); if (!d) d = "./state";
+    char a[1024], b[1024], dst[1024];
+    mkdir("/tmp/acc/outside/staging", 0700);
+    snprintf(a, sizeof(a), "/tmp/acc/outside/staging/info.yaml"); put(a, "aaa\n");
+    snprintf(b, sizeof(b), "/tmp/acc/outside/staging/paper.pdf"); put(b, "bbb\n");
+    snprintf(dst, sizeof(dst), "%s/probe-doc", d);
+    if (rename("/tmp/acc/outside/staging", dst) != 0) { perror("rename"); return 1; }
+    return 0;
+}
+EOC
+( cc -O0 -o /tmp/acc/renamein /tmp/acc/renamein.c 2>/tmp/acc/rn-build.log ||
+  gcc -O0 -o /tmp/acc/renamein /tmp/acc/renamein.c 2>>/tmp/acc/rn-build.log ) || {
+    echo "FAIL could not build the rename-in toy"; sed 's/^/     | /' /tmp/acc/rn-build.log | head -4; rn_fails=1; }
+if [ "$rn_fails" = "0" ]; then
+    o=$("$SIDEEYE" explore --state /tmp/acc/state --operation /tmp/acc/renamein \
+        --shim "$SHIM" --work /tmp/acc/work --allow-unverified \
+        --json /tmp/acc/renamein.json 2>&1)
+    rc=$?
+    if [ "$rc" != "0" ]; then
+        echo "FAIL wanted PASS (exit 0), got exit $rc — the reconciliation refused a run whose change a record does name"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+        rn_fails=$((rn_fails + 1))
+    else
+        python3 - <<'PYEOF' || rn_fails=$((rn_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/renamein.json"))
+if d.get("verdict") != "PASS":
+    sys.exit("verdict %r" % d.get("verdict"))
+l0 = d.get("l0") or ""
+if "attributed to a directory a recorded rename moved in" not in l0:
+    sys.exit("the window is not disclosed in the l0 account: %r" % l0)
+if "2 path(s) attributed" not in l0:
+    sys.exit("the disclosed count is not the two descendants: %r" % l0)
+# The machine's copy, which is the half ADR 0032 leans on: the sentence is for a reader,
+# the number is what a caller can branch on, and only the number is present when there is
+# no window to describe.
+if d.get("paths_attributed_to_rename") != 2:
+    sys.exit("the machine-readable count disagrees with the account: %r"
+             % d.get("paths_attributed_to_rename"))
+PYEOF
+    fi
+fi
+if [ "$rn_fails" = "0" ]; then
+    echo "ok   a renamed-in directory passes, and the report says how many paths it covered"
+else
+    fails=$((fails + rn_fails))
+    reasons="$reasons rename-window"
+fi
+
+
+echo ""
+echo "=========== check 2ah: the mixed-visibility target refuses without an oracle too ==========="
+# `toy-mixed` exists to defeat the structural detectors: one libc operation the shim
+# sees, then the real write through a raw syscall it cannot. Its own header named the
+# oracle as the only thing that catches it. Measured on the pre-change binary with no
+# oracle: FAIL — a counterexample computed from an operation list that omitted the very
+# write it was about. The reconciliation answers UNKNOWN instead, naming key.json.
+#
+# The oracle path is unchanged and check 1 (:160) still requires
+# `oracle_missed_operation` there: the comparison runs first and says strictly more.
+mx_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-mixed init" --operation "$OUT/toy-mixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --allow-unverified \
+    --json /tmp/acc/mixed.json 2>&1)
+rc=$?
+if [ "$rc" != "2" ]; then
+    echo "FAIL wanted UNKNOWN (exit 2) with no oracle, got exit $rc"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+    mx_fails=$((mx_fails + 1))
+else
+    python3 - <<'PYEOF' || mx_fails=$((mx_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/mixed.json"))
+if d.get("unknown_reason") != "state_changed_unaccounted":
+    sys.exit("wanted state_changed_unaccounted, got %r" % d.get("unknown_reason"))
+m = d.get("message") or ""
+if "key.json" not in m:
+    sys.exit("the refusal does not name the raw-written path: %r" % m)
+# The negative half, the way 2af has it: `marker.txt` is the operation the shim DID
+# record, so naming it would mean a renderer listing every changed path rather than the
+# unexplained ones — and this leg would stay green over exactly that.
+if "marker.txt" in m:
+    sys.exit("the refusal names a path a record DOES explain: %r" % m)
+PYEOF
+fi
+if [ "$mx_fails" = "0" ]; then
+    echo "ok   the half-invisible target refuses by path where it used to FAIL on a partial account"
+else
+    fails=$((fails + mx_fails))
+    reasons="$reasons mixed-no-oracle"
+fi
+
+echo ""
+echo "=========== check 2ai: a path recorded through an interior symlink is not refused ==========="
+# The other direction of the same join, and a regression this PR introduced and then
+# fixed. The shim normalises path arguments lexically and records `cur/f`; the snapshot
+# never follows a link and holds the difference at `v1/f`. Comparing those two spellings
+# directly refused a fully observed run.
+#
+# Seen red once, measured rather than argued: the first build of the detector answered
+# UNKNOWN exit 2 / `state_changed_unaccounted` naming `v1/f` on this exact toy, while the
+# shipped 1.0.0 answered PASS exit 0 on it and a control operating on `v1/f` directly
+# passed on both. The shape is `current -> release-N`, which GNU Stow — on this project's
+# own target list — is made of.
+sl_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-symlink init" --operation "$OUT/toy-symlink rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/symlink.json 2>&1)
+rc=$?
+if [ ! -L /tmp/acc/state/cur ]; then
+    echo "FAIL the toy did not reach the shape this leg measures: no interior symlink"
+    sl_fails=$((sl_fails + 1))
+elif [ "$rc" != "0" ]; then
+    echo "FAIL a run observed end to end was refused: exit $rc"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    sl_fails=$((sl_fails + 1))
+else
+    python3 - <<'PYEOF' || sl_fails=$((sl_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/symlink.json"))
+if d.get("verdict") != "PASS":
+    sys.exit("wanted PASS, got %r %r" % (d.get("verdict"), d.get("unknown_reason")))
+# Not a rename: the count has to stay zero, or the substitution is being paid for by
+# absorbing the difference into a window instead of naming it.
+if d.get("paths_attributed_to_rename") != 0:
+    sys.exit("a symlinked spelling was absorbed as a rename window: %r"
+             % d.get("paths_attributed_to_rename"))
+PYEOF
+fi
+# The mirror shape, and the regression the fix for the one above introduced: a record on
+# the LINK gets substituted into a record on its target, and the difference at `cur` is
+# named by nobody. Seen red once on the build carrying only the first fix: PASS exit 0 on
+# the merge base, UNKNOWN exit 2 naming `cur` there. A generation swap — build the new
+# link beside the old, rename it over — is the shape, not a contrivance.
+rm -rf /tmp/acc2 && mkdir -p /tmp/acc2/state
+o=$(TOY_STATE=/tmp/acc2/state "$SIDEEYE" explore --state /tmp/acc2/state \
+    --setup "$OUT/toy-symlink init" --operation "$OUT/toy-symlink swap" \
+    --shim "$SHIM" --work /tmp/acc2/work --oracle /usr/bin/strace \
+    --json /tmp/acc2/swap.json 2>&1)
+rc=$?
+if [ "$rc" != "0" ]; then
+    echo "FAIL a generation swap of the link itself was refused: exit $rc"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    sl_fails=$((sl_fails + 1))
+elif ! python3 -c '
+import json, sys
+d = json.load(open("/tmp/acc2/swap.json"))
+sys.exit(None if d.get("verdict") == "PASS" else "wanted PASS, got %r %r"
+         % (d.get("verdict"), d.get("unknown_reason")))'; then
+    sl_fails=$((sl_fails + 1))
+fi
+if [ "$sl_fails" = "0" ]; then
+    echo "ok   an operation spelled through an interior symlink, and one on the link itself, both name what the snapshot holds"
+else
+    fails=$((fails + sl_fails))
+    reasons="$reasons symlink-spelling"
 fi
 
 reached_end=1

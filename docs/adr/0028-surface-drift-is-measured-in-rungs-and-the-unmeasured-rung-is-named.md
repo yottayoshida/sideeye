@@ -72,6 +72,21 @@ kept separate because they support different claims.**
    code, the two MCP input schemas, the `isError` derivation rule, and the shape of
    an old case's refusal. These are held by review and by `spike/acceptance.sh`.
 
+   **Amended 2026-08-30 (#369): per clause, not per surface.** The paragraph above
+   named five paragraphs' worth of residue and left the reader unable to tell, for
+   any one clause, whether a check watched it or nobody did — "held by review and by
+   `spike/acceptance.sh`" is true of the set and says nothing about a member.
+   `spike/freeze-audit/clause-checks.tsv` now answers that per clause, and this rung
+   prints only what is unpinned plus the leftover half of what is pinned in part.
+   Three consequences follow. The output shrinks as checks are written rather than
+   staying a fixed five paragraphs. `held` has three values, because two would
+   force every partially covered clause to read as covered — the misreading that
+   prompted #369. And **this rung retires itself**: when the file holds no unpinned
+   and no partial row, the run says so and the ladder collapses to two rungs.
+   What stays unmeasured is whether the enumeration is complete; a clause is one
+   independently checkable assertion, which matches no boundary in the declaration,
+   so no check can find a row that was never written. The output says that too.
+
 **Two revisions are pinned beside the snapshot, and they fail differently.** The
 declaration's revision is pinned and the gate **fails** (exit 1) if it has moved: a
 reading taken against another revision is a reading of another promise, so the
@@ -80,6 +95,17 @@ pinned too, and a later movement of the closed set is **drift** (exit 3), not a
 failure: the sweep was correct when taken and is now out of date. The first version
 of that leg compared the window's base against `HEAD` and so would have exited 1
 the moment the next member landed, reporting a stale audit as a broken one.
+
+> **Superseded in part, 2026-08-30 (#371):** the paragraph above no longer describes
+> the gate. The two pins no longer fail differently — a moved declaration is
+> **staleness**, reported at the end beside drift, and both exit 3. "Invalid rather
+> than stale" was the reading that made it exit 1, and exiting there stopped every
+> leg behind it: `main` carried an unrecorded frozen-surface movement (`config_keys`
+> gained `cwd`, #395) from 2026-08-29 with nothing reporting it, because the leg that
+> would have was never reached. The message that came with exit 1 also told whoever
+> saw the red to move the pin, which only a sweep can honestly do. What survives here
+> unchanged is the reasoning in "Three costs" below: the declaration pin is a
+> maintenance obligation, and discharging it is a sweep's job. Exit 3 is still red.
 
 This is also the only mechanism in the audit that can see a frozen surface move
 **without any issue changing state**. `--live` asks the tracker about issues, so it

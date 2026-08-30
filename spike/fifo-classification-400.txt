@@ -1,0 +1,139 @@
+#400 — what a descriptor answers, and which mutations die. Measured transcript.
+
+Why this file exists: the change that closed #400 rests on claims about what a FIFO and
+a character device answer to open/fstat/lseek/read, and on the six mutations in §5.
+Prose can carry a wrong number indefinitely; this is the output.
+
+Host: macOS 15 (Darwin 24.3.0), arm64, Apple silicon. zig 0.16.0.
+Probe: a 60-line C program (open/fstat/lseek/lseek/read, printing errno each time) run
+against a real FIFO with no writer and, as a control, a 14-byte regular file. The probe
+is not committed: it is reproducible in ten lines from the table below, and a committed
+copy would be a second thing to keep true.
+
+
+== 1. O_RDONLY | O_NONBLOCK ==
+
+--- FIFO, no writer
+    open              : ok (fd=3)
+    fstat             : S_IFIFO  S_ISREG=0 S_ISFIFO=1
+    lseek(0, SEEK_END): ret=-1 errno=29 (Illegal seek)
+    lseek(0, SEEK_SET): ret=-1 errno=29 (Illegal seek)
+    read              : n=0 errno=0   <-- EOF, not EAGAIN
+
+--- regular file (14 bytes)
+    open              : ok (fd=3)
+    fstat             : S_IFREG  S_ISREG=1 S_ISFIFO=0
+    lseek(0, SEEK_END): ret=14 errno=0
+    lseek(0, SEEK_SET): ret=0 errno=0
+    read              : n=14 errno=0
+
+The read returning 0 is the finding. The first design for #400 assumed EAGAIN and would
+have turned a FIFO into an empty case file rather than a refusal. POSIX gives EOF when
+no process has the pipe open for writing; EAGAIN is for a writer that exists and has
+sent nothing.
+
+
+== 2. The same regular file, with and without the flag ==
+
+--- regular file, O_RDONLY | O_NONBLOCK : open ok, lseek 14 / 0, read 14
+--- regular file, O_RDONLY              : open ok, lseek 14 / 0, read 14
+
+Identical. This is what "regular files are unaffected" rests on.
+
+
+== 3. /dev/zero — the input that separates classification from a failed seek ==
+
+--- /dev/zero, O_RDONLY | O_NONBLOCK
+    open              : ok (fd=3)
+    fstat             : S_IFCHR  S_ISREG=0 S_ISFIFO=0
+    lseek(0, SEEK_END): ret=0 errno=0     <-- SUCCEEDS
+    lseek(0, SEEK_SET): ret=0 errno=0     <-- SUCCEEDS
+    read              : n=64 errno=0      <-- yields bytes, without end
+
+Every refusal built on a failed seek accepts this descriptor. That is why the guard asks
+`fstat` for S_ISREG rather than asking whether the thing seeks, and why the unit tests
+use /dev/zero rather than a FIFO: against a FIFO, deleting the classification changes
+nothing at three of the four call sites, because their own `lseek` refuses first.
+
+
+== 4. Does the open actually block without the flag? ==
+
+Deadline of 5 s around a program that only opens and reports:
+
+    FIFO, no writer, O_NONBLOCK        returned rc=0  open returned fd=3
+    FIFO, no writer, plain             DID NOT RETURN within 5.0s  <-- blocked
+    regular file, O_NONBLOCK           returned rc=0  open returned fd=3
+    regular file, plain                returned rc=0  open returned fd=3
+
+The filed symptom, reproduced. (#400 reports the process alive past fifteen seconds; the
+measurement here stops at five, which is all the claim needs.)
+
+
+== 5. Mutations ==
+
+Baseline: `zig build test` green, `spike/case-path-deadline.py` green.
+
+    delete O_NONBLOCK at the case read
+        -> harness: DID NOT RETURN within the deadline. KILLED.
+
+    delete the classification at the case read, keep the flag
+        -> harness: returns, exit 3, but says
+           "the case file could not be parsed as a sideeye case". KILLED by the
+           message assertion; an exit-code-only harness would have passed it.
+
+    delete the classification in readFileFrom
+        -> zig build test: KILLED (the /dev/zero assertion).
+
+    delete the classification in observeCapture
+        -> zig build test: KILLED —
+           "expected error.Unreadable, found .{ .measured = 0, .bytes = 0, ... }"
+           i.e. the empty observation the guard exists to prevent.
+
+    delete the classification in readWhole
+        -> zig build test: KILLED —
+           "expected error.ReadFailed, found error.FileTooLarge"
+
+    pass O_NONBLOCK unconditionally (revert the coupling to require_regular)
+        -> zig build test: GREEN. Nothing in-process notices.
+        -> harness --config leg: KILLED —
+           "the config was read as EMPTY ... [world] state is required"
+           and "exit was 3".
+        This mutation is the regression this change introduced and then removed, so
+        it is the one most worth being able to kill. Three attempts at that leg
+        measured nothing before this one:
+          - `{ sleep 0.5; cat cfg; } | ... --config /dev/stdin` — the writer won the
+            race during process start-up; mutant survived.
+          - the same at 1.5 s — still survived: on macOS /dev/stdin resolves through
+            /dev/fd/0, where the open behaves as a dup of the existing description and
+            a fresh O_NONBLOCK never reaches the pipe.
+          - an inherited pipe descriptor passed as /dev/fd/N — same reason, same result.
+        A FIFO opened by name gets its own description on both platforms, which is what
+        the flag acts on. The mutant's symptom is also not the one predicted: with no
+        writer yet open the read returns EOF rather than EAGAIN, so the config arrives
+        empty rather than unreadable, and an assertion looking only for
+        "--config could not be read" passes against it. The leg asserts both.
+
+Two notes against overreading this list.
+
+First, an earlier run of mutation 2 was fabricated. It was spelled `if (false)`, which
+leaves `require_regular` unused and fails to compile; the build error went unread, the
+previous mutant's binary was still in zig-out, and the harness reported a deadline
+overrun that had nothing to do with the mutation. The rows above are from runs whose
+build exited 0.
+
+Second, one call site is not on this list and cannot be: `mcp.zig`'s `readFile` reads in
+a loop and returns one bit, so a non-regular descriptor, an unreadable one and a file
+over the cap all arrive as null. No unit test distinguishes them, and no harness stands
+up an MCP server with a planted FIFO. The guard there is reasoned, not falsified.
+
+
+== 6. Apparatus ==
+
+The harness distinguishes "the binary will not execute" from "the test failed", because
+during development a Linux cross-build left in zig-out was run on macOS and produced an
+uncaught traceback exiting 1 — the same code as a real failure. Falsified deliberately:
+
+    zig build -Dtarget=x86_64-linux-gnu --prefix ~/out
+    python3 spike/case-path-deadline.py ~/out/bin/sideeye
+    -> APPARATUS could not execute '...': [Errno 8] Exec format error
+    -> exit 2

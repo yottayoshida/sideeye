@@ -30,6 +30,16 @@ jobs:
       - name: Build engine and shim
         run: zig build
 
+      # The deadline has to be outside the process it measures: #400's defect is a run
+      # that never returns, a unit test cannot bound its own runtime, and the unit-test
+      # step above carries no timeout-minutes — so the same defect inside `zig build
+      # test` would hold this runner for the GitHub default of six hours instead of
+      # failing. Asserts which refusal fires, not only the exit code: with O_NONBLOCK
+      # and without the descriptor check the run still exits 3, blaming the JSON for a
+      # file it read as empty. Both halves seen red (BUILDLOG 2026-08-30 third).
+      - name: A case path that is not a regular file is refused, and the run returns (#400)
+        run: python3 spike/case-path-deadline.py zig-out/bin/sideeye
+
       # #270's apparatus, plus the guard on the apparatus itself: -Dtest-seq-gap must
       # ADD libsideeye_shim_testgap and leave the shipped shim byte-identical. A build
       # option that leaked into the shipped artifact would make every other acceptance
@@ -66,9 +76,11 @@ jobs:
       # driven by their own names — but a QUIET one is caught nowhere: 128 MiB clears every
       # toy trace, so acceptance passes, this step passes, and the released engine carries
       # a ceiling that disagrees with engine.max_trace_bytes. The unit test in src/main.zig
-      # is the only thing that sees it. The quiet half is measured: with the literal at
-      # 128 MiB this step stayed green while `zig build test` went red. The loud half is
-      # read off spike/acceptance.sh, not run — acceptance needs the Linux container.
+      # is the only thing that sees it. The quiet half is measured, though not on this
+      # runner and not with this command: with the literal at 128 MiB, the same
+      # before/after comparison run locally — `shasum -a 256`, since macOS has no
+      # `sha256sum` — stayed green while `zig build test` went red. The loud half is
+      # read off spike/acceptance.sh rather than run: acceptance needs the Linux container.
       - name: Build the trace-cap apparatus, shipped engine unchanged (#324)
         run: |
           sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
@@ -155,6 +167,31 @@ jobs:
 
       - name: Build engine and shim
         run: zig build
+
+      # Runs on both platforms deliberately: the FIFO measurements behind #400 were
+      # taken here on macOS, and the Linux leg is where the statx branch of `kindOfFd`
+      # is exercised at all — the Darwin branch uses fstat and neither compiles the
+      # other. See the Linux job for why the deadline is outside the process.
+      - name: A case path that is not a regular file is refused, and the run returns (#400)
+        run: python3 spike/case-path-deadline.py zig-out/bin/sideeye
+
+      # #389 was measured on a Homebrew install on macOS arm64, and the MCP acceptance
+      # suite runs only in the Linux container — so the surface the report was written
+      # about had never been exercised on this platform. The rest of that suite is
+      # Linux-shaped (a `.so` shim, an strace oracle), which is why this is the one leg
+      # extracted into a script of its own rather than the whole file being wired here.
+      # It needs no oracle: the config names a target with a real bug, and a FAIL is a
+      # verdict on its own evidence.
+      - name: The README's own MCP first call reaches a verdict, from a cleared environment (#389)
+        run: |
+          mkdir -p /tmp/mcp-readme
+          cc -DBUGGY=1 -o /tmp/mcp-readme/toy-bug spike/toys/toy.c -lpthread
+          sh spike/check-readme-mcp-call.sh README.md \
+             zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib \
+             /tmp/mcp-readme /tmp/mcp-readme/toy-bug
+
+      - name: Every MCP environment read is documented, and every documented one is read (#389)
+        run: python3 spike/check-mcp-env.py README.md src/mcp.zig
 
       # The demo is also the release workflow's smoke test; macOS is where its
       # no-oracle path lives (a FAIL stands on its own evidence, so the demo needs
@@ -722,6 +759,23 @@ jobs:
 
       - name: ADR numbers are unique
         run: sh spike/check-adr-numbering.sh
+
+      # The Status line, for the same reason and in the same shape (#360). Five
+      # ADRs sat at `Proposed` after their implementing PRs merged, because the
+      # old convention asked for a flip that no single PR can perform: the ADR
+      # arrives with the work it decides, so the flip is always a second commit.
+      # The default is inverted now — written Accepted, refused otherwise.
+      #
+      # Selftest first, and here it carries negative controls as well as red
+      # cases: an over-matching check reddens, which is indistinguishable from
+      # working until it reddens on a file that is correct. Two such files exist
+      # (0002 has `proposed` inside a parenthetical, 0030 says `Proposed by
+      # external review` in its body), so the fixture holds both shapes.
+      - name: The status check proves it can go red, and stays green where it must
+        run: sh spike/check-adr-status.sh --selftest
+
+      - name: Every ADR says whether its decision shipped
+        run: sh spike/check-adr-status.sh
 
   # The onboarding clock's audit is criterion 6's instrument: it decides whether a
   # timed run's evidence stands. Until 2026-08-28 nothing here ran it — the launcher
