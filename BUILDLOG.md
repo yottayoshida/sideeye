@@ -2,6 +2,20 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-30 (tenth) - three sentences from the previous entry said more than their measurements did
+
+#365's review came back after that PR had merged, with six findings. None met the issue-filing predicate. Four are fixed here and two are recorded at the bottom and left alone — the four are all places where prose claims a measurement wider than the one taken, which is the defect #365 was filed for, reproduced in the writing that describes the fix. **A review of this entry found the same thing a third time**: its first draft said "five would have been dropped; three were kept", which does not close against six findings, and it dropped one of them for a reason that turned out to be false.
+
+**`.github/workflows/ci.yml`**: "with the literal at 128 MiB **this step** stayed green" attributed a local macOS run to the CI step it annotates. The comparison was the same command sequence, but not this runner. Now says so.
+
+**`CHANGELOG.md` against `spike/freeze-audit/audit.tsv`**: the same ratchet was described as guarding against "a fifth option" in one and "a fourth option" in the other. Both readings are defensible — four shipped values across two modules, three declarations in the engine's — which is why neither looked wrong while being written separately. The ratchet is per options module, and both now say that.
+
+**`docs/freeze-audit.md`**: "eleven of the fifty-six active rows" was stale in the denominator. Measured against the manifest: 53 active, 11 carrying a forecast other than `none`. The numerator was right. Two of the three rows had already been lost before #365 (`c07189b` moved them without touching the prose); #365 added the third.
+
+**The same page, twice more.** Fixing the denominator made the parenthetical after it read as an arithmetic error — it explained the drop from sixteen as "the three foreclosed-decision rows resolving and the nine new rows", and 16 − 3 ≠ 11. The first draft of this entry dropped that as too expensive to reconstruct: "walking the sweep history". **That reason was false, and the review said so — two `comm` invocations against the third sweep's manifest (`33049a9`) settle it.** Eight rows left the active set, five of them the ones carrying a forecast; eight arrived, all forecasting `none`. So 16 − 5 = 11 and the population stays at 53. Both numbers in the parenthetical were wrong and both are now measured. Further down the same page, `Sixteen active rows now carry a surface forecast` said 16 where the manifest says 11 — **a contradiction this PR created**, by fixing the first instance and not the second — and `sixty resolved rows below` said 60 against 69 (17 migrated + 52 since). Cost, it turns out, was never the reason to leave any of them.
+
+**Two left alone, recorded rather than filed.** `gap_opts` is still hand-built while its engine sibling goes through the `engineOptions` helper — that helper exists because building three of four modules by hand broke a variant silently, and the lesson has not reached the shim side. And a future enum-typed build option would make the declaration ratchet count two rather than one, which fails in the safe direction.
+
 ## 2026-08-30 (ninth) - a stale audit was reporting itself as a broken one, and stopping before the leg that had something to say
 
 The freeze-audit gate checked, first thing, whether `docs/contract-freeze.md` had moved since the sweep read it, and on a mismatch printed `FAIL`, told the reader to "re-read the surfaces, then update DECLARATION_PIN in the same commit", and exited 1. Two things wrong with that, and the second is the expensive one.

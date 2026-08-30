@@ -76,9 +76,11 @@ jobs:
       # driven by their own names — but a QUIET one is caught nowhere: 128 MiB clears every
       # toy trace, so acceptance passes, this step passes, and the released engine carries
       # a ceiling that disagrees with engine.max_trace_bytes. The unit test in src/main.zig
-      # is the only thing that sees it. The quiet half is measured: with the literal at
-      # 128 MiB this step stayed green while `zig build test` went red. The loud half is
-      # read off spike/acceptance.sh, not run — acceptance needs the Linux container.
+      # is the only thing that sees it. The quiet half is measured, though not on this
+      # runner and not with this command: with the literal at 128 MiB, the same
+      # before/after comparison run locally — `shasum -a 256`, since macOS has no
+      # `sha256sum` — stayed green while `zig build test` went red. The loud half is
+      # read off spike/acceptance.sh rather than run: acceptance needs the Linux container.
       - name: Build the trace-cap apparatus, shipped engine unchanged (#324)
         run: |
           sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
