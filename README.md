@@ -135,7 +135,7 @@ Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2) with
 - **Dynamically linked and single-threaded**, reaching its files through libc — buffered stdio included. State-changing raw syscalls, static linking, hardened runtimes and threads are refused.
 - **State in one directory**, declared with `--state` or the toml. Symlinks inside it are snapshotted and restored as links.
 - **A clean run exits its declared success status** (default 0) — the crash points are read off that run.
-- **Other processes stay away from the state.** Forked helpers are fine when the oracle (`--oracle`, Linux) confirms nobody else touched it. Without an oracle any process boundary is UNKNOWN. For a single-process target with no oracle, a PASS requires `--allow-unverified`, and the report says the weaker claim out loud.
+- **Other processes stay away from the state.** Forked helpers are fine when the strace oracle (`--oracle`, Linux) confirms nobody else touched it. On macOS, `--oracle-fs-usage` buys the same comparison for a single-process run — it pays root once per run and refuses rather than prompting — but cannot account for other processes, so a process boundary under it is UNKNOWN. Without an oracle any process boundary is UNKNOWN. For a single-process target with no oracle, a PASS requires `--allow-unverified`, and the report says the weaker claim out loud.
 
 How real tool classes have fared against these limits: [docs/target-classes.md](docs/target-classes.md). The full contract, and the reason behind each refusal: [DESIGN.md](DESIGN.md).
 

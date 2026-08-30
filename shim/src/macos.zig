@@ -16,9 +16,11 @@
 //! root, and `dtruss` — built on that provider — runs the target and exits 0 with no
 //! syscall in its capture, which for an oracle is worse than a refusal. Of the
 //! candidates measured there, only `fs_usage` produced an ordered, attributed,
-//! full-path account of the survey's toy, and it requires root, which a distributable
-//! default cannot demand. The engine's structural detectors carry completeness alone on
-//! this platform, and a PASS requires the caller to say `--allow-unverified`.
+//! full-path account of the survey's toy, and it requires root — which a distributable
+//! default cannot demand, but a caller can choose to pay: `--oracle-fs-usage` runs it
+//! beside the recording and compares (ADR 0031). Without that flag the engine's
+//! structural detectors carry completeness alone on this platform, and a PASS requires
+//! the caller to say `--allow-unverified`.
 
 const libc = @import("darwin_libc.zig");
 const ops = @import("ops.zig");

@@ -2,6 +2,228 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-29 (ninth) - macOS gets an oracle, and the design that was supposed to avoid paying root did not survive its own review
+
+The starting question was #286's: what verification can macOS buy without demanding root on every run. The answer this entry records is that it should demand root on every run after all, because the design that avoided it could not be made sound.
+
+**What was tried first, and why it is gone.** Route C from #286 — a calibration ceremony. Pay root once, compare the shim's account against `fs_usage` for one binary, write a receipt, and let later unprivileged runs present the receipt for a claim stronger than `--allow-unverified`. External review rejected it on a single sentence that no amount of binding repairs: *an agreement observed in run A does not establish that run B's shim trace is complete.* Same binary, different argv, environment or initial state, different code path — a target that reaches `open(2)` through libc under one mode and a raw syscall under another agrees in the calibration run and is invisible in the judged one, with the SHA-256 matching throughout. The counter-argument offered in defence, that coverage is a property of the program rather than of a run, is wrong in exactly the way that matters: coverage is a property of *the paths actually taken*.
+
+**Three things were measured before the replacement was chosen, and one of them contradicted the premise the whole ceremony rested on.** `--oracle` observes the recording run only, not each crash world (`--help`, and the code path around `runOperationObserved`), so "root on every run" costs one authentication per `explore`, not one per world. The CI runners already run `sudo -n` unattended (27 times, PR #298). And the shipped `--help` names `fs_usage` as "the one candidate measured oracle-shaped". The expensive thing the ceremony existed to avoid was not as expensive as #286 assumed, and the product's own text was already pointing at the alternative.
+
+So `fs_usage` goes where `strace` goes: an oracle backend producing `oracle.Parsed`, compared by the existing `oracle.compare`, reported through the existing `oracle_verified`. No new report field, no new `unknown_reason`, nothing added to a frozen surface. The evidence is about the run that is being judged.
+
+**The PID filter had to go, and the measurement that killed it is now #405.** The first draft of the backend filtered `fs_usage` by the subject's pid and declared the backend single-process-only, on the reasoning that a child would be caught by the existing boundary refusals. Review called that circular, and it is: the boundary refusal depends on the shim seeing the child. A probe was written to check. A target that creates a child with `syscall(SYS_fork)` and has the child write into the state directory through raw syscalls reaches **PASS, exit 0** on the shipped 1.0.0, with `processes: single process` in the account, because the parent's own libc write keeps `state_changed_without_ops` from firing. That is a defect in what ships today, not only a gap in the proposed backend, and it is filed separately.
+
+Two details of that probe are worth keeping. `syscall(SYS_fork)` returns the pid in *both* processes on arm64, and `getpid()` is cached in libc and not invalidated by the raw path, so a raw fork written the obvious way leaves the child unable to discover that it is the child — it takes `syscall(SYS_getpid)` to discriminate. Both were measured by watching the naive versions do nothing at all. The hole is reachable, but not by accident.
+
+The fix is the one this repository had already written down and not yet used: `spike/fsusage/RESULTS.md` says an adapter that wants children must not filter by pid, and should capture everything and scope by state path, attributing by tid. So the capture is unfiltered, scope is the state root, and a write by any process into that root appears whether or not the shim ever heard of it. This also dissolves the reviewer's other finding — that a sentinel issued by the engine cannot prove *the target's* pid filter took effect — because there is no per-target filter left to prove.
+
+**Identifying the subject without a contract bump.** `fs_usage` prints a process name and a thread id, not a pid, so with the filter gone something has to say which lines are the subject's. Adding a tid to the trace would be a contract bump, and a bump orphans every saved case (#279). It is not needed: the shim writes its trace to `SIDEEYE_TRACE_PATH`, and only the subject carries the shim, so **the tid that writes to the trace path is the subject**. The identification is self-checking — if no tid writes there, the run refuses rather than guessing — and a second tid writing there means a shimmed child, which the shim's own account already reports.
+
+**What the capture has to prove about itself.** A start sentinel alone establishes that `fs_usage` began, not that it was still running at the end, and `oracle_verified: true` now rests on the capture. Four conditions, all required: a start sentinel read out of the capture before the subject is allowed to run; an end sentinel required after the recording; `fs_usage` ended by an explicit kill rather than by its own `-t` expiry; and the pipe at EOF before the comparison reads anything. Dropped lines in between are fail-safe in the direction that matters — a line the shim recorded and the kernel lost becomes a divergence and a refusal, never a false agreement — with one residue, disclosed rather than closed: a drop that coincides exactly with an operation the shim also missed. The `-t` bound stays as insurance against a root observer outliving its parent and holding kdebug, which `SIGPIPE` alone cannot deliver, since a process that has stopped writing never notices the reader is gone.
+
+**The first end-to-end run refused, and every reason was mine.** Three defects in the
+lifecycle, none of which any unit test could have produced, because each was a property
+of the real machine rather than of a fixture. `fs_usage` buffers when its stdout is not
+a terminal, so a signal that is not the one it handles kills it with the buffer
+unwritten — and the signal was going to `sudo` rather than to the observer it forked, so
+the capture ended cleanly at a flush boundary sixty-four milliseconds in and read
+exactly like a complete capture of a short window. The handshake had passed on a raw
+substring search that matched `fseventsd`'s `lstat64` of the sentinel, a different
+process entirely: a gate looser than the check behind it is not a gate, and it is now
+the reader's own predicate. And every path in a real capture under `$HOME` arrives as
+`/System/Volumes/Data/...`, because the data volume is firmlinked — so the first version
+of the reader scoped precisely zero lines.
+
+The closing sentinel is what refused. That is the one part of this that worked: the
+integrity conditions caught a defect in the lifecycle they were written for, rather than
+reporting an agreement over a capture that stopped early.
+
+**Review then found eleven more, and the sharpest was that the flag opened nothing.**
+`requireCompleteness` was still reading `args.oracle != null`, so a comparison could run,
+agree, set `oracle_verified` — and the PASS gate would still demand
+`--allow-unverified`. The promise was false in the one line that decides it, through two
+end-to-end runs that failed earlier for other reasons and never reached it.
+
+**Two end-to-end runs then measured a binary that did not contain the fixes.** After
+the handshake loop was repaired, the acceptance run failed with the identical message,
+and the identical message was read as fresh evidence twice. The artifacts said
+otherwise, once they were actually read: no `trace-record.bin` in the work directory
+(the recording never ran), the start sentinel still on disk (the loop's cleanup never
+reached), and `strings zig-out/bin/sideeye` holding the old loop's copy-pasted refusal
+and none of the new wording — a binary stamped 09:51 against source stamped 10:10.
+`zig build test` runs the tests and installs nothing; every fix since 09:51 had been
+followed by that command and never by `zig build`. The acceptance script's
+`[ -x "$SIDEEYE" ]` cannot see staleness, so it now builds first and refuses to
+measure a binary older than the newest source. What was being diagnosed for an hour was
+a fix that had never executed.
+
+**The refusals stop the observer now, not the call sites.** The old binary's orphan —
+3:52 of root `fs_usage` after the engine had exited, 741 MB of capture, every later
+start on the machine failing `Resource busy` — came from a refusal inside the handshake
+that exited without stopping what it had spawned. The new code had the same shape at two
+more sites. Rather than a third reminder, the observer is registered when spawned and
+`unknown` and `setupError`, the two functions every refusal exits through, stop it on
+the way out. An exit that cannot forget replaces a rule that every exit must remember.
+
+**The first run of the fixed binary refused because the cleanup deleted the evidence.**
+Recording ran, both sentinels came and went, the handshake held — and the comparison
+read nothing, because a `defer removeFile(capture)` sat inside the block that stopped
+the observer and fired at that block's closing brace, forty lines before the read. A
+tidy-up added for a real reason (2.9 GB of capture left behind) had been placed by
+proximity rather than by lifetime. The capture is now registered like the observer is,
+dropped once the comparison holds the bytes and inside the two refusal exits, and
+nowhere else.
+
+**What broke the one-fix-per-rerun loop was reading a real capture end to end before
+asking for another run.** `spike/fsusage/scan.zig` calls the shipped reader over a
+committed-shape capture — 3,386 lines from a run in which the toy actually executed —
+and the refusals it produced were the next four that acceptance would have found one
+rerun at a time.
+
+*A `stat64` of a framework path, cut by the display width, refused the run.* 353 of
+those in one capture and one `access`, all from the subject's own thread, all read-only:
+dyld probing `/System/Volumes/Preboot/Cryptexes/...` at start-up. A read-only call
+cannot be a hole in the account of the judged directory whatever happened to its path,
+so read-only calls (and read-only opens) are dropped before the truncation check. The
+control is kept beside it: the same cut on an `unlink` still refuses.
+
+*The subject was `fseventsd`.* The first rule took any line naming the trace path, and
+the last such line was the daemon's `lstat64` of the file — with a security agent's
+read-only opens before it. The subject is now the thread that opened the trace *for
+writing* (`(_WCA_______X)` on disk, the shim's `O_WRONLY|O_CREAT|O_APPEND`), and two
+such threads refuse rather than pick one.
+
+*The shim's own trace writes were "a descriptor nobody opened".* The shim moves its
+trace descriptor out of the target's way — `fcntl(F_DUPFD, 900)` fails `[22]`, then
+`F_DUPFD, 200` succeeds, `close(3)`, and every write goes to 200. `fs_usage` prints the
+dup's source and never its result; the result is the next descriptor the thread touches
+that the table has not seen, `fcntl F=200 <SETFD>` on disk. Two orderings in the reader
+each hid this: the `fcntl` handling sat below the scope decision, so a pathless dup on a
+known out-of-scope descriptor never reached it, and the observer-shadow skip for the
+trace path ran before the descriptor bookkeeping, so `open F=3 trace.bin` was never in
+the table for the dup to inherit from. Both moved.
+
+*Two classes, not three.* The reader's own unit test asserted `open, write, close` for
+the toy and was wrong: `oracle.zig` drops `close` from the compared sequence, and the two
+accounts have to be shaped alike. The real capture said two first; the strace reader
+said why.
+
+**The acceptance run then passed all three checks, and the two refusals between here
+and there were both new shapes.** Microsoft Defender opened the toy's file read-only to
+scan it, which under the first "touched the root" rule made every write it then issued
+on its own log descriptors a hole in the account of the judged directory; a thread is
+now held to account only for what it opened under the root write-capably. And
+`mkstemp`'s creation — the one line check 2 exists to catch — arrives as
+`openat F=3 (RWC__E______) [-2]//Users/.../tmp-oepJXu`: fs_usage prints `openat` as a
+directory-descriptor annotation followed by `/` and the operand, `[-2]` being `AT_FDCWD`
+and the doubled slash the separator sitting in front of an operand that is itself
+absolute. The reader knew only the plain spelling, so the one line it was written to
+read was the one it could not. `classify.py`, the port's source, never met the form: its
+probes used `open`. Three resolutions now exist — `AT_FDCWD` with an absolute operand,
+`AT_FDCWD` with a relative one joined to the subject's cwd (the strace reader's
+`initial_cwd`, which the fs_usage reader now also takes), and a descriptor-relative
+operand inheriting the scope of the directory it names — and a read-only open of a
+directory is remembered for exactly that last case. Whatever cannot be placed still
+refuses.
+
+Check 1: `exit=0 oracle_verified=True verdict=PASS`, `agreed on 2 operations (3858 lines
+examined, 2 in scope of the judged state), witness fs_usage`. Check 2:
+`oracle_missed_operation`. Check 3: the control reproduces #405 (`PASS`, `processes:
+single process`) and the flagged run refuses `child_touched_state_dir`. The first
+verified PASS this engine has produced on macOS.
+
+**R2 rejected, and three of its five findings were the account overclaiming what a
+measurement showed.** Probe 0 counted lines naming the file a `/bin/sh` child wrote and
+read two of them as "the mutation is visible under another name". They were
+`fseventsd`'s `lstat64` — read-only lines the reader drops — so the excluded shell's
+mutation was in nobody's account, and a parent with one recorded write beside it would
+have carried a false `oracle_verified`. The tolerance the strace oracle earns for a
+process boundary (children followed, none touched the state) is therefore not extended to
+this backend: a boundary the shim reports refuses. Children that are visible are still
+caught by path scope, which is what #405's shape exercises; what is withdrawn is the
+claim to have accounted for every child, which an exclusion list makes unprovable.
+
+Two more were constructions the reader could not survive. A `chdir` followed by a raw
+`openat(AT_FDCWD, "st/missed")` — really inside the state — was joined to the *starting*
+cwd and dropped as out of scope; the reader does not follow `chdir` the way the strace
+reader does, so once a relevant thread has moved, relative operands refuse, and `..`
+refuses in every relative form. And the dup rule "the next unknown descriptor this
+thread touches" could hand a state descriptor the out-of-scope bit of an unrelated
+source; it is now the one measured shape — the very next line, an inert `fcntl` on an
+unknown number — and nothing wider.
+
+Two P2s: check 3 accepted any `exit 2` and now requires `child_touched_state_dir`; the
+CHANGELOG said two narrowings where the ADR said three, and both now say what the
+account line says. Two checks were added to the acceptance run for the constructions
+above (a libc-fork child under fs_usage refuses; the chdir construction refuses); they
+have not yet run against a real `fs_usage` at the time of this entry.
+
+**CI's first run of #406: checks 1 through 4 passed on the macOS 26 runner, and three
+things failed, all mine.** Two were pins in `spike/acceptance.sh` that a wording change
+broke — the oracle-agreement check extracts its count with `grep -o '[0-9]* syscall lines
+examined'` and this PR had dropped the word "syscall"; and the synopsis check holds each
+usage line to exactly the flags the parser accepts on the machine running the check, so a
+Linux binary advertising `--oracle-fs-usage` while refusing it at parse time is a drift by
+that check's definition. The wording is restored and the synopsis clause is per platform.
+The third was structural: the handshake polled a fixed 4 MiB tail of the capture every
+100 ms, and on the runner the fifth check's sentinel line had scrolled out of that window
+between polls — at the measured 200 MB/s burst rate 4 MiB is 20 ms of capture. The first
+four checks passed on timing. The handshake now reads what was appended since its last
+read, cut at the last newline, which cannot miss a line however fast the file grows.
+
+**Second run: the macOS job passed all five checks; the Linux job kept one failure, and
+the per-platform synopsis was the wrong fix for it.** The CLI self-description check
+holds a stronger rule than "advertise only what you accept": every flag the parser knows
+must be accepted by *some* synopsis line on the machine running the check, and "accepted"
+means the flag does not change the base command's first line of output. A parse-time
+refusal on Linux therefore reads as a flag no mode accepts, whatever the synopsis says.
+The flag is now parsed everywhere and refused on Linux after the state path has been
+resolved — still before setup, still exit 3 — and the synopsis advertises it on both
+platforms, which is also the honest text: the flag exists, and the refusal says why it
+does not apply here.
+
+**Third run: Linux green, and the macOS handshake timed out again — on check 2 this
+time, where the first run had failed on check 5 and the second on nothing.** The tail
+window was one cause and not the only one. What fits the pattern — every check passing on
+the laptop, one check failing per run on the runner, a different one each time — is
+stdio: fs_usage writes its capture through a block-buffered stream when stdout is a
+file, and on a quiet virtual machine the sentinel's line can sit in that buffer for
+longer than the ten-second window, while a laptop's neighbours (Defender, Spotlight,
+fseventsd) keep the buffer flushing. The same mechanism was measured earlier from the
+other side, when a SIGTERM left a capture cut cleanly at a flush boundary sixty-four
+milliseconds in. The handshake now generates its own pressure — sixty-four `access` calls
+on the sentinel path per poll, about 16 KB of capture the reader drops as read-only —
+and refuses at once, by name, if the observer has already exited rather than polling a
+dead process for ten seconds.
+
+The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
+the probe's `fs_usage` never started, because the previous binary's orphan still held
+kdebug for another two minutes, and the probe alone did not clear leftovers before
+launching. The two earlier probes (7 and 2 marker lines) stand; this one was not a
+measurement, and the script now refuses to read an empty probe capture as one.
+
+Four more were mine in the same shape — asserting from the man page or from my own
+reasoning what a committed measurement in this repository already answered. The
+truncation test read the `>` padding macOS 15 adds and missed the cut itself, which
+`spike/fsusage/captures/P3-deep.cap.txt` shows leaving a path with no root at all. The
+rename fail-closed that ADR 0031 describes was not implemented; out-of-scope renames
+were dropped, which is the exact hole the ADR says it closes. `fs_usage` excludes the
+shells by default and the launch did not say otherwise. And failed syscalls were being
+discarded as "changed nothing", when the shim records the attempt and `oracle.zig`
+consults success only to follow `chdir` — a normalisation mismatch that would have made
+every failing target a phantom divergence. A test asserting the wrong half of that had
+to be rewritten rather than kept.
+
+The rest were narrower and are fixed the same way: `fcntl` classified by command instead
+of waved through as a class (`F_FULLFSYNC` was walking past the unknown-call gate), the
+sentinels made collision-proof with `O_EXCL` and the engine's pid rather than fixed
+names that could truncate a state file, a size bound on a capture that is system-wide by
+construction, the handshake's polls no longer accumulating the whole growing file in the
+run's arena, and `stopSidecar` no longer treating `ECHILD` as "still running" — which,
+with a privileged signal on an unpinned pid, is this repository's own documented hazard
+wearing root.
+
 ## 2026-08-29 (eighth) - the refusal stops guessing, and what the promise had to be lowered to
 
 `no_shim_marker`'s detail line lists four candidate causes and the engine has measured none of them. README's own sentence about the limits opens "Sideeye refuses to guess", so the message contradicts the page it implements. #391 is the report: a user checked all three named causes against the Command Line Tools git, found none applied, and was left with no next step — the real mechanism, library validation, is named in `DESIGN.md:152` and ADR 0001 and nowhere the user looks.

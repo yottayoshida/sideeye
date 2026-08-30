@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `--oracle-fs-usage`: on macOS the recording run can now be compared against
+  `fs_usage`, giving `oracle_verified` the same meaning it has on Linux instead of
+  leaving every PASS on `--allow-unverified` (#286, ADR 0031). Needs root, so sudo
+  must already hold credentials — the run refuses rather than prompting. Narrower
+  than the strace oracle, and each narrowing refuses rather than agrees: a rename is
+  checked at its old path only (fs_usage prints no destination); a process boundary
+  is not tolerated, because fs_usage excludes some processes by name; a `chdir` by the
+  subject leaves relative operands unplaceable; a state directory deep enough to be
+  cut by the display width is refused before the run. Two things it cannot see and
+  says so: a process leaving the containment group, and a neighbour's descriptor into
+  the state directory opened before the capture began. Runs that do not pass the flag
+  are unchanged.
+
 ### Fixed
 
 - **The `no_shim_marker` refusal stops guessing** (#391, ADR 0030). Its detail line named four candidate causes — statically linked, hardened, not injected at all, and on macOS an Apple-shipped platform binary — and the engine had measured none of them; the branch tests one thing, that the trace carried no `shim_ready` record. README opens its limits section with "Sideeye refuses to guess", and the one message a refused user reads was doing that. The line now reports the absence of the marker and then the fields read off the operation's executable: the code directory's platform byte and its library-validation and hardened-runtime flags on macOS, whether a `PT_INTERP` is present on Linux, and the path they were read from. **Three things it deliberately does not say.** It does not name a cause: entitlements lift both flags and Apple's platform-binary test also requires endorsement, so the line reports field values, never blame. It does not claim the file measured is the image the kernel ran: the reading is taken immediately before the spawn and again at the refusal, and a disagreement between the two is reported as a disagreement with no time attached, because a swap before the spawn looks identical to one after the run. And it does not resolve `PATH` — an `argv[0]` with no `/` is left to the OS and said to be left to the OS, rather than growing a second copy of `execvp`'s rules whose drift would name the wrong file with confidence. Where a fact does not narrow to one answer — a universal binary with two slices of this CPU type, code directories that disagree — the line says so instead of picking. `no_shim_marker`, the verdict and the exit are unchanged, so no frozen surface moves. Reported by a user dogfooding v1.0.0: they checked all three named causes against an Apple-signed `git`, found every one false, and were left with no next step, the real mechanism being a fourth the message never mentioned.
