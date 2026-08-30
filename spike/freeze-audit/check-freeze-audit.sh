@@ -267,7 +267,13 @@ awk -F'\t' '
         for (i in s) surf[s[i]] = 1
         split("add remove bump semantic", k, " ")
         for (i in k) kind[k[i]] = 1
-        split("pre-tag-required additive-allowed declared-not-a-break declaration-amended", l, " ")
+        # `freeze-broken` joined the four on 2026-08-30. The other four all say a
+        # movement was permitted under some reading; this one says it was not, and
+        # was made anyway by an owner ruling. It is deliberately not a synonym for
+        # `declaration-amended` — amending the declaration is what you do AFTER
+        # breaking it, and a ledger that recorded only the amendment would leave the
+        # break itself unwritten.
+        split("pre-tag-required additive-allowed declared-not-a-break declaration-amended freeze-broken", l, " ")
         for (i in l) leg[l[i]] = 1
     }
     {
@@ -277,7 +283,7 @@ awk -F'\t' '
         for (c = 1; c <= 10; c++) if ($c == "") { printf "FAIL: change %s column %d is empty\n", id, c; bad = 1 }
         if (!($2 in surf)) { printf "FAIL: change %s surface %s is not one of the five\n", id, $2; bad = 1 }
         if (!($4 in kind)) { printf "FAIL: change %s kind %s is not add, remove, bump or semantic\n", id, $4; bad = 1 }
-        if (!($9 in leg))  { printf "FAIL: change %s legality %s is not one of the four recorded readings\n", id, $9; bad = 1 }
+        if (!($9 in leg))  { printf "FAIL: change %s legality %s is not one of the five recorded readings\n", id, $9; bad = 1 }
         if ($7 !~ /^[0-9a-f]{7,40}$/) { printf "FAIL: change %s commit %s is not a sha\n", id, $7; bad = 1 }
         if ($8 != "-" && $8 !~ /^[0-9]+( [0-9]+)*$/) { printf "FAIL: change %s issues %s is not a space-separated number list or -\n", id, $8; bad = 1 }
         if (length($10) < 40) { printf "FAIL: change %s evidence is %d characters — too short to carry a reading\n", id, length($10); bad = 1 }
