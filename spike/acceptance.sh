@@ -27,6 +27,23 @@ OUT=$ROOT/spike/out
 
 fails=0
 reasons=""
+# True when the run refused with exactly this reason — and the ledger gets that same
+# string, from the same call.
+#
+# The eight hand-written appends spelled the reason twice, once to grep for and once to
+# credit, and one of the eight spelled two different things: it asserted
+# `checker_not_falsified` and credited `case_no_longer_applies` (#411). The gate then
+# counted a detector no leg had watched fire. Saying it once makes that unwriteable.
+#
+# `-qxF`: F because a reason is a literal and not a pattern, x because the whole line has
+# to be it. `unknown()` in src/main.zig is the only writer of a `UNKNOWN  <reason>` line
+# and puts exactly two spaces there, so the anchored literal is exact rather than
+# optimistic — where a bare `grep -q` also matches the reason quoted inside a message.
+refused() {   # refused <reason> <rc> <output>
+    [ "$2" = "2" ] || return 1
+    printf '%s\n' "$3" | grep -qxF "UNKNOWN  $1" || return 1
+    reasons="$reasons $1"
+}
 
 # The binary has to run at all before any verdict means anything.
 #
@@ -145,9 +162,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "state_changed_without_ops"; then
+if refused state_changed_without_ops "$rc" "$o"; then
     echo "ok   toy-raw is caught without an oracle too (exit 2)"
-    reasons="$reasons state_changed_without_ops"
 else
     echo "FAIL structural detector without oracle: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -241,9 +257,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
 unset TOY_FORK
-if [ "$rc" = "2" ] && echo "$o" | grep -q "boundary_without_oracle"; then
+if refused boundary_without_oracle "$rc" "$o"; then
     echo "ok   the same quiet fork is UNKNOWN without an oracle (exit 2)"
-    reasons="$reasons boundary_without_oracle"
 else
     echo "FAIL boundary without oracle: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -586,9 +601,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --check /bin/true \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "checker_not_falsified"; then
+if refused checker_not_falsified "$rc" "$o"; then
     echo "ok   a checker that always succeeds is refused (exit 2)"
-    reasons="$reasons checker_not_falsified"
 else
     echo "FAIL unfalsifiable checker: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -719,9 +733,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified"; then
+if refused completeness_not_verified "$rc" "$o"; then
     echo "ok   a target that would otherwise PASS is UNKNOWN without an oracle"
-    reasons="$reasons completeness_not_verified"
 else
     echo "FAIL no-oracle PASS suppression: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -839,9 +852,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug no-such-command" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "recording_run_failed"; then
+if refused recording_run_failed "$rc" "$o"; then
     echo "ok   an operation that exits non-zero is UNKNOWN, not PASS"
-    reasons="$reasons recording_run_failed"
 else
     echo "FAIL failing operation: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -1030,9 +1042,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --shim "$SHIM" --work /tmp/acc/work --oracle "$ROOT/spike/empty-oracle.sh" \
     --json /tmp/acc/report.json 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "oracle_saw_nothing"; then
+if refused oracle_saw_nothing "$rc" "$o"; then
     echo "ok   an oracle that observed nothing does not confirm anything (exit 2)"
-    reasons="$reasons oracle_saw_nothing"
 else
     echo "FAIL empty oracle: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -1241,9 +1252,8 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "baseline_violates_invariant"; then
+if refused baseline_violates_invariant "$rc" "$o"; then
     echo "ok   an invariant that fails without a crash is UNKNOWN, not FAIL (exit 2)"
-    reasons="$reasons baseline_violates_invariant"
 else
     echo "FAIL baseline violation: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -1893,7 +1903,18 @@ else
 fi
 o=$(env TOY_EXTRA_FIRST=1 "$SIDEEYE" replay "$case_file" --shim "$SHIM" --work /tmp/acc/work-r2 --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "case_no_longer_applies" && ! echo "$o" | grep -qE "^(PASS|FAIL)"; then
+# The extra predicate runs FIRST: `&&` short-circuits, so the credit inside `refused`
+# lands only when everything this leg asserts has held.
+#
+# **Nothing enforces that order, and this comment is all there is.** A future leg written
+# `if refused X "$rc" "$o" && <something>; then` would credit X even when `<something>`
+# is false, and the gate would count a detector whose leg went red — #411's shape again,
+# spelled as an ordering rather than as a mismatched string. The end-of-file comparison
+# does not reach it: that one catches credits BELOW the gate, not credits by a failing
+# leg above it. Closing it properly means moving the credit out of `refused` and into the
+# `then` branch, which costs the one thing this change bought — the reason spelled once.
+# Left open deliberately, and written down rather than assumed away.
+if ! printf '%s\n' "$o" | grep -qE "^(PASS|FAIL)" && refused case_no_longer_applies "$rc" "$o"; then
     echo "ok   a prefix insertion refuses as 'case no longer applies', with no verdict"
 else
     echo "FAIL replay context guard: exit $rc"
@@ -1910,7 +1931,6 @@ o=$("$SIDEEYE" replay /tmp/acc/gated-case.json --shim "$SHIM" --work /tmp/acc/wo
 rc=$?
 if [ "$rc" = "2" ] && echo "$o" | grep -q "checker_not_falsified"; then
     echo "ok   the trust gates run inside a replay (an unfalsifiable checker refuses)"
-    reasons="$reasons case_no_longer_applies"
 else
     echo "FAIL replay gate preservation: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
@@ -2434,10 +2454,37 @@ fi
 
 echo ""
 echo "=========== check 2b: the reasons are distinct ==========="
+# **The gate counts exactly the reasons that were credited, and a reason is credited only
+# by the run that headlined it.** One chain, mechanised at both links: `refused` and
+# `run_case` take the string from the report the run printed, so a leg cannot credit a
+# detector it did not watch fire; and the comparison at the end of this file fails if
+# anything is credited below this point, so no credit escapes the count.
+#
+# **What this deliberately does NOT claim is completeness.** The suite asserts far more
+# refusal reasons than it credits — seven more above this line alone
+# (`marker_never_observed`, `sequence_numbering_broken`, `state_file_too_large`,
+# `state_tree_too_large`, `state_unsnapshotable`, `unsupported_state_entry`,
+# `unsupported_syscall_observed`) — because a leg that produces an UNKNOWN as a control
+# should not be forced to credit it. So this number is a floor on the variety the suite
+# exercised, not a census of it, and "the count of what the suite observed" would be a
+# false description: measured, the suite has watched about twenty distinct reasons fire
+# by the time the count is taken, and the count says thirteen.
+#
+# Before #411 the chain was broken at both links. One leg asserted `checker_not_falsified`
+# and credited `case_no_longer_applies`, so the number included a detector no leg had
+# watched; and seven legs credited below this line, so nothing they said reached it.
+#
 # Last, so that every UNKNOWN-producing case above has already contributed. It used to
 # run in the middle, and a later case appended to $reasons after the count had been
 # taken — the value was written and never read, so the new detector could have collapsed
-# into an existing one without the count noticing.
+# into an existing one without the count noticing. That failure came back seven times
+# while this comment stood; a sentence is not a mechanism, which is why there is now one.
+# The ledger closes here. Copied rather than guarded inside the credit helper: a helper
+# only binds the sites that call it, and every append this file grew after the gate was
+# written was a raw one — seven of them, six landed the same day, none reaching the count
+# above. Comparing the copy at the end covers the 2777 lines below regardless of how a
+# future leg spells its credit.
+reasons_at_gate="$reasons"
 distinct=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | sort -u | wc -l | tr -d ' ')
 total=$(echo "$reasons" | tr ' ' '\n' | grep -v '^$' | wc -l | tr -d ' ')
 echo "detectors fired: $reasons"
@@ -4870,7 +4917,6 @@ fi
 rm -rf $cd
 if [ "$cwd_fails" != "0" ]; then
     fails=$((fails + cwd_fails))
-    reasons="$reasons cwd"
 fi
 
 echo ""
@@ -4931,7 +4977,6 @@ if [ "$vf_fails" = "0" ]; then
     echo "ok   the shim's record and strace's silence are both reported, neither preferred"
 else
     fails=$((fails + vf_fails))
-    reasons="$reasons vfork-disagreement"
 fi
 
 
@@ -4971,7 +5016,6 @@ if [ "$oe_fails" = "0" ]; then
     echo "ok   a boundary only the oracle saw reaches the account"
 else
     fails=$((fails + oe_fails))
-    reasons="$reasons oracle-only-boundary"
 fi
 
 
@@ -5017,7 +5061,6 @@ if [ "$ra_fails" = "0" ]; then
     echo "ok   a path no record names is refused, and the refusal says which path"
 else
     fails=$((fails + ra_fails))
-    reasons="$reasons state_changed_unaccounted"
 fi
 
 echo ""
@@ -5087,7 +5130,6 @@ if [ "$rn_fails" = "0" ]; then
     echo "ok   a renamed-in directory passes, and the report says how many paths it covered"
 else
     fails=$((fails + rn_fails))
-    reasons="$reasons rename-window"
 fi
 
 
@@ -5132,7 +5174,6 @@ if [ "$mx_fails" = "0" ]; then
     echo "ok   the half-invisible target refuses by path where it used to FAIL on a partial account"
 else
     fails=$((fails + mx_fails))
-    reasons="$reasons mixed-no-oracle"
 fi
 
 echo ""
@@ -5200,8 +5241,20 @@ if [ "$sl_fails" = "0" ]; then
     echo "ok   an operation spelled through an interior symlink, and one on the link itself, both name what the snapshot holds"
 else
     fails=$((fails + sl_fails))
-    reasons="$reasons symlink-spelling"
 fi
+
+# Everything above the gate contributes to the number it reported; a credit below it is a
+# write nobody reads, so the number would silently stop describing what was credited.
+# Seen red by inserting one credit immediately after the count and running the suite: this
+# fails, one check, exit 1. (The seven legs that motivated it credited from their FAILURE
+# branches and are deleted in the same change, so the state that prompted this assertion
+# cannot be re-run — which is why the falsification is a synthetic insertion and says so.)
+[ "$reasons" = "$reasons_at_gate" ] || {
+    echo "FAIL ledger: a reason was credited after check 2b took the count"
+    echo "     | at the gate: $reasons_at_gate"
+    echo "     | at the end:  $reasons"
+    fails=$((fails + 1))
+}
 
 reached_end=1
 echo ""
