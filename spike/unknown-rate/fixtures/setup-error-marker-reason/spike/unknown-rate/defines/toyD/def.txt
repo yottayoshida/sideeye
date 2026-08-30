@@ -1,0 +1,1 @@
+fixture define for the B-group setup-error trial
