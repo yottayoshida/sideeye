@@ -159,6 +159,17 @@ python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));d["error"]["code"]
 drive '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"1999-01-01","io.modelcontextprotocol/clientCapabilities":{}}}}'
 python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));e=d["error"];(e["code"]==-32022 and e["data"]["supported"]==["2026-07-28"] and e["data"]["requested"]=="1999-01-01") or sys.exit(d)' \
   && pass "unsupported version is -32022 with supported/requested" || fail "version negotiation wrong"
+# The message text, which nothing checked until #389. Both keys, because the two refusals
+# are separate returns and fixing one leaves the other naming a spelling the server does
+# not accept — a caller who pastes the identifier out of the refusal gets it back.
+drive '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"clientCapabilities":{}}}}'
+python3 -c 'import json,sys;m=json.load(open("/tmp/mcp.out"))["error"]["message"];("io.modelcontextprotocol/protocolVersion" in m) or sys.exit(m)' \
+  && pass "the protocolVersion refusal names the namespaced key" \
+  || fail "the protocolVersion refusal names a spelling the server does not accept"
+drive '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}'
+python3 -c 'import json,sys;m=json.load(open("/tmp/mcp.out"))["error"]["message"];("io.modelcontextprotocol/clientCapabilities" in m) or sys.exit(m)' \
+  && pass "the clientCapabilities refusal names the namespaced key" \
+  || fail "the clientCapabilities refusal names a spelling the server does not accept"
 
 echo "=========== mcp 3: a path outside the server root is refused, not executed ==========="
 # Traversal / absolute escape must be a tool error before any exec. Uses a real file
@@ -611,6 +622,32 @@ elif [ "$(cat /tmp/mcp-cwd-seen.txt)" = "$cwdws" ]; then
     pass "the operation started in the directory the define declared, with no caller able to cd"
 else
     echo "FAIL the operation ran in $(cat /tmp/mcp-cwd-seen.txt), not the declared $cwdws"
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== mcp 15: the README's own first call reaches a verdict, from a cleared environment ==========="
+# #389. The body lives in spike/check-readme-mcp-call.sh so the macOS job can run it
+# without the rest of this suite, which is Linux-shaped (a .so shim, an strace oracle),
+# and so the README side can be falsified by pointing the script at a mutated copy.
+#
+# It clears the environment; every leg above inherits the exports at the top of this file
+# (:47-53) and therefore cannot observe what a caller starting from nothing must supply —
+# which is exactly the class #389 was in.
+if sh "$ROOT/spike/check-readme-mcp-call.sh" "$ROOT/README.md" "$SIDEEYE" "$SHIM" /tmp/mcp-readme "$OUT/toy-bug"; then
+    pass "the README's environment block and exchange reach a verdict with nothing else set"
+else
+    fails=$((fails + 1))
+fi
+
+echo "=========== mcp 16: every environment read is documented, and every documented one is read ==========="
+# The other half of #389, and the direction a table alone cannot hold: the check walks
+# `getenv` CALL SITES rather than matching variable names, because a name-shaped regex
+# cannot report the reads it does not know how to spell (src/mcp.zig also reads PATH, and
+# one read takes its name from a runtime value).
+if python3 "$ROOT/spike/check-mcp-env.py" "$ROOT/README.md" "$ROOT/src/mcp.zig"; then
+    pass "the README's MCP table and the server's environment reads agree, both directions"
+else
     fails=$((fails + 1))
 fi
 

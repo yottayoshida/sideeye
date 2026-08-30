@@ -143,6 +143,36 @@ How real tool classes have fared against these limits: [docs/target-classes.md](
 
 `sideeye mcp` is a stateless MCP server (stdio) with two tools: `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}`. The tools take *paths* inside `SIDEEYE_MCP_ROOT`, never raw commands — the config file is the trust boundary you vet, **and a saved case is the same boundary**: its setup/operation/check are executed on replay, exactly as a config's are on explore. The root confines which config or case may be named, not what its commands do: run the server inside a container, network-off where the target allows it. A single-component mount is fine (`/work`, `/repo` — a directory the container exists to hold); what the server refuses at startup is `/`, a system tree or scratch parent (`/usr`, `/var/lib`, `/tmp`), **and any directory that contains one** — so `/var` and, on macOS, `/private` are refused for holding `/var/lib` and `/private/tmp`. The denylist stops the mistake that has a name, not every bad choice: **with `SIDEEYE_MCP_STATE_ROOT` unset the root is also the declared destruction range**, so name a directory whose contents are yours to lose — `/opt` passes the vet and is where installed software lives. One thing more IS confined (#266): the state directory a replayed case names — the directory replay empties and rebuilds — must resolve strictly inside `SIDEEYE_MCP_STATE_ROOT` (default: the root). Cases made at the CLI conventionally keep state under `/tmp`; set `SIDEEYE_MCP_STATE_ROOT=/tmp` to replay them through the server. Widen that knob, never the root (ADR 0022).
 
+### The first call
+
+The server speaks MCP schema **2026-07-28**. Two consequences a client written against an older mental model will meet immediately: there is no `initialize` — the server exposes `server/discover`, and `tools/list` works without either — and **`_meta` is per-request and mandatory**, with the protocol version and client capabilities under their namespaced keys exactly as spelled below.
+
+Everything the server reads from its environment:
+
+| Variable | Required | Meaning |
+|---|---|---|
+| `SIDEEYE_MCP_ROOT` | **yes** | The directory tool paths are confined to, vetted at startup (above). |
+| `SIDEEYE_MCP_SHIM` | no | An override. Unset, the server looks where the install note above says it looks: beside the binary, then `../lib` — the same order the CLI uses, so a tarball and a Homebrew install both resolve with nothing set. Until #389 this command demanded the variable instead, which made it the one place the product did not do what that sentence promises. **That search trusts the install directory**: whoever can write `bin/` or `../lib` chooses the library injected into your target, and a symlink there is followed. This is how the CLI has resolved the shim since #78 — it is the product's posture, not a property of the server — but it is now this command's posture too. Where that directory is not yours alone, set this variable, or fix the permissions. Closing it product-wide is #423. |
+| `SIDEEYE_MCP_STATE_ROOT` | no | Where a replayed case's state directory may live. Default: the root (ADR 0022). |
+| `SIDEEYE_MCP_WORK` | no | Scratch for traces and cases. Default `/tmp/sideeye-mcp`. |
+| `SIDEEYE_MCP_ORACLE` | no | The second witness. Without one a would-be PASS refuses as `completeness_not_verified`; a FAIL stands on its own evidence either way. |
+| `SIDEEYE_MCP_CHILD_ENV` | no | Comma-separated names of variables to pass through to the target. Nothing else reaches it (ADR 0011). |
+
+One value is yours to supply, and it is written as `/path/to/…`. Nothing else has to be set:
+
+```sh
+export SIDEEYE_MCP_ROOT=/path/to/your/workspace
+```
+
+With a `sideeye.toml` in that workspace — the Usage section above shows the shape; fill it in for your own tool — this reaches a verdict, or refuses with a named reason:
+
+```jsonrpc
+{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}},"name":"sideeye_explore_config","arguments":{"config_path":"/path/to/your/workspace/sideeye.toml"}}}
+```
+
+`isError` follows the verdict structure, not the outcome: a FAIL is a real answer and comes back `false` (ADR 0010). **Both blocks are run on every pull request and every push to main, extracted from this page, against the built server, with nothing else in the environment** — on Linux as `spike/mcp-acceptance.sh` check 15 and on macOS as a step of its own, both calling `spike/check-readme-mcp-call.sh`. They are a record of what the server does today, not an addition to the frozen surface — what v1.0 froze is the two tool names, their input schemas and that `isError` rule (`docs/contract-freeze.md`, surface 5).
+
 Measured here, not aspirations: a context-free agent, handed a counterexample and bug-blind replay plumbing, produced the fix — twice: once through the CLI, once through this MCP server (`spike/loop-closure-timew/`) — an LLM scout authored the defines for five real targets under a fixed protocol (`spike/assisted/`; the method: [docs/scouting.md](docs/scouting.md)), and a context-free agent set Sideeye up **from the README alone** — tarball to a real verdict on an external tool in under five minutes, protocol declared before the clock, measured twice (`spike/onboarding-clock/`: run 1 at 4 m 22 s, 2026-08-17; run 2 at 2 m 55.7 s, 2026-08-28, against this page as it stood at the freeze — the criterion's evidence).
 
 ## What it is for after the first find
