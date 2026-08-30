@@ -175,6 +175,24 @@ jobs:
       - name: A case path that is not a regular file is refused, and the run returns (#400)
         run: python3 spike/case-path-deadline.py zig-out/bin/sideeye
 
+      # #389 was measured on a Homebrew install on macOS arm64, and the MCP acceptance
+      # suite runs only in the Linux container — so the surface the report was written
+      # about had never been exercised on this platform. The rest of that suite is
+      # Linux-shaped (a `.so` shim, an strace oracle), which is why this is the one leg
+      # extracted into a script of its own rather than the whole file being wired here.
+      # It needs no oracle: the config names a target with a real bug, and a FAIL is a
+      # verdict on its own evidence.
+      - name: The README's own MCP first call reaches a verdict, from a cleared environment (#389)
+        run: |
+          mkdir -p /tmp/mcp-readme
+          cc -DBUGGY=1 -o /tmp/mcp-readme/toy-bug spike/toys/toy.c -lpthread
+          sh spike/check-readme-mcp-call.sh README.md \
+             zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib \
+             /tmp/mcp-readme /tmp/mcp-readme/toy-bug
+
+      - name: Every MCP environment read is documented, and every documented one is read (#389)
+        run: python3 spike/check-mcp-env.py README.md src/mcp.zig
+
       # The demo is also the release workflow's smoke test; macOS is where its
       # no-oracle path lives (a FAIL stands on its own evidence, so the demo needs
       # neither strace nor --allow-unverified). The Linux side is covered by
@@ -684,6 +702,23 @@ jobs:
 
       - name: ADR numbers are unique
         run: sh spike/check-adr-numbering.sh
+
+      # The Status line, for the same reason and in the same shape (#360). Five
+      # ADRs sat at `Proposed` after their implementing PRs merged, because the
+      # old convention asked for a flip that no single PR can perform: the ADR
+      # arrives with the work it decides, so the flip is always a second commit.
+      # The default is inverted now — written Accepted, refused otherwise.
+      #
+      # Selftest first, and here it carries negative controls as well as red
+      # cases: an over-matching check reddens, which is indistinguishable from
+      # working until it reddens on a file that is correct. Two such files exist
+      # (0002 has `proposed` inside a parenthetical, 0030 says `Proposed by
+      # external review` in its body), so the fixture holds both shapes.
+      - name: The status check proves it can go red, and stays green where it must
+        run: sh spike/check-adr-status.sh --selftest
+
+      - name: Every ADR says whether its decision shipped
+        run: sh spike/check-adr-status.sh
 
   # The onboarding clock's audit is criterion 6's instrument: it decides whether a
   # timed run's evidence stands. Until 2026-08-28 nothing here ran it — the launcher

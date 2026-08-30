@@ -40,6 +40,104 @@ pub fn canonicalSelf() ?[]const u8 {
 }
 var self_buf: [contract.max_path]u8 = undefined;
 
+pub const shim_basename = if (builtin.os.tag == .macos) "libsideeye_shim.dylib" else "libsideeye_shim.so";
+
+/// Where the shim lives relative to a binary that was not told: beside it first, then
+/// `../lib`. The tarball ships the pair side by side; `zig build` and a Homebrew install
+/// put the binary in `bin/` and the library in `lib/`.
+///
+/// This lives here, next to `canonicalSelf`, because it is now shared by five callers
+/// rather than the CLI's four (#78): `sideeye mcp` used to demand `SIDEEYE_MCP_SHIM` and
+/// refuse without it, which made the server the one command that did not do what
+/// `README.md` says the product does — "it looks for the shim beside itself before
+/// `../lib`". A caller who installed from Homebrew and drove the server from that page
+/// was refused on every tool call, and nothing in the refusal said the search it was
+/// describing had never been attempted (#389).
+pub fn shimCandidates(arena: std.mem.Allocator, self: []const u8) error{OutOfMemory}![2][]const u8 {
+    const dir = std.fs.path.dirname(self) orelse "/";
+    return .{
+        try std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, shim_basename }),
+        try std.fmt.allocPrint(arena, "{s}/../lib/{s}", .{ dir, shim_basename }),
+    };
+}
+
+/// The first candidate that exists, realpath-normalised. Null when neither does — the
+/// caller decides how loud that is, because the CLI can abort the process and a tool
+/// call has to answer the request.
+pub fn findShimBeside(arena: std.mem.Allocator, self: []const u8) ?[]const u8 {
+    // Two failures below are folded into "not here": the candidate list not being
+    // buildable, and a candidate longer than `contract.max_path`. Neither is a probe that
+    // came back empty. That is why the callers' message says "either place this looks"
+    // rather than "looked at" — the second phrasing would name a probe that, in those two
+    // cases, never happened, which is the class of refusal ADR 0026 rates worse than a
+    // generic one and which this same change is fixing over in `checkMeta`.
+    const cands = shimCandidates(arena, self) catch return null;
+    for (cands) |c| {
+        var zb: [contract.max_path]u8 = undefined;
+        const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
+        if (posix.access(z.ptr, 0) != 0) continue;
+        var rb: [contract.max_path]u8 = undefined;
+        if (posix.realpath(z.ptr, &rb)) |p| {
+            // On allocation failure fall back to the candidate rather than to null: `c`
+            // is already on this arena and names the same file. Answering null would make
+            // the caller say no shim was found beside the binary, which would be a lie
+            // about a file it had just seen.
+            if (arena.dupe(u8, std.mem.span(p))) |owned| return owned else |_| return c;
+        }
+        return c;
+    }
+    return null;
+}
+
+test "findShimBeside takes the sibling before ../lib, and answers null for neither" {
+    // A pid-unique directory, for the reason image.zig's fixtureDir records: the same
+    // test runs in several concurrent binaries and a fixed path passes every single run
+    // before failing most of them in pairs (#28).
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&base_buf, "/tmp/sideeye-shimfind-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base.ptr, @as(c_uint, 0o755));
+    var b2: [contract.max_path]u8 = undefined;
+    const bin = std.fmt.bufPrintZ(&b2, "{s}/bin", .{base}) catch unreachable;
+    _ = posix.mkdir(bin.ptr, @as(c_uint, 0o755));
+    var b3: [contract.max_path]u8 = undefined;
+    const lib = std.fmt.bufPrintZ(&b3, "{s}/lib", .{base}) catch unreachable;
+    _ = posix.mkdir(lib.ptr, @as(c_uint, 0o755));
+
+    const touch = struct {
+        fn f(dir: []const u8) bool {
+            var pb: [contract.max_path]u8 = undefined;
+            const p = std.fmt.bufPrintZ(&pb, "{s}/{s}", .{ dir, shim_basename }) catch return false;
+            const fd = posix.open(p.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+            if (fd < 0) return false;
+            _ = posix.close(fd);
+            return true;
+        }
+    }.f;
+
+    const self = try std.fmt.allocPrint(arena, "{s}/bin/sideeye", .{base});
+
+    // Neither present: the caller has to be able to say so. A wrong "found" here is how a
+    // run gets handed a path that is not a shim.
+    try std.testing.expect(findShimBeside(arena, self) == null);
+
+    // `../lib` only — the `zig build` and Homebrew layout, and the one `sideeye mcp`
+    // refused to look at until #389.
+    if (!touch(lib)) return error.SkipZigTest;
+    const via_lib = findShimBeside(arena, self) orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.endsWith(u8, via_lib, "/lib/" ++ shim_basename));
+
+    // Both present: the sibling wins, which is the tarball layout and the order README.md
+    // states. Asserting only the `../lib` case would pass for an implementation that never
+    // looks beside the binary at all.
+    if (!touch(bin)) return error.SkipZigTest;
+    const via_sibling = findShimBeside(arena, self) orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.endsWith(u8, via_sibling, "/bin/" ++ shim_basename));
+}
+
 /// One line to fd 1, the MCP transport. Nothing else may write here.
 fn emit(s: []const u8) void {
     var off: usize = 0;
@@ -233,13 +331,19 @@ fn checkMeta(params: ?std.json.ObjectMap) MetaCheck {
         .object => |m| m,
         else => return .{ .missing = "missing params._meta" },
     };
+    // Both messages name the key this function actually looks up, namespace included.
+    // They used to say `_meta protocolVersion` / `_meta clientCapabilities`, which is a
+    // spelling the server does not accept — a caller who pasted the identifier out of the
+    // refusal got the identical refusal back, and the only way out was reading this
+    // function (#389 item 2). A refusal that names a spelling which cannot work sends the
+    // reader somewhere there is nothing, which ADR 0026 rates worse than a generic one.
     const ver = switch (meta.get("io.modelcontextprotocol/protocolVersion") orelse std.json.Value{ .null = {} }) {
         .string => |s| s,
-        else => return .{ .missing = "missing _meta protocolVersion" },
+        else => return .{ .missing = "missing params._meta[\"io.modelcontextprotocol/protocolVersion\"] (a string)" },
     };
     switch (meta.get("io.modelcontextprotocol/clientCapabilities") orelse std.json.Value{ .null = {} }) {
         .object => {},
-        else => return .{ .missing = "missing _meta clientCapabilities (must be an object)" },
+        else => return .{ .missing = "missing params._meta[\"io.modelcontextprotocol/clientCapabilities\"] (an object)" },
     }
     if (!std.mem.eql(u8, ver, protocol_version)) return .{ .unsupported = ver };
     return .ok;
@@ -306,8 +410,23 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     const path = resolveInsideRoot(arena, path_in) orelse
         return emitToolError(arena, id, "the path is outside the server root (SIDEEYE_MCP_ROOT), or does not exist");
 
-    const shim = if (posix.getenv("SIDEEYE_MCP_SHIM")) |s| std.mem.span(s) else
-        return emitToolError(arena, id, "SIDEEYE_MCP_SHIM is not set; the server needs a shim path");
+    // The variable is an override, not a requirement. Without it the server looks where
+    // README.md says the product looks — beside the binary, then `../lib` — which is what
+    // the CLI has always done and what this command refused to do (#389 item 4, the one
+    // the report calls unconditional). A Homebrew install resolves on the second
+    // candidate, measured.
+    const shim = if (posix.getenv("SIDEEYE_MCP_SHIM")) |s|
+        std.mem.span(s)
+    else
+        findShimBeside(arena, self) orelse {
+            const cands = shimCandidates(arena, self) catch
+                return emitToolError(arena, id, "out of memory while looking for the shim");
+            return emitToolError(arena, id, std.fmt.allocPrint(
+                arena,
+                "no shim was found at either place this looks — {s} and {s}. Set SIDEEYE_MCP_SHIM to a path to {s}",
+                .{ cands[0], cands[1], shim_basename },
+            ) catch "no shim was found beside this binary; set SIDEEYE_MCP_SHIM");
+        };
     const work = if (posix.getenv("SIDEEYE_MCP_WORK")) |w| std.mem.span(w) else "/tmp/sideeye-mcp";
     var wbuf: [contract.max_path]u8 = undefined;
     const wz = std.fmt.bufPrintZ(&wbuf, "{s}", .{work}) catch return emitToolError(arena, id, "work path too long");

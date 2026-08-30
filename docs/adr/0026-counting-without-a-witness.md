@@ -1,6 +1,6 @@
 # 0026 — Counting without a witness
 
-Status: Proposed
+Status: Accepted (implementing PR merged as `975e2fd`, 2026-08-26)
 
 ## Context
 
