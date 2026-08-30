@@ -194,10 +194,33 @@ pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 /// Opening a FIFO with no writer blocks forever, which #5 recorded when an open-probe
 /// was used to classify paths and was retired from this file for it (see
-/// `kindAtNoFollow`). `image.zig` opens a path the target's own define named, so it
-/// carries the same exposure and opens with this flag: on a FIFO the open returns
-/// immediately and the `lseek` that follows fails, which is the answer that path
-/// deserves. Regular files are unaffected.
+/// `kindAtNoFollow`). Regular files are unaffected: open, lseek and read on one answer
+/// the same with the flag and without it (measured, `spike/fifo-classification-400.txt`).
+///
+/// **The flag alone is not the fix, and this is where #400 came from.** It stops the
+/// open from waiting; it does not make the read say anything. On a FIFO with no writer
+/// the read returns 0 — end of file — so a caller that reads to EOF gets an empty buffer
+/// and calls it success.
+///
+/// **And it is not free, so it does not go everywhere.** A non-blocking read of a pipe
+/// whose writer has not written yet fails EAGAIN, and a reader that treats a negative
+/// return as unreadable then refuses input that would have arrived. So the flag belongs
+/// only where a classification follows it. Who carries it, as of #400:
+///
+/// - `image.zig` (#398): flag, then `lseek` — ESPIPE ends it there.
+/// - `engine.zig`'s `readWhole`, `main.zig`'s `readFileFrom` and `observeCapture`,
+///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`. All four read paths the engine
+///   itself produced, so nothing legitimate is refused.
+/// - `main.zig`'s `readFileAllocCapped`: **both, or neither.** The case read classifies
+///   and carries the flag; `--config` does neither, because an operator may legitimately
+///   name a pipe there and a non-blocking read would refuse it. Measured — passing the
+///   flag there unconditionally broke `--config` on a slow pipe (BUILDLOG 2026-08-30).
+///
+/// Listing the callers here is deliberate, and so is listing what each does *after* the
+/// open: the previous version of this comment named one file and said nothing about the
+/// second half, and the sweep that followed #398 looked for refusal *messages* rather
+/// than for opens — which is why #400 sat unfound in a function three lines from a
+/// comment describing its defect.
 pub const O_NONBLOCK: c_int = if (builtin.os.tag == .linux) 0o4000 else 0x0004;
 /// Derived from `std.posix.O` rather than written out, and it is the only flag in this
 /// block that needs to be.
@@ -377,9 +400,59 @@ pub fn kindAtNoFollow(dirfd_: c_int, path: [*:0]const u8) ClassifyError!Kind {
     }
 }
 
+/// The same classification for a descriptor that is **already open** (#400).
+///
+/// Deliberately not a second spelling of `kindAtNoFollow`: that one asks what a name
+/// refers to *before* anything opens it, and is the form the snapshot walk needs. This
+/// one asks what the descriptor turned out to be *after* the open, which is the only
+/// form that can answer without a window between the answer and its use — a name can
+/// change kind between the two calls, a descriptor cannot.
+///
+/// A reader that opened with `O_NONBLOCK` needs this: the flag stops the open from
+/// waiting on a FIFO's peer, but the read that follows then returns 0, which is
+/// indistinguishable from an empty regular file. Measured on macOS with a real FIFO and
+/// no writer: `open` succeeds, `fstat` says `S_IFIFO`, `lseek` fails with ESPIPE, and
+/// `read` returns 0 with errno untouched. `lseek` failing is **not** the test to write
+/// instead — seekability and regular-file-ness are different properties, and a device
+/// that seeks would pass a test built on it.
+///
+/// `.symlink` never comes back from here: `open` follows the link, so the descriptor is
+/// the target. `.missing` likewise cannot occur — the descriptor exists.
+pub fn kindOfFd(fd: c_int) ClassifyError!Kind {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        // The empty path with AT_EMPTY_PATH is how statx addresses a descriptor itself.
+        const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .TYPE = true }, &stx);
+        switch (lnx.errno(rc)) {
+            .SUCCESS => {},
+            else => return error.Unclassifiable,
+        }
+        // Same contract as above: a type the kernel did not fill in is not an answer.
+        if (!stx.mask.TYPE) return error.Unclassifiable;
+        const m: u32 = stx.mode;
+        if (lnx.S.ISDIR(m)) return .dir;
+        if (lnx.S.ISREG(m)) return .file;
+        return .other;
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstat(fd, &st) != 0) return error.Unclassifiable;
+        const m = st.mode;
+        if (std.c.S.ISDIR(m)) return .dir;
+        if (std.c.S.ISREG(m)) return .file;
+        return .other;
+    }
+}
+
 /// Test apparatus only: the classification above owes its falsification to a real
 /// FIFO (#5), and std.c carries no mkfifo. The engine itself never creates one.
 pub extern "c" fn mkfifo(path: [*:0]const u8, mode: c_uint) c_int;
+
+/// Test apparatus only: `kindOfFd` owes its falsification to a descriptor that is not a
+/// regular file, and a pipe is the one the tests can make without touching the
+/// filesystem — which is the point, since opening a FIFO by name is the thing the
+/// caller of `kindOfFd` is trying to survive.
+pub extern "c" fn pipe(fds: *[2]c_int) c_int;
 
 /// `d_name` is a fixed-size array in the struct; the name is the NUL-terminated prefix.
 pub fn direntName(e: *Dirent) []const u8 {
@@ -1484,6 +1557,47 @@ test "O_DIRECTORY actually refuses a regular file" {
         return error.ODirectoryDidNotRefuse;
     }
     try std.testing.expectEqual(ENOTDIR, std.c._errno().*);
+}
+
+test "kindOfFd answers about the descriptor, and a pipe is not a regular file (#400)" {
+    // A pipe, not a FIFO opened by name. `kindOfFd` exists because opening a FIFO by
+    // name is the thing that hangs, so a test that opened one would be reaching through
+    // the hazard to check the guard — and would hang for real if `O_NONBLOCK` ever came
+    // off the caller. `pipe()` yields the same class of descriptor with no filesystem
+    // and no possibility of blocking.
+    var fds: [2]c_int = undefined;
+    try std.testing.expect(pipe(&fds) == 0);
+    defer _ = close(fds[0]);
+    defer _ = close(fds[1]);
+    try std.testing.expectEqual(Kind.other, try kindOfFd(fds[0]));
+
+    // pid-unique for the same reason as the neighbour above (#28).
+    var bb: [128]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-kindfd-{d}", .{getpid()}) catch unreachable;
+    _ = mkdir(base.ptr, @as(c_uint, 0o755));
+
+    // The control. Without it, a `kindOfFd` that answered `.other` for everything would
+    // pass the assertion above — the refusal would fire on every case file ever read and
+    // the test would still be green.
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/f", .{base}) catch unreachable;
+    const wfd = open(file_z.ptr, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(wfd >= 0);
+    _ = close(wfd);
+    const rfd = open(file_z.ptr, O_RDONLY | O_NONBLOCK, @as(c_uint, 0));
+    try std.testing.expect(rfd >= 0);
+    try std.testing.expectEqual(Kind.file, try kindOfFd(rfd));
+    _ = close(rfd);
+
+    // A directory is its own answer, not `.file`: the caller tests `!= .file`, so this
+    // pins that a directory is refused too rather than read.
+    const dfd = open(base.ptr, O_RDONLY | O_DIRECTORY, @as(c_uint, 0));
+    try std.testing.expect(dfd >= 0);
+    try std.testing.expectEqual(Kind.dir, try kindOfFd(dfd));
+    _ = close(dfd);
+
+    _ = unlink(file_z.ptr);
+    _ = rmdir(base.ptr);
 }
 
 test "kindAtNoFollow reads the descriptor it is given, not the name alone" {
