@@ -109,6 +109,30 @@ the toy and was wrong: `oracle.zig` drops `close` from the compared sequence, an
 accounts have to be shaped alike. The real capture said two first; the strace reader
 said why.
 
+**The acceptance run then passed all three checks, and the two refusals between here
+and there were both new shapes.** Microsoft Defender opened the toy's file read-only to
+scan it, which under the first "touched the root" rule made every write it then issued
+on its own log descriptors a hole in the account of the judged directory; a thread is
+now held to account only for what it opened under the root write-capably. And
+`mkstemp`'s creation — the one line check 2 exists to catch — arrives as
+`openat F=3 (RWC__E______) [-2]//Users/.../tmp-oepJXu`: fs_usage prints `openat` as a
+directory-descriptor annotation followed by `/` and the operand, `[-2]` being `AT_FDCWD`
+and the doubled slash the separator sitting in front of an operand that is itself
+absolute. The reader knew only the plain spelling, so the one line it was written to
+read was the one it could not. `classify.py`, the port's source, never met the form: its
+probes used `open`. Three resolutions now exist — `AT_FDCWD` with an absolute operand,
+`AT_FDCWD` with a relative one joined to the subject's cwd (the strace reader's
+`initial_cwd`, which the fs_usage reader now also takes), and a descriptor-relative
+operand inheriting the scope of the directory it names — and a read-only open of a
+directory is remembered for exactly that last case. Whatever cannot be placed still
+refuses.
+
+Check 1: `exit=0 oracle_verified=True verdict=PASS`, `agreed on 2 operations (3858 lines
+examined, 2 in scope of the judged state), witness fs_usage`. Check 2:
+`oracle_missed_operation`. Check 3: the control reproduces #405 (`PASS`, `processes:
+single process`) and the flagged run refuses `child_touched_state_dir`. The first
+verified PASS this engine has produced on macOS.
+
 The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
 the probe's `fs_usage` never started, because the previous binary's orphan still held
 kdebug for another two minutes, and the probe alone did not clear leftovers before

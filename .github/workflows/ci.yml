@@ -512,6 +512,15 @@ jobs:
           ! grep -q 'unsupported_syscall_observed' /tmp/ci-v12/r.json || {
             echo "swap-out: an out-of-scope swap must not refuse as unsupported"; cat /tmp/ci-v12/r.json; exit 1; }
 
+      - name: "macOS oracle: fs_usage verifies a PASS, catches a missed op, refuses an unseen process (ADR 0031)"
+        # The three falsifiable checks from the plan, against a real fs_usage. The
+        # runner's sudo is passwordless (measured 27 times in the Route F1 survey,
+        # spike/fsusage/RESULTS.md), which is what lets a root-only observer be
+        # exercised in CI at all. The script builds first, so the binary under test is
+        # the source under test.
+        run: bash spike/fsusage/acceptance-local.sh
+
+
   # The timewarrior finding lives here as a replayed regression, not a recipe (#82):
   # every push to main and every pull request re-proves the FAIL/PASS pair across the fix — record the counterexample
   # on the pinned unpatched build, replay it FAIL, rebuild with the committed patch,
@@ -530,6 +539,7 @@ jobs:
   # case under the new contract each run (the committed-case alternative would have
   # gone red instead). If legs go red, the script's own output carries the exit code
   # and unknown_reason — enough to tell apparatus breakage from a real regression.
+
   timew-regression:
     runs-on: ubuntu-latest
     timeout-minutes: 20
