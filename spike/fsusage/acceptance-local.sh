@@ -204,8 +204,70 @@ rc3=$(run c3 rawchild_toy --oracle-fs-usage)
 echo "  flagged exit=$rc3 reason=$(field c3 unknown_reason)"
 [ "$rc3ctl" = "0" ] || echo "  NOTE: control did not reproduce #405 here (exit $rc3ctl); check 3 still stands on its own"
 [ "$rc3" = "2" ] || { sed -n '1,12p' "$WORK/c3.txt"; fail "check 3: expected exit 2"; }
+[ "$(field c3 unknown_reason)" = "child_touched_state_dir" ] || fail "check 3: expected child_touched_state_dir, got $(field c3 unknown_reason) — a refusal for another reason would leave this check green over a parser failure"
 echo "  PASS"
 
 echo "=================================================================="
-echo "all three checks passed"
+echo "Check 4 — a boundary the shim saw is not tolerated under fs_usage"
+echo "  predicate: exit 2 AND boundary_without_oracle. fs_usage excludes processes by"
+echo "             name (the shells), so no child can be accounted for"
+cat > "$WORK/libcchild_toy.c" <<'EOF'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+int main(void) {
+    const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
+    char pp[1024]; snprintf(pp, sizeof(pp), "%s/from-parent", d);
+    int fd = open(pp, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    if (fd < 0) return 1; write(fd, "p\n", 2); close(fd);
+    pid_t c = fork();
+    if (c == 0) _exit(0);
+    int st; waitpid(c, &st, 0);
+    return 0;
+}
+EOF
+"$CC" -O0 -o "$WORK/libcchild_toy" "$WORK/libcchild_toy.c" 2>/dev/null || fail "could not build libcchild_toy"
+rc4=$(run c4 libcchild_toy --oracle-fs-usage)
+echo "  exit=$rc4 reason=$(field c4 unknown_reason)"
+[ "$rc4" = "2" ] || { sed -n '1,12p' "$WORK/c4.txt"; fail "check 4: expected exit 2"; }
+[ "$(field c4 unknown_reason)" = "boundary_without_oracle" ] || fail "check 4: expected boundary_without_oracle, got $(field c4 unknown_reason)"
+echo "  PASS"
+
+echo "=================================================================="
+echo "Check 5 — a chdir followed by a raw relative openat into the state refuses"
+echo "  predicate: exit 2 (the reader does not follow cwd; a relative operand after"
+echo "             chdir is unplaceable). Review's false-PASS construction, run for real"
+cat > "$WORK/chdir_toy.c" <<'EOF'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+int main(void) {
+    const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
+    char pp[1024]; snprintf(pp, sizeof(pp), "%s/from-parent", d);
+    int fd = open(pp, O_CREAT | O_WRONLY | O_TRUNC, 0600);   /* recorded: keeps the zero-op guard quiet */
+    if (fd < 0) return 1; write(fd, "p\n", 2); close(fd);
+    /* move to the state's parent, then create INSIDE the state through a relative raw openat */
+    char parent[1024]; snprintf(parent, sizeof(parent), "%s", d);
+    char *slash = strrchr(parent, '/'); if (!slash) return 3; *slash = 0;
+    const char *base = slash + 1;
+    if (chdir(parent) != 0) return 4;
+    char rel[1024]; snprintf(rel, sizeof(rel), "%s/missed", base);
+    long r = syscall(SYS_openat, -2, rel, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    if (r >= 0) { syscall(SYS_write, r, "m\n", 2); syscall(SYS_close, r); }
+    return 0;
+}
+EOF
+"$CC" -O0 -o "$WORK/chdir_toy" "$WORK/chdir_toy.c" 2>/dev/null || fail "could not build chdir_toy"
+rc5=$(run c5 chdir_toy --oracle-fs-usage)
+echo "  exit=$rc5 reason=$(field c5 unknown_reason)"
+[ "$rc5" = "2" ] || { sed -n '1,12p' "$WORK/c5.txt"; fail "check 5: expected exit 2 — a PASS here is the false PASS review constructed"; }
+echo "  PASS"
+
+echo "=================================================================="
+echo "all five checks passed"
 echo "artifacts: $WORK"

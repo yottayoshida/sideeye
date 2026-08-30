@@ -133,6 +133,32 @@ examined, 2 in scope of the judged state), witness fs_usage`. Check 2:
 single process`) and the flagged run refuses `child_touched_state_dir`. The first
 verified PASS this engine has produced on macOS.
 
+**R2 rejected, and three of its five findings were the account overclaiming what a
+measurement showed.** Probe 0 counted lines naming the file a `/bin/sh` child wrote and
+read two of them as "the mutation is visible under another name". They were
+`fseventsd`'s `lstat64` — read-only lines the reader drops — so the excluded shell's
+mutation was in nobody's account, and a parent with one recorded write beside it would
+have carried a false `oracle_verified`. The tolerance the strace oracle earns for a
+process boundary (children followed, none touched the state) is therefore not extended to
+this backend: a boundary the shim reports refuses. Children that are visible are still
+caught by path scope, which is what #405's shape exercises; what is withdrawn is the
+claim to have accounted for every child, which an exclusion list makes unprovable.
+
+Two more were constructions the reader could not survive. A `chdir` followed by a raw
+`openat(AT_FDCWD, "st/missed")` — really inside the state — was joined to the *starting*
+cwd and dropped as out of scope; the reader does not follow `chdir` the way the strace
+reader does, so once a relevant thread has moved, relative operands refuse, and `..`
+refuses in every relative form. And the dup rule "the next unknown descriptor this
+thread touches" could hand a state descriptor the out-of-scope bit of an unrelated
+source; it is now the one measured shape — the very next line, an inert `fcntl` on an
+unknown number — and nothing wider.
+
+Two P2s: check 3 accepted any `exit 2` and now requires `child_touched_state_dir`; the
+CHANGELOG said two narrowings where the ADR said three, and both now say what the
+account line says. Two checks were added to the acceptance run for the constructions
+above (a libc-fork child under fs_usage refuses; the chdir construction refuses); they
+have not yet run against a real `fs_usage` at the time of this entry.
+
 The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
 the probe's `fs_usage` never started, because the previous binary's orphan still held
 kdebug for another two minutes, and the probe alone did not clear leftovers before

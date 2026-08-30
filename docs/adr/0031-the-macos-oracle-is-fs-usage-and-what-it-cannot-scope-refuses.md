@@ -57,11 +57,32 @@ and a mutation inside that root appears whoever performed it. This is what
 `spike/fsusage/RESULTS.md` already prescribed for an adapter that wants children.
 
 The default exclusion list stays in force — `-e` removes fs_usage's own activity and
-nothing more, and a `/bin/sh` child measured zero lines under its own name. Scoping by
-path is what survives that: the same run produced seven lines naming the file the
-excluded shell wrote, carried by other processes' entries, so the mutation is in the
-account even though its author is not. A backend that filtered by pid or by process
-name would have lost it.
+nothing more, and a `/bin/sh` child measured zero lines under its own name. An earlier
+revision of this paragraph claimed the excluded shell's mutation was still "in the
+account" because other processes' lines named the file it wrote; review pointed out
+that those were read-only lines (`fseventsd`'s `lstat64`), which the reader drops, so
+the mutation itself was in nobody's account. The consequence is decision 2a below: a
+process boundary is not tolerated under this backend. Children that *are* visible are
+still caught by path scope — that is what refuses #405's shape — but tolerance rests
+on accounting for every child, and an exclusion list makes that unprovable.
+
+### 2a. A process boundary is not tolerated under this backend
+
+The strace oracle follows children (`-f`) and lets the engine tolerate a fork or spawn
+when no child touched the state. fs_usage cannot make that statement: a child that
+execs a name on its exclusion list — the shells among them — leaves no line. So a
+boundary the shim reports refuses (`boundary_without_oracle`, with the reason in the
+message) rather than being tolerated. On macOS the oracle verifies single-process runs.
+
+### 2b. A `chdir` by the subject leaves relative operands unplaceable
+
+`openat(AT_FDCWD, relative)` is placed by joining the operand to where the subject
+started; the strace reader follows `chdir` and this one does not. Once a relevant
+thread has issued `chdir`/`fchdir`, a relative operand that could change state refuses.
+A `..` anywhere in a relative operand refuses regardless — a textual join puts it where
+the string says, not where the kernel goes. Review constructed the false PASS this
+closes: `chdir("/tmp")` then a raw `openat(AT_FDCWD, "st/missed")` joined to the
+starting cwd and dropped as out of scope.
 
 The cost is a larger capture holding other processes' paths transiently. It lives in
 the work directory, is never part of a case, a report or any artifact, and is removed
@@ -128,8 +149,9 @@ path; the destination's bytes are not verified, and the account says so.
   `--allow-unverified`.
 - macOS runs that use it pay one authentication per `explore`. Runs that do not pass
   the flag are byte-identical to before.
-- The macOS oracle is narrower than the Linux one in **three** named ways, and the
-  third was found by review after this ADR first claimed two:
+- The macOS oracle is narrower than the Linux one in the ways named below. The ADR
+  first claimed two; review found the third; the second review round added boundaries
+  and `chdir` (decisions 2a and 2b) and corrected the account of the first:
   1. **Rename destinations.** `fs_usage` prints a rename's old path and never the new
      one, so a matched rename is checked at the old path and the destination's bytes
      are not verified. The account says so per run.

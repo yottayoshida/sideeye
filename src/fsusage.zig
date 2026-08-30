@@ -552,6 +552,14 @@ pub fn read(
     var out: Reading = .{ .parsed = .{ .classes = .empty, .lines = .empty, .metadata_observed = .empty } };
     var fds: FdTable = .{};
     var dup_pending: std.ArrayList(FdKey) = .empty;
+    // Set once a relevant thread issues `chdir`/`fchdir`. This reader does not follow
+    // the cwd — the strace reader does, through `initial_cwd` plus every successful
+    // chdir it sees — so from that point an `AT_FDCWD`-relative operand can no longer
+    // be placed by joining it to where the subject *started*, and refuses if it could
+    // have changed state. Review constructed the false PASS this closes: cwd `/w`,
+    // `chdir("/tmp")`, raw `openat(AT_FDCWD, "st/missed")` — really `/tmp/st/missed`,
+    // in the judged directory — joined to `/w` and dropped as out of scope.
+    var cwd_moved = false;
     var subject_tid: ?[]const u8 = null;
     // Two threads opened the trace for writing: a shimmed child beside the subject.
     // This backend follows no children (ADR 0031 §2), so it cannot say whose account
@@ -655,20 +663,33 @@ pub fn read(
         const is_relevant = relevant(ln.tid, subject, state_tids.items);
         const fd = fdOf(ln.middle);
 
-        // Complete a pending dup: the first descriptor this thread touches that the
-        // table does not know inherits the source's mapping. Done before anything else
-        // reads the table, so the line that reveals the number is itself resolved.
-        if (fd) |f| {
+        // Complete a pending dup — strictly. fs_usage prints the dup's source and never
+        // its result, so the result has to be inferred, and "the next unknown descriptor
+        // this thread touches" (the first rule) could hand a state descriptor the
+        // out-of-scope bit of an unrelated source: a thread dups its log, then writes
+        // on an inherited state descriptor, and that write is filed as the log's. The
+        // rule is now the one measured shape and nothing wider: the very next line by
+        // the same thread, an inert `fcntl` (`<SETFD>`, the CLOEXEC the shim sets on its
+        // fresh descriptor) on a number the table does not know. Anything else drops
+        // the pending dup, and the real target's later writes refuse as unresolved —
+        // the fail-closed side.
+        {
             var i: usize = 0;
-            while (i < dup_pending.items.len) : (i += 1) {
+            while (i < dup_pending.items.len) {
                 const d = dup_pending.items[i];
-                if (!std.mem.eql(u8, d.tid, ln.tid)) continue;
-                if (fds.get(.{ .tid = ln.tid, .fd = f }) != null) break; // known: not the dup
-                if (std.mem.eql(u8, d.fd, f)) break; // the source itself
-                if (fds.get(.{ .tid = ln.tid, .fd = d.fd })) |src_in_state|
-                    try fds.set(arena, .{ .tid = ln.tid, .fd = f }, src_in_state);
+                if (!std.mem.eql(u8, d.tid, ln.tid)) {
+                    i += 1;
+                    continue;
+                }
+                const is_inert_fcntl = std.mem.eql(u8, canonicalCall(ln.call), "fcntl") and fcntlIsInert(ln.middle);
+                if (fd) |f| {
+                    if (is_inert_fcntl and fds.get(.{ .tid = ln.tid, .fd = f }) == null and !std.mem.eql(u8, d.fd, f)) {
+                        if (fds.get(.{ .tid = ln.tid, .fd = d.fd })) |src_in_state|
+                            try fds.set(arena, .{ .tid = ln.tid, .fd = f }, src_in_state);
+                    }
+                }
+                // Consumed either way: the window was this one line.
                 _ = dup_pending.swapRemove(i);
-                break;
             }
         }
 
@@ -702,12 +723,14 @@ pub fn read(
             if (op.text.len != 0 and op.text[0] == '/') {
                 path = op.text;
             } else if (op.dirfd) |d| {
-                if (d == at_fdcwd) {
-                    if (cwd.len != 0) path = try joinPath(arena, cwd, op.text) else path_unresolvable = true;
-                } else if (std.mem.indexOf(u8, op.text, "..") != null) {
-                    // `..` can leave the directory the descriptor names; the table
-                    // holds a scope bit, not a path, so this cannot be placed.
+                if (std.mem.indexOf(u8, op.text, "..") != null) {
+                    // `..` can leave the directory the operand is relative to. The table
+                    // holds a scope bit, not a path, and a textual join to the cwd
+                    // would place `../st/x` wherever the string says rather than where
+                    // the kernel goes; neither can be trusted, so neither is tried.
                     path_unresolvable = true;
+                } else if (d == at_fdcwd) {
+                    if (cwd.len != 0 and !cwd_moved) path = try joinPath(arena, cwd, op.text) else path_unresolvable = true;
                 } else {
                     const key = try std.fmt.allocPrint(arena, "{d}", .{d});
                     if (fds.get(.{ .tid = ln.tid, .fd = key })) |in| dir_scope = in else path_unresolvable = true;
@@ -722,6 +745,10 @@ pub fn read(
         // `/System/Volumes/Preboot/Cryptexes/...` is longer than the display width, and
         // every process issues hundreds of them at start-up — 353 in one measured
         // capture of the subject, plus one `access`, and not a single mutating call.
+        if (is_relevant and (std.mem.eql(u8, canonicalCall(ln.call), "chdir") or std.mem.eql(u8, canonicalCall(ln.call), "fchdir") or std.mem.eql(u8, canonicalCall(ln.call), "__pthread_chdir") or std.mem.eql(u8, canonicalCall(ln.call), "__pthread_fchdir"))) {
+            cwd_moved = true;
+            continue;
+        }
         if (isReadOnlyCall(ln.call) or isDiskIo(ln.call)) continue;
         if (cls_opt == .open and !openIsWriteCapable(ln.middle)) {
             // Not an operation (ADR 0003), but a directory opened read-only is what
@@ -1147,6 +1174,68 @@ test "a relative operand with no cwd, on a call that could change state, refuses
     const r2 = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/elsewhere");
     try testing.expect(r2.defect == null);
     try testing.expectEqual(@as(usize, 0), r2.parsed.classes.items.len);
+}
+
+test "a relative operand with .. is unplaceable through AT_FDCWD too" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        "10:00:00.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:00:00.000003  openat            F=6        (_WC_T_______)  [-2]/../st/x                      0.000010   subj.111\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/tmp/work");
+    try testing.expect(r.defect != null);
+    switch (r.defect.?) {
+        .unresolvable_path => {},
+        else => return error.WrongDefect,
+    }
+}
+
+test "after the subject chdirs, a relative operand that could change state refuses" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // Review's construction: started in /tmp/work, moved to /tmp, then a raw
+    // openat(AT_FDCWD, "st/missed") — really /tmp/st/missed, inside the judged
+    // directory — which a join to the starting cwd would have placed at
+    // /tmp/work/st/missed and dropped.
+    const text =
+        "10:00:00.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:00:00.000003  chdir                                  /tmp                                    0.000010   subj.111\n" ++
+        "10:00:00.000004  openat            F=6        (_WC_T_______)  [-2]/st/missed                    0.000010   subj.111\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/tmp/work");
+    try testing.expect(r.defect != null);
+    switch (r.defect.?) {
+        .unresolvable_path => {},
+        else => return error.WrongDefect,
+    }
+}
+
+test "a dup completes only on the next line, and only onto an inert fcntl of an unknown descriptor" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // Review's construction: the subject dups a descriptor that points outside the
+    // root, then its next line is a write on an inherited descriptor nobody opened. The
+    // first rule mapped that descriptor to the out-of-scope source and dropped the
+    // write; the write must instead be the unresolved hole it is.
+    const text =
+        "10:00:00.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=4        (_W__________)  /var/log/mine                     0.000010   subj.111\n" ++
+        "10:00:00.000004  fcntl             F=4   <DUPFD>                                                0.000003   subj.111\n" ++
+        "10:00:00.000005  write             F=7   B=0x3                                                  0.000004   subj.111\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    try testing.expect(r.defect != null);
+    switch (r.defect.?) {
+        .unresolved_fd => {},
+        else => return error.WrongDefect,
+    }
 }
 
 test "a missing sentinel refuses before anything is compared" {

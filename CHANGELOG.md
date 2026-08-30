@@ -12,10 +12,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   `fs_usage`, giving `oracle_verified` the same meaning it has on Linux instead of
   leaving every PASS on `--allow-unverified` (#286, ADR 0031). Needs root, so sudo
   must already hold credentials — the run refuses rather than prompting. Narrower
-  than the strace oracle in two measured ways, both of which refuse rather than
-  agree: `fs_usage` prints only a rename's old path, and it cuts long pathnames from
-  the left, so a state directory deep enough to be cut is refused before the run.
-  Runs that do not pass the flag are unchanged.
+  than the strace oracle, and each narrowing refuses rather than agrees: a rename is
+  checked at its old path only (fs_usage prints no destination); a process boundary
+  is not tolerated, because fs_usage excludes some processes by name; a `chdir` by the
+  subject leaves relative operands unplaceable; a state directory deep enough to be
+  cut by the display width is refused before the run. Two things it cannot see and
+  says so: a process leaving the containment group, and a neighbour's descriptor into
+  the state directory opened before the capture began. Runs that do not pass the flag
+  are unchanged.
 
 ### Fixed
 

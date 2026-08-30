@@ -1918,6 +1918,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var crossed_boundary = trace.boundary != null or trace.foreign_pid_seen;
     if (crossed_boundary and !args.has_oracle)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)");
+    // The fs_usage oracle cannot account for other processes the way strace does, so a
+    // boundary the shim saw is not tolerated under it. fs_usage excludes processes by
+    // name — the man page lists Terminal, sshd and the shells, and `-e` does not lift
+    // that (measured: a `/bin/sh` child produced zero lines under its own name) — so a
+    // child that execs one of them mutates the judged directory in nobody's account.
+    // Children that are visible are still caught by path scope (#405's shape refuses
+    // `child_touched_state_dir`); what this refuses is the tolerance, not the detection.
+    if (crossed_boundary and args.oracle_fs_usage)
+        unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs");
 
     // ---- oracle comparison ---------------------------------------------------------
     // The wording matters: a PASS carrying this line is making a weaker claim than one
@@ -2086,10 +2095,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
         oracle_note = if (args.oracle_fs_usage)
             std.fmt.allocPrint(
                 arena,
-                "{s}, witness fs_usage. Narrower than strace in three measured ways: a rename is checked at " ++
-                    "its old path only (fs_usage prints no destination), a process leaving the containment " ++
-                    "group is not observable under this capture's filter, and a pathname cut by the display " ++
-                    "width refuses rather than being scoped",
+                "{s}, witness fs_usage. Narrower than strace, each toward refusal: a rename is checked at " ++
+                    "its old path only (fs_usage prints no destination); a process boundary is not tolerated " ++
+                    "(fs_usage excludes some processes by name); a chdir by the subject leaves relative " ++
+                    "operands unplaceable; a pathname cut by the display width refuses. Two things it cannot " ++
+                    "see at all: a process leaving the containment group, and a neighbour's descriptor into " ++
+                    "the state directory opened before the capture began",
                 .{agreed},
             ) catch agreed
         else
