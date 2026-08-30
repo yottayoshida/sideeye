@@ -1238,6 +1238,32 @@ pub inline fn callOpenDprotectedNp(path: [*:0]const u8, flags: c_int, class: c_i
     if (is_darwin) return darwin.open_dprotected_np(path, flags, class, dpflags, mode);
     return optionalMissingInt();
 }
+// The guarded family (#299). macOS-only, like the two above: the Linux arm is the
+// missing-symbol return, which no caller reaches because nothing on Linux exports these.
+pub inline fn callGuardedOpenNp(path: [*:0]const u8, guard: *const u64, gflags: c_uint, flags: c_int, mode: c_uint) c_int {
+    if (is_darwin) return darwin.guarded_open_np(path, guard, gflags, flags, mode);
+    return optionalMissingInt();
+}
+pub inline fn callGuardedOpenDprotectedNp(path: [*:0]const u8, guard: *const u64, gflags: c_uint, flags: c_int, class: c_int, dpflags: c_int, mode: c_uint) c_int {
+    if (is_darwin) return darwin.guarded_open_dprotected_np(path, guard, gflags, flags, class, dpflags, mode);
+    return optionalMissingInt();
+}
+pub inline fn callGuardedCloseNp(fd: c_int, guard: *const u64) c_int {
+    if (is_darwin) return darwin.guarded_close_np(fd, guard);
+    return optionalMissingInt();
+}
+pub inline fn callGuardedWriteNp(fd: c_int, guard: *const u64, buf: [*]const u8, n: usize) isize {
+    if (is_darwin) return darwin.guarded_write_np(fd, guard, buf, n);
+    return optionalMissing();
+}
+pub inline fn callGuardedPwriteNp(fd: c_int, guard: *const u64, buf: [*]const u8, n: usize, off: i64) isize {
+    if (is_darwin) return darwin.guarded_pwrite_np(fd, guard, buf, n, off);
+    return optionalMissing();
+}
+pub inline fn callGuardedWritevNp(fd: c_int, guard: *const u64, iov: *const anyopaque, cnt: c_int) isize {
+    if (is_darwin) return darwin.guarded_writev_np(fd, guard, iov, cnt);
+    return optionalMissing();
+}
 pub inline fn callRename(old: [*:0]const u8, new: [*:0]const u8) c_int {
     if (is_darwin) return darwin.rename(old, new);
     const f = real.rename orelse return -1;

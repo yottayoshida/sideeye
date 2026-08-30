@@ -401,6 +401,63 @@ jobs:
       - name: Every watched write-capable export is interposed or explained (#333)
         run: python3 spike/check-macos-coverage.py shim/src/macos.zig shim/src/darwin_libc.zig
 
+      # The other direction, and a different question (#299): the step above compares
+      # libsystem_kernel's exports against a curated set, which is a claim about a list;
+      # this one compares the fs_usage oracle's classifier against the interpose table,
+      # which is a claim about two observers seeing the same operations. The Linux twin
+      # has made that promise since #256 and said in the same breath that macOS could
+      # not; ADR 0031 gave macOS the oracle this needs.
+      #
+      # The selftest runs first for the reason it does everywhere here: this check has
+      # branches only an abnormal input reaches, and mutation found four of them
+      # surviving until legs were written that make those inputs.
+      - name: The coverage check can still see its own predicates fail (#299)
+        run: python3 spike/check-fsusage-coverage.py --selftest
+
+      - name: Every call the oracle classifies is interposed or explained (#299)
+        run: python3 spike/check-fsusage-coverage.py src/fsusage.zig src/contract.zig shim/src/macos.zig
+
+      # The guarded family, end to end. Six state-changing calls SQLite reaches and the
+      # shim did not see until #299: without the interposers this operation writes two
+      # files the account never mentions, which the engine reports as
+      # `state_changed_without_ops`. Six crash points is the number the five KILL-POINT
+      # calls produce plus the baseline world, so it pins those five. It does NOT reach
+      # `guarded_close_np`: close is lifecycle, contributes no crash point, and removing
+      # its interposer leaves this leg green (measured). That one is held by
+      # check-fsusage-coverage.py instead, which refuses when the classifier names a
+      # call the interpose table does not carry.
+      #
+      # Their signatures are transcribed from XNU — no public header declares them — so
+      # this leg is also the only thing standing between a wrong arity and a shim that
+      # reads a register the caller never wrote.
+      - name: The guarded-descriptor family is recorded end to end (#299)
+        run: |
+          set -eu
+          rm -rf /tmp/ci-guarded && mkdir -p /tmp/ci-guarded/state
+          zig cc -o /tmp/ci-guarded/toy-guarded spike/toys/toy_guarded.c
+
+          # Unshimmed first: if the transcription is wrong, this fails on its own and
+          # the failure names which of the six calls came back with what errno.
+          /tmp/ci-guarded/toy-guarded /tmp/ci-guarded/plain
+
+          set +e
+          out=$(./zig-out/bin/sideeye explore \
+            --state /tmp/ci-guarded/state \
+            --operation "/tmp/ci-guarded/toy-guarded /tmp/ci-guarded/state/g" \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci-guarded/work \
+            --allow-unverified 2>&1)
+          rc=$?
+          set -e
+
+          echo "$out"
+          echo "$out" | grep -q 'state_changed_without_ops' && {
+            echo "the guarded writes went unrecorded — the interposers are not reached"
+            exit 1; }
+          echo "$out" | grep -q 'crash points 6' || {
+            echo "expected 6 crash points from the six guarded calls"; exit 1; }
+          [ "$rc" = "0" ] || { echo "expected PASS (exit 0), got $rc"; exit 1; }
+
       # The clone family is counted, the swap family refuses, and both are scope-
       # gated (#333, trace contract v12). Six legs over one toy, each asserting the
       # discriminating number rather than "a verdict was reached" — PASS is a verdict
