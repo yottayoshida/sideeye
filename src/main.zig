@@ -403,6 +403,12 @@ fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: boo
     if (state_created) _ = posix.rmdir(state_z);
 }
 
+/// The oracle clause of the synopsis lines, per platform. `--oracle-fs-usage` is refused
+/// on Linux at parse time, and spike/acceptance.sh's synopsis check holds each line to
+/// exactly the flags that mode accepts on the machine running the check — so a Linux
+/// binary must not advertise a flag its own parser turns away (CI, first run of #406).
+const oracle_synopsis: []const u8 = if (builtin.os.tag == .macos) "[--oracle <strace> | --oracle-fs-usage]" else "[--oracle <strace>]";
+
 fn usage() void {
     say(
         \\sideeye {s} (trace contract v{d})
@@ -410,9 +416,9 @@ fn usage() void {
         \\usage:
         \\  sideeye demo [--shim <lib>]
         \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>] [--twice]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] {s} [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] {s} [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] {s} [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
         \\  sideeye mcp
         \\  sideeye help
         \\  sideeye version
@@ -541,7 +547,7 @@ fn usage() void {
         \\so a target that fails partway through would be explored against a sequence it
         \\never performs; v0.1 reports UNKNOWN rather than guess.
         \\
-    , .{ version, contract.contract_version });
+    , .{ version, contract.contract_version, oracle_synopsis, oracle_synopsis, oracle_synopsis });
 }
 
 /// Read a trace, or refuse. Pairs with `answerForOversizedTrace`, which every caller
@@ -796,18 +802,17 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
 /// a refusal is recoverable where that is not.
 const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 
-/// The last `n` bytes of a file, for polling something that is being appended to.
+/// Bytes appended to a file since `from`, cut at the last newline so a half-written
+/// line is read whole next time; `end` is where the next read starts.
 ///
-/// The fs_usage capture is system-wide, and a machine doing ordinary work produced 233
-/// MB of it in one run — the Phase 0 figure of 28,000 lines in two seconds was measured
-/// on an idle machine and is not the ceiling. Reading the whole file on every poll of a
-/// ten-second handshake is hundreds of megabytes of I/O for a question about the last
-/// few lines. The sentinel this looks for is written by the engine immediately before
-/// the poll begins, so the tail is where it can be.
-///
-/// The first line of the window is dropped: a tail read lands mid-line, and half a line
-/// is not a line the grammar should be asked about.
-fn readFileTail(arena: std.mem.Allocator, path: []const u8, n: usize) ?[]const u8 {
+/// The handshake first polled a fixed 4 MiB tail. On the CI runner the system-wide
+/// capture grew fast enough that the sentinel's line left that window between two
+/// polls 100 ms apart — the measured burst rate is 200 MB/s, at which 4 MiB is 20 ms —
+/// and the fifth check of the run timed out waiting for a line that had already scrolled
+/// past. Reading what was appended, and only that, cannot miss a line.
+const Appended = struct { text: []const u8, end: u64 };
+
+fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usize) ?Appended {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
     const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
@@ -815,20 +820,22 @@ fn readFileTail(arena: std.mem.Allocator, path: []const u8, n: usize) ?[]const u
     defer _ = posix.close(fd);
     const size = posix.lseek(fd, 0, posix.SEEK_END);
     if (size < 0) return null;
-    const want: i64 = @intCast(n);
-    const from: i64 = if (size > want) size - want else 0;
-    if (posix.lseek(fd, from, 0) < 0) return null; // SEEK_SET
+    const usize_size: u64 = @intCast(size);
+    if (usize_size <= from) return .{ .text = "", .end = from };
+    if (posix.lseek(fd, @intCast(from), posix.SEEK_SET) < 0) return null;
+    const want: usize = @intCast(@min(usize_size - from, @as(u64, max)));
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
-    while (true) {
-        const got = posix.read(fd, &chunk, chunk.len);
-        if (got <= 0) break;
+    while (list.items.len < want) {
+        const room = @min(chunk.len, want - list.items.len);
+        const got = posix.read(fd, &chunk, room);
+        if (got < 0) return null; // a read error is not end of file
+        if (got == 0) break;
         list.appendSlice(arena, chunk[0..@intCast(got)]) catch return null;
     }
     const text = list.items;
-    if (from == 0) return text;
-    const nl = std.mem.indexOfScalar(u8, text, '\n') orelse return "";
-    return text[nl + 1 ..];
+    const nl = std.mem.lastIndexOfScalar(u8, text, '\n') orelse return .{ .text = "", .end = from };
+    return .{ .text = text[0 .. nl + 1], .end = from + nl + 1 };
 }
 
 /// Start `fs_usage` beside the run, or refuse with the reason.
@@ -892,20 +899,22 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     _ = posix.close(fd);
 
     var waited: u64 = 0;
+    var seen: u64 = 0; // bytes of the capture already scanned
     while (waited < 10_000) {
         // A fresh arena per poll: the capture grows while this loop runs, and reading
         // the whole of it ten times into the caller's arena keeps every copy.
         var poll_arena = std.heap.ArenaAllocator.init(gpa);
         defer poll_arena.deinit();
-        if (readFileTail(poll_arena.allocator(), capture_path, 4 * 1024 * 1024)) |text| {
+        if (readFileFrom(poll_arena.allocator(), capture_path, seen, 64 * 1024 * 1024)) |a| {
             // The reader's predicate, not a substring search. A raw search matched a
             // system daemon's line about the sentinel and let a run proceed whose
             // capture the reader could then not scope at all (measured, first
             // end-to-end run): a gate looser than the check behind it is not a gate.
-            if (fsusage.capturesPath(text, sentinel)) {
+            if (fsusage.capturesPath(a.text, sentinel)) {
                 removeFile(sentinel);
                 return pid;
             }
+            seen = a.end;
         }
         posix.sleepForMs(100);
         waited += 100;
@@ -2089,7 +2098,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // licence about the freeze, not about the checks that hold the code to it.
         const agreed = std.fmt.allocPrint(
             arena,
-            "agreed on {d} operations ({d} lines examined, {d} in scope of the judged state)",
+            // "syscall lines examined" verbatim: spike/acceptance.sh:700 extracts the
+            // count with `grep -o '[0-9]* syscall lines examined'`, and dropping the word
+            // made the oracle-agreement check read scanned=0 (CI, first run of #406).
+            "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
         oracle_note = if (args.oracle_fs_usage)

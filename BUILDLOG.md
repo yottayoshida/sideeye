@@ -159,6 +159,19 @@ account line says. Two checks were added to the acceptance run for the construct
 above (a libc-fork child under fs_usage refuses; the chdir construction refuses); they
 have not yet run against a real `fs_usage` at the time of this entry.
 
+**CI's first run of #406: checks 1 through 4 passed on the macOS 26 runner, and three
+things failed, all mine.** Two were pins in `spike/acceptance.sh` that a wording change
+broke — the oracle-agreement check extracts its count with `grep -o '[0-9]* syscall lines
+examined'` and this PR had dropped the word "syscall"; and the synopsis check holds each
+usage line to exactly the flags the parser accepts on the machine running the check, so a
+Linux binary advertising `--oracle-fs-usage` while refusing it at parse time is a drift by
+that check's definition. The wording is restored and the synopsis clause is per platform.
+The third was structural: the handshake polled a fixed 4 MiB tail of the capture every
+100 ms, and on the runner the fifth check's sentinel line had scrolled out of that window
+between polls — at the measured 200 MB/s burst rate 4 MiB is 20 ms of capture. The first
+four checks passed on timing. The handshake now reads what was appended since its last
+read, cut at the last newline, which cannot miss a line however fast the file grows.
+
 The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
 the probe's `fs_usage` never started, because the previous binary's orphan still held
 kdebug for another two minutes, and the probe alone did not clear leftovers before
