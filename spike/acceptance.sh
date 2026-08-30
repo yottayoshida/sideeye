@@ -338,7 +338,9 @@ p = d.get("processes")
 if not isinstance(p, str) or "refused" not in p or "explored world" not in p:
     sys.exit("the processes account still tells the recording story: %r" % p)
 if "observed for quiescence only" in p:
-    sys.exit("the pre-#169 tolerate wording survives in the processes account")'; then
+    sys.exit("the pre-#169 tolerate wording survives in the processes account")
+if p.startswith("single process;"):
+    sys.exit("the recording clause lost its scope: %r" % p)'; then
     echo "ok   a world-only boundary refuses under the recording-time reason (exit 2)"
 else
     echo "FAIL world-only boundary refusal: exit $rc"
@@ -1039,6 +1041,22 @@ fi
 # #94: this is the "--oracle was given, the oracle ran, and the comparison did not
 # complete" path — the evidence bit must stay false here, not only where no oracle
 # exists at all. The total rule has one true-point; this pins one of its elsewheres.
+# …and the boundary account must not turn that empty capture into an observation.
+# An account of nothing parses to zero children, and zero children read as "nobody
+# else was there" until #405's report half. Measured on the pre-change binary here:
+# `processes: single process` beside `unknown_reason: oracle_saw_nothing`.
+if python3 -c "
+import json, sys
+d = json.load(open('/tmp/acc/report.json'))
+p = d.get('processes')
+if 'single process' in p: sys.exit('an empty capture was published as an observation: %r' % p)
+if 'capture was empty' not in p: sys.exit('the account does not say the capture was empty: %r' % p)
+"; then
+    echo "ok   an empty capture is reported as an empty capture, not as a single process"
+else
+    echo "FAIL the empty-oracle boundary account"
+    fails=$((fails + 1))
+fi
 if ov_pin /tmp/acc/report.json false >/dev/null; then
     echo "ok   oracle_verified stays false (as a JSON bool) when the oracle ran but nothing was compared"
 else
@@ -4761,6 +4779,108 @@ if [ "$cwd_fails" != "0" ]; then
     fails=$((fails + cwd_fails))
     reasons="$reasons cwd"
 fi
+
+echo ""
+echo "=========== check 2ad: two witnesses that disagree are both reported (#405) ==========="
+# The shim records a boundary; strace, which follows children, sees none. Measured
+# reachable with a failed `vfork` (spike/toys/toy_vfork_fail.c): the shim's wrapper
+# records before the call, so the record survives the failure. The shipped build
+# answered `processes: single process` here — an assertion drawn from one witness's
+# silence while the other had spoken — and that is what this leg is for.
+#
+# Seen red once, on the pre-change binary built from main 62875eb and run against this
+# exact toy: PASS exit 0, crash_points 2, `processes: single process` (BUILDLOG
+# 2026-08-30). The verdict and the count are unchanged by the fix; only the account moved.
+vf_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+# The compiler the rest of the suite's toys use, with the same fallback, and its
+# stderr kept: swallowing it left "could not build" as the only thing a broken build
+# could say (review).
+( cc -O0 -o /tmp/acc/toy-vfork-fail "$ROOT/spike/toys/toy_vfork_fail.c" 2>/tmp/acc/vf-build.log ||
+  gcc -O0 -o /tmp/acc/toy-vfork-fail "$ROOT/spike/toys/toy_vfork_fail.c" 2>>/tmp/acc/vf-build.log ) || {
+    echo "FAIL could not build toy_vfork_fail"; sed 's/^/     | /' /tmp/acc/vf-build.log | head -5; vf_fails=1; }
+if [ "$vf_fails" = "0" ]; then
+    PROBE_STATE=/tmp/acc/state PROBE_OUTCOME=/tmp/acc/outcome "$SIDEEYE" explore \
+        --state /tmp/acc/state --operation /tmp/acc/toy-vfork-fail \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+        --json /tmp/acc/vfork.json > /tmp/acc/vfork.txt 2>&1
+    rc=$?
+    # The toy says which branch it took. Without this the leg passes vacuously on any
+    # machine where the vfork succeeds (root ignores RLIMIT_NPROC — measured) or where
+    # setrlimit is refused: both leave a run with no disagreement to report.
+    outcome=$(cat /tmp/acc/outcome 2>/dev/null || echo "(none)")
+    if [ "$outcome" != "vfork-failed" ]; then
+        echo "FAIL the toy did not reach the shape this leg measures: $outcome"
+        [ "$outcome" = "vfork-succeeded" ] && echo "     (RLIMIT_NPROC is ignored for root; this suite has to run unprivileged for this leg)"
+        vf_fails=$((vf_fails + 1))
+    elif [ "$rc" != "0" ]; then
+        echo "FAIL wanted PASS (exit 0), got exit $rc"
+        head -4 /tmp/acc/vfork.txt | sed 's/^/     | /'
+        vf_fails=$((vf_fails + 1))
+    else
+        python3 - <<'PYEOF' || vf_fails=$((vf_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/vfork.json"))
+p = d.get("processes")
+if not isinstance(p, str):
+    sys.exit("processes is not a string: %r" % p)
+if "single process" in p:
+    sys.exit("the account resolved a disagreement by asserting one witness: %r" % p)
+for needle in ("the shim recorded a process boundary", "strace observed no other process", "disagree"):
+    if needle not in p:
+        sys.exit("the account does not report %r: %r" % (needle, p))
+if d.get("verdict") != "PASS" or d.get("exit_code") != 0:
+    sys.exit("the verdict moved: %r/%r" % (d.get("verdict"), d.get("exit_code")))
+PYEOF
+    fi
+fi
+if [ "$vf_fails" = "0" ]; then
+    echo "ok   the shim's record and strace's silence are both reported, neither preferred"
+else
+    fails=$((fails + vf_fails))
+    reasons="$reasons vfork-disagreement"
+fi
+
+
+echo ""
+echo "=========== check 2ae: a boundary only the oracle saw is in the account (#405) ==========="
+# `clone(CLONE_THREAD)` crosses a process boundary and emits no second pid, so the child
+# count stays zero and the witness matrix would read the run as single-process. The
+# engine refuses it (`child_process_detected`, from `parsed.boundary`), and on the
+# pre-change binary the report for that refusal said `processes: single process`
+# — measured, and the red this leg exists to show.
+oe_fails=0
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle "$ROOT/spike/thread-oracle.sh" \
+    --json /tmp/acc/thread.json 2>&1)
+rc=$?
+if [ "$rc" != "2" ]; then
+    echo "FAIL wanted UNKNOWN (exit 2), got exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    oe_fails=$((oe_fails + 1))
+else
+    python3 - <<'PYEOF' || oe_fails=$((oe_fails + 1))
+import json, sys
+d = json.load(open("/tmp/acc/thread.json"))
+if d.get("unknown_reason") != "child_process_detected":
+    sys.exit("wanted child_process_detected, got %r — a refusal for another reason "
+             "would leave this leg green over a parser failure" % d.get("unknown_reason"))
+p = d.get("processes")
+if "single process" in p:
+    sys.exit("a boundary the oracle reported was published as a single process: %r" % p)
+if "crosses a process boundary" not in p:
+    sys.exit("the account does not carry the oracle's boundary: %r" % p)
+PYEOF
+fi
+if [ "$oe_fails" = "0" ]; then
+    echo "ok   a boundary only the oracle saw reaches the account"
+else
+    fails=$((fails + oe_fails))
+    reasons="$reasons oracle-only-boundary"
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
