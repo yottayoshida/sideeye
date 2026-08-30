@@ -16,6 +16,10 @@ const engine_build_options = @import("engine_build_options");
 /// artifact, so no invocation of the build can lower a released binary's cap. The shape
 /// `-Dtest-seq-gap` established, for the same reason: the shipped cap is unreachable by
 /// any fixture, and a branch nothing can reach is a branch nothing can check.
+///
+/// "No invocation of the build" was always the whole of that promise — an edit to the
+/// literal is not an invocation, and CI's sha comparison cannot see one because it lands
+/// in both arms. Since #365 the literal is held by a test at the bottom of this file.
 const trace_cap: usize = if (engine_build_options.trace_cap_override == 0)
     engine.max_trace_bytes
 else
@@ -4975,6 +4979,51 @@ test "the version in build.zig.zon and the one the CLI prints are the same strin
     const start = (std.mem.indexOf(u8, zon, needle) orelse return error.NoVersionField) + needle.len;
     const end = std.mem.indexOfScalarPos(u8, zon, start, '"') orelse return error.Unterminated;
     try std.testing.expectEqualStrings(zon[start..end], version);
+}
+
+// Three tests rather than one, because a failing assertion aborts its test and the ones
+// after it never run. Written as a single test, the mutation that breaks the recording
+// override stopped at the first line, and the record of what had been seen red was
+// written as if the whole body had fired — five assertions instead of eight. Split by
+// role, a mutation names which role it broke.
+
+test "the shipped engine options carry the shipped values (#365)" {
+    // What a released binary is built with. Until #365 the only machine holding these was
+    // the sha comparison in CI between a build with `-Dtest-trace-cap` and one without —
+    // and an edit to the literal in build.zig lands in BOTH arms of that comparison, so it
+    // stays green. What the comparison covers is the FLAG leaking in, not the value.
+    //
+    // A loud edit is caught elsewhere: at 64 bytes every acceptance leg that drives the
+    // SHIPPED binary refuses on a trace that size, and most of the suite does drive it —
+    // not all, since four apparatus binaries are driven by their own names. A quiet one
+    // is caught nowhere: 128 MiB passes acceptance (no toy trace comes near it), passes
+    // the sha step, and ships an engine whose ceiling disagrees with engine.max_trace_bytes.
+    // That quiet mutation is what these tests exist for, and it is the half that was
+    // measured; the loud half is read off spike/acceptance.sh rather than run.
+    try std.testing.expectEqual(@as(usize, 0), engine_build_options.trace_cap_override);
+    try std.testing.expectEqual(@as(usize, 0), engine_build_options.trace_cap_override_world);
+    try std.testing.expect(!engine_build_options.ancestor_probe);
+}
+
+test "the shipped trace caps fall back to the engine's constant (#365)" {
+    // The raw options are the promise; these two are the wiring that carries it to the
+    // read sites, and they fail differently. A non-zero override breaks the test above.
+    // A rewrite of the conditional at the top of this file breaks only this one.
+    // Asserting the derived values alone would be a step removed from the promise: with
+    // `trace_cap_override` set to engine.max_trace_bytes itself, the override IS present
+    // and the comparisons below still hold.
+    try std.testing.expectEqual(engine.max_trace_bytes, trace_cap);
+    try std.testing.expectEqual(engine.max_trace_bytes, trace_cap_world);
+}
+
+test "no fourth engine build option arrives unchecked (#365)" {
+    // The ratchet. Asserting three values says nothing about a FOURTH option arriving, and
+    // the promise is universal: a `-Dtest-…` added later with no assertion above would
+    // leave it false while CI stayed green. Pinning the count makes the next option fail
+    // here until someone writes its line. Same instrument as the RestoreError arity pin
+    // above and the OpClass enumeration in contract.zig.
+    const decls = @typeInfo(engine_build_options).@"struct".decls;
+    try std.testing.expectEqual(@as(usize, 3), decls.len);
 }
 
 /// The reachable boundary-evidence states, written out rather than generated as a
