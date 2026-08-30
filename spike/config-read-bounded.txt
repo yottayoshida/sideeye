@@ -1,0 +1,139 @@
+Measurements behind bounding the `--config` read.
+
+Why this file exists: this design was written once, refuted by measurement, and rewritten.
+What refuted it was numbers, not prose, so the numbers are kept. The sibling record for
+the case-path half of the same class is spike/fifo-classification-400.txt.
+
+Host A: macOS 15 (Darwin 24.3.0), arm64, zig 0.16.0. Measured by the author.
+Host B: Linux 6.12.76-linuxkit aarch64, glibc 2.41, ephemeral container. Measured by an
+        external reviewer; not reproduced by the author. Every row says which host it is
+        from, because the two disagree in one place that matters (section 6).
+
+
+== 1. The filed behaviour, before any change (Host A) ==
+
+`sideeye explore --config <path>`, bounded from outside at eight seconds:
+
+    --config <FIFO, no writer>          did not return within 8s   (stalls in open)
+    --config /dev/zero                  did not return within 8s   (stalls in read)
+    --config /dev/null                  rc=3 in 0.01s              ([world] state is required)
+    --config <regular file>             rc=2 in 0.02s              (no_shim_marker)
+
+A third way to stall turned up during review and is not in the row set above: a pipe whose
+writer has opened and sent nothing stalls in `read`, with neither a peer to wait for nor
+bytes to cap. Host B measured it at over three seconds against the rejected design; the
+author measured the shipped build's answer to it in section 4.
+
+
+== 2. The premise the whole design rests on ==
+
+Everything here depends on one thing: that a descriptor which returned EOF still delivers
+bytes if a writer shows up later. If FIFOs latched EOF, a config written late could never
+be read at all.
+
+Host A, named FIFO, writer opens and writes at t=1.0:
+
+    reads          : 83
+    first EOF at   : 0.000s
+    elapsed        : 1.011s
+    bytes received : 25
+    byte-identical : True
+
+Host B, same shape: 78 reads, data at t~1.0, contents byte-identical.
+
+Neither latches.
+
+
+== 3. Why the first design was rejected ==
+
+The first design opened non-blocking and cleared the flag immediately with
+`fcntl(F_SETFL)`, on the reasoning that this buys a non-blocking open and a blocking read.
+Host B, implementing exactly that loop:
+
+    FIFO, no writer ever                        EOF, immediately
+    FIFO, writer open, no data                  BLOCKED past 3.0s
+    FIFO, writer opens and writes at t=1.0      returned EMPTY at t=0.001
+    same input, plain blocking open (shipped)   open returned at t=1.01, config read
+    /dev/zero                                   64 bytes, endlessly
+
+Rows three and four next to each other are the finding. "Wait for a peer" is a property of
+the open; clearing the flag afterwards does not restore it. The design would have broken a
+usage that works today, and left row two unbounded.
+
+The first design rejected a time bound with "a byte ceiling is enough". Row two has no
+bytes. Only time bounds it.
+
+
+== 4. What the shipped design does (Host A) ==
+
+Engine deadline 2s, byte ceiling 1 MiB:
+
+    --config <FIFO, no writer>              rc=3   2.20s   --config could not be read
+    --config <FIFO, writer open, no data>   rc=3   2.01s   --config could not be read
+    --config <FIFO, writer writes at t=1>   rc=2   1.02s   UNKNOWN (config was read)
+    --config /dev/zero                      rc=3   0.00s   --config could not be read
+    --config /dev/null                      rc=3   0.00s   [world] state is required
+    --config <empty regular file>           rc=3   0.00s   [world] state is required
+    --config <regular file>                 rc=2   0.02s   no_shim_marker
+
+Row four ends in milliseconds because the byte ceiling fires before the deadline. Rows five
+and six do because the retry asks whether the descriptor is a FIFO, not whether the read
+came back empty. Deciding that with the existing `Kind` classifier would have sent
+`/dev/null` to the full deadline with the other message: `Kind` has no FIFO member, so a
+FIFO and a character device both answer `.other`.
+
+
+== 5. Mutation ==
+
+Host A. Baseline: `zig build test` green, `spike/case-path-deadline.py` PASS with 16 `ok`
+lines.
+
+    disable `bounded` (drops both the flag and the deadline)
+        -> harness: "FIFO, no writer -> deadline: did not return within 5.0s"
+                    "FIFO, writer idle -> deadline: did not return within 5.0s"   KILLED
+
+    disable `isFifoFd` (drops the EOF arm of the retry)
+        -> harness: "the config was read as EMPTY ... [world] state is required"
+                    the late-writer leg fails as well                             KILLED
+
+    neuter the deadline (constant raised to an hour)
+        -> harness: the same two legs exceed the harness deadline                 KILLED
+
+    give EAGAIN the wrong value (posix.EAGAIN -> posix.ENOENT)
+        -> harness: "FIFO, writer idle -> deadline (rc=3, 0.02s)"
+                    want ... at least 1.5s                                        KILLED
+
+The last one took two attempts, and the first attempt is the more useful record. Deleting
+the comparison outright — rather than corrupting the value — leaves "bounded" retrying on
+every error, so the idle-writer leg still ends at the deadline with the same message and
+the same exit code. Asserting the outcome cannot separate those two programs; asserting a
+lower bound on elapsed time can. External review had named this mechanism as the one most
+likely to ship green and wrong, and it was.
+
+That same leg has a second failure mode, found by review after the mutation table above
+was written: its writer thread opens the FIFO non-blocking, which fails ENXIO if sideeye
+has not opened its end yet. When that happens the thread dies, the leg degenerates into a
+copy of the no-writer leg — still waiting the full deadline, still satisfying the lower
+bound — and **the wrong-value mutant passes**. The leg now retries the attach and fails
+loudly if it never succeeds.
+
+The deadline mutation also produced a hollow result first: deleting the check leaves
+`deadline_at` unused, the build fails, and what gets measured is the previous binary.
+Raising the constant instead keeps the build honest.
+
+
+== 6. Not measured ==
+
+- **x86_64 Linux.** Host B is aarch64; CI runs ubuntu-latest on x86_64. The Linux branch
+  of `isFifoFd` cross-compiles clean, and CI runs the harness, but no author-run exists.
+- **Unix sockets as `--config`.** Only FIFOs and character devices were measured.
+- **The EINTR retry.** No signal could be arranged that interrupts the read.
+- **`statx` returning ENOSYS** (kernels before 4.11), where `isFifoFd` answers false and a
+  late config would be read as empty.
+
+One difference between the hosts is load-bearing and *is* measured: on macOS, opening
+`/dev/stdin` or `/dev/fd/N` over a pipe with `O_RDONLY|O_NONBLOCK` still blocks (Host A,
+past two seconds) because the kernel hands back a duplicate of the existing description
+and the fresh flag never reaches the pipe. On Linux the same path gets its own description
+and returns EAGAIN (Host B). The deadline cannot fire where the flag did not take, so that
+usage is outside the promise and the promise says so.

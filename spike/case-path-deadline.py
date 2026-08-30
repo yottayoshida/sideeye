@@ -7,23 +7,32 @@ CI carry no `timeout-minutes`, so a regression would hold a runner for the GitHu
 default of six hours instead of failing. The deadline has to live outside the process
 it is measuring.
 
-Three legs. The case leg asserts both halves of the fix, the `--config` leg asserts that
-the first half is not applied where it does not belong, and the control keeps the case
-leg from passing vacuously:
+Four groups. Two paths read caller-named files and they are bounded differently, because
+what they are allowed to refuse differs:
 
-  case path is a FIFO
+  case path is a FIFO                       -- refuse by kind (#400)
     1. the run returns inside the deadline  <- O_NONBLOCK on the open
     2. it exits 3 (SETUP ERROR)
     3. it says the case could not be READ   <- the descriptor is classified first
-  --config on a FIFO whose writer is late
-    4. the config is not declared unreadable
-    5. the config's contents arrive         <- the flag is NOT on this open
-    6. the run gets past setup
+    4. and NOT that it could not be parsed  <- the empty-file path is not taken
+  --config on a FIFO whose writer is late   -- must NOT refuse by kind
+    5. the config is not declared unreadable
+    6. the config's contents arrive         <- the read waits and retries
+    7. the run gets past setup
   control: a regular file with invalid contents
-    7-9. exit 3, the PARSE message, not the read message
+    8-10. exit 3, the PARSE message, not the read message
+  --config is bounded                       -- it waits, but not forever
+    11-16. no writer / idle writer -> refused AT the deadline (a lower bound on
+           elapsed time, not just the message: a build that stops retrying refuses
+           the same way in milliseconds); late writer -> read; /dev/zero -> stopped
+           by the byte cap, not the deadline; /dev/null and an empty regular file ->
+           answered at once, never retried
 
-Legs 4-6 are the only thing in the repository that catches passing `O_NONBLOCK`
-unconditionally: that mutation leaves `zig build test` fully green.
+Groups 5-7 and 11-16 are the only things in the repository that separate the shipped
+`--config` behaviour from two designs that were tried and rejected: passing `O_NONBLOCK`
+with nothing to handle it (which reads a late config as empty), and clearing the flag
+after the open (which does the same, and leaves an idle writer unbounded). Both leave
+`zig build test` fully green.
 
 Without (3) the run still returns and still exits 3: a FIFO with no writer answers EOF
 on the first read, the empty buffer fails to parse as JSON, and the next refusal catches
@@ -39,6 +48,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import tempfile
 
@@ -252,12 +262,176 @@ def main():
             "a readable regular file was reported as unreadable — the classification "
             "is refusing ordinary files",
         )
+
+        ok &= config_legs(binary, work, cfg_text)
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
     print()
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1
+
+
+def config_legs(binary, work, cfg_text):
+    """The `--config` read is bounded: it waits for a peer, but not forever.
+
+    Four inputs, and each one is here because it separates the shipped design from a
+    design that was tried and rejected:
+
+      - FIFO with no writer      -> the open used to wait forever
+      - FIFO, writer open, no data -> `fcntl`-clearing designs block here with no
+                                      deadline to stop them (measured, >3 s)
+      - /dev/zero                -> an unbounded read; the byte cap must fire, not the
+                                    deadline, so this one is also a timing assertion
+      - /dev/null and an empty regular file
+                                 -> must NOT be retried. A rule that retries any
+                                    zero-length read spends the whole deadline here and
+                                    ends with the wrong message. This is the pair that
+                                    pins the retry predicate to "a peer may still
+                                    arrive" rather than "no bytes came back".
+    """
+    ok = True
+
+    def probe(label, path, want_rc, want_msg, not_msg, max_s=None, min_s=None, prep=None):
+        # `min_s` is what makes the EAGAIN arm of the retry rule observable. Deleting
+        # that arm leaves "bounded" retrying on every error, so the idle-writer legs
+        # still end at the deadline with the same message and the same exit code —
+        # measured, that mutation survived a version of this leg that asserted only the
+        # outcome. What separates them is that a build which does not recognise EAGAIN
+        # gives up at once instead of waiting.
+        nonlocal ok
+        t0 = time.time()
+        if prep:
+            prep()
+        try:
+            p = subprocess.run(
+                [os.path.abspath(binary), "explore", "--config", path],
+                capture_output=True, text=True, timeout=DEADLINE,
+            )
+        except subprocess.TimeoutExpired:
+            print(f"  FAIL {label}: did not return within {DEADLINE}s")
+            ok = False
+            return
+        except OSError as e:
+            raise Apparatus(f"could not run the config probe: {e}")
+        el = time.time() - t0
+        out = (p.stdout or "") + (p.stderr or "")
+        good = p.returncode == want_rc and want_msg in out and not_msg not in out
+        if max_s is not None and el > max_s:
+            good = False
+        if min_s is not None and el < min_s:
+            good = False
+        mark = "ok " if good else "FAIL"
+        print(f"  {mark} {label} (rc={p.returncode}, {el:.2f}s)")
+        if not good:
+            print(f"       want rc={want_rc}, {want_msg!r} present, {not_msg!r} absent"
+                  + (f", under {max_s}s" if max_s is not None else "")
+                  + (f", at least {min_s}s" if min_s is not None else ""))
+            print(f"       got: {out.strip()[:160]}")
+            ok = False
+
+    print("\n--config is bounded:")
+
+    f1 = os.path.join(work, "cfg-nowriter.fifo")
+    os.mkfifo(f1)
+    # min_s: it has to WAIT, not just refuse. A build that stops retrying answers the
+    # same way in milliseconds, which is a different program with the same output.
+    probe("FIFO, no writer -> deadline", f1, 3, READ_MSG, "state is required", min_s=1.5)
+
+    f2 = os.path.join(work, "cfg-idle.fifo")
+    os.mkfifo(f2)
+    held = {}
+
+    def open_writer():
+        # Held open for the run's duration, writing nothing. Retried, because a
+        # non-blocking write-open of a FIFO with no reader fails ENXIO and sideeye may
+        # not have opened its end yet.
+        #
+        # **The retry is not politeness; without it this leg silently stops measuring
+        # what it is for.** A writer that never attaches leaves the input identical to
+        # the no-writer leg above: the run still waits the full deadline, still satisfies
+        # `min_s`, and **a build that does not recognise EAGAIN passes** — measured, by
+        # forcing the failure and running the wrong-errno mutant against it. The
+        # assertion after the probe is what turns that from a green run into a red one.
+        for _ in range(300):
+            try:
+                held["fd"] = os.open(f2, os.O_WRONLY | os.O_NONBLOCK)
+                return
+            except OSError:
+                time.sleep(0.01)
+
+    threading.Thread(target=open_writer, daemon=True).start()
+    before = ok
+    probe("FIFO, writer idle -> deadline", f2, 3, READ_MSG, "state is required", min_s=1.5)
+    if "fd" in held:
+        os.close(held["fd"])
+    elif before == ok:
+        # Only when the probe itself passed. A build that refuses for an unrelated
+        # reason returns before the writer can attach, and blaming EAGAIN there would
+        # send triage at the wrong mutation — measured with an isFifoFd-disabled build,
+        # which refuses in 0.01 s and is already red from the probe above.
+        print("  FAIL FIFO, writer idle: the writer never attached, so this leg measured "
+              "the no-writer case instead — and that version of it passes a build "
+              "that ignores EAGAIN")
+        ok = False
+    else:
+        print("  note FIFO, writer idle: the writer never attached, but the probe was "
+              "already failing — this leg's own predicate is unmeasured either way")
+
+    f3 = os.path.join(work, "cfg-late.fifo")
+    os.mkfifo(f3)
+
+    wrote = {}
+
+    def late_writer():
+        # Non-blocking on the write end, for the reason the case leg above gives: against
+        # a build that refuses fast there is no reader left, and a blocking open would
+        # wait for one that is never coming. `daemon=True` would hide that rather than
+        # prevent it.
+        time.sleep(WRITER_DELAY)
+        for _ in range(100):
+            try:
+                fd = os.open(f3, os.O_WRONLY | os.O_NONBLOCK)
+            except OSError:
+                time.sleep(0.01)
+                continue
+            os.write(fd, cfg_text.encode())
+            os.close(fd)
+            wrote["ok"] = True
+            return
+
+    threading.Thread(target=late_writer, daemon=True).start()
+    # Past the config stage. What is asserted is that a *verdict-side* refusal was
+    # reached — exit 2, UNKNOWN — not which one. An earlier version named
+    # `no_shim_marker`, which is what this host happens to answer when the shim is not
+    # injected; CI answers `completeness_not_verified` on the same input because the
+    # shim works there and no oracle was given. Both mean the config was read; only one
+    # of them is a property of the machine.
+    before = ok
+    probe("FIFO, writer late -> config read", f3, 2, "UNKNOWN", READ_MSG)
+    if "ok" not in wrote and before == ok:
+        # Same guard as the idle leg: a writer that gave up silently turns an apparatus
+        # failure into what reads as a defect in the binary. Only reported when the probe
+        # itself passed, so a build that is red for its own reason is not mislabelled.
+        print("  FAIL FIFO, writer late: the writer never wrote, so this leg did not "
+              "measure whether a late config is picked up")
+        ok = False
+
+    # The cap, not the deadline: a run that took ~2 s here would mean the deadline
+    # fired, i.e. the byte ceiling never did.
+    probe("/dev/zero -> cap, not deadline", "/dev/zero", 3, READ_MSG,
+          "state is required", max_s=1.0)
+
+    # The two that must not be retried. A margin well under the engine's deadline: if
+    # either is being retried, this takes ~2 s and the message changes as well.
+    probe("/dev/null -> empty, not retried", "/dev/null", 3, "state is required",
+          READ_MSG, max_s=1.0)
+    empty = os.path.join(work, "empty.toml")
+    open(empty, "w").close()
+    probe("empty regular -> empty, not retried", empty, 3, "state is required",
+          READ_MSG, max_s=1.0)
+
+    return ok
 
 
 if __name__ == "__main__":

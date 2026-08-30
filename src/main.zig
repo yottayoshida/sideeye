@@ -1009,6 +1009,23 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
 /// a refusal is recoverable where that is not.
 const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 
+/// How long `--config` may wait for a peer that has not written yet before refusing.
+///
+/// **This number is pinned between three constants in another file and nothing checks
+/// the coupling**, so the inequality is written here rather than left to be rediscovered.
+/// `spike/case-path-deadline.py` carries `WRITER_DELAY = 1.0` (how late its writer
+/// opens), `min_s = 1.5` on the two deadline legs (the floor they assert this wait
+/// against), and `DEADLINE = 5.0` (when it kills sideeye). **`min_s` is the binding
+/// lower bound, not `WRITER_DELAY`** — measured: 1200 ms satisfies "above 1.0, below
+/// 5.0" and still fails both legs at 1.21 s. So: `min_s < this << DEADLINE`. Move any of
+/// the three and this has to move with them.
+const config_read_deadline_ms: u64 = 2000;
+
+/// Between attempts while a peer might still arrive. Small enough to pick up a config
+/// that lands mid-wait, large enough not to spin — the measured late-writer case takes
+/// around eighty reads to cover a second on both platforms.
+const config_read_poll_ms: u64 = 10;
+
 /// Bytes appended to a file since `from`, cut at the last newline so a half-written
 /// line is read whole next time; `end` is where the next read starts.
 ///
@@ -1526,7 +1543,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             args.cwd != null or args.config != null)
             setupError("replay takes its define from the case file; the define-surface flags and --config do not apply");
         const rarena = arena_state.allocator();
-        const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, true) orelse setupError(
+        const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, .{ .require_regular = true }) orelse setupError(
             std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
         );
         const parsed = std.json.parseFromSlice(ReplayCase, rarena, ctext, .{}) catch
@@ -1600,7 +1617,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null)
             setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
-        const text = readFileAlloc(arena, cfg_path) orelse setupError(
+        // Bounded, and the only reader that is. The path is operator-named and may
+        // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
+        // cannot be refused by kind the way a case path is (#400), and it cannot be
+        // waited on forever either. A ceiling comes with it: the largest config in this
+        // repository is 4.5 KiB, and an unbounded read was one of the three ways this
+        // call used not to return (`/dev/zero`; the other two were the open waiting for
+        // a peer, and a read waiting for one that had opened but sent nothing).
+        const text = readFileAllocCapped(arena, cfg_path, 1024 * 1024, .{ .bounded = true }) orelse setupError(
             std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
         );
         switch (config.parse(arena, text) catch setupError("out of memory")) {
@@ -2228,7 +2252,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // file itself cannot be read, and until #363's adjudication its message
         // claimed the other condition.
         const text = if (args.oracle_fs_usage)
-            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, false) orelse
+            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{}) orelse
                 unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read")
         else
             readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
@@ -2596,7 +2620,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // dropped — an empty line carries nothing harvestable and a bare marker is
         // noise. A capture that cannot be read back is said out loud rather than
         // silently swallowed.
-        if (readFileAllocCapped(arena, fal_out, 1024 * 1024, false)) |fal_text| {
+        if (readFileAllocCapped(arena, fal_out, 1024 * 1024, .{})) |fal_text| {
             var lines = std.mem.splitScalar(u8, fal_text, '\n');
             while (lines.next()) |line| {
                 if (line.len == 0) continue;
@@ -4264,7 +4288,7 @@ test "the readers ask what the descriptor is before reading it, at every call si
     // What kills it is `spike/case-path-deadline.py`, from outside the process, where
     // the refusal *message* separates "could not be read" from "could not be parsed".
     // The line stays because it pins the behaviour; it is not evidence of wiring.
-    try std.testing.expect(readFileAllocCapped(arena, fifo_path, 1024 * 1024, true) == null);
+    try std.testing.expect(readFileAllocCapped(arena, fifo_path, 1024 * 1024, .{ .require_regular = true }) == null);
     try std.testing.expect(readFileFrom(arena, fifo_path, 0, 64 * 1024) == null);
     try std.testing.expectError(error.Unreadable, observeCapture(fifo_path, null));
 
@@ -4300,13 +4324,13 @@ test "the readers ask what the descriptor is before reading it, at every call si
     _ = posix.close(ofd);
     const reg_path = std.mem.span(@as([*:0]const u8, reg_z.ptr));
 
-    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, true) != null);
+    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, .{ .require_regular = true }) != null);
     try std.testing.expect(readFileFrom(arena, reg_path, 0, 64 * 1024) != null);
     _ = try observeCapture(reg_path, null);
 
     // And the case read still accepts an ordinary file when it is not asked to classify,
     // which is the half `--config` depends on.
-    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, false) != null);
+    try std.testing.expect(readFileAllocCapped(arena, reg_path, 1024 * 1024, .{}) != null);
 
     _ = posix.unlink(fifo_z.ptr);
     _ = posix.unlink(reg_z.ptr);
@@ -4402,69 +4426,136 @@ test "a shrink observed inside one sample is its own evidence, not the next comp
     try std.testing.expect(!during.fingerprintEql(honest));
 }
 
-/// `readFileAlloc` with a ceiling: a case file is caller-supplied input, and reading
-/// until EOF from something that never ends (a device, a fifo) would hang the run
-/// before any refusal could fire. Over the cap answers like unreadable.
+/// What the caller wants of the read, beyond the byte ceiling.
+///
+/// A struct rather than two positional booleans: `(…, true, false)` and `(…, false,
+/// true)` are both well-typed and mean opposite things, Zig has no named arguments, and
+/// this codebase already carries an incident about an argument arriving silently in the
+/// wrong place (`open`'s variadic `mode`, wrong on one architecture and plausible on the
+/// other).
+const ReadMode = struct {
+    /// Refuse a descriptor that is not a regular file, before reading a byte (#400).
+    require_regular: bool = false,
+    /// Bound the read in wall-clock time as well as in bytes: keep asking while a peer
+    /// might still arrive, and refuse at the deadline rather than waiting forever.
+    bounded: bool = false,
+};
+
+/// `readFileAlloc` with a ceiling: a caller-named file is input, and reading until EOF
+/// from something that never ends (a device, a fifo) would hang the run before any
+/// refusal could fire. Over the cap answers like unreadable.
 ///
 /// **That sentence was written for a hazard the cap cannot reach, which is #400.** A
 /// FIFO does not hang the read the cap guards — it hangs the `open` in front of it, and
-/// the loop is never entered to be capped. So the open takes `O_NONBLOCK`. That alone
-/// then buys a second defect: past the open, a FIFO with no writer returns 0 from the
-/// first read, so the file arrives *empty* and successful. Measured on macOS against a
-/// real FIFO: `open` ok, `fstat` S_IFIFO, `lseek` ESPIPE, `read` n=0 with errno
-/// untouched. Hence the descriptor is classified before anything is read.
+/// the loop is never entered to be capped. So the open takes `O_NONBLOCK` where either
+/// mode asks for it. That alone then buys a second defect: past the open, a FIFO with no
+/// writer returns 0 from the first read, so the file arrives *empty* and successful.
+/// Measured on macOS against a real FIFO: `open` ok, `fstat` S_IFIFO, `lseek` ESPIPE,
+/// `read` n=0 with errno untouched.
 ///
-/// `require_regular` switches **both** halves — the flag and the classification — and it
-/// is the caller's to decide, because the callers differ in who names the path and in
-/// what the answer may be. The case file is named by whoever runs `replay`, and a case
-/// file is an ordinary file or it is not a case file. The capture and the falsify gate's
-/// output are made by this process or its child inside the work directory, so demanding
-/// regularity of them would refuse nothing that happens. `--config` is the one that
-/// decides the coupling: it is operator-named, it is *not* in the work directory, and it
-/// is legitimately not a regular file — `--config /dev/stdin` and a process substitution
-/// both work today. Passing the flag there without the classification is what makes the
-/// pair inseparable: the read below calls every negative return unreadable, so a
-/// non-blocking read of a pipe whose writer has not written yet refuses a config that
-/// would have arrived a moment later.
+/// The two `ReadMode` halves are the caller's to choose, because the callers differ in
+/// who names the path and in what may be refused.
+///
+/// **`require_regular`** is the case read's. A case file is named by whoever runs
+/// `replay`, and it is an ordinary file or it is not a case file — so a descriptor that
+/// is anything else is refused before a byte is read.
+///
+/// **`bounded`** is `--config`'s, and it exists because that path cannot take the other
+/// half. `--config` is operator-named and may legitimately be a pipe (`--config
+/// /dev/stdin`, a process substitution), so refusing by kind would break spellings that
+/// work today. What it can do is refuse to wait forever: keep asking while a peer might
+/// still arrive, and stop at a deadline. Three inputs made that necessary, and each one
+/// used to be a run with no exit code — a FIFO with no writer (the open), a pipe whose
+/// writer opened and sent nothing (the read), and `/dev/zero` (a read that never ends).
+///
+/// **What `bounded` costs.** The deadline is absolute, not idle-based: a producer slower
+/// than it, or a config that streams across it, is refused with the partial read
+/// discarded. And a pipe whose writer opened, wrote nothing and closed is indisputably
+/// *empty*, but reads exactly like one whose writer has not arrived — POSIX offers no
+/// way to tell them apart — so it waits out the deadline and is reported unreadable
+/// rather than empty. Both are measured and disclosed in the CHANGELOG.
+///
+/// The two captures ask for neither. They are written by this process or its child
+/// inside the work directory: demanding regularity would refuse nothing that happens,
+/// and a deadline would bound something the run already bounds.
 fn readFileAllocCapped(
     arena: std.mem.Allocator,
     path: []const u8,
     cap: usize,
-    require_regular: bool,
+    mode: ReadMode,
 ) ?[]const u8 {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
-    // The flag travels with the classification, and only with it. `O_NONBLOCK` exists
-    // here to hold the open open long enough for `kindOfFd` to be asked; where nothing
-    // is going to ask, it buys nothing and takes something — the read below treats every
-    // negative return as unreadable, so a non-blocking read of a pipe whose writer has
-    // not written yet fails instead of waiting. Measured against the version of this
-    // change that passed the flag unconditionally: `{ sleep 1; cat sideeye.toml; } |
-    // sideeye explore --config /dev/stdin` went from reading the config to
-    // `--config could not be read`, an exit 2 turning into an exit 3 on an unchanged
-    // command line, depending only on which of the two processes got there first.
-    const flags: c_int = if (require_regular)
+    // Both modes need the open to return, for different reasons: classification has to
+    // get a descriptor before it can ask what it is, and the bounded read needs `EAGAIN`
+    // where a blocking read would sit somewhere the deadline cannot see. Plain readers
+    // keep the blocking open they had — the flag is not free, and a non-blocking read of
+    // a pipe whose writer has not written yet fails where waiting would have succeeded.
+    const flags: c_int = if (mode.require_regular or mode.bounded)
         posix.O_RDONLY | posix.O_NONBLOCK
     else
         posix.O_RDONLY;
     const fd = posix.open(z.ptr, flags, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
-    if (require_regular) {
+    if (mode.require_regular) {
         // Asked of the descriptor rather than of the name. A name classified before the
         // open can change kind before the read, and the probe that classified names by
         // opening them is what #5 retired — for hanging on exactly this input.
         const kind = posix.kindOfFd(fd) catch return null;
         if (kind != .file) return null;
     }
+    // Asked once. The answer cannot change for an open descriptor, and asking per read
+    // would cost an fstat on every empty pass — around eighty of them in the measured
+    // late-writer case.
+    const peer_may_arrive = mode.bounded and posix.isFifoFd(fd);
+    const deadline_at: u64 = if (mode.bounded) posix.monotonicMs() + config_read_deadline_ms else 0;
+
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
+    var eintr_left: u32 = 8;
     while (true) {
         const n = posix.read(fd, &chunk, chunk.len);
-        if (n < 0) return null;
-        if (n == 0) break;
-        list.appendSlice(arena, chunk[0..@intCast(n)]) catch return null;
-        if (list.items.len > cap) return null;
+        if (n > 0) {
+            list.appendSlice(arena, chunk[0..@intCast(n)]) catch return null;
+            if (list.items.len > cap) return null;
+            continue;
+        }
+
+        // Everything past here is a pass that produced no bytes, and the deadline is
+        // consulted **only** here. A 300 KiB regular file finishes in six reads without
+        // touching this branch, so a slow disk cannot spend the budget — which is the
+        // false positive that made an earlier draft reject a time bound outright.
+        if (n == 0) {
+            // End of file — unless a peer might still show up. A FIFO with no writer
+            // answers 0 exactly as an empty regular file does, and the only difference
+            // is whether waiting could change the answer. `/dev/null` is not a FIFO, so
+            // it takes this break and stays as fast as it is today.
+            if (!peer_may_arrive or list.items.len != 0) break;
+        } else {
+            const e = std.c._errno().*;
+            if (e == posix.EINTR) {
+                // The repo's shape for this: an EINTR-only bounded retry, counted by the
+                // loop rather than by hand (`posix.zig`'s wait). It applies to every
+                // mode, and it is the plain readers — the ones without the flag, whose
+                // read *does* block — that can actually reach it; for them this changes
+                // a first-interruption `null` into eight retries. Unreachable in
+                // practice on all of them today (no handler is installed anywhere), and
+                // folding an interruption into "unreadable" would be a wrong answer
+                // rather than a slow one.
+                if (eintr_left == 0) return null;
+                eintr_left -= 1;
+                continue;
+            }
+            if (!(mode.bounded and e == posix.EAGAIN)) return null;
+        }
+
+        // Only `bounded` reaches here: the `n == 0` arm above needs `peer_may_arrive`
+        // and the `n < 0` arm needs `mode.bounded` explicitly. Reading the clock
+        // unconditionally rather than re-testing the mode keeps that from reading as a
+        // case someone still has to think about.
+        if (posix.monotonicMs() >= deadline_at) return null;
+        posix.sleepForMs(config_read_poll_ms);
     }
     return list.items;
 }
@@ -4473,7 +4564,7 @@ fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     // A read error is not end of file (the shared loop returns null for it): treating
     // them alike once turned a truncated oracle file into a complete one, and the
     // comparison that followed was against however much happened to arrive.
-    return readFileAllocCapped(arena, path, std.math.maxInt(usize), false);
+    return readFileAllocCapped(arena, path, std.math.maxInt(usize), .{});
 }
 
 /// A define command as a bare JSON value, mirroring `config.Command.jsonParse`:
