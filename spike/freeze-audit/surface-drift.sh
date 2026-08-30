@@ -246,7 +246,8 @@ else
     # than as a shorter clean list.
     rows=$(grep -cv '^#\|^clause_id\|^$' "$clause_file" || true)
     walked=0
-    anchor_bad=0
+    anchor_gone=0
+    bad_row=0
     unpinned_n=0
     partial_n=0
     while IFS="$(printf '\t')" read -r cid csurface cclause cheld cby cgap; do
@@ -264,11 +265,11 @@ else
             _head=${cby#*::}
             if [ ! -f "$ROOT/$_suite" ]; then
                 note "  ANCHOR GONE  $cid names $_suite, which does not exist"
-                anchor_bad=$((anchor_bad + 1))
+                anchor_gone=$((anchor_gone + 1))
             elif ! grep -qF -- "$_head" "$ROOT/$_suite"; then
                 note "  ANCHOR GONE  $cid names a heading no longer in $_suite:"
                 note "               $_head"
-                anchor_bad=$((anchor_bad + 1))
+                anchor_gone=$((anchor_gone + 1))
             fi
         fi
 
@@ -278,17 +279,23 @@ else
         # `pinned` with `by` set to `-`, drops the row from the residue and skips
         # the anchor test, turning "nobody holds this" into "a check holds this"
         # with no output at all. Measured in review, one token per mutation.
+        # One row can trip both tests at once (`Unpinned` is an unrecognised value AND
+        # compares unequal to `unpinned`, so a row with by=- also reads as a held row
+        # naming no check). The counter is per ROW because the summary line says
+        # "row(s)": counting findings there made one typo report as two rows.
+        _row_bad=0
         case "$cheld" in
             pinned|partial|unpinned) ;;
             *)
                 note "  BAD held  $cid has held=\"$cheld\", which is not pinned/partial/unpinned"
-                anchor_bad=$((anchor_bad + 1))
+                _row_bad=1
                 ;;
         esac
         if [ "$cheld" != "unpinned" ] && [ "$cby" = "-" ]; then
             note "  BAD by    $cid is $cheld but names no check"
-            anchor_bad=$((anchor_bad + 1))
+            _row_bad=1
         fi
+        [ "$_row_bad" = "1" ] && bad_row=$((bad_row + 1))
 
         case "$cheld" in
             unpinned)
@@ -310,11 +317,24 @@ else
         note "FAIL: read $walked clause row(s) but the file holds $rows — the read is partial"
         fails=$((fails + 1))
     fi
-    if [ "$anchor_bad" -gt 0 ]; then
-        note "FAIL: $anchor_bad row(s) name a check heading that is no longer there"
+    # Two counters, not one. They were one, and the summary named only the anchor
+    # case, so a `held` typo was reported as "a check heading is no longer there" —
+    # a diagnostic pointing at acceptance.sh when the defect is in this manifest.
+    if [ "$anchor_gone" -gt 0 ]; then
+        note "FAIL: $anchor_gone row(s) name a check heading that is no longer there"
         fails=$((fails + 1))
     fi
-    if [ "$unpinned_n" = "0" ] && [ "$partial_n" = "0" ]; then
+    if [ "$bad_row" -gt 0 ]; then
+        note "FAIL: $bad_row malformed row(s) in spike/freeze-audit/clause-checks.tsv — held is not pinned/partial/unpinned, or a held row names no check"
+        fails=$((fails + 1))
+    fi
+    # The retire line is the strongest claim this script makes: it says a whole rung
+    # of ADR 0028 can be deleted. A malformed row increments neither residue counter,
+    # so on a failing run "the residue is empty" would mean "the loop could not
+    # classify these rows", which is the opposite of what the sentence says. Every
+    # failure above suppresses it.
+    if [ "$unpinned_n" = "0" ] && [ "$partial_n" = "0" ] \
+        && [ "$anchor_gone" = "0" ] && [ "$bad_row" = "0" ] && [ "$walked" = "$rows" ]; then
         note "  residue is empty: every clause is pinned by a check."
         note "  ADR 0028's third rung has nothing left to report and can be retired (#369)."
     else
