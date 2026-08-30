@@ -288,12 +288,40 @@ amendment constrained the change rather than excusing it — `0e035eb` wrote the
 sentence that binds its own closed-set addition to pre-tag, and `9f04932`
 narrowed what a verdict may return. The audit records the pattern; it does not
 allege a fault. What it does now insist on is that a sweep pin the revisions
-it read, which the gate enforces twice: it **fails** if
-`docs/contract-freeze.md` has moved since, naming both shas, and it reports
-**drift** (exit 3) if `src/contract.zig`'s closed set has moved since. The second
-is the one no earlier mechanism could reach — a frozen surface can move without
-any issue changing state, so every population check is blind to it by
-construction.
+it read, and the gate reports two ages against those pins: **staleness** if
+`docs/contract-freeze.md` has moved since the readings were taken, naming both
+shas, and **drift** if an enumerated frozen surface has moved since. Both exit 3
+and neither stops the legs behind it. The second is the one no earlier mechanism
+could reach — a frozen surface can move without any issue changing state, so
+every population check is blind to it by construction, and the one leg that is
+not blind has to be reached before it can say so.
+
+**Both ages are a sweep's to resolve, and only a sweep's.** A pin asserts that
+somebody read the five surfaces against that revision; moving one is a claim
+about a reading, not a data update. An author whose change moved the declaration
+or an enumerated surface has not taken that reading, so **those two reports** say
+plainly that there is nothing here for them to do. That reassurance is scoped to
+them: a leg that cannot extract a surface at all is saying the gate's own
+extraction no longer matches the code, which does want someone to look. It did not always. The declaration check used to
+`exit 1` — the code for a malformed audit — and told whoever saw the red to
+"re-read the surfaces, then update DECLARATION_PIN in the same commit": advice
+only a sweeper can honestly follow, put in front of an author who could not.
+A parallel session landing a new closed-set member read it, correctly doubted
+it, and asked whether to break the standing agreement that authors do not touch
+`spike/freeze-audit/` (#371). Exiting 1 also hid every leg behind it. `config_keys`
+gained `cwd` with no ledger row — which under (A) below is the correct state until
+the next sweep, not a defect — and **nothing reported it** for a day, because the
+leg that would have was never reached.
+
+The ledger row and the pin stay **coupled**, which was a choice with a named
+alternative. **(A)** keep them coupled and let a sweep move both: the ledger
+stays "what a sweep measured", which is what its header claims. **(B)** decouple
+them, so the gate requires the causing PR to add its row while the pin moves only
+at a sweep. (B) is the stronger invariant and the worse arrangement: it turns a
+file one sweep owns into a file every surface-touching PR must edit, and what it
+buys — the row landing earlier — the next sweep buys again anyway. **(A) is
+taken.** (B) is recorded because it is the shape to move to if
+`spike/freeze-audit/` ever stops being sweep-owned.
 
 ## Every open issue, classified
 

@@ -81,6 +81,17 @@ failure: the sweep was correct when taken and is now out of date. The first vers
 of that leg compared the window's base against `HEAD` and so would have exited 1
 the moment the next member landed, reporting a stale audit as a broken one.
 
+> **Superseded in part, 2026-08-30 (#371):** the paragraph above no longer describes
+> the gate. The two pins no longer fail differently — a moved declaration is
+> **staleness**, reported at the end beside drift, and both exit 3. "Invalid rather
+> than stale" was the reading that made it exit 1, and exiting there stopped every
+> leg behind it: `main` carried an unrecorded frozen-surface movement (`config_keys`
+> gained `cwd`, #395) from 2026-08-29 with nothing reporting it, because the leg that
+> would have was never reached. The message that came with exit 1 also told whoever
+> saw the red to move the pin, which only a sweep can honestly do. What survives here
+> unchanged is the reasoning in "Three costs" below: the declaration pin is a
+> maintenance obligation, and discharging it is a sweep's job. Exit 3 is still red.
+
 This is also the only mechanism in the audit that can see a frozen surface move
 **without any issue changing state**. `--live` asks the tracker about issues, so it
 is blind to that by construction, and the page had described the gap rather than

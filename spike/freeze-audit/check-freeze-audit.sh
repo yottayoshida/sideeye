@@ -152,16 +152,27 @@ if [ "${1-}" = "--live" ]; then
 fi
 
 # --- leg 1: the yardstick this sweep read ------------------------------------
+# RECORDED, NOT FATAL. A moved declaration is this audit noticing its own age, which
+# is what exit 3 is for — the same code population drift and surface drift already
+# use. Nothing is malformed. And nothing downstream depends on it: `DECLARATION`
+# is read in leg 1 and reported at the end, and by no leg in between, so legs
+# 2-8 measure exactly what they would have measured either way. (`DECLARATION`
+# occurs at its definition, at the pin, in this comment, in the check below, and in
+# the report at the end — no leg reads it. `surface-drift.sh` does read it, and the
+# gate never invokes that script.)
+#
+# It used to `exit 1` here, which had two costs, both paid. The exit code said
+# "malformed, and whoever is looking must act" to a reader who, if they arrived by
+# moving the declaration, could not act — moving the pin asserts that somebody read
+# the five surfaces against this revision, and they had not (#371). And stopping
+# here hid every leg behind it: `main` carried an unrecorded frozen-surface movement
+# (`config_keys` gained `cwd`, #395) from 2026-08-29 with nothing reporting it,
+# because the gate never reached the leg that would have.
+declaration_stale=0
 decl_now=$(git -C "$ROOT" rev-parse "HEAD:$DECLARATION" 2>/dev/null) \
     || { echo "FAIL: cannot read $DECLARATION at HEAD"; exit 1; }
 if [ "$decl_now" != "$DECLARATION_PIN" ]; then
-    echo "FAIL: $DECLARATION has moved since this sweep read it"
-    echo "  pinned: $DECLARATION_PIN"
-    echo "  HEAD:   $decl_now"
-    echo "  The declaration moved three times inside the window this sweep audits, so a"
-    echo "  reading taken against another revision is a reading of another promise."
-    echo "  Re-read the surfaces, then update DECLARATION_PIN in the same commit."
-    exit 1
+    declaration_stale=1
 fi
 
 # --- leg 2: population — every snapshot issue has exactly one row ------------
@@ -485,17 +496,52 @@ resolved_count=$(grep -c . "$resolved_nums" || true)
 
 # Reported after every other leg has passed, so a stale audit never masks a
 # malformed one. Exit 3 is the same code population drift uses: the audit noticing
-# its own age, not a gate failure.
-if [ "$surface_drift" = "1" ]; then
-    echo "ok: $mcount rows ($active_count active, $resolved_count resolved) cover the $snap_count snapshot issues,"
-    echo "    and everything this sweep measured still agrees with what it recorded."
+# its own age, not a gate failure. Both ages are reported here — the declaration the
+# readings were taken against, and the surfaces themselves — because either can move
+# without the other, and a reader who is told about one should not have to run the
+# gate again to learn about the other.
+if [ "$declaration_stale" = "1" ] || [ "$surface_drift" = "1" ]; then
+    # The agreement clause is dropped under drift, where it is exactly false: a
+    # surface this sweep measured no longer agrees with what it recorded, which is
+    # what the DRIFT block two lines down says. On main this block was unreachable
+    # (leg 1 exited first), so the contradiction had never printed.
+    if [ "$surface_drift" = "1" ]; then
+        echo "ok: $mcount rows ($active_count active, $resolved_count resolved) cover the $snap_count snapshot issues."
+    else
+        echo "ok: $mcount rows ($active_count active, $resolved_count resolved) cover the $snap_count snapshot issues,"
+        echo "    and everything this sweep measured still agrees with what it recorded."
+    fi
     echo ""
-    echo "DRIFT: an enumerated frozen surface has moved since this sweep measured it."
-    cat "$TMP/drift_report"
-    echo "  No issue needs to have changed state for this to happen, which is why"
-    echo "  --live cannot see it: --live asks about issues, this asks about surfaces."
-    echo "  Re-sweep, or extend surface-changes.tsv and move the pin in the same commit."
-    echo "exit 3 — drift is not a gate failure (that is exit 1)"
+    if [ "$declaration_stale" = "1" ]; then
+        echo "STALE: $DECLARATION has moved since this sweep read it."
+        echo "  pinned: $DECLARATION_PIN"
+        echo "  HEAD:   $decl_now"
+        echo "  A reading taken against another revision is a reading of another promise, so"
+        echo "  the legality column in surface-changes.tsv describes the declaration as it"
+        echo "  stood, not as it stands. Every other leg measured what it would have"
+        echo "  measured regardless."
+        echo "  A sweep resolves this: re-read the five surfaces, then move the pin in the"
+        echo "  same commit. If you are reading this because your own change moved the"
+        echo "  declaration, there is nothing wrong with your change and nothing here for"
+        echo "  you to do. The pin asserts that somebody read the surfaces against this"
+        echo "  revision; you have not, and moving it would put your name on a reading you"
+        echo "  did not take. Leave it."
+        # Only when a DRIFT block follows; otherwise this is a stray line before the
+        # exit note.
+        if [ "$surface_drift" = "1" ]; then echo ""; fi
+    fi
+    if [ "$surface_drift" = "1" ]; then
+        echo "DRIFT: an enumerated frozen surface has moved since this sweep measured it."
+        cat "$TMP/drift_report"
+        echo "  No issue needs to have changed state for this to happen, which is why"
+        echo "  --live cannot see it: --live asks about issues, this asks about surfaces."
+        echo "  A sweep resolves this too: re-read the surfaces, record what moved in"
+        echo "  surface-changes.tsv, and move the pin in the same commit. If your own change"
+        echo "  is what moved the surface, that is not your job either — the ledger records"
+        echo "  what a sweep measured, and the pin asserts a reading you have not taken."
+        echo "  Leave both alone."
+    fi
+    echo "exit 3 — an age, not a gate failure (that is exit 1)"
     exit 3
 fi
 
