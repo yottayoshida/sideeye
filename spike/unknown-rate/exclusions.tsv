@@ -1,0 +1,23 @@
+# Trials whose apparatus failure could not be fixed, and which are therefore
+# published as excluded rows instead of being re-run (#347).
+#
+# docs/unknown-rate.md states the rule this file serves: "SETUP_ERROR is an
+# apparatus failure, not a refusal: fix the apparatus and re-run that trial; if
+# unfixable, the row is published as excluded, with the reason." The first half is
+# the default and needs no record. This file is the second half: count.py refuses
+# a generation marked complete that carries a SETUP_ERROR not listed here, so the
+# judgement "this one could not be fixed" is made once, in a commit, in front of a
+# reviewer — rather than by a sweep that drops the row and publishes the rate from
+# what remains. The report's own message says what failed; it cannot say whether
+# anyone tried to fix it.
+#
+# Every row here must also BE a SETUP_ERROR in some complete generation. A waiver
+# that outlives the trial it excused would sit here excusing nothing.
+#
+# The reason is published verbatim in the per-trial table, so it carries no pipe
+# (the markdown row would split) and is written to be read, never matched. A
+# newline cannot reach the table: read_ledger splits the file into lines, so the
+# cell is always one line. What a stray newline costs is the rest of the reason,
+# dropped in silence — the diff shows it as two rows.
+#
+# id	reason

@@ -182,6 +182,25 @@ echo "  flagged exit=$rc oracle_verified=$(field c1 oracle_verified) verdict=$(f
 [ "$rc_ctl" = "2" ] || fail "control did not refuse; the check discriminates nothing"
 [ "$rc" = "0" ] || { sed -n '1,12p' "$WORK/c1.txt"; fail "check 1: expected exit 0"; }
 [ "$(field c1 oracle_verified)" = "True" ] || fail "check 1: oracle_verified is not true"
+# The account moves with the witness (#405). Same toy, same binary, and the two runs
+# differ in the flag *and* in whether a witness read — so this pair does NOT discriminate
+# an implementation that rewords by reading the flag: it would emit these same two
+# strings. Review named that, and the discrimination lives on the Linux side instead,
+# where `spike/acceptance.sh` checks 2k and 2ae drive a witness that read an empty
+# capture and one that reported a boundary — both with the flag on, both refusing the
+# single-process wording. What this pair pins is narrower and still worth pinning: the
+# two states macOS reaches without extra apparatus say different, specific things.
+ctl_p=$(field c1ctl processes)
+flg_p=$(field c1 processes)
+[ "$ctl_p" != "$flg_p" ] || fail "check 1: the processes account did not move with the witness: $ctl_p"
+case "$ctl_p" in *"not established"*) ;; *) fail "check 1: the unwitnessed run did not say the question was unestablished: $ctl_p" ;; esac
+case "$flg_p" in *"fs_usage capture"*) ;; *) fail "check 1: the witnessed run does not name what fs_usage covered: $flg_p" ;; esac
+# fs_usage drops whole processes by name, so its silence is never the single-process
+# assertion — ADR 0031 §2a is the ruling and this is the leg that holds the code to it.
+case "$flg_p" in *"single process"*) fail "check 1: fs_usage's silence was published as an assertion: $flg_p" ;; esac
+case "$ctl_p" in *"single process"*) fail "check 1: an unwitnessed run asserted a single process: $ctl_p" ;; esac
+echo "  processes without a witness: $ctl_p"
+echo "  processes under fs_usage:    $flg_p"
 echo "  PASS"
 
 echo "=================================================================="
@@ -199,14 +218,22 @@ echo "  PASS"
 echo "=================================================================="
 echo "Check 3 — a second process nobody saw stops the run"
 echo "  predicate: exit 2 with the flag"
-echo "  control:   WITHOUT the flag the same toy reaches PASS exit 0 saying"
-echo "             'single process' — the shipped defect (#405), so this check"
-echo "             is the only thing catching it"
+echo "  control:   WITHOUT the flag the same toy still reaches PASS exit 0 with the"
+echo "             child's file in the judged directory — #405's detection half, open,"
+echo "             so this check is the only thing catching it. Its account no longer"
+echo "             says 'single process' (#405's report half, asserted below)"
 rc3ctl=$(run c3ctl rawchild_toy --allow-unverified)
 echo "  control exit=$rc3ctl verdict=$(field c3ctl verdict) processes=$(field c3ctl processes)"
 rc3=$(run c3 rawchild_toy --oracle-fs-usage)
 echo "  flagged exit=$rc3 reason=$(field c3 unknown_reason)"
 [ "$rc3ctl" = "0" ] || echo "  NOTE: control did not reproduce #405 here (exit $rc3ctl); check 3 still stands on its own"
+# #405's report half: the control still reaches PASS with a child's file in the judged
+# directory — that is the detection gap, and it is not what this asserts — but the
+# account must no longer answer a question nothing looked at. Before the fix this field
+# read exactly "single process" here.
+ctl3_p=$(field c3ctl processes)
+case "$ctl3_p" in *"single process"*) fail "check 3 control: an unwitnessed run asserted a single process: $ctl3_p" ;; esac
+case "$ctl3_p" in *"raw syscall"*) ;; *) fail "check 3 control: the account does not say what the shim cannot see: $ctl3_p" ;; esac
 [ "$rc3" = "2" ] || { sed -n '1,12p' "$WORK/c3.txt"; fail "check 3: expected exit 2"; }
 [ "$(field c3 unknown_reason)" = "child_touched_state_dir" ] || fail "check 3: expected child_touched_state_dir, got $(field c3 unknown_reason) — a refusal for another reason would leave this check green over a parser failure"
 echo "  PASS"

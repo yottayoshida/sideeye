@@ -1,0 +1,9 @@
+# Apparatus failures that could not be fixed (fixture). Same shape as the real
+# spike/unknown-rate/exclusions.tsv; see that file for the rules count.py holds.
+#
+# This fixture waives a trial that is not a SETUP_ERROR — the shape a waiver takes
+# once the apparatus it excused has been repaired and the trial re-run. The row
+# then sits here excusing nothing, still carrying an approved-looking reason.
+#
+# id	reason
+fx-toyA	the pinned image stopped building this target
