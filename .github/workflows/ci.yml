@@ -90,6 +90,26 @@ jobs:
           test -x zig-out/bin/sideeye-testtracecap-world
           test "$sha_before" = "$sha_after"
 
+      # #377's apparatus, same guard: -Dtest-trace-budget must ADD one engine with a
+      # lowered WHOLE-TRACE ceiling and leave the shipped engine byte-identical. One
+      # artifact, not two, and it names no read site — the ceiling is a property of the
+      # sum, so a leg needs two reads live at once (`preflight --twice`) rather than a
+      # chosen one of them to break.
+      #
+      # Its own invocation rather than a flag folded into the step above, for the reason
+      # the ancestor probe's is: a combined build leaves the new option unexercised. The
+      # same blind spot applies here as there — this comparison sees the flag, not the
+      # shipped value, and an edit to the literal in build.zig lands in both arms. What
+      # sees that is the unit test in src/main.zig, which asserts the option is zero and
+      # that `trace_budget_limit` falls back to engine.max_trace_bytes_total.
+      - name: Build the trace-budget apparatus, shipped engine unchanged (#377)
+        run: |
+          sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          zig build -Dtest-trace-budget
+          sha_after=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          test -x zig-out/bin/sideeye-testtracebudget
+          test "$sha_before" = "$sha_after"
+
       # The ancestor probe (#358) needs its own invocation — folding it into the step
       # above would leave the new option unexercised — and asserts a property rather than
       # a difference. Both options keep their shipped value as a separate literal in

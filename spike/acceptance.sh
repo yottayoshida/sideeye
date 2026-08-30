@@ -4318,7 +4318,14 @@ else
     fails=$((fails + 1))
 fi
 
-# The trace read's cap names itself at BOTH read sites (#324). Neither can be reached
+# The trace read's cap names itself at the recording AND world read sites (#324).
+#
+# It said "BOTH read sites" until #377 counted them: there are three, and the third —
+# `preflight --twice`'s second observation — shares `trace_cap` with the recording read,
+# so run A's read fires first and neither apparatus binary can reach it. That site is
+# covered by review rather than by a leg, which `main.zig` says where it stands. What
+# this leg covers is therefore two of three, and the sentence now says so.
+# Neither of the two can be reached
 # by a fixture: the engine unlinks the trace before every run, so no oversized file can
 # be planted, and the shipped 64 MiB ceiling would need on the order of a million
 # recorded operations to reach through the only writer there is. So the apparatus lowers
@@ -4388,7 +4395,7 @@ else
     fi
     rm -rf "$capdir"
     if [ "$cap_fails" = "0" ]; then
-        echo "ok   the trace cap names itself at both read sites, and the shipped cap is nowhere near"
+        echo "ok   the trace cap names itself at the recording and world read sites, and the shipped cap is nowhere near"
     else
         fails=$((fails + 1))
     fi
@@ -5241,6 +5248,74 @@ if [ "$sl_fails" = "0" ]; then
     echo "ok   an operation spelled through an interior symlink, and one on the link itself, both name what the snapshot holds"
 else
     fails=$((fails + sl_fails))
+fi
+
+# Check 24 — the whole-trace ceiling (#377): two live traces, neither of them large.
+#
+# `preflight --twice` holds the recording run's trace while it reads the second
+# observation's, which is the only shape that separates this refusal from
+# `trace_too_large`: both traces are a few kilobytes, well under the per-read cap, and
+# what runs out is the sum. The shipped ceiling is 512 MiB and unreachable by any fixture
+# — the engine unlinks the trace before every run and the only writer is the shim — so
+# this drives the `-Dtest-trace-budget` engine, whose ceiling is 3 KiB.
+#
+# **No `reasons` credit in this leg.** The ledger gate takes its count at check 2b, far
+# above here, and the assertion at the end of this file fails when anything appends below
+# it — a credit down here is a write nobody reads. `fails` is what this leg reports.
+BUDGETBIN=$ROOT/zig-out/bin/sideeye-testtracebudget
+if [ ! -x "$BUDGETBIN" ]; then
+    echo "FAIL trace-budget apparatus missing: build with zig build -Dtest-trace-budget (add -Dtarget=... for the container)"
+    fails=$((fails + 1))
+else
+    rm -rf /tmp/acc-tb && mkdir -p /tmp/acc-tb/state /tmp/acc-tb/work /tmp/acc-tb/state2 /tmp/acc-tb/work2
+    o=$("$BUDGETBIN" preflight --twice --state /tmp/acc-tb/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work /tmp/acc-tb/work 2>&1)
+    rc=$?
+    ok=1
+    [ "$rc" = "2" ] || ok=0
+    echo "$o" | grep -q "trace_budget_exhausted" || ok=0
+    # The refusal has to say the sum is what ran out. Without that sentence an operator
+    # reads it as "some trace was too big" and goes looking for a large file there is
+    # none of — which is the whole reason this is not a second wording of the cap's.
+    echo "$o" | grep -q "what ran out is the sum" || ok=0
+    # **Which read was refused is the load-bearing half.** Without this the leg passes for
+    # an apparatus ceiling set below one trace's own cost: the RECORDING read refuses
+    # first, with the same reason and the same prose, and the shipped contrast still runs
+    # — so the check would report "two live traces exhausted the ceiling" having measured
+    # one. Measured: at a 1 KiB ceiling this command refuses at "the recording run".
+    echo "$o" | grep -q "the trace from the second observed run" || ok=0
+    # Neither of the two wrong refusals this change passed through on the way here: the
+    # per-read cap's (a different fact), and the collapse. A budget refusal during the RAW
+    # read is not an error the caller can catch — `readTraceCapped` returns an empty
+    # TraceInfo — so it arrives as `no_shim_marker` unless the caller also asks the budget
+    # after a read that succeeded. That was the measured behaviour of the first
+    # implementation, on this exact command.
+    echo "$o" | grep -q "trace_too_large" && ok=0
+    echo "$o" | grep -q "no_shim_marker" && ok=0
+    if [ "$ok" = "1" ]; then
+        echo "ok   two live traces exhaust the shared ceiling, and the refusal says it was the sum"
+    else
+        echo "FAIL trace-budget leg: exit $rc (wanted 2 with trace_budget_exhausted)"
+        echo "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+
+    # The contrast, and the reason this leg is more than "the apparatus refuses": the
+    # SHIPPED engine runs the same define to completion. Without this arm an engine that
+    # refused every second read would pass the check above.
+    o=$("$SIDEEYE" preflight --twice --state /tmp/acc-tb/state2 \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work /tmp/acc-tb/work2 2>&1)
+    rc=$?
+    if [ "$rc" = "0" ] && echo "$o" | grep -q "PREFLIGHT"; then
+        echo "ok   the same define under the shipped ceiling completes — the ceiling fires on the sum, not on presence"
+    else
+        echo "FAIL trace-budget contrast: exit $rc (wanted 0)"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    rm -rf /tmp/acc-tb
 fi
 
 # Everything above the gate contributes to the number it reported; a credit below it is a
