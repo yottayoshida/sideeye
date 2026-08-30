@@ -180,6 +180,18 @@ fn isTruncated(middle: []const u8) bool {
 }
 
 
+/// `[ 22]` — the call failed. Needed for one thing: a failed `F_DUPFD` produced no
+/// descriptor, and the shim's first attempt fails on purpose (it asks for 900 before
+/// settling for 200, measured), so the mapping must wait for the one that succeeded.
+fn hasErrno(middle: []const u8) bool {
+    const lb = std.mem.indexOfScalar(u8, middle, '[') orelse return false;
+    const rb = std.mem.indexOfScalarPos(u8, middle, lb, ']') orelse return false;
+    const inner = std.mem.trim(u8, middle[lb + 1 .. rb], " ");
+    if (inner.len == 0) return false;
+    for (inner) |c| if (!std.ascii.isDigit(c)) return false;
+    return true;
+}
+
 fn fdOf(middle: []const u8) ?[]const u8 {
     var it = std.mem.tokenizeAny(u8, middle, " \t");
     while (it.next()) |tok| {
@@ -470,7 +482,12 @@ pub fn read(
 ) !Reading {
     var out: Reading = .{ .parsed = .{ .classes = .empty, .lines = .empty, .metadata_observed = .empty } };
     var fds: FdTable = .{};
+    var dup_pending: std.ArrayList(FdKey) = .empty;
     var subject_tid: ?[]const u8 = null;
+    // Two threads opened the trace for writing: a shimmed child beside the subject.
+    // This backend follows no children (ADR 0031 §2), so it cannot say whose account
+    // is whose and refuses rather than picking one.
+    var subject_ambiguous = false;
     var saw_start = false;
     var saw_end = false;
     var other_tids: std.ArrayList([]const u8) = .empty;
@@ -495,7 +512,17 @@ pub fn read(
         if (raw.len == 0) continue;
         const ln = parseLine(raw) orelse continue;
         const path = pathOf(ln.middle) orelse continue;
-        if (samePath(path, trace_path)) subject_tid = ln.tid;
+        // The subject is the thread that opened the trace FOR WRITING. Any line naming
+        // the path was the first rule, and on a real capture the last such line was
+        // `fseventsd`'s `lstat64` of the file — with a security agent's read-only
+        // `open`s before it — so the daemon became the subject and every one of the
+        // toy's writes was "a thread other than the subject". Only the shim opens the
+        // trace to write; `O_WRONLY|O_CREAT|O_APPEND`, `(_WCA_______X)` on disk.
+        if (samePath(path, trace_path) and classOf(ln.call) == .open and openIsWriteCapable(ln.middle)) {
+            if (subject_tid) |prev| {
+                if (!std.mem.eql(u8, prev, ln.tid)) subject_ambiguous = true;
+            } else subject_tid = ln.tid;
+        }
         if (sentinel_start.len != 0 and samePath(path, sentinel_start)) saw_start = true;
         if (sentinel_end.len != 0 and samePath(path, sentinel_end)) saw_end = true;
         if (inState(path, state_root, state_alt)) {
@@ -515,6 +542,10 @@ pub fn read(
         out.defect = .no_subject;
         return out;
     };
+    if (subject_ambiguous) {
+        out.defect = .no_subject;
+        return out;
+    }
     out.subject_tid = subject;
 
     // Whether a hole in this line would be a hole in the account of the judged
@@ -547,6 +578,51 @@ pub fn read(
         const cls_opt = classOf(ln.call);
         const is_relevant = relevant(ln.tid, subject, state_tids.items);
 
+        // Descriptor first, before any line can be skipped: a dup's result shows up on
+        // the NEXT line this thread issues on a new number, and on a real capture that
+        // line was `fcntl F=200 <SETFD>` — a call the earlier ordering skipped as inert
+        // before the table ever saw the number, so the shim's own trace writes on 200
+        // were "a descriptor nobody opened" and every run refused.
+        const fd = fdOf(ln.middle);
+
+        // Complete a pending dup: the first descriptor this thread touches that the
+        // table does not know inherits the source's mapping. Done before anything else
+        // reads the table, so the line that reveals the number is itself resolved.
+        if (fd) |f| {
+            var i: usize = 0;
+            while (i < dup_pending.items.len) : (i += 1) {
+                const d = dup_pending.items[i];
+                if (!std.mem.eql(u8, d.tid, ln.tid)) continue;
+                if (fds.get(.{ .tid = ln.tid, .fd = f }) != null) break; // known: not the dup
+                if (std.mem.eql(u8, d.fd, f)) break; // the source itself
+                if (fds.get(.{ .tid = ln.tid, .fd = d.fd })) |src_in_state|
+                    try fds.set(arena, .{ .tid = ln.tid, .fd = f }, src_in_state);
+                _ = dup_pending.swapRemove(i);
+                break;
+            }
+        }
+
+        if (std.mem.eql(u8, canonicalCall(ln.call), "fcntl")) {
+            if (fcntlDuplicates(ln.middle)) {
+                // fs_usage prints the SOURCE descriptor and not the result, so the
+                // mapping is completed on the next line this thread issues on a
+                // descriptor the table does not know — which on a real capture is the
+                // shim's own trace: `open F=3`, `fcntl F=3 [22] <DUPFD>` (the 900 floor
+                // fails), `fcntl F=3 <DUPFD>`, then `fcntl F=200 <SETFD>`, `close F=3`,
+                // `write F=200`. The first version of this file did not follow the dup
+                // and refused every run on the shim's first trace write.
+                if (!hasErrno(ln.middle)) {
+                    if (fd) |src| try dup_pending.append(arena, .{ .tid = ln.tid, .fd = src });
+                }
+                continue;
+            }
+            if (fcntlIsInert(ln.middle)) continue;
+            // Any other command falls through to the scope decision below: `F_FULLFSYNC`
+            // on a state descriptor reaches the unknown-call refusal there, and the same
+            // command on a descriptor outside the root is nobody's business.
+        }
+
+
         // A call that cannot change state is not a hole whatever happened to its path.
         // Decided before the truncation check, because the truncation check is where a
         // real run refused: dyld's `stat64` of a framework path under
@@ -574,16 +650,7 @@ pub fn read(
         // that did was removed with the branch that used it.
 
         const path = pathOf(ln.middle);
-        const fd = fdOf(ln.middle);
 
-        // The shim's own trace writes and the sentinels are the observer's shadow,
-        // not the target's work. Classified here rather than filtered above so the
-        // line still counts toward `lines_seen`.
-        if (path) |p| {
-            if (samePath(p, trace_path)) continue;
-            if (sentinel_start.len != 0 and samePath(p, sentinel_start)) continue;
-            if (sentinel_end.len != 0 and samePath(p, sentinel_end)) continue;
-        }
 
         // Descriptor bookkeeping runs for every line that carries one, whether or not
         // the line is in scope: a descriptor opened outside the state root and later
@@ -623,6 +690,18 @@ pub fn read(
                 if (fd) |f| fds.clear(.{ .tid = ln.tid, .fd = f });
                 continue;
             }
+        }
+
+        // The shim's own trace writes and the sentinels are the observer's shadow, not
+        // the target's work — skipped here, AFTER the descriptor bookkeeping above. The
+        // first version skipped them before it, so the shim's `open F=3 trace.bin` never
+        // entered the table, the dup to 200 had no source to inherit from, and the very
+        // first `write F=200` was "a descriptor nobody opened". The line still counts
+        // toward `lines_seen`.
+        if (path) |p| {
+            if (samePath(p, trace_path)) continue;
+            if (sentinel_start.len != 0 and samePath(p, sentinel_start)) continue;
+            if (sentinel_end.len != 0 and samePath(p, sentinel_end)) continue;
         }
 
         // Is this line about the judged directory?
@@ -665,19 +744,6 @@ pub fn read(
         if (isMetadataCall(ln.call)) {
             try out.parsed.metadata_observed.append(arena, try arena.dupe(u8, ln.call));
             continue;
-        }
-        if (std.mem.eql(u8, canonicalCall(ln.call), "fcntl")) {
-            if (fcntlDuplicates(ln.middle)) {
-                // The duplicate inherits where the original pointed. fs_usage prints
-                // the source descriptor; the new number appears on the following
-                // operations, so the safe reading is that an unresolvable write after
-                // a dup refuses — which it already does — rather than guessing a
-                // mapping the line does not carry.
-                continue;
-            }
-            if (fcntlIsInert(ln.middle)) continue;
-            out.defect = .{ .unknown_call = raw };
-            return out;
         }
         const cls = cls_opt orelse {
             out.defect = .{ .unknown_call = raw };
@@ -848,6 +914,42 @@ test "a truncated mutating line from the subject still refuses" {
         .truncated => {},
         else => return error.WrongDefect,
     }
+}
+
+test "the shim's dup of its own trace descriptor is followed, and a daemon reading the trace is not the subject" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // The shape of a real capture, line for line: fseventsd stats the trace file, a
+    // security agent opens it read-only, then the subject opens it for writing, fails
+    // to dup to the 900 floor, dups to 200, closes 3 and writes through 200 — and then
+    // does its one real operation on the judged directory.
+    const text =
+        "21:03:21.587700  lstat64                                /work/trace.bin                        0.000005   fseventsd.999\n" ++
+        "21:03:21.587701  open              F=27       (R___________)  /work/trace.bin                   0.000010   wdavdaemon.888\n" ++
+        "21:03:21.587753  open              F=3        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
+        "21:03:21.587757  fcntl             F=3   [ 22] <DUPFD>                                          0.000001   subj.111\n" ++
+        "21:03:21.587760  fcntl             F=3   <DUPFD>                                                0.000003   subj.111\n" ++
+        "21:03:21.587761  fcntl             F=200 <SETFD>                                                0.000001   subj.111\n" ++
+        "21:03:21.587763  close             F=3                                                          0.000003   subj.111\n" ++
+        "21:03:21.587764  lseek             F=200 O=0x00000000 <SEEK_END>                                0.000001   subj.111\n" ++
+        "21:03:21.587809  write             F=200 B=0xc                                                  0.000045   subj.111\n" ++
+        "21:03:21.587900  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
+        "21:03:21.588000  open              F=3        (_WC_T_______)  /tmp/st/keep                      0.000010   subj.111\n" ++
+        "21:03:21.588001  write             F=3   B=0x3                                                  0.000004   subj.111\n" ++
+        "21:03:21.588002  close             F=3                                                          0.000002   subj.111\n" ++
+        "21:03:21.588100  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b");
+    try testing.expect(r.defect == null);
+    try testing.expectEqualStrings("111", r.subject_tid.?);
+    try testing.expect(!r.parsed.child_touched);
+    // Two, not three: `close` is a lifecycle op the shim records and the strace oracle
+    // drops from the compared sequence (`oracle.zig`, `if (cls == .close) continue`),
+    // and the two accounts have to be shaped alike. This test first asserted three and
+    // was wrong; the real capture said two and the strace reader said why.
+    try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
+    try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
+    try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
 }
 
 test "a missing sentinel refuses before anything is compared" {
