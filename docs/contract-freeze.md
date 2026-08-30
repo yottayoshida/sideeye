@@ -37,6 +37,20 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    promise. The `unknown_reason` closed set is **not** covered by that
    allowance: it is closed by name, held to the code by a gate, and gaining a
    member after the tag is a breaking change under either reading.
+
+   **Amended 2026-08-30: this promise was broken once, deliberately, by owner
+   ruling.** `state_changed_unaccounted` was added after the tag, taking the set
+   from 32 members to 33, for #405's detection half — a raw-forked child writing
+   into the judged directory reached PASS with its file still there, and no
+   existing member could carry the refusal without saying something false about
+   the run (the readings are in `surface-changes.tsv`, row `sc-18`). The
+   paragraph above is left standing rather than softened: it states what the tag
+   promised, and this note states that the promise was not kept. A consumer that
+   pinned the set at 32 is entitled to have been surprised. **The rule for
+   1.x is unchanged** — the next member needs its own ruling, not this
+   precedent, and `sc-18`'s `legality` reads `freeze-broken` for exactly that
+   reason: it is not a category of permitted movement, and the ledger would be
+   lying if it recorded one.
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

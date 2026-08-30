@@ -26,6 +26,19 @@ echo "building toy-lfs"
 # fopen64 — the glibc alias path the stdio wrappers must also cover (ADR 0005).
 gcc $cc_flags -D_FILE_OFFSET_BITS=64 -o "$out/toy-lfs" "$root/spike/toys/toy.c" -lpthread
 
+echo "building toy-rawchild"
+# #405's fixture: a child created with a raw syscall, writing through raw syscalls, into
+# the judged directory. The parent's libc write keeps the zero-ops detector quiet, which
+# is what made this reach PASS before the per-path reconciliation existed.
+gcc $cc_flags -o "$out/toy-rawchild" "$root/spike/toys/toy_rawchild.c"
+
+echo "building toy-symlink"
+# The other side of #405's fixture: a run the reconciliation must NOT refuse. Its judged
+# tree holds `cur -> v1` and its operation goes through the link, so the spelling the shim
+# records and the one the snapshot holds differ. The first build of the detector turned
+# this into UNKNOWN — a false refusal on a layout GNU Stow is made of.
+gcc $cc_flags -o "$out/toy-symlink" "$root/spike/toys/toy_symlink.c"
+
 echo "building toy-raw"
 gcc $cc_flags -o "$out/toy-raw" "$root/spike/toys/toy_raw.c"
 

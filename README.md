@@ -8,7 +8,7 @@
 
 Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process immediately before each of its state-changing operations, one crash world per operation, then brings back the **earliest failing crash point**, saved as a replayable case. When that earliest world trips only the built-in comparison and some other world falsifies **your own checker**, the report carries that world as a second exhibit — usually the one worth reading, and the reason the first failing world alone is not always the whole answer. It breaks worlds, not inputs: same input, hostile universe.
 
-It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo, himalaya — several of them reported upstream. Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS.
+It has produced replay-confirmed counterexamples against real tools — timewarrior, topydo, GNU Stow, calcurse, devtodo, himalaya — several of them reported upstream. Verdicts are deterministic: a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS. One exception is named rather than hidden: a directory a recorded `rename` moved in from outside the judged tree is attributed to that one record, because its source was never snapshotted — so a later unrecorded write inside that subtree can still ride a PASS. Every report says how many paths that covered (`paths_attributed_to_rename`), and a run reporting zero has no such gap.
 
 ## Installation
 
