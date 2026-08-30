@@ -33,6 +33,19 @@ const trace_cap_world: usize = if (engine_build_options.trace_cap_override_world
 else
     engine_build_options.trace_cap_override_world;
 
+/// The whole-trace ceiling (#377, ADR 0033), by the same rule as the two caps above: a
+/// zero override means the engine's constant, and any other value comes from a separate
+/// test artifact so no invocation of the build lowers a released binary's ceiling.
+///
+/// **One override, not one per site** — unlike the caps. Those needed a second knob
+/// because the recording read fires first and exits, leaving the world branch
+/// unreachable; the ceiling is a property of the sum, so a leg that exercises it needs
+/// two reads to be live at once rather than a particular one of them to break.
+const trace_budget_limit: usize = if (engine_build_options.trace_budget_override == 0)
+    engine.max_trace_bytes_total
+else
+    engine_build_options.trace_budget_override;
+
 /// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
 /// same number, and they had already drifted: the package said 0.1.0 while `--help` said
 /// 0.1.0-dev. A test below holds them together.
@@ -770,8 +783,24 @@ fn usage() void {
 /// (#324) — the world loop's read has no shim-marker branch to catch the collapse, so a
 /// missed check there refused with `kill_did_not_land`, a claim about the engine's own
 /// kill drawn from a trace it declined to read.
-fn readTraceOrRefuse(gpa: std.mem.Allocator, path: []const u8, cap: usize, setup_msg: []const u8) engine.TraceInfo {
-    return engine.readTraceCapped(gpa, path, cap) catch setupError(setup_msg);
+/// **Every trace read allocates from the shared budget, and no call site gets a say**
+/// (#377). The defect this closes is that a property held by "there are two call sites
+/// and both do the right thing" stops holding the moment someone adds a third — which
+/// had already happened when it was written.
+///
+/// What enforces it is `engine.readTraceCapped`'s signature, not this function: it takes
+/// a `*TraceBudget`, so a read site cannot supply a plain allocator even by reaching past
+/// this wrapper. An earlier version injected the budget here instead, which left the
+/// engine's public API accepting any allocator while the documents claimed otherwise.
+/// All this wrapper does now is hand over the process-wide budget and turn a read that
+/// could not happen at all into a SETUP ERROR.
+fn readTraceOrRefuse(path: []const u8, cap: usize, setup_msg: []const u8) engine.TraceInfo {
+    // Not `.?`: an ordering mistake should report itself rather than panic. It cannot
+    // happen today — `main` installs the budget before any argument is parsed — and a
+    // local budget could not stand in if it could, because the `TraceInfo` returned here
+    // outlives this frame and frees through the budget's child.
+    const b = trace_budget orelse setupError("internal: a trace was read before the whole-trace ceiling was installed");
+    return engine.readTraceCapped(b, path, cap) catch setupError(setup_msg);
 }
 
 /// The cap's refusal, separate from the read so a caller can classify first. The
@@ -782,17 +811,34 @@ fn readTraceOrRefuse(gpa: std.mem.Allocator, path: []const u8, cap: usize, setup
 /// classified" — a regression a simplification pass introduced and review caught.
 ///
 /// The cost of the split, stated because it is the defect this issue is about: nothing
-/// forces a caller to reach this. A third read site could read and never answer, which
-/// is exactly how the world loop came to refuse with `kill_did_not_land`. What holds it
-/// instead is the acceptance leg, which drives BOTH sites through lowered-cap engines
-/// and fails on the reason rather than the exit code; a site added without an answer
-/// has no leg and is caught in review, not by the compiler.
+/// forces a caller to reach this. A read site can read and never answer, which is
+/// exactly how the world loop came to refuse with `kill_did_not_land`. What holds it
+/// instead is the acceptance leg, which drives the recording and world sites through
+/// lowered-cap engines and fails on the reason rather than the exit code; a site added
+/// without an answer has no leg and is caught in review, not by the compiler.
+///
+/// **There are three read sites, not two** — the third arrived with `preflight --twice`
+/// (#199) and answers, but has no leg of its own, which it says where it stands. The
+/// sentence above used to say "a third read site COULD read and never answer", written
+/// while the third already existed: the count was a claim nothing rechecked, which is
+/// exactly what #377 is about. The per-read cap's pairing is still a rule callers must
+/// follow; **the whole-trace ceiling is not** — that one lives inside
+/// `readTraceOrRefuse`, where a site cannot fail to reach it.
 fn answerForOversizedTrace(t: engine.TraceInfo, where: []const u8, cap: usize) void {
     if (t.too_large) traceTooLarge(t.too_large_size, where, cap);
+    // The whole-trace ceiling answers HERE, beside the per-read cap, rather than at the
+    // read (#377). Both refusals are structural UNKNOWNs, and this is the point every
+    // caller already reaches after classifying — refusing at the read instead cost the
+    // recording site its L0 account, measured as `atomicity: not classified`, because
+    // the final snapshot had not been taken yet.
+    if (t.budget_refused) |want| {
+        if (trace_budget) |b| traceBudgetExhausted(want, where, b.limit);
+    }
 }
 
-/// The trace read broke its cap (#324). Both read sites refuse the same way, so the
-/// wording lives once; `where` names which read it was. The size appears only when
+/// The trace read broke its cap (#324). Every read site refuses the same way, so the
+/// wording lives once; `where` names which read it was. (It said "both" until #377
+/// counted the sites and found three.) The size appears only when
 /// `lseek` measured it — a size nobody measured must not appear in the message, the
 /// rule the per-file cap's refusal already follows.
 fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
@@ -807,6 +853,31 @@ fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
     // this function does not depend on that ordering; nothing exercises it.
     unknown(.trace_too_large, "the trace is larger than this engine will read");
 }
+
+/// The whole-trace ceiling refused an allocation (#377, ADR 0033).
+///
+/// The message says what `trace_too_large`'s does not: **the trace being read may be
+/// small**. What ran out is the ceiling every live trace shares, so an operator sent to
+/// look for one oversized file would find none — which is the reason this is a separate
+/// `unknown_reason` and not a second wording of the per-read one.
+/// `wanted` is not optional, unlike the per-file cap's size: that one comes from an
+/// `lseek` that can fail, this one from the budget's own record of the request it turned
+/// down, so there is no "a size nobody measured" case to guard against here.
+fn traceBudgetExhausted(wanted: usize, where: []const u8, limit: usize) noreturn {
+    if (json_arena) |ja| {
+        unknown(.trace_budget_exhausted, std.fmt.allocPrint(ja, "reading the trace from {s} would have taken this engine past the ceiling every trace it holds at once must fit under: a {d}-byte allocation against a {d}-byte ceiling. Each trace involved may be well under the per-read cap — what ran out is the sum", .{ where, wanted, limit }) catch "the engine's whole-trace ceiling was reached");
+    }
+    unknown(.trace_budget_exhausted, "the engine's whole-trace ceiling was reached");
+}
+
+/// The budget every trace read allocates from, from the moment `main` installs it
+/// (#377, ADR 0033). One per process, shared by every read site, and the reason
+/// `readTraceOrRefuse` is the only place that chooses an allocator for a trace.
+///
+/// A pointer rather than the object: the object lives as a local in `main`, which
+/// outlives every `TraceInfo` built on it — a budget that died first would leave those
+/// arenas holding a dangling child allocator to free through.
+var trace_budget: ?*engine.TraceBudget = null;
 
 /// The privileged observer, while it is running. Registered the moment it is spawned
 /// and cleared when it is stopped, so that the two functions every refusal exits
@@ -1265,6 +1336,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var gpa_state: std.heap.DebugAllocator(.{}) = .init;
     defer _ = gpa_state.deinit();
     const gpa = gpa_state.allocator();
+
+    // The whole-trace ceiling, installed before anything in this process can read a
+    // trace (#377, ADR 0033). A local in `main` on purpose: every `TraceInfo` built on
+    // it is freed before `main` returns, and a budget that died first would leave those
+    // arenas freeing through a dangling child allocator. Nothing moves it after
+    // `readTraceOrRefuse` starts handing out its allocator.
+    var budget: engine.TraceBudget = .{ .child = gpa, .limit = trace_budget_limit };
+    trace_budget = &budget;
 
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -2093,7 +2172,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
 
-    var trace = readTraceOrRefuse(gpa, rec_trace, trace_cap, "could not read the trace");
+    var trace = readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
     defer trace.deinit();
 
     var final = snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
@@ -2737,7 +2816,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             error.ForkFailed, error.OutOfMemory, error.WaitFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
 
-        var wtrace = readTraceOrRefuse(gpa, world_trace, trace_cap_world, "could not read a world trace");
+        var wtrace = readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
         answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
         defer wtrace.deinit();
 
@@ -3327,7 +3406,7 @@ fn observeAgain(
         else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded"),
     }
 
-    var trace = readTraceOrRefuse(gpa, trace_b, trace_cap, "could not read the second observed run's trace");
+    var trace = readTraceOrRefuse(trace_b, trace_cap, "could not read the second observed run's trace");
     defer trace.deinit();
     // #324's pairing: every site that reads with a cap must answer for it. Forgetting
     // this at one site is the defect that issue exists to fix, and its own doc warns
@@ -5364,6 +5443,11 @@ test "the shipped engine options carry the shipped values (#365)" {
     // measured; the loud half is read off spike/acceptance.sh rather than run.
     try std.testing.expectEqual(@as(usize, 0), engine_build_options.trace_cap_override);
     try std.testing.expectEqual(@as(usize, 0), engine_build_options.trace_cap_override_world);
+    // The whole-trace ceiling's override (#377) is the same promise one level up: a
+    // quiet edit here ships an engine whose ceiling disagrees with
+    // `engine.max_trace_bytes_total`, and no acceptance leg would notice because no toy
+    // run comes near either value.
+    try std.testing.expectEqual(@as(usize, 0), engine_build_options.trace_budget_override);
     try std.testing.expect(!engine_build_options.ancestor_probe);
 }
 
@@ -5376,16 +5460,20 @@ test "the shipped trace caps fall back to the engine's constant (#365)" {
     // and the comparisons below still hold.
     try std.testing.expectEqual(engine.max_trace_bytes, trace_cap);
     try std.testing.expectEqual(engine.max_trace_bytes, trace_cap_world);
+    try std.testing.expectEqual(engine.max_trace_bytes_total, trace_budget_limit);
 }
 
-test "no fourth engine build option arrives unchecked (#365)" {
-    // The ratchet. Asserting three values says nothing about a FOURTH option arriving, and
+test "no fifth engine build option arrives unchecked (#365)" {
+    // The ratchet. Asserting four values says nothing about a FIFTH option arriving, and
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
     // here until someone writes its line. Same instrument as the RestoreError arity pin
     // above and the OpClass enumeration in contract.zig.
+    //
+    // It fired for real on 2026-08-30: #377's `trace_budget_override` was the fourth, and
+    // this test is what stopped it arriving without the two assertions above.
     const decls = @typeInfo(engine_build_options).@"struct".decls;
-    try std.testing.expectEqual(@as(usize, 3), decls.len);
+    try std.testing.expectEqual(@as(usize, 4), decls.len);
 }
 
 /// The reachable boundary-evidence states, written out rather than generated as a

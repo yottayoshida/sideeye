@@ -385,9 +385,25 @@ pub const UnknownReason = enum {
     /// apart because collapsing them loses which side stopped — and because the cap's
     /// natural collapse, an empty TraceInfo, reads as `no_shim_marker`, which is a
     /// third thing again (the shim never started). UNKNOWN rather than SETUP_ERROR:
-    /// both read sites are at or past the recording run, where exit 3's "the define
+    /// every read site is at or past the recording run, where exit 3's "the define
     /// did not run" is no longer true — the line `child_wait_failed` draws above.
+    /// (This said "both" while there were three of them; #377 counted.)
     trace_too_large,
+    /// The trace reads outstanding at once reached the engine's whole-trace ceiling
+    /// (#377, ADR 0033). **Not a synonym for `trace_too_large`**, and kept apart for the
+    /// reason `state_tree_too_large` is kept apart from `state_file_too_large`: there the
+    /// refusal names one oversized file and an operator can go find it, here every trace
+    /// involved may be comfortably small and what ran out is the sum. Collapsing the two
+    /// would send that operator looking for a large file that does not exist.
+    ///
+    /// UNKNOWN rather than SETUP_ERROR for the same reason `trace_too_large` is: every
+    /// trace read is at or past the recording run, where exit 3's "the define did not
+    /// run" is no longer true.
+    ///
+    /// **Added after the v1.0 tag**, the second member to be. `docs/contract-freeze.md`
+    /// carries the amendment; the previous one is not a precedent this leans on, because
+    /// that amendment says so in as many words — this is its own owner ruling.
+    trace_budget_exhausted,
     /// A state file was larger than the snapshot will read (#265), at a snapshot taken
     /// at or past the recording run (#330). The initial snapshot hits the same cap and
     /// stays SETUP_ERROR: it runs before anything of the define does, so exit 3's "the

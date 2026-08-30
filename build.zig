@@ -34,10 +34,21 @@ pub fn build(b: *std.Build) void {
     // it is **an edit to the shipped literal below**, not a flipped default here — the
     // default cannot reach a shipped build, exactly as the trace cap's cannot, and this
     // comment claimed otherwise until review measured both: flipping this `orelse` leaves
-    // the shipped binary clean, editing `engineOptions(b, 0, 0, false)` puts the entry in
+    // the shipped binary clean, editing `engineOptions(b, 0, 0, 0, false)` puts the entry in
     // it. A sha comparison is blind to that edit because it lands in both arms; a grep
     // of the shipped artifact is not.
     const test_ancestor_probe = b.option(bool, "test-ancestor-probe", "also build sideeye-ancprobe, an engine with a synthetic denied entry under /tmp used only by acceptance (#358)") orelse false;
+
+    // `-Dtest-trace-budget` ADDITIONALLY builds `sideeye-testtracebudget`, an engine whose
+    // WHOLE-TRACE ceiling is a few kilobytes instead of 512 MiB (#377). Unlike the two
+    // cap artifacts above there is only one of these, and it does not name a read site:
+    // the ceiling is a property of the sum, so what a leg needs is two reads live at once
+    // rather than a chosen one of them to break. `preflight --twice` is that shape.
+    //
+    // The shipped ceiling is unreachable by any fixture for the same reason the caps are
+    // — the engine unlinks the trace before every run and the only writer is the shim —
+    // and the shipped value is a literal below rather than this flag's default.
+    const test_trace_budget = b.option(bool, "test-trace-budget", "also build sideeye-testtracebudget, an engine with a tiny whole-trace ceiling used only by acceptance (#377)") orelse false;
 
     // Every options module handed to a build of src/main.zig must carry the same field
     // set — engine.zig and main.zig read them unconditionally, so a module missing one
@@ -46,10 +57,11 @@ pub fn build(b: *std.Build) void {
     // `zig build test` and the new option all stayed green; the sibling variant was not
     // in the measurement. Built here instead, a module cannot be short a field.
     const engineOptions = struct {
-        fn make(bld: *std.Build, trace_cap: usize, trace_cap_world: usize, ancestor_probe: bool) *std.Build.Step.Options {
+        fn make(bld: *std.Build, trace_cap: usize, trace_cap_world: usize, trace_budget: usize, ancestor_probe: bool) *std.Build.Step.Options {
             const o = bld.addOptions();
             o.addOption(usize, "trace_cap_override", trace_cap);
             o.addOption(usize, "trace_cap_override_world", trace_cap_world);
+            o.addOption(usize, "trace_budget_override", trace_budget);
             o.addOption(bool, "ancestor_probe", ancestor_probe);
             return o;
         }
@@ -86,7 +98,7 @@ pub fn build(b: *std.Build) void {
     // sentence never covered is an edit to the literal itself (#365): the sha comparison
     // in CI puts such an edit in both arms and stays green. The unit tests below assert
     // these values, so the literal is held by a check rather than by the sentence.
-    const exe_opts = engineOptions(b, 0, 0, false);
+    const exe_opts = engineOptions(b, 0, 0, 0, false);
 
     // ONE module object, handed to both the shipped executable and the unit tests.
     // `createModule` returns a fresh Module on every call, and calling it separately in
@@ -123,7 +135,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(exe);
 
     if (test_ancestor_probe) {
-        const probe_opts = engineOptions(b, 0, 0, true);
+        const probe_opts = engineOptions(b, 0, 0, 0, true);
         const exe_probe = b.addExecutable(.{
             .name = "sideeye-ancprobe",
             .root_module = b.createModule(.{
@@ -145,11 +157,15 @@ pub fn build(b: *std.Build) void {
     if (test_trace_cap) {
         // 64 bytes: over the trace header, under any real recording, so the cap breaks
         // on an ordinary toy run instead of needing a million operations.
-        // Two artifacts, because the two read sites cannot both fire in one run: the
-        // recording read happens first and exits, so a binary that caps both can only
-        // ever demonstrate the first branch. The second caps the world read alone,
-        // leaving the recording read at the shipped ceiling.
-        const cap_opts = engineOptions(b, 64, 0, false);
+        // Two artifacts, because the recording and world reads cannot both fire in one
+        // run: the recording read happens first and exits, so a binary that caps both
+        // can only ever demonstrate the first branch. The second caps the world read
+        // alone, leaving the recording read at the shipped ceiling.
+        //
+        // This said "the two read sites" until #377 counted them and found three. The
+        // third — `preflight --twice`'s second observation — shares `trace_cap` with the
+        // recording read, so neither artifact can reach it: run A's read fires first.
+        const cap_opts = engineOptions(b, 64, 0, 0, false);
         const exe_cap = b.addExecutable(.{
             .name = "sideeye-testtracecap",
             .root_module = b.createModule(.{
@@ -167,7 +183,7 @@ pub fn build(b: *std.Build) void {
         exe_cap.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
         b.installArtifact(exe_cap);
 
-        const world_opts = engineOptions(b, 0, 64, false);
+        const world_opts = engineOptions(b, 0, 64, 0, false);
         const exe_cap_world = b.addExecutable(.{
             .name = "sideeye-testtracecap-world",
             .root_module = b.createModule(.{
@@ -184,6 +200,30 @@ pub fn build(b: *std.Build) void {
         exe_cap_world.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
         exe_cap_world.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
         b.installArtifact(exe_cap_world);
+    }
+
+    if (test_trace_budget) {
+        // Sized so that ONE toy trace fits and TWO do not, which is the only shape that
+        // separates this refusal from `trace_too_large`: every trace involved is well
+        // under the per-read cap, and what runs out is the sum. The value is read off a
+        // measured toy trace rather than guessed — see BUILDLOG for the run.
+        const budget_opts = engineOptions(b, 0, 0, 3 * 1024, false);
+        const exe_budget = b.addExecutable(.{
+            .name = "sideeye-testtracebudget",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/main.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .imports = &.{
+                    .{ .name = "contract", .module = contract },
+                    .{ .name = "engine_build_options", .module = budget_opts.createModule() },
+                },
+            }),
+        });
+        exe_budget.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
+        exe_budget.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        b.installArtifact(exe_budget);
     }
 
     // The shim is only built for targets whose interposition mechanism exists.
