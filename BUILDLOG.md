@@ -45,6 +45,27 @@ agree, set `oracle_verified` — and the PASS gate would still demand
 `--allow-unverified`. The promise was false in the one line that decides it, through two
 end-to-end runs that failed earlier for other reasons and never reached it.
 
+**Two end-to-end runs then measured a binary that did not contain the fixes.** After
+the handshake loop was repaired, the acceptance run failed with the identical message,
+and the identical message was read as fresh evidence twice. The artifacts said
+otherwise, once they were actually read: no `trace-record.bin` in the work directory
+(the recording never ran), the start sentinel still on disk (the loop's cleanup never
+reached), and `strings zig-out/bin/sideeye` holding the old loop's copy-pasted refusal
+and none of the new wording — a binary stamped 09:51 against source stamped 10:10.
+`zig build test` runs the tests and installs nothing; every fix since 09:51 had been
+followed by that command and never by `zig build`. The acceptance script's
+`[ -x "$SIDEEYE" ]` cannot see staleness, so it now builds first and refuses to
+measure a binary older than the newest source. What was being diagnosed for an hour was
+a fix that had never executed.
+
+**The refusals stop the observer now, not the call sites.** The old binary's orphan —
+3:52 of root `fs_usage` after the engine had exited, 741 MB of capture, every later
+start on the machine failing `Resource busy` — came from a refusal inside the handshake
+that exited without stopping what it had spawned. The new code had the same shape at two
+more sites. Rather than a third reminder, the observer is registered when spawned and
+`unknown` and `setupError`, the two functions every refusal exits through, stop it on
+the way out. An exit that cannot forget replaces a rule that every exit must remember.
+
 Four more were mine in the same shape — asserting from the man page or from my own
 reasoning what a committed measurement in this repository already answered. The
 truncation test read the `>` padding macOS 15 adds and missed the cut itself, which

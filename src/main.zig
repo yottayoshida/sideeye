@@ -587,7 +587,30 @@ fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
     unknown(.trace_too_large, "the trace is larger than this engine will read");
 }
 
+/// The privileged observer, while it is running. Registered the moment it is spawned
+/// and cleared when it is stopped, so that the two functions every refusal exits
+/// through — `unknown` and `setupError` — can stop it on their way out.
+///
+/// This is the shape the alternative kept failing in: each refusing call site was
+/// supposed to remember to stop the sidecar first, and two of them did not, and each
+/// time one forgot, a root `fs_usage` outlived the engine holding kdebug (the single
+/// system-wide trace facility) until its `-t` bound — 3:52 of it measured, 741 MB of
+/// capture — and every later start on the machine failed with `Resource busy`. An
+/// exit that cannot forget is cheaper than a rule that every exit must remember.
+const LiveSidecar = struct { pid: c_int, gpa: std.mem.Allocator };
+var fsu_live: ?LiveSidecar = null;
+
+/// Stop the registered observer if one is running, and report what the pre-signal
+/// observation said. `.had_exited` when nothing was registered, which is the answer
+/// every non-fs_usage run gets and costs it nothing.
+fn stopLiveSidecar() posix.SidecarEnd {
+    const live = fsu_live orelse return .had_exited;
+    fsu_live = null;
+    return posix.stopSidecar(live.gpa, live.pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
+}
+
 fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
+    _ = stopLiveSidecar();
     if (json_path) |jp| if (json_arena) |ja|
         writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), detail);
     // The classification lines appear here too: DESIGN §13 demands text and JSON
@@ -665,6 +688,7 @@ fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
 /// several of these fire mid-run — after the trace is read, after a world is restored —
 /// that stale verdict could be a PASS for a run that never explored anything.
 fn setupError(detail: []const u8) noreturn {
+    _ = stopLiveSidecar();
     if (json_path) |jp| if (json_arena) |ja|
         writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, detail);
     say("SETUP ERROR  {s}\n", .{detail});
@@ -828,6 +852,9 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // refusal it should be.
     const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit, "-f", "filesys" }, capture_path) catch
         setupError("could not start fs_usage");
+    // Registered before anything below can refuse. From here on, every `setupError`
+    // and `unknown` stops it; no call site has to.
+    fsu_live = .{ .pid = pid, .gpa = gpa };
 
     // The proof that the capture is live. Not a sleep: a sleep asserts a duration and
     // this has to assert an observation. The engine creates a file inside the state
@@ -865,7 +892,6 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         posix.sleepForMs(100);
         waited += 100;
     }
-    _ = posix.stopSidecar(gpa, pid, &.{ "/usr/bin/sudo", "-n" }, 2000);
     removeFile(sentinel);
     setupError("fs_usage started but its capture never showed the engine's own sentinel, so nothing proves the observer was recording; the run would have been judged against a capture of unknown coverage");
 }
@@ -1711,12 +1737,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var zb: [contract.max_path]u8 = undefined;
         const sz = std.fmt.bufPrintZ(&zb, "{s}", .{fsu_sentinel_b}) catch setupError("path too long");
         const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
-        if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created, so nothing can establish that the capture covered the end of the recording");
+        // `unknown` stops the observer on its way out; this site does not have to.
+        if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created inside the state directory, so nothing can establish that the capture covered the end of the recording");
         _ = posix.close(fd);
         // Stopped, not left to `-t`: the answer to "was it still running?" is what
         // separates a capture of the whole window from one that closed early, and it
         // can only be asked before the signal.
-        const end = posix.stopSidecar(gpa, pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
+        _ = pid;
+        const end = stopLiveSidecar();
         // Read once, then dropped. The capture is system-wide, so its size is set by
         // what else the machine is doing: one measured run left 2.9 GB in the work
         // directory. Keeping it costs gigabytes per run and buys nothing — the account

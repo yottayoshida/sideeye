@@ -17,8 +17,18 @@ WORK="$(mktemp -d "$HOME/fsusage-acceptance-XXXXXX")"
 CC=/usr/bin/cc
 
 fail() { echo "FAIL: $*"; exit 1; }
-[ -x "$SIDEEYE" ] || fail "build first: zig build"
-[ -f "$SHIM" ] || fail "shim missing at $SHIM"
+
+# Build here, every time. Two end-to-end runs measured a binary from before the fixes
+# they were meant to exercise: `zig build test` runs the tests and installs nothing,
+# so `zig-out/bin/sideeye` sat at 09:51 while the source moved to 10:10, and the same
+# failure was read twice as fresh evidence. An existence check on the binary cannot
+# see that; building is the only thing that makes "the binary under test" and "the
+# source under test" the same object.
+( cd "$HERE" && zig build ) || fail "zig build failed; nothing was measured"
+[ -x "$SIDEEYE" ] || fail "zig build produced no binary at $SIDEEYE"
+[ -f "$SHIM" ] || fail "zig build produced no shim at $SHIM"
+newest_src=$(ls -t "$HERE"/src/*.zig | head -1)
+[ "$SIDEEYE" -nt "$newest_src" ] || fail "binary is older than $newest_src after a build; refusing to measure a stale artifact"
 
 sudo -v || fail "sudo unavailable; nothing was measured"
 
