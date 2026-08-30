@@ -30,10 +30,27 @@ jobs:
       - name: Build engine and shim
         run: zig build
 
+      # The deadline has to be outside the process it measures: #400's defect is a run
+      # that never returns, a unit test cannot bound its own runtime, and the unit-test
+      # step above carries no timeout-minutes — so the same defect inside `zig build
+      # test` would hold this runner for the GitHub default of six hours instead of
+      # failing. Asserts which refusal fires, not only the exit code: with O_NONBLOCK
+      # and without the descriptor check the run still exits 3, blaming the JSON for a
+      # file it read as empty. Both halves seen red (BUILDLOG 2026-08-30 third).
+      - name: A case path that is not a regular file is refused, and the run returns (#400)
+        run: python3 spike/case-path-deadline.py zig-out/bin/sideeye
+
       # #270's apparatus, plus the guard on the apparatus itself: -Dtest-seq-gap must
       # ADD libsideeye_shim_testgap and leave the shipped shim byte-identical. A build
       # option that leaked into the shipped artifact would make every other acceptance
       # leg measure the gap shim — a new guard silently blinding the old ones.
+      #
+      # What this comparison covers is the FLAG leaking in, never the shipped VALUE
+      # (#365): an edit to build.zig's `test_seq_gap` literal lands in both arms and
+      # leaves the shas matching. That literal is held by a unit test in
+      # shim/src/common.zig instead. Byte-identical here means "the same source built
+      # two ways" — any edit to the source moves both shas together, which is why a
+      # differential check cannot stand in for an assertion about the value.
       - name: Build the gap-shim apparatus, shipped shim unchanged (#270)
         run: |
           sha_before=$(sha256sum zig-out/lib/libsideeye_shim.so | cut -d' ' -f1)
@@ -50,6 +67,20 @@ jobs:
       # every run, and the only writer is the shim — so without these the refusal is
       # untested: its branches live in main.zig, whose refusals exit the process, which
       # no unit test can drive.
+      #
+      # Same blind spot as #270's step above, and the same fix (#365). This comparison
+      # sees the flag, not the shipped value: editing `engineOptions(b, 0, 0, false)`
+      # puts the new ceiling in both arms. A LOUD edit is caught elsewhere — at 64 bytes
+      # every acceptance leg that drives the SHIPPED binary refuses on a trace that size,
+      # which is most of the suite though not all of it, since four apparatus binaries are
+      # driven by their own names — but a QUIET one is caught nowhere: 128 MiB clears every
+      # toy trace, so acceptance passes, this step passes, and the released engine carries
+      # a ceiling that disagrees with engine.max_trace_bytes. The unit test in src/main.zig
+      # is the only thing that sees it. The quiet half is measured, though not on this
+      # runner and not with this command: with the literal at 128 MiB, the same
+      # before/after comparison run locally — `shasum -a 256`, since macOS has no
+      # `sha256sum` — stayed green while `zig build test` went red. The loud half is
+      # read off spike/acceptance.sh rather than run: acceptance needs the Linux container.
       - name: Build the trace-cap apparatus, shipped engine unchanged (#324)
         run: |
           sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
@@ -136,6 +167,13 @@ jobs:
 
       - name: Build engine and shim
         run: zig build
+
+      # Runs on both platforms deliberately: the FIFO measurements behind #400 were
+      # taken here on macOS, and the Linux leg is where the statx branch of `kindOfFd`
+      # is exercised at all — the Darwin branch uses fstat and neither compiles the
+      # other. See the Linux job for why the deadline is outside the process.
+      - name: A case path that is not a regular file is refused, and the run returns (#400)
+        run: python3 spike/case-path-deadline.py zig-out/bin/sideeye
 
       # The demo is also the release workflow's smoke test; macOS is where its
       # no-oracle path lives (a FAIL stands on its own evidence, so the demo needs
@@ -602,6 +640,28 @@ jobs:
 
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
+
+  # What this project filed upstream lived in a hand-written literal, and a report
+  # filed without editing it was invisible: the status table looked whole, every
+  # row read fine, and it exited 0 whether it held six of six or six of seven
+  # (#297). The ledger and the markers in docs/target-classes.md are now held to
+  # each other, so forgetting one of the two is red instead of quiet. Its own job
+  # for the same reason as the one above: no toolchain, so a failure here names
+  # the records and nothing else.
+  #
+  # The selftest runs first, and not as a formality. A checker nobody has seen red
+  # is a checker whose predicates are untested, and this one's empty-versus-empty
+  # leg is the exact shape that would otherwise pass as agreement.
+  upstream-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The ledger checker can still see its own predicates fail
+        run: sh spike/check-upstream-ledger.sh --selftest
+
+      - name: The ledger and the target table hold in both directions (#297)
+        run: sh spike/check-upstream-ledger.sh
 
   # ADR numbers are allocated as "the highest existing number plus one", which
   # reserves nothing. On 2026-08-27 two sessions each wrote a docs/adr/0028-*.md;

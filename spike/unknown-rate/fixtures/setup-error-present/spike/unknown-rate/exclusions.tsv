@@ -1,0 +1,11 @@
+# Apparatus failures that could not be fixed (fixture). Same shape as the real
+# spike/unknown-rate/exclusions.tsv; see that file for the rules count.py holds.
+#
+# Two rows, one per published table shape: fx-toyE is rendered by the wide
+# A-group table and fx-toyD by the B-group funnel table, which puts the excluded
+# cell in a different column. Without the second, the funnel side of the renderer
+# would be covered by reading the code and nothing else.
+#
+# id	reason
+fx-toyD	the pinned image has no perl and the target's build is unreproducible without it
+fx-toyE	the vendor toolchain that ships these headers was withdrawn

@@ -44,6 +44,7 @@ SMALL_N = 5
 CORPUS_COLS = ["id", "group", "tool", "cls", "judge", "launcher", "args",
                "artdir", "rpath", "defines", "since", "flags"]
 GEN_COLS = ["id", "date", "dir", "groups", "status"]
+EXCLUSION_COLS = ["id", "reason"]
 GEN_STATUSES = ("complete", "unstarted")
 GROUPS = ("A", "B", "control")
 OUTCOME_COLS = ["tool", "disposition", "source"]
@@ -248,6 +249,71 @@ def read_ledger(root, name, cols):
             die(f"{name} row does not have {len(cols)} columns: {line!r}")
         rows.append(dict(zip(cols, f)))
     return rows
+
+def read_exclusions(root):
+    """trial id -> why its apparatus failure was not fixable.
+
+    The page's SETUP_ERROR rule has two halves — "fix the apparatus and re-run
+    that trial; if unfixable, the row is published as excluded, with the reason".
+    The first half is the default and leaves no record. This is the second: the
+    judgement that a failure could not be fixed is made in a commit, in front of
+    a reviewer, rather than by a sweep that drops the row and publishes the rate
+    from what remains. The report's `message` says what failed and is not read
+    here — it cannot say whether anyone tried to fix it, and the page states that
+    count.py reads only machine fields.
+
+    The three shape rules are checked where the file is read, so `emit` and
+    `check` both get them: a ledger that is itself broken should refuse in either
+    mode, and the message names this predicate rather than whatever downstream
+    thing tripped over the bad row.
+    """
+    m = {}
+    for r in read_ledger(root, "exclusions.tsv", EXCLUSION_COLS):
+        if r["id"] in m:
+            die(f"exclusions.tsv lists {r['id']!r} twice — the later row would win in "
+                f"silence, and the reason a reviewer approved would publish as the other one")
+        if not r["reason"].strip():
+            die(f"exclusions.tsv: {r['id']} is waived with no reason — the page publishes "
+                f"an excluded row *with the reason*, and an empty cell is not one")
+        if "|" in r["reason"]:
+            die(f"exclusions.tsv: {r['id']}'s reason contains a pipe, which would split the "
+                f"published table row it is written into")
+        if MARK_END in r["reason"]:
+            die(f"exclusions.tsv: {r['id']}'s reason carries the results block's end marker. "
+                f"The reason is written into that block and `check` finds the block by "
+                f"splitting the page on this string, so an injected one shortens the compared "
+                f"region on both sides at once — everything past it stops being checked, and "
+                f"the reason a reviewer approved can differ from the one the page publishes")
+        # That rule was written, withdrawn, and restored, and the withdrawal is the part
+        # worth keeping. Four placements were tried and every one died on a predicate
+        # that already existed — injected early the truncated block loses rows and the
+        # published-rows-against-measured guard fires, injected late the group's rate
+        # line goes missing and attribution fires — which read as "structurally
+        # unreachable": a SETUP_ERROR row only renders inside a detail table, and a
+        # detail table appeared to always be followed by a rate line or an outcome
+        # table. The generalisation was false and all four measurements sat inside its
+        # blind spot. `check_attribution` skips a group with no rated trial, and the
+        # outcome table is only required when the A group has one — so a generation
+        # covering B alone, whose trials are all walls and SETUP_ERRORs, has nothing
+        # after that detail table. This page contemplates exactly that generation
+        # ("A future B measurement is its own decision, with its own generation").
+        # Measured on it: green, with the comparison ending mid-cell, and the reason
+        # editable past the marker without the gate noticing.
+        m[r["id"]] = r["reason"]
+    return m
+
+
+def excluded_cell(trial_id, exclusions):
+    """The cell that reports an excluded row, carrying its reason when one is waived.
+
+    Deliberately tolerant where `check` is strict: an unwaived SETUP_ERROR renders
+    the way it always did. `check` calls `emit` before its own predicates run, so
+    refusing here would kill the unwaived fixture inside the renderer — red, and
+    about the renderer rather than about the missing waiver.
+    """
+    reason = exclusions.get(trial_id)
+    return f"SETUP_ERROR (excluded: {reason})" if reason else "SETUP_ERROR (excluded, published)"
+
 
 def split_revision(define):
     """spike/cohortN/<target>[-rM]/ops -> (cohortN, base target, revision).
@@ -521,7 +587,7 @@ def check_attribution(tables, published):
     return n_sec, n_detail, n_slice, n_outcome, sorted(set(sum_only))
 
 
-def emit_generation(gen, trials, walls, setup_errors, outcome):
+def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions):
     L = []
     L.append("")
     L.append(f"### Generation {gen['id']} — measured {gen['date']} ({gen['groups']})")
@@ -546,7 +612,7 @@ def emit_generation(gen, trials, walls, setup_errors, outcome):
                 flag = " (0 crash points)" if t["cp0"] else ""
                 L.append(f"| {t['tool']} | {t['cls']} | explored | {t['v']}{flag} | {t['reason'] or '-'} |")
             for s in gs:
-                L.append(f"| {s['tool']} | {s['cls']} | SETUP_ERROR (excluded, published) | - | - |")
+                L.append(f"| {s['tool']} | {s['cls']} | {excluded_cell(s['id'], exclusions)} | - | - |")
         else:
             L.append("")
             L.append("| trial | tool | class | judge | verdict | unknown_reason | flags |")
@@ -557,7 +623,7 @@ def emit_generation(gen, trials, walls, setup_errors, outcome):
                          f"{t['v']}{flag} | {t['reason'] or '-'} | {t['flags']} |")
             for s in gs:
                 L.append(f"| {s['id']} | {s['tool']} | {s['cls']} | {s['judge']} | "
-                         f"SETUP_ERROR (excluded, published) | - | {s['flags']} |")
+                         f"{excluded_cell(s['id'], exclusions)} | - | {s['flags']} |")
         if not g:
             continue
         L.append("")
@@ -637,6 +703,7 @@ def generation_tables(root):
 def emit(root):
     corpus, generations, tables = generation_tables(root)
     outcome = read_outcome_map(root)
+    exclusions = read_exclusions(root)
     L = [MARK_BEGIN,
          "_Generated by `spike/unknown-rate/count.py emit` — do not edit between the markers._"]
     for gen, exp, man, trials, walls, setup_errors in tables:
@@ -646,7 +713,7 @@ def emit(root):
             L.append("")
             L.append(PLACEHOLDER)
             continue
-        L.extend(emit_generation(gen, trials, walls, setup_errors, outcome))
+        L.extend(emit_generation(gen, trials, walls, setup_errors, outcome, exclusions))
     L.append(MARK_END)
     return "\n".join(L) + "\n"
 
@@ -714,6 +781,7 @@ def check_dispositions(root, corpus, outcome):
 def check(root):
     corpus, generations, tables = generation_tables(root)
     outcome = read_outcome_map(root)
+    exclusions = read_exclusions(root)
     docs = (root / "docs/unknown-rate.md").read_text()
     block = emit(root)
 
@@ -765,6 +833,10 @@ def check(root):
     enum = enum_from_schema_doc(root)
     by_id_c = {c["id"]: c for c in corpus}
     measured = 0
+    # Counted, not just checked: on a tree with no apparatus failures the waiver
+    # predicates look at nothing, and a success line that does not say so cannot be
+    # told apart from one that checked something. The live tree is that tree today.
+    waived, seen_waivers = 0, set()
 
     for gen, exp, manifest, trials, walls, setup_errors in tables:
         gid = gen["id"]
@@ -857,10 +929,38 @@ def check(root):
             die(f"{gid}: A-group FAILs from {stray} carry a disposition the outcome table does "
                 f"not print — they would leave the ratio without leaving a trace")
 
+        # The page's SETUP_ERROR rule is two-sided and only one side was enforced.
+        # A row that failed to set up leaves the rated denominator whatever anyone
+        # decided about it, so a sweep with one apparatus failure publishes a rate
+        # over n-1 and reads exactly like a sweep of n. The default the page states
+        # is "fix the apparatus and re-run that trial"; publishing the row instead
+        # is the exception, allowed only "if unfixable", and that judgement is a
+        # person's. This is where the person has to have written it down.
+        for s in setup_errors:
+            waived += 1
+            if s["id"] not in exclusions:
+                die(f"{gid}/{s['id']}: SETUP_ERROR with no row in exclusions.tsv — the page "
+                    f"re-runs an apparatus failure and publishes it as excluded only if it "
+                    f"cannot be fixed, so a generation cannot be complete while nobody has "
+                    f"said which of those two happened")
+            seen_waivers.add(s["id"])
+
+    # And the other direction. A waiver whose trial no longer fails — or never did —
+    # excuses nothing, and the reason it carries would go on reading as approved
+    # while the row it named has moved on.
+    orphans = sorted(set(exclusions) - seen_waivers)
+    if orphans:
+        die(f"exclusions.tsv waives {orphans}, which is not a SETUP_ERROR in any complete "
+            f"generation — a waiver outliving its trial excuses nothing")
+
     if measured == 0:
         if PLACEHOLDER not in docs:
             die("no generation has measured anything, and docs/unknown-rate.md lacks the "
                 "not-yet-measured placeholder")
+        # No waiver count here: the orphan check above runs before this branch, so a
+        # pre-data tree with any waiver at all has already died. The number would be
+        # zero on every run that reaches this line, which is the opposite of the
+        # reason the main success line carries one.
         print(f"count.py check: pre-data state — placeholder asserted, corpus parsed "
               f"({len(corpus)} rows, {len(generations)} generations)")
         return
@@ -939,7 +1039,8 @@ def check(root):
     print(f"count.py check: OK — {len(corpus)} corpus rows across {len(generations)} generations, "
           f"{measured} measured, digests verified, docs in sync; attribution reconciled "
           f"{n_detail} published rows against {n_slice} slices and {n_outcome} outcome rows "
-          f"across {n_sec} sections{weaker}")
+          f"across {n_sec} sections{weaker}; {waived} SETUP_ERROR rows against "
+          f"{len(exclusions)} waivers")
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check"):

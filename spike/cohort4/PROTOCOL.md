@@ -493,7 +493,42 @@ once against a synthetic mutation before being trusted
 Each upstream report is its own owner-approved gate; nothing in this
 cohort authorises contact. The standing table of what has been filed and
 what has come back is `spike/upstream-report-status.sh`, which measures
-rather than remembers. **One lesson from the poetry #11019 close
+rather than remembers.
+
+**Two of the writes a filing needs are held to each other by CI (#297).** A
+report that goes out gets a row in `spike/upstream-reports.tsv` —
+`owner/repo`, number, `standing` or `withdrawn`, and the finding spelled
+the way `docs/target-classes.md` spells that tool — and an
+`<!-- upstream-report: owner/repo#N -->` marker on that tool's row in
+`docs/target-classes.md`. `spike/check-upstream-ledger.sh` refuses when
+one record names a filing the other does not, when a marker sits on some
+other tool's row, and when the ledger does not parse the way its own
+header describes, so forgetting either write is red rather than quiet.
+Before this the list lived in the status script as a literal, and the
+cohort-4 close depended on remembering to edit it by hand (PR #253):
+nothing asked, and six of seven printed exactly like six of six.
+
+**A cohort tool needs a third write, held separately**: the disposition
+row in `spike/unknown-rate/outcome-map.tsv` that `count.py` already
+requires for any corpus tool whose defines come from a cohort. Nothing ties that row's disposition
+to this ledger's status, so the two can drift — the checker's subject is
+the ledger and the markers, not the corpus map.
+
+What the two records cannot see is a filing written into neither.
+**Prose is not one of the records**: a row in `docs/target-classes.md`
+written the way the standing six are written, naming a report in its text
+and carrying no marker, is invisible to the check. That is the recorded
+accident with only its prose half done, so the residue is narrower than
+"not in either file" but it is not empty. Deriving the set from a tracker
+instead was measured and rejected: a withdrawn report and an unlisted one
+have the same shape there, and the search is per-account rather than
+per-project.
+
+A withdrawn report keeps its row. It was filed, it exists on a tracker,
+and the status column is what separates it from a filing nobody recorded;
+`alecthomas/devtodo#9` is the one this project has.
+
+**One lesson from the poetry #11019 close
 (2026-08-23) is frozen here as a reporting requirement**: before any
 report, measure and state the recovery paths that exist *outside* the
 tool, and the conditions under which they do not apply. This is a

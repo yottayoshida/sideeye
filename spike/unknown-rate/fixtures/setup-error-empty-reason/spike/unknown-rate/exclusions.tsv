@@ -1,0 +1,9 @@
+# Apparatus failures that could not be fixed (fixture). Same shape as the real
+# spike/unknown-rate/exclusions.tsv; see that file for the rules count.py holds.
+#
+# The waiver names a real SETUP_ERROR — so the row/waiver pair is well formed and
+# only the reason is wrong. Blank after stripping: the page publishes an excluded
+# row *with the reason*, and there is nothing here to publish.
+#
+# id	reason
+fx-toyE	   
