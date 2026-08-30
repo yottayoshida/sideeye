@@ -1,6 +1,6 @@
 # 0029 — The snapshot caps what holding the tree costs, not what the tree weighs
 
-Status: Proposed
+Status: Accepted (implementing PR merged as `ab8c688`, 2026-08-27)
 
 ## Context
 

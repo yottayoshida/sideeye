@@ -27,8 +27,22 @@ The contract:
 
 ## Other conventions
 
-- ADRs live in `docs/adr/` and are created `Proposed`, flipped to `Accepted` when the
-  implementing PR merges. **The directory holds nothing but ADR files, every name is
+- ADRs live in `docs/adr/` and are **written `Accepted`**, with provenance — at minimum
+  `Accepted (YYYY-MM-DD)`, and ``Accepted (implementing PR merged as `sha`, DATE)`` once a
+  merge commit exists to name. The old rule was "created `Proposed`, flipped when the
+  implementing PR merges", and it asked for something one pull request cannot do: the ADR
+  file arrives *with* the work it decides, so the flip is always a second commit. Measured
+  over the whole history, twenty of twenty-five born-`Proposed` ADRs were flipped and five
+  were not — all five inside the three dense release days of 2026-08-25..27 (#360).
+  The exception is **pre-registration**: a campaign Seal A declares its ADR before the
+  campaign runs (ADR 0012, 0015, 0016), and `Proposed` is the honest value there. Write it
+  as `Proposed (design-first: …)`; a bare `Proposed` is refused. That marker is a claim,
+  not a proof — like `Filed-under:` on an issue, it removes the silent slip, not the lie.
+  `spike/check-adr-status.sh` reports this on pull requests and on `main`: it judges the
+  first word of the Status line only, so `Accepted (…; proposed …)` and a body that
+  discusses a proposal both pass, and it fails on a missing Status line, on a walk that
+  covered fewer files than the directory holds, and on an empty directory.
+  **The directory holds nothing but ADR files, every name is
   `NNNN-slug.md`, and the four digits are unique** — reported by
   `spike/check-adr-numbering.sh`, which runs on pull requests and on `main`. Numbering is
   highest-plus-one, which reserves nothing: on 2026-08-27 two sessions each wrote an
