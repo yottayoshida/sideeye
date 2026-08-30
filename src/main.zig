@@ -895,6 +895,27 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     var waited: u64 = 0;
     var seen: u64 = 0; // bytes of the capture already scanned
     while (waited < 10_000) {
+        // An observer that has already exited will never show the sentinel; ten seconds
+        // of polling a dead process is a wrong answer arriving late. `ktrace_start:
+        // Resource busy` — another fs_usage still holding kdebug — is the usual cause.
+        var st: c_int = 0;
+        const w = posix.waitpid(pid, &st, posix.WNOHANG);
+        if (w == pid or w < 0) {
+            fsu_live = null;
+            removeFile(sentinel);
+            setupError("fs_usage exited before the handshake completed; if it printed `ktrace_start: Resource busy` above, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run");
+        }
+
+        // Flush pressure. fs_usage writes its capture through stdio, and a file is
+        // block-buffered: on a quiet machine the sentinel's line can sit in that buffer
+        // past the whole ten-second window. Two CI runs on the macOS runner timed out
+        // here on different checks while the same script passed every check on a busy
+        // laptop, whose neighbours kept the buffer moving. Sixty-four `access` calls on
+        // the sentinel path from the engine are about 16 KB of capture — past a 4 KB
+        // stdio buffer several times over — and the reader drops them as read-only.
+        var pressure: u32 = 0;
+        while (pressure < 64) : (pressure += 1) _ = posix.access(sz.ptr, posix.F_OK);
+
         // A fresh arena per poll: the capture grows while this loop runs, and reading
         // the whole of it ten times into the caller's arena keeps every copy.
         var poll_arena = std.heap.ArenaAllocator.init(gpa);

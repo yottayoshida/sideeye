@@ -183,6 +183,20 @@ resolved — still before setup, still exit 3 — and the synopsis advertises it
 platforms, which is also the honest text: the flag exists, and the refusal says why it
 does not apply here.
 
+**Third run: Linux green, and the macOS handshake timed out again — on check 2 this
+time, where the first run had failed on check 5 and the second on nothing.** The tail
+window was one cause and not the only one. What fits the pattern — every check passing on
+the laptop, one check failing per run on the runner, a different one each time — is
+stdio: fs_usage writes its capture through a block-buffered stream when stdout is a
+file, and on a quiet virtual machine the sentinel's line can sit in that buffer for
+longer than the ten-second window, while a laptop's neighbours (Defender, Spotlight,
+fseventsd) keep the buffer flushing. The same mechanism was measured earlier from the
+other side, when a SIGTERM left a capture cut cleanly at a flush boundary sixty-four
+milliseconds in. The handshake now generates its own pressure — sixty-four `access` calls
+on the sentinel path per poll, about 16 KB of capture the reader drops as read-only —
+and refuses at once, by name, if the observer has already exited rather than polling a
+dead process for ten seconds.
+
 The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
 the probe's `fs_usage` never started, because the previous binary's orphan still held
 kdebug for another two minutes, and the probe alone did not clear leftovers before

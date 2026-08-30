@@ -139,6 +139,7 @@ pub extern "c" fn access(path: [*:0]const u8, mode: c_int) c_int;
 
 /// `access` mode: executable. Same value on Linux and the BSDs.
 pub const X_OK: c_int = 1;
+pub const F_OK: c_int = 0;
 
 /// The only signal in play. Cannot be caught, which is the point: a target that could
 /// decline to die would make the crash point a request rather than a fact.
