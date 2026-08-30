@@ -1169,7 +1169,10 @@ pub const max_state_file_bytes: usize = 64 * 1024 * 1024;
 ///
 /// Four snapshots are live at once at the widest point (`main.zig`'s `initial`, `final`,
 /// `crashed`, `crashed_again`), so a completed run's resident judgement data is bounded
-/// by four times this, plus the two trace arenas. The run that refuses may hold more, for
+/// by four times this, plus `max_trace_bytes_total`. That last term said "the two trace
+/// arenas" until #377 found three read sites and gave them a ceiling of their own — the
+/// point of which is that this sentence no longer has to count them. The run that
+/// refuses may hold more, for
 /// the node-growth reason above, and then exits. Raising this value is not the safe
 /// direction: here a refusal is the good outcome, and the alternative to refusing is the
 /// unreported death above.
@@ -2144,6 +2147,17 @@ pub const TraceInfo = struct {
     /// even that failed, in which case the refusal names the cap and no more (#265's
     /// rule: a size nobody measured must not appear in the message).
     too_large_size: ?u64 = null,
+    /// The whole-trace ceiling refused an allocation during this read (#377). Carried on
+    /// the TraceInfo rather than raised as an error for the reason `too_large` is: the
+    /// caller classifies first and refuses after, so a structural UNKNOWN still reports
+    /// the L0 classification that exists. Raising it instead cost exactly that — review
+    /// measured `atomicity: not classified` on a recording-site refusal, because the
+    /// refusal ran before the final snapshot.
+    /// One field rather than a flag beside a size: unlike `too_large_size`, which is null
+    /// when even `lseek` failed, this size always exists when the ceiling refused —
+    /// it comes off the budget's own record of the request. A separate bool would be
+    /// derivable from it, and derivable state is state that can disagree.
+    budget_refused: ?usize = null,
 
     pub fn deinit(self: *TraceInfo) void {
         self.arena.deinit();
@@ -2178,8 +2192,192 @@ pub const TraceInfo = struct {
 /// different things and may move apart.
 pub const max_trace_bytes: usize = 64 * 1024 * 1024;
 
-pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
-    return readTraceCapped(gpa, path, max_trace_bytes);
+/// What every live trace read may hold TOGETHER (#377).
+///
+/// `max_trace_bytes` bounds one read. Nothing bounded the sum: the total was held by
+/// there being two read sites in one function, so the bound moved whenever someone
+/// added a site — and by the time this was written there were **three**, in two
+/// functions, with six comments and documents still saying two. A bound that a call
+/// site can move is not a rule, it is an argument, and arguments go stale in silence.
+/// This is the shape `max_state_tree_bytes` removed from the snapshot path (#323,
+/// ADR 0029) one level up: there a sum of per-file caps, here a sum of per-read ones.
+///
+/// **The value is measured, not derived.** What a trace costs is not its file size:
+/// `readWhole` reserves from the file's own length (a flat 1.50x, the arena's node
+/// growth factor), and the decode then duplicates every record's `path` and `aux` and
+/// grows an `ArrayList(Op)` in the same arena. A ceiling read off file sizes would bound
+/// none of that. Measured here, one live read at a time (ADR 0033 carries the table):
+///
+/// | shape | file bytes | budget bytes | ratio |
+/// |---|---|---|---|
+/// | header only | 36 | 542 | 15.1x |
+/// | 100 records, 16-byte paths | 3,436 | 22,580 | 6.6x |
+/// | 10,000 records, 16-byte paths | 340,036 | 2,680,986 | 7.9x |
+/// | 100 records, 3000-byte path and aux | 601,836 | 2,285,906 | 3.8x |
+/// | 2,000 records, 3000-byte path and aux | 12,036,036 | 45,139,816 | 3.75x |
+/// | 1,973,000 records, 16-byte paths | 67,082,036 | 521,200,426 | 7.77x |
+/// | **3,532,000 records, 1-byte paths** | **67,108,036** | **1,523,533,632** | **22.7x** |
+///
+/// **Shorter records cost more**, not less: the per-record overhead is what dominates, so
+/// the same file size decoded from more records holds more — by a factor of six between
+/// the last two rows, at the same file size.
+///
+/// **This ceiling therefore does NOT clear one read at the per-read cap, and that is
+/// deliberate.** Clearing the last row would need 1.5 GiB, and two of them 3 GiB, which
+/// is the resident set the ceiling exists to prevent — an OOM kill with no report is
+/// worse than a refusal that names itself. So the two ceilings **disagree about some
+/// traces**: `max_trace_bytes` admits a file this one will not hold. ADR 0029 records the
+/// same shape for the snapshot, where a tree can break the per-file cap and the tree
+/// ceiling and which fires depends on `readdir` order.
+///
+/// What 512 MiB is sized against is the corpus rather than the cap, **and that half is an
+/// estimate, not a measurement.** The largest exploration recorded here is 119 worlds
+/// (Borg, cohort 2), which at `contract.max_record_len` comes to 976,990 bytes — a
+/// calculated bound inherited from `max_trace_bytes` above, and it inherits that comment's
+/// caveat with it: worlds are not records, and a trace also carries lifecycle, boundary
+/// and marker records that the figure does not count. Taken at the worst ratio in the
+/// table it suggests some 22 MB per trace and 45 MB for two, which this ceiling clears by
+/// a wide margin. **No trace from that exploration was weighed**; what is measured here is
+/// the shape table, and the margin is a reading off it.
+///
+/// An earlier draft of this comment claimed the value cleared one read at the per-read
+/// cap; it was written from the 16-byte row alone, and the 1-byte row is what review
+/// asked for and measurement then contradicted it with.
+pub const max_trace_bytes_total: usize = 512 * 1024 * 1024;
+
+/// The ceiling above, as an allocator rather than a counter call sites remember to update.
+///
+/// Every `TraceInfo.arena` is built on one of these, so the raw read, the decode's
+/// `path`/`aux` duplicates and the `ArrayList(Op)` all charge the same limit — and
+/// `TraceInfo.deinit` returns them through the arena's own `rawFree`, with no site
+/// having to remember. **A fourth read site inherits the bound by construction**, which
+/// is the whole point: the previous arrangement was correct and would have stayed
+/// correct only for as long as nobody added a caller.
+///
+/// **Refusal happens BEFORE the allocation.** An accounting pass that reads
+/// `queryCapacity()` after the bytes are held refuses a run that has already taken the
+/// memory — ADR 0029 says exactly that about its own ceiling ("the run that refuses may
+/// hold more"). Here the vtable answers `null` first, so the promise is that an
+/// over-budget allocation does not SUCCEED, which is a thing the code can keep.
+///
+/// The judging granularity is the arena node, not the individual allocation: small
+/// allocations are served from a node already charged. What the limit bounds is the
+/// backing memory taken, which is what an operator runs out of.
+pub const TraceBudget = struct {
+    child: Allocator,
+    limit: usize,
+    used: usize = 0,
+    /// The size of the allocation this budget refused MOST RECENTLY, cleared by the next
+    /// success. The **caller** reads it after an `OutOfMemory` to tell "the budget said
+    /// no" from "the machine said no" — the vtable cannot say which, because `alloc`
+    /// returns `?[*]u8` and carries no error, and every failure therefore reaches the
+    /// caller as the same `error.OutOfMemory`.
+    ///
+    /// Read by `readTraceCapped`, which turns it into `TraceInfo.budget_refused` — the
+    /// verdict travels on the TraceInfo and **never joins `SnapshotError`**. A budget
+    /// member added to that set would land in the snapshot walk's exhaustive switches,
+    /// which the trace reader shares: the coupling #376 is about, and this change must
+    /// not make it worse.
+    ///
+    /// **Deliberately not sticky.** `readWhole`'s reservation failure is swallowed on
+    /// purpose (`catch {}` there: a failed reservation is not an error, because turning
+    /// it into one would relabel an oversized trace as `no_shim_marker`). A flag that
+    /// remembered every refusal would let that swallowed one decide a later verdict, so
+    /// this is cleared on success and the value always belongs to the failure that
+    /// actually propagated.
+    refused: ?usize = null,
+
+    pub fn allocator(self: *TraceBudget) Allocator {
+        return .{ .ptr = self, .vtable = &.{ .alloc = alloc, .resize = resize, .remap = remap, .free = free } };
+    }
+
+    /// Written as `len > limit - used` rather than `used + len > limit`: the sum can
+    /// overflow a usize and the difference cannot, since `used <= limit` holds after
+    /// every arm below.
+    fn wouldExceed(self: *const TraceBudget, len: usize) bool {
+        return len > self.limit - self.used;
+    }
+
+    /// Record a successful movement of the charge, and clear the refusal flag.
+    ///
+    /// **The clearing lives here, in one place, on purpose.** It was written inline in
+    /// all three of `alloc`, `resize` and `remap` first, and a mutation deleting any one
+    /// of them stayed green — the other two cleared the flag on the same read, so the
+    /// tests could not see the sticky behaviour they were written to catch. Three copies
+    /// of a rule are three places for it to be half-removed.
+    fn charge(self: *TraceBudget, add: usize, sub: usize) void {
+        self.used = self.used - sub + add;
+        self.refused = null;
+    }
+
+    fn alloc(ctx: *anyopaque, len: usize, a: std.mem.Alignment, ra: usize) ?[*]u8 {
+        const self: *TraceBudget = @ptrCast(@alignCast(ctx));
+        if (self.wouldExceed(len)) {
+            self.refused = len;
+            return null;
+        }
+        // **A refusal by the child is not a refusal by the budget**, and the flag has to
+        // say so. Without this line a large reservation refused by the ceiling, followed
+        // by a smaller allocation that the ceiling admitted and the machine could not
+        // meet, would report a real out-of-memory as `trace_budget_exhausted`: the stale
+        // side-channel outlives the failure it described. Cleared rather than set,
+        // because the budget did allow this one.
+        const p = self.child.rawAlloc(len, a, ra) orelse {
+            self.refused = null;
+            return null;
+        };
+        self.charge(len, 0);
+        return p;
+    }
+
+    fn resize(ctx: *anyopaque, m: []u8, a: std.mem.Alignment, n: usize, ra: usize) bool {
+        const self: *TraceBudget = @ptrCast(@alignCast(ctx));
+        if (n > m.len and self.wouldExceed(n - m.len)) {
+            self.refused = n - m.len;
+            return false;
+        }
+        // Same rule as `alloc`: the child saying no is not the ceiling saying no, and a
+        // stale flag would let a later reader call it one.
+        if (!self.child.rawResize(m, a, n, ra)) {
+            self.refused = null;
+            return false;
+        }
+        self.charge(n, m.len);
+        return true;
+    }
+
+    fn remap(ctx: *anyopaque, m: []u8, a: std.mem.Alignment, n: usize, ra: usize) ?[*]u8 {
+        const self: *TraceBudget = @ptrCast(@alignCast(ctx));
+        if (n > m.len and self.wouldExceed(n - m.len)) {
+            self.refused = n - m.len;
+            return null;
+        }
+        const p = self.child.rawRemap(m, a, n, ra) orelse {
+            self.refused = null;
+            return null;
+        };
+        self.charge(n, m.len);
+        return p;
+    }
+
+    fn free(ctx: *anyopaque, m: []u8, a: std.mem.Alignment, ra: usize) void {
+        const self: *TraceBudget = @ptrCast(@alignCast(ctx));
+        self.child.rawFree(m, a, ra);
+        self.used -= m.len;
+    }
+};
+
+/// A budget with no practical limit, for reads that are not about the ceiling — tests,
+/// mostly. **It is a `TraceBudget` rather than a plain allocator on purpose**: the type
+/// is what keeps the ceiling from being something a call site can decline to use. A
+/// caller that genuinely wants no ceiling says so here, in one named place, instead of
+/// passing a general allocator and looking identical to a caller that forgot.
+pub fn unboundedBudget(child: Allocator) TraceBudget {
+    return .{ .child = child, .limit = std.math.maxInt(usize) };
+}
+
+pub fn readTrace(budget: *TraceBudget, path: []const u8) SnapshotError!TraceInfo {
+    return readTraceCapped(budget, path, max_trace_bytes);
 }
 
 /// The capped form, parameterized for the reason `takeSnapshotCapped` is (#265): the
@@ -2188,9 +2386,49 @@ pub fn readTrace(gpa: Allocator, path: []const u8) SnapshotError!TraceInfo {
 /// planted, and the only writer is the shim. How many operations that takes depends on
 /// path lengths and is not claimed here; what is measured is that no committed define
 /// comes near it. Tests drive this with a small `max`.
-pub fn readTraceCapped(gpa: Allocator, path: []const u8, max: usize) SnapshotError!TraceInfo {
+/// **Takes the budget, not an allocator.** The first version of #377 left this signature
+/// alone and injected the ceiling in `main.zig`'s private wrapper, which meant the public
+/// API still accepted any allocator: a read site calling `engine.readTrace(gpa, …)`
+/// directly would have bypassed the ceiling in silence, while the ADR claimed every
+/// `TraceInfo` was built on a budget. Review caught the gap between the claim and the
+/// type. `unboundedBudget` is how a caller opts out, visibly.
+pub fn readTraceCapped(budget: *TraceBudget, path: []const u8, max: usize) SnapshotError!TraceInfo {
+    // **A ceiling refusal is an observation, not an error**, and this wrapper is what
+    // makes it one. The read below reaches the ceiling by two different doors: during the
+    // raw read, where `readWhole`'s failure collapses into an empty TraceInfo returned
+    // normally, and during the decode, where a `try` propagates. Left as they come, the
+    // first arrives at the caller as `no_shim_marker` and the second as a SETUP ERROR —
+    // two wrong refusals for one cause, and the caller cannot tell either from the real
+    // thing. Both are turned into the same flag here, which the caller answers for after
+    // it has classified, exactly as it does for `too_large`.
+    // **The verdict belongs to THIS read.** `refused` survives until the next successful
+    // allocation, which is what makes it usable after a failure — but a read that
+    // allocates nothing at all (a missing file, a failed open) would otherwise inherit
+    // the previous read's refusal and report a ceiling that did not stop it.
+    budget.refused = null;
+
+    var info = readTraceCappedInner(budget, path, max) catch |err| {
+        if (err == error.OutOfMemory) {
+            if (budget.refused) |want| {
+                var empty: TraceInfo = .{
+                    .arena = std.heap.ArenaAllocator.init(budget.allocator()),
+                    .ops = .empty,
+                };
+                empty.budget_refused = want;
+                return empty;
+            }
+        }
+        return err;
+    };
+    if (budget.refused) |want| {
+        info.budget_refused = want;
+    }
+    return info;
+}
+
+fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) SnapshotError!TraceInfo {
     var info: TraceInfo = .{
-        .arena = std.heap.ArenaAllocator.init(gpa),
+        .arena = std.heap.ArenaAllocator.init(budget.allocator()),
         .ops = .empty,
     };
     errdefer info.arena.deinit();
@@ -3817,7 +4055,8 @@ test "a trace written against another contract version is a mismatch, not a shor
     try std.testing.expectEqual(@as(isize, buf.len), posix.write(fd, &buf, buf.len));
     _ = posix.close(fd);
 
-    var info = try readTrace(std.testing.allocator, std.mem.span(fz.ptr));
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz.ptr));
     defer info.deinit();
     try std.testing.expect(info.version_mismatch);
     // Distinct from truncation: the two lead to different verdicts and different advice.
@@ -3831,7 +4070,7 @@ test "a trace written against another contract version is a mismatch, not a shor
     try std.testing.expect(fd2 >= 0);
     try std.testing.expectEqual(@as(isize, ok_buf.len), posix.write(fd2, &ok_buf, ok_buf.len));
     _ = posix.close(fd2);
-    var ok_info = try readTrace(std.testing.allocator, std.mem.span(fz.ptr));
+    var ok_info = try readTrace(&tb_, std.mem.span(fz.ptr));
     defer ok_info.deinit();
     try std.testing.expect(!ok_info.version_mismatch);
 
@@ -3870,7 +4109,8 @@ test "a subject exec followed by a shim_ready carrying the count is a continuati
         .{ .op = .shim_ready, .seq = 2, .pid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/b", .aux = "" },
     }, &fbuf);
-    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
     try std.testing.expect(info.hard_boundary == null);
     try std.testing.expect(!info.exec_chain_broken);
@@ -3893,7 +4133,8 @@ test "a subject exec whose shim_ready restarts at zero is a broken chain, and th
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/b", .aux = "" },
     }, &fbuf);
-    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
     try std.testing.expect(info.exec_chain_broken);
     try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
@@ -3912,7 +4153,8 @@ test "a subject exec with no shim_ready after it is a broken chain (#123)" {
         .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
         .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
     }, &fbuf);
-    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
     try std.testing.expect(info.exec_chain_broken);
     try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
@@ -3931,7 +4173,8 @@ test "a second announcement with no exec record is itself an image change (#123)
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
     }, &fbuf);
-    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
     try std.testing.expect(info.exec_chain_broken);
     try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
@@ -3950,7 +4193,8 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
         .{ .op = .write, .seq = 1, .pid = 9, .path = "/tmp/s/c", .aux = "" },
         .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
     }, &fbuf);
-    var info = try readTrace(std.testing.allocator, std.mem.span(fz));
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
     try std.testing.expect(info.hard_boundary == null);
     try std.testing.expect(!info.exec_chain_broken);
@@ -4337,6 +4581,284 @@ fn traceFixture(tag: []const u8, bytes: []const u8, path_out: []u8) ?[]const u8 
     return path;
 }
 
+/// A trace of `n` write records with 16-byte paths, for the budget tests. Measured at
+/// n=100: 3,436 bytes of file and 22,580 bytes of budget.
+fn budgetFixture(tag: []const u8, n: usize, gpa: Allocator, fbuf: *[contract.max_path]u8) ![*:0]const u8 {
+    const recs = try gpa.alloc(contract.Record, n + 1);
+    defer gpa.free(recs);
+    const p16 = "pppppppppppppppp";
+    recs[0] = .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" };
+    for (recs[1..], 0..) |*r, i| r.* = .{ .op = .write, .seq = @intCast(i + 1), .pid = 7, .path = p16, .aux = "" };
+    return writeTraceForTest(tag, recs, fbuf);
+}
+
+test "MEASURE what a trace costs the budget, by shape (#377, ADR 0033)" {
+    // **The table in `max_trace_bytes_total`'s doc, in ADR 0033 and in BUILDLOG is this
+    // test's output.** Kept rather than deleted so the numbers a value was chosen from
+    // are reproducible by whoever questions the value — review's first pass could not
+    // check them against anything, which is a fair complaint about a claim that says
+    // "measured". Gated because the last two shapes cost about a minute and 1.5 GB of
+    // resident memory between them, which CI should not pay on every push:
+    //
+    //   SIDEEYE_MEASURE=1 zig build test 2>&1 | grep '#377'
+    if (posix.getenv("SIDEEYE_MEASURE") == null) return error.SkipZigTest;
+
+    const gpa = std.testing.allocator;
+    const shapes = [_]struct { tag: []const u8, n: usize, plen: usize, alen: usize }{
+        .{ .tag = "hdr", .n = 0, .plen = 0, .alen = 0 },
+        .{ .tag = "s100", .n = 100, .plen = 16, .alen = 0 },
+        .{ .tag = "s10k", .n = 10000, .plen = 16, .alen = 0 },
+        .{ .tag = "l100", .n = 100, .plen = 3000, .alen = 3000 },
+        .{ .tag = "l2k", .n = 2000, .plen = 3000, .alen = 3000 },
+        // Just under `max_trace_bytes` at 34 bytes a record. 1,974,000 would be 67,116,036
+        // bytes — over the cap, refused before the decode, and the measurement would be of
+        // the raw read alone (`ops=0`, which is how the first attempt reported it).
+        .{ .tag = "cap16", .n = 1973000, .plen = 16, .alen = 0 },
+        // The same file size at 19 bytes a record. The shim can write a one-character
+        // unresolved operand, so this shape is reachable, and it is six times the cost of
+        // the row above — which is why the ceiling is not sized against the per-read cap.
+        .{ .tag = "cap1", .n = 3532000, .plen = 1, .alen = 0 },
+    };
+    inline for (shapes) |s| {
+        var pbuf: [contract.max_path]u8 = undefined;
+        @memset(&pbuf, 'p');
+        var abuf: [contract.max_path]u8 = undefined;
+        @memset(&abuf, 'x');
+        const recs = try gpa.alloc(contract.Record, s.n + 1);
+        defer gpa.free(recs);
+        recs[0] = .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" };
+        for (recs[1..], 0..) |*r, i| r.* = .{
+            .op = .write,
+            .seq = @intCast(i + 1),
+            .pid = 7,
+            .path = pbuf[0..s.plen],
+            .aux = abuf[0..s.alen],
+        };
+        var fbuf: [contract.max_path]u8 = undefined;
+        const fz = try writeTraceForTest("budget-m-" ++ s.tag, recs, &fbuf);
+
+        var budget = unboundedBudget(gpa);
+        var info = try readTraceCapped(&budget, std.mem.span(fz), max_trace_bytes);
+        std.debug.print("[#377] {s:>6}: recs={d:>7} plen={d:>4} alen={d:>4} used={d:>11} ops={d:>7} too_large={any}\n", .{
+            s.tag, s.n, s.plen, s.alen, budget.used, info.ops.items.len, info.too_large,
+        });
+        info.deinit();
+        try std.testing.expectEqual(@as(usize, 0), budget.used);
+    }
+}
+
+test "the ceiling covers resize and remap, which no trace read reaches (#377)" {
+    const gpa = std.testing.allocator;
+
+    // **`ArenaAllocator` never asks its child to `remap`, and only `resize`s its last
+    // node.** So the two growth arms of this vtable are unreachable through every other
+    // test in this file: deleting their ceiling checks left the whole suite green,
+    // measured. They are reachable through the allocator interface directly, which is
+    // what a future non-arena caller would use, and that is what this drives.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 4096 };
+    const a = budget.allocator();
+
+    const m = try a.alloc(u8, 2048);
+    try std.testing.expectEqual(@as(usize, 2048), budget.used);
+
+    // Growing by more than the 2048 that remain: both arms must refuse, and must say the
+    // budget was the one refusing. `resize` reports `false` and `remap` reports `null`,
+    // which the child also does when it simply cannot move the allocation — `refused` is
+    // how the two are told apart.
+    budget.refused = null;
+    try std.testing.expect(!a.resize(m, 5000));
+    try std.testing.expect(budget.refused != null);
+
+    budget.refused = null;
+    try std.testing.expect(a.remap(m, 5000) == null);
+    try std.testing.expect(budget.refused != null);
+
+    // Shrinking is never refused BY THE BUDGET. Whether the child can do it in place is
+    // a different question — `std.testing.allocator` answers false for 2048 → 1024,
+    // measured — so what this asserts is that the ceiling did not object, not that the
+    // resize happened.
+    budget.refused = null;
+    _ = a.resize(m, 1024);
+    try std.testing.expect(budget.refused == null);
+
+    a.free(m);
+    try std.testing.expectEqual(@as(usize, 0), budget.used);
+}
+
+test "a child refusal is not a ceiling refusal, on all three arms (#377)" {
+    const gpa = std.testing.allocator;
+
+    // A budget with room to spare over a child that refuses anything large: the shape
+    // where the ceiling says yes and the machine says no. Both answer the caller with
+    // the same `null`/`false`, so the only thing that separates them is `refused` —
+    // which means a stale value here reports a real out-of-memory as a ceiling refusal.
+    var refuser: RefuseLargeAllocator = .{ .backing = gpa, .ceiling = 4096 };
+    var budget: TraceBudget = .{ .child = refuser.allocator(), .limit = 64 * 1024 };
+    const a = budget.allocator();
+
+    const m = try a.alloc(u8, 2048);
+    defer a.free(m);
+
+    // The real order, not a flag set by hand: a genuine ceiling refusal first, then a
+    // request the ceiling admits and the child declines. Each arm has to clear.
+    try std.testing.expectError(error.OutOfMemory, a.alloc(u8, 128 * 1024));
+    try std.testing.expect(budget.refused != null);
+    try std.testing.expectError(error.OutOfMemory, a.alloc(u8, 5000));
+    try std.testing.expect(budget.refused == null);
+
+    try std.testing.expectError(error.OutOfMemory, a.alloc(u8, 128 * 1024));
+    try std.testing.expect(budget.refused != null);
+    try std.testing.expect(!a.resize(m, 5000));
+    try std.testing.expect(budget.refused == null);
+
+    try std.testing.expectError(error.OutOfMemory, a.alloc(u8, 128 * 1024));
+    try std.testing.expect(budget.refused != null);
+    try std.testing.expect(a.remap(m, 5000) == null);
+    try std.testing.expect(budget.refused == null);
+}
+
+test "the whole-trace ceiling charges the decode, not only the raw read (#377)" {
+    const gpa = std.testing.allocator;
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try budgetFixture("budget-decode", 100, gpa, &fbuf);
+
+    // **This is the leg that separates a budget from an accounting pass over the raw
+    // read.** Measured: this trace is 3,436 bytes of file and 22,580 bytes of budget,
+    // because the decode duplicates every record's path into the same arena. The raw
+    // read alone costs about 1.50x the file — some 6 KiB. A ceiling of 12 KiB is
+    // therefore well clear of the raw bytes and well under the decoded trace, so an
+    // implementation that charged only `readWhole` would let this through.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 12 * 1024 };
+    var info = try readTraceCapped(&budget, std.mem.span(fz), max_trace_bytes);
+    defer info.deinit();
+    // Not an error: a ceiling refusal is an observation the caller answers for after it
+    // has classified, like `too_large`. The read reports it on the TraceInfo.
+    try std.testing.expect(info.budget_refused != null);
+    }
+
+test "the whole-trace ceiling is shared: a second live trace is refused on the sum (#377)" {
+    const gpa = std.testing.allocator;
+    var fbuf_a: [contract.max_path]u8 = undefined;
+    var fbuf_b: [contract.max_path]u8 = undefined;
+    const a = try budgetFixture("budget-sum-a", 100, gpa, &fbuf_a);
+    const b = try budgetFixture("budget-sum-b", 100, gpa, &fbuf_b);
+
+    // 32 KiB admits one 22,580-byte trace and not two. **Neither trace is too large by
+    // itself** — that is the whole distinction between this and `trace_too_large`, and
+    // the reason the two carry different `unknown_reason` values.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 32 * 1024 };
+    var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
+    var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
+    try std.testing.expect(refused.budget_refused != null);
+    refused.deinit();
+
+    // And it is the SUM that refused, not the second file: freeing the first admits it.
+    // Without this arm the test above passes for an implementation that simply refuses
+    // every second read. It also pins the verdict to the read that produced it — the
+    // wrapper clears the side-channel on entry, and without that this second read would
+    // inherit the first refusal and report a ceiling that did not stop it.
+    first.deinit();
+    var second = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
+    try std.testing.expect(second.budget_refused == null);
+    second.deinit();
+    try std.testing.expectEqual(@as(usize, 0), budget.used);
+}
+
+test "a read that allocates nothing does not inherit the previous refusal (#377)" {
+    const gpa = std.testing.allocator;
+    var fbuf_a: [contract.max_path]u8 = undefined;
+    var fbuf_b: [contract.max_path]u8 = undefined;
+    const a = try budgetFixture("budget-inherit-a", 100, gpa, &fbuf_a);
+    const b = try budgetFixture("budget-inherit-b", 100, gpa, &fbuf_b);
+
+    // **The case the entry reset exists for, and the only one that reaches it.** A read
+    // that succeeds clears the side-channel on its own first allocation, so the reset is
+    // invisible there — the mutation deleting it survived every other test in this file,
+    // measured. A read that allocates NOTHING has no such moment: a missing file fails at
+    // `open`, before the arena takes a byte, and returns the empty TraceInfo that means
+    // "the shim never ran". Without the reset it would carry the previous read's refusal
+    // and be reported as a ceiling that never stopped it.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 32 * 1024 };
+    var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
+    defer first.deinit();
+    var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
+    try std.testing.expect(refused.budget_refused != null);
+    refused.deinit();
+
+    var absent = try readTraceCapped(&budget, "/tmp/sideeye-no-such-trace-for-inherit-test", max_trace_bytes);
+    defer absent.deinit();
+    try std.testing.expect(absent.budget_refused == null);
+    try std.testing.expect(!absent.saw_shim_ready);
+}
+
+test "the whole-trace ceiling is returned by deinit, so a loop does not drift (#377)" {
+    const gpa = std.testing.allocator;
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try budgetFixture("budget-loop", 100, gpa, &fbuf);
+
+    // The world loop reads a trace per world. A budget that charged without returning
+    // would refuse a long exploration for no reason the operator could act on — and it
+    // would do so at a world number that depends on the ceiling, which is the kind of
+    // failure nobody reproduces. Ten passes at a ceiling that fits exactly one.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 32 * 1024 };
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        var info = try readTraceCapped(&budget, std.mem.span(fz), max_trace_bytes);
+        info.deinit();
+        try std.testing.expectEqual(@as(usize, 0), budget.used);
+    }
+}
+
+test "a budget refusal during the RAW read returns an empty trace, not an error (#377)" {
+    const gpa = std.testing.allocator;
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try budgetFixture("budget-rawread", 100, gpa, &fbuf);
+
+    // **The shape that made the first implementation ship the wrong refusal.** This
+    // function collapses every `readWhole` failure except the per-read cap into an empty
+    // `TraceInfo` and returns it NORMALLY — so a budget refusal during the raw read is
+    // not an error the caller can catch. It arrives as a trace with no shim marker,
+    // which `main.zig` reports as `no_shim_marker`: the shim never initialised.
+    //
+    // Measured on a real run before this was pinned: `preflight --twice` under a lowered
+    // ceiling refused the second observation with `no_shim_marker`. The unit tests at the
+    // time all passed, because every one of them drove the path where the error DOES
+    // propagate (the decode's `try`), and this path is the other one.
+    //
+    // What this pins is therefore an obligation on the caller, not a behaviour of this
+    // function: after any read, a budget with `refused` set means the read was refused,
+    // whether or not it returned an error.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 4 * 1024 };
+    var info = try readTraceCapped(&budget, std.mem.span(fz), max_trace_bytes);
+    defer info.deinit();
+    try std.testing.expect(!info.saw_shim_ready);
+    try std.testing.expectEqual(@as(usize, 0), info.ops.items.len);
+    try std.testing.expect(budget.refused != null);
+}
+
+test "a success clears the budget's refusal flag, so it always names the last failure (#377)" {
+    const gpa = std.testing.allocator;
+
+    // Driven through the allocator rather than through a read, because that is the only
+    // way to reach the case: `readWhole` reserves the same bytes its read loop goes on to
+    // need, so no ceiling refuses the reservation and admits the loop. An earlier version
+    // of this test tried it through a read, asserted a flag that was never set, and
+    // survived the sticky mutation — measured, which is how this version exists.
+    //
+    // Why it matters: `readWhole`'s reservation failure is swallowed on purpose, so a
+    // flag that remembered every refusal would let a swallowed one mark a read that then
+    // succeeded. The read's own verdict would say the ceiling stopped it when nothing did.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 4096 };
+    const alloc = budget.allocator();
+
+    try std.testing.expectError(error.OutOfMemory, alloc.alloc(u8, 8192));
+    try std.testing.expect(budget.refused != null);
+
+    const m = try alloc.alloc(u8, 1024);
+    defer alloc.free(m);
+    try std.testing.expect(budget.refused == null);
+}
+
 /// An allocator that refuses any single request over `ceiling` and passes the rest
 /// through. `std.testing.FailingAllocator` cannot express this: its `alloc_index` only
 /// advances on success, so a `fail_index` that catches the first request catches every
@@ -4437,7 +4959,8 @@ test "a reservation that cannot be met does not relabel an oversized trace (#323
     // reservation and nothing else, which is what separates "the reservation is a hint"
     // from "the reservation is load-bearing".
     var refuser: RefuseLargeAllocator = .{ .backing = std.testing.allocator, .ceiling = 16 * 1024 };
-    var info = try readTraceCapped(refuser.allocator(), path, 4);
+    var rb_ = unboundedBudget(refuser.allocator());
+    var info = try readTraceCapped(&rb_, path, 4);
     defer info.deinit();
 
     // The answer is the cap's, not the empty read's — which is the whole point.
@@ -4448,7 +4971,7 @@ test "a reservation that cannot be met does not relabel an oversized trace (#323
     // completes. Without it, an allocator that broke every read would satisfy the line
     // above for the wrong reason — "nothing can be allocated at all" is a different
     // failure that would otherwise pass as correct here.
-    var ok = try readTraceCapped(refuser.allocator(), path, 4096);
+    var ok = try readTraceCapped(&rb_, path, 4096);
     defer ok.deinit();
     try std.testing.expect(!ok.too_large);
     try std.testing.expectEqual(@as(usize, 0), ok.ops.items.len);
@@ -4469,7 +4992,8 @@ test "an oversized trace says so, instead of collapsing into the empty read (#32
 
     // Over the cap: the flag is set and the size is the file's true length, read by
     // lseek rather than counted from the truncated read.
-    var big = try readTraceCapped(gpa, path, 4);
+    var gb_ = unboundedBudget(gpa);
+    var big = try readTraceCapped(&gb_, path, 4);
     defer big.deinit();
     try std.testing.expect(big.too_large);
     try std.testing.expectEqual(@as(?u64, 10), big.too_large_size);
@@ -4481,7 +5005,7 @@ test "an oversized trace says so, instead of collapsing into the empty read (#32
 
     // At the cap exactly, no breach — the boundary is "over", not "at" (the per-file
     // cap's boundary, kept identical so the two caps cannot drift in that detail).
-    var ok = try readTraceCapped(gpa, path, 10);
+    var ok = try readTraceCapped(&gb_, path, 10);
     defer ok.deinit();
     try std.testing.expect(!ok.too_large);
 }
@@ -4491,7 +5015,8 @@ test "a cap breach and an unreadable trace are different observations (#324)" {
 
     // A trace that is not there at all: the empty TraceInfo, exactly as before this
     // change — the honest observation that the shim never wrote anything.
-    var absent = try readTraceCapped(gpa, "/tmp/sideeye-no-such-trace-file-does-not-exist", 4);
+    var gb_ = unboundedBudget(gpa);
+    var absent = try readTraceCapped(&gb_, "/tmp/sideeye-no-such-trace-file-does-not-exist", 4);
     defer absent.deinit();
     try std.testing.expect(!absent.too_large);
     try std.testing.expect(absent.too_large_size == null);
@@ -4511,7 +5036,7 @@ test "a cap breach and an unreadable trace are different observations (#324)" {
         const dir_z = std.fmt.bufPrintZ(&dz, "/tmp/sideeye-tracecap-contrast-{d}", .{posix.getpid()}) catch unreachable;
         _ = posix.rmdir(dir_z.ptr);
     }
-    var big = try readTraceCapped(gpa, path, 4);
+    var big = try readTraceCapped(&gb_, path, 4);
     defer big.deinit();
     try std.testing.expect(big.too_large);
 }

@@ -51,6 +51,26 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    precedent, and `sc-18`'s `legality` reads `freeze-broken` for exactly that
    reason: it is not a category of permitted movement, and the ledger would be
    lying if it recorded one.
+
+   **Amended again 2026-08-30: broken a second time, by its own ruling.**
+   `trace_budget_exhausted` was added for #377, taking the set from 33 members
+   to 34. The engine now holds every live trace under one ceiling rather than
+   under a per-read cap counted by call sites, and the refusal that ceiling
+   produces is a different fact from `trace_too_large`: there one trace is
+   larger than the reader will hold, here every trace involved may be small and
+   what ran out is the sum. Reusing the existing member would have changed a
+   frozen machine meaning rather than added to the set — a consumer reading
+   `trace_too_large` and going to look for one oversized file would find none —
+   and that is the same reason `state_tree_too_large` was never folded into
+   `state_file_too_large`. Ruled on its own merits, as the paragraph above
+   requires: the count of prior breaks was not an argument in it. Its
+   `surface-changes.tsv` row carries `freeze-broken` and lands in the follow-up
+   audit commit, which is where a row naming its own merge sha can be written —
+   **the same follow-up the first break is still waiting for**: measured
+   2026-08-30, that ledger ends at `sc-17`, so neither this break nor
+   `state_changed_unaccounted`'s has a row yet. **The rule for 1.x is still
+   unchanged**, and a third member would need a third ruling; two is not a
+   pattern that grants the next one.
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

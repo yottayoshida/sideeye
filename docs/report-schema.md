@@ -102,7 +102,8 @@ the case file — nothing else in the report was load-bearing for them.
 `case_no_longer_applies`, `recording_run_failed`, `baseline_run_failed`,
 `parent_exited`,
 `baseline_violates_invariant`, `boundary_without_oracle`,
-`state_not_quiescent`, `unsupported_state_entry`, `state_changed_unaccounted`.
+`state_not_quiescent`, `unsupported_state_entry`, `state_changed_unaccounted`,
+`trace_budget_exhausted`.
 
 A new refusal joins this list in the change that introduces it, and the
 acceptance check above holds this page to that.
