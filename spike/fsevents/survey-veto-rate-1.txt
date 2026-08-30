@@ -1,0 +1,1179 @@
+== environment
+   ProductName:		macOS
+   ProductVersion:		15.3.1
+   BuildVersion:		24D70
+   24.3.0 arm64
+   System Integrity Protection status: enabled.
+   invoked as uid 502 — every leg here is unprivileged by design
+   settle before flush: 0.4s; repetitions for timing legs: 30
+
+== the judge, seen red before it judges anything
+-- selftest (accept side, reject side, and apparatus-BROKEN side)
+    containment: 1 operation(s) over 1 path(s); 1 event(s) besides the sentinel; 0 outside the account
+    containment: ok - nothing outside the account
+    containment: 1 operation(s) over 1 path(s); 2 event(s) besides the sentinel; 1 outside the account
+    containment: outside, unrelated to the account: /selftest-only/stranger
+    containment: FAIL - 0 ancestor(s), 1 unrelated; a veto on this relation as stated fires on a clean run
+    containment: 1 operation(s) over 1 path(s); 1 event(s) besides the sentinel; 0 outside the account
+    sensitivity: planted clonefile at /s/clone-dst.txt, outside an account of 1 path(s); 1 event(s) name it
+    sensitivity: ok - the veto sees what the account does not
+    sensitivity: planted clonefile at /s/clone-dst.txt, outside an account of 1 path(s); 0 event(s) name it
+    sensitivity: FAIL - the veto cannot see a mutation the account misses
+    op seq=0 open class=open rc=0 errno=0: path(s) observed ['ItemCreated']
+    mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+    soundness: sentinel delivered; 1 operation(s) over 1 path(s); 1 event(s) besides the sentinel; 1/1 path(s) produced at least one event
+    soundness: ok - the apparatus is alive
+    coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies)
+      /s/target: 1 entry(ies), union of flags ['ItemCreated']
+    ordering: ids monotonic across 2 entry(ies)
+      entry batch=0.0 id=1 inside op(s) [], after op(s) [0, 1]
+      entry batch=0.1 id=2 inside op(s) [], after op(s) [0, 1]
+    op seq=0 unlink class=unlink rc=-1 errno=2: path(s) NOT observed []
+    mapping: 1 operation(s) -> 0 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+    mapping: DEAD - 1 path(s) with an operation and no event: /s/missing
+    mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+    op seq=0 open class=open rc=0 errno=0: path(s) observed ['ItemCreated']
+    op seq=1 unlink class=unlink rc=0 errno=0: path(s) NOT observed []
+    mapping: 2 operation(s) -> 1 entry(ies) over 2 path(s); per-operation attribution is not available when operations share a path
+    mapping: DEAD - 1 path(s) with an operation and no event: /s/b
+    mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+    soundness: sentinel delivered; 1 operation(s) over 1 path(s); 1 event(s) besides the sentinel; 0/1 path(s) produced at least one event
+    soundness: FAIL - no event for any path the probe touched
+    ordering: ids are not monotonic across the capture: [9, 2]
+      entry batch=0.0 id=9 inside op(s) [], after op(s) [0, 1]
+      entry batch=0.1 id=2 inside op(s) [], after op(s) [0, 1]
+    ordering: ids monotonic across 1 entry(ies)
+    ordering: DEAD - 3 operation(s) arrived as 1 entry(ies), so no entry order can carry the operation order
+      entry batch=0.0 id=1 inside op(s) [], after op(s) [0, 1, 2]
+    coalescing: DEAD - the sentinel arrived but the operations produced no entry at all
+    attribution: run A 2 entry(ies), run B 2 entry(ies)
+      A: /s/target ['ItemCreated', 'ItemIsFile']
+      A: /s/sentinel ['ItemCreated']
+      B: /s/target ['ItemCreated', 'ItemIsFile']
+      B: /s/sentinel ['ItemCreated']
+    attribution: INDISTINGUISHABLE - the runs differ only in which process acted, and the captures agree in path and flags
+    attribution: run A 2 entry(ies), run B 2 entry(ies)
+      A: /s/target ['ItemCreated', 'ItemIsFile']
+      A: /s/sentinel ['ItemCreated']
+      B: /s/other ['ItemCreated', 'ItemIsFile']
+      B: /s/sentinel ['ItemCreated']
+    attribution: the captures differ
+    attribution: run A 0 entry(ies), run B 0 entry(ies)
+    selftest ok: containment accepts a capture inside the account                        -> 0 (wanted 0)
+    selftest ok: containment rejects one path the account never names                    -> 1 (wanted 1)
+    selftest ok: containment calls a parent directory an ancestor, not a stranger        -> 'ancestor' (wanted 'ancestor')
+    selftest ok: containment calls a sibling path unrelated, not an ancestor             -> '+unrelated' (wanted '+unrelated')
+    selftest ok: containment is BROKEN when the sentinel produced no event               -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: sensitivity is BROKEN when the sentinel produced no event               -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: sensitivity is BROKEN when the capture disowns itself                   -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: a planted record without a syscall is BROKEN, not a blind veto          -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: containment is BROKEN when the capture disowns itself                   -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: sensitivity accepts a planted path the capture names                    -> 0 (wanted 0)
+    selftest ok: sensitivity rejects a planted path the capture is silent about          -> 1 (wanted 1)
+    selftest ok: sensitivity is BROKEN when the planted path is inside the account       -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: mapping accepts one op with one event                                   -> 0 (wanted 0)
+    selftest ok: soundness accepts a live apparatus                                      -> 0 (wanted 0)
+    selftest ok: coalescing accepts and records a collapsed run                          -> 0 (wanted 0)
+    selftest ok: ordering accepts monotonic ids with one entry per op                    -> 0 (wanted 0)
+    selftest ok: mapping rejects an op whose path saw nothing (the K1 shape)             -> 1 (wanted 1)
+    selftest ok: mapping rejects when only one of two paths was seen                     -> 1 (wanted 1)
+    selftest ok: soundness rejects a capture with no event for any op path               -> 1 (wanted 1)
+    selftest ok: ordering rejects non-monotonic ids                                      -> 1 (wanted 1)
+    selftest ok: ordering rejects fewer entries than operations as unrecoverable         -> 1 (wanted 1)
+    selftest ok: coalescing rejects zero entries beside a delivered sentinel             -> 1 (wanted 1)
+    selftest ok: mapping never claims 'every operation produced an event'                -> True (wanted True)
+    selftest ok: mapping says the sequence is not recoverable when entries < ops         -> True (wanted True)
+    selftest ok: malformed JSON is BROKEN                                                -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: a JSON scalar line is BROKEN, not a traceback                           -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: flags_decoded of the wrong type is BROKEN                               -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: a missing ready record is BROKEN                                        -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: a truncated capture is BROKEN                                           -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: a watcher broken record is BROKEN                                       -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: no sentinel record is BROKEN                                            -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: a sentinel that failed is BROKEN                                        -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: a sentinel with no event of its own is BROKEN (the empty-capture trap)  -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: an empty capture with no sentinel event is BROKEN, not DEAD             -> 'BROKEN' (wanted 'BROKEN')
+    selftest ok: attribution reports indistinguishable when only ids/times differ        -> 1 (wanted 1)
+    selftest ok: attribution reports a difference when paths differ                      -> 0 (wanted 0)
+    selftest ok: attribution on an empty capture is BROKEN, not agreement                -> 'BROKEN' (wanted 'BROKEN')
+    selftest cases: 37, failures: 0
+-- positive control: the selftest must kill a judge that always accepts
+   always-accept judge -> 7 selftest failure(s)
+-- positive control: and a judge that always rejects
+   always-reject judge -> 4 selftest failure(s)
+
+== the header lines this survey is designed from
+   (committed because a design source that lives only in a session's
+    memory is not a source — the #181 lesson)
+   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreServices.framework/Frameworks/FSEvents.framework/Headers/FSEvents.h
+-- latency exists to hide intermediate states, and names the very
+   write pattern this project judges
+   | 80: *    "latency" parameter that tells how long to wait after an event
+   | 81- *    occurs before forwarding it; this reduces the volume of events
+   | 82- *    and reduces the chance that the client will see an "intermediate"
+   | 83- *    state, like those that arise when doing a "safe save" of a file,
+   | 84- *    creating a package, or downloading a file via Safari. 
+-- an event id belongs to the most recent event for that directory
+   | 697: *      the eventPaths parameter. Each event ID comes from the most
+   | 698- *      recent event being reported in the corresponding directory
+   | 699- *      named in the eventPaths parameter.  Event IDs all come from a
+   | 700- *      single global source.  They are guaranteed to always be
+-- MarkSelf/OwnEvent: the framework can tell its own client's events
+   apart. It exposes no pid for anyone else.
+   | 284:  kFSEventStreamCreateFlagMarkSelf __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0) = 0x00000020,
+   | 543:  kFSEventStreamEventFlagOwnEvent __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0) = 0x00080000,
+-- ScheduleWithRunLoop is deprecated since macOS 13; the watcher uses
+   a dispatch queue instead
+   | 1157:  CFStringRef        runLoopMode) API_DEPRECATED("Use FSEventStreamSetDispatchQueue instead.", macos(10.5, 13.0), ios(6.0,16.0));
+
+== build
+   watcher: 52024 bytes
+   probe:   35144 bytes
+
+== L0: is the apparatus alive?
+   One file created after READY must produce at least one event for that
+   path. This is a control on the WATCHER. It deliberately does not ask
+   whether several operations arrive distinctly — that is the question
+   under test, and a control that assumes the answer is not a control.
+   (settle 0.4s)
+  soundness: sentinel delivered; 1 operation(s) over 1 path(s); 1 event(s) besides the sentinel; 1/1 path(s) produced at least one event
+  soundness: ok - the apparatus is alive
+   L0 verdict rc=0
+
+== L1: which operations produce an event at all?
+   The shim records every ATTEMPT before it runs, and says why: a failed
+   attempt has to count on both sides or the accounts desync
+   (shim/src/ops.zig). FSEvents reports changes, so an attempt that
+   changed nothing has nothing to report. Each mode runs alone.
+-- mode create
+   (settle 0.4s)
+  op seq=0 open class=open rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile']
+  mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+-- mode write
+   (settle 0.4s)
+  op seq=0 open class=open rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemModified']
+  op seq=1 write class=write rc=7 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemModified']
+  mapping: 2 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+  mapping: every path was observed, but 2 operation(s) arrived as 1 entry(ies): the sequence is not recoverable from this capture
+-- mode fsync
+   (settle 0.4s)
+  op seq=0 open class=open rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemModified']
+  op seq=1 write class=write rc=7 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemModified']
+  op seq=2 fsync class=fsync rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemModified']
+  mapping: 3 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+  mapping: every path was observed, but 3 operation(s) arrived as 1 entry(ies): the sequence is not recoverable from this capture
+-- mode truncate-same
+   (settle 0.4s)
+  op seq=0 truncate class=truncate rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemInodeMetaMod', 'ItemIsFile', 'ItemModified']
+  mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+-- mode truncate-shrink
+   (settle 0.4s)
+  op seq=0 truncate class=truncate rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemInodeMetaMod', 'ItemIsFile', 'ItemModified']
+  mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+-- mode rename
+   (settle 0.4s)
+  op seq=0 rename class=rename rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemModified', 'ItemRenamed']
+  mapping: 1 operation(s) -> 2 entry(ies) over 2 path(s); per-operation attribution is not available when operations share a path
+-- mode unlink
+   (settle 0.4s)
+  op seq=0 unlink class=unlink rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemModified', 'ItemRemoved']
+  mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+-- mode mkdir
+   (settle 0.4s)
+  op seq=0 mkdir class=mkdir rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsDir']
+  mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+-- mode rmdir
+   (settle 0.4s)
+  op seq=0 rmdir class=rmdir rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsDir', 'ItemRemoved']
+  mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+-- mode link
+   (settle 0.4s)
+  op seq=0 link class=link rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsFile', 'ItemIsHardlink']
+  mapping: 1 operation(s) -> 2 entry(ies) over 2 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 1 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-link/state/target
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+-- mode symlink
+   (settle 0.4s)
+  op seq=0 symlink class=symlink rc=0 errno=0: path(s) observed ['ItemCreated', 'ItemIsSymlink']
+  mapping: 1 operation(s) -> 1 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+-- mode fail-open
+   (settle 0.4s)
+  op seq=0 open class=open rc=-1 errno=ENOENT: path(s) NOT observed []
+  mapping: 1 operation(s) -> 0 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 1 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-fail-open/state/missing-dir/leaf
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+-- mode fail-unlink
+   (settle 0.4s)
+  op seq=0 unlink class=unlink rc=-1 errno=ENOENT: path(s) NOT observed []
+  mapping: 1 operation(s) -> 0 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 1 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-fail-unlink/state/missing
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+-- mode fail-rename
+   (settle 0.4s)
+  op seq=0 rename class=rename rc=-1 errno=ENOENT: path(s) NOT observed []
+  mapping: 1 operation(s) -> 0 entry(ies) over 2 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 2 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-fail-rename/state/missing, /Users/i.yoshida/se286.jDrfKi/L1-fail-rename/state/target2
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+-- mode fail-mkdir
+   (settle 0.4s)
+  op seq=0 mkdir class=mkdir rc=-1 errno=EEXIST: path(s) NOT observed []
+  mapping: 1 operation(s) -> 0 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 1 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-fail-mkdir/state/subdir
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+-- mode fail-rmdir
+   (settle 0.4s)
+  op seq=0 rmdir class=rmdir rc=-1 errno=ENOENT: path(s) NOT observed []
+  mapping: 1 operation(s) -> 0 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 1 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-fail-rmdir/state/missing
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+-- mode fail-link
+   (settle 0.4s)
+  op seq=0 link class=link rc=-1 errno=ENOENT: path(s) NOT observed []
+  mapping: 1 operation(s) -> 0 entry(ies) over 2 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 2 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-fail-link/state/missing, /Users/i.yoshida/se286.jDrfKi/L1-fail-link/state/target2
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+-- mode fail-truncate
+   (settle 0.4s)
+  op seq=0 truncate class=truncate rc=-1 errno=ENOENT: path(s) NOT observed []
+  mapping: 1 operation(s) -> 0 entry(ies) over 1 path(s); per-operation attribution is not available when operations share a path
+  mapping: DEAD - 1 path(s) with an operation and no event: /Users/i.yoshida/se286.jDrfKi/L1-fail-truncate/state/missing
+  mapping: the shim records those attempts, so a comparison against this capture desyncs (shim/src/ops.zig)
+
+   L1 summary: 10 mode(s) fully observed, 8 mode(s) with at least
+   one operation that produced no event.
+
+== L2: how many entries does one run produce?
+   Repeated 30 times per configuration, because one run cannot
+   separate a rule from a coincidence.
+-- latency=0 gap=0ms settle=0.4s --no-defer
+   (settle 0.4s)
+   rep 1 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-1/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 2 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-2/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 3 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-3/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 4 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-4/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 5 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-5/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 6 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-6/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 7 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-7/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 8 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-8/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 9 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-9/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 10 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-10/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 11 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-11/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 12 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-12/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 13 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-13/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 14 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-14/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 15 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-15/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 16 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-16/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 17 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-17/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 18 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-18/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 19 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-19/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 20 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-20/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 21 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-21/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 22 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-22/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 23 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-23/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 24 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-24/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 25 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-25/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 26 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-26/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 27 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-27/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 28 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-28/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 29 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-29/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 30 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0---no-defer-30/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+-- latency=0 gap=0ms settle=0.4s (defer)
+   (settle 0.4s)
+   rep 1 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-1/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 2 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-2/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 3 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-3/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 4 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-4/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 5 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-5/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 6 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-6/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 7 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-7/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 8 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-8/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+BROKEN: judge coalescing could not measure (rc 2)
+   rep 9 (rc 2):  BROKEN: the sentinel mutation produced no event in this capture, so delivery is unproven for this run and its silence says nothing about FSEvents 
+   (settle 0.4s)
+   rep 10 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-10/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 11 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-11/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 12 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-12/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 13 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-13/state: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsDir'] /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-13/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 14 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-14/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 15 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-15/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 16 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-16/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 17 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-17/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 18 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-18/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 19 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-19/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 20 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-20/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 21 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-21/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+BROKEN: judge coalescing could not measure (rc 2)
+   rep 22 (rc 2):  BROKEN: the sentinel mutation produced no event in this capture, so delivery is unproven for this run and its silence says nothing about FSEvents 
+   (settle 0.4s)
+   rep 23 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-23/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 24 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-24/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 25 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-25/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 26 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-26/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 27 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-27/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 28 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-28/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 29 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-29/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 30 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-0-defer-30/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+-- latency=0.01 gap=0ms settle=0.4s (defer)
+   (settle 0.4s)
+   rep 1 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-1/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 2 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-2/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 3 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-3/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 4 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-4/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 5 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-5/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 6 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-6/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 7 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-7/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 8 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-8/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 9 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-9/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 10 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-10/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 11 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-11/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 12 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-12/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 13 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-13/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 14 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-14/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 15 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-15/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 16 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-16/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 17 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-17/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 18 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-18/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 19 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-19/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 20 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-20/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 21 (rc 0):  coalescing: 3 operation(s) -> 3 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-21/state: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsDir'] /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-21/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 22 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-22/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 23 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-23/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 24 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-24/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 25 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-25/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 26 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-26/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 27 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-27/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 28 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-28/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 29 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-29/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 30 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0.01-0-defer-30/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+-- latency=1.0 gap=0ms settle=2.5s (defer)
+   (settle 2.5s)
+   rep 1 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-1/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 2 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-2/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 3 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-3/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 4 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-4/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 5 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-5/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 6 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-6/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 7 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-7/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 8 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-8/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 9 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-9/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 10 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-10/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 11 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-11/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 12 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-12/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 13 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-13/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 14 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-14/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 15 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-15/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 16 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-16/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 17 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-17/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 18 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-18/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 19 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-19/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 20 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-20/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 21 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-21/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 22 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-22/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 23 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-23/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 24 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-24/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 25 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-25/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 26 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-26/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 27 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-27/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 28 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-28/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 29 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-29/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 2.5s)
+   rep 30 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-1.0-0-defer-30/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+-- latency=0 gap=50ms settle=0.4s --no-defer
+   (settle 0.4s)
+   rep 1 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-1/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 2 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-2/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 3 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-3/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 4 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-4/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 5 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-5/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 6 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-6/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 7 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-7/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 8 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-8/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 9 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-9/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 10 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-10/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 11 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-11/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 12 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-12/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 13 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-13/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 14 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-14/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 15 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-15/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 16 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-16/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 17 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-17/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 18 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-18/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 19 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-19/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 20 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-20/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 21 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-21/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 22 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-22/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 23 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-23/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 24 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-24/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 25 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-25/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 26 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-26/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 27 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-27/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 28 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-28/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 29 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-29/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.4s)
+   rep 30 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-50---no-defer-30/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+-- latency=0 gap=200ms settle=0.8s --no-defer
+   (settle 0.8s)
+   rep 1 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-1/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 2 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-2/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 3 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-3/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 4 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-4/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 5 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-5/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 6 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-6/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 7 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-7/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 8 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-8/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 9 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-9/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 10 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-10/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 11 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-11/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 12 (rc 0):  coalescing: 3 operation(s) -> 3 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-12/state: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsDir'] /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-12/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 13 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-13/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 14 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-14/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 15 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-15/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 16 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-16/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 17 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-17/state/target: 1 entry(ies), union of flags ['ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 18 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-18/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 19 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-19/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 20 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-20/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 21 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-21/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 22 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-22/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 23 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-23/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 24 (rc 0):  coalescing: 3 operation(s) -> 2 entry(ies) in 2 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-24/state/target: 2 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 25 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-25/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 26 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-26/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 27 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-27/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 28 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-28/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 29 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-29/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+   (settle 0.8s)
+   rep 30 (rc 0):  coalescing: 3 operation(s) -> 1 entry(ies) in 1 callback delivery(ies) /Users/i.yoshida/se286.jDrfKi/L2-0-200---no-defer-30/state/target: 1 entry(ies), union of flags ['ItemCreated', 'ItemIsFile', 'ItemModified'] 
+
+== L3: does entry order carry operation order?
+   The fsync mode issues open, write, fsync against one path — three
+   operations the comparison keeps, in a fixed order.
+   (settle 0.4s)
+  ordering: ids monotonic across 1 entry(ies)
+  ordering: DEAD - 3 operation(s) arrived as 1 entry(ies), so no entry order can carry the operation order
+    entry batch=0.0 id=386690398 inside op(s) [], after op(s) [0, 1, 2]
+   L3 verdict rc=1
+
+== L4: can the output say WHO acted?
+   Two runs of the same operation on the same path, differing only in
+   which program performed it. A neighbour-only path would separate by
+   path and prove nothing, so both runs write the identical name.
+   A: the probe created /Users/i.yoshida/se286.jDrfKi/L4/state/target (rc 0)
+   B: /bin/sh created /Users/i.yoshida/se286.jDrfKi/L4/state/target (rc 0)
+  attribution: run A 2 entry(ies), run B 2 entry(ies)
+    A: /Users/i.yoshida/se286.jDrfKi/L4/state/target ['ItemCreated', 'ItemIsFile']
+    A: /Users/i.yoshida/se286.jDrfKi/L4/state/sentinel ['ItemCreated', 'ItemIsFile']
+    B: /Users/i.yoshida/se286.jDrfKi/L4/state/target ['ItemCreated', 'ItemIsFile']
+    B: /Users/i.yoshida/se286.jDrfKi/L4/state/sentinel ['ItemCreated', 'ItemIsFile']
+  attribution: INDISTINGUISHABLE - the runs differ only in which process acted, and the captures agree in path and flags
+   L4 verdict rc=1
+
+== L5: what MarkSelf and IgnoreSelf actually cover
+   Both flags are about the watcher's own process. The control is the
+   watcher writing a file itself; the probe is never 'self' to it.
+-- /Users/i.yoshida/se286.jDrfKi/L5-markself/events.jsonl
+   watcher's own write:
+     {"type":"self_write","path":"/Users/i.yoshida/se286.jDrfKi/L5-markself/state/by-watcher","rc":0,"errno":0,"mono_ns":3627356670978375}
+   events recorded:
+     {"type":"event","batch":0,"index_in_batch":0,"event_id":386690550,"flags_raw":"0x00020100","flags_decoded":["ItemCreated","ItemIsDir"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L5-markself/state","mono_ns":3627356672057833}
+     {"type":"event","batch":0,"index_in_batch":1,"event_id":386690559,"flags_raw":"0x00090100","flags_decoded":["ItemCreated","ItemIsFile","OwnEvent"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L5-markself/state/by-watcher","mono_ns":3627356672057833}
+     {"type":"event","batch":1,"index_in_batch":0,"event_id":386690568,"flags_raw":"0x00010100","flags_decoded":["ItemCreated","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L5-markself/state/target","mono_ns":3627356747004333}
+     {"type":"event","batch":1,"index_in_batch":1,"event_id":386690571,"flags_raw":"0x00010100","flags_decoded":["ItemCreated","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L5-markself/state/sentinel","mono_ns":3627356747004333}
+-- /Users/i.yoshida/se286.jDrfKi/L5-ignoreself/events.jsonl
+   watcher's own write:
+     {"type":"self_write","path":"/Users/i.yoshida/se286.jDrfKi/L5-ignoreself/state/by-watcher","rc":0,"errno":0,"mono_ns":3627357176765250}
+   events recorded:
+     {"type":"event","batch":0,"index_in_batch":0,"event_id":386690786,"flags_raw":"0x00020100","flags_decoded":["ItemCreated","ItemIsDir"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L5-ignoreself/state","mono_ns":3627357178539250}
+     {"type":"event","batch":1,"index_in_batch":0,"event_id":386690807,"flags_raw":"0x00010100","flags_decoded":["ItemCreated","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L5-ignoreself/state/target","mono_ns":3627357244042291}
+     {"type":"event","batch":1,"index_in_batch":1,"event_id":386690810,"flags_raw":"0x00010100","flags_decoded":["ItemCreated","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L5-ignoreself/state/sentinel","mono_ns":3627357244042291}
+
+== L6: do the flags describe this window, or the path's history?
+   L1 showed ItemCreated on every mode whose setup created the file
+   before the watcher started. Two explanations fit that: the flags
+   summarise what is known about the path, or the setup's own event was
+   still in flight. They are told apart by waiting between the setup and
+   the watcher. Without this leg, writing either sentence would claim
+   more than the measurement.
+-- setup, then 0s, then watcher, then open+write
+     {"type":"event","batch":0,"index_in_batch":0,"event_id":386690849,"flags_raw":"0x00011100","flags_decoded":["ItemCreated","ItemModified","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L6-wait0/state/target","mono_ns":3627357782589208}
+     {"type":"event","batch":0,"index_in_batch":1,"event_id":386690852,"flags_raw":"0x00010100","flags_decoded":["ItemCreated","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L6-wait0/state/sentinel","mono_ns":3627357782589208}
+-- setup, then 3s, then watcher, then open+write
+     {"type":"event","batch":0,"index_in_batch":0,"event_id":386690974,"flags_raw":"0x00011100","flags_decoded":["ItemCreated","ItemModified","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L6-wait3/state/target","mono_ns":3627361355080541}
+     {"type":"event","batch":0,"index_in_batch":1,"event_id":386690977,"flags_raw":"0x00010100","flags_decoded":["ItemCreated","ItemIsFile"],"flags_unknown":"0x00000000","path":"/Users/i.yoshida/se286.jDrfKi/L6-wait3/state/sentinel","mono_ns":3627361355080541}
+
+== L7: can this be a veto rather than an oracle? (#293)
+   H1 asked whether a capture rebuilds into the OpClass sequence
+   src/oracle.zig compares. L1-L4 measured that it does not. H2 is a
+   weaker question, so it gets a weaker relation: PATH SET CONTAINMENT.
+   Every path FSEvents reports must be one the account already names.
+   Containment passes through coalescing and reordering by construction,
+   because it never asks which event belongs to which operation.
+
+   Both legs take their ground truth from the probe's own record, never
+   from the shim. Judging FSEvents against the shim in an experiment
+   about the shim's incompleteness is circular: an event with no matching
+   operation is either a false alarm or a real miss, and that comparison
+   cannot say which.
+
+-- L7a: the planted mutation is invisible to the shim, measured not assumed
+   The sensitivity leg below plants a clonefile(2), which WAS absent from
+   the then-40 symbols shim/src/macos.zig interposed when this survey ran
+   (v11). Trace contract v12 (#333) interposes the clone family, so this
+   precondition now refuses by design; the recorded result stands as a
+   v11 measurement, and a re-run needs an msync-class mutation (#293).
+   If that were wrong, a
+   silent capture could not be told from a capture of something the shim
+   already saw, and the leg would prove nothing in either direction.
+BROKEN: L7a: the shim DOES record the clone destination (1 mention(s)) — pick another mutation
+
+-- L7b: containment on runs with nothing wrong
+   Over the probe's whole succeeding repertoire, not one mode. Repeating
+   a single mode raises the run count without widening what containment
+   was tested against: five runs of one write are five observations of
+   one path. The modes below reach files, directories, links and renames,
+   which is what makes 'stayed inside the account' a claim about the
+   account rather than about one file.
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+-- truncate-same run 8
+     containment: 1 operation(s) over 1 path(s); 3 event(s) besides the sentinel; 1 outside the account
+     containment: outside, ancestor of an account path: /Users/i.yoshida/se286.jDrfKi/L7/b-truncate-same-8/state
+     containment: FAIL - 1 ancestor(s), 0 unrelated; a veto on this relation as stated fires on a clean run
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+-- link run 0
+     containment: 1 operation(s) over 2 path(s); 2 event(s) besides the sentinel; 1 outside the account
+     containment: outside, ancestor of an account path: /Users/i.yoshida/se286.jDrfKi/L7/b-link-0/state
+     containment: FAIL - 1 ancestor(s), 0 unrelated; a veto on this relation as stated fires on a clean run
+   (settle 0.4s)
+-- link run 1
+     containment: 1 operation(s) over 2 path(s); 2 event(s) besides the sentinel; 1 outside the account
+     containment: outside, ancestor of an account path: /Users/i.yoshida/se286.jDrfKi/L7/b-link-1/state
+     containment: FAIL - 1 ancestor(s), 0 unrelated; a veto on this relation as stated fires on a clean run
+   (settle 0.4s)
+-- link run 2
+     containment: 1 operation(s) over 2 path(s); 2 event(s) besides the sentinel; 1 outside the account
+     containment: outside, ancestor of an account path: /Users/i.yoshida/se286.jDrfKi/L7/b-link-2/state
+     containment: FAIL - 1 ancestor(s), 0 unrelated; a veto on this relation as stated fires on a clean run
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+-- mkdir run 26
+     containment: 1 operation(s) over 1 path(s); 2 event(s) besides the sentinel; 1 outside the account
+     containment: outside, ancestor of an account path: /Users/i.yoshida/se286.jDrfKi/L7/b-mkdir-26/state
+     containment: FAIL - 1 ancestor(s), 0 unrelated; a veto on this relation as stated fires on a clean run
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   (settle 0.4s)
+   per mode (outside/runs):
+      create:0/30
+      write:0/30
+      fsync:0/30
+      truncate-shrink:0/30
+      truncate-same:1/30
+      rename:0/30
+      link:30/30
+      symlink:0/30
+      mkdir:1/30
+      rmdir:0/30
+      unlink:0/30
+   A mode reading 0/30 is not a mode that does not do it: at 30 runs
+   a zero count still admits rates up to 11.4% (Wilson 95%).
+   pooled over the 10 modes outside 'link':
+      2/300 outside = 0.7% (Wilson 95%: 0.2% - 2.4%)
+   The interval assumes runs are independent, which this survey does not
+   establish. #311 recorded 5, 6 and 23 outside over three sets of 55 on
+   one machine; 23 sits far outside what a binomial with the other two
+   would produce, so a single set's interval is a lower bound on the
+   uncertainty, not the uncertainty. Run this more than once and compare
+   the sets before quoting any figure.
+   containment held in 298/330 runs across
+   11 modes, over 390 path-observations and 401 event(s)
+   besides the sentinels. A run reaching zero events would be counted
+   here as containment holding, which is why the event total is printed:
+   containment over nothing is not containment.
+
+-- L7d: positive control for the unrelated bucket
+   L7b reported zero unrelated paths over 55 runs. That is the number a
+   working classifier gives in a directory only the probe uses, and it is
+   also the number a classifier that never reaches that branch gives.
+   Nothing in L7b tells the two apart, so a second actor writes a path
+   the account will never name, and the branch has to say so.
+     containment: 2 operation(s) over 1 path(s); 3 event(s) besides the sentinel; 2 outside the account
+     containment: outside, ancestor of an account path: /Users/i.yoshida/se286.jDrfKi/L7/d/state
+     containment: outside, unrelated to the account: /Users/i.yoshida/se286.jDrfKi/L7/d/state/written-by-a-neighbour
+     containment: FAIL - 1 ancestor(s), 1 unrelated; a veto on this relation as stated fires on a clean run
+   ok: the neighbour's path reached the unrelated bucket, so that branch
+       is reachable and L7b's zero is a measurement rather than a gap
+
+-- L7c: sensitivity — does the veto see what the account misses?
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c0/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c1/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c2/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c3/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c4/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c5/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c6/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c7/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c8/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c9/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c10/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c11/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c12/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c13/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c14/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c15/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c16/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c17/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c18/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c19/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c20/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c21/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c22/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c23/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c24/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c25/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c26/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c27/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c28/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+     sensitivity: planted clonefile at /Users/i.yoshida/se286.jDrfKi/L7/c29/state/clone-dst.txt, outside an account of 2 path(s); 2 event(s) name it
+     sensitivity: ok - the veto sees what the account does not
+   the veto saw the planted mutation in 30/30 runs
+
+-- L7: what these two numbers do and do not settle
+   Containment holding says a veto on this relation does not fire on a
+   quiet run of THIS probe in a directory nothing else is using. It is
+   not a soundness proof: a busier directory, an editor, a backup daemon
+   or a second process would each be a path outside the account.
+   Sensitivity holding says the veto sees ONE mutation the shim misses.
+   The rate over a corpus is a different measurement and is not made
+   here. Neither number licenses a report vocabulary; naming a claim
+   weaker than oracle_verified reopens the contract (#201, #202, #156).
+
+== what this survey does not answer
+   H2 is measured at two points in L7, not settled. What is missing is
+   the rate: containment was measured on one probe in an idle directory,
+   and sensitivity on one planted mutation. 'What fraction of unreported
+   mutations does this catch, and how often does it fire on a clean run
+   of a real target' needs a corpus this survey does not build.
+   Also unmeasured: behaviour under load, on non-APFS volumes, across
+   the network, and after a Full Disk Access grant (out of scope: a
+   grant would end the unprivileged premise).
+
+== BROKEN checks: 3

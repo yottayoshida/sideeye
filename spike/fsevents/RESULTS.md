@@ -289,6 +289,72 @@ never name. It lands in `unrelated`, and the state directory lands in
 `ancestor`, in the same capture. Both branches are reachable, so the zero above
 is a measurement.
 
+## The rate, measured over three sets of 330 runs
+
+`#293` asked for a rate and `#311` did not build one: five runs per mode answers
+whether a behaviour reproduces, not how often. `SE286_REPS` raises the
+repetition count, and three sets were taken at thirty
+(`survey-veto-rate-1.txt` through `-3`, 422 / 427 / 426 seconds each).
+
+`link` is separated from the pool rather than dropped. It was outside on every
+run it had in `#311`, and a pool mixing a near-certain member with rare ones
+describes neither.
+
+| set | `link` | the other ten modes | Wilson 95% |
+|---|---|---|---|
+| 1 | 30/30 | 2/300 | 0.67% [0.18%, 2.40%] |
+| 2 | 30/30 | 1/300 | 0.33% [0.06%, 1.86%] |
+| 3 | 30/30 | 4/300 | 1.33% [0.52%, 3.38%] |
+| **all** | **90/90 = 100% [95.91%, 100%]** | **7/900** | **0.78% [0.38%, 1.60%]** |
+
+**The three sets are consistent with one rate.** A chi-squared test of
+homogeneity over the three counts gives 2.02 on two degrees of freedom, against
+a 5% critical value of 5.99. That is not proof of independence — a test that
+fails to reject is not a test that confirms — but it is the observation
+`#311` could not make, and it is what licenses quoting a single interval.
+
+**The set that made a rate look impossible was measured on a different
+apparatus.** `#311` recorded 5, 6 and 23 outside over three sets of 150 and
+concluded that no percentage from one survives the other two. Read again, that
+comment says the 6 and the 23 came from sets taken *while the leg was being
+built*. Only the 5 is from the leg as it stands. Held against the nine hundred
+runs here:
+
+| source | rate | Wilson 95% | overlaps 7/900? |
+|---|---|---|---|
+| `#311`, the finished leg (5/150) | 3.33% | [1.43%, 7.57%] | yes |
+| `#311`, while being built (23/150) | 15.33% | [10.44%, 21.96%] | no |
+
+So the finished leg's two measurements agree, and the outlier belongs to a
+version of the apparatus that no longer exists. The spread was not evidence
+about the phenomenon.
+
+**Every outside path in all nine hundred runs is an ancestor of an account
+path** — the state directory itself, the same shape `#311` reported. The
+`unrelated` bucket read zero in `L7b` in all three sets, and the two
+`unrelated` lines each transcript does carry come from the judge's own selftest
+and from `L7d`, whose planted neighbour proves the branch is reachable. A zero
+that a positive control has walked through is a measurement.
+
+**A per-mode zero is still not a zero.** At thirty runs a count of zero admits
+rates up to 11.4% (Wilson), which the survey now prints beside the table so a
+reader cannot take `write:0/30` for "write does not do this". Which modes never
+do it remains unmeasured, and nine hundred runs did not change that: the modes
+that were outside differ between sets (`truncate-same` and `mkdir`, then
+`truncate-shrink`, then `symlink`, `rmdir` and `unlink`), which is what a rare
+event drawn from a common cause looks like rather than a property of particular
+modes.
+
+**What this does not measure.** The runs are on one machine, one volume, one
+probe, in a directory nothing else was using — the conditions `#311` named and
+this does not widen. A busier directory is still the case that matters and is
+still unmeasured. The sensitivity half is worse off than that: `L7a` refuses on
+this build, because trace contract v12 interposes the clone family and the
+planted `clonefile(2)` is no longer invisible to the shim. `L7c` reports 30/30
+anyway — it measures whether the veto sees a mutation, and the mutation is now
+one the shim sees too, so its green says nothing. That is `#344`, and the rate
+above is unaffected by it: `L7b` and `L7a` share no state.
+
 ## Where this leaves #293
 
 Not settled, and not close-able on this evidence.
@@ -299,11 +365,18 @@ is a design decision rather than a measurement: it also excuses a real
 neighbour writing into the parent directory, which is precisely the case a veto
 exists to catch. The measurement gives both numbers and does not choose.
 
-What is still missing is the thing `#293` asked for and this does not build: a
-rate over a corpus. Sensitivity was measured on **one** planted mutation, and
-containment in a directory nothing else was using. A busier directory, an
-editor, a backup daemon or a second process would each be a path outside the
-account, and none of them was present here.
+**Half of what `#293` asked for is now built.** The false-positive side has a
+rate: 0.78% [0.38%, 1.60%] over nine hundred runs for the ten modes outside
+`link`, and 100% [95.91%, 100%] for `link` itself, consistent across three sets.
+The sensitivity side does not, and cannot on this build: its planted mutation is
+no longer invisible to the shim (`#344`). So the corpus `#293` asked for is one
+member short of existing, and that member is the half that would say what
+fraction of *unreported* mutations a veto catches.
+
+The conditions are unchanged and still narrow. Containment was measured in a
+directory nothing else was using; a busier directory, an editor, a backup daemon
+or a second process would each be a path outside the account, and none of them
+was present here.
 
 No report vocabulary follows from any of this. Naming a claim weaker than
 `oracle_verified` reopens the contract (`#201`, `#202`, `#156`), and nothing

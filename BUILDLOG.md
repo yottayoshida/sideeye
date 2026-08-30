@@ -2,6 +2,66 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-31 - the spread that made a rate look impossible came from an apparatus that no longer exists
+
+`#293` asks whether FSEvents can veto a mutation the shim never reported, and
+`#311` measured it at two points without settling it. The blocker it named was
+the false-positive side having no rate: five runs per mode answers whether a
+behaviour reproduces, not how often, and three sets had given 5, 6 and 23
+outside over 150 runs each. "No percentage from one survives the other two" was
+the recorded reading, and it is why this ticket sat open.
+
+`SE286_REPS` now raises the repetition count and three sets were taken at
+thirty — 330 runs each, 422/427/426 seconds. `link` is held out of the pool
+rather than dropped, because it was outside on every run it had and a pool
+mixing a near-certain member with rare ones describes neither. **The other ten
+modes: 2, 1 and 4 outside per 300, or 7/900 = 0.78% [0.38%, 1.60%] Wilson.
+`link`: 90/90.** A chi-squared test of homogeneity over the three counts gives
+2.02 against a 5% critical value of 5.99 at two degrees of freedom, so the sets
+are consistent with one rate — which is the observation `#311` could not make
+and the thing that licenses quoting an interval at all.
+
+**Then the spread explained itself, by reading the source instead of the
+summary.** I built the three-set design specifically because 5/6/23 looked like
+run-to-run dependence, and wrote as much before opening `#311`'s comment. The
+comment says the 6 and the 23 came from sets taken *while the leg was being
+built*; only the 5 is from the leg as it stands. Held against 7/900, the
+finished leg's 5/150 overlaps ([1.43%, 7.57%] against [0.38%, 1.60%]) and the
+23/150 does not ([10.44%, 21.96%]). The outlier belongs to an apparatus that no
+longer exists, so the spread was never evidence about the phenomenon. Taking
+three sets was still right — one set could not have said which of the two it
+agreed with — but the reason I gave for taking them was wrong, and I gave it
+from a summary rather than from the page.
+
+Two things the numbers do not say, both now printed by the survey rather than
+left to the reader. A per-mode zero is not a zero: at thirty runs a count of
+zero still admits rates up to 11.4%, so `write:0/30` is not a mode that does not
+do this — and the modes that *were* outside differ between sets
+(`truncate-same`/`mkdir`, then `truncate-shrink`, then `symlink`/`rmdir`/
+`unlink`), which is a rare event from a common cause rather than a property of
+particular modes. And every outside path in all nine hundred runs is an ancestor
+of an account path, the state directory itself; `L7b`'s `unrelated` bucket read
+zero in all three, with `L7d`'s planted neighbour proving that branch reachable.
+
+**The guard I added to make the count overridable broke the cleanup, and the
+evidence was sitting in $HOME.** `REPS` is validated for a positive integer;
+I put that check where `REPS` is defined, which is after `W=$(mktemp -d)` and
+long before the single `rm -rf "${W:?}"` at the end of the file. Both
+falsification runs exited through it and left their scratch directories behind.
+Measured, not reasoned: two `se286.*` directories were there when I went
+looking for something else. The check now runs before the mktemp, and the red
+case is re-run with a before/after count of those directories.
+
+**`L7a` refuses on this build and `L7c` reports 30/30 anyway.** Trace contract
+v12 interposes the clone family, so the planted `clonefile(2)` is no longer
+invisible to the shim — which is exactly what `L7a` exists to detect, and it
+does, and then `L7c` runs regardless and measures whether the veto sees a
+mutation the shim also sees. Its green says nothing. That is `#344` and it is
+not touched here; the rate above is unaffected because `L7b` and `L7a` share no
+state. Recorded rather than fixed, because the boundary of this change was
+declared before the defect was found and moving it quietly is how a scope
+becomes unfalsifiable.
+
 ## 2026-08-30 (twenty-first) - the shim's coverage was never compared to the oracle's, and the family that fell through the gap is the one SQLite uses
 
 macOS interposes 52 functions and nothing said what that set should be measured against. `check-macos-coverage.py` compares `libsystem_kernel`'s exports to a curated list of ten and says so in its own header — "the ratchet is over the curated set, not over the export namespace". Meanwhile `check-shim-coverage.py` has made a stronger promise on Linux since #256, "every syscall the oracle classifies is either interposed or explained", and states in the same paragraph that macOS cannot keep it: "a syscall the oracle classifies and macOS does not interpose is exactly the #256 shape and this check cannot see it". ADR 0031 gave macOS an oracle three days ago. Nobody had gone back to that sentence.
