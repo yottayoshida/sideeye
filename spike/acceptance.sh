@@ -2923,11 +2923,31 @@ json.dump(c, open(sys.argv[2], "w"))
 PY
 o=$("$SIDEEYE" replay /tmp/acc/v7-case.json --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "different trace contract"; then
-    echo "ok   a v7-recorded case refuses as a contract mismatch, never a verdict"
+# The success line used to claim "never a verdict" while the predicate was exit 2
+# plus a message substring — neither half of that claim was asserted (#370). The
+# substring is also not specific to this leg's subject: `different trace contract`
+# appears in TWO refusals in src/main.zig, and docs/contract-freeze.md surface 4
+# states that the other one, `contract_version_mismatch`, "is a different refusal
+# entirely ... nothing to do with saved cases". So the reason NAME is what
+# separates this leg's subject from its neighbour; the message alone cannot.
+# Asserted here, and stronger than the prefix-insertion leg above rather than the same
+# shape as it: that leg stops at the exit code, an UNANCHORED substring and the absence
+# of a verdict. Two of the five clauses below are its verbatim; the anchored headline is
+# a strictly tighter form of its substring; the headline count and the message clause
+# have no analogue there. Of the five, three are each solely responsible for killing a
+# mutant — the reason name, the verdict clause, and the message. The count is defensive:
+# `unknown()` is `noreturn` and the only writer of a `^UNKNOWN ` line, so on this path no
+# reachable mutation produces a second headline, and no mutant demonstrates its necessity.
+v7_unknowns=$(printf '%s\n' "$o" | grep -cE '^UNKNOWN ' || true)
+if [ "$rc" = "2" ] \
+    && printf '%s\n' "$o" | grep -qE '^UNKNOWN  case_no_longer_applies$' \
+    && [ "$v7_unknowns" = "1" ] \
+    && ! printf '%s\n' "$o" | grep -qE '^(PASS|FAIL)' \
+    && printf '%s\n' "$o" | grep -q "different trace contract"; then
+    echo "ok   a v7-recorded case refuses as case_no_longer_applies, naming the trace contract as the cause, with no verdict"
 else
-    echo "FAIL v7 case handling: exit $rc"
-    echo "$o" | sed 's/^/     | /' | head -4
+    echo "FAIL v7 case handling: exit $rc, UNKNOWN headlines $v7_unknowns"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
 
@@ -3352,6 +3372,25 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # claimed by two), ledger-successor (a supersession row whose replacement is in no
 # corpus), ledger-unrelated-successor (a replacement that is a different target) and
 # outcome-new-this-sweep (an already-triaged tool parked as untriaged).
+# #347 adds six more, for the two sides of the page's SETUP_ERROR rule and for the
+# shape of the ledger that records them: setup-error-unwaived (a SETUP_ERROR nobody
+# waived — the generation is marked complete and the rate publishes over what
+# remains), setup-error-orphan-waiver (a waiver whose trial is not a SETUP_ERROR,
+# which is what a waiver becomes once the apparatus it excused is repaired), and
+# setup-error-empty-reason / setup-error-piped-reason / setup-error-duplicate-waiver
+# / setup-error-marker-reason for read_exclusions' own four rules. Those four refuse
+# inside the reader, so they fire in `emit` as well as `check` — that is the
+# fail-closed direction, and it is why the message each carries names the ledger
+# rather than whatever downstream thing would have tripped over the bad row.
+# Each of the six is red for its own predicate and green without it: the first three
+# shape fixtures were written against `good`, waiving a trial that is not a
+# SETUP_ERROR, so removing the rule under test left them red on the orphan message
+# instead — right rc, right text, wrong reason. They waive a real SETUP_ERROR now,
+# and their published blocks are what the guard-less emitter renders, because a
+# fixture whose docs do not match that is caught by the byte-compare instead.
+# marker-reason needs a generation covering B alone with no rated trial: that is the
+# only shape where nothing the attribution checks read comes after a detail table,
+# and it is the shape the page contemplates for a future B measurement.
 # The first of those seven was itself red for the wrong reason when it was written —
 # count.py read its reports before checking its status, so it died on a missing file
 # — which is what this loop's message-matching exists to catch. **Predicates with no
@@ -3373,6 +3412,10 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # green, and that gap is filed rather than left implied. Sunset: never fired by the
 # v1.0 freeze -> removal list (same rule as check 11).
 ur_fails=0
+# Counted by the loop rather than written here: the sentence said "twelve" while the
+# list below held twenty, because nothing recomputes a number kept in prose beside
+# the thing it counts.
+ur_red=0
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
     echo "     the live page/artifacts disagree with recomputation"
     ur_fails=$((ur_fails + 1))
@@ -3385,7 +3428,13 @@ fi
 # live page has none and neither does `good`, so the rule that keeps such a row out
 # of every denominator was reachable by nothing. Green here proves the exclusion
 # holds; removing it from count.py turns THIS fixture red on the attribution row
-# count while good and the live tree stay green (measured before shipping).
+# count while good and the live tree stay green (measured before shipping). It
+# carries one SETUP_ERROR per published table shape — fx-toyE in the wide A-group
+# table and fx-toyD in the B-group funnel table, whose excluded cell sits in a
+# different column — because with only the A-group row the funnel half of that
+# renderer was covered by reading the code and nothing else. Both are waived in
+# exclusions.tsv, so this is also where a waived reason is proven to reach the
+# published table rather than only to pass the ledger's own shape rules.
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/setup-error-present" >/dev/null 2>&1; then
     echo "     fixture setup-error-present failed — the SETUP_ERROR exclusion has no other reachable input"
     ur_fails=$((ur_fails + 1))
@@ -3416,7 +3465,14 @@ for pair in \
     "attribution-detail-row-missing:rated rows against" \
     "attribution-reason-table:the reason table is" \
     "attribution-reason-sum:the reason counts sum to" \
-    "attribution-outcome-sum:a row leaves the ratio without leaving a trace"; do
+    "attribution-outcome-sum:a row leaves the ratio without leaving a trace" \
+    "setup-error-unwaived:SETUP_ERROR with no row in exclusions.tsv" \
+    "setup-error-orphan-waiver:a waiver outliving its trial excuses nothing" \
+    "setup-error-empty-reason:is waived with no reason" \
+    "setup-error-piped-reason:reason contains a pipe" \
+    "setup-error-duplicate-waiver:twice — the later row would win in silence" \
+    "setup-error-marker-reason:carries the results block's end marker"; do
+    ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
           --root "$ROOT/spike/unknown-rate/fixtures/$bad" 2>&1)
@@ -3431,7 +3487,7 @@ for pair in \
     fi
 done
 if [ "$ur_fails" = "0" ]; then
-    echo "ok   unknown-rate page in sync; gate red on all twelve tampered fixtures"
+    echo "ok   unknown-rate page in sync; gate red on all $ur_red tampered fixtures"
 else
     echo "FAIL unknown-rate drift gate: $ur_fails problem(s)"
     fails=$((fails + 1))

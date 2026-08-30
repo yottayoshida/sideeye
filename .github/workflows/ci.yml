@@ -44,6 +44,13 @@ jobs:
       # ADD libsideeye_shim_testgap and leave the shipped shim byte-identical. A build
       # option that leaked into the shipped artifact would make every other acceptance
       # leg measure the gap shim — a new guard silently blinding the old ones.
+      #
+      # What this comparison covers is the FLAG leaking in, never the shipped VALUE
+      # (#365): an edit to build.zig's `test_seq_gap` literal lands in both arms and
+      # leaves the shas matching. That literal is held by a unit test in
+      # shim/src/common.zig instead. Byte-identical here means "the same source built
+      # two ways" — any edit to the source moves both shas together, which is why a
+      # differential check cannot stand in for an assertion about the value.
       - name: Build the gap-shim apparatus, shipped shim unchanged (#270)
         run: |
           sha_before=$(sha256sum zig-out/lib/libsideeye_shim.so | cut -d' ' -f1)
@@ -60,6 +67,18 @@ jobs:
       # every run, and the only writer is the shim — so without these the refusal is
       # untested: its branches live in main.zig, whose refusals exit the process, which
       # no unit test can drive.
+      #
+      # Same blind spot as #270's step above, and the same fix (#365). This comparison
+      # sees the flag, not the shipped value: editing `engineOptions(b, 0, 0, false)`
+      # puts the new ceiling in both arms. A LOUD edit is caught elsewhere — at 64 bytes
+      # every acceptance leg that drives the SHIPPED binary refuses on a trace that size,
+      # which is most of the suite though not all of it, since four apparatus binaries are
+      # driven by their own names — but a QUIET one is caught nowhere: 128 MiB clears every
+      # toy trace, so acceptance passes, this step passes, and the released engine carries
+      # a ceiling that disagrees with engine.max_trace_bytes. The unit test in src/main.zig
+      # is the only thing that sees it. The quiet half is measured: with the literal at
+      # 128 MiB this step stayed green while `zig build test` went red. The loud half is
+      # read off spike/acceptance.sh, not run — acceptance needs the Linux container.
       - name: Build the trace-cap apparatus, shipped engine unchanged (#324)
         run: |
           sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
@@ -619,6 +638,28 @@ jobs:
 
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
+
+  # ADR numbers are allocated as "the highest existing number plus one", which
+  # reserves nothing. On 2026-08-27 two sessions each wrote a docs/adr/0028-*.md;
+  # the slugs differed, so git merged both without a conflict and only the two
+  # sessions telling each other noticed (#373). Its own job for the same reason
+  # as the one above: no toolchain, so a failure here names the allocation and
+  # nothing else. What it can and cannot do is written on the script — it reports
+  # a collision that reached main, and cannot stop the merge that creates one,
+  # because no status check is required on this repository.
+  adr-numbering:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # First, because a green from a check that cannot go red says nothing. The
+      # uniqueness pass is a pipeline with no `set -e` behind it: break its sed and
+      # a directory holding a real duplicate reports every number unique (measured).
+      - name: The check proves it can go red
+        run: sh spike/check-adr-numbering.sh --selftest
+
+      - name: ADR numbers are unique
+        run: sh spike/check-adr-numbering.sh
 
   # The onboarding clock's audit is criterion 6's instrument: it decides whether a
   # timed run's evidence stands. Until 2026-08-28 nothing here ran it — the launcher

@@ -55,9 +55,48 @@ pub fn build(b: *std.Build) void {
         }
     }.make;
 
+    // The half the unit tests cannot reach (#365). Those tests assert the VALUES inside
+    // the shipped options modules; nothing in them says a released artifact is built with
+    // one. Pointing an artifact's import at a freshly made options module is a single
+    // edit that leaves `zig build test` green and CI's sha comparison green while the
+    // shipped binary carries whatever literal that edit chose — the shape #365 filed, one
+    // level further out. Measured before this assertion existed: swapping the engine's
+    // import for `engineOptions(b, 128 * 1024 * 1024, 0, false).createModule()` passed the
+    // whole suite and produced a shipped engine byte-identical to the one an edit to the
+    // literal produces.
+    //
+    // Checked at configure time, so every `zig build` sees it. `import_table` is a public
+    // field of std.Build.Module (std/Build/Module.zig:7); a rename there fails the build
+    // loudly rather than silently skipping the check.
+    const assertBuiltWith = struct {
+        fn check(m: *std.Build.Module, name: []const u8, want: *std.Build.Module, artifact: []const u8) void {
+            const got = m.import_table.get(name) orelse std.debug.panic(
+                "{s} has no `{s}` import: its shipped build values are held by nothing (#365)",
+                .{ artifact, name },
+            );
+            if (got != want) std.debug.panic(
+                "{s} is built with a different `{s}` than the one the unit tests assert (#365)",
+                .{ artifact, name },
+            );
+        }
+    }.check;
+
     // The shipped values. Each is a literal here, not a flag's default, so no invocation
-    // of any build option below can change what a released binary carries.
+    // of any build option below can change what a released binary carries. What that
+    // sentence never covered is an edit to the literal itself (#365): the sha comparison
+    // in CI puts such an edit in both arms and stays green. The unit tests below assert
+    // these values, so the literal is held by a check rather than by the sentence.
     const exe_opts = engineOptions(b, 0, 0, false);
+
+    // ONE module object, handed to both the shipped executable and the unit tests.
+    // `createModule` returns a fresh Module on every call, and calling it separately in
+    // the two places left them joined by nothing but "the same variable is read twice" —
+    // an invariant nothing asserted. Pointing the test's import at a different options
+    // module and then editing the literal above is two edits no test could see, which is
+    // #365's own shape (a differential check cannot see a change present on both sides)
+    // one level up. Sharing the object makes them the same THING rather than the same
+    // value, the way `contract` above is already shared by the engine, shim and tests.
+    const shipped_engine_opts = exe_opts.createModule();
     const exe = b.addExecutable(.{
         .name = "sideeye",
         .root_module = b.createModule(.{
@@ -69,7 +108,7 @@ pub fn build(b: *std.Build) void {
             .link_libc = true,
             .imports = &.{
                 .{ .name = "contract", .module = contract },
-                .{ .name = "engine_build_options", .module = exe_opts.createModule() },
+                .{ .name = "engine_build_options", .module = shipped_engine_opts },
             },
         }),
     });
@@ -80,6 +119,7 @@ pub fn build(b: *std.Build) void {
     // would fail to build.
     exe.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
     exe.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+    assertBuiltWith(exe.root_module, "engine_build_options", shipped_engine_opts, "the shipped engine");
     b.installArtifact(exe);
 
     if (test_ancestor_probe) {
@@ -161,12 +201,17 @@ pub fn build(b: *std.Build) void {
     // source with plain `zig build`, where the variant does not exist at all.
     const test_seq_gap = b.option(bool, "test-seq-gap", "also build libsideeye_shim_testgap, a numbering-gap shim used only by acceptance (#270)") orelse false;
 
+    // Declared outside the platform branch below because the unit tests import it too and
+    // `test_step` lives out here. One options module and one module object, shared by the
+    // shipped shim and the tests — the same reason `shipped_engine_opts` above is shared
+    // (#365). The shipped `false` is a literal, not the flag's default, so no invocation
+    // of this build can produce a shipped shim that skips numbers; the literal itself is
+    // held by a test in shim/src/common.zig rather than by this comment.
+    const shim_opts = b.addOptions();
+    shim_opts.addOption(bool, "test_seq_gap", false);
+    const shipped_shim_opts = shim_opts.createModule();
+
     if (target.result.os.tag == .linux or target.result.os.tag == .macos) {
-        // One options module per artifact, each with a literal value: the shipped
-        // shim's `false` is not the flag's default but a constant, so no invocation
-        // of this build can produce a shipped shim that skips numbers.
-        const shim_opts = b.addOptions();
-        shim_opts.addOption(bool, "test_seq_gap", false);
         const shim = b.addLibrary(.{
             .name = "sideeye_shim",
             .linkage = .dynamic,
@@ -183,7 +228,7 @@ pub fn build(b: *std.Build) void {
                 .link_libc = true,
                 .imports = &.{
                     .{ .name = "contract", .module = contract },
-                    .{ .name = "shim_build_options", .module = shim_opts.createModule() },
+                    .{ .name = "shim_build_options", .module = shipped_shim_opts },
                 },
             }),
         });
@@ -197,6 +242,7 @@ pub fn build(b: *std.Build) void {
         // build that otherwise ran. Measured against v0.12.0's released dylib,
         // whose ID is `@rpath/libsideeye_shim.dylib` and cannot be lengthened.
         if (target.result.os.tag == .macos) shim.headerpad_max_install_names = true;
+        assertBuiltWith(shim.root_module, "shim_build_options", shipped_shim_opts, "the shipped shim");
         b.installArtifact(shim);
 
         if (test_seq_gap) {
@@ -261,8 +307,14 @@ pub fn build(b: *std.Build) void {
                     // test build of engine.zig has to resolve it too. Always the shipped
                     // values: the unit tests assert what a released binary does, and a
                     // probe entry visible to them would make the denied lists they check
-                    // differ from the ones users get.
-                    .{ .name = "engine_build_options", .module = exe_opts.createModule() },
+                    // differ from the ones users get. It is the SAME module object the
+                    // shipped executable gets (#365), not a second one built from the
+                    // same literal — nothing would have held those two together.
+                    .{ .name = "engine_build_options", .module = shipped_engine_opts },
+                    // The shim's shipped options, for the same reason. shim/src/common.zig
+                    // imports this module, and until #365 it was absent here: the import
+                    // resolved only because no test reached a declaration that used it.
+                    .{ .name = "shim_build_options", .module = shipped_shim_opts },
                 },
             }),
         });

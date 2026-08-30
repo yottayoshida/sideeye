@@ -1,0 +1,1 @@
+fixture define for the setup-error trial

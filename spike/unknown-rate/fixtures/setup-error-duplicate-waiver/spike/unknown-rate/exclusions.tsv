@@ -1,0 +1,9 @@
+# Apparatus failures that could not be fixed (fixture). Same shape as the real
+# spike/unknown-rate/exclusions.tsv; see that file for the rules count.py holds.
+#
+# The same trial waived twice. The later row wins in silence, so the sentence a
+# reviewer approved is not the one that publishes.
+#
+# id	reason
+fx-toyE	the vendor withdrew the toolchain
+fx-toyE	flaky, retry later
