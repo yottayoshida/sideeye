@@ -104,14 +104,28 @@ for t in libc_toy mkstemp_toy rawchild_toy; do
     "$CC" -O0 -o "$WORK/$t" "$WORK/$t.c" 2>/dev/null || fail "could not build $t"
 done
 
+# kdebug is a single system-wide resource: an fs_usage left holding it makes every later
+# start fail with `ktrace_start: Resource busy`, and the failure surfaces downstream as
+# an unrelated refusal or an empty capture. One measured run of this script read an
+# empty Probe 0 capture as "a shell child is invisible" when the truth was that the
+# probe's fs_usage had never started — an orphan from a previous binary still held the
+# resource until its -t bound. Called before EVERY start, probe included. Waits for the
+# resource itself, not for a duration.
+ensure_no_fs_usage() {
+    pgrep -x fs_usage >/dev/null 2>&1 || return 0
+    sudo -n /usr/bin/pkill -INT -x fs_usage 2>/dev/null
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        pgrep -x fs_usage >/dev/null 2>&1 || return 0
+        sleep 1
+    done
+    sudo -n /usr/bin/pkill -KILL -x fs_usage 2>/dev/null; sleep 2
+    pgrep -x fs_usage >/dev/null 2>&1 && fail "an fs_usage survived and still holds kdebug; nothing after this could start"
+    return 0
+}
+
 run() {  # run <name> <toy> <extra-args...>
     local name="$1" toy="$2"; shift 2
-    # kdebug is single-instance; a leftover observer makes this run's start fail with
-    # `ktrace_start: Resource busy` and the failure surfaces as an unrelated refusal.
-    if pgrep -x fs_usage >/dev/null 2>&1; then
-        sudo -n /usr/bin/pkill -INT -x fs_usage 2>/dev/null
-        sleep 2
-    fi
+    ensure_no_fs_usage
     local st="$WORK/state-$name"; mkdir -p "$st"
     PROBE_STATE="$st" "$SIDEEYE" explore --state "$st" --operation "$WORK/$toy" \
         --shim "$SHIM" --work "$WORK/w-$name" --json "$WORK/$name.json" "$@" \
@@ -130,23 +144,14 @@ echo "  default, and says -e excludes fs_usage itself (plus any list given). It 
 echo "  NOT say -e lifts the defaults. Measured here rather than assumed, because a"
 echo "  child that execs /bin/sh would otherwise be missing from the capture."
 PROBE_CAP="$WORK/probe0.capture"
+ensure_no_fs_usage
 sudo -n /usr/bin/fs_usage -w -e -t 8 -f filesys > "$PROBE_CAP" 2>/dev/null &
 PROBE_PID=$!
 sleep 2
 /bin/sh -c "cat /etc/hostconfig > /dev/null 2>&1; : > $WORK/probe0-marker" 2>/dev/null
 sleep 1
-# kdebug is a single system-wide resource: an fs_usage left holding it makes every
-# later start fail with `ktrace_start: Resource busy`. Killing $PROBE_PID reaches the
-# sudo helper, not the observer it forked — the same defect this work fixed in the
-# engine and left standing here. Signal the group, then wait for the resource itself
-# rather than for a duration.
-sudo -n /usr/bin/pkill -INT -x fs_usage 2>/dev/null
-for _ in 1 2 3 4 5 6 7 8 9 10; do
-    pgrep -x fs_usage >/dev/null 2>&1 || break
-    sleep 1
-done
-pgrep -x fs_usage >/dev/null 2>&1 && { sudo -n /usr/bin/pkill -KILL -x fs_usage 2>/dev/null; sleep 2; }
-pgrep -x fs_usage >/dev/null 2>&1 && fail "an fs_usage survived the probe and still holds kdebug; nothing after this could start"
+ensure_no_fs_usage
+[ -s "$PROBE_CAP" ] || fail "Probe 0's capture is empty: fs_usage did not run, so nothing here is a measurement"
 SH_LINES=$(grep -cE '[[:space:]]sh\.[0-9]+$' "$PROBE_CAP" 2>/dev/null); SH_LINES=${SH_LINES:-0}
 MARKER_LINES=$(grep -c "probe0-marker" "$PROBE_CAP" 2>/dev/null); MARKER_LINES=${MARKER_LINES:-0}
 echo "  lines attributed to a process named sh: $SH_LINES"

@@ -66,6 +66,21 @@ more sites. Rather than a third reminder, the observer is registered when spawne
 `unknown` and `setupError`, the two functions every refusal exits through, stop it on
 the way out. An exit that cannot forget replaces a rule that every exit must remember.
 
+**The first run of the fixed binary refused because the cleanup deleted the evidence.**
+Recording ran, both sentinels came and went, the handshake held — and the comparison
+read nothing, because a `defer removeFile(capture)` sat inside the block that stopped
+the observer and fired at that block's closing brace, forty lines before the read. A
+tidy-up added for a real reason (2.9 GB of capture left behind) had been placed by
+proximity rather than by lifetime. The capture is now registered like the observer is,
+dropped once the comparison holds the bytes and inside the two refusal exits, and
+nowhere else.
+
+The same run's Probe 0 reported "a shell child is invisible" over a zero-byte capture:
+the probe's `fs_usage` never started, because the previous binary's orphan still held
+kdebug for another two minutes, and the probe alone did not clear leftovers before
+launching. The two earlier probes (7 and 2 marker lines) stand; this one was not a
+measurement, and the script now refuses to read an empty probe capture as one.
+
 Four more were mine in the same shape — asserting from the man page or from my own
 reasoning what a committed measurement in this repository already answered. The
 truncation test read the `>` padding macOS 15 adds and missed the cut itself, which

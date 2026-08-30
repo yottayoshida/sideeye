@@ -600,6 +600,21 @@ fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
 const LiveSidecar = struct { pid: c_int, gpa: std.mem.Allocator };
 var fsu_live: ?LiveSidecar = null;
 
+/// The observer's capture file, from spawn until it has been read. A `defer` on the
+/// block that stopped the observer removed it — at that block's closing brace, forty
+/// lines before the comparison opened it, so the comparison read nothing and the run
+/// refused with "could not be read". Measured on an otherwise green end-to-end run.
+/// The file is dropped at exactly two points instead: right after the comparison has
+/// the bytes in memory, and inside the two refusal exits, which is where a capture
+/// nobody will read again would otherwise be left at hundreds of megabytes.
+var fsu_capture: ?[]const u8 = null;
+
+fn dropCapture() void {
+    const c = fsu_capture orelse return;
+    fsu_capture = null;
+    removeFile(c);
+}
+
 /// Stop the registered observer if one is running, and report what the pre-signal
 /// observation said. `.had_exited` when nothing was registered, which is the answer
 /// every non-fs_usage run gets and costs it nothing.
@@ -611,6 +626,7 @@ fn stopLiveSidecar() posix.SidecarEnd {
 
 fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
     _ = stopLiveSidecar();
+    dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
         writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), detail);
     // The classification lines appear here too: DESIGN §13 demands text and JSON
@@ -689,6 +705,7 @@ fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
 /// that stale verdict could be a PASS for a run that never explored anything.
 fn setupError(detail: []const u8) noreturn {
     _ = stopLiveSidecar();
+    dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
         writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, detail);
     say("SETUP ERROR  {s}\n", .{detail});
@@ -855,6 +872,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // Registered before anything below can refuse. From here on, every `setupError`
     // and `unknown` stops it; no call site has to.
     fsu_live = .{ .pid = pid, .gpa = gpa };
+    fsu_capture = capture_path;
 
     // The proof that the capture is live. Not a sleep: a sleep asserts a duration and
     // this has to assert an observation. The engine creates a file inside the state
@@ -1745,13 +1763,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // can only be asked before the signal.
         _ = pid;
         const end = stopLiveSidecar();
-        // Read once, then dropped. The capture is system-wide, so its size is set by
-        // what else the machine is doing: one measured run left 2.9 GB in the work
-        // directory. Keeping it costs gigabytes per run and buys nothing — the account
-        // it produced is in the report, and the raw lines a refusal needs are quoted in
-        // the refusal itself. Deferred so every exit below drops it too, including the
-        // refusals: a run that failed is exactly the one nobody comes back to clean up.
-        defer removeFile(oracle_out);
         // Removed before the final snapshot, which is what judges the state: a file the
         // engine created for its own bookkeeping must not appear as an unexplained
         // entry in the tree the verdict is about. Unconditional, so the refusals below
@@ -1929,6 +1940,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read")
         else
             readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
+        // The bytes are in the arena now; the file has done its job. The capture is
+        // system-wide and one measured run left 2.9 GB of it, so it does not stay.
+        dropCapture();
         // The oracle resolves relative paths against the subject's cwd (ADR 0006). Where
         // the subject starts is the define's `cwd` when it declared one and the engine's
         // own otherwise; the subject's own chdir/fchdir move it from there. The alt
