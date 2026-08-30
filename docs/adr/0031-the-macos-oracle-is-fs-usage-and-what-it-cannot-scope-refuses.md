@@ -56,6 +56,13 @@ So the capture is taken with no pid filter, scope is decided by the state root's
 and a mutation inside that root appears whoever performed it. This is what
 `spike/fsusage/RESULTS.md` already prescribed for an adapter that wants children.
 
+The default exclusion list stays in force — `-e` removes fs_usage's own activity and
+nothing more, and a `/bin/sh` child measured zero lines under its own name. Scoping by
+path is what survives that: the same run produced seven lines naming the file the
+excluded shell wrote, carried by other processes' entries, so the mutation is in the
+account even though its author is not. A backend that filtered by pid or by process
+name would have lost it.
+
 The cost is a larger capture holding other processes' paths transiently. It lives in
 the work directory, is never part of a case, a report or any artifact, and is removed
 with the rest of the work directory.
@@ -115,8 +122,25 @@ path; the destination's bytes are not verified, and the account says so.
   `--allow-unverified`.
 - macOS runs that use it pay one authentication per `explore`. Runs that do not pass
   the flag are byte-identical to before.
-- The macOS oracle is narrower than the Linux one in two named ways (rename
-  destinations, path depth), and both narrow toward refusal.
+- The macOS oracle is narrower than the Linux one in **three** named ways, and the
+  third was found by review after this ADR first claimed two:
+  1. **Rename destinations.** `fs_usage` prints a rename's old path and never the new
+     one, so a matched rename is checked at the old path and the destination's bytes
+     are not verified. The account says so per run.
+  2. **Path depth.** A pathname cut by the display width refuses rather than being
+     scoped, and a state root deep enough to be cut is refused before the run.
+  3. **Containment-group departure.** `oracle.zig` watches `setsid`/`setpgid` because
+     it "is the only observer of an unshimmed child detaching"; this capture runs under
+     `-f filesys` and does not carry those calls. A child that loaded the shim is still
+     reported by the shim's own account, so what is unobserved here is narrower than
+     the class — an *unshimmed* child that leaves the group. It is disclosed rather
+     than closed: closing it means a second capture class and a second stream to
+     reconcile, which is a different promise from this one.
+
+  The first two narrow toward refusal. The third does not — it is a gap in what this
+  witness can see, and the run does not know it happened. That is the honest reading of
+  "the same claim a Linux one does": the same claim *about what was compared*, over a
+  witness that sees less.
 - `fs_usage`'s behaviour under load is measured only within one envelope
   (`spike/fsusage/`): one machine, one operation class, up to ten thousand operations,
   with the shim attached. Nothing here claims a general bound.

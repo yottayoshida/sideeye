@@ -132,9 +132,7 @@ fn parseLine(raw: []const u8) ?Line {
             dur_end = w_start;
             break;
         }
-        if (!std.mem.eql(u8, word, "W")) {
-            // Part of the process name; keep walking left.
-        }
+        // Not a duration: part of the process name, or the `W` flag. Keep walking left.
         scan = w_start;
     }
     const middle_end = dur_end orelse return null;
@@ -181,16 +179,6 @@ fn isTruncated(middle: []const u8) bool {
     return false;
 }
 
-/// `[  2]` — the call failed and changed nothing. Present on every failing mode
-/// measured (seven of seven), so a failed call is recognised rather than inferred.
-fn errnoPresent(middle: []const u8) bool {
-    const lb = std.mem.indexOfScalar(u8, middle, '[') orelse return false;
-    const rb = std.mem.indexOfScalarPos(u8, middle, lb, ']') orelse return false;
-    const inner = std.mem.trim(u8, middle[lb + 1 .. rb], " ");
-    if (inner.len == 0) return false;
-    for (inner) |c| if (!std.ascii.isDigit(c)) return false;
-    return true;
-}
 
 fn fdOf(middle: []const u8) ?[]const u8 {
     var it = std.mem.tokenizeAny(u8, middle, " \t");
@@ -220,11 +208,25 @@ fn pathOf(middle: []const u8) ?[]const u8 {
 /// CALL name to the class the shim would have recorded. Only calls that can change
 /// state are mapped; read-only calls return null and are ignored, matching ADR 0003's
 /// predicate on the shim side. `close` is recorded but never a crash point.
-fn classOf(call: []const u8) ?contract.OpClass {
+/// `fs_usage` prints the `_nocancel` spelling of a call when the target used the
+/// variant that is not a cancellation point — `open_nocancel`, `write_nocancel` and
+/// eight more that `spike/fsusage/classify.py` enumerates one by one. They are the same
+/// call. Stripped in one place rather than listed in three tables, so a spelling this
+/// version has not seen still lands on its own class instead of on the unknown-call
+/// refusal: the enumeration is what a port drops, and this one dropped nine of ten.
+fn canonicalCall(call: []const u8) []const u8 {
+    const suffix = "_nocancel";
+    if (std.mem.endsWith(u8, call, suffix)) return call[0 .. call.len - suffix.len];
+    return call;
+}
+
+fn classOf(call_in: []const u8) ?contract.OpClass {
+    const call = canonicalCall(call_in);
     const table = [_]struct { name: []const u8, class: contract.OpClass }{
         .{ .name = "open", .class = .open },
         .{ .name = "guarded_open_np", .class = .open },
         .{ .name = "openat", .class = .open },
+        .{ .name = "open_dprotected", .class = .open },
         .{ .name = "write", .class = .write },
         .{ .name = "pwrite", .class = .write },
         .{ .name = "writev", .class = .write },
@@ -232,6 +234,7 @@ fn classOf(call: []const u8) ?contract.OpClass {
         .{ .name = "rename", .class = .rename },
         .{ .name = "renameat", .class = .rename },
         .{ .name = "renameatx_np", .class = .rename },
+        .{ .name = "renamex_np", .class = .rename },
         .{ .name = "unlink", .class = .unlink },
         .{ .name = "unlinkat", .class = .unlink },
         .{ .name = "fsync", .class = .fsync },
@@ -246,7 +249,6 @@ fn classOf(call: []const u8) ?contract.OpClass {
         .{ .name = "symlink", .class = .symlink },
         .{ .name = "symlinkat", .class = .symlink },
         .{ .name = "close", .class = .close },
-        .{ .name = "close_nocancel", .class = .close },
     };
     for (table) |e| if (std.mem.eql(u8, call, e.name)) return e.class;
     return null;
@@ -278,7 +280,8 @@ fn openIsWriteCapable(middle: []const u8) bool {
 
 /// Ownership/permission/timestamp writes: observed and excluded from judgement (#121),
 /// reported so the exclusion is visible per run.
-fn isMetadataCall(call: []const u8) bool {
+fn isMetadataCall(call_in: []const u8) bool {
+    const call = canonicalCall(call_in);
     const names = [_][]const u8{
         "chmod",    "fchmod",  "fchmodat", "chown", "fchown", "lchown",
         "fchownat", "utimes",  "futimes",  "utimensat", "setattrlist",
@@ -296,7 +299,8 @@ fn isMetadataCall(call: []const u8) bool {
 /// end-to-end run: `lstat64` and `getattrlist` dominate (Spotlight and fseventsd walking
 /// a directory that just changed), with `listxattr`, `getxattr` and `access` behind
 /// them, and the subject's own `fstat64`/`fcntl` bracketing pairs from the shim.
-fn isReadOnlyCall(call: []const u8) bool {
+fn isReadOnlyCall(call_in: []const u8) bool {
+    const call = canonicalCall(call_in);
     const names = [_][]const u8{
         "stat64",     "stat",       "lstat64",    "lstat",     "fstat64",   "fstat",
         "fstatat64",  "fstatat",    "getattrlist", "getattrlistat", "fgetattrlist",
@@ -406,6 +410,20 @@ fn physical(path: []const u8) []const u8 {
     return path;
 }
 
+/// Append unless it is already there. Two copies of this loop had drifted apart inside
+/// one function — one with a `break`, one without — which is what a third copy would
+/// have cost.
+/// Under either spelling of the judged root. `underRoot` already answers false for an
+/// empty root, so the `alt.len != 0` guard three call sites carried was always true.
+fn inState(path: []const u8, root: []const u8, alt: []const u8) bool {
+    return underRoot(path, root) or underRoot(path, alt);
+}
+
+fn appendUnique(arena: std.mem.Allocator, list: *std.ArrayList([]const u8), s: []const u8) !void {
+    for (list.items) |t| if (std.mem.eql(u8, t, s)) return;
+    try list.append(arena, s);
+}
+
 fn underRoot(path_in: []const u8, root_in: []const u8) bool {
     const root = physical(root_in);
     const path = physical(path_in);
@@ -480,12 +498,8 @@ pub fn read(
         if (samePath(path, trace_path)) subject_tid = ln.tid;
         if (sentinel_start.len != 0 and samePath(path, sentinel_start)) saw_start = true;
         if (sentinel_end.len != 0 and samePath(path, sentinel_end)) saw_end = true;
-        if (underRoot(path, state_root) or (state_alt.len != 0 and underRoot(path, state_alt))) {
-            var known = false;
-            for (state_tids.items) |t| {
-                if (std.mem.eql(u8, t, ln.tid)) known = true;
-            }
-            if (!known) try state_tids.append(arena, ln.tid);
+        if (inState(path, state_root, state_alt)) {
+            try appendUnique(arena, &state_tids, ln.tid);
         }
     }
 
@@ -526,7 +540,14 @@ pub fn read(
             return out;
         };
 
-        if (isTruncated(ln.middle) and relevant(ln.tid, subject, state_tids.items)) {
+        const is_subject = std.mem.eql(u8, ln.tid, subject);
+        // Asked once per line, not once per test. `classOf` is a linear walk of the
+        // call table and `relevant` a linear walk of the touching-thread list; a
+        // capture measured at 5,558,556 lines pays for every extra ask.
+        const cls_opt = classOf(ln.call);
+        const is_relevant = relevant(ln.tid, subject, state_tids.items);
+
+        if (isTruncated(ln.middle) and is_relevant) {
             out.defect = .{ .truncated = raw };
             return out;
         }
@@ -537,11 +558,11 @@ pub fn read(
         // to decide whether a line is an operation. Dropping them here would make every
         // failing target a phantom divergence against an account that has them.
         //
-        // The observation that a failed call carries its errno and its path (measured,
-        // seven modes of seven) is what makes the two accounts line up, not a licence
-        // to discard the line.
+        // The observation that a failed call carries its errno and its path — measured,
+        // seven failing modes of seven — is what makes the two accounts line up, not a
+        // licence to discard the line. Nothing here reads the errno bracket: the helper
+        // that did was removed with the branch that used it.
 
-        const is_subject = std.mem.eql(u8, ln.tid, subject);
         const path = pathOf(ln.middle);
         const fd = fdOf(ln.middle);
 
@@ -557,23 +578,39 @@ pub fn read(
         // Descriptor bookkeeping runs for every line that carries one, whether or not
         // the line is in scope: a descriptor opened outside the state root and later
         // written must resolve to "not in scope", not to "unknown".
-        if (classOf(ln.call)) |cls| {
+        if (cls_opt) |cls| {
             if (cls == .open) {
                 // A read-only open changes nothing and is not an observed operation on
                 // either side (ADR 0003). Skipped before the descriptor bookkeeping so
                 // a pathless one — `fs_usage` prints six of them in a real capture,
                 // all reads — is not mistaken for a hole.
                 if (!openIsWriteCapable(ln.middle)) continue;
+                // Only descriptors whose later use could matter are remembered. The
+                // capture is system-wide: one measured run held 5,558,556 lines,
+                // 26,228 distinct (tid, fd) pairs — and 22 lines touching the judged
+                // directory. Recording every pair to answer questions about those 22
+                // is what made this table quadratic in a file this size.
+                //
+                // Two kinds are kept: anything the subject opens (its own descriptors
+                // decide its account), and anything under the root whoever opened it
+                // (that is what `child_touched` is read from). A neighbour's descriptor
+                // outside the root is dropped — a later write on it resolves to nothing
+                // and is then dismissed by `relevant`, which is the same answer the
+                // table would have given.
+                const keep = std.mem.eql(u8, ln.tid, subject) or blk: {
+                    const pp = path orelse break :blk false;
+                    break :blk inState(pp, state_root, state_alt);
+                };
+                if (!keep) continue;
                 if (fd) |f| {
                     const p = path orelse {
-                        if (relevant(ln.tid, subject, state_tids.items)) {
+                        if (is_relevant) {
                             out.defect = .{ .unresolved_fd = raw };
                             return out;
                         }
                         continue;
                     };
-                    try fds.set(arena, .{ .tid = ln.tid, .fd = f }, underRoot(p, state_root) or
-                        (state_alt.len != 0 and underRoot(p, state_alt)));
+                    try fds.set(arena, .{ .tid = ln.tid, .fd = f }, inState(p, state_root, state_alt));
                 }
             } else if (cls == .close) {
                 if (fd) |f| fds.clear(.{ .tid = ln.tid, .fd = f });
@@ -584,14 +621,14 @@ pub fn read(
         // Is this line about the judged directory?
         var in_scope = false;
         if (path) |p| {
-            in_scope = underRoot(p, state_root) or (state_alt.len != 0 and underRoot(p, state_alt));
+            in_scope = inState(p, state_root, state_alt);
         } else if (fd) |f| {
             // Pathless: `write F=3 B=0x7`. Resolve through the open, or refuse.
             const known = fds.get(.{ .tid = ln.tid, .fd = f }) orelse {
                 // Only calls that could change state make an unresolved descriptor a
                 // hole; a read on an inherited descriptor is not this module's problem.
-                if (classOf(ln.call)) |c| {
-                    if (c != .close and relevant(ln.tid, subject, state_tids.items)) {
+                if (cls_opt) |c| {
+                    if (c != .close and is_relevant) {
                         out.defect = .{ .unresolved_fd = raw };
                         return out;
                     }
@@ -608,8 +645,8 @@ pub fn read(
             // close — the raw-fork child's `rename(outside, state/x)` that neither
             // witness would otherwise report. Kept as a divergence candidate: the
             // comparison has no shim record to match it against, so it refuses.
-            if (classOf(ln.call)) |c| {
-                if (c == .rename and relevant(ln.tid, subject, state_tids.items)) {
+            if (cls_opt) |c| {
+                if (c == .rename and is_relevant) {
                     out.defect = .{ .unresolved_fd = raw };
                     return out;
                 }
@@ -622,7 +659,7 @@ pub fn read(
             try out.parsed.metadata_observed.append(arena, try arena.dupe(u8, ln.call));
             continue;
         }
-        if (std.mem.eql(u8, ln.call, "fcntl")) {
+        if (std.mem.eql(u8, canonicalCall(ln.call), "fcntl")) {
             if (fcntlDuplicates(ln.middle)) {
                 // The duplicate inherits where the original pointed. fs_usage prints
                 // the source descriptor; the new number appears on the following
@@ -637,7 +674,7 @@ pub fn read(
         }
         if (isReadOnlyCall(ln.call) or isDiskIo(ln.call)) continue;
 
-        const cls = classOf(ln.call) orelse {
+        const cls = cls_opt orelse {
             out.defect = .{ .unknown_call = raw };
             return out;
         };
@@ -647,14 +684,8 @@ pub fn read(
             // a process other than the subject mutated the judged directory, and this
             // witness is the only one that sees it whether or not the shim was loaded.
             out.parsed.child_touched = true;
-            var seen = false;
-            for (other_tids.items) |t| {
-                if (std.mem.eql(u8, t, ln.tid)) seen = true;
-            }
-            if (!seen) {
-                try other_tids.append(arena, ln.tid);
-                out.parsed.children += 1;
-            }
+            try appendUnique(arena, &other_tids, ln.tid);
+            out.parsed.children = other_tids.items.len;
             continue;
         }
 
@@ -703,12 +734,6 @@ test "both measured truncation shapes are stumps, and a whole path is not" {
     try testing.expect(!isTruncated("F=3    B=0x5"));
 }
 
-test "an errno bracket marks a call that changed nothing" {
-    try testing.expect(errnoPresent("open      [  2] (_WC_T__)  /tmp/st/missing"));
-    try testing.expect(!errnoPresent("open      F=3  (_WC_T__)  /tmp/st/load"));
-    // A byte count is not an errno.
-    try testing.expect(!errnoPresent("write     F=3  B=0x7"));
-}
 
 test "fd and path come out of the middle" {
     const ln = parseLine(cap_line).?;

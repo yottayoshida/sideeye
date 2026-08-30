@@ -146,8 +146,11 @@ pub const X_OK: c_int = 1;
 /// Typed `u8` so the same constant serves both users — `kill` widens it to `c_int`, and
 /// `Term.isSignal` compares it directly. `main.zig` was spelling it as a bare `9`.
 pub const SIGKILL: u8 = 9;
-/// 15 on both platforms. Sent before SIGKILL to a sidecar so an observer that buffers
-/// its capture gets the chance to flush it; the capture is the whole point of the child.
+/// 2 on both platforms. Sent before SIGKILL to a sidecar because it is the disposition
+/// `fs_usage` is built to handle — it is meant to be stopped from a terminal, and it
+/// flushes and releases kdebug on the way out. SIGTERM does neither: measured, a
+/// capture ended at a stdio flush boundary sixty-four milliseconds in and read like a
+/// complete capture of a short window.
 pub const SIGINT: u8 = 2;
 
 /// `waitid` selectors and flags, taken from the platform headers rather than from memory.
@@ -588,6 +591,8 @@ pub fn spawnSidecar(
     return pid;
 }
 
+pub const SidecarEnd = enum { was_running, had_exited, would_not_die };
+
 /// Stop a sidecar and reap it, reporting whether it was still running when asked.
 ///
 /// The answer matters: an observer that had already exited when the recording finished
@@ -606,8 +611,6 @@ pub fn spawnSidecar(
 /// A caller signalling a privileged sidecar needs `signal_helper` — the group is root's
 /// and an unprivileged parent cannot reach it. It is invoked as
 /// `<helper...> kill -<sig> -<pgid>`.
-pub const SidecarEnd = enum { was_running, had_exited, would_not_die };
-
 pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []const u8, grace_ms: u64) SidecarEnd {
     // WNOHANG first: this is the observation that separates "we stopped it" from
     // "it was already gone", and it has to happen before any signal is sent.

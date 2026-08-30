@@ -96,6 +96,12 @@ done
 
 run() {  # run <name> <toy> <extra-args...>
     local name="$1" toy="$2"; shift 2
+    # kdebug is single-instance; a leftover observer makes this run's start fail with
+    # `ktrace_start: Resource busy` and the failure surfaces as an unrelated refusal.
+    if pgrep -x fs_usage >/dev/null 2>&1; then
+        sudo -n /usr/bin/pkill -INT -x fs_usage 2>/dev/null
+        sleep 2
+    fi
     local st="$WORK/state-$name"; mkdir -p "$st"
     PROBE_STATE="$st" "$SIDEEYE" explore --state "$st" --operation "$WORK/$toy" \
         --shim "$SHIM" --work "$WORK/w-$name" --json "$WORK/$name.json" "$@" \
@@ -119,10 +125,20 @@ PROBE_PID=$!
 sleep 2
 /bin/sh -c "cat /etc/hostconfig > /dev/null 2>&1; : > $WORK/probe0-marker" 2>/dev/null
 sleep 1
-sudo -n /bin/kill -INT "-$PROBE_PID" 2>/dev/null
-sleep 1
-SH_LINES=$(grep -cE '[[:space:]]sh\.[0-9]+$' "$PROBE_CAP" 2>/dev/null || echo 0)
-MARKER_LINES=$(grep -c "probe0-marker" "$PROBE_CAP" 2>/dev/null || echo 0)
+# kdebug is a single system-wide resource: an fs_usage left holding it makes every
+# later start fail with `ktrace_start: Resource busy`. Killing $PROBE_PID reaches the
+# sudo helper, not the observer it forked — the same defect this work fixed in the
+# engine and left standing here. Signal the group, then wait for the resource itself
+# rather than for a duration.
+sudo -n /usr/bin/pkill -INT -x fs_usage 2>/dev/null
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+    pgrep -x fs_usage >/dev/null 2>&1 || break
+    sleep 1
+done
+pgrep -x fs_usage >/dev/null 2>&1 && { sudo -n /usr/bin/pkill -KILL -x fs_usage 2>/dev/null; sleep 2; }
+pgrep -x fs_usage >/dev/null 2>&1 && fail "an fs_usage survived the probe and still holds kdebug; nothing after this could start"
+SH_LINES=$(grep -cE '[[:space:]]sh\.[0-9]+$' "$PROBE_CAP" 2>/dev/null); SH_LINES=${SH_LINES:-0}
+MARKER_LINES=$(grep -c "probe0-marker" "$PROBE_CAP" 2>/dev/null); MARKER_LINES=${MARKER_LINES:-0}
 echo "  lines attributed to a process named sh: $SH_LINES"
 echo "  lines naming the marker the shell wrote: $MARKER_LINES"
 if [ "$SH_LINES" -gt 0 ]; then

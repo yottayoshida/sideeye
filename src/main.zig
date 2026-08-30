@@ -87,6 +87,16 @@ const Args = struct {
     /// (`src/fsusage.zig`), so the two cannot be reduced to one parameter without the
     /// value silently meaning two different things.
     oracle_fs_usage: bool = false,
+    /// Whether this run named a completeness oracle at all — the one question six
+    /// sites used to ask by spelling the disjunction themselves.
+    ///
+    /// Derived once, immediately after the parser has ruled the two flags mutually
+    /// exclusive, so no reader has to re-establish that they cannot both be set. The
+    /// review that found `requireCompleteness` still reading `args.oracle != null` —
+    /// a comparison that ran, agreed, and left the PASS gate demanding
+    /// `--allow-unverified` — found a defect this shape produces: a second backend
+    /// arrives and every site that asked the old question keeps answering it.
+    has_oracle: bool = false,
     check: ?config.Command = null,
     allow_unverified: bool = false,
     fresh_state: bool = false,
@@ -722,16 +732,6 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
     setupError(doing);
 }
 
-/// Spawn the operation under observation, the way the recording run does.
-///
-/// Extracted when `--twice` (#199) needed a second observation that cannot drift from
-/// the first. Everything that decides what the run *sees* — the oracle wrapper and its
-/// trace filter, the environment the child inherits, which failure wording a spawn
-/// error gets — lives at one site now, so a second caller cannot quietly observe under
-/// different conditions and have its snapshot compared as if it had not.
-///
-/// The trace and stdout paths are parameters because each observation needs its own: a
-/// second run writing over the first's trace would leave a snapshot being compared
 /// Start `fs_usage` beside the run, or refuse with the reason.
 ///
 /// Everything that can fail about the observer fails *here*, before the first child of
@@ -743,14 +743,61 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
 /// How much fs_usage capture the engine will hold.
 ///
 /// The capture is system-wide (`src/fsusage.zig` explains why it cannot be filtered),
-/// so its size is set by whatever else the machine is doing, not by the target. The
-/// measured envelope is 27,994 lines in two seconds at rest and about 827,000 events
-/// per second under a burst, and `-t` bounds the observer's time, not its output. A
-/// run that exceeds this refuses rather than growing the arena until the engine dies:
-/// an out-of-memory kill mid-exploration leaves the target's state directory in a
-/// crash world with nobody to restore it.
-const fsusage_capture_cap: usize = 512 * 1024 * 1024;
+/// so its size is set by whatever else the machine is doing, not by the target. Two
+/// measurements, and the gap between them is the point: 27,994 lines in two seconds on
+/// an idle machine, and **233 MB in a single acceptance run** on one doing ordinary
+/// work — containers, a search indexer and a security agent all writing. `-t` bounds
+/// the observer's time, not its output.
+///
+/// A run that exceeds this refuses rather than growing the arena until the engine dies.
+/// That direction matters more than the number: an out-of-memory kill mid-exploration
+/// leaves the target's state directory in a crash world with nobody to restore it, and
+/// a refusal is recoverable where that is not.
+const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 
+/// The last `n` bytes of a file, for polling something that is being appended to.
+///
+/// The fs_usage capture is system-wide, and a machine doing ordinary work produced 233
+/// MB of it in one run — the Phase 0 figure of 28,000 lines in two seconds was measured
+/// on an idle machine and is not the ceiling. Reading the whole file on every poll of a
+/// ten-second handshake is hundreds of megabytes of I/O for a question about the last
+/// few lines. The sentinel this looks for is written by the engine immediately before
+/// the poll begins, so the tail is where it can be.
+///
+/// The first line of the window is dropped: a tail read lands mid-line, and half a line
+/// is not a line the grammar should be asked about.
+fn readFileTail(arena: std.mem.Allocator, path: []const u8, n: usize) ?[]const u8 {
+    var buf: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
+    const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+    if (fd < 0) return null;
+    defer _ = posix.close(fd);
+    const size = posix.lseek(fd, 0, posix.SEEK_END);
+    if (size < 0) return null;
+    const want: i64 = @intCast(n);
+    const from: i64 = if (size > want) size - want else 0;
+    if (posix.lseek(fd, from, 0) < 0) return null; // SEEK_SET
+    var list: std.ArrayList(u8) = .empty;
+    var chunk: [64 * 1024]u8 = undefined;
+    while (true) {
+        const got = posix.read(fd, &chunk, chunk.len);
+        if (got <= 0) break;
+        list.appendSlice(arena, chunk[0..@intCast(got)]) catch return null;
+    }
+    const text = list.items;
+    if (from == 0) return text;
+    const nl = std.mem.indexOfScalar(u8, text, '\n') orelse return "";
+    return text[nl + 1 ..];
+}
+
+/// Start `fs_usage` beside the run, or refuse with the reason.
+///
+/// Everything that can fail about the observer fails *here*, before the first child of
+/// the measured run exists: the credential check, the launch, and the proof that the
+/// capture is live. That placement is not a preference — `docs/contract-freeze.md`
+/// fixes exit 3 to "before exploration started" and closes the `unknown_reason` set
+/// until 2.0, so a new way to fail that arrives after the recording has begun would
+/// have no honest code to leave under.
 fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: []const u8, sentinel: []const u8, limit_s: u32) c_int {
     // `sudo -n`: never prompt. A prompt here would block a run nobody is watching, and
     // the caller who *is* watching gets a message naming the one command to run first.
@@ -768,11 +815,17 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // `fsusage.read`. `-t` is insurance against a root observer outliving its parent
     // and holding kdebug, which SIGPIPE cannot deliver: a process that has stopped
     // writing never learns the reader is gone.
-    // `-e` with no process list: fs_usage excludes ITSELF and nothing else. Without it
-    // the default exclusion list is in force — the man page names Terminal, sshd, and
-    // the shells (`sh`, `csh`, `tcsh`, `zsh`) — and a child that execs one of those
-    // would be missing from the capture entirely, which is the same blind spot #405
-    // is about wearing a different hat.
+    // `-e` keeps fs_usage's own activity out of the capture. It does NOT lift the
+    // default exclusion list, which the man page says covers Terminal, sshd and the
+    // shells — measured, not assumed: with `-e` in force a `/bin/sh` child produced
+    // zero lines under its own name, and seven lines naming the file it wrote, carried
+    // by other processes' entries.
+    //
+    // That measurement is why scope is decided by path (`src/fsusage.zig`) rather than
+    // by process identity. A design that filtered by pid or by name would lose an
+    // excluded shell's mutations entirely; scoping by the state root still sees them,
+    // and the account records them as a thread other than the subject — which is the
+    // refusal it should be.
     const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit, "-f", "filesys" }, capture_path) catch
         setupError("could not start fs_usage");
 
@@ -782,16 +835,24 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // the subject would do is guaranteed to be recorded.
     var zb: [contract.max_path]u8 = undefined;
     const sz = std.fmt.bufPrintZ(&zb, "{s}", .{sentinel}) catch setupError("path too long");
+    // Created ONCE, before the loop. Inside it, the second iteration's O_EXCL open
+    // necessarily fails on the file the first one made — which is how the first
+    // version of this refused every run that needed more than one poll, under a
+    // message about the *closing* sentinel that named neither the file nor the loop
+    // it came from. The O_EXCL that guards against clobbering a state file and the
+    // retry that waits for the observer are two different concerns; only the first
+    // belongs on the open.
+    const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
+    if (fd < 0) setupError("the fs_usage handshake could not create its sentinel inside the state directory; a file of that name is already there, or the directory is not writable");
+    _ = posix.close(fd);
+
     var waited: u64 = 0;
     while (waited < 10_000) {
-        const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
-        if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created, so nothing can establish that the capture covered the end of the recording");
-        _ = posix.close(fd);
         // A fresh arena per poll: the capture grows while this loop runs, and reading
         // the whole of it ten times into the caller's arena keeps every copy.
         var poll_arena = std.heap.ArenaAllocator.init(gpa);
         defer poll_arena.deinit();
-        if (readFileAllocCapped(poll_arena.allocator(), capture_path, fsusage_capture_cap)) |text| {
+        if (readFileTail(poll_arena.allocator(), capture_path, 4 * 1024 * 1024)) |text| {
             // The reader's predicate, not a substring search. A raw search matched a
             // system daemon's line about the sentinel and let a run proceed whose
             // capture the reader could then not scope at all (measured, first
@@ -809,6 +870,16 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     setupError("fs_usage started but its capture never showed the engine's own sentinel, so nothing proves the observer was recording; the run would have been judged against a capture of unknown coverage");
 }
 
+/// Spawn the operation under observation, the way the recording run does.
+///
+/// Extracted when `--twice` (#199) needed a second observation that cannot drift from
+/// the first. Everything that decides what the run *sees* — the oracle wrapper and its
+/// trace filter, the environment the child inherits, which failure wording a spawn
+/// error gets — lives at one site now, so a second caller cannot quietly observe under
+/// different conditions and have its snapshot compared as if it had not.
+///
+/// The trace and stdout paths are parameters because each observation needs its own: a
+/// second run writing over the first's trace would leave a snapshot being compared
 /// against an account that no longer describes it.
 fn runOperationObserved(
     gpa: std.mem.Allocator,
@@ -1134,6 +1205,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // accepted-but-inert shape this parser refuses everywhere else (ADR 0007).
     if (args.oracle != null and args.oracle_fs_usage)
         setupError("--oracle and --oracle-fs-usage both name a completeness oracle; pass one");
+    args.has_oracle = args.oracle != null or args.oracle_fs_usage;
 
     if (mode == .preflight) {
         if (args.oracle_fs_usage) setupError("--oracle-fs-usage belongs to explore and replay; preflight asks whether the recording phase accepts this target, and answers that without a second witness");
@@ -1620,7 +1692,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // observer starts, so the refusal is a setup error rather than a silent hole.
         if (state_abs.len > 96)
             setupError("--oracle-fs-usage cannot scope a state directory this deep: fs_usage cuts long pathnames from the left, so the state root's own prefix would be missing from the capture and no line could be attributed to it. Use a shorter --state path");
-        fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 600);
+        // 90 seconds, not the ten minutes this first carried. The observer covers the
+        // recording run alone — `--oracle` has never watched the crash worlds — and a
+        // recording is seconds. `-t` is the insurance against a stop that does not
+        // land, so its right size is the smallest one that cannot cut a real recording
+        // short, and an oversized bound is not free: a run whose stop failed wrote
+        // **2.9 GB** of system-wide capture before its ten minutes were up, measured.
+        fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
     }
 
     const rec_started_ms = posix.monotonicMs();
@@ -1639,6 +1717,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // separates a capture of the whole window from one that closed early, and it
         // can only be asked before the signal.
         const end = posix.stopSidecar(gpa, pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
+        // Read once, then dropped. The capture is system-wide, so its size is set by
+        // what else the machine is doing: one measured run left 2.9 GB in the work
+        // directory. Keeping it costs gigabytes per run and buys nothing — the account
+        // it produced is in the report, and the raw lines a refusal needs are quoted in
+        // the refusal itself. Deferred so every exit below drops it too, including the
+        // refusals: a run that failed is exactly the one nobody comes back to clean up.
+        defer removeFile(oracle_out);
         // Removed before the final snapshot, which is what judges the state: a file the
         // engine created for its own bookkeeping must not appear as an unexplained
         // entry in the tree the verdict is about. Unconditional, so the refusals below
@@ -1792,7 +1877,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // child loads nothing), and every consequence of having crossed a boundary — the
     // quiescence sampling above all — must engage for those too.
     var crossed_boundary = trace.boundary != null or trace.foreign_pid_seen;
-    if (crossed_boundary and args.oracle == null and !args.oracle_fs_usage)
+    if (crossed_boundary and !args.has_oracle)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)");
 
     // ---- oracle comparison ---------------------------------------------------------
@@ -1801,7 +1886,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // without knowing how the run was invoked.
     if (args.allow_unverified)
         oracle_note = "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported";
-    if (args.oracle != null or args.oracle_fs_usage) {
+    if (args.has_oracle) {
         // Set before the exits below, not after them. Every `unknown()` in this block is
         // raised by the oracle having run and disagreed; a report saying "not run" beside
         // `unknown_reason: oracle_missed_operation` contradicts itself.
@@ -1940,11 +2025,32 @@ pub fn main(init: std.process.Init.Minimal) !void {
         };
 
         oracle_verified = true;
-        oracle_note = std.fmt.allocPrint(
+        // The account names the witness and, where the witness is narrower, what it did
+        // not check. The promise this flag makes is that a macOS run *naming its oracle*
+        // carries the Linux claim — and a reader could not tell the two apart from this
+        // line, which read identically whichever observer had run. Prose, so surface 2
+        // permits it: `docs/contract-freeze.md` freezes the account fields' presence and
+        // the machine fields' meaning, not their wording.
+        // The witness and its narrowing go at the END of the line. Two acceptance checks
+        // match `agreed on N operations` as a substring (spike/acceptance.sh:703, 2835);
+        // a prefix would break them, and "surface 2 permits improving the prose" is a
+        // licence about the freeze, not about the checks that hold the code to it.
+        const agreed = std.fmt.allocPrint(
             arena,
-            "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
+            "agreed on {d} operations ({d} lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
+        oracle_note = if (args.oracle_fs_usage)
+            std.fmt.allocPrint(
+                arena,
+                "{s}, witness fs_usage. Narrower than strace in three measured ways: a rename is checked at " ++
+                    "its old path only (fs_usage prints no destination), a process leaving the containment " ++
+                    "group is not observable under this capture's filter, and a pathname cut by the display " ++
+                    "width refuses rather than being scoped",
+                .{agreed},
+            ) catch agreed
+        else
+            std.fmt.allocPrint(arena, "{s}, witness strace", .{agreed}) catch agreed;
 
         if (parsed.children > 0) {
             crossed_boundary = true;
@@ -2064,7 +2170,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     }
 
     if (n == 0) {
-        requireCompleteness(arena, args.oracle != null or args.oracle_fs_usage, args.allow_unverified);
+        requireCompleteness(arena, args.has_oracle, args.allow_unverified);
         // "judged state", not "state directory": a run whose only writes are
         // ownership/permission metadata lands exactly here with zero kill points,
         // and those writes DO change the directory — just nothing the verdict
@@ -2620,7 +2726,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
-    requireCompleteness(arena, args.oracle != null or args.oracle_fs_usage, args.allow_unverified);
+    requireCompleteness(arena, args.has_oracle, args.allow_unverified);
 
     say(
         \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant
