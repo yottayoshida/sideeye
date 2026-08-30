@@ -3391,6 +3391,31 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # marker-reason needs a generation covering B alone with no rated trial: that is the
 # only shape where nothing the attribution checks read comes after a detail table,
 # and it is the shape the page contemplates for a future B measurement.
+# #348 adds four more, for the apparatus record a completed generation is swept
+# under: apparatus-missing (no record at all), apparatus-digest-missing (one digest
+# line instead of two), apparatus-head-empty (`head: ` with no value — what
+# sweep.sh writes when `git rev-parse` fails, since nothing there checks its rc) and
+# apparatus-image-unlisted (no image lines — what it writes when `docker images |
+# grep` returns nothing). The first three read only the file; the last is the one
+# predicate that holds the record against the generation's own manifest.
+# **apparatus-missing's red-once is defined differently from every other fixture
+# here.** Removing its guard does not turn the fixture green: the read that follows
+# raises instead, so what the removal changes is the KIND of red — a refusal with a
+# pinned message becomes a traceback, which this loop reports as "died, but not on
+# its predicate". That difference is the measurement.
+# Two apparatus checks were considered and left out, named here so the omission is
+# not read as an oversight. **The banner line** is not checked: truncation eats from
+# the end, so a record can lose its images, then its head, then its digests, but a
+# banner-only loss cannot be produced that way — it takes a targeted edit, which is
+# equally invisible to every other rule here (rewriting one character of a digest,
+# say). The search behind that was one probe deep: no generation in the current
+# corpus leaves the image predicate covering an empty set (non-wall rows are A 36/36,
+# B 7/20, control 1/1). "No shape was found" rather than "no shape exists".
+# **Whether `head:` names a commit in this history** is not checked either: it would
+# catch a real accident (a sweep interrupted and rebased left a head: pointing at a
+# commit no longer reachable), but count.py calls neither git nor subprocess today,
+# and bringing a git dependency into a tool that runs in the sweep container is its
+# own decision.
 # The first of those seven was itself red for the wrong reason when it was written —
 # count.py read its reports before checking its status, so it died on a missing file
 # — which is what this loop's message-matching exists to catch. **Predicates with no
@@ -3471,7 +3496,11 @@ for pair in \
     "setup-error-empty-reason:is waived with no reason" \
     "setup-error-piped-reason:reason contains a pipe" \
     "setup-error-duplicate-waiver:twice — the later row would win in silence" \
-    "setup-error-marker-reason:carries the results block's end marker"; do
+    "setup-error-marker-reason:carries the results block's end marker" \
+    "apparatus-missing:apparatus.txt is missing" \
+    "apparatus-digest-missing:digest lines, not the engine's" \
+    "apparatus-head-empty:no resolved head: line" \
+    "apparatus-image-unlisted:the apparatus record does not"; do
     ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \

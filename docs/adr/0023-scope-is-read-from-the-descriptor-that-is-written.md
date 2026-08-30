@@ -1,7 +1,7 @@
 # 0023. Scope is read from the descriptor a syscall writes, not from its first argument
 
 Date: 2026-08-26
-Status: Proposed
+Status: Accepted (implementing PR merged as `36a5b73`, 2026-08-26)
 
 ## Context
 
