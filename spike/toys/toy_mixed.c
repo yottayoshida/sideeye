@@ -7,7 +7,12 @@
  * raw syscall, which the shim cannot see at all. The resulting trace is short but not
  * empty, and looks like a complete account of a small operation.
  *
- * Only the oracle catches this, which is why PASS requires one.
+ * The oracle catches it by comparing accounts, and named that as the only way until
+ * 2026-08-30: the per-path reconciliation (#405, ADR 0032) now catches it with no oracle
+ * at all, because `key.json` changed and no record names it. Measured here — without an
+ * oracle this toy answered FAIL before and answers `state_changed_unaccounted` now, and
+ * the FAIL was the worse answer: its crash points were derived from an operation list
+ * that omitted the write the counterexample was about.
  */
 
 #define _GNU_SOURCE

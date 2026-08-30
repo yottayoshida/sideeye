@@ -514,6 +514,22 @@ pub const UnknownReason = enum {
     /// contained, disagreed: something was still writing. Whatever the verdict would
     /// have been, it would have described a moment nobody chose.
     state_not_quiescent,
+    /// The judged state changed at a path that no recorded operation names. The
+    /// general form of `state_changed_without_ops`, which asks the same question of the
+    /// whole run and therefore goes silent as soon as one operation is recorded: a
+    /// target whose libc write is seen and whose raw write is not looks exactly like one
+    /// that was fully observed (#405, measured on the shipped 1.0.0 — a raw-forked
+    /// child's file sat in the judged directory under a PASS).
+    ///
+    /// Distinct from `state_changed_without_ops` by more than resolution: that name
+    /// says operations were counted and there were none, which is false here. Distinct
+    /// from `oracle_missed_operation`, which names the syscall a second witness saw the
+    /// shim miss; this one has no second witness and names the path instead.
+    ///
+    /// **Added after the v1.0 tag** — the first member to be, and a break of the freeze
+    /// declaration rather than an exception inside it. `docs/contract-freeze.md` carries
+    /// the amendment and the reason.
+    state_changed_unaccounted,
     /// A state-directory entry is neither a regular file, a directory nor a symlink —
     /// a FIFO, a socket, a device. `restore` cannot recreate such an entry, so every
     /// explored world would run against a tree the recording run never had, and the

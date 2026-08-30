@@ -70,40 +70,15 @@ int main(void) {
     return 0;
 }
 EOF
-cat > "$WORK/rawchild_toy.c" <<'EOF'
-/* #405's shape: the parent writes through libc so the recording is not empty, then
- * forks raw and the child writes through raw syscalls. Neither the shim nor a
- * pid-filtered fs_usage sees the child. `syscall(SYS_fork)` returns the pid in both
- * processes on arm64 and libc caches getpid(), so the discrimination has to go
- * through syscall(SYS_getpid) — measured. */
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/syscall.h>
-#include <sys/wait.h>
-#include <unistd.h>
-int main(void) {
-    const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
-    char pp[1024], cp[1024];
-    snprintf(pp, sizeof(pp), "%s/from-parent", d);
-    snprintf(cp, sizeof(cp), "%s/from-raw-child", d);
-    int fd = open(pp, O_CREAT | O_WRONLY | O_TRUNC, 0600);
-    if (fd < 0) { perror("open"); return 1; }
-    if (write(fd, "p\n", 2) != 2) { perror("write"); return 1; }
-    close(fd);
-    long before = syscall(SYS_getpid);
-    long r = syscall(SYS_fork);
-    if (r < 0) { fprintf(stderr, "raw fork failed\n"); return 3; }
-    if (syscall(SYS_getpid) != before) {
-        long c = syscall(SYS_open, cp, O_CREAT | O_WRONLY | O_TRUNC, 0600);
-        if (c >= 0) { syscall(SYS_write, c, "c\n", 2); syscall(SYS_close, c); }
-        syscall(SYS_exit, 0);
-        _exit(0);
-    }
-    int st; waitpid((pid_t)r, &st, 0);
-    return 0;
-}
-EOF
+# The raw-child fixture is the TRACKED one, not a copy. It used to be a heredoc here,
+# and a third copy lived in spike/fsusage/phase0/ — three files, one claim, hand-synced,
+# and they had already drifted (`PROBE_STATE` only versus `TOY_STATE` then `PROBE_STATE`;
+# a raw-fork fallback present in one and absent in another). Check 3 below and
+# `spike/acceptance.sh` check 2af assert the same thing about the same shape, so they had
+# better be asserting it about the same program. The tracked fixture reads both variable
+# spellings, which is why this can hand it `PROBE_STATE` unchanged.
+cp "$HERE/spike/toys/toy_rawchild.c" "$WORK/rawchild_toy.c" ||
+    fail "the tracked #405 fixture is missing: spike/toys/toy_rawchild.c"
 for t in libc_toy mkstemp_toy rawchild_toy; do
     "$CC" -O0 -o "$WORK/$t" "$WORK/$t.c" 2>/dev/null || fail "could not build $t"
 done
@@ -218,19 +193,23 @@ echo "  PASS"
 echo "=================================================================="
 echo "Check 3 — a second process nobody saw stops the run"
 echo "  predicate: exit 2 with the flag"
-echo "  control:   WITHOUT the flag the same toy still reaches PASS exit 0 with the"
-echo "             child's file in the judged directory — #405's detection half, open,"
-echo "             so this check is the only thing catching it. Its account no longer"
-echo "             says 'single process' (#405's report half, asserted below)"
+echo "  control:   WITHOUT the flag the same toy now refuses too, by path rather than by"
+echo "             witness (state_changed_unaccounted, ADR 0032). It reached PASS exit 0"
+echo "             with the child's file in the judged directory until 2026-08-30 — that"
+echo "             was #405's detection half, and it is closed"
 rc3ctl=$(run c3ctl rawchild_toy --allow-unverified)
-echo "  control exit=$rc3ctl verdict=$(field c3ctl verdict) processes=$(field c3ctl processes)"
+echo "  control exit=$rc3ctl verdict=$(field c3ctl verdict) reason=$(field c3ctl unknown_reason)"
 rc3=$(run c3 rawchild_toy --oracle-fs-usage)
 echo "  flagged exit=$rc3 reason=$(field c3 unknown_reason)"
-[ "$rc3ctl" = "0" ] || echo "  NOTE: control did not reproduce #405 here (exit $rc3ctl); check 3 still stands on its own"
-# #405's report half: the control still reaches PASS with a child's file in the judged
-# directory — that is the detection gap, and it is not what this asserts — but the
-# account must no longer answer a question nothing looked at. Before the fix this field
-# read exactly "single process" here.
+# The control was a soft NOTE while the gap was open, because a leg cannot assert a
+# defect it is documenting. Now that the gap is closed it is a hard assert: the two
+# paths refuse for DIFFERENT reasons, and that difference is the point — with the flag
+# a witness sees the second process, without it only the unexplained path is visible.
+[ "$rc3ctl" = "2" ] || { sed -n '1,12p' "$WORK/c3ctl.txt"; fail "check 3 control: expected exit 2 (state_changed_unaccounted); a PASS here is #405's detection half reopening"; }
+[ "$(field c3ctl unknown_reason)" = "state_changed_unaccounted" ] || fail "check 3 control: expected state_changed_unaccounted, got $(field c3ctl unknown_reason)"
+case "$(field c3ctl message)" in *from-raw-child*) ;; *) fail "check 3 control: the refusal does not name the unexplained path: $(field c3ctl message)" ;; esac
+# The report half (#409) still holds on the same run: the account does not answer a
+# question nothing looked at.
 ctl3_p=$(field c3ctl processes)
 case "$ctl3_p" in *"single process"*) fail "check 3 control: an unwitnessed run asserted a single process: $ctl3_p" ;; esac
 case "$ctl3_p" in *"raw syscall"*) ;; *) fail "check 3 control: the account does not say what the shim cannot see: $ctl3_p" ;; esac

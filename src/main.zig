@@ -217,6 +217,12 @@ var l1_configured: bool = false;
 /// an UNKNOWN raised before the snapshots exist never carries an invented
 /// classification; set from the L0Plan the moment it is built.
 var l0_note: []const u8 = "not classified (the run was refused before L0 classification)";
+
+/// How many differences were attributed wholesale to a directory a recorded rename moved
+/// in from outside the judged root (#405, ADR 0032). Zero means the run has no such
+/// window — which is the point of carrying it as a number: "no window" is then something
+/// a caller reads, not something it infers from the absence of a sentence.
+var attributed_to_rename: usize = 0;
 /// Non-zero once any file is judged by the history form; widens `not tested`.
 var l0_history_count: u32 = 0;
 /// What the operation's executable looked like immediately before the recording run
@@ -2428,6 +2434,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // place an unreproducible entry could otherwise slip into the worlds.
     refuseUnsupportedEntry(arena, final, "appeared during the recording run");
 
+    // The general form of the zero-ops detector above (#405). That one asks whether the
+    // state moved while *nothing* was counted, and goes silent the moment one operation
+    // is recorded: a target whose libc write is seen and whose raw write is not looks
+    // exactly like one that was fully observed. Measured on the shipped build — a
+    // raw-forked child's file sat in the judged directory under a PASS.
+    //
+    // Placed after `refuseUnsupportedEntry` on purpose. A `mknod`'d FIFO is a change no
+    // operation names — the shim interposes no `mknod` anywhere — so running first would
+    // take three acceptance legs' refusals and answer them under this name instead of
+    // the one that says what is actually wrong with the entry.
+    //
+    // After the oracle comparison too: where an oracle ran, `oracle_missed_operation`
+    // names the specific syscall that went unseen, which is strictly more than "this
+    // path is unexplained". This is the detector for the runs that have no second
+    // witness at all, which is every macOS run that does not pay root.
+    reconcileOrRefuse(gpa, arena, initial, final, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
+
     const n = trace.kill_point_count;
     crash_points = n;
 
@@ -3866,6 +3889,105 @@ fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase
     }
 }
 
+/// How many unaccounted paths the refusal names before it stops counting out loud.
+/// The count itself is never truncated — a caller reading three names must still be
+/// told the run had thirty.
+const unaccounted_shown = 4;
+
+/// Refuse when the judged state changed at a path no recorded operation names (#405).
+///
+/// The account this rests on is the shim's, and the shim sees only what crosses the
+/// libc boundary it interposes. A raw syscall is invisible to it — so was a raw-forked
+/// child's write, measured on the shipped build reaching PASS with the child's file
+/// still in the directory. The existing zero-ops detector cannot see that: it asks
+/// whether *nothing* was counted, and the parent's own recorded write answers no.
+///
+/// Returns only when every difference is accounted for, or is inside a subtree a
+/// recorded `rename` moved in. That second clause is a window, not a proof, and the
+/// report says how wide it is rather than leaving it to a comment: the source of such a
+/// rename was never snapshotted (for `papis add` it lives outside the judged root
+/// entirely), so which descendants arrived with the move cannot be recovered from
+/// anything this run holds.
+fn reconcileOrRefuse(
+    gpa: std.mem.Allocator,
+    arena: std.mem.Allocator,
+    initial: engine.Snapshot,
+    final: engine.Snapshot,
+    ops: []const engine.Op,
+    root: []const u8,
+    alt: []const u8,
+) void {
+    // The differences are walked a second time here — `snapshotsEqual` above already
+    // asked whether there were any — and that duplication is deliberate. Folding the two
+    // would mean the zero-ops detector and this one shared a computation, and the first
+    // is a frozen member whose firing condition must not move because the second wanted
+    // a value. The cost is one linear merge over a tree whose largest committed instance
+    // holds twenty-nine entries.
+    //
+    // Sized from the tree rather than fixed: a bound smaller than the difference count
+    // would still report `total` correctly, but the names it printed would be an
+    // arbitrary prefix of the problem.
+    const cap = initial.entries.items.len + final.entries.items.len + 1;
+    const diffs = gpa.alloc(engine.Difference, cap) catch setupError("out of memory");
+    defer gpa.free(diffs);
+    const dc = engine.diffSnapshots(initial, final, diffs);
+    if (dc.equal()) return;
+
+    const found = gpa.alloc(engine.Unaccounted, dc.stored + 1) catch setupError("out of memory");
+    defer gpa.free(found);
+
+    // The tree's own symlinks, from the snapshots rather than from the filesystem. The
+    // shim normalises path arguments lexically, so an operation on `cur/f` under
+    // `cur -> v1` is recorded as `cur/f` while the difference sits at `v1/f`; joining the
+    // two spellings without this turned a fully observed run into a refusal (measured:
+    // one unlink through an interior symlink, PASS on the shipped 1.0.0, UNKNOWN here).
+    // Reading the live tree instead would answer about the tree after the run, not the
+    // one the operation crossed.
+    var links: std.ArrayList(engine.Link) = .empty;
+    engine.collectLinks(arena, initial, final, &links) catch setupError("out of memory");
+    const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError("out of memory");
+    defer gpa.free(scratch);
+
+    const r = engine.reconcile(diffs[0..dc.stored], ops, links.items, root, alt, scratch, found);
+
+    // Disclosed on every run that has one, not only on the refusals: a reader deciding
+    // what a PASS covers needs to know a subtree went unexamined. Twice, on purpose — the
+    // number is the machine's copy and cannot be lost to an allocation failure, and the
+    // sentence rides `l0_note`, the line that already says what the judgement covered.
+    attributed_to_rename = r.by_rename_prefix;
+    if (r.by_rename_prefix > 0)
+        l0_note = std.fmt.allocPrint(
+            arena,
+            "{s}; {d} path(s) attributed to a directory a recorded rename moved in from outside the judged root, and not individually accounted for — that source subtree was never snapshotted, so what arrived with the move and what an unrecorded writer added afterwards cannot be told apart",
+            .{ l0_note, r.by_rename_prefix },
+        ) catch l0_note;
+
+    if (r.clean()) return;
+
+    // `written` rather than `shown`: an allocation failure mid-list leaves a shorter one,
+    // and a count computed from what was *intended* would then describe a list that was
+    // never printed — the detail would read "incomplete: a and 3 more" with two names
+    // missing and nothing saying so.
+    var names: std.ArrayList(u8) = .empty;
+    var written: usize = 0;
+    for (found[0..@min(r.stored, unaccounted_shown)]) |u| {
+        if (written > 0) names.appendSlice(arena, ", ") catch break;
+        names.appendSlice(arena, textShown(arena, u.rel)) catch break;
+        written += 1;
+    }
+    if (written == 0) names.appendSlice(arena, "(the names could not be rendered)") catch {};
+    const more = if (r.total > written)
+        std.fmt.allocPrint(arena, " and {d} more", .{r.total - written}) catch ""
+    else
+        "";
+    const detail = std.fmt.allocPrint(
+        arena,
+        "the judged state changed at {d} path(s) that no recorded operation names, so the account of this run is incomplete: {s}{s}. The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all",
+        .{ r.total, names.items, more },
+    ) catch "the judged state changed at a path that no recorded operation names";
+    unknown(.state_changed_unaccounted, detail);
+}
+
 /// The `no_shim_marker` detail line, built from what was observed rather than from a
 /// list of things that might have been true.
 ///
@@ -4437,6 +4559,10 @@ fn buildJson(
     try jsonString(w, arena, checker_note);
     try w.appendSlice(arena, ",\n  \"processes\": ");
     try jsonString(w, arena, boundaryAccount());
+    // Additive under the report-schema allowance the freeze keeps open (surface 2). A
+    // number rather than a sentence in `l0`, so "this run has no unexamined subtree" is
+    // machine-readable instead of being the absence of a phrase.
+    try w.print(arena, ",\n  \"paths_attributed_to_rename\": {d}", .{attributed_to_rename});
     // Stated in the report itself, not only in the documentation: a PASS that does not
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": ");
