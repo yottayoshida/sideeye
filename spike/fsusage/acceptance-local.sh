@@ -11,24 +11,28 @@
 set -u
 
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
-SIDEEYE="$HERE/zig-out/bin/sideeye"
-SHIM="$HERE/zig-out/lib/libsideeye_shim.dylib"
 WORK="$(mktemp -d "$HOME/fsusage-acceptance-XXXXXX")"
+OUT="$WORK/out"
+SIDEEYE="$OUT/bin/sideeye"
+SHIM="$OUT/lib/libsideeye_shim.dylib"
 CC=/usr/bin/cc
 
 fail() { echo "FAIL: $*"; exit 1; }
 
-# Build here, every time. Two end-to-end runs measured a binary from before the fixes
-# they were meant to exercise: `zig build test` runs the tests and installs nothing,
-# so `zig-out/bin/sideeye` sat at 09:51 while the source moved to 10:10, and the same
-# failure was read twice as fresh evidence. An existence check on the binary cannot
-# see that; building is the only thing that makes "the binary under test" and "the
-# source under test" the same object.
-( cd "$HERE" && zig build ) || fail "zig build failed; nothing was measured"
-[ -x "$SIDEEYE" ] || fail "zig build produced no binary at $SIDEEYE"
-[ -f "$SHIM" ] || fail "zig build produced no shim at $SHIM"
-newest_src=$(ls -t "$HERE"/src/*.zig | head -1)
-[ "$SIDEEYE" -nt "$newest_src" ] || fail "binary is older than $newest_src after a build; refusing to measure a stale artifact"
+# Build here, every time, into a prefix that did not exist a moment ago. Two end-to-end
+# runs measured a binary from before the fixes they were meant to exercise: `zig build
+# test` runs the tests and installs nothing, so `zig-out/bin/sideeye` sat at 09:51 while
+# the source moved to 10:10, and the same failure was read twice as fresh evidence.
+# An existence check on `zig-out` cannot see that. Neither can an mtime comparison
+# against `src/`: Zig's install step copies the cached artifact and gives the copy the
+# artifact's mtime (`std.Io.Dir.updateFile`), so under a warm cache with unchanged
+# sources the installed binary is legitimately older than a fresh checkout — which is
+# what CI measured on the first PR after #406 that did not touch `src/`. An empty
+# prefix is the check that survives the cache: whatever is in it was installed by
+# this invocation from this tree, or it is not there.
+( cd "$HERE" && zig build --prefix "$OUT" ) || fail "zig build failed; nothing was measured"
+[ -x "$SIDEEYE" ] || fail "zig build installed no binary at $SIDEEYE"
+[ -f "$SHIM" ] || fail "zig build installed no shim at $SHIM"
 
 sudo -v || fail "sudo unavailable; nothing was measured"
 
