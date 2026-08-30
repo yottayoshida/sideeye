@@ -2923,11 +2923,31 @@ json.dump(c, open(sys.argv[2], "w"))
 PY
 o=$("$SIDEEYE" replay /tmp/acc/v7-case.json --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "different trace contract"; then
-    echo "ok   a v7-recorded case refuses as a contract mismatch, never a verdict"
+# The success line used to claim "never a verdict" while the predicate was exit 2
+# plus a message substring — neither half of that claim was asserted (#370). The
+# substring is also not specific to this leg's subject: `different trace contract`
+# appears in TWO refusals in src/main.zig, and docs/contract-freeze.md surface 4
+# states that the other one, `contract_version_mismatch`, "is a different refusal
+# entirely ... nothing to do with saved cases". So the reason NAME is what
+# separates this leg's subject from its neighbour; the message alone cannot.
+# Asserted here, and stronger than the prefix-insertion leg above rather than the same
+# shape as it: that leg stops at the exit code, an UNANCHORED substring and the absence
+# of a verdict. Two of the five clauses below are its verbatim; the anchored headline is
+# a strictly tighter form of its substring; the headline count and the message clause
+# have no analogue there. Of the five, three are each solely responsible for killing a
+# mutant — the reason name, the verdict clause, and the message. The count is defensive:
+# `unknown()` is `noreturn` and the only writer of a `^UNKNOWN ` line, so on this path no
+# reachable mutation produces a second headline, and no mutant demonstrates its necessity.
+v7_unknowns=$(printf '%s\n' "$o" | grep -cE '^UNKNOWN ' || true)
+if [ "$rc" = "2" ] \
+    && printf '%s\n' "$o" | grep -qE '^UNKNOWN  case_no_longer_applies$' \
+    && [ "$v7_unknowns" = "1" ] \
+    && ! printf '%s\n' "$o" | grep -qE '^(PASS|FAIL)' \
+    && printf '%s\n' "$o" | grep -q "different trace contract"; then
+    echo "ok   a v7-recorded case refuses as case_no_longer_applies, naming the trace contract as the cause, with no verdict"
 else
-    echo "FAIL v7 case handling: exit $rc"
-    echo "$o" | sed 's/^/     | /' | head -4
+    echo "FAIL v7 case handling: exit $rc, UNKNOWN headlines $v7_unknowns"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
 
