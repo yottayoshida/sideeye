@@ -63,14 +63,20 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    `trace_too_large` and going to look for one oversized file would find none —
    and that is the same reason `state_tree_too_large` was never folded into
    `state_file_too_large`. Ruled on its own merits, as the paragraph above
-   requires: the count of prior breaks was not an argument in it. Its
-   `surface-changes.tsv` row carries `freeze-broken` and lands in the follow-up
-   audit commit, which is where a row naming its own merge sha can be written —
-   **the same follow-up the first break is still waiting for**: measured
-   2026-08-30, that ledger ends at `sc-17`, so neither this break nor
-   `state_changed_unaccounted`'s has a row yet. **The rule for 1.x is still
-   unchanged**, and a third member would need a third ruling; two is not a
-   pattern that grants the next one.
+   requires: the count of prior breaks was not an argument in it. **Its ledger
+   row is a sweep's job, not this change's** — the same reason the paragraph
+   above names `sc-18` for a row `surface-changes.tsv` does not yet hold. That
+   ledger ends at `sc-17`, and the gap is the designed state rather than a debt:
+   the ledger is compared against the surfaces *as the pin reads them*, so a row
+   for a change made after the pin fails `check-freeze-audit.sh` outright. The
+   script says so where a reader meets it — "if your own change is what moved
+   the surface, that is not your job either … the pin asserts a reading you have
+   not taken. Leave both alone." A row written early was tried once and reverted
+   (BUILDLOG, "the freeze ledger row was a PR too early"), and this change
+   started down the same path before the gate stopped it. Both rows arrive when
+   a sweep re-reads the surfaces and moves the pin in one commit. **The rule for
+   1.x is still unchanged**, and a third member would need a third ruling; two
+   is not a pattern that grants the next one.
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
