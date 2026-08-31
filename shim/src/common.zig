@@ -36,6 +36,10 @@ pub const c = struct {
     /// in this file, and a cached pid would be the parent's — in the one process the
     /// pid field exists to tell apart.
     pub extern "c" fn getpid() c_int;
+    /// Coarse, and that is all it is for: the temp-name creators mix it with the pid
+    /// and a counter so two runs of one pid do not produce one name sequence (#39).
+    /// `time_t` is 64-bit on both platforms this builds for.
+    pub extern "c" fn time(t: ?*i64) i64;
     /// Only the subject calls these (execSeqCarrySet guards on getpid == armed_pid),
     /// so the heap they may touch is never a vfork parent's shared one.
     pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
@@ -102,9 +106,16 @@ const O_WRONLY: c_int = 0o1;
 pub const O_CREAT: c_int = if (is_darwin) 0x200 else 0o100;
 const O_APPEND: c_int = if (is_darwin) 0x8 else 0o2000;
 const O_CLOEXEC: c_int = if (is_darwin) 0x1000000 else 0o2000000;
+/// Public for the same reason as `O_CREAT`: `ops.zig`'s temp-name creators build the
+/// open the real `mkstemp` builds, rather than forwarding to it (#39). Read from the
+/// two platforms' headers rather than recalled — `O_RDWR` happens to agree and
+/// `O_EXCL` does not, which is exactly the pair a memory would get wrong.
+pub const O_RDWR: c_int = 0x2;
+pub const O_EXCL: c_int = if (is_darwin) 0x800 else 0o200;
 /// The access-mode mask and O_TRUNC agree across Linux and Darwin; O_CREAT does not
-/// and is branched above.
-const O_ACCMODE: c_int = 0o3;
+/// and is branched above. Public for the same reason as the three above: `ops.zig`'s
+/// temp-name creators need it to strip what glibc strips out of a caller's flags.
+pub const O_ACCMODE: c_int = 0o3;
 const O_TRUNC: c_int = if (is_darwin) 0x400 else 0o1000;
 
 /// Is this open capable of changing state? (ADR 0003)

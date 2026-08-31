@@ -110,7 +110,17 @@ const std = @import("std");
 /// mutations, so a mere open or fsync beside the clone kept the refusal); Rust
 /// std's `fs::copy` reaches `fclonefileat` first on this platform, so the silent
 /// route was the common one, not the exotic one.
-pub const contract_version: u32 = 12;
+/// v13 closes the temp-name creators on both platforms (#39) — `mkstemp`,
+/// `mkostemp`, `mkstemps`, `mkostemps` and `mkdtemp` now record the create they
+/// perform, because the shim performs it: each replacement reimplements the
+/// documented sequence through the recorded wrappers rather than forwarding, which is
+/// what `remove` has done since v7 and for the same reason (the inner call never
+/// crosses the PLT). No new op class and no new `unknown_reason`: the attempts record
+/// as `.open` and `.mkdir`, which both observers already classify. The version moves
+/// because the account of an unchanged target does — a target using the canonical C
+/// atomic-replace idiom gains crash points it did not have — and crash-point
+/// numbering does not carry across versions.
+pub const contract_version: u32 = 13;
 
 pub const magic = "SIDEEYE1";
 

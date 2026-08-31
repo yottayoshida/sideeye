@@ -63,16 +63,28 @@ below is a statement about what the judge would have said.
 
 - **State-changing raw syscalls** (writes bypassing libc): UNKNOWN `oracle_missed_operation` with an oracle, `state_changed_without_ops` without one — pinned by `spike/toys/toy_raw.c` in `spike/acceptance.sh`. Read-only raw opens are tolerated: they never join the crash-point numbering, which is what let a rustix-carrying Rust target through (next section).
 - **That bypass class has three mechanisms, and they differ in what lifts them** (read 2026-08-23 while scouting cohort 4; sources and line numbers in `spike/cohort4/SCOUT-ROWS.md` and `SCOUT-ROWS-SLOT2.md`, status in #244, partly closed 2026-08-26 by trace contract v11 — see the note after this list): (1) an **inline syscall instruction** (rustix/linux-raw-sys, cargo's manifest rename): no symbol exists and no preload reaches it; (2) **libc's `syscall(3)` entry point** (unison's `copy_file_range`): a real PLT symbol, interposable only by defining `syscall` itself and dispatching on its first argument; (3) a **weak-symbol lookup** (Rust std's `fs::copy` route to `copy_file_range`/`sendfile`), whose own std comment says the weak path exists to allow `LD_PRELOAD` interposition, so a shim export alone makes it visible (the oracle still needs the op class, #244). Reading (1) and (3) as one class rejects candidates the cheap fix would serve. Kernel-side filtering is mechanism-blind: a seccomp ENOSYS profile catches all three spellings, which is how cohort 4 lands both its targets' copy paths on the libc read/write loop (`spike/cohort4/seccomp-enosys.json`); it works only when the program carries its own userspace fallback.
-- **Internal libc calls that mutate state** (#39, measured 2026-08-22 on `spike/toys/toy_mkstemp.c`): the canonical C atomic-replace idiom —
-  `mkstemp` + write + fsync + rename — leaves its **creation invisible**. The kernel performs
-  `openat(..., O_RDWR|O_CREAT|O_EXCL, 0600)` inside the state root and the interposer records no
-  `open` for that path, because `mkstemp(3)` opens from inside libc, past the PLT. The control sits
-  in the same run: the *write* and *fsync* on that same temp file are visible, because the program
-  issues those itself. `dprintf(3)` behaves the same way — the `open` it writes into is visible, its
-  write is not. `tmpfile(3)` left nothing inside the state root. Consequence for target selection:
-  a C or C++ target whose atomic write goes through `mkstemp` reaches the same wall as cargo's raw
-  rename, and `spike/cohort4/preflight.sh visibility` names it before a define is written. Transcript:
-  `spike/cohort4/mkstemp-class.txt`.
+- **Internal libc calls that mutate state** (#39). The mechanism: a libc convenience
+  function performs its state change through a call made *inside* libc, which crosses no PLT and so
+  reaches no replacement of `open` or `mkdir`. Measured 2026-08-22 on `spike/toys/toy_mkstemp.c`
+  (`spike/cohort4/mkstemp-class.txt`) and member by member on 2026-08-31
+  (`spike/libc-internal/RESULTS.md`).
+  **The name-generating creators are no longer a wall** (contract v13): `mkstemp`, `mkostemp`,
+  `mkstemps`, `mkostemps` and `mkdtemp` are reimplemented in the shim through the recorded wrappers,
+  the way `remove(3)` has been since v7, so the create they perform is recorded on both platforms.
+  Measured before and after with the same toy: each of the five moved from
+  `UNKNOWN oracle_missed_operation` to a verdict, and `mkstemp`'s no-oracle run moved from
+  **PASS over 4 crash points to PASS over 5** — the creation had never been one.
+  **`dprintf(3)`/`vdprintf(3)` remain a wall**, by decision rather than by omission: glibc splits a
+  large write at 8192 bytes (measured), so a replacement writing once would delete a crash point the
+  real program has, and one that split would hard-code an undocumented libc internal.
+  **`tmpfile(3)` differs by platform, and only Linux takes it out of the class**: glibc reaches
+  `openat(AT_FDCWD, "/tmp", O_TMPFILE)`, which creates no directory entry and ignores `TMPDIR`, so
+  there it cannot change a state directory at all; **Apple's honours `TMPDIR` and creates a real
+  named file it then unlinks**, so on macOS it is a member and stays a wall. Taking it would mean
+  picking one of those two behaviours for both platforms.
+  Consequence for target selection: a C or C++ target whose atomic write goes through the `mkstemp`
+  family is now judged; one that appends through `dprintf` still reaches the wall, and
+  `spike/cohort4/preflight.sh visibility` names it before a define is written.
 - **Static binaries**: no shim can load — `no_shim_marker`, measured on a statically linked C toy (`spike/build-toys.sh`) and, since 2026-08-29, on a real Go tool: `gh` 2.97.0 from the official `gh_2.97.0_linux_arm64` release tarball is `statically linked` by `file` and `not a dynamic executable` by `ldd`, and refuses with `no_shim_marker` (`spike/go-target/gh-2.97.0.txt`). **The language does not decide the wall** (#390): the same tool version installed by Homebrew on macOS is dynamically linked and ad-hoc signed, so the shim does load and the run reaches the threads row two lines below instead — `multiple_threads_detected`, measured in the same transcript. What separates the two artifacts is not isolated: OS, toolchain, `CGO_ENABLED`, imports, buildmode and packaging all differ between them, so the measurement shows that two builds of one Go tool meet different walls, not which of those axes did it. Neither result generalises to Go, and another Go binary is measured rather than inferred.
 - **Threads**: a clone carrying CLONE_THREAD refuses (`multiple_threads_detected`) — there is no per-thread order the kill can address deterministically. Pinned on the threaded toy in `spike/acceptance.sh`.
 - **macOS platform binaries**: on macOS the target must be a binary you built or installed yourself, never an Apple-shipped one — SIP strips the injected library from Apple platform binaries, and the platform identity travels with the code signature, so copying the binary elsewhere does not change it. The measured record is in `BUILDLOG.md`, and *how* the refusal arrives is OS-dependent (measured 2026-08-18): macOS 15 strips the insertion silently — the run completes and answers `no_shim_marker` — while macOS 26's dyld terminates the target over the arm64/arm64e mismatch and the run answers `recording_run_failed`; exit 2 either way, never a verdict (that copying cannot help follows from the signature mechanism, not from a committed measurement). Since 2026-08-29 the `no_shim_marker` line offers no causes at all (#391): it reports the absence of the marker, then the fields it read off the operation's executable immediately before the run started — the code directory's platform byte, its library-validation and hardened-runtime flags, and on Linux whether a `PT_INTERP` is present. What it reports is the byte: "its code directory names a platform, the marker an Apple-shipped binary carries" — not that the binary is one of Apple's, since that test also requires the signature to be endorsed and this reads no endorsement. A target where nothing was found is told the cause lies elsewhere rather than being handed the old list. Two things the line deliberately does not claim: that a flag it read is *why* the insertion failed (entitlements lift both flags, and Apple's own platform-binary test also requires endorsement), and that the file measured is the image the kernel ran — the reading is taken before the spawn and again at the refusal, and a disagreement between the two is reported as a disagreement, with no time attached to it. The macOS CI job pins the shape and the absence of the old guesses (#10, #391).
@@ -94,7 +106,9 @@ interposing logger can (#217).
 ## Not yet measured
 
 - **Node/libuv tools**: still no recorded run — Bun, refused on threads in cohort 2, is not Node and does not use libuv, so it is a neighbour rather than an instance. The expected wall is the thread refusal (libuv starts a worker pool), which is measured on toys — but no real Node target run exists in this repository, so this row is a prediction, labeled as one.
-- **libc functions that mutate state through internal calls** (the mkstemp family, mkdtemp, tmpfile, dprintf — #39): **two members now measured** (2026-08-22, `spike/cohort4/mkstemp-class.txt`), and both are invisible exactly as the mechanism predicted — see the toy-wall row above; the remaining members still have no recorded run. The *mechanism* is not a projection — two class members are measured: stdio's internal writes (ADR 0005, probed on both platforms; the macOS probe showed dyld interposition equally blind to libSystem-internal calls) and remove(3), measured on Linux through the timewarrior work (PR #38). On Linux the class fails closed, in the same shape the raw-syscall wall pins above: the oracle sees the internal syscalls, the accounts diverge, the run refuses. On macOS an oracle exists but is not free: `--oracle-fs-usage` buys the same comparison for the price of root on the run (ADR 0031), and without it the consequence for the unmeasured members is inferred from that mechanism rather than measured: an internal mutation is invisible to the shim with nothing to catch it, and a macOS PASS carries only the weaker `--allow-unverified` claim the README spells out. The interpose-on-first-contact policy stands, and #39 stays open as the family's lookout post: a member gets reimplemented through the recorded wrappers when a real target first demonstrates it.
+*(The libc-internal-call class left this section on 2026-08-31: every member it names now has a
+recorded run, and the row sits with the measured walls above. `spike/measure-libc-internal.sh`
+re-measures all seven on every pull request, `dprintf`'s refusal included.)*
 
 ---
 

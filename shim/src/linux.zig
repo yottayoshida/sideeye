@@ -66,6 +66,20 @@ comptime {
     @export(&ops.mkdirat, .{ .name = "mkdirat" });
     @export(&ops.rmdir, .{ .name = "rmdir" });
 
+    // The temp-name creators (#39). Their creating call happens inside libc and never
+    // reaches the wrappers above, so the replacements build it themselves. The `64`
+    // spellings are glibc's LFS aliases — measured present as weak symbols at the same
+    // addresses as the base names — taken for the same reason `pwrite64` is.
+    @export(&ops.mkstemp, .{ .name = "mkstemp" });
+    @export(&ops.mkstemp, .{ .name = "mkstemp64" });
+    @export(&ops.mkostemp, .{ .name = "mkostemp" });
+    @export(&ops.mkostemp, .{ .name = "mkostemp64" });
+    @export(&ops.mkstemps, .{ .name = "mkstemps" });
+    @export(&ops.mkstemps, .{ .name = "mkstemps64" });
+    @export(&ops.mkostemps, .{ .name = "mkostemps" });
+    @export(&ops.mkostemps, .{ .name = "mkostemps64" });
+    @export(&ops.mkdtemp, .{ .name = "mkdtemp" });
+
     @export(&ops.close, .{ .name = "close" });
 
     // stdio, at flush granularity (ADR 0005). fdopen needs no wrapper: no syscall

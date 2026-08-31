@@ -156,6 +156,24 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
 
+      # The libc-internal-call class (#39), one member per run. Its own invocation
+      # rather than a check inside the acceptance suite: it drives the shipped engine
+      # seven times with its own toy build, and folding that into a suite that keeps a
+      # single `fails` counter would bury which member moved.
+      #
+      # The reds live behind `--selftest` and run first, so a run that reports green
+      # has shown its own predicates red in the same job. What this leg asserts is
+      # *declared outcomes*, not syscall spellings: the runner's glibc moves when
+      # GitHub moves it, and pinning a spelling here would turn that into a failure
+      # about the runner. `dprintf` is declared a wall and its refusal is part of
+      # green — the negative control this leg did not have to invent.
+      - name: The libc-internal-call class matches its declarations (#39)
+        run: |
+          sh spike/measure-libc-internal.sh --selftest
+          sh spike/measure-libc-internal.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
       # The MCP adapter has its own suite. It was not wired in here when the adapter
       # merged, which left the whole surface without CI coverage — and two of its
       # checks turned out to be satisfiable by stale artifacts nobody re-ran it to see
@@ -588,6 +606,37 @@ jobs:
       # the answer is yes. What is assertable is the pair: a runtime lookup resolves into
       # the shim, and `getpid` — which the shim does not wrap — does not, in the same
       # run. A reporter that had stopped reading anything fails the second half.
+      # The other half of #39's check, and the half that only this platform can run.
+      # The Linux leg asserts that the five replacements are RECORDED; this one asserts
+      # they answer what libc answers, which is a different claim and the one that
+      # matters here — the two libcs do not agree about this family's contract (glibc
+      # clears the access mode out of `mkostemp`'s flags, Apple's rejects anything
+      # outside four; glibc wants exactly six `X`s, Apple takes the whole trailing run),
+      # so a replacement written from one reading and installed on both would let calls
+      # succeed here that the real libc refuses. The comparison is against the same
+      # binary run without the shim, so there is no expected-output file to go stale.
+      - name: The temp-name creators answer what libc answers (#39)
+        run: |
+          set -eu
+          w=$(mktemp -d)
+          trap 'rm -rf "$w"' EXIT
+          zig cc -Wall -Wextra -o "$w/toy-temp-rules" spike/toys/toy_temp_rules.c
+          mkdir -p "$w/plain" "$w/shimmed"
+          "$w/toy-temp-rules" "$w/plain" > "$w/plain.txt" 2> "$w/plain.err"
+          DYLD_INSERT_LIBRARIES="$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            "$w/toy-temp-rules" "$w/shimmed" > "$w/shimmed.txt" 2> "$w/shimmed.err"
+          # Two empty files compare equal, so both sides have to have said something.
+          test -s "$w/plain.txt"
+          test -s "$w/shimmed.txt"
+          # The positive control, on stderr because these two lines are supposed to
+          # DIFFER. Without it, deleting every temp row from the interpose table leaves
+          # both runs reaching Apple's libc, agreeing, and this step green having
+          # measured nothing at all.
+          grep -q 'resolved mkstemp in libsystem' "$w/plain.err"
+          grep -q 'resolved mkstemp in libsideeye_shim' "$w/shimmed.err"
+          echo "cases compared: $(grep -c . "$w/plain.txt")"
+          diff "$w/plain.txt" "$w/shimmed.txt"
+
       - name: Interposition reaches what a runtime lookup hands back (#299)
         run: |
           set -eu
