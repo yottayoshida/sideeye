@@ -61,8 +61,11 @@ pin=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["pin"])' "$
     { echo "could not read the pin from protocol.json beside the seal" >&2; exit 1; }
 # Three-valued, like the script it calls: 1 is "the statement is false", 2 is "the
 # check could not make it".
-sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$pin"
-case $? in
+# `|| rc=$?` rather than a bare call: `set -eu` would end this script on the non-zero
+# exit and the dispatch below would never run. check-history.sh's header carries why.
+hist_rc=0
+sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$pin" || hist_rc=$?
+case $hist_rc in
     0) ;;
     1) echo "the stage's git holds more than the pin reaches; not running any agent" >&2; exit 1 ;;
     *) echo "the history check could not run; not running any agent" >&2; exit 1 ;;
