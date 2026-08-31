@@ -40,6 +40,31 @@ for p in sys.argv[1:]:
 
 [ -e "$RESULTS/transcript.jsonl" ] && { echo "a transcript already exists in $RESULTS; one run per stage" >&2; exit 1; }
 
+# The stage's git is checked again HERE, the same as the cli launcher does (#62).
+# This variant needs it MORE, not less: `contrast-mcp.sh` runs a further container
+# against `$STAGE` between staging and this point, so there is more traffic through
+# the window that `repo/**` being outside the seal leaves unwatched.
+#
+# Before the canaries, because everything after them is unreachable without spending
+# the stage on a real agent — a gate placed there could only ever be observed by the
+# run it exists to gate. `protocol.json` sits BESIDE the seal, not in it.
+pin=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["pin"])' "$ROOT/seal/protocol.json") ||
+    { echo "could not read the pin from protocol.json beside the seal" >&2; exit 1; }
+sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$pin"
+case $? in
+    0) ;;
+    1) echo "the stage's git holds more than the pin reaches; not running any agent" >&2; exit 1 ;;
+    *) echo "the history check could not run; not running any agent" >&2; exit 1 ;;
+esac
+
+case "${2:-}" in
+    "") ;;
+    --check-only)
+        echo "preflight and the history check hold; --check-only stops before the canaries"
+        exit 0 ;;
+    *) echo "unknown argument: $2 (expected nothing, or --check-only)" >&2; exit 2 ;;
+esac
+
 CLI_VERSION=$(claude --version 2>&1 | head -1)
 SETTINGS="$SCRIPT_DIR/seal-settings.json"
 ALLOWED="Bash,Read,Edit,Write,Glob,Grep,mcp__sideeye__sideeye_replay_case,mcp__sideeye__sideeye_explore_config"

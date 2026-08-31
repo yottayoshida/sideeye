@@ -44,6 +44,45 @@ for p in sys.argv[1:]:
 
 [ -e "$RESULTS/transcript.jsonl" ] && { echo "a transcript already exists in $RESULTS; one run per stage" >&2; exit 1; }
 
+# The stage's git is checked again HERE, not only where it was built (#62).
+# `repo/**` sits outside the seal on purpose — it is the agent's work product and the
+# judge must not restore it — which means nothing has looked at the repository between
+# staging and this moment. One check at stage time says what was assembled; this one
+# says what the agent is about to receive, and those are different sentences.
+#
+# BEFORE the canary, for two reasons: a compromised stage should not cost a model call,
+# and — the one that decided it — everything after the canary is unreachable without
+# actually spending the stage on an agent, so a check placed there could never be
+# exercised except by the run it is supposed to gate.
+# `protocol.json` sits BESIDE the seal, not in it: the manifest is built from `$STAGE`
+# and this file lives in `$SEAL`, so it is neither hashed nor restored. Saying "from
+# the seal" would be false, and this gate's one input deserves the accurate word.
+pin=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["pin"])' "$ROOT/seal/protocol.json") ||
+    { echo "could not read the pin from protocol.json beside the seal" >&2; exit 1; }
+# Three-valued, like the script it calls: 1 is "the statement is false", 2 is "the
+# check could not make it".
+sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$pin"
+case $? in
+    0) ;;
+    1) echo "the stage's git holds more than the pin reaches; not running any agent" >&2; exit 1 ;;
+    *) echo "the history check could not run; not running any agent" >&2; exit 1 ;;
+esac
+
+# `--check-only` stops here. It exists so the wiring above can be run — the preflight,
+# the pin read beside the seal, the history check — without spending the stage. A gate
+# whose only execution path is the measurement it guards is a gate nobody has seen work.
+#
+# An unrecognised second argument is fatal rather than ignored: this script's own
+# contract is "one stage, one measurement", and `--check-onl` silently running the
+# real thing is the opposite of that.
+case "${2:-}" in
+    "") ;;
+    --check-only)
+        echo "preflight and the history check hold; --check-only stops before the canary"
+        exit 0 ;;
+    *) echo "unknown argument: $2 (expected nothing, or --check-only)" >&2; exit 2 ;;
+esac
+
 CLI_VERSION=$(claude --version 2>&1 | head -1)
 
 # Canary: safe mode must authenticate before the real run burns the stage.

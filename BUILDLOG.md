@@ -2,6 +2,111 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-31 (seventh) - the stage keeps its past and loses its future, and the check reads the object store
+
+`#62` noticed that the loop-closure stage carries a full clone: every upstream branch
+and every commit made since the pin. In the recorded run the agent's `git branch -a`
+printed an upstream issue branch. It was harmless there — the pin sat at the tip, so
+nothing later existed — but with an older pin upstream's own fix for the finding would
+be sitting in the agent's world, one `git log --all` away.
+
+**The first draft got the direction right and the design backwards, and the review said
+so.** The plan was a `--depth 1` fetch of the pin: seal hard, carry nothing. Codex's
+Major 4 asked what the property actually meant, and answering it killed the design.
+This experiment declares that it hands over **the repository**. A checkout with one
+commit in it cannot be logged or blamed; it is a snapshot wearing git's shape, and an
+agent working in it is not working in what the sentence promises. That is the same
+argument the `#39` change used an hour earlier to refuse a `dprintf` wrapper that would
+have written once where libc writes twice — **the replacement must not change what the
+subject is** — and it had not been applied to the apparatus. So: keep the past, remove
+the future.
+
+**Two Criticals, both about the check rather than the change.** The draft asserted
+`rev-list --all --count == 1`. Deleting refs does not delete objects: a repository can
+pass every ref-level assertion while `git cat-file --batch-all-objects` still lists
+every future commit and `git fsck --unreachable` names them. And the abbreviation
+count made the assertion nearly self-fulfilling — a shallow fetch produces 1 for free,
+which is the chance-level calculation the draft got wrong by computing it against the
+*current* tree instead of the one the change would create. The check reads the object
+store now: **everything reachable from HEAD == everything the database holds**, plus
+`fsck --full --no-reflogs --unreachable` empty, plus no refs at all.
+
+The second Critical: **the submodule was entirely outside it.** `src/libshared`'s
+objects live in `repo/.git/modules/src/libshared`, where the superproject's `rev-list`
+and `for-each-ref` cannot see them — a submodule stripped of nothing would have sailed
+through a top-level check. Both are walked, and the submodule's absence is itself a
+failure. Its HEAD is read from the superproject's gitlink rather than trusted from the
+checkout.
+
+**Measured, on the real repository rather than on the plan.** Full clone at the pin:
+19647 objects, `%h` = `db7751cb`. After narrowing: **19424 objects, `%h` unchanged**,
+reachable == present, 3384 commits still visible. The abbreviation length was the one
+Minor the review raised — `%h` is not a fixed seven characters and can move with the
+object count — and it did not move here; it is measured rather than assumed. `.git/index`
+survives, which is the whole of what timewarrior's CMake asks for (`git log -1
+--pretty=format:%h`, no tags, no `describe`).
+
+The staging then ran end to end: explore FAIL with `k=19 of 24`, seal of seven files,
+`judge neg` reproducing at the case's crash point, `judge pos` passing with the known
+patch. Both controls hold on a narrowed stage.
+
+**The check runs twice, and the second run is not belt and braces.** `repo/**` is
+outside the seal on purpose — it is the agent's work product, so the judge must not
+restore it — which means nothing looked at the repository between staging and the
+measurement. One run says what was assembled; the other says what the agent received.
+
+**The first-look review then broke the check in the place it was supposed to be
+strongest, and did it by building the counterexample.** Codex could not finish (the
+workspace ran out of credits mid-answer), so this round is a proxy — and its P1 was
+that the submodule set was *hard-coded*. `narrow_to_head "$STAGE/repo/src/libshared"`
+in one file, `SUB="$REPO/src/libshared"` in the other. The reviewer assembled a
+superproject with two submodules, narrowed exactly what the script narrows, ran the
+check: **rc=0, every line `ok`**, while the second submodule still printed its future.
+The whole argument for this design was that the check does not depend on the
+completeness of the stripping list — and the check had quietly kept its own copy of
+that list. Both are derived from the pin's tree now
+(`ls-tree -r HEAD`, the `commit`-type entries), `src/libshared` appears in neither
+script, and a submodule the pin names with nothing in the stage is a failure.
+
+**Fixing that broke the ref deletion, and the check caught it.** The same round's P2
+said the `for-each-ref | while` pipeline reports the loop's status, so a failed listing
+would look like success; the fix was one `update-ref --stdin` transaction. Run against
+the two-submodule scratch it died: `fatal: multiple updates for
+'refs/remotes/origin/main' (including one via symref 'refs/remotes/origin/HEAD') are
+not allowed` — a clone leaves that symref, and a batch cannot delete both ends of it.
+`--no-deref` fixes it. What is worth recording is not the flag but the sequence: a
+review fix introduced a defect, and the thing that surfaced it was the check going red
+on surviving refs. That is twice today that a fix for a finding carried its own.
+
+**Two more claims turned out wider than what was read.** The header said the check runs
+twice, "`stage.sh` … and `run-agent.sh`" — but the mcp variant launches through
+`run-agent-mcp.sh`, which had no such call, and which runs `contrast-mcp.sh` against
+the stage inside the same unwatched window. It has the block now. And the paragraph
+added here claiming the pin's snapshot was "audited by reading" rested on one file and
+one keyword; the reviewer found `test/write-failure.t` in the same snapshot, a
+committed fault-injection harness whose comment names "tags, **undo**, datafiles,
+configs". The paragraph now says what was read and stops there.
+
+Smaller, all taken: both callers collapsed BROKEN(2) into the FAIL(1) sentence, so a
+missing repository printed "carries git the pin cannot reach"; `run-agent.sh` said the
+pin came "out of the seal" when `protocol.json` sits beside it, unhashed, and is the
+one input to the gate that nothing covers; `--check-onl` silently ran the real
+measurement; `protocol.json` gains `"history": "narrowed-to-pin"` so a run's own record
+says which shape of stage produced it — the `#62` witness run has the other shape and
+was indistinguishable; and the property is qualified to the handover, because the agent
+has `Bash` and this is not a network namespace.
+
+**And the second run had to move before it could ever be exercised.** It was first
+placed after the canary, which is a live model call: everything past that point is
+unreachable without spending the stage on an agent, so the gate could only have been
+observed by the run it exists to gate. It sits before the canary now, with a
+`--check-only` exit beside it so the wiring — preflight, the pin read out of the seal,
+the history check — can be run without the measurement. Seen red through that path by
+writing one loose blob with `hash-object -w`, which moves no ref and changes no HEAD:
+`unreachable=1`, exit 1, "not running any agent", with the submodule still green beside
+it. The first attempt to read that exit code went through `| tail` and reported 0 — the
+pipeline's status, not the script's.
+
 ## 2026-08-31 (sixth) - the temp-name creators stop being a wall, and the trigger for taking one becomes a proof
 
 `#39` has been open since the beginning as the lookout post for libc conveniences that
