@@ -878,6 +878,26 @@ jobs:
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
 
+  # A decision (ADR 0035) rests on the figures in spike/fsevents/RESULTS.md, and this
+  # recomputes them from the three transcripts rather than trusting the page: the
+  # per-set counts, the per-set and pooled Wilson intervals, the chi-squared statistic,
+  # and the unrelated bucket's zero against the planted neighbour that makes it a
+  # measurement. The obligation is NEW — the record's "Every number below is
+  # recomputable from them" was written by #311 about the 55-run transcripts, and #433
+  # added the rate table without extending it — so the rate section carries its own
+  # sentence and this job is what keeps it. Its own red proofs run first, the way every
+  # other checker here does.
+  veto-rate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The rate checker can still see its own predicates fail
+        run: python3 spike/check-veto-rate.py --selftest
+
+      - name: The veto's rate table is what the transcripts produce (#293)
+        run: python3 spike/check-veto-rate.py
+
   # What this project filed upstream lived in a hand-written literal, and a report
   # filed without editing it was invisible: the status table looked whole, every
   # row read fine, and it exited 0 whether it held six of six or six of seven

@@ -2,6 +2,100 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-31 (fifth) - route B is declined on what it costs, not on what it proved, and the arithmetic is now a command
+
+`#293` asked whether FSEvents can act as a veto — an independent witness catching a
+mutation the shim never reported. `#311` measured it at two points, `#433` gave the
+false-positive side a rate over nine hundred runs, and the sensitivity side then died:
+trace contract v12 interposes the clone family, so the planted `clonefile(2)` is no
+longer invisible to the shim and `L7a` refuses on this build. Recovering it needs a
+mutation v12 cannot see, which is `#344` and lives in another batch.
+
+**So the ticket cannot be answered here, and is closed by deciding rather than by
+finding out.** ADR 0035 records the decision and spends most of its length on the
+difference. Route B is not shown incapable: the half that would say what fraction of
+unreported mutations a veto catches is unmeasured, and nothing here changes that. What
+is declined is the price — the measured false-refusal cost of the only relation that
+can be implemented, and the cost of recovering the other half.
+
+**The relation, said exactly.** Path-set containment fails on clean runs: `link` was
+outside on 90 of 90, the other ten modes on 7 of 900 — 0.78% [0.38%, 1.60%] Wilson,
+three sets consistent at chi-squared 2.02 against a 5% critical value of 5.99.
+Widening it to "an account path or an ancestor of one" would pass every measured run
+whose outside path the transcripts carry — every one of those was the state directory
+itself, and that is 16 of the 97 classifications made, the other 81 being `link` runs
+the survey counted without printing — and
+that widening also excuses a neighbour writing into the parent directory, which is the
+case a veto exists to catch. The measurement gave both numbers and declined to choose.
+This chooses.
+
+**What review corrected about the third ground.** The first draft said FSEvents cannot
+attribute an event to an actor, therefore cannot supply the `child_touched` predicate
+`src/main.zig` takes from the oracle, therefore cannot be a veto. The first two clauses
+hold and the third does not: **a conservative veto that refuses on every outside event
+needs no attribution at all.** What that costs is the number above — a target using
+`link` would be refused every time. So attribution is not an impossibility argument,
+it is the same cost argument one step further in, and the ADR says so.
+
+**No acceptance threshold was pre-registered, and the ADR says that too.** Nobody wrote
+down "we take this at under X%" before the survey ran, so the figures inform the ruling
+and do not compel it. Writing them as though they forced the conclusion would be the
+tidier story and the false one.
+
+**The arithmetic stopped being prose — and the promise it was hung on turned out to be
+about other transcripts.** `RESULTS.md` does say "Every number below is recomputable
+from them", but `git log -L` puts that sentence at `70e2117`, `#311`, and it names
+`survey-veto-1..3.txt` — the 55-run sets. `#433` added the rate table and the 330-run
+transcripts and promised nothing about them. The first draft of this change said the
+promise "has been kept by hand since #433" and was extending it to a command; it was
+extending it to a different set of files. So the obligation is **new**, the rate section
+of the record now carries a sentence saying so, and `spike/check-veto-rate.py`
+recomputes the table from the three transcripts and asserts it against the record — per-set counts, per-set Wilson
+intervals, the pooled figures and the chi-squared statistic. It reads the transcripts'
+own per-mode tally rather than counting run blocks, because **the survey prints at most
+three blocks per mode while counting all thirty**: counting headers gives 5 where the
+answer is 32, which is what the first attempt at this recomputation did. The tally is
+checked against the run total instead, and a transcript whose two halves disagree is
+BROKEN rather than a disagreement.
+
+Falsified six ways, with an untouched copy as the control: one digit changed
+in the record's table goes red naming the cell; the pooled row's own percentage and its
+interval each go red; an unrelated classification planted in a printed block goes red;
+one count changed in a transcript goes BROKEN naming the inconsistency; and removing
+`L7d`'s planted neighbour goes BROKEN.
+
+**Two of those exist because review broke the first version.** The pooled row's `= 100%
+[95.91%, 100%]` sat inside the guarded table and was not guarded — the pattern skipped
+it with `[^|]*`, so rewriting the interval to `[9.91%, 12.00%]` left the check green
+while three sentences in this change said every figure was held. And the `unrelated`
+zero is measured over the outside runs `L7b` **prints**, which is 16 of the 97
+classified: `survey.sh` prints at most three blocks per mode and `L7b` carries no bucket
+tally. Deleting the entire `L7b` body left the checker green. That is the same 5-versus-32
+arithmetic this change had already written into the checker's own docstring for the
+other leg, applied nowhere near the leg that needed it. The denominator is printed
+beside the verdict now, and the record and the ADR say 16 rather than "all three sets".
+
+**The regex that found nothing.** The first version of the chi-squared assertion used a
+literal-space pattern and matched nothing, because the sentence it looks for straddles a
+line break in this hard-wrapped record — the same shape that made `#318`'s first sweep
+miss its own README two entries below this one. Whitespace-flexible now, and the reason
+is in the code beside it.
+
+**What carries the gap route B would have covered.** `--oracle-fs-usage` (ADR 0031),
+and the ADR quotes what its acceptance leg **asserts** rather than what its heading
+says: `spike/fsusage/acceptance-local.sh`'s Check 2 requires exit 2 and either
+`oracle_missed_operation` or `oracle_saw_phantom` — a divergence, not specifically a
+missed operation. The heading reads "the oracle catches what the shim missed", which is
+wider than the assertion under it. That gap is left as it is and recorded here: it does
+not meet this repository's post-ship filing threshold (no hang, no crash, no data loss,
+no silently wrong verdict from the shipped tool, no violated documented promise), so it
+is a `not filed` line in the pull request rather than a new ticket.
+
+Nothing in code moves. No report vocabulary is added, so the closed set stays at
+thirty-four members and `docs/contract-freeze.md` is untouched. The README's macOS
+paragraph already says a single-process run without an oracle reaches PASS only under
+`--allow-unverified`; that stays true and stays as written.
+
 ## 2026-08-31 (fourth) - dyld interposes what dlsym hands back, and the generated interposer is declined on cost rather than refuted
 
 `#299` proposes generating the macOS interposer from libSystem's export table, so that
