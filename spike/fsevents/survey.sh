@@ -23,6 +23,13 @@
 # root or a Full Disk Access grant, the premise of route B is gone and there
 # is nothing left to measure.
 set -u
+# Validated before the scratch directory exists, because the refusal below exits
+# and the only `rm -rf` for that directory is at the very end of this file: a
+# guard placed after the mktemp leaves one behind every time it fires. Measured
+# — two were sitting in $HOME after the first two falsification runs.
+case "${SE286_REPS:-5}" in
+    ''|*[!0-9]*|0) echo "BROKEN: SE286_REPS must be a positive integer, got '${SE286_REPS:-5}'" >&2; exit 1 ;;
+esac
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo=$(cd "$here/../.." && pwd)
 W=$(mktemp -d "$HOME/se286.XXXXXX") || { echo "BROKEN: mktemp failed" >&2; exit 1; }
@@ -44,7 +51,13 @@ SETTLE=0.4
 # Repetitions for the timing-dependent legs. A single run cannot separate
 # "this configuration coalesces" from "these two calls happened to land in the
 # same window once".
-REPS=5
+#
+# Overridable because five answers "does this reproduce", not "how often", and
+# #293 asks for the second. The default stays five: the timing legs above are
+# reproduction questions and a larger default would make the survey slower
+# without making them say more. Raise it for L7b, which is the one leg whose
+# question is a rate (SE286_REPS=50 sh survey.sh).
+REPS=${SE286_REPS:-5}
 
 echo "== environment"
 sw_vers | sed 's/^/   /'
@@ -458,11 +471,20 @@ echo "   one path. The modes below reach files, directories, links and renames,"
 echo "   which is what makes 'stayed inside the account' a claim about the"
 echo "   account rather than about one file."
 L7B_MODES="create write fsync truncate-shrink truncate-same rename link symlink mkdir rmdir unlink"
+# The one mode measured as outside on every run it had (#311). Kept out of the
+# pooled rate below rather than dropped: a pool mixing a near-certain mode with
+# rare ones reports neither, and which of the two a reader wants depends on the
+# question. Both numbers are printed.
+L7B_CERTAIN="link"
 l7b_out=0
 l7b_runs=0
 l7b_paths=0
 l7b_events=0
+l7b_per_mode=""
+l7b_pool_k=0
+l7b_pool_n=0
 for l7_m in $L7B_MODES; do
+    l7_k=0
     l7_i=0
     while [ "$l7_i" -lt "$REPS" ]; do
         l7_d="$L7/b-$l7_m-$l7_i"; mkdir -p "$l7_d"
@@ -471,7 +493,12 @@ for l7_m in $L7B_MODES; do
             l7_jrc=$?
             l7b_runs=$((l7b_runs + 1))
             case "$l7_jrc" in
-                1) l7b_out=$((l7b_out + 1)); echo "-- $l7_m run $l7_i"; sed 's/^/   /' "$JUDGE_OUT" ;;
+                1) l7b_out=$((l7b_out + 1)); l7_k=$((l7_k + 1))
+                   # Printed only for the first few of a mode: at SE286_REPS=50
+                   # a mode that is always outside would bury the summary under
+                   # its own transcript, and the counts below are what the rate
+                   # is read from.
+                   if [ "$l7_k" -le 3 ]; then echo "-- $l7_m run $l7_i"; sed 's/^/   /' "$JUDGE_OUT"; fi ;;
             esac
             # Counted from the judge's own line rather than recomputed here: a
             # second implementation of "how many paths" is the copy that drifts.
@@ -491,11 +518,47 @@ for l7_m in $L7B_MODES; do
         fi
         l7_i=$((l7_i + 1))
     done
+    l7b_per_mode="$l7b_per_mode $l7_m:$l7_k/$REPS"
+    # The near-certain mode is summarised on its own line; pooling it with the
+    # rare ones gives a number that describes neither.
+    case " $L7B_CERTAIN " in
+        *" $l7_m "*) : ;;
+        *) l7b_pool_k=$((l7b_pool_k + l7_k)); l7b_pool_n=$((l7b_pool_n + REPS)) ;;
+    esac
 done
-echo "   $REPS runs per mode answers 'does this reproduce', not 'how often'."
-echo "   A behaviour appearing one run in five is missed entirely by five runs"
-echo "   about a third of the time, so a mode reading 0/$REPS here is not a mode"
-echo "   that does not do it. No rate is claimed below."
+echo "   per mode (outside/runs):"
+printf '%s\n' $l7b_per_mode | sed 's/^/      /'
+# A per-mode zero has no interval printed beside it, and reads as "this mode
+# does not do it" unless the reader is told what a zero at this n still allows.
+# The pooled interval below does not cover that: it is over a different n.
+awk -v n="$REPS" 'BEGIN{
+    z = 1.959964; d = 1 + z*z/n
+    hi = (z*z/(2*n))/d + z/d * sqrt(z*z/(4*n*n))
+    printf "   A mode reading 0/%d is not a mode that does not do it: at %d runs\n", n, n
+    printf "   a zero count still admits rates up to %.1f%% (Wilson 95%%).\n", 100*hi
+}'
+# Wilson score interval rather than the textbook p +- z*sqrt(p(1-p)/n): at these
+# counts the normal approximation runs off the end of [0,1] and reports a
+# negative lower bound, which reads as a measurement rather than as the formula
+# leaving its domain. Wilson stays inside [0,1] and is defined at k=0.
+echo "   pooled over the $(printf '%s\n' $L7B_MODES | grep -vxF "$L7B_CERTAIN" | wc -l | tr -d ' ') modes outside '$L7B_CERTAIN':"
+awk -v k="$l7b_pool_k" -v n="$l7b_pool_n" 'BEGIN{
+    if (n == 0) { print "      BROKEN: pooled n is zero"; exit }
+    z = 1.959964; p = k / n
+    d = 1 + z*z/n
+    c = (p + z*z/(2*n)) / d
+    h = z / d * sqrt(p*(1-p)/n + z*z/(4*n*n))
+    lo = c - h; hi = c + h
+    if (lo < 0) lo = 0
+    if (hi > 1) hi = 1
+    printf "      %d/%d outside = %.1f%% (Wilson 95%%: %.1f%% - %.1f%%)\n", k, n, 100*p, 100*lo, 100*hi
+}'
+echo "   The interval assumes runs are independent, which this survey does not"
+echo "   establish. #311 recorded 5, 6 and 23 outside over three sets of 55 on"
+echo "   one machine; 23 sits far outside what a binomial with the other two"
+echo "   would produce, so a single set's interval is a lower bound on the"
+echo "   uncertainty, not the uncertainty. Run this more than once and compare"
+echo "   the sets before quoting any figure."
 echo "   containment held in $((l7b_runs - l7b_out))/$l7b_runs runs across"
 echo "   $(printf '%s\n' $L7B_MODES | wc -l | tr -d ' ') modes, over $l7b_paths path-observations and $l7b_events event(s)"
 echo "   besides the sentinels. A run reaching zero events would be counted"
