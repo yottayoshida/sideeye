@@ -8,7 +8,11 @@
 #   report.json                 the FAIL report from a fresh exploration
 #   work/cases/000001.json      the saved case the report names (its real path)
 #   define/setup.sh, check.sh   the declared invariant the case's define points at
-#   repo/                       timewarrior at the pinned commit, unpatched
+#   repo/                       timewarrior at the pinned commit, unpatched, and
+#                               narrowed to it: the history up to the pin is there,
+#                               nothing after it is, and `check-history.sh` asserts
+#                               that against the object store rather than the refs
+#                               (#62). Its submodule is narrowed the same way.
 #   replay.sh | build.sh        the re-check button, by VARIANT: cli bakes
 #                               replay.sh (rebuild + replay in one script), mcp
 #                               bakes build.sh (rebuild + install; the replay is
@@ -16,10 +20,21 @@
 #   .harness/                   the sideeye binary and shim the plumbing runs
 #
 # What the agent does not receive: this repository (the buildlog, the known patch,
-# the dogfood scripts), the upstream issue, network access. The experiment's text
+# the dogfood scripts), the upstream issue, network access, and — since #62 — any git
+# object the pin cannot reach. The experiment's text
 # outputs (exploration console, control verdicts, transcripts) go to
 # spike/runs/<root-name>/ in this repository — outside the stage — so nothing in
 # the agent's world names the finding.
+#
+# What sits inside the pin's own snapshot is a separate question, and this file makes
+# no claim to have audited it. What WAS read, and all that was read: `ChangeLog`'s two
+# `undo` entries at this pin, #416 (an encode/decode failure) and #9 (the feature's
+# introduction), neither of which is the finding. Review then found `test/write-failure.t`
+# in the same snapshot — a committed fault-injection harness whose comment names "tags,
+# undo, datafiles, configs" — which is exactly why the first version of this paragraph,
+# claiming an audit of the snapshot on the strength of one file and one keyword, was
+# wrong. The snapshot is NOT filtered: filtering it would make "the repository" false in
+# a different way. It is also not cleared.
 #
 # Sealing: every staged file except repo/** is copied to <root>/seal/files and
 # hashed into <root>/seal/manifest.sha256. The judge restores from the seal before
@@ -80,12 +95,85 @@ cp "$SHIM_LIB" "$STAGE/.harness/libsideeye_shim.so"
 cp "$SCRIPT_DIR/define/setup.sh" "$SCRIPT_DIR/define/check.sh" "$STAGE/define/"
 chmod +x "$STAGE/define/setup.sh" "$STAGE/define/check.sh" "$STAGE/.harness/sideeye"
 
-echo "=== clone at the pin ==="
+echo "=== clone at the pin, then remove everything the pin cannot reach ==="
+# The clone is still a full one, and the history up to the pin is still here on
+# purpose (#62). A `--depth 1` fetch would seal harder and was rejected: the agent
+# would receive a repository with ONE commit, and this experiment declares that it
+# hands over "the repository" — a checkout that cannot be blamed or logged is a
+# different object to work in, and changing it changes what is measured.
+#
+# What is removed is the future. A full clone carries every upstream branch and every
+# commit made since the pin, so with an older pin upstream's own fix for the finding
+# would be sitting in the stage, one `git log --all` away. The recorded run has a
+# witness: the agent's `git branch -a` printed an upstream issue branch.
+#
+# Deleting refs is not enough — the objects outlive them until a prune. So: detach at
+# the pin, drop every ref, drop the remote (and with it the fetch refspec that would
+# bring them back), drop the fetch bookkeeping, expire the reflog, and collect. The
+# assertion afterwards is what this rests on, not the completeness of this list.
 git clone --quiet "$TIMEW_GIT" "$STAGE/repo"
-git -C "$STAGE/repo" checkout --quiet "$PIN"
+git -C "$STAGE/repo" checkout --quiet --detach "$PIN"
 got=$(git -C "$STAGE/repo" rev-parse HEAD)
 [ "$got" = "$PIN" ] || { echo "checkout mismatch: wanted $PIN, got $got" >&2; exit 1; }
 git -C "$STAGE/repo" submodule update --init --quiet
+
+narrow_to_head() { # $1 = a git work tree whose HEAD is already where it should be
+    # Resolved, never assembled as "$1/.git": a submodule's `.git` is a FILE pointing
+    # into `repo/.git/modules/…`, so a path built by hand would name nothing and the
+    # `rm -f` below would succeed against it silently.
+    gitdir=$(git -C "$1" rev-parse --absolute-git-dir) ||
+        { echo "not a git work tree: $1" >&2; exit 1; }
+    # One transaction, one process, one exit status. The first version piped
+    # `for-each-ref` into a `while` loop, whose status is the loop's: if the listing
+    # died the loop read nothing and reported success, the refs survived, and the
+    # failure surfaced later as the history check saying the stage carries a future —
+    # a true verdict with the wrong cause attached.
+    # `--no-deref` is not decoration: a clone leaves `refs/remotes/origin/HEAD` as a
+    # symref to `refs/remotes/origin/main`, and a batch that deletes both is refused
+    # outright ("multiple updates … including one via symref … are not allowed").
+    # Without it this whole function fails and the refs survive — measured, on a
+    # two-submodule scratch, while writing the batching that this comment explains.
+    git -C "$1" for-each-ref --format='delete %(refname)' |
+        git -C "$1" update-ref --no-deref --stdin ||
+        { echo "could not delete refs in $1" >&2; exit 1; }
+    for remote in $(git -C "$1" remote); do
+        git -C "$1" remote remove "$remote"
+    done
+    rm -f "$gitdir/FETCH_HEAD" "$gitdir/ORIG_HEAD"
+    git -C "$1" reflog expire --expire=now --expire-unreachable=now --all
+    git -C "$1" gc --prune=now --quiet
+}
+narrow_to_head "$STAGE/repo"
+# Each submodule is a repository of its own: its objects live under
+# `repo/.git/modules/`, where the superproject's own refs and rev-list cannot see
+# them. Stripping only the top level would leave a submodule's whole history in place
+# while every top-level assertion still passed.
+#
+# The set is DERIVED from the pin's tree, never written down here. A hard-coded
+# `src/libshared` was the first version, and review demonstrated the failure: a
+# superproject with a second submodule narrowed clean, checked green, and still
+# carried that submodule's future. `PIN` and `TIMEW_GIT` are both overridable, so
+# "timewarrior has one submodule today" is not a property of this script.
+sm_list=$(mktemp) || { echo "cannot create a scratch file" >&2; exit 1; }
+git -C "$STAGE/repo" ls-tree -r HEAD > "$sm_list"
+[ -s "$sm_list" ] || { echo "ls-tree produced nothing; the pin has no tree" >&2; exit 1; }
+# A file rather than a pipe: `narrow_to_head` exits on failure, and inside a pipeline
+# that would end a subshell while the script carried on.
+while read -r _mode type _oid sm_path; do
+    [ "$type" = commit ] || continue
+    narrow_to_head "$STAGE/repo/$sm_path"
+done < "$sm_list"
+rm -f "$sm_list"
+
+# Three-valued, because check-history.sh is: 1 is "the statement is false", 2 is "the
+# check could not make it". Collapsing them would print the false-statement sentence
+# for a missing repository or a configured alternate.
+sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$PIN"
+case $? in
+    0) ;;
+    1) echo "the staged repository carries git the pin cannot reach; refusing to stage" >&2; exit 1 ;;
+    *) echo "the history check could not run; refusing to stage" >&2; exit 1 ;;
+esac
 
 echo "=== explore: the counterexample is recorded fresh, in the container ==="
 # The work dir lives IN the stage (mounted at the identical absolute path) so the
@@ -191,10 +279,16 @@ fi
 
 # The protocol facts finalize will cite, kept beside the seal (not agent-visible,
 # not secret — the seal holds only copies of what the stage already shows).
+# `history` is here so a run's own record says which shape of stage produced it. The
+# #62 witness run — the one whose `git branch -a` motivated the narrowing — was
+# recorded before this existed, and without the key a run from either side of the
+# change reads identically. The apparatus alters what the agent works in, so results
+# across it are not obviously commensurable.
 python3 -c '
 import json, sys
 json.dump({"pin": sys.argv[1], "image": sys.argv[2], "case_k": int(sys.argv[3]),
-           "case_ops_total": int(sys.argv[4]), "operation": sys.argv[6]},
+           "case_ops_total": int(sys.argv[4]), "operation": sys.argv[6],
+           "history": "narrowed-to-pin"},
           open(sys.argv[5], "w"), indent=1)
 ' "$PIN" "$IMAGE" "$K" "$OPS" "$SEAL/protocol.json" "$OPERATION"
 
