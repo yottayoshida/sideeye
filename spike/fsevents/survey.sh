@@ -567,7 +567,10 @@ echo "   containment over nothing is not containment."
 
 echo ""
 echo "-- L7d: positive control for the unrelated bucket"
-echo "   L7b reported zero unrelated paths over 55 runs. That is the number a"
+# Interpolated, not literal: this said "55 runs" while SE286_REPS was raising the count
+# to 330, so every rate transcript carries a denominator three sets of runs disagree with.
+# The number a positive control is about has to be the number that was run.
+echo "   L7b reported zero unrelated paths over $l7b_runs runs. That is the number a"
 echo "   working classifier gives in a directory only the probe uses, and it is"
 echo "   also the number a classifier that never reaches that branch gives."
 echo "   Nothing in L7b tells the two apart, so a second actor writes a path"

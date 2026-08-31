@@ -291,6 +291,13 @@ is a measurement.
 
 ## The rate, measured over three sets of 330 runs
 
+`spike/fsevents/survey-veto-rate-1.txt` through `-3` are the transcripts for this
+section. **Every number in the table below is recomputable from them**, and
+`spike/check-veto-rate.py` recomputes it on every pull request rather than leaving the
+sentence to be kept by hand — an obligation this section did not carry until a ruling
+started resting on the figures (ADR 0035). The paragraph above makes the same promise
+about `survey-veto-1..3.txt`, which are the 55-run transcripts and a different set.
+
 `#293` asked for a rate and `#311` did not build one: five runs per mode answers
 whether a behaviour reproduces, not how often. `SE286_REPS` raises the
 repetition count, and three sets were taken at thirty
@@ -360,7 +367,9 @@ above is unaffected by it: `L7b` and `L7a` share no state.
 Not settled, and not close-able on this evidence.
 
 Containment as stated does not hold on a clean run. Widening the relation to
-"an account path or an ancestor of one" would make every measured run pass, and that
+"an account path or an ancestor of one" would make every measured run whose outside
+path this record carries pass — 16 of the 97 classifications made, the rest being
+`link` runs the survey counted and did not print — and that
 is a design decision rather than a measurement: it also excuses a real
 neighbour writing into the parent directory, which is precisely the case a veto
 exists to catch. The measurement gives both numbers and does not choose.
@@ -381,3 +390,53 @@ was present here.
 No report vocabulary follows from any of this. Naming a claim weaker than
 `oracle_verified` reopens the contract (`#201`, `#202`, `#156`), and nothing
 measured here licenses that.
+
+## Ruled 2026-08-31 (owner, ADR 0035): route B is declined, on its cost
+
+**The measurement sections above are not rewritten by this ruling.** Two things
+elsewhere in the document are, and both are the same denominator.
+
+`L7b`'s `unrelated` bucket reading zero is stated above as holding "in all three
+sets". It holds over the outside runs `L7b` **prints**, which is **16** of the 97
+classified: the survey prints at most three outside runs per mode and `L7b` carries
+no bucket tally, so 81 classifications — all of them `link` runs — exist nowhere in
+the record. The sentence beside it, "every outside path in all nine hundred runs is
+an ancestor of an account path", is *not* narrowed by that: nine hundred there is the
+non-`link` pool, and all seven of its outside runs are printed.
+
+So the closing section's "would make every measured run pass" has been narrowed in
+place, to the runs whose outside path this record carries. That edit is the only one
+this ruling makes above itself.
+
+What else changes is that the question this document left open — "not settled, and
+not close-able on this evidence" — has been closed by a decision instead of by
+evidence, and the distinction is the point.
+
+**Route B is not shown incapable.** The sensitivity half is still unmeasured and
+still blocked on `#344`; nothing here makes a veto less likely to work. What is
+declined is the price: the false-refusal rate of the only implementable relation
+(`link` 90/90, the other ten modes 7/900), the fact that widening the relation
+excuses the case the mechanism exists for, and the cost of recovering the other
+half.
+
+**A separate over-reach, in the ruling's first draft rather than in this file.**
+The section above observes that FSEvents cannot attribute an event to an actor and
+therefore cannot supply the oracle's `child_touched` predicate. Both hold, and that
+is all this file claims. The draft ADR turned it into an impossibility argument
+against a veto as such, which review broke: a conservative veto refusing on *every*
+outside event needs no attribution, so this is the cost argument one step further in
+rather than a second reason. Recorded here because the ADR cites this section.
+
+**No acceptance threshold was pre-registered**, so the figures above informed the
+ruling and did not compel it.
+
+The rate table in this document is no longer kept by hand:
+`spike/check-veto-rate.py` recomputes it from the three transcripts — the per-set
+counts, the per-set and pooled intervals, and the chi-squared statistic — and asserts
+it against the table on every pull request. **The prose around the table is not
+covered**, and neither are the copies of these figures in the ADR, the CHANGELOG or
+the journal. One number in particular is weaker than it looks and the checker now
+prints its denominator: `L7b`'s `unrelated` bucket reads zero over the **16** outside
+runs the transcripts print, not over the 97 that were classified — the survey prints
+at most three blocks per mode and `L7b` carries no bucket tally, so the other 81 exist
+nowhere in the record.

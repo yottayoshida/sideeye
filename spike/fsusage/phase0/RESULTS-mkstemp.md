@@ -65,3 +65,11 @@ macOS では初めての実測。ADR 0005 が「dyld interposition は libSystem
 - oracle との突き合わせはしていない（macOS に非特権 oracle が無いのがそもそもの前提）。
   ここでの「見えない」は **shim の口座だけを読んで、同一 run 内の陽性対照と比べた**もの
 - この機械1台のみ
+
+
+## 追記 2026-08-31: oracle との突き合わせは、その後 CI に着地した
+
+上の「測っていないこと」は**この 2026-08-29 の実験についての記述で、そのまま正しい**。
+その後 `spike/fsusage/acceptance-local.sh` の Check 2 が同じ族の toy を実
+`--oracle-fs-usage` に当て、CI の macOS job から毎回走っている。その leg が実際に
+assert しているもの（見出しより狭い）は ADR 0035 に英語で書いた。
