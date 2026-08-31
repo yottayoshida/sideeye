@@ -42,6 +42,26 @@
 #
 # Exit 0 when both repositories hold only what the pin reaches, 1 when one does not,
 # 2 when the check could not run — never read a 2 as a pass.
+#
+# ## How to call it, and why that is not a style question
+#
+# Every caller runs under `set -eu`, so the dispatch has to be written
+#
+#     hist_rc=0
+#     sh check-history.sh "$ROOT" "$pin" || hist_rc=$?
+#     case $hist_rc in ...
+#
+# The name is its own rather than `rc` because `stage.sh` already uses `rc` further down
+# for the explore container's status; two unrelated meanings on one name in one script is
+# a reordering away from being a bug.
+#
+# A bare call followed by `case $?` on the next line never reaches the case: `set -e`
+# ends the caller the moment a standalone command exits non-zero. All three call sites
+# shipped that shape in #62 — the `||` form had been seen red, then it was "improved"
+# into `case $?` and the improved form was never run. Measured 2026-09-01 against a
+# disposable stage: both launchers printed nothing of their own, and a BROKEN 2 went
+# straight out as the caller's exit status where 1 was meant. On the left of `||` a
+# command is tested rather than fatal, which is what lets the dispatch happen at all.
 set -u
 
 die_broken() { echo "BROKEN: $*" >&2; exit 2; }

@@ -168,8 +168,11 @@ rm -f "$sm_list"
 # Three-valued, because check-history.sh is: 1 is "the statement is false", 2 is "the
 # check could not make it". Collapsing them would print the false-statement sentence
 # for a missing repository or a configured alternate.
-sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$PIN"
-case $? in
+# `|| rc=$?` rather than a bare call: `set -eu` would end this script on the non-zero
+# exit and the dispatch below would never run. check-history.sh's header carries why.
+hist_rc=0
+sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$PIN" || hist_rc=$?
+case $hist_rc in
     0) ;;
     1) echo "the staged repository carries git the pin cannot reach; refusing to stage" >&2; exit 1 ;;
     *) echo "the history check could not run; refusing to stage" >&2; exit 1 ;;

@@ -2,6 +2,62 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-01 - the three-valued dispatch shipped unreachable, because the fixed form was never run
+
+`#62` shipped yesterday with a defect its own review put there. The first draft dispatched
+on the history check with `sh check-history.sh ... || { ...; exit 1; }`, and that form was
+measured red. It was then "improved" into
+
+    sh "$SCRIPT_DIR/check-history.sh" "$ROOT" "$pin"
+    case $? in
+        0) ;;
+        1) echo "the stage's git holds more than the pin reaches; ..." >&2; exit 1 ;;
+        *) echo "the history check could not run; ..." >&2; exit 1 ;;
+    esac
+
+so the two failure modes could be told apart, and the improved form was never run. All
+three call sites — `stage.sh`, `run-agent.sh`, `run-agent-mcp.sh` — are under `set -eu`,
+where a standalone command that exits non-zero ends the script on that line. The `case`
+was unreachable at every one of them. `stage.sh`'s comment above it says "Three-valued,
+because check-history.sh is", which was a false statement about the shipped file from the
+moment it was written.
+
+The gate itself never stopped working: the caller still exits non-zero, so no agent runs
+on a stage carrying a future. What was dead is everything the dispatch was added for. A
+BROKEN 2 went out as the caller's own exit status where 1 was meant, and none of the six
+sentences had ever been printed.
+
+Measured 2026-09-01, before and after, against a disposable one-commit stage. For the two
+launchers the real scripts were driven through `--check-only` with the real
+`check-history.sh`: red at 1 by planting a loose blob no ref reaches, red at 2 by writing
+`objects/info/alternates`. Before: rc=1 and rc=2 with only the check's own output. After:
+rc=1 in both cases, each with the launcher's own sentence. Green stays green — the check
+passes and `--check-only` still exits 0.
+
+`stage.sh`'s site was driven the same way but with the callee substituted: the shipped
+`stage.sh` was invoked through a directory of symlinks to this one, so `SCRIPT_DIR`
+resolved to a stub `check-history.sh` that exits 1 or 2 on demand. `stage.sh` runs its own
+bytes at its own line numbers there; only the callee is fake. Reaching that line with the
+real check requires a full staging run, and `stage.sh`'s own preflight forecloses every
+cheap way of making the check fail once it gets there — an empty tree, a missing
+submodule and a broken work tree are all caught by earlier guards, and everything else is
+pruned by the narrowing itself. Before: rc=1 and **rc=2**, silent. After: rc=1 with
+"refusing to stage" and rc=1 with "the history check could not run".
+
+The correct shape is `hist_rc=0` then `... || hist_rc=$?` then `case $hist_rc`, and the
+reason it is not a style question now lives in `check-history.sh`'s header, where the three call sites can
+point at one copy of it. Repository-wide there were exactly three occurrences of a bare
+command paired with `case $?`, all of them from `#62`; the other nineteen `rc=$?` captures
+are in scripts that never set `-e`, or sit after a `||`, or inside a `set +e` window.
+The captured status has a name of its own because `stage.sh` already spends `rc` on the
+explore container's status further down; the two meanings never overlap in time, and a
+reordering is all it would take.
+
+The lesson is the one this session collected three times: **a fix for a review finding
+carries its own defect, and only running the fixed form catches it.** The other two were
+caught before merge (an `mkostemp` access-mode mask that was right for glibc and wrong for
+Darwin; a batched `update-ref --stdin` that a symref refused). This one shipped.
+
 ## 2026-08-31 (seventh) - the stage keeps its past and loses its future, and the check reads the object store
 
 `#62` noticed that the loop-closure stage carries a full clone: every upstream branch
