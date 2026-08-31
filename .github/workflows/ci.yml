@@ -863,7 +863,12 @@ jobs:
               --agent-rc 0 --repo-root "$PWD" --target-version v \
               --allowed 'Bash(docker exec onboarding-box *),Read,Edit,Write,Glob,Grep' \
               --disallowed 'WebFetch,WebSearch,Task' \
-              --launch-started-at T0 || rc=$?
+              --launch-started-at T0 \
+              --box 'container_id=cafe0001
+          image_id=sha256:dead0002
+          created=2026-01-01T00:00:00Z
+          dockerfile_sha256=beef0003
+          readme_sha256=f00d0004' || rc=$?
             echo "exit=$rc"
           }
           # Read the JSON rather than grepping it: a count of `"kind"` lines is a
@@ -880,7 +885,80 @@ jobs:
           expect 'needs adjudication' 1 \
             || { echo '::error::the scoped Bash spec may have stopped reducing to a name — a legitimate box call would then be flagged too'; exit 1; }
           grep -q '"tool": "Monitor"' "$d/meta.json"
+          # The launcher's arguments actually reach meta.json. This is the only
+          # place that can be measured: --selftest returns before main() reads
+          # argv and builds its own run_meta, so deleting the line that carries
+          # a flag into the record leaves the selftest at 56 of 56 with the
+          # field silently None (measured, on --target-version, which had been
+          # in exactly that state since it was added). Both are asserted here
+          # because the second was the older half of the same hole.
+          python3 -c "import json,sys; m=json.load(open('$d/meta.json')); b=m.get('box'); print('box=%s target_version=%s' % (b, m.get('target_version'))); sys.exit(0 if (b == {'container_id':'cafe0001','image_id':'sha256:dead0002','created':'2026-01-01T00:00:00Z','dockerfile_sha256':'beef0003','readme_sha256':'f00d0004'} and m.get('target_version')=='v') else 'the launcher arguments did not reach meta.json')" \
+            || { echo '::error::--box or --target-version is not wired into meta.json'; exit 1; }
           audit "$d/broken.jsonl"
           test "$rc" != 0 || { echo '::error::a transcript with an unreadable line must not exit 0'; exit 1; }
           expect 'unauditable' 1
           echo 'ok: the real entry point holds its exit codes, its policy wiring and its writes'
+
+      # #383: the launcher used to inherit whatever container held the name, and
+      # run 2 was taken on one started 2h51m earlier. `box.sh` creates it, so
+      # there is nothing to inherit. This is the only part of the launch that a
+      # test can execute — `run-clock.sh` refuses to start inside a Claude
+      # session and then needs the CLI, an account and a box — so this is where
+      # that enforcement stops shipping on review alone.
+      #
+      # A throwaway image (busybox needs its own CMD; the real one has
+      # `sleep infinity`) and a throwaway NAME. The name matters: the teardown
+      # below is a `docker rm -f`, and written against the production spelling
+      # it deletes a completed run's evidence the first time it meets a
+      # self-hosted runner or a copy-paste. `spike/check-box-name.sh` is what
+      # holds the production spelling; this job holds the behaviour.
+      - name: The launcher creates its box, and a second launch refuses to inherit one
+        run: |
+          set -eu
+          img=$(printf 'FROM busybox\nCMD ["sleep","infinity"]\n' | docker build -q -)
+          export BOX_NAME=onboarding-box-ci
+          # A hosted runner is fresh; a self-hosted one is not, and this step's
+          # own refusal leg would otherwise wedge it forever on a box left by a
+          # previous run. Only ever the throwaway name.
+          docker rm -f "$BOX_NAME" >/dev/null 2>&1 || true
+          out=$(sh spike/onboarding-clock/box.sh "$img")
+          printf '%s\n' "$out"
+          id1=$(printf '%s\n' "$out" | sed -n 's/^container_id=//p')
+          test -n "$id1" || { echo '::error::box.sh created a box but printed no container_id'; exit 1; }
+          rc=0
+          err=$(sh spike/onboarding-clock/box.sh "$img" 2>&1 >/dev/null) || rc=$?
+          printf '%s\n' "$err"
+          test "$rc" != 0 || { echo '::error::a second launch must refuse rather than inherit the box'; exit 1; }
+          printf '%s\n' "$err" | grep -qF "$id1" \
+            || { echo '::error::the refusal does not name the container it found'; exit 1; }
+          test "$(docker inspect -f '{{.Id}}' "$BOX_NAME")" = "$id1" \
+            || { echo '::error::the refused launch changed the container it refused over'; exit 1; }
+          # An exited container still holds the name, so it is still a box this
+          # run did not create. This leg is why the launch carries no `--rm`:
+          # with it the box would remove itself and the refusal would cover
+          # nothing (measured both ways).
+          docker stop "$BOX_NAME" >/dev/null
+          rc=0
+          sh spike/onboarding-clock/box.sh "$img" >/dev/null 2>&1 || rc=$?
+          test "$rc" != 0 || { echo '::error::an exited box must be refused too'; exit 1; }
+          docker rm -f "$BOX_NAME" >/dev/null
+          echo 'ok: the launcher owns its box, and refuses to inherit one in any state'
+
+      # PROTOCOL.md promises that a run's meta.json names the amendment it ran
+      # under, and the constant that supplies it is compared, in the selftest,
+      # to itself. So an amendment that lands without bumping it ships a run
+      # claiming an older protocol — which happened in the very PR that added
+      # this step.
+      - name: The audit's protocol version names the newest amendment
+        run: |
+          set -eu
+          newest=$(grep -o '^### [0-9][0-9-]*' spike/onboarding-clock/PROTOCOL.md | awk '{print $2}' | sort | tail -1)
+          test -n "$newest" || { echo '::error::found no dated amendment heading in PROTOCOL.md'; exit 1; }
+          declared=$(python3 -c "import re,sys; m=re.search(r'^PROTOCOL_VERSION = \"([0-9-]+)\"', open('spike/onboarding-clock/clock-audit.py').read(), re.M); print(m.group(1) if m else '')")
+          test -n "$declared" || { echo '::error::found no PROTOCOL_VERSION in clock-audit.py'; exit 1; }
+          echo "newest amendment=$newest  PROTOCOL_VERSION=$declared"
+          test "$newest" = "$declared" \
+            || { echo "::error::PROTOCOL_VERSION is $declared but the newest amendment is $newest"; exit 1; }
+
+      - name: The box name has one spelling
+        run: sh spike/check-box-name.sh

@@ -35,7 +35,11 @@ the wall-clock of the **first** qualifying exploration.
 ## The fresh machine
 
 A network-off Linux container (`docker run --network=none`), built by the
-`Dockerfile` beside this protocol. Inside, at `/home/user/onboarding`:
+`Dockerfile` beside this protocol — **both steps performed by `run-clock.sh`
+itself**, which builds the image and hands its id to `box.sh`; `box.sh` refuses
+to start when a container of that name already exists in any state *(2026-08-31,
+below: until then the operator typed both by hand and the launcher inherited
+whatever held the name)*. Inside, at `/home/user/onboarding`:
 
 - `README.md` — the repository's front page at the measured commit, verbatim.
 - `sideeye-v0.13.0-aarch64-linux.tar.gz` — the current release tarball,
@@ -301,3 +305,58 @@ CLI and its credentials, which is a different apparatus and would restart the
 count again. **The audit as detector is not a fallback here; it is the only
 design available**, and the promise in **The driver** is written to claim
 exactly what it delivers.
+
+### 2026-08-31 — the launcher owns the box, and the run count does not restart
+
+Run 2 was taken against a container started 2 h 51 m earlier. The operator's
+`docker run` had failed with a name conflict, and `run-clock.sh` proceeded: its
+preflight asked whether *a* box was running and network-off, never who made it
+or when. **What caught it was a human reading an error in a terminal** — a
+hand-typed step that fails is outside this script's `set -e` — and a box that
+had already been used is precisely what the rehearsal boundary forbids (#383).
+
+**What changed.** The launcher builds the image and `box.sh` creates the
+container, so there is nothing to inherit; a container that did not exist a
+second ago cannot have been used. `box.sh` refuses when the name is taken **in
+any state**, and the launch carries no `--rm` — with it an exited box removes
+itself and that refusal covers nothing. `meta.json` gains a `box` block
+(`container_id`, `image_id`, `created`, `dockerfile_sha256`, `readme_sha256`),
+so "this run
+measured a fresh box" is checkable from the run's own evidence rather than from
+whoever's terminal the launch happened in. `dockerfile_sha256` is there because
+`image_id` cannot carry the claim: a fully cached rebuild exports a new id with
+identical contents, as the 2026-08-28 amendment's own reading of run 2 records.
+What this fixes is **provenance, not content identity** — the `Dockerfile` pins
+neither jrnl nor the apt set, deliberately, so two builds of the same file are
+not byte-identical; `target_version` continues to record what came out.
+
+**The run count does not restart, and that is a ruling rather than a reading.**
+The rule at the top of this document says a change to this protocol starts the
+count over, and this document has changed, so the literal reading restarts it.
+The owner ruled otherwise on 2026-08-31, and the distinction is written into the
+rule here rather than applied to it from outside: **the count restarts when a
+change moves what a run's number is attributable to** — the measured document,
+the stimulus (prompt, tools), or the artifact under test. A change to what the
+operator types moves none of them. The driver reads the same README, is given
+the same prompt and the same tools, and works in a box with the same contents
+built from the same file.
+
+Two things this ruling does not rest on. It does not rest on the earlier
+restarts having each been triggered by a stimulus change: those were bundles of
+five and ten items, most of them instrument-only, and which item forced the
+restart is not recoverable from them. And it is not the first amendment to
+decline a restart — the second 2026-08-25 amendment says in as many words that
+it changes which binary run 2 measures, "not the count".
+
+**Run 2 therefore stands as criterion 6's evidence, with its deviation on its
+own page.** Had `box.sh` existed, run 2 would have been refused; that does not
+retroactively make it a run under a different protocol, because the sentence it
+departed from ("re-runs use a fresh box") is the same sentence in force now.
+What changed is that the next departure is a refusal instead of a disclosure.
+
+**A run's box is now worth keeping.** The name is fixed, so at most one exists,
+and the next run's refusal names it. Commit its contents before removing it:
+the image a run was built from is not reachable by tag afterwards — measured on
+run 2's own box, whose image id matches no tag and is not dangling, so the
+container is the only handle to it.
+
