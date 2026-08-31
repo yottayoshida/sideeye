@@ -111,6 +111,16 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.mkdir, libc.mkdir),
     entry(&ops.mkdirat, libc.mkdirat),
     entry(&ops.rmdir, libc.rmdir),
+    // The temp-name creators (#39). This is the edge dyld DOES rewrite — a target
+    // calling libc directly — not the one it does not (libSystem calling its own
+    // export, ADR 0005 and ADR 0034). So the same replacement closes the wall on both
+    // platforms, which is why the reimplementation lives in ops.zig rather than in a
+    // Linux-only branch.
+    entry(&ops.mkstemp, libc.mkstemp),
+    entry(&ops.mkostemp, libc.mkostemp),
+    entry(&ops.mkstemps, libc.mkstemps),
+    entry(&ops.mkostemps, libc.mkostemps),
+    entry(&ops.mkdtemp, libc.mkdtemp),
     entry(&ops.fork, libc.fork),
     // The vfork replacement is frameless at the call — a guaranteed tail jump. See ops.zig.
     entry(&ops.vfork, libc.vfork),

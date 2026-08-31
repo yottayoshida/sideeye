@@ -11,6 +11,12 @@
  * Two more members of the class are exercised beside it so the answer is not
  * one data point: dprintf(3) writes to a descriptor from inside libc, and
  * tmpfile(3) creates and unlinks one.
+ *
+ * 2026-08-31: `rotate` is unchanged — it is what the 2026-08-22 transcript records —
+ * and one subcommand per class member was added beside it, each writing through its
+ * own final path so a divergence names the member that caused it. The shim now
+ * reimplements the five creators (contract v13), so those five reach a verdict here;
+ * `dprintf` and `tmpfile` are the deliberate non-members and stay measurable.
  */
 
 #define _GNU_SOURCE
@@ -61,8 +67,13 @@ static int append_via_dprintf(int value) {
     return 0;
 }
 
-/* tmpfile creates and unlinks inside libc; nothing should survive in-root,
- * but the calls are worth seeing (it honours TMPDIR). */
+/* tmpfile creates and unlinks inside libc; nothing should survive in-root.
+ *
+ * The parenthesis here used to read "it honours TMPDIR". That was never measured and
+ * it is false on glibc 2.36/aarch64: tmpfile reaches
+ * `openat(AT_FDCWD, "/tmp", O_RDWR|O_EXCL|O_TMPFILE, 0600)`, which ignores TMPDIR and
+ * creates no directory entry at all — so it cannot mutate a state root, and there is
+ * no unlink either. Corrected 2026-08-31 with the run in spike/libc-internal/. */
 static int scratch_via_tmpfile(void) {
     FILE *f = tmpfile();
     if (!f) { perror("tmpfile"); return 1; }
@@ -70,6 +81,69 @@ static int scratch_via_tmpfile(void) {
     fclose(f);
     return 0;
 }
+
+/* One subcommand per class member (#39, 2026-08-31), each writing through its OWN
+ * final path. A single command exercising all of them cannot say which member a
+ * divergence belongs to; separate runs can, and the run is what the record shows.
+ *
+ * Each of the four file creators performs the same atomic replace `rotate` does, so
+ * the shape under measurement is the one a real C program writes. `mkdtemp` has no
+ * atomic-replace form: it creates the directory and leaves it, which is what a
+ * program using it does.
+ */
+static int replace_with(int fd, char *tmpl, const char *final_name) {
+    char final_path[1024];
+    if (fd < 0) { perror("create"); return 1; }
+    if (write(fd, "key=2\n", 6) != 6) { perror("write"); return 1; }
+    if (fsync(fd) != 0) { perror("fsync"); return 1; }
+    if (close(fd) != 0) { perror("close"); return 1; }
+    join_path(final_path, sizeof(final_path), final_name);
+    if (rename(tmpl, final_path) != 0) { perror("rename"); return 1; }
+    return 0;
+}
+
+static int cmd_mkstemp(void) {
+    char t[1024];
+    join_path(t, sizeof(t), "m-mkstemp.XXXXXX");
+    return replace_with(mkstemp(t), t, "m-mkstemp.json");
+}
+
+/* O_WRONLY is passed on purpose, and it is not decoration: the real mkostemp clears
+ * the caller's access-mode bits (measured), so a replacement that ORs them in raw
+ * builds access mode 3 and the create fails where libc's succeeds. Without this flag
+ * the measurement leg would pass either way. */
+static int cmd_mkostemp(void) {
+    char t[1024];
+    join_path(t, sizeof(t), "m-mkostemp.XXXXXX");
+    return replace_with(mkostemp(t, O_WRONLY | O_CLOEXEC), t, "m-mkostemp.json");
+}
+
+static int cmd_mkstemps(void) {
+    char t[1024];
+    join_path(t, sizeof(t), "m-mkstemps.XXXXXX.tmp");
+    return replace_with(mkstemps(t, 4), t, "m-mkstemps.json");
+}
+
+static int cmd_mkostemps(void) {
+    char t[1024];
+    join_path(t, sizeof(t), "m-mkostemps.XXXXXX.tmp");
+    return replace_with(mkostemps(t, 4, O_WRONLY | O_CLOEXEC), t, "m-mkostemps.json");
+}
+
+static int cmd_mkdtemp(void) {
+    char t[1024];
+    join_path(t, sizeof(t), "m-mkdtemp.XXXXXX");
+    if (mkdtemp(t) == NULL) { perror("mkdtemp"); return 1; }
+    return 0;
+}
+
+/* The two members this change deliberately leaves as walls, kept runnable so the
+ * record can show them still diverging in the same sitting as the five that no
+ * longer do. Without them the check would have no negative control it did not
+ * invent. */
+static int cmd_dprintf(void) { return append_via_dprintf(2); }
+
+static int cmd_tmpfile(void) { return scratch_via_tmpfile(); }
 
 static int cmd_init(void) {
     char path[1024];
@@ -87,7 +161,10 @@ static int cmd_init(void) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s init|rotate\n", argv[0]);
+        fprintf(stderr,
+                "usage: %s init|rotate"
+                "|mkstemp|mkostemp|mkstemps|mkostemps|mkdtemp|dprintf|tmpfile\n",
+                argv[0]);
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
@@ -97,6 +174,13 @@ int main(int argc, char **argv) {
         if (scratch_via_tmpfile() != 0) return 1;
         return 0;
     }
+    if (strcmp(argv[1], "mkstemp") == 0) return cmd_mkstemp();
+    if (strcmp(argv[1], "mkostemp") == 0) return cmd_mkostemp();
+    if (strcmp(argv[1], "mkstemps") == 0) return cmd_mkstemps();
+    if (strcmp(argv[1], "mkostemps") == 0) return cmd_mkostemps();
+    if (strcmp(argv[1], "mkdtemp") == 0) return cmd_mkdtemp();
+    if (strcmp(argv[1], "dprintf") == 0) return cmd_dprintf();
+    if (strcmp(argv[1], "tmpfile") == 0) return cmd_tmpfile();
     fprintf(stderr, "unknown command\n");
     return 2;
 }

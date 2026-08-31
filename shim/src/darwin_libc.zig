@@ -80,6 +80,18 @@ pub const truncate = @extern(*const fn ([*:0]const u8, i64) callconv(.c) c_int, 
 pub const mkdir = @extern(*const fn ([*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "mkdir" });
 pub const mkdirat = @extern(*const fn (c_int, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "mkdirat" });
 pub const rmdir = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "rmdir" });
+/// The temp-name creators (#39). All five are here, not only the GNU-looking ones:
+/// `libsystem_c.dylib` exports `mkstemp`, `mkostemp`, `mkstemps`, `mkostemps` and
+/// `mkdtemp` (measured with `dyld_info -exports`, not assumed from the fact that
+/// `mkostemp*` are GNU extensions elsewhere). None of these is ever *called* from
+/// here — the replacements reimplement the sequence — but the interpose table names
+/// the original to say which function dyld should replace, the same way `remove`'s
+/// entry does while `ops.remove` calls `unlink` and `rmdir`.
+pub const mkstemp = @extern(*const fn ([*:0]u8) callconv(.c) c_int, .{ .name = "mkstemp" });
+pub const mkostemp = @extern(*const fn ([*:0]u8, c_int) callconv(.c) c_int, .{ .name = "mkostemp" });
+pub const mkstemps = @extern(*const fn ([*:0]u8, c_int) callconv(.c) c_int, .{ .name = "mkstemps" });
+pub const mkostemps = @extern(*const fn ([*:0]u8, c_int, c_int) callconv(.c) c_int, .{ .name = "mkostemps" });
+pub const mkdtemp = @extern(*const fn ([*:0]u8) callconv(.c) ?[*:0]u8, .{ .name = "mkdtemp" });
 pub const fork = @extern(*const fn () callconv(.c) c_int, .{ .name = "fork" });
 pub const vfork = @extern(*const fn () callconv(.c) c_int, .{ .name = "vfork" });
 pub const execve = @extern(*const fn ([*:0]const u8, [*]const ?[*:0]const u8, [*]const ?[*:0]const u8) callconv(.c) c_int, .{ .name = "execve" });

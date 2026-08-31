@@ -334,6 +334,204 @@ pub fn remove(path: [*:0]const u8) callconv(.c) c_int {
     return rmdir(path);
 }
 
+// --- kill-point ops: the temp-name creators (#39) ---------------------------------
+//
+// `mkstemp` and its three variants open from inside libc, and `mkdtemp` makes its
+// directory from inside libc; neither inner call crosses the PLT, so a shim that
+// replaces only `open` and `mkdir` records nothing for them. Measured twice: on
+// 2026-08-22 (`spike/cohort4/mkstemp-class.txt`) and again for this change. Forwarding
+// to the real function would keep the shim blind, so — the same discipline as `remove`
+// above — each wrapper reimplements the documented sequence through the recorded
+// wrappers, one recorded attempt per name tried, which is the attempt-by-attempt
+// account strace hands the oracle.
+//
+// What the real ones issue, measured on glibc 2.36/aarch64 rather than recalled:
+// every member of the mkstemp family issues exactly
+// `openat(AT_FDCWD, path, O_RDWR|O_CREAT|O_EXCL, 0600)` — plus the caller's extra
+// flags for the `mkostemp*` pair — and `mkdtemp` issues
+// `mkdirat(AT_FDCWD, path, 0700)`. Both spellings arrive here through `callOpen` and
+// `callMkdir`, which reach the same kernel entry points.
+//
+// Two members of the same class are deliberately NOT here, and the record says why:
+//
+//   `dprintf`/`vdprintf` — glibc splits a large write at 8192 bytes (measured, same
+//   run). A wrapper writing once would delete a crash point the real program has;
+//   one that split would hard-code an undocumented libc constant that differs by
+//   platform. They stay a wall.
+//
+//   `tmpfile` — **and here the two platforms disagree about whether it is even a
+//   member.** glibc reaches it through `openat(AT_FDCWD, "/tmp", O_TMPFILE)`
+//   (measured), which creates no directory entry anywhere and ignores TMPDIR, so on
+//   Linux it cannot mutate a state directory. Apple's honours TMPDIR and creates a
+//   real named file it then unlinks (measured with `F_GETPATH`: nlink 0, path inside
+//   the directory TMPDIR named), so on macOS it IS a member and IS a wall. Taking it
+//   would mean choosing one of the two behaviours for both, which is the thing this
+//   file refuses to do.
+
+// **The two platforms disagree about both halves of this contract**, measured on
+// 2026-08-31 rather than read, because a wrapper that reproduces one of them on both
+// does not add an observation — it changes what the target does.
+//
+//   flags     glibc CLEARS the access mode out of the caller's flags:
+//             `mkostemp(t, O_WRONLY|O_APPEND)` reaches the kernel as
+//             `O_RDWR|O_CREAT|O_EXCL|O_APPEND`. Apple's REJECTS anything outside
+//             {O_APPEND, O_CLOEXEC, O_SHLOCK, O_EXLOCK} with EINVAL — **`O_RDWR`
+//             included** — so "mask the access mode" is not a portable fix, it is
+//             the glibc rule wearing a portable name.
+//
+//   template  glibc requires the last six characters before the suffix to be `X` and
+//             replaces exactly those six; a longer run keeps its leading X's
+//             (`c.XXXXXXXX` → `c.XXrZr5DH`) and anything shorter is EINVAL. Apple
+//             replaces the WHOLE trailing run however long (`b.XXXXX` → `b.mPwbp`,
+//             `c.XXXXXXXX` → `c.M9gSd4XP`), and a template with no trailing X is not
+//             an error there — it is used literally (`d.XXXXXXn` comes back
+//             unchanged, `e.noX` becomes `e.noj`).
+
+const is_darwin = builtin.os.tag == .macos;
+
+const temp_letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+/// glibc's TMP_MAX, and the ceiling on Darwin too. The bound only decides how long a
+/// *collision* is retried; O_EXCL and mkdir's own exclusivity are what make a
+/// collision a retry rather than a wrong answer, exactly as they do in libc.
+const temp_attempts: u32 = 62 * 62 * 62;
+
+/// Flags `mkostemp`/`mkostemps` accept on Darwin. Values read from the SDK header and
+/// confirmed by running each one: `O_APPEND` 0x8, `O_CLOEXEC` 0x1000000,
+/// `O_SHLOCK` 0x10, `O_EXLOCK` 0x20.
+const darwin_ostemp_flags: c_int = 0x8 | 0x1000000 | 0x10 | 0x20;
+
+var temp_seq: u64 = 0;
+
+/// The run of `X`s a replacement is allowed to fill. `len` may be zero, which is legal
+/// on Darwin and means the template is used as it stands.
+const TempSlot = struct { at: [*]u8, len: usize };
+
+/// Fill the slot with a name unlikely to collide.
+///
+/// Deliberately not `arc4random_buf`: it reached glibc only in 2.36 and this
+/// repository pins no glibc floor (#161), so depending on it would narrow where the
+/// shim loads. Deliberately not `std.crypto.random`: it does not exist in the Zig this
+/// builds with. And deliberately **not the address of a stack variable**, which the
+/// first version mixed in — glibc's own `tempname.c` avoids address entropy precisely
+/// because the result is published as a filename, and six characters derived from a
+/// stack address narrow the ASLR search for anyone who can read the directory. The
+/// mix is time, pid and a counter, which is what libc did before `getrandom`: the pid
+/// separates a forked child (which inherits both the counter and the layout), the
+/// counter separates calls within a process, and the clock separates runs.
+fn fillTempName(slot: TempSlot) void {
+    if (slot.len == 0) return;
+    temp_seq +%= 1;
+    var x: u64 = @bitCast(common.c.time(null));
+    x ^= @as(u64, @bitCast(@as(i64, common.c.getpid()))) *% 0x9E3779B97F4A7C15;
+    x ^= temp_seq *% 0xBF58476D1CE4E5B9;
+    for (0..slot.len) |i| {
+        x ^= x >> 30;
+        x *%= 0xBF58476D1CE4E5B9;
+        x ^= x >> 27;
+        x *%= 0x94D049BB133111EB;
+        x ^= x >> 31;
+        slot.at[i] = temp_letters[@intCast(x % temp_letters.len)];
+    }
+}
+
+/// The caller's extra flags as the real function would take them, or null for EINVAL.
+fn tempFlags(extra: c_int) ?c_int {
+    if (is_darwin) {
+        if (extra & ~darwin_ostemp_flags != 0) return null;
+        return extra;
+    }
+    return extra & ~common.O_ACCMODE;
+}
+
+/// The `X` run this platform's libc would fill, or null for EINVAL.
+fn tempSlot(template: [*:0]u8, suffixlen: c_int) ?TempSlot {
+    if (suffixlen < 0) return null;
+    const suffix: usize = @intCast(suffixlen);
+    const len = std.mem.len(template);
+    if (len < suffix) return null;
+    const end = len - suffix;
+    if (is_darwin) {
+        var n: usize = 0;
+        while (n < end and template[end - 1 - n] == 'X') n += 1;
+        return .{ .at = template + (end - n), .len = n };
+    }
+    if (end < 6) return null;
+    for (0..6) |i| if (template[end - 6 + i] != 'X') return null;
+    return .{ .at = template + (end - 6), .len = 6 };
+}
+
+/// How many names there are to try. A short run has fewer than TMP_MAX candidates and
+/// an empty one has exactly the template itself, so retrying either to the ceiling
+/// would spin on names already refused.
+fn tempAttempts(n: usize) u32 {
+    if (n == 0) return 1;
+    if (n >= 3) return temp_attempts;
+    var space: u32 = 1;
+    for (0..n) |_| space *= 62;
+    return space;
+}
+
+/// EEXIST and EINVAL are 17 and 22 on both platforms (checked, not recalled — the
+/// pair `remove` had to branch on, EISDIR/EPERM, is the reminder that agreement is
+/// not the rule here).
+const EEXIST: c_int = 17;
+const EINVAL: c_int = 22;
+
+fn mkstempImpl(template: [*:0]u8, suffixlen: c_int, extra_flags: c_int) c_int {
+    const extra = tempFlags(extra_flags) orelse {
+        std.c._errno().* = EINVAL;
+        return -1;
+    };
+    const slot = tempSlot(template, suffixlen) orelse {
+        std.c._errno().* = EINVAL;
+        return -1;
+    };
+    const flags = common.O_RDWR | common.O_CREAT | common.O_EXCL | extra;
+    for (0..tempAttempts(slot.len)) |_| {
+        fillTempName(slot);
+        // Recorded the way `open` records it, and before the call like every kill
+        // point: a failed attempt counts on both sides or the accounts desync.
+        if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, template);
+        const fd = common.callOpen(template, flags, 0o600);
+        if (fd >= 0) return fd;
+        if (std.c._errno().* != EEXIST) return -1;
+    }
+    std.c._errno().* = EEXIST;
+    return -1;
+}
+
+pub fn mkstemp(template: [*:0]u8) callconv(.c) c_int {
+    return mkstempImpl(template, 0, 0);
+}
+
+pub fn mkostemp(template: [*:0]u8, flags: c_int) callconv(.c) c_int {
+    return mkstempImpl(template, 0, flags);
+}
+
+pub fn mkstemps(template: [*:0]u8, suffixlen: c_int) callconv(.c) c_int {
+    return mkstempImpl(template, suffixlen, 0);
+}
+
+pub fn mkostemps(template: [*:0]u8, suffixlen: c_int, flags: c_int) callconv(.c) c_int {
+    return mkstempImpl(template, suffixlen, flags);
+}
+
+pub fn mkdtemp(template: [*:0]u8) callconv(.c) ?[*:0]u8 {
+    const slot = tempSlot(template, 0) orelse {
+        std.c._errno().* = EINVAL;
+        return null;
+    };
+    for (0..tempAttempts(slot.len)) |_| {
+        fillTempName(slot);
+        common.note1(.mkdir, AT_FDCWD, template);
+        if (common.callMkdir(template, 0o700) == 0) return template;
+        if (std.c._errno().* != EEXIST) return null;
+    }
+    std.c._errno().* = EEXIST;
+    return null;
+}
+
 // --- kill-point ops: link --------------------------------------------------------
 //
 // A second name for an inode changes the tree, so link is a kill point and a mutation

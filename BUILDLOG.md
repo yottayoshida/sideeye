@@ -2,6 +2,153 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-31 (sixth) - the temp-name creators stop being a wall, and the trigger for taking one becomes a proof
+
+`#39` has been open since the beginning as the lookout post for libc conveniences that
+change state from inside libc, past any PLT. It was picked up to be *measured* — the
+page listed four families and only some had a recorded run — and the plan that came out
+of that was measurement only: enumerate the class, correct the page, close the ticket.
+The owner sent it back with three words: do not scope this to measurement. Codex's
+first-look review had reached the same place from the other side, as a Critical: a
+completed observation ledger does not close a soundness ticket, because the shim is
+still blind and the policy is still in force.
+
+**The issue's own premise turned out to be stale, and that mattered more than the
+enumeration.** `#39` argues a PASS hole: a mixed-visibility target keeps
+`mutation_count != 0`, so `state_changed_without_ops` stays quiet and the run passes.
+Read against the current engine that is not true — `requireCompleteness`
+(`src/main.zig`) refuses with `completeness_not_verified` when there is no oracle and no
+`--allow-unverified`, and it guards the PASS path and the zero-kill-points path both.
+There is no silent PASS for this class. What is left is not soundness but **capability**:
+with an oracle these targets refuse, without one they reach only the weaker claim, and
+the canonical C atomic replace — `mkstemp` + write + fsync + rename — is not an exotic
+shape. A whole class of targets was outside the tool, and the ticket had been filed
+under the wrong noun.
+
+**What the real functions do, measured before anything was written.** A throwaway C
+program under `strace`, glibc 2.36/aarch64: every member of the mkstemp family issues
+one `openat(AT_FDCWD, path, O_RDWR|O_CREAT|O_EXCL, 0600)`, `mkostemp*` ORing the
+caller's flags; `mkdtemp` issues **`mkdirat`**, which the plan had guessed as `mkdir`;
+`dprintf` splits a 8999-byte payload into **8192 + 807**; and `tmpfile` reaches
+`openat(AT_FDCWD, "/tmp", O_RDWR|O_EXCL|O_TMPFILE)`. Two of those contradicted the
+tree. `spike/toys/toy_mkstemp.c` carried the parenthesis "(it honours TMPDIR)" beside
+`tmpfile`, which nothing had ever measured and which is false — with `O_TMPFILE` there
+is no name anywhere, so `tmpfile` cannot change a state directory and is not a member of
+the class at all. The comment is corrected in place.
+
+**Five members are taken, two are not, and the two are the interesting half.**
+`shim/src/ops.zig` reimplements `mkstemp`, `mkostemp`, `mkstemps`, `mkostemps` and
+`mkdtemp` through the recorded wrappers, one recorded attempt per name tried — the same
+seven-line shape `remove` has had since v7, and for the reason its doc comment already
+gives: a failed attempt has to count on both sides or the accounts desync.
+`dprintf`/`vdprintf` are **not** taken. The tempting argument is that it does not
+matter what a replacement issues, since the oracle sees the replacement rather than
+glibc, so a single `write` would agree with itself. That argument is wrong in a way
+worth writing down: agreement is not the bar, fidelity is. glibc writes twice for a
+large payload, so a one-write replacement **deletes a crash point the real program has**
+— sideeye would never ask what a machine dying between those two writes leaves behind.
+Matching the split means hard-coding 8192, an undocumented libc internal that differs by
+platform, which is the exact failure PR #38 was written to stop. So they stay a wall,
+with the number that makes them one.
+
+**The measurement instrument was wrong in the plan and had to be replaced.** The plan
+said to measure with `spike/cohort4/preflight.sh visibility`. That would have measured
+the wrong thing: its `visibility-logger.c` is a separate `LD_PRELOAD` wrapping `open`
+and `mkdir` and no member of this class, so it reports a wall whatever the shim does —
+and would have gone on reporting one afterwards. `spike/measure-libc-internal.sh` drives
+the shipped engine instead, one member per run, each writing through its own final path
+so a divergence names the member.
+
+**Before and after, same toy, same declarations, engine and shim swapped.** Under
+`--oracle`: five members move from `UNKNOWN oracle_missed_operation` to a verdict,
+`dprintf` stays refused, `tmpfile` stays inert. Without an oracle and under
+`--allow-unverified`, `mkstemp` moves from **PASS over 4 crash points to PASS over 5**.
+That is the sentence to keep: v12 answered PASS having never explored the world where
+the machine dies between the temp file existing and the first byte reaching it. The
+report said `NOT VERIFIED`, which is true and is not the same sentence as "one crash
+point fewer than this program has". Nothing said the second one.
+
+**The first-look review broke the change in the place the plan was proudest of.** The
+plan said the same replacements install on both platforms because a target's own call
+into libc is the edge dyld rewrites, and that is true — and it is a statement about
+*reachability*, which the review pointed out is not the same as a statement about
+*contract*. Measured after the finding: **the two libcs do not agree about this
+family.** glibc clears the access mode out of `mkostemp`'s caller flags; Apple's
+rejects anything outside `{O_APPEND, O_CLOEXEC, O_SHLOCK, O_EXLOCK}` with EINVAL,
+`O_RDWR` included. glibc requires exactly six `X`s before the suffix and replaces those
+six; Apple replaces the whole trailing run however long, and no trailing `X` is legal
+there and means "use this name". So the shim, written from the glibc reading, made
+`mkostemp(t, O_WRONLY|O_CLOEXEC)` succeed on macOS where the real one returns EINVAL —
+**a change to what the target does**, which is the exact objection that keeps `dprintf`
+out of the shim, pointed back at the members that are in it. `ops.zig` branches now, and
+`spike/toys/toy_temp_rules.c` is run twice per platform, plain and shimmed, with the
+outputs required to match. ADR 0036 gained a fourth clause for it.
+
+**Two more from the same review, both about a claim reaching past its measurement.**
+`tmpfile` was written up as "not a member at all" on the strength of a glibc run;
+Apple's honours `TMPDIR` and creates a real named file it then unlinks, measured with
+`F_GETPATH`, so on macOS it is a member and a wall. And the macOS acceptance leg for the
+oracle (`spike/fsusage/acceptance-local.sh` check 2) **pins the wall this change
+folds** — it requires a `mkstemp` toy to exit 2 with a divergence, so a green run of it
+after this change would have been impossible. Its negative control moves to `dprintf`,
+which is still a wall on that platform too (measured: `state_changed_without_ops`, zero
+mutating operations recorded). A check that asserts "the oracle catches what the shim
+missed" needs something the shim misses, and the comment now says so for the next person
+who closes a member.
+
+**The differential's own first version was wrong, and it reported a correct run as a
+difference.** It marked a template position "replaced" when the character changed, and
+a replacement draws from 62 letters — so a position filled with a literal `X` read as
+untouched, and `c.XXXXXXXX` under glibc came back looking like the wrong rule. Eight
+repeats per case now, with a position marked replaced if it moved in any of them.
+
+**The reimplementation had a defect, and the thing that caught it was measuring the
+real function one more time.** `mkostemp`/`mkostemps` take caller flags, and the first
+version ORed them into the open raw. The real ones **clear the access mode out of
+them** — `mkostemp(t, O_WRONLY|O_APPEND)` reaches the kernel as
+`openat(..., O_RDWR|O_CREAT|O_EXCL|O_APPEND, 0600)` — so ORing raw builds access mode 3
+and the create fails where libc's succeeds. No man page for it is installed in the
+container, so this was settled by running it rather than by reading. The toy's two
+`mkostemp*` subcommands pass `O_WRONLY` deliberately now, and with the mask removed
+**exactly those two members go red while the other five stay green**. Without the flag
+the leg would have been green either way, which is the difference between a test and a
+place where a test could go.
+
+**macOS was run, not reasoned about, and it disagreed in one place.** The four file
+creators move 4/4 → 5/5 there exactly as on Linux. `mkdtemp` does not: it was **already
+2/2 on v12**, meaning macOS had been recording its directory all along, while the same
+run on Linux refuses with `state_changed_without_ops` having recorded nothing.
+`libsystem_kernel.dylib` exports `_mkdir`, so a call leaving `libsystem_c` for it would
+cross an image boundary and be interposed, which would explain it — but the reading that
+would settle which image the call leaves from was not taken, and the one attempt at it
+(`dyld_info -imports`) returned nothing for either name, which is as likely to be a bad
+query as a real absence. Written down as unexplained rather than as a mechanism. It
+changes nothing about the replacements: afterwards the record comes from the shim's own
+`mkdir` on both platforms instead of from whichever inner call happened to be visible.
+
+**The first attempt at the red was invalid, and the shape is worth recording.** Pointing
+`SIDEEYE_ROOT` at the pre-change build moved the *toy source* with it, so all seven
+members came back `other` with "unknown command". It was red, loudly, for a reason with
+nothing to do with what the check measures — a mutation whose kill has to be attributed
+before it counts. The script takes engine, shim and toy as separate overrides now, and
+the real red has the five creators failing while `dprintf` and `tmpfile` stay green,
+which is what says the red belongs to the replacements.
+
+**Contract v12 → v13, and what it costs.** No new op class and no new `unknown_reason`
+— the attempts record as `.open` and `.mkdir`, already classified by both observers — so
+the closed set stays at thirty-four and `docs/contract-freeze.md` is untouched. The
+version moves because the account of an unchanged target moves. **Every saved case from
+v12 now replays as `case_no_longer_applies`.** That cost is not paid for here; migrating
+saved cases across a bump is `#279`, open, in another batch, and this change adds one
+more bump to the population that issue is about.
+
+ADR 0036 replaces PR #38's trigger. First contact was a proxy for "someone has looked at
+what this function actually does", and the proxy stopped tracking the thing: `mkstemp`
+was measured on 2026-08-22 and still not taken, because a toy is not a real target. The
+trigger is a property now — the reimplementation is proven against the oracle on a
+committed toy, and the check has been seen red without it — which is what the proxy was
+standing in for all along.
+
 ## 2026-08-31 (fifth) - route B is declined on what it costs, not on what it proved, and the arithmetic is now a command
 
 `#293` asked whether FSEvents can act as a veto — an independent witness catching a

@@ -52,20 +52,30 @@ int main(void) {
     return 0;
 }
 EOF
-cat > "$WORK/mkstemp_toy.c" <<'EOF'
-/* The creation happens inside libc, past the PLT, so the shim never sees it —
- * measured on macOS, spike/fsusage/RESULTS-mkstemp.md. The write IS visible, so the
- * two accounts differ by exactly the creation. */
+cat > "$WORK/dprintf_toy.c" <<'EOF'
+/* The WRITE happens inside libc, past the PLT, so the shim never sees it. The open IS
+ * visible, because the program issues it, so the two accounts differ by exactly the
+ * write — which is what makes this a divergence the oracle catches and not a run with
+ * nothing recorded at all.
+ *
+ * This used to be a `mkstemp` toy, and the creation was the invisible half. #39 closed
+ * that: `mkstemp` is reimplemented in the shim as of contract v13, so this check's
+ * negative control had to move to a member of the same class that is STILL a wall.
+ * `dprintf` is one by decision — glibc splits a large write at 8192 bytes, so a
+ * replacement writing once would delete a crash point the real program has — and
+ * `spike/libc-internal/RESULTS.md` carries the measurement. If a later change takes
+ * `dprintf` too, this control has to move again rather than be deleted: a check that
+ * pins "the oracle catches what the shim missed" needs something the shim misses. */
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 int main(void) {
     const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
-    char t[1024]; snprintf(t, sizeof(t), "%s/tmp-XXXXXX", d);
-    int fd = mkstemp(t);
-    if (fd < 0) { perror("mkstemp"); return 1; }
-    if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
+    char t[1024]; snprintf(t, sizeof(t), "%s/log.txt", d);
+    int fd = open(t, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0) { perror("open"); return 1; }
+    if (dprintf(fd, "ok %d\n", 1) < 0) { perror("dprintf"); return 1; }
     if (close(fd) != 0) { perror("close"); return 1; }
     return 0;
 }
@@ -79,7 +89,7 @@ EOF
 # spellings, which is why this can hand it `PROBE_STATE` unchanged.
 cp "$HERE/spike/toys/toy_rawchild.c" "$WORK/rawchild_toy.c" ||
     fail "the tracked #405 fixture is missing: spike/toys/toy_rawchild.c"
-for t in libc_toy mkstemp_toy rawchild_toy; do
+for t in libc_toy dprintf_toy rawchild_toy; do
     "$CC" -O0 -o "$WORK/$t" "$WORK/$t.c" 2>/dev/null || fail "could not build $t"
 done
 
@@ -181,7 +191,7 @@ echo "  PASS"
 echo "=================================================================="
 echo "Check 2 — the oracle catches what the shim missed, in this run"
 echo "  predicate: exit 2 AND oracle_verified false AND a divergence reason"
-rc2=$(run c2 mkstemp_toy --oracle-fs-usage)
+rc2=$(run c2 dprintf_toy --oracle-fs-usage)
 echo "  exit=$rc2 reason=$(field c2 unknown_reason) oracle_verified=$(field c2 oracle_verified)"
 [ "$rc2" = "2" ] || { sed -n '1,12p' "$WORK/c2.txt"; fail "check 2: expected exit 2"; }
 case "$(field c2 unknown_reason)" in
