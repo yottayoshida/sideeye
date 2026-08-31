@@ -1,13 +1,28 @@
 #!/bin/sh
-# Launch the onboarding-clock driver against a running box (PROTOCOL.md).
-# One run per run directory; a second attempt needs a fresh name.
+# Launch the onboarding-clock driver against a box it builds and creates itself
+# (PROTOCOL.md). One run per run directory; a second attempt needs a fresh name.
 #
-#   docker build -f spike/onboarding-clock/Dockerfile -t sideeye-onboarding .
-#   docker run -d --rm --network=none --name onboarding-box sideeye-onboarding
-#   sh spike/onboarding-clock/run-clock.sh run2      # the next unused name
+#   sh spike/onboarding-clock/run-clock.sh run3      # the next unused name
+#
+# That is the whole operator procedure now. It used to be three commands, with
+# the first two typed by hand — and run 2 was taken against a box a `docker run`
+# had failed to replace, because a hand-typed step that fails is outside this
+# script's `set -e` (#383). Both steps moved in: the image is built here and the
+# container is created by `box.sh`, which refuses to inherit one.
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+# The box name is not the operator's to choose. `box.sh` reads BOX_NAME so a
+# test can drive the lifecycle without touching a real run's box, and CI sets
+# it — but this script hard-codes `onboarding-box` in the allow-set it hands
+# the CLI and in the version read below, and `prompt.md` and the audit's box
+# predicate do the same. Inherited from the environment it would send `box.sh`
+# to build a different container, write a `box` block certifying that one as
+# fresh, and leave the run itself on whatever still holds the real name — with
+# the preflight that used to check it now living inside `box.sh`, which is
+# looking elsewhere. That is #383 again, wearing this PR's evidence.
+unset BOX_NAME
 RUN=${1:?usage: run-clock.sh <run name; the next unused one, e.g. run2>}
 RESULTS="$SCRIPT_DIR/runs/$RUN"
 
@@ -48,11 +63,61 @@ command -v claude >/dev/null || { echo "claude CLI not found" >&2; exit 1; }
 python3 "$SCRIPT_DIR/clock-audit.py" --selftest >/dev/null \
     || { echo "clock-audit.py --selftest failed; fix the instrument before running" >&2; exit 1; }
 
-# The box's isolation is checked before the run, not assumed after it.
-[ "$(docker inspect -f '{{.State.Running}}' onboarding-box 2>/dev/null)" = "true" ] \
-    || { echo "onboarding-box is not running" >&2; exit 1; }
-[ "$(docker inspect -f '{{.HostConfig.NetworkMode}}' onboarding-box)" = "none" ] \
-    || { echo "onboarding-box is not network-off; the protocol requires --network=none" >&2; exit 1; }
+# Canary: safe mode must authenticate before the run burns the box. This sits
+# ahead of the build and the box because the launcher now creates them: a
+# failed canary used to leave the operator's hand-made box and cost a retry,
+# and would now leave one this script refuses to launch over, so the sentence
+# above became load-bearing rather than descriptive.
+# Canary: safe mode must authenticate before the run burns the box.
+canary_out=$(claude --safe-mode -p "Reply with exactly: ok" < /dev/null 2>"$RESULTS/canary-stderr.log") \
+    || { echo "canary failed — see $RESULTS/canary-stderr.log" >&2; exit 1; }
+case "$canary_out" in
+    *ok*) echo "canary: safe mode authenticates" ;;
+    *) echo "canary returned unexpected output: $canary_out" >&2; exit 1 ;;
+esac
+
+REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
+
+# The image, from the Dockerfile beside this protocol — which is what
+# PROTOCOL.md's "The fresh machine" names, so an image inherited from whatever
+# the tag happens to point at is the same defect as an inherited box, one line
+# up. A cached rebuild costs under a second and reaches the network for nothing
+# (measured). What this fixes is provenance, not content identity: the
+# Dockerfile does not pin jrnl or the apt set, deliberately, so two builds of
+# the same file are not byte-identical. `dockerfile_sha256` below records the
+# file; `target_version` records what came out.
+#
+# `-q` prints only the image id, and passing that id rather than the tag means
+# the container runs the image this line built, not whatever the tag names by
+# the time the next line runs. The shape is asserted because `set -u` does not
+# fire on an empty capture and a bare `IMAGE=$(...)` that produced nothing would
+# reach `docker run` as a missing argument.
+IMAGE=$(docker build -q -f "$SCRIPT_DIR/Dockerfile" -t sideeye-onboarding "$REPO_ROOT")
+case "$IMAGE" in
+    sha256:*) ;;
+    *) echo "docker build -q did not return an image id: [$IMAGE]" >&2; exit 1 ;;
+esac
+DOCKERFILE_SHA=$(shasum -a 256 "$SCRIPT_DIR/Dockerfile" | cut -d' ' -f1)
+# The document this criterion measures. `Dockerfile` copies it out of the build
+# context — the working tree, at whatever commit and cleanliness it is in — and
+# PROTOCOL.md promises the box holds "the repository's front page at the
+# measured commit, verbatim". Run 2 established that by comparing sha256 after
+# the fact; recording it here is what lets a later reader do the same without
+# the box.
+README_SHA=$(shasum -a 256 "$REPO_ROOT/README.md" | cut -d' ' -f1)
+
+# The box. `box.sh` refuses when a container of that name already exists — in
+# any state — so this run cannot inherit one, and its isolation checks (running,
+# network-off) live there now, applied to the container it just made.
+BOX=$(sh "$SCRIPT_DIR/box.sh" "$IMAGE")
+# Shape-checked for the reason the image id is, and against a worse failure: a
+# truncated record is refused by the audit, which runs after the driver has
+# already spent the box, so a run that actually happened would write neither
+# meta.json nor timeline.tsv.
+case "$BOX" in
+    container_id=*) ;;
+    *) echo "box.sh did not return a container record: [$BOX]" >&2; exit 1 ;;
+esac
 
 CLI_VERSION=$(claude --version 2>&1 | head -1)
 
@@ -62,14 +127,6 @@ CLI_VERSION=$(claude --version 2>&1 | head -1)
 # tail command's exit code and turn a dead box into an empty string.
 TARGET_VERSION=$(docker exec onboarding-box jrnl --version 2>&1) \
     || { echo "could not read the target's version from the box" >&2; exit 1; }
-
-# Canary: safe mode must authenticate before the run burns the box.
-canary_out=$(claude --safe-mode -p "Reply with exactly: ok" < /dev/null 2>"$RESULTS/canary-stderr.log") \
-    || { echo "canary failed — see $RESULTS/canary-stderr.log" >&2; exit 1; }
-case "$canary_out" in
-    *ok*) echo "canary: safe mode authenticates" ;;
-    *) echo "canary returned unexpected output: $canary_out" >&2; exit 1 ;;
-esac
 
 PROMPT="$SCRIPT_DIR/prompt.md"
 PROMPT_SHA=$(shasum -a 256 "$PROMPT" | cut -d' ' -f1)
@@ -120,7 +177,6 @@ else
     rm -rf -- "$WORKDIR"
 fi
 
-REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 # The audit exits non-zero when it voids the run or cannot audit it. Its status
 # is captured rather than allowed to abort the script, so the reading
 # instructions below still print — a voided run is exactly the one whose
@@ -137,6 +193,9 @@ python3 "$SCRIPT_DIR/clock-audit.py" \
     --allowed "$ALLOWED" \
     --disallowed "$DISALLOWED" \
     --launch-started-at "$LAUNCH_STARTED_AT" \
+    --box "$BOX
+dockerfile_sha256=$DOCKERFILE_SHA
+readme_sha256=$README_SHA" \
     || audit_rc=$?
 
 echo ""

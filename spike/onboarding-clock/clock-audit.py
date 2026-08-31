@@ -88,7 +88,7 @@ from pathlib import Path
 # not the one that run's committed meta.json carries. run 1 predates the field
 # entirely: its meta.json has no protocol_version and its timeline is the older
 # one-row-per-event projection. The amendment names it.
-PROTOCOL_VERSION = "2026-08-28"
+PROTOCOL_VERSION = "2026-08-31"
 
 # Keys whose value IS a filesystem path in this CLI's tools. A repo root here
 # is a path the call points at, which is as far as the evidence goes: Write and
@@ -182,6 +182,37 @@ def tool_names(spec):
         if entry:
             names.add(entry.split("(", 1)[0].strip())
     return names
+
+
+BOX_KEYS = ("container_id", "image_id", "created",
+            "dockerfile_sha256", "readme_sha256")
+
+
+def parse_box(spec):
+    """The launcher's `key=value` record of the container it created.
+
+    Fails closed, the way `parse_policy` does and for the same reason: this
+    block is the only place a reader can check that a run was taken on a box
+    the launcher made, so a partial record is worse than a refusal — it reads
+    as evidence while omitting the field that would have contradicted it. All
+    four keys are required and nothing else is accepted, so a launcher that
+    starts emitting a fifth field has to come here and say what it means.
+    """
+    box = {}
+    for line in (spec or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        key, sep, value = line.partition("=")
+        if not sep or key not in BOX_KEYS:
+            raise ValueError(f"unreadable line in --box: {line!r}")
+        if key in box:
+            raise ValueError(f"--box repeats {key}")
+        box[key] = value
+    missing = [k for k in BOX_KEYS if k not in box or not box[k]]
+    if missing:
+        raise ValueError("--box is missing " + ", ".join(missing))
+    return box
 
 
 def parse_policy(allowed_spec, disallowed_spec):
@@ -473,6 +504,20 @@ def extract(events, repo_root, policy, run_meta):
         "num_turns": result.get("num_turns"),
         "duration_ms": result.get("duration_ms"),
         "launch_started_at": run_meta.get("launch_started_at"),
+        # The container this run was taken on, as the launcher created it.
+        # Before #383 nothing here named the machine, so "this run measured a
+        # fresh box" was checkable only from the terminal the launch happened
+        # in — which is how run 2's stale box was found, three hours later, by a
+        # human reading a failed `docker run`. `dockerfile_sha256` is here and
+        # `image_id` is not enough on its own: a fully cached rebuild exports a
+        # new image id with identical contents (RESULTS.md measured that), so
+        # the id cannot say two runs came from the same Dockerfile and the sha
+        # of the file the protocol names can. `readme_sha256` is here for the
+        # same reason one level in: the Dockerfile copies README.md out of the
+        # build context — the working tree, at whatever commit and cleanliness
+        # it happens to be in — and the README is the document this criterion
+        # measures. Run 2 established that by hand after the fact.
+        "box": run_meta.get("box"),
         "clock_start": first_ts,
         # What the audit actually looked at. A verdict of "clean" over zero
         # examined calls and one over four hundred read identically without
@@ -740,6 +785,41 @@ def selftest():
         and _refuses(lambda: parse_policy("   ,  ", SELFTEST_DISALLOWED)))
     add("check 2d: the reader counts a line it cannot parse", _reader_counts_rejects())
 
+    # The box record fails closed, like the policy above. A partial record is
+    # the dangerous shape, not an absent one: it reads as evidence that a run
+    # was taken on a box the launcher made while omitting the field that would
+    # have said otherwise. These measure `parse_box` only — whether `--box`
+    # reaches `meta.json` is not visible from here, because `--selftest` returns
+    # before `main()` touches its arguments, and the CI step that drives the
+    # real entry point is where that is asserted.
+    _good = ("container_id=c\nimage_id=sha256:i\ncreated=T\n"
+             "dockerfile_sha256=d\nreadme_sha256=r")
+    add("check 2f: a complete box record parses to all of its fields",
+        parse_box(_good) == {"container_id": "c", "image_id": "sha256:i",
+                             "created": "T", "dockerfile_sha256": "d",
+                             "readme_sha256": "r"})
+    # The line is deleted, not renamed. Renaming it to an unknown key would be
+    # refused for being unknown, and this check would pass while saying nothing
+    # about missing fields — a mutation killed by the wrong assertion.
+    def _without(k):
+        return "\n".join(ln for ln in _good.splitlines()
+                         if not ln.startswith(k + "="))
+    add("check 2g: a box record missing any one field is refused",
+        all(_refuses(lambda s=_without(k): parse_box(s)) for k in BOX_KEYS))
+    add("check 2h: an empty value is missing, not present",
+        _refuses(lambda: parse_box(_good.replace("container_id=c", "container_id="))))
+    add("check 2i: an unknown key and a repeated key are both refused",
+        _refuses(lambda: parse_box(_good + "\nsurprise=1"))
+        and _refuses(lambda: parse_box(_good + "\ncreated=T2")))
+    add("check 2j: no record at all is refused",
+        _refuses(lambda: parse_box("")) and _refuses(lambda: parse_box(None)))
+    # The launcher writes flush-left and CI's YAML block scalar strips its
+    # indentation, so no shipped call site exercises the trim. Review measured
+    # that deleting it left the selftest green; this input makes it a tested
+    # line rather than a hopeful one.
+    add("check 2k: an indented record parses the same as a flush-left one",
+        parse_box("  " + _good.replace("\n", "\n\t")) == parse_box(_good))
+
     # An unread line hides whatever calls it carried. Counting it and then
     # reporting the readable remainder clean is what review reproduced: a Monitor
     # call on a broken line vanished while a legitimate Bash call beside it kept
@@ -886,6 +966,7 @@ def main():
         ("--allowed", "the --allowedTools string handed to the CLI, verbatim"),
         ("--disallowed", "the --disallowedTools string handed to the CLI, verbatim"),
         ("--launch-started-at", "UTC stamp taken one line before the driver exec"),
+        ("--box", "key=value lines naming the container the launcher created"),
     ):
         ap.add_argument(flag, help=helptext)
     args = ap.parse_args()
@@ -894,9 +975,12 @@ def main():
         selftest()
         return
 
+    # `--box` is required, so a launcher that stopped passing it fails loudly
+    # here instead of publishing a run whose evidence says nothing about the box
+    # it was taken on — which is the state every run before #383 shipped in.
     missing = [f for f in ("transcript", "outdir", "cli_version", "prompt_sha",
                            "agent_rc", "repo_root", "target_version", "allowed",
-                           "disallowed", "launch_started_at")
+                           "disallowed", "launch_started_at", "box")
                if getattr(args, f) is None]
     if missing:
         ap.error("missing required argument(s): "
@@ -906,6 +990,10 @@ def main():
         policy = parse_policy(args.allowed, args.disallowed)
     except ValueError as e:
         sys.exit(f"cannot read the declared policy: {e}")
+    try:
+        box = parse_box(args.box)
+    except ValueError as e:
+        sys.exit(f"cannot read the box record: {e}")
 
     outdir = args.outdir
     events, scan = read_transcript(args.transcript)
@@ -915,6 +1003,7 @@ def main():
         "agent_rc": args.agent_rc,
         "target_version": args.target_version,
         "launch_started_at": args.launch_started_at,
+        "box": box,
     }
     run_meta.update(scan)
 
