@@ -173,6 +173,19 @@ jobs:
       - name: Sealed campaigns are internally consistent
         run: sh spike/check-sealed-campaigns.sh
 
+      # The positive control under the cohort-4 himalaya record is what licenses reading
+      # runs 2-6 there, and until now nothing ran it: PRD.md said so in as many words
+      # ("Nothing in CI runs either leg"). The sentence the records quote was therefore
+      # supplied by memory, and it lost a normalisation on the way — three became two in
+      # two documents (#318). The script needs no container; the two transcripts it
+      # compares are committed.
+      #
+      - name: The positive control's red proofs still go red (#318)
+        run: sh spike/cohort4/himalaya-r2/upstream-fix/verify-positive-control.sh --selftest
+
+      - name: The positive control reproduces the committed transcript (#318)
+        run: sh spike/cohort4/himalaya-r2/upstream-fix/verify-positive-control.sh
+
   macos:
     runs-on: macos-latest
     steps:

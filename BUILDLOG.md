@@ -2,6 +2,85 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-31 (third) - the sentence about the normalisation was wrong in three places, and the normaliser was wrong too
+
+`#318` filed two committed sentences that claim run 1 reproduces the committed
+transcript without carrying the normalisation the measurement performs. The sweep it
+asked for found a third, and the review of the plan found a fourth in the one place
+that was supposed to be the authority.
+
+**The comparator did not do what its own header says.** `verify-positive-control.sh`
+opens with "Three things are normalised, and only three" and then removes them with
+`grep -v '^###'` — every line beginning `###`, wherever it sits. Measured on the two
+committed inputs: `replay-stock.txt` carries exactly three such lines, at positions 1-3
+(`### target:`, `### binary:`, a bare `###`), printed by `run-replay.sh:26-28`;
+`run1/replay-transcript.txt` carries none. So the current inputs make the two readings
+agree, and nothing would notice a fourth `###` line appearing later in either file — it
+would be deleted from both sides and the diff would stay empty. The removal is now
+positional and guarded: the three lines are asserted at the top of the driver-produced
+side, asserted absent from the original, and removed by position, so a `###` line
+anywhere else survives into the diff as the difference it is.
+
+**The sweep's denominator is comparators, not phrases.** Grepping prose for "empty
+diff" misses this record's own README, which says "The diff is empty"; grepping for
+every equality claim in the repository returns 207 lines, nearly all of them correct
+(a claim of byte-identity backed by a byte comparison is not this class). What makes
+the class is a comparison that transforms before it compares, so the population was
+built from those: **two** in the tracked tree — `norm()` here and `norm_trace()` in
+`spike/acceptance.sh` (pid renaming, check 3b) — against the paragraphs that publish
+one of their results. `campaign-driver.sh`'s `canon_out()` and the two
+`cleanup_tmp()` helpers match a naive search and are not comparators;
+`render-audit.sh --check` compares extracted blocks byte for byte and scopes its
+sentence to the block, which is the correct form rather than an instance.
+
+Across tracked `*.md` and `*.sh`, fourteen paragraphs publish one of those two
+comparators' results. Ten name every normalised thing. Four do not, and one of those
+four is a real instance: this journal's entry of **2026-08-23**, which says the diff is
+empty "once the minted filename and the per-run work path are normalised" — two of
+three, the same miscount as the README. The other three are the regex reaching past its
+subject: two paragraphs of this entry, which discuss the class rather than claim
+anything, and `check-upstream-ledger.sh`'s account of a `comm` that produced "two empty
+difference lists", which is a different comparison entirely.
+
+So **two prose defects are fixed here** — `upstream-fix/README.md`'s positive-control
+paragraph and `PRD.md`'s criterion-1 trail sentence — and **one is left as written**.
+Entries in this file stand as they were written; the 2026-08-25 entry already records
+the correction, two screens above the entry that needs it. (Line numbers are not quoted
+for either: this entry moved both of them by forty-odd lines the moment it was added,
+which is its own small demonstration of why a record should not cite its own file by
+position.)
+
+**The fourth instance is the one no prose scan finds.** The script's header sentence was
+already right — it says three, and names them — and the implementation under it was not.
+A sweep over claims cannot see a claim whose author kept their word in the sentence and
+broke it in the code; only running the predicate against its own statement does that,
+which is what the second red proof below now does on every pull request.
+
+**And the claim is now executed rather than asserted.** `PRD.md`'s criterion-1 trail
+said "Nothing in CI runs either leg" while the script existed and printed the sentence
+the records quote; what supplied the sentence to those records was memory, which is
+where three became two. The Linux job runs it on every pull request now, preceded by
+`--selftest` and **two** red proofs rather than one.
+
+The first draft carried only the judgment-line mutation, and review pointed out that the
+old `grep -v '^###'` normaliser catches that mutation too — so the leg would have been
+green with the guarantee this change adds entirely absent. The second proof appends a
+later `###` line, which the old normaliser deleted from both sides while reporting an
+empty diff. That is the axis this repository states for every new guard: falsify the
+guard's own predicate, not the accident that motivated it.
+
+**And both proofs were written into `ci.yml` before they were written into the script.**
+Every other check here keeps its own red proof behind `--selftest`
+(`check-adr-status.sh`, `check-adr-numbering.sh`, `check-upstream-ledger.sh`,
+`check-fsusage-coverage.py`) and this one had no reason to be the exception. The tell
+was needing a Python one-liner to lift the `run:` block out of the YAML in order to
+execute it: a proof that only exists inside a CI step is one nobody runs while changing
+the thing it proves. It is `verify-positive-control.sh --selftest` now, the workflow
+step is one line, and an unrecognised argument is refused rather than ignored. Both
+proofs require exit 1 and
+the `FAIL` word rather than a non-zero exit — exit 2 is this script's BROKEN, and a
+check that accepts it reads a jammed instrument as a detection.
+
 ## 2026-08-31 - the spread that made a rate look impossible came from an apparatus that no longer exists
 
 `#293` asks whether FSEvents can veto a mutation the shim never reported, and

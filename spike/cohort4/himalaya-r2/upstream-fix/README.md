@@ -94,8 +94,13 @@ does nothing: "the target folder holds 0 entries, want exactly 1".
 
 Run 1 is the positive control and it is why the rest can be read: it reproduces
 the committed transcript. Not field for field by eye — **diffed**, after
-normalising the two things that cannot be equal across runs, the minted filename
-and the per-run work path. The diff is empty. That covers the verdict, both
+normalising three things and only three, which is what
+`verify-positive-control.sh` declares and performs: the two that cannot be equal
+across runs, the minted filename and the per-run work path, and one that is an
+artifact of how this record was produced rather than a field at all — the
+driver's own three-line header block, which `run-replay.sh` prints at the top of
+its output and the committed original does not carry. The diff is empty. That
+covers the verdict, both
 crash-point classes, leg D's wording including "0 bytes on disk against 307 in
 the source", `oracle: agreed on 2 operations (139 syscall lines examined, 30 in
 scope of the judged state)`, the eight paths judged and the one excluded fchmod.
