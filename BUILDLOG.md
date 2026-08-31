@@ -2,6 +2,106 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-08-31 (fourth) - dyld interposes what dlsym hands back, and the generated interposer is declined on cost rather than refuted
+
+`#299` proposes generating the macOS interposer from libSystem's export table, so that
+"exported and touching a path or descriptor, but not wrapped" becomes a mechanical diff
+assertable empty in CI, and it asks for three measurements before any design. `#428`
+answered part of the second — the size of the surface, not its cost. This closes the
+ticket with the first taken and the rest declined by the owner — **declined, not
+refuted**, and the difference is what this entry is mostly about.
+
+**The measurement.** `shim/src/macos.zig` rests on one sentence — dyld "rewrites calls
+that cross image boundaries" — and three edges follow from it. Two were already
+measured: a target calling libc directly is reached, and libSystem calling its own
+exports internally is not (ADR 0005; `RESULTS-mkstemp.md` re-measured that on macOS on
+2026-08-29, two operations against one). The third — a target that resolves a symbol at
+runtime and calls through the pointer — had no measurement in this repository. It does
+now, and **the answer is that interposition reaches it.**
+
+`spike/toys/toy_reach.c` runs the same two state-changing calls, `mkdir` and `open`, in
+five modes that differ only in how they are resolved — the image's own binding,
+`RTLD_DEFAULT`, `RTLD_NEXT`, a handle on the libSystem umbrella and a handle on the
+defining image — with the `write` and the `close` issued directly in every one as the
+in-run positive control. **All five
+report 3 state-changing operations, and `dladdr` puts every resolved pointer inside
+`libsideeye_shim.dylib`**; unshimmed, every one resolves into `libsystem_kernel.dylib`.
+Two calls rather than one because `open` is variadic and `mkdir` is not, and on arm64
+those conventions place arguments differently — a difference in only one of them would
+be about this toy's calling convention rather than about dyld.
+
+**It started as two modes and two review rounds made it five.** The first version measured
+`RTLD_DEFAULT` alone while three shipped sentences said "resolved with dlsym" without
+naming a form. The record disclaimed the wider scope in its own scope note, which meant
+a reader following the citation would find less than the sentence that sent them there.
+
+**And review broke the guard with one line.** A mutant that forced the direct path in a
+run still *invoked* as `dlsym` passed every assertion the leg had. The first fix — print
+the resolution form from inside the branch that resolved — did not work either: the
+mutant replaced the two resolution lines and left the label beside them untouched.
+The third attempt was to stop trying. **Once the answer is yes, every form returns the
+same pointer, so the arms are observationally identical by construction — which is the
+finding, not a defect in the instrument.** What is assertable is a pair, and that is
+what the leg asserts now: the two calls resolve into the shim, while `getpid` — not
+wrapped by the shim — resolves into `libsystem_kernel.dylib` in the same run. **That
+control is matched on the reporter, not on the mode**: `getpid` is always looked up with
+`RTLD_DEFAULT`, because what it holds fixed is `image_of`, which does not know how the
+pointer it was handed came to be. R2 caught the first wording claiming a matched control
+it did not have — the finding-2 shape recurring inside the finding-1 fix. A reporter that
+stopped reading names the shim for all three and fails; falsified by making `image_of`
+return a constant.
+
+**Two things about the instrument.** The image name is reported rather than the
+addresses: two pointers being equal says they are the same function, not which one, and
+ASLR makes the number unquotable. And the findings print to **stderr**, because
+`preflight` relays the operation's stderr into its own output and does not relay its
+stdout — measured by moving the lines from one to the other and watching them vanish.
+Both halves of this measurement have to land in the same transcript or they are two
+measurements of two things.
+
+**The refutation I had written first was wrong twice, and review broke both halves.**
+The plan for this change argued that the generator could not be built because its input
+does not exist: `dyld_info -exports` prints names without types, and the SDK has no
+declaration for the `guarded_*` family that motivated `#428`. Both are false as stated.
+The SDK ships `Kernel.framework/Headers/sys/sysproto.h`, which carries
+`struct guarded_open_np_args` with `path`, `guard`, `guardflags`, `flags` and `mode`
+typed and named — I had searched `usr/include` and concluded the SDK. And the second
+argument, that no amount of export coverage records `mkstemp`'s internal `open`, does
+not survive contact either: `mkstemp` **is** a libSystem export, so a generator covering
+file-touching exports would wrap it and record the creation at that boundary. What the
+mkstemp measurement shows is that wrapping `open` does not see the internal call, which
+is a different sentence.
+
+A third number was wrong in the same draft: the export count. `dyld_info -exports` on
+`libsystem_kernel.dylib` was read with a naive second-column extraction that counted the
+architecture headings, giving 1548. Per architecture and counting only underscore-led
+symbols it is **1534 (x86_64), 1533 (arm64), 1533 (arm64e)** — and none of those is the
+**1502** `check-macos-coverage.py` prints two paragraphs later in the same record. That
+one is a filter, not a disagreement: the checker matches `_(\w+)$`, which cannot match a
+`$NOCANCEL` suffix, and there are 31 of those on arm64. 1533 − 31 = 1502. Two commands,
+two definitions, and the record now reconciles them rather than leaving a reader to.
+
+**The mkstemp correction needed a qualification too.** `mkstemp` is an export — but of
+`libsystem_c.dylib`, not of `libsystem_kernel.dylib`, which is the only table this
+repository's tooling parses and the one those counts come from. So "a generator covering
+file-touching exports would wrap it" is true of a generator reading the re-export
+closure and not of one built on the table already in use here. `libSystem.B` is an
+umbrella and exports three symbols of its own.
+
+**So the ticket closes on a decision, not on a proof.** The generator is not shown to be
+impossible; the two remaining measurements it asks for — the runtime cost of wrapping a
+much larger set, and a static `svc` scan's false-positive rate on real targets — are
+declined, because both only pay off if the design is taken and neither is cheap. That
+sentence is what the ADR carries, and `#299` is closed as not planned rather than as
+answered.
+
+**What the coverage checks say now.** Both `check-macos-coverage.py` and
+`check-fsusage-coverage.py` gain a line in the section each already keeps for what a
+green run does not mean. The line does not narrow their claim, which is what this change
+expected to do before the measurement came back: `dlsym`-resolved calls are reached, so
+that is not a hole. What it names instead is the edge that is one — a call libSystem
+makes to its own export, which no wrapper set can see and which `#39` tracks.
+
 ## 2026-08-31 (third) - the sentence about the normalisation was wrong in three places, and the normaliser was wrong too
 
 `#318` filed two committed sentences that claim run 1 reproduces the committed

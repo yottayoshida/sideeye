@@ -559,6 +559,104 @@ jobs:
             exit 1; }
           [ "$rc" = "0" ] || { echo "expected PASS (exit 0), got $rc"; exit 1; }
 
+      # Interposition reaches a call the target resolved at runtime (#299, ADR 0034).
+      #
+      # This pins a fact about dyld, not about this repository: a symbol looked up at
+      # runtime comes back interposed, so a target that resolves its calls that way is
+      # recorded like any other. The coverage checks' limits sections say so, and a
+      # platform change that stopped it would otherwise leave those sentences quietly
+      # false — the class of failure this repository keeps finding.
+      #
+      # Five forms because the sentences it feeds do not name one: the image's own
+      # binding, RTLD_DEFAULT, RTLD_NEXT, a handle on the libSystem umbrella (what a
+      # program writes; it re-exports rather than defines these symbols), and a handle on
+      # the defining image — the last being the form that could plausibly differ, since
+      # it names where the symbol actually comes from. Two calls in each because `open`
+      # is variadic and `mkdir` is not and arm64 places their arguments differently; the
+      # created file's mode is the readable consequence of that marshalling going right.
+      #
+      # This is the only leg in this job whose scratch tree comes from `mktemp -d`, which
+      # on macOS lands under /var/folders — behind the /var -> /private/var symlink, a
+      # path shape the engine's F_GETPATH accounting is not otherwise exercised on here.
+      # Run that way deliberately, and green.
+      #
+      # What this leg CANNOT do, said here so nobody reads it as wider: it cannot tell
+      # that a mode took the branch its name says. Review demonstrated that with a
+      # one-line mutant forcing the direct path in a run invoked as `dlsym`, and no
+      # assertion caught it — because under interposition every form returns the same
+      # pointer, which is the result being recorded. The arms are indistinguishable once
+      # the answer is yes. What is assertable is the pair: a runtime lookup resolves into
+      # the shim, and `getpid` — which the shim does not wrap — does not, in the same
+      # run. A reporter that had stopped reading anything fails the second half.
+      - name: Interposition reaches what a runtime lookup hands back (#299)
+        run: |
+          set -eu
+          w=$(mktemp -d)
+          trap 'rm -rf "$w"' EXIT
+          zig cc -Wall -Wextra -o "$w/toy-reach" spike/toys/toy_reach.c
+
+          modes="direct default next handle defining"
+          via_for() {
+            case $1 in
+              direct)   echo bound ;;
+              default)  echo RTLD_DEFAULT ;;
+              next)     echo RTLD_NEXT ;;
+              handle)   echo handle ;;
+              defining) echo defining ;;
+            esac
+          }
+
+          # Unshimmed first: every mode must do the same thing, or the runs below differ
+          # for a reason that has nothing to do with interposition.
+          for m in $modes; do
+            mkdir -p "$w/plain-$m"
+            # Not piped into sed: a pipeline's status is the last command's, so the toy
+            # could exit non-zero and the loop would not notice. Same defect the shimmed
+            # loop below was fixed for; this one was left behind the first time.
+            set +e
+            plain=$("$w/toy-reach" "$m" "$w/plain-$m/x" 2>&1); prc=$?
+            set -e
+            printf '%s\n' "$plain" | sed "s/^/  plain-$m | /"
+            [ "$prc" = 0 ] || { echo "$m: the unshimmed run exited $prc"; exit 1; }
+            [ -d "$w/plain-$m/x-dir" ] && [ -f "$w/plain-$m/x-file" ] || {
+              echo "$m: the unshimmed run did not create both entries"; exit 1; }
+          done
+
+          for m in $modes; do
+            mkdir -p "$w/state-$m"
+            set +e
+            out=$(./zig-out/bin/sideeye preflight \
+              --state "$w/state-$m" \
+              --operation "$w/toy-reach $m $w/state-$m/p" \
+              --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" 2>&1)
+            rc=$?
+            set -e
+            printf '%s\n' "$out" | sed "s/^/  $m | /"
+            [ "$rc" = 0 ] || { echo "$m: preflight exited $rc"; exit 1; }
+
+            want=$(via_for "$m")
+            printf '%s\n' "$out" | grep -q "^resolved_via: $want$" || {
+              echo "$m: the run labelled itself $want-not — the mode argument did not reach"
+              echo "    the label. This does NOT mean a branch was skipped; see the note above."
+              exit 1; }
+            printf '%s\n' "$out" | grep -q '3 state-changing operation(s) observed' || {
+              echo "$m: wanted 3 state-changing operations"; exit 1; }
+            for sym in open mkdir; do
+              printf '%s\n' "$out" | grep -q "^symbol=$sym used_in=libsideeye_shim.dylib$" || {
+                echo "$m: $sym did not resolve into the shim — ADR 0034 rests on it doing so"
+                exit 1; }
+            done
+            printf '%s\n' "$out" | grep -q '^symbol=getpid used_in=libsystem_kernel.dylib$' || {
+              echo "$m: the negative control moved — a reporter that names the shim for a"
+              echo "    symbol the shim does not wrap is not reading the resolution"
+              exit 1; }
+            mode=$(stat -f %Lp "$w/state-$m/p-file")
+            [ "$mode" = 600 ] || {
+              echo "$m: the created file is $mode, not 600 — the arguments did not arrive as written"
+              exit 1; }
+          done
+          echo "ok   five resolution forms, each recording 3 operations into the shim"
+
       # The clone family is counted, the swap family refuses, and both are scope-
       # gated (#333, trace contract v12). Six legs over one toy, each asserting the
       # discriminating number rather than "a verdict was reached" — PASS is a verdict
