@@ -29,6 +29,15 @@ What this does NOT do, so nobody reads a green run as wider than it is:
     copyfile-DATA pin).
   - The runner's OS lags releases, so an Apple-side change reaches this check when
     the runners reach that OS, not when users do.
+  - Being interposed is not the same as being reached. Three edges follow from
+    dyld's "calls that cross image boundaries", and two of them are reached: a
+    target calling libc directly, and a target calling through a pointer it
+    resolved at runtime (RTLD_DEFAULT, RTLD_NEXT and a dlopen handle all
+    measured — spike/generated-interposer/RESULTS.md, pinned by the toy_reach CI
+    leg). The third is not: a call libSystem makes to its OWN export crosses no
+    image boundary, so no wrapper set sees it, generated or curated. That is
+    #39's class and this check cannot see it either. On macOS what does see it
+    is --oracle-fs-usage (ADR 0031).
 
 Fail-closed discipline (the "never read a 2 as a pass" rule): dyld_info's textual
 output is not a stable API. This script exits 2 (BROKEN) when the export parse

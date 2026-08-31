@@ -49,6 +49,16 @@ comparison. This check narrows the shim's blind spot to the oracle's, and the or
 blind spot stays. It also runs at build time only — it is not a runtime guard, and the
 default path (no `--oracle-fs-usage`) still rests on `--allow-unverified` for its PASSes.
 
+And "interposed" is not "reached". Dyld rewrites calls that cross image boundaries, and
+three edges follow from that. A target calling libc directly is reached. A target calling
+through a pointer it resolved at runtime is too — RTLD_DEFAULT, RTLD_NEXT and a dlopen
+handle all measured 2026-08-31 (spike/generated-interposer/RESULTS.md) and pinned by the
+toy_reach CI leg. A call libSystem makes to its OWN export is reached by no wrapper set,
+generated or curated: the name can be interposed and this check green while that
+particular call goes unrecorded. That is #39's class. The oracle does see it, because
+fs_usage reads the syscall layer and does not care how the call was resolved; this
+comparison does not, because it compares names.
+
 Usage:
   check-fsusage-coverage.py <src/fsusage.zig> <src/contract.zig> <shim/src/macos.zig>
   check-fsusage-coverage.py --selftest
