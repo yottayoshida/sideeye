@@ -2,6 +2,106 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-01 (second) - each cookbook recipe shows its checker, and a renderer keeps it honest
+
+`#276`: `docs/checker-cookbook.md` opened by promising "Everything below is a real
+committed checker … nothing was invented for this page" and then gave four pointers into
+`spike/`. Twenty-nine lines, zero code fences. A reader landed on the page with nothing to
+copy and a sealed cohort directory to spelunk. The promise was true only in the sense of
+*naming* a file.
+
+The four checkers are on the page now, and they are **generated** from the committed files
+by `spike/render-cookbook.py`, whose `check` subcommand runs from `spike/acceptance.sh`.
+Pasting them by hand would have made the page correct once: these files are edited — the
+buku one carries the history of a leg it dropped — so a hand-pasted copy only gets more
+wrong, and the page's opening sentence would go quietly false. Nothing here is a new
+mechanism; it is the third instance of a shape the repository already uses twice, in
+`count.py` (holding `docs/unknown-rate.md`) and `render-audit.sh` (holding the freeze
+audit's tables). Python rather than sh, like `count.py`, because every operation is
+exact block surgery and a command substitution eats a trailing newline invisibly.
+
+**The property is about recipes, not about the page**, and that narrowing came from
+review. The first draft said "the cookbook shows each checker it names", which the failure
+patterns section falsifies on its own: it names `spike/dogfood-todoman.sh` and
+`spike/assisted/devtodo/ops/check.sh` too. Those citations are evidence for a lesson, not
+templates to copy, so they stay pointers — and the page's own heading structure
+(`## Recipe N` against `## Failure patterns`) is where the limit comes from rather than
+from convenience.
+
+Three things the same review put in that the draft did not have. **Marker cardinality**:
+begin and end each exactly once, begin before end, region non-empty, all asserted before
+anything is compared — a duplicated BEGIN is how a naive slice compares a region nobody
+edits and stays green forever, which the freeze audit's renderer already met. **The fence
+is chosen from the source**: one backtick longer than the longest run in the file, because
+a checker containing a fence line would leave the page and a fresh render in agreement —
+check green — with the Markdown around it broken. None of today's four contains one; the
+point is that green keeps meaning "the page renders what the file holds". **And the
+adaptation line is generated too**, from the same table, rather than hand-written outside
+the markers where deleting it or attaching it to the wrong recipe would pass.
+
+The fourth is the one that would have shipped a check that could never fail.
+`spike/acceptance.sh` is `set -u`, not `set -e`; it counts into `fails` and judges at the
+end. A leg that only calls the checker cannot turn the suite red. The leg increments
+`fails`, and that `$?` reaches the message from inside the `else` branch was measured
+rather than reasoned about — this journal's previous entry is what happens when it isn't.
+
+**Review then broke the first version in the way that mattered.** It moved recipe 1's whole
+block under `## Failure patterns` and every clause above still held — cardinality,
+ordering, non-emptiness — so the comparison passed with Recipe 1 showing no checker at
+all. A block that matches its source in the wrong place leaves the promise false and the
+check green, which is the failure this check exists to prevent. Each block is bound to its
+own section now: the `## Recipe N` heading must be unique, and both markers must fall
+between it and the next heading.
+
+The same round found that "byte-exact" was the wrong word for what the comparison did.
+`read_text` folds CRLF to LF, renders the folded form, and compares its own output with
+itself — green while the page did not show the file. Two smaller ones: a repair hint that
+told the operator to `write` the default page after checking a different one, and a decode
+error that came out as rc 1 and a traceback where the leg's own comment promises 2.
+
+**Both P1 fixes were then found incomplete by the confirmation round, which is the fourth
+time in this session that a fix carried its own defect.** The section binding looked for
+the next `##` and an `#` slipped a block out of its section with the check still green.
+And the newline fix had been applied to the source read only: the page was still read
+through `Path.read_text`, so a CRLF checker rendered into the page and compared against
+its own render came back red — write and check did not round-trip. Both ends read with
+`newline=""` now, `write` writes the same way, and a heading of level 1 or 2 ends a
+section. The same round also found the section scan reading *inside* the generated blocks,
+where a checker's own `##` comment ended a section or counted as a second heading and
+turned a valid page red; headings are looked for in the page's prose only. The one
+remaining normalisation, a trailing newline added where a file lacks one so the closing
+fence gets its own line, is stated rather than glossed.
+
+Seen red before it was trusted, and every clause re-measured after the confirmation
+round's fixes rather than reasoned about: a character appended to a source file (rc 1),
+the page's block edited in a copy (rc 1, naming the tweaked line), a duplicated BEGIN
+(rc 2), inverted markers (rc 2), an emptied region (rc 2), a block moved to another
+section (rc 2), a block pushed out of its section by an `#` heading (rc 2), a non-UTF-8
+source (rc 2, where it was rc 1 before), the fence rule against sources holding zero,
+three and four backtick runs, a `###` sub-heading still accepted, a checker whose body
+holds `## Recipe 1` still accepted through a full `write` then `check`, and a CRLF source
+round-tripping through `write` and `check` with the CRLF still in the page. The acceptance
+leg itself was run in both directions: tampered source gives `fails=1` with `rc=1`
+reported, restored gives `fails=0`.
+
+Run from the page rather than from the sources: all four blocks extract identical to their
+files and pass `sh -n`, and **two were executed as a reader would copy them**, each with a
+green and a red. Recipe 1 against the acceptance toy: exit 0 on a healthy store, exit 1
+with "doctor says 'healthy' but the key is unloadable" on a torn one, which is the
+mismatch that recipe is about. Recipe 2 against timewarrior 1.10.0: exit 0 after an undo
+that removed the one seeded interval, exit 1 on an empty store, which is the checker's own
+first guard. **Recipes 3 and 4 were not executed** — `watson` and `buku` are not installed
+here, measured rather than assumed. The first draft of this paragraph said recipe 2 was
+never a candidate because it names its target's paths; it names none, `timew` was sitting
+in `PATH`, and the sentence was an excuse written before looking.
+
+Two prose corrections fell out of showing the code, and they are the point of showing it.
+"Two lines is a real checker" sat directly above a four-line block; it reads "One command"
+now. And Recipe 2's sentence promised the checker rejects an invented interval, while the
+code compares *sets* of interval keys and is blind to multiplicity — a duplicate of an
+interval already present adds no new key and passes. The page says that now. Neither would
+have been visible while the file was a link.
+
 ## 2026-09-01 - the three-valued dispatch shipped unreachable, because the fixed form was never run
 
 `#62` shipped yesterday with a defect its own review put there. The first draft dispatched
