@@ -237,7 +237,7 @@ The check always runs **after a restart, in a fresh process.** In-memory state h
 
 ## 13. Output Requirements
 
-The most important UI is the counterexample report. It ships in two forms with identical content: **JSON for the caller, text for the reader.**
+The most important UI is the counterexample report. It ships in two forms: **JSON for the caller, text for the reader.** The JSON is the complete record — every field a machine might gate on, including the ones no human wants in a verdict (`schema`, `contract_version`, `exit_code`). The text is the reader's view of the same run, and the worked examples below are what it actually looks like: a short summary, not a second copy of the JSON. **What binds them is that a value both forms carry has one definition** — the JSON reads the same note the text prints, never a second formatting of it. Two things hold that: `spike/check-report-schema.py`'s fifth claim, for every value the JSON writer passes through `jsonString`, and — for `not_tested`, which is appended directly and so falls outside that claim — a comptime table plus acceptance check 2nt, which reads one real report in both forms and requires them to agree. This sentence used to read "two forms with identical content". Its own examples below contradicted it: eleven lines for the FAIL and three for the PASS, against a document of twenty top-level fields (`docs/report-schema.md` carries that one; this section shows no JSON). Ruled 2026-09-01 (owner, #280) in favour of the examples.
 
 A FAIL, as the reader sees it:
 

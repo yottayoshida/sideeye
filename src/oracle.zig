@@ -574,6 +574,28 @@ const fd_write_args = [_]FdWriteArg{
     .{ .name = "copy_file_range", .arg = 2 },
 };
 
+/// The fd syscalls whose descriptor really is argument 0. Written out rather than left
+/// to the default (#280).
+///
+/// `#244` added the table above when `copy_file_range` broke the old blanket rule, and
+/// left "anything absent keeps the argument-0 default" — which fixed the datum and not
+/// the mechanism. The issue's sentence stayed literally true: *"true for every entry
+/// today, enforced by nothing, and a future `known` entry that violates it would
+/// silently scope real operations out."* Nothing cross-referenced the classifier against
+/// either table, so a new entry inherited argument 0 in silence.
+///
+/// It cannot now: the test below requires every fd syscall the classifier knows to
+/// appear in exactly one of these two lists. Adding a `known` entry that carries its
+/// descriptor elsewhere fails until someone says which argument that is, and adding one
+/// that really does use argument 0 costs a line here — which is the point, because the
+/// line is where the reader learns it was decided rather than defaulted.
+const fd_arg0 = [_][]const u8{
+    "close", "fdatasync", "fsync", "ftruncate",
+    "ftruncate64", "pwrite", "pwrite64", "pwritev",
+    "pwritev2", "sendfile", "sendfile64", "write",
+    "writev",
+};
+
 fn fdWriteArg(name: []const u8) usize {
     for (fd_write_args) |w| {
         if (std.mem.eql(u8, w.name, name)) return w.arg;
@@ -1728,4 +1750,42 @@ test "compare finds the first divergence and the direction of it" {
     const swapped = [_]contract.OpClass{ .open, .unlink, .rename };
     const mid = compare(&a, &swapped).?;
     try std.testing.expectEqual(@as(usize, 1), mid.missed.index);
+}
+
+test "every fd syscall the classifier knows declares which argument holds its descriptor (#280)" {
+    // `fdSyscallInScope` reads one argument and decides scope from it. Which argument
+    // comes from `fd_write_args`, defaulting to 0 -- a default that used to apply to
+    // anything nobody had thought about. This makes the classifier and the two tables
+    // agree: exactly one of them names each fd syscall, so a new `known` entry is a
+    // decision rather than an inheritance.
+    for (known) |m| {
+        if (pathSpec(m.name) != null) continue; // a path syscall, not scoped by fd
+        var declared: usize = 0;
+        for (fd_write_args) |w| {
+            if (std.mem.eql(u8, w.name, m.name)) declared += 1;
+        }
+        for (fd_arg0) |n| {
+            if (std.mem.eql(u8, n, m.name)) declared += 1;
+        }
+        if (declared != 1) {
+            std.debug.print(
+                "fd syscall '{s}' is named by {d} of the two argument tables, wanted exactly 1\n",
+                .{ m.name, declared },
+            );
+            return error.FdArgumentUndeclared;
+        }
+    }
+    // The tables name nothing the classifier does not know, and nothing that is scoped
+    // by a path rather than a descriptor: either kind of row would sit here reading as
+    // coverage while the forward loop skipped past it. Review measured the second one --
+    // adding "open" to `fd_arg0` left the suite green, because the forward loop
+    // `continue`s on a path syscall and the reverse check only asked about `classify`.
+    for (fd_arg0) |n| {
+        try std.testing.expect(classify(n) != null);
+        try std.testing.expect(pathSpec(n) == null);
+    }
+    for (fd_write_args) |w| {
+        try std.testing.expect(classify(w.name) != null);
+        try std.testing.expect(pathSpec(w.name) == null);
+    }
 }

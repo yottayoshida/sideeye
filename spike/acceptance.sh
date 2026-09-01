@@ -2087,6 +2087,142 @@ else
     rm -rf /tmp/acc-gap
 fi
 
+echo "=========== check 2nt: the two reports agree about not_tested, at the call sites (#280) ==========="
+# The unit goldens pin the two RENDERINGS. They do not pin the WIRING, and review measured
+# the gap: swapping `notTestedText()` for `notTestedJson()` at a call site prints a JSON
+# array into the text pane and leaves the whole unit suite green, because the text
+# report's `not tested` line is asserted nowhere in this repository.
+#
+# So this reads one real report in both forms, from the same run, on three verdict paths.
+# The expected text is DERIVED from that run's own JSON array rather than written here:
+# hard-coding the three classes would pass a run whose list is legitimately wider (the
+# history form and L1 each add one), and the property is that the two forms agree, not
+# that the list has a particular length today.
+#
+# These three runs cover FOUR of the five call sites: the UNKNOWN, FAIL and full-PASS
+# text sites, and the single JSON site, which every one of the three writes. The fifth,
+# the zero-operation PASS, has no cheap target here and is NOT covered -- the goldens are
+# all that holds it.
+nt_fails=0
+nt_pair() {   # nt_pair <label> <text output> <json path>
+    nt_t=$(printf '%s\n' "$2" | sed -n -e 's/^ *not tested: *//p' -e 's/^not tested  */&/p' | head -1)
+    case "$nt_t" in "not tested "*) nt_t=$(printf '%s' "$nt_t" | sed 's/^not tested  *//') ;; esac
+    nt_j=$(python3 -c 'import json,sys; print(", ".join(json.load(open(sys.argv[1]))["not_tested"]))' "$3" 2>&1)
+    if [ -z "$nt_t" ]; then
+        echo "FAIL not_tested ($1): no 'not tested' line in the text report"
+        nt_fails=$((nt_fails + 1))
+    elif [ "$nt_t" != "$nt_j" ]; then
+        echo "FAIL not_tested ($1): text [$nt_t] but JSON [$nt_j]"
+        nt_fails=$((nt_fails + 1))
+    else
+        echo "ok   not_tested ($1): the text line is the JSON array's items, same order"
+    fi
+}
+
+rm -rf /tmp/acc-nt && mkdir -p /tmp/acc-nt/p/state /tmp/acc-nt/f/state /tmp/acc-nt/u/state
+o=$("$SIDEEYE" explore --state /tmp/acc-nt/p/state --setup "$OUT/toy-fixed init" \
+    --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc-nt/p/work \
+    --oracle /usr/bin/strace --json /tmp/acc-nt/p.json 2>&1)
+[ "$?" = "0" ] || { echo "FAIL not_tested (PASS): the PASS run did not pass"; nt_fails=$((nt_fails + 1)); }
+nt_pair PASS "$o" /tmp/acc-nt/p.json
+
+o=$("$SIDEEYE" explore --state /tmp/acc-nt/f/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-nt/f/work \
+    --oracle /usr/bin/strace --json /tmp/acc-nt/f.json 2>&1)
+[ "$?" = "1" ] || { echo "FAIL not_tested (FAIL): the FAIL run did not fail"; nt_fails=$((nt_fails + 1)); }
+nt_pair FAIL "$o" /tmp/acc-nt/f.json
+
+if [ -f "$GAPSHIM" ]; then
+    o=$("$SIDEEYE" explore --state /tmp/acc-nt/u/state --setup "$OUT/toy-fixed init" \
+        --operation "$OUT/toy-fixed rotate" --shim "$GAPSHIM" --work /tmp/acc-nt/u/work \
+        --oracle /usr/bin/strace --json /tmp/acc-nt/u.json 2>&1)
+    [ "$?" = "2" ] || { echo "FAIL not_tested (UNKNOWN): the refusing run did not refuse"; nt_fails=$((nt_fails + 1)); }
+    nt_pair UNKNOWN "$o" /tmp/acc-nt/u.json
+else
+    echo "FAIL not_tested (UNKNOWN): gap-shim apparatus missing (see check 2sq)"
+    nt_fails=$((nt_fails + 1))
+fi
+
+[ "$nt_fails" = 0 ] || fails=$((fails + 1))
+rm -rf /tmp/acc-nt
+
+echo "=========== check 2sp: when two refusal conditions both hold, the earlier check answers (#280) ==========="
+# The engine refuses in a fixed order and says so in comments; nothing pinned which
+# refusal a run gets when two of the conditions hold at once. The order is load-bearing
+# -- it decides which sentence a user reads about an untrustworthy recording -- and
+# reordering would have moved it silently.
+#
+# The pair is `sequence_numbering_broken` (the structural block) against
+# `unsupported_syscall_observed` (the oracle comparison, which is where mknod lands on
+# Linux). Deliberately NOT the pair the suite already pins: `unsupported_syscall_observed`
+# against `unsupported_state_entry` is held by the two TOY_MKNOD legs that differ on
+# whether an oracle is given.
+#
+# Three runs, because the third alone proves nothing: a run where only one condition can
+# hold cannot tell "the earlier check won" from "the later condition never applied".
+#
+# That BOTH conditions really hold in the third run was established by an experiment this
+# leg cannot perform -- moving the numbering check below the oracle block and re-running
+# it, on 2026-09-01, in the Linux container. The answer FLIPPED to
+# `unsupported_syscall_observed`, which is only possible if the oracle-side condition was
+# live all along. The first version of this leg used a different pair (a close sweep at
+# the trace fd against the same numbering gap); the same experiment did NOT flip it,
+# because the sweep ends the trace channel before the second kill-point record and the
+# numbering condition never held. That leg asserted a precedence it was not measuring,
+# and swapping its expected reason -- which is what had been done -- cannot tell the two
+# worlds apart. Redo that experiment before trusting any change to this ordering.
+if [ ! -f "$GAPSHIM" ]; then
+    echo "FAIL refusal precedence: gap-shim apparatus missing (see check 2sq)"
+    fails=$((fails + 1))
+else
+    sp_fails=0
+    rm -rf /tmp/acc-sp
+    mkdir -p /tmp/acc-sp/loser/state /tmp/acc-sp/winner/state /tmp/acc-sp/both/state
+
+    # The later check's condition, on its own.
+    o=$(TOY_MKNOD=1 "$SIDEEYE" explore --state /tmp/acc-sp/loser/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc-sp/loser/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if refused unsupported_syscall_observed "$rc" "$o"; then
+        echo "ok   precedence: the later check's condition reaches its own refusal alone"
+    else
+        echo "FAIL precedence: mknod alone gave exit $rc, not unsupported_syscall_observed"
+        echo "$o" | sed 's/^/     | /' | head -6
+        sp_fails=$((sp_fails + 1))
+    fi
+
+    # The earlier check's condition, on its own.
+    o=$("$SIDEEYE" explore --state /tmp/acc-sp/winner/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$GAPSHIM" --work /tmp/acc-sp/winner/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if refused sequence_numbering_broken "$rc" "$o"; then
+        echo "ok   precedence: the earlier check's condition reaches its own refusal alone"
+    else
+        echo "FAIL precedence: gap shim alone gave exit $rc, not sequence_numbering_broken"
+        echo "$o" | sed 's/^/     | /' | head -6
+        sp_fails=$((sp_fails + 1))
+    fi
+
+    # Both conditions live: the earlier check answers and the later one stays silent.
+    o=$(TOY_MKNOD=1 "$SIDEEYE" explore --state /tmp/acc-sp/both/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$GAPSHIM" --work /tmp/acc-sp/both/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if refused sequence_numbering_broken "$rc" "$o" \
+        && ! echo "$o" | grep -q "unsupported_syscall_observed"; then
+        echo "ok   precedence: with both conditions live, sequence_numbering_broken answers and the oracle-side refusal is silent"
+    else
+        echo "FAIL precedence: both together gave exit $rc, wanted sequence_numbering_broken and no unsupported_syscall_observed"
+        echo "$o" | sed 's/^/     | /' | head -6
+        sp_fails=$((sp_fails + 1))
+    fi
+
+    [ "$sp_fails" = 0 ] || fails=$((fails + 1))
+    rm -rf /tmp/acc-sp
+fi
+
 echo "=========== check 2fc: a state file over the per-file cap refuses by name (#265) ==========="
 # The snapshot path was the one unbounded read in the engine; a big enough file
 # turned the judgment into an OOM kill with no report. The unit tests drive the
@@ -2461,14 +2597,18 @@ echo "=========== check 2b: the reasons are distinct ==========="
 # anything is credited below this point, so no credit escapes the count.
 #
 # **What this deliberately does NOT claim is completeness.** The suite asserts far more
-# refusal reasons than it credits — seven more above this line alone
-# (`marker_never_observed`, `sequence_numbering_broken`, `state_file_too_large`,
-# `state_tree_too_large`, `state_unsnapshotable`, `unsupported_state_entry`,
-# `unsupported_syscall_observed`) — because a leg that produces an UNKNOWN as a control
-# should not be forced to credit it. So this number is a floor on the variety the suite
-# exercised, not a census of it, and "the count of what the suite observed" would be a
-# false description: measured, the suite has watched about twenty distinct reasons fire
-# by the time the count is taken, and the count says thirteen.
+# refusal reasons than it credits — five more above this line alone
+# (`marker_never_observed`, `state_file_too_large`, `state_tree_too_large`,
+# `state_unsnapshotable`, `unsupported_state_entry`) — because a leg that produces an
+# UNKNOWN as a control should not be forced to credit it. So this number is a floor on
+# the variety the suite exercised, not a census of it, and "the count of what the suite
+# observed" would be a false description: the suite watches more distinct reasons fire
+# than it credits by the time the count is taken.
+#
+# The list was seven until check 2sp (#280) began crediting `sequence_numbering_broken`
+# and `unsupported_syscall_observed` through `refused()`, above this line. Two moved from
+# asserted-only to credited, so the floor rises and this sentence had to move with them —
+# a prose list beside a number nothing recomputes is exactly the shape #411 was about.
 #
 # Before #411 the chain was broken at both links. One leg asserted `checker_not_falsified`
 # and credited `case_no_longer_applies`, so the number included a detector no leg had
@@ -2657,8 +2797,9 @@ TOY_STATE=$SD/s4 "$SIDEEYE" explore --state "$SD/s4" \
     --setup "/bin/false" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work "$SD/w4" --json "$SD/setup.json" >/dev/null 2>&1
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
+    "$ROOT/src/main.zig" \
     "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json"; then
-    echo "ok   the schema page, the generated reports, and the contract enum agree"
+    echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
     fails=$((fails + 1))

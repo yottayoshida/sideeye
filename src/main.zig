@@ -189,9 +189,12 @@ const ReplayCase = struct {
 /// What the report says so far.
 ///
 /// These are module-level because `unknown()` and `setupError()` exit from deep inside
-/// the run and still have to emit the machine-readable half of the report: DESIGN §13
-/// requires both forms to carry identical content, and UNKNOWN is the verdict a caller
-/// is most likely to be branching on.
+/// the run and still have to emit the machine-readable half of the report: DESIGN §13's
+/// rule is that a value both forms carry has one definition, and these globals are how
+/// that holds from a path that exits early. UNKNOWN is the verdict a caller is most
+/// likely to be branching on. (This used to cite §13 as requiring "identical content";
+/// that sentence was retracted 2026-09-01, #280, because §13's own examples contradict
+/// it.)
 ///
 /// There used to be two variables per note — a local the text report read, and a global
 /// the JSON read, copied across on the success path only. An UNKNOWN then printed
@@ -317,11 +320,12 @@ const BoundaryEvidence = struct {
         strace,
         fs_usage,
 
+        /// The tag, like the two in `contract.zig` (#280). This was the third
+        /// hand-written switch of the same shape and the first scan for them missed it:
+        /// it looked in `contract.zig` only, where the other two live, while
+        /// `grep -n "fn name(self" src/*.zig` finds all three.
         fn name(self: Kind) []const u8 {
-            return switch (self) {
-                .strace => "strace",
-                .fs_usage => "fs_usage",
-            };
+            return @tagName(self);
         }
     };
 
@@ -921,9 +925,14 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
     dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
         writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), detail);
-    // The classification lines appear here too: DESIGN §13 demands text and JSON
-    // carry identical content, and the JSON below already does. Before the snapshots
-    // exist this honestly reads "not classified".
+    // The classification lines appear here too. The reason used to be written as
+    // "DESIGN §13 demands text and JSON carry identical content, and the JSON below
+    // already does" -- false where it stood, on the most divergent path of the three,
+    // and §13 no longer says that (ruled 2026-09-01, #280: the JSON is the complete
+    // record, the text is the reader's view, and what binds them is that a shared value
+    // has one definition). The lines are here because a reader who is being refused
+    // still needs to know what was classified. Before the snapshots exist this honestly
+    // reads "not classified".
     say(
         \\UNKNOWN  {s}
         \\         {s}
@@ -4215,26 +4224,114 @@ fn textShown(arena: std.mem.Allocator, s: []const u8) []const u8 {
 /// The `not tested` list is not constant: whenever any file was judged by the history
 /// form, its appended tail joined the untested set, and a PASS headline must not
 /// stand without that narrowing beside it.
+///
+/// **One definition, two renderings** (#280). Both reports carry this list, and
+/// `DESIGN.md` §13's binding rule is that a value both forms carry has one definition.
+/// This one had two: hand-written functions holding the same four cases twice, with the
+/// JSON side escaping its quotes by hand, and nothing holding them together. Both are
+/// built at comptime from the items below now, so adding one puts it in both renderings
+/// and there is no way to edit one side alone.
+///
+/// Comptime rather than a runtime join, deliberately: the old functions returned static
+/// strings and allocate nothing, and **four of the five** call sites are inside format
+/// strings where an allocation failure has nowhere to go. The tables cost nothing at
+/// runtime and keep the output the same bytes it was.
+const not_tested_always = [_][]const u8{ "power loss", "torn writes", "concurrent processes" };
+const not_tested_history = "appended tails (files under the history form)";
+const not_tested_l1 = "post-only file contents (L1 checks existence only; post-only link targets are judged)";
+
+/// Whether a list item could not be placed into JSON by quoting it and nothing else.
+/// Separated from the guard below so it can be tested: `@compileError` cannot be
+/// exercised from a test, but the predicate that decides it can.
+///
+/// Invalid UTF-8 counts, and that clause came from review: `jsonString` rewrites it to
+/// U+FFFD, with a comment recording that the raw bytes give "a file that jq, Python and
+/// Go all refuse". A `\xNN` escape in a Zig literal reaches this directly, so without
+/// this clause an item could build clean and ship a JSON document no parser accepts --
+/// measured, before the clause existed.
+fn notTestedNeedsEscaping(s: []const u8) bool {
+    for (s) |c| if (c == '"' or c == '\\' or c < 0x20) return true;
+    return !std.unicode.utf8ValidateSlice(s);
+}
+
+// The JSON rendering quotes each item and does nothing else, which is correct only while
+// no item contains a quote, a backslash or a control byte. Rather than carry a second
+// escaper beside `jsonString` -- one that could drift from it in silence -- an item that
+// would need one fails the build, and "escaping" here includes invalid UTF-8, which
+// `jsonString` also rewrites. Seen red by giving an item a quote and reading
+// the failure: "not-tested item needs JSON escaping: appended \"tails\" ...".
+comptime {
+    for (not_tested_always) |item| {
+        if (notTestedNeedsEscaping(item)) @compileError("not-tested item needs JSON escaping: " ++ item);
+    }
+    if (notTestedNeedsEscaping(not_tested_history)) @compileError("not-tested item needs JSON escaping: " ++ not_tested_history);
+    if (notTestedNeedsEscaping(not_tested_l1)) @compileError("not-tested item needs JSON escaping: " ++ not_tested_l1);
+}
+
+/// The list for one variant, indexed the way `notTestedVariant` indexes them.
+fn notTestedList(comptime variant: usize) []const []const u8 {
+    comptime {
+        var out: []const []const u8 = &not_tested_always;
+        if (variant & 1 != 0) out = out ++ [_][]const u8{not_tested_history};
+        if (variant & 2 != 0) out = out ++ [_][]const u8{not_tested_l1};
+        return out;
+    }
+}
+
+/// Both renderings, from one walk of one list: `", "` between items either way, and the
+/// JSON form adds the brackets and the quotes. The separator is written once here rather
+/// than in two functions, which is the whole point.
+fn notTestedJoined(comptime variant: usize, comptime quoted: bool) []const u8 {
+    comptime {
+        var out: []const u8 = if (quoted) "[" else "";
+        for (notTestedList(variant), 0..) |item, i| {
+            if (i != 0) out = out ++ ", ";
+            out = out ++ if (quoted) "\"" ++ item ++ "\"" else item;
+        }
+        return out ++ if (quoted) "]" else "";
+    }
+}
+
+const not_tested_items_by_variant = [4][]const []const u8{
+    notTestedList(0), notTestedList(1), notTestedList(2), notTestedList(3),
+};
+const not_tested_text_by_variant = [4][]const u8{
+    notTestedJoined(0, false), notTestedJoined(1, false),
+    notTestedJoined(2, false), notTestedJoined(3, false),
+};
+const not_tested_json_by_variant = [4][]const u8{
+    notTestedJoined(0, true),  notTestedJoined(1, true),
+    notTestedJoined(2, true),  notTestedJoined(3, true),
+};
+
+/// How many independent conditions widen the list, and the width the three tables are
+/// asserted to share.
+///
+/// What this does NOT do, said plainly because the first version of this comment claimed
+/// it: it does not bind `notTestedVariant` below, which hard-codes the same two bits. A
+/// third condition added there without widening the tables is still an out-of-range read
+/// (a panic under the shipped ReleaseSafe build, not corruption). Binding that too would
+/// mean deriving the variant from a comptime list of conditions; it is one condition
+/// away from being worth it.
+const not_tested_bits = 2;
+comptime {
+    std.debug.assert(not_tested_text_by_variant.len == 1 << not_tested_bits);
+    std.debug.assert(not_tested_json_by_variant.len == 1 << not_tested_bits);
+    std.debug.assert(not_tested_items_by_variant.len == 1 << not_tested_bits);
+}
+
+/// Bit 0 is the history form, bit 1 is L1 -- read once, so the two renderings cannot
+/// disagree about which list this run is even describing.
+fn notTestedVariant() usize {
+    return (if (l0_history_count > 0) @as(usize, 1) else 0) | (if (l1_configured) @as(usize, 2) else 0);
+}
+
 fn notTestedText() []const u8 {
-    const history = l0_history_count > 0;
-    if (history and l1_configured)
-        return "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)";
-    if (history)
-        return "power loss, torn writes, concurrent processes, appended tails (files under the history form)";
-    if (l1_configured)
-        return "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)";
-    return "power loss, torn writes, concurrent processes";
+    return not_tested_text_by_variant[notTestedVariant()];
 }
 
 fn notTestedJson() []const u8 {
-    const history = l0_history_count > 0;
-    if (history and l1_configured)
-        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]";
-    if (history)
-        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]";
-    if (l1_configured)
-        return "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]";
-    return "[\"power loss\", \"torn writes\", \"concurrent processes\"]";
+    return not_tested_json_by_variant[notTestedVariant()];
 }
 
 /// One bounded observation of a stdout capture: how many bytes it held when opened, a
@@ -4664,7 +4761,10 @@ fn jsonCommand(w: *std.ArrayList(u8), arena: std.mem.Allocator, cmd: config.Comm
     }
 }
 
-/// JSON for the caller, text for the reader, with identical content (DESIGN §13).
+/// JSON for the caller, text for the reader (DESIGN §13). Not identical content: this is
+/// the complete record and the text is the reader's view of it. What §13 binds is that a
+/// value both forms carry has one definition, which is why every `jsonString` below reads
+/// a shared note rather than formatting one again.
 ///
 /// Hand-written rather than derived from a type: the schema is explicitly experimental
 /// until v1.0, and generating it would suggest a stability this release does not offer.
@@ -5409,6 +5509,126 @@ test "the l0 note neutralises control bytes in target-chosen file names" {
     try std.testing.expect(std.mem.indexOfScalar(u8, note, '\n') == null);
     try std.testing.expect(std.mem.indexOfScalar(u8, note, 0x1b) == null);
     try std.testing.expect(std.mem.indexOf(u8, note, "evil?name?.log") != null);
+}
+
+test "the not-tested list renders the same eight strings it shipped as two hand-written functions (#280)" {
+    // The eight literals below are the output of the two functions this replaced, copied
+    // from them before they were deleted. They are the point of the test: the change was
+    // allowed to remove a duplicate definition and not allowed to move a byte of the
+    // report. A one-time before/after comparison proves that once; this proves it on
+    // every run, which is what a frozen report surface needs.
+    const want_text = [4][]const u8{
+        "power loss, torn writes, concurrent processes",
+        "power loss, torn writes, concurrent processes, appended tails (files under the history form)",
+        "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)",
+        "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)",
+    };
+    const want_json = [4][]const u8{
+        "[\"power loss\", \"torn writes\", \"concurrent processes\"]",
+        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]",
+        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
+        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
+    };
+    for (want_text, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_text_by_variant[i]);
+    for (want_json, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_json_by_variant[i]);
+}
+
+test "the two renderings read the variant once, so they cannot describe different runs (#280)" {
+    // The pair used to branch separately on the same two globals. What the duplication
+    // put at risk is not whether the strings are right -- the goldens above hold that --
+    // but whether both sides are answering about the same run.
+    const saved_hist = l0_history_count;
+    const saved_l1 = l1_configured;
+    defer {
+        l0_history_count = saved_hist;
+        l1_configured = saved_l1;
+    }
+    for ([_]bool{ false, true }) |h| {
+        for ([_]bool{ false, true }) |l| {
+            l0_history_count = if (h) 1 else 0;
+            l1_configured = l;
+            const want_v: usize = (if (h) @as(usize, 1) else 0) | (if (l) @as(usize, 2) else 0);
+            const v = notTestedVariant();
+            try std.testing.expectEqual(want_v, v);
+            try std.testing.expectEqualStrings(not_tested_text_by_variant[v], notTestedText());
+            try std.testing.expectEqualStrings(not_tested_json_by_variant[v], notTestedJson());
+            // Both renderings are the items and nothing else: the text joined by ", ",
+            // the JSON the same items quoted, bracketed and in the same order.
+            // Rebuilt from the item list, both forms, and compared for EQUALITY --
+            // review measured that an `indexOf` on the JSON side lets a ghost item ride
+            // along: appending one to the quoted rendering left the suite green.
+            const items = not_tested_items_by_variant[v];
+            var buf: [1024]u8 = undefined;
+            var n: usize = 0;
+            var jn: usize = 0;
+            var jbuf: [1024]u8 = undefined;
+            jbuf[jn] = '[';
+            jn += 1;
+            for (items, 0..) |item, i| {
+                // The buffers are asserted rather than assumed: an item long enough to
+                // overrun should report, not panic inside @memcpy.
+                try std.testing.expect(n + 2 + item.len <= buf.len);
+                try std.testing.expect(jn + 5 + item.len <= jbuf.len); // + the closing ']'
+                if (i != 0) {
+                    @memcpy(buf[n..][0..2], ", ");
+                    n += 2;
+                    @memcpy(jbuf[jn..][0..2], ", ");
+                    jn += 2;
+                }
+                @memcpy(buf[n..][0..item.len], item);
+                n += item.len;
+                jbuf[jn] = '"';
+                jn += 1;
+                @memcpy(jbuf[jn..][0..item.len], item);
+                jn += item.len;
+                jbuf[jn] = '"';
+                jn += 1;
+            }
+            jbuf[jn] = ']';
+            jn += 1;
+            try std.testing.expectEqualStrings(buf[0..n], notTestedText());
+            try std.testing.expectEqualStrings(jbuf[0..jn], notTestedJson());
+        }
+    }
+}
+
+test "an item that would need JSON escaping is rejected, and the ones shipped do not (#280)" {
+    // The comptime guard beside the items cannot be reached from a test -- @compileError
+    // is not catchable -- so the predicate it asks is tested here, and the guard itself
+    // was seen red once by giving an item a quote and reading the build failure. Without
+    // this, "the JSON side just quotes each item" rests on nothing.
+    try std.testing.expect(notTestedNeedsEscaping("has a \" quote"));
+    try std.testing.expect(notTestedNeedsEscaping("has a \\ backslash"));
+    try std.testing.expect(notTestedNeedsEscaping("has a \n newline"));
+    try std.testing.expect(notTestedNeedsEscaping("has a \t tab"));
+    try std.testing.expect(!notTestedNeedsEscaping("power loss"));
+    try std.testing.expect(!notTestedNeedsEscaping("post-only file contents (L1 checks existence only; post-only link targets are judged)"));
+    for (not_tested_always) |item| try std.testing.expect(!notTestedNeedsEscaping(item));
+    try std.testing.expect(!notTestedNeedsEscaping(not_tested_history));
+    try std.testing.expect(!notTestedNeedsEscaping(not_tested_l1));
+}
+
+test "every OpClass name is its own tag, which is why the hand-written switch could go (#280)" {
+    // The switch this replaced had twenty arms, each spelling its own tag, while
+    // src/main.zig printed @tagName(op.class) directly in divergence detail. This asserts
+    // the equality the removal rested on, so a member added with a name() that should
+    // differ from its tag is a decision someone has to take deliberately rather than a
+    // silent behaviour change. It also covers UnknownReason, whose name() was already
+    // @tagName and is the precedent the removal followed.
+    inline for (@typeInfo(contract.OpClass).@"enum".fields) |f| {
+        const v: contract.OpClass = @enumFromInt(f.value);
+        try std.testing.expectEqualStrings(f.name, v.name());
+    }
+    inline for (@typeInfo(contract.UnknownReason).@"enum".fields) |f| {
+        const v: contract.UnknownReason = @enumFromInt(f.value);
+        try std.testing.expectEqualStrings(f.name, v.name());
+    }
+    // The oracle kind's name(), the third of the three and the one the first scan for
+    // this shape missed.
+    inline for (@typeInfo(BoundaryEvidence.Kind).@"enum".fields) |f| {
+        const v: BoundaryEvidence.Kind = @enumFromInt(f.value);
+        try std.testing.expectEqualStrings(f.name, v.name());
+    }
 }
 
 test "the version in build.zig.zon and the one the CLI prints are the same string" {

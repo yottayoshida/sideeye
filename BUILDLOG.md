@@ -2,6 +2,157 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-01 (third) - the report's two renderings come from one list, and the detector order is pinned
+
+`#280` reported four defects inside `src/`. Measured against the tree first: **three are
+live** — two hand-synced pairs and an unpinned ordering — and the fourth, which the plan
+had marked as fixed, was not (below). The issue's own figures were stale — `src/main.zig` is 5,657 lines with 22 tests, not 2,963
+with 10, and every line number in the body had moved. The pairs were found by name.
+
+**`notTestedText` and `notTestedJson`** held the same four cases twice, the JSON side
+escaping its quotes by hand, on the one field `DESIGN.md` §13 requires identical between
+the two reports. The items are one list now and both renderings are built from it at
+comptime. Comptime rather than a runtime join for a specific reason: the old functions
+returned static strings and allocate nothing, and three of the four call sites sit inside
+format strings where an allocation failure has nowhere to go. The tables cost nothing at
+runtime and the report's bytes do not move.
+
+The JSON rendering quotes each item and does nothing else, which is only correct while no
+item holds a quote, a backslash or a control byte. Rather than write a second escaper
+beside `jsonString` — one that could drift from it in silence — an item that would need
+one **fails the build**. `@compileError` cannot be reached from a test, so the predicate
+it asks is unit-tested and the guard itself was seen red by giving an item a quote:
+`not-tested item needs JSON escaping: appended "tails" …`.
+
+**`OpClass.name()`** was a hand-written switch of twenty arms while the twin in the same
+file, `UnknownReason.name()`, is `@tagName` in one line — and `src/main.zig` prints
+`@tagName(op.class)` directly in divergence detail, so both spellings already reach one
+output. Measured before removing anything: twenty members, twenty arms, **zero
+differences**. It is `@tagName` now, and a test asserts the equality the removal rested on over **all
+three** enums — `OpClass`, `UnknownReason`, and `BoundaryEvidence.Kind` in `src/main.zig`,
+the third switch of the same shape, which the first scan missed by looking in
+`contract.zig` only. So a member whose display name should differ from its tag becomes a
+decision someone takes rather than a silent change. The wire format is `@intFromEnum`, so
+nothing frozen reads it; what it does reach besides the report is the landing context
+written into a saved case, which is why the arms were compared one by one first.
+
+**The engine refuses in a fixed order** and nothing pinned which refusal a run gets when
+two conditions hold at once. `spike/acceptance.sh` check 2sp pins
+`sequence_numbering_broken` (the structural block) against `unsupported_syscall_observed`
+(the oracle comparison, where mknod lands on Linux) — deliberately not the pair the suite
+already holds, since the two `TOY_MKNOD` legs differing on the oracle pin
+`unsupported_syscall_observed` against `unsupported_state_entry`; that one came from the
+plan's review, which is why this pair was checked for an existing pin before it was
+written.
+
+Three runs, because the third alone proves nothing: a run where only one condition can
+hold cannot tell "the earlier check won" from "the later condition never applied".
+Measured on aarch64 Linux with the engine, both shims and the toys cross-built from this
+machine: mknod alone refuses `unsupported_syscall_observed`, the gap shim alone refuses
+`sequence_numbering_broken`, and both together refuse `sequence_numbering_broken` with the
+oracle-side refusal absent. Each of the three assertions was falsified on its own.
+
+**The first version of this leg measured nothing, and how that was found is the part worth
+keeping.** It used a different pair — a close sweep at the trace fd against the same
+numbering gap — and argued the co-occurrence rather than measuring it: the gap is a
+property of `-Dtest-seq-gap` rather than of the target, so it was taken as present. Review
+asked for the discriminating experiment: move the winner's check below the loser's and
+re-run the combined case. It did **not** flip. The sweep ends the trace channel before the
+second kill-point record, so `primary_kill_records == kill_point_count`, the numbering
+condition never held, and the third run was a duplicate of the second with its
+`! grep -q` clause passing vacuously. Swapping an expected reason — which is what had been
+done, three times — only shows an assertion can go red; it cannot tell those two worlds
+apart.
+
+The pair that shipped was chosen by running that experiment on it: with the numbering
+check moved below the oracle block, the combined run flips to
+`unsupported_syscall_observed`, which is only possible if the oracle-side condition was
+live all along. The leg's comment carries the instruction to redo it before trusting any
+change to the ordering.
+
+**The fourth item was going to be dropped on a false reading, and review caught it.** The
+plan said `fdSyscallInScope`'s argument-0 assumption had been closed by `#244` and that a
+correction saying so would go on the issue. It had not been: `fd_write_args` is a data
+table, `fdWriteArg` returns 0 for anything absent, and the doc comment says so out loud.
+Nothing cross-referenced the classifier against it. `#244` fixed the datum
+(`copy_file_range` at argument 2) and left the mechanism, so the issue's sentence — "true
+for every entry today, enforced by nothing, and a future `known` entry that violates it
+would silently scope real operations out" — described the tree exactly. Posting that
+correction would have put a false statement on a public issue.
+
+Owner ruled to fix it here instead. `fd_arg0` names the thirteen fd syscalls whose
+descriptor really is argument 0, and a test requires every fd syscall the classifier knows
+to appear in **exactly one** of the two tables. Adding a `known` entry that carries its
+descriptor elsewhere now fails until someone says which argument that is; adding one that
+really does use argument 0 costs a line, which is the point — the line is where a reader
+learns it was decided rather than defaulted. The list was derived from the `known` table
+rather than typed: the first version was written from memory, and the test's first run
+named `pwrite` as missing.
+
+Seen red three ways: a new `known` fd entry (0 tables, the issue's own scenario), a name in
+a table the classifier does not know (a ghost row reading as coverage), and a name in both
+tables at once.
+
+The test-density half of the issue stays open by the issue's own wording — it asks for it
+after the floor is in, and the floor is what this is.
+
+**Review then broke two things that had been called measured**, and both are worth the
+space.
+
+The first: the goldens pin the two renderings and **not the wiring**. Replacing
+`notTestedText()` with `notTestedJson()` at a call site prints a JSON array into the text
+pane and leaves the whole unit suite green, because this repository asserted the text
+report's `not tested` line nowhere at all. `spike/acceptance.sh` check 2nt reads one real
+report in both forms on three verdict paths and derives the expected text from that run's
+own JSON array rather than hard-coding three classes. Measured: the swap at the full-PASS,
+FAIL and UNKNOWN call sites each turns it red, and `zig build test` stays green through
+all three. Four of the five call sites are covered by these runs — the UNKNOWN, FAIL and full-PASS
+text sites and the single JSON site every run writes — and the fifth, the zero-operation
+PASS, is **not**: no cheap target reaches it here, and the goldens are all that holds it.
+
+The second: the precedence pin was measuring nothing. The first pair was a close sweep at
+the trace fd against the numbering gap, and the discriminating experiment review asked
+for — move the winner's check below the loser's and re-run — did **not** flip the answer.
+The sweep ends the trace channel before the second kill-point record, so the numbering
+condition never held and the third run was a duplicate of the second, with its
+`! grep -q` clause passing vacuously. Swapping the expected reason, which is what had been
+done, cannot tell those two worlds apart. The pair is now `sequence_numbering_broken`
+against `unsupported_syscall_observed` (mknod, which on Linux lands in the oracle
+comparison), and the same experiment **does** flip it — which is only possible if both
+conditions were live. Both runs are in the container, on 2026-09-01, and the leg's comment
+says to redo the experiment before trusting any change to the ordering.
+
+Mutation, with attribution checked rather than assumed: changing the shared separator from
+`", "` to `","` kills the goldens; swapping the variant's bit assignment kills the
+variant test and not the goldens; making one `OpClass` arm differ from its tag kills the
+new tag test; a ghost item appended to the quoted rendering kills the variant test, which
+before review compared the JSON with `indexOf` and let it through; an item with invalid
+UTF-8 fails the build, which the escaping predicate did not catch until `jsonString`'s own
+handling was read.
+
+**The promise was written at the wrong altitude, and the document it was drawn from turned
+out to be wrong too.** "The text report and the JSON report render the same content from
+one definition" is a claim about the report; `not_tested` is one field of twenty-odd.
+Opening `DESIGN.md` §13 to narrow it found the sentence there — "It ships in two forms with
+identical content" — contradicted by §13's own worked examples on the same page: eight
+lines of text beside a document carrying `schema`, `contract_version` and `exit_code`.
+Ruled 2026-09-01 (owner): the examples are the truth. §13 says so now, and the comment in
+`unknown()` that cited the old sentence — false where it stood, on the most divergent of
+the three text paths — says what is actually true instead.
+
+What the ruling leaves is sharper than what it replaces, and **measured to be already
+true**: every value both forms carry has one definition. Every `jsonString` call in
+`buildJson` reads a shared note (`oracle_note`, `l0_note`, `case_note`, …), an accessor, a
+parameter, or a field of the same earliest record the text renders — twenty-seven calls,
+zero inline constructions. `not_tested` was the one exception, and it is what `#280`
+named. Claim 5 in `spike/check-report-schema.py` holds it: a value built again inside the
+JSON writer fails, seen red against both an inline `allocPrint` and a bare literal.
+
+**A self-inflicted loss worth recording**: `git checkout -- src/main.zig`, typed to undo a
+one-line falsification, reverted the whole change in that file. Nothing was lost that could
+not be retyped, and it cost one re-application. Every falsification after that restored its
+literal by hand.
+
 ## 2026-09-01 (second) - each cookbook recipe shows its checker, and a renderer keeps it honest
 
 `#276`: `docs/checker-cookbook.md` opened by promising "Everything below is a real
