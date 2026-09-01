@@ -471,15 +471,21 @@ pub fn kindOfFd(fd: c_int) ClassifyError!Kind {
 /// same process. So the encoding only has to be injective within a run, and the cheapest
 /// injective encoding on each platform is the one the platform already gives.
 ///
-/// **What it cannot distinguish is an inode that was freed and handed out again.** If the
-/// object a caller vetted is *unlinked* and the filesystem then allocates the same inode
-/// number on the same device to something new, two objects that never coexisted compare
-/// equal. Renaming the old one aside — the ordinary way a directory is swapped, and the
-/// case the engine's tests use — keeps it alive and keeps the numbers apart; unlinking it
-/// does not. Closing that needs something this pair does not carry: a descriptor held from
-/// the moment of the vet, or a per-inode generation number that neither platform exposes
-/// through a portable stat. Recorded rather than closed, and named in ADR 0037 so it is
-/// not read as covered.
+/// **What it cannot distinguish is an inode that was freed and handed out again**, and on
+/// Linux that is not exotic. Measured 2026-09-01: on overlayfs, removing a directory and
+/// creating another at the same path hands back the same number on the very next `mkdir`,
+/// three runs of three. APFS gives a new one, three of three. Renaming the old directory
+/// aside — the ordinary way one is swapped, and what the engine's tests do — keeps it
+/// linked and keeps the numbers apart; removing its last link does not.
+///
+/// What that admits is narrower than it sounds, and the narrowing is the reason it is
+/// recorded rather than closed. A caller comparing identities is guarding a *path* it will
+/// then operate on, so the harm of a swap is that something worth keeping arrives at that
+/// path — and anything **moved** there carries its own inode and is refused. Only an object
+/// the filesystem created after the vetted one was unlinked can inherit the number, which
+/// makes it a new and empty directory. Closing even that needs a descriptor held from the
+/// moment of the vet, or a per-inode generation number neither platform exposes through a
+/// portable stat. ADR 0037 carries the same account.
 pub const Identity = struct {
     dev: u64,
     ino: u64,

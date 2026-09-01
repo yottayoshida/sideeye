@@ -3500,13 +3500,13 @@ test "createRoot keeps the vetted identity across a swap, rather than re-reading
     try std.testing.expectError(error.UnsafeRoot, openRootDir(std.mem.span(root_z.ptr), kept));
 }
 
-test "a vetted root that vanishes leaves createRoot's own directory unvetted, and the open refuses (#338)" {
+test "a vetted root that vanishes leaves createRoot's own directory unvetted (#338)" {
     // The third state, which neither swap test reaches: the vet identified a directory and
     // then it was removed rather than replaced, so `createRoot`'s `mkdir` succeeds and makes
-    // one of its own. Keeping the vetted identity means the open cannot match it. Refusing
-    // is the intended answer -- the object that was approved is gone, and nothing inside
-    // `restore` legitimately removes the root between those two calls -- but a refusal here
-    // becomes an UNKNOWN verdict rather than a red test, so it is pinned rather than assumed.
+    // one of its own. What holds everywhere is that the vetted identity is kept rather than
+    // refreshed. Whether the open then refuses does not, and finding that out is what this
+    // test is really for -- an earlier version asserted the refusal unconditionally, passed
+    // here, and went red on Linux in CI.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vanish-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
@@ -3531,8 +3531,24 @@ test "a vetted root that vanishes leaves createRoot's own directory unvetted, an
     try std.testing.expect(kept.identified.eql(approved.identified)); // still the vetted one
     try std.testing.expect((try posix.kindOfPathNoFollow(root_z.ptr)) == .dir); // and it did create
 
-    // The directory now at the name is not the one that was approved, so the open refuses.
-    try std.testing.expectError(error.UnsafeRoot, openRootDir(root, kept));
+    // Whether the open refuses depends on the one thing the pair cannot see. Measured
+    // 2026-09-01: overlayfs under Linux hands the new directory the number the old one had,
+    // on the very next `mkdir`, three runs of three; APFS does not, three of three. So the
+    // reuse case is not exotic on Linux -- it is what remove-then-recreate does by default.
+    //
+    // What it lets through is narrow, and worth writing beside the test rather than only in
+    // the ADR. `O_NOFOLLOW` means the walk always reaches a real directory *at the vetted
+    // path*, so a swap cannot redirect it elsewhere; the harm of one is that something worth
+    // keeping ends up at that path. A directory *moved* there brings its own inode and is
+    // refused. Only an object the filesystem created after the vetted one was unlinked can
+    // inherit the number, and that object is a new, empty directory.
+    //
+    // Asserting the refusal where it is deliverable, and naming the world otherwise, rather
+    // than asserting a portable refusal that is not.
+    const now = try posix.identityOfPath(root_z.ptr);
+    if (!now.eql(approved.identified)) {
+        try std.testing.expectError(error.UnsafeRoot, openRootDir(root, kept));
+    }
 }
 
 test "createRoot refuses a root that arrived after the vet found nothing (#338)" {

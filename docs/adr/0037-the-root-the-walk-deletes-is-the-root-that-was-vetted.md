@@ -58,17 +58,27 @@ in the sense that a change of the underlying object inside the window is caught 
 leaves a different device/inode pair behind** — a mount is not special there, and the
 qualifier is not decoration, because of the reuse case below. The second half stands.
 
-**And an inode that was freed and handed out again.** If the vetted directory is *unlinked*
-rather than renamed aside, and the filesystem allocates the same inode number on the same
-device to a new directory at the same path, the pair compares equal and the walk proceeds.
-Review found this; it is a property of the primitive, not of the wiring. Renaming — the
-ordinary way a directory is swapped, and what the tests do — keeps the old inode alive and
-keeps the numbers apart. Closing it needs a descriptor held from the moment of the vet, or a
-per-inode generation number, and neither platform offers the second through a portable stat.
-Taking the first would mean the vet opening the root, which is a second descriptor held
-across the whole call for the sake of a narrower window than the one this ADR closes.
-Recorded rather than attempted, and named in `posix.Identity`'s doc so a reader of the
-comparison sees it.
+**And an inode that was freed and handed out again.** Review raised this as a property of
+the primitive, and measuring it moved it from a footnote to something worth stating twice:
+on overlayfs under Linux, removing a directory and creating another at the same path hands
+back the same inode number on the very next `mkdir` — three runs of three. APFS gives a new
+one, three of three. So on Linux, remove-then-recreate defeats the comparison **by default**,
+not by contrivance. It was found the hard way: a test asserting the refusal for a vanished
+root passed on macOS and went red on Linux in CI.
+
+What it admits is narrow, and the narrowing is why this is recorded rather than closed.
+`O_NOFOLLOW` means the walk always reaches a real directory *at the vetted path*, so a swap
+cannot redirect it elsewhere; the harm of one is that something worth keeping ends up at
+that path. A directory **moved** there brings its own inode and is refused. Only an object
+the filesystem created after the vetted one was unlinked can inherit the number, and that
+object is a new, empty directory — emptying it costs its creator nothing.
+
+Renaming the old directory aside, the ordinary way one is swapped and what the tests do,
+keeps it linked and keeps the numbers apart. Closing the rest needs a descriptor held from
+the moment of the vet, or a per-inode generation number neither platform exposes through a
+portable stat. The first would mean the vet opening the root and holding a second descriptor
+across the whole call, for a case whose exploitable form is an empty directory. Not
+attempted; `posix.Identity`'s doc carries the same account where the comparison lives.
 
 ## Alternatives considered
 

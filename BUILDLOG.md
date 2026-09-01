@@ -73,11 +73,20 @@ all; they were rewritten to compile and re-run.
 
 **Two residuals are now written down rather than implied.** A swap that happened before the
 vet, which #338 concedes and which no comparison anchored to the vet can question. And an
-inode that was freed and handed out again: if the vetted directory is *unlinked* rather than
-renamed aside and the filesystem reuses its inode number on the same device, the pair
-compares equal. Review found the second; it is a property of the primitive, and closing it
-would need a descriptor held from the moment of the vet or a generation number no portable
-stat exposes.
+inode that was freed and handed out again — review raised it, and **CI proved it is not a
+footnote**. The test pinning the vanished-root state asserted that the open refuses; it
+passed here and went red on Linux. Measured after: on overlayfs, removing a directory and
+creating another at the same path hands back the same inode number on the very next `mkdir`,
+three runs of three, while APFS gives a new one three of three. On Linux the comparison is
+defeated by remove-then-recreate **by default**.
+
+What that admits is narrow, and saying only the first half would have been the more
+alarming error. `O_NOFOLLOW` means the walk always reaches a real directory at the vetted
+path, so a swap cannot send it elsewhere; the harm of one is that something worth keeping
+arrives at that path, and anything *moved* there brings its own inode and is refused. Only
+an object created after the vetted one was unlinked can inherit the number, which makes it a
+new and empty directory. The test now asserts the part that holds everywhere — the identity
+was not refreshed — and asserts the refusal only where the filesystem makes it deliverable.
 
 The operator-facing refusal grew a fourth cause. `UnsafeRoot` used to mean the path resolved
 elsewhere, was not a directory, or could not be read; it now also means the path is still a
