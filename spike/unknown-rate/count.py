@@ -878,10 +878,14 @@ def check(root):
     # generation at all: it is measured by nothing, and every completeness
     # check passes over it. Narrowing a generation's groups is enough to do
     # that to eight rows at once.
+    # `since` is already known to name a generation: `generation_tables` above calls
+    # `expected_for`, whose own check refuses first. A duplicate of that refusal used to
+    # sit here, and it was unreachable -- measured 2026-09-01 (#341) by removing the one
+    # in `expected_for` and feeding a bad `since`: the run died with `KeyError` inside
+    # `expected_for`, never arriving here. A fixture aimed at it could only ever have
+    # died on its twin, which is why it was removed rather than given one.
     by_gen = {g["id"]: g for g in generations}
     for c in corpus:
-        if c["since"] not in by_gen:
-            die(f"corpus row {c['id']}: since={c['since']!r} is not a generation")
         cover = by_gen[c["since"]]["groups"].split(",")
         if c["group"] not in cover:
             die(f"corpus row {c['id']} is in group {c['group']} but enters at generation "
