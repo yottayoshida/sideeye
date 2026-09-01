@@ -3407,6 +3407,23 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 11b: each cookbook recipe shows its checker (#276) ==========="
+# docs/checker-cookbook.md's four recipe blocks are rendered from the committed checkers,
+# so the page cannot drift from what those files hold. `check` asserts marker cardinality
+# and ordering before it compares anything -- a duplicated BEGIN is the way a naive slice
+# stays green over a region nobody edits -- and exits 2 (BROKEN) rather than 1 when it
+# cannot make its statement at all.
+#
+# Wired through `fails` rather than left to its exit status: this suite is `set -u`, not
+# `set -e`, so a leg that only calls a checker cannot turn the suite red, and would never
+# have been seen doing anything.
+if python3 "$ROOT/spike/render-cookbook.py" check; then
+    :
+else
+    echo "     the cookbook and a fresh render disagree (rc=$?); re-run: python3 spike/render-cookbook.py write"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
 # Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
 # recomputation from corpus.tsv + the committed sweep artifacts (count.py check also
