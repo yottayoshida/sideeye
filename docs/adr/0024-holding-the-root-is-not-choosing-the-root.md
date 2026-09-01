@@ -108,7 +108,13 @@ exact conflation the correction is about. A first draft of this ADR did list the
   established inside the window, though not one established before the check. Deferred
   because it is a second mechanism with its own error mapping and its own falsification,
   and this change already replaces the walk; recorded here so the residual is not read as
-  expensive when the change just made it cheap.
+  expensive when the change just made it cheap. **Done in ADR 0037 (#338).** The shape is
+  the one described here; the one claim above that did not survive is "would catch a bind
+  mount established inside the window, though not one established before the check" — a
+  mount is not a special case of anything the pair sees, and what the pair actually covers
+  is a change of the underlying object between the vet and the open **that leaves a
+  different device/inode behind**. ADR 0037 records the case that does not: an inode
+  recycled after the vetted directory's last link is gone.
 - **An open-probe for the `DT_UNKNOWN` fallback** — rejected. `opendir` passes `O_NONBLOCK`
   and a hand-rolled `openat` does not; this project already retired an open-probe for that
   reason, after a FIFO with no writer blocked one forever (#5 R1). The fallback uses the

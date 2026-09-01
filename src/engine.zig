@@ -1740,11 +1740,19 @@ pub fn assertSafeNamingRoot(root: []const u8) RestoreError!void {
 /// that leaves the canonical pathname alone is invisible here: a bind mount over the same
 /// path resolves to itself while naming a different tree, and in a privileged container
 /// that is a real move rather than a theoretical one. Comparing the device and inode
-/// captured at resolution time would cover it, and needs that pair threaded from the call
-/// site — filed rather than done.
+/// captured at resolution time covers a replacement that happens **after** this look and
+/// leaves a different pair behind, and since #338 that pair is threaded from here to the
+/// open. Two things it still does not see: a mount that was already in place when this
+/// function ran, because that is what this function approved; and a replacement that
+/// inherits the vetted inode number after the original's last link is gone
+/// (`posix.Identity`'s doc carries that one).
 ///
-/// Nor does this close the window it does cover: the check and the `opendir` are two
-/// syscalls, and a swap between them is not detected.
+/// **The check-to-open window is closed now (#338, ADR 0037), and this function is half
+/// of how.** It still resolves a name and compares strings, which is two syscalls away
+/// from the open that follows. What it adds is the identity of the object it approved, and
+/// `openRootDir` refuses any descriptor that is not that object. Not a second reading of
+/// the name at open time — that was tried, and measured accepting the swap, because after
+/// a rename-and-replace the descriptor and the name reach the same new directory.
 ///
 /// **That sentence used to continue "Both gaps have the same fix, the root held open by
 /// descriptor for the whole delete", and it was wrong** — the twin of the denylist's
@@ -1758,8 +1766,22 @@ pub fn assertSafeNamingRoot(root: []const u8) RestoreError!void {
 ///
 /// The fix for both gaps is the one named two paragraphs up, comparing device and inode,
 /// and the descriptor makes it cheap rather than redundant: one side of that comparison is
-/// now an open descriptor. Still filed rather than done (ADR 0024, Alternatives).
-fn assertRootResolvesToItself(root: []const u8) RestoreError!void {
+/// now an open descriptor. **Done for the check-to-open half in #338 (ADR 0037),
+/// in `openRootDir`.** The bind-mount half stays open and is not closable this way: a
+/// mount established before the open is pinned wrong by a descriptor and agrees with
+/// itself by device and inode, so both comparisons pass on it.
+///
+/// What the vet saw, and — when it saw something — which object that was.
+///
+/// The identity is the whole point (#338). "Vetted" can only mean "the object this
+/// function looked at", so the object has to be named in a way that survives the pathname
+/// being repointed afterwards. A device and inode pair does; a pathname does not.
+///
+/// `absent` is not a failure. A root that is simply gone is a state two callers below
+/// recover from by creating it, and one of them then has to know that nothing was there.
+const RootVet = union(enum) { identified: posix.Identity, absent };
+
+fn assertRootResolvesToItself(root: []const u8) RestoreError!RootVet {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     // No separate symlink test. An earlier version asked `isSymlink` first, justified as
@@ -1769,10 +1791,14 @@ fn assertRootResolvesToItself(root: []const u8) RestoreError!void {
     // link, never reaches here — `main.zig` cannot resolve such a `--state` at all.
     var real_buf: [contract.max_path]u8 = undefined;
     const resolved = posix.realpath(root_z.ptr, &real_buf) orelse {
-        if (std.c._errno().* == posix.ENOENT) return; // nothing there to delete
+        if (std.c._errno().* == posix.ENOENT) return .absent; // nothing there to delete
         return error.UnsafeRoot; // cannot look: refuse rather than delete blind
     };
     if (!std.mem.eql(u8, std.mem.span(resolved), root)) return error.UnsafeRoot;
+    // Which object was approved, not merely that the name approves of itself. `openRootDir`
+    // compares the descriptor it ends up holding against this, and that comparison is what
+    // closes the window between here and there.
+    return .{ .identified = posix.identityOfPath(root_z.ptr) catch return error.UnsafeRoot };
 }
 
 /// What opening the destructive root found.
@@ -1783,11 +1809,22 @@ fn assertRootResolvesToItself(root: []const u8) RestoreError!void {
 /// exists to remove. One `open`, two meanings, and neither may be assumed by the other.
 const RootOpen = union(enum) { fd: c_int, absent };
 
-/// Open a directory for the destructive walk, pinned by descriptor (#327).
+/// Open a directory for the destructive walk, pinned by descriptor (#327), and refuse it
+/// unless the descriptor and the pathname still reach the same object (#338).
 ///
 /// Holding the descriptor is what closes the swap window: every delete below is relative
 /// to the inode opened here, so replacing the *pathname* afterwards redirects nothing.
-/// `O_NOFOLLOW` additionally refuses a root that is itself a link.
+/// `O_NOFOLLOW` additionally refuses a root that is itself a link. `vet` closes the other
+/// end — the window between the caller's vet and this open — by carrying the identity that
+/// vet approved, so the descriptor has to be that object and not merely something wearing
+/// that name.
+///
+/// The parameter is not optional on purpose. Every caller has to produce a `RootVet`, and
+/// the only things that produce one are `assertRootResolvesToItself` and a `stat` taken
+/// by a caller that has just created the root itself. Nobody can quietly opt out of the
+/// comparison by passing nothing, which is the shape a fourth destructive entry point
+/// would otherwise take — and the reason this function exists at all is that `opendir`
+/// used to be called from several places with several different amounts of care.
 ///
 /// **This does not replace `assertRootResolvesToItself`, and the callers still run it.**
 /// `O_NOFOLLOW` is about the final component only: with root `/a/b/state`, replacing
@@ -1798,7 +1835,7 @@ const RootOpen = union(enum) { fd: c_int, absent };
 /// The errno map is caller-visible. `ENOTDIR` becoming `UnsafeRoot` is a deliberate
 /// reclassification: a regular file where the state directory should be used to arrive as
 /// `DeleteFailed` through the `opendir` probe this replaces.
-fn openRootDir(root: []const u8) RestoreError!RootOpen {
+fn openRootDir(root: []const u8, vet: RootVet) RestoreError!RootOpen {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     const fd = posix.open(
@@ -1806,7 +1843,53 @@ fn openRootDir(root: []const u8) RestoreError!RootOpen {
         posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC,
         @as(c_uint, 0),
     );
-    if (fd >= 0) return .{ .fd = fd };
+    if (fd >= 0) {
+        // **The vet-to-open window (#338, ADR 0037).** The descriptor pins an inode for
+        // its whole life; the pathname between the vet and here does not. So the caller
+        // hands over the identity its vet approved, and the descriptor has to be that same
+        // object or nothing happens.
+        //
+        // **Comparing the descriptor against what the name resolves to *now* does not
+        // work, and was measured not working before this shape was written.** Move the
+        // vetted directory aside inside the window and put another in its place: the open
+        // reaches the new one and the name resolves to the new one, the two agree, and the
+        // walk empties a tree nobody vetted. That comparison can only see a swap landing
+        // in the sliver between the open and the stat — a window this function would be
+        // creating itself.
+        //
+        // What stays open is a swap that happened *before* the vet, including a bind mount
+        // established before it. The vet approves whatever was there when it looked, and
+        // no comparison anchored to the vet can question the vet. `#338` says so in the
+        // same words; ADR 0024's Alternatives claimed the device/inode pair would cover
+        // it, and ADR 0037 records that correction.
+        //
+        // Both arms live here rather than at the three call sites. They were written there
+        // first, one conditional each, which is the shape where the fourth caller forgets
+        // one: the whole reason this function exists is that `opendir` used to be called
+        // from several places with several different amounts of care.
+        switch (vet) {
+            .identified => |want| {
+                const held = posix.identityOfFd(fd) catch {
+                    _ = posix.close(fd);
+                    return error.UnsafeRoot;
+                };
+                if (!held.eql(want)) {
+                    _ = posix.close(fd);
+                    return error.UnsafeRoot;
+                }
+            },
+            // The vet found nothing and yet something is here, so it arrived after the vet
+            // looked and nobody approved it. `freshDir` reaches this when its `mkdir` has
+            // already failed; `corruptState` when the tree `restore` just built has gone.
+            // `restore` is the one caller that legitimately creates the root, and it takes
+            // a fresh identity after its `mkdir` rather than passing this stale `.absent`.
+            .absent => {
+                _ = posix.close(fd);
+                return error.UnsafeRoot;
+            },
+        }
+        return .{ .fd = fd };
+    }
     return switch (std.c._errno().*) {
         posix.ENOENT => .absent,
         posix.ELOOP, posix.ENOTDIR => error.UnsafeRoot,
@@ -1821,7 +1904,17 @@ fn openRootDir(root: []const u8) RestoreError!RootOpen {
 /// that descriptor. An absent root is nothing to delete, which is what `opendir` returning
 /// null used to mean here.
 fn deleteTree(root: []const u8) RestoreError!void {
-    switch (try openRootDir(root)) {
+    // Reached only from tests — every production path goes through `restore`, `freshDir`
+    // or `corruptState`, each of which runs the full vet. This one takes an identity of
+    // its own instead. The name-resolution half of the vet demands the realpath'd spelling
+    // and these callers pass `/tmp/...` literals; the identity half needs no such thing,
+    // and it is the half `openRootDir` compares against. So the swap window is closed here
+    // too and the name checks are not, which is the accurate statement and the reason this
+    // is not a fourth production entry point.
+    var vet_buf: [contract.max_path]u8 = undefined;
+    const vet_z = std.fmt.bufPrintZ(&vet_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const vet: RootVet = if (posix.identityOfPath(vet_z.ptr)) |id| .{ .identified = id } else |_| .absent;
+    switch (try openRootDir(root, vet)) {
         .absent => return,
         .fd => |fd| {
             const r = deleteTreeAt(fd, 0);
@@ -1976,8 +2069,11 @@ pub fn freshDir(root: []const u8) RestoreError!void {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     if (posix.mkdir(root_z.ptr, 0o755) == 0) return; // did not exist: created empty
-    try assertRootResolvesToItself(root);
-    switch (try openRootDir(root)) {
+    // The `mkdir` above is this function's only legitimate creator, and it has already
+    // failed. So if the vet finds nothing here, nothing that appears afterwards can be
+    // legitimate -- see the `.fd` arm below (#338).
+    const vet = try assertRootResolvesToItself(root);
+    switch (try openRootDir(root, vet)) {
         // `mkdir` failed AND nothing is there: a missing parent. Loud, and this is the one
         // place the two meanings of an absent root diverge — `deleteTree` treats it as
         // "nothing to delete" and returns. A `--fresh-state` that could not do its job and
@@ -1994,9 +2090,60 @@ pub fn freshDir(root: []const u8) RestoreError!void {
     }
 }
 
+/// `restore`'s root creation, and the identity the descriptor will be held to (#338).
+///
+/// Separated from `restore` so the state it refuses can be reached by a test. That state
+/// lives between two calls `restore` makes back to back — the vet, then this `mkdir` — and
+/// no input to `restore` can place anything in between. Handed the vet's verdict directly,
+/// it is three ordinary cases.
+///
+/// Unlike `freshDir`, `restore` *is* the legitimate creator when the root is gone: the
+/// first run of every world arrives with nothing there, so a vet that saw nothing is
+/// ordinary and the `mkdir` that follows must succeed. `EEXIST` on that path says a
+/// directory arrived between the two calls. It is someone else's, and `O_NOFOLLOW` will
+/// not refuse it, because it is a perfectly real directory.
+///
+/// Every other `mkdir` failure is left alone and falls through to `openRootDir`'s `.absent`
+/// arm, which still answers `CreateFailed`. A missing parent keeps the diagnosis it has
+/// always had rather than being reported as a swap.
+///
+/// The identity comes *after* the `mkdir` for the same reason: on a first run the `mkdir`
+/// is what put the directory there, and the vet above has nothing to name. One `stat`
+/// rather than a second full vet — the name's resolution was judged above, and a swap to a
+/// symlink since then is refused by `O_NOFOLLOW` in the open, not here.
+fn createRoot(root_z: [*:0]const u8, vet: RootVet) RestoreError!RootVet {
+    switch (vet) {
+        // The vet saw the root and approved it, so the identity to hold the descriptor to
+        // is **that** one. Re-reading the name here would undo the whole change: a swap
+        // between the vet and this point makes `mkdir` say `EEXIST` exactly as it would
+        // have anyway, and a fresh reading then returns the intruder, which then agrees
+        // with the intruder at the open. That shape was in the tree until review found it,
+        // and it passed every test, because the swap test drove `openRootDir` directly and
+        // never came through here.
+        .identified => {
+            _ = posix.mkdir(root_z, 0o755); // EEXIST is the expected answer and says nothing
+            return vet;
+        },
+        // Nothing was there, so this call is the legitimate creator and the identity can
+        // only be read afterwards.
+        .absent => {
+            if (posix.mkdir(root_z, 0o755) != 0) {
+                // Something is there that was not there a moment ago. It is not ours, and
+                // `O_NOFOLLOW` will not refuse it for being real.
+                if (std.c._errno().* == posix.EEXIST) return error.UnsafeRoot;
+                // Any other failure keeps the diagnosis it has always had: `openRootDir`
+                // finds nothing and the caller answers `CreateFailed`, which is what a
+                // missing parent has always produced.
+                return .absent;
+            }
+            return if (posix.identityOfPath(root_z)) |id| .{ .identified = id } else |_| .absent;
+        },
+    }
+}
+
 pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
-    try assertRootResolvesToItself(root);
+    const vet = try assertRootResolvesToItself(root);
 
     // Created *before* the descriptor is taken, not after the delete where it used to sit.
     // Once the root is held open, a `mkdir` on the pathname makes a different directory
@@ -2005,13 +2152,13 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     // disagree with: a root that is simply gone is recreated here, as it always was.
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
-    _ = posix.mkdir(root_z.ptr, 0o755);
+    const after = try createRoot(root_z.ptr, vet);
 
     // One descriptor for the whole call: the delete and the rebuild are pinned to the same
     // inode, so a swap between them redirects neither. What it does not pin is the interior
     // — `e.rel` is a multi-component path, and its intermediate components are still
     // resolved by name below. Those directories were made by this loop moments earlier.
-    const fd = switch (try openRootDir(root)) {
+    const fd = switch (try openRootDir(root, after)) {
         .absent => return error.CreateFailed, // the mkdir above failed and nothing is there
         .fd => |f| f,
     };
@@ -2931,12 +3078,12 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
     // write below outside the state directory. The single call site runs this immediately
     // after `restore`, which refuses the same way — but relying on the neighbour is how a
     // guard ends up covering one entry point and not the next.
-    try assertRootResolvesToItself(root);
+    const vet = try assertRootResolvesToItself(root);
     // Through the same held descriptor as `restore`, for the same reason: writing by
     // pathname after the root has been vetted leaves the vet's window open, and this
     // function's own comment above says relying on the neighbour is how a guard ends up
     // covering one entry point and not the next.
-    const fd = switch (try openRootDir(root)) {
+    const fd = switch (try openRootDir(root, vet)) {
         .absent => return error.CreateFailed,
         .fd => |f| f,
     };
@@ -3194,8 +3341,11 @@ test "assertRootResolvesToItself refuses a root swapped for a symlink after reso
     }
 
     try std.testing.expect(posix.mkdir(good_zs.ptr, 0o755) == 0);
-    // Resolves to itself: accepted.
-    try assertRootResolvesToItself(good);
+    // Resolves to itself: accepted, and it names what it approved. The verdict is not
+    // discarded here because every destructive caller now branches on it (#338): a vet
+    // that answered `.absent` for a root plainly present would let `restore` read its own
+    // legitimate `mkdir` as a swap and refuse every first run.
+    try std.testing.expect((try assertRootResolvesToItself(good)) == .identified);
 
     // Now the swap. The link points at a sibling, which is enough — what is refused is
     // "this root no longer resolves to itself", not "the target is dangerous".
@@ -3206,12 +3356,232 @@ test "assertRootResolvesToItself refuses a root swapped for a symlink after reso
     try std.testing.expectError(error.UnsafeRoot, assertRootResolvesToItself(good));
     // Control: the sibling the link points at is itself fine, so the refusal above is
     // about the swap and not about anything in this directory.
-    try assertRootResolvesToItself(other);
+    try std.testing.expect((try assertRootResolvesToItself(other)) == .identified);
 
     // A root that is simply absent is not a swap: deleteTree already returns silently
     // for it, and refusing here would turn a tolerated state into a SETUP ERROR.
     try std.testing.expect(posix.unlink(good_zs.ptr) == 0);
-    try assertRootResolvesToItself(good);
+    try std.testing.expect((try assertRootResolvesToItself(good)) == .absent);
+}
+
+test "openRootDir refuses a root swapped between the vet and the open (#338)" {
+    // The window #338 named: `assertRootResolvesToItself` looks at a name, `openRootDir`
+    // opens that name, and the two are separate syscalls. Deterministic, no threads — the
+    // swap is performed between two calls this test makes itself, which is the whole
+    // reason the comparison is anchored to the vet rather than to a second look at the name.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vetwin-{d}", .{std.c.getpid()}) catch unreachable;
+    var pz: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    // The base goes back through realpath: on macOS /tmp is itself a link, and the vet
+    // compares spellings.
+    var dbuf: [contract.max_path]u8 = undefined;
+    const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
+    var ab: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
+    var az: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    var bb: [contract.max_path]u8 = undefined;
+    const moved_z = std.fmt.bufPrintZ(&bb, "{s}/moved", .{rparent}) catch unreachable;
+    defer {
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(moved_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+
+    const vet = try assertRootResolvesToItself(root);
+    try std.testing.expect(vet == .identified);
+
+    // Control first: nothing swapped, the open is accepted. Without this the refusal below
+    // is satisfied by a guard that refuses everything.
+    switch (try openRootDir(root, vet)) {
+        .fd => |fd| _ = posix.close(fd),
+        .absent => return error.TestUnexpectedResult,
+    }
+
+    // Now the swap, inside the window: the vetted directory is moved aside and another put
+    // at the same name.
+    try std.testing.expect(posix.rename(root_z.ptr, moved_z.ptr) == 0);
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+
+    try std.testing.expectError(error.UnsafeRoot, openRootDir(root, vet));
+
+    // And why the baseline has to come from the vet. The design this replaced compared the
+    // descriptor against whatever the *name* resolved to at open time; after the swap those
+    // two are the same new directory, so that comparison agrees and the walk would empty a
+    // tree nobody vetted. Asserted rather than argued, because it is the only thing that
+    // distinguishes the shipped shape from the one that was measured accepting this.
+    const fd2 = posix.open(root_z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0));
+    try std.testing.expect(fd2 >= 0);
+    defer _ = posix.close(fd2);
+    const held = try posix.identityOfFd(fd2);
+    const named = try posix.identityOfPath(root_z.ptr);
+    try std.testing.expect(held.eql(named)); // the rejected comparison passes here
+    try std.testing.expect(!held.eql(vet.identified)); // the shipped one does not
+}
+
+test "openRootDir refuses a root that appeared after the vet found nothing (#338)" {
+    // `freshDir` reaches this with its `mkdir` already failed, and `corruptState` when the
+    // tree `restore` built has gone: in both, nothing between the vet and the open is
+    // entitled to create the root, so something being there means someone else made it.
+    // `restore` is the exception and takes a fresh identity after its own `mkdir`.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vetabs-{d}", .{std.c.getpid()}) catch unreachable;
+    var pz: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var dbuf: [contract.max_path]u8 = undefined;
+    const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
+    var ab: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
+    var az: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    defer {
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    // The vet looks at a root that is not there.
+    try std.testing.expect((try assertRootResolvesToItself(root)) == .absent);
+    // Inside the window, one appears.
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+
+    try std.testing.expectError(error.UnsafeRoot, openRootDir(root, .absent));
+
+    // Control: the same directory, opened against a vet that did see it, is accepted — so
+    // the refusal above is about the `.absent` verdict and not about this directory.
+    const seen = RootVet{ .identified = try posix.identityOfPath(root_z.ptr) };
+    switch (try openRootDir(root, seen)) {
+        .fd => |fd| _ = posix.close(fd),
+        .absent => return error.TestUnexpectedResult,
+    }
+}
+
+test "createRoot keeps the vetted identity across a swap, rather than re-reading the name (#338)" {
+    // The hole review found, and the reason it survived: the swap test above drives
+    // `openRootDir` directly, so it never came through here. Inside `restore` the order is
+    // vet, `createRoot`, open — and if `createRoot` re-reads the name, a swap landing
+    // before it makes `mkdir` answer the `EEXIST` it would have answered anyway, the fresh
+    // reading returns the intruder, and the open then agrees with the intruder.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-keepid-{d}", .{std.c.getpid()}) catch unreachable;
+    var pz: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var ab: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&ab, "{s}/state", .{parent}) catch unreachable;
+    var bb: [contract.max_path]u8 = undefined;
+    const moved_z = std.fmt.bufPrintZ(&bb, "{s}/moved", .{parent}) catch unreachable;
+    defer {
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(moved_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+    const approved = RootVet{ .identified = try posix.identityOfPath(root_z.ptr) };
+
+    // Control: no swap, and the identity comes back unchanged — so the assertion below is
+    // about what `createRoot` does with the name, not about it returning a constant.
+    const quiet = try createRoot(root_z.ptr, approved);
+    try std.testing.expect(quiet.identified.eql(approved.identified));
+
+    // The swap, before `createRoot` runs.
+    try std.testing.expect(posix.rename(root_z.ptr, moved_z.ptr) == 0);
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+
+    const kept = try createRoot(root_z.ptr, approved);
+    // It must still name what the vet approved, not what the name reaches now.
+    try std.testing.expect(kept.identified.eql(approved.identified));
+    const intruder = try posix.identityOfPath(root_z.ptr);
+    try std.testing.expect(!intruder.eql(approved.identified)); // the swap really happened
+    // ...and the open then refuses, which is the outcome `restore` depends on.
+    try std.testing.expectError(error.UnsafeRoot, openRootDir(std.mem.span(root_z.ptr), kept));
+}
+
+test "createRoot refuses a root that arrived after the vet found nothing (#338)" {
+    // The one rule in this change that no input to `restore` can exercise: it sits between
+    // the vet and the `mkdir`, two calls `restore` makes back to back. Driving `createRoot`
+    // directly is what makes the three states reachable, and the mutation survey said so —
+    // with the rule inline, deleting it left every test green.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-mkwin-{d}", .{std.c.getpid()}) catch unreachable;
+    var pz: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var ab: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&ab, "{s}/state", .{parent}) catch unreachable;
+    defer {
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    // First run: the vet saw nothing and nothing is there. The `mkdir` succeeds and names
+    // what it made. This is the ordinary path, asserted first so the refusal below cannot
+    // be satisfied by a rule that refuses whenever the vet was empty.
+    const first = try createRoot(root_z.ptr, .absent);
+    try std.testing.expect(first == .identified);
+    try std.testing.expect((try posix.kindOfPathNoFollow(root_z.ptr)) == .dir);
+
+    // The hostile case: the vet still says it saw nothing, but a directory is there now, so
+    // it arrived in between and nobody approved it. `O_NOFOLLOW` would not refuse it —
+    // it is a real directory — and without this rule the identity taken afterwards would
+    // be the intruder's, agreeing with itself all the way down.
+    try std.testing.expectError(error.UnsafeRoot, createRoot(root_z.ptr, .absent));
+
+    // Ordinary second run: the vet identified the root, so `EEXIST` is expected and the
+    // identity comes back unchanged.
+    const seen = RootVet{ .identified = try posix.identityOfPath(root_z.ptr) };
+    const again = try createRoot(root_z.ptr, seen);
+    try std.testing.expect(again == .identified);
+    try std.testing.expect(again.identified.eql(seen.identified));
+}
+
+test "restore still creates a root that is not there yet (#338)" {
+    // The over-strictness detector. #338 makes three destructive paths refuse a root they
+    // did not vet, and the first run of every world arrives here with no root at all: the
+    // vet answers `.absent`, `restore`'s own `mkdir` puts the directory there, and the
+    // identity it holds the descriptor to has to be taken after that `mkdir` rather than
+    // before it. An implementation that refuses whenever the vet found nothing passes
+    // every swap test above and breaks every ordinary run.
+    const gpa = std.testing.allocator;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-firstrun-{d}", .{std.c.getpid()}) catch unreachable;
+    var pz: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var dbuf: [contract.max_path]u8 = undefined;
+    const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
+    var ab: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
+    var az: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    defer {
+        deleteTree(root) catch {};
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+
+    var snap: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer snap.deinit();
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "a", .kind = .file, .content = "x" });
+
+    // Nothing there at all: the state the vet reports as `.absent`.
+    try std.testing.expect((try assertRootResolvesToItself(root)) == .absent);
+    try restore(snap, root);
+
+    // And it did the work rather than merely not refusing.
+    var eb: [contract.max_path]u8 = undefined;
+    const entry_z = try joinZ(&eb, root, "a");
+    try std.testing.expect((try posix.kindOfPathNoFollow(entry_z.ptr)) == .file);
+    _ = posix.unlink(entry_z.ptr);
+
+    // The second run is the other half: the root now exists, the vet identifies it, and
+    // the `mkdir` fails with EEXIST as it always has.
+    try std.testing.expect((try assertRootResolvesToItself(root)) == .identified);
+    try restore(snap, root);
+    try std.testing.expect((try posix.kindOfPathNoFollow(entry_z.ptr)) == .file);
 }
 
 test "restore and freshDir refuse a swapped root — the guard is wired in front of the delete" {

@@ -5053,9 +5053,11 @@ fn writeJsonReport(
 ///
 /// **The error decides the wording.** Every `restore`/`freshDir`/`corruptState` call
 /// site folds its errors into one message, which used to swallow the one error that
-/// says something different: `UnsafeRoot` from `assertRootResolvesToItself` means the
-/// state directory was replaced between the resolution and the destructive step, not
-/// that the step failed. That is an actionable difference — a setup command or the
+/// says something different: `UnsafeRoot` means the state directory was replaced between
+/// the resolution and the destructive step, not that the step failed. It no longer comes
+/// only from `assertRootResolvesToItself` — since #338 the identity comparison in
+/// `openRootDir` and `createRoot`'s `EEXIST` rule raise it too, which is why the wording
+/// below names a fourth cause. That is an actionable difference — a setup command or the
 /// recorded operation left a link there — and it is the case an acceptance check can
 /// assert on.
 ///
@@ -5075,13 +5077,24 @@ fn rewriteFailureDisposition(
     doing: []const u8,
 ) RewriteDisposition {
     const detail: []const u8 = switch (e) {
-        // Three causes, not two: #327 added the third by moving a non-directory at the
-        // root from DeleteFailed to UnsafeRoot, which is the right class — the root is
-        // not a thing to rewrite — but the old wording named only a swap, and a refusal
-        // that states the wrong cause is worse than one that states none. "Destructive
-        // access", not "empty": the same refusal now serves the falsification probe's
-        // corruption (#363), which overwrites rather than empties.
-        error.UnsafeRoot => "the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), it is not a directory, or it could not be read at all. Refusing destructive access to it",
+        // Four causes now, and the fourth reads nothing like the other three. #327 added
+        // the third by moving a non-directory at the root from DeleteFailed to UnsafeRoot,
+        // which is the right class — the root is not a thing to rewrite. #338 added the
+        // fourth, and it is the one an operator would otherwise stare at: the path is a
+        // perfectly ordinary readable directory that resolves to itself, and it is simply
+        // not the one this run has anything to do with.
+        //
+        // "Vetted or created", not "the one that was checked": #338 raises this on two
+        // paths and the narrower wording covers only one. Either the directory checked
+        // earlier was replaced by another, or nothing was there when the check looked and
+        // a directory appeared before this run could make its own. A refusal that states
+        // the wrong cause is worse than one that states none, which is why each is named,
+        // and why the message is generated from the error rather than written at the call
+        // sites: three of the four arrived after the first wording.
+        //
+        // "Destructive access", not "empty": the same refusal serves the falsification
+        // probe's corruption (#363), which overwrites rather than empties.
+        error.UnsafeRoot => "the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), it is not a directory, it could not be read at all, or the path names a directory this run neither vetted nor created (one appeared, or replaced another, between the check and the open). Refusing destructive access to it",
         error.DeleteFailed, error.CreateFailed, error.PathTooLong => doing,
     };
     return .{

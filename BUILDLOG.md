@@ -2,6 +2,97 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-01 (sixth) - the root the walk deletes is the root that was vetted, and the reviewed design did not do that
+
+`#338`: the destructive paths vet a root and then open it, two syscalls apart, and a swap
+in between was undetected. `assertRootResolvesToItself`'s own doc said so, and ADR 0024
+had already described the fix and filed it — a `stat` at vet time, an `fstat` after the
+open, one struct threaded through.
+
+**The plan shipped a different design, and it did not close the window.** First-look review
+argued that recording an identity at vet time lets a swap *before* the vet record the
+attacker's object as the vetted one, and proposed comparing the descriptor against what the
+pathname resolves to *now*. That reasoning is about a different window — the one #338 itself
+concedes is not closable this way — and the substitute was implemented before it was
+measured. Measured: **it accepted the swap.** Move the vetted directory aside inside the
+window, put another at the same name, and the open reaches the new one while the name
+resolves to the new one; the two agree and the walk proceeds. That comparison can only see a
+swap landing between the open and the stat, a window it creates itself. The probe printed
+`openRootDir ACCEPTED the swapped root`, and the same probe prints `refused with
+error.UnsafeRoot` against the shipped shape. Both halves are now a permanent test, because
+"the rejected comparison agrees here" is the only thing that distinguishes the two designs
+and it would otherwise be a paragraph nobody re-runs.
+
+So the vet returns what it approved. `RootVet` is `identified: posix.Identity` or `absent`,
+`posix.Identity` is a device and inode pair read through `statx` on Linux and `fstat` on
+Darwin, and `openRootDir` takes a `RootVet` — **not an optional**. An optional is an opt-out
+and the opt-out would be invisible at the call site; `deleteTree`, which is reachable only
+from tests and takes a raw path, produces an identity of its own rather than passing
+nothing.
+
+**Both refusals live in `openRootDir` rather than at the three call sites.** They were
+written at the call sites first, one conditional each, which is the shape where the fourth
+caller gets one of them wrong — and `openRootDir` exists at all because `opendir` used to be
+called from several places with several different amounts of care.
+
+**`restore` is the exception and that is a regression risk, not a detail.** It legitimately
+creates the root: the first run of every world arrives with nothing there. An implementation
+that refuses whenever the vet was empty passes every swap test and breaks every ordinary
+run, so `createRoot` takes the identity *after* its own `mkdir` — and refuses `EEXIST` there
+when the vet was empty, because a directory that arrived in that window is someone else's
+and `O_NOFOLLOW` will not refuse it for being real.
+
+**That `EEXIST` rule cannot be reached from a single-threaded call to `restore`**, since it
+sits between two calls `restore` makes back to back. It is perfectly reachable in the world
+— another process creating the root in that window is the case it exists for — but not from
+an argument. Inline, the mutation survey confirmed the consequence: deleting it left every
+test green. It is a separate function now, `createRoot`, so a test can hand it the vet's
+verdict directly — first run, hostile arrival, ordinary second run. Extracting it was not
+tidiness; it was the only way to measure it.
+
+**And then review found that `restore` still accepted the swap.** `createRoot` re-read the
+name unconditionally, so on the path that matters — vet identifies A, A is replaced by B,
+`mkdir` answers the `EEXIST` it would have answered anyway, the `.absent` rule does not
+apply — the fresh reading returned B, and the open then compared B against B and agreed.
+The whole change, on its main caller, did nothing. It survived because the swap test drives
+`openRootDir` directly and never comes through `createRoot`: **the test aimed at the
+mechanism and the defect lived at the call site**, which is the shape this repository keeps
+refiling. `createRoot` now returns the vet's own identity when the vet saw something, and
+reads a fresh one only when it did not, and there is a test that swaps the directory
+underneath it and asserts the identity did not move.
+
+Five mutations, five kills, each by the test written for it. **Three are refusals** — the
+identity comparison, the `.absent` arm, and the `EEXIST` rule — and the other two are not,
+which is worth saying because an earlier draft of this entry called all five refusals and
+review took it apart. `restore` taking its identity *after* the `mkdir` is what lets a first
+run succeed; the conditional that keeps the vetted identity is what preserves the evidence
+the mismatch refusal compares against. Deleting either one does not remove a refusal, it
+removes the thing a refusal needs to be right. **Two of the five came back as compile errors
+rather than failures** — removing a use left a variable unused — which is not a mutant at
+all; they were rewritten to compile and re-run.
+
+**Two residuals are now written down rather than implied.** A swap that happened before the
+vet, which #338 concedes and which no comparison anchored to the vet can question. And an
+inode that was freed and handed out again: if the vetted directory is *unlinked* rather than
+renamed aside and the filesystem reuses its inode number on the same device, the pair
+compares equal. Review found the second; it is a property of the primitive, and closing it
+would need a descriptor held from the moment of the vet or a generation number no portable
+stat exposes.
+
+The operator-facing refusal grew a fourth cause. `UnsafeRoot` used to mean the path resolved
+elsewhere, was not a directory, or could not be read; it now also means the path is still a
+readable directory that still resolves to itself and is simply not the one that was checked.
+Review caught that the message had not been told — and the ADR had claimed the existing
+wording already covered it, which it did not.
+
+The Linux half of the identity wrappers had only been **type-checked**, since Zig does not
+analyse a branch it cannot reach and this machine is Darwin. Cross-compiling is not running,
+and the container has no network to fetch a toolchain, so a small probe was cross-built here
+and executed in one: same object agrees, the swapped name gives a different inode, a missing
+name answers `Unidentifiable` rather than matching by accident. The full acceptance suite is
+CI's — a false positive here is not a test failure but an `UNKNOWN` verdict, and this tool's
+subject is the UNKNOWN rate.
+
 ## 2026-09-01 (fifth) - the opening banner is forgeable too, and what protects the start is what comes before it
 
 `#339` said acceptance plants a target-spelled **closing** banner and nothing else, and

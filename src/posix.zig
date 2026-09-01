@@ -289,6 +289,7 @@ pub const AT_REMOVEDIR: c_int = std.posix.AT.REMOVEDIR;
 /// it cannot be written out the way `EINTR` and `ENOENT` above are; `ENOTDIR` agrees
 /// across both but comes from the same place so the pair cannot drift apart.
 pub const ELOOP: c_int = @intFromEnum(std.posix.E.LOOP);
+pub const EEXIST: c_int = @intFromEnum(std.posix.E.EXIST);
 pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
 /// Taken from `std.posix.E` for the same reason as its two neighbours, and with more at
 /// stake: this one differs **between operating systems** — 11 on Linux, 35 on Darwin —
@@ -456,6 +457,96 @@ pub fn kindOfFd(fd: c_int) ClassifyError!Kind {
         if (std.c.S.ISDIR(m)) return .dir;
         if (std.c.S.ISREG(m)) return .file;
         return .other;
+    }
+}
+
+/// What a swap changes and a rename does not: the pair that says a descriptor and a name
+/// reach the same object (#338).
+///
+/// **The two platforms encode `dev` differently and that is deliberate.** Linux composes
+/// it from `statx`'s major and minor; Darwin hands back its own `dev_t`, which is signed
+/// there and is widened through its bit pattern rather than its value. Nothing serialises
+/// an `Identity`, nothing stores one, and nothing compares one taken on one platform with
+/// one taken on another — the only comparison is between two taken moments apart in the
+/// same process. So the encoding only has to be injective within a run, and the cheapest
+/// injective encoding on each platform is the one the platform already gives.
+///
+/// **What it cannot distinguish is an inode that was freed and handed out again.** If the
+/// object a caller vetted is *unlinked* and the filesystem then allocates the same inode
+/// number on the same device to something new, two objects that never coexisted compare
+/// equal. Renaming the old one aside — the ordinary way a directory is swapped, and the
+/// case the engine's tests use — keeps it alive and keeps the numbers apart; unlinking it
+/// does not. Closing that needs something this pair does not carry: a descriptor held from
+/// the moment of the vet, or a per-inode generation number that neither platform exposes
+/// through a portable stat. Recorded rather than closed, and named in ADR 0037 so it is
+/// not read as covered.
+pub const Identity = struct {
+    dev: u64,
+    ino: u64,
+
+    pub fn eql(a: Identity, b: Identity) bool {
+        return a.dev == b.dev and a.ino == b.ino;
+    }
+
+    /// One definition of the encoding per platform, called from both readers below. It was
+    /// written out at all four sites first, which is the shape where someone widens the
+    /// Linux composition in one of two places and the descriptor and the pathname stop
+    /// agreeing about an object they both reached.
+    fn fromStatx(stx: anytype) Identity {
+        return .{ .dev = (@as(u64, stx.dev_major) << 32) | @as(u64, stx.dev_minor), .ino = stx.ino };
+    }
+
+    fn fromStat(st: std.c.Stat) Identity {
+        return .{ .dev = @as(u64, @as(u32, @bitCast(st.dev))), .ino = st.ino };
+    }
+};
+
+/// Failure to identify is never "they match". Every caller refuses on this error, which is
+/// why it is an error and not a null: an optional invites `orelse` at the call site, and
+/// the one thing that must not happen here is a missing answer read as agreement.
+pub const IdentityError = error{Unidentifiable};
+
+/// The identity of what a descriptor holds. Cannot race: the descriptor pins the inode.
+pub fn identityOfFd(fd: c_int) IdentityError!Identity {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        // AT_EMPTY_PATH with the empty name is how statx addresses a descriptor itself,
+        // the same spelling `kindOfFd` uses above.
+        const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .INO = true }, &stx);
+        if (lnx.errno(rc) != .SUCCESS) return error.Unidentifiable;
+        // The inode is mask-gated and has to be checked; the device is not — `statx(2)`
+        // fills `stx_dev_major`/`stx_dev_minor` unconditionally, outside the mask.
+        if (!stx.mask.INO) return error.Unidentifiable;
+        return Identity.fromStatx(stx);
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstat(fd, &st) != 0) return error.Unidentifiable;
+        return Identity.fromStat(st);
+    }
+}
+
+/// The identity of whatever a pathname resolves to **right now**.
+///
+/// Follows links on purpose: the question is what the name means at this instant, not what
+/// the last component is. A caller comparing this against a descriptor it already holds is
+/// asking whether the name still leads back to the thing it opened, and a link that leads
+/// there is not a swap.
+///
+/// ENOENT is `Unidentifiable` like every other failure. A name that resolves to nothing
+/// while a descriptor holds something is precisely a disagreement, not an absence.
+pub fn identityOfPath(path: [*:0]const u8) IdentityError!Identity {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        const rc = lnx.statx(AT_FDCWD, path, 0, .{ .INO = true }, &stx);
+        if (lnx.errno(rc) != .SUCCESS) return error.Unidentifiable;
+        if (!stx.mask.INO) return error.Unidentifiable;
+        return Identity.fromStatx(stx);
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstatat(AT_FDCWD, path, &st, 0) != 0) return error.Unidentifiable;
+        return Identity.fromStat(st);
     }
 }
 
