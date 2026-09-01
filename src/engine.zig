@@ -3500,6 +3500,41 @@ test "createRoot keeps the vetted identity across a swap, rather than re-reading
     try std.testing.expectError(error.UnsafeRoot, openRootDir(std.mem.span(root_z.ptr), kept));
 }
 
+test "a vetted root that vanishes leaves createRoot's own directory unvetted, and the open refuses (#338)" {
+    // The third state, which neither swap test reaches: the vet identified a directory and
+    // then it was removed rather than replaced, so `createRoot`'s `mkdir` succeeds and makes
+    // one of its own. Keeping the vetted identity means the open cannot match it. Refusing
+    // is the intended answer -- the object that was approved is gone, and nothing inside
+    // `restore` legitimately removes the root between those two calls -- but a refusal here
+    // becomes an UNKNOWN verdict rather than a red test, so it is pinned rather than assumed.
+    var pbuf: [contract.max_path]u8 = undefined;
+    const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vanish-{d}", .{std.c.getpid()}) catch unreachable;
+    var pz: [contract.max_path]u8 = undefined;
+    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    _ = posix.mkdir(parent_z.ptr, 0o755);
+    var dbuf: [contract.max_path]u8 = undefined;
+    const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
+    var ab: [contract.max_path]u8 = undefined;
+    const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
+    var az: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    defer {
+        _ = posix.rmdir(root_z.ptr);
+        _ = posix.rmdir(parent_z.ptr);
+    }
+    try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
+    const approved = RootVet{ .identified = try posix.identityOfPath(root_z.ptr) };
+
+    // It goes away, and `createRoot` makes a new one.
+    try std.testing.expect(posix.rmdir(root_z.ptr) == 0);
+    const kept = try createRoot(root_z.ptr, approved);
+    try std.testing.expect(kept.identified.eql(approved.identified)); // still the vetted one
+    try std.testing.expect((try posix.kindOfPathNoFollow(root_z.ptr)) == .dir); // and it did create
+
+    // The directory now at the name is not the one that was approved, so the open refuses.
+    try std.testing.expectError(error.UnsafeRoot, openRootDir(root, kept));
+}
+
 test "createRoot refuses a root that arrived after the vet found nothing (#338)" {
     // The one rule in this change that no input to `restore` can exercise: it sits between
     // the vet and the `mkdir`, two calls `restore` makes back to back. Driving `createRoot`

@@ -85,6 +85,21 @@ readable directory that still resolves to itself and is simply not the one that 
 Review caught that the message had not been told — and the ADR had claimed the existing
 wording already covered it, which it did not.
 
+A third state is pinned that neither swap test reaches: a vetted root that is *removed*
+rather than replaced, so `createRoot`'s `mkdir` succeeds and makes one of its own. Keeping
+the vetted identity means the open cannot match it and refuses. That is the intended answer
+— nothing inside `restore` legitimately removes the root between those two calls — but a
+refusal here is an `UNKNOWN` verdict rather than a red test, which is why it is measured
+rather than reasoned about.
+
+**And a red that was not the change.** `zig build -Dtarget=aarch64-linux-gnu` installs into
+the same `zig-out` as the host build, so after cross-checking the Linux branch the tree held
+an ELF `sideeye` and a `libsideeye_shim.so` beside the `.dylib`. The next `zig build test`
+failed `findShimBeside`, which looks for the shim next to the binary — an unrelated test,
+red for an environment reason, on a change that touches destructive paths. Rebuilding for
+the host cleared it. Worth writing down because the obvious reading of that failure is the
+wrong one.
+
 The Linux half of the identity wrappers had only been **type-checked**, since Zig does not
 analyse a branch it cannot reach and this machine is Darwin. Cross-compiling is not running,
 and the container has no network to fetch a toolchain, so a small probe was cross-built here
