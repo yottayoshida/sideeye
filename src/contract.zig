@@ -286,29 +286,17 @@ pub const OpClass = enum(u16) {
         return self == .rename or self == .link;
     }
 
+    /// The class's own tag, the way `UnknownReason.name` in this file already does it
+    /// (#280). This was a hand-written switch of twenty arms, every one of them spelling
+    /// its own tag -- measured: twenty members, twenty arms, zero differences -- while
+    /// `src/main.zig` printed `@tagName(op.class)` directly in divergence detail. Two
+    /// spellings of one thing in one output, kept in step by nothing. The wire format is
+    /// `@intFromEnum`, so nothing frozen reads this; what it does reach, besides the
+    /// report, is the landing context written into a saved case, which is why the arms
+    /// were compared to their tags one by one before the switch was removed rather than
+    /// after.
     pub fn name(self: OpClass) []const u8 {
-        return switch (self) {
-            .open => "open",
-            .write => "write",
-            .rename => "rename",
-            .unlink => "unlink",
-            .fsync => "fsync",
-            .truncate => "truncate",
-            .mkdir => "mkdir",
-            .rmdir => "rmdir",
-            .link => "link",
-            .symlink => "symlink",
-            .close => "close",
-            .fork => "fork",
-            .exec => "exec",
-            .thread => "thread",
-            .spawn => "spawn",
-            .detached => "detached",
-            .shim_ready => "shim_ready",
-            .kill_landed => "kill_landed",
-            .unresolved => "unresolved",
-            .unsupported => "unsupported",
-        };
+        return @tagName(self);
     }
 
     pub fn fromInt(raw: u16) ?OpClass {

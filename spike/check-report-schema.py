@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Hold docs/report-schema.md to the generated reports, in both directions.
 
-Usage: check-report-schema.py <schema.md> <contract.zig> <report.json>...
+Usage: check-report-schema.py <schema.md> <contract.zig> <main.zig> <report.json>...
 
-Four claims, each enforced:
+Five claims, each enforced:
   1. every field present in any given report is documented (a table row whose
      first cell backticks the field name);
   2. every documented field appears in at least one given report — a row that
      nothing generates is a claim nobody measured;
   3. the doc's closed unknown_reason set equals the contract's enum, exactly;
-  4. the contract version the doc names is the one the code speaks.
+  4. the contract version the doc names is the one the code speaks;
+  5. every prose value the JSON report carries is read from the same place the text
+     report reads it, never built again inside the JSON writer (#280).
 
 The verdict coverage itself is asserted too: the given reports must include all
 four verdicts, or the reverse direction would go vacuously green for the
@@ -31,7 +33,9 @@ def flatten(doc):
 
 
 def main():
-    md_path, zig_path, report_paths = sys.argv[1], sys.argv[2], sys.argv[3:]
+    md_path, zig_path = sys.argv[1], sys.argv[2]
+    zig_main_path, report_paths = sys.argv[3], sys.argv[4:]
+    zig_main = open(zig_main_path).read()
     md = open(md_path, encoding="utf-8").read()
 
     reports = [json.load(open(p)) for p in report_paths]
@@ -95,10 +99,50 @@ def main():
                             "speaks v%s (anchor /%s/)"
                             % (m.group(1), code_v.group(1), anchor))
 
+    # Claim 5. DESIGN §13 ships the report in two forms, and the text one is the
+    # reader's view rather than a second copy of the JSON (its own worked examples are
+    # eight lines; the JSON is twenty-odd fields). What has to hold is narrower and
+    # sharper: a value BOTH forms carry must have one definition. It did, everywhere
+    # except `not_tested`, which was two hand-written functions until #280 — so this
+    # keeps the state the repository was already in rather than imposing a new one.
+    #
+    # Mechanically: inside `buildJson`, every string handed to `jsonString` must be a
+    # bare name, a field of one, or a call taking no arguments. Those are the shared
+    # notes (`oracle_note`, `l0_note`, …), the earliest-record fields the text renders
+    # from the same struct, this function's own parameters, and `boundaryAccount()`.
+    # An inline `allocPrint`, a literal, or a second formatting of something the text
+    # also prints is what fails.
+    #
+    # Two limits, stated because review measured both. A bare zero-argument call passes,
+    # so this would not by itself have caught `notTestedJson()` being handed over here --
+    # what catches that shape is the comptime table it now comes from. And `not_tested`
+    # is appended directly rather than through `jsonString`, so it is outside this claim
+    # entirely; acceptance check 2nt is what holds that field.
+    body = re.search(r"^fn buildJson\(.*?^\}$", zig_main, re.S | re.M)
+    if not body:
+        problems.append("could not find buildJson in %s" % zig_main_path)
+    else:
+        calls = re.findall(r"jsonString\(w, arena, (.+?)\);", body.group(0))
+        # Without this, a call split across lines is silently not examined: the pattern
+        # would not match it and nothing would notice the shortfall. Counted against the
+        # bare function name, which survives the split -- the first version compared
+        # against `jsonString(w, arena,`, which does not, so both sides fell together and
+        # the guard could never fire (measured).
+        if len(calls) != body.group(0).count("jsonString("):
+            problems.append("a jsonString call in buildJson spans lines; this check "
+                            "reads single-line calls and would skip it silently")
+        if not calls:
+            problems.append("no jsonString calls found in buildJson — this check did not run")
+        shared = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*(\(\))?$")
+        for arg in calls:
+            if not shared.match(arg.strip()):
+                problems.append("buildJson builds a value inline where the text report "
+                                "reads a shared one: jsonString(..., %s)" % arg.strip())
+
     if problems:
         sys.exit("; ".join(problems))
-    print("schema page, %d reports (all four verdicts), and the contract enum agree"
-          % len(reports))
+    print("schema page, %d reports (all four verdicts), the contract enum, and "
+          "buildJson's %d shared values agree" % (len(reports), len(calls)))
 
 
 if __name__ == "__main__":
