@@ -3573,7 +3573,34 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # holds every unknown_reason to report-schema.md's closed set). Before the sweep's
 # artifacts exist it asserts the explicit not-yet-measured placeholder instead.
 # The gate's own predicates are proven falsifiable on committed fixtures every run —
-# one fixture per predicate, not only the two accidents that motivated the gate:
+# a fixture for each predicate this check NAMES, not only the two accidents that
+# motivated the gate. **Not a fixture per predicate** — that reading was here until
+# #341 and it was false: `count.py` holds 78 `if` guards that reach a `die()`, and a
+# sweep on 2026-09-01 that rewrote each of their tests to `False` in turn and re-ran
+# every input this check feeds found **36 whose removal changes nothing here**. They
+# cluster in `check` (15) and in the readers' shape checks — `read_generations` (3),
+# `check_attribution` (3), `load_reports` (2), `split_revision` (2), `check_ledgers` (2),
+# and one each in `read_corpus`, `_reject_duplicate_ids`, `read_manifest`,
+# `enum_from_schema_doc`, `digest_for`, `read_ledger`, `parse_section`,
+# `check_dispositions` and `read_lines`. Column counts, duplicate ids, file existence,
+# and the published page's arithmetic: a different family from the ones below, and filed
+# rather than left implied — the same disclosure the distinctness gate makes about the
+# reasons it does not credit.
+#
+# **How that 36 was counted, and why two earlier counts came out lower.** The candidates
+# are every `if` whose body reaches a `die()`, found by walking the parse tree rather
+# than by reading nearby lines; each test was rewritten to `False` in a copy and the
+# whole of this check re-run — the live root, `good`, `setup-error-present`, and all 37
+# tampered fixtures against their expected messages. A predicate is undetected when all
+# 40 verdicts are unchanged. The two earlier passes found candidates by text proximity —
+# a `die` within three lines of its `if` — and got 32, then 33 once the sites that
+# heuristic had skipped were swept by hand; the published block's duplicate-slice
+# refusal, whose `if` is separated from its `die` by a comment block, is the one it
+# could not see. **The figure is complete for this file**: `count.py` contains no
+# `assert` and no `raise`, and every one of its 71 `die()` calls sits inside an `if`, so
+# there is no fourth way to guard one and nothing falls outside the candidate set.
+#
+# The fixtures this check does name:
 # fixtures/good must pass; tampered-verdict (report verdict flipped, docs stale),
 # tampered-manifest (a row deleted), tampered-define (define bytes edited after the
 # hash), tampered-reason (an unknown_reason outside the documented closed set) and
@@ -3654,6 +3681,8 @@ ur_fails=0
 # list below held twenty, because nothing recomputes a number kept in prose beside
 # the thing it counts.
 ur_red=0
+ur_seen=
+ur_blob=
 if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT"; then
     echo "     the live page/artifacts disagree with recomputation"
     ur_fails=$((ur_fails + 1))
@@ -3708,17 +3737,31 @@ for pair in \
     "setup-error-orphan-waiver:a waiver outliving its trial excuses nothing" \
     "setup-error-empty-reason:is waived with no reason" \
     "setup-error-piped-reason:reason contains a pipe" \
-    "setup-error-duplicate-waiver:twice — the later row would win in silence" \
+    "setup-error-duplicate-waiver:exclusions.tsv lists 'fx-toyE' twice" \
     "setup-error-marker-reason:carries the results block's end marker" \
     "apparatus-missing:apparatus.txt is missing" \
     "apparatus-digest-missing:digest lines, not the engine's" \
     "apparatus-head-empty:no resolved head: line" \
-    "apparatus-image-unlisted:the apparatus record does not"; do
+    "apparatus-image-unlisted:the apparatus record does not" \
+    "gen-group-unknown:is not one of A/B/control" \
+    "gen-covers-no-group:a row no generation covers" \
+    "corpus-since-unknown:is not a generation" \
+    "outcome-map-columns:does not have 3 columns" \
+    "outcome-map-duplicate:outcome-map.tsv lists 'toyA' twice" \
+    "outcome-map-disposition:is not one of reported-upstream/" \
+    "outcome-conservation:carry a disposition the outcome table does not print"; do
     ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
+    ur_seen="$ur_seen $bad"
     out=$(python3 "$ROOT/spike/unknown-rate/count.py" check \
           --root "$ROOT/spike/unknown-rate/fixtures/$bad" 2>&1)
     rc=$?
+    ur_blob="$ur_blob
+@@F@@
+$bad
+$want
+$out
+@@E@@"
     if [ "$rc" = 0 ]; then
         echo "     fixture $bad PASSED — the gate has gone blind to its own predicate"
         ur_fails=$((ur_fails + 1))
@@ -3728,6 +3771,60 @@ for pair in \
         ur_fails=$((ur_fails + 1))
     fi
 done
+
+# A committed tampered fixture that no row above names is a fixture nobody runs, and the
+# loop cannot notice its own absence: `ur_red` is printed, never compared, so a list that
+# loses rows still reports "ok". That is not hypothetical -- while writing #341 the seven
+# new rows landed one line below the `; do` and became a command in the loop body, which
+# `sh -n` accepts and `set -u` does not stop; the check printed `gate red on all 0
+# tampered fixtures` and passed. Reconciling against the directory catches both that and
+# a fixture added without a row. `good` and `setup-error-present` are the two that are
+# meant to pass, so they are the only names exempt.
+ur_committed=0
+for d in "$ROOT"/spike/unknown-rate/fixtures/*/; do
+    name=${d%/}; name=${name##*/}
+    case " good setup-error-present " in *" $name "*) continue ;; esac
+    ur_committed=$((ur_committed + 1))
+    case " $ur_seen " in
+        *" $name "*) ;;
+        *) echo "     fixture $name is committed but no row above names it -- it is never run"
+           ur_fails=$((ur_fails + 1)) ;;
+    esac
+done
+# The other direction: a duplicated row runs a fixture twice and inflates the number this
+# check prints. Comparing the two closes the loop on a count that was, until #341, only
+# ever displayed.
+if [ "$ur_red" != "$ur_committed" ]; then
+    echo "     the list ran $ur_red fixtures against $ur_committed committed -- a row is duplicated"
+    ur_fails=$((ur_fails + 1))
+fi
+
+# And a want must belong to exactly one fixture. The loop asserts that a fixture dies on a
+# message containing its want; it does not assert the want could not have come from
+# somewhere else, and a short one cannot. Three of the thirty-seven rows failed that when
+# it was first measured (#341): `is not one of` also fits the generation table's group
+# vocabulary and the ledger's "silence is not one of those", and a new row made a
+# PRE-EXISTING pair ambiguous by producing the same "twice - the later row would win in
+# silence" sentence from a different file. Without this, the sentence at the top of this
+# check holds by the fixtures' luck rather than by the check. Cross-checked on the output
+# the loop already captured, so no fixture is run twice.
+ur_amb=$(printf '%s\n' "$ur_blob" | awk '
+    $0 == "@@F@@" { getline cur; getline wv; n++; wn[n] = cur; wt[n] = wv; next }
+    $0 == "@@E@@" { cur = ""; next }
+    cur != ""     { out[cur] = out[cur] $0 "\n" }
+    END {
+        for (i = 1; i <= n; i++) {
+            others = ""
+            for (f in out)
+                if (f != wn[i] && index(out[f], wt[i]) > 0) others = others " " f
+            if (others != "")
+                printf "     want for %s also matches%s - it does not name its own predicate\n", wn[i], others
+        }
+    }')
+if [ -n "$ur_amb" ]; then
+    printf '%s\n' "$ur_amb"
+    ur_fails=$((ur_fails + $(printf '%s\n' "$ur_amb" | wc -l | tr -d ' ')))
+fi
 if [ "$ur_fails" = "0" ]; then
     echo "ok   unknown-rate page in sync; gate red on all $ur_red tampered fixtures"
 else

@@ -2,6 +2,100 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-01 (fourth) - a predicate with no fixture is a check that can be deleted, and the row that names it can fall out of the list
+
+`#341` said check 12 holds "twelve committed fixtures" and that four of `count.py`'s
+predicates have none, so removing them leaves the gate green. Measured against the tree
+first, both figures were stale in the same direction: **32 fixture directories, 30
+`bad:want` rows**, and the undetected predicates are not four. Rewriting each guarded
+condition to `False` in turn and re-running every input this check feeds found **36 that
+change nothing** — against 78 `if` guards that reach a `die()`. The issue's claim
+survived; its numbers did not.
+
+**Seven fixtures, for the predicates check 12 names.** The generation table's group
+vocabulary, a generation covering no group, a corpus row entering at a generation that
+does not exist, and the outcome map's column count, duplicate keys, disposition
+vocabulary and conservation against the reports. Each is a one-file, one- or two-line
+edit away from `fixtures/good`, except `outcome-conservation`, which needs two points to
+move together: a row's disposition in the map and the verdict in the report it accounts
+for. Both halves were built and run. The verdict alone dies on an older predicate —
+`published results block differs from recomputation (drift)` — so a fixture built that way
+would be a hollow red on someone else's message. The map alone is **green, and correctly
+so**: `no-fail-recorded` beside a PASS is a consistent pair, and there is nothing there to
+refuse. The inconsistency this predicate names does not exist until both move, which is
+why the fixture moves both and nothing more. A first version also pretty-printed the
+report from one line to five; that bought nothing — the same message comes out without it
+— and it is gone, so the fixture is two changed lines in two files.
+
+**One refusal removed rather than given a fixture.** `check` re-refused a corpus `since`
+that names no generation. Its first statement calls `generation_tables`, which calls
+`expected_for` for every generation, and `expected_for`'s own check refuses first. Measured by deleting the one in
+`expected_for` and feeding a bad `since`: the run died with `KeyError` inside
+`expected_for` and never reached the duplicate. A fixture aimed at it could only ever have
+died on its twin.
+
+**The comment said "one fixture per predicate" and that was false.** It now names the
+family it holds and files the 36 it does not — they cluster in `check` (15) and in the
+readers' shape checks, and they are column counts, duplicate ids, file existence and the
+published page's arithmetic. The same disclosure the distinctness gate already makes about
+the reasons it does not credit.
+
+**How the 36 was counted, and why two earlier counts came out lower.** The candidates are
+every `if` whose body reaches a `die()`, found by walking the parse tree; each test was
+rewritten to `False` in a copy and the whole of check 12 re-run — the live root, `good`,
+`setup-error-present`, and all 37 tampered fixtures against their expected messages. A
+predicate is undetected when all 40 verdicts are unchanged. Two earlier passes found their
+candidates by text proximity — a `die` within three lines of its `if` — and got 32, then
+33 once the sites that heuristic had skipped were swept by hand. The one it could not see
+is the published block's duplicate-slice refusal, whose `if` is separated from its `die`
+by a comment block. Both counts were low for the same reason: the candidate set came from
+proximity rather than from structure. The figure is now complete for this file —
+`count.py` contains no `assert` and no `raise`, and all 71 `die()` calls sit inside an
+`if`, so there is no fourth way to guard one.
+
+**And the seven rows landed one line below the `; do`.** They became a command in the loop
+body instead of entries in the list. `sh -n` accepts that — the shell reads it as a
+command name with a variable assignment in front — and `spike/acceptance.sh` is `set -u`,
+not `set -e`, so nothing stopped. The loop ran the original 30, the counter never
+incremented because `ur_red=$((ur_red + 1))` was consumed as that command's prefix
+assignment, and the check printed `gate red on all 0 tampered fixtures` and **passed**.
+The seven new fixtures were never executed. It was found by reading the diff, not by
+running anything: the fixtures had been measured with a standalone driver before the
+insertion, and the inserted form was never run. Sixth time this session that a fix's own
+shape carried the defect.
+
+So the count is no longer only printed. Check 12 reconciles the rows against the fixture
+directories on disk in both directions: it fails naming any fixture no row mentions, and
+it fails when the number of rows run differs from the number committed, which is what a
+duplicated row does. `good` and `setup-error-present` are the two meant to pass and the
+only exempt names. Seen red four ways — the misplacement names all seven, dropping a row
+names that one, duplicating a row reports 38 against 37, and the unmodified list is green
+at 37.
+
+**Review found the promise was held by the fixtures' luck, not by the check.** The loop
+asserts a fixture dies on a message containing its `want`; it never asserted the `want`
+could not have come from somewhere else. Measured across all 37: three fail that. `is not
+one of` also fits the generation table's group vocabulary and the ledger's "silence is not
+one of those" — and worse, a new row made a **pre-existing** pair ambiguous, because
+`outcome-map.tsv lists 'toyA' twice — the later row would win in silence` and
+`exclusions.tsv lists 'fx-toyE' twice — …` end in the same sentence, and the older row's
+`want` was the shared half. That is a regression this change introduced into a check that
+was previously exact. The three strings are longer now, but that only restores the luck,
+so the discrimination is held by the check: the loop keeps each fixture's output and one
+`awk` pass at the end fails any `want` that matches a fixture other than its own. Nothing
+is run twice for it. Seen red by shortening each of the three back — the disposition row
+names `ledger-missing` and `gen-group-unknown`, the duplicate pair names each other.
+
+Review also measured three sentences in this entry wrong before they shipped: "either
+alone is caught" (one half is green and should be), and two line distances, which are
+gone rather than corrected — a distance in prose beside code is the kind of number that
+rots. It found the fixture's pretty-printed report, and it verified the sweep's hedge was
+too weak: with no `assert` and no `raise` in the file and every `die()` inside an `if`,
+the 36 is complete rather than a floor. R1 was a fresh-subagent proxy because Codex was
+out of credits; by R2 the credits were back, and Codex reproduced the whole matrix
+independently — 78 candidates, 36 undetected, 42 detected, 71 `die()` sites, 40 inputs —
+with no findings. R1 → fix → R2 → stop.
+
 ## 2026-09-01 (third) - the report's two renderings come from one list, and the detector order is pinned
 
 `#280` reported four defects inside `src/`. Measured against the tree first: **three are
