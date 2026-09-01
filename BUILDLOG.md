@@ -2,6 +2,80 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-01 (fifth) - the opening banner is forgeable too, and what protects the start is what comes before it
+
+`#339` said acceptance plants a target-spelled **closing** banner and nothing else, and
+that the region doc argues only about a reader scanning for the closing line. Both
+survived measurement. The issue's third ask did not: it wanted a UTF-8 clause added to the
+tool description, and that clause is already there — dropped rather than done.
+
+**What the new leg actually adds is one assertion.** Reading mcp 13 before writing mcp 17
+showed that three of the four planned assertions already existed: mcp 13 locates the region
+by searching for the **opening** banner and comparing the count-delimited bytes against
+`message`, so planting the opening spelling runs the same code path. Saying "four new
+measurements" would have been four times the truth. The new one is that **nothing a target
+chose reaches the text before the first opening banner** — which is what makes "scan forward
+to the opening line" a safe way to find the start, and what would fail if a planted banner
+could sit above the engine's.
+
+**That assertion cannot be falsified by input, and writing that down is the point.**
+Everything above the region is `verdict` plus an optional `unknown_reason`, both closed
+sets, and the path where `summarize` returns null hands back an engine-fixed string. There
+is no configuration that puts a target byte up there. It was seen red by mutating
+`summarize` to emit five bytes of the message before the region opens — five, and not the
+whole message, so the kill is attributable: under that mutant the positive control, the
+count-delimited comparison and the line rule all stay green, and only the prefix assertion
+flips. The expected prefix is derived from the run's own structured report rather than
+written into the leg, because a literal would keep passing a summariser that stopped
+printing the reason.
+
+**The separate state directory is not hygiene.** Sharing mcp 13's leaves its FIFO in place,
+and the refusal then names whichever entry `readdir` reaches first. Measured with them
+shared, six runs of six: the refusal names mcp 13's entry and **mcp 17 goes red on its
+positive control** — correctly, since its attack never reached the message. Only mcp 17 is
+exposed, and a first draft of this entry said otherwise: mcp 13 runs earlier in the file and
+creates its entry before mcp 17's exists, so it always measures its own no matter how
+`readdir` orders them. Review measured that; it had been reasoned about instead. With
+separate directories, five consecutive runs of both legs in one workspace gave the same
+result every time.
+
+**`region_advisory` and the two tool descriptions are unchanged, and that is a decision.**
+They carry the closing-line rule only, so a model that located the region by scanning for
+the opening line would be told nothing. But no text this engine ships suggests that reading:
+finding the start is the counting reader's job, and the advisory already says counting bytes
+is a parser's move, not a reader's. The freeze is not the reason — `docs/contract-freeze.md`
+surface 5 covers tool names, input schemas and the `isError` rule, not prose. The region doc
+now carries the opening-side argument where the closing-side one already lived.
+
+**Review found the leg's positive control accepted much less than the leg had planted.**
+It counted occurrences of `--- target-influenced text, ` across the text block, and one of
+those is always the engine's own; the second only had to *begin* with those bytes. A fixture
+named `--- target-influenced text, but-not-a-banner` satisfied it, measured — under the old
+control that entry passes, under the new one it fails. The control now looks for the
+banner's whole shape inside `message`. And it cannot look for more than that: the delimiter
+the parser matches ends in a newline, which `textShown` defangs, so the target can spell the
+banner up to that newline and no further. That is the opening-side counterpart of the line
+rule, and it is why the reader at risk here is one scanning for the banner rather than one
+matching the delimiter exactly.
+
+The same round found the prefix test resting on two closed sets it did not actually check:
+the verdict list omitted `SETUP_ERROR`, and `unknown_reason` was tested for lowercase and
+underscores rather than membership, which `targetbytes` passes. Both sets are now read from
+`docs/report-schema.md` — 4 verdicts and 34 reasons — and an empty read refuses rather than
+passing vacuously, since a docs rewrite is exactly how that set would empty.
+
+And the confirmation round found the `src/mcp.zig` paragraph **was not there at all**. It
+had been written, then destroyed by restoring the file from a snapshot taken before it was
+added — the second mutation round reused the copy the first one had made. `BUILDLOG` and
+`CHANGELOG` both claimed the argument had reached the opening side while the file was
+byte-identical to `HEAD`. Second time this session that restoring from a stale snapshot
+silently undid work, and the only thing that noticed either time was a reader that went and
+looked at the file.
+
+The leg went in at the **end** of the file as mcp 17 rather than beside mcp 13. Inserting it
+there would have renumbered 14, 15 and 16, and `BUILDLOG.md` refers to one of them by number.
+No output byte changes; `zig build test` green.
+
 ## 2026-09-01 (fourth) - a predicate with no fixture is a check that can be deleted, and the row that names it can fall out of the list
 
 `#341` said check 12 holds "twelve committed fixtures" and that four of `count.py`'s

@@ -746,6 +746,25 @@ fn unlinkPath(path: []const u8) void {
 /// region *is* the diagnostic. The closing line repeats the count so a forged copy of it
 /// sits at an offset that does not agree.
 ///
+/// **The opening line is forgeable the same way, and what protects the start is not the
+/// banner but what precedes it.** A reader scanning forward for the opening line reaches
+/// the engine's only because everything above it comes from closed sets — the verdict and,
+/// when there is one, the `unknown_reason`. A target byte up there would let a planted
+/// banner win that search and move where the region appears to begin. No configuration can
+/// put one there, which is why `spike/mcp-acceptance.sh` mcp 17 asserts the prefix directly
+/// and was seen red by mutating `summarize` rather than by an input. What a target *can*
+/// spell is the banner up to its terminating newline and no further: the defang below 0x20
+/// takes that byte, so the delimiter never completes inside the region. A reader matching
+/// the delimiter exactly is therefore safe by accident; the one at risk scans for the
+/// banner, and only the closed-set prefix stands in front of it.
+///
+/// `region_advisory` and the tool descriptions below still carry only the closing-line
+/// rule, and that is a decision rather than an omission. Finding the start is the counting
+/// reader's job — the advisory already says counting bytes is a parser's move, not a
+/// reader's — and no text this engine ships tells a model to locate the region by scanning
+/// for its opening line. The freeze does not enter into it: `docs/contract-freeze.md`
+/// surface 5 covers tool names, input schemas and the `isError` rule, not prose.
+///
 /// This marks the text block only. `structuredContent` carries the report whole, and its
 /// `earliest.*` path fields hold names the target chose — JSON-escaped, so a parser hands
 /// the control bytes back. Saying so in full is `tools/list`'s job; since #336 a result
