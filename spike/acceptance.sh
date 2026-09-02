@@ -675,6 +675,39 @@ else
     fails=$((fails + 1))
 fi
 
+# The refusal says which slice stopped it (#123). pass's shape, reproduced from the toys:
+# stage 1 self-execs, stage 2 forks a writing child (TOY_SELFEXEC_STAGE2 makes the second
+# image take the fork branch), so the run is refused for the child while the chain across
+# the image change was followed. The engine has carried that account in the JSON since
+# #405 and printed it on FAIL and PASS; until #123 the UNKNOWN text left it out, which is
+# what this asserts. The control is the same run without TOY_SELFEXEC: no image change, so
+# the image clause must be absent while the `processes` line itself stays.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_SELFEXEC=1 TOY_FORKEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o_ctl=$(TOY_FORKEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc_ctl=$?
+if refused child_touched_state_dir "$rc" "$o" \
+    && refused child_touched_state_dir "$rc_ctl" "$o_ctl" \
+    && echo "$o" | grep -q "^processes   " \
+    && echo "$o" | grep -q "image replaced" \
+    && echo "$o_ctl" | grep -q "^processes   " \
+    && ! echo "$o_ctl" | grep -q "image replaced"; then
+    echo "ok   a refusal prints the process account, and the image clause tracks the run rather than the wording"
+else
+    echo "FAIL refusal process account: exit $rc / control $rc_ctl"
+    echo "$o" | sed 's/^/     | /' | head -8
+    echo "$o_ctl" | sed 's/^/     ctl | /' | head -8
+    fails=$((fails + 1))
+fi
+
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_EXECL=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
@@ -5208,6 +5241,60 @@ if [ "$ok" = "1" ]; then
 else
     echo "FAIL --twice equal leg: exit $rc (wanted 0)"
     echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+# Check 19b — a preflight refusal names the run it is about (#123).
+#
+# `boundary_ev.second_run` is assigned above the four refusals that can fire between run
+# B's trace read and its boundary switch, which is what makes a refusal there say "the
+# second observed run" rather than describe run A. That placement was invisible until
+# now — preflight refuses `--json`, and the UNKNOWN text block carried no `processes`
+# line — so nothing would have noticed it drifting back down, and an earlier revision
+# had in fact sat below four of those refusals while claiming otherwise.
+#
+# Getting in needs a difference that appears only on the second run: measured, every
+# boundary the other toys can produce refuses in run A first (the interposed exec chain
+# is judged in run A and is not a hard boundary in run B; an uninterposed exec refuses in
+# run A; a forking toy forks in both). TOY_TWICE_FORK_ON_SECOND has the child write the
+# state on run 2 only, so run A is accepted and run B refuses as child_touched_state_dir
+# — a refusal below the assignment. No oracle: the shim's own witness sees the child.
+#
+# The control is the same toy with the mode off: it refuses too — on run B's exit status,
+# which is checked ABOVE the assignment — and its account carries no run-B clause. So the
+# pair separates "the clause tracks what run B recorded" from "a refusal prints something
+# about processes", which a single refusal cannot.
+rm -rf /tmp/acc-tw3 && mkdir -p /tmp/acc-tw3/state /tmp/acc-tw3/state2
+o=$(TOY_TWICE_COUNTER=/tmp/acc-tw3/count TOY_TWICE_FORK_ON_SECOND=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw3/state \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice rotate" \
+    --shim "$SHIM" --work /tmp/acc-tw3/work 2>&1)
+rc=$?
+o_ctl=$(TOY_TWICE_COUNTER=/tmp/acc-tw3/count2 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw3/state2 \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice rotate" \
+    --shim "$SHIM" --work /tmp/acc-tw3/work2 2>&1)
+rc_ctl=$?
+# Not `refused()` here, though it is the same assertion: this leg sits BELOW the gate that
+# snapshots the detector ledger (`reasons_at_gate`), and a credit taken after that number
+# was read is a write nobody reads — the suite asserts against exactly that at its end.
+# So the reasons are spelled with the same anchored literal `refused()` uses (`-qxF`,
+# because a bare match also hits a reason quoted inside a message) and nothing is credited.
+ok=1
+[ "$rc" = "2" ] || ok=0
+echo "$o" | grep -qxF "UNKNOWN  child_touched_state_dir" || ok=0
+echo "$o" | grep -q "during the second observed run" || ok=0
+echo "$o" | grep -q "^processes   .*the second observed run recorded a process boundary" || ok=0
+[ "$rc_ctl" = "2" ] || ok=0
+echo "$o_ctl" | grep -qxF "UNKNOWN  recording_run_failed" || ok=0
+echo "$o_ctl" | grep -q "^processes   " || ok=0
+echo "$o_ctl" | grep -q "the second observed run recorded" && ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   a preflight refusal's process account names run B, and a refusal raised before run B's trace does not"
+else
+    echo "FAIL preflight run-B account: exit $rc / control $rc_ctl (both wanted 2, only the first naming run B)"
+    echo "$o" | sed 's/^/     | /' | head -10
+    echo "$o_ctl" | sed 's/^/     ctl | /' | head -10
     fails=$((fails + 1))
 fi
 

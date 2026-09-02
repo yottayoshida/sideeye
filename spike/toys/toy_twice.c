@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 /* open/write/fsync/close, the way toy.c writes — not stdio.
@@ -126,6 +127,47 @@ int main(int argc, char **argv) {
         char extra[4096];
         if (snprintf(extra, sizeof extra, "%s/only-in-second.txt", state) >= (int)sizeof extra) return 2;
         if (write_file(extra, "second\n") != 0) return 2;
+        return 0;
+    }
+
+    /* Under TOY_TWICE_FORK_ON_SECOND only the second run has a child write the state.
+     *
+     * The refusals between run B's trace read and its boundary switch are the ones that
+     * make the process account name run B rather than run A (#123), and every boundary
+     * shape the other toys can produce refuses in run A first — measured: the exec chain
+     * is judged in run A and soft in run B, an uninterposed exec refuses in run A, and a
+     * forking toy forks in both. A difference that appears only on the second run is the
+     * only way in from outside, and the counter already gives one.
+     *
+     * The child is a real exec, the way toy.c's TOY_FORKEXEC does it: the file header
+     * above records that a spawned child writing the state refuses as
+     * `child_touched_state_dir`, which is exactly the refusal wanted here — reached
+     * through the shim's own witness, so no oracle is needed to see it. */
+    if (getenv("TOY_TWICE_FORK_ON_SECOND") && n >= 2) {
+        char cmd[4200];
+        if (snprintf(cmd, sizeof cmd, "echo forked > %s/forked.txt", state) >= (int)sizeof cmd) return 2;
+        pid_t p = fork();
+        if (p == 0) {
+            execl("/bin/sh", "sh", "-c", cmd, (char *)NULL);
+            _exit(127);
+        }
+        /* A fork or exec failure must not look like an ordinary run. Without this the leg
+         * that reads the refusal fails on "no refusal" and the diagnosis points at the
+         * engine instead of at the fixture; the child's own status is checked for the same
+         * reason, since _exit(127) from a missing /bin/sh writes nothing. */
+        if (p < 0) {
+            fprintf(stderr, "toy-twice: fork failed\n");
+            return 2;
+        }
+        int st = 0;
+        if (waitpid(p, &st, 0) != p) {
+            fprintf(stderr, "toy-twice: waitpid failed\n");
+            return 2;
+        }
+        if (!WIFEXITED(st) || WEXITSTATUS(st) != 0) {
+            fprintf(stderr, "toy-twice: the writing child did not succeed (status %d)\n", st);
+            return 2;
+        }
         return 0;
     }
 

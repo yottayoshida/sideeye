@@ -1071,7 +1071,16 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.Ne
     // still needs to know what was classified. Before the snapshots exist this honestly
     // reads "not classified".
     // `next` sits AFTER the detail line: the acceptance suite reads the detail as the line
-    // that follows `UNKNOWN  <reason>`, and that contract predates this line.
+    // that follows `UNKNOWN  <reason>`, and that contract predates this line. `processes`
+    // goes in the lower block for the same reason and joins the other verdicts there (#123):
+    // the JSON has carried this account on every refusal since #405, the ordinary FAIL and
+    // PASS blocks both print it, and only the UNKNOWN text left it out — so a reader refused
+    // for touching the state could not tell that the engine had followed the subject across
+    // an image change. Two text blocks still do not carry it and are not meant to: a
+    // `SETUP_ERROR` is one line by design, and the zero-operation PASS renders its own.
+    // `boundaryAccount()` answers from this run's evidence, not from a capability blurb: a
+    // self-exec chain adds "the subject's image replaced N time(s), chain unbroken", a run
+    // refused before the trace was read says the account was never established.
     say(
         \\UNKNOWN  {s}
         \\         {s}
@@ -1081,12 +1090,13 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.Ne
         \\l1          {s}
         \\case        {s}
         \\expected    exit {d}
+        \\processes   {s}
         \\not tested  {s}
         \\
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ reason.name(), detail, next_step, l0_note, l1_note, case_note, expected_status_val, notTestedText() });
+    , .{ reason.name(), detail, next_step, l0_note, l1_note, case_note, expected_status_val, boundaryAccount(), notTestedText() });
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -3686,9 +3696,14 @@ fn observeAgain(
     // recorded above its own: each of them writes a report, and the account has to name
     // the run it is about. An earlier revision of this said "before the refusals" while
     // sitting after four of them (`no_shim_marker`, `trace_truncated`,
-    // `child_touched_state_dir`, `contract_version_mismatch`) — harmless today, because
-    // preflight refuses `--json` and the UNKNOWN text block carries no `processes` line,
-    // and wrong for whoever builds on the claim next. Caught by review.
+    // `child_touched_state_dir`, `contract_version_mismatch`) — harmless at the time,
+    // because preflight refuses `--json` and the UNKNOWN text block carried no `processes`
+    // line, and wrong for whoever built on the claim next. Caught by review. **The second
+    // half of that excuse is gone as of #123**: the UNKNOWN block prints the account,
+    // and each of those four refusals goes through it, so this assignment sitting above them
+    // is what makes it name run B. (A refusal that exits through `setupError` still prints
+    // one line and no account — `restoreFailure` above and the snapshot OOM paths below take
+    // that route — so the claim is about this block, not about every exit from here.)
     if (trace.hard_boundary) |b| boundary_ev.second_run = switch (b) {
         .exec => "an image replacement",
         .thread => "a thread",
