@@ -244,6 +244,63 @@ jobs:
       - name: Every MCP environment read is documented, and every documented one is read (#389)
         run: python3 spike/check-mcp-env.py README.md src/mcp.zig
 
+      # #325's call site, on the platform the author works on. The property — a relative
+      # `define.state` resolves against the case file, not the invoking cwd — is held in
+      # the Linux container by acceptance legs I-M, and `resolvePathAgainst`'s own unit
+      # test does not reach the call site (reverting the line leaves every unit test
+      # green, measured). This needs no oracle and no shim discipline: it asks only where
+      # the directory came out. The verdict does NOT discriminate — both the pre-fix and
+      # the fixed engine answer `the case reproduced`, the pre-fix one having quietly set
+      # up its own state in the invoking cwd (review measured that too).
+      - name: A relative state in a case resolves against the case file (#325)
+        run: |
+          set -e
+          root=/tmp/relcase; rm -rf "$root"; mkdir -p "$root/home" "$root/elsewhere" "$root/seed/state"
+          cc -DBUGGY=1 -o "$root/toy-bug" spike/toys/toy.c -lpthread
+          # No checker: this leg asks where the state directory came out, not what the
+          # verdict was. A declared checker would add a `baseline_violates_invariant`
+          # UNKNOWN on the replayed, freshly emptied state (measured) — noise the
+          # assertions below do not read and a reader would have to explain away.
+          TOY_STATE="$root/seed/state" TOY="$root/toy-bug" ./zig-out/bin/sideeye explore \
+            --state "$root/seed/state" --setup "$root/toy-bug init" \
+            --operation "$root/toy-bug rotate" \
+            --shim zig-out/lib/libsideeye_shim.dylib --work "$root/seed/work" \
+            --allow-unverified > "$root/explore.txt" 2>&1 || true
+          case_file=$(ls "$root"/seed/work/cases/*.json | head -1)
+          python3 - "$case_file" "$root/home/case.json" <<'PY'
+          import json, sys
+          c = json.load(open(sys.argv[1]))
+          c["define"]["state"] = "./state"
+          json.dump(c, open(sys.argv[2], "w"))
+          PY
+          ( cd "$root/elsewhere" && TOY_STATE="$root/home/state" TOY="$root/toy-bug" \
+            "$GITHUB_WORKSPACE/zig-out/bin/sideeye" replay "$root/home/case.json" --fresh-state \
+            --shim "$GITHUB_WORKSPACE/zig-out/lib/libsideeye_shim.dylib" --work "$root/rw" \
+            --allow-unverified > "$root/replay.txt" 2>&1 ) || true
+          tail -3 "$root/replay.txt"
+          [ ! -e "$root/elsewhere/state" ] || { echo "the invoking cwd gained a state directory: resolved against the cwd, not the case"; exit 1; }
+          [ -d "$root/home/state" ] || { echo "the case's own neighbour was never created: the case did not name what ran"; exit 1; }
+          echo "ok: the invoking cwd gained nothing and the case's neighbour is what ran"
+          # The destruction vet, on the same platform: a case naming its own directory
+          # refuses before anything is emptied (#325 review).
+          mkdir -p "$root/self"
+          python3 - "$case_file" "$root/self/case.json" <<'PY'
+          import json, sys
+          c = json.load(open(sys.argv[1]))
+          c["define"]["state"] = "."
+          json.dump(c, open(sys.argv[2], "w"))
+          PY
+          echo precious > "$root/self/precious.txt"
+          set +e
+          out=$(./zig-out/bin/sideeye replay "$root/self/case.json" --fresh-state \
+            --shim zig-out/lib/libsideeye_shim.dylib --work "$root/rw2" --allow-unverified 2>&1)
+          rc=$?
+          set -e
+          echo "$out" | head -2
+          [ "$rc" = "3" ] || { echo "expected exit 3 from a self-deleting case, got $rc"; exit 1; }
+          [ -f "$root/self/case.json" ] && [ -s "$root/self/precious.txt" ] || { echo "the refusal did not come before the deletion"; exit 1; }
+          echo "ok: a case naming its own directory refuses and both files survive"
+
       # The demo is also the release workflow's smoke test; macOS is where its
       # no-oracle path lives (a FAIL stands on its own evidence, so the demo needs
       # neither strace nor --allow-unverified). The Linux side is covered by
