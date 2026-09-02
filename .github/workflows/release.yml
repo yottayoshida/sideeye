@@ -40,11 +40,11 @@ jobs:
         include:
           - runner: ubuntu-latest
             artifact: x86_64-linux
-            target: x86_64-linux-gnu
+            target: x86_64-linux-gnu.2.28
             shim: libsideeye_shim.so
           - runner: ubuntu-24.04-arm
             artifact: aarch64-linux
-            target: aarch64-linux-gnu
+            target: aarch64-linux-gnu.2.28
             shim: libsideeye_shim.so
           - runner: macos-latest
             artifact: aarch64-macos
@@ -72,6 +72,17 @@ jobs:
       # architecture. The smoke test below still runs on the builder's CPU only —
       # it proves the artifact pair works, not that every CPU can run it; the pin
       # is what carries that.
+      #
+      # The glibc version is spelled too (#161): the artefact's requirement is capped by the
+      # triple rather than by whatever the toolchain defaults to that month — 2.31 on Zig
+      # 0.16.0, against the 2.28 the artefacts actually use. The version is a CEILING, not a
+      # gate: where the symbol a build wants has an older entry point, Zig links that one and
+      # the requirement simply drops (measured — `.2.27` and `.2.17` both build, at 2.27 and
+      # 2.17). A symbol with nothing at or below the pin has no fallback and does fail the
+      # build, which is the only shape that turns a versioned build red — and the reason CI
+      # builds this triple too. 2.28 is the one value that leaves today's pair untouched; below it the
+      # shim's own requirement set moves, and which libc entry points the shim resolves is an
+      # observation-surface question, not a packaging one.
       - name: Build (ReleaseSafe, baseline CPU)
         run: zig build -Doptimize=ReleaseSafe -Dtarget=${{ matrix.target }}
 
