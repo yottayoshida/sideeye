@@ -616,6 +616,18 @@ fn fdSyscallInScope(line: []const u8, name: []const u8, state: []const u8, alt: 
 pub const Parsed = struct {
     /// The subject's state-directory operation classes, in order.
     classes: std.ArrayList(contract.OpClass),
+    /// The observer's own name for each entry of `classes`, index-aligned with it and
+    /// with `lines` (#337). `openat`, `renameat2` from strace; `open`, `rename` from
+    /// fs_usage — each observer's spelling, not a normalised one, because a reader who
+    /// goes back to the capture has to find the line again.
+    ///
+    /// Appended beside `classes` by both producers, which is what makes the alignment
+    /// hold: the field exists so a divergence refusal can say WHICH operation it refused
+    /// on without the reader parsing the quoted line, and the fs_usage side had this
+    /// name in hand (`ln.call`) and was dropping it. Empty entries are possible in
+    /// principle (an observer whose line the reader cannot name); the refusal then omits
+    /// the field rather than guessing.
+    names: std.ArrayList([]const u8),
     /// The raw strace line behind each entry of `classes`, index-aligned. Kept so a
     /// refusal can name the operation it refused on instead of handing the reader a
     /// binary trace to decode by hand (#41). These borrow from the `text` given to
@@ -649,7 +661,7 @@ pub const Parsed = struct {
 };
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8) !Parsed {
-    var out: Parsed = .{ .classes = .empty, .lines = .empty, .metadata_observed = .empty };
+    var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
 
@@ -863,6 +875,9 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             const actual: contract.OpClass = if (cls == .unlink and
                 std.mem.eql(u8, name, "unlinkat") and unlinkatRemovesDir(line)) .rmdir else cls;
             try out.classes.append(arena, actual);
+            // Index-aligned with `classes`, appended in the same breath so the three
+            // lists cannot drift apart (#337).
+            try out.names.append(arena, name);
             try out.lines.append(arena, line);
         } else if (out.unsupported == null) {
             out.unsupported = try arena.dupe(u8, name);
@@ -928,6 +943,13 @@ test "parse extracts the class sequence the shim should have recorded" {
     try std.testing.expectEqual(p.classes.items.len, p.lines.items.len);
     try std.testing.expect(std.mem.indexOf(u8, p.lines.items[3], "unlinkat") != null);
     try std.testing.expect(std.mem.indexOf(u8, p.lines.items[4], "renameat") != null);
+    // And the name beside each, in this reader's own spelling — the third list a
+    // divergence refusal reads (#337). Asserted here rather than left to the Linux
+    // acceptance leg: deleting the `names.append` above passed every unit test until
+    // this line existed, while the fs_usage side had its alignment pinned.
+    try std.testing.expectEqual(p.classes.items.len, p.names.items.len);
+    try std.testing.expectEqualStrings("unlinkat", p.names.items[3]);
+    try std.testing.expectEqualStrings("renameat", p.names.items[4]);
     // The loader's own openat is outside the state directory and must not be counted;
     // the close is still *examined* (in scope), just not compared.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);
@@ -1745,6 +1767,13 @@ test "compare finds the first divergence and the direction of it" {
     const short = [_]contract.OpClass{ .open, .write };
     const phantom = compare(&a, &short).?;
     try std.testing.expectEqual(contract.OpClass.rename, phantom.phantom.class);
+    // The index is exactly the oracle's length, and that is load-bearing beyond this
+    // function: a phantom is by definition a position the oracle's account does not
+    // reach, so there is no oracle line to name there. `divergenceDetail` guards its
+    // read with `index < oracle_lines.len` for that reason, and `divergence_syscall`
+    // (#337) is written inside that guard — so the field stays absent on this refusal
+    // rather than naming the wrong operation.
+    try std.testing.expectEqual(short.len, phantom.phantom.index);
 
     // Divergence in the middle is reported at the position it happens.
     const swapped = [_]contract.OpClass{ .open, .unlink, .rename };

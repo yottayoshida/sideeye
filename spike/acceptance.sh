@@ -3064,9 +3064,27 @@ TOY_STATE=$SD/s3 "$SIDEEYE" explore --state "$SD/s3" \
 TOY_STATE=$SD/s4 "$SIDEEYE" explore --state "$SD/s4" \
     --setup "/bin/false" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work "$SD/w4" --json "$SD/setup.json" >/dev/null 2>&1
+# A fifth report, for the fields only a divergence carries (#337). `divergence_syscall`
+# appears on `oracle_missed_operation` and nowhere else, so without a report of that
+# shape the page's row would be "documented but never generated" and claim 2 goes red —
+# the reverse direction working, and the reason this report is generated here rather
+# than the field being documented alone. toy-raw issues its writes through `syscall(2)`,
+# so the oracle sees operations the shim never recorded.
+mkdir -p "$SD/sdiv"
+TOY_STATE=$SD/sdiv "$SIDEEYE" explore --state "$SD/sdiv" \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
+    --shim "$SHIM" --work "$SD/wdiv" --oracle /usr/bin/strace \
+    --json "$SD/divergence.json" >/dev/null 2>&1
+# The fifth report has to BE a divergence, or the schema check's red would say "the page
+# drifted" when the truth is "toy-raw stopped diverging" — a real possibility, since
+# teaching the shim to see raw syscalls is where #39/#256 are heading (review).
+if ! grep -q '"unknown_reason": "oracle_missed_operation"' "$SD/divergence.json" 2>/dev/null; then
+    echo "FAIL the divergence fixture no longer diverges: toy-raw did not produce oracle_missed_operation, so the schema check below cannot see divergence_syscall"
+    fails=$((fails + 1))
+fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/main.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -6017,6 +6035,54 @@ else
 fi
 fails=$((fails + ns_fails))
 rm -rf /tmp/acc-ns
+
+echo "=========== check 2ds: a divergence names the syscall the oracle saw, in both forms (#337) ==========="
+# `divergenceDetail` splices the raw strace line into `message`, and under `-y` that line
+# quotes bytes the target wrote into a state file. #326 marks those bytes; it does not
+# shrink them, and a host that summarises a tool result drops the marking and keeps the
+# payload. The frozen `message` is left alone (surface 2 forbids changing what a field
+# means, not adding one), and the decomposition rides beside it: the syscall name, which
+# is what a reader branches on and which the engine spells itself.
+#
+# Two directions, on one real divergence: the text line and the JSON field are the same
+# bytes, and the name is the one the oracle's line actually opens with — not a constant.
+rm -rf /tmp/acc-ds && mkdir -p /tmp/acc-ds/state
+o=$(TOY_STATE=/tmp/acc-ds/state "$SIDEEYE" explore --state /tmp/acc-ds/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
+    --shim "$SHIM" --work /tmp/acc-ds/work --oracle /usr/bin/strace \
+    --json /tmp/acc-ds/r.json 2>&1)
+rc=$?
+ds_t=$(printf '%s\n' "$o" | sed -n 's/^divergence  *//p' | head -1)
+ds_j=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("divergence_syscall",""))' /tmp/acc-ds/r.json 2>/dev/null)
+# The name the oracle's own line opens with, read out of `message` rather than written
+# here: a hard-coded `openat` would keep passing if the field were wired to a constant.
+ds_expect=$(python3 -c '
+import json, re, sys
+m = json.load(open(sys.argv[1])).get("message", "")
+# Both prefix spellings strace emits: a bare tid column (today, under `-f`) and the
+# `[pid N]` form. `stripPidPrefix` in src/oracle.zig reads both, so a leg that read only
+# one would go red on an oracle flag change and blame the wrong thing (review).
+hit = re.search(r"the oracle saw: (?:\[pid\s*\d+\]\s*|\d+\s+)?([A-Za-z0-9_]+)\(", m)
+print(hit.group(1) if hit else "")
+' /tmp/acc-ds/r.json 2>/dev/null)
+if [ "$rc" = "2" ] && [ -n "$ds_j" ] && [ "$ds_t" = "$ds_j" ] && [ "$ds_j" = "$ds_expect" ]; then
+    echo "ok   a divergence carries divergence_syscall in both forms, naming what the oracle's line opens with: $ds_j"
+else
+    echo "FAIL divergence_syscall: exit $rc, text [$ds_t], JSON [$ds_j], expected from message [$ds_expect]"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# The raw line is still there: this change adds a form, it does not remove the evidence
+# a refusal needs to name the operation it refused on (ADR 0010).
+# stderr dropped, not merged: a traceback (missing or unparsable report) must not read as
+# "the frozen field's meaning moved" — the same trap check 2ns records for its own helper.
+if python3 -c 'import json,sys; sys.exit(0 if "the oracle saw:" in (json.load(open(sys.argv[1])).get("message") or "") else 1)' /tmp/acc-ds/r.json 2>/dev/null; then
+    echo "ok   message still quotes the oracle's line: the decomposition is beside the evidence, not instead of it"
+else
+    echo "FAIL the oracle's line left message: the frozen field's meaning moved"
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-ds
 
 reached_end=1
 echo ""

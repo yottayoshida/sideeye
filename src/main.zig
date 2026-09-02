@@ -360,6 +360,27 @@ var rec_image: ?image.Observation = null;
 /// file parses, so even a `case_no_longer_applies` refusal names which case it
 /// refused — the JSON consumer is the §17 audience and must not need the text.
 var case_note: []const u8 = "(none)";
+
+/// The syscall the oracle saw at a divergence, for the report's `divergence_syscall`
+/// (#337). Empty until a divergence refusal builds its detail, which is the only writer
+/// — and it writes only where the oracle HAS a line at the diverging index, so
+/// `oracle_saw_phantom` (where the shim's account runs past the oracle's, and the index
+/// is exactly `oracle.len`) leaves it empty and the field stays absent.
+///
+/// The quoted line stays in `message`: a refusal that cannot name the operation it
+/// refused on is not a diagnostic (ADR 0010), and #326 marks those bytes rather than
+/// removing them. This is the same fact in a form a reader does not have to parse.
+///
+/// **It is the observer's vocabulary, never the target's** — which matters because the
+/// text report prints this value without passing it through `sanitizeForReport`, unlike
+/// every path-shaped string beside it. Two producers hold that line, and neither is
+/// visible from here: `src/oracle.zig`'s `syscallName` returns only `[A-Za-z0-9_]+`
+/// (its loop rejects anything else), and `src/fsusage.zig` appends `ln.call`, which by
+/// then has been matched against `classOf`'s table — a member of that table or its
+/// `_nocancel` variant, never free text from the capture. A third producer would have to
+/// keep that property; the alignment tests on both sides are where a new one would be
+/// noticed, not here.
+var divergence_syscall: []const u8 = "";
 var replay_note: []const u8 = "-";
 /// What the run has *established* about process boundaries, as it establishes it.
 ///
@@ -1077,6 +1098,14 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.Ne
         \\         {s}
         \\next        {s}
         \\
+    , .{ reason.name(), detail, next_step });
+    // #337: the same value the JSON carries, on its own line, and only when there is one
+    // — a `divergence` line reading empty would be a field pretending to an answer. After
+    // `next`, before the classification block, so the two lines the acceptance suite
+    // anchors on (the reason, and the detail beneath it) keep their positions.
+    if (divergence_syscall.len > 0) say("divergence  {s}\n", .{divergence_syscall});
+    say(
+        \\
         \\atomicity   {s}
         \\l1          {s}
         \\case        {s}
@@ -1086,7 +1115,7 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.Ne
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ reason.name(), detail, next_step, l0_note, l1_note, case_note, expected_status_val, notTestedText() });
+    , .{ l0_note, l1_note, case_note, expected_status_val, notTestedText() });
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -2724,6 +2753,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 m.index,
                 shim_ops.items,
                 parsed.lines.items,
+                parsed.names.items,
             ), .class_wall),
             .phantom => |p| unknown(.oracle_saw_phantom, divergenceDetail(
                 arena,
@@ -2731,6 +2761,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 p.index,
                 shim_ops.items,
                 parsed.lines.items,
+                parsed.names.items,
             ), .sideeye_defect),
             .unsupported => |name| unknown(.unsupported_syscall_observed, name, .class_wall),
         };
@@ -5207,6 +5238,14 @@ fn buildJson(
     // `unknown()` renders it once and passes it here, so `check-report-schema.py`'s fifth
     // claim (a bare name through `jsonString`) holds, and acceptance check 2ns holds the
     // two forms to each other by bytes.
+    // #337: the syscall the oracle saw at a divergence, beside the line `message` quotes.
+    // Present only on `oracle_missed_operation` — the one refusal where the oracle has a
+    // line at the diverging index — and written from the same `divergence_syscall` the
+    // text report prints, so the two forms cannot disagree.
+    if (divergence_syscall.len > 0) {
+        try w.appendSlice(arena, ",\n  \"divergence_syscall\": ");
+        try jsonString(w, arena, divergence_syscall);
+    }
     if (next_step) |n| {
         try w.appendSlice(arena, ",\n  \"next_step\": ");
         try jsonString(w, arena, n);
@@ -5689,10 +5728,20 @@ fn divergenceDetail(
     index: usize,
     shim_ops: []const engine.Op,
     oracle_lines: []const []const u8,
+    oracle_names: []const []const u8,
 ) []const u8 {
-    const oracle_part = if (index < oracle_lines.len)
-        std.fmt.allocPrint(arena, "the oracle saw: {s}", .{oracle_lines[index]}) catch return lead
-    else
+    const oracle_part = if (index < oracle_lines.len) blk: {
+        // The decomposition the reader would otherwise take from the quoted line (#337).
+        // Assigned inside this arm on purpose: the other arm is the phantom case, where
+        // the oracle has no line at this index and there is nothing to name.
+        // The observer's own name for this operation, carried beside the line by whichever
+        // reader produced it — strace's `openat`, fs_usage's `open`. Read from the list
+        // rather than parsed back out of the quoted line, so both oracles answer (review
+        // measured that parsing the line gives nothing on macOS: an fs_usage line opens
+        // with a timestamp, not a call name).
+        if (index < oracle_names.len and oracle_names[index].len > 0) divergence_syscall = oracle_names[index];
+        break :blk std.fmt.allocPrint(arena, "the oracle saw: {s}", .{oracle_lines[index]}) catch return lead;
+    } else
         std.fmt.allocPrint(arena, "the oracle's account ends after {d} operation(s)", .{index}) catch return lead;
     const shim_part = if (index < shim_ops.len) blk: {
         const op = shim_ops[index];
@@ -5767,6 +5816,9 @@ test "the defang classifier covers raw C1, encoded C1 and invalid bytes, and spa
 }
 
 test "divergence detail escapes a control byte a target put in a path" {
+    // This calls `divergenceDetail`, which sets the module-level `divergence_syscall`;
+    // leaving it set would hand a later test a field it never wrote (#337 review).
+    defer divergence_syscall = "";
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const ops = [_]engine.Op{.{
@@ -5777,11 +5829,37 @@ test "divergence detail escapes a control byte a target put in a path" {
         .aux = "",
     }};
     const lines = [_][]const u8{"openat(AT_FDCWD, \"/tmp/s/a\", O_RDWR) = 3"};
-    const detail = divergenceDetail(arena_state.allocator(), "lead", 0, &ops, &lines);
+    const names = [_][]const u8{"openat"};
+    const detail = divergenceDetail(arena_state.allocator(), "lead", 0, &ops, &lines, &names);
     // The newline must arrive spelled out, never as a line break the report obeys.
     try std.testing.expect(std.mem.indexOf(u8, detail, "\n") == null);
     try std.testing.expect(std.mem.indexOf(u8, detail, "\\x0a") != null);
     try std.testing.expect(std.mem.indexOf(u8, detail, "divergence at operation 1") != null);
+}
+
+test "a phantom divergence names no syscall: the oracle's account does not reach that index (#337)" {
+    // `compare` returns `.phantom` only from the branch where the shim's list runs past
+    // the oracle's, so its index is exactly the oracle's length — there is no line and no
+    // name there. The report's page says the field is absent on that refusal; this is
+    // what holds it. A reader tempted to fall back to `index - 1` would name the WRONG
+    // operation, which is the failure this pins.
+    defer divergence_syscall = "";
+    divergence_syscall = "";
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const ops = [_]engine.Op{
+        .{ .class = .open, .seq = 1, .pid = 1, .path = "/tmp/s/a", .aux = "" },
+        .{ .class = .write, .seq = 2, .pid = 1, .path = "/tmp/s/a", .aux = "" },
+    };
+    // The oracle saw one operation; the shim recorded two. `compare` answers
+    // `.phantom` at index 1, which is one past the end of both oracle lists.
+    const lines = [_][]const u8{"openat(AT_FDCWD, \"/tmp/s/a\", O_RDWR) = 3"};
+    const names = [_][]const u8{"openat"};
+    const detail = divergenceDetail(arena_state.allocator(), "lead", 1, &ops, &lines, &names);
+    try std.testing.expectEqualStrings("", divergence_syscall);
+    // And the detail says so in words, rather than borrowing the previous operation.
+    try std.testing.expect(std.mem.indexOf(u8, detail, "the oracle's account ends after 1 operation(s)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, detail, "openat") == null);
 }
 
 /// Two snapshots agree, on the same three fields `diffSnapshots` compares.
