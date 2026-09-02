@@ -112,5 +112,14 @@ DESIGN §4.5), so **this ADR is where it lives**. What it would cost, ruled at t
 crash points are addressed by one deterministic operation count, and across processes the
 engine cannot reproduce the interleaving that count depends on — so the slice is not a
 widening of coverage but a wager on the reproducibility the product rests on (DESIGN.md §4.7: "everything that affects a verdict — exploration, violation detection, shrinking, replay — is deterministic"),
-and it touches a frozen surface (replay compatibility, `docs/contract-freeze.md` surface 4).
 It needs its own design work, not a follow-up ticket.
+
+**Corrected 2026-09-02, same day.** The amendment above first added "and it touches a frozen
+surface (replay compatibility, surface 4)" to that list of costs. That is the opposite of
+this repository's recorded reading, and review caught it. Implementing the slice is a
+trace-contract event, and `docs/contract-freeze.md` surface 4 says a future trace-contract
+bump is *not* a broken promise, because old cases refuse with the mismatch named and that
+refusal is the promised behaviour. The freeze audit's manifest records the same judgement:
+`spike/freeze-audit/audit.tsv`'s row for #123 carries a surface forecast of **none**, with
+that sentence as its reason. So the freeze is not what stands in the way of the
+multi-process slice. What stands in the way is the determinism above.

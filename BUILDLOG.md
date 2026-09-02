@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (eleventh) - three merged changes said six things the record contradicts, and the reviews that found them arrived after the merges
+
+`#161`, `#147` and `#123` shipped this morning. Their first-look reviews were run before each
+merge, but four of the six agents finished without their reports reaching the caller, and two
+of those were blocked from writing the report to a file by a guard that tells subagents to
+answer as text. The reports arrived afterwards, in one batch. **They were right about six
+statements, and none of them is about the code.** This entry is the correction, and the
+delivery failure is the reason it is a second commit rather than part of the first.
+
+**The one that matters most is in an ADR that is now the sole home of a decision.** ADR 0018's
+amendment listed, among the costs of the unbuilt multi-process slice, "and it touches a frozen
+surface (replay compatibility, surface 4)". The repository says the opposite, in two places
+that CI holds: `spike/freeze-audit/audit.tsv`'s row for `#123` carries a surface forecast of
+**none**, its stated reason being that "surface 4 says in as many words that a future
+trace-contract bump is not a broken promise", and `docs/contract-freeze.md` surface 4 says
+exactly that of itself. So the freeze is not what stands in the way of that slice. The
+determinism argument above it is. The ADR now says so, and keeps the wrong sentence visible as
+a correction rather than quietly deleting it.
+
+**The topydo row miscounted its own evidence, twice over.** The `#147` row said eleven of the
+twelve A-group FAILs are the crash-window destruction of the active list, and one is the `do`
+duplication. Counted from all thirteen `report.json` files by `earliest.subject`: **ten** name
+`todo.txt`, `a-topydo-revert` names `done.txt`, and `a-topydo-do` names nothing by path because
+the checker judged it. `spike/blind-hunt/analysis/findings.md` had already written that
+division in prose — "the ten single-file operations… `do` and `revert` fail across the file
+pair instead" — and the row was shipped citing a page while contradicting it. It also cited
+"row 3" of `docs/kill-criteria-review.md` where the supporting sentence is in **Row 4**
+(`:144`). Both corrected, and the row now says which of #318's coverage reaches which trial
+rather than folding twelve trials into one story. That is the same defect `#147` exists to
+remove, one level down, for the second time in one day: the first draft asserted uniformity
+while announcing non-uniformity, and this one asserted the wrong division.
+
+**Four smaller ones, all measured before changing.** `2.28 is the only version that leaves
+today's artefacts alone` is false — a default build and `.2.31` leave them alone too, as the
+table two lines below it shows; 2.28 is the *smallest* such value and the only one equal to the
+requirement, which is the argument that actually picks it. `docs/target-classes.md` still
+called `#123` open. `ci.yml`'s new step described a counterfactual in the past tense: before
+this morning no versioned triple was compiled anywhere, so nothing "happened for the first time
+during the release ceremony". And `spike/README.md` and `spike/cohort4/PREP.md` still tie
+topydo's twelve counterexamples to `topydo/topydo#341`, the conflation `#147` was opened about.
+
+**What is recorded and not fixed.** Review found a branch in `observeAgain` that cannot fire —
+`foreign_kill_point` implies `foreign_pid_seen`, so the third `second_run` assignment is
+unreachable and run B's account is always the less specific of the two wordings, where run A
+resolves the same evidence to the more specific one. Fixing it moves a rendered string and
+turns check 19b red, which pins the current wording. It clears none of this repository's
+conditions for opening an issue, so it lives here. Also recorded: the released `reported-upstream`
+value now rests on the redefinition alone for topydo, and two rows (`black`, `rustfmt`) carry
+`kept-unreported` for a situation the new definition describes as upstream-facing. That is a
+vocabulary question the owner already ruled on by choosing to write meaning into the table
+instead of adding a value, so it is not reopened here.
+
 ## 2026-09-02 (eighth) - a refusal says which slice stopped it, and the multi-process slice gets an ADR rather than a ticket
 
 **The red, first.** The engine before this change, refusing a run whose child wrote the judged
@@ -255,8 +307,8 @@ nothing older to fall back to, and drops the requirement silently — correctly 
 Both are things to find out on a pull request, which is the argument for the `ci.yml` half
 below; neither can be inferred from the other.
 
-**That reframing is what picks the value.** 2.28 is the only version that leaves today's
-artefacts alone:
+**That reframing is what picks the value.** 2.28 is the smallest version that leaves today's
+artefacts alone, and the only one equal to what they require:
 
 | triple | binary max | shim max |
 |---|---|---|

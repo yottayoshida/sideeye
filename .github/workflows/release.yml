@@ -80,7 +80,8 @@ jobs:
       # the requirement simply drops (measured — `.2.27` and `.2.17` both build, at 2.27 and
       # 2.17). A symbol with nothing at or below the pin has no fallback and does fail the
       # build, which is the only shape that turns a versioned build red — and the reason CI
-      # builds this triple too. 2.28 is the one value that leaves today's pair untouched; below it the
+      # builds this triple too. 2.28 is the smallest value that leaves today's pair untouched and the only one equal to
+      # what the pair requires; below it the
       # shim's own requirement set moves, and which libc entry points the shim resolves is an
       # observation-surface question, not a packaging one.
       - name: Build (ReleaseSafe, baseline CPU)

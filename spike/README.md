@@ -29,7 +29,7 @@ rehearsal green is required before a Seal A PR and after any tool change).
 
 | Path | Campaign | Outcome |
 |------|----------|---------|
-| `blind-hunt/` | campaign 1 (topydo) | 12/13 counterexamples; `topydo/topydo#341` filed upstream |
+| `blind-hunt/` | campaign 1 (topydo) | 12/13 counterexamples, none of them filed (`topydo/topydo#318` already covers the destruction); `topydo/topydo#341` is a separate finding, the recovery misfire |
 | `blind-hunt2/` | campaign 2 (khard burned → abook) | null — no counterexample in the declared window |
 | `blind-hunt3/` | campaign 3 (khal) | null — 41 crash worlds, all PASS |
 

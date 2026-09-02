@@ -149,10 +149,11 @@ threshold set from it would be satisfied by construction. So:
   declaring everything untriaged. **The disposition describes the tool's
   upstream story, which is not always the story of the FAIL verdicts
   counted under it** (#147): **none of topydo's twelve A-group FAILs was
-  filed** — eleven are the crash-window destruction of the active list,
-  which a third-party report from 2023 already covers, and the twelfth
-  (`do`, a task left in both files) was never scored for novelty or for
-  filing at all. The `reported-upstream` value comes from this project's
+  filed** — ten destroy the active list in its crash window, which a
+  third-party report from 2023 already covers; `revert` is the same
+  destruction on the done file, and `do` is not a destruction at all, the
+  task ending up in both files. Neither of those two was scored for novelty
+  or for filing. The `reported-upstream` value comes from this project's
   one topydo filing, a different finding reached by post-seal analysis
   rather than by any trial counted here. The map's `source` column carries
   that, so a reader is not left to infer it. The counts below are therefore
