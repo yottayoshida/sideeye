@@ -103,6 +103,85 @@ processes the engine cannot reproduce the interleaving that count depends on, so
 not a widening of coverage but a wager on the reproducibility the product rests on (DESIGN.md §4.7, which states that
 everything affecting a verdict is deterministic) — and it moves a frozen surface (replay compatibility, surface 4). That needs its own
 design work, not a ticket.
+## 2026-09-02 (tenth) - the divergence names its syscall, and the plan's own premise about the parser was half wrong
+
+`#337`. A divergence refusal quotes the oracle's raw strace line into `message`, and under
+`-y` that line carries bytes the target wrote into a state file. #326 marks them; marking
+is attribution, not reduction, and a host that summarises a tool result keeps the payload
+and drops the marking. `message` is frozen (surface 2 forbids changing what a field means,
+not adding one), so the decomposition rides beside it in a new field.
+
+**Cut from three fields to one, in design review.** The issue proposed
+`syscall=… path=… flags=…` on the ground that `src/oracle.zig` "already parses syscall
+name, scope and flags". Measured: it parses them and throws them away. `resolveArg` and
+`argPath` write into buffers owned by the caller's frame, so keeping a resolved path
+needs `arena.dupe` — a new allocation-failure path on a `noreturn` refusal — and flags
+exist only as booleans (`isReadOnlyOpen`, `argContains(line, 2, "PROT_WRITE")`), with most
+of the classes that reach a divergence having no flags argument at all. Worse, a resolved
+path would *widen* the exposure this issue is about: `message` carries strace's escaped
+spelling, an unescaped path would carry the target's bytes. And `oracle.Parsed` has a
+second producer — `src/fsusage.zig:63` holds one and appends to it — so a field added to
+that struct would be empty on every macOS divergence while the shared `divergenceDetail`
+indexed into it. The name alone needs none of that: `syscallName` already exists as a pure
+function over the line the refusal is holding, so this makes it `pub` and calls it.
+
+**Where the assignment sits is the whole design.** `compare` returns `.phantom` only from
+the branch where the shim's list runs past the oracle's, so its index is exactly
+`oracle.len` — there is no oracle line at that position, which is why `divergenceDetail`
+has always guarded its read with `index < oracle_lines.len`. The new assignment goes
+*inside* that guard, so `oracle_saw_phantom` leaves the field empty and it is absent from
+the report, without a second condition anywhere. The unit test on `compare` now pins that
+index, with the reason written beside it.
+
+Measured on Linux in the pinned container, against a cross-compiled build: `toy-raw`, whose writes go through `syscall(2)` and so are invisible
+to the shim, refuses `oracle_missed_operation` with `divergence  openat` in the text and
+`"divergence_syscall": "openat"` in the JSON, while `message` still quotes
+`18 openat(AT_FDCWD</work>, "/tmp/d/state/key.json.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644)`.
+The schema check needed a fifth report — the field appears on one refusal and nowhere
+else, so with only the four existing inputs the page's new row reads "documented but never
+generated"; both directions measured (five inputs green, four red on exactly that line).
+The new acceptance leg derives its expected name from `message` rather than hard-coding
+`openat`, and a mutant returning a constant `"write"` turns it red.
+
+**The review found the design one platform short, and the cut's own argument had been
+misapplied.** The first shape read the name back out of the quoted line with
+`oracle.syscallName`, which requires the text before the first `(` to be `[A-Za-z0-9_]+`.
+An fs_usage line opens with `18:51:42.041795  open …` — a timestamp, a colon, no
+parenthesis — so it returns null every time, and macOS divergences would have carried no
+name at all while the page said the field was absent only on phantoms. That is not a
+corner: `docs/adr/0031` puts `oracle_missed_operation` in the fs_usage vocabulary and the
+macOS CI job's own name says "catches a missed op".
+
+The scope cut's reasoning was sound for `path` and `flags` — those are not held anywhere
+after parsing — and I extended it to the name without checking. `src/fsusage.zig` had the
+name in hand (`ln.call`) and was dropping it on the line above the append. So the name now
+travels in `Parsed.names`, appended beside `classes` by both producers, index-aligned with
+it and with `lines`; `divergenceDetail` reads the list instead of parsing the line, and
+`syscallName` goes back to being private. Five lines, and both oracles answer. The
+fs_usage tests asserted `classes.items.len` in eight places and `lines.items.len` in none,
+so the alignment now has a test on that side too.
+
+Also from the review, each with its own line rather than folded into the above: the leg's
+expected-name regex reads both of strace's prefix spellings (`[pid N]` as well as the bare
+tid column `stripPidPrefix` already handles), the message check drops stderr so a missing
+report cannot read as "the frozen field moved", the schema check first asserts that the
+fifth report actually diverges (teaching the shim to see raw syscalls is where #39/#256 are
+headed, and that would otherwise surface as "the page drifted"), and the escaping test
+resets the module-level field it sets. A unit test now pins the phantom half directly: at
+an index one past the oracle's account, the field stays empty and the detail says the
+account ends there rather than borrowing the previous operation's name.
+
+The confirmation round then measured the asymmetry the fix had left: deleting the strace
+side's `names.append` passed all 495 unit tests, because only the fs_usage side had its
+three lists pinned — the comment there even claimed "the strace reader pins the same
+property", true of `classes`/`lines` and false of the list this change added. One assert
+in `oracle.zig`'s parse test closes it (measured: the same deletion now fails with
+`expected 5, found 0`). It also caught that the field's safety comment still cited
+`syscallName`, which the value no longer passes through: the property holds on two
+separate grounds now — `syscallName`'s character filter on one side, `classOf`'s table on
+the other — and the comment says so rather than naming a function that stopped being the
+reason. That matters because this is the one observer-side string the text report prints
+without `sanitizeForReport`.
 
 ## 2026-09-02 (seventh) - the outcome map's value is a statement about a tool, and topydo's row now says which trials it does not cover
 
