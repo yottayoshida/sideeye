@@ -204,6 +204,37 @@ jobs:
       - name: The positive control reproduces the committed transcript (#318)
         run: sh spike/cohort4/himalaya-r2/upstream-fix/verify-positive-control.sh
 
+      # Both released Linux triples still compile under the glibc ceiling they declare
+      # (#161). Until now that pair was built only on release events and on pull requests
+      # touching release.yml, so whatever the pin does to a source change happened for the
+      # first time during the release ceremony.
+      #
+      # What it does, measured: the version is a ceiling, not a gate. A symbol that has an
+      # older entry point links to that one and the requirement drops with the pin — that
+      # is the pin working, and it is silent. A symbol with nothing at or below the pin has
+      # no fallback and fails to link (`zig cc -target aarch64-linux-gnu.2.28` on a program
+      # calling `closefrom`, added in 2.34: `undefined symbol`). Only the second shape is a
+      # red here, and it is the one worth learning about on a pull request.
+      #
+      # Into a SCRATCH PREFIX, never `zig-out`. Three steps above compare a sha of
+      # `zig-out` before and after an apparatus build and require it unchanged (#270,
+      # #324, #377), and those apparatus builds carry no `-Dtarget`: a versioned build
+      # into `zig-out` would leave them comparing two targets, and the guard would go red
+      # on the target rather than on what it watches. (#358's step is not one of them — it
+      # runs its own `zig build` and greps the result.) Writing elsewhere also keeps this
+      # step from leaving aarch64 binaries where a later step would find them executable;
+      # position in the job then carries no meaning, which is what a comment cannot hold.
+      #
+      # ReleaseSafe, because that is what the release matrix builds. A libc reference that
+      # appeared only under the release optimisation would otherwise still surface first at
+      # the ceremony — the thing this step exists to prevent. The aarch64 triple
+      # cross-compiles from this runner, so one step covers both released artefacts.
+      - name: Both released Linux triples compile under their declared glibc ceiling (#161)
+        run: |
+          scratch=$(mktemp -d)
+          zig build --prefix "$scratch/x86" -Doptimize=ReleaseSafe -Dtarget=x86_64-linux-gnu.2.28
+          zig build --prefix "$scratch/arm" -Doptimize=ReleaseSafe -Dtarget=aarch64-linux-gnu.2.28
+
   macos:
     runs-on: macos-latest
     steps:

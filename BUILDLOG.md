@@ -2,6 +2,104 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (ninth) - the release triples spell their glibc version, and the version turns out to be a ceiling rather than a gate
+
+`#161`: the release matrix passes `x86_64-linux-gnu` / `aarch64-linux-gnu` with no version, so
+the glibc floor of every published Linux artefact is whatever Zig defaults to that month.
+Measured on 0.16.0: the default is **2.31** on both architectures, while the artefacts
+actually require nothing newer than **`GLIBC_2.28`** — a three-minor-version gap between what
+is declared and what is used.
+
+**The plan said spelling the version would make an over-new symbol fail the build. Not for
+this repository's symbols.** Pinning `.2.27` builds fine and the requirement simply drops to
+2.27; `.2.17` builds too, at 2.17. Zig satisfies the pin by linking older entry points rather
+than by refusing. So the triple is a **ceiling, not a gate**, and the property this change
+makes true is the weaker, measurable one: the requirement is capped by the triple instead of
+tracking the toolchain's default.
+
+The other half of that sentence had to be measured too, rather than reasoned about, because
+the pin does refuse in one shape: a symbol with no entry point at or below it. `closefrom`
+arrived in glibc 2.34, and `zig cc -target aarch64-linux-gnu.<v>` on a three-line program
+calling it builds at `.2.34` and fails at `.2.28` and at `.2.17` with `ld.lld: error:
+undefined symbol: closefrom`. So a versioned build goes red exactly when a new call has
+nothing older to fall back to, and drops the requirement silently — correctly — otherwise.
+Both are things to find out on a pull request, which is the argument for the `ci.yml` half
+below; neither can be inferred from the other.
+
+**That reframing is what picks the value.** 2.28 is the only version that leaves today's
+artefacts alone:
+
+| triple | binary max | shim max |
+|---|---|---|
+| default (= 2.31) | 2.28 | 2.28 |
+| `.2.31` | 2.28 | 2.28 |
+| `.2.28` | 2.28 | 2.28 |
+| `.2.27` | 2.27 | **2.25** |
+| `.2.17` | 2.17 | 2.17 |
+
+Below 2.28 the *shim's* requirement set moves, and the shim's whole job is interposing libc
+entry points — which entry points it resolves is an observation-surface change, not a
+packaging one. 2.31 would leave the declared value three minors above the real one for no
+reason. 2.28 makes the declaration equal the requirement and changes nothing shipped.
+
+**The plan's compatibility argument was already dead before this.** First-look review ran the
+current x86_64 build *and the released v1.0.0 aarch64 tarball* inside `debian:10` (glibc 2.28)
+and got `sideeye demo` to a FAIL verdict on both — the artefacts have always run there. This
+change buys no platform.
+
+**`ci.yml` gets the pin too, and where it goes was got wrong first.** Until now the versioned
+triple was compiled only on release events and on pull requests touching `release.yml` (its
+`paths` filter), so whatever the pin does to a source change happened for the first time
+during the release ceremony. The first wiring put the triple on the linux job's shared
+`Build engine and shim` step. **That would have turned CI red on this PR**: three later steps
+(#270, #324, #377) take a sha of `zig-out` before an apparatus build and assert it is
+unchanged after, and those apparatus builds carry no `-Dtarget` — so the comparison would
+have been a `.2.28` shim against a natively-built one, and the guard would have failed on
+the target instead of on the thing it watches. Caught by reading the job in order rather than
+the diff, and then measured rather than argued: built to two prefixes on one host,
+`-Dtarget=aarch64-linux-gnu.2.28` and `-Dtarget=aarch64-linux-gnu` produce shims with
+different sha256 (`119ac705…` against `843b65c6…`). Versioned and unversioned builds of the
+same architecture are not byte-identical, which is all those three guards need to go red.
+(An earlier draft of this paragraph counted four and named #358. Review corrected it: that
+step runs its own `zig build` and greps the result for a synthetic symbol, comparing no sha,
+so it would have stayed green. The decision stands on three.)
+
+What ships instead is a compile-only step building both released triples **into a scratch
+prefix**, at ReleaseSafe. It is last in the job, but nothing rests on that any more: review
+pointed out that "nothing after it reads `zig-out`" is an invariant held by a comment, and
+that the step would leave aarch64 binaries in `zig-out` on an x86_64 runner — where
+`access(X_OK)` is true for a foreign binary, a trap this repository has already recorded.
+`--prefix` removes the ordering constraint instead of documenting it. ReleaseSafe for a
+second reason review supplied: the release matrix builds ReleaseSafe, so a Debug-only compile
+check could still let an optimisation-dependent libc reference reach the ceremony first
+(measured: today's Debug and ReleaseSafe `.2.28` builds carry identical version sets, so this
+is coverage rather than a live gap). The aarch64 triple cross-compiles from that runner, so
+one step covers both released artefacts and disturbs no comparison. The suite itself keeps
+running the unversioned pair it always ran.
+
+**A claim in this file's own v1.0.0 entry is now false, and review found it.** That entry
+records the owner's sequencing on the strength of "#161 was measured to change no artifact
+byte (the release matrix already builds at the glibc floor it would pin)". The floor half is
+confirmed — 2.28 was already the requirement. The byte half is not: a `.2.28` build and an
+unversioned one differ, measured above. The scheduling decision it supported is unaffected
+(nothing shipped needs a different libc), but the sentence should not be read as a
+measurement any more.
+
+Measured on the `.2.28` pair before any of this: the container acceptance suite is 220 ok,
+with the same ten failures an unversioned build produces in that container and none of them
+about the pin — six legs whose apparatus binaries the plain `zig build` does not produce
+(`-Dtest-seq-gap`, `-Dtest-trace-cap`, `-Dtest-trace-budget`, `-Dtest-ancestor-probe`), and
+four that need an unprivileged user, which the script says at both sites: root ignores the
+permission bits the rewrite legs plant, and RLIMIT_NPROC is ignored for root. Confirmed on
+the unversioned build afterwards: with the four apparatus builds present and the container
+run `--user`, the same suite is 234 ok and 0 failed, which is what identifies those ten as
+the container's own and not the pin's.
+
+Those two totals are different lengths, which review asked about, so: 220 + 10 = **230**
+lines against **234**. Building the apparatus does not only turn six failures green, it adds
+three legs that the apparatus-missing branch prints as one line each; the unversioned run
+also carries one leg the `.2.28` measurement predates (this batch's `#123` addition to check
+2ex). 220 + 1 new leg + 3 apparatus legs + the 10 recoveries = 234.
 ## 2026-09-02 (sixth) - a case's relative state resolves against the case, and the verdict never showed the difference
 
 `#325`. A config's relative `state` resolves against the toml (ADR 0007 Decision 4); a

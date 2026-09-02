@@ -230,8 +230,9 @@ correction.**
   never written down.
 - Not that the reimplementations are byte-for-byte what libc does. What is measured is
   that both observers see the same operations; the *name* generation differs
-  deliberately (no `arc4random_buf`, which reached glibc only in 2.36 while this
-  repository pins no glibc floor — #161).
+  deliberately (no `arc4random_buf`, which reached glibc only in 2.36 — above the 2.28
+  ceiling the release triples now spell, #161; before that pin the floor was whatever the
+  toolchain defaulted to, and the argument was the same one made against a moving target).
 
 ## The check being red
 
