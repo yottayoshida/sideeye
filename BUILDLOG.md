@@ -2,6 +2,114 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (fourth) - criterion 3's current status has one home, and the three documents cannot disagree about it unnoticed
+
+*(The ordinal was reserved with the sibling session before either landed; its `(fifth)`
+merged first, so today's entries read 4, 3, 2, 5 down the file. The ordinal says which
+entry was claimed when, not where it sits.)*
+
+`#356`: `PRD.md`, `DESIGN.md` §18 and `docs/kill-criteria-review.md` each carry v1.0 entry
+criterion 3's status as dated paragraphs that are appended and never rewritten, and nothing
+compared them. The issue's own predicate — "each contains a reopen marker and a pending
+marker, or none does" — was written on 2026-08-26 with the criterion reopened; after the
+2026-08-27 adjudication all three carry reopen text, pending text and settled text at once,
+so it separates nothing. The issue's comment restated it as "the last dated statement in
+each document agrees", and the first plan did exactly that with a regex over the prose.
+
+**Review threw that plan out, and it was right to.** A regex over dated status prose is a
+middle form: the prose can be re-scored around an unchanged status line and stay green;
+`met|reopened` swallows the reopen's phases and an unknown value is ignored rather than
+refused; "latest date wins" is not the rule any of the three documents follows (PRD has a
+line that calls itself current and is superseded; DESIGN is an event sequence; the review
+page's sections supersede each other), and it collides with the append-only rule on the day
+two states land; and an unanchored pattern lets a quoted example hijack the state. What
+the three documents already say, in their own words, is who carries what — the review page:
+"`PRD.md` carries the criterion's status line"; DESIGN: "`PRD.md` carries the criterion's
+status"; PRD: "the binding definition lives in `DESIGN.md` §18". So the design is that
+split, made machine-readable: PRD carries one `current` marker, the review page carries
+one `state` marker per dated section in file order, DESIGN carries a pointer, and
+`spike/check-criterion3-status.sh` holds them to it — current equals the page's last
+state, every dated section has its marker, nobody else claims a current, the markers'
+vocabulary is closed and an unknown value is red, and the page's marker sequence equals
+a history pinned in the script, count included, so a new adjudication touches three
+files in one pull request. Markers are HTML comments at column 1, outside fences, whole
+line: a marker in a fence, in prose or indented is not a marker, and the selftest proves
+each of those green as well as twenty mutations red on their own diagnostic. The prose
+beside the markers is not held — the same line ADR 0039 draws for the figures — and the
+review page says so.
+
+**What the issue asked for and this does not do, stated rather than dropped.** The dated
+prose in PRD and DESIGN is not pinned (the history's authority is the review page's
+marker list; pinning prose breaks legitimate copy-edits). The "superseded" annotation on a
+line that stopped being current is prose. The comment's third point — BUILDLOG and
+CHANGELOG entries byte-identical to the merge base — is a different guard with a
+measured counter-example (this file's same-day ordinals are renumbered after merge
+conflicts; this very entry became `(fourth)` that way) and is left to the owner. The
+reopen's phase — pending owner, pending evidence — is not in the marker's vocabulary. A
+re-score written in prose with no marker moved is green in both directions; on the
+review page the dated-section rule catches the commonest form (a new dated section
+without its marker), on PRD's side it is declared as the residue.
+
+**The selftest's first run caught its own hollow red.** The "last two markers swapped"
+case was written as one sed program, `s/a/b/; t; s/b/a/`. GNU sed reads `t;` as a branch
+with no label; BSD sed reads it as a branch to a label named `;` and refuses the program,
+so on this machine the swap never happened, the copy stayed clean, and the case reported
+"the check passed" — a mutation that did not take, reported as a check that did not fire.
+It is three passes through a placeholder now, and the case asserts the mutated marker
+sequence before it asserts the red, so a swap that fails to apply is its own diagnostic.
+Every other case already carried its own diagnostic string. Green on macOS `sh`, `bash`
+and the Linux container's `/bin/sh`; the live check reads 1 / 3 / 1 markers and two dated
+sections, and prints those counts so a run that read nothing cannot pass as one that
+agreed.
+
+**Review took the check apart with mutants of its own, and six of them lived.** It copied
+the script, planted seventeen wrong implementations and ran the selftest against each:
+eleven died, six passed. The shape of all six is the same — a predicate the selftest
+names in prose but never drives from both sides. `exactly one` marker per dated section
+had no case for *two*; the DESIGN pointer was compared but no case pointed it at another
+file or added a second; the fence control sat at the one place where a bare-``` toggle
+happens to agree with the real one, and nothing asserted the insertion had landed inside
+a fence; the vocabulary test was unanchored, so `unmet` would have passed; and the
+section rule's `after ## The verdict` gate had no dated heading before the verdict to
+gate. Each now has a case, and the two insertion-based controls assert the mutation took
+before they read the green — the same lesson as the swap above, applied to the greens.
+
+**The vocabulary had a hole the mutants did not need to find.** The marker shape allowed
+an optional second word, so `<!-- criterion-3-state: 2026-09-03 -->` counted as a state
+marker with no state; the vocabulary check then read it as *known*, because its offender
+list printed an empty line that the command substitution swallowed. Two people writing
+that shape — the marker and the pin — would have published a state nobody defined, green.
+`current` and `state` require two words now (only the pointer takes one), a missing state
+prints as `(none)`, and a case proves the shapeless marker is not a marker at all. The
+selftest also stopped transcribing today's pin: its dates and states are derived from
+`PIN`, so extending the history is one edit rather than two. Twenty reds, eight greens,
+identical on macOS `sh` and the container's dash with mawk.
+
+**Then the fence control was measured and it was still empty.** Review's session ended
+mid-sentence on "the bare-fence mutant is a real survivor", which was right: the control
+had been moved to the *first* fence in `DESIGN.md`, and that one is bare — a bare-only
+toggle and the real one agree about every bare-fenced region, so the control was green
+under both and selected nothing. It sits inside the first **language-tagged** fence now
+(```` ```toml ````), where the bare-only reading has the fence closed and counts the
+marker, and the case asserts both that the insertion landed and that the line above it
+carries a tag. Fourteen mutants were then planted one at a time and the selftest run
+against each: eleven died, and the three that lived were run down individually.
+
+- **The `(none)` arm in the vocabulary check was dead code.** Once `current` and `state`
+  required two words, no payload could reach it with a missing field. Removed rather than
+  defended; the anchored `grep -vx` beside it still dies to the `unmet` case.
+- **Dropping one of the two `started` guards is equivalent** — the print is gated as well
+  as the assignment, so a pre-verdict dated section is still never reported. Dropping
+  *both* is a real change, and the pre-verdict control kills it.
+- **Hard-coding the marker count back to `3` is equivalent today** and diverges only when
+  `PIN` grows, which is the case the derivation exists for. Filed here rather than chased.
+
+Also killed, and worth naming because each is a shape this check could plausibly have
+been written with: a prefix instead of a full comparison against the pin, `head` instead
+of `tail` for "the last state", the line-start and line-end anchors on the marker regex,
+the kind split in either direction, and reading the whole line instead of field 2 in the
+vocabulary check.
+
 ## 2026-09-02 (third) - a run that named an oracle never says none was given
 
 `#352`: the JSON report's `oracle` and `metadata_writes` are initialised to their no-oracle
