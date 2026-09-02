@@ -72,7 +72,7 @@ provably survived the image change (trace contract v10):
   in the single-pid slice. Rejected as over-general for this step.
 - **Full multi-process** — the real prize and the issue's stated non-goal for
   a first slice; per-process traces and cross-process ordering are a redesign.
-  #123 stays open for it.
+  #123 stays open for it. **(Superseded by the amendment below: #123 closed 2026-09-02, and this slice is held here rather than by an issue.)**
 - **Refusal-precision only** — no judging change. Rejected: pass stays parked
   at the FIRST wall and tail-exec chains (measured judgeable with the count
   carried) stay unjudged for no reason.
@@ -99,3 +99,18 @@ provably survived the image change (trace contract v10):
 - A self-exec sets a boundary, so such targets require `--oracle` on Linux
   (`boundary_without_oracle`), which is the configuration the acceptance and
   the cohort already use.
+
+**Amended 2026-09-02 (#123 closed).** The second half of this decision — "#123 remains open
+and says which slice" — is retired. What #123 still asked for was that a refusal say which
+slice stopped the run, and that is now true: the `processes` account, which the JSON has
+carried on every refusal since #405 and which the ordinary FAIL and PASS blocks both print,
+is printed in the UNKNOWN text block too, so a target refused for a child touching the state is told that its
+own image change was followed. The multi-process slice is not built and is not filed as an
+issue: it fails this repository's threshold for opening one (no hang, crash, data loss,
+silently wrong result, or violated documented promise — a refusal is the designed answer,
+DESIGN §4.5), so **this ADR is where it lives**. What it would cost, ruled at the same time:
+crash points are addressed by one deterministic operation count, and across processes the
+engine cannot reproduce the interleaving that count depends on — so the slice is not a
+widening of coverage but a wager on the reproducibility the product rests on (DESIGN.md §4.7: "everything that affects a verdict — exploration, violation detection, shrinking, replay — is deterministic"),
+and it touches a frozen surface (replay compatibility, `docs/contract-freeze.md` surface 4).
+It needs its own design work, not a follow-up ticket.

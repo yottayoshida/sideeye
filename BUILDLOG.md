@@ -2,6 +2,107 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (eighth) - a refusal says which slice stopped it, and the multi-process slice gets an ADR rather than a ticket
+
+**The red, first.** The engine before this change, refusing a run whose child wrote the judged
+directory:
+
+```
+UNKNOWN  child_touched_state_dir
+         a process other than the subject performed a state-directory operation during the recording run
+next        This target does something Sideeye refuses by design: ...
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+not tested  power loss, torn writes, concurrent processes
+```
+
+No `processes` line. The JSON has carried that account on every refusal since `#405` and the
+text report prints it on FAIL and on PASS; UNKNOWN alone left it out. So a target refused for
+its child was not told whether the engine had followed the subject across its own image change
+— which is the question `#123` is about, and the refusal was the best-placed sentence to
+answer it.
+
+**What the plan got wrong, and the measurement that said so.** The plan carried a second edit:
+move `boundary_ev.second_run` in `preflight` above the four refusals that sit between run B's
+trace read and its boundary switch. It is already above them. The comment there says so and
+names all four, and it also records that an earlier revision claimed the same thing while
+sitting below them — caught by review then, with the excuse that preflight refuses `--json`
+and the UNKNOWN block carried no account. The second half of that excuse is what this change
+removes, so the comment moved and the code did not.
+
+**Getting a leg onto that placement took a new fixture, and the measurements are why.** The
+obvious fixtures do not reach a refusal below the assignment:
+
+| fixture | what happens |
+|---|---|
+| `TOY_SELFEXEC`, no oracle | run A refuses first: `boundary_without_oracle` |
+| `TOY_SELFEXEC` + `--oracle` | preflight **accepts**, exit 0 — the interposed chain is judged in run A and is not a hard boundary in run B |
+| `TOY_EXECL` | run A refuses: a second announcement with no exec record |
+| `TOY_FORKEXEC` | forks in both runs, so run A refuses first |
+
+Every boundary the toys can produce refuses in run A. A difference that appears only on the
+second run is the way in, and `toy_twice` already keeps a counter outside the state root for
+exactly that. `TOY_TWICE_FORK_ON_SECOND` has run 2 fork a child that writes the state: run A is
+clean, run B refuses as `child_touched_state_dir`, and the account reads `…; the second
+observed run recorded a process boundary, and that run's capture is never parsed, so nothing
+accounts for it`. No oracle needed — the shim's own witness sees the child.
+
+**Seen red once.** Assignment moved below the four refusals, rebuilt, same fixture: the refusal
+is unchanged and the run-B clause is gone —
+
+```
+UNKNOWN  child_touched_state_dir
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (…) — and no second witness ran
+```
+
+So the leg selects the placement, not the refusal. Its control is the same toy with the mode
+off, which also refuses — on run B's exit status, checked above the assignment — and carries no
+run-B clause; that pair separates "the clause tracks what run B recorded" from "a refusal
+prints something about processes". The check 2ex leg has the same shape: `TOY_SELFEXEC=1
+TOY_FORKEXEC=1` prints `image replaced 1 time(s)`, the same run without `TOY_SELFEXEC` prints
+the `processes` line without that clause.
+
+Container acceptance, run `--user` with the four apparatus builds present: **240 ok, 0 failed**
+on the current base. `zig build test`: pass.
+
+**Review falsified the documentation, not the code.** The `processes` row of
+`docs/report-schema.md` had been given the sentence "the same account appears in the text
+block of every verdict, refusals included". Measured false on three paths: `SETUP_ERROR`
+prints one line and nothing else (and that page's own heading calls `SETUP_ERROR` a refusal),
+the zero-operation PASS renders its own shorter block, and the MCP summary carries verdict,
+message, case and next only — each with `processes` present in its JSON. The same over-claim
+had been copied into two comments in `main.zig`, the ADR amendment and the CHANGELOG entry.
+All four are narrowed to what the run does: the UNKNOWN block prints it, those three do not,
+and the JSON is where the field is unconditional. Nothing about the change moved; the claim
+about it did. Three text blocks that render no account are recorded in the PR's scan as
+deliberate shapes rather than filed.
+
+**One review suggestion was tried and reverted, and the suite is what said so.** The two new
+legs spell their refusal reasons by hand; the suite has a `refused()` helper that spells a
+reason once and credits the detector ledger from the same call (#411), so check 2ex now uses
+it. Doing the same in check 19b turned the suite red — 19b sits *below* the gate that
+snapshots that ledger, and the suite's last assertion is that no reason is credited after the
+count was taken. 19b keeps the anchored literal `refused()` uses (`grep -qxF`, since a bare
+match also hits a reason quoted inside a message) and credits nothing, with the invariant
+named in the comment. The tidier form was not available; a helper's presence is not the same
+as its being usable where you are.
+
+Review also found the new toy mode ignoring a failed `fork` and its child's exit status. Both
+are checked now: without it a fixture failure would have surfaced as "no refusal", pointing
+the diagnosis at the engine rather than at the fixture.
+
+**The other slice of `#123` is not built, and is not filed.** What the issue also asked for is
+judging targets whose work is spread over several processes. A refusal is the designed answer
+there (DESIGN.md §4.5), so it clears none of this repository's conditions for opening an issue
+— no hang, crash, data loss, silently wrong result, or violated documented promise. Filing it
+would put a design decision in a queue nobody measures. ADR 0018 records it instead, with what
+it would cost: crash points are addressed by one deterministic operation count, across
+processes the engine cannot reproduce the interleaving that count depends on, so the slice is
+not a widening of coverage but a wager on the reproducibility the product rests on (DESIGN.md §4.7, which states that
+everything affecting a verdict is deterministic) — and it moves a frozen surface (replay compatibility, surface 4). That needs its own
+design work, not a ticket.
 ## 2026-09-02 (tenth) - the divergence names its syscall, and the plan's own premise about the parser was half wrong
 
 `#337`. A divergence refusal quotes the oracle's raw strace line into `message`, and under
