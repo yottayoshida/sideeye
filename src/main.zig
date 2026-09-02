@@ -1843,7 +1843,46 @@ pub fn main(init: std.process.Init.Minimal) !void {
             setupError("a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4");
         if (c.case_version == 4 and c.define.cwd == null)
             setupError("a case_version 4 file must carry define.cwd; the version exists to freeze it");
-        args.state = c.define.state;
+        // A relative `state` resolves against the CASE FILE, not the cwd of whoever
+        // invoked the replay (#325). ADR 0007 Decision 4 states the rule for a
+        // sideeye.toml — "Paths resolve against the toml's directory, not the process
+        // cwd, so the same file means the same thing from anywhere" — and this is the
+        // second door into the same property: replay empties and rebuilds the directory
+        // it resolves, so a case that meant a different directory from every cwd meant a
+        // different directory to empty.
+        //
+        // Nothing the engine writes changes meaning: `writeCase` stores `state_abs`
+        // (the resolved spelling), so every saved case takes the `path[0] == '/'` exit
+        // of `resolvePathAgainst` unchanged. What moves is the hand-written case, which
+        // is what the report was about. (The resolution of the case's own directory
+        // below does run for those too — one `realpath` more per replay, and two
+        // refusals that a saved case cannot reach.)
+        //
+        // `cwd` takes the same rule, for the same reason: `args.cwd` is `realpath`'d
+        // before the save (the declared-cwd vet below), so every case this engine wrote
+        // carries an absolute spelling and takes the unchanged early exit — while a
+        // hand-written relative `cwd` had exactly the `state` bug, resolved against the
+        // invoking process instead of the case. (A first draft excluded it on the ground
+        // that saved cases store it "as the CLI spelled it"; that is true of the commands
+        // and false of `cwd`, and the comment twenty lines below already said so. Caught
+        // in review.)
+        //
+        // The COMMANDS are deliberately not resolved here. `writeCase` stores those as
+        // the CLI spelled them — only `state` is overwritten with its resolved form at
+        // the save site, and the flag path never calls `resolveCommand` — so resolving
+        // them on the way in would point a saved case's `./op.sh` at the case directory,
+        // breaking the cases this engine writes. Making them absolute is the save site's
+        // job, and a separate change (ADR 0009 Decision 1 claims a "resolved define",
+        // which is not true of the commands today).
+        const case_dir = blk: {
+            const raw = std.fs.path.dirname(case_arg.?) orelse ".";
+            var dz_buf: [contract.max_path]u8 = undefined;
+            const dz = std.fmt.bufPrintZ(&dz_buf, "{s}", .{raw}) catch setupError("the case file's directory is too long to resolve against");
+            var real_buf: [contract.max_path]u8 = undefined;
+            const abs = posix.realpath(dz.ptr, &real_buf) orelse setupError("the case file's directory could not be resolved");
+            break :blk rarena.dupe(u8, std.mem.span(abs)) catch setupError("out of memory");
+        };
+        args.state = resolvePathAgainst(rarena, case_dir, c.define.state);
         args.setup = c.define.setup;
         args.operation = c.define.operation;
         args.check = c.define.check;
@@ -1856,7 +1895,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // Taken as stored: a saved case always carries the resolved spelling, so there is
         // nothing here for a toml directory to resolve against. The vet below still runs
         // — the directory may be gone by replay time, which is a refusal, not a verdict.
-        args.cwd = c.define.cwd;
+        // A hand-written relative spelling is resolved against the case, like `state`
+        // above (#325): an engine-written case is absolute and passes through unchanged.
+        args.cwd = if (c.define.cwd) |cd| resolvePathAgainst(rarena, case_dir, cd) else null;
         // Mirrored into the report before any refusal below can fire: a contract
         // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
         expected_status_val = c.define.expected_status orelse 0;
@@ -2080,6 +2121,36 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // /opt/x/work` creates both, one directory up.)
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupError("--work must not be the state directory or inside it: the engine's own captures and traces there would be observed as the target's state operations");
+        }
+    }
+
+    // The same shape, for the case file itself (#325 review). A replay empties the state
+    // directory (`--fresh-state`) and rebuilds it once per world, so a case whose
+    // `define.state` resolves to a directory *containing the case* deletes the case —
+    // and, in the conventional `<work>/cases/` layout, every sibling case with it,
+    // including the second exhibit a checker-red run saves.
+    //
+    // Reachable before this batch too (a relative `.` resolved against the invoker's
+    // cwd), but resolving against the case file is what makes it land reliably: the case
+    // is then always inside the directory being emptied. `--state-under` does not see it
+    // — the state IS inside the declared range, which is the only thing that test asks —
+    // so this is its own vet, beside `--work`'s, on the same resolved bytes the
+    // destruction will use. Measured before the vet existed: `"state": "."` with the case
+    // in `<root>/sub` under `--state-under <root>` emptied `sub/`, taking the case file
+    // and a planted file with it, and still exited 1 as if nothing were wrong.
+    if (mode == .replay) {
+        var case_z_buf: [contract.max_path]u8 = undefined;
+        const czb = std.fmt.bufPrintZ(&case_z_buf, "{s}", .{case_arg.?}) catch setupError("the case file's path is too long");
+        var case_real: [contract.max_path]u8 = undefined;
+        // Unresolvable here means it moved since the read a moment ago: refuse rather
+        // than skip the vet.
+        const case_abs = posix.realpath(czb.ptr, &case_real) orelse {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError("the case file could not be resolved for the destruction vet");
+        };
+        if (contract.isInsideDir(std.mem.span(case_abs), state_abs)) {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError("the case file lies inside the state directory this replay empties, so replaying it would delete the case (and any sibling case beside it); point define.state at a directory that does not contain the case");
         }
     }
 

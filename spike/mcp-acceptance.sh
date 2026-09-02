@@ -417,6 +417,54 @@ else
     fail "state confinement through the server: refusal or sentinel missing"
 fi
 
+echo "=========== mcp 10r: a case's RELATIVE state resolves against the case, and one naming its own directory refuses (#325) ==========="
+# Every hostile-case leg above hands the server an ABSOLUTE define.state, so the relative
+# spelling had never been exercised through this surface at all. Two legs:
+#   A — a relative state pointing at a sibling of the case resolves against the CASE
+#       (not the server's cwd) and reaches a verdict inside the range.
+#   B — a relative state naming the case's OWN directory refuses: the replay would
+#       delete the case, and in this layout every sibling case with it. The range test
+#       cannot see this one (the state IS inside the range), which is why it has its own
+#       vet — and why it is pinned here rather than left to the CLI suite.
+#
+# Leg A's relative spelling is `../state` — the ORIGINAL state directory, reached from
+# the case's new home — and not a fresh sibling. Check 8's setup is deliberately
+# non-idempotent (`mkdir` of a fixed `once` under that original directory, the same
+# shape mcp 11 handles two checks below), so a case pointed at any other directory dies
+# in setup with `File exists` rather than exercising the resolution. Aiming back at the
+# original keeps `--fresh-state` clearing `once` before setup runs. It also keeps the
+# leg discriminating: resolved against the case the path lands inside the root, while a
+# pre-fix engine resolving against the server's cwd would land at `/work/state` — outside
+# the range, refused. (Measured: with the sibling spelling the leg failed on
+# `--setup exited non-zero`, and its message would have blamed the resolution.)
+mkdir -p "$WS2/rel"
+python3 - "$WS2/work/cases/000001.json" "$WS2/rel/sibling.json" "$WS2/rel/self.json" <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = "../state"         # the original state dir, named relatively
+json.dump(c, open(sys.argv[2], "w"))
+c["define"]["state"] = "."                # the case's own directory: refused
+json.dump(c, open(sys.argv[3], "w"))
+PY
+REQ="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/rel/sibling.json\"}}}" \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
+  sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+if python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];sc=r.get("structuredContent") or {};sys.exit(0 if sc.get("verdict") in ("PASS","FAIL","UNKNOWN") and "outside the allowed range" not in r["content"][0]["text"] else 1)' \
+   && [ -f "$WS2/rel/sibling.json" ]; then
+    pass "a relative define.state resolves against the case file and reaches a verdict through the server"
+else
+    fail "relative define.state through the server: refused or resolved somewhere else"
+fi
+REQ="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/rel/self.json\"}}}" \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
+  sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+if python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];sys.exit(0 if r["isError"] is True and "would delete the case" in r["content"][0]["text"] else 1)' \
+   && [ -f "$WS2/rel/self.json" ] && [ -f "$WS2/rel/sibling.json" ]; then
+    pass "a case naming its own directory is refused through the server, and both case files survive"
+else
+    fail "self-deleting case through the server: refusal missing or a case file gone"
+fi
+
 echo "=========== mcp 11: SIDEEYE_MCP_STATE_ROOT widens the range without widening the root (#266) ==========="
 # The operator's knob, exercised for real: the SAME outside-state case that mcp 10
 # refused is replayable once the destruction range is explicitly widened to /tmp —

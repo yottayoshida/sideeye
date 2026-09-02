@@ -2,7 +2,7 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-09-02 (sixth) - the release triples spell their glibc version, and the version turns out to be a ceiling rather than a gate
+## 2026-09-02 (ninth) - the release triples spell their glibc version, and the version turns out to be a ceiling rather than a gate
 
 `#161`: the release matrix passes `x86_64-linux-gnu` / `aarch64-linux-gnu` with no version, so
 the glibc floor of every published Linux artefact is whatever Zig defaults to that month.
@@ -100,6 +100,92 @@ lines against **234**. Building the apparatus does not only turn six failures gr
 three legs that the apparatus-missing branch prints as one line each; the unversioned run
 also carries one leg the `.2.28` measurement predates (this batch's `#123` addition to check
 2ex). 220 + 1 new leg + 3 apparatus legs + the 10 recoveries = 234.
+## 2026-09-02 (sixth) - a case's relative state resolves against the case, and the verdict never showed the difference
+
+`#325`. A config's relative `state` resolves against the toml (ADR 0007 Decision 4); a
+replayed case's did not — `args.state = c.define.state` took the value raw, so a
+hand-written case naming `./state` meant a different directory from every cwd, and replay
+empties what it resolves. Fixed by giving the case file's own directory to
+`resolvePathAgainst`, the four-line shape `--config` already uses.
+
+**The measurement that changed the test.** The plan's falsifiable check was "replay the
+relative case from elsewhere and see it reproduce". Measured against a pre-fix binary
+built from `main` in a throwaway worktree: **it reproduces either way** (`the case
+reproduced`, exit 1, on both). The pre-fix run created its own `state/` in the invoking
+cwd, set it up from scratch and reproduced there; the engine printed `note: the paths at
+the crash point differ from the recorded case … the class structure matches, so the
+replay proceeds` and carried on. A note is not a refusal, so from outside the wrong
+directory looked like success. The leg now asserts **where the directory came out** — the
+invoking cwd gains nothing, the case's neighbour is what ran — which is the property, and
+the only thing that discriminates. Pre-fix: cwd-side `state/` CREATED, case-side MISSING.
+Post-fix: the reverse.
+
+**Scope, cut by the design review.** The first draft resolved `setup`/`operation`/`check`/
+`cwd` as well, on the stated ground that "the engine's own cases are unchanged because
+they store resolved paths". That ground is false: `writeCase` overwrites `case_args.state`
+alone (`src/main.zig`), and the flag path never calls `resolveCommand`, so a case saved
+from `--operation ./op.sh` stores `./op.sh` verbatim. Resolving it on the way in would
+have pointed it at the case directory — breaking the cases this engine writes. `state`
+only; making the commands absolute is the save site's job and a separate change (ADR 0009
+Decision 1 already claims a "resolved define", which is untrue today for the commands).
+
+**The range, measured in both directions.** `resolvePathAgainst` concatenates without
+normalising and `realpath` flattens later, so under `--state-under` a relative state can
+climb with `..` back *inside* the range and be allowed. Owner ruling: acceptable — the
+root is documented as "a directory whose contents are yours to lose" — and pinned as leg J
+rather than left to be rediscovered. Leg K pins the other direction: a relative spelling
+landing *outside* the range is still refused with the sentinel intact, so leg J is "the
+range allows what is inside it", not "relative paths skip the range". Every hostile-case
+leg before this used absolute paths (check 2sc, mcp 10), so the relative path had never
+been exercised at all. Owner ruling on the schema: `case_version` stays at 4 — the field
+shape does not move and no case this engine wrote changes meaning.
+
+**The code review found the hole this resolution opened, and one false sentence in it.**
+
+A case whose `state` resolves to the directory *containing the case* deletes the case.
+Measured: `"state": "."`, case in `<root>/sub`, `--state-under <root>` — `sub/` emptied,
+the case file and a planted `precious.txt` gone, exit 1 as if nothing had happened. The
+range test cannot see it, because the state genuinely is inside the declared range; that
+is the only question it asks. In the conventional `<work>/cases/` layout it also takes
+every sibling case, including the second exhibit a checker-red run writes. Reachable
+before this change too (a relative `.` resolved against the invoker's cwd), but resolving
+against the case is what makes it land every time: the case is then always inside the
+directory being emptied. Fixed with a vet of the same shape as `--work`'s, on the same
+resolved bytes, refusing before any destruction; pinned by leg L (refusal, both files
+survive) and leg M (the ordinary sibling case still replays, so the vet catches
+containment and not relativeness), and by two legs through the MCP surface, where no
+hostile-case leg had ever used a relative spelling.
+
+And the reason given for excluding `cwd` was false. The new comment said `writeCase`
+stores the commands and `cwd` "as the CLI spelled them"; true of the commands, false of
+`cwd`, which is `realpath`'d by the declared-cwd vet before the save — and the comment
+twenty lines below in the same function already said so ("a saved case always carries the
+resolved spelling"). So the exclusion's own argument applies in reverse: an
+engine-written `cwd` is absolute and takes the early exit, exactly like `state`, while a
+hand-written relative `cwd` had the same bug this issue is about. `cwd` now takes the same
+line. The commands stay out, and that part of the argument survives measurement: they are
+stored verbatim and the flag path never calls `resolveCommand`.
+
+**The confirmation round caught a regression the fix itself introduced.** The new MCP leg
+cloned check 8's case, whose setup is deliberately non-idempotent — `mkdir` of a fixed
+`once` under the ORIGINAL state directory — so pointing the clone at a fresh sibling meant
+`--fresh-state` cleared the sibling while `once` survived, and setup died `File exists`.
+The leg would have failed on every Linux run, with a message blaming the resolution. The
+same trap is handled two checks below (mcp 11 removes `once` before reusing the case), and
+this leg had walked past it. Reproduced at the CLI — sibling spelling: `SETUP ERROR
+--setup exited non-zero`; `../state`, aiming back at the original: `the case reproduced` —
+and the leg now uses the latter, which also keeps it discriminating (resolved against the
+case the path stays inside the root; a pre-fix engine resolving against the server's cwd
+would land outside the range and be refused).
+
+Also from that round: the claim that no cheap call-site check existed on macOS was wrong.
+It needs no oracle and no strace — only a replay from another cwd and a look at where the
+directory came out — and the macOS job already drives the binary end to end. Both halves
+now run there (the resolution, and the destruction vet), written without a declared
+checker: a checker adds a `baseline_violates_invariant` UNKNOWN on the freshly emptied
+state, which is noise the assertions do not read. Verified by extracting the step from
+`ci.yml` and running it locally; the first draft also forgot to create the seed state
+directory, which the same run caught.
 
 ## 2026-09-02 (fourth) - criterion 3's current status has one home, and the three documents cannot disagree about it unnoticed
 

@@ -2034,6 +2034,118 @@ else
     echo "FAIL refusal cleanup: exit $rc, state $([ -e "$VICTIM/never-made" ] && echo LEFT || echo gone), work $([ -e /tmp/acc/work-scg ] && echo LEFT || echo gone)"
     fails=$((fails + 1))
 fi
+# Leg I (#325): a RELATIVE state in a case resolves against the case file, not against
+# whoever invoked the replay. ADR 0007 states the rule for a sideeye.toml; a case is the
+# second door into the same property, and replay empties what it resolves.
+#
+# **The verdict does not discriminate here** — measured 2026-09-02 against the pre-fix
+# binary: both answer `the case reproduced`, because a replay that resolved the state
+# somewhere else simply set that somewhere else up and reproduced there. The engine
+# noticed ("note: the paths at the crash point differ from the recorded case") and
+# continued, which is not a refusal. So this leg asserts WHERE the directory came out:
+# the invoking cwd must gain nothing, and the case's own neighbour must be what ran.
+rm -rf /tmp/acc-relcase && mkdir -p /tmp/acc-relcase/home /tmp/acc-relcase/elsewhere
+python3 - "$case_file" /tmp/acc-relcase/home/case.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = "./state"          # relative: the whole point of the leg
+json.dump(c, open(sys.argv[2], "w"))
+PY
+( cd /tmp/acc-relcase/elsewhere && "$SIDEEYE" replay /tmp/acc-relcase/home/case.json --fresh-state \
+    --shim "$SHIM" --work /tmp/acc/work-sci --oracle /usr/bin/strace > /tmp/acc-relcase/out.txt 2>&1 )
+rc=$?
+if [ ! -e /tmp/acc-relcase/elsewhere/state ] && [ -d /tmp/acc-relcase/home/state ]; then
+    echo "ok   a relative state resolves against the case file: the invoking cwd gained nothing, the case's neighbour ran (exit $rc)"
+else
+    echo "FAIL relative state resolution: cwd-side state $([ -e /tmp/acc-relcase/elsewhere/state ] && echo CREATED || echo absent), case-side state $([ -d /tmp/acc-relcase/home/state ] && echo present || echo MISSING) (exit $rc)"
+    sed 's/^/     | /' /tmp/acc-relcase/out.txt | head -6
+    fails=$((fails + 1))
+fi
+# Leg J (#325, the range's side): a relative state CAN climb back inside the range with
+# `..` — `resolvePathAgainst` concatenates and `realpath` flattens, so the strict-inside
+# test sees a path within the range and allows it. Ruled acceptable (the root is
+# documented as "a directory whose contents are yours to lose"), and pinned here so the
+# behaviour cannot change unnoticed in either direction.
+rm -rf /tmp/acc-relrange && mkdir -p /tmp/acc-relrange/sub /tmp/acc-relrange/climbed
+echo "replaced" > /tmp/acc-relrange/climbed/sentinel.txt
+python3 - "$case_file" /tmp/acc-relrange/sub/case.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = "../climbed"       # inside the range, reached by climbing
+json.dump(c, open(sys.argv[2], "w"))
+PY
+o=$("$SIDEEYE" replay /tmp/acc-relrange/sub/case.json --fresh-state --state-under /tmp/acc-relrange \
+    --shim "$SHIM" --work /tmp/acc/work-scj --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ ! -e /tmp/acc-relrange/climbed/sentinel.txt ] && [ "$rc" != "3" ]; then
+    echo "ok   a relative state climbing to a sibling INSIDE the range is allowed and emptied it (exit $rc) — the documented reading of the root"
+else
+    echo "FAIL relative-climb inside the range: exit $rc, sentinel $([ -e /tmp/acc-relrange/climbed/sentinel.txt ] && echo PRESENT || echo gone)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# Leg K (#325, the range still binds): the same climb aimed OUTSIDE the range is refused,
+# so leg J is "the range allows what is inside it", never "relative paths skip the range".
+rm -rf /tmp/acc-relout && mkdir -p /tmp/acc-relout/range/sub
+echo "survives" > "$VICTIM/sentinel.txt" 2>/dev/null || { mkdir -p "$VICTIM"; echo "survives" > "$VICTIM/sentinel.txt"; }
+python3 - "$case_file" /tmp/acc-relout/range/sub/case.json "$VICTIM" <<'PY'
+import json, sys, os
+c = json.load(open(sys.argv[1]))
+# a relative spelling that lands outside the range once flattened
+c["define"]["state"] = os.path.relpath(sys.argv[3], "/tmp/acc-relout/range/sub")
+json.dump(c, open(sys.argv[2], "w"))
+PY
+o=$("$SIDEEYE" replay /tmp/acc-relout/range/sub/case.json --fresh-state --state-under /tmp/acc-relout/range \
+    --shim "$SHIM" --work /tmp/acc/work-sck --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "outside the allowed range" && [ -s "$VICTIM/sentinel.txt" ]; then
+    echo "ok   a relative state resolving OUTSIDE the range is still refused, and the outside directory is untouched"
+else
+    echo "FAIL relative state outside the range: exit $rc, sentinel $([ -e "$VICTIM/sentinel.txt" ] && echo present || echo GONE)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# Leg L (#325 review): a case whose state resolves to a directory CONTAINING the case
+# deletes the case. `--state-under` does not see it — the state is inside the declared
+# range, which is all that test asks — so the destruction vet is its own, beside --work's.
+# Measured before the vet existed: `"state": "."` with the case in <root>/sub under
+# --state-under <root> emptied sub/, took the case file and a planted file with it, and
+# still exited 1. In the conventional <work>/cases/ layout that also takes the sibling
+# case a checker-red run saves.
+rm -rf /tmp/acc-selfdel && mkdir -p /tmp/acc-selfdel/root/sub
+python3 - "$case_file" /tmp/acc-selfdel/root/sub/case.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["state"] = "."                # the directory the case itself lives in
+json.dump(c, open(sys.argv[2], "w"))
+PY
+echo "precious" > /tmp/acc-selfdel/root/sub/precious.txt
+o=$("$SIDEEYE" replay /tmp/acc-selfdel/root/sub/case.json --fresh-state --state-under /tmp/acc-selfdel/root \
+    --shim "$SHIM" --work /tmp/acc/work-scl --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "would delete the case" \
+    && [ -f /tmp/acc-selfdel/root/sub/case.json ] && [ -s /tmp/acc-selfdel/root/sub/precious.txt ]; then
+    echo "ok   a case naming its own directory refuses before the deletion, and both the case and its neighbour survive"
+else
+    echo "FAIL self-deleting case: exit $rc, case $([ -f /tmp/acc-selfdel/root/sub/case.json ] && echo present || echo GONE), planted file $([ -s /tmp/acc-selfdel/root/sub/precious.txt ] && echo present || echo GONE)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# Leg M (#325 review, the vet's positive control): the ordinary relative case — state in
+# a SIBLING directory of the case — still replays. Without this, deleting the vet's
+# `isInsideDir` test or widening it to every relative state would leave leg L green while
+# breaking leg I's shape.
+o=$("$SIDEEYE" replay /tmp/acc-relcase/home/case.json --fresh-state \
+    --shim "$SHIM" --work /tmp/acc/work-scm --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" != "3" ] && [ -f /tmp/acc-relcase/home/case.json ]; then
+    echo "ok   a relative state in a sibling directory still replays (exit $rc); the vet catches containment, not relativeness"
+else
+    echo "FAIL destruction vet is too wide: exit $rc on an ordinary relative case"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-relcase /tmp/acc-relrange /tmp/acc-relout /tmp/acc-selfdel
 # Leg H: "/" as a range would confine nothing — isStrictlyInsideDir answers true
 # for every absolute path under it — so the flag refuses the range itself. Without
 # this leg, deleting that one branch turns --state-under / into a silent no-op
