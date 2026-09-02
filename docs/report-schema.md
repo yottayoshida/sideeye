@@ -88,6 +88,7 @@ the case file — nothing else in the report was load-bearing for them.
 |---|---|---|---|
 | `unknown_reason` | string | UNKNOWN | Machine-readable reason, one of the closed set below. |
 | `message` | string | UNKNOWN and SETUP_ERROR | Human-readable detail: what was observed, and often which operation it happened at. |
+| `next_step` | string | UNKNOWN | One sentence saying what to do about the refusal — change the define, pass a flag, narrow the state directory, fix the environment, or file it as Sideeye's defect. Chosen at the site that raised the refusal, where the cause is known, so two refusals sharing an `unknown_reason` may carry different steps; `message` keeps the observation and this keeps the action (ADR 0030's line). A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 
 `unknown_reason` values (closed set, contract v13 — the set is unchanged from v12;
 the version moved because the recorded account did, not the vocabulary):
@@ -133,5 +134,7 @@ report refuses to be reassuring without an account.
 `sideeye_explore_config` and `sideeye_replay_case` return this same document as
 the tool result's `structuredContent`, minified. `isError` is derived from
 `verdict`: a real verdict (PASS/FAIL) is `isError: false`; every refusal
-(UNKNOWN, SETUP_ERROR) is `isError: true` — retry after fixing what the
-`message` names, don't parse the error text (ADR 0010).
+(UNKNOWN, SETUP_ERROR) is `isError: true` — retry after doing what `next_step`
+says and fixing what the `message` names, don't parse the error text (ADR 0010).
+The text block carries `next_step` too, as a `next:` line after the marked
+region and before `case`/`replay`.

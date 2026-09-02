@@ -223,6 +223,142 @@ and the review page's citation line was re-wrapped to its paragraph's width.
 **Not done here, on purpose.** The freeze audit's row for `#357` still says "three"; rows in
 that ledger move with a sweep, not with the change they describe.
 
+## 2026-09-02 (fifth) - every UNKNOWN carries a next step, and the review moved where it is chosen
+
+`#274`. Measured before designing: `no_shim_marker`'s half of the report was already done
+(#391, `src/image.zig` reads the image instead of listing guesses); `unsupported_syscall_observed`
+still passed a bare syscall name at four of its five sites; nothing anywhere required a
+refusal to say what to do next. The owner chose the whole set over the one named
+detector.
+
+**The first design was wrong and the review said so.** The draft was one sentence per
+`unknown_reason`, held exhaustive by a `switch` — 34 sentences, compile-enforced. The
+reviewer counted: 34 reasons, 85 call sites (86 by its count, with the definition), and
+reasons that bundle causes with different remedies — `state_unsnapshotable`'s own doc says
+"five kinds of cause", `recording_run_failed` covers a wrong declared status, a signal
+death and a diverging second run. A reason-keyed sentence loses that or lies. So the
+choice moved to the site: `unknown(reason, detail, next)` with `next` required, a closed
+enum of **actions** (twelve at first, fourteen after the code review below), and the two disposition helpers (`snapshotOrRefuse`'s
+`answer`, `rewriteFailureDisposition`) deciding the member in the same arm that decides
+the wording — which is what split `state_unsnapshotable` into narrow-the-tree,
+fix-the-environment and Sideeye's-defect.
+
+The second round moved it again: `render(arena)` with a `[]const u8` flag payload was
+replaced by a payload-free enum returning comptime strings, because `unknown()` is
+`noreturn` and a sentence that could fail to allocate at the moment the report is
+written would break "every UNKNOWN carries it" — and because a free-form payload could
+carry a flag that does not exist, or target bytes, into MCP text outside the marked
+region. It also placed the MCP `next:` line: after the region (so #339's prefix rule
+still sees only verdict, reason and `:\n` before the opening banner) and before `case`.
+
+The 83 sites that needed a member were migrated by a script that keys the member on the
+reason with overrides on the detail text, and prints its table; the table is the review
+surface. Judgements worth naming: `oracle_saw_nothing` splits four ways (an fs_usage
+capture that could not be read, or a sentinel that could not be written, is the
+environment; a line that did not match the grammar this build knows, or a descriptor or
+path the engine could not resolve, is Sideeye's; a pathname fs_usage cut at its display
+width is the operator's tree to shorten); `boundary_without_oracle` under fs_usage is the
+wall, not "pass an oracle" (macOS cannot account for other processes and README says so);
+the checker probe exiting 126 is the environment (a capture the stub could not open, or a
+script mode) rather than the declared invariant; `sequence_numbering_broken` is the wall,
+on the doc's own reading that a restarted counter is an unobserved image change. Two
+sites were skipped by the script because they already carried three arguments (the
+`child_wait_failed` and `state_rewrite_failed` sites edited by hand).
+
+**The review moved four of those choices**, each because the sentence named an action
+that does not work at that site: `boundary_without_oracle` at the recording run and at
+`preflight --twice` had `pass_oracle`, whose sentence offers `--allow-unverified` (which
+does not lift that refusal) and `--oracle-fs-usage` (under which the same boundary is
+refused as the wall) — a new member, `account_boundary`, names only `--oracle`; the
+world-only boundary is the wall outright. `kill_did_not_land`'s first site (a world that
+ended before the kill point was ever reached — `!landed`) had `sideeye_defect`, and this repository's own
+borg r1 entry (2026-08-21) is the counter-example — the fix there was the define
+(`BORG_BASE_DIR` moved inside the state root), so that site is `fix_define`; the second
+site (a kill recorded but not by SIGKILL) stays Sideeye's. `trace_truncated` and
+`child_wait_failed` had `environment`, whose sentence says "fix what the detail names"
+when the detail names nothing — a new member, `retry_then_report`, says so. And
+`rewriteFailureDisposition` chose one member for four causes, against the ADR's own
+"in that same arm" rule; it now chooses per cause (`PathTooLong` is the operator's tree).
+
+The table, as it stands at this commit (line, reason, member) — the review surface the
+ADR names:
+
+```
+L879  trace_too_large              narrow_state     L2513 oracle_missed_operation      class_wall
+L881  trace_too_large              narrow_state     L2520 oracle_saw_phantom           sideeye_defect
+L886  trace_too_large              narrow_state     L2527 unsupported_syscall_observed class_wall
+L900  trace_budget_exhausted       narrow_state     L2582 state_not_quiescent          quiesce
+L902  trace_budget_exhausted       narrow_state     L2590 state_not_quiescent          quiesce
+L1016 completeness_not_verified    pass_oracle      L2594 state_changed_without_ops    class_wall
+L1105 child_wait_failed            retry_then_report L2629 case_no_longer_applies      re_record
+L1740 case_no_longer_applies       re_record        L2631 case_no_longer_applies       re_record
+L2178 oracle_saw_nothing (sentinel) environment     L2634 case_no_longer_applies       re_record
+L2192 oracle_saw_nothing (fs_usage) environment     L2636 case_no_longer_applies       re_record
+L2193 oracle_saw_nothing (fs_usage) environment     L2641 case_no_longer_applies       re_record
+L2207 recording_run_failed         fix_define       L2726 checker_not_falsified        fix_define
+L2208 recording_run_failed         fix_define       L2776 checker_not_falsified (126)  environment
+L2224 marker_never_observed        fix_define       L2778 checker_not_falsified        fix_define
+L2260 contract_version_mismatch    rebuild_pair     L2780 checker_not_falsified        fix_define
+L2268 no_shim_marker               noShimNext()     L2830 parent_exited                relaunch
+L2293 trace_truncated              retry_then_report L2868 child_timed_out             raise_world_timeout
+L2296 unresolvable_path            class_wall       L2891 child_touched_state_dir      class_wall
+L2304 unsupported_syscall_observed class_wall       L2895 unsupported_syscall_observed class_wall
+L2317 child_process_detected       class_wall       L2897 child_process_detected       class_wall
+L2319 child_process_detected       class_wall       L2898 multiple_threads_detected    class_wall
+L2320 multiple_threads_detected    class_wall       L2899 child_process_detected       class_wall
+L2321 child_process_detected       class_wall       L2903 sequence_numbering_broken    class_wall
+L2329 sequence_numbering_broken    class_wall       L2912 kill_did_not_land (!landed)  fix_define
+L2350 child_touched_state_dir      class_wall       L2914 kill_did_not_land (not SIGKILL) sideeye_defect
+L2360 boundary_without_oracle      account_boundary L2923 baseline_run_failed          fix_define
+L2369 boundary_without_oracle (fs_usage) class_wall L2924 baseline_run_failed          fix_define
+L2389 oracle_saw_nothing (capture) environment      L2946 boundary_without_oracle (world) class_wall
+L2417 oracle_saw_nothing (grammar) sideeye_defect   L2953 state_not_quiescent          quiesce
+L2418 oracle_saw_nothing (cut path) narrow_state    L2994 state_not_quiescent          quiesce
+L2419 oracle_saw_nothing (fd)      sideeye_defect   L3026 baseline_violates_invariant  fix_define
+L2420 oracle_saw_nothing (path)    sideeye_defect   L3459 recording_run_failed         fix_define
+L2421 unsupported_syscall_observed class_wall       L3460 recording_run_failed         fix_define
+L2422 oracle_saw_nothing (no subject) class_wall    L3495 no_shim_marker (second run)  check_shim
+L2423 oracle_saw_nothing (sentinel) environment     L3499 trace_truncated              retry_then_report
+L2481 oracle_saw_nothing (no output) environment    L3502 child_touched_state_dir      class_wall
+L2484 child_process_detected       class_wall       L3504 contract_version_mismatch    rebuild_pair
+L2489 child_touched_state_dir      class_wall       L3516 child_process_detected       class_wall
+L2492 unsupported_syscall_observed class_wall       L3517 multiple_threads_detected    class_wall
+                                                    L3518 child_process_detected       class_wall
+                                                    L3533 boundary_without_oracle      account_boundary
+                                                    L3544 state_not_quiescent          quiesce
+                                                    L3560 state_changed_without_ops    class_wall
+                                                    L4054 unsupported_state_entry      class_wall
+                                                    L4154 state_changed_unaccounted    class_wall
+                                                    L5204 state_rewrite_failed         d.next (per cause)
+```
+
+Plus `snapshotOrRefuse`'s five arms (two caps and `TooDeep`/`PathTooLong` → `narrow_state`;
+`ReadFailed`/`ClassifyFailed` → `environment`; `EntriesNotSortedUnique` → `sideeye_defect`).
+Members by count over the 85 rows: class_wall 31, fix_define 12, environment 7,
+re_record 6, narrow_state 6, sideeye_defect 5, quiesce 5, retry_then_report 3,
+rebuild_pair 2, account_boundary 2, one each of pass_oracle, check_shim, relaunch,
+raise_world_timeout and noShimNext(), and one site (`state_rewrite_failed`) reading
+`d.next` from its disposition. (The first draft of this line was off by one in four
+places against its own table; the review counted.)
+
+Measured on this machine (macOS, arm64) before the change shipped:
+
+- **The promise, both forms.** The oracle-less fixed toy refuses `completeness_not_verified`;
+  its text `next` line and its JSON `next_step` are the same bytes ("Re-run with --oracle
+  <strace> on Linux or --oracle-fs-usage on macOS, or accept the weaker claim with
+  --allow-unverified."). Through `sideeye mcp` the summary carries `next:` at offset 282,
+  after the region's closing banner at 237 and before the advisory at 410, equal to
+  `structuredContent.next_step`.
+- **Five reds, each against its own predicate.** Dropping the third argument at one
+  site: `error: expected 3 argument(s), found 2`. Deleting one `render` arm: `switch must
+  handle all possibilities`. Writing `--max-trace` into a sentence: the unit test names
+  the member and the flag. Printing a different string on the text line than the JSON
+  carries: the two-form comparison reports the mismatch. And `check-report-schema.py` in
+  both directions on the four macOS-generated reports — the doc row removed: "generated
+  but not documented: next_step"; the field removed from the UNKNOWN report: "documented
+  but never generated: next_step". All reverted; `zig build test` 491/493, two pre-existing
+  skips.
+
 ## 2026-09-02 - every command the engine runs starts with stdin at end-of-file, and the design review took the exit code away
 
 `#263`, second half. The first half (`--world-timeout`, #385) bounded a hung world; what

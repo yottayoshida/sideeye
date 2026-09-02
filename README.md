@@ -131,7 +131,7 @@ The full version is [`spike/check.sh`](spike/check.sh). Sideeye refuses to trust
 
 ## What the target has to be
 
-Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2) with the refusing detector named:
+Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2) with the refusing detector named, and every UNKNOWN carries a `next_step` — one sentence saying what to do about it (`docs/report-schema.md`):
 
 - **Dynamically linked and single-threaded**, reaching its files through libc — buffered stdio included. State-changing raw syscalls, static linking, hardened runtimes and threads are refused.
 - **State in one directory**, declared with `--state` or the toml. Symlinks inside it are snapshotted and restored as links.

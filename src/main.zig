@@ -633,29 +633,47 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // reason and the sentence that goes with it was then a thing two lists had to
         // agree about — with only one of them reachable, so a disagreement would sit
         // there unobserved. One arm cannot disagree with itself.
-        const answer: struct { reason: contract.UnknownReason, bare: []const u8 } = switch (e) {
+        //
+        // The next step is decided in the same arm (#274), and it is what splits the
+        // `state_unsnapshotable` group: one reason, three remedies — a tree the operator
+        // shapes (too deep, a path too long), an environment the operator fixes (an
+        // entry that could not be read or classified), and a sorted-entry invariant
+        // that is Sideeye's to fix. A reason-keyed table could not say that.
+        const answer: struct { reason: contract.UnknownReason, bare: []const u8, next: contract.NextStep } = switch (e) {
             error.FileTooLarge => .{
                 .reason = .state_file_too_large,
                 .bare = "a state file is too large for byte-level judgment",
+                .next = .narrow_state,
             },
             error.TreeTooLarge => .{
                 .reason = .state_tree_too_large,
                 .bare = "the state tree is too large to snapshot",
+                .next = .narrow_state,
             },
-            error.ReadFailed,
             error.TooDeep,
             error.PathTooLong,
-            error.ClassifyFailed,
-            error.EntriesNotSortedUnique,
             => .{
                 .reason = .state_unsnapshotable,
                 .bare = "the state tree could not be snapshotted",
+                .next = .narrow_state,
+            },
+            error.ReadFailed,
+            error.ClassifyFailed,
+            => .{
+                .reason = .state_unsnapshotable,
+                .bare = "the state tree could not be snapshotted",
+                .next = .environment,
+            },
+            error.EntriesNotSortedUnique => .{
+                .reason = .state_unsnapshotable,
+                .bare = "the state tree could not be snapshotted",
+                .next = .sideeye_defect,
             },
             error.OutOfMemory => unreachable, // refused above
         };
         const reason = answer.reason;
 
-        if (json_arena) |ja| snapshotRefusal(reason, snapshotDetail(ja, e, what, &diag));
+        if (json_arena) |ja| snapshotRefusal(reason, snapshotDetail(ja, e, what, &diag), answer.next);
 
         // Unreachable in practice: json_arena is assigned unconditionally before the
         // parse loop, ahead of every call site. Kept so this function's contract does
@@ -668,7 +686,7 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // else }` over `UnknownReason` it was not compiler-covered at all, and a new
         // reason silently took the catch-all sentence — the mistake the switch above is
         // exhaustive to prevent, one level down and on the path nothing exercises (#323).
-        snapshotRefusal(reason, answer.bare);
+        snapshotRefusal(reason, answer.bare, answer.next);
     };
 }
 
@@ -729,10 +747,10 @@ fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const 
 }
 
 /// A snapshot refusal's one exit, split by how far the run has got (#330, widened by #351).
-fn snapshotRefusal(reason: contract.UnknownReason, detail: []const u8) noreturn {
+fn snapshotRefusal(reason: contract.UnknownReason, detail: []const u8, next: contract.NextStep) noreturn {
     switch (run_phase) {
         .before_exploration => setupError(detail),
-        .exploring => unknown(reason, detail),
+        .exploring => unknown(reason, detail, next),
     }
 }
 
@@ -745,149 +763,155 @@ fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: boo
     if (state_created) _ = posix.rmdir(state_z);
 }
 
+/// The help text, as a format string with two holes (version, contract version). A
+/// constant rather than a literal inside `usage()` so a test can read it: every `--flag`
+/// a `NextStep` sentence names has to exist here (#274), and a sentence that named a flag
+/// this binary does not accept would be advice nobody can follow.
+const usage_fmt =
+    \\sideeye {s} (trace contract v{d})
+    \\
+    \\usage:
+    \\  sideeye demo [--shim <lib>]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>] [--twice]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye mcp
+    \\  sideeye help
+    \\  sideeye version
+    \\
+    \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
+    \\and explores it, printing the same FAIL report a real finding produces. The
+    \\expected exit code is 1 — the planted bug found — so the demo doubles as a
+    \\smoke test of this binary and its shim.
+    \\
+    \\preflight answers "does the recording phase accept this target?" before a
+    \\define exists: it runs the operation under observation and either accepts
+    \\the recording (exit 0) or refuses with the same named detector a real run
+    \\would use (exit 2). With --twice it observes a second run and compares the
+    \\two, adding one outcome: the runs left different state (exit 1, and no
+    \\verdict — see --twice below). What only a real exploration can check — kill
+    \\landing, world-side process boundaries, baseline behavior, checker
+    \\falsification — is listed as not checked, never silently claimed.
+    \\
+    \\replay re-runs one saved counterexample: the same pipeline as explore — the
+    \\oracle comparison, the structural detectors, checker falsification, landing
+    \\evidence — restricted to the case's crash point plus the baseline (ADR 0009).
+    \\When the recording no longer matches the case's landing context, the answer
+    \\is "case no longer applies" (exit 2), never a verdict about a shifted point.
+    \\
+    \\  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
+    \\               mutually exclusive with --state/--setup/--operation/--check.
+    \\               Relative paths in the file resolve against its own directory
+    \\  --state      directory whose contents define the target's state
+    \\  --cwd        directory the define's commands run in (default: this process's).
+    \\               The engine's own cwd does not move: --work, --json and --state
+    \\               are still read against it
+    \\  stdin        not a flag: every command sideeye runs (setup, operation, checker)
+    \\               starts with its standard input at end-of-file, on the CLI and MCP
+    \\               paths alike. A target that reads stdin sees EOF, never the
+    \\               terminal or pipe sideeye itself was started from
+    \\  --setup      command that produces the initial state (run once)
+    \\  --operation  command to explore; killed before each operation that can change state
+    \\  --expect-status  the exit status that means the operation completed (0..255,
+    \\               default 0). Governs the recording run and the un-killed baseline
+    \\               world alike; killed worlds still require the kill signal itself
+    \\  --shim       path to libsideeye_shim.so; when omitted it is looked for
+    \\               beside this binary (its sibling, then ../lib — the tarball
+    \\               and zig-out layouts), and absence is a loud error naming
+    \\               both looked-at paths
+    \\  --work       scratch directory for traces (default /tmp/sideeye-work)
+    \\  --oracle     path to strace; the recording run is compared against it
+    \\  --oracle-fs-usage
+    \\               macOS: compare the recording run against fs_usage instead. Needs
+    \\               root, so sudo must already hold credentials (`sudo -v` first, in
+    \\               this terminal — the cache is per-terminal); the run refuses
+    \\               rather than prompting. Narrower than strace by two measured
+    \\               limits: fs_usage prints only a rename's old path, and it cuts
+    \\               long pathnames from the left, so a rename it cannot match and a
+    \\               state directory deep enough to be cut are both refusals rather
+    \\               than agreements. Everything it cannot resolve refuses
+    \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
+    \\  --marker     success marker: a byte string the operation prints on stdout when
+    \\               it has committed. In worlds where it appeared before the kill,
+    \\               the post-success invariant is enforced: the new state must
+    \\               survive (ADR 0008)
+    \\  --json       write the machine-readable report to this path
+    \\  --fresh-state
+    \\               (replay only) empty and recreate the case's state directory
+    \\               before setup runs — for callers that cannot hand over a
+    \\               pristine directory themselves. The MCP server passes it on
+    \\               every replay: it lives for the whole client session, and the
+    \\               second replay used to die in the leftovers of the first
+    \\  --state-under
+    \\               (replay only) the directory the case's state must resolve
+    \\               strictly inside; anything else is refused before setup runs.
+    \\               The case file names its own state directory, and this flag is
+    \\               how a caller that only vetted the case's PATH bounds where the
+    \\               case may point the deletion. The MCP server passes its
+    \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
+    \\               replay
+    \\  --allow-unverified
+    \\               accept PASS with no completeness check. On macOS this is the
+    \\               answer when no privilege is available: SIP leaves DTrace's
+    \\               syscall provider with no probes even as root (#181), and the
+    \\               one candidate measured oracle-shaped, fs_usage, requires it —
+    \\               which is what --oracle-fs-usage pays for. The report says which
+    \\               claim was made, and this one is weaker.
+    \\  --stop-when-orphaned
+    \\               stop at the next world boundary if the process that launched
+    \\               this run exits (UNKNOWN, parent_exited). The MCP server passes
+    \\               it on every explore and replay: agent hosts restart MCP servers
+    \\               routinely, and an orphaned exploration otherwise keeps killing
+    \\               processes and rewriting its state directory with nobody left to
+    \\               report to. A run that hangs before a boundary is out of reach.
+    \\  --world-timeout <s>
+    \\               wall-clock budget per explored world, in seconds (1..86400,
+    \\               off by default). A world's operation still running when the
+    \\               budget expires is sent SIGKILL and refused UNKNOWN
+    \\               child_timed_out, with the budget in the message. Worlds only: a
+    \\               recording run, setup command or checker that hangs still hangs —
+    \\               this flag is not a promise of a hang-free run. Setting it also
+    \\               resets SIGCHLD to its default disposition for the whole run.
+    \\               Not settable over MCP today.
+    \\  --twice
+    \\               (preflight only) observe the operation a SECOND time from the
+    \\               restored pre-state, at least two seconds after the first start,
+    \\               and compare the two post-states. Byte repeatability is a
+    \\               property of two runs, so one observation structurally cannot
+    \\               see it. Equal: exit 0. Different: the differing paths are named
+    \\               and the command exits 1 — not a FAIL verdict, which preflight
+    \\               never produces, but the negative answer to the question --twice
+    \\               asked. A second run that ends abnormally refuses by name
+    \\               instead, the way the first one would.
+    \\               What this does NOT establish: that the target is
+    \\               deterministic. The comparison covers file bytes, entry kinds
+    \\               and symlink targets under --state; modes, ownership,
+    \\               timestamps, inode identity, a symlink's destination and
+    \\               everything outside --state are not compared, the pre-state
+    \\               run B starts from is rebuilt rather than byte-identical, and
+    \\               two runs are not all runs. The two-second gap is what
+    \\               epoch-second stamping needs to move — not a measured
+    \\               sufficiency threshold for nondeterminism in general.
+    \\               It also REWRITES --state: the directory is restored from the
+    \\               pre-run snapshot before the second run, so the first run's
+    \\               output is gone and file modes come back as 0644/0755. A
+    \\               preflight without this flag leaves the directory as the run
+    \\               left it.
+    \\
+    \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
+    \\            (preflight produces no verdict: it exits 0 when it accepts, 1 when
+    \\             --twice found a split, 2 when a detector refused, 3 on setup)
+    \\
+    \\--operation must exit its declared success status when it is not being killed
+    \\(--expect-status, default 0). The crash points are read off the recording run,
+    \\so a target that fails partway through would be explored against a sequence it
+    \\never performs; v0.1 reports UNKNOWN rather than guess.
+    \\
+;
+
 fn usage() void {
-    say(
-        \\sideeye {s} (trace contract v{d})
-        \\
-        \\usage:
-        \\  sideeye demo [--shim <lib>]
-        \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>] [--twice]
-        \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-        \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-        \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-        \\  sideeye mcp
-        \\  sideeye help
-        \\  sideeye version
-        \\
-        \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
-        \\and explores it, printing the same FAIL report a real finding produces. The
-        \\expected exit code is 1 — the planted bug found — so the demo doubles as a
-        \\smoke test of this binary and its shim.
-        \\
-        \\preflight answers "does the recording phase accept this target?" before a
-        \\define exists: it runs the operation under observation and either accepts
-        \\the recording (exit 0) or refuses with the same named detector a real run
-        \\would use (exit 2). With --twice it observes a second run and compares the
-        \\two, adding one outcome: the runs left different state (exit 1, and no
-        \\verdict — see --twice below). What only a real exploration can check — kill
-        \\landing, world-side process boundaries, baseline behavior, checker
-        \\falsification — is listed as not checked, never silently claimed.
-        \\
-        \\replay re-runs one saved counterexample: the same pipeline as explore — the
-        \\oracle comparison, the structural detectors, checker falsification, landing
-        \\evidence — restricted to the case's crash point plus the baseline (ADR 0009).
-        \\When the recording no longer matches the case's landing context, the answer
-        \\is "case no longer applies" (exit 2), never a verdict about a shifted point.
-        \\
-        \\  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
-        \\               mutually exclusive with --state/--setup/--operation/--check.
-        \\               Relative paths in the file resolve against its own directory
-        \\  --state      directory whose contents define the target's state
-        \\  --cwd        directory the define's commands run in (default: this process's).
-        \\               The engine's own cwd does not move: --work, --json and --state
-        \\               are still read against it
-        \\  stdin        not a flag: every command sideeye runs (setup, operation, checker)
-        \\               starts with its standard input at end-of-file, on the CLI and MCP
-        \\               paths alike. A target that reads stdin sees EOF, never the
-        \\               terminal or pipe sideeye itself was started from
-        \\  --setup      command that produces the initial state (run once)
-        \\  --operation  command to explore; killed before each operation that can change state
-        \\  --expect-status  the exit status that means the operation completed (0..255,
-        \\               default 0). Governs the recording run and the un-killed baseline
-        \\               world alike; killed worlds still require the kill signal itself
-        \\  --shim       path to libsideeye_shim.so; when omitted it is looked for
-        \\               beside this binary (its sibling, then ../lib — the tarball
-        \\               and zig-out layouts), and absence is a loud error naming
-        \\               both looked-at paths
-        \\  --work       scratch directory for traces (default /tmp/sideeye-work)
-        \\  --oracle     path to strace; the recording run is compared against it
-        \\  --oracle-fs-usage
-        \\               macOS: compare the recording run against fs_usage instead. Needs
-        \\               root, so sudo must already hold credentials (`sudo -v` first, in
-        \\               this terminal — the cache is per-terminal); the run refuses
-        \\               rather than prompting. Narrower than strace by two measured
-        \\               limits: fs_usage prints only a rename's old path, and it cuts
-        \\               long pathnames from the left, so a rename it cannot match and a
-        \\               state directory deep enough to be cut are both refusals rather
-        \\               than agreements. Everything it cannot resolve refuses
-        \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
-        \\  --marker     success marker: a byte string the operation prints on stdout when
-        \\               it has committed. In worlds where it appeared before the kill,
-        \\               the post-success invariant is enforced: the new state must
-        \\               survive (ADR 0008)
-        \\  --json       write the machine-readable report to this path
-        \\  --fresh-state
-        \\               (replay only) empty and recreate the case's state directory
-        \\               before setup runs — for callers that cannot hand over a
-        \\               pristine directory themselves. The MCP server passes it on
-        \\               every replay: it lives for the whole client session, and the
-        \\               second replay used to die in the leftovers of the first
-        \\  --state-under
-        \\               (replay only) the directory the case's state must resolve
-        \\               strictly inside; anything else is refused before setup runs.
-        \\               The case file names its own state directory, and this flag is
-        \\               how a caller that only vetted the case's PATH bounds where the
-        \\               case may point the deletion. The MCP server passes its
-        \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
-        \\               replay
-        \\  --allow-unverified
-        \\               accept PASS with no completeness check. On macOS this is the
-        \\               answer when no privilege is available: SIP leaves DTrace's
-        \\               syscall provider with no probes even as root (#181), and the
-        \\               one candidate measured oracle-shaped, fs_usage, requires it —
-        \\               which is what --oracle-fs-usage pays for. The report says which
-        \\               claim was made, and this one is weaker.
-        \\  --stop-when-orphaned
-        \\               stop at the next world boundary if the process that launched
-        \\               this run exits (UNKNOWN, parent_exited). The MCP server passes
-        \\               it on every explore and replay: agent hosts restart MCP servers
-        \\               routinely, and an orphaned exploration otherwise keeps killing
-        \\               processes and rewriting its state directory with nobody left to
-        \\               report to. A run that hangs before a boundary is out of reach.
-        \\  --world-timeout <s>
-        \\               wall-clock budget per explored world, in seconds (1..86400,
-        \\               off by default). A world's operation still running when the
-        \\               budget expires is sent SIGKILL and refused UNKNOWN
-        \\               child_timed_out, with the budget in the message. Worlds only: a
-        \\               recording run, setup command or checker that hangs still hangs —
-        \\               this flag is not a promise of a hang-free run. Setting it also
-        \\               resets SIGCHLD to its default disposition for the whole run.
-        \\               Not settable over MCP today.
-        \\  --twice
-        \\               (preflight only) observe the operation a SECOND time from the
-        \\               restored pre-state, at least two seconds after the first start,
-        \\               and compare the two post-states. Byte repeatability is a
-        \\               property of two runs, so one observation structurally cannot
-        \\               see it. Equal: exit 0. Different: the differing paths are named
-        \\               and the command exits 1 — not a FAIL verdict, which preflight
-        \\               never produces, but the negative answer to the question --twice
-        \\               asked. A second run that ends abnormally refuses by name
-        \\               instead, the way the first one would.
-        \\               What this does NOT establish: that the target is
-        \\               deterministic. The comparison covers file bytes, entry kinds
-        \\               and symlink targets under --state; modes, ownership,
-        \\               timestamps, inode identity, a symlink's destination and
-        \\               everything outside --state are not compared, the pre-state
-        \\               run B starts from is rebuilt rather than byte-identical, and
-        \\               two runs are not all runs. The two-second gap is what
-        \\               epoch-second stamping needs to move — not a measured
-        \\               sufficiency threshold for nondeterminism in general.
-        \\               It also REWRITES --state: the directory is restored from the
-        \\               pre-run snapshot before the second run, so the first run's
-        \\               output is gone and file modes come back as 0644/0755. A
-        \\               preflight without this flag leaves the directory as the run
-        \\               left it.
-        \\
-        \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
-        \\            (preflight produces no verdict: it exits 0 when it accepts, 1 when
-        \\             --twice found a split, 2 when a detector refused, 3 on setup)
-        \\
-        \\--operation must exit its declared success status when it is not being killed
-        \\(--expect-status, default 0). The crash points are read off the recording run,
-        \\so a target that fails partway through would be explored against a sequence it
-        \\never performs; v0.1 reports UNKNOWN rather than guess.
-        \\
-    , .{ version, contract.contract_version });
+    say(usage_fmt, .{ version, contract.contract_version });
 }
 
 /// Read a trace, or refuse. Pairs with `answerForOversizedTrace`, which every caller
@@ -956,14 +980,14 @@ fn answerForOversizedTrace(t: engine.TraceInfo, where: []const u8, cap: usize) v
 fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
     if (json_arena) |ja| {
         if (size) |sz|
-            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read: {d} bytes against a {d}-byte cap; the shim's account is complete, but the engine declined to hold it", .{ where, sz, cap }) catch "the trace is larger than this engine will read")
+            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read: {d} bytes against a {d}-byte cap; the shim's account is complete, but the engine declined to hold it", .{ where, sz, cap }) catch "the trace is larger than this engine will read", .narrow_state)
         else
-            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read (over the {d}-byte cap); the shim's account is complete, but the engine declined to hold it", .{ where, cap }) catch "the trace is larger than this engine will read");
+            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read (over the {d}-byte cap); the shim's account is complete, but the engine declined to hold it", .{ where, cap }) catch "the trace is larger than this engine will read", .narrow_state);
     }
     // Unreachable in practice for the same reason snapshotOrRefuse's fallback is:
     // json_arena is assigned before the parse loop, ahead of every call site. Kept so
     // this function does not depend on that ordering; nothing exercises it.
-    unknown(.trace_too_large, "the trace is larger than this engine will read");
+    unknown(.trace_too_large, "the trace is larger than this engine will read", .narrow_state);
 }
 
 /// The whole-trace ceiling refused an allocation (#377, ADR 0033).
@@ -977,9 +1001,9 @@ fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
 /// down, so there is no "a size nobody measured" case to guard against here.
 fn traceBudgetExhausted(wanted: usize, where: []const u8, limit: usize) noreturn {
     if (json_arena) |ja| {
-        unknown(.trace_budget_exhausted, std.fmt.allocPrint(ja, "reading the trace from {s} would have taken this engine past the ceiling every trace it holds at once must fit under: a {d}-byte allocation against a {d}-byte ceiling. Each trace involved may be well under the per-read cap — what ran out is the sum", .{ where, wanted, limit }) catch "the engine's whole-trace ceiling was reached");
+        unknown(.trace_budget_exhausted, std.fmt.allocPrint(ja, "reading the trace from {s} would have taken this engine past the ceiling every trace it holds at once must fit under: a {d}-byte allocation against a {d}-byte ceiling. Each trace involved may be well under the per-read cap — what ran out is the sum", .{ where, wanted, limit }) catch "the engine's whole-trace ceiling was reached", .narrow_state);
     }
-    unknown(.trace_budget_exhausted, "the engine's whole-trace ceiling was reached");
+    unknown(.trace_budget_exhausted, "the engine's whole-trace ceiling was reached", .narrow_state);
 }
 
 /// The budget every trace read allocates from, from the moment `main` installs it
@@ -1028,11 +1052,16 @@ fn stopLiveSidecar() posix.SidecarEnd {
     return posix.stopSidecar(live.gpa, live.pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
 }
 
-fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
+/// `next` is required, not optional, on purpose (#274): the site that raises a refusal is
+/// the one that knows why, and the compiler is what holds every site to choosing. The
+/// sentence is rendered exactly once here and handed to both forms — the JSON field and
+/// the text line are one value with one definition (DESIGN §13).
+fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.NextStep) noreturn {
     _ = stopLiveSidecar();
     dropCapture();
+    const next_step = next.render();
     if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), detail);
+        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), detail, next_step);
     // The classification lines appear here too. The reason used to be written as
     // "DESIGN §13 demands text and JSON carry identical content, and the JSON below
     // already does" -- false where it stood, on the most divergent path of the three,
@@ -1041,9 +1070,12 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
     // has one definition). The lines are here because a reader who is being refused
     // still needs to know what was classified. Before the snapshots exist this honestly
     // reads "not classified".
+    // `next` sits AFTER the detail line: the acceptance suite reads the detail as the line
+    // that follows `UNKNOWN  <reason>`, and that contract predates this line.
     say(
         \\UNKNOWN  {s}
         \\         {s}
+        \\next        {s}
         \\
         \\atomicity   {s}
         \\l1          {s}
@@ -1054,7 +1086,7 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8) noreturn {
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ reason.name(), detail, l0_note, l1_note, case_note, expected_status_val, notTestedText() });
+    , .{ reason.name(), detail, next_step, l0_note, l1_note, case_note, expected_status_val, notTestedText() });
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -1085,7 +1117,7 @@ fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverif
         std.fmt.allocPrint(arena, "{s} (strace is on this machine: pass --oracle {s})", .{ base, s }) catch base
     else
         base;
-    unknown(.completeness_not_verified, msg);
+    unknown(.completeness_not_verified, msg, .pass_oracle);
 }
 
 /// Linux-only PATH discovery used by refusal hints: the first absolute PATH entry
@@ -1116,7 +1148,7 @@ fn setupError(detail: []const u8) noreturn {
     _ = stopLiveSidecar();
     dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, detail);
+        writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, detail, null);
     say("SETUP ERROR  {s}\n", .{detail});
     std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
 }
@@ -1174,7 +1206,7 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
         const detail = "a child process ran, but its exit status could never be read: the wait was interrupted repeatedly, or failed permanently. Every verdict here rests on how that child ended, so the run refuses instead of deriving one from a status that was never written";
         switch (phase) {
             .before_exploration => setupError(detail),
-            .exploring => unknown(.child_wait_failed, detail),
+            .exploring => unknown(.child_wait_failed, detail, .retry_then_report),
         }
     }
     // A child's stdin source that could not be opened (#263) is refused in the parent,
@@ -1835,7 +1867,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // refusal this block raises names it too.
         case_note = case_arg.?;
         if (c.contract_version != contract.contract_version)
-            unknown(.case_no_longer_applies, "the case was recorded under a different trace contract; the crash-point numbering does not carry over");
+            unknown(.case_no_longer_applies, "the case was recorded under a different trace contract; the crash-point numbering does not carry over", .re_record);
         // --fresh-state (#69) is honoured further down, on state_abs — the guard in
         // front of the deletion is lexical, and only the realpath'd spelling makes
         // it mean anything. Nothing destructive happens in this block.
@@ -2280,7 +2312,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const sz = std.fmt.bufPrintZ(&zb, "{s}", .{fsu_sentinel_b}) catch setupError("path too long");
         const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
         // `unknown` stops the observer on its way out; this site does not have to.
-        if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created inside the state directory, so nothing can establish that the capture covered the end of the recording");
+        if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created inside the state directory, so nothing can establish that the capture covered the end of the recording", .environment);
         _ = posix.close(fd);
         // Stopped, not left to `-t`: the answer to "was it still running?" is what
         // separates a capture of the whole window from one that closed early, and it
@@ -2294,8 +2326,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
         removeFile(fsu_sentinel_b);
         switch (end) {
             .was_running => {},
-            .had_exited => unknown(.oracle_saw_nothing, "fs_usage was no longer running when the recording finished, so its capture describes a window that closed before the run did"),
-            .would_not_die => unknown(.oracle_saw_nothing, "fs_usage did not stop when asked, so nothing bounds what its capture covers"),
+            .had_exited => unknown(.oracle_saw_nothing, "fs_usage was no longer running when the recording finished, so its capture describes a window that closed before the run did", .environment),
+            .would_not_die => unknown(.oracle_saw_nothing, "fs_usage did not stop when asked, so nothing bounds what its capture covers", .environment),
         }
     }
     // The recording run's outcome decides whether its trace means anything.
@@ -2309,8 +2341,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // result the entire trace depends on.
     switch (rec_term) {
         .exited => |code| if (code != expect_status)
-            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run"),
-        else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run"),
+            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", .fix_define),
+        else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run", .fix_define),
     }
 
     // A marker the clean run cannot produce would make every post-success obligation
@@ -2326,7 +2358,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (args.marker != null) {
         if (!rec_capture.marker_seen) {
             l1_note = "marker configured; never observed, even in the recording run";
-            unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all");
+            unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", .fix_define);
         }
         l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
@@ -2362,7 +2394,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     boundary_ev.trace_read = true;
 
     if (trace.version_mismatch)
-        unknown(.contract_version_mismatch, "the shim was built against a different trace contract than this engine");
+        unknown(.contract_version_mismatch, "the shim was built against a different trace contract than this engine", .rebuild_pair);
 
     // One line for both platforms now, because the difference between them was never
     // the platform: it was which facts had been looked at. The old macOS clause named a
@@ -2370,7 +2402,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // are replaced by what the image actually shows. `no_shim_marker` itself, the
     // verdict and the exit are unchanged, so no frozen surface moves.
     if (!trace.saw_shim_ready)
-        unknown(.no_shim_marker, noShimDetail(arena));
+        unknown(.no_shim_marker, noShimDetail(arena), noShimNext());
 
     // The shim's half of the boundary evidence, recorded the moment the trace is known
     // to be the shim's — before every refusal below, because each of them writes a
@@ -2395,10 +2427,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     };
 
     if (trace.truncated)
-        unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown");
+        unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown", .retry_then_report);
 
     if (trace.saw_unresolved)
-        unknown(.unresolvable_path, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points");
+        unknown(.unresolvable_path, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points", .class_wall);
 
     // The shim's own `unsupported` refusal (v12). On Linux this arrives from the
     // oracle instead — same reason, same spelling shape ("renamex_np(RENAME_SWAP)"
@@ -2406,7 +2438,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // only observer the platform has issues it. The shim scope-gates the record the
     // way the oracle scope-gates its refusal, so an out-of-scope swap refuses nothing.
     if (trace.first_unsupported) |name|
-        unknown(.unsupported_syscall_observed, name);
+        unknown(.unsupported_syscall_observed, name, .class_wall);
 
     // The boundaries that stay refusals whatever an oracle says. exec replaces the
     // image the crash points were read from; a thread makes operation order
@@ -2419,11 +2451,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // self-exec chain — exec record, then a same-pid shim_ready carrying the
         // operation count — is a continuation and never reaches here.
         .exec => if (trace.exec_chain_broken)
-            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)")
+            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)", .class_wall)
         else
-            unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading"),
-        .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic"),
-        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid); the engine cannot claim to have stopped it"),
+            unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .class_wall),
+        .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic", .class_wall),
+        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid); the engine cannot claim to have stopped it", .class_wall),
         else => {},
     };
 
@@ -2431,7 +2463,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // a restarted counter after an unobserved exec is a duplicate — means any
     // crash-point address may name a different operation than the one that ran.
     if (trace.primary_kill_records != trace.kill_point_count)
-        unknown(.sequence_numbering_broken, "the subject's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted");
+        unknown(.sequence_numbering_broken, "the subject's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted", .class_wall);
 
     // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid count
     // would otherwise read as one process while the crash points span more than one
@@ -2452,7 +2484,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // loaded it, which the oracle sees. Two witnesses with different blind spots, kept
     // deliberately.
     if (trace.foreign_kill_point)
-        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the recording run");
+        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the recording run", .class_wall);
 
     // A fork/spawn boundary — or any record from another pid — is tolerable only when
     // an oracle can account for what the other processes did. The shim only sees
@@ -2462,7 +2494,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // quiescence sampling above all — must engage for those too.
     var crossed_boundary = boundary_ev.shim_boundary;
     if (crossed_boundary and !args.has_oracle)
-        unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)");
+        unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary);
     // The fs_usage oracle cannot account for other processes the way strace does, so a
     // boundary the shim saw is not tolerated under it. fs_usage excludes processes by
     // name — the man page lists Terminal, sshd and the shells, and `-e` does not lift
@@ -2471,7 +2503,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // Children that are visible are still caught by path scope (#405's shape refuses
     // `child_touched_state_dir`); what this refuses is the tolerance, not the detection.
     if (crossed_boundary and args.oracle_fs_usage)
-        unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs");
+        unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .class_wall);
 
     // ---- oracle comparison ---------------------------------------------------------
     // The wording matters: a PASS carrying this line is making a weaker claim than one
@@ -2491,7 +2523,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // claimed the other condition.
         const text = if (args.oracle_fs_usage)
             readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{}) orelse
-                unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read")
+                unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read", .environment)
         else
             readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
         // The bytes are in the arena now; the file has done its job. The capture is
@@ -2519,13 +2551,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // statement from "the two witnesses disagreed" — and only the second one
             // is a divergence.
             if (r.defect) |d| switch (d) {
-                .unparsed => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "a line of the fs_usage capture did not match the grammar, so the account has a hole: {s}", .{textShown(arena, l)}) catch "a line of the fs_usage capture did not match the grammar"),
-                .truncated => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "fs_usage cut a pathname at its display width, so the line cannot be scoped to the state directory either way: {s}", .{textShown(arena, l)}) catch "fs_usage cut a pathname at its display width"),
-                .unresolved_fd => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation on a descriptor it never saw opened, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation on a descriptor it never saw opened"),
-                .unresolvable_path => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation whose path this reader could not read or place, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation whose path could not be read or placed"),
-                .unknown_call => |l| unknown(.unsupported_syscall_observed, std.fmt.allocPrint(arena, "fs_usage reported a call on the state directory that this version does not model: {s}", .{textShown(arena, l)}) catch "fs_usage reported a call this version does not model"),
-                .no_subject => unknown(.oracle_saw_nothing, "no thread in the fs_usage capture wrote to the shim's trace file, so the capture cannot say which lines are the subject's"),
-                .missing_sentinel => |sp| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the fs_usage capture is missing a sentinel the engine placed ({s}), so nothing establishes that the observer covered the whole recording", .{textShown(arena, sp)}) catch "the fs_usage capture is missing a sentinel the engine placed"),
+                .unparsed => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "a line of the fs_usage capture did not match the grammar, so the account has a hole: {s}", .{textShown(arena, l)}) catch "a line of the fs_usage capture did not match the grammar", .sideeye_defect),
+                .truncated => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "fs_usage cut a pathname at its display width, so the line cannot be scoped to the state directory either way: {s}", .{textShown(arena, l)}) catch "fs_usage cut a pathname at its display width", .narrow_state),
+                .unresolved_fd => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation on a descriptor it never saw opened, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation on a descriptor it never saw opened", .sideeye_defect),
+                .unresolvable_path => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation whose path this reader could not read or place, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation whose path could not be read or placed", .sideeye_defect),
+                .unknown_call => |l| unknown(.unsupported_syscall_observed, std.fmt.allocPrint(arena, "fs_usage reported a call on the state directory that this version does not model: {s}", .{textShown(arena, l)}) catch "fs_usage reported a call this version does not model", .class_wall),
+                .no_subject => unknown(.oracle_saw_nothing, "no thread in the fs_usage capture wrote to the shim's trace file, so the capture cannot say which lines are the subject's", .class_wall),
+                .missing_sentinel => |sp| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the fs_usage capture is missing a sentinel the engine placed ({s}), so nothing establishes that the observer covered the whole recording", .{textShown(arena, sp)}) catch "the fs_usage capture is missing a sentinel the engine placed", .environment),
             };
             break :blk r.parsed;
         } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError("out of memory");
@@ -2583,18 +2615,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // more than ten lines were examined; the tool itself shipped without the check
         // its own suite considered necessary.
         if (parsed.lines_seen == 0)
-            unknown(.oracle_saw_nothing, "the oracle produced no output, so nothing was compared against the shim's account");
+            unknown(.oracle_saw_nothing, "the oracle produced no output, so nothing was compared against the shim's account", .environment);
 
         if (parsed.boundary) |name|
-            unknown(.child_process_detected, name);
+            unknown(.child_process_detected, name, .class_wall);
 
         // The tolerance condition, decided by the observer that sees children whether
         // or not they loaded the shim.
         if (parsed.child_touched)
-            unknown(.child_touched_state_dir, "a process other than the subject touched the state directory; its operations have no crash-point address");
+            unknown(.child_touched_state_dir, "a process other than the subject touched the state directory; its operations have no crash-point address", .class_wall);
 
         if (parsed.unsupported) |name|
-            unknown(.unsupported_syscall_observed, name);
+            unknown(.unsupported_syscall_observed, name, .class_wall);
 
         var shim_classes: std.ArrayList(contract.OpClass) = .empty;
         // Index-aligned with shim_classes, so a refusal can say what the shim's
@@ -2621,15 +2653,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 m.index,
                 shim_ops.items,
                 parsed.lines.items,
-            )),
+            ), .class_wall),
             .phantom => |p| unknown(.oracle_saw_phantom, divergenceDetail(
                 arena,
                 "the shim recorded an operation the oracle did not see",
                 p.index,
                 shim_ops.items,
                 parsed.lines.items,
-            )),
-            .unsupported => |name| unknown(.unsupported_syscall_observed, name),
+            ), .sideeye_defect),
+            .unsupported => |name| unknown(.unsupported_syscall_observed, name, .class_wall),
         };
 
         oracle_verified = true;
@@ -2684,7 +2716,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var final_again = snapshotOrRefuse(gpa, state_abs, "could not re-snapshot the final state");
         defer final_again.deinit();
         if (!snapshotsEqual(final, final_again))
-            unknown(.state_not_quiescent, "the state directory changed between two samples taken after the recording run was contained: something is still writing");
+            unknown(.state_not_quiescent, "the state directory changed between two samples taken after the recording run was contained: something is still writing", .quiesce);
         // The capture is L1 evidence and gets the same observation (#46). Its first
         // sample was the marker scan above; the oracle-output parse sits between the
         // two, so the observed window is wide without costing an extra wait.
@@ -2692,11 +2724,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
             setupError("the recording run's stdout capture could not be read back");
         if (rec_capture.sawTruncation() or rec_capture_again.sawTruncation() or
             !rec_capture.fingerprintEql(rec_capture_again))
-            unknown(.state_not_quiescent, "the stdout capture changed between two samples taken after the recording run was contained: something is still writing to the inherited stdout");
+            unknown(.state_not_quiescent, "the stdout capture changed between two samples taken after the recording run was contained: something is still writing to the inherited stdout", .quiesce);
     }
 
     if (!snapshotsEqual(initial, final) and trace.mutation_count == 0)
-        unknown(.state_changed_without_ops, "the state directory changed while zero mutating operations were recorded: operations were missed");
+        unknown(.state_changed_without_ops, "the state directory changed while zero mutating operations were recorded: operations were missed", .class_wall);
 
     // #5, after every trust detector above has had its say: under an oracle a mid-run
     // mknod already refused as unsupported_syscall_observed (#121's defined list keeps
@@ -2731,19 +2763,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // temp names legitimately differ between runs — the timewarrior shape).
     if (replay_case) |rc| {
         if (rc.ops_total != n)
-            unknown(.case_no_longer_applies, std.fmt.allocPrint(arena, "the recording now counts {d} state-changing operation(s); the case was recorded over {d}", .{ n, rc.ops_total }) catch "the operation count changed");
+            unknown(.case_no_longer_applies, std.fmt.allocPrint(arena, "the recording now counts {d} state-changing operation(s); the case was recorded over {d}", .{ n, rc.ops_total }) catch "the operation count changed", .re_record);
         if (rc.k < 1 or rc.k > n)
-            unknown(.case_no_longer_applies, "the case's crash point is out of range for this recording");
+            unknown(.case_no_longer_applies, "the case's crash point is out of range for this recording", .re_record);
         var hh: [16]u8 = undefined;
         if (!prefixHash(trace, rc.k, &hh))
-            unknown(.case_no_longer_applies, "the recording's operation numbering has a gap before the crash point; nothing can vouch that the recorded index still names the same operation");
+            unknown(.case_no_longer_applies, "the recording's operation numbering has a gap before the crash point; nothing can vouch that the recorded index still names the same operation", .re_record);
         if (!std.mem.eql(u8, &hh, rc.prefix_hash))
-            unknown(.case_no_longer_applies, "the class sequence leading to the crash point changed; killing at the recorded index would address a different operation");
+            unknown(.case_no_longer_applies, "the class sequence leading to the crash point changed; killing at the recorded index would address a different operation", .re_record);
         const addr = trace.logicalAddress(rc.k);
         const after_class = if (addr.after) |a| a.class.name() else "(start)";
         const before_class = if (addr.before) |b| b.class.name() else "(end)";
         if (!std.mem.eql(u8, after_class, rc.after_class) or !std.mem.eql(u8, before_class, rc.before_class))
-            unknown(.case_no_longer_applies, "the operations around the crash point changed class; the case names a different window");
+            unknown(.case_no_longer_applies, "the operations around the crash point changed class; the case names a different window", .re_record);
         const after_path = if (addr.after) |a| a.path else "";
         const before_path = if (addr.before) |b| b.path else "";
         if (!std.mem.eql(u8, after_path, rc.after_path) or !std.mem.eql(u8, before_path, rc.before_path))
@@ -2811,7 +2843,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\      not tested: {s}
             \\
         , .{ expected_status_val, l0_note, oracle_note, metadata_note, l1_note, case_note, notTestedText() });
-        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null);
+        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -2832,7 +2864,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         checker_note = "configured; falsification did not complete";
 
         if (engine.countCorruptible(initial) == 0)
-            unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested");
+            unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested", .fix_define);
 
         engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore before falsifying the checker");
         // Through the same disposition as the restore one line up, not setupError:
@@ -2882,11 +2914,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 // a checker that genuinely exits 126 is indistinguishable and gets
                 // the fail-closed reading.
                 if (code == 126)
-                    unknown(.checker_not_falsified, "the checker probe exited 126: either the capture stub could not open its stdout capture in the work directory, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red");
+                    unknown(.checker_not_falsified, "the checker probe exited 126: either the capture stub could not open its stdout capture in the work directory, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
                 if (code == 0)
-                    unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name");
+                    unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", .fix_define);
             },
-            else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state"),
+            else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .fix_define),
         }
         checker_note = "falsified before the run (corrupted state -> check failed)";
     }
@@ -2936,7 +2968,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // never reaches one, and the process-group teardown that would help there runs at
         // the end of a world, not the start.
         if (stop_when_orphaned and posix.getppid() != startup_ppid)
-            unknown(.parent_exited, "the process that launched this exploration is gone; stopping at a world boundary rather than continuing to kill processes and rewrite the state directory with nobody to report to");
+            unknown(.parent_exited, "the process that launched this exploration is gone; stopping at a world boundary rather than continuing to kill processes and rewrite the state directory with nobody to report to", .relaunch);
         engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory");
 
         var kbuf: [16]u8 = undefined;
@@ -2974,7 +3006,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                     "a world's operation was still running after the --world-timeout budget of {d} second(s) expired; it was sent SIGKILL, and the remaining worlds cannot be judged. Raise the budget, or investigate what the operation waits on",
                     .{args.world_timeout_s.?},
                 ) catch unreachable;
-                unknown(.child_timed_out, detail);
+                unknown(.child_timed_out, detail, .raise_world_timeout);
             },
             error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
@@ -2997,19 +3029,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // changes which path the child takes — so clearing the recording run clears
         // nothing else.
         if (wtrace.foreign_kill_point)
-            unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation in an explored world");
+            unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation in an explored world", .class_wall);
         // A world may take a branch the recording run did not (the kill changes what the
         // target sees), so an unmodellable in-scope operation can first appear here.
         if (wtrace.first_unsupported) |name|
-            unknown(.unsupported_syscall_observed, name);
+            unknown(.unsupported_syscall_observed, name, .class_wall);
         if (wtrace.hard_boundary) |hb| switch (hb) {
-            .detached => unknown(.child_process_detected, "a process left the containment group in an explored world"),
-            .thread => unknown(.multiple_threads_detected, "the target created a thread in an explored world"),
-            .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world without an unbroken chain of observation"),
+            .detached => unknown(.child_process_detected, "a process left the containment group in an explored world", .class_wall),
+            .thread => unknown(.multiple_threads_detected, "the target created a thread in an explored world", .class_wall),
+            .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world without an unbroken chain of observation", .class_wall),
             else => {},
         };
         if (wtrace.primary_kill_records != wtrace.kill_point_count)
-            unknown(.sequence_numbering_broken, "the subject's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted");
+            unknown(.sequence_numbering_broken, "the subject's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
 
         // Landing evidence: the kill must have happened where it was asked for, *to the
         // subject*. seq alone is not enough — a spawned child inherits SIDEEYE_KILL_AT
@@ -3018,9 +3050,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
             wtrace.kill_landed_pid != null and wtrace.primary_pid != null and
             wtrace.kill_landed_pid.? == wtrace.primary_pid.?;
         if (k <= n and !landed)
-            unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not");
+            unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not", .fix_define);
         if (k <= n and !term.isSignal(posix.SIGKILL))
-            unknown(.kill_did_not_land, "a world that should have been killed exited on its own");
+            unknown(.kill_did_not_land, "a world that should have been killed exited on its own", .sideeye_defect);
         // The baseline world is not killed, so nothing above inspects it — which is
         // exactly the discarded-exit-status defect that was just fixed for the recording
         // run. It is the same command over the same state, and the recording run was
@@ -3029,8 +3061,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // started from it too.
         if (k > n) switch (term) {
             .exited => |code| if (code != expect_status)
-                unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status"),
-            else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally"),
+                unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status", .fix_define),
+            else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .fix_define),
         };
 
         var crashed = snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
@@ -3052,14 +3084,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // story, never the recording's "single process".
         if (!crossed_boundary and world_armed) {
             boundary_ev.world_only = true;
-            unknown(.boundary_without_oracle, "a process boundary appeared in an explored world that the recording never crossed; explored worlds run without an oracle, so nothing accounts for what the other process did");
+            unknown(.boundary_without_oracle, "a process boundary appeared in an explored world that the recording never crossed; explored worlds run without an oracle, so nothing accounts for what the other process did", .class_wall);
         }
         var world_capture_first: ?CaptureObservation = null;
         if (world_armed) {
             var crashed_again = snapshotOrRefuse(gpa, state_abs, "could not re-snapshot a crashed state");
             defer crashed_again.deinit();
             if (!snapshotsEqual(crashed, crashed_again))
-                unknown(.state_not_quiescent, "the crashed state changed between two samples: something the subject started is still writing");
+                unknown(.state_not_quiescent, "the crashed state changed between two samples: something the subject started is still writing", .quiesce);
             // The capture's first sample (#46). The second rides the marker scan below,
             // so the observed window brackets the checker and the scan itself.
             world_capture_first = observeCapture(world_stdout, null) catch
@@ -3100,7 +3132,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             if (world_capture_first) |first| {
                 if (first.sawTruncation() or world_capture.sawTruncation() or
                     !first.fingerprintEql(world_capture))
-                    unknown(.state_not_quiescent, "the stdout capture of a crashed world changed between two samples: something the subject started is still writing to the inherited stdout");
+                    unknown(.state_not_quiescent, "the stdout capture of a crashed world changed between two samples: something the subject started is still writing to the inherited stdout", .quiesce);
             }
             if (args.marker != null) marker_seen = world_capture.marker_seen;
         }
@@ -3132,7 +3164,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // here, and that refusal is the honest one: its crash worlds could not be
         // judged either.
         if (k > n and (l0 != null or l2_failed or l1 != null))
-            unknown(.baseline_violates_invariant, "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first");
+            unknown(.baseline_violates_invariant, "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first", .fix_define);
 
         if (l0 != null or l2_failed or l1 != null) {
             violations += 1;
@@ -3353,7 +3385,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .subject = path_shown,
             .observed = what,
             .invariant = invariant,
-        }, checker_detail, null, null);
+        }, checker_detail, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
@@ -3373,7 +3405,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      not tested: {s}
         \\
     , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
-    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null);
+    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -3565,8 +3597,8 @@ fn observeAgain(
     // forbids until 2.0.
     switch (term) {
         .exited => |code| if (code != expect_status)
-            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the second observed run exited {d} where {d} was expected, although the first run of the same command succeeded: the two runs cannot be compared", .{ code, expect_status }) catch "the second observed run exited with an unexpected status"),
-        else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded"),
+            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the second observed run exited {d} where {d} was expected, although the first run of the same command succeeded: the two runs cannot be compared", .{ code, expect_status }) catch "the second observed run exited with an unexpected status", .fix_define),
+        else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded", .fix_define),
     }
 
     var trace = readTraceOrRefuse(trace_b, trace_cap, "could not read the second observed run's trace");
@@ -3601,16 +3633,16 @@ fn observeAgain(
     // would make that word false — the flag exists for targets that take a different
     // path the second time, so a second run that loads nothing is not hypothetical.
     if (!trace.saw_shim_ready)
-        unknown(.no_shim_marker, noShimDetailSecondRun(arena));
+        unknown(.no_shim_marker, noShimDetailSecondRun(arena), .check_shim);
     // A trace that ends mid-record leaves the operation count unknown for run B, which
     // is the same reason run A refuses on it.
     if (trace.truncated)
-        unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown");
+        unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown", .retry_then_report);
     // The shim-side witness for a foreign writer, and it does not depend on an oracle.
     if (trace.foreign_kill_point)
-        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the second observed run");
+        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the second observed run", .class_wall);
     if (trace.version_mismatch)
-        unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run");
+        unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run", .rebuild_pair);
     // The boundaries that stay refusals whatever an oracle says, applied to the second
     // run exactly as run A applies them. Read from `hard_boundary` for the same reason
     // run A does: the first boundary in a trace can be a tolerable fork written before
@@ -3622,9 +3654,9 @@ fn observeAgain(
     // B that created a thread, replaced its image, or left the containment group was
     // reported as "left equal state" (review, P1).
     if (trace.hard_boundary) |b| switch (b) {
-        .exec => unknown(.child_process_detected, "the second observed run replaced its own image, so the two runs did not execute the same program to completion and cannot be compared"),
-        .thread => unknown(.multiple_threads_detected, "the second observed run created a thread; operation order would not be deterministic, so a comparison against the first run describes an ordering nobody chose"),
-        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid) during the second observed run; the engine cannot claim to have stopped it, so what touched the state afterwards is unaccounted for"),
+        .exec => unknown(.child_process_detected, "the second observed run replaced its own image, so the two runs did not execute the same program to completion and cannot be compared", .class_wall),
+        .thread => unknown(.multiple_threads_detected, "the second observed run created a thread; operation order would not be deterministic, so a comparison against the first run describes an ordering nobody chose", .class_wall),
+        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid) during the second observed run; the engine cannot claim to have stopped it, so what touched the state afterwards is unaccounted for", .class_wall),
         else => {},
     };
     // A soft boundary in run B and not run A is still a boundary: the shim only sees
@@ -3639,7 +3671,7 @@ fn observeAgain(
     // does not rest on: the post-states are read from the filesystem, not from either
     // witness. The report's `scope` line says so, and widening it is a separate promise.
     if ((trace.boundary != null or trace.foreign_pid_seen) and oracle_path == null)
-        unknown(.boundary_without_oracle, "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)");
+        unknown(.boundary_without_oracle, "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary);
 
     var second = snapshotOrRefuse(gpa, state_abs, "could not snapshot the state after the second observed run");
     defer second.deinit();
@@ -3650,7 +3682,7 @@ fn observeAgain(
     defer again.deinit();
     var quiesce_buf: [1]engine.Difference = undefined;
     if (!engine.diffSnapshots(second, again, &quiesce_buf).equal())
-        unknown(.state_not_quiescent, "two samples of the state directory taken back to back after the second observed run disagreed: something was still writing, so the comparison would describe a moment nobody chose");
+        unknown(.state_not_quiescent, "two samples of the state directory taken back to back after the second observed run disagreed: something was still writing, so the comparison would describe a moment nobody chose", .quiesce);
 
     // The partial version of `no_shim_marker`, and it belongs on the same side.
     //
@@ -3666,7 +3698,7 @@ fn observeAgain(
     // snapshots already taken, which is why it is a single line rather than the
     // wholesale reuse the exclusion was about.
     if (!snapshotsEqual(initial, second) and trace.mutation_count == 0)
-        unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed");
+        unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed", .class_wall);
 
     const diffs = arena.alloc(engine.Difference, repeat_diff_slots) catch setupError("out of memory");
     const count = engine.diffSnapshots(first, second, diffs);
@@ -4160,7 +4192,7 @@ fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase
             "the state directory holds an entry that is neither a regular file, a directory nor a symlink ({s}: {s}) — restore cannot recreate it, so every explored world would run against a tree the recording run never had",
             .{ phase, textShown(arena, rel) },
         ) catch "the state directory holds an entry that restore cannot recreate (a FIFO, socket or device)";
-        unknown(.unsupported_state_entry, detail);
+        unknown(.unsupported_state_entry, detail, .class_wall);
     }
 }
 
@@ -4260,7 +4292,33 @@ fn reconcileOrRefuse(
         "the judged state changed at {d} path(s) that no recorded operation names, so the account of this run is incomplete: {s}{s}. The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all",
         .{ r.total, names.items, more },
     ) catch "the judged state changed at a path that no recorded operation names";
-    unknown(.state_changed_unaccounted, detail);
+    unknown(.state_changed_unaccounted, detail, .class_wall);
+}
+
+/// The next step for `no_shim_marker`, chosen from the same observation the detail line
+/// reports (#274) — the one site where a reason's remedy is decided by the image rather
+/// than by the call site's position. A statically linked ELF, a Mach-O not linked
+/// against dyld, or one whose code directory names a platform or carries the
+/// library-validation or hardened-runtime flag: those are the refused classes README
+/// lists, and the step is the wall. A dynamically linked image with nothing on it that
+/// this build looks for: the marker's absence has another cause, and the shim is the
+/// thing to check. An image that could not be read or resolved says nothing about
+/// linkage, so it takes the shim step too — the honest default, not a diagnosis.
+fn noShimNext() contract.NextStep {
+    const obs = rec_image orelse return .check_shim;
+    return switch (obs.facts) {
+        .elf => |e| if (e.has_interp) .check_shim else .class_wall,
+        // Read in the same order `noShimDetail` reads them, so the step never contradicts
+        // the sentence beside it: signing first, and only an unsigned image is judged by
+        // its dyld linkage (review caught the reversed order on a signed, non-dyld image —
+        // the detail said "another cause", the step said "the wall").
+        .macho => |m| blk: {
+            const s = m.signing orelse break :blk if (m.dyldlink) .check_shim else .class_wall;
+            if (s.platformNamed() or s.libraryValidation() or s.hardenedRuntime()) break :blk .class_wall;
+            break :blk .check_shim;
+        },
+        .not_resolved, .unreadable, .unrecognised, .undecidable => .check_shim,
+    };
 }
 
 /// The `no_shim_marker` detail line, built from what was observed rather than from a
@@ -5035,6 +5093,7 @@ fn buildJson(
     checker_detail: ?CheckerEarliest,
     unknown_reason: ?[]const u8,
     message: ?[]const u8,
+    next_step: ?[]const u8,
 ) ![]const u8 {
     var buf: std.ArrayList(u8) = .empty;
     const w = &buf;
@@ -5072,6 +5131,14 @@ fn buildJson(
     if (message) |m| {
         try w.appendSlice(arena, ",\n  \"message\": ");
         try jsonString(w, arena, m);
+    }
+    // #274: the same rendered sentence the text report prints on its `next` line —
+    // `unknown()` renders it once and passes it here, so `check-report-schema.py`'s fifth
+    // claim (a bare name through `jsonString`) holds, and acceptance check 2ns holds the
+    // two forms to each other by bytes.
+    if (next_step) |n| {
+        try w.appendSlice(arena, ",\n  \"next_step\": ");
+        try jsonString(w, arena, n);
     }
 
     if (detail) |d| {
@@ -5172,8 +5239,9 @@ fn writeJsonReport(
     checker_detail: ?CheckerEarliest,
     unknown_reason: ?[]const u8,
     message: ?[]const u8,
+    next_step: ?[]const u8,
 ) void {
-    const doc = buildJson(arena, verdict, exit_code, detail, checker_detail, unknown_reason, message) catch
+    const doc = buildJson(arena, verdict, exit_code, detail, checker_detail, unknown_reason, message, next_step) catch
         return jsonFailed("the document could not be built");
 
     var pbuf: [contract.max_path]u8 = undefined;
@@ -5225,7 +5293,7 @@ fn writeJsonReport(
 /// Typed and exhaustive on purpose: a new member of `engine.RestoreError` must stop
 /// compilation here rather than inherit `state_rewrite_failed` unexamined — the same
 /// containment the snapshot's spawn-error switch keeps.
-const RewriteDisposition = struct { exit: enum { setup, unknown }, detail: []const u8 };
+const RewriteDisposition = struct { exit: enum { setup, unknown }, detail: []const u8, next: contract.NextStep };
 
 fn rewriteFailureDisposition(
     phase: SpawnPhase,
@@ -5259,6 +5327,14 @@ fn rewriteFailureDisposition(
             .exploring => .unknown,
         },
         .detail = detail,
+        // Decided per cause, beside the wording and for the same reason (#274): a path
+        // the engine cannot spell is the operator's tree to shorten; a root that
+        // resolves elsewhere, or a delete or create the filesystem refused, is the
+        // environment to put right. None is the define's.
+        .next = switch (e) {
+            error.PathTooLong => .narrow_state,
+            error.UnsafeRoot, error.DeleteFailed, error.CreateFailed => .environment,
+        },
     };
 }
 
@@ -5266,7 +5342,7 @@ fn restoreFailure(e: engine.RestoreError, doing: []const u8) noreturn {
     const d = rewriteFailureDisposition(run_phase, e, doing);
     switch (d.exit) {
         .setup => setupError(d.detail),
-        .unknown => unknown(.state_rewrite_failed, d.detail),
+        .unknown => unknown(.state_rewrite_failed, d.detail, d.next),
     }
 }
 
@@ -5966,6 +6042,42 @@ test "a bare single-process claim is scoped the moment anything follows it" {
     boundary_ev = witnessed;
     boundary_ev.second_run = "a thread";
     try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
+}
+
+test "every NextStep renders one sentence whose flags the help text accepts (#274)" {
+    // Advice that names a flag this binary does not take is advice nobody can follow —
+    // and a sentence is what the schema promises, so it ends in a full stop. Held here
+    // against `usage_fmt`, the same text `sideeye help` prints, rather than against a
+    // second list of flags that could drift from it.
+    inline for (@typeInfo(contract.NextStep).@"enum".fields) |f| {
+        const member: contract.NextStep = @enumFromInt(f.value);
+        const s = member.render();
+        try std.testing.expect(s.len > 0);
+        try std.testing.expect(s[s.len - 1] == '.');
+        var i: usize = 0;
+        while (std.mem.indexOfPos(u8, s, i, "--")) |at| {
+            var end = at + 2;
+            while (end < s.len and (std.ascii.isAlphabetic(s[end]) or s[end] == '-')) end += 1;
+            const flag = s[at..end];
+            // Every flag a sentence names appears in the help, as a flag (followed by
+            // a space, a newline or a bracket — not as a prefix of a longer flag).
+            var found = false;
+            var k: usize = 0;
+            while (std.mem.indexOfPos(u8, usage_fmt, k, flag)) |hit| {
+                const after = hit + flag.len;
+                if (after >= usage_fmt.len or usage_fmt[after] == ' ' or usage_fmt[after] == '\n' or usage_fmt[after] == ']' or usage_fmt[after] == ',') {
+                    found = true;
+                    break;
+                }
+                k = hit + 1;
+            }
+            if (!found) {
+                std.debug.print("NextStep.{s} names {s}, which the help text does not list\n", .{ f.name, flag });
+                return error.TestUnexpectedResult;
+            }
+            i = end;
+        }
+    }
 }
 
 test "the image-replacement disclosure survives every evidence state (#123)" {

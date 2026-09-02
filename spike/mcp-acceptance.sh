@@ -131,6 +131,9 @@ def expected_text(s):
     t = s["verdict"] if isinstance(s.get("verdict"), str) else "?"
     if isinstance(s.get("unknown_reason"), str): t += " (%s)" % s["unknown_reason"]
     if isinstance(s.get("message"), str): t += ":\n" + marked(s["message"])
+    # #274: next_step rides after the region and before case — engine text, outside
+    # the counted region, so the prefix rule of mcp 17 is untouched.
+    if isinstance(s.get("next_step"), str): t += "\nnext: " + s["next_step"]
     if isinstance(s.get("case"), str) and s["case"] != "(none)": t += "\ncase: " + s["case"]
     if isinstance(s.get("replay"), str) and s["replay"] != "-": t += "\nreplay: " + s["replay"]
     # #336: the advisory rides exactly the results whose text holds a region — same

@@ -729,6 +729,25 @@ test "isError derives from the verdict field, not a reason list" {
     try std.testing.expect(isActionable(a, "{\"schema\":\"sideeye/report\"}")); // no verdict: fail closed
 }
 
+test "the summary carries next_step after the region and before case, and only when the report does (#274)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // An UNKNOWN with every field the summary reads: the order is the property. `next`
+    // must follow the region's closing banner (so #339's prefix rule still sees only
+    // verdict, reason and ":\n" before the opening banner) and precede `case`.
+    const with = summarize(a, "{\"verdict\":\"UNKNOWN\",\"unknown_reason\":\"no_shim_marker\",\"message\":\"m\",\"next_step\":\"Do this.\",\"case\":\"/w/c.json\",\"replay\":\"sideeye replay /w/c.json\"}") orelse return error.TestUnexpectedResult;
+    const region_close = std.mem.indexOf(u8, with, "--- end target-influenced text") orelse return error.TestUnexpectedResult;
+    const next_at = std.mem.indexOf(u8, with, "\nnext: Do this.") orelse return error.TestUnexpectedResult;
+    const case_at = std.mem.indexOf(u8, with, "\ncase: ") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(region_close < next_at);
+    try std.testing.expect(next_at < case_at);
+    // Nothing invented: a report without the field (SETUP_ERROR, or an older engine's
+    // report) gets no `next` line at all.
+    const without = summarize(a, "{\"verdict\":\"SETUP_ERROR\",\"message\":\"m\"}") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.indexOf(u8, without, "\nnext: ") == null);
+}
+
 /// Best-effort unlink for a work-dir artifact this server is about to recreate.
 fn unlinkPath(path: []const u8) void {
     var zb: [contract.max_path]u8 = undefined;
@@ -862,6 +881,15 @@ fn summarize(arena: std.mem.Allocator, report_min: []const u8) ?[]const u8 {
     if (strField(o, "message")) |m| {
         out.appendSlice(arena, ":\n") catch return null;
         appendMarkedRegion(arena, &out, m) catch return null;
+    }
+    // `next_step` (#274): engine text, never target-influenced, so it sits OUTSIDE the
+    // marked region — after it, because #339's prefix rule fixes what precedes the first
+    // opening banner (verdict, reason, `:\n` and nothing else), and before `case`/`replay`
+    // and the advisory, which the acceptance suite derives in that order. Present on
+    // every UNKNOWN; absent on SETUP_ERROR, which carries no reason to choose it by.
+    if (strField(o, "next_step")) |n| {
+        out.appendSlice(arena, "\nnext: ") catch return null;
+        out.appendSlice(arena, n) catch return null;
     }
     if (strField(o, "case")) |c| if (!std.mem.eql(u8, c, "(none)")) {
         out.appendSlice(arena, "\ncase: ") catch return null;
