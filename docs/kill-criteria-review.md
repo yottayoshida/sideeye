@@ -42,12 +42,28 @@ Two framing notes before the rows:
   below.)*
 
 What holds this page: acceptance check 11 verifies that every repository path
-named here exists (path rot), and nothing more. The numbers are quotations
-from their source pages — the UNKNOWN-rate figures are recomputed from the
-committed artifacts by check 12 *at their source*, not here — and the
-quotations themselves are held by review, the way check 11's own comment says
-(`docs/adr/0039-quoted-figures-are-held-by-review.md` records why that stays
-the rule, and what would reopen it).
+named here exists (path rot), and `spike/check-criterion3-status.sh` holds the
+criterion-3 state markers below (next paragraph); nothing else does. The
+numbers are quotations from their source pages — the UNKNOWN-rate figures are
+recomputed from the committed artifacts by check 12 *at their source*, not
+here — and the quotations themselves are held by review, the way check 11's
+own comment says (`docs/adr/0039-quoted-figures-are-held-by-review.md`
+records why that stays the rule, and what would reopen it).
+
+`PRD.md` carries the one current status of criterion 3; this page carries the
+dated state markers it cites — appended after the last, so file order is the
+timeline — and `DESIGN.md` §18 the definition.
+`spike/check-criterion3-status.sh` holds the three to that split: PRD's
+current-status marker must equal this page's last state marker, every H2
+section after `## The verdict` whose heading carries a `(YYYY-MM-DD` date
+carries exactly one state marker, and neither this page nor §18 may carry a
+current-status marker of its own. The page's whole marker sequence is pinned
+inside that script, so **recording a new state touches three files in one
+pull request**: the marker here, PRD's current marker, and the pin. The
+markers are HTML comments, invisible when rendered; the prose beside them is
+held by review, the same way the figures are. The check retires if PRD's
+marker is ever generated from this page, or if this page stops carrying dated
+state markers (#356).
 
 ## Row 1 — "It is only useful when humans define failure scenarios in bulk."
 
@@ -293,6 +309,7 @@ and margins stated; row 2 is scored on the recorded absence of the very
 comparison it asserts; row 7 is an owner adjudication whose no-data
 asymmetry and missing head-to-head are disclosed above. This review is what v1.0 entry
 criterion 3 asks for, and the criterion is checked on it.
+<!-- criterion-3-state: 2026-08-16 met -->
 
 None of the rows closes permanently. A future measurement landing on a
 row's trigger side — a sweep where target-origin UNKNOWNs dominate, a
@@ -313,6 +330,7 @@ lands on. *(Superseded 2026-08-27 — both rows were adjudicated in the section
 at the end of this page: neither is triggered and criterion 3 stays met. This
 paragraph and everything under it are the state as it stood on 2026-08-26,
 left as written.)*
+<!-- criterion-3-state: 2026-08-26 reopened -->
 
 What has been measured since: **twelve targets across three selection
 cohorts** (#183 2026-08-21, #209 2026-08-22, cohort 4 2026-08-23), each
@@ -462,6 +480,7 @@ closing verdict, and the 2026-08-26 re-review with its `pending` cells are all
 left as the dated records they are; the one edit above is a superseded note
 appended to the 2026-08-26 section's opening paragraph, which adds a pointer
 and removes nothing. This section is what supersedes them.
+<!-- criterion-3-state: 2026-08-27 met -->
 
 Both rulings are recorded the way the criterion-1 adjudication of #305 was —
 the reading taken, the readings rejected and why, and what the chosen reading

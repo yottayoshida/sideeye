@@ -1008,6 +1008,25 @@ jobs:
       - name: Every ADR says whether its decision shipped
         run: sh spike/check-adr-status.sh
 
+  # Criterion 3's status lives in three documents (#356): PRD.md carries the one current
+  # status, docs/kill-criteria-review.md the dated state markers it cites, DESIGN.md §18
+  # a pointer. Nothing compared them until this job, and the repository has a recorded
+  # case (#240) of a correction to the review page being silently reverted while another
+  # document still claimed it. Its own job for the same reason as the two above: no
+  # toolchain, so a failure here names the instrument. Selftest first, on copies of the
+  # three real files: it proves the check goes red on every predicate it names and stays
+  # green on the shapes it must not count (a marker in a fence, in prose, indented).
+  criterion-3-status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The status check proves it can go red, and stays green where it must
+        run: sh spike/check-criterion3-status.sh --selftest
+
+      - name: The three documents agree on criterion 3's current status
+        run: sh spike/check-criterion3-status.sh
+
   # The onboarding clock's audit is criterion 6's instrument: it decides whether a
   # timed run's evidence stands. Until 2026-08-28 nothing here ran it — the launcher
   # ran its selftest, and runs are rare, so a broken instrument could sit on main for
