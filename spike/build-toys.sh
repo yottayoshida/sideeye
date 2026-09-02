@@ -39,6 +39,12 @@ echo "building toy-symlink"
 # this into UNKNOWN — a false refusal on a layout GNU Stow is made of.
 gcc $cc_flags -o "$out/toy-symlink" "$root/spike/toys/toy_symlink.c"
 
+echo "building toy-stdin"
+# #263's fixture: one binary in three roles (setup / op / check), each draining fd 0 to
+# EOF before doing anything. A spawn wrapper that still hands the child the engine's own
+# stdin shows up as a hang under an open pipe, not as a wrong verdict.
+gcc $cc_flags -o "$out/toy-stdin" "$root/spike/toys/toy_stdin.c"
+
 echo "building toy-raw"
 gcc $cc_flags -o "$out/toy-raw" "$root/spike/toys/toy_raw.c"
 

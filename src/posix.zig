@@ -129,6 +129,9 @@ pub extern "c" fn signal(sig: c_int, handler: usize) usize;
 pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
 pub extern "c" fn getenv(name: [*:0]const u8) ?[*:0]u8;
 pub extern "c" fn _exit(status: c_int) noreturn;
+/// For the one child-side failure that must not become an exit code (#263): a signal
+/// death is outside the target's 0..255 and cannot be mistaken for its own status.
+pub extern "c" fn abort() noreturn;
 pub extern "c" fn realpath(path: [*:0]const u8, resolved: [*]u8) ?[*:0]u8;
 /// macOS: fills `buf` with the executable's path (may be non-canonical; realpath it).
 /// Returns 0 on success; on too-small buffer returns -1 and writes the needed size.
@@ -632,7 +635,12 @@ pub fn decodeStatus(status: c_int) Term {
 /// with, `decodeStatus` reads that as a clean exit, and a world that was killed is
 /// reported `kill_did_not_land`. A refusal naming the wait is the honest answer; a
 /// confident wrong reason is not (#264).
-pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed };
+/// `StdinUnavailable` (#263): `/dev/null` could not be opened, so the child could not be
+/// started with its stdin at end-of-file. Raised by the PARENT before any fork, on purpose:
+/// the child's exit status is the target's namespace (`expected_status` accepts 0..255, so
+/// no code is free for the engine to mean something by), and a failure to arrange the
+/// child's descriptors has to reach the caller on a channel the target cannot also use.
+pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed, StdinUnavailable };
 
 /// Run a command to completion with extra environment variables set, and leave nothing of
 /// it running.
@@ -679,6 +687,16 @@ pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed };
 /// be a define running somewhere its author did not declare, and nothing downstream can
 /// see that. `runChildCaptureMinimalEnv` is the one wrapper without it, on purpose — its
 /// child is the engine, not a define's command.
+///
+/// `stdin` — not a parameter, on purpose (#263). Every child these wrappers start, on
+/// every path, begins with fd 0 at end-of-file: the engine's own stdin is the caller's
+/// terminal or pipe, a fact no committed define can declare and no replay can reproduce,
+/// and a target that read it either hung the CLI path forever or saw EOF on the MCP path
+/// — two behaviours for one target. There is no spawn site with a reason to inherit
+/// (the sudo probe, the demo compiler, the signal helper and the engine's self-exec read
+/// nothing), so a per-site choice would only be a way for a new site to inherit by
+/// accident. How the descriptor is arranged, and why its failure is a `SpawnError`
+/// rather than an exit code, is written at the fork in `runChildImplWithOps`.
 pub fn runChild(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -763,6 +781,26 @@ pub fn runChildCaptureMinimalEnv(
     return runChildImpl(gpa, argv, env_pairs, stdout_path, true, false, null);
 }
 
+/// Child side of the stdin discipline (#263): make fd 0 the descriptor the parent
+/// opened, then drop the parent's copy. Runs after `fork` and before `exec`, so nothing
+/// here allocates. With a valid descriptor in hand `dup2` fails only on `EINTR`, which
+/// is retried under the same nine-attempt bound as every other retry in this file — a
+/// resumable handler installed by a preloaded library, with its signal arriving
+/// continuously, would otherwise spin here under no budget. Anything else is treated
+/// as unreachable and the child aborts rather than exiting: an exit code would be the
+/// target's (`expected_status` accepts 0..255). A descriptor that already landed on 0
+/// — the engine's own stdin was closed — is simply kept: `dup2(0, 0)` would be a no-op
+/// and closing it would be the EBADF-at-exec trap this function exists to avoid.
+fn adoptStdin(nfd: c_int) void {
+    if (nfd == 0) return;
+    var tries: u32 = 0;
+    while (dup2(nfd, 0) < 0) {
+        tries += 1;
+        if (std.c._errno().* != EINTR or tries >= 9) abort();
+    }
+    _ = close(nfd);
+}
+
 /// A child the caller does not wait for: started, left running, stopped later.
 ///
 /// Every other spawn here runs a child to completion, because everything else the
@@ -790,10 +828,21 @@ pub fn spawnSidecar(
     cargv[argv.len] = null;
     const stdout_z = (try arena.dupeZ(u8, stdout_path)).ptr;
 
+    // Same stdin discipline as every other spawn (#263), same reasons, same shape:
+    // opened by the parent, handed to the child, never an exit code. `sudo -n` never
+    // prompts, so nothing observable changes here — what changes is that "every child
+    // Sideeye forks starts at end-of-file" is one sentence with no exception in it.
+    const nfd = RealOps.openDevNull();
+    if (nfd < 0) return error.StdinUnavailable;
+
     const pid = fork();
-    if (pid < 0) return error.ForkFailed;
+    if (pid < 0) {
+        _ = close(nfd);
+        return error.ForkFailed;
+    }
     if (pid == 0) {
         _ = setpgid(0, 0);
+        adoptStdin(nfd);
         const cfd = open(stdout_z, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_EXCL, @as(c_uint, 0o600));
         if (cfd < 0) _exit(126);
         if (cfd != 1) {
@@ -803,6 +852,7 @@ pub fn spawnSidecar(
         _ = execvp(cargv[0].?, cargv.ptr);
         _exit(127);
     }
+    _ = close(nfd);
     return pid;
 }
 
@@ -893,7 +943,7 @@ fn runChildImpl(
         // A null budget never takes the timeout branch — see the budget block below,
         // which is the only producer of this error and is gated on `budget_ms != null`.
         error.TimedOut => unreachable,
-        error.ForkFailed, error.OutOfMemory, error.WaitFailed => |narrow| narrow,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable => |narrow| narrow,
     };
 }
 
@@ -932,6 +982,17 @@ const RealOps = struct {
     }
     fn sleepMs(ms: u64) void {
         sleepForMs(ms);
+    }
+    /// The fork itself is on the seam (#263) so a test can assert that a spawn refused
+    /// before it — `/dev/null` unavailable — never forked at all. Without this a
+    /// "fork count is zero" assertion is vacuous: nothing in the fake could count.
+    fn forkChild() c_int {
+        return fork();
+    }
+    /// The child's stdin source, opened in the parent. On the seam for the same reason:
+    /// the failure is arranged by a fake, never for real.
+    fn openDevNull() c_int {
+        return open("/dev/null", O_RDONLY, @as(c_uint, 0));
     }
 };
 
@@ -1009,11 +1070,30 @@ fn runChildImplWithOps(
     // budget still never reads the clock.
     const budget_t0: u64 = if (budget_ms != null) Ops.nowMs() else 0;
 
-    const pid = fork();
-    if (pid < 0) return error.ForkFailed;
+    // Every child starts with its stdin at end-of-file (#263). The descriptor is opened
+    // HERE, in the parent, before the fork: a failure is then a named spawn error on the
+    // caller's channel, and never a code in the target's exit-status namespace (the
+    // first design had the child `_exit(123)`; `expected_status` accepts 0..255, so 123
+    // is a status a define may legitimately declare, and the parent would have misread
+    // that target). No O_CLOEXEC, on purpose: when the engine's own fd 0 is closed this
+    // open returns 0, `dup2(0, 0)` is a no-op, and a close-on-exec flag would then shut
+    // fd 0 at exec — the child would read EBADF, not EOF. The child handles that case by
+    // keeping the descriptor where it landed; the parent closes its copy either way.
+    const nfd = Ops.openDevNull();
+    if (nfd < 0) return error.StdinUnavailable;
+
+    const pid = Ops.forkChild();
+    if (pid < 0) {
+        _ = close(nfd);
+        return error.ForkFailed;
+    }
     if (pid == 0) {
         // Before exec, so the target never runs in the engine's group.
         _ = setpgid(0, 0);
+        // stdin first, before any capture: a child that could not be given its stdin
+        // must not run at all. The retry bound, the abort, and the fd-0 case are all
+        // in `adoptStdin`, shared with the sidecar's fork.
+        adoptStdin(nfd);
         if (stdout_z) |sz| {
             // A capture that cannot be opened must not fall back to the engine's own
             // stdout: a world whose evidence went to the wrong stream would read as
@@ -1039,15 +1119,11 @@ fn runChildImplWithOps(
                 if (dup2(1, 2) < 0) _exit(126);
             }
             if (minimal_env) {
-                // The child (a config's operation, untrusted) must not read the MCP
-                // transport on fd 0, nor write to it on fd 2. stdin → /dev/null,
-                // stderr → the same capture file. Higher fds are closed so no inherited
-                // descriptor (the JSON-RPC stdin among them) survives into the child.
-                const nfd = open("/dev/null", O_RDONLY, @as(c_uint, 0));
-                if (nfd >= 0 and nfd != 0) {
-                    _ = dup2(nfd, 0);
-                    _ = close(nfd);
-                }
+                // The child (a config's operation, untrusted) must not write to the MCP
+                // transport on fd 2 either: stderr → the same capture file. (fd 0 was
+                // already pointed at /dev/null above, for every child, not only this
+                // path — #263.) Higher fds are closed so no inherited descriptor (the
+                // JSON-RPC stdin among them) survives into the child.
                 _ = dup2(1, 2); // stderr → capture
                 var fd: c_int = 3;
                 while (fd < 256) : (fd += 1) _ = close(fd);
@@ -1076,6 +1152,8 @@ fn runChildImplWithOps(
         // Only reached when exec failed; 127 is the shell's convention for that.
         _exit(127);
     }
+    // The parent's copy of the child's stdin source: the child has its own by now.
+    _ = close(nfd);
     // Repeated in the parent to close the window where the child has not been scheduled
     // yet. Whichever call runs first wins; the second fails harmlessly (EACCES once the
     // child has exec'd, ESRCH if it has already exited).
@@ -1272,6 +1350,8 @@ const FakeWait = struct {
     var eintr_budget: u32 = 0;
     var permanent: bool = false;
     var deliver_status: c_int = 0;
+    var fork_calls: u32 = 0;
+    var devnull_fails: bool = false;
 
     fn reset() void {
         direct_calls = 0;
@@ -1279,6 +1359,20 @@ const FakeWait = struct {
         eintr_budget = 0;
         permanent = false;
         deliver_status = 0;
+        fork_calls = 0;
+        devnull_fails = false;
+    }
+
+    fn forkChild() c_int {
+        fork_calls += 1;
+        return fork();
+    }
+    fn openDevNull() c_int {
+        if (devnull_fails) {
+            std.c._errno().* = EINTR; // any errno: the caller reads only the sign
+            return -1;
+        }
+        return RealOps.openDevNull();
     }
 
     fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
@@ -1345,6 +1439,34 @@ test "an interruption that never stops is bounded rather than looping forever" {
     // The first call plus the eight retries the bound allows.
     try std.testing.expectEqual(@as(u32, 9), FakeWait.direct_calls);
     try std.testing.expect(FakeWait.drain_calls >= 1);
+}
+
+test "a child whose stdin cannot be pointed at /dev/null is refused by name and never forked (#263)" {
+    FakeWait.reset();
+    FakeWait.devnull_fails = true;
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
+
+    try std.testing.expectError(error.StdinUnavailable, r);
+    // Refused BEFORE the fork: the parent opens the descriptor, so a child that could
+    // not have its stdin arranged does not exist to have an exit status at all. `fork`
+    // is on the seam precisely so this zero is a measurement and not a tautology.
+    try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
+    try std.testing.expectEqual(@as(u32, 0), FakeWait.direct_calls);
+}
+
+test "every child starts with its stdin at /dev/null, on the plain path with no capture (#263)" {
+    FakeWait.reset();
+    // Read out of the child, like the cwd test below: the property is about the forked
+    // process's fd 0, and a test that inspected this process would pass against an
+    // implementation that redirected the engine instead. `-ef` compares identities, so
+    // this asks "is fd 0 the null device", not "does reading it give EOF" — an inherited
+    // closed fd or an empty pipe would answer the weaker question the same way. The
+    // plain path (no capture, not minimal_env) is chosen because that is the one the
+    // MCP-only redirect never covered: setup and the checker run through it.
+    const is_null = [_][]const u8{ "/bin/sh", "-c", "[ /dev/stdin -ef /dev/null ]" };
+    const term = try runChildImplWithOps(std.testing.allocator, &is_null, &.{}, null, false, false, null, null, FakeWait);
+    try std.testing.expectEqual(Term{ .exited = 0 }, term);
+    try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 }
 
 test "a declared cwd is where the child starts; null leaves it at the engine's" {
@@ -1447,6 +1569,9 @@ const FakeBudget = struct {
         _ = ms;
         sleep_calls += 1;
     }
+    // The budget tests drive the deadline logic only; the spawn itself is real.
+    const forkChild = RealOps.forkChild;
+    const openDevNull = RealOps.openDevNull;
     fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
         if (pid < 0) {
             drain_calls += 1;
