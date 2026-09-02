@@ -205,9 +205,12 @@ jobs:
         run: sh spike/cohort4/himalaya-r2/upstream-fix/verify-positive-control.sh
 
       # Both released Linux triples still compile under the glibc ceiling they declare
-      # (#161). Until now that pair was built only on release events and on pull requests
-      # touching release.yml, so whatever the pin does to a source change happened for the
-      # first time during the release ceremony.
+      # (#161). The release matrix gained those versions in the same change; with only that
+      # half, they would be compiled on release events and on pull requests touching
+      # release.yml, so whatever the pin does to a source change would surface for the first
+      # time during the release ceremony. (Before that change no versioned triple was built
+      # anywhere — the past tense in the first draft of this comment described a state that
+      # never existed.)
       #
       # What it does, measured: the version is a ceiling, not a gate. A symbol that has an
       # older entry point links to that one and the requirement drops with the pin — that
