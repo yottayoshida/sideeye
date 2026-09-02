@@ -209,7 +209,10 @@ var stop_when_orphaned: bool = false;
 var startup_ppid: c_int = 0;
 var json_path: ?[]const u8 = null;
 var json_arena: ?std.mem.Allocator = null;
-var oracle_note: []const u8 = "not run (no --oracle given)";
+/// The prose half of the oracle account. Assigned from `OracleAsked` at three points —
+/// here, the moment an oracle flag is consumed, and the end of the parse loop — and
+/// rewritten only inside the comparison block. See `noteOracle` (#352).
+var oracle_note: []const u8 = initialOracleNote(.unparsed);
 
 /// The machine-readable half of the oracle account (#94). Set true at exactly one
 /// point — beside the "agreed on N operations" note, after the comparison completed
@@ -224,12 +227,113 @@ var oracle_verified: bool = false;
 /// verdict input. The default says why absence of a note is not absence of writes:
 /// without an oracle nothing can see a chown, and "was not seen" must not read as
 /// "did not happen" here any more than anywhere else in this tool.
-var metadata_note: []const u8 = "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)";
-var checker_note: []const u8 = "none configured";
+var metadata_note: []const u8 = initialMetadataNote(.unparsed);
+
+/// What the parser has established about the completeness oracle so far (#352). Both
+/// account strings above are assigned from this — at their initialisers, the moment either
+/// oracle flag is consumed, and once the parse loop has read the whole argv — so "no
+/// --oracle given" is written only after every argument was read and none named one.
+/// Every exit before the comparison block writes the report through the same
+/// `writeJsonReport` (`unknown()` and `setupError()` alike, parse errors included), and
+/// used to publish the no-oracle wording on runs that were given an oracle: the initialiser
+/// asserted a fact the parser had not yet established. Now it asserts nothing until it can.
+const OracleAsked = union(enum) {
+    /// The arguments have not been read to the end.
+    unparsed,
+    /// A flag naming an oracle was consumed; the comparison has not run.
+    named: BoundaryEvidence.Kind,
+    /// The arguments were read to the end and named none.
+    none,
+};
+
+fn initialOracleNote(asked: OracleAsked) []const u8 {
+    return switch (asked) {
+        .unparsed => "not established: this run stopped while its arguments were still being read",
+        // The flag is named so a reader can tell which observer was asked for; the two
+        // phrases are matched whole by spike/acceptance.sh (2fc, 2fd, 2fi), not by the
+        // `--oracle` prefix they share.
+        .named => |kind| switch (kind) {
+            .strace => "not compared: --oracle was named, and this run stopped before the comparison",
+            .fs_usage => "not compared: --oracle-fs-usage was named, and this run stopped before the comparison",
+        },
+        // Byte for byte what every run that named no oracle published before #352.
+        .none => "not run (no --oracle given)",
+    };
+}
+
+fn initialMetadataNote(asked: OracleAsked) []const u8 {
+    return switch (asked) {
+        .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose ownership/permission/timestamp calls, so only a completed oracle account could show them",
+        // "before its metadata account was completed", not "before its capture was read":
+        // the comparison block reads the capture and can refuse on it before
+        // `metadata_note` is assigned, and this wording has to stay true there too.
+        .named => |kind| switch (kind) {
+            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
+            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
+        },
+        .none => "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+    };
+}
+
+/// Assign both accounts from what the parser has established.
+fn noteOracle(asked: OracleAsked) void {
+    oracle_note = initialOracleNote(asked);
+    metadata_note = initialMetadataNote(asked);
+}
+/// The declared invariant's account. Same rule as `oracle_note` (#352): "none configured"
+/// is written only once every source of a checker — the flag, a replayed case, the toml —
+/// has been read and none supplied one; a source that did supply one says so from that
+/// line on, and the initialiser establishes nothing. Rewritten inside the checker block.
+var checker_note: []const u8 = checkerNoteFor(.unparsed);
 /// The L1 story (ADR 0008): whether a success marker was declared, and in how many
 /// crash worlds it was observed — the worlds where the post-success invariant was
-/// enforced. Mirrors `checker_note`: one variable, read by text and JSON alike.
-var l1_note: []const u8 = "no marker configured";
+/// enforced. Mirrors `checker_note`: one variable, read by text and JSON alike, and the
+/// same three-state rule for what it says before the recording run (#352).
+var l1_note: []const u8 = l1NoteFor(.unparsed);
+
+/// What the parser and the define sources have established about a declared checker or
+/// marker (#352). Like `OracleAsked` but with no kind: the account names no source.
+const Declared = enum {
+    /// The arguments and the define sources have not all been read.
+    unparsed,
+    /// A flag, a replayed case or the toml supplied one.
+    named,
+    /// Every source has been read and none supplied one.
+    none,
+};
+
+fn checkerNoteFor(d: Declared) []const u8 {
+    return switch (d) {
+        // "or define": a replayed case or a toml is read after the argv, and a run that
+        // stops while reading either is in this state too.
+        .unparsed => "not established: this run stopped while its arguments or define were still being read",
+        .named => "configured; this run stopped before the checker ran",
+        // Byte for byte the pre-#352 wording; docs/report-schema.md and acceptance pin it.
+        .none => "none configured",
+    };
+}
+
+fn l1NoteFor(d: Declared) []const u8 {
+    return switch (d) {
+        .unparsed => "not established: this run stopped while its arguments or define were still being read",
+        // True from the moment a marker is known until the recording run's stdout is
+        // scanned, which is where the next assignment sits.
+        .named => "marker configured; the recording run has not been scanned yet",
+        // Byte for byte the pre-#352 wording; README and docs/report-schema.md show it.
+        .none => "no marker configured",
+    };
+}
+
+/// Every source of a checker and a marker that this mode reads has been read: say
+/// "configured" where one came and "none configured" where none did (#352). Called at the
+/// line each mode's last source has been read by — right after the parse loop when neither
+/// a replayed case nor a toml follows, after the case in replay, after the toml under
+/// `--config`. Not later: the required-flag refusals and the marker vet sit after all three,
+/// and a run refused there with nothing declared must say "none", not "not established".
+fn settleDeclared(has_check: bool, has_marker: bool) void {
+    checker_note = checkerNoteFor(if (has_check) .named else .none);
+    l1_note = l1NoteFor(if (has_marker) .named else .none);
+}
 /// Whether a marker was configured at all; widens `not tested` (post-only file
 /// contents are checked for existence, not content).
 var l1_configured: bool = false;
@@ -1514,6 +1618,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // flag changes the base command's first line of output — so a parse-time
             // refusal on Linux read as a flag no mode accepts (CI, #406, twice).
             args.oracle_fs_usage = true;
+            // Said the moment the flag is read, so an exit anywhere after this line —
+            // a later parse error included — reports the oracle as named (#352).
+            noteOracle(.{ .named = .fs_usage });
             i += 1;
             continue;
         }
@@ -1549,9 +1656,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v }
         else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v
         else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
-        else if (std.mem.eql(u8, argv[i], "--oracle")) args.oracle = v
-        else if (std.mem.eql(u8, argv[i], "--check")) args.check = .{ .str = v }
-        else if (std.mem.eql(u8, argv[i], "--marker")) args.marker = v
+        else if (std.mem.eql(u8, argv[i], "--oracle")) {
+            args.oracle = v;
+            // As for --oracle-fs-usage above: named from this line on (#352).
+            noteOracle(.{ .named = .strace });
+        }
+        else if (std.mem.eql(u8, argv[i], "--check")) {
+            args.check = .{ .str = v };
+            checker_note = checkerNoteFor(.named);
+        }
+        else if (std.mem.eql(u8, argv[i], "--marker")) {
+            args.marker = v;
+            l1_note = l1NoteFor(.named);
+        }
         // Taken as spelled, unlike the toml's, which resolves against the file's own
         // directory: a flag is typed at a cwd, so a relative one already means what the
         // caller meant. It is absolutized with the rest of them further down.
@@ -1618,6 +1735,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (args.oracle != null and args.oracle_fs_usage)
         setupError("--oracle and --oracle-fs-usage both name a completeness oracle; pass one");
     args.has_oracle = args.oracle != null or args.oracle_fs_usage;
+    // Only now can "no --oracle given" be said: the whole argv has been read and no flag
+    // named one. Before this line the account says nothing was established (#352).
+    if (!args.has_oracle) noteOracle(.none);
+    // The flags are the only source of a checker and a marker unless a replayed case or a
+    // toml follows; those two blocks settle their own accounts once they have read theirs
+    // (#352). Settled here and not at the marker vet: `--state is required` and its
+    // siblings refuse between the two, and a flags-only run refused there with nothing
+    // declared has read every source it will ever have.
+    if (mode != .replay and args.config == null) settleDeclared(args.check != null, args.marker != null);
     // Named, not yet read. The account distinguishes the two: an oracle whose capture
     // never parsed establishes nothing about other processes, and a run refused before
     // the comparison must not report as though it had one.
@@ -1690,6 +1816,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         args.operation = c.define.operation;
         args.check = c.define.check;
         args.marker = c.define.marker;
+        // The case is replay's last source of both (flags and --config were refused above),
+        // so the accounts settle here — "configured" or "none configured" — and every exit
+        // from here on, `case_no_longer_applies` included, reports what the case held (#352).
+        settleDeclared(args.check != null, args.marker != null);
         args.expect_status = c.define.expected_status;
         // Taken as stored: a saved case always carries the resolved spelling, so there is
         // nothing here for a toml directory to resolve against. The vet below still runs
@@ -1730,6 +1860,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         );
         switch (config.parse(arena, text) catch setupError("out of memory")) {
             .ok => |d| {
+                // The toml is the last source of a checker and a marker under --config (the
+                // flags were refused), and it has been read: settle both accounts here, before
+                // the two refusals below that can fire after a successful parse, so a toml
+                // that declared them is never reported as "not established" (#352, review).
+                settleDeclared(d.check != null, d.marker != null);
                 // The dirname is absolutized before anything resolves against it: the
                 // resolved define is what a saved case stores as the counterexample's
                 // identity, and a relative spelling would make the case mean a
@@ -1776,7 +1911,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (m.len == 0) setupError("the marker is empty");
         if (m.len >= 4096) setupError("the marker is unreasonably long (>= 4 KiB)");
         l1_configured = true;
-        l1_note = "marker configured; the recording run has not been scanned yet";
+        // Already settled by whichever block read the marker's source; re-stated here so
+        // the vet and the account it vouches for sit together.
+        l1_note = l1NoteFor(.named);
     }
 
     // The declared cwd is resolved and vetted here, ahead of the state directory's mkdir
@@ -2652,6 +2789,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     if (n == 0) {
         requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+        // A PASS, not a refusal: the checker's pre-run wording says the run "stopped",
+        // which is the wrong word beside a verdict. A declared checker had no world to be
+        // falsified in, and the account says that (#352, review).
+        if (args.check != null) checker_note = "configured; not run (no crash point, so no world to falsify it in)";
         // "judged state", not "state directory": a run whose only writes are
         // ownership/permission metadata lands exactly here with zero kill points,
         // and those writes DO change the directory — just nothing the verdict
@@ -5902,4 +6043,76 @@ test "a run refused before the trace is read says so, rather than reporting the 
     // Control: once the trace is read, the same all-false evidence is a different fact.
     boundary_ev.trace_read = true;
     try std.testing.expect(std.mem.indexOf(u8, boundaryAccount(), "never announced itself") != null);
+}
+
+test "the oracle account says no oracle was given only once the arguments were read to the end (#352)" {
+    // The no-oracle wording is a byte-for-byte pin: it is what every run that named no
+    // oracle published before #352, and spike/acceptance.sh's 2fi control reads it out of
+    // the JSON and compares the whole string.
+    try std.testing.expectEqualStrings("not run (no --oracle given)", initialOracleNote(.none));
+    try std.testing.expectEqualStrings(
+        "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+        initialMetadataNote(.none),
+    );
+    // Before the parse loop finishes, and once a flag was consumed, neither account may
+    // claim that none was given.
+    const states = [_]OracleAsked{ .unparsed, .{ .named = .strace }, .{ .named = .fs_usage } };
+    for (states) |s| {
+        try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(s), "no --oracle given") == null);
+        try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(s), "no oracle ran") == null);
+    }
+    try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.unparsed), "not established") != null);
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.unparsed), "not established") != null);
+    // The named wording carries the flag that was read, and the fs_usage one is not the
+    // strace one with a suffix — the acceptance legs match the whole phrase.
+    try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.{ .named = .strace }), "--oracle was named") != null);
+    try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.{ .named = .fs_usage }), "--oracle-fs-usage was named") != null);
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }), "--oracle was named") != null);
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .fs_usage }), "--oracle-fs-usage was named") != null);
+    // The named metadata wording asserts no progress: the comparison block can refuse
+    // after reading the capture and before assigning the metadata account, so "before its
+    // capture was read" would be false there.
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }), "capture was read") == null);
+}
+
+test "noteOracle assigns both accounts, and the initialiser is the unparsed state (#352)" {
+    const saved_o = oracle_note;
+    const saved_m = metadata_note;
+    defer {
+        oracle_note = saved_o;
+        metadata_note = saved_m;
+    }
+    // Fresh process state: the initialiser is the unparsed wording, not the no-oracle one.
+    // Nothing else in this test binary assigns these globals, so what was saved is the
+    // initialiser.
+    try std.testing.expectEqualStrings(initialOracleNote(.unparsed), saved_o);
+    try std.testing.expectEqualStrings(initialMetadataNote(.unparsed), saved_m);
+    noteOracle(.{ .named = .strace });
+    try std.testing.expect(std.mem.indexOf(u8, oracle_note, "--oracle was named") != null);
+    try std.testing.expect(std.mem.indexOf(u8, metadata_note, "--oracle was named") != null);
+    noteOracle(.none);
+    try std.testing.expectEqualStrings("not run (no --oracle given)", oracle_note);
+}
+
+test "the checker and marker accounts say none was configured only once every source was read (#352)" {
+    // The two "none" wordings are byte-for-byte pins: docs/report-schema.md, README's
+    // sample report and spike/acceptance.sh (check 2 and 2fi) carry them.
+    try std.testing.expectEqualStrings("none configured", checkerNoteFor(.none));
+    try std.testing.expectEqualStrings("no marker configured", l1NoteFor(.none));
+    // Before the sources are read, and once one supplied a checker or a marker, neither
+    // account may claim that none was configured.
+    const states = [_]Declared{ .unparsed, .named };
+    for (states) |s| {
+        try std.testing.expect(std.mem.indexOf(u8, checkerNoteFor(s), "none configured") == null);
+        try std.testing.expect(std.mem.indexOf(u8, l1NoteFor(s), "no marker configured") == null);
+    }
+    try std.testing.expect(std.mem.indexOf(u8, checkerNoteFor(.unparsed), "not established") != null);
+    try std.testing.expect(std.mem.indexOf(u8, l1NoteFor(.unparsed), "not established") != null);
+    try std.testing.expect(std.mem.indexOf(u8, checkerNoteFor(.named), "configured") != null);
+    try std.testing.expect(std.mem.indexOf(u8, l1NoteFor(.named), "marker configured") != null);
+    // The module initialisers are the unparsed state, not the "none" one. Nothing else in
+    // this test binary assigns these two globals except the l1_configured test, which
+    // touches only the flag.
+    try std.testing.expectEqualStrings(checkerNoteFor(.unparsed), checker_note);
+    try std.testing.expectEqualStrings(l1NoteFor(.unparsed), l1_note);
 }
