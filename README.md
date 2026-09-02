@@ -69,6 +69,7 @@ cwd       = "./repo"            # optional: where the three commands run (defaul
 ```
 
 - The same define works as flags: `--state` / `--setup` / `--operation` / `--check` / `--marker` / `--expect-status` / `--cwd`.
+- Every command Sideeye runs — your setup, operation and checker among them — starts with its standard input at end-of-file, on the CLI and MCP paths alike. A target that reads stdin sees EOF, never the terminal or pipe Sideeye itself was started from: that input is the caller's, not the define's, and a committed define has to mean the same run everywhere.
 - `--shim` names the interposition library when it is not beside the binary (the tarball and zig-out layouts are found on their own); `--work` moves the scratch directory for traces and cases (default `/tmp/sideeye-work`).
 - `--json <path>` writes the same report as JSON, for a machine to branch on.
 - `--fresh-state` (replay only) empties and recreates the case's state directory before setup, for a caller that cannot hand over a pristine one — a second replay in the same directory would otherwise die in the leftovers of the first.

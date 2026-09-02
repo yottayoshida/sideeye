@@ -2,6 +2,91 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 - every command the engine runs starts with stdin at end-of-file, and the design review took the exit code away
+
+`#263`, second half. The first half (`--world-timeout`, #385) bounded a hung world; what
+stayed open was the owner's question of whether every child's stdin should be `/dev/null`
+rather than only the MCP self-exec's. Measured before designing: the redirect sat inside
+`if (stdout_z)` **and** `if (minimal_env)` in `runChildImplWithOps`, so on the CLI every
+one of the spawn sites — setup, the recording run, worlds, the checker and its probe, plus
+the sudo probe, the demo compiler and the signal helper — inherited the engine's fd 0. A
+target that read it hung the CLI and saw EOF under MCP: two behaviours for one target.
+
+**The first design was wrong and the review said so.** The draft had the child open
+`/dev/null` itself and `_exit(123)` on failure, with 123 chosen as "unused". It is not:
+`expected_status` accepts 0..255, so a define may declare 123 as its success status, and
+a parent reading 123 as "stdin could not be arranged" would misdiagnose that target — the
+ambiguity 126 already carries between the capture stub and a checker that exits 126.
+There is no code in the target's namespace the engine can mean something by. The shipped
+shape opens `/dev/null` in the **parent, before the fork**, returns a new
+`SpawnError.StdinUnavailable` when it cannot, and hands the descriptor to the child; the
+child's own failure path is `abort()`, a signal death outside 0..255.
+
+The second round found the edge of that: when the engine's own fd 0 is closed, `open`
+returns 0, `dup2(0, 0)` is a no-op, and an `O_CLOEXEC` on the descriptor would then shut
+fd 0 at exec — the target would read `EBADF`, not EOF. So no `O_CLOEXEC`, the child keeps
+a descriptor that landed on 0, and the parent closes its copy on both fork outcomes.
+
+Two other things the review moved. `fork` joined the wait seam alongside the `/dev/null`
+open: without it the unit assertion "refused before any fork" is a count nothing could
+increment, which is the vacuous-green shape this repository keeps finding. And the
+acceptance leg's first draft, `sleep 60 | timeout 20 sideeye …`, would have spent the
+sleep's full sixty seconds even with the fix in place — the shell waits for the whole
+pipeline — so both legs hold the engine's stdin open through a FIFO and a background
+writer that is killed afterwards. The MCP leg additionally cuts the server at twenty
+seconds while the writer holds sixty, so a regression (a child inheriting the transport)
+is a missing response rather than a slow green.
+
+**Not promised: the argv-form escape.** The draft told a target that needs input to spell
+`["/bin/sh", "-c", "prog < input"]`. ADR 0019 and `docs/unknown-rate.md` record lbdb's
+stdin redirect as outside any argv shape's reach, and whether `sh -c` execs without a
+fork is shell-dependent. README says stdin is EOF and stops there. ADR 0038 carries the
+decision and the rejected shapes.
+
+Measured on this machine (macOS, arm64) before the change shipped:
+
+- **Red first.** The pre-fix binary, built from `main` at `bd87a31` in a throwaway
+  worktree, against the three-role fixture with the engine's stdin held open through a
+  FIFO: the setup role blocked in `read(0)`, the alarm killed the engine at thirty
+  seconds (rc 142), and the orphaned setup child kept the FIFO until the writer closed at
+  sixty. **Green.** The fixed binary, same define, same FIFO: PASS 4/4 explored worlds
+  (3 crash points + the baseline) in one second. Same fixture through `sideeye mcp` with
+  the transport held open and the server cut at twenty seconds: the tool result was on
+  stdout before the cut (UNKNOWN `completeness_not_verified` here, macOS having no strace;
+  the CI leg runs under `SIDEEYE_MCP_ORACLE` and expects PASS).
+- **The escape, measured once.** The argv-form `["/bin/sh", "-c", "/bin/cat < input > f"]`
+  on macOS refuses `no_shim_marker` before the fork-or-exec question is even asked:
+  `/bin/sh` is an Apple-signed platform binary (bash 3.2.57) and the shim cannot be
+  inserted into it. So on this platform the escape does not exist at all, and the README
+  line that stops at "stdin is EOF" is the honest one. Linux was not measured here; if a
+  Linux measurement ever reaches a verdict, ADR 0019's lbdb sentence and unknown-rate's
+  present tense move with the README, in one change.
+- **The MCP leg's red is a mutant, not the pre-fix binary.** Run against `main`'s binary
+  the MCP leg stays green: that path already redirected fd 0, which is the whole point of
+  the change (one behaviour for two doors). What the leg has to catch is a *regression* —
+  a spawn site inheriting the transport — so the red was taken by making `adoptStdin` a
+  no-op (`if (nfd >= 0) return;`, a mutant that compiles; the first attempt, a bare
+  `return;` after the guard, was refused by the compiler as unreachable code and the
+  "red" it produced was the unmutated binary, i.e. no measurement at all) and running
+  both legs: CLI rc 142 at thirty seconds with no verdict, MCP no response for id 18
+  inside the twenty-second cut. Reverted, rebuilt, 488/490 unit tests (two pre-existing
+  skips).
+
+Review record. R1 was Codex (gpt-5.6-sol): one P1 — the child's `dup2` retry on `EINTR`
+was unbounded at both fork sites, a spin before exec under no budget, which is the
+silent hang this change removes — and three P2 (the acceptance leg's `$( … )` would wait
+sixty seconds on a regression because the orphaned setup child holds the pipe; the MCP
+server folded `StdinUnavailable` into "could not run sideeye"; the ADR claimed the seam
+for the sidecar's fork too). All four taken. R2 could not be Codex — the workspace was
+out of credits — and was a fresh Claude subagent with no context of this session, which
+confirmed the four, built and ran the suite itself, reproduced the fd-0-closed case
+against a scratch copy of `posix.zig`, and found one more doc mismatch (the ADR counted
+two exhaustive switches; the MCP fix had made a third). It also noted, outside R2's
+remit, three spawn sites that still swallowed or did not name the new error (the demo's
+compiler search, the sudo probe, the sidecar); routed through `spawnFailure`, so the
+CHANGELOG sentence is true at every site. The inline simplify pass then folded the two
+identical child-side `dup2` loops into `adoptStdin`.
+
 ## 2026-09-01 (sixth) - the root the walk deletes is the root that was vetted, and the reviewed design did not do that
 
 `#338`: the destructive paths vet a root and then open it, two syscalls apart, and a swap

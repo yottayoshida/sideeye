@@ -682,6 +682,10 @@ fn usage() void {
         \\  --cwd        directory the define's commands run in (default: this process's).
         \\               The engine's own cwd does not move: --work, --json and --state
         \\               are still read against it
+        \\  stdin        not a flag: every command sideeye runs (setup, operation, checker)
+        \\               starts with its standard input at end-of-file, on the CLI and MCP
+        \\               paths alike. A target that reads stdin sees EOF, never the
+        \\               terminal or pipe sideeye itself was started from
         \\  --setup      command that produces the initial state (run once)
         \\  --operation  command to explore; killed before each operation that can change state
         \\  --expect-status  the exit status that means the operation completed (0..255,
@@ -1069,6 +1073,15 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
             .exploring => unknown(.child_wait_failed, detail),
         }
     }
+    // A child's stdin source that could not be opened (#263) is refused in the parent,
+    // before any fork, and named here: the caller's `doing` says which step was starting,
+    // and this says why it never started. SETUP_ERROR in either phase, the same reading
+    // as a fork failure below — the environment, not the target, is what could not be
+    // arranged, and no child ran whose exit status could be read as anything.
+    if (e == error.StdinUnavailable) {
+        var buf: [512]u8 = undefined;
+        setupError(std.fmt.bufPrint(&buf, "{s}: /dev/null could not be opened, so the command could not be started with its stdin at end-of-file", .{doing}) catch doing);
+    }
     // Fork and allocation failures are environment problems in either phase, and the
     // caller's wording already says which step was starting.
     setupError(doing);
@@ -1161,8 +1174,8 @@ fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usiz
 fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: []const u8, sentinel: []const u8, limit_s: u32) c_int {
     // `sudo -n`: never prompt. A prompt here would block a run nobody is watching, and
     // the caller who *is* watching gets a message naming the one command to run first.
-    const probe = posix.runChildCapture(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/true" }, &.{}, "/dev/null", null) catch
-        setupError("could not run sudo to start fs_usage");
+    const probe = posix.runChildCapture(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/true" }, &.{}, "/dev/null", null) catch |e|
+        spawnFailure(e, .before_exploration, "could not run sudo to start fs_usage");
     switch (probe) {
         .exited => |c| if (c != 0) setupError("fs_usage needs root and sudo has no cached credentials; run `sudo -v` in this terminal first, then re-run. The credential cache is per-terminal, so a `sudo -v` elsewhere does not reach this process"),
         else => setupError("the sudo credential check did not exit normally"),
@@ -1186,8 +1199,8 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // excluded shell's mutations entirely; scoping by the state root still sees them,
     // and the account records them as a thread other than the subject — which is the
     // refusal it should be.
-    const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit, "-f", "filesys" }, capture_path) catch
-        setupError("could not start fs_usage");
+    const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit, "-f", "filesys" }, capture_path) catch |e|
+        spawnFailure(e, .before_exploration, "could not start fs_usage");
     // Registered before anything below can refuse. From here on, every `setupError`
     // and `unknown` stops it; no call site has to.
     fsu_live = .{ .pid = pid, .gpa = gpa };
@@ -2822,7 +2835,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 ) catch unreachable;
                 unknown(.child_timed_out, detail);
             },
-            error.ForkFailed, error.OutOfMemory, error.WaitFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
+            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
 
         var wtrace = readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
@@ -3862,8 +3875,10 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
                 // Trying the next candidate is right for a compiler that could not be
                 // started. It is wrong for a wait failure: swallowing that here ends the
                 // loop with "none of cc, gcc, clang worked", which diagnoses the machine's
-                // toolchain for what is actually an environment problem (#264).
-                if (e == error.WaitFailed) spawnFailure(e, .before_exploration, "");
+                // toolchain for what is actually an environment problem (#264). The same
+                // holds for a stdin source that could not be opened (#263): that is not a
+                // fact about any compiler, and the next candidate would fail identically.
+                if (e == error.WaitFailed or e == error.StdinUnavailable) spawnFailure(e, .before_exploration, "could not start the compiler");
                 continue;
             };
             switch (term) {

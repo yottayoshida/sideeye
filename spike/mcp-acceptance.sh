@@ -762,6 +762,51 @@ if b"\n" in mb:
     sys.exit("a target-chosen newline survived into the message: the region body is no longer one line")
 PY
 
+echo "=========== mcp 18: the explore child's commands start with stdin at end-of-file while the transport stays open (#263) ==========="
+# The MCP half of README's promise ("on the CLI and MCP paths alike"). The same
+# three-role fixture as the CLI leg in acceptance.sh, driven through
+# sideeye_explore_config. The shape has to be able to go red on a regression, and
+# `drive()` cannot: it closes the transport at once, so an engine that inherited the
+# transport's fd 0 would see EOF immediately and answer as if nothing were wrong. Here
+# the transport is a FIFO held open for sixty seconds by a background writer while the
+# server is cut at twenty. If the fix holds, the tool result is on stdout long before
+# the cut and the server's own exit (124: it is still waiting for the next request) is
+# the expected one. If a spawn inherited the transport, the setup role blocks in
+# read(0) until the writer closes at sixty — after the cut — and the response is missing.
+cat > "$WS/stdin.toml" <<TOML
+[world]
+state = "./stdin-state"
+[define]
+setup     = "$OUT/toy-stdin setup"
+operation = "$OUT/toy-stdin op"
+check     = "$OUT/toy-stdin check"
+TOML
+rm -rf "$WS/stdin-state" && mkdir -p "$WS/stdin-state"
+rm -f /tmp/mcp-hold && mkfifo /tmp/mcp-hold
+req="{\"jsonrpc\":\"2.0\",\"id\":18,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/stdin.toml\"}}}"
+( printf '%s\n' "$req"; sleep 60 ) > /tmp/mcp-hold &
+hold_writer=$!
+timeout 20 "$SIDEEYE" mcp < /tmp/mcp-hold >/tmp/mcp.out 2>/tmp/mcp.err
+hold_rc=$?
+kill "$hold_writer" 2>/dev/null; wait "$hold_writer" 2>/dev/null
+rm -f /tmp/mcp-hold
+python3 - "$hold_rc" <<'PY' && pass "explore over an open transport: every define command reached EOF on fd 0 and the verdict arrived before the cut" || fail "stdin at end-of-file over MCP (124 with no response = a command inherited the transport and blocked)"
+import json, sys
+rc = int(sys.argv[1])
+lines = [l for l in open("/tmp/mcp.out") if l.strip()]
+resp = None
+for l in lines:
+    d = json.loads(l)
+    if d.get("id") == 18: resp = d
+if resp is None:
+    sys.exit("no response for id 18 on stdout (server exit %d); the explore never returned" % rc)
+sc = resp["result"]["structuredContent"]
+if sc.get("verdict") != "PASS":
+    sys.exit("verdict %r, wanted PASS: %s" % (sc.get("verdict"), sc.get("message")))
+if resp["result"]["isError"] is not False:
+    sys.exit(resp["result"])
+PY
+
 echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

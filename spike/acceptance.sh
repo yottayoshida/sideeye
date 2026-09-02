@@ -5586,6 +5586,54 @@ fi
     fails=$((fails + 1))
 }
 
+echo "=========== check: every command the define runs starts with stdin at end-of-file (#263) ==========="
+# The promise (README, Usage): every command sideeye runs — setup, operation and checker
+# among them — starts with its standard input at end-of-file, on the CLI and MCP paths
+# alike. Before this the redirect lived on the MCP path only; on the CLI every spawn
+# inherited the engine's fd 0, and a target that read it hung the explore forever.
+#
+# The fixture is one binary in three roles, each draining fd 0 to EOF BEFORE doing its
+# work, so one define exercises every wrapper a define's commands reach: `runChild`
+# (setup, checker), `runChildCapture` (the recording run), `runChildCaptureWorld`
+# (worlds) and `runChildCaptureAll` (the falsification probe). An implementation that
+# redirected only the world spawn still hangs at setup and fails here.
+#
+# The engine's own stdin is a FIFO held open by a background writer, not a pipeline:
+# `sleep 60 | timeout 20 sideeye …` looks the same and is not — the shell waits for the
+# whole pipeline, so the leg would spend the sleep's full sixty seconds even when the
+# fix holds (measured on the design review). With the FIFO the engine finishes on its
+# own and the writer is killed afterwards. `timeout 30` is the net: under an inherited
+# stdin the setup role blocks in `read(0)` and the leg reports 124; the elapsed bound is
+# the claim ("completes"), separate from the verdict.
+#
+# Output goes to a FILE, not a command substitution, and that is what makes the net
+# thirty seconds on a regression rather than sixty: a blocked setup child sits in its
+# own process group, so `timeout` killing the engine leaves it alive holding the
+# engine's stdout — and a `$( … )` would wait on that pipe until the FIFO writer closed
+# (review). A file has no reader to wait for.
+rm -rf /tmp/acc-stdin && mkdir -p /tmp/acc-stdin/state
+mkfifo /tmp/acc-stdin/hold
+sleep 60 > /tmp/acc-stdin/hold &
+si_writer=$!
+si_t0=$(date +%s)
+timeout 30 "$SIDEEYE" explore --state /tmp/acc-stdin/state \
+    --setup "$OUT/toy-stdin setup" --operation "$OUT/toy-stdin op" --check "$OUT/toy-stdin check" \
+    --shim "$SHIM" --work /tmp/acc-stdin/work --oracle /usr/bin/strace \
+    --json /tmp/acc-stdin/r.json < /tmp/acc-stdin/hold > /tmp/acc-stdin/out 2>&1
+rc=$?
+si_elapsed=$(( $(date +%s) - si_t0 ))
+kill "$si_writer" 2>/dev/null; wait "$si_writer" 2>/dev/null
+if [ "$rc" = "0" ] \
+    && [ "$si_elapsed" -le 20 ] \
+    && grep -q '"verdict": "PASS"' /tmp/acc-stdin/r.json; then
+    echo "ok   setup, operation and checker each read fd 0 to EOF while the engine's stdin was held open: PASS in ${si_elapsed}s"
+else
+    echo "FAIL stdin at end-of-file: exit $rc in ${si_elapsed}s (wanted 0 + PASS within 20s; 124 = some command inherited the engine's stdin and blocked in read(0))"
+    sed 's/^/     | /' /tmp/acc-stdin/out | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-stdin
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
