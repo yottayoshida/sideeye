@@ -2,6 +2,54 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (seventh) - the outcome map's value is a statement about a tool, and topydo's row now says which trials it does not cover
+
+`#147`: `spike/unknown-rate/outcome-map.tsv` gives each A-group tool one disposition, and the
+published outcome ratio counts FAILs by it. A reader can take `reported-upstream` as "these
+FAILs were filed". For topydo that is not what happened, and nothing in the file said so.
+
+**The plan's account of topydo was wrong; so was the first correction.** The plan said the row
+mixed a filed finding with covered ones. Read against the record, none of topydo's twelve
+A-group FAILs was filed, and the value comes from a different finding — so the first rewrite
+said the twelve are uniform and only the value's name does not fit them. **Review falsified
+that too**, and the artifacts settle it. Read from all thirteen `spike/unknown-rate/artifacts/
+a-topydo-*/report.json` (twelve FAIL, `a-topydo-ls` PASS):
+
+| earliest invariant | trials |
+|---|---|
+| `built-in atomicity, and the checker` — the active list destroyed in its crash window | 11 |
+| `the checker (L2)` — `a-topydo-do`: the task ends up in **both** `todo.txt` and `done.txt` | 1 |
+
+`spike/blind-hunt/analysis/findings.md:31-34` says the same in prose ("the ten single-file
+operations… `do` and `revert` fail across the file pair instead"), and the ledger's novelty
+review (`spike/blind-hunt/ledger.md:206-233`) scored exactly **two** findings: the destruction,
+covered by `topydo/topydo#318` and deliberately not re-filed, and the recovery misfire, filed
+as `topydo/topydo#341`. The `do` duplication was scored as neither. So the sentence that was
+about to ship — "all twelve are the destruction class, and #318 is why none was filed" —
+attached a non-filing rationale to a trial the rationale does not cover. That is the same
+defect `#147` exists to remove, one level down.
+
+What ships says eleven and one, and says the twelfth has no recorded reason. `#341` remains a
+different finding from every trial here: `a-topydo-revert` crashes *during* a revert, while
+`#341` is a plain revert run *after* another command's crash.
+
+**Owner ruling: write the meaning into the table rather than widen the vocabulary.** The other
+route was a new disposition value making each tool's story exact. `count.py` renders one table
+row per member of `PRINTED_DISPOSITIONS` unconditionally (`:714`), so a fifth value adds a row
+to every generated artefact — 37 committed fixtures plus the live page, measured by grepping
+for the existing `FAIL, reported-upstream` row. That is a real cost, and it buys precision the
+prose can carry instead: the ambiguity was in what the value asserts, not in which values
+exist.
+
+So four edits, no code: the value's definition in the map, topydo's source column, the
+paragraph beside the ratio in `docs/unknown-rate.md` (outside the generated block, so the
+generator does not overwrite it), and **`docs/target-classes.md`'s topydo row**. That fourth one
+was review's other finding and it is not optional: the map's own header names that page as its
+source, and the page said "12 of 13 crash points yielded counterexamples… reported upstream as
+`#341`" — the exact reading this change exists to deny, on the page the map sends readers to.
+Nothing the generator produces changes (`count.py check`: OK, 57 corpus rows, docs in sync),
+which is the point — the numbers were never wrong, only unexplained.
+
 ## 2026-09-02 (ninth) - the release triples spell their glibc version, and the version turns out to be a ceiling rather than a gate
 
 `#161`: the release matrix passes `x86_64-linux-gnu` / `aarch64-linux-gnu` with no version, so
