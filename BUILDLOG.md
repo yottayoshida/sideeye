@@ -69,6 +69,16 @@ that capability; the sentence saying so is now the measured one. Also removed: t
 draft's introduction, which had stayed above its own correction, leaving the ADR with two
 opening sentences and the discarded universal still on the page.
 
+**CI found a third form of the same mistake, in the fix for the first.** Moving the
+comments out of the command, I also gave the fence a language — ```` ```sh ```` — and
+`spike/check-readme-mcp-call.sh` slices the MCP section expecting *exactly one* `sh`
+fence, the one holding the first call it substitutes and runs. Two made it exit 1 before
+running anything. The fence is unmarked again. None of the five checks run locally saw
+it: that one builds the planted-bug toy first and lives in the macOS job. The class is
+wider than a fence — twelve scripts under `spike/` read `README.md`, `docs/adr/`,
+`docs/report-schema.md` or `docs/freeze-audit.md` as structure rather than prose, so a
+documentation edit is an edit to their input. All twelve run green now, locally.
+
 Nothing shipped in code.
 
 ## 2026-09-02 (eleventh) - three merged changes said six things the record contradicts, and the reviews that found them arrived after the merges

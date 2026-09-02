@@ -146,7 +146,7 @@ How real tool classes have fared against these limits: [docs/target-classes.md](
 
 A deployment that follows from the above, rather than only from the word "container":
 
-```sh
+```
 # --network=none where the target allows it; --read-only and --cap-drop bound what a
 # target can do to the image; --tmpfs /tmp:exec is required, not decoration — the work
 # directory defaults to /tmp/sideeye-mcp and the engine execs from it; the -v mount is
