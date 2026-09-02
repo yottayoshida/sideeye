@@ -557,7 +557,7 @@ pub fn read(
     /// placed and refuses if it could have changed state.
     cwd: []const u8,
 ) !Reading {
-    var out: Reading = .{ .parsed = .{ .classes = .empty, .lines = .empty, .metadata_observed = .empty } };
+    var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty } };
     var fds: FdTable = .{};
     var dup_pending: std.ArrayList(FdKey) = .empty;
     // Set once a relevant thread issues `chdir`/`fchdir`. This reader does not follow
@@ -883,6 +883,9 @@ pub fn read(
         }
 
         try out.parsed.classes.append(arena, cls);
+        // fs_usage's own spelling of the call, which this reader already has and used to
+        // drop — a divergence refusal names it the same way the strace side does (#337).
+        try out.parsed.names.append(arena, ln.call);
         try out.parsed.lines.append(arena, ln.raw);
     }
 
@@ -1087,6 +1090,16 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
     try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
+    // The three lists are index-aligned, and a divergence refusal reads `names[i]` for
+    // the operation `classes[i]` diverged on (#337). Only `classes` was ever asserted
+    // here, so an append that drifted would have gone unnoticed on this side — the
+    // strace reader pins the same property for its own two lists.
+    try testing.expectEqual(r.parsed.classes.items.len, r.parsed.names.items.len);
+    try testing.expectEqual(r.parsed.classes.items.len, r.parsed.lines.items.len);
+    // fs_usage's own spelling, not a normalised one: a reader who goes back to the
+    // capture has to be able to find the line again.
+    try testing.expectEqualStrings("open", r.parsed.names.items[0]);
+    try testing.expectEqualStrings("write", r.parsed.names.items[1]);
 }
 
 test "a neighbour that only read the judged directory is not made relevant by it" {
