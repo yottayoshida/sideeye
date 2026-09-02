@@ -146,7 +146,20 @@ threshold set from it would be satisfied by construction. So:
   counts as `new-this-sweep` (pending triage) — and for a tool whose
   disposition the repository already records, writing that value is an
   error `count.py check` refuses, so the map cannot be satisfied by
-  declaring everything untriaged.
+  declaring everything untriaged. **The disposition describes the tool's
+  upstream story, which is not always the story of the FAIL verdicts
+  counted under it** (#147): **none of topydo's twelve A-group FAILs was
+  filed** — eleven are the crash-window destruction of the active list,
+  which a third-party report from 2023 already covers, and the twelfth
+  (`do`, a task left in both files) was never scored for novelty or for
+  filing at all. The `reported-upstream` value comes from this project's
+  one topydo filing, a different finding reached by post-seal analysis
+  rather than by any trial counted here. The map's `source` column carries
+  that, so a reader is not left to infer it. The counts below are therefore
+  coarser than the record — they say how many FAILs sit under a tool whose
+  dealings were upstream-facing, not how many reports were filed. Twelve is
+  per generation: the same trials are re-measured in each, so the two
+  tables below are not additive.
 - **Generations** (added with #239): a generation is one run of
   `sweep.sh` — one engine build, one set of images, one artifacts
   directory — enumerated in `spike/unknown-rate/generations.tsv`. The
