@@ -2,6 +2,75 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (twelfth) - the engine cannot verify its own confinement, and the review corrected why
+
+`#328` tracked what #266's close left open: a case's setup/operation/check are executed on
+replay, by design, and the safety of that rests on ADR 0010's operational precondition —
+the root is the operator's and not attacker-writable — with README telling the operator to
+run the server in a container. Owner ruling: investigate isolated execution, in the
+direction "the engine reads back the containment provided outside it".
+
+**The first write-up said no observation moves with containment. That was false, and the
+review refuted it with one line of `/proc/self/status`.** `Seccomp: 2` in a plain
+container drops to `0` under `--privileged`; Docker's ten masked `/proc` mounts drop to
+none. I had opened that file to read `CapEff` and not looked three lines down. The
+generalisation was signed "measured", which is the worst place to put an unmeasured
+sentence.
+
+The conclusion survives on better ground, and the review supplied the decisive experiment:
+
+- **The subject can raise the signal itself.** Two `prctl` calls take `Seccomp: 0` to `2`
+  without privilege. A flag the confined thing can set is not evidence of confinement.
+- **The signals measure the wrong thing.** A container reading maximally confined by all
+  of them — `/.dockerenv` present, `Seccomp: 2`, ten masked `/proc` entries, no extra
+  capabilities, its own PID namespace — destroyed a file on the host through its
+  bind-mounted root. Reproduced here: `operator data, must survive` → `destroyed by a
+  replayed case`, through exactly the mount shape README recommends.
+
+The unmoving observations are still worth recording, because they are what a first attempt
+reaches for: `/.dockerenv` survives `--pid=host --privileged`, and `CapEff` is
+byte-identical between a `--privileged` container and the host it runs on.
+
+**The rejected alternative needed a real reason, not a slogan.** The first draft dismissed
+a launcher-set containment declaration as "asserts nothing the engine can verify" — while
+citing `requireCompleteness` six lines above, whose resolution is precisely to accept an
+unverifiable declaration: "the caller states the weaker claim deliberately, **and the
+report says which claim was made**". I had quoted the first half and dropped the half
+that decides it. `--allow-unverified` weakens something the report asserts, so it lands
+in `oracle_verified` where a consumer gating on it sees it. A containment declaration
+weakens nothing the report claims, so it has no field to land in and no decision it would
+change. That is the difference, and the ADR now states it instead of asserting the
+conclusion.
+
+**And the issue's movement condition is two-part**: "a declared non-goal *with the
+deployment guidance strengthened*". The first draft did the first half only — the added
+sentence was about the engine, not for the operator. README now carries a deployment whose
+flags were run before being written (`--read-only` with `--tmpfs /tmp:exec`, `--cap-drop=ALL`,
+`--network=none`, and a root created for the purpose), and says which part a container
+cannot make safe: everything reachable through the mount is reachable by a replayed
+case's commands.
+
+**The second review caught that recipe not working as written.** Every continuation line
+ended `\\` + space + `# comment`, so the backslash escaped the space, the `#` opened a
+comment, and the bare newline ended the command — bash, sh and zsh all handed docker five
+arguments (`run --rm -i --network=none " "`) and ran the remaining three lines as
+commands of their own. The flags I had verified were the ones I typed into a shell by
+hand; the form committed to the page was never run. Comments now sit above the command.
+
+The same round found the "a process can install them on itself" claim generalising from
+one signal to two — the same shape as the false universal R1 removed, reproduced one
+scope smaller. Measured here per signal: `Seccomp` goes `0` to `2` through two `prctl`
+calls in a process holding `CapEff: 0000000000000000` (dropping `PR_SET_NO_NEW_PRIVS`
+gives `EACCES`, the control), while faking the masked `/proc` mounts needs
+`CAP_SYS_ADMIN` — with it, three bind mounts in a fresh mount namespace take the count
+from ten to twelve; without it `unshare -m` is `Operation not permitted`. The conclusion
+survives because the process a check would be aimed at is the unconfined one, which holds
+that capability; the sentence saying so is now the measured one. Also removed: the first
+draft's introduction, which had stayed above its own correction, leaving the ADR with two
+opening sentences and the discarded universal still on the page.
+
+Nothing shipped in code.
+
 ## 2026-09-02 (eleventh) - three merged changes said six things the record contradicts, and the reviews that found them arrived after the merges
 
 `#161`, `#147` and `#123` shipped this morning. Their first-look reviews were run before each
