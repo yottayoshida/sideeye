@@ -142,7 +142,25 @@ How real tool classes have fared against these limits: [docs/target-classes.md](
 
 ## Driving it from an agent (MCP)
 
-`sideeye mcp` is a stateless MCP server (stdio) with two tools: `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}`. The tools take *paths* inside `SIDEEYE_MCP_ROOT`, never raw commands — the config file is the trust boundary you vet, **and a saved case is the same boundary**: its setup/operation/check are executed on replay, exactly as a config's are on explore. The root confines which config or case may be named, not what its commands do: run the server inside a container, network-off where the target allows it. A single-component mount is fine (`/work`, `/repo` — a directory the container exists to hold); what the server refuses at startup is `/`, a system tree or scratch parent (`/usr`, `/var/lib`, `/tmp`), **and any directory that contains one** — so `/var` and, on macOS, `/private` are refused for holding `/var/lib` and `/private/tmp`. The denylist stops the mistake that has a name, not every bad choice: **with `SIDEEYE_MCP_STATE_ROOT` unset the root is also the declared destruction range**, so name a directory whose contents are yours to lose — `/opt` passes the vet and is where installed software lives. One thing more IS confined (#266): the state directory a replayed case names — the directory replay empties and rebuilds — must resolve strictly inside `SIDEEYE_MCP_STATE_ROOT` (default: the root). Cases made at the CLI conventionally keep state under `/tmp`; set `SIDEEYE_MCP_STATE_ROOT=/tmp` to replay them through the server. Widen that knob, never the root (ADR 0022).
+`sideeye mcp` is a stateless MCP server (stdio) with two tools: `sideeye_explore_config {config_path}` and `sideeye_replay_case {case_path}`. The tools take *paths* inside `SIDEEYE_MCP_ROOT`, never raw commands — the config file is the trust boundary you vet, **and a saved case is the same boundary**: its setup/operation/check are executed on replay, exactly as a config's are on explore. The root confines which config or case may be named, not what its commands do: run the server inside a container, network-off where the target allows it. **The server does not check that you did**, and #328 measured why a check would not help: the observations that *do* move with confinement can be raised by the process being confined — a `Seccomp` filter costs two `prctl` calls and no capability at all, Docker's masked `/proc` mounts cost `CAP_SYS_ADMIN`, which the unconfined process is the one to have — and none of them says anything about the mount the root came in on. A container reading maximally confined by every one of them (`/.dockerenv` present, `Seccomp: 2`, ten masked `/proc` entries, no extra capabilities, its own PID namespace) destroyed a file on the host through a bind-mounted root — the shape this page recommends. **What the containment cannot do for you is make the root safe to lose**: pick that directory as if a replayed case will empty it, because one can. A single-component mount is fine (`/work`, `/repo` — a directory the container exists to hold); what the server refuses at startup is `/`, a system tree or scratch parent (`/usr`, `/var/lib`, `/tmp`), **and any directory that contains one** — so `/var` and, on macOS, `/private` are refused for holding `/var/lib` and `/private/tmp`. The denylist stops the mistake that has a name, not every bad choice: **with `SIDEEYE_MCP_STATE_ROOT` unset the root is also the declared destruction range**, so name a directory whose contents are yours to lose — `/opt` passes the vet and is where installed software lives. One thing more IS confined (#266): the state directory a replayed case names — the directory replay empties and rebuilds — must resolve strictly inside `SIDEEYE_MCP_STATE_ROOT` (default: the root). Cases made at the CLI conventionally keep state under `/tmp`; set `SIDEEYE_MCP_STATE_ROOT=/tmp` to replay them through the server. Widen that knob, never the root (ADR 0022).
+
+A deployment that follows from the above, rather than only from the word "container":
+
+```
+# --network=none where the target allows it; --read-only and --cap-drop bound what a
+# target can do to the image; --tmpfs /tmp:exec is required, not decoration — the work
+# directory defaults to /tmp/sideeye-mcp and the engine execs from it; the -v mount is
+# a directory made FOR this, holding nothing else.
+docker run --rm -i \
+  --network=none \
+  --read-only --tmpfs /tmp:exec \
+  --cap-drop=ALL --security-opt no-new-privileges \
+  -v "$PWD/sideeye-work:/work" \
+  -e SIDEEYE_MCP_ROOT=/work \
+  your-image sideeye mcp
+```
+
+The mount is the part that matters and the part a container cannot make safe: everything reachable through it is reachable by a replayed case's commands. Give the server a directory created for it — not your repository, not your home, not a checkout you would mind losing — and treat its contents as already gone. `--read-only` and `--cap-drop=ALL` bound what a target can do to the *image*; nothing bounds what it does inside the root you handed it, which is why `SIDEEYE_MCP_STATE_ROOT` exists (ADR 0022) and why it is the knob to narrow first.
 
 ### The first call
 

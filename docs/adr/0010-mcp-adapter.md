@@ -131,6 +131,71 @@ language, and made a hand-written Zig server small.
   stated, not hidden. The root confines *which* config may be named, never what its
   operation may do: it is not an execution sandbox, and agent-driven deployments supply
   their own containment (a container or otherwise restricted workspace).
+
+  **The engine neither provides that containment nor checks for it, and that is a
+  decision rather than an omission** (#328, measured 2026-09-02). Two things were asked:
+  could the engine confine the commands itself, and failing that, could it refuse to
+  start when the containment this ADR assumes is absent. The answer to the second is no,
+  which settles the first as well.
+
+  Some of what a process can see about its own confinement does not move with it
+  (measured in this project's image; the fourth column taken from the LinuxKit VM the
+  containers run in):
+
+  | observation | plain container | `--privileged` | `--pid=host --privileged` | host |
+  |---|---|---|---|---|
+  | `/.dockerenv` | present | present | **present** | absent |
+  | `/proc/1/cgroup` | `0::/` | `0::/` | `0::/../..` | `0::/` |
+  | `CapEff` | `00000000a80425fb` | `000001ffffffffff` | `000001ffffffffff` | `000001ffffffffff` |
+  | `/proc/self/uid_map` | `0 0 4294967295` | same | same | same |
+
+  `/.dockerenv` survives having the PID namespace shared and every capability restored,
+  and `CapEff` is byte-identical between a `--privileged` container and the host — it
+  measures privilege, not isolation.
+
+  **But some observations do move**, and that is the finding rather than the exception:
+  `Seccomp: 2` drops to `0` under `--privileged`, and Docker's ten masked `/proc` mounts
+  drop to none. A check could read those. It would still be worthless here, for two
+  reasons a measurement makes plain:
+
+  - **The subject can raise them itself, and neither costs what it should.** `Seccomp`
+    costs nothing: two `prctl` calls — `PR_SET_NO_NEW_PRIVS` then `PR_SET_SECCOMP` with
+    an allow-everything filter — take `0` to `2` in a process holding
+    `CapEff: 0000000000000000` (dropping the first call gives `EACCES`, which is the
+    control). The masked mounts cost `CAP_SYS_ADMIN`: with it, three bind mounts inside
+    a fresh mount namespace take the count from ten to twelve; without it `unshare -m`
+    is `Operation not permitted`. That price buys nothing, because the process a check
+    would be aimed at — the unconfined one, faking confinement — is the one that has the
+    capability. A signal the thing being confined can raise is not evidence.
+  - **They measure the wrong thing.** A container reading *maximally confined* by all of
+    them — `/.dockerenv` present, `Seccomp: 2`, ten masked `/proc` entries, no extra
+    capabilities, its own PID namespace — destroyed a file on the host through its
+    bind-mounted root, which is exactly the shape README recommends ("a directory the
+    container exists to hold"). Nothing a process can read tells it whether the root it
+    was handed is the operator's to lose.
+
+  macOS has nothing to put in the table at all: `sandbox-exec` exists and is deprecated,
+  and a process learning whether it is itself sandboxed is private SPI (`sandbox_check`,
+  no man page). So a refusal would also be a platform branch answering a different
+  question on each side — the shape `requireCompleteness` rejects, "which would break the
+  claim that both operating systems produce the same verdict for the same scenario".
+
+  So the deployment guidance in README is the control, and it is guidance rather than
+  a gate: **in a deployment where the agent can write the root, this ADR's precondition
+  does not hold and nothing in the engine restores it.** Sandboxed command execution
+  remains a posture change with its own cost line.
+
+  The alternative examined and not taken was to require the launcher to declare its
+  containment — an environment variable the engine refuses to start without. This
+  project does accept unverifiable declarations elsewhere: `requireCompleteness`'s own
+  resolution is that "the caller states the weaker claim deliberately, **and the report
+  says which claim was made**", which is what makes `--allow-unverified` a control rather
+  than a ceremony. The difference is the second half. That flag weakens something the
+  report asserts, so the declaration lands in `oracle_verified` where a consumer gating on
+  it can see it. A containment declaration would weaken nothing the report claims — the
+  verdict is about the target's crash-consistency either way — so there is no field for it
+  to land in and no consumer whose decision it would change. It would be a ceremony, and
+  saying so is what distinguishes it from the flag above.
 - Long real-target explores block the single-threaded loop; small targets are the v1
   assumption, with async deferred to the Tasks extension.
 - A server killed mid-explore stops its exploration **at the next world boundary it
