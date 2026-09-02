@@ -2238,12 +2238,17 @@ with open("/tmp/acc-cap/state/huge.bin", "wb") as f:
 PY
 o=$("$SIDEEYE" explore --state /tmp/acc-cap/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
-    --shim "$SHIM" --work /tmp/acc-cap/work --oracle /usr/bin/strace 2>&1)
+    --shim "$SHIM" --work /tmp/acc-cap/work --oracle /usr/bin/strace \
+    --json /tmp/acc-cap/r.json 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q "too large for byte-level judgment" && echo "$o" | grep -q "huge.bin"; then
-    echo "ok   a file over the cap is a named SETUP ERROR, not an OOM kill"
+# `--json` and the field read are #352's: a SETUP_ERROR after the parse loop writes the
+# same report every refusal does, and it used to say no oracle was given on this run.
+cap_oracle=$(field /tmp/acc-cap/r.json oracle)
+if [ "$rc" = "3" ] && echo "$o" | grep -q "too large for byte-level judgment" && echo "$o" | grep -q "huge.bin" \
+    && echo "$cap_oracle" | grep -q -- '--oracle was named'; then
+    echo "ok   a file over the cap is a named SETUP ERROR, not an OOM kill, and its report says the oracle was named"
 else
-    echo "FAIL per-file cap: exit $rc (wanted 3, naming huge.bin)"
+    echo "FAIL per-file cap: exit $rc (wanted 3, naming huge.bin, oracle field naming --oracle; got oracle=$cap_oracle)"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
@@ -2269,17 +2274,168 @@ o=$("$SIDEEYE" explore --state /tmp/acc-cap-late/state \
     --shim "$SHIM" --work /tmp/acc-cap-late/work --oracle /usr/bin/strace \
     --json /tmp/acc-cap-late/r.json 2>&1)
 rc=$?
+# #352: every exit before the oracle comparison used to publish the no-oracle wording,
+# and this leg is the instance the issue reported — an oracle named, a refusal at the
+# final snapshot. Read through field(), one key at a time: a grep over the whole
+# document would let the `oracle` string satisfy the `metadata_writes` assertion.
+late_oracle=$(field /tmp/acc-cap-late/r.json oracle)
+late_meta=$(field /tmp/acc-cap-late/r.json metadata_writes)
 if [ "$rc" = "2" ] \
     && echo "$o" | grep -q "state_file_too_large" \
     && echo "$o" | grep -q "huge.bin" \
-    && grep -q '"unknown_reason": "state_file_too_large"' /tmp/acc-cap-late/r.json; then
-    echo "ok   a cap hit past the recording run is UNKNOWN state_file_too_large, in text and JSON"
+    && grep -q '"unknown_reason": "state_file_too_large"' /tmp/acc-cap-late/r.json \
+    && echo "$late_oracle" | grep -q -- '--oracle was named' \
+    && ! echo "$late_oracle" | grep -q 'no --oracle given' \
+    && echo "$late_meta" | grep -q -- '--oracle was named' \
+    && ! echo "$late_meta" | grep -q 'no oracle ran'; then
+    echo "ok   a cap hit past the recording run is UNKNOWN state_file_too_large, in text and JSON, and the JSON says the oracle was named (#352)"
 else
-    echo "FAIL late per-file cap: exit $rc (wanted 2 + state_file_too_large in text and JSON)"
+    echo "FAIL late per-file cap: exit $rc (wanted 2 + state_file_too_large in text and JSON, oracle/metadata_writes naming --oracle)"
     echo "$o" | sed 's/^/     | /' | head -6
     sed 's/^/     json | /' /tmp/acc-cap-late/r.json 2>/dev/null | head -4
+    echo "     oracle=$late_oracle"
+    echo "     metadata_writes=$late_meta"
     fails=$((fails + 1))
 fi
+
+echo "=========== check 2fi: an oracle that was named is never reported as none, on every exit before the comparison (#352) ==========="
+# 2fd covers the refusal the issue reported. The account used to be initialised to the
+# no-oracle wording and rewritten only inside the comparison block, so every earlier exit
+# — inside the parse loop, at the two-oracles refusal, at any SETUP_ERROR — published
+# "no --oracle given" on runs that were given one. The fix assigns the account the moment
+# an oracle flag is consumed and says "none" only after the whole argv was read; these
+# legs reach the exits 2fc and 2fd cannot, and C is the only leg that leaves the
+# --oracle-fs-usage branch's note standing without --oracle on the same command line
+# (B passes both; last wins). Two controls close the other side: a run that
+# read its arguments to the end and named no oracle publishes the old string byte for
+# byte, and a run that stopped inside the parse loop with no oracle says nothing was
+# established rather than guessing. Seen red on the pre-fix binary: every oracle-given run
+# here (A, B, C, and 2fc/2fd) published the no-oracle string, and a build with the
+# --oracle-fs-usage branch's note removed fails B and C (BUILDLOG 2026-09-02 (third)).
+fe_fails=0
+rm -rf /tmp/acc-fe && mkdir -p /tmp/acc-fe/state
+# A: a parse error after --oracle and --json were consumed. Exits inside the loop, before
+# the line that used to compute the account.
+"$SIDEEYE" explore --oracle /usr/bin/strace --json /tmp/acc-fe/a.json --bogus x >/dev/null 2>&1
+rc=$?
+fe_a=$(field /tmp/acc-fe/a.json oracle)
+if [ "$rc" = "3" ] && echo "$fe_a" | grep -q -- '--oracle was named'; then
+    echo "ok   a parse error after --oracle still reports the oracle as named (exit 3)"
+else
+    echo "FAIL 2fi-A: exit $rc, oracle=$fe_a"
+    fe_fails=$((fe_fails + 1))
+fi
+# B: both oracle flags. Refused after the loop and before has_oracle exists. The flag read
+# last is the one named, and the argv order here is fixed, so the fs_usage phrase is
+# asserted whole: a build that dropped the note from the --oracle-fs-usage branch would
+# still carry --oracle's and pass a shared-phrase assertion (R1).
+"$SIDEEYE" explore --oracle /usr/bin/strace --oracle-fs-usage --json /tmp/acc-fe/b.json \
+    --state /tmp/acc-fe/state --operation true --shim "$SHIM" --work /tmp/acc-fe/work >/dev/null 2>&1
+rc=$?
+fe_b=$(field /tmp/acc-fe/b.json oracle)
+if [ "$rc" = "3" ] && echo "$fe_b" | grep -q -- '--oracle-fs-usage was named'; then
+    echo "ok   the two-oracles refusal names the flag read last, --oracle-fs-usage (exit 3)"
+else
+    echo "FAIL 2fi-B: exit $rc, oracle=$fe_b"
+    fe_fails=$((fe_fails + 1))
+fi
+# C: --oracle-fs-usage alone. On Linux the flag is refused after the loop, once the state
+# path has resolved — a SETUP_ERROR that writes the report — so this is the one leg that
+# reaches the fs_usage branch's note without --oracle on the same command line.
+"$SIDEEYE" explore --oracle-fs-usage --json /tmp/acc-fe/c.json \
+    --state /tmp/acc-fe/state --operation true --shim "$SHIM" --work /tmp/acc-fe/work >/dev/null 2>&1
+rc=$?
+fe_c=$(field /tmp/acc-fe/c.json oracle)
+if [ "$rc" = "3" ] && echo "$fe_c" | grep -q -- '--oracle-fs-usage was named' \
+    && ! echo "$fe_c" | grep -q 'no --oracle given'; then
+    echo "ok   the Linux refusal of --oracle-fs-usage reports that flag as named (exit 3)"
+else
+    echo "FAIL 2fi-C: exit $rc, oracle=$fe_c"
+    fe_fails=$((fe_fails + 1))
+fi
+# D (control): arguments read to the end, no oracle. The would-be PASS refuses as
+# completeness_not_verified and the account is the old string, compared whole.
+"$SIDEEYE" explore --state /tmp/acc-fe/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-fe/work --json /tmp/acc-fe/d.json >/dev/null 2>&1
+rc=$?
+fe_d=$(field /tmp/acc-fe/d.json oracle)
+fe_d_chk=$(field /tmp/acc-fe/d.json checker)
+fe_d_l1=$(field /tmp/acc-fe/d.json l1)
+if [ "$rc" = "2" ] && [ "$fe_d" = "not run (no --oracle given)" ] \
+    && [ "$fe_d_chk" = "none configured" ] && [ "$fe_d_l1" = "no marker configured" ]; then
+    echo "ok   control: no oracle, checker or marker named and arguments read to the end -> all three 'none' wordings are byte-identical"
+else
+    echo "FAIL 2fi-D: exit $rc, oracle=$fe_d, checker=$fe_d_chk, l1=$fe_d_l1"
+    fe_fails=$((fe_fails + 1))
+fi
+# E (control): a parse error with no oracle, checker or marker. Nothing is established,
+# and nothing is guessed — the one wording that changed on a no-oracle path, deliberately.
+"$SIDEEYE" explore --json /tmp/acc-fe/e.json --bogus x >/dev/null 2>&1
+rc=$?
+fe_e=$(field /tmp/acc-fe/e.json oracle)
+fe_e_chk=$(field /tmp/acc-fe/e.json checker)
+fe_e_l1=$(field /tmp/acc-fe/e.json l1)
+fe_e_ok=1
+case "$fe_e" in "not established:"*) ;; *) fe_e_ok=0 ;; esac
+case "$fe_e_chk" in "not established:"*) ;; *) fe_e_ok=0 ;; esac
+case "$fe_e_l1" in "not established:"*) ;; *) fe_e_ok=0 ;; esac
+if [ "$rc" = "3" ] && [ "$fe_e_ok" = "1" ]; then
+    echo "ok   control: a parse error with nothing named says nothing was established, in all three accounts"
+else
+    echo "FAIL 2fi-E: exit $rc, oracle=$fe_e, checker=$fe_e_chk, l1=$fe_e_l1"
+    fe_fails=$((fe_fails + 1))
+fi
+# F: the checker and marker accounts, same shape (#352, widened at the owner's ruling). A
+# parse error after --check and --marker were consumed used to publish "none configured"
+# and "no marker configured"; the checker's window was wider than the oracle's, since its
+# first assignment sits inside the falsification block, after the oracle comparison.
+"$SIDEEYE" explore --check true --marker done --json /tmp/acc-fe/f.json --bogus x >/dev/null 2>&1
+rc=$?
+fe_f_chk=$(field /tmp/acc-fe/f.json checker)
+fe_f_l1=$(field /tmp/acc-fe/f.json l1)
+if [ "$rc" = "3" ] && [ "$fe_f_chk" = "configured; this run stopped before the checker ran" ] \
+    && [ "$fe_f_l1" = "marker configured; the recording run has not been scanned yet" ]; then
+    echo "ok   a parse error after --check and --marker reports both as configured (exit 3)"
+else
+    echo "FAIL 2fi-F: exit $rc, checker=$fe_f_chk, l1=$fe_f_l1"
+    fe_fails=$((fe_fails + 1))
+fi
+# G: a refusal past the recording run and before the checker block, with a checker
+# declared — 2fd's late cap plus --check. The checker never ran; the account says so.
+rm -rf /tmp/acc-fe/state && mkdir -p /tmp/acc-fe/state
+"$SIDEEYE" explore --state /tmp/acc-fe/state \
+    --operation "dd if=/dev/zero of=/tmp/acc-fe/state/huge.bin bs=1 seek=67108864 count=1" \
+    --check true --shim "$SHIM" --work /tmp/acc-fe/work --oracle /usr/bin/strace \
+    --json /tmp/acc-fe/g.json >/dev/null 2>&1
+rc=$?
+fe_g_chk=$(field /tmp/acc-fe/g.json checker)
+fe_g_reason=$(field /tmp/acc-fe/g.json unknown_reason)
+if [ "$rc" = "2" ] && [ "$fe_g_reason" = "state_file_too_large" ] \
+    && [ "$fe_g_chk" = "configured; this run stopped before the checker ran" ]; then
+    echo "ok   a refusal before the checker block, with --check given, reports the checker as configured and not run"
+else
+    echo "FAIL 2fi-G: exit $rc, unknown_reason=$fe_g_reason, checker=$fe_g_chk"
+    fe_fails=$((fe_fails + 1))
+fi
+# H: flags only, arguments read to the end, nothing declared, refused at `--state is
+# required` — after the parse loop and before the marker vet. The first cut of the
+# checker/marker fix settled "none" at the vet, so this run said "not established" about
+# arguments it had finished reading (review). All three accounts must say "none".
+"$SIDEEYE" explore --json /tmp/acc-fe/h.json --operation true --shim "$SHIM" >/dev/null 2>&1
+rc=$?
+fe_h_o=$(field /tmp/acc-fe/h.json oracle)
+fe_h_chk=$(field /tmp/acc-fe/h.json checker)
+fe_h_l1=$(field /tmp/acc-fe/h.json l1)
+if [ "$rc" = "3" ] && [ "$fe_h_o" = "not run (no --oracle given)" ] \
+    && [ "$fe_h_chk" = "none configured" ] && [ "$fe_h_l1" = "no marker configured" ]; then
+    echo "ok   a flags-only run refused after the loop with nothing declared says 'none' in all three accounts"
+else
+    echo "FAIL 2fi-H: exit $rc, oracle=$fe_h_o, checker=$fe_h_chk, l1=$fe_h_l1"
+    fe_fails=$((fe_fails + 1))
+fi
+fails=$((fails + fe_fails))
+rm -rf /tmp/acc-fe
 rm -rf /tmp/acc-cap-late
 
 echo "=========== check 2fg: a tree under the per-file cap but over the TREE ceiling refuses before anything runs (#323) ==========="
@@ -3138,6 +3294,37 @@ else
     printf '%s\n' "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
+# The same refusal, read through the JSON, for the checker and marker accounts (#352): the
+# case is replay's last source of both, so the accounts settle from what it held before
+# `case_no_longer_applies` fires. This case declares neither, so both say "none" — the
+# pre-fix wording, byte for byte. A copy that declares both says "configured" for each;
+# the settle line after the case read is the only thing that can make it so, since the
+# flags are refused in replay.
+"$SIDEEYE" replay /tmp/acc/v7-case.json --shim "$SHIM" --work /tmp/acc/work-r --json /tmp/acc/v7.json >/dev/null 2>&1
+rc=$?
+v7_chk=$(field /tmp/acc/v7.json checker)
+v7_l1=$(field /tmp/acc/v7.json l1)
+python3 - /tmp/acc/v7-case.json /tmp/acc/v7-cm-case.json <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))
+c["define"]["check"] = "true"
+c["define"]["marker"] = "done"
+json.dump(c, open(sys.argv[2], "w"))
+PY
+"$SIDEEYE" replay /tmp/acc/v7-cm-case.json --shim "$SHIM" --work /tmp/acc/work-r --json /tmp/acc/v7-cm.json >/dev/null 2>&1
+rc2=$?
+v7cm_reason=$(field /tmp/acc/v7-cm.json unknown_reason)
+v7cm_chk=$(field /tmp/acc/v7-cm.json checker)
+v7cm_l1=$(field /tmp/acc/v7-cm.json l1)
+if [ "$rc" = "2" ] && [ "$v7_chk" = "none configured" ] && [ "$v7_l1" = "no marker configured" ] \
+    && [ "$rc2" = "2" ] && [ "$v7cm_reason" = "case_no_longer_applies" ] \
+    && [ "$v7cm_chk" = "configured; this run stopped before the checker ran" ] \
+    && [ "$v7cm_l1" = "marker configured; the recording run has not been scanned yet" ]; then
+    echo "ok   a replayed case settles the checker and marker accounts before it refuses: none when it declares none, configured when it declares both"
+else
+    echo "FAIL v7 case accounts: exit $rc/$rc2, reason=$v7cm_reason, checker=$v7_chk/$v7cm_chk, l1=$v7_l1/$v7cm_l1"
+    fails=$((fails + 1))
+fi
 
 # The containment vet runs before --fresh-state's deletion. The first version emptied
 # the state directory and only then noticed --work sat inside it (measured: a sentinel
@@ -3297,6 +3484,22 @@ if [ "$bad" = "0" ] && [ "$rc" = "3" ] && echo "$o" | grep -q "must be an intege
     echo "ok   256, -1 and abc refuse in both spellings"
 else
     echo "FAIL boundary rejection: flag ok=$bad, toml exit $rc"
+    fails=$((fails + 1))
+fi
+# The toml is --config's last source of a checker and a marker, and this refusal fires
+# after it was read: the accounts must already say "configured" (#352). Removing the settle
+# line after the toml read leaves both at "not established", which is what this asserts
+# against.
+printf '[world]\nstate = "/tmp/acc/state"\n[define]\noperation = "true"\ncheck = "true"\nmarker = "done"\nexpected_status = "abc"\n' > /tmp/acc/bad-cm.toml
+"$SIDEEYE" explore --config /tmp/acc/bad-cm.toml --shim "$SHIM" --json /tmp/acc/bad-cm.json >/dev/null 2>&1
+rc=$?
+cm_chk=$(field /tmp/acc/bad-cm.json checker)
+cm_l1=$(field /tmp/acc/bad-cm.json l1)
+if [ "$rc" = "3" ] && [ "$cm_chk" = "configured; this run stopped before the checker ran" ] \
+    && [ "$cm_l1" = "marker configured; the recording run has not been scanned yet" ]; then
+    echo "ok   a toml that declares a checker and a marker settles both accounts before its expected_status refuses"
+else
+    echo "FAIL toml accounts: exit $rc, checker=$cm_chk, l1=$cm_l1"
     fails=$((fails + 1))
 fi
 

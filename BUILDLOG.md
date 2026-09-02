@@ -2,6 +2,175 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (third) - a run that named an oracle never says none was given
+
+`#352`: the JSON report's `oracle` and `metadata_writes` are initialised to their no-oracle
+wording (`src/main.zig` `oracle_note` / `metadata_note`) and overwritten only inside the
+oracle-comparison block. Every exit before that block — the direct `unknown()` calls between
+the recording run and the comparison, the snapshot / trace-cap / child-wait refusals routed
+through them, and every `setupError` after `--json` was parsed, which writes the same report
+— publishes `"oracle": "not run (no --oracle given)"` on runs that were given one. The issue
+listed five refusals; measured, the window holds nineteen direct `unknown()` calls over
+thirteen reasons plus the indirect ones, and the exit-3 path besides. The text pane is
+untouched: `unknown()`'s `say` prints classification lines only, so the false sentence lives
+in the JSON alone.
+
+**The plan's first placement was wrong, and review measured it before it shipped.** The draft
+derived both notes once, right after `args.has_oracle` is computed — which is *after* the parse
+loop, so a run that exits inside the loop (`--oracle … --json … --bogus` → "unknown option";
+`--oracle` with `--oracle-fs-usage` → the mutual-exclusion refusal) never reaches it and keeps
+the lie. So the notes are assigned three times: the module-level initialiser says nothing is
+established ("this run stopped while its arguments were still being read"), the two flag
+branches say "named" the moment the flag is consumed, and the post-loop line says "no
+--oracle given" only after the whole argv has been read and found none. That last string is
+byte-identical to today's, so a run that read its arguments to the end and named no oracle
+publishes exactly what it published yesterday. `--allow-unverified`'s wording stays where it
+is: moving it to parse time would have changed the no-oracle early-exit string, which the plan
+had promised not to do. The `metadata_writes` wording for a named oracle asserts no progress —
+"stopped before its metadata account was completed" — because the comparison block reads the
+capture and can refuse on it before `metadata_note` is assigned, and "before its capture was
+read" would be false there.
+
+**Seen red first, on the pre-fix binary in the spike container** (cross-compiled for the
+image's own arm64; the first attempt built x86_64 and died under Rosetta before it printed
+anything). Six runs, the JSON `oracle` field read back with a real parser:
+
+```
+2fd  cap hit past the recording run, --oracle    rc=2  oracle='not run (no --oracle given)'
+A    parse error after --oracle --json           rc=3  oracle='not run (no --oracle given)'
+B    --oracle and --oracle-fs-usage together     rc=3  oracle='not run (no --oracle given)'
+2fc  SETUP_ERROR after parse, --oracle            rc=3  oracle='not run (no --oracle given)'
+D    no oracle, would-be PASS refused (control)  rc=2  oracle='not run (no --oracle given)'
+E    no oracle, parse error (control)            rc=3  oracle='not run (no --oracle given)'
+```
+
+`metadata_writes` read `not observable (no oracle ran; …)` on all six. Four runs given an
+oracle, four false accounts. After the fix the first four must name the flag, D must be
+byte-identical, and E — the one no-oracle path whose wording changes — must say nothing was
+established. Those six lines are now acceptance legs 2fc, 2fd and 2fi (2fi, not 2fe: the
+first draft took a label the suite already used for #351, and the first container run
+printed two "check 2fe" headers before anyone noticed).
+
+**After the fix, same six runs, same container:**
+
+```
+2fd  rc=2  oracle='not compared: --oracle was named, and this run stopped before the comparison'
+A    rc=3  oracle='not compared: --oracle was named, and this run stopped before the comparison'
+B    rc=3  oracle='not compared: --oracle-fs-usage was named, and this run stopped before the comparison'
+2fc  rc=3  oracle='not compared: --oracle was named, and this run stopped before the comparison'
+D    rc=2  oracle='not run (no --oracle given)'
+E    rc=3  oracle='not established: this run stopped while its arguments were still being read'
+```
+
+B names `--oracle-fs-usage` because it was the flag read last (the leg asserted only the
+shared phrase until review round one, below). `metadata_writes` moved with it on the four oracle-given runs ("not
+established: --oracle was named, and this run stopped before its metadata account was
+completed; …") and is unchanged on D. `zig build test`: 490 passed, 2 skipped — the two
+new tests pin the four wordings, the byte-identity of the no-oracle strings, and that the
+module initialiser is the unparsed state rather than the no-oracle one.
+
+**The whole acceptance suite, in the same container, against a control.** Fixed tree: 209 ok,
+10 FAIL (210 ok on the re-run after review round one added leg 2fi-C; the ten FAILs are the same). Pre-fix `HEAD` in a scratch worktree, same image, same command: 205 ok, the same
+10 FAIL line for line — five are the apparatus builds CI makes and this run did not
+(`-Dtest-seq-gap` ×3 dependents, `-Dtest-ancestor-probe`, `-Dtest-trace-cap`,
+`-Dtest-trace-budget`), and four are the legs the suite itself says fail loudly under root
+(the three `state_rewrite_failed` plants, which root's permission bits do not honour, and the
+`vfork-succeeded` leg's `RLIMIT_NPROC`). The new `ok` lines are 2fi's (four, then five once
+leg C was added); 2fc and 2fd are
+green in both trees because on the pre-fix tree they had no field assertions yet. CI runs
+the suite unprivileged with the apparatus built, so it sees all ten.
+
+**Review round one (a Claude subagent standing in for Codex, read-only): no P0 or P1,
+three P2, all taken.** (1) Nothing that runs in CI pinned the `--oracle-fs-usage` branch's
+note: 2fc, 2fd and 2fi-A all pass `--oracle`, and 2fi-B asserted only the shared phrase, so a
+build that dropped the fs_usage branch's `noteOracle` would still carry `--oracle`'s and pass.
+B now asserts `--oracle-fs-usage was named` whole — argv order is fixed and last wins — and a
+new leg C passes `--oracle-fs-usage` alone, which Linux refuses after the loop with a
+SETUP_ERROR that writes the report. (2) The rewritten `oracle` row in `docs/report-schema.md`
+enumerated four states in a closed form while the engine has six — "ran; the comparison
+did not complete" and the `--allow-unverified` wording were missing; the old row named two,
+so the gap was inherited, but a closed list has to be complete. All six are listed now.
+(3) The same shape, other fields: `checker_note` is initialised to `"none configured"` and
+assigned only inside the checker-falsification block, *after* the oracle comparison, so a
+run that passed `--check` and refused anywhere before that publishes `"checker": "none
+configured"` — a wider window than the oracle's; `l1_note` (`"no marker configured"`) has
+the same shape with a narrower window (replay's `case_no_longer_applies`, config errors
+before the marker is read, parse errors after `--marker`). Different fields, different rows
+of the schema, different promise — not fixed here; whether it is filed is the owner's call
+and is asked at the commit gate.
+
+**Round two asked for the reds leg C and the fs_usage mutant had not been seen, so they were
+taken.** Two scratch worktrees, same container: the pre-fix `HEAD` answers B and C with
+`oracle='not run (no --oracle given)'` — both new assertions red. The mutant (this diff with
+the `--oracle-fs-usage` branch's `noteOracle` line removed) answers B with `not compared:
+--oracle was named, …` — the strace note, left standing by last-wins — and C with `not
+established: this run stopped while its arguments were still being read`, because
+`has_oracle` is true so the post-loop `.none` never runs and the initialiser is all that is
+left. B's whole-phrase assertion and C both go red on it; the shared-phrase assertion round
+one found would have passed B. The "seen red" table above is labelled with the legs the
+runs became (2fc, 2fd, A, B, D, E); C was not in it because it did not exist yet.
+
+**The owner widened the scope at the commit gate: the checker and marker accounts are fixed
+here, not filed.** Same rule, three sources instead of two flags: `checker_note` and
+`l1_note` start as "not established", become "configured" the moment `--check` / `--marker`
+is consumed or a replayed case or the toml supplies one, and say "none configured" / "no
+marker configured" (both byte-identical to before) only at the line every source has been
+read by — the existing marker vet, where `l1_note` was already first assigned. The checker's
+window was the wider one: its first assignment sat inside the falsification block, *after*
+the oracle comparison, so a run given `--check` that refused at any of the oracle block's
+own exits (`oracle_missed_operation`, `oracle_saw_phantom`, …) published `"checker": "none
+configured"`. Measured before and after on the same container:
+
+```
+                                        pre-fix                          fixed
+F  parse error after --check --marker   checker='none configured'        'configured; this run stopped before the checker ran'
+                                        l1='no marker configured'        'marker configured; the recording run has not been scanned yet'
+G  late cap, --check, before the block  checker='none configured'        'configured; this run stopped before the checker ran'
+D  nothing named, args read to the end  'none configured' / 'no marker configured'   unchanged, byte for byte
+E  nothing named, parse error           'none configured' / 'no marker configured'   'not established: …' (both)
+```
+
+`zig build test`: 491 passed, 2 skipped (one more test, pinning the two "none" strings and
+that the initialisers are the unparsed state). 2fi gained F and G; D and E now read all three
+accounts. The whole suite in the container: 212 ok, the same ten environment FAILs as before.
+
+**The widening's own review round found the "none" line was too late, and the first cut
+shipped a new lie of the same shape.** Settling "none configured" / "no marker configured"
+at the marker vet put it *after* `--state is required` and its siblings, so a flags-only run
+refused there with nothing declared — every source it will ever have already read — said
+"not established" about arguments it had finished reading; the pre-fix binary had said
+"none", which was true. Replay had the mirror image: a case declaring neither left both
+accounts at the initialiser, and `case_no_longer_applies` printed "l1  not established" on
+the terminal too, since `unknown()` puts `l1_note` in the text pane. The rule the oracle fix
+already followed — say "none" at the line the mode's last source has been read by, not at
+the last convenient place — is now applied literally: `settleDeclared` runs right after the
+parse loop when neither a case nor a toml follows, after the case in replay, after the toml
+under `--config`, and nowhere later. Three legs pin the three sites: 2fi-H (flags only,
+`--state` missing, all three accounts "none"), a replay of the v7 case with and without a
+declared checker and marker, and a toml declaring both that refuses on `expected_status`
+after reading them. The `.unparsed` wording says "arguments or define" now, because a case
+or a toml is read after the argv and a run that stops reading one of those is in that state
+too. And a PASS with zero crash points no longer says a declared checker "stopped" — a
+verdict is not a refusal — but that it was configured and had no world to be falsified in.
+
+**Each settle site has one leg that is red without it, and only that leg.** Three mutants,
+one `settleDeclared` call removed each, built in scratch worktrees and probed in the
+container: without the post-loop call, 2fi-H reads "not established" in both accounts while
+the replay and toml runs are unchanged; without the replay call, both replay runs read "not
+established" (the none-declaring case and the both-declaring copy alike) while H and the
+toml run are unchanged; without the toml call, only the toml run moves. `zig build test`:
+491 passed, 2 skipped. The whole suite: 215 ok, the same ten environment FAILs.
+
+**The confirmation round moved the toml settle up one more time.** It sat after the
+dirname's absolutisation and the `resolveCommand` calls, and two refusals fire between a
+successful parse and that line — `--config path is too long`, `--config's directory could
+not be resolved` — so a toml that declared both could still be reported as "not
+established" from those two exits. The settle now reads `d.check` / `d.marker` straight
+off the parsed define, first thing after `.ok`. Hard to reach (a 4 KiB path, or a directory
+that vanishes between the read and the realpath), and not false in the old place either —
+resolving the define is part of reading it — but the rule is "at the line the source has
+been read by", and that line is the parse.
+
 ## 2026-09-02 (second) - a quoted figure stays held by review, and the record says why
 
 `#357` asked for a check that a figure quoted on a documentation page is the *right* figure,
