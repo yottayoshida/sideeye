@@ -5838,6 +5838,74 @@ else
 fi
 rm -rf /tmp/acc-stdin
 
+echo "=========== check 2ns: every UNKNOWN carries next_step, and the text's next line is that field (#274) ==========="
+# The schema page promises "Every UNKNOWN carries next_step: one sentence saying what to
+# do about it". check-report-schema.py holds the field to the page in both directions and
+# holds buildJson's argument to a bare name — but nothing there reads the TEXT report, so
+# a text `next` line printed from a different string than the JSON field would leave
+# every check green. This reads one real refusal in both forms, from the same run, the
+# way check 2nt does for not_tested, on two different reasons so a per-site choice is
+# what is being compared and not one constant.
+ns_fails=0
+ns_pair() {   # ns_pair <label> <text output> <json path>
+    ns_t=$(printf '%s\n' "$2" | sed -n 's/^next  *//p' | head -1)
+    # stderr dropped, not merged: a traceback in `ns_j` would read as a non-empty field
+    # and be blamed on the text side (review). Empty means missing, whichever way.
+    ns_j=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("next_step",""))' "$3" 2>/dev/null)
+    if [ -z "$ns_j" ]; then
+        echo "FAIL next_step ($1): the JSON report carries no next_step"
+        ns_fails=$((ns_fails + 1))
+    elif [ -z "$ns_t" ]; then
+        echo "FAIL next_step ($1): no 'next' line in the text report"
+        ns_fails=$((ns_fails + 1))
+    elif [ "$ns_t" != "$ns_j" ]; then
+        echo "FAIL next_step ($1): text [$ns_t] but JSON [$ns_j]"
+        ns_fails=$((ns_fails + 1))
+    else
+        echo "ok   next_step ($1): the text line is the JSON field, byte for byte: $ns_j"
+    fi
+}
+rm -rf /tmp/acc-ns && mkdir -p /tmp/acc-ns/a/state /tmp/acc-ns/b/state
+# completeness_not_verified: the fixed toy with no oracle — a would-be PASS that refuses.
+o=$(TOY_STATE=/tmp/acc-ns/a/state "$SIDEEYE" explore --state /tmp/acc-ns/a/state --setup "$OUT/toy-fixed init" \
+    --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc-ns/a/work --json /tmp/acc-ns/a.json 2>&1)
+[ "$?" = "2" ] || { echo "FAIL next_step (oracle-less): the run did not refuse"; ns_fails=$((ns_fails + 1)); }
+ns_pair oracle-less "$o" /tmp/acc-ns/a.json
+# no_shim_marker on a statically linked image: a different reason, a different site, and
+# the step decided from the image (the wall, not "check the shim").
+o=$(TOY_STATE=/tmp/acc-ns/b/state "$SIDEEYE" explore --state /tmp/acc-ns/b/state --setup "$OUT/toy-static init" \
+    --operation "$OUT/toy-static rotate" --shim "$SHIM" --work /tmp/acc-ns/b/work --oracle /usr/bin/strace --json /tmp/acc-ns/b.json 2>&1)
+[ "$?" = "2" ] || { echo "FAIL next_step (static): the run did not refuse"; ns_fails=$((ns_fails + 1)); }
+ns_pair static "$o" /tmp/acc-ns/b.json
+if grep -q '"next_step": ".*refuses by design' /tmp/acc-ns/b.json; then
+    echo "ok   next_step (static): the step is the class wall, decided from the image"
+else
+    echo "FAIL next_step (static): a statically linked image should take the class-wall step"
+    ns_fails=$((ns_fails + 1))
+fi
+# Every document a NextStep sentence points at exists — read from the SOURCE table, not
+# from the binary's strings, so the check names which sentence pointed where. The
+# pattern admits any path under docs/ plus the two root pages a sentence may name.
+ns_docs=$(sed -n '/pub const NextStep = enum/,/^};/p' "$ROOT/src/contract.zig" | grep -oE '(docs/[A-Za-z0-9_./-]+\.md|README\.md|DESIGN\.md)' | sort -u)
+[ -n "$ns_docs" ] || { echo "FAIL next_step: no document name found in the NextStep table (the scan itself did not run)"; ns_fails=$((ns_fails + 1)); }
+for doc in $ns_docs; do
+    if [ -f "$ROOT/$doc" ]; then
+        echo "ok   next_step: $doc, named by a sentence, exists"
+    else
+        echo "FAIL next_step: a sentence names $doc and nothing is there"
+        ns_fails=$((ns_fails + 1))
+    fi
+done
+# The README section the class-wall sentence sends the operator to, by its heading.
+if grep -q '^## What the target has to be' "$ROOT/README.md"; then
+    echo "ok   next_step: README still has the 'What the target has to be' section the class-wall step names"
+else
+    echo "FAIL next_step: the class-wall step names a README section that is not there"
+    ns_fails=$((ns_fails + 1))
+fi
+fails=$((fails + ns_fails))
+rm -rf /tmp/acc-ns
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

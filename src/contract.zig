@@ -576,6 +576,92 @@ pub const UnknownReason = enum {
     }
 };
 
+/// What the operator does next about a refusal (#274). Every UNKNOWN carries one — the
+/// report's `next_step` field and the text report's `next` line are the same sentence,
+/// rendered once — and `main.zig`'s `unknown()` takes it as a required argument, so a
+/// refusal without a next step does not compile.
+///
+/// **A member is an action, not a reason.** The first design was one sentence per
+/// `unknown_reason`, and review counted why that cannot be right: the reasons are 34 and
+/// the sites that raise them are 85, and one reason routinely bundles causes with
+/// different remedies — `state_unsnapshotable` covers a tree that is too deep, a file that
+/// cannot be read and an entry list this engine mis-sorted, and the operator does three
+/// different things about those. So the choice is made where the cause is known, at the
+/// site (or in the disposition helper the site reads from), and this enum only names the
+/// actions the sites can choose between. When two sites raising the same reason need
+/// different actions, they pick different members; when no member fits, the site adds
+/// one and `render` refuses to compile until it has a sentence.
+///
+/// **Closed and payload-free**, so the sentence is a comptime string. `unknown()` is
+/// `noreturn` and the promise is "every UNKNOWN carries it": a sentence assembled at run
+/// time from an arena could fail to allocate exactly when the report is being written,
+/// and a `[]const u8` payload could carry a flag that does not exist or target-chosen
+/// bytes into text the MCP surface prints outside its marked region. Members that name
+/// a flag name it in the tag and in the sentence, and a unit test holds every `--flag`
+/// in every sentence to the help text.
+///
+/// The sentences follow ADR 0030's line for refusals: what to do, never why it happened
+/// — the `message` beside it reports the observation, and "this class is refused by
+/// design" is a fact about Sideeye, not a diagnosis of the target.
+pub const NextStep = enum {
+    /// The define declares something this run contradicted — a checker that accepted a
+    /// corrupted store, a marker that never appeared, an exit status that was not the
+    /// declared one, a baseline that failed its own invariant.
+    fix_define,
+    /// A would-be PASS with no completeness witness: the weaker claim is available too.
+    pass_oracle,
+    /// A process boundary nothing could account for. Not `pass_oracle`: `--allow-unverified`
+    /// does not lift this refusal, and on macOS the boundary is refused under the fs_usage
+    /// oracle as well — so the sentence names only the one thing that works (review).
+    account_boundary,
+    /// A world outlived its `--world-timeout` budget.
+    raise_world_timeout,
+    /// The target does something Sideeye refuses by design: static linking, threads,
+    /// other processes on the state, a syscall the restore model cannot reproduce, an
+    /// entry kind the snapshot does not hold.
+    class_wall,
+    /// The image is dynamically linked and the marker still never appeared: the shim is
+    /// the thing to look at.
+    check_shim,
+    /// Shim and engine speak different trace contracts.
+    rebuild_pair,
+    /// A saved case that this recording no longer matches.
+    re_record,
+    /// Something outside both the define and Sideeye that the detail names: permissions,
+    /// disk, the oracle binary, a directory that moved.
+    environment,
+    /// A failure the detail cannot attribute — a trace cut short mid-record, a wait that
+    /// kept being interrupted. Once may be the machine; twice is worth reporting.
+    retry_then_report,
+    /// A ceiling the operator can move by giving Sideeye less to hold.
+    narrow_state,
+    /// The state directory was still changing after the run was contained.
+    quiesce,
+    /// The process that launched the exploration went away.
+    relaunch,
+    /// Nothing the operator changes fixes this; it is Sideeye's.
+    sideeye_defect,
+
+    pub fn render(self: NextStep) []const u8 {
+        return switch (self) {
+            .fix_define => "Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.",
+            .pass_oracle => "Re-run with --oracle <strace> on Linux or --oracle-fs-usage on macOS, or accept the weaker claim with --allow-unverified.",
+            .account_boundary => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.",
+            .raise_world_timeout => "Raise --world-timeout, or find out what the operation waits on.",
+            .class_wall => "This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.",
+            .check_shim => "Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.",
+            .rebuild_pair => "Use the shim and the engine from the same build: --shim must name the library this binary shipped with.",
+            .re_record => "Explore the define again under this build; the saved case does not apply here, and a fresh recording yields a fresh case.",
+            .environment => "Fix what the detail above names in the environment, then re-run; the define itself is unchanged.",
+            .retry_then_report => "Re-run once; if it happens again, file it with the report attached, because the detail cannot say whether the machine or Sideeye stopped short.",
+            .narrow_state => "Point --state at a smaller or shallower directory, or reduce what the operation writes there and how deep it nests; the ceiling the detail names is fixed in this build.",
+            .quiesce => "Wait for whatever the target left running to finish, or stop it, so the state directory holds still; then re-run.",
+            .relaunch => "Start the exploration from a process that stays alive for its whole duration; the one that launched this run has exited.",
+            .sideeye_defect => "Nothing in the define fixes this: it is a defect in Sideeye. File it with the report attached.",
+        };
+    }
+};
+
 pub const max_path = 4096;
 
 pub const Record = struct {
