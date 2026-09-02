@@ -45,7 +45,9 @@ What holds this page: acceptance check 11 verifies that every repository path
 named here exists (path rot), and nothing more. The numbers are quotations
 from their source pages — the UNKNOWN-rate figures are recomputed from the
 committed artifacts by check 12 *at their source*, not here — and the
-quotations themselves are held by review, the way check 11's own comment says.
+quotations themselves are held by review, the way check 11's own comment says
+(`docs/adr/0039-quoted-figures-are-held-by-review.md` records why that stays
+the rule, and what would reopen it).
 
 ## Row 1 — "It is only useful when humans define failure scenarios in bulk."
 

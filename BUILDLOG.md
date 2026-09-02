@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-02 (second) - a quoted figure stays held by review, and the record says why
+
+`#357` asked for a check that a figure quoted on a documentation page is the *right* figure,
+not merely one that exists in a source, and asked for the decision before the implementation.
+Ruled by the owner: not built. ADR 0039 carries the reasoning; this entry carries what was
+measured and what moved while writing it.
+
+**What the tree holds, measured before writing.** No committed check reads a figure on these
+pages: the only code naming `docs/kill-criteria-review.md` is check 11's page list in
+`spike/acceptance.sh`, and the figure strings `1/28`, `3.6%`, `2/36`, `5.6%`, `42.9` appear
+in no `.py`, `.sh` or `.yml` file. The "pair rule" `#357` describes as added in `#240` was
+never committed — PR #355 says so in its own Verified. The mutant that motivated the issue
+passed the first version of a *local* script, not check 11, which reads no figures at all.
+
+**Review corrected the count and the argument.** The plan said `#240`'s real errors were
+"three, none numeric". PR #355 and this file's 2026-08-26 entry say five, and one of them
+was numeric in form — "six of the seven", a count the writer made, not a figure quoted from
+a page. That is a stronger reason to decline than the plan had: a source-anchored check
+cannot reach a figure whose source is the writer. Review also counted the review page's
+sources — at least six records, of which only `docs/unknown-rate.md` is recomputed by
+anything — so most quotations are unheld at both ends, which the ADR now says instead of
+assuming a machine-held source.
+
+**The ADR number collided before the file existed.** When this entry opened, the sibling
+batch running in the main worktree held an uncommitted `docs/adr/0038-…`; `origin/main`
+topped out at 0037 and nothing on the remote showed it. Proxy review found it by opening
+the other tree. This decision is 0039, the sibling session was told, and the review page
+cites the ADR by backticked path so check 11 holds the citation if either number moves
+again. The sibling merged as `47c443c` (#263) while this change was in review, so the tree
+now holds 0038 and 0039 side by side and `check-adr-numbering.sh` reports both unique.
+Codex was out of credits for this round; the review was a fresh Claude subagent standing in
+for it.
+
+**The diff's first review moved the record, not the decision.** Eight corrections, all
+taken: the "two numeric errors" the plan and this entry's first draft claimed had been one
+— the miscount beneath it (four counted,
+five on a normalised recount) was caught by the writer's own recount *before* review, which
+is the recompute pattern and not a figure check, so it now sits on the Decision's side of
+the argument; the "no new acceptance check" quotation is from this file's 2026-08-30
+(sixteenth) entry, not 08-27; ADR 0034 and 0035 set the *form* of a decline but neither
+names what would reopen it — that list is new with 0039; `docs/checker-cookbook.md` quotes
+no figures (it is rendered), so the pages that quote are two, not three; the review page's
+sources are "at least six", and only `outcome-map.tsv` among the unrecomputed ones has a
+shape check — the RESULTS and RUNLOG records are named by nothing but check 11's existence
+test; #318's count was caught by review in one place and a sweep in the other, fixed by
+hand, and answered in CI by a self-test rather than a quotation check; this entry's
+heading became `(second)` once the sibling's bare-date entry landed above it on `main`;
+and the review page's citation line was re-wrapped to its paragraph's width.
+
+**Not done here, on purpose.** The freeze audit's row for `#357` still says "three"; rows in
+that ledger move with a sweep, not with the change they describe.
+
 ## 2026-09-02 - every command the engine runs starts with stdin at end-of-file, and the design review took the exit code away
 
 `#263`, second half. The first half (`--world-timeout`, #385) bounded a hung world; what

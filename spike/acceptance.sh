@@ -3514,7 +3514,8 @@ echo "=========== check 11: the docs pages' repo paths exist (#79/#80) =========
 # Guards path rot, not claim drift: every backticked token containing a slash in the
 # evidence-first pages must exist in the repo, so a moved transcript or a renamed
 # checker cannot leave a page pointing at nothing. Claim-vs-transcript verification
-# stays a review-time axis. Pages that quote ratios or numbers must keep them out of
+# stays a review-time axis (ADR 0039 records that ruling and what would reopen it; #357).
+# Pages that quote ratios or numbers must keep them out of
 # backticks — a backticked "3/7" is extracted as a path here and goes red (#85). Sunset: never fired by the v1.0 freeze -> removal list.
 doc_fails=0
 for page in "$ROOT/docs/target-classes.md" "$ROOT/docs/checker-cookbook.md" "$ROOT/docs/kill-criteria-review.md"; do
