@@ -80,6 +80,25 @@ exist and every `probes/*.txt` must have a row. Cohorts 2-4 are not restaged:
 their scripts stay as sealed, and the one implementation of each verdict
 function stays where it was drilled red.
 
+**The next cohort's selection asks about the copy.** Beside rule 5 of
+`spike/cohort4/SCOUT-BRIEF.md` (sealed, so the question lives here rather
+than in it), "Stores primary data locally that users do not want to lose",
+it asks whether the user's ordinary workflow keeps an external copy of
+that data, and whether damage reaches it. A copy that survives the crash
+takes the target off the slate: poetry's manifest lives in its users'
+version control (the note for cohort 5 in the 2026-08-23 BUILDLOG entry,
+cohort 4 begins), and the report `python-poetry/poetry#11019` was closed
+not-planned by its own reporter, this repository's author, because the
+write path is tomlkit's; that the copy in version control is what takes
+the target off the slate is this repository's reading, said nowhere
+upstream (BUILDLOG, 2026-09-03). A copy that receives the damage is the
+strongest form and what the slate is for: on himalaya the external
+recovery path carries the damage outward, a real server keeps it, and a
+second store downloads it (`spike/cohort4/himalaya-r2/RESULTS.md`,
+measured 2026-08-23). The external recovery paths are measured again
+before any report, which is cohort 4's Reporting rule; asking at selection
+is the cheaper place to ask the same question.
+
 ## Assisted-discovery cohort (#118) — closed record, live acceptance tests
 
 `assisted/` holds the first cohort: `PROTOCOL.md`, `SCOUT.md`,
