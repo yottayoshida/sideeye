@@ -2,6 +2,57 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-03 (eighth) - the exploration cost is measured and declared, and the issue that tracked it closes
+
+`#262` (2026-08-23, after-1.0) said three things: exploration is strictly sequential, every
+world pays the full state size, and two cheap steps (a binary search in `Snapshot.find`, a
+hash-first compare) touch no frozen surface. The first two are true and are the design. The
+binary search shipped on 2026-08-24 (PR #300, in v1.0.0). The hash-first compare turned out not to be a step at
+all: both sides of a judgement are in memory and the compare is `std.mem.eql`, which stops
+at the first differing byte, while a hash reads both to the end before it can say anything.
+The cost is the I/O either side of the compare — `restore` deletes the tree and recreates
+every entry, then the world ends with a full snapshot — and that is what the remaining
+steps are about. The owner chose, from three shapes (build differential restore now, leave
+the issue open, measure and declare), to measure, declare the bound in DESIGN §9, record the
+preconditions of the three remaining steps in ADR 0042, and close. The engine does not
+change.
+
+The measurement is the fixed toy over a padding directory the operation never touches, so
+the per-world figure is the engine's own work and nothing the target does: no oracle, no
+checker, no forking target, five shapes, three runs, medians. 20 padding files 0.17 s per world, 200 files 0.56 s, 2,000 files 3.7 s (and 4.0 s at
+five times the bytes, 8% more), 20,000 files 28 s: under 0.2 s per world plus 1.4 to 2.2 ms per
+padding file per world, 1.4 ms on the largest shape. The run logs record a one-minute load
+average between 10 and 15 (an endpoint scanner and a browser were busy), and the spread between
+runs was 2.0× on the 20-file row and 1.1 to 1.2× on the others, so the constants are one
+afternoon's and the shape is the claim. The plan's earlier trial on the same machine, before
+the script printed exit codes or recorded the load, had read 0.15 s and 1.3 to 2 ms; the record
+keeps only the figures the committed script produced. The
+plan's first table carried a row at 195 MB that the review suspected of measuring the
+snapshot ceiling's refusal rather than an exploration, and the draft could not say which;
+the script now prints the engine's exit code and its own `explored N worlds (crash points
+K + 1 baseline)` line beside every row, and a row whose numbers do not agree prints
+`not-counted` and no figure. The first run of the committed script carried the checkout's absolute
+path in its header, and the first three runs recorded no load average while the prose
+quoted one seen by hand; the header now names the binaries relative to the checkout and
+records `uptime` at start and end, the timer wraps the engine process alone rather than the
+shell around it, and the three runs were taken again. The review also named what the
+divisor hides: the engine's clock covers start-up, `setup`, the recording run and its two
+snapshots, none of which is a world, so "per world" is an upper bound on one world, about
+two full-tree reads over the ten passes five worlds cost on this toy; the record says so
+rather than subtracting an estimate. No total of the form "2,000 files take N minutes" is
+written anywhere: the multiplier is the crash-point count, which the operation sets.
+
+What each remaining step has to preserve, so the question is not rediscovered: a partial
+exploration changes what `explored` and `violations` mean and must name the chosen set in
+the report (an additive field); a differential restore has to reproduce whole restore's mode
+normalisation (`0755` / `0644` by construction) and needs a leg that compares it against a
+whole restore, because #164's strictness is what is being risked; parallel worlds need a
+work directory, a trace path and a state directory each, and have to compute `earliest`
+and the exhibit write order after all workers return, since the sequential loop gets both
+by construction. The first draft of the ADR said the report's "world order" was frozen;
+the report has no world list — what it promises is that `earliest` is the lowest violating
+crash point and that the checker exhibit's case is written strictly after it.
+
 ## 2026-09-03 (seventh) - the next cohort asks at selection whether the user keeps a copy
 
 `#260` (2026-08-23) gives a home to a note for cohort 5 left in the 2026-08-23 entry (cohort 4
