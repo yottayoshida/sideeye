@@ -2,6 +2,39 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-03 (seventh) - the next cohort asks at selection whether the user keeps a copy
+
+`#260` (2026-08-23) gives a home to a note for cohort 5 left in the 2026-08-23 entry (cohort 4
+begins): poetry's manifest survives
+corruption because its users keep it in version control, a recoverability class rule 5's
+wording ("Stores primary data locally that users do not want to lose") does not capture, and
+the freeze's Reporting rule learned it at report time, which is the expensive place to learn
+it. The issue asked that rule 5 be extended or a question placed beside it before cohort 5
+selects. Rule 5's text is sealed in `spike/cohort4/SCOUT-BRIEF.md`, so "beside it" had to be a
+place the next cohort's preparer actually reads and that is not sealed: the "next cohort
+sources `spike/lib/`" paragraph in `spike/README.md`, which #259 wrote for exactly that reader.
+One paragraph there asks the two-sided question, whether the user's ordinary workflow keeps an
+external copy and whether damage reaches it. A copy that survives takes the target off the
+slate (poetry; the report was closed not-planned by its own reporter, this repository's author,
+because the write path is tomlkit's, and the one upstream comment called it low value; that the
+manifest's copy in version control is what makes the target a poor pick is this repository's
+reading, said nowhere upstream). A copy that receives the damage is the strongest form and what the slate is
+for (himalaya: isync carried the empty entry, dovecot kept it, a second store downloaded a
+21-byte file; `himalaya-r2/RESULTS.md`, 2026-08-23).
+
+The first draft put a sixth item on `docs/scouting.md`'s reading list and a line under its
+"After a FAIL". The review took both apart from primary sources: that page shipped on
+2026-08-16 and had its selection rule deliberately removed on 2026-08-22 (#229; the CHANGELOG
+0.13.0 entry describes the removal: the page binds this repository's experiments, not a reader's
+use of the tool), its "Five things" are written as five by three records, one of them
+#221's sealed protocol, and the draft's himalaya sentence had the measured direction backwards,
+copied from the issue's own reading, that the broken entry "never reaches the synchronized
+side", rather than from the transcript, which keeps a distinction that sentence loses: the copy
+operation itself sends nothing, which stays true, and what happens afterwards is that the
+damaged entry travels. The paragraph is written from the transcript and names the direction. The audit row for #260 moves to resolved / document; nothing frozen
+moved, and `docs/target-classes.md`'s poetry row gains the one clause that says the question
+would have taken it off the slate.
+
 ## 2026-09-03 (sixth) - a define names its apparatus, and the engine checks it reached the child
 
 `#257` (2026-08-25) was deferred on 2026-08-26 with a reading that still holds: of the nine
