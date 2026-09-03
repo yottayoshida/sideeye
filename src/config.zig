@@ -68,6 +68,14 @@ pub const Define = struct {
     /// list into the report verbatim. Absent means nothing declared, which is what every
     /// define written before this key existed says by saying nothing.
     apparatus: ?[]const []const u8 = null,
+    /// The paths under `state` the define declares as scratch (ADR 0043): each entry
+    /// names the path itself and everything beneath it, relative to `state`, spelled
+    /// without a leading `/`, without `.` or `..` segments, and with any trailing `/`
+    /// dropped by the parser. The built-in invariants judge none of them — not their
+    /// bytes, not their presence, in no world — and the report and the saved case carry
+    /// the declaration verbatim. Absent means nothing declared, which is what every
+    /// define written before this key existed says by saying nothing.
+    scratch: ?[]const []const u8 = null,
 };
 
 pub const Fault = struct {
@@ -96,6 +104,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var expected_status: ?[]const u8 = null;
     var cwd: ?[]const u8 = null;
     var apparatus: ?[]const []const u8 = null;
+    var scratch: ?[]const []const u8 = null;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     var line_no: usize = 0;
@@ -123,7 +132,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
         // other key knows exactly one value shape, and an array there is refused by
         // name rather than falling into a generic parse error — the key dispatch
         // happens before the value parse precisely so this refusal can exist.
-        const Slot = union(enum) { cmd: *?Command, str: *?[]const u8, list: *?[]const []const u8 };
+        // The two array-only keys share one slot shape and differ in the grammar each
+        // element is held to; the key is carried so the refusals name the right one.
+        const ListKey = enum { apparatus, scratch };
+        const ListSlot = struct { p: *?[]const []const u8, key: ListKey };
+        const Slot = union(enum) { cmd: *?Command, str: *?[]const u8, list: ListSlot };
         const slot: Slot = switch (section) {
             .none => return fault(line_no, "a key before any section header"),
             .world => if (std.mem.eql(u8, key, "state"))
@@ -143,14 +156,16 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
             else if (std.mem.eql(u8, key, "cwd"))
                 Slot{ .str = &cwd }
             else if (std.mem.eql(u8, key, "apparatus"))
-                Slot{ .list = &apparatus }
+                Slot{ .list = .{ .p = &apparatus, .key = .apparatus } }
+            else if (std.mem.eql(u8, key, "scratch"))
+                Slot{ .list = .{ .p = &scratch, .key = .scratch } }
             else
-                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status`, `cwd` and `apparatus` exist"),
+                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status`, `cwd`, `apparatus` and `scratch` exist"),
         };
         switch (slot) {
             .str => |p| {
                 if (is_array)
-                    return fault(line_no, "this key takes one double-quoted string; the array form belongs to the commands (setup, operation, check) and to apparatus");
+                    return fault(line_no, "this key takes one double-quoted string; the array form belongs to the commands (setup, operation, check), to apparatus and to scratch");
                 const value = stripQuoted(rawv) orelse
                     return fault(line_no, "the value must be one double-quoted string (an inline # comment may follow it)");
                 if (badBytes(value)) |msg| return fault(line_no, msg);
@@ -173,19 +188,37 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                     p.* = .{ .str = try arena.dupe(u8, value) };
                 }
             },
-            .list => |p| {
-                if (p.* != null) return fault(line_no, "duplicate key");
+            .list => |l| {
+                if (l.p.* != null) return fault(line_no, "duplicate key");
                 if (!is_array)
-                    return fault(line_no, "apparatus takes the array form: one `[` ... `]` line of double-quoted `kind:value` entries (env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE, note:TEXT)");
+                    return fault(line_no, switch (l.key) {
+                        .apparatus => "apparatus takes the array form: one `[` ... `]` line of double-quoted `kind:value` entries (env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE, note:TEXT)",
+                        .scratch => "scratch takes the array form: one `[` ... `]` line of double-quoted paths relative to the state directory",
+                    });
                 // `[]`, `[ ]`, `[] # comment`: all the empty array, refused in this key's own
                 // words rather than the commands' ("a command needs at least its argv[0]").
                 const inner = std.mem.trimStart(u8, rawv[1..], " \t");
                 if (inner.len > 0 and inner[0] == ']')
-                    return fault(line_no, "apparatus is empty; leave the key out to declare nothing");
+                    return fault(line_no, switch (l.key) {
+                        .apparatus => "apparatus is empty; leave the key out to declare nothing",
+                        .scratch => "scratch is empty; leave the key out to declare nothing",
+                    });
                 switch (try parseArrayValue(arena, rawv)) {
-                    .ok => |elems| {
-                        for (elems) |e| if (apparatusFault(e)) |msg| return fault(line_no, msg);
-                        p.* = elems;
+                    .ok => |elems| l.p.* = switch (l.key) {
+                        .apparatus => blk: {
+                            for (elems) |e| if (apparatusFault(e)) |msg| return fault(line_no, msg);
+                            break :blk elems;
+                        },
+                        // Stored normalised (trailing slashes dropped), so the report and
+                        // the case carry the spelling the judge matches on.
+                        .scratch => blk: {
+                            const norm = try arena.alloc([]const u8, elems.len);
+                            for (elems, 0..) |e, i| switch (parseScratchEntry(e)) {
+                                .ok => |n| norm[i] = n,
+                                .bad => |msg| return fault(line_no, msg),
+                            };
+                            break :blk norm;
+                        },
                     },
                     .bad => |msg| return fault(line_no, msg),
                 }
@@ -194,7 +227,74 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus, .scratch = scratch } };
+}
+
+pub const ScratchParse = union(enum) { ok: []const u8, bad: []const u8 };
+
+/// One scratch entry (ADR 0043), normalised, or why it is not one. One grammar for the
+/// toml key and the `--scratch` flag, the way `apparatus` shares its parser with its
+/// flag. The value is a path relative to the state directory, naming the path itself and
+/// everything beneath it: a leading `/` cannot be under the state directory, `.` and
+/// `..` segments would let one spelling name two paths, and an empty segment (`a//b`) is
+/// a path the snapshot never spells. Trailing slashes are dropped rather than refused
+/// (`foo/` and `foo` name the same entry, because the snapshot writes a directory as
+/// `foo`, never `foo/`), so the returned slice is what the judge compares against.
+pub fn parseScratchEntry(entry: []const u8) ScratchParse {
+    if (badBytes(entry)) |msg| return .{ .bad = msg };
+    if (std.mem.indexOfScalar(u8, entry, '"') != null)
+        return .{ .bad = "a scratch path cannot contain a double quote (the toml form could not spell it)" };
+    const path = std.mem.trimEnd(u8, entry, "/");
+    if (path.len == 0) return .{ .bad = "a scratch path is empty (or only slashes); the state directory itself cannot be declared scratch" };
+    if (path[0] == '/') return .{ .bad = "a scratch path is relative to the state directory; an absolute path cannot be under it" };
+    var segs = std.mem.splitScalar(u8, path, '/');
+    while (segs.next()) |seg| {
+        if (seg.len == 0) return .{ .bad = "a scratch path has an empty segment (`//`)" };
+        if (std.mem.eql(u8, seg, ".") or std.mem.eql(u8, seg, ".."))
+            return .{ .bad = "a scratch path is spelled without `.` or `..` segments" };
+    }
+    return .{ .ok = path };
+}
+
+/// Why a scratch entry is not one, or null when it is.
+pub fn scratchFault(entry: []const u8) ?[]const u8 {
+    return switch (parseScratchEntry(entry)) {
+        .ok => null,
+        .bad => |msg| msg,
+    };
+}
+
+test "scratch parses as an array of relative paths, normalises trailing slashes, and refuses what cannot be under the state directory" {
+    var arena_state = std.heap.ArenaAllocator.init(t.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const base = "[world]\nstate = \"./s\"\n[define]\noperation = \"x\"\n";
+    const none = try parse(a, base);
+    try t.expect(none.ok.scratch == null);
+    const two = try parse(a, base ++ "scratch = [\"COMMIT_EDITMSG\", \".hg/wcache/\"]\n");
+    try t.expectEqual(@as(usize, 2), two.ok.scratch.?.len);
+    try t.expectEqualStrings("COMMIT_EDITMSG", two.ok.scratch.?[0]);
+    // The trailing slash is dropped: the snapshot spells a directory without one.
+    try t.expectEqualStrings(".hg/wcache", two.ok.scratch.?[1]);
+    const str = try parse(a, base ++ "scratch = \"COMMIT_EDITMSG\"\n");
+    try t.expect(std.mem.indexOf(u8, str.fault.what, "scratch takes the array form") != null);
+    const empty = try parse(a, base ++ "scratch = []\n");
+    try t.expect(std.mem.indexOf(u8, empty.fault.what, "scratch is empty") != null);
+    const abs = try parse(a, base ++ "scratch = [\"/etc/passwd\"]\n");
+    try t.expect(std.mem.indexOf(u8, abs.fault.what, "absolute path cannot be under it") != null);
+    const dots = try parse(a, base ++ "scratch = [\"../outside\"]\n");
+    try t.expect(std.mem.indexOf(u8, dots.fault.what, "without `.` or `..`") != null);
+    const slashes = try parse(a, base ++ "scratch = [\"///\"]\n");
+    try t.expect(std.mem.indexOf(u8, slashes.fault.what, "only slashes") != null);
+    const dbl = try parse(a, base ++ "scratch = [\"a//b\"]\n");
+    try t.expect(std.mem.indexOf(u8, dbl.fault.what, "empty segment") != null);
+    // The unknown-key refusal names the eighth key.
+    const unknown = try parse(a, base ++ "scratchy = [\"x\"]\n");
+    try t.expect(std.mem.indexOf(u8, unknown.fault.what, "`scratch` exist") != null);
+    // The flag form goes through the same function.
+    try t.expectEqualStrings("a/b", parseScratchEntry("a/b//").ok);
+    try t.expect(scratchFault("./a") != null);
+    try t.expect(scratchFault("a") == null);
 }
 
 /// One apparatus entry, parsed (ADR 0041). The parser and the engine's check both go

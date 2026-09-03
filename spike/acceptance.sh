@@ -2289,6 +2289,14 @@ o=$("$SIDEEYE" explore --state /tmp/acc-nt/f/state --setup "$OUT/toy-bug init" \
 [ "$?" = "1" ] || { echo "FAIL not_tested (FAIL): the FAIL run did not fail"; nt_fails=$((nt_fails + 1)); }
 nt_pair FAIL "$o" /tmp/acc-nt/f.json
 
+# The third condition (ADR 0043): a declaration widens the list, and both forms agree.
+mkdir -p /tmp/acc-nt/s/state
+o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" explore --state /tmp/acc-nt/s/state --setup "$OUT/toy-fixed init" \
+    --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc-nt/s/work \
+    --oracle /usr/bin/strace --scratch nondet.txt --json /tmp/acc-nt/s.json 2>&1)
+[ "$?" = "0" ] || { echo "FAIL not_tested (SCRATCH): the declared run did not pass"; nt_fails=$((nt_fails + 1)); }
+nt_pair SCRATCH "$o" /tmp/acc-nt/s.json
+
 if [ -f "$GAPSHIM" ]; then
     o=$("$SIDEEYE" explore --state /tmp/acc-nt/u/state --setup "$OUT/toy-fixed init" \
         --operation "$OUT/toy-fixed rotate" --shim "$GAPSHIM" --work /tmp/acc-nt/u/work \
@@ -3141,9 +3149,22 @@ if ! grep -q '"apparatus_unchecked"' "$SD/apparatus.json" 2>/dev/null; then
     echo "FAIL the apparatus fixture carries no apparatus_unchecked field, so the schema check below cannot see the rows it documents"
     fails=$((fails + 1))
 fi
+# A seventh report, for the field only a scratch declaration carries (#261, ADR 0043):
+# `scratch` appears when the define declares it and nowhere else, for the reason the
+# apparatus report above exists.
+mkdir -p "$SD/ssc"
+TOY_NONDET_REWRITE=1 TOY_STATE=$SD/ssc "$SIDEEYE" explore --state "$SD/ssc" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --scratch nondet.txt \
+    --shim "$SHIM" --work "$SD/wsc" --oracle /usr/bin/strace \
+    --json "$SD/scratch.json" >/dev/null 2>&1
+if ! grep -q '"scratch"' "$SD/scratch.json" 2>/dev/null; then
+    echo "FAIL the scratch fixture carries no scratch field, so the schema check below cannot see the row it documents"
+    fails=$((fails + 1))
+fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/main.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -3409,6 +3430,136 @@ else
 fi
 
 echo ""
+echo "=========== check 2sc: a define names its scratch paths, and the judge leaves them alone (#261, ADR 0043) ==========="
+# `[define] scratch` / `--scratch`: a declared path (itself and everything beneath it) is
+# judged by neither built-in invariant, in no world, on no side of the pair. The legs:
+# (a) the byte layer, both kinds — the rewrite that refuses at the baseline without the
+# key PASSes with it, and so does the removal; (b) L1's post-only loop, on a toy whose
+# claim is honest about the commit and creates a kept file after it; (c) the saved case
+# carries the declaration as version 5 and the hand-edited shapes refuse by name; (d) the
+# grammar and the exclusivities; (e) `preflight --twice` leaves the declared path out of
+# its comparison. Seen red by removing the `isScratch` skip in judgeL1's post-only loop
+# (b PASSes no more) and by making `classifyWith` ignore its argument (a refuses again).
+sc_fails=0
+sc_ok() { echo "ok   $1"; }
+sc_fail() { echo "FAIL $1: exit $2"; printf '%s\n' "$3" | sed 's/^/     | /' | head -6; sc_fails=$((sc_fails + 1)); }
+# (a) the rewrite kind: text, JSON and not_tested all carry the declaration.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --scratch nondet.txt --json /tmp/acc/scratch.json 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -qF "atomicity: 1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: nondet.txt)" \
+   && echo "$o" | grep -qF "declared scratch paths (neither bytes nor presence judged)" \
+   && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("scratch")==["nondet.txt"] and d["l0"].endswith("1 path(s) matched by scratch, not judged (declared: nondet.txt)") and "declared scratch paths (neither bytes nor presence judged)" in d["not_tested"] else 1)' /tmp/acc/scratch.json; then
+    sc_ok "a nondeterministic rewrite declared scratch PASSes, and text, JSON and not_tested carry the declaration"
+else
+    sc_fail "scratch rewrite leg" "$rc" "$o"
+fi
+# (a) the missing kind (#199's other baseline refusal): the declared path may be gone.
+rm -rf /tmp/acc/state /tmp/acc/work /tmp/acc/once-flag && mkdir -p /tmp/acc/state
+o=$(TOY_NONDET_REMOVE=1 TOY_ONCE_FLAG=/tmp/acc/once-flag "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --scratch nondet.txt 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -qF "1 path(s) matched by scratch"; then
+    sc_ok "a declared path the baseline re-run removes is not asked after either"
+else
+    sc_fail "scratch missing-kind leg" "$rc" "$o"
+fi
+# (b) the post-only loop of L1, which walks the post snapshot rather than the plan: an
+# honest claim followed by a kept receipt FAILs on the world killed between them, and
+# the same run with the receipt declared scratch PASSes with the marker still observed.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_MARKER_KEEPS=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --marker COMMITTED 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "post-success invariant" && echo "$o" | grep -q "receipt.txt"; then
+    sc_ok "a kept post-marker file is required by L1 (the control for the next leg)"
+else
+    sc_fail "scratch L1 control" "$rc" "$o"
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_MARKER_KEEPS=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --marker COMMITTED --scratch receipt.txt 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "marker observed in [1-9]" && echo "$o" | grep -qF "1 path(s) matched by scratch"; then
+    sc_ok "the same file declared scratch is not required by L1's post-only loop, with the marker still observed"
+else
+    sc_fail "scratch L1 post-only leg" "$rc" "$o"
+fi
+# (c) the case: a FAIL under a declaration that matched nothing still FAILs, saves a
+# version-5 case spelling both optional keys, and replays to the same verdict; the two
+# hand-edited shapes refuse by name.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --scratch other.txt 2>&1)
+rc=$?
+sc_case=$(ls /tmp/acc/work/cases/*.json 2>/dev/null | head -1)
+if [ "$rc" = "1" ] && echo "$o" | grep -qF "0 path(s) matched by scratch, not judged (declared: other.txt)" && [ -n "$sc_case" ] \
+   && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==5 and d["define"]["scratch"]==["other.txt"] and "cwd" in d["define"] and d["define"]["cwd"] is None else 1)' "$sc_case"; then
+    sc_ok "a FAIL under a declaration saves a version-5 case spelling scratch and a null cwd"
+else
+    sc_fail "scratch case leg" "$rc" "$o"
+fi
+o=$("$SIDEEYE" replay "$sc_case" --shim "$SHIM" --work /tmp/acc/work-r --oracle /usr/bin/strace --fresh-state 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -qF "(declared: other.txt)"; then
+    sc_ok "the version-5 case replays under the same declaration to the same verdict"
+else
+    sc_fail "scratch replay leg" "$rc" "$o"
+fi
+python3 - "$sc_case" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+v4 = json.loads(json.dumps(d)); v4["case_version"] = 4; v4["define"]["cwd"] = "/tmp"
+json.dump(v4, open("/tmp/acc/v4-scratch.json", "w"))
+v5 = json.loads(json.dumps(d)); del v5["define"]["cwd"]
+json.dump(v5, open("/tmp/acc/v5-nocwd.json", "w"))
+PYEOF
+o=$("$SIDEEYE" replay /tmp/acc/v4-scratch.json --shim "$SHIM" --work /tmp/acc/work-r2 --oracle /usr/bin/strace 2>&1); rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "cannot carry a scratch declaration; it arrived with version 5"; then
+    sc_ok "a version-4 file carrying scratch refuses as malformed"
+else
+    sc_fail "scratch v4 gate" "$rc" "$o"
+fi
+o=$("$SIDEEYE" replay /tmp/acc/v5-nocwd.json --shim "$SHIM" --work /tmp/acc/work-r3 --oracle /usr/bin/strace 2>&1); rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "must spell define.cwd, as null when none was declared"; then
+    sc_ok "a version-5 file that lost its cwd key refuses as malformed"
+else
+    sc_fail "scratch v5 cwd-key gate" "$rc" "$o"
+fi
+# (d) the grammar and the exclusivities, each by name.
+o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch /etc/passwd 2>&1); rc=$?
+[ "$rc" = "3" ] && echo "$o" | grep -q "an absolute path cannot be under it" && sc_ok "--scratch refuses an absolute path" || sc_fail "scratch absolute" "$rc" "$o"
+o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch 'a/../b' 2>&1); rc=$?
+[ "$rc" = "3" ] && echo "$o" | grep -q 'without `.` or `..` segments' && sc_ok "--scratch refuses a .. segment" || sc_fail "scratch dotdot" "$rc" "$o"
+o=$("$SIDEEYE" explore --config /dev/null --scratch x 2>&1); rc=$?
+[ "$rc" = "3" ] && echo "$o" | grep -q -- "--scratch) are mutually exclusive" && sc_ok "--scratch is exclusive with --config" || sc_fail "scratch config exclusivity" "$rc" "$o"
+o=$("$SIDEEYE" replay "$sc_case" --scratch x --shim "$SHIM" --work /tmp/acc/work-r4 2>&1); rc=$?
+[ "$rc" = "3" ] && echo "$o" | grep -q -- "--apparatus and --scratch included" && sc_ok "replay refuses --scratch: the case carries the declaration" || sc_fail "scratch replay exclusivity" "$rc" "$o"
+# (e) preflight --twice: the declared path is left out of the comparison and the report says
+# so, beside the split the same toy produces without the declaration (check 19).
+rm -rf /tmp/acc-sc && mkdir -p /tmp/acc-sc/state
+o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --twice --state /tmp/acc-sc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-sc/work --scratch nondet.txt 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "left equal state under --state" \
+   && echo "$o" | grep -qF "scratch        declared scratch, not compared: nondet.txt" \
+   && ! echo "$o" | grep -q "^difference"; then
+    sc_ok "--twice leaves a declared path out of the comparison and says so"
+else
+    sc_fail "scratch --twice leg" "$rc" "$o"
+fi
+rm -rf /tmp/acc-sc
+fails=$((fails + sc_fails))
+[ "$sc_fails" = "0" ] && echo "ok   check 2sc: the scratch declaration is honoured by both judges, the case and the preflight"
+
 echo "=========== check 2ap: a define names its apparatus, and the engine checks it reached the child (#257, ADR 0041) ==========="
 # `[define] apparatus` / `--apparatus`: after setup, before the first snapshot, every entry
 # the engine can check is checked against the environment the operation inherits, and a
@@ -4520,7 +4671,7 @@ acc_argjson=/tmp/acc/argmatrix.json
 mkdir -p /tmp/acc
 
 # Values that are merely well-formed for their flag. A path that cannot exist serves
-# nine of the eleven that take one; the two exceptions validate their value before anything else
+# every flag that takes one except three — --cwd, --apparatus and --scratch — which validate their value before anything else
 # can fail, so a path there produces a complaint about the value and reads as a refusal.
 # A stale entry fails loudly rather than quietly — the "accepted somewhere" assertion at
 # the end turns it into a flag that no line accepts.
@@ -4535,6 +4686,8 @@ acc_dummy() {
         # A well-formed entry: the grammar is checked at parse time, and the dummy path
         # below has no `kind:`, so the flag would read as refused everywhere.
         --apparatus)      printf 'note:x' ;;
+        # A well-formed relative path: the dummy below is absolute, which --scratch refuses.
+        --scratch)        printf 'x' ;;
         *)                printf '%s' "$acc_nx.dummy" ;;
     esac
 }

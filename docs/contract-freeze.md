@@ -16,12 +16,12 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
 ## The five surfaces
 
 1. **Config format.** `[world] state`; `[define] setup`, `operation`,
-   `check`, `marker`, `expected_status`, `cwd`, `apparatus` — the last two added
+   `check`, `marker`, `expected_status`, `cwd`, `apparatus`, `scratch` — the last three added
    after the tag under the additive allowance this paragraph ends with (`cwd`
    recorded in DESIGN §12's fourth facing, with no ADR of its own;
-   `apparatus` with ADR 0041), and named here rather than left to
+   `apparatus` with ADR 0041; `scratch` with ADR 0043), and named here rather than left to
    the code so the frozen surface and the accepted set stay the same list.
-   `apparatus` takes only the array form: double-quoted `kind:value` entries. Both command spellings: the string
+   `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. Both command spellings: the string
    form with its split-on-spaces, no-quoting rule, and the argv form — one
    line, double-quoted elements, passed verbatim (ADR 0019). Unknown keys,
    malformed values and the array form on non-command keys refuse with named,
@@ -104,7 +104,13 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    `contract_version_mismatch` is a different refusal entirely — a shim and
    engine speaking different trace versions inside one run, nothing to do
    with saved cases. Version and shape travel together (a v1/v2 case cannot
-   carry an argv command). A future trace-contract bump is therefore *not* a
+   carry an argv command). From version 5 (ADR 0043) a case also spells both
+   keys the top of the ladder introduced — `cwd` as `null` when none was
+   declared, `scratch` as a non-empty array — because a version holding two
+   independent optional fields cannot be held honest by the one-field gate
+   version 4 used;
+   a v5 file missing either key, or an older file carrying `scratch`, refuses
+   as malformed. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
 5. **The MCP surface** (decided 2026-08-13, recorded in #86, codified here).

@@ -60,6 +60,10 @@ const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "
 const max_apparatus = 32;
 var apparatus_flag_buf: [max_apparatus][]const u8 = undefined;
 
+/// `--scratch` is repeatable for the same reason, with the same ceiling (ADR 0043).
+const max_scratch = 32;
+var scratch_flag_buf: [max_scratch][]const u8 = undefined;
+
 /// Every variable the engine sets for a child it spawns (the pairs handed to `runChild*`
 /// at the recording, the worlds and the baseline). `config.engineOwnedEnv` refuses these
 /// as apparatus, and a test below holds the two lists together: a pair added to the
@@ -171,6 +175,11 @@ const Args = struct {
     /// repeated `--apparatus` flags collected in `apparatus_flag_buf`. Empty when nothing
     /// was declared, which is what every define written before the key existed says.
     apparatus: []const []const u8 = &.{},
+    /// The define's scratch paths (ADR 0043), normalised: the toml key's list, the
+    /// repeated `--scratch` flags collected in `scratch_flag_buf`, or a version-5 case's
+    /// declaration. Empty when nothing was declared. Every path here, and everything
+    /// beneath it, is judged by neither built-in invariant.
+    scratch: []const []const u8 = &.{},
 };
 
 /// A saved counterexample (ADR 0009): the resolved define it was found against, the
@@ -196,6 +205,11 @@ const ReplayCase = struct {
         /// arrived, so a define that declared no cwd still saves as the version its other
         /// fields ask for. Always the resolved spelling.
         cwd: ?[]const u8 = null,
+        /// Present exactly when the case is version 5 (ADR 0043), non-empty there. A
+        /// version-5 file spells `cwd` too, as null when none was declared; that key's
+        /// presence is checked on a second, untyped parse, since this one cannot tell
+        /// an absent optional from a null.
+        scratch: ?[]const []const u8 = null,
     },
     k: u32,
     ops_total: u32,
@@ -635,6 +649,13 @@ var expected_status_val: u8 = 0;
 /// `config.apparatusUnchecked`, so they cannot disagree about it.
 var apparatus_declared: []const []const u8 = &.{};
 
+/// The define's scratch declaration (ADR 0043), set beside the L0 classification — the
+/// same slice the plan matches on, so the report's `scratch` field, the `atomicity`
+/// line's parenthesis and the `not tested` item cannot describe a declaration the judge
+/// did not read. Empty until the define was read, so a SETUP ERROR raised before that
+/// carries no field.
+var scratch_declared: []const []const u8 = &.{};
+
 fn apparatusHasUnchecked() bool {
     for (apparatus_declared) |e| if (config.apparatusUnchecked(e)) return true;
     return false;
@@ -825,8 +846,8 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--oracle <strace>] [--work <dir>] [--twice]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--work <dir>] [--twice]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye mcp
@@ -865,6 +886,10 @@ const usage_fmt =
     \\               pythonpath:FILE, note:TEXT. Checked after setup, before anything is
     \\               recorded; a missing one is a SETUP ERROR naming it. The report carries
     \\               the list as declared (docs/apparatus.md). The engine applies nothing
+    \\  --scratch    a path under --state the built-in invariants leave alone, repeatable:
+    \\               the path itself and everything beneath it, judged in no world — not
+    \\               its bytes, not its presence. The report carries the declaration and
+    \\               counts what it matched; the saved case carries it too (ADR 0043)
     \\  stdin        not a flag: every command sideeye runs (setup, operation, checker)
     \\               starts with its standard input at end-of-file, on the CLI and MCP
     \\               paths alike. A target that reads stdin sees EOF, never the
@@ -1783,6 +1808,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // caller meant. It is absolutized with the rest of them further down.
         else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v
         else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v)
+        else if (std.mem.eql(u8, argv[i], "--scratch")) appendScratchFlag(&args, v)
         else if (std.mem.eql(u8, argv[i], "--expect-status")) {
             args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
             // Mirrored immediately: a refusal between here and the canonical binding
@@ -1877,8 +1903,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (mode == .replay) {
         if (args.state != null or args.setup != null or args.operation != null or
             args.check != null or args.marker != null or args.expect_status != null or
-            args.cwd != null or args.config != null or args.apparatus.len != 0)
-            setupError("replay takes its define from the case file; the define-surface flags (--apparatus included) and --config do not apply");
+            args.cwd != null or args.config != null or args.apparatus.len != 0 or args.scratch.len != 0)
+            setupError("replay takes its define from the case file; the define-surface flags (--apparatus and --scratch included) and --config do not apply");
         const rarena = arena_state.allocator();
         const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, .{ .require_regular = true }) orelse setupError(
             std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
@@ -1888,8 +1914,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const c = parsed.value;
         if (!std.mem.eql(u8, c.schema, "sideeye/case"))
             setupError("the file does not declare itself a sideeye case");
-        if (c.case_version != 1 and c.case_version != 2 and c.case_version != 3 and c.case_version != 4)
-            setupError("this binary understands case schema versions 1, 2, 3 and 4 only");
+        if (c.case_version != 1 and c.case_version != 2 and c.case_version != 3 and c.case_version != 4 and c.case_version != 5)
+            setupError("this binary understands case schema versions 1, 2, 3, 4 and 5 only");
         // The same travel-together law, extended to the command shape (ADR 0019): the
         // argv form arrived with version 3, so an older file carrying it is not an
         // older file — it is malformed, and reading it under a guessed contract would
@@ -1910,7 +1936,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (c.case_version == 1 and c.define.expected_status != null)
             setupError("a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
         if (c.case_version >= 2 and c.define.expected_status == null)
-            setupError("a case_version 2, 3 or 4 file must carry define.expected_status; the case freezes the declaration");
+            setupError("a case_version 2, 3, 4 or 5 file must carry define.expected_status; the case freezes the declaration");
         // The same law again, for the directory the define declared it runs in. A cwd is
         // part of what the counterexample was found against — replaying the same commands
         // somewhere else is replaying a different define — so the version moves with it.
@@ -1921,6 +1947,34 @@ pub fn main(init: std.process.Init.Minimal) !void {
             setupError("a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4");
         if (c.case_version == 4 and c.define.cwd == null)
             setupError("a case_version 4 file must carry define.cwd; the version exists to freeze it");
+        // Version 5 (ADR 0043) carries the scratch declaration, which decides verdicts, and
+        // it holds two independent optional fields where version 4 held one — so the gate
+        // above cannot be copied: a v5 file without a cwd is not malformed. From version 5
+        // a case spells both keys the ladder's top rungs introduced, `cwd` as null when
+        // none was declared and `scratch` as a non-empty array, and the reader asks for
+        // the KEY, which the typed parse above cannot see (an absent optional and a null
+        // land in the same place), through a second, untyped parse of the same bytes. A
+        // hand-edited v5 file that lost `cwd` refuses rather than replaying a define that
+        // ran somewhere else. The entries themselves are validated where they are
+        // normalised, in the apply block below, with the same refusals the flag gives.
+        if (c.case_version < 5 and c.define.scratch != null)
+            setupError("a case_version 1, 2, 3 or 4 file cannot carry a scratch declaration; it arrived with version 5");
+        if (c.case_version == 5) {
+            const decl = c.define.scratch orelse setupError("a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
+            if (decl.len == 0) setupError("a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
+            const raw = std.json.parseFromSlice(std.json.Value, rarena, ctext, .{}) catch
+                setupError("the case file could not be parsed as a sideeye case");
+            const def: std.json.Value = switch (raw.value) {
+                .object => |o| o.get("define") orelse setupError("the case file has no define object"),
+                else => setupError("the case file is not a JSON object"),
+            };
+            const has_cwd = switch (def) {
+                .object => |o| o.contains("cwd"),
+                else => false,
+            };
+            if (!has_cwd)
+                setupError("a case_version 5 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit");
+        }
         // A relative `state` resolves against the CASE FILE, not the cwd of whoever
         // invoked the replay (#325). ADR 0007 Decision 4 states the rule for a
         // sideeye.toml — "Paths resolve against the toml's directory, not the process
@@ -1976,6 +2030,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // A hand-written relative spelling is resolved against the case, like `state`
         // above (#325): an engine-written case is absolute and passes through unchanged.
         args.cwd = if (c.define.cwd) |cd| resolvePathAgainst(rarena, case_dir, cd) else null;
+        // The declaration the exploration judged under (ADR 0043), so the replay judges
+        // the same question. Normalised again on the way in: an engine-written case is
+        // already normalised and passes through unchanged, a hand-written `cache/` would
+        // otherwise be accepted by the grammar and match nothing.
+        if (c.define.scratch) |decl| {
+            const norm = rarena.alloc([]const u8, decl.len) catch setupError("out of memory");
+            for (decl, 0..) |e, j| norm[j] = switch (config.parseScratchEntry(e)) {
+                .ok => |p| p,
+                .bad => |m| setupError(m),
+            };
+            args.scratch = norm;
+        }
         // Mirrored into the report before any refusal below can fire: a contract
         // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
         expected_status_val = c.define.expected_status orelse 0;
@@ -1996,8 +2062,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
     if (args.config) |cfg_path| {
-        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0)
-            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus) are mutually exclusive: the define lives in one place or the other");
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0)
+            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         // Bounded, and the only reader that is. The path is operator-named and may
         // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
@@ -2033,6 +2099,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 args.marker = d.marker;
                 args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
                 args.apparatus = d.apparatus orelse &.{};
+                args.scratch = d.scratch orelse &.{};
                 if (d.expected_status) |es| {
                     args.expect_status = parseExpectStatus(es, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -2351,6 +2418,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // RUSTC stand-in), and before the first snapshot, so a define whose apparatus is absent
     // never records. Every path that runs a define passes here: explore, preflight, replay.
     checkApparatus(arena_state.allocator(), args.apparatus, args.cwd);
+    // The scratch declaration is published here too (ADR 0043), at the same point as the
+    // apparatus: the define is final, and every report from here on — a refusal raised
+    // by the recording run included — carries it under the same presence rule.
+    scratch_declared = args.scratch;
 
     var initial = snapshotOrRefuse(gpa, state_abs, "could not snapshot the initial state");
     // #5, checked before anything runs: an unreproducible entry the setup left (or
@@ -2528,7 +2599,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // Classified before the structural detectors, so every exit below — including the
     // UNKNOWNs — reports the classification that actually existed, not a placeholder.
     // The plan is the single source for both the judgement and the report (ADR 0004).
-    var l0_plan = engine.classify(gpa, initial, final) catch setupError("out of memory");
+    // `scratch_declared` was published beside the apparatus check, before the recording
+    // run: the plan matches on the same slice, so no rendering can name a declaration the
+    // judge did not read, and a refusal raised between there and here carries it too.
+    var l0_plan = engine.classifyWith(gpa, initial, final, scratch_declared) catch setupError("out of memory");
     defer l0_plan.deinit();
     l0_history_count = l0_plan.history_count;
     l0_note = buildL0Note(arena, l0_plan);
@@ -3886,7 +3960,12 @@ fn observeAgain(
         unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed", .class_wall);
 
     const diffs = arena.alloc(engine.Difference, repeat_diff_slots) catch setupError("out of memory");
-    const count = engine.diffSnapshots(first, second, diffs);
+    // A declared scratch path is left out of the comparison (ADR 0043), the way the
+    // exploration leaves it out of the judgement: README points at --twice as the
+    // byte-repeatability wall's measurement, and a wall the exploration no longer hits on
+    // a declared path must not still be reported by the preflight. Left out before it is
+    // counted, so the total the report prints is the total of what was compared.
+    const count = engine.diffSnapshotsExcept(first, second, diffs, scratch_declared);
     // `Difference.rel` borrows from whichever snapshot holds the entry, and `second` is
     // freed by this function's own `defer`. An `only_in_second` row therefore points
     // into a released arena the moment this returns — read-after-free in
@@ -3996,6 +4075,10 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
                 \\               compared; only the first run's account was checked
                 \\
             , .{});
+        // ADR 0043: the declaration is the same one the atomicity line above carries; this
+        // says what it did to the comparison, which the atomicity line is not about.
+        if (scratch_declared.len > 0)
+            say("scratch        declared scratch, not compared: {s}\n", .{scratchNote(arena)});
         say("\n", .{});
     }
     if (oracle_path == null)
@@ -4285,6 +4368,28 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
 /// different classification than the one that ran. Names are bounded — the point is
 /// "which files got the weaker claim", not an inventory.
 fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
+    const base = buildL0NoteBase(arena, plan);
+    if (plan.scratch.len == 0) return base;
+    // ADR 0043: the declaration and its reach, read from the same plan the judge read.
+    // The count is recorded paths the declaration matched (before or after), so a reader
+    // can tell a declaration that reached something from one that named nothing the
+    // recording had; the names are the declaration itself, bounded like the history names.
+    var names: std.ArrayList(u8) = .empty;
+    var listed: u32 = 0;
+    for (plan.scratch) |p| {
+        if (listed == 3) break;
+        if (listed > 0) names.appendSlice(arena, ", ") catch return base;
+        appendSanitized(&names, arena, p) catch return base;
+        listed += 1;
+    }
+    if (plan.scratch.len > listed) {
+        const more = std.fmt.allocPrint(arena, " (+{d} more)", .{plan.scratch.len - listed}) catch return base;
+        names.appendSlice(arena, more) catch return base;
+    }
+    return std.fmt.allocPrint(arena, "{s}; {d} path(s) matched by scratch, not judged (declared: {s})", .{ base, plan.scratch_matched, names.items }) catch base;
+}
+
+fn buildL0NoteBase(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
     const standard = plan.files.items.len - @as(usize, plan.history_count);
     if (plan.history_count == 0) {
         // "path(s)", not "file(s)": since #122 the judged pairs include symlinks and
@@ -4638,6 +4743,16 @@ fn textShown(arena: std.mem.Allocator, s: []const u8) []const u8 {
 const not_tested_always = [_][]const u8{ "power loss", "torn writes", "concurrent processes" };
 const not_tested_history = "appended tails (files under the history form)";
 const not_tested_l1 = "post-only file contents (L1 checks existence only; post-only link targets are judged)";
+const not_tested_scratch = "declared scratch paths (neither bytes nor presence judged)";
+
+/// The conditions that widen the list, in bit order: bit i of the variant is condition i.
+/// One list binds the three tables AND `notTestedVariant` below, which derives its bits
+/// from this length — the comment that used to sit on `not_tested_bits` said binding the
+/// variant too was "one condition away from being worth it", and `scratch` (ADR 0043) is
+/// that condition. Adding an item here without a predicate in `notTestedCondition` is a
+/// compile error, not an out-of-range read.
+const not_tested_conditions = [_][]const u8{ not_tested_history, not_tested_l1, not_tested_scratch };
+const not_tested_variants = 1 << not_tested_conditions.len;
 
 /// Whether a list item could not be placed into JSON by quoting it and nothing else.
 /// Separated from the guard below so it can be tested: `@compileError` cannot be
@@ -4663,16 +4778,19 @@ comptime {
     for (not_tested_always) |item| {
         if (notTestedNeedsEscaping(item)) @compileError("not-tested item needs JSON escaping: " ++ item);
     }
-    if (notTestedNeedsEscaping(not_tested_history)) @compileError("not-tested item needs JSON escaping: " ++ not_tested_history);
-    if (notTestedNeedsEscaping(not_tested_l1)) @compileError("not-tested item needs JSON escaping: " ++ not_tested_l1);
+    for (not_tested_conditions) |item| {
+        if (notTestedNeedsEscaping(item)) @compileError("not-tested item needs JSON escaping: " ++ item);
+    }
 }
 
-/// The list for one variant, indexed the way `notTestedVariant` indexes them.
+/// The list for one variant, indexed the way `notTestedVariant` indexes them: bit i of
+/// the variant appends condition i, in list order.
 fn notTestedList(comptime variant: usize) []const []const u8 {
     comptime {
         var out: []const []const u8 = &not_tested_always;
-        if (variant & 1 != 0) out = out ++ [_][]const u8{not_tested_history};
-        if (variant & 2 != 0) out = out ++ [_][]const u8{not_tested_l1};
+        for (not_tested_conditions, 0..) |item, i| {
+            if (variant & (@as(usize, 1) << i) != 0) out = out ++ [_][]const u8{item};
+        }
         return out;
     }
 }
@@ -4691,38 +4809,45 @@ fn notTestedJoined(comptime variant: usize, comptime quoted: bool) []const u8 {
     }
 }
 
-const not_tested_items_by_variant = [4][]const []const u8{
-    notTestedList(0), notTestedList(1), notTestedList(2), notTestedList(3),
+// The three tables, one row per variant, every row built from the one list above: the
+// width is derived from the conditions' count, so a condition added there widens all
+// three here and there is no second constant to keep in step.
+const not_tested_items_by_variant = blk: {
+    var t: [not_tested_variants][]const []const u8 = undefined;
+    for (0..not_tested_variants) |v| t[v] = notTestedList(v);
+    break :blk t;
 };
-const not_tested_text_by_variant = [4][]const u8{
-    notTestedJoined(0, false), notTestedJoined(1, false),
-    notTestedJoined(2, false), notTestedJoined(3, false),
+const not_tested_text_by_variant = blk: {
+    var t: [not_tested_variants][]const u8 = undefined;
+    for (0..not_tested_variants) |v| t[v] = notTestedJoined(v, false);
+    break :blk t;
 };
-const not_tested_json_by_variant = [4][]const u8{
-    notTestedJoined(0, true),  notTestedJoined(1, true),
-    notTestedJoined(2, true),  notTestedJoined(3, true),
+const not_tested_json_by_variant = blk: {
+    var t: [not_tested_variants][]const u8 = undefined;
+    for (0..not_tested_variants) |v| t[v] = notTestedJoined(v, true);
+    break :blk t;
 };
 
-/// How many independent conditions widen the list, and the width the three tables are
-/// asserted to share.
-///
-/// What this does NOT do, said plainly because the first version of this comment claimed
-/// it: it does not bind `notTestedVariant` below, which hard-codes the same two bits. A
-/// third condition added there without widening the tables is still an out-of-range read
-/// (a panic under the shipped ReleaseSafe build, not corruption). Binding that too would
-/// mean deriving the variant from a comptime list of conditions; it is one condition
-/// away from being worth it.
-const not_tested_bits = 2;
-comptime {
-    std.debug.assert(not_tested_text_by_variant.len == 1 << not_tested_bits);
-    std.debug.assert(not_tested_json_by_variant.len == 1 << not_tested_bits);
-    std.debug.assert(not_tested_items_by_variant.len == 1 << not_tested_bits);
+/// The run-time predicate for condition i of `not_tested_conditions`, by index. `i` is
+/// comptime (the caller unrolls over the list), so a condition without a predicate here
+/// is a compile error — the binding the table's old comment said was one condition away.
+fn notTestedCondition(comptime i: usize) bool {
+    return switch (i) {
+        0 => l0_history_count > 0,
+        1 => l1_configured,
+        2 => scratch_declared.len > 0,
+        else => @compileError("a not-tested condition was added to the list without a predicate here"),
+    };
 }
 
-/// Bit 0 is the history form, bit 1 is L1 -- read once, so the two renderings cannot
-/// disagree about which list this run is even describing.
+/// Bit i is condition i -- read once, so the two renderings cannot disagree about which
+/// list this run is even describing.
 fn notTestedVariant() usize {
-    return (if (l0_history_count > 0) @as(usize, 1) else 0) | (if (l1_configured) @as(usize, 2) else 0);
+    var v: usize = 0;
+    inline for (0..not_tested_conditions.len) |i| {
+        if (notTestedCondition(i)) v |= @as(usize, 1) << i;
+    }
+    return v;
 }
 
 fn notTestedText() []const u8 {
@@ -5144,6 +5269,30 @@ fn appendApparatusFlag(args: *Args, v: []const u8) void {
     args.apparatus = apparatus_flag_buf[0 .. n + 1];
 }
 
+/// `--scratch PATH`: the same grammar the toml key uses, refused with the same words, and
+/// stored normalised the way the parser stores it (ADR 0043).
+fn appendScratchFlag(args: *Args, v: []const u8) void {
+    const norm = switch (config.parseScratchEntry(v)) {
+        .ok => |p| p,
+        .bad => |m| setupError(m),
+    };
+    const n = args.scratch.len;
+    if (n == max_scratch) setupError("--scratch: more than 32 entries; a define this large belongs in a toml");
+    scratch_flag_buf[n] = norm;
+    args.scratch = scratch_flag_buf[0 .. n + 1];
+}
+
+/// The text form of the declaration (ADR 0043): the entries as declared, comma-separated,
+/// neutralised the way every target-chosen path in the text report is.
+fn scratchNote(arena: std.mem.Allocator) []const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    for (scratch_declared, 0..) |e, i| {
+        if (i > 0) out.appendSlice(arena, ", ") catch return "(allocation failed)";
+        out.appendSlice(arena, textShown(arena, e)) catch return "(allocation failed)";
+    }
+    return out.items;
+}
+
 /// A SETUP ERROR whose sentence carries values; when even the sentence cannot be built
 /// the format string itself is the fallback, so the refusal still names its subject.
 fn setupErrorFmt(arena: std.mem.Allocator, comptime fmt: []const u8, args: anytype) noreturn {
@@ -5508,6 +5657,8 @@ fn buildJson(
         try jsonArrayField(w, arena, "apparatus", apparatus_declared, false);
         if (apparatusHasUnchecked()) try jsonArrayField(w, arena, "apparatus_unchecked", apparatus_declared, true);
     }
+    // ADR 0043: the same presence rule, the same slice the plan judged by.
+    if (scratch_declared.len > 0) try jsonArrayField(w, arena, "scratch", scratch_declared, false);
     if (unknown_reason) |r| {
         try w.appendSlice(arena, ",\n  \"unknown_reason\": ");
         try jsonString(w, arena, r);
@@ -5913,7 +6064,10 @@ fn writeCase(
     // A declared cwd is part of what the counterexample was found against, so it moves
     // the version the same way — and it takes precedence over the argv rule because a
     // version-3 reader would drop the field and replay the commands somewhere else.
-    const case_version: u32 = if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
+    // A scratch declaration decides verdicts (ADR 0043), so it moves the version to 5, above
+    // cwd for the reason cwd sits above argv: an older reader would drop the field and
+    // judge a different question. A define that declares nothing keeps the case it always got.
+    const case_version: u32 = if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
     w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
@@ -5943,6 +6097,18 @@ fn writeCase(
     if (args.cwd) |c| {
         w.appendSlice(arena, ",\n    \"cwd\": ") catch return null;
         jsonString(w, arena, c) catch return null;
+    } else if (case_version >= 5) {
+        // From version 5 `cwd` is explicit beside `scratch` (ADR 0043): `null` says "none
+        // declared" in the file itself, so a reader can tell it from a key edited out.
+        w.appendSlice(arena, ",\n    \"cwd\": null") catch return null;
+    }
+    if (case_version >= 5) {
+        w.appendSlice(arena, ",\n    \"scratch\": [") catch return null;
+        for (args.scratch, 0..) |s, i| {
+            if (i > 0) w.appendSlice(arena, ", ") catch return null;
+            jsonString(w, arena, s) catch return null;
+        }
+        w.append(arena, ']') catch return null;
     }
     // Written even at the default (case_version 2): a case is a frozen contract, and
     // "0 because nothing was declared" and "0 by declaration" must replay identically
@@ -6207,6 +6373,20 @@ test "the not-tested list renders the same eight strings it shipped as two hand-
     };
     for (want_text, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_text_by_variant[i]);
     for (want_json, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_json_by_variant[i]);
+    // Bit 2 (ADR 0043): the same four rows again with the scratch item last, since the
+    // list is built in condition order and scratch is the third condition.
+    const scratch_item = "declared scratch paths (neither bytes nor presence judged)";
+    for (want_text, 0..) |w, i| {
+        const got = not_tested_text_by_variant[4 + i];
+        try std.testing.expect(std.mem.startsWith(u8, got, w));
+        try std.testing.expectEqualStrings(", " ++ scratch_item, got[w.len..]);
+    }
+    for (want_json, 0..) |w, i| {
+        const got = not_tested_json_by_variant[4 + i];
+        try std.testing.expect(std.mem.startsWith(u8, got, w[0 .. w.len - 1]));
+        try std.testing.expectEqualStrings(", \"" ++ scratch_item ++ "\"]", got[w.len - 1 ..]);
+    }
+    try std.testing.expectEqual(@as(usize, 8), not_tested_text_by_variant.len);
 }
 
 test "the two renderings read the variant once, so they cannot describe different runs (#280)" {
@@ -6215,55 +6395,61 @@ test "the two renderings read the variant once, so they cannot describe differen
     // but whether both sides are answering about the same run.
     const saved_hist = l0_history_count;
     const saved_l1 = l1_configured;
+    const saved_scratch = scratch_declared;
     defer {
         l0_history_count = saved_hist;
         l1_configured = saved_l1;
+        scratch_declared = saved_scratch;
     }
-    for ([_]bool{ false, true }) |h| {
-        for ([_]bool{ false, true }) |l| {
-            l0_history_count = if (h) 1 else 0;
-            l1_configured = l;
-            const want_v: usize = (if (h) @as(usize, 1) else 0) | (if (l) @as(usize, 2) else 0);
-            const v = notTestedVariant();
-            try std.testing.expectEqual(want_v, v);
-            try std.testing.expectEqualStrings(not_tested_text_by_variant[v], notTestedText());
-            try std.testing.expectEqualStrings(not_tested_json_by_variant[v], notTestedJson());
-            // Both renderings are the items and nothing else: the text joined by ", ",
-            // the JSON the same items quoted, bracketed and in the same order.
-            // Rebuilt from the item list, both forms, and compared for EQUALITY --
-            // review measured that an `indexOf` on the JSON side lets a ghost item ride
-            // along: appending one to the quoted rendering left the suite green.
-            const items = not_tested_items_by_variant[v];
-            var buf: [1024]u8 = undefined;
-            var n: usize = 0;
-            var jn: usize = 0;
-            var jbuf: [1024]u8 = undefined;
-            jbuf[jn] = '[';
-            jn += 1;
-            for (items, 0..) |item, i| {
-                // The buffers are asserted rather than assumed: an item long enough to
-                // overrun should report, not panic inside @memcpy.
-                try std.testing.expect(n + 2 + item.len <= buf.len);
-                try std.testing.expect(jn + 5 + item.len <= jbuf.len); // + the closing ']'
-                if (i != 0) {
-                    @memcpy(buf[n..][0..2], ", ");
-                    n += 2;
-                    @memcpy(jbuf[jn..][0..2], ", ");
-                    jn += 2;
+    const one_scratch = [_][]const u8{"nondet.txt"};
+    for ([_]bool{ false, true }) |s| {
+        for ([_]bool{ false, true }) |h| {
+            for ([_]bool{ false, true }) |l| {
+                l0_history_count = if (h) 1 else 0;
+                l1_configured = l;
+                scratch_declared = if (s) &one_scratch else &.{};
+                const want_v: usize = (if (h) @as(usize, 1) else 0) | (if (l) @as(usize, 2) else 0) | (if (s) @as(usize, 4) else 0);
+                const v = notTestedVariant();
+                try std.testing.expectEqual(want_v, v);
+                try std.testing.expectEqualStrings(not_tested_text_by_variant[v], notTestedText());
+                try std.testing.expectEqualStrings(not_tested_json_by_variant[v], notTestedJson());
+                // Both renderings are the items and nothing else: the text joined by ", ",
+                // the JSON the same items quoted, bracketed and in the same order.
+                // Rebuilt from the item list, both forms, and compared for EQUALITY --
+                // review measured that an `indexOf` on the JSON side lets a ghost item ride
+                // along: appending one to the quoted rendering left the suite green.
+                const items = not_tested_items_by_variant[v];
+                var buf: [1024]u8 = undefined;
+                var n: usize = 0;
+                var jn: usize = 0;
+                var jbuf: [1024]u8 = undefined;
+                jbuf[jn] = '[';
+                jn += 1;
+                for (items, 0..) |item, i| {
+                    // The buffers are asserted rather than assumed: an item long enough to
+                    // overrun should report, not panic inside @memcpy.
+                    try std.testing.expect(n + 2 + item.len <= buf.len);
+                    try std.testing.expect(jn + 5 + item.len <= jbuf.len); // + the closing ']'
+                    if (i != 0) {
+                        @memcpy(buf[n..][0..2], ", ");
+                        n += 2;
+                        @memcpy(jbuf[jn..][0..2], ", ");
+                        jn += 2;
+                    }
+                    @memcpy(buf[n..][0..item.len], item);
+                    n += item.len;
+                    jbuf[jn] = '"';
+                    jn += 1;
+                    @memcpy(jbuf[jn..][0..item.len], item);
+                    jn += item.len;
+                    jbuf[jn] = '"';
+                    jn += 1;
                 }
-                @memcpy(buf[n..][0..item.len], item);
-                n += item.len;
-                jbuf[jn] = '"';
+                jbuf[jn] = ']';
                 jn += 1;
-                @memcpy(jbuf[jn..][0..item.len], item);
-                jn += item.len;
-                jbuf[jn] = '"';
-                jn += 1;
+                try std.testing.expectEqualStrings(buf[0..n], notTestedText());
+                try std.testing.expectEqualStrings(jbuf[0..jn], notTestedJson());
             }
-            jbuf[jn] = ']';
-            jn += 1;
-            try std.testing.expectEqualStrings(buf[0..n], notTestedText());
-            try std.testing.expectEqualStrings(jbuf[0..jn], notTestedJson());
         }
     }
 }

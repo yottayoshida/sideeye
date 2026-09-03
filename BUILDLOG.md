@@ -2,6 +2,52 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-03 (ninth) - a define names its scratch paths, and the judge leaves them alone
+
+`#261` (2026-08-23) counted what the L0 precision limit had cost: git's `COMMIT_EDITMSG`
+(#35, closed with "only a checker knows which file is scratch"), buku (the assisted cohort, claim withdrawn), Borg's relocated cache (cohort 2),
+Mercurial's dirstate (cohort 2, 73 L0-only worlds under a contract that held in all 107),
+and poetry still FAIL 2/5 on an L0-only world. The owner chose the key
+over documenting the limit again: `[define] scratch`, the eighth key of the define, ADR 0043.
+The design question was whether §12's "no other way to say it" test could be passed a sixth
+time, and the answer is that nothing else can say it — a checker adds knowledge and cannot
+subtract from L0; `--state` fixes the range at directory granularity; moving the file out
+needs the target's cooperation; `not tested` is the engine's line. What the key narrows is
+the range of the question the define asks, not what the target does. The cookbook's "L0
+exempts no file by its role" is reversed on the record, because the reason for it was the
+absence of a place to say a role.
+
+Two things the plan got wrong, one caught by review and one by the machine. The review
+found that `judgeL1` has three loops and only the first reads the plan: a per-pair tag
+would have left the post-only and pre-only loops asking after a declared path's presence.
+The second reviewer then found the hazard inside the tag itself — a skip placed after
+`crashed.find` reports the path as `missing`, asking after exactly the presence the
+declaration said not to ask about. The shipped shape has no tag: a matching pair never
+enters the plan (`classifyWith`), so neither judge has a line to place the skip on, and the
+two snapshot-walking loops ask `isScratch` themselves. The machine found that the plan's
+acceptance leg for that loop could not pass: `TOY_MARKER_CREATES` prints its claim before
+the key's commit, so with `receipt.txt` declared scratch the world still fails on
+`key.json` — measured FAIL 7 of 8 on the first host run. The toy gains `TOY_MARKER_KEEPS`,
+an honest claim followed by a kept receipt, which FAILs on the world between the two and
+PASSes with the receipt declared; the control and the leg sit side by side.
+
+The case is version 5, and version 5 changes the law rather than copying the gate. Version
+4 could require `cwd` because `cwd` sat alone at the top of the ladder; a file with two
+independent optional fields cannot be held honest by "the newest one must be present". So from version 5 a case spells both keys the top of the ladder introduced — `cwd` as null when
+none was declared, `scratch` as a non-empty array — and the reader asks for the key's presence on a second, untyped parse, because the typed
+parse lands an absent optional and a null in the same place. Measured on the host: a v4 file
+carrying `scratch` and a v5 file with `cwd` edited out both refuse by name, and the engine's
+own v5 case replays to the same verdict under the same declaration. `preflight --twice`
+learned the declaration too, because README points at it as the byte-repeatability wall's
+measurement and a wall the exploration no longer hits must not still be reported by the
+preflight: the declared path is left out before the diff is counted and the report says so.
+The `not tested` list's variant is derived from the one list of conditions now; the old
+comment beside `not_tested_bits` had said binding the variant was "one condition away from
+being worth it", and this was the condition. Left out on purpose, and the second reviewer
+asked: the MCP text summary carries an `apparatus` line and gains no `scratch` line; the
+structured content carries the field, the count and the `not tested` item, and that is what
+an agent branches on. The ADR records the reasoning so the omission reads as a decision.
+
 ## 2026-09-03 (eighth) - the exploration cost is measured and declared, and the issue that tracked it closes
 
 `#262` (2026-08-23, after-1.0) said three things: exploration is strictly sequential, every

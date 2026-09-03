@@ -3,6 +3,10 @@
 # Zig build output
 .zig-cache/
 zig-out/
+# Cross builds for the Linux container (`zig build --prefix zig-out-linux -Dtarget=…`) and the toys
+# built inside it; the same slip `zig-out/` guards against, one directory over.
+zig-out-linux/
+spike/out-linux/
 
 # Spike artifacts: toys are rebuilt inside the container, runs are throwaway
 spike/out/
