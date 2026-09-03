@@ -2,7 +2,119 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-09-03 - the timewarrior define has one text, and the frozen recipe is a record
+## 2026-09-03 (second) - the secondary observations come from the committed apparatus, and the judge never restores twice
+
+`#64` (2026-08-13): DESIGN §17 cites, beside run 1's three gates, a full re-exploration of the
+fixed tree ("PASS 25/25") and the upstream suites green — and nothing in
+`spike/loop-closure-timew/` produces either. The numbers came from commands typed once and
+recorded nowhere (the BUILDLOG entry of that day carries the figures and not a line of
+shell). Run 2 shipped without the secondary observations for exactly that reason, and §17
+says so. The stages of run 1 and run 2 are gone from this machine; only the #62 witness
+stage (`~/sideeye-loop-62`, cli variant, controls already evaluated) remains, so what this
+change can measure is the generator's own controls there, not the cited figures.
+
+Shape: a `secondary` subcommand of `judge.sh`, not a fourth script — #65 named the fourth
+script as the moment the layout copies would multiply. It rebuilds from `repo/` the way
+`eval` does, then in one `--network none` container runs the full exploration under the
+sealed define (`TIMEWARRIORDB` set beside `--state`, as every existing call does) and the
+four C++ suites run 1 counted — `AtomicFileTest`, `data.t`, `Datafile.t`,
+`TagInfoDatabase.t`, built one target at a time because `test/` is `EXCLUDE_FROM_ALL` and
+the `timew_test` aggregate depends on a `doc` target the image cannot build. The bash and
+python `.t` suites look for an in-tree `src/timew` and are not in the set; run 1 had not
+counted them either.
+
+Two things the plan got wrong, both found by review before a line was written. First, it
+had the subcommand verify the seal through `restore_and_diff` and refuse when `restored` was
+non-empty — but that function restores *before* it records, and the first restore of a stage
+is the only record of what the agent changed outside `repo/`. A secondary run before `eval
+--mode run` would have moved that record into its own file and left `finalize` printing
+"agent edits outside repo/: none". So `restore_and_diff` gained a `check` action that compares
+and records but never copies, and `secondary` uses only that. Second, the upstream gate
+counted `ok` lines against the `1..N` plan; the framework prints a skip as `ok … # skip`, and
+`AtomicFileTest` at this pin declares 22 and runs 24. The gate now reads the framework's own
+summary line (`# P passed, F failed, S skipped.`) and fails on the under-run line (`# Only N
+tests, out of a planned M were run.`), which the framework prints while still exiting 0 —
+the rc alone means `_failed > 0` and nothing else. The over-run is recorded, not judged.
+
+The controls are the discipline `eval` already has. `--mode neg` expects the full
+exploration to reproduce THE failure — `fail_reproduced` at the case's `k`, the same pin
+`eval` puts on its negative control — with all four suites green, which is the primary
+criterion's "the target's own tests do not catch it" made mechanical for the slice run 1 counted
+— four of the eleven C++ suites, none of the integration `.t` scripts (`undo.t` among them),
+and six of `AtomicFileTest`'s 24 skipped without libfiu, which run 1's own record noted as
+the fault-injection cases covering exactly the error paths the change touches. `--mode pos` expects
+`pass` through `replay_gate.py` with `expected_explored = ops_total + 1` and `crash_points`
+pinned to the case's `ops_total` (a setup that silently did nothing would explore a handful
+of worlds and PASS). `--mode run` refuses until both controls have held on the same stage —
+the sentence DESIGN now carries had nobody enforcing it in the first draft. `finalize`
+carries `run-secondary.json` into the manifest when it exists and prints "absent" when it
+does not; `loop_closed` stays the three gates, and run 2's record keeps its meaning.
+
+Measured on `~/sideeye-loop-62` with the stage's own sealed harness (the 2026-08-31 Linux build
+the seal pins; nothing built from this tree ran) and the 2026-08-13 image,
+predictions written first from run 1's BUILDLOG figures and the suites' `UnitTest t (N)`
+declarations, then the runs. `--mode neg`: `full_explore=fail_reproduced` — FAIL, exit 1,
+explored 25, crash_points 24, earliest crash point 19 = the case's `k`; upstream
+`AtomicFileTest` 18 passed / 0 failed / 6 skipped with the framework's over-run line
+(24 run, 22 planned) recorded, `data.t` 96/0/0, `Datafile.t` 2/0/0, `TagInfoDatabase.t`
+8/0/0; `expectation_met=True`. `--mode pos`: `full_explore=pass` — PASS, exit 0, explored 25,
+crash_points 24; the same four suites green; `expectation_met=True`. Every number matched the
+prediction, including the 22-versus-24 that would have failed a plan-line gate. The dotted
+targets (`data.t`, `Datafile.t`, `TagInfoDatabase.t`) build under `cmake --build --target`
+as written. Refusals without a container: `--mode run` on a root with no secondary controls
+stops at "controls have not held: … is missing"; `--mode neg` on a copy of the stage whose
+checker differs from the seal by one appended line stops at "the stage differs from the
+seal", and the file's hash is the same before and after — nothing was restored. `--mode run`
+on the same stage (no agent ever ran there, so the tree is the unpatched one) reads
+`fail_reproduced`, explored 25, crash point 19, the four suites green, `expectation_met`
+null and the stage diff empty — the measurement, with nothing to expect. `finalize` on a
+synthetic results directory prints "secondary: absent" and leaves `manifest.run` with its three
+keys when `run-secondary.json` is missing, and carries the record under `run.secondary`
+when it is there.
+
+Mutations, in copies of the tree against the same stage, each written as a prediction first:
+the exploration replaced by a failing no-op — `full_explore=build_failed`,
+`expectation_met=False`, "secondary control neg did not hold"; the summary-line pattern made
+unmatchable — every suite `passed: None`, `upstream=fail`, `expectation_met=False`, while the
+full exploration still read `fail_reproduced` (the two halves of the control fail
+independently). Three refusals and two mutations, each landing on the clause it targets.
+
+The diff review then found what the mutations had not reached. The verdict read whatever
+`<mode>-full-explore.*` and `<mode>-upstream-*` it found in the results directory, and the
+container runs under `sh -eu`: a build that fails writes nothing, and the verdict would have
+re-read the previous run's files and called a broken apparatus green — `eval` had the same
+shape since 2026-08-13. Both now stamp the results directory before the container starts,
+treat any record older than the stamp as absent, and put the container's own exit into the
+expectation. The suite verdict moved out of the heredoc into `spike/suite_summary.py` with a
+selftest that acceptance runs (check 11d), the way #65 did for the replay gate that morning;
+the negative control pins the world count as well as the crash point; the check-only seal
+verification writes `<mode>-stage-check.json` without a `restored` field, so a reader of
+`*-stage-diff.json` cannot mistake it for a restore that found nothing; and the launchers'
+"next" lines name `secondary --mode run` after `eval --mode run`, which is where it has to
+sit. The four suites are the slice run 1 counted, not the target's tests — that sentence
+was overclaiming above and is corrected in place.
+
+Re-measured after those changes, same stage, same predictions: `--mode neg` and `--mode pos`
+read the same numbers as before with `container_rc=0` in the record and no `restored` field
+in `neg-stage-check.json`; `eval --mode pos` still holds with its stamp. The stale-record
+mutation, in a copy of the tree seeded with the previous run's records and with the
+secondary container's `cmake` configure replaced by `false`: `container_rc=1`,
+`full_explore=build_failed`, `upstream=fail`, `expectation_met=False` — the previous run's
+files, present in the directory, were not read. `suite_summary.py --selftest` is green on
+eight synthetic outputs and red with the summary pattern made unmatchable; its CLI passes
+the four real suite records of the negative control.
+
+The second review found five small things the first round had left or introduced, all
+taken: the header still said three subcommands; the changelog had grown a second `Added`
+heading; `suite_summary.py` had no preflight beside `replay_gate.py`'s; a report cut off
+mid-write would have been a traceback rather than `no_report`; and "on the same stage" was
+held only by the results directory's name. The last is the one worth a sentence: a
+secondary record now carries the seal's `protocol.json` it ran against, and `--mode run`
+compares each control's copy with the seal in front of it, so a control recorded on another
+stage of the same name is refused as such. Re-measured once more after that: the controls
+read the same numbers with the protocol in their record, and `--mode run` on a root whose
+controls carry a different pin refuses before touching a container.
+
 
 `#65` filed the shape on 2026-08-13: the undo checker and its setup existed three times under
 `spike/` (the committed `loop-closure-timew/define/` pair and heredocs in both dogfood scripts),

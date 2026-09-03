@@ -3946,6 +3946,19 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 11d: the upstream suite verdict is one text, and its CLI agrees with it (#64) ==========="
+# spike/suite_summary.py reads timewarrior's C++ test-framework output for the loop-closure
+# judge's secondary observation: the summary line, the under-run line that exits 0, the plan
+# line recorded and not judged. Its --selftest runs synthetic outputs (plain, skips with an
+# over-run, a not-ok, an under-run, no summary, zero passed, a re-plan) through parse(),
+# gate() and the CLI. Seen red with the summary pattern made unmatchable.
+if python3 "$ROOT/spike/suite_summary.py" --selftest; then
+    echo "ok   suite_summary.py: parse(), gate() and its CLI agree on the selftest outputs"
+else
+    echo "     suite_summary.py's selftest failed (rc=$?): a clause moved, or the CLI disagrees"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
 # Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
 # recomputation from corpus.tsv + the committed sweep artifacts (count.py check also

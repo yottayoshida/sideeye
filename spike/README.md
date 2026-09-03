@@ -17,6 +17,7 @@ rehearsal green is required before a Seal A PR and after any tool change).
 | `acceptance.sh`, `mcp-acceptance.sh` | CI acceptance harness (CLI and MCP surfaces) |
 | `check-report-schema.py` | report JSON/text parity and schema claims |
 | `replay_gate.py` | the one replay-gate predicate: imported by `loop-closure-timew/judge.sh`, called by `dogfood-timew-replay.sh` leg C. `--selftest` holds `gate()` and the CLI to the same answers (acceptance check 11c) |
+| `suite_summary.py` | the upstream suite verdict for `judge.sh secondary`: reads timewarrior's C++ test-framework output (summary line, under-run line, plan recorded not judged). `--selftest` in acceptance check 11d |
 | `check-sealed-campaigns.sh` | CI: walks every `blind-hunt*/` and runs the consistency checker each campaign sealed |
 | `campaign-driver.sh` | non-sealed driver: status / sweep / select / verify / explore. Refuses dirty trees, uncommitted inputs, existing outdirs |
 | `ledger-append.sh` | the ONLY pen for campaign ledgers — appends, then proves byte-prefix against HEAD |
