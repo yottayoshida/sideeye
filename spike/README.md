@@ -19,6 +19,8 @@ rehearsal green is required before a Seal A PR and after any tool change).
 | `replay_gate.py` | the one replay-gate predicate: imported by `loop-closure-timew/judge.sh`, called by `dogfood-timew-replay.sh` leg C. `--selftest` holds `gate()` and the CLI to the same answers (acceptance check 11c) |
 | `suite_summary.py` | the upstream suite verdict for `judge.sh secondary`: reads timewarrior's C++ test-framework output (summary line, under-run line, plan recorded not judged). `--selftest` in acceptance check 11d |
 | `check-sealed-campaigns.sh` | CI: walks every `blind-hunt*/` and runs the consistency checker each campaign sealed |
+| `lib/` | the cohort harness, sourced not copied (#259; `check-transcript.sh` is the one file run rather than sourced): `probes.sh` (entry point to the verdict functions, which stay in `cohort2/probes/lib.sh` and `cohort4/probes/lib.sh`), `drills.sh` (`drill NAME red\|green CMD…`, measures the FAILS delta itself), `snapshot.sh` (`snap` — red through the tested leg, from cohort 4's `run()` — plus `run_rc` and `declared_exec`), `check-transcript.sh` (manifest-driven verdict-set check). Every file has `--selftest`; acceptance check 11e runs them |
+| `check-cohort-transcripts.sh` | CI: re-verifies the four cohort-4 probe transcripts the sealed checker declares sets for, holds the eight sealed transcript names, and walks any later cohort's `probes/verdicts.tsv` through `lib/check-transcript.sh` |
 | `campaign-driver.sh` | non-sealed driver: status / sweep / select / verify / explore. Refuses dirty trees, uncommitted inputs, existing outdirs |
 | `ledger-append.sh` | the ONLY pen for campaign ledgers — appends, then proves byte-prefix against HEAD |
 | `rehearse-campaign.sh` | full-apparatus rehearsal in a scratch repo; every guard is fired with a planted defect before the real thing runs |
@@ -57,14 +59,26 @@ tracker, or scout it. That eligibility is spent the moment anyone looks.
 
 ## Cohort 4 — preparation, open
 
-`cohort4/` holds preconditions, not a campaign: `PREP.md` (the register of
-every mistake cohorts 1-3 paid for, mapped to what makes it impossible),
-`SCOUT-BRIEF.md` (the instrument for proposing candidates),
-`PROTOCOL-DRAFT.md` (each section marked carried, drafted or blocked),
-`CANDIDATES-REJECTED.md` (the rejections the brief requires be shown beside
-the survivors), and the gates with their falsification transcripts. No
-target is named in any of it, and the frozen `PROTOCOL.md` does not exist
-yet.
+`cohort4/` is a closed record. `PREP.md` (the register of every mistake
+cohorts 1-3 paid for, mapped to what makes it impossible), `SCOUT-BRIEF.md`,
+`PROTOCOL-DRAFT.md` and `CANDIDATES-REJECTED.md` are the preconditions;
+`PROTOCOL.md` is the frozen protocol, and it names the targets — himalaya
+and vdirsyncer at the 2026-08-22 sign-off (vdirsyncer then failed rule 2
+when measured on the 23rd), unison after the rule screen (its "freeze"
+paragraph). `probes/` holds the eight transcripts, the
+sealed `check-transcript.sh` that holds four of them to their verdict
+sets, and `capture.sh`, which ran it once at capture time. (An earlier
+version of this paragraph said no target was named and the frozen protocol
+did not exist; both were true only of the preparation stage.)
+
+**The next cohort sources `spike/lib/`.** Its probe and drill scripts
+source `lib/probes.sh`, `lib/drills.sh` and `lib/snapshot.sh` rather than
+copying cohort 2's or cohort 4's, and its expected verdict sets go in
+`probes/verdicts.tsv` (target, mode, transcript file, names), which
+`check-cohort-transcripts.sh` walks in CI — every row's transcript must
+exist and every `probes/*.txt` must have a row. Cohorts 2-4 are not restaged:
+their scripts stay as sealed, and the one implementation of each verdict
+function stays where it was drilled red.
 
 ## Assisted-discovery cohort (#118) — closed record, live acceptance tests
 

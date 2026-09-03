@@ -4102,6 +4102,28 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 11e: the next cohort's harness is one library, and its selftests hold (#259) ==========="
+# spike/lib/ holds what cohorts 2-4 each rewrote: the entry point to the probe verdict
+# functions (probes.sh pins cohort 4's gate path, which its lib derives from $0), the drill
+# runner that measures the FAILS delta itself (drills.sh — the bookkeeping line callers
+# forgot), the checker-snapshot drill that requires red THROUGH the tested leg plus the raw-rc
+# and declared-exec helpers (snapshot.sh), and the manifest-driven transcript check
+# (check-transcript.sh, cohort 4's generalised, its six selftests carried plus truncation and a
+# duplicate-row case). Each selftest was seen red by mutating its own predicate: run_rc behind
+# a tee reads 0, a subset comparison passes a renamed verdict, a runner without the delta calls
+# a green predicate "red as required".
+lib_fails=0
+for lib in lib/probes lib/drills lib/snapshot lib/check-transcript check-cohort-transcripts; do
+    if sh "$ROOT/spike/$lib.sh" --selftest > "/tmp/acc-lib-$(basename "$lib").txt" 2>&1; then
+        echo "ok   spike/$lib.sh --selftest"
+    else
+        echo "FAIL spike/$lib.sh --selftest (rc=$?)"
+        sed 's/^/     | /' "/tmp/acc-lib-$(basename "$lib").txt" | tail -12
+        lib_fails=$((lib_fails + 1))
+    fi
+done
+[ "$lib_fails" = 0 ] || fails=$((fails + 1))
+
 echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
 # Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
 # recomputation from corpus.tsv + the committed sweep artifacts (count.py check also

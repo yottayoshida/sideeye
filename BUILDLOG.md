@@ -74,6 +74,75 @@ whose skip guard for the preload legs splits on colons the way the engine does �
 review's one remaining "partly" — and the mutation that proves the check is live was
 re-pointed at the call line each time it moved, because a mutation whose anchor no longer
 matches measures nothing and reports green.
+## 2026-09-03 (fifth) - the next cohort sources the harness instead of rewriting it
+
+`#259` (2026-08-25) counted what cohorts 2, 3 and 4 each wrote again: the probe verdict
+functions were shared (cohort 2's `probes/lib.sh`, sourced in place by 18 scripts), but the
+drill runner, the checker-snapshot checks and the transcript verification were re-derived per
+cohort, and the issue named three bug classes that came back with them. Measured today
+against the records, the classes that actually recur in the drill and snapshot code are
+narrower than the issue's list: a drill runner whose bookkeeping (`_before=$FAILS`) lives in
+the caller and turns a forgotten line into a green predicate reported "red as required"; a
+snapshot check that accepts any red, so a state that trips a different leg leaves the tested
+leg dead; and a transcript check that only cohort 4 had. The pipe-hides-rc examples in this
+log are one-off shells, not cohort harness code, and the `sh file` rule is scoped to the
+declaration files the engine execs. The owner chose to build the library now, with no cohort
+5 planned: the consumers are the selftests and one CI walker.
+
+`spike/lib/` is four files. `probes.sh` defines nothing — it sources cohort 2's and cohort 4's
+libraries where they are, and pins `_C4_HERE` first, because cohort 4's lib derives its gate
+path from `$0` and, read from another cohort, points `PREFLIGHT` at a file that does not exist
+(conditions 8 and 9 would then report `8/9-preflight` FAIL). `drills.sh` runs the predicate
+itself and measures the delta; its contract is two lines — environment goes before `drill`
+as a prefix, the way cohort 4 already calls its predicates, and a multi-statement drill is
+wrapped in a function — because the first design (`drill NAME colour CMD…`) could express
+neither ancestor's call sites, which the plan's second review measured (an assignment word
+through `"$@"` is rc 127, and `env` cannot run a shell function). `snapshot.sh` takes cohort
+4's `run()` rather than cohort 2's `want`, adds `run_rc` (an `if` around the command, so it
+survives `set -eu`, which 98 files under spike/ set) and `declared_exec` (a lint, not a
+spawner). `check-transcript.sh` is the sealed cohort-4 checker with its four hard-coded sets
+replaced by a manifest, and its six selftests carried plus two (truncation, duplicate rows).
+
+The walker could not promise "every committed cohort-4 transcript": there are eight, the
+sealed checker has sets for four, and the other four are records without a verdict set that
+the checker would report as a false red (three) or BROKEN (one). So the walker holds the four
+triples and the eight names itself — the sealed directory takes no new files — verifies the
+four through the sealed checker, and fails if the set of eight changes. Cohort 5 onward is
+walked from `probes/verdicts.tsv`. The first draft's falsification of `run_rc` was
+`false | true` returning 1, which POSIX sh cannot do (a pipeline's status is its last
+command's, and there is no pipefail); the fixture became the shape the helper refuses to have,
+a `tee` behind a failing command, shown live in the selftest beside the helper's own result.
+
+The review of the diff found no P0 and five things worth the label P1, all of them about the
+seams between the pieces rather than the pieces. The walker compared the sealed set as a
+string built from a glob, so its colour depended on the locale's collation — a trap this
+repository already pays for in `spike/cohort4/Dockerfile` — and it is a set comparison now.
+The README promised a four-column manifest and the shared checker read three, which the
+walker's one-row temporary view hid from CI; there is one format now, the checker reads the
+fourth column from the file the walker hands it whole, and the duplicate-row refusal is on the
+CI path for the first time. A manifest saved without a trailing newline dropped its last row
+(`while read`); rows are listed by awk, and the selftest's last row is written without one on
+purpose. The env prefix before `drill` persists after the call in dash and bash — measured by
+the reviewer — which the contract now says, with cohort 4's habit (set it on every drill's
+line) as the rule. And a library that tests `$1` for `--selftest` runs its own selftest when
+the cohort script that sources it is invoked that way; each file now checks that `$0` is
+itself first. Two of the seven smaller items changed behaviour: the manifest's names were
+compared as patterns (`1-exit.codes` matched `1-exit-codes`), now literals with a selftest for
+the dotted rename; and the CI step gained the "goes red" proof its neighbours carry, on a copied
+root with a cut transcript and with a missing one.
+
+The simplify pass and the second review moved four things worth writing down. The walker's
+general path — the one every future cohort takes — checked rows but not files, so a transcript
+captured without its manifest row would have passed green on exactly the path the sealed path
+guards; both directions now. The walker had its own reading of the manifest format beside the
+checker's; `--list-rows` on the checker is the one reading, and a row with fewer than four
+columns comes out with empty columns the walker refuses by name instead of vanishing. The red
+proof that had been inline YAML in CI is the walker's own `--selftest`, six cases that each
+require the failing line, and the truncation case cuts after the third verdict so that the red
+comes from the set difference and not from the zero-verdict control — which is where the first
+cut's red was actually coming from, as the second review measured. And `snap` is a whole drill,
+not a predicate: wrapped in `drill` it would declare its colour twice in inverted vocabulary,
+so its header says not to.
 
 ## 2026-09-03 (fourth) - a baseline refusal names the layer that failed there
 
