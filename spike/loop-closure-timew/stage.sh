@@ -338,10 +338,14 @@ echo "results will land in: $RESULTS"
 if [ "$VARIANT" = "mcp" ]; then
     echo "next: judge.sh eval --root $ROOT --mode neg   (control: unfixed must FAIL)"
     echo "      judge.sh eval --root $ROOT --mode pos   (control: known patch must PASS)"
+    echo "      judge.sh secondary --root $ROOT --mode neg   (evidence control: full explore must FAIL, upstream suites green)"
+    echo "      judge.sh secondary --root $ROOT --mode pos   (evidence control: full explore must PASS, upstream suites green)"
     echo "      contrast-mcp.sh $ROOT                   (control: the MCP channel itself)"
-    echo "      run-agent-mcp.sh $ROOT                  (only after all three hold)"
+    echo "      run-agent-mcp.sh $ROOT                  (only after every control above holds)"
 else
     echo "next: judge.sh eval --root $ROOT --mode neg   (control: unfixed must FAIL)"
     echo "      judge.sh eval --root $ROOT --mode pos   (control: known patch must PASS)"
-    echo "      run-agent.sh $ROOT                      (only after both controls hold)"
+    echo "      judge.sh secondary --root $ROOT --mode neg   (evidence control: full explore must FAIL, upstream suites green)"
+    echo "      judge.sh secondary --root $ROOT --mode pos   (evidence control: full explore must PASS, upstream suites green)"
+    echo "      run-agent.sh $ROOT                      (only after every control above holds)"
 fi

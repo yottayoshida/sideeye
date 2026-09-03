@@ -1,5 +1,5 @@
 #!/bin/sh
-# The judge for the loop-closure experiment. Three subcommands, one discipline:
+# The judge for the loop-closure experiment. Four subcommands, one discipline:
 # nothing the agent can edit is trusted.
 #
 #   judge.sh eval --root <root> --mode neg|pos|run
@@ -14,6 +14,18 @@
 #         neg  unpatched tree  -> replay must FAIL (reproduce), functional must pass
 #         pos  known patch     -> replay must PASS (leg-C predicate), functional must pass
 #         run  the agent's tree -> no expectation; the verdict is the measurement
+#
+#   judge.sh secondary --root <root> --mode neg|pos|run
+#       The secondary observations DESIGN §17 cites beside the three gates (#64): a
+#       full exploration of the tree under the sealed define (every crash world, not
+#       only the one the case names) and the four upstream C++ suites run 1 counted
+#       (UPSTREAM_SUITES below). Verifies the stage against the seal WITHOUT restoring
+#       — restoring is eval's job, and eval's first restore is the only record of what
+#       the agent changed outside repo/ — then rebuilds from repo/ as eval does and
+#       measures both in one --network none container. Emits <mode>-secondary.json.
+#       The two controls carry expectations and exit nonzero when they do not hold;
+#       --mode run refuses until both controls have held on this stage. Evidence, not
+#       a gate: loop_closed stays the three gates.
 #
 #   judge.sh audit --root <root> --transcript <stream-json file> [--allow-mcp <server>]
 #       Enumerate every tool call the agent made. Network reach or a read into
@@ -34,6 +46,14 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 SIDEEYE_REPO=${SIDEEYE_REPO:-$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)}
 IMAGE=${IMAGE:-sideeye-loop-timew:latest}
 PATCH="$SIDEEYE_REPO/spike/timew-undo-ordering.patch"
+# The upstream suites the secondary observation runs: the four C++ test executables run 1
+# counted (BUILDLOG 2026-08-13; the bash launcher test/AtomicFile.t also ran there, errored
+# on a path it hardcodes, and was not counted). Built one target at a time: test/ is
+# EXCLUDE_FROM_ALL, and the `timew_test` aggregate depends on `doc`, which this image
+# cannot build. The other seven C++ suites in test/CMakeLists.txt were not in run 1's count
+# either, and the python/bash .t suites (undo.t among them) look for an in-tree src/timew;
+# none of those is here. This is the slice run 1 counted, not the target's whole suite.
+UPSTREAM_SUITES="AtomicFileTest data.t Datafile.t TagInfoDatabase.t"
 
 usage() { awk 'NR==1{next} /^#/{print;next} {exit}' "$0" >&2; exit 2; }
 
@@ -55,11 +75,24 @@ SEAL="$ROOT/seal"
 RESULTS="$SIDEEYE_REPO/spike/runs/$(basename "$ROOT")"
 mkdir -p "$RESULTS"
 
-restore_and_diff() { # $1 = mode; writes $RESULTS/<mode>-stage-diff.json
-    python3 - "$STAGE" "$SEAL" "$RESULTS/$1-stage-diff.json" <<'PY'
+stamp() { # $1 = label; writes $RESULTS/<label>-started, the floor for this run's records
+    date -u +%FT%TZ > "$RESULTS/$1-started"
+}
+
+restore_and_diff() { # $1 = mode, $2 = restore|check; writes $RESULTS/<mode>-stage-diff.json
+                     # (restore) or $RESULTS/<mode>-stage-check.json (check)
+    # `check` compares and records but never copies: the secondary observation uses it, because
+    # the first restore of a stage is the only record of what the agent changed outside repo/,
+    # and that record belongs to eval (#64). Its record has its own name and no `restored`
+    # field, so nothing reading *-stage-diff.json can mistake it for a restore that found nothing.
+    out="$RESULTS/$1-stage-diff.json"
+    [ "$2" = check ] && out="$RESULTS/$1-stage-check.json"
+    python3 - "$STAGE" "$SEAL" "$out" "$2" <<'PY'
 import hashlib, json, os, shutil, sys
 
-stage, seal, out_path = sys.argv[1], sys.argv[2], sys.argv[3]
+stage, seal, out_path, action = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+if action not in ("restore", "check"):
+    sys.exit("restore_and_diff: action must be restore or check, got %r" % action)
 
 def sha256(path):
     h = hashlib.sha256()
@@ -87,6 +120,8 @@ for rel, digest in sorted(manifest.items()):
         modified.append(rel)
     else:
         continue
+    if action == "check":
+        continue
     # Restore from the seal, then re-verify: a restore that silently failed would
     # let a doctored checker decide the verdict.
     os.makedirs(os.path.dirname(cur), exist_ok=True)
@@ -106,7 +141,9 @@ for dirpath, dirnames, filenames in os.walk(stage):
         if rel not in manifest:
             extra.append(rel)
 
-diff = {"modified": modified, "missing": missing, "extra": sorted(extra), "restored": restored}
+diff = {"modified": modified, "missing": missing, "extra": sorted(extra)}
+if action == "restore":
+    diff["restored"] = restored
 json.dump(diff, open(out_path, "w"), indent=1)
 print(json.dumps(diff))
 PY
@@ -123,7 +160,7 @@ cmd_eval() {
     fi
 
     echo "=== $MODE: verify against the seal, restore what differs ==="
-    restore_and_diff "$MODE"
+    restore_and_diff "$MODE" restore
     if [ "$MODE" != "run" ]; then
         python3 -c '
 import json, sys
@@ -144,6 +181,10 @@ if d["modified"] or d["missing"] or d["extra"]:
     if [ "$MODE" = "pos" ]; then
         set -- "$@" -v "$PATCH:/tmp/fix.patch:ro"
     fi
+    # A record older than this stamp is not this run's (#64 review): the container runs
+    # under `sh -eu`, so a build that fails writes nothing, and the verdict below would
+    # otherwise read the previous run's files and call a broken apparatus green.
+    stamp "$MODE-eval"
     set +e
     docker "$@" "$IMAGE" sh -eu -c '
         cp -r "$STAGE/repo" /tmp/src
@@ -188,10 +229,12 @@ results, mode, proto_path, container_rc = sys.argv[1], sys.argv[2], sys.argv[3],
 sys.path.insert(0, sys.argv[5])
 from replay_gate import gate
 proto = json.load(open(proto_path))
+started = os.path.getmtime(os.path.join(results, "%s-eval-started" % mode))
 
 def read(name, parse=False):
+    # A file from before this run's stamp is a previous run's: absent, for this verdict.
     p = os.path.join(results, "%s-%s" % (mode, name))
-    if not os.path.exists(p):
+    if not os.path.exists(p) or os.path.getmtime(p) < started:
         return None
     with open(p) as f:
         return json.load(f) if parse else f.read().strip()
@@ -239,11 +282,12 @@ expected = None
 if mode == "neg":
     # Not any FAIL: THE failure. A checker broken for an unrelated reason also
     # exits FAIL; pinning the reproduced crash point to the case's k keeps a
-    # differently-broken apparatus from opening the agent gate.
-    expected = (replay["gate"] == "fail_reproduced" and func["gate"] == "pass"
+    # differently-broken apparatus from opening the agent gate. The container's own
+    # exit is part of the expectation: a build that failed wrote nothing this run.
+    expected = (container_rc == 0 and replay["gate"] == "fail_reproduced" and func["gate"] == "pass"
                 and replay.get("crash_point") == proto["case_k"])
 elif mode == "pos":
-    expected = replay["gate"] == "pass" and func["gate"] == "pass"
+    expected = container_rc == 0 and replay["gate"] == "pass" and func["gate"] == "pass"
 verdict["expectation_met"] = expected
 
 out = os.path.join(results, "%s-verdict.json" % mode)
@@ -252,6 +296,211 @@ print("%s: replay=%s func=%s%s" % (mode, replay["gate"], func["gate"],
       "" if expected is None else " expectation_met=%s" % expected))
 if expected is False:
     sys.exit("control %s did not hold — fix the apparatus before running any agent" % mode)
+PY
+}
+
+cmd_secondary() {
+    case "$MODE" in neg|pos|run) ;; *) echo "--mode must be neg, pos or run" >&2; exit 2 ;; esac
+    [ -f "$SEAL/manifest.sha256" ] || { echo "no seal at $SEAL — run stage.sh first" >&2; exit 1; }
+    [ -f "$SIDEEYE_REPO/spike/replay_gate.py" ] || { echo "replay gate not found: $SIDEEYE_REPO/spike/replay_gate.py" >&2; exit 1; }
+    [ -f "$SIDEEYE_REPO/spike/suite_summary.py" ] || { echo "suite summary not found: $SIDEEYE_REPO/spike/suite_summary.py" >&2; exit 1; }
+    if [ "$MODE" = "pos" ]; then
+        [ -f "$PATCH" ] || { echo "known patch not found: $PATCH" >&2; exit 1; }
+    fi
+    if [ "$MODE" = "run" ]; then
+        # Controls first, before anything touches the stage or a container: the run's
+        # numbers are not read until the unpatched tree has failed and the known patch has
+        # passed through this same subcommand (the mirror of run-agent.sh's gate on eval).
+        python3 -c '
+import json, sys
+proto = json.load(open(sys.argv[1]))
+for p in sys.argv[2:]:
+    try:
+        v = json.load(open(p))
+    except (OSError, ValueError) as e:
+        sys.exit("controls have not held: %s is missing or unreadable (%s) — run judge.sh secondary --mode neg and --mode pos first" % (p, e))
+    if v.get("expectation_met") is not True:
+        sys.exit("controls have not held: %s has expectation_met %r" % (p, v.get("expectation_met")))
+    # "on the same stage" is a claim about the seal, not about a directory name: the
+    # control carries the protocol it ran against, and it must be the one this seal names.
+    if v.get("protocol") != proto:
+        sys.exit("controls have not held: %s was recorded against another stage (its protocol differs from %s)" % (p, sys.argv[1]))
+' "$SEAL/protocol.json" "$RESULTS/neg-secondary.json" "$RESULTS/pos-secondary.json"
+    fi
+
+    echo "=== $MODE: verify against the seal (read only; eval restores, this never does) ==="
+    restore_and_diff "$MODE" check
+    python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1])); mode = sys.argv[2]
+if d["modified"] or d["missing"]:
+    sys.exit("the stage differs from the seal (%r); run judge.sh eval --mode %s first — it restores, and records what the agent changed" % (d, mode))
+if mode != "run" and d["extra"]:
+    sys.exit("controls must run on a pristine stage; found extra files %r" % d["extra"])
+' "$RESULTS/$MODE-stage-check.json" "$MODE"
+
+    echo "=== $MODE: rebuild from repo/ only; full explore under the sealed define; upstream suites ==="
+    OPERATION=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["operation"])' "$SEAL/protocol.json")
+    set -- run --rm --network none \
+        -v "$STAGE:$STAGE" -v "$RESULTS:$RESULTS" \
+        -e STAGE="$STAGE" -e RESULTS="$RESULTS" -e MODE="$MODE" \
+        -e OPERATION="$OPERATION" -e UPSTREAM_SUITES="$UPSTREAM_SUITES"
+    if [ "$MODE" = "pos" ]; then
+        set -- "$@" -v "$PATCH:/tmp/fix.patch:ro"
+    fi
+    stamp "$MODE-secondary"
+    set +e
+    docker "$@" "$IMAGE" sh -eu -c '
+        cp -r "$STAGE/repo" /tmp/src
+        if [ "$MODE" = "pos" ]; then git -C /tmp/src apply /tmp/fix.patch; fi
+        cmake -S /tmp/src -B /tmp/build -DCMAKE_BUILD_TYPE=Release >/dev/null
+        cmake --build /tmp/build -j"$(nproc)" >/dev/null
+        mkdir -p /tmp/loop-bin
+        cp /tmp/build/src/timew /tmp/loop-bin/timew
+        export PATH="/tmp/loop-bin:$PATH"
+
+        # The full exploration: every crash world under the sealed define, from a fresh
+        # state at a container-local path (the state dir must not ride a mount) and a
+        # work dir outside the stage (whose work/ is sealed).
+        export TIMEWARRIORDB=/tmp/sec-state
+        mkdir -p /tmp/sec-state
+        erc=0
+        "$STAGE/.harness/sideeye" explore \
+            --state /tmp/sec-state \
+            --setup "$STAGE/define/setup.sh" \
+            --operation "$OPERATION" \
+            --check "$STAGE/define/check.sh" \
+            --shim "$STAGE/.harness/libsideeye_shim.so" \
+            --work /tmp/sec-work \
+            --json "$RESULTS/$MODE-full-explore.json" \
+            --oracle /usr/bin/strace \
+            > "$RESULTS/$MODE-full-explore.txt" 2>&1 || erc=$?
+        printf "%s\n" "$erc" > "$RESULTS/$MODE-full-explore-rc"
+
+        # The upstream suites, one target at a time, run from the build tree the way run 1
+        # ran them. A build failure is recorded as such, never as a suite result.
+        for suite in $UPSTREAM_SUITES; do
+            if ! cmake --build /tmp/build --target "$suite" > "$RESULTS/$MODE-upstream-$suite-build.log" 2>&1; then
+                printf "%s\n" build-failed > "$RESULTS/$MODE-upstream-$suite-rc"
+                continue
+            fi
+            src=0
+            (cd /tmp/build/test && "./$suite") > "$RESULTS/$MODE-upstream-$suite.txt" 2>&1 || src=$?
+            printf "%s\n" "$src" > "$RESULTS/$MODE-upstream-$suite-rc"
+        done
+    ' > "$RESULTS/$MODE-secondary-container.log" 2>&1
+    container_rc=$?
+    set -e
+
+    python3 - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" "$SIDEEYE_REPO/spike" "$UPSTREAM_SUITES" <<'PY'
+import json, os, sys
+
+results, mode, proto_path, container_rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+sys.path.insert(0, sys.argv[5])
+from replay_gate import gate
+import suite_summary
+suites = sys.argv[6].split()
+proto = json.load(open(proto_path))
+started = os.path.getmtime(os.path.join(results, "%s-secondary-started" % mode))
+
+def read(name, parse=False):
+    # A file from before this run's stamp is a previous run's: absent, for this verdict.
+    # A file this run wrote but did not finish (a report cut off mid-write) is absent too,
+    # not a traceback: the verdict then says no_report or build_failed, which is the truth.
+    p = os.path.join(results, "%s-%s" % (mode, name))
+    if not os.path.exists(p) or os.path.getmtime(p) < started:
+        return None
+    with open(p) as f:
+        if not parse:
+            return f.read().strip()
+        try:
+            return json.load(f)
+        except ValueError:
+            return None
+
+verdict = {
+    "mode": mode,
+    "container_rc": container_rc,
+    # The seal this observation ran against; --mode run compares its controls to this.
+    "protocol": proto,
+    "stage_check": json.load(open(os.path.join(results, "%s-stage-check.json" % mode))),
+}
+
+# The full exploration, judged by the same gate as a replay, with the world count a full
+# run has: every crash point plus the baseline. crash_points stays pinned to the case's
+# ops_total the way eval pins it: a setup that silently did nothing would explore a
+# handful of worlds and PASS, and must not read as the fixed tree passing.
+erc = read("full-explore-rc")
+full = {"gate": "build_failed"}
+rj = read("full-explore.json", parse=True)
+if erc is not None and rj is None:
+    # The exploration ran (its rc is this run's) and wrote no report: named apart from
+    # a build that never reached it.
+    full = {"gate": "no_report", "rc": int(erc)}
+if rj is not None and erc is not None:
+    erc = int(erc)
+    g, detail = gate(rj, erc, proto["case_ops_total"], proto["case_ops_total"] + 1)
+    full = {
+        "rc": erc,
+        "verdict": rj.get("verdict"),
+        "unknown_reason": rj.get("unknown_reason"),
+        "explored": rj.get("explored"),
+        "crash_points": rj.get("crash_points"),
+        "ops_total": proto["case_ops_total"],
+        "crash_point": (rj.get("earliest") or {}).get("crash_point"),
+        "gate": g,
+    }
+    if detail:
+        full["gate_detail"] = detail
+verdict["full_explore"] = full
+
+# The upstream suites, read and judged by spike/suite_summary.py (the summary line, the
+# under-run line, the plan recorded and not judged; its --selftest runs in acceptance).
+upstream = {}
+all_pass = bool(suites)
+for suite in suites:
+    src = read("upstream-%s-rc" % suite)
+    text = read("upstream-%s.txt" % suite)
+    entry = {"rc": src}
+    if src is None or src == "build-failed" or text is None:
+        entry["gate"] = "fail"
+        entry["detail"] = "the suite did not build" if src == "build-failed" else "the suite did not run"
+        upstream[suite] = entry
+        all_pass = False
+        continue
+    src = int(src)
+    entry["rc"] = src
+    parsed = suite_summary.parse(text)
+    entry.update(parsed)
+    g, detail = suite_summary.gate(src, parsed)
+    entry["gate"] = g
+    if detail:
+        entry["detail"] = detail
+    all_pass = all_pass and g == "pass"
+    upstream[suite] = entry
+verdict["upstream"] = {"suites": upstream, "gate": "pass" if all_pass else "fail"}
+
+expected = None
+n = proto["case_ops_total"]
+if mode == "neg":
+    # THE failure, at the case's crash point, over every world (a FAIL still explores
+    # them all: 25 of 25 on the witness stage), with the counted suites green — the
+    # unpatched tree reproduces the finding and the suites run 1 counted do not catch it.
+    # The container's own exit is part of it: a build that failed wrote nothing this run.
+    expected = (container_rc == 0 and full["gate"] == "fail_reproduced"
+                and full.get("crash_point") == proto["case_k"]
+                and full.get("crash_points") == n and full.get("explored") == n + 1
+                and verdict["upstream"]["gate"] == "pass")
+elif mode == "pos":
+    expected = container_rc == 0 and full["gate"] == "pass" and verdict["upstream"]["gate"] == "pass"
+verdict["expectation_met"] = expected
+
+out = os.path.join(results, "%s-secondary.json" % mode)
+json.dump(verdict, open(out, "w"), indent=1)
+print("%s: container_rc=%d full_explore=%s upstream=%s%s" % (mode, container_rc, full["gate"],
+      verdict["upstream"]["gate"], "" if expected is None else " expectation_met=%s" % expected))
+if expected is False:
+    sys.exit("secondary control %s did not hold — fix the apparatus before reading any run" % mode)
 PY
 }
 
@@ -399,6 +648,11 @@ manifest = {
     "audit": need("audit.json"),
     "agent": need("agent-meta.json"),
 }
+# The secondary observation (judge.sh secondary --mode run) is evidence beside the gates,
+# not one of them (#64): carried when present, named as absent when not, never required.
+secondary_path = os.path.join(results, "run-secondary.json")
+if os.path.exists(secondary_path):
+    manifest["run"]["secondary"] = json.load(open(secondary_path))
 # An mcp-variant root (it carries mcp.json) has a third control: the channel
 # itself. Its absence — or a contrast that did not hold — is an incomplete record.
 if os.path.exists(os.path.join(root, "mcp.json")):
@@ -443,11 +697,16 @@ print("  replay gate: %s" % manifest["run"]["replay"].get("gate"))
 print("  func gate:   %s" % manifest["run"]["func"].get("gate"))
 print("  audit:       %s" % manifest["audit"]["verdict"])
 print("  agent edits outside repo/: %s" % (manifest["run"]["stage_diff"]["restored"] or "none"))
+sec = manifest["run"].get("secondary")
+print("  secondary:   %s" % ("full explore %s, upstream %s (evidence, not a gate)"
+      % (sec["full_explore"].get("gate"), sec["upstream"].get("gate")) if sec
+      else "absent (judge.sh secondary --mode run was not run; evidence, not a gate)"))
 PY
 }
 
 case "$CMD" in
     eval) cmd_eval ;;
+    secondary) cmd_secondary ;;
     audit) cmd_audit ;;
     finalize) cmd_finalize ;;
     *) usage ;;

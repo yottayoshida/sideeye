@@ -164,4 +164,5 @@ PY
 echo ""
 echo "next: judge.sh audit --root $ROOT --transcript $RESULTS/transcript.jsonl"
 echo "      judge.sh eval  --root $ROOT --mode run"
+echo "      judge.sh secondary --root $ROOT --mode run   (evidence: after eval, which restores; this only verifies)"
 echo "      judge.sh finalize --root $ROOT"
