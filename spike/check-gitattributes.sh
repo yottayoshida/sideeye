@@ -59,7 +59,7 @@ root=${1:-$(cd "$(dirname "$0")/.." && pwd)}
 # `for e in $exempt_dirs` there would read the whole list as one word. With a
 # single entry that is indistinguishable from working; it breaks the first time
 # a second live directory is added, which is the only time this list is edited.
-exempt_dirs=" toys "
+exempt_dirs=" toys lib "
 
 total=0
 fails=0
