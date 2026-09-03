@@ -105,6 +105,18 @@
  *                      recording — plants the flag instead. Killed worlds never reach
  *                      the last act, so only the baseline re-run leaves the FIFO:
  *                      the attribution case for #5's per-world refusal.
+ *   TOY_NONDET_REMOVE  init writes nondet.txt; once the flag file named by TOY_ONCE_FLAG
+ *                      exists (rotate's last act plants it, so the recording does), rotate
+ *                      REPLACES its final rename with unlink(nondet.txt). Same op count as
+ *                      the recording, so every kill still lands where it did; with no
+ *                      trailing-op knob (TOY_MARKER and friends add ops after the rename)
+ *                      killed worlds die at or before that op and keep the file, and only
+ *                      the un-killed baseline re-run executes it: the `missing` kind of
+ *                      baseline_violates_invariant, for #199's per-kind wording. Not an
+ *                      extra op after the rename: the baseline is the world whose kill
+ *                      would land on op n+1, and an interposed op there dies as
+ *                      baseline_run_failed (measured 2026-09-03, with unlink and with
+ *                      remove(3) alike on macOS).
  *   TOY_REMOVE         delete state through remove(3) — a file, a path that was never
  *                      created, and a directory. libc implements remove as unlink (then
  *                      rmdir on the directory errno) internally, without crossing the
@@ -376,7 +388,7 @@ static int cmd_init(void) {
         join_path(log, sizeof log, "log.txt");
         if (write_file(log, "born\n") != 0) return 1;
     }
-    if (getenv("TOY_NONDET_REWRITE")) {
+    if (getenv("TOY_NONDET_REWRITE") || getenv("TOY_NONDET_REMOVE")) {
         char nd[4096];
         join_path(nd, sizeof nd, "nondet.txt");
         if (write_file(nd, "seed\n") != 0) return 1;
@@ -393,6 +405,23 @@ static int cmd_init(void) {
         join_path(sk, sizeof sk, "stdio-seek.txt");
         if (write_file(sk, "0123456789\n") != 0) return 1;
     }
+    return 0;
+}
+
+/* The once-flag named by TOY_ONCE_FLAG lives outside the state directory, so restore
+ * never resets it: the first run that completes plants it and every later run sees it.
+ * Shared by every "only the baseline re-run does X" knob (TOY_MKNOD_BASELINE,
+ * TOY_NONDET_REMOVE); an unset name means no flag, so nothing is planted or seen. */
+static int once_flag_planted(void) {
+    const char *flag = getenv("TOY_ONCE_FLAG");
+    return flag && *flag && access(flag, F_OK) == 0;
+}
+static int plant_once_flag(void) { /* 0 on success or when there is nothing to plant */
+    const char *flag = getenv("TOY_ONCE_FLAG");
+    if (!flag || !*flag || access(flag, F_OK) == 0) return 0;
+    int fd = open(flag, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) return 1;
+    close(fd);
     return 0;
 }
 
@@ -714,7 +743,15 @@ static int cmd_rotate(void) {
     if (unlink(key) != 0 && errno != ENOENT) return 1;
 #endif
 
-    if (rename(tmp, key) != 0) return 1;
+    if (getenv("TOY_NONDET_REMOVE") && once_flag_planted()) {
+        /* #199's `missing` kind: in place of the commit, not after it, so the op count
+         * matches the recording and every kill lands where it did. With no trailing-op
+         * knob set, killed worlds die at or before this op and keep nondet.txt; the
+         * un-killed baseline removes it. */
+        char nd[4096];
+        join_path(nd, sizeof nd, "nondet.txt");
+        if (unlink(nd) != 0) return 1;
+    } else if (rename(tmp, key) != 0) return 1;
 
     /* The correct L1 shape: claim success only after the commit, then do benign
      * trailing work so crash points exist on the far side of the claim. The scratch
@@ -732,19 +769,17 @@ static int cmd_rotate(void) {
      * completed run) plants the flag, and only the baseline re-run — the other run
      * that finishes — sees it and leaves the FIFO (#5's attribution case). */
     if (getenv("TOY_MKNOD_BASELINE")) {
-        const char *flag = getenv("TOY_ONCE_FLAG");
-        if (flag && *flag) {
-            if (access(flag, F_OK) == 0) {
-                char f[4096];
-                join_path(f, sizeof f, "baseline-fifo");
-                if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
-            } else {
-                int fd = open(flag, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                if (fd < 0) return 1;
-                close(fd);
-            }
-        }
+        if (once_flag_planted()) {
+            char f[4096];
+            join_path(f, sizeof f, "baseline-fifo");
+            if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
+        } else if (plant_once_flag() != 0) return 1;
     }
+
+    /* The flag for TOY_NONDET_REMOVE is planted here, as the last act, so only a run
+     * that completes — the recording — plants it; the substitution it arms sits at the
+     * final rename above, in place of an op, not after the last one (#199). */
+    if (getenv("TOY_NONDET_REMOVE") && plant_once_flag() != 0) return 1;
 
     /* Last, after every state operation: the git-convention shape, where a run that
      * did all its work still reports a non-zero status by design. */

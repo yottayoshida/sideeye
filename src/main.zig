@@ -1715,7 +1715,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // operation a second time — the un-killed baseline world is that run, and
             // `baseline_run_failed` is what they say when the re-run disagrees. What
             // preflight lacks is any second observation at all.
-            if (mode != .preflight) setupError("--twice belongs to preflight; explore and replay already re-run the operation in the un-killed baseline world, and a divergent re-run refuses there as baseline_run_failed");
+            if (mode != .preflight) setupError("--twice belongs to preflight; explore and replay already re-run the operation in the un-killed baseline world, and a divergent re-run refuses there: as baseline_run_failed when it does not end the way the recording did, as baseline_violates_invariant when its bytes differ");
             args.twice = true;
             i += 1;
             continue;
@@ -3275,8 +3275,27 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // path for files that only grow; a non-reproducible *rewrite* still lands
         // here, and that refusal is the honest one: its crash worlds could not be
         // judged either.
-        if (k > n and (l0 != null or l2_failed or l1 != null))
-            unknown(.baseline_violates_invariant, "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing; check the operation and the checker against each other first", .fix_define);
+        //
+        // Three layers reach this refusal and the message names which (#199). The byte
+        // layer first: the engine knows the path the re-run left holding neither
+        // recorded content, and saying "check the checker" about it cost the first real
+        // target three measurements. It cannot tell a clock or a random id from a cache
+        // keyed on an inode the restore moved (git's index), so the message reports the
+        // observation and the path, never a cause; the limit itself — byte-repeatable
+        // writes — is the README's, beside `preflight --twice`, which is what the class
+        // wall points at. The marker and the checker are the define's own declarations,
+        // and stay `fix_define`. Bytes first, then the marker, then the checker; the
+        // layers that also failed ride along as a clause.
+        if (k > n and (l0 != null or l1 != null or l2_failed)) {
+            const step: contract.NextStep = if (l0 != null) .class_wall else .fix_define;
+            const what: []const u8 = if (l0) |v|
+                std.fmt.allocPrint(arena, "{s}{s}", .{ baselineObserved(arena, v), baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
+            else if (l1) |v|
+                std.fmt.allocPrint(arena, "the operation printed its success marker, and {s} did not hold the new state that marker promised{s}; check the marker and the operation against each other first", .{ textShown(arena, violationPath(v)), baselineAlsoFailed(false, l2_failed) }) catch "the success marker's promise did not hold in the un-killed re-run; check the marker and the operation against each other first"
+            else
+                "the checker rejected the state the operation leaves on its own; check the operation and the checker against each other first";
+            unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "{s}: {s}", .{ baseline_refusal_lead, what }) catch what, step);
+        }
 
         if (l0 != null or l2_failed or l1 != null) {
             violations += 1;
@@ -5171,6 +5190,35 @@ fn violationPath(v: engine.Violation) []const u8 {
         .rewritten => |p| p,
         .not_durable => |p| p,
     };
+}
+
+/// The opening clause of every `baseline_violates_invariant` refusal (#199): the acceptance
+/// suite and the docs quote it, so it has one home, the way `not_tested_*` fragments do.
+const baseline_refusal_lead = "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing";
+
+/// The other layers that failed in the same un-killed world, as a trailing clause; empty
+/// when none did. The byte layer asks about both; the marker asks only about the checker.
+fn baselineAlsoFailed(marker: bool, checker: bool) []const u8 {
+    if (marker and checker) return "; the success marker's invariant and the checker failed there too";
+    if (checker) return "; the checker rejected that state too";
+    if (marker) return "; the success marker's invariant failed there too";
+    return "";
+}
+
+/// The baseline's reading of the same kinds (#199), worded for the world that was never
+/// killed: `violationObserved` speaks of a crashed state, and the baseline has none. The
+/// switch is the sibling's shape — a tail per kind — and the path is spliced in once.
+/// `judgeL0` hands the baseline only the first three kinds; `not_durable` is `judgeL1`'s
+/// and is worded here so the switch stays total rather than hiding an `unreachable` behind
+/// a judge's contract.
+fn baselineObserved(arena: std.mem.Allocator, v: engine.Violation) []const u8 {
+    const tail: []const u8 = switch (v) {
+        .missing => "gone, though the recording had it before and after",
+        .hybrid => "holding neither the old nor the new content",
+        .rewritten => "with its recorded history no longer a prefix of its content",
+        .not_durable => "not in its recorded final form",
+    };
+    return std.fmt.allocPrint(arena, "the re-run from the restored state left {s} {s}", .{ textShown(arena, violationPath(v)), tail }) catch "the re-run from the restored state did not leave the recorded bytes";
 }
 
 fn violationObserved(v: ?engine.Violation) []const u8 {

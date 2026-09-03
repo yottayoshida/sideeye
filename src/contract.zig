@@ -606,7 +606,9 @@ pub const UnknownReason = enum {
 pub const NextStep = enum {
     /// The define declares something this run contradicted — a checker that accepted a
     /// corrupted store, a marker that never appeared, an exit status that was not the
-    /// declared one, a baseline that failed its own invariant.
+    /// declared one, a baseline whose checker or success marker failed there. A baseline
+    /// whose bytes did not repeat is not the define's to fix and goes to `class_wall`
+    /// (#199).
     fix_define,
     /// A would-be PASS with no completeness witness: the weaker claim is available too.
     pass_oracle,
@@ -618,7 +620,9 @@ pub const NextStep = enum {
     raise_world_timeout,
     /// The target does something Sideeye refuses by design: static linking, threads,
     /// other processes on the state, a syscall the restore model cannot reproduce, an
-    /// entry kind the snapshot does not hold.
+    /// entry kind the snapshot does not hold, a write that does not repeat byte-for-byte
+    /// across two clean runs (the README's "Byte-repeatable writes", measured by
+    /// `preflight --twice`).
     class_wall,
     /// The image is dynamically linked and the marker still never appeared: the shim is
     /// the thing to look at.
