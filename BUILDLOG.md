@@ -5,11 +5,13 @@ Development journal, newest first. Decisions are recorded when they are made —
 ## 2026-09-03 (third) - the assisted-discovery thesis closes where it landed
 
 `#118` (2026-08-14) opened the "bring your own scout — Sideeye remains the judge" thesis
-and, by its own last comment (2026-08-16), stayed open "to track the assisted-discovery
-product thesis" so that "the funnel's next measurements report here". They did not: cohorts
-2, 3 and 4 (2026-08-21..23), the criterion-1 redesign around provenance (ADR 0017), criterion
-1 met on 2026-08-25 (himalaya-r2, assisted), v1.0.0 on 2026-08-29 and the scout-model floor
-(#221) were all recorded in the repository and none on the issue. The one live dependency on
+and, by its comment of 2026-08-16 09:46 (the product decision; the last comment, at 10:09,
+is the 3.5 → 3 correction), stayed open "to track the assisted-discovery product thesis" so
+that "the funnel's next measurements report here". They did not: cohorts 2, 3 and 4
+(2026-08-21..23), criterion 1 met on 2026-08-25 (himalaya-r2, assisted), v1.0.0 on
+2026-08-29 and the scout-model floor (#221, 2026-08-22) were all recorded in the repository
+and none on the issue. The criterion-1 redesign (ADR 0017) was reported there, on
+2026-08-15 — before that comment, and the last thing that was. The one live dependency on
 the issue being open was `docs/freeze-audit.md`'s row — "product tracking, open by owner
 ruling" — and the owner ruled today to close it. The row moves to resolved as `document`,
 the way #345 closed (#425); the closing comment names where the thesis landed and says that
@@ -25,7 +27,6 @@ This entry also puts back two headings of today's own: the edit that added the s
 replaced the first entry's heading line instead of writing above it, and #460 shipped the
 #65 entry headless; the same slip took the second entry's heading when this one was written.
 Both headings are restored here, bodies untouched.
-
 
 ## 2026-09-03 (second) - the secondary observations come from the committed apparatus, and the judge never restores twice
 
@@ -139,7 +140,6 @@ compares each control's copy with the seal in front of it, so a control recorded
 stage of the same name is refused as such. Re-measured once more after that: the controls
 read the same numbers with the protocol in their record, and `--mode run` on a root whose
 controls carry a different pin refuses before touching a container.
-
 
 ## 2026-09-03 - the timewarrior define has one text, and the frozen recipe is a record
 
