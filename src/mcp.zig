@@ -748,6 +748,20 @@ test "the summary carries next_step after the region and before case, and only w
     try std.testing.expect(std.mem.indexOf(u8, without, "\nnext: ") == null);
 }
 
+test "the summary carries apparatus after next_step and before case, joined, and only when the report does (ADR 0041)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const with = summarize(a, "{\"verdict\":\"UNKNOWN\",\"unknown_reason\":\"no_shim_marker\",\"message\":\"m\",\"next_step\":\"Do this.\",\"apparatus\":[\"env:FAKETIME=x\",\"note:n\"],\"case\":\"/c.json\",\"replay\":\"-\"}") orelse return error.TestUnexpectedResult;
+    const next_at = std.mem.indexOf(u8, with, "\nnext: Do this.") orelse return error.TestUnexpectedResult;
+    const ap_at = std.mem.indexOf(u8, with, "\napparatus: env:FAKETIME=x, note:n") orelse return error.TestUnexpectedResult;
+    const case_at = std.mem.indexOf(u8, with, "\ncase: ") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(next_at < ap_at);
+    try std.testing.expect(ap_at < case_at);
+    const without = summarize(a, "{\"verdict\":\"PASS\"}") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.indexOf(u8, without, "\napparatus: ") == null);
+}
+
 /// Best-effort unlink for a work-dir artifact this server is about to recreate.
 fn unlinkPath(path: []const u8) void {
     var zb: [contract.max_path]u8 = undefined;
@@ -891,6 +905,20 @@ fn summarize(arena: std.mem.Allocator, report_min: []const u8) ?[]const u8 {
         out.appendSlice(arena, "\nnext: ") catch return null;
         out.appendSlice(arena, n) catch return null;
     }
+    // ADR 0041: the define's declared devices, as the report carries them. Define text,
+    // not target text, and it sits outside the region: what keeps it from forging a banner
+    // is that the parser refuses control bytes, so an entry cannot contain a newline and
+    // nothing in it can begin a line — a banner is only a banner at the start of one.
+    if (o.get("apparatus")) |a| if (a == .array) {
+        out.appendSlice(arena, "\napparatus: ") catch return null;
+        var first = true;
+        for (a.array.items) |item| {
+            if (item != .string) continue;
+            if (!first) out.appendSlice(arena, ", ") catch return null;
+            first = false;
+            out.appendSlice(arena, item.string) catch return null;
+        }
+    };
     if (strField(o, "case")) |c| if (!std.mem.eql(u8, c, "(none)")) {
         out.appendSlice(arena, "\ncase: ") catch return null;
         out.appendSlice(arena, c) catch return null;

@@ -134,6 +134,9 @@ def expected_text(s):
     # #274: next_step rides after the region and before case — engine text, outside
     # the counted region, so the prefix rule of mcp 17 is untouched.
     if isinstance(s.get("next_step"), str): t += "\nnext: " + s["next_step"]
+    # ADR 0041: the declared devices ride after next_step and before case, outside the
+    # region — define text, control bytes refused by the parser.
+    if isinstance(s.get("apparatus"), list): t += "\napparatus: " + ", ".join(x for x in s["apparatus"] if isinstance(x, str))
     if isinstance(s.get("case"), str) and s["case"] != "(none)": t += "\ncase: " + s["case"]
     if isinstance(s.get("replay"), str) and s["replay"] != "-": t += "\nreplay: " + s["replay"]
     # #336: the advisory rides exactly the results whose text holds a region — same
@@ -256,6 +259,38 @@ drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META
 python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));v=d["result"]["structuredContent"]["verdict"];v=="PASS" or sys.exit(("stale or wrong verdict for toy-fixed: %s"%v,d))' \
   && pass "server B answered about ITS target (toy-fixed PASS), not server A's stale FAIL" \
   || fail "a reused work dir served a stale verdict (or toy-fixed did not PASS)"
+
+echo "=========== mcp 6ap: a define's apparatus is checked in the child the server starts (#257) ==========="
+# The server starts `sideeye explore --config` with a minimal environment plus the names
+# in SIDEEYE_MCP_CHILD_ENV, and that child's environment is what the define's operation
+# inherits. A device the define declares but the allowlist does not carry is a SETUP ERROR
+# in the child — a loud isError here — and not a silently different run. Seen red by
+# pointing the check at the server's own environment instead: the first call then runs.
+mkdir -p "$WS/apstate"
+cat > "$WS/apparatus.toml" <<TOML
+[world]
+state = "./apstate"
+[define]
+setup = "$OUT/toy-fixed init"
+operation = "$OUT/toy-fixed rotate"
+apparatus = ["env:TOY_PIN=1", "note:the flag form and the key form are one grammar"]
+TOML
+TOY_PIN=1 SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WORK=/tmp/mcp-work \
+  sh -c "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/apparatus.toml\"}}}' | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];(r.get("isError") is True and "has no TOY_PIN" in r["content"][0]["text"]) or sys.exit(r)' \
+  && pass "a device the server holds but the allowlist does not carry is a SETUP ERROR in the child" || fail "the check looked at the server's environment, or did not run"
+rm -rf "$WS/apstate" /tmp/mcp-work; mkdir -p "$WS/apstate"
+TOY_PIN=1 SIDEEYE_MCP_CHILD_ENV=TOY_PIN SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WORK=/tmp/mcp-work \
+  sh -c "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/apparatus.toml\"}}}' | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+python3 - <<'PY' && pass "with the device on the allowlist the run reaches a verdict, and the summary carries the apparatus line" || fail "the allowlisted device did not reach the check, or the summary lacks the line"
+import json, sys
+d = json.load(open("/tmp/mcp.out")); r = d["result"]
+if r.get("isError"): sys.exit("isError: " + r["content"][0]["text"][:200])
+s = r["structuredContent"]
+if s.get("apparatus") != ["env:TOY_PIN=1", "note:the flag form and the key form are one grammar"]: sys.exit(s.get("apparatus"))
+if s.get("apparatus_unchecked") != ["note:the flag form and the key form are one grammar"]: sys.exit(s.get("apparatus_unchecked"))
+if "\napparatus: env:TOY_PIN=1, note:the flag form and the key form are one grammar" not in r["content"][0]["text"]: sys.exit(r["content"][0]["text"][:300])
+PY
 
 echo "=========== mcp 7: SIDEEYE_MCP_CHILD_ENV passes named vars through — and only those ==========="
 # #68: a target that locates its state through an environment variable (TIMEWARRIORDB,

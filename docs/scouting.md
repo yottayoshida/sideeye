@@ -127,7 +127,10 @@ the recorded one has its answer.
   the paths that differ. Epoch-stamping targets are byte-identical within
   a second and flaky across one — the worst refusal shape to discover late,
   because explore only refuses it at the baseline, after every crash world
-  has run.
+  has run. Whatever you pin to get past it — a faked clock, a seeded
+  `os.urandom` — goes in `[define] apparatus`, so the define carries the
+  whole question and the engine refuses to record without it
+  (`docs/apparatus.md`).
 - Capture the engine's exit code before piping its output anywhere; a
   pipe's exit code is not the engine's.
 - Create the state root and the report's directory before exploring; the

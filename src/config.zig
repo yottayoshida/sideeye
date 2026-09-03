@@ -61,6 +61,13 @@ pub const Define = struct {
     /// Relative spellings resolve against the toml's own directory, like `state`
     /// (ADR 0007): the same file means the same thing from any cwd.
     cwd: ?[]const u8 = null,
+    /// The devices the define assumes are present in the environment the operation
+    /// inherits — `env:NAME`, `env:NAME=VALUE`, `preload:LIB`, `pythonpath:FILE`,
+    /// `note:TEXT` — as spelled, in order (ADR 0041). The engine checks each entry it can
+    /// after `setup`, refuses the run as SETUP ERROR when one is missing, and carries the
+    /// list into the report verbatim. Absent means nothing declared, which is what every
+    /// define written before this key existed says by saying nothing.
+    apparatus: ?[]const []const u8 = null,
 };
 
 pub const Fault = struct {
@@ -88,6 +95,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var marker: ?[]const u8 = null;
     var expected_status: ?[]const u8 = null;
     var cwd: ?[]const u8 = null;
+    var apparatus: ?[]const []const u8 = null;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     var line_no: usize = 0;
@@ -115,7 +123,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
         // other key knows exactly one value shape, and an array there is refused by
         // name rather than falling into a generic parse error — the key dispatch
         // happens before the value parse precisely so this refusal can exist.
-        const Slot = union(enum) { cmd: *?Command, str: *?[]const u8 };
+        const Slot = union(enum) { cmd: *?Command, str: *?[]const u8, list: *?[]const []const u8 };
         const slot: Slot = switch (section) {
             .none => return fault(line_no, "a key before any section header"),
             .world => if (std.mem.eql(u8, key, "state"))
@@ -134,13 +142,15 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 Slot{ .str = &expected_status }
             else if (std.mem.eql(u8, key, "cwd"))
                 Slot{ .str = &cwd }
+            else if (std.mem.eql(u8, key, "apparatus"))
+                Slot{ .list = &apparatus }
             else
-                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status` and `cwd` exist"),
+                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status`, `cwd` and `apparatus` exist"),
         };
         switch (slot) {
             .str => |p| {
                 if (is_array)
-                    return fault(line_no, "this key takes one double-quoted string; the array form belongs to the commands (setup, operation, check)");
+                    return fault(line_no, "this key takes one double-quoted string; the array form belongs to the commands (setup, operation, check) and to apparatus");
                 const value = stripQuoted(rawv) orelse
                     return fault(line_no, "the value must be one double-quoted string (an inline # comment may follow it)");
                 if (badBytes(value)) |msg| return fault(line_no, msg);
@@ -163,11 +173,168 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                     p.* = .{ .str = try arena.dupe(u8, value) };
                 }
             },
+            .list => |p| {
+                if (p.* != null) return fault(line_no, "duplicate key");
+                if (!is_array)
+                    return fault(line_no, "apparatus takes the array form: one `[` ... `]` line of double-quoted `kind:value` entries (env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE, note:TEXT)");
+                // `[]`, `[ ]`, `[] # comment`: all the empty array, refused in this key's own
+                // words rather than the commands' ("a command needs at least its argv[0]").
+                const inner = std.mem.trimStart(u8, rawv[1..], " \t");
+                if (inner.len > 0 and inner[0] == ']')
+                    return fault(line_no, "apparatus is empty; leave the key out to declare nothing");
+                switch (try parseArrayValue(arena, rawv)) {
+                    .ok => |elems| {
+                        for (elems) |e| if (apparatusFault(e)) |msg| return fault(line_no, msg);
+                        p.* = elems;
+                    },
+                    .bad => |msg| return fault(line_no, msg),
+                }
+            },
         }
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus } };
+}
+
+/// One apparatus entry, parsed (ADR 0041). The parser and the engine's check both go
+/// through `parseApparatusEntry`, so the grammar has one home and a kind added here
+/// reaches the check as a compile error in its `switch`, never as a runtime "the parser
+/// should have refused it". The entry's spelling is what the report carries; this is
+/// what the engine acts on.
+pub const ApparatusEntry = union(enum) {
+    env: struct { name: []const u8, value: ?[]const u8 },
+    preload: []const u8,
+    pythonpath: []const u8,
+    note: []const u8,
+};
+
+pub const ApparatusParse = union(enum) { ok: ApparatusEntry, bad: []const u8 };
+
+/// Parse one `kind:value` entry, or say why it is not one. One grammar for the toml key
+/// and the `--apparatus` flag, so the two cannot drift into accepting different spellings
+/// — the same reason `expected_status` shares its digit check with the flag.
+pub fn parseApparatusEntry(entry: []const u8) ApparatusParse {
+    if (badBytes(entry)) |msg| return .{ .bad = msg };
+    // The toml's array form cannot spell a double quote inside an element, so the flag
+    // form does not accept one either: one grammar, not a superset on the command line.
+    if (std.mem.indexOfScalar(u8, entry, '"') != null)
+        return .{ .bad = "an apparatus entry cannot contain a double quote (the toml form could not spell it)" };
+    const colon = std.mem.indexOfScalar(u8, entry, ':') orelse
+        return .{ .bad = "an apparatus entry is `kind:value`: env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE or note:TEXT" };
+    const kind = entry[0..colon];
+    const value = entry[colon + 1 ..];
+    if (value.len == 0) return .{ .bad = "an apparatus entry has nothing after its `kind:`" };
+    if (std.mem.eql(u8, kind, "env")) {
+        const eq = std.mem.indexOfScalar(u8, value, '=');
+        const name = if (eq) |i| value[0..i] else value;
+        if (name.len == 0) return .{ .bad = "env: needs a variable name before the `=`" };
+        for (name) |ch| if (!(std.ascii.isAlphanumeric(ch) or ch == '_'))
+            return .{ .bad = "env: names a variable: letters, digits and underscores only" };
+        if (engineOwnedEnv(name))
+            return .{ .bad = "env: names a variable the engine sets for every child (LD_PRELOAD, DYLD_INSERT_LIBRARIES, TOY_STATE, SIDEEYE_*); the engine's own doing is not the define's apparatus" };
+        return .{ .ok = .{ .env = .{ .name = name, .value = if (eq) |i| value[i + 1 ..] else null } } };
+    }
+    if (std.mem.eql(u8, kind, "preload")) {
+        if (std.mem.indexOfScalar(u8, value, '/') != null)
+            return .{ .bad = "preload: names a library by the start of its basename (libfaketime), not by path" };
+        return .{ .ok = .{ .preload = value } };
+    }
+    if (std.mem.eql(u8, kind, "pythonpath")) {
+        if (std.mem.indexOfScalar(u8, value, '/') != null)
+            return .{ .bad = "pythonpath: names a file directly under a PYTHONPATH entry (sitecustomize.py), not a path" };
+        return .{ .ok = .{ .pythonpath = value } };
+    }
+    if (std.mem.eql(u8, kind, "note")) return .{ .ok = .{ .note = value } };
+    return .{ .bad = "an apparatus entry's kind is one of env, preload, pythonpath, note" };
+}
+
+/// Why an apparatus entry is not one, or null when it is.
+pub fn apparatusFault(entry: []const u8) ?[]const u8 {
+    return switch (parseApparatusEntry(entry)) {
+        .ok => null,
+        .bad => |msg| msg,
+    };
+}
+
+/// The one predicate behind `apparatus_unchecked` and the text line's "(declared, not
+/// checked)": an entry the engine carries without checking. Today that is `note:` alone;
+/// both renderings read this, so they cannot disagree about which entries those are.
+pub fn apparatusUnchecked(entry: []const u8) bool {
+    return switch (parseApparatusEntry(entry)) {
+        .ok => |e| e == .note,
+        .bad => false,
+    };
+}
+
+/// The variables the engine sets for every child it spawns. Declaring one as apparatus
+/// would declare the engine's own doing, and a value the define wrote there is overwritten
+/// before the operation sees it.
+pub fn engineOwnedEnv(name: []const u8) bool {
+    return std.mem.eql(u8, name, "LD_PRELOAD") or std.mem.eql(u8, name, "DYLD_INSERT_LIBRARIES") or
+        std.mem.eql(u8, name, "TOY_STATE") or std.mem.startsWith(u8, name, "SIDEEYE_");
+}
+
+test "apparatus parses as an array of kind:value entries, stays optional, and refuses the string form by name" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const base = "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\n";
+    const none = parseFor(a, base);
+    try t.expect(none.ok.apparatus == null);
+    const two = parseFor(a, base ++ "apparatus = [\"env:FAKETIME=@2024-01-01 00:00:00\", \"preload:libfaketime\", \"note:hgrc revbranchcache.mmap = no\"]\n");
+    try t.expectEqual(@as(usize, 3), two.ok.apparatus.?.len);
+    try t.expectEqualStrings("env:FAKETIME=@2024-01-01 00:00:00", two.ok.apparatus.?[0]);
+    try t.expectEqualStrings("preload:libfaketime", two.ok.apparatus.?[1]);
+    try t.expectEqualStrings("note:hgrc revbranchcache.mmap = no", two.ok.apparatus.?[2]);
+    // The string form is refused by name, the mirror of the array refusal on `cwd`.
+    const str = parseFor(a, base ++ "apparatus = \"env:FAKETIME\"\n");
+    try t.expectEqual(@as(usize, 5), str.fault.line);
+    try t.expect(std.mem.indexOf(u8, str.fault.what, "takes the array form") != null);
+    const empty = parseFor(a, base ++ "apparatus = []\n");
+    try t.expect(std.mem.indexOf(u8, empty.fault.what, "apparatus is empty") != null);
+    const empty_sp = parseFor(a, base ++ "apparatus = [ ]\n");
+    try t.expect(std.mem.indexOf(u8, empty_sp.fault.what, "apparatus is empty") != null);
+    const empty_c = parseFor(a, base ++ "apparatus = [] # nothing yet\n");
+    try t.expect(std.mem.indexOf(u8, empty_c.fault.what, "apparatus is empty") != null);
+    const dup = parseFor(a, base ++ "apparatus = [\"note:a\"]\napparatus = [\"note:b\"]\n");
+    try t.expect(std.mem.indexOf(u8, dup.fault.what, "duplicate key") != null);
+    // A bad entry is refused at its line, with the entry grammar's own words.
+    const kind = parseFor(a, base ++ "apparatus = [\"seccomp:enosys.json\"]\n");
+    try t.expectEqual(@as(usize, 5), kind.fault.line);
+    try t.expect(std.mem.indexOf(u8, kind.fault.what, "kind is one of") != null);
+    const owned = parseFor(a, base ++ "apparatus = [\"env:LD_PRELOAD=/x.so\"]\n");
+    try t.expect(std.mem.indexOf(u8, owned.fault.what, "the engine sets for every child") != null);
+}
+
+test "apparatusFault: the entry grammar, one case per refusal" {
+    try t.expect(apparatusFault("env:FAKETIME") == null);
+    try t.expect(apparatusFault("env:PAPIS_NP=0") == null);
+    try t.expect(apparatusFault("preload:libfaketime") == null);
+    try t.expect(apparatusFault("pythonpath:sitecustomize.py") == null);
+    try t.expect(apparatusFault("note:anything at all, with spaces: and colons") == null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("faketime").?, "kind:value") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("env:").?, "nothing after") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("env:=1").?, "before the `=`") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("env:MY-VAR").?, "letters, digits") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("env:SIDEEYE_TRACE_PATH=/x").?, "engine sets") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("env:TOY_STATE").?, "engine sets") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("preload:/usr/lib/libfaketime.so").?, "not by path") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("pythonpath:pins/sitecustomize.py").?, "not a path") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("seccomp:enosys").?, "kind is one of") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("note:a\x01b").?, "control bytes") != null);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("note:say \"hi\"").?, "double quote") != null);
+    try t.expect(engineOwnedEnv("SIDEEYE_STATE_DIR"));
+    try t.expect(!engineOwnedEnv("FAKETIME"));
+    // The parsed shape the engine acts on, and the one predicate both renderings share.
+    const env = parseApparatusEntry("env:PAPIS_NP=0").ok;
+    try t.expectEqualStrings("PAPIS_NP", env.env.name);
+    try t.expectEqualStrings("0", env.env.value.?);
+    try t.expect(parseApparatusEntry("env:FAKETIME").ok.env.value == null);
+    try t.expectEqualStrings("libfaketime", parseApparatusEntry("preload:libfaketime").ok.preload);
+    try t.expect(apparatusUnchecked("note:anything"));
+    try t.expect(!apparatusUnchecked("env:FAKETIME"));
+    try t.expect(!apparatusUnchecked("not an entry"));
 }
 
 /// The byte discipline both value shapes share. A NUL truncates at the C boundary,

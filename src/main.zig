@@ -54,6 +54,23 @@ pub const version = "1.0.0";
 /// How the loader is told to inject the shim. Same idea, different spelling.
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
 
+/// `--apparatus` is repeatable and the flag parser owns no allocator; a define with more
+/// devices than this belongs in a toml. The entries live here and `Args.apparatus` is a
+/// slice of them, the same slice type the toml's key yields.
+const max_apparatus = 32;
+var apparatus_flag_buf: [max_apparatus][]const u8 = undefined;
+
+/// Every variable the engine sets for a child it spawns (the pairs handed to `runChild*`
+/// at the recording, the worlds and the baseline). `config.engineOwnedEnv` refuses these
+/// as apparatus, and a test below holds the two lists together: a pair added to the
+/// children without being refused here would be a device the parent has and the child
+/// does not — the silent-different-run the refusal exists to stop.
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, preload_var };
+
+test "every variable the engine sets for a child is refused as apparatus" {
+    for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
+}
+
 var out_buf: [16 * 1024]u8 = undefined;
 
 /// The report is the product. Losing it silently is not an option.
@@ -150,6 +167,10 @@ const Args = struct {
     /// server's, handed a config path and starting the engine itself — has no other way
     /// to say it. Absolute by the time anything reads it.
     cwd: ?[]const u8 = null,
+    /// The define's apparatus entries, as spelled (ADR 0041): the toml key's list, or the
+    /// repeated `--apparatus` flags collected in `apparatus_flag_buf`. Empty when nothing
+    /// was declared, which is what every define written before the key existed says.
+    apparatus: []const []const u8 = &.{},
 };
 
 /// A saved counterexample (ADR 0009): the resolved define it was found against, the
@@ -607,6 +628,17 @@ var violations: u32 = 0;
 /// The declared success status in effect (default 0), mirrored into every report so a
 /// PASS over a non-zero convention is machine-auditable (ADR 0014).
 var expected_status_val: u8 = 0;
+/// The define's apparatus as declared (ADR 0041), set by `checkApparatus` once every entry
+/// passed. Empty when nothing was declared, and the report then carries neither field: an
+/// empty array would read as "declared nothing" on a SETUP ERROR raised before any define
+/// was read. The unchecked subset is not stored: both renderings derive it through
+/// `config.apparatusUnchecked`, so they cannot disagree about it.
+var apparatus_declared: []const []const u8 = &.{};
+
+fn apparatusHasUnchecked() bool {
+    for (apparatus_declared) |e| if (config.apparatusUnchecked(e)) return true;
+    return false;
+}
 
 /// Snapshot with the per-file cap, or refuse naming the file (#265). `what` is the
 /// call site's existing message, kept byte-identical for every failure except the
@@ -793,8 +825,8 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--oracle <strace>] [--work <dir>] [--twice]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--oracle <strace>] [--work <dir>] [--twice]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye mcp
@@ -828,6 +860,11 @@ const usage_fmt =
     \\  --cwd        directory the define's commands run in (default: this process's).
     \\               The engine's own cwd does not move: --work, --json and --state
     \\               are still read against it
+    \\  --apparatus  a device the operation's environment must carry, kind:value, repeatable:
+    \\               env:NAME, env:NAME=VALUE, preload:LIB (a line of /etc/ld.so.preload),
+    \\               pythonpath:FILE, note:TEXT. Checked after setup, before anything is
+    \\               recorded; a missing one is a SETUP ERROR naming it. The report carries
+    \\               the list as declared (docs/apparatus.md). The engine applies nothing
     \\  stdin        not a flag: every command sideeye runs (setup, operation, checker)
     \\               starts with its standard input at end-of-file, on the CLI and MCP
     \\               paths alike. A target that reads stdin sees EOF, never the
@@ -1113,6 +1150,7 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.Ne
     // `next`, before the classification block, so the two lines the acceptance suite
     // anchors on (the reason, and the detail beneath it) keep their positions.
     if (divergence_syscall.len > 0) say("divergence  {s}\n", .{divergence_syscall});
+    sayApparatus(json_arena orelse std.heap.page_allocator, "apparatus   {s}\n");
     say(
         \\
         \\atomicity   {s}
@@ -1744,6 +1782,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // directory: a flag is typed at a cwd, so a relative one already means what the
         // caller meant. It is absolutized with the rest of them further down.
         else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v
+        else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v)
         else if (std.mem.eql(u8, argv[i], "--expect-status")) {
             args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
             // Mirrored immediately: a refusal between here and the canonical binding
@@ -1838,8 +1877,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (mode == .replay) {
         if (args.state != null or args.setup != null or args.operation != null or
             args.check != null or args.marker != null or args.expect_status != null or
-            args.cwd != null or args.config != null)
-            setupError("replay takes its define from the case file; the define-surface flags and --config do not apply");
+            args.cwd != null or args.config != null or args.apparatus.len != 0)
+            setupError("replay takes its define from the case file; the define-surface flags (--apparatus included) and --config do not apply");
         const rarena = arena_state.allocator();
         const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, .{ .require_regular = true }) orelse setupError(
             std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
@@ -1957,8 +1996,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
     if (args.config) |cfg_path| {
-        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null)
-            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd) are mutually exclusive: the define lives in one place or the other");
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0)
+            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         // Bounded, and the only reader that is. The path is operator-named and may
         // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
@@ -1993,6 +2032,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 args.check = if (d.check) |c| resolveCommand(arena, dir, c) else null;
                 args.marker = d.marker;
                 args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
+                args.apparatus = d.apparatus orelse &.{};
                 if (d.expected_status) |es| {
                     args.expect_status = parseExpectStatus(es, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -2305,6 +2345,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
             else => setupError("--setup did not exit normally"),
         }
     }
+
+    // ---- apparatus (ADR 0041) -----------------------------------------------------
+    // After setup, which is where the cohorts generated their devices (a sitecustomize, a
+    // RUSTC stand-in), and before the first snapshot, so a define whose apparatus is absent
+    // never records. Every path that runs a define passes here: explore, preflight, replay.
+    checkApparatus(arena_state.allocator(), args.apparatus, args.cwd);
 
     var initial = snapshotOrRefuse(gpa, state_abs, "could not snapshot the initial state");
     // #5, checked before anything runs: an unreproducible entry the setup left (or
@@ -2955,6 +3001,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\      not tested: {s}
             \\
         , .{ expected_status_val, l0_note, oracle_note, metadata_note, l1_note, case_note, notTestedText() });
+        sayApparatus(arena, "      apparatus: {s}\n");
         if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
@@ -3485,6 +3532,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             case_shown,
             replay_cmd,
         });
+        sayApparatus(arena, "apparatus   {s}\n");
         // Printed only when the two exhibits are different worlds; when the
         // earliest is itself checker-red — every FAIL this engine produced
         // before poetry — the text above is byte-identical to what it was.
@@ -3536,6 +3584,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      not tested: {s}
         \\
     , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
+    sayApparatus(arena, "      apparatus: {s}\n");
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -5086,6 +5135,169 @@ fn readFileAllocCapped(
     return list.items;
 }
 
+/// `--apparatus ENTRY`: the same grammar the toml key uses, refused with the same words.
+fn appendApparatusFlag(args: *Args, v: []const u8) void {
+    if (config.apparatusFault(v)) |m| setupError(m);
+    const n = args.apparatus.len;
+    if (n == max_apparatus) setupError("--apparatus: more than 32 entries; a define this large belongs in a toml");
+    apparatus_flag_buf[n] = v;
+    args.apparatus = apparatus_flag_buf[0 .. n + 1];
+}
+
+/// A SETUP ERROR whose sentence carries values; when even the sentence cannot be built
+/// the format string itself is the fallback, so the refusal still names its subject.
+fn setupErrorFmt(arena: std.mem.Allocator, comptime fmt: []const u8, args: anytype) noreturn {
+    setupError(std.fmt.allocPrint(arena, fmt, args) catch fmt);
+}
+
+/// The text report's apparatus line, in the calling block's own style, only when
+/// something was declared.
+fn sayApparatus(arena: std.mem.Allocator, comptime fmt: []const u8) void {
+    if (apparatus_declared.len > 0) say(fmt, .{apparatusNote(arena)});
+}
+
+/// A JSON array of strings as a report field; with `only_unchecked`, the entries
+/// `config.apparatusUnchecked` selects.
+fn jsonArrayField(w: *std.ArrayList(u8), arena: std.mem.Allocator, name: []const u8, items: []const []const u8, only_unchecked: bool) !void {
+    try w.appendSlice(arena, ",\n  \"");
+    try w.appendSlice(arena, name);
+    try w.appendSlice(arena, "\": [");
+    var first = true;
+    for (items) |e| {
+        if (only_unchecked and !config.apparatusUnchecked(e)) continue;
+        if (!first) try w.appendSlice(arena, ", ");
+        first = false;
+        try jsonString(w, arena, e);
+    }
+    try w.append(arena, ']');
+}
+
+/// ADR 0041. Every entry the engine can check is checked against the environment the
+/// operation will inherit — this process's, which `runChild*` hands down, plus the pairs
+/// the engine adds, whose names the parser refused up front. A missing device is a SETUP
+/// ERROR naming the entry and what was looked at; `note:` entries are carried and listed
+/// as unchecked. `preload:` reads `/etc/ld.so.preload` and never `LD_PRELOAD`: the engine
+/// replaces that variable with its own shim for every child, so a library there is a
+/// device that does not arrive, and the refusal says so when that is where it was found.
+///
+/// `apparatus_declared` is set here, at the end, and only when every entry passed: a SETUP
+/// ERROR raised by this check carries no apparatus field, so a report that carries one is
+/// a run whose declared devices were present when the engine looked (the schema page's
+/// promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
+/// resolves it from there, so the check must too.
+fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8) void {
+    // The global preload file is one file; read once, on the first `preload:` entry.
+    var preload_file: ?[]const u8 = null;
+    for (entries) |e| {
+        const parsed = switch (config.parseApparatusEntry(e)) {
+            .ok => |p| p,
+            .bad => |msg| setupError(msg),
+        };
+        switch (parsed) {
+            .env => |v| {
+                const got = envValue(v.name) orelse setupErrorFmt(arena, "apparatus {s}: the environment the operation inherits has no {s}", .{ e, v.name });
+                if (v.value) |want| if (!std.mem.eql(u8, got, want))
+                    setupErrorFmt(arena, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
+            },
+            .preload => |lib| {
+                if (builtin.os.tag == .macos)
+                    setupErrorFmt(arena, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
+                if (preload_file == null) preload_file = readFileAllocCapped(arena, "/etc/ld.so.preload", 64 * 1024, .{ .require_regular = true }) orelse blk: {
+                    // Absent is the common case and means "no preload"; present but unreadable
+                    // is a different fact and must not be reported as "no line names it".
+                    if (posix.access("/etc/ld.so.preload", posix.F_OK) == 0)
+                        setupErrorFmt(arena, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB)", .{e});
+                    break :blk "";
+                };
+                if (!preloadNamed(preload_file.?, lib)) {
+                    if (envValue("LD_PRELOAD")) |lp| if (namesLib(lp, lib))
+                        setupErrorFmt(arena, "apparatus {s}: {s} is in LD_PRELOAD, which the engine replaces with its own shim for every child, so it does not reach the operation; a global preload goes in /etc/ld.so.preload", .{ e, lib });
+                    setupErrorFmt(arena, "apparatus {s}: no line of /etc/ld.so.preload names {s}", .{ e, lib });
+                }
+            },
+            .pythonpath => |file| {
+                const pp = envValue("PYTHONPATH") orelse setupErrorFmt(arena, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits", .{e});
+                if (!pythonpathHas(arena, pp, file, cwd))
+                    setupErrorFmt(arena, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
+            },
+            .note => {},
+        }
+    }
+    apparatus_declared = entries;
+}
+
+fn envValue(name: []const u8) ?[]const u8 {
+    var zbuf: [256]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&zbuf, "{s}", .{name}) catch return null;
+    const v = posix.getenv(z.ptr) orelse return null;
+    return std.mem.span(v);
+}
+
+/// Does a list of libraries — one line of `/etc/ld.so.preload`, or an `LD_PRELOAD`
+/// value — name one whose basename starts with `lib`? Entries are separated by
+/// whitespace or colons, the way the loader reads both. The one prefix rule, pure, so a
+/// unit test holds the predicate the acceptance suite cannot reach: the runner's file is
+/// one file for the whole job.
+fn namesLib(list: []const u8, lib: []const u8) bool {
+    var it = std.mem.tokenizeAny(u8, list, " \t:");
+    while (it.next()) |entry| if (std.mem.startsWith(u8, std.fs.path.basename(entry), lib)) return true;
+    return false;
+}
+
+/// `namesLib` over the lines of `/etc/ld.so.preload`, skipping blanks and `#` comments.
+fn preloadNamed(contents: []const u8, lib: []const u8) bool {
+    var lines = std.mem.tokenizeScalar(u8, contents, '\n');
+    while (lines.next()) |raw| {
+        const line = std.mem.trim(u8, raw, " \t\r");
+        if (line.len == 0 or line[0] == '#') continue;
+        if (namesLib(line, lib)) return true;
+    }
+    return false;
+}
+
+fn pythonpathHas(arena: std.mem.Allocator, pythonpath: []const u8, file: []const u8, cwd: ?[]const u8) bool {
+    var it = std.mem.tokenizeScalar(u8, pythonpath, ':');
+    while (it.next()) |dir| {
+        // A relative entry is relative to where the operation runs, which is the define's
+        // cwd when it declares one and this process's otherwise — the same rule
+        // `resolvePathAgainst` applies to every relative path of the define (ADR 0007).
+        const base = if (cwd) |c| resolvePathAgainst(arena, c, dir) else dir;
+        var zbuf: [contract.max_path]u8 = undefined;
+        const z = std.fmt.bufPrintZ(&zbuf, "{s}/{s}", .{ base, file }) catch continue;
+        if (posix.access(z.ptr, posix.F_OK) == 0) return true;
+    }
+    return false;
+}
+
+/// The text report's `apparatus` line: the entries as declared, comma-separated, each
+/// unchecked one saying so. The JSON carries the same list as two arrays.
+fn apparatusNote(arena: std.mem.Allocator) []const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    for (apparatus_declared, 0..) |e, i| {
+        if (i > 0) out.appendSlice(arena, ", ") catch return "(allocation failed)";
+        out.appendSlice(arena, textShown(arena, e)) catch return "(allocation failed)";
+        if (config.apparatusUnchecked(e)) out.appendSlice(arena, " (declared, not checked)") catch return "(allocation failed)";
+    }
+    return out.items;
+}
+
+test "preloadNamed: /etc/ld.so.preload lines, by basename prefix, comments and blanks ignored" {
+    try std.testing.expect(preloadNamed("/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1\n", "libfaketime"));
+    try std.testing.expect(preloadNamed("# comment\n\n  /opt/pin/no-accel-copy.so  \n", "no-accel-copy"));
+    try std.testing.expect(preloadNamed("/a/libone.so /b/libtwo.so\n", "libtwo"));
+    try std.testing.expect(!preloadNamed("", "libfaketime"));
+    try std.testing.expect(!preloadNamed("# /usr/lib/libfaketime.so.1\n", "libfaketime"));
+    try std.testing.expect(!preloadNamed("/usr/lib/libfake.so\n", "libfaketime"));
+    try std.testing.expect(!preloadNamed("/usr/lib/libfaketime/other.so\n", "libfaketime"));
+}
+
+test "namesLib: an LD_PRELOAD value or a preload line, colon- or space-separated, by basename prefix" {
+    try std.testing.expect(namesLib("/x/libsideeye_shim.so:/y/libfaketime.so.1", "libfaketime"));
+    try std.testing.expect(namesLib("/y/libfaketime.so.1 /x/other.so", "libfaketime"));
+    try std.testing.expect(!namesLib("/x/libsideeye_shim.so", "libfaketime"));
+    try std.testing.expect(!namesLib("", "libfaketime"));
+}
+
 fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     // A read error is not end of file (the shared loop returns null for it): treating
     // them alike once turned a truncated oracle file into a complete one, and the
@@ -5289,6 +5501,13 @@ fn buildJson(
     try w.appendSlice(arena, ",\n  \"expected_status\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{expected_status_val}));
 
+    // ADR 0041: present only when the define declared something (the presence rule
+    // `next_step` and `divergence_syscall` follow), each entry as it was spelled; the
+    // unchecked list is the same entries through the one predicate the text line uses.
+    if (apparatus_declared.len > 0) {
+        try jsonArrayField(w, arena, "apparatus", apparatus_declared, false);
+        if (apparatusHasUnchecked()) try jsonArrayField(w, arena, "apparatus_unchecked", apparatus_declared, true);
+    }
     if (unknown_reason) |r| {
         try w.appendSlice(arena, ",\n  \"unknown_reason\": ");
         try jsonString(w, arena, r);
