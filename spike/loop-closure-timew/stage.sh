@@ -51,10 +51,17 @@ SIDEEYE_REPO=${SIDEEYE_REPO:-$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)}
 PIN=${PIN:-db7751cb12aa3b1d52161a9e2457be8539644e56}
 TIMEW_GIT=${TIMEW_GIT:-https://github.com/GothenburgBitFactory/timewarrior.git}
 IMAGE=${IMAGE:-sideeye-loop-timew:latest}
-# The define's operation, written once: the explore records it into the case,
-# and protocol.json carries it to the judge so the functional gate drives the
-# same command (space-separated words only — sideeye's own operation parsing).
-OPERATION="timew track 2020-01-02T10:00 - 2020-01-02T11:00 beta :yes"
+# The define's operation, read from its one canonical text beside the checker
+# (define/operation, #65): the explore records it into the case, and protocol.json
+# carries it to the judge so the functional gate drives the same command
+# (space-separated words only — sideeye's own operation parsing). The file is read,
+# never staged: the seal's seven-file inventory below does not include it.
+OPERATION=$(cat "$SCRIPT_DIR/define/operation")
+[ -n "$OPERATION" ] || { echo "empty operation in $SCRIPT_DIR/define/operation" >&2; exit 1; }
+# One line: judge.sh expands it unquoted inside its container, so a second line would
+# ride into the command. ($(cat) strips trailing newlines; an embedded one stays.)
+nl=$(printf '\nx'); nl=${nl%x}
+case "$OPERATION" in *"$nl"*) echo "operation must be one line: $SCRIPT_DIR/define/operation" >&2; exit 1 ;; esac
 # VARIANT selects the agent's re-check button. cli (default): a baked replay.sh.
 # mcp: a baked build.sh plus an mcp.json at the root — the agent rebuilds with
 # the script and replays through the sideeye MCP server (ADR 0011). The seal

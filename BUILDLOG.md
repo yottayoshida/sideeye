@@ -2,6 +2,78 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-03 - the timewarrior define has one text, and the frozen recipe is a record
+
+`#65` filed the shape on 2026-08-13: the undo checker and its setup existed three times under
+`spike/` (the committed `loop-closure-timew/define/` pair and heredocs in both dogfood scripts),
+and the leg-C replay predicate twice (`judge.sh`, `dogfood-timew-replay.sh`), all kept in step
+by hand. Verified today before touching anything: the executable bodies are still
+byte-identical (the committed files differ only by their header comments), and the two
+predicates are equivalent while differing in text (`.get` versus `[]`).
+
+The first draft moved the pair to a neutral `spike/dogfood-timew/` and made all three
+scripts copy from it. The review's first Critical ended that: `spike/dogfood-timew.sh` is the
+`defines` entry of two unknown-rate corpus rows (`corpus.tsv:67-68`), the manifests pin its
+digest, `count.py` recomputes it from the checkout and dies on a mismatch, and
+`acceptance.sh` runs that on every pull request. The file cannot change by a byte. So the
+consumers are two, `stage.sh` and `dogfood-timew-replay.sh`, both loop-closure-adjacent — and
+with two consumers the move bought nothing. The canonical text stays where it was, gains an
+`operation` file beside it (read, never staged: the seal's seven-file inventory is unchanged),
+and the frozen recipe is named in the cookbook as a record rather than a consumer.
+
+The mutation that proves a copy is gone: the plan chose `exit 0` at the top of the checker and
+argued that `exit 7` would leave both consumers green — the falsification probe (`main.zig`)
+counts a non-zero exit other than 126 as red, so a checker that always fails passes the probe,
+and the exploration would FAIL "as the unpatched tree should". The first diff review read the
+engine further than the plan had: the baseline world (`k = n + 1`) runs the checker too, and a
+failure there is `baseline_violates_invariant`, an UNKNOWN. Measured, both mutants are red, for
+different reasons: `exit 0` makes the probe refuse (`checker_not_falsified`), `exit 7` makes
+the baseline refuse. Leg A sees exit 2 instead of 1 either way, and `stage.sh` stops at its
+explore check. The plan's argument was wrong; the check it chose still measures what it
+claims. The predicate lives in `spike/replay_gate.py` with the judge's `.get` form (a
+missing key reads as None and lands in `other`; the old leg C would have raised); the
+`unknown_reason not in report` clause is kept as written, so a present-null document is still
+not a pass. The second review added the two things the first draft could not see: the
+`operation` string had no check of its own (an implementation that left it in place would have
+passed every check), and `{check,setup}.sh` brace expansion does not exist in the `sh` CI
+invokes. The diff review added the preflight the replay script had for its binary, shim and
+patch but not for the gate (a missing `replay_gate.py` would have surfaced as a leg-C FAIL after
+two timewarrior builds; the check runs only when leg C is selected, the way the header's
+leg-only rule wants it; the judge got the same check beside its seal check on the second
+round), and a one-line guard on `define/operation`: the judge expands the
+string unquoted inside its container, so a second line would ride into the command.
+
+What stays duplicated, on purpose: the one-field JSON reads and the STAGE/SEAL/RESULTS
+derivations. Their drift is loud across scripts (`run-agent.sh` refuses without a verdict it can
+read; `finalize` exits on a missing record), and within one script there is nothing to drift
+from. `spike/fsusage/phase0/reach.sh` carries the same words after argv[0] (its `timew` is
+an absolute Homebrew path) for a different measurement (fs_usage reach, no checker, no setup)
+and is not a consumer either.
+
+Measured, with the Linux build from this tree and the `sideeye-loop-timew` image of 2026-08-13.
+Unmutated: `stage.sh` on a fresh root read `define/operation` into `protocol.json` and sealed
+the same seven files as before; `judge.sh eval --mode pos` on the #62 witness stage
+(`~/sideeye-loop-62`) came back `replay=pass func=pass expectation_met=True` through
+`replay_gate.py`; `LEGS=abc sh spike/dogfood-timew-replay.sh` in the container (the clone
+pointed at a host mirror of the pin, `--network none`) ended `ALL REPLAY-ACROSS-FIX LEGS
+PASSED`. Mutated, in copies of the tree so the reviewer's diff stayed clean: `exit 0` after
+the checker's `set -eu` made leg A fail with `got exit 2` and the probe's "the checker accepted
+a state whose every file had been overwritten with junk", and made `stage.sh` stop at
+`FAIL explore: expected exit 1 + verdict FAIL + a saved case (got exit 2)` — both consumers,
+one edit. `exit 7` in the same place, measured after the review: leg A fails the same way
+(`got exit 2`) with "the invariant failed in the world that was never crashed". The gate's default `expected_explored` changed to 3 made the judge's pos control
+say `replay=other … expectation_met=False` and exit with "control pos did not hold".
+
+**The same mutation left leg C green.** The first `replay_gate.py` had its CLI restate the
+default (`else 2`), so the number lived twice inside the one file this change exists to make
+single, and the mutation reached only the importer. The CLI now defers to the function when no
+fourth argument is given, and `--selftest` runs `gate()` and the CLI over the same nine
+documents and fails on a disagreement; acceptance check 11c runs it. Seen red twice before
+being trusted: the default moved to 3 (four failures) and the original defect shape, default 3
+with the CLI passing 2 (two failures). Re-run against the corrected file, the same default-to-3
+mutation now fails leg C — `replay gate: other -- explored 2 != 3`, `1 leg(s) failed`, exit 1 —
+with legs A and B still green, and the unmutated tree passes all three legs again.
+
 ## 2026-09-02 (twelfth) - the engine cannot verify its own confinement, and the review corrected why
 
 `#328` tracked what #266's close left open: a case's setup/operation/check are executed on
