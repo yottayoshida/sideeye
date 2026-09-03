@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-03 (third) - the assisted-discovery thesis closes where it landed
+
+`#118` (2026-08-14) opened the "bring your own scout — Sideeye remains the judge" thesis
+and, by its own last comment (2026-08-16), stayed open "to track the assisted-discovery
+product thesis" so that "the funnel's next measurements report here". They did not: cohorts
+2, 3 and 4 (2026-08-21..23), the criterion-1 redesign around provenance (ADR 0017), criterion
+1 met on 2026-08-25 (himalaya-r2, assisted), v1.0.0 on 2026-08-29 and the scout-model floor
+(#221) were all recorded in the repository and none on the issue. The one live dependency on
+the issue being open was `docs/freeze-audit.md`'s row — "product tracking, open by owner
+ruling" — and the owner ruled today to close it. The row moves to resolved as `document`,
+the way #345 closed (#425); the closing comment names where the thesis landed and says that
+nothing further is tracked there. Two things the review of the plan caught before the edit:
+the row's sixth column still said "open by owner ruling" and would have rendered, struck
+through, on the resolved table; and the plan's check asked `--live` for "no drift", which it
+never says on this repository today (29 snapshot issues closed without a resolved row, three
+filed since) — the check is that `#118` appears under `open_not_active` between this merge and
+the close, and under neither heading after. The promise this change makes is false for exactly
+that window, and the pull request says so.
+
+This entry also puts back two headings of today's own: the edit that added the second entry
+replaced the first entry's heading line instead of writing above it, and #460 shipped the
+#65 entry headless; the same slip took the second entry's heading when this one was written.
+Both headings are restored here, bodies untouched.
+
+
 ## 2026-09-03 (second) - the secondary observations come from the committed apparatus, and the judge never restores twice
 
 `#64` (2026-08-13): DESIGN §17 cites, beside run 1's three gates, a full re-exploration of the
@@ -115,6 +140,8 @@ stage of the same name is refused as such. Re-measured once more after that: the
 read the same numbers with the protocol in their record, and `--mode run` on a root whose
 controls carry a different pin refuses before touching a container.
 
+
+## 2026-09-03 - the timewarrior define has one text, and the frozen recipe is a record
 
 `#65` filed the shape on 2026-08-13: the undo checker and its setup existed three times under
 `spike/` (the committed `loop-closure-timew/define/` pair and heredocs in both dogfood scripts),
