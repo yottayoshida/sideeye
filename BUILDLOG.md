@@ -45,7 +45,11 @@ review of the diff caught the leg's first form calling `refused()` below the gat
 snapshots the detector ledger — a credit taken after the count is read fails the suite's
 closing check, on Linux only, which the host run of the leg alone could not show; the leg
 now spells the reason with the anchored literal and credits nothing, the way the `--twice`
-legs below the gate already do.
+legs below the gate already do — through `refused_uncredited()`, which `refused()` now calls.
+The simplify pass then folded the three sites back into one `if` whose else-if chain picks
+the sentence and the `next_step` by layer, hoisted the opening clause into
+`baseline_refusal_lead`, and moved the README/DESIGN greps out of the engine leg into a leg
+of their own, so a prose edit that drops the bullet fails under a line about the documents.
 
 ## 2026-09-03 (third) - the assisted-discovery thesis closes where it landed
 
