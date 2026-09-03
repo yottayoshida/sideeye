@@ -66,9 +66,11 @@ check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + r
 marker    = "Recorded"          # optional: the operation's own success claim
 expected_status = "3"           # optional: the exit status that means "completed" (default "0")
 cwd       = "./repo"            # optional: where the three commands run (default: sideeye's own cwd)
+apparatus = ["env:FAKETIME=@2024-01-01 00:00:00", "preload:libfaketime"]   # optional: what the operation's environment must carry
 ```
 
-- The same define works as flags: `--state` / `--setup` / `--operation` / `--check` / `--marker` / `--expect-status` / `--cwd`.
+- The same define works as flags: `--state` / `--setup` / `--operation` / `--check` / `--marker` / `--expect-status` / `--cwd` / `--apparatus` (repeatable).
+- `apparatus` names the devices a deterministic run depends on — a faked clock, a pinned `os.urandom`, a stand-in compiler — so the define is the whole question and the report says what it ran under. Sideeye applies none of it; after `setup` it checks that each `env:`, `preload:` (a line of `/etc/ld.so.preload`) and `pythonpath:` entry is present in the environment the operation inherits and refuses the run as SETUP ERROR when one is not. `note:` entries are carried unchecked. Recipes and the one thing to know about global preloads: [docs/apparatus.md](docs/apparatus.md).
 - Every command Sideeye runs — your setup, operation and checker among them — starts with its standard input at end-of-file, on the CLI and MCP paths alike. A target that reads stdin sees EOF, never the terminal or pipe Sideeye itself was started from: that input is the caller's, not the define's, and a committed define has to mean the same run everywhere.
 - `--shim` names the interposition library when it is not beside the binary (the tarball and zig-out layouts are found on their own); `--work` moves the scratch directory for traces and cases (default `/tmp/sideeye-work`).
 - `--json <path>` writes the same report as JSON, for a machine to branch on.
@@ -217,6 +219,7 @@ The finding is not the durable artifact — the declaration is. A `sideeye.toml`
 | [docs/report-schema.md](docs/report-schema.md) | Every field the JSON report carries, held to the code by CI |
 | [docs/ci-quickstart.md](docs/ci-quickstart.md) | Running sideeye in GitHub Actions — the example is a live workflow |
 | [docs/scouting.md](docs/scouting.md) | Handing the repo-reading to an agent — and how capable that agent has to be |
+| [docs/apparatus.md](docs/apparatus.md) | Declaring the devices a deterministic run depends on, and what the engine checks |
 | [docs/target-classes.md](docs/target-classes.md) | Real tool classes against the constraint list, each row backed by a recorded run |
 | [docs/unknown-rate.md](docs/unknown-rate.md) | How often Sideeye refuses instead of judging — measured on a corpus frozen before the sweep ran, with the threshold set from the data |
 | [docs/kill-criteria-review.md](docs/kill-criteria-review.md) | The project's own conditions for abandoning it, scored against the collected data |

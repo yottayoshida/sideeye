@@ -3127,9 +3127,23 @@ if ! grep -q '"unknown_reason": "oracle_missed_operation"' "$SD/divergence.json"
     echo "FAIL the divergence fixture no longer diverges: toy-raw did not produce oracle_missed_operation, so the schema check below cannot see divergence_syscall"
     fails=$((fails + 1))
 fi
+# A sixth report, for the fields only a declared apparatus carries (#257): `apparatus` and
+# `apparatus_unchecked` appear when the define declares them and nowhere else, so without a
+# report of that shape the page's rows would be "documented but never generated" and claim 2
+# goes red — the same reason the divergence report above exists.
+mkdir -p "$SD/sap"
+TOY_PIN=1 TOY_STATE=$SD/sap "$SIDEEYE" explore --state "$SD/sap" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --apparatus env:TOY_PIN=1 --apparatus "note:carried, not checked" \
+    --shim "$SHIM" --work "$SD/wap" --oracle /usr/bin/strace \
+    --json "$SD/apparatus.json" >/dev/null 2>&1
+if ! grep -q '"apparatus_unchecked"' "$SD/apparatus.json" 2>/dev/null; then
+    echo "FAIL the apparatus fixture carries no apparatus_unchecked field, so the schema check below cannot see the rows it documents"
+    fails=$((fails + 1))
+fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/main.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -3393,6 +3407,82 @@ else
     echo "$o3" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
+
+echo ""
+echo "=========== check 2ap: a define names its apparatus, and the engine checks it reached the child (#257, ADR 0041) ==========="
+# `[define] apparatus` / `--apparatus`: after setup, before the first snapshot, every entry
+# the engine can check is checked against the environment the operation inherits, and a
+# missing one is a SETUP ERROR naming it. The legs: an env device unset, set to the wrong
+# value, set right (the report carries the list, and a note is listed unchecked); a
+# pythonpath device under the second entry and under none; a preload device found in
+# LD_PRELOAD — which the engine replaces for every child, so it does not reach the
+# operation — and not in /etc/ld.so.preload. The positive preload leg is NOT here:
+# /etc/ld.so.preload is one file for the whole runner and every other leg would inherit
+# it; the content predicate is a unit test and the arrival was measured by hand (PR).
+# Seen red by removing the checkApparatus call: the unset, wrong-value and absent legs
+# then run to a verdict instead of exit 3.
+ap_fails=0
+# ap_leg <label> <want-rc> <fragment> [NAME=VALUE...] [-- <extra explore flags...>]: a fresh
+# state and work directory, the toy define, the strace oracle. The assignments go to the
+# engine's own environment (which the operation inherits); the flags precede the define.
+ap_leg() {
+    _ap_label=$1; _ap_want=$2; _ap_frag=$3; shift 3
+    _ap_env=""
+    while [ $# -gt 0 ] && [ "$1" != "--" ]; do _ap_env="$_ap_env $1"; shift; done
+    [ "${1-}" = "--" ] && shift
+    rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+    # shellcheck disable=SC2086
+    o=$(env $_ap_env "$SIDEEYE" explore "$@" --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "$_ap_want" ] && echo "$o" | grep -q -- "$_ap_frag"; then
+        echo "ok   $_ap_label"
+    else
+        echo "FAIL $_ap_label: exit $rc (wanted $_ap_want), looked for [$_ap_frag]"
+        echo "$o" | sed 's/^/     | /' | head -3
+        ap_fails=$((ap_fails + 1))
+    fi
+}
+unset TOY_PIN 2>/dev/null || true
+rm -rf /tmp/acc && mkdir -p /tmp/acc
+ap_leg "an env device that is not set is a SETUP ERROR naming the entry" 3 \
+    "apparatus env:TOY_PIN=1: the environment the operation inherits has no TOY_PIN" -- --apparatus env:TOY_PIN=1
+ap_leg "an env device set to another value is a SETUP ERROR naming the value" 3 \
+    "TOY_PIN is set, but to a different value (2)" TOY_PIN=2 -- --apparatus env:TOY_PIN=1
+# The device present: the run reaches a verdict and both renderings carry the declaration —
+# the text line here, the JSON's two arrays (the note listed as unchecked) just below.
+ap_leg "a device that is present runs to a verdict, and the text carries the declaration" 0 \
+    "      apparatus: env:TOY_PIN=1, note:hgrc revbranchcache.mmap = no (declared, not checked)" \
+    TOY_PIN=1 -- --apparatus env:TOY_PIN=1 --apparatus "note:hgrc revbranchcache.mmap = no" --json /tmp/acc/apparatus.json
+if python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("apparatus")==["env:TOY_PIN=1","note:hgrc revbranchcache.mmap = no"] and d.get("apparatus_unchecked")==["note:hgrc revbranchcache.mmap = no"] else 1)' /tmp/acc/apparatus.json; then
+    echo "ok   the JSON carries the declaration verbatim and the note as unchecked"
+else
+    echo "FAIL apparatus JSON: the two arrays are not the declaration and its unchecked subset"; ap_fails=$((ap_fails + 1))
+fi
+mkdir -p /tmp/acc/pp && : > /tmp/acc/pp/sitecustomize.py
+ap_leg "a pythonpath device under the second PYTHONPATH entry is found" 0 \
+    "      apparatus: pythonpath:sitecustomize.py" PYTHONPATH=/nonexistent:/tmp/acc/pp -- --apparatus pythonpath:sitecustomize.py
+ap_leg "a pythonpath device under no entry is a SETUP ERROR naming the entries looked at" 3 \
+    "no entry of PYTHONPATH (/nonexistent) has sitecustomize.py directly under it" PYTHONPATH=/nonexistent -- --apparatus pythonpath:sitecustomize.py
+# The library the engine's own process preloads here is harmless (libc is already loaded);
+# what the leg measures is the refusal's reading of LD_PRELOAD, not the library. The skip
+# uses the engine's own predicate — entries split on whitespace or colons, a basename
+# starting with `libc` — so a runner whose global preload names such a library skips
+# rather than failing the leg by accident.
+if [ -f /etc/ld.so.preload ] && awk -F'[ \t:]+' '{ for (i = 1; i <= NF; i++) { n = $i; sub(/.*\//, "", n); if (n ~ /^libc/) f = 1 } } END { exit !f }' /etc/ld.so.preload; then
+    echo "skip apparatus preload legs: this runner's /etc/ld.so.preload names a library starting with libc, the fixture's prefix"
+else
+    ap_leg "a preload device found only in LD_PRELOAD is refused as not reaching the operation" 3 \
+        "libc is in LD_PRELOAD, which the engine replaces with its own shim for every child" LD_PRELOAD=libc.so.6 -- --apparatus preload:libc
+    ap_leg "a preload device absent from /etc/ld.so.preload is a SETUP ERROR naming the file" 3 \
+        "no line of /etc/ld.so.preload names libc" -- --apparatus preload:libc
+fi
+# The grammar is one function for the flag and the key: a bad entry is refused before any
+# command runs, with the parser's words.
+ap_leg "an entry of an unknown kind is refused by the flag with the parser's words" 3 \
+    "kind is one of env, preload, pythonpath, note" -- --apparatus seccomp:enosys.json
+[ "$ap_fails" = 0 ] || fails=$((fails + 1))
 
 echo ""
 echo "=========== check 7: no descriptor number is exempt (contract v8) ==========="
@@ -4420,6 +4510,9 @@ acc_dummy() {
         # A directory that exists: --cwd is vetted before anything runs, so the
         # nonexistent default below would make the flag read as refused everywhere.
         --cwd)            printf '/' ;;
+        # A well-formed entry: the grammar is checked at parse time, and the dummy path
+        # below has no `kind:`, so the flag would read as refused everywhere.
+        --apparatus)      printf 'note:x' ;;
         *)                printf '%s' "$acc_nx.dummy" ;;
     esac
 }

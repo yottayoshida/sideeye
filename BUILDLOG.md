@@ -2,6 +2,79 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-03 (sixth) - a define names its apparatus, and the engine checks it reached the child
+
+`#257` (2026-08-25) was deferred on 2026-08-26 with a reading that still holds: of the nine
+devices cohorts 2-4 used to make targets deterministic, two cannot be config at all (a seccomp
+profile is the container's; a pid pin applied inside the operation's own command line is not the
+engine's to see), the declaration vocabulary already existed in the cohort protocol's three tiers,
+and the report side depended on #320. #320 closed. The owner ruled today between three shapes —
+the engine applies the apparatus, the define only names it, the define names it and the engine
+checks it reached the child — and chose the third. ADR 0041.
+
+The key is `[define] apparatus`, an array of `kind:value` strings, the eighth key and the fifth
+time DESIGN §12's growth sentence is faced; the ADR answers the test the `cwd` paragraph set,
+because the environment is exactly what this key names: it is not a way to set it (that stays
+in the launcher, `setup` and the MCP allowlist), it is the only way to say it in the artifact
+the report carries. Four kinds. `env:NAME` and `env:NAME=VALUE`, because `PAPIS_NP=0` is a
+device only at 0. `preload:LIB`, read from `/etc/ld.so.preload` and never from `LD_PRELOAD` —
+the plan's first draft checked `LD_PRELOAD`, and the review pointed at `main.zig`'s recording
+pairs: the engine replaces that variable with its own shim for every child, so a library there
+is a device that does not arrive, and cohort 2's launcher used the global file for exactly that
+reason; the refusal now says so when `LD_PRELOAD` is where the library was found.
+`pythonpath:FILE`, existence under some entry, content not judged. `note:TEXT`, carried and
+reported as unchecked. The check runs after `setup` — the sitecustomize and the RUSTC stand-in
+are generated there — and before the first snapshot, on explore, preflight and replay alike.
+
+Three things the plan gave up on review. The saved case does not carry the declaration:
+surface 4 is a closed set of versions with a gate per field, and the safety net for a replay
+without the apparatus is #199's refusal, which names the path. The report's two fields appear
+only when something was declared, so a SETUP ERROR raised before the config was read cannot
+carry an empty array that reads as "declared nothing" — and `check-report-schema.py`'s second
+claim then needed a sixth fixture report, one that declares, the way the divergence report was
+added for `divergence_syscall`. And the positive preload observation is not in CI:
+`/etc/ld.so.preload` is one file for the whole runner and every other leg would inherit it;
+the runner's sudo is passwordless, so "cannot" was the wrong word and "must not" is the right
+one. The content predicate is a unit test, the arrival was measured by hand, and the acceptance
+legs hold the negative side — including the `LD_PRELOAD` wording, exercised by preloading libc
+into the engine's own process, which is harmless because libc is already there.
+
+The host measurement caught one omission the unit tests could not: the PASS report is printed
+from two blocks of its own (`expected status:` in the indented style, not `expected    exit`),
+and the first cut put the `apparatus` line only beside the FAIL and UNKNOWN blocks, so a PASS
+carried the field in JSON and not in text. Both PASS blocks print it now, in their own style.
+
+The review of the diff found two P0s, both on seams the host run could not reach. The
+acceptance suite's CLI self-description takes its flag list from the parser and its argument
+values from `acc_dummy`, whose default has no `kind:`, so `--apparatus` would have read as
+refused in every mode and absent from every synopsis line; the synopsis names it now, and the
+dummy hands it `note:x`. And the report's `apparatus` field was assigned before the check ran,
+so the SETUP ERROR that a missing device raises carried the field the schema page says means
+"those devices reached the run" — the two fields are set at the end of the check now, once
+every entry passed, and a `note:` beside a missing device no longer produces `apparatus` without
+`apparatus_unchecked`. Replay refused every define-surface flag but this one; it refuses this
+one too. The audit row goes back to active: a resolution that moves a surface waits for the
+sweep to write its `sc-` row, the way #377's did, and `not-measured` would have rendered as
+"closed before its window", which is the wrong fact.
+
+The simplify pass moved the grammar to where it belonged. The entry was a string all the way
+to the check, so `checkApparatus` re-split `kind:value` and the `=` that `apparatusFault`
+had already split, and paid with two unreachable "the parser should have refused it" arms; a
+fifth kind added to the parser would have compiled clean and reached the check's `else` as
+an internal error about the operator's valid entry. `config.parseApparatusEntry` now returns
+a tagged union the check switches on, and `apparatusFault` is its thin wrapper. The unchecked
+list is no longer stored — the JSON array and the text line both derive it through one
+predicate, `config.apparatusUnchecked`, so the day a kind becomes carried-not-checked they
+cannot disagree. `Args` holds one slice instead of a buffer, a count and an optional; the
+seven formatted refusals share `setupErrorFmt`; the four text sites share `sayApparatus`;
+the two JSON arrays share `jsonArrayField`; `preloadNamed` is a line filter over one
+`namesLib` predicate; and the names the engine sets for every child are listed once, with a
+unit test holding `engineOwnedEnv` to them. The acceptance legs run through one `ap_leg`,
+whose skip guard for the preload legs splits on colons the way the engine does — the second
+review's one remaining "partly" — and the mutation that proves the check is live was
+re-pointed at the call line each time it moved, because a mutation whose anchor no longer
+matches measures nothing and reports green.
+
 ## 2026-09-03 (fourth) - a baseline refusal names the layer that failed there
 
 `#199` asked for a second observation in preflight, and `preflight --twice` shipped it in
