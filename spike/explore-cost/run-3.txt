@@ -1,0 +1,13 @@
+# explore-cost: Darwin arm64, 5ae3d40, zig 0.16.0, 2026-09-03T09:17Z
+# host: macOS 15.3.1, Apple M4, 32 GiB
+# load at start: load average 11.95 12.28 12.29
+# engine: zig-out/bin/sideeye  shim: zig-out/lib/libsideeye_shim.dylib  toy: spike/out/toy-fixed  (paths relative to the checkout)
+# per-world = engine wall clock / worlds; the clock includes start-up, setup, the recording run and its snapshots (an upper bound on one world)
+#
+shape        padfiles  padsize du      rc  worlds  cps    engine    per-world
+small        20        1024     80K    0   5       4      0.6s      0.113s
+f200-100k    200       102400   20M    0   5       4      2.8s      0.560s
+f2000-10k    2000      10240    23M    0   5       4      18.0s     3.606s
+f2000-50k    2000      51200   102M    0   5       4      18.9s     3.778s
+f20000-1k    20000     1024     78M    0   5       4      157.3s    31.457s
+# load at end: load average 14.63 13.46 12.80
