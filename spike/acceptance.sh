@@ -3932,6 +3932,20 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 11c: the replay gate is one text, and its CLI agrees with it (#65) ==========="
+# spike/replay_gate.py is the leg-C predicate for dogfood-timew-replay.sh and the replay
+# gate the loop-closure judge imports. Its --selftest runs gate() and the CLI over the
+# same synthetic documents (pass / fail_reproduced / the other clauses, with and without
+# the explored default) and fails on any disagreement. Seen red: with the function's
+# default changed to 3 while the CLI still carried its own 2, leg C stayed green under a
+# mutation the judge caught -- the shape this check exists to hold shut.
+if python3 "$ROOT/spike/replay_gate.py" --selftest; then
+    echo "ok   replay_gate.py: gate() and its CLI agree on the selftest documents"
+else
+    echo "     replay_gate.py's selftest failed (rc=$?): gate() and its CLI disagree, or a clause moved"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
 # Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
 # recomputation from corpus.tsv + the committed sweep artifacts (count.py check also

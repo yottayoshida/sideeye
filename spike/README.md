@@ -16,6 +16,7 @@ rehearsal green is required before a Seal A PR and after any tool change).
 | `toys/`, `build-toys.sh`, `check.sh` | the demo/acceptance toy target |
 | `acceptance.sh`, `mcp-acceptance.sh` | CI acceptance harness (CLI and MCP surfaces) |
 | `check-report-schema.py` | report JSON/text parity and schema claims |
+| `replay_gate.py` | the one replay-gate predicate: imported by `loop-closure-timew/judge.sh`, called by `dogfood-timew-replay.sh` leg C. `--selftest` holds `gate()` and the CLI to the same answers (acceptance check 11c) |
 | `check-sealed-campaigns.sh` | CI: walks every `blind-hunt*/` and runs the consistency checker each campaign sealed |
 | `campaign-driver.sh` | non-sealed driver: status / sweep / select / verify / explore. Refuses dirty trees, uncommitted inputs, existing outdirs |
 | `ledger-append.sh` | the ONLY pen for campaign ledgers — appends, then proves byte-prefix against HEAD |
@@ -77,8 +78,16 @@ that closes a gap is proven by re-running them from a fresh checkout.
 
 `dogfood-*.sh`, `dogfood-watson/`, `loop-closure-timew/`, `probe.sh`,
 `empty-oracle.sh`, `timew-undo-ordering.patch` — the pre-campaign era
-(timewarrior, watson, todoman, omamori). Nothing in CI runs them; they
-stay because BUILDLOG and ADR prose cite them by path.
+(timewarrior, watson, todoman, omamori). They stay because BUILDLOG and
+ADR prose cite them by path, and CI is not blind to them: the
+`timew-regression` job runs `dogfood-timew-replay.sh` (legs a–c) on every
+push to main and every pull request, and `acceptance.sh` reads three of them on every
+run — `dogfood-watson/check.sh` and `loop-closure-timew/define/check.sh` as
+cookbook recipes, and `dogfood-timew.sh` as a define whose bytes the
+unknown-rate corpus pins. That pin freezes the recipe, so the timewarrior
+define's one canonical text is `loop-closure-timew/define/` (checker, setup,
+operation): `stage.sh` and `dogfood-timew-replay.sh` copy its checker and setup
+and read its operation (#65).
 
 ## Local outputs
 

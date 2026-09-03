@@ -4,8 +4,9 @@
 # older committed interval, and it must not invent intervals. Removing nothing is
 # allowed because a crash may have beaten the intent's commit.
 #
-# Copied verbatim from the heredoc in spike/dogfood-timew-replay.sh (which copied it
-# from spike/dogfood-timew.sh, where the full reasoning lives).
+# This file is the one canonical text of the checker (#65). The scripts that stage or
+# replay the define copy it from here; none carries its own. The frozen v0.4 recipe,
+# whose bytes the unknown-rate corpus pins, is a record rather than a consumer.
 set -eu
 before=$(timew export) || exit 1
 timew undo >/dev/null || exit 1

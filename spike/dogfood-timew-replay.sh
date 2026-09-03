@@ -36,8 +36,8 @@
 # The CI regression job runs LEGS=abc: the FAIL/PASS pair across the fix, no
 # distro package. Leg a is mandatory — b/c/d replay the case leg A records in
 # this same run, so a subset without a would have nothing to replay. Leg-only
-# preconditions (the distro timewarrior for leg d) are checked only when their
-# leg is selected; an unconditional check here once made LEGS=abc die in an
+# preconditions (the distro timewarrior for leg d, the replay gate for leg c) are
+# checked only when their leg is selected; an unconditional check here once made LEGS=abc die in an
 # environment that had everything legs a-c need. The state-archive labels
 # (state-after-leg-X) assume the default leg order; with a subset the label
 # names the archive slot, not necessarily the leg that just ran.
@@ -70,6 +70,13 @@ TIMEW_GIT=${TIMEW_GIT:-https://github.com/GothenburgBitFactory/timewarrior.git}
 [ -x "$SIDEEYE" ] || { echo "build sideeye first: zig build -Dtarget=<arch>-linux-gnu"; exit 1; }
 [ -f "$SHIM" ] || { echo "shim not found: $SHIM"; exit 1; }
 [ -f "$PATCH" ] || { echo "patch not found: $PATCH"; exit 1; }
+# Leg C's gate is checked up front, beside the binary, shim and patch — but only when leg C
+# is selected, like the distro package for leg D: a missing file must not surface as a
+# leg-C FAIL after two timewarrior builds, indistinguishable from a regression.
+REPLAY_GATE=$SIDEEYE_REPO/spike/replay_gate.py
+if wants c; then
+    [ -f "$REPLAY_GATE" ] || { echo "replay gate not found: $REPLAY_GATE (leg C reads it)"; exit 1; }
+fi
 for tool in git cmake g++ make python3 strace; do
     command -v "$tool" >/dev/null || { echo "$tool not found; see the header for the install"; exit 1; }
 done
@@ -90,47 +97,24 @@ fails=0
 pass() { echo "ok   $1"; }
 fail() { echo "FAIL $1"; fails=$((fails + 1)); }
 
-# --- the define, copied from spike/dogfood-timew.sh (the original recipe keeps the
-# full reasoning; the copy keeps this script one self-contained measurement) --------
-cat > "$RUN/check.sh" <<'CHECK'
-#!/bin/sh
-set -eu
-before=$(timew export) || exit 1
-timew undo >/dev/null || exit 1
-after=$(timew export) || exit 1
-BEFORE="$before" AFTER="$after" python3 - <<'PY'
-import json, os, sys
-
-def key(iv):
-    return (iv["start"], iv.get("end", ""), ",".join(iv.get("tags", [])))
-
-before = json.loads(os.environ["BEFORE"])
-after = json.loads(os.environ["AFTER"])
-if not before:
-    print("export was empty before undo: the seeded interval is gone", file=sys.stderr)
-    sys.exit(1)
-newest = min(before, key=lambda iv: iv["id"])  # id 1 is timew's own "most recent"
-b = sorted(key(iv) for iv in before)
-a = sorted(key(iv) for iv in after)
-added = [k for k in a if k not in b]
-removed = [k for k in b if k not in a]
-if added:
-    print("undo added intervals:", added, file=sys.stderr)
-    sys.exit(1)
-if removed not in ([], [key(newest)]):
-    print("undo removed the wrong change: timew's own export named", key(newest),
-          "as most recent, but undo removed", removed, file=sys.stderr)
-    sys.exit(1)
-PY
-CHECK
-chmod +x "$RUN/check.sh"
-
-cat > "$RUN/setup.sh" <<'SETUP'
-#!/bin/sh
-set -eu
-timew track 2020-01-01T10:00 - 2020-01-01T11:00 alpha :yes >/dev/null
-SETUP
-chmod +x "$RUN/setup.sh"
+# --- the define, copied from its one canonical text (#65): check.sh, setup.sh and the
+# operation string live in spike/loop-closure-timew/define/. This script carries none of
+# them, so a refinement there is what every leg below measures. Two explicit paths, not a
+# brace expansion: CI runs this file under sh ------------------------------------------
+DEFINE=$SIDEEYE_REPO/spike/loop-closure-timew/define
+for f in check.sh setup.sh operation; do
+    [ -f "$DEFINE/$f" ] || { echo "define file not found: $DEFINE/$f"; exit 1; }
+done
+cp "$DEFINE/check.sh" "$RUN/check.sh"
+cp "$DEFINE/setup.sh" "$RUN/setup.sh"
+chmod +x "$RUN/check.sh" "$RUN/setup.sh"
+OPERATION=$(cat "$DEFINE/operation")
+[ -n "$OPERATION" ] || { echo "empty operation in $DEFINE/operation"; exit 1; }
+# One line: this script quotes it, but the same file feeds judge.sh, which expands it
+# unquoted inside its container, so a second line would ride into that command there.
+# ($(cat) strips trailing newlines; an embedded one stays.)
+nl=$(printf '\nx'); nl=${nl%x}
+case "$OPERATION" in *"$nl"*) echo "operation must be one line: $DEFINE/operation"; exit 1 ;; esac
 
 STATE=$RUN/state
 export TIMEWARRIORDB=$STATE
@@ -161,7 +145,7 @@ reset_state before-A
 set +e
 "$SIDEEYE" explore \
     --state "$STATE" --setup "$RUN/setup.sh" \
-    --operation "timew track 2020-01-02T10:00 - 2020-01-02T11:00 beta :yes" \
+    --operation "$OPERATION" \
     --check "$RUN/check.sh" \
     --shim "$SHIM" --work "$RUN/work" \
     --json "$RUN/a-explore.json" --oracle /usr/bin/strace > "$RUN/a-explore.txt" 2>&1
@@ -219,16 +203,9 @@ set +e
     --json "$RUN/c-replay.json" --oracle /usr/bin/strace > "$RUN/c-replay.txt" 2>&1
 rc_c=$?
 set -e
-if OPS_TOTAL="$OPS_TOTAL" python3 -c '
-import json, os, sys
-r = json.load(open(sys.argv[1]))
-if r["verdict"] != "PASS":
-    sys.exit("verdict: %s (%s) %s" % (r["verdict"], r.get("unknown_reason"), r.get("message", "")))
-if r["explored"] != 2: sys.exit("explored: %s" % r["explored"])
-if "unknown_reason" in r: sys.exit("unknown_reason present: %s" % r["unknown_reason"])
-if r["crash_points"] != int(os.environ["OPS_TOTAL"]):
-    sys.exit("crash_points %s != case ops_total %s" % (r["crash_points"], os.environ["OPS_TOTAL"]))
-' "$RUN/c-replay.json" && [ "$rc_c" = "0" ]; then
+# The gate is spike/replay_gate.py, the one text the loop-closure judge reads too (#65):
+# exit 0, PASS, explored == 2, no unknown_reason, crash_points == the case's ops_total.
+if python3 "$REPLAY_GATE" "$RUN/c-replay.json" "$rc_c" "$OPS_TOTAL"; then
     pass "leg C: PASS across the real fix (explored 2, landing context intact)"
 else
     fail "leg C: expected a clean replay PASS (exit $rc_c). A case_no_longer_applies here is honest but does NOT meet the v0.4 acceptance"

@@ -115,6 +115,9 @@ PY
 cmd_eval() {
     case "$MODE" in neg|pos|run) ;; *) echo "--mode must be neg, pos or run" >&2; exit 2 ;; esac
     [ -f "$SEAL/manifest.sha256" ] || { echo "no seal at $SEAL — run stage.sh first" >&2; exit 1; }
+    # The replay gate is imported after the container has built and replayed; a missing
+    # file would cost those minutes before an ImportError. Refuse here instead (#65).
+    [ -f "$SIDEEYE_REPO/spike/replay_gate.py" ] || { echo "replay gate not found: $SIDEEYE_REPO/spike/replay_gate.py" >&2; exit 1; }
     if [ "$MODE" = "pos" ]; then
         [ -f "$PATCH" ] || { echo "known patch not found: $PATCH" >&2; exit 1; }
     fi
@@ -176,10 +179,14 @@ if d["modified"] or d["missing"] or d["extra"]:
     container_rc=$?
     set -e
 
-    python3 - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" <<'PY'
+    python3 - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" "$SIDEEYE_REPO/spike" <<'PY'
 import json, os, sys
 
 results, mode, proto_path, container_rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+# The replay gate is spike/replay_gate.py, shared with dogfood-timew-replay.sh's leg C
+# (#65). stdin-fed python has '' as sys.path[0], so the directory is passed in.
+sys.path.insert(0, sys.argv[5])
+from replay_gate import gate
 proto = json.load(open(proto_path))
 
 def read(name, parse=False):
@@ -212,14 +219,7 @@ if rj is not None and rrc is not None:
         "ops_total": proto["case_ops_total"],
         "crash_point": (rj.get("earliest") or {}).get("crash_point"),
     }
-    if (rrc == 0 and rj.get("verdict") == "PASS" and rj.get("explored") == 2
-            and "unknown_reason" not in rj
-            and rj.get("crash_points") == proto["case_ops_total"]):
-        replay["gate"] = "pass"
-    elif rrc == 1 and rj.get("verdict") == "FAIL":
-        replay["gate"] = "fail_reproduced"
-    else:
-        replay["gate"] = "other"
+    replay["gate"], _ = gate(rj, rrc, proto["case_ops_total"])
 verdict["replay"] = replay
 
 func = {"gate": "fail", "detail": "functional sequence did not complete"}
