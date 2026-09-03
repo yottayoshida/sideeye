@@ -191,6 +191,23 @@ jobs:
       - name: Sealed campaigns are internally consistent
         run: sh spike/check-sealed-campaigns.sh
 
+      # Cohort 4 wrote a checker that holds a probe transcript to the verdict set the
+      # plan required, and capture.sh ran it once, at capture time. Nothing re-ran it
+      # (#259). This walks the committed transcripts on every push: the four cohort-4
+      # transcripts the sealed checker declares sets for, through that checker, and any
+      # later cohort's probes/verdicts.tsv through spike/lib/check-transcript.sh. It
+      # also fails when cohort 4's sealed transcript set changes in either direction.
+      - name: Cohort probe transcripts verify against their declared verdict sets
+        run: sh spike/check-cohort-transcripts.sh
+
+      # The walker can say red — its own selftest cuts a transcript short, removes one, and
+      # plants an undeclared one in a cohort-5-shaped record, and requires the failing line
+      # each time — the same proof the neighbouring checks carry, so a green above is a
+      # measurement. The selftest lives in the script (the repository's shape for a
+      # checker's red proof), so acceptance check 11e runs it too.
+      - name: The transcript walker goes red where it must
+        run: sh spike/check-cohort-transcripts.sh --selftest
+
       # The positive control under the cohort-4 himalaya record is what licenses reading
       # runs 2-6 there, and until now nothing ran it: PRD.md said so in as many words
       # ("Nothing in CI runs either leg"). The sentence the records quote was therefore

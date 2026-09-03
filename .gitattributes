@@ -39,3 +39,4 @@
 spike/**        linguist-documentation
 spike/*        -linguist-documentation
 spike/toys/**  -linguist-documentation
+spike/lib/**   -linguist-documentation
