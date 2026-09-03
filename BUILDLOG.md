@@ -2,6 +2,55 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-03 (fourth) - a baseline refusal names the layer that failed there
+
+`#199` asked for a second observation in preflight, and `preflight --twice` shipped it in
+#392 (2026-08-30). What kept the issue open were its two comments. The 08-29 one: `git add`
+passes a bare preflight, and explore refuses it at the baseline as `baseline_violates_invariant`
+with a message that says "check the operation and the checker against each other first" — so
+the writer measured three times before believing the checker was fine. The engine knew better
+all along: `judgeL0` hands the baseline the path the re-run left holding neither recorded
+content, and `main.zig` folded that, the marker's failure and the checker's into one sentence
+with `next_step: fix_define`. The 08-22 one (does preflight name a libc bypass?) was already
+answered by the recording detectors preflight runs before its cut-off and by
+`docs/target-classes.md`; nothing to build.
+
+The one site becomes three. The byte layer says what the re-run left — `gone, though the
+recording had it before and after` / `holding neither the old nor the new content` / `with its
+recorded history no longer a prefix` — with the path, and points at the class wall. It does
+not name a cause: the first plan's draft said "the operation is a nondeterministic writer",
+and the adversarial review pointed out the engine cannot tell a clock from an inode-keyed
+cache the restore moved — git's index is the second kind — and README:134 says Sideeye
+refuses to guess. So the message is the observation, the action lives in `next_step`
+(ADR 0030's line), and the limit the class wall points at — byte-repeatable writes — is
+written into the README's limits and DESIGN's known constraints, which the `class_wall`
+sentence names as the two places each limit lives. The marker and the checker keep
+`fix_define`, each in its own sentence. The `--twice` misuse refusal, which claimed a
+divergent re-run refuses as `baseline_run_failed`, now names both refusals; that reason is
+exit-status only.
+
+Tests were not a new check: the preflight honesty pair and check 2n already reached this
+refusal, and the review's minimal form was to make them assert the message and the next
+step. One leg is new — `TOY_NONDET_REMOVE`, for the `missing` kind: once the recording has
+planted the `TOY_ONCE_FLAG` file (the last-act shape `TOY_MKNOD_BASELINE` uses), rotate
+replaces its final rename with `unlink(nondet.txt)`, so the op count is the recording's,
+killed worlds die at or before that op and keep the file, and only the un-killed baseline
+removes it. The first cut put the removal after the last op, and the baseline died as
+`baseline_run_failed` instead: the baseline is the world whose kill index is n+1, and an
+interposed op there is that kill — `remove(3)` too, on macOS. The refusal has to say `gone`;
+a message that ignored the kind and said "neither content" about a vanished file passes the
+hybrid leg and fails this one (mutated once to see it). Stale comments beside 2n claimed only
+the checker can reach the refusal; the first real target arrived through the bytes. The
+review of the diff caught the leg's first form calling `refused()` below the gate that
+snapshots the detector ledger — a credit taken after the count is read fails the suite's
+closing check, on Linux only, which the host run of the leg alone could not show; the leg
+now spells the reason with the anchored literal and credits nothing, the way the `--twice`
+legs below the gate already do — through `refused_uncredited()`, which `refused()` now calls.
+The simplify pass then folded the three sites back into one `if` whose else-if chain picks
+the sentence and the `next_step` by layer, hoisted the opening clause into
+`baseline_refusal_lead`, and moved the README/DESIGN greps out of the engine leg into a leg
+of their own, so a prose edit that drops the bullet fails under a line about the documents.
+
 ## 2026-09-03 (third) - the assisted-discovery thesis closes where it landed
 
 `#118` (2026-08-14) opened the "bring your own scout — Sideeye remains the judge" thesis

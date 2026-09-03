@@ -39,9 +39,14 @@ reasons=""
 # to be it. `unknown()` in src/main.zig is the only writer of a `UNKNOWN  <reason>` line
 # and puts exactly two spaces there, so the anchored literal is exact rather than
 # optimistic — where a bare `grep -q` also matches the reason quoted inside a message.
-refused() {   # refused <reason> <rc> <output>
+refused_uncredited() {   # refused_uncredited <reason> <rc> <output> — the same test, no ledger credit
+    # For legs BELOW the gate that snapshots the detector ledger (`reasons_at_gate`, check 2b):
+    # a credit taken after that number was read fails the suite's closing ledger check.
     [ "$2" = "2" ] || return 1
-    printf '%s\n' "$3" | grep -qxF "UNKNOWN  $1" || return 1
+    printf '%s\n' "$3" | grep -qxF "UNKNOWN  $1"
+}
+refused() {   # refused <reason> <rc> <output>
+    refused_uncredited "$1" "$2" "$3" || return 1
     reasons="$reasons $1"
 }
 
@@ -1276,8 +1281,12 @@ echo "=========== check 2n: a failure that needs no crash is not a counterexampl
 # violated an invariant", blaming crashing for something that happens without it. Found
 # while generating an example for the README, not by review.
 #
-# Only reachable through a checker: for the baseline world `crashed` is `final`, and
-# judgeL0 compares every shared file against pre or post, so post always matches.
+# Reached here through the checker. The byte layer reaches the same refusal when the
+# re-run does not repeat the recorded bytes (the honesty pair and the `missing` leg
+# further down), and #199 has the message name which layer failed: this leg pins the
+# checker wording and `fix_define`; the byte legs pin the path, the kind and the class
+# wall. (An earlier comment here claimed only the checker can reach this refusal; the
+# first real target arrived through the bytes.)
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 unset TOY 2>/dev/null || true
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
@@ -1285,8 +1294,11 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if refused baseline_violates_invariant "$rc" "$o"; then
-    echo "ok   an invariant that fails without a crash is UNKNOWN, not FAIL (exit 2)"
+if refused baseline_violates_invariant "$rc" "$o" \
+   && echo "$o" | grep -q "the checker rejected the state the operation leaves on its own" \
+   && ! echo "$o" | grep -q "the re-run from the restored state left" \
+   && echo "$o" | grep -q "Change the define"; then
+    echo "ok   an invariant that fails without a crash is UNKNOWN, not FAIL (exit 2), and the refusal names the checker, not the bytes"
 else
     echo "FAIL baseline violation: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -3332,12 +3344,53 @@ o2=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc2=$?
-if [ "$pf_ok" = "1" ] && [ "$rc2" = "2" ] && echo "$o2" | grep -q "baseline_violates_invariant"; then
-    echo "ok   a recording-clean, exploration-refused target splits the claims: accepted + named unchecked vs refused"
+# The refusal must name the layer (#199): the path, what the re-run left it holding,
+# and the class wall — not "check the checker", which cost the first real target
+# (git add) three measurements.
+if [ "$pf_ok" = "1" ] && [ "$rc2" = "2" ] && echo "$o2" | grep -q "baseline_violates_invariant" \
+   && echo "$o2" | grep -q "the re-run from the restored state left nondet.txt holding neither the old nor the new content" \
+   && ! echo "$o2" | grep -q "check the operation and the checker" \
+   && echo "$o2" | grep -q "refuses by design"; then
+    echo "ok   a recording-clean, exploration-refused target splits the claims: accepted + named unchecked vs refused, naming the path and the wall"
 else
     echo "FAIL preflight honesty pair: preflight=$rc explore=$rc2"
     echo "$o" | sed 's/^/     | /' | head -4
-    echo "$o2" | sed 's/^/     | /' | head -4
+    echo "$o2" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# The wall that refusal points at has to exist in both documents the `class_wall` sentence
+# names (README's limits, DESIGN's known constraints). Its own leg, so a prose edit that
+# drops the bullet fails here, under a line about the documents, not under the engine's.
+wall_readme="Byte-repeatable writes"
+wall_design="repeat byte-for-byte across two clean runs"
+if grep -q "$wall_readme" "$ROOT/README.md" && grep -q "$wall_design" "$ROOT/DESIGN.md"; then
+    echo "ok   the wall the baseline refusal points at is documented in README and DESIGN"
+else
+    echo "FAIL the byte-repeatability wall is missing from a document the class_wall sentence names (README '$wall_readme': $(grep -c "$wall_readme" "$ROOT/README.md"); DESIGN '$wall_design': $(grep -c "$wall_design" "$ROOT/DESIGN.md"))"
+    fails=$((fails + 1))
+fi
+
+# The byte layer's other kind (#199). The recording keeps nondet.txt and plants the flag;
+# from then on rotate replaces its final rename with unlink(nondet.txt) — the same op count,
+# so every kill lands where it did, killed worlds keep the file, and only the un-killed
+# baseline re-run removes it. (An op added AFTER the last one is where the baseline's own
+# kill would land, and the run dies as baseline_run_failed; measured on the first cut.) The message has to say so: the same site worded for
+# `hybrid` would call a vanished file "holding neither content", and a message that
+# ignores the kind is what this leg exists to catch.
+rm -rf /tmp/acc/state /tmp/acc/work /tmp/acc/once-flag && mkdir -p /tmp/acc/state
+o3=$(TOY_NONDET_REMOVE=1 TOY_ONCE_FLAG=/tmp/acc/once-flag "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc3=$?
+# `refused_uncredited`, not `refused`: this leg sits below the ledger gate (check 2b).
+if refused_uncredited baseline_violates_invariant "$rc3" "$o3" \
+   && echo "$o3" | grep -q "the re-run from the restored state left nondet.txt gone, though the recording had it before and after" \
+   && echo "$o3" | grep -q "refuses by design"; then
+    echo "ok   a baseline re-run that removes a recorded file is refused naming the path as gone, with the class wall"
+else
+    echo "FAIL baseline missing kind: exit $rc3"
+    echo "$o3" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
 

@@ -112,6 +112,16 @@ the version moved because the recorded account did, not the vocabulary):
 A new refusal joins this list in the change that introduces it, and the
 acceptance check above holds this page to that.
 
+`baseline_violates_invariant` says which layer failed in the world that was
+never killed (#199). For the byte layer the `message` names the first path and
+what was observed of it — gone, holding neither recorded content, or its
+recorded history no longer a prefix — and `next_step` is the class wall: the
+README's limits list byte-repeatable writes beside `preflight --twice`, which
+measures them before a define exists. The engine does not name a cause; a
+clock, a random id and a cache keyed on an inode the restore moved all look
+the same from the bytes. For the success marker and the checker, `next_step`
+is `fix_define`.
+
 ## The account (always present)
 
 Free-form strings whose *presence* is stable and whose prose may improve

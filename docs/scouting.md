@@ -122,9 +122,12 @@ the recorded one has its answer.
   zero-operation PASS ("the operation performed nothing that can change the
   judged state") is the tell.
 - Prefer invocations with explicit path flags over environment plumbing.
-- Probe determinism with a two-second gap between two clean runs:
-  epoch-stamping targets are byte-identical within a second and flaky
-  across one — the worst refusal shape to discover late.
+- Probe determinism with `sideeye preflight --twice`: it re-runs the
+  operation from the restored state at least two seconds later and names
+  the paths that differ. Epoch-stamping targets are byte-identical within
+  a second and flaky across one — the worst refusal shape to discover late,
+  because explore only refuses it at the baseline, after every crash world
+  has run.
 - Capture the engine's exit code before piping its output anywhere; a
   pipe's exit code is not the engine's.
 - Create the state root and the report's directory before exploring; the
