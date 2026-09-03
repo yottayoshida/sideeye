@@ -5,13 +5,13 @@ Development journal, newest first. Decisions are recorded when they are made —
 ## 2026-09-03 (third) - the assisted-discovery thesis closes where it landed
 
 `#118` (2026-08-14) opened the "bring your own scout — Sideeye remains the judge" thesis
-and, by its comment of 2026-08-16 09:46 (the product decision; the last comment, at 10:09,
-is the 3.5 → 3 correction), stayed open "to track the assisted-discovery product thesis" so
-that "the funnel's next measurements report here". They did not: cohorts 2, 3 and 4
+and, by its comment of 2026-08-16 09:46Z (the product decision; the last comment, at 10:09Z,
+is the 3.5 → 3 correction), stayed open because "it tracks the assisted-discovery product
+thesis" and "the funnel's next measurements report here". They did not: cohorts 2, 3 and 4
 (2026-08-21..23), criterion 1 met on 2026-08-25 (himalaya-r2, assisted), v1.0.0 on
 2026-08-29 and the scout-model floor (#221, 2026-08-22) were all recorded in the repository
 and none on the issue. The criterion-1 redesign (ADR 0017) was reported there, on
-2026-08-15 — before that comment, and the last thing that was. The one live dependency on
+2026-08-15 — before that comment, so it is not an example of the tracking that stopped. The one live dependency on
 the issue being open was `docs/freeze-audit.md`'s row — "product tracking, open by owner
 ruling" — and the owner ruled today to close it. The row moves to resolved as `document`,
 the way #345 closed (#425); the closing comment names where the thesis landed and says that
