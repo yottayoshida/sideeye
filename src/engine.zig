@@ -167,6 +167,13 @@ pub const DiffCount = struct {
 /// created has no pre-image to be judged hybrid against), and wrong for a
 /// repeatability question, where a file only the second run wrote is the split.
 pub fn diffSnapshots(first: Snapshot, second: Snapshot, out: []Difference) DiffCount {
+    return diffSnapshotsExcept(first, second, out, &.{});
+}
+
+/// `diffSnapshots` with a scratch declaration (ADR 0043): a path the declaration matches
+/// is left out before it is counted, so `total` is the total of what was compared and no
+/// row past the buffer can hide a declared path behind "… and N more".
+pub fn diffSnapshotsExcept(first: Snapshot, second: Snapshot, out: []Difference, scratch: []const []const u8) DiffCount {
     var count: DiffCount = .{ .stored = 0, .total = 0 };
     var i: usize = 0;
     var j: usize = 0;
@@ -205,6 +212,7 @@ pub fn diffSnapshots(first: Snapshot, second: Snapshot, out: []Difference) DiffC
                 },
             }
         };
+        if (scratchMatches(scratch, rel)) continue;
         count.total += 1;
         if (count.stored < out.len) {
             out[count.stored] = .{ .rel = rel, .how = how };
@@ -2774,11 +2782,38 @@ pub const L0Plan = struct {
     arena: std.heap.ArenaAllocator,
     files: std.ArrayList(PlannedFile),
     history_count: u32 = 0,
+    /// The define's scratch declaration (ADR 0043), as spelled, borrowed from the caller.
+    /// A pair matching an entry never enters `files`, so neither judge can reach it by
+    /// construction; the two L1 loops that walk the snapshots rather than the plan ask
+    /// `isScratch` themselves. The report reads the declaration and the count from here,
+    /// the same plan the judgement reads (ADR 0004).
+    scratch: []const []const u8 = &.{},
+    /// How many recorded paths (pre ∪ post, every kind) the declaration matched — the
+    /// number the `atomicity` line reports beside the declaration, so a reader can tell
+    /// a declaration that reached something from one that named nothing the recording had.
+    scratch_matched: u32 = 0,
 
     pub fn deinit(self: *L0Plan) void {
         self.arena.deinit();
     }
+
+    pub fn isScratch(self: L0Plan, rel: []const u8) bool {
+        return scratchMatches(self.scratch, rel);
+    }
 };
+
+/// Whether `rel` is a declared scratch path or lies beneath one (ADR 0043). One rule for
+/// the path itself and its subtree: `rel == p`, or `rel` starts with `p` followed by `/`.
+/// The snapshot spells a directory as `foo`, never `foo/`, so a subtree-only form would
+/// miss the directory's own pair — the pair #164 made enter the plan — and `foobar` must
+/// not match `foo`, which the slash after the prefix is there to say.
+pub fn scratchMatches(scratch: []const []const u8, rel: []const u8) bool {
+    for (scratch) |p| {
+        if (std.mem.eql(u8, rel, p)) return true;
+        if (rel.len > p.len and std.mem.startsWith(u8, rel, p) and rel[p.len] == '/') return true;
+    }
+    return false;
+}
 
 /// The kinds the built-in invariants can compare: a (kind, content) pair is a whole
 /// identity for each of these. Sockets and devices stay outside — their content is
@@ -2797,11 +2832,31 @@ fn isJudgedKind(k: posix.Kind) bool {
 /// vacuously true, so an empty "history" would constrain nothing — such files keep
 /// the standard rule, where the atomic-write check still means something.
 pub fn classify(gpa: Allocator, pre: Snapshot, post: Snapshot) error{OutOfMemory}!L0Plan {
-    var plan: L0Plan = .{ .arena = std.heap.ArenaAllocator.init(gpa), .files = .empty };
+    return classifyWith(gpa, pre, post, &.{});
+}
+
+/// `classify` with the define's scratch declaration (ADR 0043). A pair whose path the
+/// declaration matches is left out of the plan rather than tagged inside it: a tag would
+/// have to be honoured before `crashed.find` in both judges, and a skip placed one line
+/// too late would report the path as `missing` — the judge asking after a presence the
+/// declaration said not to ask about. Left out, there is no line to place. The count of
+/// matched recorded paths is taken over both snapshots, every kind, so it says how far the
+/// declaration reached into the recording, not how many pairs it removed.
+pub fn classifyWith(gpa: Allocator, pre: Snapshot, post: Snapshot, scratch: []const []const u8) error{OutOfMemory}!L0Plan {
+    var plan: L0Plan = .{ .arena = std.heap.ArenaAllocator.init(gpa), .files = .empty, .scratch = scratch };
     errdefer plan.arena.deinit();
     const arena = plan.arena.allocator();
+    if (scratch.len > 0) {
+        for (pre.entries.items) |pe| if (scratchMatches(scratch, pe.rel)) {
+            plan.scratch_matched += 1;
+        };
+        for (post.entries.items) |po| if (pre.find(po.rel) == null and scratchMatches(scratch, po.rel)) {
+            plan.scratch_matched += 1;
+        };
+    }
     for (pre.entries.items) |pe| {
         if (!isJudgedKind(pe.kind)) continue;
+        if (scratchMatches(scratch, pe.rel)) continue;
         const po = post.find(pe.rel) orelse continue;
         if (!isJudgedKind(po.kind)) continue;
         // A dir-to-dir pair used to be skipped as carrying "nothing to compare" —
@@ -2907,6 +2962,10 @@ pub fn judgeL1(plan: L0Plan, pre: Snapshot, post: Snapshot, crashed: Snapshot) ?
     }
     for (post.entries.items) |e| {
         if (pre.find(e.rel) != null) continue;
+        // A declared scratch path is not required to exist here either (ADR 0043): this
+        // loop and the next walk the snapshots, not the plan, so the plan's omission of
+        // scratch pairs does not reach them and they ask the declaration themselves.
+        if (plan.isScratch(e.rel)) continue;
         const ce = crashed.find(e.rel) orelse return .{ .not_durable = e.rel };
         if (ce.kind != e.kind) return .{ .not_durable = e.rel };
         // A post-only FILE's content may legitimately differ between runs, which is
@@ -2919,9 +2978,117 @@ pub fn judgeL1(plan: L0Plan, pre: Snapshot, post: Snapshot, crashed: Snapshot) ?
     }
     for (pre.entries.items) |e| {
         if (post.find(e.rel) != null) continue;
+        if (plan.isScratch(e.rel)) continue;
         if (crashed.find(e.rel) != null) return .{ .not_durable = e.rel };
     }
     return null;
+}
+
+// The ADR 0043 pins: a declared scratch path is judged by neither invariant, on no side
+// of the pair, in no world — and the declaration's reach is counted, not assumed.
+
+fn snapWith(gpa: Allocator, entries: []const Entry) !Snapshot {
+    var s: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    errdefer s.deinit();
+    for (entries) |e| try s.entries.append(s.arena.allocator(), e);
+    return s;
+}
+
+test "scratchMatches: the path itself and its subtree, never a sibling sharing the prefix" {
+    const decl = [_][]const u8{ "COMMIT_EDITMSG", ".hg/wcache" };
+    try std.testing.expect(scratchMatches(&decl, "COMMIT_EDITMSG"));
+    try std.testing.expect(scratchMatches(&decl, ".hg/wcache"));
+    try std.testing.expect(scratchMatches(&decl, ".hg/wcache/checkisexec"));
+    try std.testing.expect(!scratchMatches(&decl, ".hg/wcachex"));
+    try std.testing.expect(!scratchMatches(&decl, "COMMIT_EDITMSG.bak"));
+    try std.testing.expect(!scratchMatches(&decl, ".hg"));
+    try std.testing.expect(!scratchMatches(&.{}, "COMMIT_EDITMSG"));
+}
+
+test "ADR 0043: a shared scratch pair leaves the plan, and a hybrid there is not a violation" {
+    const gpa = std.testing.allocator;
+    var pre = try snapWith(gpa, &.{ .{ .rel = "key.json", .kind = .file, .content = "k=1\n" }, .{ .rel = "nondet.txt", .kind = .file, .content = "a\n" } });
+    defer pre.deinit();
+    var post = try snapWith(gpa, &.{ .{ .rel = "key.json", .kind = .file, .content = "k=2\n" }, .{ .rel = "nondet.txt", .kind = .file, .content = "b\n" } });
+    defer post.deinit();
+    const decl = [_][]const u8{"nondet.txt"};
+    var plan = try classifyWith(gpa, pre, post, &decl);
+    defer plan.deinit();
+    try std.testing.expectEqual(@as(usize, 1), plan.files.items.len);
+    try std.testing.expectEqualStrings("key.json", plan.files.items[0].rel);
+    try std.testing.expectEqual(@as(u32, 1), plan.scratch_matched);
+    // Neither content, and even absent: neither judge asks.
+    var hybrid = try snapWith(gpa, &.{ .{ .rel = "key.json", .kind = .file, .content = "k=2\n" }, .{ .rel = "nondet.txt", .kind = .file, .content = "zzz\n" } });
+    defer hybrid.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan, hybrid));
+    try std.testing.expectEqual(@as(?Violation, null), judgeL1(plan, pre, post, hybrid));
+    var gone = try snapWith(gpa, &.{.{ .rel = "key.json", .kind = .file, .content = "k=2\n" }});
+    defer gone.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan, gone));
+    try std.testing.expectEqual(@as(?Violation, null), judgeL1(plan, pre, post, gone));
+    // The control: the same worlds with no declaration are the violations they were.
+    var bare = try classify(gpa, pre, post);
+    defer bare.deinit();
+    try std.testing.expectEqualStrings("nondet.txt", judgeL0(bare, hybrid).?.hybrid);
+    try std.testing.expectEqualStrings("nondet.txt", judgeL0(bare, gone).?.missing);
+}
+
+test "ADR 0043: a post-only scratch path may be absent and a pre-only one may return, under L1" {
+    const gpa = std.testing.allocator;
+    var pre = try snapWith(gpa, &.{ .{ .rel = "key.json", .kind = .file, .content = "k=1\n" }, .{ .rel = "old.tmp", .kind = .file, .content = "t\n" } });
+    defer pre.deinit();
+    var post = try snapWith(gpa, &.{ .{ .rel = "key.json", .kind = .file, .content = "k=2\n" }, .{ .rel = "receipt.txt", .kind = .file, .content = "ok\n" } });
+    defer post.deinit();
+    const decl = [_][]const u8{ "receipt.txt", "old.tmp" };
+    var plan = try classifyWith(gpa, pre, post, &decl);
+    defer plan.deinit();
+    // Both sides counted once each: the declaration reached two recorded paths.
+    try std.testing.expectEqual(@as(u32, 2), plan.scratch_matched);
+    // The marker world that lost the receipt and kept the temp file: clean under L1.
+    var world = try snapWith(gpa, &.{ .{ .rel = "key.json", .kind = .file, .content = "k=2\n" }, .{ .rel = "old.tmp", .kind = .file, .content = "t\n" } });
+    defer world.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), judgeL1(plan, pre, post, world));
+    var bare = try classify(gpa, pre, post);
+    defer bare.deinit();
+    try std.testing.expectEqualStrings("receipt.txt", judgeL1(bare, pre, post, world).?.not_durable);
+}
+
+test "ADR 0043: a directory named scratch covers its own pair and its children, and no more" {
+    const gpa = std.testing.allocator;
+    var pre = try snapWith(gpa, &.{ .{ .rel = "cache", .kind = .dir, .content = "" }, .{ .rel = "cache/a", .kind = .file, .content = "1" }, .{ .rel = "cachex", .kind = .file, .content = "x" } });
+    defer pre.deinit();
+    var post = try snapWith(gpa, &.{ .{ .rel = "cache", .kind = .dir, .content = "" }, .{ .rel = "cache/a", .kind = .file, .content = "2" }, .{ .rel = "cachex", .kind = .file, .content = "y" } });
+    defer post.deinit();
+    const decl = [_][]const u8{"cache"};
+    var plan = try classifyWith(gpa, pre, post, &decl);
+    defer plan.deinit();
+    try std.testing.expectEqual(@as(usize, 1), plan.files.items.len);
+    try std.testing.expectEqualStrings("cachex", plan.files.items[0].rel);
+    try std.testing.expectEqual(@as(u32, 2), plan.scratch_matched);
+    // The directory itself deleted outright — the #164 shape — is not `missing` here.
+    var gone = try snapWith(gpa, &.{.{ .rel = "cachex", .kind = .file, .content = "y" }});
+    defer gone.deinit();
+    try std.testing.expectEqual(@as(?Violation, null), judgeL0(plan, gone));
+    // The sibling sharing the prefix is still judged.
+    var sib = try snapWith(gpa, &.{.{ .rel = "cachex", .kind = .file, .content = "zzz" }});
+    defer sib.deinit();
+    try std.testing.expectEqualStrings("cachex", judgeL0(plan, sib).?.hybrid);
+}
+
+test "ADR 0043: a declaration that matches nothing recorded counts zero and changes no verdict" {
+    const gpa = std.testing.allocator;
+    var pre = try snapWith(gpa, &.{.{ .rel = "key.json", .kind = .file, .content = "k=1\n" }});
+    defer pre.deinit();
+    var post = try snapWith(gpa, &.{.{ .rel = "key.json", .kind = .file, .content = "k=2\n" }});
+    defer post.deinit();
+    const decl = [_][]const u8{"other.txt"};
+    var plan = try classifyWith(gpa, pre, post, &decl);
+    defer plan.deinit();
+    try std.testing.expectEqual(@as(u32, 0), plan.scratch_matched);
+    try std.testing.expectEqual(@as(usize, 1), plan.files.items.len);
+    var hybrid = try snapWith(gpa, &.{.{ .rel = "key.json", .kind = .file, .content = "k=" }});
+    defer hybrid.deinit();
+    try std.testing.expectEqualStrings("key.json", judgeL0(plan, hybrid).?.hybrid);
 }
 
 // The #27 pins, one test per pin: the issue's named scenario, both ways

@@ -473,6 +473,8 @@ is why it is not chosen here.
 
 ## Adjudication (2026-08-27)
 
+*Noted 2026-09-03 (ADR 0043, #261): a define can now declare its scratch paths (`[define] scratch`), so the class row 4's case was filed under, "tools with non-durable scratch files", no longer decides a verdict on its own. Nothing below is re-scored: the ruling's basis — the checker carries the target's real integrity claim, and held — is what scratch leaves untouched, because the key adds no knowledge, only a verdict that is not decided by files nobody depends on.*
+
 The two rows the section above put on a trigger side were adjudicated by the
 project owner on 2026-08-27, under #240. **Neither is triggered, and v1.0
 entry criterion 3 stays met.** **No dated text above this line is overwritten.** The 2026-08-16 review, its

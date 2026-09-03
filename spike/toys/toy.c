@@ -136,6 +136,11 @@
  *   TOY_MARKER_CREATES  claims success, then creates receipt.txt (a post-only file the
  *                       claim covers). The world killed before the create has the
  *                       marker and no receipt — not_durable pins the existence rule.
+ *   TOY_MARKER_KEEPS    the correct shape with a kept trailing file: commit, print
+ *                       COMMITTED with a flush, then create receipt.txt and leave it,
+ *                       so it is a post-only path L1 requires in every marker world.
+ *                       FAILs on the world killed between the marker and the create —
+ *                       unless the define declares receipt.txt scratch (ADR 0043).
  *   TOY_MARKER_NOFLUSH  prints the marker with no flush. Every killed world loses the
  *                       buffer with the process, so zero crash worlds observe it — an
  *                       honestly vacuous L1 — while the recording run's exit-time flush
@@ -757,13 +762,21 @@ static int cmd_rotate(void) {
      * trailing work so crash points exist on the far side of the claim. The scratch
      * file is in neither the pre nor the post snapshot, so only the marker windows
      * make these addresses interesting. */
-    if (getenv("TOY_MARKER") || getenv("TOY_MARKER_NOFLUSH")) {
+    if (getenv("TOY_MARKER") || getenv("TOY_MARKER_NOFLUSH") || getenv("TOY_MARKER_KEEPS")) {
         printf("COMMITTED\n");
-        if (getenv("TOY_MARKER")) fflush(stdout);
+        if (getenv("TOY_MARKER") || getenv("TOY_MARKER_KEEPS")) fflush(stdout);
         char scr[4096];
-        join_path(scr, sizeof scr, "post-marker.tmp");
-        if (write_file(scr, "x\n") != 0) return 1;
-        if (unlink(scr) != 0) return 1;
+        if (getenv("TOY_MARKER_KEEPS")) {
+            /* ADR 0043's fixture: the claim is honest about the commit, and the file
+             * created after it is a post-only path L1 requires in every marker world --
+             * unless the define declares it scratch. Kept, so it is in the post snapshot. */
+            join_path(scr, sizeof scr, "receipt.txt");
+            if (write_file(scr, "ok\n") != 0) return 1;
+        } else {
+            join_path(scr, sizeof scr, "post-marker.tmp");
+            if (write_file(scr, "x\n") != 0) return 1;
+            if (unlink(scr) != 0) return 1;
+        }
     }
     /* The very last act, so no killed world ever reaches it: the recording (first
      * completed run) plants the flag, and only the baseline re-run — the other run
