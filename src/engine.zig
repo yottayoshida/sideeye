@@ -2149,6 +2149,37 @@ fn createRoot(root_z: [*:0]const u8, vet: RootVet) RestoreError!RootVet {
     }
 }
 
+/// Write one recorded file into the tree, relative to the held root descriptor. The
+/// single write path `restore` and `corruptState` share.
+///
+/// `O_NOFOLLOW` because the two halves of this file used to answer a planted symlink
+/// differently (#446): `deleteTreeAt` descends with the flag and refuses a link where a
+/// directory was, while the write opened without it and agreed to write *through* one —
+/// sending the recorded bytes to whatever it pointed at, outside the state directory.
+/// Measured on a directory descriptor with a link at the entry name: without the flag the
+/// write succeeds through the link, with it the open is refused and the file outside is
+/// unchanged byte for byte.
+///
+/// **Final component only.** The interior of a multi-component `e.rel` is still resolved
+/// by name and is left open rather than argued safe — the reasoning, and why closing it
+/// needs resolution the kernel enforces, is in CHANGELOG and BUILDLOG under #446.
+///
+/// A partial write is a failure, not a short success: returning here would start the next
+/// world from a truncated file, and judgeL0 would then report a hybrid — a counterexample
+/// manufactured by the tool rather than found in the target. readWhole distinguishes
+/// these cases; the loop this replaced did not.
+fn writeFileEntryAt(dirfd: c_int, rel_z: [*:0]const u8, bytes: []const u8) RestoreError!void {
+    const wfd = posix.openat(dirfd, rel_z, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0o644));
+    if (wfd < 0) return error.CreateFailed;
+    defer _ = posix.close(wfd);
+    var off: usize = 0;
+    while (off < bytes.len) {
+        const w = posix.write(wfd, bytes[off..].ptr, bytes.len - off);
+        if (w <= 0) return error.CreateFailed;
+        off += @intCast(w);
+    }
+}
+
 pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     const vet = try assertRootResolvesToItself(root);
@@ -2196,24 +2227,7 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
                 const tz = std.fmt.bufPrintZ(&tz_buf, "{s}", .{e.content}) catch return error.PathTooLong;
                 if (posix.symlinkat(tz.ptr, fd, rel_z.ptr) != 0) return error.CreateFailed;
             },
-            .file => {
-                const wfd = posix.openat(fd, rel_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC | posix.O_CLOEXEC, @as(c_uint, 0o644));
-                if (wfd < 0) return error.CreateFailed;
-                var off: usize = 0;
-                while (off < e.content.len) {
-                    const w = posix.write(wfd, e.content[off..].ptr, e.content.len - off);
-                    // Breaking here and returning success would start the next world from
-                    // a truncated file, and judgeL0 would then report a hybrid — a
-                    // counterexample manufactured by the tool rather than found in the
-                    // target. readWhole distinguishes these cases; this loop did not.
-                    if (w <= 0) {
-                        _ = posix.close(wfd);
-                        return error.CreateFailed;
-                    }
-                    off += @intCast(w);
-                }
-                _ = posix.close(wfd);
-            },
+            .file => try writeFileEntryAt(fd, rel_z.ptr, e.content),
             // Unreachable from any explored path since #5's refusal fires on every
             // snapshot before restore runs — kept loud, not silent: an `.other` that
             // somehow arrives here would otherwise become a tool-manufactured
@@ -3274,25 +3288,12 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
             if (posix.symlinkat(corruption_probe_target, fd, rel_z.ptr) != 0) return error.CreateFailed;
             continue;
         }
-        const wfd = posix.openat(fd, rel_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC | posix.O_CLOEXEC, @as(c_uint, 0o644));
-        // A file that could not be overwritten leaves the state intact, and an intact
-        // state is one the checker is right to accept. The run would then report
-        // `checker_not_falsified` — "the checker accepted a state whose every file had
-        // been overwritten with junk" — about files this function failed to touch,
-        // blaming the caller's checker for the engine's own failed write. The same
-        // silence was fixed in `restore` and `deleteTree`; the scan that found those
-        // looked at the two functions named in the finding and missed this one.
-        if (wfd < 0) return error.CreateFailed;
-        var off: usize = 0;
-        while (off < corruption_probe.len) {
-            const w = posix.write(wfd, corruption_probe[off..].ptr, corruption_probe.len - off);
-            if (w <= 0) {
-                _ = posix.close(wfd);
-                return error.CreateFailed;
-            }
-            off += @intCast(w);
-        }
-        _ = posix.close(wfd);
+        // Loud on failure, per `writeFileEntryAt`: a file that could not be overwritten
+        // leaves the state intact, and the run would then report `checker_not_falsified`
+        // — "the checker accepted a state whose every file had been overwritten with
+        // junk" — about a file this function never touched, blaming the caller's checker
+        // for the engine's own failed write.
+        try writeFileEntryAt(fd, rel_z.ptr, corruption_probe);
     }
 }
 
@@ -3864,6 +3865,112 @@ test "restore and freshDir refuse a swapped root — the guard is wired in front
 
     // The sentinel survived: the refusal happened before anything was removed.
     try std.testing.expectEqual(posix.Kind.file, try posix.kindOfPathNoFollow(sentinel_z.ptr));
+}
+
+test "the rebuild refuses to write through a symlink at an entry name (#446)" {
+    // The asymmetry this closes: `deleteTreeAt` descends with `O_NOFOLLOW` and refuses a
+    // symlink where a directory was; the write side opened without it and agreed to write
+    // through one. Same file, same threat model, opposite answers.
+    //
+    // Aimed at `writeFileEntryAt` rather than at `restore`, because `restore` empties the
+    // tree immediately above its rebuild: a link planted before the call is deleted by the
+    // walk, and one planted *between* the delete and the write is a race this test cannot
+    // stage. What is measured here is the flag's effect on the write, which is what the
+    // change is. The `corruptState` leg below sits one level higher — that is a `pub fn`
+    // and the production entry point `main.zig` calls — but it is still called directly
+    // rather than reached through its own call site, which runs it after `restore` and so
+    // cannot be driven into a planted link either.
+    const gpa = std.testing.allocator;
+    var fx: TreeFixture = .{};
+    const root = fx.init("writeentry") orelse return error.SkipZigTest;
+    defer fx.deinit();
+    const outside = try fx.sibling("outside");
+
+    // A sentinel outside the state directory, with content — not just existence. A test
+    // that only asked whether the file was still there would pass against a write that
+    // followed the link and truncated it.
+    const keep = "keep-me-intact\n";
+    var sbuf: [contract.max_path]u8 = undefined;
+    const sentinel_z = try joinZ(&sbuf, outside, "keep-me");
+    try TreeFixture.writeAt(sentinel_z.ptr, keep);
+
+    var rz: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&rz, "{s}", .{root}) catch unreachable;
+    const fd = posix.open(root_z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0));
+    try std.testing.expect(fd >= 0);
+    defer _ = posix.close(fd);
+
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    // Control first: a real entry name is written, so the refusal below is about the link
+    // and not about this directory, these flags, or these bytes.
+    try writeFileEntryAt(fd, "real", "recorded bytes");
+    var real_buf: [contract.max_path]u8 = undefined;
+    const real_z = try joinZ(&real_buf, root, "real");
+    try std.testing.expectEqualStrings("recorded bytes", try readWhole(arena, real_z.ptr, 4096, null));
+
+    // The link: what a resident racer could leave at an entry name.
+    var lbuf: [contract.max_path]u8 = undefined;
+    const link_z = try joinZ(&lbuf, root, "planted");
+    try std.testing.expect(posix.symlink(sentinel_z.ptr, link_z.ptr) == 0);
+
+    try std.testing.expectError(error.CreateFailed, writeFileEntryAt(fd, "planted", "recorded bytes"));
+
+    // The bytes outside are untouched — the whole point. `expectEqualStrings` rather than
+    // a length or an existence check: a followed write truncates first and would leave an
+    // empty file that still exists.
+    try std.testing.expectEqualStrings(keep, try readWhole(arena, sentinel_z.ptr, 4096, null));
+    // And the link is still a link: the refusal did not replace it with a regular file.
+    try std.testing.expectEqual(posix.Kind.symlink, try posix.kindOfPathNoFollow(link_z.ptr));
+}
+
+test "corruptState refuses a planted symlink rather than corrupting what it points at (#446)" {
+    // The same write path, reached through the other of its two callers. Called directly
+    // for the reason the test above records: `corruptState`'s one call site runs it
+    // immediately after `restore`, which empties the tree, so no link planted from outside
+    // survives to be met there.
+    const gpa = std.testing.allocator;
+    var fx: TreeFixture = .{};
+    const root = fx.init("corrupt-nofollow") orelse return error.SkipZigTest;
+    defer fx.deinit();
+    const outside = try fx.sibling("outside");
+
+    const keep = "not-a-probe\n";
+    var sbuf: [contract.max_path]u8 = undefined;
+    const sentinel_z = try joinZ(&sbuf, outside, "keep-me");
+    try TreeFixture.writeAt(sentinel_z.ptr, keep);
+
+    var snap: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    defer snap.deinit();
+    // A real entry before the planted one, as the positive control: without it, the two
+    // assertions below are also satisfied by a `corruptState` that refused before reaching
+    // any write at all — `openRootDir` answering `.absent`, say. The probe landing in this
+    // file is what says the write path was entered.
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "real", .kind = .file, .content = "recorded" });
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "planted", .kind = .file, .content = "recorded" });
+    // Created rather than left to `O_CREAT`, so the control overwrites a file the way the
+    // production path does: `restore` has always put the recorded tree back by this point.
+    var real_buf: [contract.max_path]u8 = undefined;
+    const real_z = try joinZ(&real_buf, root, "real");
+    try TreeFixture.writeAt(real_z.ptr, "recorded");
+
+    // The snapshot says `planted` is a file; the tree holds a link pointing outside. That
+    // is exactly the disagreement a racer creates between the recording and the rewrite.
+    var lbuf: [contract.max_path]u8 = undefined;
+    const link_z = try joinZ(&lbuf, root, "planted");
+    try std.testing.expect(posix.symlink(sentinel_z.ptr, link_z.ptr) == 0);
+
+    try std.testing.expectError(error.CreateFailed, corruptState(snap, root));
+
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    // The control: the entry that is a real file was corrupted, so the refusal above is
+    // the write path saying no to the link, not this function stopping short of it.
+    try std.testing.expectEqualStrings(corruption_probe, try readWhole(arena, real_z.ptr, 4096, null));
+    try std.testing.expectEqualStrings(keep, try readWhole(arena, sentinel_z.ptr, 4096, null));
 }
 
 test "the walk drains a directory past its collection bound, in one call (#327)" {
@@ -4970,6 +5077,8 @@ const TreeFixture = struct {
     parent_z: [contract.max_path]u8 = undefined,
     root_buf: [contract.max_path]u8 = undefined,
     root: []const u8 = &.{},
+    outside_buf: [contract.max_path]u8 = undefined,
+    outside: []const u8 = &.{},
 
     fn init(self: *TreeFixture, tag: []const u8) ?[]const u8 {
         const parent_z = std.fmt.bufPrintZ(&self.parent_z, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
@@ -4989,14 +5098,55 @@ const TreeFixture = struct {
         return self.root;
     }
 
+    /// A directory beside `root`, under the same parent — where a test puts something the
+    /// tree under test must not be able to reach. Torn down with the rest, and before the
+    /// parent, which would otherwise refuse to go and leave the whole fixture behind.
+    ///
+    /// **One per fixture.** There is a single slot, so a second call would overwrite the
+    /// first and leave that directory behind for the rest of the machine's life; the
+    /// assert makes that a test failure rather than a slow leak.
+    fn sibling(self: *TreeFixture, name: []const u8) ![]const u8 {
+        std.debug.assert(self.outside.len == 0);
+        const base = std.fs.path.dirname(self.root) orelse return error.SkipZigTest;
+        self.outside = std.fmt.bufPrint(&self.outside_buf, "{s}/{s}", .{ base, name }) catch unreachable;
+        var oz: [contract.max_path]u8 = undefined;
+        const outside_z = std.fmt.bufPrintZ(&oz, "{s}", .{self.outside}) catch unreachable;
+        if (posix.mkdir(outside_z.ptr, 0o755) != 0) return error.SkipZigTest;
+        return self.outside;
+    }
+
     fn deinit(self: *TreeFixture) void {
         deleteTree(self.root) catch {};
         var rz: [contract.max_path]u8 = undefined;
         const root_z = std.fmt.bufPrintZ(&rz, "{s}", .{self.root}) catch unreachable;
         _ = posix.rmdir(root_z.ptr);
+        if (self.outside.len != 0) {
+            deleteTree(self.outside) catch {};
+            var oz: [contract.max_path]u8 = undefined;
+            const outside_z = std.fmt.bufPrintZ(&oz, "{s}", .{self.outside}) catch unreachable;
+            _ = posix.rmdir(outside_z.ptr);
+        }
         var pz: [contract.max_path]u8 = undefined;
         const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{std.mem.sliceTo(&self.parent_z, 0)}) catch unreachable;
         _ = posix.rmdir(parent_z.ptr);
+    }
+
+    /// Put `bytes` at `path_z`. Extracted at the third copy inside the two `#446` tests,
+    /// not across the file — a dozen or so hand-rolled open/write/close sequences remain
+    /// in older tests here and were left alone. `fill` cannot serve either way, because
+    /// its names and contents are fixed for the size tests it exists for.
+    ///
+    /// A short write fails the test rather than skipping it. `fill` and `fillDirs` skip on
+    /// everything, which is right for bulk setup, and wrong here: callers use this to
+    /// place the bytes an assertion is about — a positive control that quietly turned into
+    /// a skip would leave the guard unmeasured and the suite green. The open keeps
+    /// `SkipZigTest`, because that one is about whether the environment can host the test
+    /// at all, which is the same question `init` and `sibling` answer.
+    fn writeAt(path_z: [*:0]const u8, bytes: []const u8) !void {
+        const fd = posix.open(path_z, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        if (fd < 0) return error.SkipZigTest;
+        defer _ = posix.close(fd);
+        try std.testing.expectEqual(@as(isize, @intCast(bytes.len)), posix.write(fd, bytes.ptr, bytes.len));
     }
 
     /// `n` empty directories. The shape that has no content and no file entries at all,
