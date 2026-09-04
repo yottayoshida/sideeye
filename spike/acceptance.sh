@@ -17,6 +17,7 @@ set -u
 # non-zero exit ended the script immediately, after its last *passing* line, with no
 # failure message. The exit code was 1, which is what a failing suite looks like, so the
 # only clue was the missing summary. A run that stops early now says so out loud.
+not_measured=0
 reached_end=0
 trap '[ "$reached_end" = 1 ] || echo "ACCEPTANCE SUITE ENDED EARLY — no verdict was reached" >&2' EXIT
 
@@ -6528,9 +6529,103 @@ else
 fi
 rm -rf /tmp/acc-ds
 
+echo "=========== check 2so: the shim search refuses a candidate someone else owns (#423) ==========="
+# The owner half of #423. The symlink half has a unit test — a link can be planted by
+# anyone — but a candidate owned by a THIRD party cannot be created without chown, so the
+# refusing side of the owner predicate is measured here and nowhere else. Without this leg
+# only `ownerAccepted`'s arithmetic is checked, and a uid that never reaches it (an
+# unfilled statx field reading as 0, say) would leave the guard passing everything while
+# every unit test stayed green.
+#
+# Loud rather than skipped when chown is unavailable, the way the #363 legs are: a guard
+# whose one measurement quietly did not run is indistinguishable from one that works.
+SO_DIR=/tmp/acc-shim-owner
+rm -rf "$SO_DIR"; mkdir -p "$SO_DIR/bin" "$SO_DIR/lib"
+cp "$ROOT/zig-out/bin/sideeye" "$SO_DIR/bin/"
+# Every shim in zig-out, not the first name that exists: a tree that has been built for
+# another target too holds both `.so` and `.dylib`, and picking the wrong one hands the
+# copied binary a prefix with no shim in it — which this leg then reports as a control
+# failure about the search (measured, on a macOS tree carrying a Linux build).
+cp "$ROOT"/zig-out/lib/libsideeye_shim.* "$SO_DIR/lib/"
+
+# Control: the same command, the same host, before the chown. The pair is what isolates
+# the variable — asserting a verdict instead would tie this leg to whether the host can
+# explore at all (measured: a bare Debian container compiles the demo's toy and then
+# answers UNKNOWN, which says nothing either way about the shim search).
+env -i PATH="$PATH" "$SO_DIR/bin/sideeye" demo >"$SO_DIR/control.txt" 2>&1 || true
+if grep -qF "was not used" "$SO_DIR/control.txt"; then
+    echo "FAIL control: an untouched prefix was already refused — the leg below would prove nothing"
+    sed -n '1,3p' "$SO_DIR/control.txt" | sed 's/^/       /'
+    fails=$((fails + 1))
+elif grep -qF "SETUP ERROR" "$SO_DIR/control.txt"; then
+    # Not just "did it print something": the demo's own SETUP ERROR text contains the word
+    # `demo`, so a run that died before the shim was resolved used to satisfy a looser
+    # control. Anything that stops this early makes the pair below meaningless.
+    echo "FAIL control: the untouched prefix stopped at a setup error, before the search proved anything"
+    sed -n '1,3p' "$SO_DIR/control.txt" | sed 's/^/       /'
+    fails=$((fails + 1))
+else
+    echo "ok   control: an untouched prefix resolves its shim and gets past the search"
+fi
+
+# 65534 is nobody on Debian and Ubuntu: a uid that is neither the caller, nor root, nor
+# the owner of the binary beside it — which is the whole predicate. The binary is left
+# alone on purpose; chowning both would make the pair self-consistent and accepted.
+# Whether this host can host the leg at all is asked before it is run, and separately from
+# whether the leg passes. A host that cannot chown cannot measure the owner half — that is
+# a fact about the host, and reporting it as a failed check would make every macOS and
+# every sudo-less container run of this suite red for a reason that is not a defect.
+# CI (the ubuntu runner, passwordless sudo) and the root container both answer yes.
+if [ "$(id -u)" = "0" ] || sudo -n true 2>/dev/null; then
+    so_can_chown=1
+else
+    so_can_chown=0
+    # Counted, not just printed. A line that only echoes lets the suite finish on
+    # "ALL ACCEPTANCE CHECKS PASSED" while the owner half of #423 — whose only real
+    # measurement is right here — never ran, and green is then indistinguishable from
+    # not-measured. The count is reported beside the pass line rather than as a failure:
+    # a host without chown is a fact about the host.
+    not_measured=$((not_measured + 1))
+    echo "     NOT MEASURED: the owner half of #423 needs chown (root or passwordless sudo); this host has neither"
+fi
+# Every shim in the prefix, not one picked by name: a tree built for two targets holds
+# both, only one of them is the one this binary will load, and chowning the other leaves
+# the run untouched — which reads as "the owner check did not fire" (measured, on a Linux
+# binary beside a macOS shim that sorted first).
+if [ "$so_can_chown" = "1" ] && { sudo -n chown 65534 "$SO_DIR"/lib/libsideeye_shim.* 2>/dev/null || chown 65534 "$SO_DIR"/lib/libsideeye_shim.* 2>/dev/null; }; then
+    if env -i PATH="$PATH" "$SO_DIR/bin/sideeye" demo >"$SO_DIR/refused.txt" 2>&1; then
+        so_rc=0
+    else
+        so_rc=$?
+    fi
+    if [ "$so_rc" != "3" ]; then
+        echo "FAIL a shim owned by uid 65534 was not refused (exit $so_rc) — the owner check did not fire"
+        sed -n '1,3p' "$SO_DIR/refused.txt" | sed 's/^/       /'
+        fails=$((fails + 1))
+    elif ! grep -qF "owned by uid 65534" "$SO_DIR/refused.txt"; then
+        echo "FAIL the refusal did not name the owner it refused on"
+        sed -n '1,3p' "$SO_DIR/refused.txt" | sed 's/^/       /'
+        fails=$((fails + 1))
+    elif ! grep -qF -- "--shim" "$SO_DIR/refused.txt"; then
+        echo "FAIL the refusal named no way past it"
+        fails=$((fails + 1))
+    else
+        echo "ok   a shim owned by a third party is refused, by uid, with a way past it"
+    fi
+elif [ "$so_can_chown" = "1" ]; then
+    # The host said it could and then could not: that is a broken leg, not a bare host.
+    echo "FAIL chown was available and still failed — the owner half of #423 did not run"
+    fails=$((fails + 1))
+fi
+rm -rf "$SO_DIR"
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
+    if [ "$not_measured" != "0" ]; then
+        echo "ALL ACCEPTANCE CHECKS PASSED — but $not_measured check(s) could not run on this host (see NOT MEASURED above)"
+        exit 0
+    fi
     echo "ALL ACCEPTANCE CHECKS PASSED"
     exit 0
 fi
