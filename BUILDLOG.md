@@ -2,6 +2,51 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 — Two readers, two error sets, and one measurement that went through the wrong build (#376)
+
+`SnapshotError` typed eight failures for readers that can raise two and six. Splitting it
+is mechanical; the interesting part was measuring the defect.
+
+The first attempt added a trace-only member to `SnapshotError` and ran `zig build test`.
+**No error.** The reason recorded here at first was that `zig build test` does not compile
+`src/main.zig` — **which is false**: `build.zig`'s `test_sources` lists it. Review found
+that, and the real reason is Zig's lazy analysis: the two switches sit in
+`snapshotOrRefuse` and `snapshotDetail`, which only the explore flow calls and which no
+test in `main.zig` reaches, so a test build never analyses them. `zig build` shows it
+immediately — `main.zig:716: switch must handle all possibilities`, and `:791` once 716 is
+filled. The same shape as #344's `link_libc` earlier today: a check that passes because
+the path it ran on does not reach the thing being changed. Getting the *reason* wrong is
+the same failure one level up — the next person reads "main.zig is not a test root",
+believes their own switch is covered, and it is not.
+
+The asymmetry is worth stating: the `ReadWholeError` half really does redden under
+`zig build test`, because `engine.zig` is a test root and both forcing sites are inside
+it. Only the two `main.zig` switches need the executable. And a member added to
+`SnapshotError` itself reddened **nothing** under `zig build test` until this change added
+a count assertion for the three sets, the way `RestoreError`'s length is already pinned in
+`main.zig` — measured before and after.
+
+The scope shrank in review before any of this. The plan had also wanted the trace read to
+say *which* failure it hit — and `PathTooLong` cannot happen. All three call sites format a
+longer sibling path (`stdout-record.txt` beside `trace-record.bin`) into a buffer of the
+same `contract.max_path`, so the one-byte window where the trace path fits and its
+formatting does not is closed before the read. A message for it would have been dead code
+with a falsification check nothing could run.
+
+What is left is one-directional and the type is written to say so: a trace-only member can
+no longer reach the snapshot's switches, and nothing forces the trace side to say anything
+about it.
+
+**And the unreachability claim was too strong.** Review did the arithmetic the scope note
+had done by eye: the read's `bufPrintZ` needs one byte more than the `bufPrint` that built
+the same path, so the window is `path.len == max_path` exactly, and the record sites close
+it with an eighteen-byte sibling. The world loop does not — `/trace-{d}.bin` passes
+`/stdout-world.txt` in length at seven digits, so a work directory of 4,078 bytes and a
+crash point past one million reaches `PathTooLong` for real. The refusal is still correct
+and still one sentence; what changes is that the documents now say "nearly unreachable"
+and name the shape, instead of asserting a closure that was never measured.
+
+
 ## 2026-09-04 — The root vets keep their address and gain a relation (#359)
 
 #359 asked whether the root denylists should move out of `engine.zig`, and named two
