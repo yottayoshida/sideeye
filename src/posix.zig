@@ -376,6 +376,74 @@ pub fn kindOfPathNoFollow(path: [*:0]const u8) ClassifyError!Kind {
     return kindAtNoFollow(AT_FDCWD, path);
 }
 
+/// What a name is and who owns it, without following the last component (#423).
+///
+/// One `lstat` rather than two calls, because the two answers are asked together: the shim
+/// search refuses a candidate that is a link **or** that someone else owns, and taking the
+/// kind from one syscall and the owner from another would let the file change identity
+/// between them — the shape #338 closed elsewhere in this codebase.
+///
+/// **`mask.UID` is checked on Linux, and not checking it is how this guard would fail
+/// open.** `statx` fills only what the mask grants, and an unfilled `uid` reads as 0 — the
+/// one value that means "root owns it", which is a value the caller *accepts*. The same
+/// gate is on `kindAtNoFollow`'s `TYPE` and `identityOfPath`'s `INO`, for the reason std's
+/// own contract gives: "Callers must check this field since support varies by kernel
+/// version and filesystem."
+/// `uid` is optional because `.missing` has no owner, and the value that would otherwise
+/// stand in for one is 0 — which is *root*, an owner the shim search accepts. A caller who
+/// grew a use for the uid on a path that is not there would inherit an accept, silently.
+pub const OwnedKind = struct { kind: Kind, uid: ?u32 };
+
+pub fn ownedKindNoFollow(path: [*:0]const u8) ClassifyError!OwnedKind {
+    return statNoFollow(AT_FDCWD, path, true);
+}
+
+/// The one place a `stat` is turned into a `Kind`, shared by the walk's classifier and by
+/// the shim search. `want_uid` is what differs and the only thing that differs: on Linux it
+/// adds `UID` to the `statx` mask and gates on it, which the walk must not do — a
+/// filesystem that answers `TYPE` and not `UID` would start failing every entry it walks,
+/// to serve a search of two candidates.
+fn statNoFollow(dirfd_: c_int, path: [*:0]const u8, want_uid: bool) ClassifyError!OwnedKind {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        const mask: lnx.STATX = if (want_uid) .{ .TYPE = true, .UID = true } else .{ .TYPE = true };
+        const rc = lnx.statx(@intCast(dirfd_), path, lnx.AT.SYMLINK_NOFOLLOW, mask, &stx);
+        switch (lnx.errno(rc)) {
+            .SUCCESS => {},
+            .NOENT => return .{ .kind = .missing, .uid = null },
+            else => return error.Unclassifiable,
+        }
+        // std's own contract: "Callers must check this field since support varies by
+        // kernel version and filesystem." A mode the kernel never filled in is not a
+        // classification, and an unfilled uid reads as 0 — which is root, an owner the
+        // shim search *accepts*, so leaving that ungated is how the guard fails open.
+        if (!stx.mask.TYPE) return error.Unclassifiable;
+        if (want_uid and !stx.mask.UID) return error.Unclassifiable;
+        const m: u32 = stx.mode;
+        const k: Kind = if (lnx.S.ISLNK(m)) .symlink else if (lnx.S.ISDIR(m)) .dir else if (lnx.S.ISREG(m)) .file else .other;
+        return .{ .kind = k, .uid = if (want_uid) stx.uid else null };
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstatat(@intCast(dirfd_), path, &st, std.c.AT.SYMLINK_NOFOLLOW) != 0) {
+            if (std.c._errno().* == ENOENT) return .{ .kind = .missing, .uid = null };
+            return error.Unclassifiable;
+        }
+        // No mask gate on this side, and its absence is the point rather than an omission:
+        // `fstatat` either fills the whole `struct stat` or fails. There is no partial
+        // answer to guard against, which is what `statx` introduced on the other side.
+        const m = st.mode;
+        const k: Kind = if (std.c.S.ISLNK(m)) .symlink else if (std.c.S.ISDIR(m)) .dir else if (std.c.S.ISREG(m)) .file else .other;
+        return .{ .kind = k, .uid = if (want_uid) st.uid else null };
+    }
+}
+
+/// The effective user this process runs as — the identity the kernel checks writes
+/// against, which is the one that matters for "could someone else have put this here".
+pub fn geteuid() u32 {
+    return @intCast(std.c.geteuid());
+}
+
 /// The same classification, relative to an open directory (#327).
 ///
 /// **`path` must be a bare entry name.** An absolute path makes `dirfd` irrelevant on both
@@ -387,36 +455,7 @@ pub fn kindOfPathNoFollow(path: [*:0]const u8) ClassifyError!Kind {
 /// costs — "a FIFO with no writer blocks that open forever" is why the open-probe was
 /// retired from this file in the first place.
 pub fn kindAtNoFollow(dirfd_: c_int, path: [*:0]const u8) ClassifyError!Kind {
-    if (builtin.os.tag == .linux) {
-        const lnx = std.os.linux;
-        var stx: lnx.Statx = undefined;
-        const rc = lnx.statx(@intCast(dirfd_), path, lnx.AT.SYMLINK_NOFOLLOW, .{ .TYPE = true }, &stx);
-        switch (lnx.errno(rc)) {
-            .SUCCESS => {},
-            .NOENT => return .missing,
-            else => return error.Unclassifiable,
-        }
-        // std's own contract: "Callers must check this field since support varies by
-        // kernel version and filesystem." A mode the kernel never filled in is not a
-        // classification.
-        if (!stx.mask.TYPE) return error.Unclassifiable;
-        const m: u32 = stx.mode;
-        if (lnx.S.ISLNK(m)) return .symlink;
-        if (lnx.S.ISDIR(m)) return .dir;
-        if (lnx.S.ISREG(m)) return .file;
-        return .other;
-    } else {
-        var st: std.c.Stat = undefined;
-        if (std.c.fstatat(@intCast(dirfd_), path, &st, std.c.AT.SYMLINK_NOFOLLOW) != 0) {
-            if (std.c._errno().* == ENOENT) return .missing;
-            return error.Unclassifiable;
-        }
-        const m = st.mode;
-        if (std.c.S.ISLNK(m)) return .symlink;
-        if (std.c.S.ISDIR(m)) return .dir;
-        if (std.c.S.ISREG(m)) return .file;
-        return .other;
-    }
+    return (try statNoFollow(dirfd_, path, false)).kind;
 }
 
 /// The same classification for a descriptor that is **already open** (#400).

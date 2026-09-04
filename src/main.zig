@@ -901,8 +901,11 @@ const usage_fmt =
     \\               world alike; killed worlds still require the kill signal itself
     \\  --shim       path to libsideeye_shim.so; when omitted it is looked for
     \\               beside this binary (its sibling, then ../lib — the tarball
-    \\               and zig-out layouts), and absence is a loud error naming
-    \\               both looked-at paths
+    \\               and zig-out layouts). Absence is a loud error naming both
+    \\               places it looks, and so is a candidate the search will not
+    \\               attribute: a symlink, or one owned by neither you, nor
+    \\               root, nor the owner of this binary. A path given here is
+    \\               used as named and not checked
     \\  --work       scratch directory for traces (default /tmp/sideeye-work)
     \\  --oracle     path to strace; the recording run is compared against it
     \\  --oracle-fs-usage
@@ -4162,15 +4165,15 @@ const demo_check_sh = @embedFile("check_sh");
 /// says the product does. Two copies of a search order is how the two ends of that
 /// sentence drift apart again.
 const shim_basename = mcp.shim_basename;
-fn shimCandidates(arena: std.mem.Allocator, self: []const u8) [2][]const u8 {
-    return mcp.shimCandidates(arena, self) catch setupError("out of memory");
-}
 
 test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
+    // Calls `mcp.shimCandidates` directly. This file used to keep a wrapper that turned
+    // its allocation failure into a setup error, and #423 left that wrapper with no
+    // caller but this test — a function alive only because something measured it.
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
-    const c = shimCandidates(arena, "/opt/sideeye/bin/sideeye");
+    const c = try mcp.shimCandidates(arena, "/opt/sideeye/bin/sideeye");
     const first = std.fmt.allocPrint(arena, "/opt/sideeye/bin/{s}", .{shim_basename}) catch unreachable;
     const second = std.fmt.allocPrint(arena, "/opt/sideeye/bin/../lib/{s}", .{shim_basename}) catch unreachable;
     try std.testing.expectEqualStrings(first, c[0]);
@@ -4190,9 +4193,16 @@ test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
 fn findShim(arena: std.mem.Allocator) []const u8 {
     const self = mcp.canonicalSelf() orelse setupError("could not resolve the canonical path of this binary to look beside it for the shim; pass --shim <path>");
     const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
-    if (mcp.findShimBeside(arena, self_owned)) |found| return found;
-    const cands = shimCandidates(arena, self_owned);
-    setupError(std.fmt.allocPrint(arena, "the shim is half the product, and none was found at either place this looks — {s} and {s}. Pass --shim <path to {s}>", .{ cands[0], cands[1], shim_basename }) catch "the shim was not found beside this binary; pass --shim");
+    switch (mcp.findShimBeside(arena, self_owned)) {
+        .found => |f| return f,
+        // A refused candidate is fatal here rather than absent: falling through to the
+        // message below would say nothing was found at a place where something was, and
+        // the operator would go looking for a missing file instead of a planted one.
+        .refused => |r| setupError(mcp.refusalMessage(arena, r)),
+        .absent => |cands| setupError(mcp.absentMessage(arena, cands, std.fmt.allocPrint(arena, "Pass --shim <path to {s}>", .{shim_basename}) catch "Pass --shim <path>")),
+        .unsearchable => setupError("out of memory while looking for the shim"),
+    }
+    unreachable;
 }
 
 /// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete

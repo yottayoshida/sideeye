@@ -55,15 +55,16 @@ language, and made a hand-written Zig server small.
    beside the binary, then `../lib` — because demanding the variable made this the one
    command that did not do what that page says. Neither default takes a value from the
    caller of a tool.
-   **What the shim fallback does add is a trust in the install directory**, and the
-   precondition below does not cover it: whoever can write `bin/` or `../lib` of the
-   installed prefix chooses the library injected into the target, and a symlink placed
-   there is followed (measured). This is the CLI's behaviour since #78, so the exposure
-   belongs to the product rather than to this adapter — what changed is that the adapter
-   no longer sits outside it. Closing it product-wide is a separate decision (#423), because it
-   would change how a shipped command resolves its own library. **The config is a trust
-   boundary**: its
-   operation is executed; the confinement bounds *which* config, not what it may do.
+   **What the shim fallback adds is a trust in the install directory**, and the
+   precondition below does not cover it — that gap is now narrowed rather than only
+   described (#423, ADR 0044). The search refuses a candidate that is a symlink, or whose
+   owner is none of {the invoking user, root, the owner of the binary}, and says which and
+   why instead of falling through to the other candidate or to "no shim was found". What
+   remains open is the window the check cannot reach: it inspects a pathname, and the
+   child's dynamic linker resolves that pathname again later. Treat the guard as a
+   mitigation; `--shim` / `SIDEEYE_MCP_SHIM` and the permissions on the install directory
+   are what actually bound this.
+
    **Operational precondition:** `SIDEEYE_MCP_ROOT` and the work dir are user-owned and
    **not attacker-writable** — the operator sets them to their own workspace. Two
    residual issues are out of scope *only under this precondition*, and would need

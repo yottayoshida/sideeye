@@ -61,81 +61,385 @@ pub fn shimCandidates(arena: std.mem.Allocator, self: []const u8) error{OutOfMem
     };
 }
 
-/// The first candidate that exists, realpath-normalised. Null when neither does — the
-/// caller decides how loud that is, because the CLI can abort the process and a tool
-/// call has to answer the request.
-pub fn findShimBeside(arena: std.mem.Allocator, self: []const u8) ?[]const u8 {
-    // Two failures below are folded into "not here": the candidate list not being
-    // buildable, and a candidate longer than `contract.max_path`. Neither is a probe that
-    // came back empty. That is why the callers' message says "either place this looks"
-    // rather than "looked at" — the second phrasing would name a probe that, in those two
-    // cases, never happened, which is the class of refusal ADR 0026 rates worse than a
-    // generic one and which this same change is fixing over in `checkMeta`.
-    const cands = shimCandidates(arena, self) catch return null;
+/// Why a candidate was turned down, when it was there and was not taken.
+///
+/// The distinction the caller needs is not "found or not" but "not there" versus "there
+/// and refused": the second must never fall through to the next candidate or to the
+/// absent message, because the whole exposure #423 names is that the search hands the
+/// target a library somebody else chose. A refusal that quietly became "no shim here"
+/// would be the worst answer available — the run would carry on with a different library
+/// and nothing would say so.
+pub const ShimRefusal = enum { symlink, foreign_owner, unclassifiable };
+
+/// Named rather than anonymous inside the union: `refusalMessage` took `anytype` while it
+/// was anonymous, which accepted any value carrying the three fields and left the compiler
+/// with nothing to check between the two ends of this — the shape #389 found drifting
+/// within the hour when only the candidate list was shared.
+pub const ShimRefused = struct { path: []const u8, why: ShimRefusal, uid: ?u32 };
+
+pub const ShimSearch = union(enum) {
+    found: []const u8,
+    /// The two places that were looked at, carried rather than rebuilt: both callers used
+    /// to call `shimCandidates` a second time to write their own absent message, with
+    /// their own out-of-memory fallback beside it. Sharing only part of the search is what
+    /// #389 found drifting; `refusalMessage` closed that for one arm and this closes it
+    /// for the other.
+    absent: [2][]const u8,
+    /// The candidate list could not be built, so nothing was looked at. Separate from
+    /// `absent` because the message for that one names two directories, and naming a place
+    /// no probe reached is the class ADR 0026 rates worse than a generic refusal — the
+    /// first draft of this arm filled the pair with the bare basename twice, which said
+    /// the search had looked in `libsideeye_shim.so` and `libsideeye_shim.so`.
+    unsearchable,
+    refused: ShimRefused,
+};
+
+/// The absent message, shared for the same reason `refusalMessage` is. The caller supplies
+/// the flag it wants named, because that is the one thing the CLI and the server do not
+/// agree on.
+pub fn absentMessage(arena: std.mem.Allocator, cands: [2][]const u8, how: []const u8) []const u8 {
+    // `how` is the whole closing sentence, not a flag name: the CLI says
+    // `Pass --shim <path to X>` and the server `Set SIDEEYE_MCP_SHIM to a path to X`, and
+    // a shared template with a slot for the flag alone turned the first into
+    // "Pass --shim to a path to X" — grammatical damage the CLI's acceptance check could
+    // not see, because it greps for `pass --shim` case-insensitively.
+    return std.fmt.allocPrint(
+        arena,
+        "the shim is half the product, and none was found at either place this looks — {s} and {s}. {s}",
+        .{ cands[0], cands[1], how },
+    ) catch "the shim was not found at either place this looks; name one explicitly";
+}
+
+/// Whether a candidate's owner is one the search will accept, given who is asking.
+///
+/// Three owners pass, and the reasons differ. `self_uid` is the effective user: a file it
+/// owns is one it could have written itself. Root is the owner of a system install, and a
+/// root that wanted to subvert this run would not need a shim to do it. `binary_uid` is
+/// whoever owns the `sideeye` binary being run — a shared prefix installed by a dedicated
+/// account (Homebrew on Linux owns `/home/linuxbrew` this way) puts the binary and the
+/// library under that same account, and anyone who can write *that* can replace the
+/// binary, so trusting the pair costs nothing the binary did not already cost.
+///
+/// Split out and taking the uids as arguments because the refusing case cannot be built as
+/// a fixture without `chown`: a test running as an ordinary user cannot create a file owned
+/// by a third party. The acceptance suite covers that side in a container; this function is
+/// what a unit test can falsify directly.
+pub fn ownerAccepted(owner: u32, self_uid: u32, binary_uid: ?u32) bool {
+    if (owner == self_uid or owner == 0) return true;
+    if (binary_uid) |b| return owner == b;
+    return false;
+}
+
+/// The first candidate that is there — or the refusal that stops the search (#423).
+///
+/// A candidate that is a symlink, or that belongs to none of the accepted owners, ends the
+/// search with `refused`. It does not move on: the next candidate could be the attacker's
+/// too, and "no shim was found" would be a false statement about a file that was found.
+///
+/// **The check is a mitigation, not a boundary.** What it inspects is a pathname; what
+/// loads the library is the child's dynamic linker, which resolves that pathname again
+/// later. Anyone who can write the directory between the two has not been stopped by this,
+/// and anyone who is the accepted owner was never being stopped. `--shim` and
+/// `SIDEEYE_MCP_SHIM` are the caller naming the file, and permissions on the install
+/// directory are what actually bound this; both are documented in README.md.
+///
+/// Only the final component is inspected. A `../lib` that is itself a link is followed, and
+/// the owner checked is the owner of what it leads to — refusing on the way would turn
+/// away the symlink farms package managers legitimately build.
+pub fn findShimBeside(arena: std.mem.Allocator, self: []const u8) ShimSearch {
+    // One failure is still folded into "not here": a candidate longer than
+    // `contract.max_path`, which is skipped. The other two now answer for themselves —
+    // an unbuildable candidate list is `unsearchable`, a stat that cannot classify is
+    // `refused`. That single fold is why the absent message says "either place this
+    // looks" rather than "looked at": the second phrasing would name a probe that, for
+    // an over-long candidate, never happened — the class of refusal ADR 0026 rates worse
+    // than a generic one.
+    const cands = shimCandidates(arena, self) catch return .unsearchable;
+    const self_uid = posix.geteuid();
     for (cands) |c| {
         var zb: [contract.max_path]u8 = undefined;
         const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
-        if (posix.access(z.ptr, 0) != 0) continue;
+        // A candidate that cannot be classified ends the search rather than being treated
+        // as absent. `kindAtNoFollow`'s doc names that fold — EACCES, seccomp's EPERM,
+        // ENOSYS on an old kernel, a `statx` that did not fill the mask — as the silent
+        // shape it was written to avoid, and folding it here would be worse: the search
+        // would move to the next candidate, or end up saying nothing was found at a place
+        // where something is. This is the one kind of candidate the title of ADR 0044
+        // is about — the one that cannot be attributed.
+        const ok = posix.ownedKindNoFollow(z.ptr) catch
+            return .{ .refused = .{ .path = c, .why = .unclassifiable, .uid = null } };
+        if (ok.kind == .missing) continue;
+        // A file that is there but whose owner did not come back is the same answer as one
+        // that could not be classified at all: unattributable, and refused rather than
+        // used. Unwrapped here so the `uid` in every refusal below is a real one.
+        const uid = ok.uid orelse
+            return .{ .refused = .{ .path = c, .why = .unclassifiable, .uid = null } };
+        if (ok.kind == .symlink)
+            return .{ .refused = .{ .path = c, .why = .symlink, .uid = null } };
+        // The binary's owner is read only when the first two accepted owners have already
+        // failed — which on an ordinary install never happens, so the common path pays no
+        // stat for it. Taken from the `self` the caller resolved rather than by calling
+        // `canonicalSelf` again: that answer lives in a static buffer the MCP server holds
+        // a slice of for the life of the process.
+        //
+        // Every way of not getting an answer — a `self` too long for the buffer, a `self`
+        // that is not there (which the unit tests drive deliberately), a stat that failed
+        // — lands on `null`, and `ownerAccepted` reads `null` as "no third owner", so the
+        // accepted set narrows to {euid, root} rather than widening. Narrowing can refuse
+        // a shared-prefix install that would otherwise run, which is loud and has two
+        // documented ways past it; widening would accept a planted file in silence.
+        if (!ownerAccepted(uid, self_uid, null)) {
+            var self_zb: [contract.max_path]u8 = undefined;
+            const binary_uid: ?u32 = if (std.fmt.bufPrintZ(&self_zb, "{s}", .{self})) |sz|
+                if (posix.ownedKindNoFollow(sz.ptr)) |b| b.uid else |_| null
+            else |_|
+                null;
+            if (!ownerAccepted(uid, self_uid, binary_uid))
+                return .{ .refused = .{ .path = c, .why = .foreign_owner, .uid = uid } };
+        }
         var rb: [contract.max_path]u8 = undefined;
         if (posix.realpath(z.ptr, &rb)) |p| {
-            // On allocation failure fall back to the candidate rather than to null: `c`
-            // is already on this arena and names the same file. Answering null would make
-            // the caller say no shim was found beside the binary, which would be a lie
-            // about a file it had just seen.
-            if (arena.dupe(u8, std.mem.span(p))) |owned| return owned else |_| return c;
+            // On allocation failure fall back to the candidate rather than to absent: `c`
+            // is already on this arena and names the same file. Answering absent would
+            // make the caller say no shim was found beside the binary, which would be a
+            // lie about a file it had just seen.
+            if (arena.dupe(u8, std.mem.span(p))) |owned| return .{ .found = owned } else |_| return .{ .found = c };
         }
-        return c;
+        return .{ .found = c };
     }
-    return null;
+    return .{ .absent = cands };
 }
 
-test "findShimBeside takes the sibling before ../lib, and answers null for neither" {
-    // A pid-unique directory, for the reason image.zig's fixtureDir records: the same
-    // test runs in several concurrent binaries and a fixed path passes every single run
-    // before failing most of them in pairs (#28).
+/// One sentence naming the candidate, the reason, and the way past it. Shared so the CLI
+/// and the server say the same thing — the split #389 closed is not worth reopening for a
+/// message.
+pub fn refusalMessage(arena: std.mem.Allocator, r: ShimRefused) []const u8 {
+    // "the shim the search found" rather than "beside this binary": the second candidate
+    // is `../lib`, and naming it as a sibling would misdescribe half the refusals. The
+    // path is in every message, so the reader still gets which of the two places it was.
+    return switch (r.why) {
+        .symlink => std.fmt.allocPrint(
+            arena,
+            "the shim the search found is a symlink and was not used: {s}. Whoever can write that directory would choose the library injected into your target. Pass --shim (or set SIDEEYE_MCP_SHIM) to name the file yourself, or fix the permissions on the install directory",
+            .{r.path},
+        ) catch "the shim the search found is a symlink; pass --shim to name one",
+        // The only arm that carries a uid, and the type says so: the other two set it to
+        // null rather than to 0, because 0 is root and root is an owner this search
+        // *accepts* — a filler value that would read as a real answer wherever it was
+        // printed. The fallback here is unreachable (this arm is only constructed with a
+        // uid in hand) and is written as a sentence rather than an unreachable, since a
+        // refusal that crashed instead of speaking would be the worst of both.
+        .foreign_owner => if (r.uid) |u| std.fmt.allocPrint(
+            arena,
+            "the shim the search found is owned by uid {d}, which is neither you nor root nor the owner of this binary, and was not used: {s}. Whoever owns it would choose the library injected into your target. Pass --shim (or set SIDEEYE_MCP_SHIM) to name the file yourself, or fix the ownership of the install directory",
+            .{ u, r.path },
+        ) catch "the shim the search found is owned by someone else; pass --shim to name one" else "the shim the search found is owned by someone else; pass --shim to name one",
+        .unclassifiable => std.fmt.allocPrint(
+            arena,
+            "the shim the search found could not be classified — neither its kind nor its owner could be read — and was not used: {s}. Pass --shim (or set SIDEEYE_MCP_SHIM) to name the file yourself",
+            .{r.path},
+        ) catch "the shim the search found could not be classified; pass --shim to name one",
+    };
+}
+
+/// A pid-unique `<base>/bin` + `<base>/lib` pair, for the tests that drive the shim search
+/// against a prefix they build. Pid-unique for the reason `image.zig`'s `fixtureDir`
+/// records: the same test runs in several concurrent binaries, and a fixed path passes
+/// every single run before failing most of them in pairs (#28).
+const PrefixFixture = struct {
+    base_buf: [contract.max_path]u8 = undefined,
+    base: [:0]const u8 = "",
+    bin_buf: [contract.max_path]u8 = undefined,
+    bin: [:0]const u8 = "",
+    lib_buf: [contract.max_path]u8 = undefined,
+    lib: [:0]const u8 = "",
+
+    fn init(self: *PrefixFixture, tag: []const u8) !void {
+        self.base = std.fmt.bufPrintZ(&self.base_buf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+        _ = posix.mkdir(self.base.ptr, @as(c_uint, 0o755));
+        self.bin = std.fmt.bufPrintZ(&self.bin_buf, "{s}/bin", .{self.base}) catch unreachable;
+        if (posix.mkdir(self.bin.ptr, @as(c_uint, 0o755)) != 0 and std.c._errno().* != 17) return error.SkipZigTest;
+        self.lib = std.fmt.bufPrintZ(&self.lib_buf, "{s}/lib", .{self.base}) catch unreachable;
+        if (posix.mkdir(self.lib.ptr, @as(c_uint, 0o755)) != 0 and std.c._errno().* != 17) return error.SkipZigTest;
+        // Pid-unique is not the same as unused: a pid comes round again, and a run that
+        // died before its `deinit` leaves its files behind. Tolerating `EEXIST` on the
+        // directories and then trusting their contents is how a test starts from a state
+        // nobody chose. Everything this fixture creates is removed here, so each run
+        // begins from the same empty prefix whether or not the name is fresh.
+        self.clear();
+    }
+
+    /// Remove everything this fixture puts under `base`, leaving the directories.
+    fn clear(self: *const PrefixFixture) void {
+        var pb: [contract.max_path]u8 = undefined;
+        for ([_][:0]const u8{ self.bin, self.lib }) |d| {
+            const shim = std.fmt.bufPrintZ(&pb, "{s}/{s}", .{ d, shim_basename }) catch continue;
+            _ = posix.unlink(shim.ptr);
+        }
+        const spare = std.fmt.bufPrintZ(&pb, "{s}/elsewhere", .{self.base}) catch return;
+        _ = posix.unlink(spare.ptr);
+    }
+
+    /// The path this fixture's `sideeye` would be. Not created: the search takes it as a
+    /// string, and one test drives it deliberately absent.
+    fn selfPath(self: *const PrefixFixture, arena: std.mem.Allocator) ![]const u8 {
+        return std.fmt.allocPrint(arena, "{s}/bin/sideeye", .{self.base});
+    }
+
+    /// An empty `libsideeye_shim.*` in `dir`. Returns the path so a caller can point a
+    /// link at it or chown it.
+    fn shimIn(dir: []const u8, buf: []u8) ![:0]const u8 {
+        const path = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ dir, shim_basename }) catch return error.SkipZigTest;
+        const fd = posix.open(path.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        if (fd < 0) return error.SkipZigTest;
+        _ = posix.close(fd);
+        return path;
+    }
+
+    fn deinit(self: *PrefixFixture) void {
+        self.clear();
+        _ = posix.rmdir(self.bin.ptr);
+        _ = posix.rmdir(self.lib.ptr);
+        _ = posix.rmdir(self.base.ptr);
+    }
+};
+
+test "findShimBeside takes the sibling before ../lib, and answers absent for neither" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
 
-    var base_buf: [contract.max_path]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&base_buf, "/tmp/sideeye-shimfind-{d}", .{posix.getpid()}) catch unreachable;
-    _ = posix.mkdir(base.ptr, @as(c_uint, 0o755));
-    var b2: [contract.max_path]u8 = undefined;
-    const bin = std.fmt.bufPrintZ(&b2, "{s}/bin", .{base}) catch unreachable;
-    _ = posix.mkdir(bin.ptr, @as(c_uint, 0o755));
-    var b3: [contract.max_path]u8 = undefined;
-    const lib = std.fmt.bufPrintZ(&b3, "{s}/lib", .{base}) catch unreachable;
-    _ = posix.mkdir(lib.ptr, @as(c_uint, 0o755));
-
-    const touch = struct {
-        fn f(dir: []const u8) bool {
-            var pb: [contract.max_path]u8 = undefined;
-            const p = std.fmt.bufPrintZ(&pb, "{s}/{s}", .{ dir, shim_basename }) catch return false;
-            const fd = posix.open(p.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
-            if (fd < 0) return false;
-            _ = posix.close(fd);
-            return true;
-        }
-    }.f;
-
-    const self = try std.fmt.allocPrint(arena, "{s}/bin/sideeye", .{base});
+    var fx: PrefixFixture = .{};
+    try fx.init("shimfind");
+    defer fx.deinit();
+    const self = try fx.selfPath(arena);
 
     // Neither present: the caller has to be able to say so. A wrong "found" here is how a
     // run gets handed a path that is not a shim.
-    try std.testing.expect(findShimBeside(arena, self) == null);
+    try std.testing.expect(findShimBeside(arena, self) == .absent);
 
     // `../lib` only — the `zig build` and Homebrew layout, and the one `sideeye mcp`
     // refused to look at until #389.
-    if (!touch(lib)) return error.SkipZigTest;
-    const via_lib = findShimBeside(arena, self) orelse return error.TestUnexpectedResult;
+    var lb: [contract.max_path]u8 = undefined;
+    _ = try PrefixFixture.shimIn(fx.lib, &lb);
+    const via_lib = switch (findShimBeside(arena, self)) {
+        .found => |f| f,
+        else => return error.TestUnexpectedResult,
+    };
     try std.testing.expect(std.mem.endsWith(u8, via_lib, "/lib/" ++ shim_basename));
 
     // Both present: the sibling wins, which is the tarball layout and the order README.md
     // states. Asserting only the `../lib` case would pass for an implementation that never
     // looks beside the binary at all.
-    if (!touch(bin)) return error.SkipZigTest;
-    const via_sibling = findShimBeside(arena, self) orelse return error.TestUnexpectedResult;
+    var bb: [contract.max_path]u8 = undefined;
+    _ = try PrefixFixture.shimIn(fx.bin, &bb);
+    const via_sibling = switch (findShimBeside(arena, self)) {
+        .found => |f| f,
+        else => return error.TestUnexpectedResult,
+    };
     try std.testing.expect(std.mem.endsWith(u8, via_sibling, "/bin/" ++ shim_basename));
+}
+
+test "a symlinked candidate is refused, not followed and not skipped (#423)" {
+    // The measurement in #423: `access` returns 0 and `realpath` resolves it, so a link
+    // planted in the install directory decided which library got injected. Both halves
+    // matter here — that the link is refused, and that the search stops rather than moving
+    // on. Falling through to `../lib` would let an attacker who owns `bin/` steer the run
+    // to whatever sits at the second candidate, and the caller would be told nothing was
+    // wrong. Both candidates are driven, because a search that checked the first and
+    // trusted the second would pass a test that only planted the link beside the binary.
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    var fx: PrefixFixture = .{};
+    try fx.init("shimlink");
+    defer fx.deinit();
+    const self = try fx.selfPath(arena);
+
+    // A real file at `../lib`, so the search has somewhere to wrongly fall through to.
+    var libb: [contract.max_path]u8 = undefined;
+    const lib_shim = try PrefixFixture.shimIn(fx.lib, &libb);
+
+    // Control: with only the real `../lib` file, the search finds it. Without this the
+    // refusal below could be about this directory rather than about the link.
+    switch (findShimBeside(arena, self)) {
+        .found => |f| try std.testing.expect(std.mem.endsWith(u8, f, "/lib/" ++ shim_basename)),
+        else => return error.TestUnexpectedResult,
+    }
+
+    // The link as the first candidate, pointing at the real second one.
+    var binb: [contract.max_path]u8 = undefined;
+    const bin_shim = std.fmt.bufPrintZ(&binb, "{s}/{s}", .{ fx.bin, shim_basename }) catch unreachable;
+    if (posix.symlink(lib_shim.ptr, bin_shim.ptr) != 0) return error.SkipZigTest;
+
+    switch (findShimBeside(arena, self)) {
+        .refused => |r| {
+            try std.testing.expectEqual(ShimRefusal.symlink, r.why);
+            try std.testing.expect(std.mem.endsWith(u8, r.path, "/bin/" ++ shim_basename));
+            // No uid on this arm: 0 would read as root, an owner this search accepts.
+            try std.testing.expect(r.uid == null);
+            // The message carries the candidate and a way past it, so an operator is not
+            // left to guess which of the two places was the problem.
+            const msg = refusalMessage(arena, r);
+            try std.testing.expect(std.mem.indexOf(u8, msg, "symlink") != null);
+            try std.testing.expect(std.mem.indexOf(u8, msg, r.path) != null);
+            try std.testing.expect(std.mem.indexOf(u8, msg, "--shim") != null);
+        },
+        // Not `else`: the wrong answers are worth naming apart. `.found` means the link was
+        // followed (the bug), `.absent` means the search silently gave up on a file it had
+        // just seen, `.unsearchable` means it never looked.
+        .found => return error.TestUnexpectedResult,
+        .absent => return error.TestUnexpectedResult,
+        .unsearchable => return error.TestUnexpectedResult,
+    }
+
+    // The second candidate takes the same answer. Asserting only the sibling would pass
+    // for an implementation that checks the first candidate and trusts the second.
+    _ = posix.unlink(bin_shim.ptr);
+    _ = posix.unlink(lib_shim.ptr);
+    var ob: [contract.max_path]u8 = undefined;
+    const outside = std.fmt.bufPrintZ(&ob, "{s}/elsewhere", .{fx.base}) catch unreachable;
+    {
+        const fd = posix.open(outside.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        if (fd < 0) return error.SkipZigTest;
+        _ = posix.close(fd);
+    }
+    if (posix.symlink(outside.ptr, lib_shim.ptr) != 0) return error.SkipZigTest;
+    switch (findShimBeside(arena, self)) {
+        .refused => |r| {
+            try std.testing.expectEqual(ShimRefusal.symlink, r.why);
+            try std.testing.expect(std.mem.endsWith(u8, r.path, "/lib/" ++ shim_basename));
+        },
+        .found => return error.TestUnexpectedResult,
+        .absent => return error.TestUnexpectedResult,
+        .unsearchable => return error.TestUnexpectedResult,
+    }
+    _ = posix.unlink(outside.ptr);
+}
+
+test "the accepted owners are the caller, root, and whoever owns the binary (#423)" {
+    // The owner axis cannot be given a fixture here: an ordinary user cannot create a file
+    // owned by a third party, so the refusing case needs `chown` and lives in the
+    // container leg of the acceptance suite. What a unit test can do is drive the decision
+    // with the uids as arguments, which is why the predicate is a function of three
+    // numbers rather than a stat buried inside the search.
+    const me: u32 = 1000;
+    const binary: u32 = 501;
+    const stranger: u32 = 4242;
+
+    try std.testing.expect(ownerAccepted(me, me, binary));
+    try std.testing.expect(ownerAccepted(0, me, binary)); // root: a system install
+    try std.testing.expect(ownerAccepted(binary, me, binary)); // a shared prefix's own account
+    try std.testing.expect(!ownerAccepted(stranger, me, binary));
+
+    // With the binary's owner unknown the set narrows rather than opening: a stranger is
+    // still refused, and only the caller and root are left. Getting this backwards is the
+    // fail-open shape — an unreadable stat must not become "anyone may own it".
+    try std.testing.expect(ownerAccepted(me, me, null));
+    try std.testing.expect(ownerAccepted(0, me, null));
+    try std.testing.expect(!ownerAccepted(binary, me, null));
+    try std.testing.expect(!ownerAccepted(stranger, me, null));
 }
 
 /// One line to fd 1, the MCP transport. Nothing else may write here.
@@ -417,16 +721,14 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     // candidate, measured.
     const shim = if (posix.getenv("SIDEEYE_MCP_SHIM")) |s|
         std.mem.span(s)
-    else
-        findShimBeside(arena, self) orelse {
-            const cands = shimCandidates(arena, self) catch
-                return emitToolError(arena, id, "out of memory while looking for the shim");
-            return emitToolError(arena, id, std.fmt.allocPrint(
-                arena,
-                "no shim was found at either place this looks — {s} and {s}. Set SIDEEYE_MCP_SHIM to a path to {s}",
-                .{ cands[0], cands[1], shim_basename },
-            ) catch "no shim was found beside this binary; set SIDEEYE_MCP_SHIM");
-        };
+    else switch (findShimBeside(arena, self)) {
+        .found => |f| f,
+        // Same answer as the CLI, from the same function: a refusal is reported as a
+        // refusal, never as absence and never by moving on to the other candidate.
+        .refused => |r| return emitToolError(arena, id, refusalMessage(arena, r)),
+        .absent => |cands| return emitToolError(arena, id, absentMessage(arena, cands, std.fmt.allocPrint(arena, "Set SIDEEYE_MCP_SHIM to a path to {s}", .{shim_basename}) catch "Set SIDEEYE_MCP_SHIM")),
+        .unsearchable => return emitToolError(arena, id, "out of memory while looking for the shim"),
+    };
     const work = if (posix.getenv("SIDEEYE_MCP_WORK")) |w| std.mem.span(w) else "/tmp/sideeye-mcp";
     var wbuf: [contract.max_path]u8 = undefined;
     const wz = std.fmt.bufPrintZ(&wbuf, "{s}", .{work}) catch return emitToolError(arena, id, "work path too long");

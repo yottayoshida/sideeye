@@ -2,6 +2,64 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 - the shim search took the first candidate that existed
+
+`#423` had been sitting open with its measurement already done: a symlink placed in an
+installed prefix is followed, on the shipped 1.0.0 binary from Homebrew, on the branch, and
+through `sideeye mcp`. What it did not have was a decision. The filing said so explicitly -
+"the exposure is the product's, not one command's, and it predates 1.0" - and listed four
+questions a fix has to answer rather than answering them.
+
+The owner picked "refuse symlinks and refuse foreign owners" over "refuse symlinks only"
+and over "record the posture and close". Design review then found the first draft of the
+owner rule broken for a real layout: {invoking user, root} refuses Homebrew on Linux, where
+a dedicated account owns `/home/linuxbrew` and everyone else runs from it. The accepted set
+gained the owner of the `sideeye` binary - which the filing had itself suggested - and the
+argument that makes it free is that anyone who can write that can replace the binary, so
+the pair costs nothing the binary did not already cost.
+
+The second review finding was the one worth the whole exercise. The plan's falsification for
+the owner axis was: a pure function fed fake uids, plus a Homebrew run that passes. Both are
+accept-side. A `statx` whose `UID` mask bit went unchecked would leave `uid` unfilled, read
+as 0, and 0 is root - an *accepted* owner. Every unit test would stay green and the guard
+would pass everything. So `posix.ownedKindNoFollow` refuses a `statx` that did not fill the
+mask (the same gate `identityOfPath` has on INO), and the refusing side is measured for
+real in `spike/acceptance.sh` check 2so: chown a candidate to 65534, run, require exit 3
+and the uid in the message. The mask gate itself has no fixture and cannot get one from
+here: producing a filesystem that answers `TYPE` and not `UID` is the point, and the Linux
+branch's tests do not run on this laptop (`zig build test -Dtarget=x86_64-linux` cannot
+execute the binaries it builds). It is a fail-closed guard carried on the argument above,
+not on a measurement.
+
+Cleanup review then merged the two classifiers rather than leaving the duplicate the first
+draft justified: `statNoFollow(dirfd, path, want_uid)` is the one place a stat becomes a
+`Kind`, and `kindAtNoFollow` is a wrapper that asks for no uid — so the walk's mask is
+unchanged and the search's extra bit is a parameter rather than a second copy of the
+ISLNK/ISDIR/ISREG ladder.
+
+Two things that same cleanup broke, both caught by the second review and both of the same
+shape — a message shared one step too far. Folding the *absent* message into the shared
+helper meant the out-of-memory path, which has no candidate list to name, filled the pair
+with the bare basename twice and said the search had looked in `libsideeye_shim.so` and
+`libsideeye_shim.so`: a probe named that never happened, which is precisely what ADR 0026
+rates worse than a generic refusal, and which the comment three lines above it cites. That
+case is now its own answer (`unsearchable`). And a template with a slot for the flag name
+turned the CLI's `Pass --shim <path to X>` into `Pass --shim to a path to X`; acceptance
+check 9 greps for `pass --shim` case-insensitively and could not see it. The helper now
+takes the whole closing sentence.
+
+That leg took three tries, each one a lesson about what a control is worth. First form
+asserted the control run exits 1 (the planted bug found) - which ties the leg to whether the
+host can explore at all, and a bare Debian container answers UNKNOWN instead. Second form
+kept `env -i`, and the demo's own `cc` could not find `ld` without a PATH. The form that
+ships compares the *same command on the same host before and after the chown*, so the only
+thing that differs between the two runs is the owner. Measured green in a Debian container:
+control quiet, refusal named by uid.
+
+Not closed here: the child stdout capture opens `O_NOFOLLOW|O_EXCL` only under
+`minimal_env`, so the same class is unguarded on every CLI run. That is #469 - `#268` named
+the line and closed COMPLETED with it in the residue, without a ticket of its own.
+
 ## 2026-09-04 - count.py compared one marker pair and called the page in sync
 
 `#444` was filed off a same-class scan while shipping `#339`, and the measurement held on
