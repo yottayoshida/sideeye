@@ -119,6 +119,14 @@ That is what a veto needs. What it no longer supports is "the veto saw the mutat
 Read from the other side it is a finding about FSEvents rather than about sideeye:
 `ItemModified` arrives for a file nothing modified.
 
+The CI step added in this change earned itself on its first run. `trace-ops` reads its
+file through libc and did not declare `link_libc`; macOS links libc by default and Linux
+does not, so it built clean on the machine it was written on and failed on the runner with
+"dependency on libc must be explicitly specified". The leg this apparatus serves is
+macOS-only and never runs in CI - without the byte-identity step, which compiles it for
+Linux as a side effect, nothing would have compiled it there until someone tried.
+`zig build -Dtrace-ops -Dtarget=x86_64-linux` now passes locally too.
+
 What this does NOT do: re-take the sensitivity result. The 15/15 stays a v11 measurement
 from 2026-08-23. Route B is still declined on price (ADR 0035), and this changes only that
 the leg could measure if someone picked it up. `RESULTS.md` says so in the section that

@@ -166,6 +166,12 @@ pub fn build(b: *std.Build) void {
                 .root_source_file = b.path("spike/fsevents/trace-ops.zig"),
                 .target = target,
                 .optimize = optimize,
+                // It reads one file through libc, so it has to say so. macOS links libc
+                // by default and Linux does not: this built clean on the machine it was
+                // written on and failed on the runner with "dependency on libc must be
+                // explicitly specified" — caught by the CI step added in the same change,
+                // which is the only place this apparatus is compiled for Linux at all.
+                .link_libc = true,
                 .imports = &.{
                     .{ .name = "contract", .module = contract },
                 },
