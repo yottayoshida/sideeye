@@ -1,0 +1,1 @@
+{"schema": "sideeye/report", "verdict": "SETUP_ERROR", "message": "toolchain image missing libc headers", "crash_points": 0}

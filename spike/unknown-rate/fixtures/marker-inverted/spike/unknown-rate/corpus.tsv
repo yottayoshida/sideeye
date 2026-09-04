@@ -1,0 +1,4 @@
+# fixture corpus — three synthetic trials for the check-12 gate proof
+fx-toyA	A	toyA	c-cli	l0c	fake.sh	toyA	t1	report.json	spike/unknown-rate/defines/toyA	g1	apparatus_declared
+fx-toyB	B	toyB	python-cli	l0	fake.sh	toyB	t2	report.json	spike/unknown-rate/defines/toyB	g1	-
+fx-toyC	B	toyC	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines/toyC	g1	-

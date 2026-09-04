@@ -54,6 +54,46 @@ recorded through the link; and the rebuild's own `mkdirat` has the same window b
 next entry's open. So the interior is open, not safe: closing it needs resolution the
 kernel enforces (`openat2` with `RESOLVE_BENEATH` on Linux, no equivalent on macOS), which
 is its own decision. Scope unchanged, reasoning replaced.
+## 2026-09-04 - count.py compared one marker pair and called the page in sync
+
+`#444` was filed off a same-class scan while shipping `#339`, and the measurement held on
+this branch before anything was changed: a fabricated table placed after the real `:end`
+marker and closed with a second one leaves `count.py check` printing `OK - ... docs in
+sync`. The slice is `docs.split(MARK_BEGIN)[1].split(MARK_END)[0]` after asserting only
+that each marker is *present*, so the second pair is outside the compared region and the
+page can publish `| everything | 0% |` inside what reads as generated.
+
+The other two tampered pages the issue suggests were already red, which the plan recorded
+before writing the fix rather than after: a second `:begin` inside the block and an
+inverted pair both empty the published slice and die on `published tables carry 0 rows`.
+So the new detection is one page shape, not three; the other two gain attribution, and the
+CHANGELOG says which is which.
+
+Review found the fix half-placed. The cardinality assert sat after the pre-data early
+return, so a tree with nothing measured could still carry a fenced-off region and pass on
+the placeholder alone - the issue's own sentence, surviving in the branch the fix did not
+reach. It moved above that return, and the predicate weakened from `!= 1` to `> 1` because
+a pre-data page correctly carries no markers at all; the measured branch's existing
+presence check still requires the pair. The same review asked for the emit side to be
+fixtured rather than only asserted, and the first attempt at that fixture was not the hole:
+built by hand, it died pre-fix on drift. The shape that is green pre-fix is the one
+`setup-error-marker-reason` already had - a B-only generation whose funnel table is the
+last thing the page publishes - with the injected marker switched from `:end` (which
+`read_exclusions` refuses) to `:begin` (which it does not).
+
+Then the ordering. Cleanup review pointed out that checking the page before calling `emit`
+would skip a full reread of the reports on the failure path, which is true and was applied
+- and it took `marker-emit-begin` with it: the page in that fixture is pasted from the
+poisoned recomputation, so it carries the same duplicated marker, and the page-side guard
+fired first. The emit-side guard was left with nothing that reaches it. Reverted: the
+cheaper failure path costs the fixture that proves the guard, and ordering is what decides
+which guard a fixture proves. The `:end` direction of the emit-side assert stays
+unfixtured and is named in check 12's no-fixture list - a corpus cell can carry it, but the
+manifest digest refuses that tree before `emit` runs (measured).
+
+Not carried from the precedent: `render-cookbook.py` binds its block to its own heading,
+and this page has no such rule, so a marker pair moved wholesale under another heading is
+still accepted here. Different promise, recorded rather than fixed.
 
 ## 2026-09-03 (ninth) - a define names its scratch paths, and the judge leaves them alone
 
