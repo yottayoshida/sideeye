@@ -41,7 +41,10 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    member after the tag is a breaking change under either reading.
 
    **Amended 2026-08-30: this promise was broken once, deliberately, by owner
-   ruling.** `state_changed_unaccounted` was added after the tag, taking the set
+   ruling.** **The version does not record it (2026-09-04):** the release
+   carrying it is `v1.1.0`, not `v2.0.0`. That is an owner ruling about what the
+   version number is for, not a reading under which the addition stopped being a
+   break — this paragraph and the tag would otherwise disagree with nothing saying so. `state_changed_unaccounted` was added after the tag, taking the set
    from 32 members to 33, for #405's detection half — a raw-forked child writing
    into the judged directory reached PASS with its file still there, and no
    existing member could carry the refusal without saying something false about
