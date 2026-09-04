@@ -1,0 +1,11 @@
+# fixture corpus — three synthetic trials for the check-12 gate proof.
+#
+# The report at t1 was replaced after the manifest was written (#349). Nothing count.py
+# reads from the file changed: verdict, unknown_reason and the crash-point count are the
+# same bytes they were. What changed is content the recomputation never looks at — which
+# is the substitution the issue measured, twenty-eight A-group reports copied byte-for-byte
+# between generations with every check still saying OK. Before the manifest carried the
+# report's hash, this fixture passed.
+fx-toyA	A	toyA	c-cli	l0c	fake.sh	toyA	t1	report.json	spike/unknown-rate/defines/toyA	g1	apparatus_declared
+fx-toyB	B	toyB	python-cli	l0	fake.sh	toyB	t2	report.json	spike/unknown-rate/defines/toyB	g1	-
+fx-toyC	B	toyC	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines/toyC	g1	-
