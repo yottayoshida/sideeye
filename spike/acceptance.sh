@@ -4389,7 +4389,11 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # can carry MARK_END past the read_exclusions reason guard into a block that
 # otherwise passes, so that half of the emit-side assert stands unfixtured.
 # Deleting any of these leaves this suite
-# green, and that gap is filed rather than left implied. Sunset: never fired by the
+# green, and that gap is filed rather than left implied. From #349: the refusal for a
+# funnel wall row carrying a report hash. A wall runs no engine, `sweep.sh` writes `-`
+# there, and no committed manifest has one (46 walked, zero hits) — the predicate exists
+# for a manifest edited by hand, which is the threat the column is about, and a fixture
+# for it would have to be a manifest nothing produces. Sunset: never fired by the
 # v1.0 freeze -> removal list (same rule as check 11).
 ur_fails=0
 # Counted by the loop rather than written here: the sentence said "twelve" while the
@@ -4469,7 +4473,8 @@ for pair in \
     "marker-second-begin:docs/unknown-rate.md carries 2 begin markers" \
     "marker-inverted:end marker precedes its begin marker" \
     "marker-predata-second-end:docs/unknown-rate.md carries 3 end markers" \
-    "marker-emit-begin:recomputation carries 2 begin markers"; do
+    "marker-emit-begin:recomputation carries 2 begin markers" \
+    "report-swapped:is not the one the sweep wrote"; do
     ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     ur_seen="$ur_seen $bad"
