@@ -3438,6 +3438,123 @@ test "assertSafeNamingRoot drops the depth rule and refuses ancestors instead (#
     try t.expectError(error.UnsafeRoot, assertSafeRoot("/private/var"));
 }
 
+/// The roots the relation below is held over (#359).
+///
+/// Written as a corpus rather than as a list of asserts because the relation is what is
+/// being pinned, not the individual answers: a root added here is checked in both
+/// directions and against both predicates without anyone remembering to write four lines.
+/// Twenty-two of the thirty-nine also appear in the hand-written vet tests above, three
+/// more only in the denylist definitions themselves — being on a list is not being
+/// tested — and the remaining fourteen appear nowhere in this file. The two mutations that motivate
+/// this test — the outward read on one side only, the depth rule on one side only — are
+/// both already killed by those hand-written asserts, so a corpus built only from their
+/// roots would have added nothing. What it adds is the fourteen nobody thought to list,
+/// one of which (a `~` in a component) is what the attribution mutation uses.
+const root_relation_corpus = [_][]const u8{
+    // Depth-1 paths in neither list: the cell where the two predicates legitimately differ.
+    "/work",                        "/opt",               "/repo",                                  "/srv",             "/nix",               "/cores",
+    "/data",                        "/scratch",
+    // Denied outright, by tree or exactly.
+              "/usr",                                   "/etc/myapp",       "/tmp",               "/private/tmp",
+    "/Users",                       "/home",              "/var/lib/x",                             "/run/lock/x",      "/root",              "/Volumes",
+    // Ancestors of denied entries — the outward read's own cell.
+    "/var",                         "/private",           "/private/var",
+    // Accepted by both: the ordinary case, in several shapes.
+                              "/opt/myapp/state", "/srv/myapp/state",   "/work/state",
+    "/Users/someone/scratch/state", "/var/library/state", "/private/var/folders/lm/abcdef/T/state", "/optimism/state",
+    // Unusual bytes in a component, and depth beyond anything else here.
+    "/work/~cache/state",           "/opt/a.b/c-d/state", "/srv/x y/state", "/a/b/c/d/e/f/g/h",
+    // Refused by the shape checks rather than by either list.
+    "/work/state/",                 "relative/path",      "",               "/",
+    // Accepted by both, and the reason both vets say the caller hands over the resolved
+    // spelling: the checks are lexical, so these pass here and mean something else on disk.
+    "//var",                        "/opt/../var",        "/work/.",
+};
+
+fn namingAccepts(root: []const u8) bool {
+    assertSafeNamingRoot(root) catch return false;
+    return true;
+}
+
+fn destructiveAccepts(root: []const u8) bool {
+    assertSafeRoot(root) catch return false;
+    return true;
+}
+
+// The relation between the two vets, held over the corpus (#359, ADR 0046).
+//
+// The denylists live in this file, next to the destructive path, and #359 asked whether
+// they should move somewhere neither consumer owns. ADR 0046 declines the move: the drift
+// the address argument protects against did happen once (#329 gave the outward read to
+// the naming side alone) and what closed it was extraction into a shared helper, not
+// relocation — and a new file would let the same asymmetry be written inside it. So what
+// is pinned here is the relation, which nothing pinned before.
+//
+// Three assertions, and the third is what keeps the first two from being vacuous. A
+// mutation that adds a check to the naming side alone would satisfy the implication by
+// emptying its antecedent; requiring every cell of the corpus to be populated means the
+// corpus has to keep separating the predicates for the test to pass at all.
+test "the naming vet refuses a subset of what the destructive vet refuses (#359)" {
+    const t = std.testing;
+
+    var naming_only_accepts: usize = 0; // naming yes, destructive no — the depth rule's cell
+    var both_accept: usize = 0;
+    var both_refuse: usize = 0;
+
+    for (root_relation_corpus) |root| {
+        const naming = namingAccepts(root);
+        const destructive = destructiveAccepts(root);
+        var slashes: usize = 0;
+        for (root) |ch| {
+            if (ch == '/') slashes += 1;
+        }
+
+        // 0. The relation as an equality, which is what the property sentence says: the
+        //    destructive vet accepts exactly what the naming vet accepts and is deep
+        //    enough. Assertions 1 and 2 decompose it into the two directions and name
+        //    which one broke; this line is what makes them an equality rather than a
+        //    containment. Without it a destructive-side-only check confined to depth-1
+        //    roots passes everything, because the cell it empties is still filled by the
+        //    other seven.
+        if (destructive != (naming and slashes >= 2)) {
+            std.debug.print(
+                "#359: {s} — naming {}, destructive {}, slashes {d}: the vets differ by something other than depth\n",
+                .{ root, naming, destructive, slashes },
+            );
+            return error.VetsDifferBySomethingOtherThanDepth;
+        }
+
+        // 1. Containment: everything the naming vet refuses, the destructive vet refuses.
+        //    A check added to the naming side that the destructive side does not get
+        //    lands here.
+        if (!naming and destructive) {
+            std.debug.print("#359: naming refuses {s} but the destructive vet accepts it\n", .{root});
+            return error.NamingRefusalNotCoveredByDestructive;
+        }
+
+        // 2. The one direction they may differ in is the depth rule, and nothing else.
+        //    A check added to the destructive side alone lands here.
+        if (naming and !destructive) {
+            if (slashes >= 2) {
+                std.debug.print("#359: the destructive vet refuses {s} for a reason that is not depth\n", .{root});
+                return error.DestructiveRefusalIsNotTheDepthRule;
+            }
+            naming_only_accepts += 1;
+        } else if (naming and destructive) {
+            both_accept += 1;
+        } else {
+            both_refuse += 1;
+        }
+    }
+
+    // 3. The corpus separates them. Without this, a mutation can satisfy 1 and 2 by
+    //    making one of the cells unreachable — which is exactly what adding the depth
+    //    rule to the naming side does.
+    try t.expect(naming_only_accepts > 0);
+    try t.expect(both_accept > 0);
+    try t.expect(both_refuse > 0);
+}
+
 test "assertSafeRoot refuses the ancestor a typed /var resolves to (#358)" {
     const t = std.testing;
 

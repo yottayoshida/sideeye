@@ -2,6 +2,62 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 — The root vets keep their address and gain a relation (#359)
+
+#359 asked whether the root denylists should move out of `engine.zig`, and named two
+conditions that would move them. **One had already fired.** #329 gave `assertSafeNamingRoot`
+the outward read of the lists and left `assertSafeRoot` inward-only, so the predicate that
+only names files refused `/private/var`, which the predicate that empties directories
+accepted. #358 closed it by extraction into a shared helper, not by moving the file.
+
+The first draft of this entry said the asymmetry stood "for two weeks". **It stood for two
+hours and forty minutes** — `8eaed2a` at 09:28 to `4655363` at 12:08 on 2026-08-27 — and
+#358 was filed at 09:03, twenty-five minutes before the merge that introduced it. Review
+found it as it landed. That is a better story for leaving the address alone and a worse
+one for the test, and the ADR now says so; the number came from nowhere and nothing had
+checked it until the diff review did.
+
+So the decision is: keep the address, pin the relation. `assertSafeNamingRoot` refuses a
+subset of what `assertSafeRoot` refuses; the one direction they differ in is the depth rule.
+
+**The first draft of this test was worth nothing, and the second review said so.** The two
+mutations it was built around — putting the outward read back on one side only, giving the
+naming side a depth rule — are both already killed by the hand-written `#329` and `#358`
+tests. Measured, five mutations, one at a time:
+
+| mutation | tests that failed |
+|---|---|
+| outward read on the naming side only | `#329`, `#358`, and the new one |
+| depth rule added to the naming side | `#329` and the new one |
+| depth rule weakened on the destructive side | `#329` and the new one |
+| naming side refuses roots containing `~` | **the new one alone** |
+| depth rule carved out so `/data` is accepted at one component | **the new one alone** |
+
+Two contributions, from different halves of the test. The `~` mutation is the corpus's:
+that byte is in no other root test. The carve-out is assertion 0's, and **an earlier
+version of this entry said assertion 0 had no mutation of its own.** It had one; the
+mutation tried ran the wrong way. Refusing `/data` on the destructive side is dead code —
+the depth rule already refuses every depth-1 root — while *accepting* one is the shape a
+container mount arrives as, and it leaves containment, the depth bound and the populated
+cells all intact. `/work` is the only depth-1 root whose destructive refusal any
+hand-written test pins; `/opt`, `/repo`, `/srv`, `/nix`, `/cores`, `/data` and `/scratch`
+are named by none.
+
+The count of corpus roots that appear elsewhere was wrong too: twenty-two are in the
+hand-written vet tests, three more are only in the denylist definitions, and fourteen are
+in neither. Being on a denylist is not being tested, and the first correction of this
+paragraph had folded the two together.
+
+The premise table for this batch had said "nothing pins this relation today", and that was
+false: three shapes are pinned by hand at `:3396`, `:3405` and `:3438`. What was not
+pinned is the relation.
+
+Also removed before it was written: the assertion that moving the lists to `contract.zig`
+would compile a host path policy into every interposed target. Zig analyses top-level
+declarations lazily, so an unreferenced `const` is likely never emitted, and nobody
+measured it. The file is declined on what it is for, not on what it would weigh.
+
+
 ## 2026-09-04 - the sensitivity leg's predicate did not survive its own mutation
 
 `#344` was filed off `#343` and pointed at a class rather than a fix: the planted
