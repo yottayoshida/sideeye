@@ -2,6 +2,41 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 — v1.1.0, and the first release that read its own block first
+
+The reading step `CLAUDE.md` gained this morning (#374) ran for the first time on the block
+it was written for: 71 entries, `[Unreleased]` for six days and 87 commits since v1.0.0.
+**It found two, both the same shape** — a number that CI reprints on every push, frozen
+into prose. The `#374` entry said "10 of the 204 sentences … the other 194" while the check
+printed `12 of 211 … 199`, and it described the `--selftest` as "six planted defects" after
+the `#374 follow-up` entry three lines above had grown that set. Neither was wrong when
+written. Both are now written as "the ok line names how many", because a count in prose
+next to a check that recomputes it is a promise to go stale.
+
+**The merge itself falsified a reference, and the check caught it in this commit.** One
+entry said "the `#374 follow-up` entry above"; regrouping moved that entry from four lines
+up to sixteen lines down, and the direction clause went red on the release commit. That is
+the third time today a positional word survived the thing that moved its referent, and the
+first time anything noticed before it shipped.
+
+The headings merged here rather than in CI, which is where #374 argued they belong:
+`### Added` ×4, `### Changed` ×3 and `### Fixed` ×3 became one of each, holding 49, 15 and
+42 entries. Forcing that per pull request would have put every branch in the same region of
+the file, and three of today's branches came off one base.
+
+**The empty-block clause earned itself immediately.** `[Unreleased]` is empty the moment
+the heading is renamed, and until this morning the check failed a block with no entries —
+so this very commit would have gone red. The review that found it did so hours before the
+release that would have hit it.
+
+**The version is 1.1.0 and the freeze page says one member of it was a break.** The
+`unknown_reason` closed set went from 32 to 33 after the tag (#405), and
+`docs/contract-freeze.md` says plainly that gaining a member after the tag is a breaking
+change under either reading. The owner ruled on 2026-08-30 that the break was deliberate
+and taken once; the ruling here is that it is not counted in the version. That is a
+judgement, not a reading of semver, and the freeze page now says which it is rather than
+leaving the page and the tag to disagree in silence.
+
 ## 2026-09-04 — The changelog check had three gaps, and two of them were reds it should not have (#374 follow-up)
 
 #477 merged and the confirming review's tail arrived after. Three gaps, all reproduced
