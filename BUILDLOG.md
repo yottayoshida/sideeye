@@ -76,6 +76,106 @@ column list became `MANIFEST_COLS` beside the four that were already there, so t
 lives in one place rather than in three; the wall row's `-` moved in with the other wall
 checks; and the fixture's explanation moved from a README nothing reads into the corpus
 header, where the other forty-four keep theirs.
+## 2026-09-04 - the sweep's own logs recorded the machine that ran it
+
+`#350` had already made the trade explicit: the paths in a committed oracle log are correct
+- they are what strace saw - and that correctness is why nothing flagged them. What they
+also are is a machine layout in a public record, growing by one sweep each time. Three
+options were filed; the owner took "fold at capture, with a check behind it" over
+"check only" and over "write it on the page".
+
+The plan for it was wrong in a way worth recording, because it was wrong about the thing it
+had looked at. It said the paths came in two shapes - one generation bare, the other with
+Docker Desktop's `/run/host_virtiofs` prefix - and designed the fold around replacing
+`$ROOT`. Review counted instead of reading: every occurrence in every committed log carries
+the prefix, and the bare form appears zero times. What differs between the generations is
+not the prefix but the checkout name. Folding `$ROOT` would have left all sixty-five
+layout-carrying lines of a single log untouched, which was then measured directly rather
+than argued.
+
+So the fold is anchored on the suffix - but not on *everything* before
+`spike/unknown-rate/artifacts`, which is what the first draft did and what review measured
+the cost of. `/work` matches that shape too, and `/work` is the read-only mount this script
+passes to `docker run`: the same on every machine, and therefore not layout. Worse, a line
+typically carries both spellings - the string the target passed and the host path the
+kernel resolved it to, in strace's `<...>` annotation - so folding both collapsed them into
+one string and the line stopped showing that a mount had been crossed. Lines carrying the `/work`
+spelling: 96 in the timew leg, 177 in todoman; of those, 47 and 48 carry both spellings at
+once. `/work` is now held back explicitly rather than by narrowing what the fold accepts.
+
+The suffix fold took a second pass to finish. strace truncates a string
+argument at 32 bytes and marks it `"..."`, so a `readlinkat` result reads
+`"/run/host_virtiofs/Users/i.yoshi"...` and the anchor the first pattern needs is not in
+the line at all. The second pattern is blunt for that reason: what is left
+after the first pass is by construction a fragment with no structure to match on. It is
+bounded to the virtiofs prefix so a target's own home-directory path would not be swept up
+with it. On a committed log: 65 lines carrying the layout, 55 folded by the first pass, 10
+by the second, 0 left.
+
+A third pass over bare `/Users/` was written and removed. It never fired - the count after
+two passes is already zero - and had it fired it would have labelled a complete path
+`<repo-truncated>`, which is the kind of statement this whole change exists to avoid. The
+second pass can do that too, and review was right to say the reason does not separate them
+by itself: a complete `/run/host_virtiofs/...` that never reaches the artifacts directory
+is shortened the same way. What separates them is the prefix - on this apparatus every
+path carrying it IS the host layout, and bare `/Users` vouches for nothing.
+
+Two collisions in the check, both mine, both found by running it rather than reading it.
+The check was numbered `2ap`, which check 2a's apparatus leg already uses, and its counter
+was `ap_fails`, which that leg already owns. The result was a check that printed `ok` for
+itself while adding 67 unrelated failures to its own reported total - green in the line
+that matters and wrong in the number beside it.
+
+The fix for that was worse than the fault, and review caught it. A blind
+`s#ap_fails#layout_fails#` renamed the wrong side: the apparatus leg lost its variable and
+the new check kept the contested name, so the collision had moved rather than gone. The
+same substitution also renamed `cap_fails` in the trace-cap leg, which has nothing to do
+with any of this, because the string was a substring. Nothing failed - the two legs zero
+their counter at different points, so the totals happened not to meet - and the BUILDLOG
+paragraph written at the time claimed a rename that had happened in the opposite direction.
+The apparatus and trace-cap legs are back to their own names; this check's counter is
+`stray_layout_fails`, and the reason is at the declaration.
+
+Then the check itself did not run. It compared two sorted lists with `comm` and bash's
+`<(...)`, in a file that starts `#!/bin/sh` and that CI invokes as `sh spike/acceptance.sh`.
+Under dash the whole file fails to parse; under macOS's `/bin/sh` the error lands inside a
+command substitution, both operands come back empty, and the check prints `ok`. Measured
+both ways, with a deliberately broken legacy list: `sh` said ok and `bash` said FAIL. The
+three falsifications this entry claimed had all been taken under `bash` - the one shell the
+suite is never run with. They were re-taken under `sh`, `bash` and `dash`, and the
+comparison now goes through temporary files.
+
+The check is held in both directions, which is the part the issue's option 2 did not ask
+for. A committed log appearing without an entry fails, and an entry naming a file that no
+longer carries a layout path fails too: an exemption that outlives its subject would
+silently cover a later file of the same name. It reports NOT MEASURED rather than failing
+where `git` is absent - the acceptance image does not ship it, and with git stubbed to exit
+127 the first draft printed a stale-exemption verdict about all eight files, which would
+send a reader to tidy a list that is correct.
+
+A third mistake of the same family, found by the confirming review. The check read `$?`
+after a pipeline, so it was reading `sort`'s status, not git's - and `sort` succeeds
+whether or not git could look. With a git stub exiting 128 the check printed exactly the
+stale-exemption verdict this entry says it was written to avoid, naming all eight files,
+with `not_measured` still 0. POSIX `sh` has no `PIPESTATUS`; git now runs on its own line
+and `sort` on the next. Measured after the fix with the stub, and with `$ROOT` pointed at
+a directory that is not a repository: both answer NOT MEASURED and add nothing to the
+failure count.
+
+The same review found the narrowing had cost more than it bought. Bounding the fold to
+home directories left a checkout under `/root`, `/srv`, `/var/lib/jenkins` or `/opt`
+passing through untouched - and the check, which was looking for `/Users` alone, would not
+have said so. The fold now accepts any prefix and holds `/work` back explicitly by
+rewriting it out of the way and back; the check greps `/Users/` and `/home/`, which is
+the stated reach rather than a claim about every layout. Measured on synthetic input:
+`/srv/ci`, `/root` and `/var/lib/jenkins` checkouts all fold, `/work` does not.
+
+Not rewritten: the eight logs that predate the fold. The raw text is what makes a FAIL
+checkable by someone who was not there. Other tracked files under `spike/` carrying
+absolute paths - 21 at HEAD - are other measurements' records and are outside both the
+sentence in `docs/unknown-rate.md` and the check. (This change makes it 23 in the working
+tree, and the two new ones are `spike/acceptance.sh` and `spike/unknown-rate/sweep.sh`
+themselves, which carry the patterns as literals rather than as records.)
 
 ## 2026-09-04 - the shim search took the first candidate that existed
 
