@@ -136,14 +136,21 @@ def check(path, wanted):
         for i, l in entries:
             for s in re.split(r"(?<=[.!])\s+", l):
                 s = s.strip()
-                nums = re.findall(r"#(\d+)", s)
+                # A quoted example is not a claim about this file. An entry that documents
+                # this check quotes sentences like "fixed by #10 and #12 above", and read
+                # literally those are references that do not resolve — measured on the
+                # entry describing this very change. Quoted spans come out before the
+                # numbers are read. The cost: a real reference inside a quotation is not
+                # checked, which is the right trade for a file whose entries quote code.
+                bare = re.sub(r"[\"\u201c\u201d][^\"\u201c\u201d]*[\"\u201c\u201d]", " ", s)
+                nums = re.findall(r"#(\d+)", bare)
                 if not nums:
                     continue
                 checked["numbered"] += 1
-                same = SAME_BLOCK.search(s)
+                same = SAME_BLOCK.search(bare)
                 direction = None
-                for m in DIRECTION.finditer(s):
-                    if any(abs(m.start() - n.start()) <= NEAR for n in re.finditer(r"#\d+", s)):
+                for m in DIRECTION.finditer(bare):
+                    if any(abs(m.start() - n.start()) <= NEAR for n in re.finditer(r"#\d+", bare)):
                         direction = m
                         break
                 if not same and not direction:
@@ -193,7 +200,7 @@ def check(path, wanted):
                         cited,
                         key=lambda c: min(
                             abs(direction.start() - n.start())
-                            for n in re.finditer(r"#" + c[0] + r"\b", s)
+                            for n in re.finditer(r"#" + c[0] + r"\b", bare)
                         ),
                     )
                     ok = (nearest[1] < i) == back
