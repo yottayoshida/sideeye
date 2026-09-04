@@ -1104,12 +1104,21 @@ pub const ReadWholeError = error{ OutOfMemory, ReadFailed, FileTooLarge };
 /// `message` carries "what was observed"; an arm written there for a trace failure
 /// carries what was not.
 ///
-/// **What this does not buy:** nothing switches exhaustively over this set. The one
-/// reachable member is `OutOfMemory` (`PathTooLong` cannot be reached from any call site
-/// — every one of them formats a longer sibling path into an equally sized buffer first),
-/// so `readTraceOrRefuse` stays a single `catch`. The guarantee is one-directional: a
-/// trace-only member cannot reach the snapshot's switches, and nothing forces the trace
-/// side to say anything about it.
+/// **What this does not buy:** nothing switches exhaustively over this set, so
+/// `readTraceOrRefuse` stays a single `catch` and both members reach the operator as one
+/// sentence. The guarantee is one-directional — a trace-only member cannot reach the
+/// snapshot's switches, and nothing forces the trace side to say anything about it.
+///
+/// `PathTooLong` is nearly unreachable rather than unreachable, and the difference was
+/// found in review after the first draft claimed the stronger thing. The read's
+/// `bufPrintZ` needs one byte more than the `bufPrint` that built the same path at the
+/// call site, so the window is `path.len == max_path` exactly. At the two record sites a
+/// longer sibling (`stdout-record.txt`, `stdout-record-2.txt`) is formatted into an
+/// equally sized buffer first and closes it. **The world loop is not closed**: its trace
+/// name is `/trace-{d}.bin`, which passes `/stdout-world.txt` in length at seven digits,
+/// so a work directory of 4,078 bytes and a crash point past one million reaches it.
+/// Reported, not fixed: the refusal is correct either way, and the message is the same
+/// sentence a `#377` ceiling breach or an allocation failure would print there.
 pub const TraceReadError = error{ OutOfMemory, PathTooLong };
 
 /// How deep the snapshot walk descends before refusing — **and how deep `deleteTreeAt`
@@ -2477,8 +2486,9 @@ pub const TraceBudget = struct {
     /// Read by `readTraceCapped`, which turns it into `TraceInfo.budget_refused` — the
     /// verdict travels on the TraceInfo and **never joins `SnapshotError`**. A budget
     /// member added to that set would land in the snapshot walk's exhaustive switches,
-    /// which the trace reader shares: the coupling #376 is about, and this change must
-    /// not make it worse.
+    /// which the trace reader shared until #376 gave it `TraceReadError` of its own. The
+    /// reason for keeping the verdict off both sets outlives that split: it is an
+    /// observation about the trace, not a failure to read one.
     ///
     /// **Deliberately not sticky.** `readWhole`'s reservation failure is swallowed on
     /// purpose (`catch {}` there: a failed reservation is not an error, because turning
@@ -3531,6 +3541,18 @@ fn destructiveAccepts(root: []const u8) bool {
 // mutation that adds a check to the naming side alone would satisfy the implication by
 // emptying its antecedent; requiring every cell of the corpus to be populated means the
 // corpus has to keep separating the predicates for the test to pass at all.
+test "the three read error sets hold what their readers can raise (#376)" {
+    // The counts, held the way `RestoreError`'s are (`main.zig`): a test that says it
+    // covered a whole set has to notice when the set grows. It also pins the split
+    // itself — merging the sets back, or widening one to the other, reddens here rather
+    // than nowhere. The membership is argued in each set's doc comment; this is the
+    // arithmetic behind those arguments.
+    const t = std.testing;
+    try t.expectEqual(@as(usize, 8), @typeInfo(SnapshotError).error_set.?.len);
+    try t.expectEqual(@as(usize, 3), @typeInfo(ReadWholeError).error_set.?.len);
+    try t.expectEqual(@as(usize, 2), @typeInfo(TraceReadError).error_set.?.len);
+}
+
 test "the naming vet refuses a subset of what the destructive vet refuses (#359)" {
     const t = std.testing;
 

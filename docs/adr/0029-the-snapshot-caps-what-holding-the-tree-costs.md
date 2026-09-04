@@ -128,7 +128,9 @@ appears.
 `SnapshotError` gains `TreeTooLarge`, and that error set is shared with `readTrace` /
 `readTraceCapped` — so the trace reader now declares a failure it cannot raise. Nothing
 breaks (its one caller catches everything into `setupError`), and splitting the sets is
-left to its own change.
+left to its own change. **That change happened: #376 gave the trace read `TraceReadError`
+and the shared leaf `ReadWholeError`**, so the sentence above describes what this ADR
+left behind rather than what the code does now.
 
 ### The value: 256 MiB, chosen against measurement
 
