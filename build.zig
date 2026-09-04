@@ -49,6 +49,11 @@ pub fn build(b: *std.Build) void {
     // — the engine unlinks the trace before every run and the only writer is the shim —
     // and the shipped value is a literal below rather than this flag's default.
     const test_trace_budget = b.option(bool, "test-trace-budget", "also build sideeye-testtracebudget, an engine with a tiny whole-trace ceiling used only by acceptance (#377)") orelse false;
+    // Not an engine variant: a reader for the shim's trace, used by
+    // `spike/fsevents/survey.sh`'s L7a to ask what was recorded ABOUT a path rather than
+    // whether the path appears at all (#344). Gated the same way for the same reason —
+    // it is apparatus, and the tarball has no use for it.
+    const trace_ops = b.option(bool, "trace-ops", "also build trace-ops, a reader that prints one <op> <path> line per shim trace record, used only by spike/fsevents (#344)") orelse false;
 
     // Every options module handed to a build of src/main.zig must carry the same field
     // set — engine.zig and main.zig read them unconditionally, so a module missing one
@@ -152,6 +157,21 @@ pub fn build(b: *std.Build) void {
         exe_probe.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
         exe_probe.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
         b.installArtifact(exe_probe);
+    }
+
+    if (trace_ops) {
+        const exe_trace_ops = b.addExecutable(.{
+            .name = "trace-ops",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("spike/fsevents/trace-ops.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{
+                    .{ .name = "contract", .module = contract },
+                },
+            }),
+        });
+        b.installArtifact(exe_trace_ops);
     }
 
     if (test_trace_cap) {

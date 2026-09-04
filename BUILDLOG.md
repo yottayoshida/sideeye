@@ -2,6 +2,129 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 - the sensitivity leg's predicate did not survive its own mutation
+
+`#344` was filed off `#343` and pointed at a class rather than a fix: the planted
+`clonefile(2)` became visible when trace contract v12 interposed the clone family, so L7a
+refuses itself, and recovering the leg needs a mutation v12 cannot see - the mmap/msync
+class. ADR 0035 had explicitly left it open while declining route B on price. The owner
+chose to rebuild.
+
+The filing's suggestion does not work as written, and finding out why was the design. A
+file has to be opened before it can be mapped, and the shim records that open. So the
+predicate L7a had - the planted path never appears in the trace - is not merely
+inconvenient for an mmap probe, it is unavailable to every probe in the class. Nor is
+there a way around it: `ftruncate` is interposed too, so sizing the file inside the traced
+run puts a `.truncate` on the same path.
+
+Two things followed. The mapping target is created and sized by `survey.sh`, outside the
+traced run, so the probe performs open / mmap / store / msync and nothing else. And the
+predicate became two-sided: the trace names the path as an `open` (the control), and
+carries no write, truncate or fsync for it (the absence). Measured before writing any of
+it, with a throwaway probe: `open` and `close`, nothing else. Adding an ordinary `pwrite`
+puts `write` there.
+
+Reading that needs operations, not strings, and this is where the shape was decided by an
+existing rule rather than by preference. `src/contract.zig` opens by saying there is
+deliberately no second definition of the wire format anywhere. A Python reader would have
+been exactly that - correct until one side moved. So `trace-ops` is Zig, built by
+`zig build -Dtrace-ops` the way the other apparatus binaries are gated, and goes through
+`contract.decodeRecord`. Its `--selftest` encodes an `open` and a `write` on the same path
+and requires both back with their tags: a reader that printed paths and ignored the op tag
+would pass a name-only test, and that reader is the one this exists not to be.
+
+Three falsifications, macOS 15.3.1 arm64, contract version 13. The shipped probe: green.
+The same probe with a `pwrite` added: refuses on "the shim DOES record a write to
+store-dst.txt". The same probe with `DYLD_INSERT_LIBRARIES` unset: refuses on "the shim
+wrote no trace" - which is why the control half is load-bearing rather than decorative.
+
+Two small things the writing got wrong first. The mapping target was created with
+`/usr/bin/dd`, which does not exist on this machine (`/bin/dd` does), so the leg reported
+both "could not create the mapping target" and a probe exit 1 while still printing its ok
+line - a leg that failed and passed in the same run. And the first `trace-ops` drafted
+`std.process.argsAlloc`, `std.fs.cwd()` and `std.Io.File.stdout()`, none of which exist in
+0.16 in that spelling; the repo's own `main.zig` takes `std.process.Init.Minimal` and the
+file reading went to libc, which is what apparatus should use anyway.
+
+Two larger ones review found, and both come from the same habit: the leg was measured in
+isolation, so the measurement never crossed the boundary of the thing that changed.
+
+`bypass` has two callers. L7a runs it once under the shim to check the precondition; L7c
+runs it REPS times under the watcher to take the sensitivity reading. The pre-created
+mapping target was written into L7a alone, so every L7c run failed on "could not open the
+pre-created mapping target", emitted neither `planted` nor `sentinel`, and `judge.py`
+raised Broken - the survey would have exited 1. The scope note for this work said the
+sensitivity result would not be RE-TAKEN; it did not say the leg would stop running. The
+target is now created by one `plant_target` function that both legs call, and the comment
+on it says why it is a function.
+
+Two more from the same review, both about the reader answering a question it had not
+actually asked. `trace-ops` checked the magic by hand instead of going through
+`contract.decodeHeader`, which is the only function that answers `VersionMismatch` — so a
+trace written by a shim built against another contract would have been read with today's
+meanings, silently, in the very field that records the version. That is the failure this
+whole change exists because of, rebuilt in the tool written to prevent it. And the walk
+ended on a record it could not decode with a `break`, printing what it had and exiting 0:
+truncating a real 1012-byte trace to 700 returned 8 of its 12 lines with a success status,
+and the leg reads absence as evidence. Both are errors now, and `--selftest` covers both —
+a truncated trace and a trace whose version byte was bumped must each fail.
+
+And L7a printed `ok` for a probe that died before the mutation. A zero-length target takes
+the mmap store down with SIGBUS - measured, exit 138 - and the trace then carries the open
+and no write for entirely the wrong reason: every count the leg reads comes out exactly as
+a clean run. The `bad` on the probe's exit status was recorded three lines earlier and did
+not stop the ok branch, which is the same "failed and passed in the same run" shape the
+paragraph above claims to have fixed, surviving in a second place. The ok branch is now
+gated on the probe's exit status, and `plant_target` checks the size it wrote rather than
+trusting `dd`. Measured across sizes: 0 bytes exits 138, 16 and 4096 both succeed (mmap
+rounds to a page, so the 20-byte store fits either way) - which is why the size check and
+the exit-status gate are both there, since only the second catches the case the first is
+supposed to prevent.
+
+`judge.py` keeps its logic and gains a paragraph. Its sensitivity leg refuses when the
+planted path is inside the account, and that still holds — the probe declares two paths and
+the planted one is not among them, measured. What changed is what an "outside the account"
+reading is allowed to imply: with clonefile the shim genuinely never named the path, and
+with an mmap store it names it as an `open`. A reader inferring "the shim never saw it" from
+"outside the account" would now be wrong, and that inference used to hold. Its selftest
+fixtures also stopped describing a mutation this repository no longer plants; renaming them
+turned up two that failed because the capture side still said `clone-dst` while the ops side
+had moved, which is the shape of a fixture pair drifting apart.
+
+The confirming review then found the thing worth the whole day, by falsifying the probe
+instead of reading it. It built three variants and measured each three times: map
+read-write and store, map read-write and store nothing, map `PROT_READ` so a store is
+impossible, and open/close with no mapping at all. The first three all produce an event
+naming the target 3 of 3, with identical flags; the fourth produces none. Reproduced here
+before believing it.
+
+So the event is produced by establishing the mapping. It is not produced by the mutation.
+An L7c count therefore does not depend on whether anything was written - which is exactly
+the "passes for the wrong reason" that L7a exists to prevent, moved from the shim's side of
+the apparatus to FSEvents'. The `clonefile` probe did not have this property: there the
+event followed the file's creation, so changing the mutation changed what the count is
+evidence OF, and nothing in the first draft noticed.
+
+The owner's call was to ship the precondition fix with the fact measured rather than
+narrated. So `bypass` gained `--map-only` and the survey gained L7d, which runs it,
+requires the file to be unchanged afterwards, and prints what it found. Three outcomes:
+all runs produce the event (today's answer - the attribution is the mapping), no run does
+(a stronger world than recorded, and the leg names the two documents that would then be
+wrong), or some do (unsettled, which is a failure). An apparatus fact written once decays
+silently; this repository's whole L7 history is that decay, so it is a leg.
+
+What an L7c count still supports: FSEvents reported activity on a path the shim's account
+does not carry - the account holds an `open` and a `close`, nothing about the mapping.
+That is what a veto needs. What it no longer supports is "the veto saw the mutation".
+Read from the other side it is a finding about FSEvents rather than about sideeye:
+`ItemModified` arrives for a file nothing modified.
+
+What this does NOT do: re-take the sensitivity result. The 15/15 stays a v11 measurement
+from 2026-08-23. Route B is still declined on price (ADR 0035), and this changes only that
+the leg could measure if someone picked it up. `RESULTS.md` says so in the section that
+carries the numbers, rather than leaving the restored precondition to imply a restored
+finding.
+
 ## 2026-09-04 - the sweep's own logs recorded the machine that ran it
 
 `#350` had already made the trade explicit: the paths in a committed oracle log are correct
