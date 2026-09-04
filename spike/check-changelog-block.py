@@ -96,7 +96,13 @@ def check(path, wanted):
             first = re.split(r"(?<=[.!])\s", l, maxsplit=1)[0]
             m = re.search(r"\(#(\d+)", first)
             if m:
-                all_heads.setdefault(m.group(1), i)
+                # Every line, not the first: sixteen issue numbers head two or three
+                # entries in this file (`#199` heads three), and taking one of them meant
+                # a reference to a later copy was judged against the earlier copy's
+                # position. The direction holds if it holds for any copy — "the #199 entry
+                # above" is true when one of the three is above, and picking which one the
+                # writer meant is not something this check can do.
+                all_heads.setdefault(m.group(1), []).append(i)
 
     failures = 0
     checked = collections.Counter()
@@ -183,16 +189,23 @@ def check(path, wanted):
                 # below" reaches from [Unreleased] into the release beneath it — so the
                 # referent is looked up across the file and the direction is judged by
                 # file position. Only the "this same block" clause is about this block.
-                cited = [(n, all_heads[n]) for n in nums if n in all_heads and all_heads[n] != i]
+                cited = [(n, w) for n in nums for w in all_heads.get(n, []) if w != i]
                 if not cited:
+                    # A number that heads no entry is not a broken reference: entries cite
+                    # issues that were never given one — twenty-seven of the hundred and
+                    # twelve numbers cited in this file — and upstream trackers use the
+                    # same `#N` spelling. Reported as a note so the reader can see what the
+                    # check could not follow, and not as a failure, because the alternative
+                    # is a red build the day someone writes "(#5, above)" about an issue
+                    # that closed before this file had entries.
                     print(
-                        f"FAIL {name} line {i}: refers to another entry but none of "
-                        f"{['#' + n for n in nums]} heads an entry anywhere in this file: {s[:90]!r}",
-                        file=sys.stderr,
+                        f"note {name} line {i}: {['#' + n for n in nums]} heads no entry here, "
+                        "so the reference is not checked"
                     )
-                    failures += 1
+                    checked["unresolved"] += 1
                     continue
 
+                checked["resolved"] += 1
                 if same and not any(where in block_lines for _, where in cited):
                     print(
                         f"FAIL {name} line {i}: says \"this same block\" but none of "
@@ -207,18 +220,25 @@ def check(path, wanted):
                     # them: "fixed by #10 and #12 above" passed on #12 alone while #10 sat
                     # the other way. A sentence that means two different directions has to
                     # say so in two sentences.
-                    nearest = min(
-                        cited,
-                        key=lambda c: min(
-                            abs(direction.start() - n.start())
-                            for n in re.finditer(r"#" + c[0] + r"\b", bare)
+                    # The nearest NUMBER, then any copy of it: sixteen numbers head more
+                    # than one entry, and "the #199 entry above" is true when one of the
+                    # three is above. Picking a copy for the writer is not something this
+                    # check can do; picking the number is.
+                    nearest_num = min(
+                        {n for n, _ in cited},
+                        key=lambda n: min(
+                            abs(direction.start() - m.start())
+                            for m in re.finditer(r"#" + n + r"\b", bare)
                         ),
                     )
-                    ok = (nearest[1] < i) == back
+                    where_all = [w for n, w in cited if n == nearest_num]
+                    ok = any((w < i) == back for w in where_all)
                     if not ok:
                         print(
                             f"FAIL {name} line {i}: says {direction.group(1)!r} but "
-                            f"#{nearest[0]}@{nearest[1]}, the nearest referent, lies the other way: {s[:90]!r}",
+                            f"#{nearest_num}, the nearest referent, heads "
+                            f"{'entries at ' + ', '.join(str(w) for w in where_all) if len(where_all) > 1 else 'line ' + str(where_all[0])}"
+                            f" — the other way: {s[:90]!r}",
                             file=sys.stderr,
                         )
                         failures += 1
@@ -236,9 +256,10 @@ def check(path, wanted):
     print(
         f"ok   {len(wanted)} block(s), {checked['entries']} entries: {checked['title']} title(s), "
         f"{checked['sentence']} sentence(s), and {checked['xref']} of {checked['numbered']} sentences "
-        f"carrying a `#N` — those {checked['xref']} name a direction or this block, and each resolves. "
-        f"The other {checked['numbered'] - checked['xref']} mention an issue without pointing anywhere "
-        "and are not checked."
+        f"carrying a `#N` — those {checked['xref']} name a direction or this block, of which "
+        f"{checked['resolved']} resolve to an entry and are checked and {checked['unresolved']} name only "
+        f"issues with no entry here. The other {checked['numbered'] - checked['xref']} mention an issue "
+        "without pointing anywhere and are not checked."
     )
     return 0
 
@@ -283,15 +304,27 @@ SELFTEST = [
 ]
 
 
-# A block that must produce NO failure: an entry quoting a reference that does not resolve
-# is documenting, not referring. Kept as a case because the entry that motivated the clause
-# was itself reworded afterwards, so the file no longer demonstrates it.
-SELFTEST_GREEN = (
-    "a quoted example is not a reference",
-    "- **First** (#10). Nothing here.\n"
-    "- **Second** (#11). The check reads \"fixed by #98 and #99 above\" as prose, not as a reference.",
-)
-
+# Blocks that must produce NO failure. The clauses that answer "leave this alone" need
+# proving as much as the ones that answer "fail": a check that only demonstrates its reds
+# has not shown where it stops.
+SELFTEST_GREEN_CASES = [
+    (
+        "a quoted example is not a reference",
+        "- **First** (#10). Nothing here.\n"
+        "- **Second** (#11). The check reads \"fixed by #98 and #99 above\" as prose, not as a reference.",
+    ),
+    (
+        "an issue with no entry here is noted, not failed",
+        "- **First** (#10). Nothing here.\n"
+        "- **Second** (#11). The probe was retired after #5 above blocked forever.",
+    ),
+    (
+        "a number heading two entries satisfies a direction from either",
+        "- **First** (#10). The early copy.\n"
+        "- **Second** (#11). Fixed by #10 below, which is the later copy.\n"
+        "- **Third** (#10). The later copy.",
+    ),
+]
 
 def selftest():
     import tempfile
@@ -318,26 +351,37 @@ def selftest():
                     file=sys.stderr,
                 )
                 failures += 1
-        # The green case, in the same scratch directory.
-        label, body = SELFTEST_GREEN
+        # The green cases, in the same scratch directory.
+        for label, body in SELFTEST_GREEN_CASES:
+            f = pathlib.Path(d) / "CHANGELOG.md"
+            f.write_text(
+                "# Changelog\n\n## [Unreleased]\n\n### Added\n\n"
+                + body
+                + "\n\n## [1.0.0] - 2026-08-29\n\n### Added\n\n- Something shipped (#1). It did a thing.\n"
+            )
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+                rc = check(f, ["[Unreleased]", "[1.0.0]"])
+            if rc != 0:
+                print(f"FAIL selftest {label!r}: rc={rc}, wanted 0\n" + err.getvalue(), file=sys.stderr)
+                failures += 1
+
+        # And the walk itself has to be able to fail: two empty blocks read nothing.
         f = pathlib.Path(d) / "CHANGELOG.md"
-        f.write_text(
-            "# Changelog\n\n## [Unreleased]\n\n### Added\n\n"
-            + body
-            + "\n\n## [1.0.0] - 2026-08-29\n\n### Added\n\n- Something shipped (#1). It did a thing.\n"
-        )
+        f.write_text("# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-08-29\n")
         err = io.StringIO()
         with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
             rc = check(f, ["[Unreleased]", "[1.0.0]"])
-        if rc != 0:
-            print(f"FAIL selftest {label!r}: rc={rc}, wanted 0\n" + err.getvalue(), file=sys.stderr)
+        if rc == 0:
+            print("FAIL selftest 'a walk that read nothing': rc=0, wanted non-zero", file=sys.stderr)
             failures += 1
 
     if failures:
         return 1
     print(
         f"ok   selftest: {len(SELFTEST)} planted defects each caught by exactly one clause, "
-        "and one quoted example left alone"
+        f"{len(SELFTEST_GREEN_CASES)} shapes deliberately left alone, and a walk of two empty "
+        "blocks refused"
     )
     return 0
 
