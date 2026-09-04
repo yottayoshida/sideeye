@@ -85,10 +85,18 @@ def check(path, wanted):
     all_heads = {}
     for bname, body in bs.items():
         for i, l in body:
-            if l.startswith("- "):
-                m = re.search(r"\(#(\d+)", l)
-                if m:
-                    all_heads.setdefault(m.group(1), i)
+            if not l.startswith("- "):
+                continue
+            # Only the number in the entry's opening sentence. Searching the whole line
+            # takes the first `(#N` anywhere, and four entries in this file carry one
+            # hundreds of characters into the prose — registering a body citation as an
+            # entry heading, which the direction test would then compare against. The
+            # first sentence is where the convention puts it, and a char budget is not:
+            # entry titles here run past a hundred and twenty characters.
+            first = re.split(r"(?<=[.!])\s", l, maxsplit=1)[0]
+            m = re.search(r"\(#(\d+)", first)
+            if m:
+                all_heads.setdefault(m.group(1), i)
 
     failures = 0
     checked = collections.Counter()
@@ -101,7 +109,10 @@ def check(path, wanted):
             # exactly when the block gets read — so failing here would redden the commit
             # this check exists to accompany. Recorded and skipped; the walk still has to
             # have seen entries somewhere, which the check below holds.
-            print(f"note {name}: no entries, skipped (a release leaves this block empty)")
+            print(
+                f"note {name}: no entries, skipped — normal right after a release rewrites\n"
+                f"     the heading, and a walk that read nothing anywhere fails below"
+            )
             continue
 
         # 1. One entry per bold title. A change re-described in a second paragraph is the
@@ -272,6 +283,16 @@ SELFTEST = [
 ]
 
 
+# A block that must produce NO failure: an entry quoting a reference that does not resolve
+# is documenting, not referring. Kept as a case because the entry that motivated the clause
+# was itself reworded afterwards, so the file no longer demonstrates it.
+SELFTEST_GREEN = (
+    "a quoted example is not a reference",
+    "- **First** (#10). Nothing here.\n"
+    "- **Second** (#11). The check reads \"fixed by #98 and #99 above\" as prose, not as a reference.",
+)
+
+
 def selftest():
     import tempfile
     import contextlib
@@ -297,9 +318,27 @@ def selftest():
                     file=sys.stderr,
                 )
                 failures += 1
+        # The green case, in the same scratch directory.
+        label, body = SELFTEST_GREEN
+        f = pathlib.Path(d) / "CHANGELOG.md"
+        f.write_text(
+            "# Changelog\n\n## [Unreleased]\n\n### Added\n\n"
+            + body
+            + "\n\n## [1.0.0] - 2026-08-29\n\n### Added\n\n- Something shipped (#1). It did a thing.\n"
+        )
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            rc = check(f, ["[Unreleased]", "[1.0.0]"])
+        if rc != 0:
+            print(f"FAIL selftest {label!r}: rc={rc}, wanted 0\n" + err.getvalue(), file=sys.stderr)
+            failures += 1
+
     if failures:
         return 1
-    print(f"ok   selftest: {len(SELFTEST)} planted defects, each caught by exactly one clause")
+    print(
+        f"ok   selftest: {len(SELFTEST)} planted defects each caught by exactly one clause, "
+        "and one quoted example left alone"
+    )
     return 0
 
 

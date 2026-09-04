@@ -68,9 +68,11 @@ The contract:
   about each. Appending per merge means the author of an entry reads their own paragraph
   and nothing else, so entry-to-entry consistency is nobody's job until this moment; and a
   release that renames the heading without reading freezes whatever disagreed. `[1.0.0]`
-  shipped that way: it carries "`readTrace` stays deliberately uncapped" beside the entry
-  that capped it, two entries calling itself "this same unreleased block", and a filed-not-
-  fixed note the entry above it already called wrong twice (#374). Merging the repeated
+  shipped that way: it went out carrying "`readTrace` stays deliberately uncapped" beside
+  the entry that capped it, two entries calling itself "this same unreleased block", a
+  filed-not-fixed note another entry already called wrong twice, and four statements about
+  issues that had since closed. #374 corrected twelve of them after the fact, which is the
+  expensive way. Merging the repeated
   `### Added`/`### Changed`/`### Fixed` headings into one of each belongs to this reading,
   not to CI: forcing it per pull request would put every branch in the same region of the
   file. `spike/check-changelog-block.py` holds the mechanical half on every push —

@@ -11,7 +11,7 @@ three instances the filing measured are now inside `## [1.0.0]`, and one of them
 false — `readTrace stays deliberately uncapped` sits eleven entries below the `#324` entry
 that capped it, in the same release.
 
-The sweep. Two families extracted from all 113 entries of the two blocks: sentences
+The sweep. Two families extracted from all 116 entries of the two blocks: sentences
 claiming something about a neighbour (143 of them), and sentences carrying a `#N` beside a
 direction word (10). The first list was narrowed to 40 by pairing each sentence with later
 entries naming the same backticked identifier; those 40 were read. Five statements were
@@ -37,6 +37,13 @@ the walk fails only if it read no entries anywhere. Two clauses were also widene
 same block` without a version name is the commoner spelling and the one a rename leaves
 standing, and the direction is now judged against the number nearest the direction word,
 because `any()` let "fixed by #10 and #12 above" pass on #12 while #10 sat the other way.
+
+The second review found four more, and they are the ones that matter most: `stays open`
+and `still not met` about issues that had closed, two of them falsified by a neighbour in
+the same block — the exact shape #374 names. The sweep's own keyword list contains `stays`
+and `still`. They were extracted and read past. **Five, then three, then four**: the count
+that matters is not eight or twelve but that a second and a third reader each found more,
+which is why the release step is a reading and not a claim that the sweep was complete.
 
 The check reddened three things nobody had asked it to. Two were mine, written minutes
 earlier: correcting `#329 replaced it in this same unreleased block` to `earlier in this
