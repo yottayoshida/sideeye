@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 - the walk refused to delete through a link and agreed to write through one
+
+`#446` came out of a same-class scan while shipping `#338` and named one line:
+`restore`'s rebuild opens with `O_WRONLY|O_CREAT|O_TRUNC` and no `O_NOFOLLOW`, in the same
+file as a walk that descends with it. The filing measured the flag rather than
+the race - with it the open is refused and the file outside is untouched, without it that
+file is truncated and rewritten - and said so, which is the right shape for a claim about
+a window nobody has driven end to end. (The filing names ELOOP; nothing here measures the
+errno, because the code branches on `wfd < 0` and never reads it.)
+
+The scan for the same class found a second copy the filing did not name:
+`corruptState` carries the identical open-and-write loop. Both are now `writeFileEntryAt`,
+so the flag lives in one place rather than in two that can drift.
+
+What the tests can and cannot reach is the part worth recording. `restore` empties the
+tree immediately above its rebuild, so a link planted before the call is deleted by the
+walk and one planted between the delete and the write is a race a unit test cannot stage.
+The plan said `corruptState` would give an integration leg instead - it does not empty the
+tree, so a planted link should survive to be met. That was wrong: its one call site
+(`main.zig`) runs it directly after `restore`, so on the production path the link is gone
+there too. Both legs therefore call the function directly rather than through its call site, and
+the plan's asymmetric risk note ("restore is the weak side") was corrected rather than
+kept. They are not at the same height, and review corrected the first draft of this
+paragraph for saying so: `corruptState` is a `pub fn` that `main.zig` calls, while
+`writeFileEntryAt` is private.
+`corruptState`'s own doc comment already says the thing the plan missed: the ordering at
+the call site is not a property of the function.
+
+Both tests were run red first, against the extraction without the flag: each reported
+`expected error.CreateFailed, found void` - the write succeeded, through the link. Then
+green with it, and the sentinel outside compared byte for byte rather than for existence,
+because a followed write truncates before it writes and would leave an empty file that
+still exists.
+
+That red was measured against the first draft of the tests, which carried their own
+hand-rolled setup. Cleanup review then moved both onto the file's existing `TreeFixture`
+(gaining a `sibling` for the outside directory and a `writeAt` for known content), so the
+measurement was taken again on the shipped form: removing `O_NOFOLLOW` from
+`writeFileEntryAt` fails exactly these two tests and no others. The rewrite also found its
+own hazard - `writeAt` first skipped on a short write, the way `fill` does, which would
+have let the positive control the review had just asked for disappear into a skip while the
+suite stayed green. Bulk setup may skip; a line that carries an assertion may not.
+
+Not covered: the intermediate components of a multi-component `e.rel`, which are still
+resolved by name. The first draft argued that away - the walk does not descend through a
+symlink, so no interior link is ever recorded - and review pointed out that the argument
+assumes the racer this PR exists because of. The walk opens children by full path
+(`opendir(root + rel)`), so a directory swapped between the classify and the open is
+recorded through the link; and the rebuild's own `mkdirat` has the same window before the
+next entry's open. So the interior is open, not safe: closing it needs resolution the
+kernel enforces (`openat2` with `RESOLVE_BENEATH` on Linux, no equivalent on macOS), which
+is its own decision. Scope unchanged, reasoning replaced.
 ## 2026-09-04 - count.py compared one marker pair and called the page in sync
 
 `#444` was filed off a same-class scan while shipping `#339`, and the measurement held on
