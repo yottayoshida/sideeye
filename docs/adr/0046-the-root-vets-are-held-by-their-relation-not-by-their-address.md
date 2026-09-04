@@ -60,9 +60,10 @@ The relation is four assertions over `root_relation_corpus`:
 from being vacuous: without it, a check added to the naming side alone satisfies 1 by
 emptying its antecedent.
 
-Twenty-five of the corpus's thirty-nine roots also appear in the hand-written tests; the
-other fourteen appear nowhere else, and they are what the corpus adds. Measured
-2026-09-04, one mutation at a time:
+Twenty-two of the corpus's thirty-nine roots also appear in the hand-written vet tests,
+three more appear only in the denylist definitions themselves, and the remaining fourteen
+appear nowhere in the file. Being on a denylist is not being tested; the number that
+matters is the twenty-two. Measured 2026-09-04, one mutation at a time:
 
 | mutation | tests that failed |
 |---|---|
@@ -70,14 +71,20 @@ other fourteen appear nowhere else, and they are what the corpus adds. Measured
 | depth rule added to the naming side | `#329` and this one |
 | depth rule weakened on the destructive side | `#329` and this one |
 | naming side refuses roots containing `~` | **this one alone** |
+| depth rule given a carve-out: `/data` accepted despite one component | **this one alone** |
 
-Only the last is a contribution, and it comes from the corpus rather than from the
-assertions: `~` is a byte no other root test uses. **Assertion 0 has no mutation of its
-own that was found** — it is a stronger statement of the same relation (an equality rather
-than a containment plus a bound), and every mutation tried against it was also caught by
-the hand-written tests. It is kept because the property sentence is an equality and a test
-that says less than the sentence invites the sentence to drift; that is a reason from
-honesty, not from measured detection, and it is written here rather than implied.
+Two contributions, and they come from different halves of the test. The `~` mutation is
+caught by the corpus: that byte appears in no other root test. The carve-out is caught by
+assertion 0 and by nothing else — assertions 1, 2 and 3 all pass, because a depth-1 root
+that the destructive vet now accepts leaves containment intact, has no depth-2 counterpart
+to violate the depth bound, and still leaves seven roots in the cell it vacates. No
+hand-written test names `/opt`, `/repo`, `/srv`, `/nix`, `/cores`, `/data` or `/scratch`;
+`/work` is the only depth-1 root whose destructive refusal is pinned by hand.
+
+An earlier draft of this ADR said assertion 0 had no mutation of its own. It had one; the
+mutation that was tried ran the wrong way — refusing `/data` on the destructive side is
+dead code, since the depth rule already refuses every depth-1 root, and the carve-out that
+*accepts* one is the shape a container mount would arrive as.
 
 ## Alternatives considered
 
@@ -108,10 +115,11 @@ The relation was the thing nobody had written down.
 
 - **The lists stay where the danger is.** The sunset note above `denied_trees` still
   governs when they are deleted, and this decision does not touch it.
-- **A one-sided check is a test failure, and for one shape this test is the only thing
+- **A one-sided check is a test failure, and for two shapes this test is the only thing
   that notices.** The table above is the whole measurement, including the three mutations
   where the new test's marginal contribution is zero. Claiming more than that would repeat
-  the "two weeks" error in a different register.
+  the "two weeks" error in a different register; claiming less, as an earlier draft did
+  about assertion 0, hides a real guard behind a wrong measurement.
 - **A legitimate asymmetry is not forbidden — it is made visible.** If a future change
   should refuse something on one side only (a network mount on the destructive side, say),
   the corpus test is edited in the same pull request and the reason is added to this ADR's

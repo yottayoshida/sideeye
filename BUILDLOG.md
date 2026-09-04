@@ -23,7 +23,7 @@ subset of what `assertSafeRoot` refuses; the one direction they differ in is the
 **The first draft of this test was worth nothing, and the second review said so.** The two
 mutations it was built around — putting the outward read back on one side only, giving the
 naming side a depth rule — are both already killed by the hand-written `#329` and `#358`
-tests. Measured, three mutations, one at a time:
+tests. Measured, five mutations, one at a time:
 
 | mutation | tests that failed |
 |---|---|
@@ -31,14 +31,22 @@ tests. Measured, three mutations, one at a time:
 | depth rule added to the naming side | `#329` and the new one |
 | depth rule weakened on the destructive side | `#329` and the new one |
 | naming side refuses roots containing `~` | **the new one alone** |
+| depth rule carved out so `/data` is accepted at one component | **the new one alone** |
 
-Only the last is a contribution, and it comes from the corpus rather than from the
-assertions. Two mutations were tried against the equality assertion the diff review asked
-for and **neither fired it alone**; one of them (`/data` refused on the destructive side)
-turned out to be dead code, since the depth rule already refuses every depth-1 root. The
-assertion is kept anyway, because the property sentence is an equality and a test that
-says less invites the sentence to drift — a reason from honesty rather than from measured
-detection, written down as such.
+Two contributions, from different halves of the test. The `~` mutation is the corpus's:
+that byte is in no other root test. The carve-out is assertion 0's, and **an earlier
+version of this entry said assertion 0 had no mutation of its own.** It had one; the
+mutation tried ran the wrong way. Refusing `/data` on the destructive side is dead code —
+the depth rule already refuses every depth-1 root — while *accepting* one is the shape a
+container mount arrives as, and it leaves containment, the depth bound and the populated
+cells all intact. `/work` is the only depth-1 root whose destructive refusal any
+hand-written test pins; `/opt`, `/repo`, `/srv`, `/nix`, `/cores`, `/data` and `/scratch`
+are named by none.
+
+The count of corpus roots that appear elsewhere was wrong too: twenty-two are in the
+hand-written vet tests, three more are only in the denylist definitions, and fourteen are
+in neither. Being on a denylist is not being tested, and the first correction of this
+paragraph had folded the two together.
 
 The premise table for this batch had said "nothing pins this relation today", and that was
 false: three shapes are pinned by hand at `:3396`, `:3405` and `:3438`. What was not

@@ -3443,8 +3443,9 @@ test "assertSafeNamingRoot drops the depth rule and refuses ancestors instead (#
 /// Written as a corpus rather than as a list of asserts because the relation is what is
 /// being pinned, not the individual answers: a root added here is checked in both
 /// directions and against both predicates without anyone remembering to write four lines.
-/// Twenty-five of the thirty-nine also appear in the hand-written tests above; the other
-/// fourteen appear nowhere else, and they are the point. The two mutations that motivate
+/// Twenty-two of the thirty-nine also appear in the hand-written vet tests above, three
+/// more only in the denylist definitions themselves — being on a list is not being
+/// tested — and the remaining fourteen appear nowhere in this file. The two mutations that motivate
 /// this test — the outward read on one side only, the depth rule on one side only — are
 /// both already killed by those hand-written asserts, so a corpus built only from their
 /// roots would have added nothing. What it adds is the fourteen nobody thought to list,
