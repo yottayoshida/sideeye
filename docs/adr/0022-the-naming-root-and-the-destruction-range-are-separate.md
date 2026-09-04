@@ -165,3 +165,10 @@ name a directory whose contents are yours to lose.
   fail-open. `mcp-acceptance` pins the startup refusal.
 - `spike/loop-closure-timew`'s MCP variant sets `STATE_ROOT=/tmp`
   (its staged cases keep state at `/tmp/loop-state`).
+
+## Addendum, 2026-09-04 (#359, ADR 0046)
+
+The relation between the two vets is now pinned rather than left to the shared helper's
+shape: `assertSafeNamingRoot` refuses a subset of what `assertSafeRoot` refuses, differing
+only by the depth rule, held over a corpus in `src/engine.zig`. ADR 0046 records why the
+lists stay in `engine.zig` rather than moving to `contract.zig` or to a file of their own.
