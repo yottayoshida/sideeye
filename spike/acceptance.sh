@@ -6619,6 +6619,97 @@ elif [ "$so_can_chown" = "1" ]; then
 fi
 rm -rf "$SO_DIR"
 
+echo "=========== check 2al: the sweep's committed logs carry no machine layout (#350) ==========="
+# The raw oracle text is strace output, so its paths are what the tool saw — which on
+# this apparatus is the sweep machine's layout, operator's home included, in a public
+# repository, growing by one sweep each time. `sweep.sh` now folds the prefix after the
+# container exits; this holds that the fold is not quietly bypassed.
+#
+# What it does NOT do is rewrite the eight logs that predate the fold. Rewriting a
+# committed measurement is the one thing this apparatus exists not to do, so they are
+# exempted by name — and the exemption is held in both directions. A file that appears
+# without an entry fails (the count grew); an entry naming a file that is gone fails
+# too (the exemption outlived its subject, and would silently cover a later file of the
+# same name).
+#
+# Text only: `trace-*.bin` and `undo.data` under the same trees carry no such path,
+# measured, and a binary scan would report matches nobody can read.
+# `stray_layout_` and not `ap_`: check 2a's apparatus leg owns `ap_fails`, and a second
+# writer to it would add this leg's failures to that one's total. The first draft of this
+# check took the name and reported 67 failures on a clean tree; the fix for THAT then
+# renamed the apparatus leg's variable instead of this one, which review caught — the
+# collision had moved rather than gone, and a stray `s#ap_fails#` had renamed the
+# unrelated `cap_fails` in the trace-cap leg as well.
+LAYOUT_LIST="$ROOT/spike/unknown-rate/absolute-path-legacy.txt"
+LAYOUT_TMP=/tmp/acc-layout
+rm -rf "$LAYOUT_TMP"; mkdir -p "$LAYOUT_TMP"
+stray_layout_fails=0
+if [ ! -f "$LAYOUT_LIST" ]; then
+    echo "FAIL the legacy list is missing — every committed log would read as new"
+    stray_layout_fails=$((stray_layout_fails + 1))
+else
+    grep -v '^#' "$LAYOUT_LIST" | grep -v '^$' | sort > "$LAYOUT_TMP/expected"
+    # Tracked files only: an untracked scratch file under artifacts is not a committed
+    # measurement and is not this check's business. `-I` skips binaries — `trace-*.bin`
+    # and `undo.data` carry no such path (measured) and a binary match reads as noise.
+    #
+    # Two home shapes, because this apparatus produces two: `/Users` when the sweep runs
+    # on a macOS host through Docker Desktop, `/home` when it runs on Linux. That is the
+    # stated reach of this check rather than a claim about every possible layout — the
+    # fold in `sweep.sh` handles any prefix, and this is what notices when it did not.
+    #
+    # Files, not process substitution: this suite runs under `sh` (ci.yml calls
+    # `sh spike/acceptance.sh`), where `<(...)` is a syntax error. Measured: under dash
+    # the whole file fails to parse, and under macOS's `/bin/sh` the error lands inside
+    # a command substitution, both sides come back empty, and the check prints `ok` —
+    # green because it asked nothing.
+    #
+    # The exit status is read, not discarded. `git grep` answers 1 for "no match", which
+    # is an answer; 2 and up mean it could not look — no git, `$ROOT` not a repository,
+    # a `safe.directory` owner mismatch (which this repo's own container acceptance can
+    # produce, since it runs `--user`). Discarding those made `found` empty and printed
+    # a stale-exemption verdict naming all eight files: a reader sent to tidy a list
+    # that is correct. Measured both ways, with `$ROOT` pointed at a non-repository and
+    # with a git stub exiting 128.
+    #
+    # git runs on its own line and `sort` runs on the next. Piping the two put `sort`'s
+    # status in `$?`, which is 0 whether or not git could look — measured: with a git
+    # stub exiting 128, the check printed the stale-exemption verdict it was being
+    # taught not to print, and `not_measured` stayed 0. POSIX `sh` has no PIPESTATUS.
+    (cd "$ROOT" && git grep -lI -e '/Users/' -e '/home/' -- 'spike/unknown-rate/artifacts*' 2>/dev/null) > "$LAYOUT_TMP/raw"
+    layout_rc=$?
+    sort "$LAYOUT_TMP/raw" > "$LAYOUT_TMP/found"
+    if [ "$layout_rc" -ge 2 ]; then
+        not_measured=$((not_measured + 1))
+        echo "     NOT MEASURED: git could not enumerate the committed logs (exit $layout_rc)"
+        layout_new=""
+        layout_gone=""
+    else
+        layout_new=$(comm -13 "$LAYOUT_TMP/expected" "$LAYOUT_TMP/found")
+        layout_gone=$(comm -23 "$LAYOUT_TMP/expected" "$LAYOUT_TMP/found")
+    fi
+    if [ -n "$layout_new" ]; then
+        echo "FAIL a committed log carries the sweep machine's layout and is not in the legacy list:"
+        printf '%s\n' "$layout_new" | sed 's/^/       /'
+        echo "       if this came from a new sweep, the fold in sweep.sh did not run"
+        stray_layout_fails=$((stray_layout_fails + 1))
+    fi
+    if [ -n "$layout_gone" ]; then
+        echo "FAIL the legacy list names a file that no longer carries one — stale exemption:"
+        printf '%s\n' "$layout_gone" | sed 's/^/       /'
+        stray_layout_fails=$((stray_layout_fails + 1))
+    fi
+fi
+rm -rf "$LAYOUT_TMP"
+if [ "$stray_layout_fails" = "0" ]; then
+    echo "ok   no committed log outside the legacy list carries the sweep machine's layout"
+else
+    # One, not the number of problems: every other check in this suite contributes at
+    # most one to the total, and a leg that adds two makes the closing count mean
+    # something different from the others.
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
