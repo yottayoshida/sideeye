@@ -1,0 +1,5 @@
+# fixture generations — this one covers B alone, the shape docs/unknown-rate.md
+# contemplates ("A future B measurement is its own decision, with its own
+# generation"). With no A group and no rated B trial, nothing is published after
+# the funnel detail table — which is the condition the marker rule needs.
+g1	2026-08-16	artifacts	B	complete

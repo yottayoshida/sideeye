@@ -4383,7 +4383,11 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # one that perturbs the number dies earlier. Also the (B, judge) axis, which the
 # funnel table cannot express because it
 # has no judge column, so that family is measured by its denominator alone and the
-# check says so in its own success line. Deleting any of these leaves this suite
+# check says so in its own success line. From #444: emit's own marker count in the
+# END direction — the begin direction has marker-emit-begin, but no committed cell
+# can carry MARK_END past the read_exclusions reason guard into a block that
+# otherwise passes, so that half of the emit-side assert stands unfixtured.
+# Deleting any of these leaves this suite
 # green, and that gap is filed rather than left implied. Sunset: never fired by the
 # v1.0 freeze -> removal list (same rule as check 11).
 ur_fails=0
@@ -4459,7 +4463,12 @@ for pair in \
     "outcome-map-columns:does not have 3 columns" \
     "outcome-map-duplicate:outcome-map.tsv lists 'toyA' twice" \
     "outcome-map-disposition:is not one of reported-upstream/" \
-    "outcome-conservation:carry a disposition the outcome table does not print"; do
+    "outcome-conservation:carry a disposition the outcome table does not print" \
+    "marker-second-end:docs/unknown-rate.md carries 2 end markers" \
+    "marker-second-begin:docs/unknown-rate.md carries 2 begin markers" \
+    "marker-inverted:end marker precedes its begin marker" \
+    "marker-predata-second-end:docs/unknown-rate.md carries 3 end markers" \
+    "marker-emit-begin:recomputation carries 2 begin markers"; do
     ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     ur_seen="$ur_seen $bad"
