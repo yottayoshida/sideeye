@@ -46,6 +46,21 @@ threshold set from it would be satisfied by construction. So:
   moved. The **threshold** is untouched: it is set from B-group data only,
   no cohort target is in B-group, and g2 does not cover B.
 
+  **What the committed oracle logs carry.** They are strace output, so their
+  paths are the ones the tool saw — which on this apparatus means the sweep
+  machine's layout, the operator's home directory included. From this change
+  on, `sweep.sh` folds that prefix once the container has exited — to `<repo>`
+  where the path is whole, and to `<repo-truncated>` where strace cut the
+  string at 32 bytes; the container's own `/work` mount is left alone, being
+  the same on every machine —
+  and `spike/acceptance.sh` check 2al holds that no committed log outside a
+  named list carries one. The eight logs that predate the fold keep their
+  paths and are that list: rewriting a committed measurement is the one thing
+  this apparatus is built not to do, and the raw text is what makes a FAIL
+  checkable by someone who was not there. The scope is the sweep's own
+  artifacts; other records under `spike/` are other measurements' evidence and
+  are not covered here.
+
   **What the difference between the two is, and is not.** A generation
   re-measures every row it covers, so g2 re-ran the twenty-eight g1
   measured as well as the eight that entered with it. That makes the

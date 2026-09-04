@@ -216,6 +216,68 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
             /work/spike/unknown-rate/artifacts/"$artdir"
         lrc=$?
         echo "$lrc" > "$ARTS/$artdir/launcher-rc"
+        # The oracle log is strace output, so its paths are what the tool actually saw —
+        # which on this apparatus means the sweep machine's layout, operator's home
+        # included, committed to a public repository and growing by one sweep each time
+        # (#350). Fold the prefix here, after the container has exited: the engine writes
+        # `work/oracle.txt` and reads it back inside the same run, so touching it earlier
+        # would change what that run compares against.
+        #
+        # Anchored on the SUFFIX, not on $ROOT. What is recorded is not the host path this
+        # script knows: Docker Desktop prefixes it (`/run/host_virtiofs/...`), and the
+        # checkout name differs between generations. Measured: folding $ROOT leaves every
+        # one of the 65 layout-carrying lines in a committed log untouched.
+        #
+        # `/work` is the one prefix held back, and holding it back is the point rather
+        # than an optimisation. It is the read-only mount this script passes to
+        # `docker run`, identical on every machine, so it is not layout — and a line
+        # often carries BOTH spellings: the string the target passed (`/work/spike/...`)
+        # and the host path the kernel resolved it to, in strace's `<...>` fd
+        # annotation. Folding both collapses them into one string and the line stops
+        # showing that a mount was crossed. Measured on committed logs, lines carrying
+        # the `/work` spelling: 96 in the timew leg, 177 in todoman; of those, 47 and 48
+        # carry both spellings at once.
+        #
+        # Held back by rewriting it out of the way and back, rather than by narrowing
+        # what the fold accepts. An earlier draft narrowed instead — home directories
+        # only — and a checkout under `/root`, `/srv`, `/var/lib/jenkins` or `/opt` then
+        # passed through untouched, silently, because the fold had stopped looking and
+        # the check below was looking for `/Users` alone.
+        #
+        # Two passes, because one does not reach them all. strace truncates a string
+        # argument at 32 bytes and marks it `"..."`, so `readlinkat` results come out as
+        # `"/run/host_virtiofs/Users/i.yoshi"...` — the artifacts directory the first
+        # pattern anchors on is not in the line at all. The second takes what is left
+        # under Docker Desktop's mount prefix; it is blunt because a truncated fragment
+        # has no structure to match on. **It can shorten a whole path too** — a complete
+        # `/run/host_virtiofs/...` that never reaches the artifacts directory becomes
+        # `<repo-truncated>`, naming it worse than it is. Accepted here because every
+        # such path on this apparatus IS the host layout; a third pass over bare
+        # `/Users/` was written and removed for the same shape without that excuse — it
+        # never fired, and would have relabelled paths no mount prefix vouches for.
+        # Measured on a committed log: 65 lines carrying the layout, 55 folded by the
+        # first pass, 10 by the second, 0 left.
+        #
+        # Not covered: a truncated fragment on a host with no mount prefix (a sweep run
+        # natively on Linux would produce `"/home/alice/sideeye/spike/unkno"...`). The
+        # check below greps for `/Users/` and `/home/`, so that case fails loudly there
+        # rather than passing quietly here.
+        #
+        # `sed -i` writes a new file and renames, so an interrupt between the two leaves
+        # `oracle.txt.bak` holding the unfolded text beside the folded one — untracked,
+        # so check 2al's `git grep` would not see it. Removed first, so a leftover from a
+        # previous interrupted sweep cannot survive this one either.
+        for orc in "$ARTS/$artdir"/run/*/work/oracle.txt; do
+            [ -f "$orc" ] || continue
+            rm -f "$orc.bak"
+            sed -i.bak -E \
+                -e 's#/work/spike/unknown-rate/artifacts#@@SIDEEYE_WORK_MOUNT@@#g' \
+                -e 's#(^|[^A-Za-z0-9_/])/[^ ")>,]*/spike/unknown-rate/artifacts#\1<repo>/spike/unknown-rate/artifacts#g' \
+                -e 's#@@SIDEEYE_WORK_MOUNT@@#/work/spike/unknown-rate/artifacts#g' \
+                -e 's#/run/host_virtiofs/[^ ")>,]*#<repo-truncated>#g' \
+                "$orc"
+            rm -f "$orc.bak"
+        done
     else
         lrc=$(cat "$ARTS/$artdir/launcher-rc" 2>/dev/null || echo '?')
     fi

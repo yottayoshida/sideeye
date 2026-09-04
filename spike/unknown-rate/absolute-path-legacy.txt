@@ -1,0 +1,18 @@
+# Committed oracle logs that carry the sweep machine's layout (#350).
+#
+# These predate the fold `sweep.sh` now applies, and they are not rewritten: the raw
+# oracle text is the evidence a FAIL is checked against by someone who was not there,
+# and rewriting committed measurements is the one thing this apparatus is built not to
+# do. What the check in `spike/acceptance.sh` holds is that the list does not grow —
+# and that it does not shrink either, so a file deleted here cannot silently take its
+# exemption with it.
+#
+# One tracked path per line, relative to the repository root.
+spike/unknown-rate/artifacts-a2/inv-timew/run/a/work/oracle.txt
+spike/unknown-rate/artifacts-a2/inv-timew/run/b/work/oracle.txt
+spike/unknown-rate/artifacts-a2/inv-todoman/run/a/work/oracle.txt
+spike/unknown-rate/artifacts-a2/inv-todoman/run/b/work/oracle.txt
+spike/unknown-rate/artifacts/inv-timew/run/a/work/oracle.txt
+spike/unknown-rate/artifacts/inv-timew/run/b/work/oracle.txt
+spike/unknown-rate/artifacts/inv-todoman/run/a/work/oracle.txt
+spike/unknown-rate/artifacts/inv-todoman/run/b/work/oracle.txt
