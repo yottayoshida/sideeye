@@ -64,6 +64,12 @@ under no budget, which is the silent hang this change exists to remove.
   as "stdin could not be arranged" would misdiagnose that target — the same ambiguity
   126 already carries between the capture stub and a checker that exits 126 itself.
   There is no exit code the engine can mean something by.
+  (**That example moved on 2026-09-04.** #469 applied this decision's own reasoning to
+  the capture, so 126 no longer carries "the capture could not be opened" — a refusal
+  reaches the caller as `error.CaptureUnavailable`. What it still carries is a `dup2`
+  that failed in the child, against a checker that exits 126 itself. The decision this
+  ADR records is unchanged; the sentence illustrating it named a case that has since
+  been fixed by applying it.)
 - **A one-time `/dev/null` check at startup, then the child-side open.** A window between
   the check and each fork, and the child-side failure is back in the exit-code namespace.
   Opening per spawn in the parent makes the check unnecessary.

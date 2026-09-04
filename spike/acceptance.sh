@@ -615,18 +615,31 @@ else
     fails=$((fails + 1))
 fi
 
-# A blocked capture must not read as a red checker. The capture stub _exit(126)s
-# when it cannot open the capture file; before this was discriminated, a directory
-# squatting on the capture path made /bin/true — a checker that can never fail —
-# pass the gate (R1 of #134, measured on the default world-writable /tmp work dir).
+# A blocked capture must not read as a red checker: a directory squatting on the
+# capture path made /bin/true — a checker that can never fail — pass the gate (R1 of
+# #134, measured on the default /tmp work dir).
+#
+# **This leg's answer changed in #469, and the change is the point.** The capture used
+# to be opened by the child, so a blocked path arrived as `_exit(126)` and the gate
+# refused `checker_not_falsified` (exit 2) with a message that said outright it could
+# not tell this apart from a checker that genuinely exits 126. It now refuses in the
+# parent, before any child exists: SETUP ERROR (exit 3), naming the capture. Naming the
+# *checker* for a checker that never ran was the misattribution #469 removes — and the
+# same reading `StdinUnavailable` and `ForkFailed` already ship with, both of which are
+# SETUP_ERROR in either phase because no child ran whose status could be read.
+#
+# The third assertion is what carries the original purpose forward: whatever this
+# becomes, it must not be a verdict about the checker.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/work/falsify-check.txt
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --check /bin/true \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "could not open its stdout capture"; then
-    echo "ok   a blocked falsify capture refuses loudly instead of reading as a red checker (exit 2)"
+if [ "$rc" = "3" ] &&
+   echo "$o" | grep -q "stdout capture in the work directory could not be opened" &&
+   ! echo "$o" | grep -q "checker_not_falsified"; then
+    echo "ok   a blocked falsify capture names the capture, not the checker (exit 3)"
 else
     echo "FAIL blocked falsify capture: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -3710,6 +3723,64 @@ else
     fails=$((fails + 1))
 fi
 
+# #469: a blocked capture path is reported as a blocked capture path.
+#
+# A DIRECTORY at <work>/stdout-record.txt rather than a symlink, and the difference is
+# the point: the engine unlinks that path immediately before the run, and `unlink`
+# removes a symlink itself — a link planted here would simply be deleted and the run
+# would pass. A directory survives (unlink answers EISDIR and the result is discarded),
+# so it reaches the open the same way a link planted inside the unlink→open window
+# would. The same squatter is what made a checker probe read 126 as "the checker went
+# red" (R1 of #134).
+#
+# Three assertions, because there are three wrong answers this can give and they are
+# different mistakes:
+#   (a) it names the capture at all,
+#   (b) NOT the recording-run reading — before this change the child exited 126, the
+#       exit-status switch ran before the trace read, and the operator was told to
+#       declare --expect-status, which would have made a refused capture look like a
+#       successful run,
+#   (c) NOT the bare "could not run --operation" — spawnFailure is a chain of `if`s
+#       ending in a bare setupError(doing), so a SpawnError member with no arm there is
+#       not a compile error, it is a run with no reason. Nothing but this line measures
+#       that arm.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/work/stdout-record.txt
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "3" ] &&
+   echo "$o" | grep -q "stdout capture in the work directory could not be opened" &&
+   ! echo "$o" | grep -q "expect-status" &&
+   ! echo "$o" | grep -q "^SETUP ERROR *could not run --operation$"; then
+    echo "ok   a blocked capture path names the capture, not the define (#469)"
+else
+    echo "FAIL blocked capture path: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -5
+    fails=$((fails + 1))
+fi
+
+# The control. Without it an engine that refused every run — or one that printed this
+# sentence unconditionally — would satisfy the leg above. Same command, same work
+# directory, nothing squatting: the ordinary verdict comes back.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+# `rc = 1` and the crash point, not `rc != 3`: this define is the known-buggy toy, so
+# the ordinary answer is a FAIL naming a world. Asserting only "not 3" would be
+# satisfied by an engine that had started refusing everything as UNKNOWN.
+if [ "$rc" = "1" ] &&
+   echo "$o" | grep -q "crash point" &&
+   ! echo "$o" | grep -q "stdout capture in the work directory could not be opened"; then
+    echo "ok   the same run with nothing at the capture path reaches a verdict (control)"
+else
+    echo "FAIL capture-path control: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -5
+    fails=$((fails + 1))
+fi
+
 # A case recorded under the previous contract refuses honestly. The fixture is a REAL
 # case generated by the current writer with only contract_version mutated to 7 — a
 # hand-written fixture could pass this check by merely failing to parse.
@@ -6379,7 +6450,8 @@ echo "=========== check: every command the define runs starts with stdin at end-
 # The fixture is one binary in three roles, each draining fd 0 to EOF BEFORE doing its
 # work, so one define exercises every wrapper a define's commands reach: `runChild`
 # (setup, checker), `runChildCapture` (the recording run), `runChildCaptureWorld`
-# (worlds) and `runChildCaptureAll` (the falsification probe). An implementation that
+# (worlds) and `runChildCapture` again with `stderr_too` (the falsification probe, which
+# had a wrapper of its own until #469 folded it into `Capture`). An implementation that
 # redirected only the world spawn still hangs at setup and fails here.
 #
 # The engine's own stdin is a FIFO held open by a background writer, not a pipeline:

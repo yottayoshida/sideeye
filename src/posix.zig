@@ -59,6 +59,11 @@ pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
 pub extern "c" fn symlink(target: [*:0]const u8, linkpath: [*:0]const u8) c_int;
+/// Test-only, and there is no production caller on purpose: this exists so the capture
+/// tests can plant the one thing `O_NOFOLLOW` does not see (#469). A hard link is the
+/// same inode under a second name, so a guard written only against symlinks answers it
+/// "yes" — which is what `O_EXCL` is on those captures for.
+pub extern "c" fn link(oldpath: [*:0]const u8, newpath: [*:0]const u8) c_int;
 
 // The descriptor-relative half of the calls above (#327). The destructive walk opens its
 // root once and reaches every entry through these, so a swap of the root's *pathname*
@@ -214,8 +219,20 @@ pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 ///
 /// - `image.zig` (#398): flag, then `lseek` — ESPIPE ends it there.
 /// - `engine.zig`'s `readWhole`, `main.zig`'s `readFileFrom` and `observeCapture`,
-///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`. All four read paths the engine
-///   itself produced, so nothing legitimate is refused.
+///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`.
+///
+///   This list used to add "all four read paths the engine itself produced, so nothing
+///   legitimate is refused", and that sentence is **wrong about `readWhole`** (#469):
+///   its trace read is engine-produced, and its other caller is the snapshot walk, which
+///   reads files inside the *target's* state directory. The distinction matters because
+///   #469 gave the other three `O_NOFOLLOW` on exactly that reasoning — the file was
+///   written by the engine refusing links, so reading it back through one can only be
+///   somebody else's substitution. That argument covers `readWhole`'s trace read and not
+///   its snapshot read, so it did not get the flag (#489). **Not because the flag would
+///   break anything**: the walk classifies with `kindOfPathNoFollow` first and a symlink
+///   goes to the `.symlink` arm, so `readWhole` meets one only through a race — which
+///   is a window worth closing on its own terms, with its own leg, rather than as a
+///   side effect of a list about `O_NONBLOCK`.
 /// - `main.zig`'s `readFileAllocCapped`: the flag comes with **either** half of its
 ///   `ReadMode`, and the two halves answer the same question differently. The case read
 ///   *classifies*: it needs the open to return so it can ask what the descriptor is, and
@@ -679,7 +696,74 @@ pub fn decodeStatus(status: c_int) Term {
 /// the child's exit status is the target's namespace (`expected_status` accepts 0..255, so
 /// no code is free for the engine to mean something by), and a failure to arrange the
 /// child's descriptors has to reach the caller on a channel the target cannot also use.
-pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed, StdinUnavailable };
+///
+/// `CaptureUnavailable` (#469) is the same sentence applied to the other descriptor the
+/// parent arranges. The capture used to be opened in the child, so a blocked capture path
+/// left `_exit(126)` — a value in the target's namespace — and `main`'s recording-run
+/// check, which reads the exit status *before* it reads the trace, reported
+/// `recording_run_failed` and told the operator to declare a different success convention
+/// with `--expect-status`. Taking that advice would have made a refused capture
+/// indistinguishable from a run that succeeded. The open moved to the parent so the
+/// failure never enters that namespace at all.
+pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed, StdinUnavailable, CaptureUnavailable };
+
+/// A child's stdout capture: where it goes, and what the open that creates it refuses.
+///
+/// One argument rather than three positional parameters, because #469 was exactly a
+/// positional flag deciding something unrelated: the symlink guard on this open was
+/// spelled `if (minimal_env)`, an environment-scrubbing switch that only the MCP adapter
+/// passes, so every CLI run opened its capture following links. Each decision is named
+/// here and chosen at the call site that makes it.
+pub const Capture = struct {
+    /// Resolved against the ENGINE's working directory, not the child's: this open now
+    /// happens in the parent, and it happened before `chdir` even when it lived in the
+    /// child (see `runChildImplWithOps`). Every production path passes an absolute path.
+    path: []const u8,
+
+    /// Send the child's stderr to the same file. The falsification gate uses this (#134):
+    /// its child's output must not reach the transcript unlabeled, and a checker reports
+    /// through both streams — the target's own stderr passes through the checker's — so
+    /// capturing stdout alone would still leak the exact line class that was once
+    /// harvested as world evidence.
+    stderr_too: bool = false,
+
+    /// Refuse a path that already holds anything, rather than truncating it.
+    ///
+    /// `O_NOFOLLOW` is unconditional below and covers a *symlink* at the name. It does
+    /// nothing about a **hard link**, which is the same file rather than a pointer to
+    /// one — so a work directory an attacker reached can still turn a capture into an
+    /// arbitrary-file truncation with `O_NOFOLLOW` set. `O_EXCL` covers that, and it is
+    /// free wherever the caller unlinks the path first, which every work-directory
+    /// capture does.
+    ///
+    /// What it buys is narrow, and saying so is the point: the same unlink that makes
+    /// `O_EXCL` free also removes a link planted before the run. Both flags therefore
+    /// act only inside the window between that unlink and this open, or when the unlink
+    /// silently failed (`removeFile` discards its result, and an attacker-owned sticky
+    /// work directory can answer `EPERM`).
+    ///
+    /// Not set for a capture to `/dev/null` — the device already exists, so
+    /// `O_CREAT|O_EXCL` there refuses every time.
+    ///
+    /// **A work-directory capture added later must set it, for a second reason.** Since
+    /// #469 this open happens in the parent, before the fork, where no budget reaches:
+    /// a FIFO planted at a non-exclusive capture path would block `O_WRONLY` until a
+    /// reader arrived, and the run would hang with nothing to time it out. `O_EXCL`
+    /// refuses a FIFO along with everything else already at the name. The two captures
+    /// without it today go to `/dev/null`, which nobody but root can replace.
+    exclusive: bool = false,
+};
+
+/// The flags a capture is opened with. `O_NOFOLLOW` is not conditional on anything:
+/// #469 is the whole reason this is a function rather than an expression at each site.
+/// `spawnSidecar` shares it, so the two forks in this file cannot drift apart.
+/// Takes the one field it reads rather than a `Capture`, so no caller has to build a
+/// throwaway struct with a path in it — the flags do not depend on the path, and a
+/// signature that looked as though they might is the kind of thing this issue is about.
+fn captureFlags(exclusive: bool) c_int {
+    const base: c_int = O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW;
+    return if (exclusive) base | O_EXCL else base;
+}
 
 /// Run a command to completion with extra environment variables set, and leave nothing of
 /// it running.
@@ -742,20 +826,23 @@ pub fn runChild(
     env_pairs: []const [2][]const u8,
     cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, null, false, false, cwd);
+    return runChildImpl(gpa, argv, env_pairs, null, false, cwd);
 }
 
 /// `runChild`, with the child's stdout sent to a file. What a target says on stdout
 /// is evidence — the L1 success marker is read from it (ADR 0008) — and evidence
 /// belongs in the work directory, not interleaved with the engine's own report.
+///
+/// `cap.stderr_too` folds in what `runChildCaptureAll` used to be a separate wrapper
+/// for: a wrapper whose only job is to set one boolean is the shape #469 is about.
 pub fn runChildCapture(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
-    stdout_path: []const u8,
+    cap: Capture,
     cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, false, cwd);
+    return runChildImpl(gpa, argv, env_pairs, cap, false, cwd);
 }
 
 /// `runChildCapture` with a wall-clock budget: the one entry point that can answer
@@ -781,26 +868,11 @@ pub fn runChildCaptureWorld(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
-    stdout_path: []const u8,
+    cap: Capture,
     budget_ms: ?u64,
     cwd: ?[]const u8,
 ) (SpawnError || error{TimedOut})!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, false, false, budget_ms, cwd, RealOps);
-}
-
-/// `runChildCapture`, with the child's stderr sent to the same file. The
-/// falsification gate uses this (#134): its child's output must not reach the
-/// transcript unlabeled, and a checker reports through both streams — the target's
-/// own stderr passes through the checker's — so capturing stdout alone would still
-/// leak the exact line class that was once harvested as world evidence.
-pub fn runChildCaptureAll(
-    gpa: std.mem.Allocator,
-    argv: []const []const u8,
-    env_pairs: []const [2][]const u8,
-    stdout_path: []const u8,
-    cwd: ?[]const u8,
-) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, false, true, cwd);
+    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, budget_ms, cwd, RealOps);
 }
 
 /// Like `runChildCapture`, but the child receives *only* `env_pairs` as its whole
@@ -811,13 +883,13 @@ pub fn runChildCaptureMinimalEnv(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
-    stdout_path: []const u8,
+    cap: Capture,
 ) SpawnError!Term {
     // No `cwd` parameter, and `null` here rather than a pass-through: this child is the
     // engine re-executing itself, and the engine's own cwd is what `--work`, `--json` and
     // the oracle's path resolution are all read against. A define's `cwd` is applied one
     // level down, by that engine, to the commands it runs.
-    return runChildImpl(gpa, argv, env_pairs, stdout_path, true, false, null);
+    return runChildImpl(gpa, argv, env_pairs, cap, true, null);
 }
 
 /// Child side of the stdin discipline (#263): make fd 0 the descriptor the parent
@@ -853,6 +925,14 @@ fn adoptStdin(nfd: c_int) void {
 /// than a spoiled capture. The child leaves the engine's process group for the same
 /// reason every other spawn does — a terminal SIGINT must not reach it before the
 /// caller has read what it captured.
+///
+/// **The capture is opened here, in the parent, like the stdin below it** (#469). It
+/// used to be opened in the child, where a failure could only be `_exit(126)` — and the
+/// caller reads this pid back through the fs_usage handshake, whose loop sees the child
+/// gone and reports "another fs_usage still holds the kernel trace facility". A blocked
+/// capture path came back as a diagnosis about somebody else's process, which is the
+/// misattribution class #469 exists to remove; it reaches the caller as
+/// `error.CaptureUnavailable` now, and the handshake never sees it.
 pub fn spawnSidecar(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -874,16 +954,24 @@ pub fn spawnSidecar(
     const nfd = RealOps.openDevNull();
     if (nfd < 0) return error.StdinUnavailable;
 
+    // The same flag expression `runChildImpl*` uses, through the same function, so the
+    // two forks in this file cannot answer a planted link differently — which is the
+    // whole shape of #469, one level up.
+    const cfd = RealOps.openCapture(stdout_z, captureFlags(true));
+    if (cfd < 0) {
+        _ = close(nfd);
+        return error.CaptureUnavailable;
+    }
+
     const pid = fork();
     if (pid < 0) {
         _ = close(nfd);
+        _ = close(cfd);
         return error.ForkFailed;
     }
     if (pid == 0) {
         _ = setpgid(0, 0);
         adoptStdin(nfd);
-        const cfd = open(stdout_z, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_EXCL, @as(c_uint, 0o600));
-        if (cfd < 0) _exit(126);
         if (cfd != 1) {
             if (dup2(cfd, 1) < 0) _exit(126);
             _ = close(cfd);
@@ -891,7 +979,11 @@ pub fn spawnSidecar(
         _ = execvp(cargv[0].?, cargv.ptr);
         _exit(127);
     }
+    // Both copies released, with the same low-descriptor note as `runChildImplWithOps`:
+    // an engine started with fd 1 closed gets `cfd == 1` and ends this call with fd 1
+    // closed again, which is the state it started in.
     _ = close(nfd);
+    _ = close(cfd);
     return pid;
 }
 
@@ -966,23 +1058,25 @@ fn signalGroup(gpa: std.mem.Allocator, pgid: c_int, sig: []const u8, helper: []c
     list.append(arena, sig) catch return;
     const target = std.fmt.allocPrint(arena, "-{d}", .{pgid}) catch return;
     list.append(arena, target) catch return;
-    _ = runChildCapture(gpa, list.items, &.{}, "/dev/null", null) catch return;
+    // `/dev/null` is a device that already exists, so this capture is not `exclusive`:
+    // `O_CREAT|O_EXCL` there refuses every time. `O_NOFOLLOW` still applies and costs
+    // nothing — the device is not a symlink on either platform.
+    _ = runChildCapture(gpa, list.items, &.{}, .{ .path = "/dev/null" }, null) catch return;
 }
 
 fn runChildImpl(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
-    stdout_path: ?[]const u8,
+    capture: ?Capture,
     minimal_env: bool,
-    capture_stderr: bool,
     cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, stdout_path, minimal_env, capture_stderr, null, cwd, RealOps) catch |e| switch (e) {
+    return runChildImplWithOps(gpa, argv, env_pairs, capture, minimal_env, null, cwd, RealOps) catch |e| switch (e) {
         // A null budget never takes the timeout branch — see the budget block below,
         // which is the only producer of this error and is gated on `budget_ms != null`.
         error.TimedOut => unreachable,
-        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable => |narrow| narrow,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |narrow| narrow,
     };
 }
 
@@ -1033,6 +1127,14 @@ const RealOps = struct {
     fn openDevNull() c_int {
         return open("/dev/null", O_RDONLY, @as(c_uint, 0));
     }
+    /// The child's stdout capture, opened in the parent since #469. On the seam beside
+    /// `openDevNull` and `forkChild` so a test can assert the pair that matters: the
+    /// spawn refused, and it refused BEFORE the fork. A fake is expected to delegate
+    /// here rather than answer — the flags are what the tests are about, and a fake
+    /// that returned a number of its own would measure nothing.
+    fn openCapture(path: [*:0]const u8, flags: c_int) c_int {
+        return open(path, flags, @as(c_uint, 0o600));
+    }
 };
 
 /// Monotonic milliseconds, on the clock a deadline can trust.
@@ -1067,9 +1169,8 @@ fn runChildImplWithOps(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     env_pairs: []const [2][]const u8,
-    stdout_path: ?[]const u8,
+    capture: ?Capture,
     minimal_env: bool,
-    capture_stderr: bool,
     budget_ms: ?u64,
     cwd: ?[]const u8,
     comptime Ops: type,
@@ -1101,7 +1202,7 @@ fn runChildImplWithOps(
         list[env_pairs.len] = null;
         break :blk list.ptr;
     } else null;
-    const stdout_z: ?[*:0]const u8 = if (stdout_path) |sp| (try arena.dupeZ(u8, sp)).ptr else null;
+    const capture_z: ?[*:0]const u8 = if (capture) |cap| (try arena.dupeZ(u8, cap.path)).ptr else null;
 
     // The budget clock starts before the fork: the child is runnable the moment fork
     // returns, and time the parent spends unscheduled between fork and its first poll
@@ -1121,9 +1222,28 @@ fn runChildImplWithOps(
     const nfd = Ops.openDevNull();
     if (nfd < 0) return error.StdinUnavailable;
 
+    // The capture, arranged by the parent for the same reason and in the same place
+    // (#469). It used to be opened in the child, which put its failure at `_exit(126)`
+    // — inside the target's exit-status namespace, where `main`'s recording-run check
+    // reads it *before* the trace and answers `recording_run_failed`, telling the
+    // operator to declare `--expect-status`. The flags moved with it: `O_NOFOLLOW`
+    // unconditionally, where it used to be spelled `if (minimal_env)` and so applied
+    // only to the MCP path. What the parent holding this descriptor also buys is a
+    // shorter window — the caller's unlink and this open are no longer separated by a
+    // fork.
+    const cfd: c_int = if (capture_z) |cz| blk: {
+        const fd = Ops.openCapture(cz, captureFlags(capture.?.exclusive));
+        if (fd < 0) {
+            _ = close(nfd);
+            return error.CaptureUnavailable;
+        }
+        break :blk fd;
+    } else -1;
+
     const pid = Ops.forkChild();
     if (pid < 0) {
         _ = close(nfd);
+        if (cfd >= 0) _ = close(cfd);
         return error.ForkFailed;
     }
     if (pid == 0) {
@@ -1133,28 +1253,21 @@ fn runChildImplWithOps(
         // must not run at all. The retry bound, the abort, and the fd-0 case are all
         // in `adoptStdin`, shared with the sidecar's fork.
         adoptStdin(nfd);
-        if (stdout_z) |sz| {
-            // A capture that cannot be opened must not fall back to the engine's own
+        if (cfd >= 0) {
+            // The descriptor was opened by the parent (#469); all that is left here is
+            // putting it on fd 1. A `dup2` that fails is still 126 — the one meaning
+            // that code keeps for this path, and distinct from exec's 127 on purpose.
+            // A capture that cannot be arranged must not fall back to the engine's own
             // stdout: a world whose evidence went to the wrong stream would read as
-            // "marker never appeared". 126 is distinct from exec's 127 on purpose.
-            // Under minimal_env (the MCP path) the capture is opened O_NOFOLLOW|O_EXCL:
-            // the work dir is attacker-visible in the general case, and a pre-planted
-            // symlink must not turn the capture into an arbitrary-file truncation or a
-            // read of the child's stdout by someone else.
-            const flags: c_int = if (minimal_env)
-                O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_EXCL
-            else
-                O_WRONLY | O_CREAT | O_TRUNC;
-            const cfd = open(sz, flags, @as(c_uint, 0o600));
-            if (cfd < 0) _exit(126);
+            // "marker never appeared".
             if (cfd != 1) {
                 if (dup2(cfd, 1) < 0) _exit(126);
                 _ = close(cfd);
             }
-            if (capture_stderr) {
+            if (capture.?.stderr_too) {
                 // Both streams into the capture: a partial capture would leak the
                 // other stream to the inherited fds — the exact failure this variant
-                // exists to prevent. 126 for the same reason as the open above.
+                // exists to prevent. 126 for the same reason as the dup2 above.
                 if (dup2(1, 2) < 0) _exit(126);
             }
             if (minimal_env) {
@@ -1168,15 +1281,16 @@ fn runChildImplWithOps(
                 while (fd < 256) : (fd += 1) _ = close(fd);
             }
         }
-        // After the descriptor work above and before exec. Placed here so a capture the
-        // child could not open still reports 126 rather than being pre-empted by a cwd
-        // that also failed — one refusal per cause, and the earlier one wins.
+        // After the descriptor work above and before exec. The ordering it used to
+        // enforce — a capture failure winning over a cwd failure — is now structural
+        // rather than positional: a capture that could not be opened refuses in the
+        // parent (#469) and no child exists to reach this line.
         //
-        // 125 is its own code: 126 already carries two meanings the engine cannot tell
-        // apart (`checker_not_falsified` says so at the checker probe), and adding a
-        // third would make the ambiguity structural rather than local. The parent
-        // resolves and vets this path before the fork, so reaching here means the
-        // directory went away between the vet and the exec.
+        // 125 is its own code: 126 still carries two meanings the engine cannot tell
+        // apart (a `dup2` failure here, and a target that genuinely exits 126), and
+        // adding a third would make the ambiguity structural rather than local. The
+        // parent resolves and vets this path before the fork, so reaching here means
+        // the directory went away between the vet and the exec.
         if (cwd_z) |cz| {
             if (chdir(cz) != 0) _exit(125);
         }
@@ -1191,8 +1305,20 @@ fn runChildImplWithOps(
         // Only reached when exec failed; 127 is the shell's convention for that.
         _exit(127);
     }
-    // The parent's copy of the child's stdin source: the child has its own by now.
+    // The parent's copies of the descriptors it arranged: the child has its own by now.
+    // The capture's copy matters more than stdin's — held open, the engine would keep a
+    // descriptor on a work-directory file for the whole run, and every later world's
+    // open would add another.
+    //
+    // Both closes release whatever number the open landed on, including a low one. An
+    // engine started with fd 1 already closed gets `cfd == 1` here and ends this call
+    // with fd 1 closed again — the state it started in, and the same thing the `nfd`
+    // close beside it has always done for fd 0. What is not claimed is that `say()` is
+    // safe in that engine: it writes to fd 1 whatever is there, which was true before
+    // this line existed. Sideeye is a CLI and its stdout is its report; being started
+    // without one is out of scope rather than handled.
     _ = close(nfd);
+    if (cfd >= 0) _ = close(cfd);
     // Repeated in the parent to close the window where the child has not been scheduled
     // yet. Whichever call runs first wins; the second fails harmlessly (EACCES once the
     // child has exec'd, ESRCH if it has already exited).
@@ -1413,6 +1539,13 @@ const FakeWait = struct {
         }
         return RealOps.openDevNull();
     }
+    /// Delegated, never faked: the capture tests below are about what the real `open`
+    /// does with the real flags against a real planted path. A fake answering here
+    /// would turn "the kernel refused a symlink" into "the fake said -1", which is the
+    /// same vacuity `O_NOFOLLOW actually refuses a symlink` exists to avoid. What
+    /// `FakeWait` contributes to those tests is `fork_calls` — the count that says the
+    /// refusal happened before the fork.
+    const openCapture = RealOps.openCapture;
 
     fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
         if (pid < 0) {
@@ -1444,7 +1577,7 @@ const FakeWait = struct {
 test "a wait that fails permanently refuses instead of reporting a clean exit" {
     FakeWait.reset();
     FakeWait.permanent = true;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
 
     // Before #264 this returned `.exited = 0`: `status` keeps the zero it was initialised
     // with, and every explored world is expected to die by signal, so the engine reported
@@ -1461,7 +1594,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
     FakeWait.reset();
     FakeWait.eintr_budget = 3;
     FakeWait.deliver_status = 0x0100; // exit(1)
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
 
     // The status written by the call that succeeded — not the zero the loop started with.
     try std.testing.expectEqual(Term{ .exited = 1 }, term);
@@ -1472,7 +1605,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
 test "an interruption that never stops is bounded rather than looping forever" {
     FakeWait.reset();
     FakeWait.eintr_budget = std.math.maxInt(u32);
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
 
     try std.testing.expectError(error.WaitFailed, r);
     // The first call plus the eight retries the bound allows.
@@ -1483,7 +1616,7 @@ test "an interruption that never stops is bounded rather than looping forever" {
 test "a child whose stdin cannot be pointed at /dev/null is refused by name and never forked (#263)" {
     FakeWait.reset();
     FakeWait.devnull_fails = true;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
 
     try std.testing.expectError(error.StdinUnavailable, r);
     // Refused BEFORE the fork: the parent opens the descriptor, so a child that could
@@ -1503,7 +1636,7 @@ test "every child starts with its stdin at /dev/null, on the plain path with no 
     // plain path (no capture, not minimal_env) is chosen because that is the one the
     // MCP-only redirect never covered: setup and the checker run through it.
     const is_null = [_][]const u8{ "/bin/sh", "-c", "[ /dev/stdin -ef /dev/null ]" };
-    const term = try runChildImplWithOps(std.testing.allocator, &is_null, &.{}, null, false, false, null, null, FakeWait);
+    const term = try runChildImplWithOps(std.testing.allocator, &is_null, &.{}, null, false, null, null, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 }
@@ -1528,6 +1661,165 @@ test "a declared cwd is where the child starts; null leaves it at the engine's" 
     // process does not run in /usr, so the same command must now answer non-zero.
     const stayed = try runChild(std.testing.allocator, &at_usr, &.{}, null);
     try std.testing.expect(stayed.exited != 0);
+}
+
+/// A scratch directory for the capture tests below, pid-unique because `zig build test`
+/// runs the same test in several concurrent binaries and a fixed name passes every
+/// single run before failing most paired ones (CLAUDE.md, #28).
+const CaptureFixture = struct {
+    base: [160]u8 = undefined,
+    base_len: usize = 0,
+
+    fn init(self: *CaptureFixture, tag: []const u8) ![:0]const u8 {
+        const b = try std.fmt.bufPrintZ(&self.base, "/tmp/sideeye-capture-{s}-{d}", .{ tag, getpid() });
+        self.base_len = b.len;
+        _ = mkdir(b.ptr, 0o755);
+        return b;
+    }
+
+    /// Read a whole small file back. `O_NOFOLLOW` is deliberately absent: these tests
+    /// assert about the file a link POINTS AT, which is reached by following one.
+    fn slurp(path_z: [*:0]const u8, buf: []u8) ![]u8 {
+        const fd = open(path_z, O_RDONLY, @as(c_uint, 0));
+        if (fd < 0) return error.CouldNotRead;
+        defer _ = close(fd);
+        const n = read(fd, buf.ptr, buf.len);
+        if (n < 0) return error.CouldNotRead;
+        return buf[0..@intCast(n)];
+    }
+
+    fn writeAt(path_z: [*:0]const u8, bytes: []const u8) !void {
+        const fd = open(path_z, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
+        if (fd < 0) return error.CouldNotWrite;
+        defer _ = close(fd);
+        if (write(fd, bytes.ptr, bytes.len) != @as(isize, @intCast(bytes.len))) return error.CouldNotWrite;
+    }
+};
+
+test "a symlink at the capture path is refused before the fork, and what it points at is untouched (#469)" {
+    // The asymmetry this closes: the capture's `O_NOFOLLOW` was spelled
+    // `if (minimal_env)` — an environment-scrubbing switch only the MCP adapter passes —
+    // so every CLI run opened its capture following links.
+    //
+    // `FakeWait` is used for one number: `fork_calls`. The open itself is real (the fake
+    // delegates `openCapture`), so what is measured is the kernel's answer to the real
+    // flags, and the count says the refusal happened in the parent — which is the other
+    // half of the change. Driven through `runChildImplWithOps` so `FakeWait` can supply
+    // that count; the arguments are `runChildCapture`'s, the plain wrapper — that is the
+    // path `minimal_env` never covered.
+    //
+    // **`exclusive` is false here, and that is what makes this test about `O_NOFOLLOW`.**
+    // Written first with it true, and the mutation that removes `O_NOFOLLOW` survived:
+    // POSIX has `O_CREAT|O_EXCL` fail on a symlink too (EEXIST), so `O_EXCL` was
+    // answering and the flag under test was never consulted. Non-exclusive is also the
+    // shape two production captures actually take — the sudo probe and the group-signal
+    // helper both go to `/dev/null` — so this is the configuration that would otherwise
+    // have no symlink guard at all.
+    var fx: CaptureFixture = .{};
+    const base = try fx.init("nofollow");
+    var sb: [200]u8 = undefined;
+    const sentinel_z = try std.fmt.bufPrintZ(&sb, "{s}/outside", .{base});
+    var cb: [200]u8 = undefined;
+    const cap_z = try std.fmt.bufPrintZ(&cb, "{s}/capture", .{base});
+    defer {
+        _ = unlink(cap_z.ptr);
+        _ = unlink(sentinel_z.ptr);
+        _ = rmdir(base.ptr);
+    }
+
+    // Content, not just existence: a test that only asked whether the file still existed
+    // would pass against a write that followed the link and truncated it.
+    const keep = "bytes that must survive\n";
+    try CaptureFixture.writeAt(sentinel_z.ptr, keep);
+
+    // The control first, so the refusal below is about the link and not about this
+    // directory, these flags, or this child. Without it, an implementation that failed
+    // every capture would satisfy every assertion in the refusal half.
+    // `FakeWait.wait` answers from `deliver_status`, which `reset` sets to 0, so the
+    // `Term` below is the fake's number and not the child's: what says the child ran
+    // and reached its capture is `fork_calls` and the bytes read back. The `Term`
+    // assertion is kept as the shape check it is — the call returned a value rather
+    // than an error — and named here so it is not mistaken for a measurement.
+    const say = [_][]const u8{ "/bin/sh", "-c", "printf hello" };
+    FakeWait.reset();
+    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, FakeWait);
+    try std.testing.expectEqual(Term{ .exited = 0 }, ok);
+    try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
+    var rb: [64]u8 = undefined;
+    try std.testing.expectEqualStrings("hello", try CaptureFixture.slurp(cap_z.ptr, &rb));
+
+    // Now the link, where the control's own capture file was — what a racer could leave
+    // between the caller's unlink and this open.
+    _ = unlink(cap_z.ptr);
+    try std.testing.expect(symlink(sentinel_z.ptr, cap_z.ptr) == 0);
+
+    FakeWait.reset();
+    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, FakeWait);
+    try std.testing.expectError(error.CaptureUnavailable, refused);
+    // The half that says the open moved to the parent. Before #469 this path answered
+    // `.exited = 126` — a value inside the target's own status namespace — and the fork
+    // had already happened.
+    try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
+
+    // The bytes outside are untouched, which is the whole point. `expectEqualStrings`
+    // rather than an existence check: a followed write truncates first and would leave
+    // an empty file that still exists.
+    var rb2: [64]u8 = undefined;
+    try std.testing.expectEqualStrings(keep, try CaptureFixture.slurp(sentinel_z.ptr, &rb2));
+
+    // And the link is still a link: the refusal did not replace it with a regular file.
+    try std.testing.expectEqual(Kind.symlink, try kindOfPathNoFollow(cap_z.ptr));
+}
+
+test "a hard link at an exclusive capture path is refused too, and /dev/null still works (#469)" {
+    // `O_NOFOLLOW` does nothing here: a hard link is the same file, not a pointer to
+    // one, so the test above passes against an implementation that stops at that flag.
+    // `O_EXCL` is what refuses this, and it is free wherever the caller unlinks first —
+    // which every work-directory capture does.
+    var fx: CaptureFixture = .{};
+    const base = try fx.init("excl");
+    var sb: [200]u8 = undefined;
+    const sentinel_z = try std.fmt.bufPrintZ(&sb, "{s}/outside", .{base});
+    var cb: [200]u8 = undefined;
+    const cap_z = try std.fmt.bufPrintZ(&cb, "{s}/capture", .{base});
+    defer {
+        _ = unlink(cap_z.ptr);
+        _ = unlink(sentinel_z.ptr);
+        _ = rmdir(base.ptr);
+    }
+
+    const keep = "bytes that must survive\n";
+    try CaptureFixture.writeAt(sentinel_z.ptr, keep);
+    if (link(sentinel_z.ptr, cap_z.ptr) != 0) return error.SkipZigTest; // no hard links here
+
+    const say = [_][]const u8{ "/bin/sh", "-c", "printf hello" };
+    FakeWait.reset();
+    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, FakeWait);
+    try std.testing.expectError(error.CaptureUnavailable, refused);
+    try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
+    var rb: [64]u8 = undefined;
+    try std.testing.expectEqualStrings(keep, try CaptureFixture.slurp(sentinel_z.ptr, &rb));
+
+    // Control A: `/dev/null` always exists, so an implementation that made `exclusive`
+    // unconditional would refuse the sudo probe and the group-signal helper — the two
+    // production captures that go there — on every run.
+    //
+    // `fork_calls` is what carries this one. Nothing can be read back from `/dev/null`,
+    // and the `Term` comes from the fake's `deliver_status`; the count of 1 is the
+    // measurement that the parent did not refuse before forking.
+    FakeWait.reset();
+    const to_null = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = "/dev/null" }, false, null, null, FakeWait);
+    try std.testing.expectEqual(Term{ .exited = 0 }, to_null);
+    try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
+
+    // Control B: the same exclusive capture at a name holding nothing succeeds, so the
+    // refusal above is about what was at the path and not about `exclusive` itself.
+    _ = unlink(cap_z.ptr);
+    FakeWait.reset();
+    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, FakeWait);
+    try std.testing.expectEqual(Term{ .exited = 0 }, ok);
+    var rb2: [64]u8 = undefined;
+    try std.testing.expectEqualStrings("hello", try CaptureFixture.slurp(cap_z.ptr, &rb2));
 }
 
 /// An Ops whose whole budget vocabulary the tests script (#263): the waitid poll
@@ -1611,6 +1903,7 @@ const FakeBudget = struct {
     // The budget tests drive the deadline logic only; the spawn itself is real.
     const forkChild = RealOps.forkChild;
     const openDevNull = RealOps.openDevNull;
+    const openCapture = RealOps.openCapture;
     fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
         if (pid < 0) {
             drain_calls += 1;
@@ -1640,7 +1933,7 @@ test "a world over budget is sent SIGKILL after a final observation, reaped unde
     FakeBudget.script = &.{ .running, .running };
     FakeBudget.direct_waits = &.{1}; // the grace reap succeeds at once
     FakeBudget.now_step = 100;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -1656,7 +1949,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
     FakeBudget.script = &.{ .running, .running, .exited };
     FakeBudget.deliver_status = 0; // exit(0) once the shared reap runs
     FakeBudget.now_step = 1; // deadline 1000 is never approached
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     // All three polls were consumed: an implementation that treated the first rc==0
@@ -1673,7 +1966,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
 test "a null budget never touches the budget vocabulary: no clock, no sleep, no poll (#263)" {
     FakeBudget.reset();
     FakeBudget.deliver_status = 0;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, null, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.clock_calls);
@@ -1687,7 +1980,7 @@ test "a child the final observation sees exited is accepted, not timed out — t
     FakeBudget.script = &.{ .running, .exited };
     FakeBudget.deliver_status = 0;
     FakeBudget.now_step = 100;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -1700,7 +1993,7 @@ test "a poll interruption retries under the same deadline; a permanent poll fail
     FakeBudget.script = &.{ .{ .err = EINTR }, .{ .err = EINTR }, .{ .err = FakeWait.ECHILD } };
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     // ECHILD can mean an inherited SIGCHLD disposition auto-reaped the child, and a
@@ -1721,7 +2014,7 @@ test "an interruption storm cannot poll forever: the ninth consecutive interrupt
     FakeBudget.script = &.{.{ .err = EINTR }};
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 1000, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     // Nine attempts — the blocking reap's own discipline — then refusal, no kill:
@@ -1739,7 +2032,7 @@ test "a SIGKILL that never lands exhausts the grace, drains without blocking, an
     // the group signal could not reach.
     FakeBudget.direct_waits = &.{ 0, 0, 0, 0, 0, 0, 0, 0 };
     FakeBudget.now_step = 3000;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, false, 10, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);

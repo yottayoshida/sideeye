@@ -743,10 +743,13 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
 
     // A previous server process may have left report-N / child-N behind — the counter
     // is per-process, so two servers sharing a work dir collide on the same names. The
-    // capture opens O_EXCL, the collision aborts the child at 126, and the parent then
-    // reads the PREVIOUS run's report-N.json back as THIS call's verdict (measured
-    // 2026-08-12: a second server answered with the first server's report, about a
-    // different target). Unlink both names first: whatever exists at them afterwards
+    // capture opens O_EXCL, the collision refuses the spawn, and the parent then reads
+    // the PREVIOUS run's report-N.json back as THIS call's verdict (measured 2026-08-12:
+    // a second server answered with the first server's report, about a different
+    // target). The refusal used to be the child's `_exit(126)`; since #469 the capture
+    // is opened in the parent and it is `error.CaptureUnavailable`, answered above. The
+    // incident is unchanged — what fixed it is the two unlinks below, not the shape of
+    // the refusal. Unlink both names first: whatever exists at them afterwards
     // was written by this call's child or by nobody. The work dir is user-owned by
     // contract (ADR 0010), so these are our own leftovers, not someone else's files.
     unlinkPath(temp_json);
@@ -835,7 +838,12 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     const argv = argv_buf[0..argc];
     // Minimal-env self-exec with the child's stdout captured to a file — fd 1 (the MCP
     // transport) stays clean.
-    const term = posix.runChildCaptureMinimalEnv(gpa, argv, env, child_out) catch |e|
+    // `exclusive` was already the flag this path opened with, and it stays for the
+    // reason #469 established rather than the one that was written here: `O_NOFOLLOW`
+    // does nothing about a hard link, and `unlinkPath(child_out)` above makes `O_EXCL`
+    // free. It is no longer derived from `minimal_env` — every capture that unlinks
+    // first now sets it, MCP or not.
+    const term = posix.runChildCaptureMinimalEnv(gpa, argv, env, .{ .path = child_out, .exclusive = true }) catch |e|
         return emitToolError(arena, id, switch (e) {
             // Distinct from "could not run": sideeye did run, and the exit code this
             // handler is about to switch on was never read (#264).
@@ -844,17 +852,25 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
             // server is the parent that could not arrange the engine's stdin, and a
             // generic "could not run" would hide that nothing was started at all.
             error.StdinUnavailable => "could not start sideeye: /dev/null could not be opened, so it could not be given its stdin at end-of-file",
+            // The other descriptor the parent arranges (#469). This used to arrive as
+            // the child's exit code 126 and is answered below; it arrives here now,
+            // before any child exists, which is why the sentence says "could not start".
+            error.CaptureUnavailable => "could not start sideeye: its stdout capture in the work directory could not be opened. The path is refused when it is a symlink, or when it already holds a file or directory the server did not just create — check SIDEEYE_MCP_WORK and what is inside it",
             error.ForkFailed, error.OutOfMemory => "could not run sideeye",
         });
     const exit_code: i64 = switch (term) {
         .exited => |c| c,
         else => -1,
     };
-    // 126/127 are the fork stub's own exit codes (capture could not open / exec
-    // failed) — sideeye itself exits 0..3. Neither leaves a report for this call, so
-    // anything found at the report path would be somebody else's file; say what broke
-    // instead of reading it.
-    if (exit_code == 126) return emitToolError(arena, id, "the child could not open its stdout capture in the work directory");
+    // 126/127 are the fork stub's own exit codes — sideeye itself exits 0..3. Neither
+    // leaves a report for this call, so anything found at the report path would be
+    // somebody else's file; say what broke instead of reading it.
+    //
+    // 126 no longer means "the capture could not be opened": that open moved to the
+    // parent in #469 and its failure is `error.CaptureUnavailable`, answered above
+    // before any child exists. What remains here is the `dup2` that puts the
+    // already-opened capture on the child's fd 1.
+    if (exit_code == 126) return emitToolError(arena, id, "the child could not be given the stdout capture the server had already opened for it");
     if (exit_code == 127) return emitToolError(arena, id, "self-exec failed: the canonical sideeye binary could not be executed");
 
     const report = readFile(arena, temp_json, 4 * 1024 * 1024) orelse
@@ -1284,7 +1300,13 @@ fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 
     // report was once read back as this call's verdict (the incident recorded above).
     // A FIFO planted at that path would hold the server with the client's request
     // outstanding, and there is no timeout anywhere around this read.
-    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    //
+    // `O_NOFOLLOW` closes the other half of that same paragraph (#469). Every reason
+    // above for why a planted FIFO is reachable here is a reason a planted *symlink*
+    // is, and this read's bytes become the tool's return value — so following one hands
+    // the caller a verdict about a file somebody else chose. The write side of this
+    // capture has refused links since the MCP path was written; the read side did not.
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
     // Read before classified, for the reason the flag's own comment gives: a FIFO with
