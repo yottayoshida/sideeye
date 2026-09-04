@@ -177,33 +177,86 @@ The sensitivity leg needs a mutation the shim provably does not report. If that
 were wrong, a silent capture could not be told from a capture of something the
 shim already saw, and the leg would prove nothing in either direction.
 
-`clonefile(2)` is the one used. It creates a file and, at the time of this
-survey, was absent from the then-40 symbols `shim/src/macos.zig` interposed. The
-table is read but not trusted: the probe runs **under the shim** first, and the
-trace is checked.
+It was `clonefile(2)` until trace contract v12 (#333, 2026-08-26). That syscall
+creates a file and was absent from the then-40 symbols `shim/src/macos.zig`
+interposed; v12 added the clone family, the planted mutation became visible, and
+the leg refused itself with its own "pick another mutation" message. Every
+number in the section below was measured under v11 and stands as taken, on its
+date.
 
-> **Superseded as a live leg by trace contract v12 (#333, 2026-08-26):** the
-> shim now interposes the clone family, so the L7a precondition refuses with its
-> own "pick another mutation" message. Every number below was measured under
-> v11 and stands as taken, on its date. A re-run needs a mutation the v12 shim
-> still cannot see — the mmap/msync class — which is filed with #293.
+**The mutation is now an mmap store flushed with `msync` (#344, contract
+version 13).** The shim does not interpose `msync` and could not usefully: the
+store is a memory write with no syscall behind it, which
+`spike/check-macos-coverage.py` records as the reason rather than an oversight.
 
-    trace names:        seen-by-shim.txt, clone-src.txt
-    trace never names:  clone-dst.txt
+**What the leg can claim changed with the mutation, and the change is not
+cosmetic.** A file must be opened before it can be mapped, and the shim records
+that open — so "the trace never names the planted path" is not available to any
+mmap-class probe. What L7a asks now is what the trace says *about* the path:
 
-The control matters as much as the absence. A trace missing everything would
-"prove" the bypass for the wrong reason, so the leg requires the control file to
-be present before the absence is read.
+    trace names:                seen-by-shim.txt, store-src.txt
+    trace names as an open:     store-dst.txt
+    trace never names as a
+      write, truncate or fsync: store-dst.txt
 
-This is also a finding about sideeye rather than about FSEvents: `clonefile`
-creates a file in the state directory that the shim never reports. It is the
-macOS instance of the class `#244` named on Linux. (Closed by v12: the shim now
-records the clone's destination, which is what retired this leg.)
+Both halves are load-bearing. Without the first, the absence in the second is
+also satisfied by a shim that never loaded — measured: running the probe without
+`DYLD_INSERT_LIBRARIES` refuses on "the shim wrote no trace" before the absence
+is ever read.
+
+Reading that needs the operations, not the strings. `strings` sees the path and
+not what was done to it, so the leg goes through `trace-ops`, built from
+`src/contract.zig`'s own decoder (`zig build -Dtrace-ops`) rather than from a
+second spelling of the record format.
+
+The mapping target is created and sized by `survey.sh`, outside the traced run.
+`ftruncate` is interposed, so sizing it inside the probe would put a `.truncate`
+for that path in the trace and the predicate could never hold.
+
+Falsified three ways on 2026-09-04, macOS 15.3.1 arm64, contract version 13:
+
+| what was run | L7a |
+|---|---|
+| the shipped probe | green: open present, no write / truncate / fsync |
+| the same probe with an ordinary `pwrite` added | refuses: "the shim DOES record a write to store-dst.txt" |
+| the same probe with the shim not loaded | refuses: "the shim wrote no trace" |
+
+The v11 finding this leg also carried — that `clonefile` created a file in the
+state directory the shim never reported, the macOS instance of the class `#244`
+named on Linux — was closed by v12, which is what retired that probe.
 
 ## Sensitivity holds: the veto sees what the account misses
 
 5 of 5 runs in each of the three transcripts, 15 of 15. Each capture names `clone-dst.txt` with two events, against an
 account of two paths that does not contain it.
+
+**The event is produced by the mapping, not by the store (#344, 2026-09-04).** L7d
+runs the same probe with `--map-only`: the target is mapped `PROT_READ`, so a store is
+impossible and the file's bytes do not change. Measured on macOS 15.3.1 arm64, three
+runs each:
+
+| probe | event naming the target | file changed |
+|---|---|---|
+| map read-write, store, `msync` | 3 / 3 | yes |
+| map read-write, no store | 3 / 3 | no |
+| map `PROT_READ` (store impossible) | 3 / 3 | no |
+| no mapping at all (open and close) | 0 / 3 | no |
+
+So **an L7c count is not evidence that the veto saw a mutation.** It is evidence that
+FSEvents reported activity the shim's account does not carry — the account holds an
+`open` and a `close` and nothing about the mapping — which is a weaker statement and the
+one this apparatus can support. Read the other way, it is a finding about FSEvents:
+`ItemModified` arrives for a file nothing modified.
+
+L7d is a leg rather than a paragraph so the fact is re-measured on every run of the
+survey. If the attribution ever changes, the leg says so and names the two documents
+that would then be wrong.
+
+**Those fifteen are v11 numbers**, taken with the `clonefile` probe on
+2026-08-23, and they are not re-run here. #344 restored the leg's *precondition*
+— L7a can measure again — and the capture side of the sensitivity result waits on
+whoever picks route B back up. ADR 0035 declined it on price, and nothing in this
+change revisits that.
 
 ## Containment does not hold on a clean run
 

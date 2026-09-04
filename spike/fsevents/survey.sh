@@ -414,20 +414,55 @@ echo "   cannot say which."
 L7="$W/L7"; mkdir -p "$L7"
 
 echo ""
-echo "-- L7a: the planted mutation is invisible to the shim, measured not assumed"
-echo "   The sensitivity leg below plants a clonefile(2), which WAS absent from"
-echo "   the then-40 symbols shim/src/macos.zig interposed when this survey ran"
-echo "   (v11). Trace contract v12 (#333) interposes the clone family, so this"
-echo "   precondition now refuses by design; the recorded result stands as a"
-echo "   v11 measurement, and a re-run needs an msync-class mutation (#293)."
-echo "   If that were wrong, a"
-echo "   silent capture could not be told from a capture of something the shim"
-echo "   already saw, and the leg would prove nothing in either direction."
+# The mapping target `bypass` writes through, created and sized OUTSIDE any traced run.
+#
+# A function rather than a line in L7a, because `bypass` has two callers: L7a runs it
+# under the shim to check the precondition, and L7c runs it REPS times under the watcher
+# to take the sensitivity reading. The first draft created the file inside L7a only, and
+# every L7c run then failed with "could not open the pre-created mapping target" — the
+# probe was measured in the leg it was written for and broken in the one that consumes it.
+#
+# ftruncate is interposed, so the probe cannot size this itself: doing so would put a
+# `.truncate` for this path in the trace and L7a's predicate could never hold. 4096
+# matches MAP_LEN in bypass.c, and a shorter file would make the mmap store run off the
+# end of the mapping and take the probe down with SIGBUS.
+plant_target() {
+    /bin/dd if=/dev/zero of="$1/store-dst.txt" bs=4096 count=1 2>/dev/null || return 1
+    # Size checked rather than assumed: a short file is the SIGBUS case above, and the
+    # probe would die before the mutation while the trace still looked exactly like a
+    # clean run.
+    sz=$(wc -c < "$1/store-dst.txt" | tr -d ' ')
+    [ "$sz" = "4096" ] || return 1
+}
+
+echo "-- L7a: the shim records the planted path but not the change to it (#344)"
+echo "   The sensitivity leg needs a mutation FSEvents can see and the shim's"
+echo "   account cannot. It used to be clonefile(2); trace contract v12 added the"
+echo "   clone family, so that probe's mutation became visible and this leg refused"
+echo "   by design. The mutation is now an mmap store flushed with msync, which the"
+echo "   shim does not interpose and could not usefully (the store is a memory"
+echo "   write with no syscall behind it — check-macos-coverage.py records that as"
+echo "   the reason)."
+echo ""
+echo "   WHAT THIS LEG CAN CLAIM CHANGED WITH THE MUTATION. A file must be opened"
+echo "   before it can be mapped, and the shim records that open, so the old"
+echo "   predicate — the planted path never appears in the trace — is not available"
+echo "   and could not be met by any mmap-class probe. What is asked instead: the"
+echo "   trace names the path as an \`open\`, and carries no operation that would"
+echo "   account for the bytes it now holds. Both halves are needed. Without (a) the"
+echo "   absence in (b) would also be satisfied by a shim that never loaded."
 SHIM="$repo/zig-out/lib/libsideeye_shim.dylib"
+TRACE_OPS="$repo/zig-out/bin/trace-ops"
 if [ ! -f "$SHIM" ]; then
     bad "L7a: no shim at $SHIM — build it before this leg can check anything"
+elif [ ! -x "$TRACE_OPS" ]; then
+    # `strings` cannot answer the question this leg now asks: it sees the path and
+    # not the operation. Reading the ops means reading the record format, and the
+    # only correct reader is the one built from contract.zig's own decoder.
+    bad "L7a: no trace reader at $TRACE_OPS — build it with: zig build -Dtrace-ops"
 else
     mkdir -p "$L7/shim/state"
+    plant_target "$L7/shim/state" || bad "L7a: could not create the mapping target at the size bypass maps"
     DYLD_INSERT_LIBRARIES="$SHIM" \
     SIDEEYE_STATE_DIR="$L7/shim/state" \
     SIDEEYE_TRACE_PATH="$L7/shim/trace.bin" \
@@ -435,29 +470,38 @@ else
     l7_brc=$?
     [ "$l7_brc" -eq 0 ] || bad "L7a: the bypass probe exited $l7_brc under the shim"
     if [ ! -s "$L7/shim/trace.bin" ]; then
-        bad "L7a: the shim wrote no trace, so its silence about the clone means nothing"
+        bad "L7a: the shim wrote no trace, so its silence about the store means nothing"
     else
         # Read the trace ONCE, check that the read itself worked, and test every
-        # condition against the saved output. Running strings a second time for
+        # condition against the saved output. Running the reader a second time for
         # the absence made a failed read indistinguishable from a real absence:
         # both come back as a non-zero grep, and the leg would have called that
-        # a proven bypass. The control has to be present before the absence is
-        # readable at all — a trace missing everything would "prove" the bypass
-        # for the wrong reason.
-        if LC_ALL=C strings -a "$L7/shim/trace.bin" > "$L7/shim/strings.txt" 2> "$L7/shim/strings.err"; then
-            l7_ctl=$(grep -c 'seen-by-shim\.txt' "$L7/shim/strings.txt")
-            l7_src=$(grep -c 'clone-src\.txt' "$L7/shim/strings.txt")
-            l7_dst=$(grep -c 'clone-dst\.txt' "$L7/shim/strings.txt")
+        # a proven bypass.
+        if "$TRACE_OPS" "$L7/shim/trace.bin" > "$L7/shim/ops.txt" 2> "$L7/shim/ops.err"; then
+            l7_ctl=$(grep -c ' .*seen-by-shim\.txt$' "$L7/shim/ops.txt")
+            l7_src=$(grep -c ' .*store-src\.txt$' "$L7/shim/ops.txt")
+            l7_dst_open=$(grep -c '^open .*store-dst\.txt$' "$L7/shim/ops.txt")
+            l7_dst_write=$(grep -cE '^(write|truncate|fsync) .*store-dst\.txt$' "$L7/shim/ops.txt")
             if [ "$l7_ctl" -eq 0 ] || [ "$l7_src" -eq 0 ]; then
-                bad "L7a: the trace names the control $l7_ctl time(s) and the clone source $l7_src time(s); the shim did not record what it does interpose"
-            elif [ "$l7_dst" -ne 0 ]; then
-                bad "L7a: the shim DOES record the clone destination ($l7_dst mention(s)) — pick another mutation"
+                bad "L7a: the trace names the control $l7_ctl time(s) and the store source $l7_src time(s); the shim did not record what it does interpose"
+            elif [ "$l7_dst_open" -eq 0 ]; then
+                bad "L7a: the trace does not name store-dst.txt as an open — the shim is not live on that path, so its silence about the store proves nothing"
+            elif [ "$l7_dst_write" -ne 0 ]; then
+                bad "L7a: the shim DOES record a write to store-dst.txt ($l7_dst_write mention(s)) — pick another mutation"
+            elif [ "$l7_brc" -ne 0 ]; then
+                # The predicate can be satisfied by a probe that died before the
+                # mutation — a short mapping target takes it down with SIGBUS, and the
+                # trace then carries the open and no write for exactly the wrong reason.
+                # Measured: with a zero-length target the probe exits 138 and every
+                # count above still reads as a pass.
+                bad "L7a: the probe exited $l7_brc, so the absence of a write says nothing about a mutation that did not happen"
             else
-                echo "   ok: the trace names seen-by-shim.txt ($l7_ctl) and clone-src.txt ($l7_src),"
-                echo "       and never names clone-dst.txt"
+                echo "   ok: the trace names seen-by-shim.txt ($l7_ctl) and store-src.txt ($l7_src),"
+                echo "       names store-dst.txt as an open ($l7_dst_open), and carries no"
+                echo "       write, truncate or fsync for it"
             fi
         else
-            bad "L7a: strings could not read the trace, so nothing in it has been checked"
+            bad "L7a: the trace reader failed, so nothing in the trace has been checked"
         fi
     fi
 fi
@@ -612,6 +656,9 @@ l7_i=0
 l7c_blind=0
 while [ "$l7_i" -lt "$REPS" ]; do
     l7_d="$L7/c$l7_i"; mkdir -p "$l7_d/state"
+    # Before the watcher starts: this file's creation is not the mutation and must not
+    # be in the capture. `bypass` requires it to exist at MAP_LEN (#344).
+    plant_target "$l7_d/state" || { bad "L7c run $l7_i: could not create the mapping target"; break; }
     mkfifo "$l7_d/ctl" || { bad "L7c run $l7_i: mkfifo failed — the loop is repeating a directory"; break; }
     "$BIN/watcher" --path "$l7_d/state" --file-events --latency 0 --no-defer \
         < "$l7_d/ctl" > "$l7_d/events.jsonl" 2> "$l7_d/watcher.err" &
@@ -634,6 +681,53 @@ done
 echo "   the veto saw the planted mutation in $((REPS - l7c_blind))/$REPS runs"
 
 echo ""
+echo "-- L7d: what the event is attributable to (#344)"
+echo "   L7c counts an event naming the planted path. This leg asks whether that"
+echo "   event is produced by the MUTATION or by the mapping that carries it, by"
+echo "   running the same probe with --map-only: the target is mapped PROT_READ, so"
+echo "   a store is not merely skipped but impossible, and nothing about the file"
+echo "   changes. If the event still arrives, L7c's count does not depend on the"
+echo "   thing L7c is named for."
+l7d_i=0
+l7d_hits=0
+while [ "$l7d_i" -lt "$REPS" ]; do
+    l7d_d="$L7/d$l7d_i"; mkdir -p "$l7d_d/state"
+    plant_target "$l7d_d/state" || { bad "L7d run $l7d_i: could not create the mapping target"; break; }
+    mkfifo "$l7d_d/ctl" || { bad "L7d run $l7d_i: mkfifo failed"; break; }
+    "$BIN/watcher" --path "$l7d_d/state" --file-events --latency 0 --no-defer \
+        < "$l7d_d/ctl" > "$l7d_d/events.jsonl" 2> "$l7d_d/watcher.err" &
+    l7d_w=$!
+    exec 9> "$l7d_d/ctl"
+    wait_ready "$l7d_d/events.jsonl" "L7d run $l7d_i"
+    "$BIN/bypass" --run "$l7d_d/state" --map-only > "$l7d_d/ops.jsonl" 2> "$l7d_d/probe.err"
+    l7d_prc=$?
+    sleep "$SETTLE"
+    echo stop >&9; exec 9>&-
+    wait "$l7d_w"; l7d_wrc=$?
+    [ "$l7d_prc" -eq 0 ] || bad "L7d run $l7d_i bypass rc=$l7d_prc"
+    [ "$l7d_wrc" -eq 0 ] || bad "L7d run $l7d_i watcher rc=$l7d_wrc"
+    # The file must be untouched: if it changed, the probe stored after all and this
+    # leg would be measuring the wrong thing.
+    if grep -q 'mmap-store-mutation' "$l7d_d/state/store-dst.txt" 2>/dev/null; then
+        bad "L7d run $l7d_i: the target was modified under --map-only"
+    fi
+    if grep -q 'store-dst' "$l7d_d/events.jsonl" 2>/dev/null; then
+        l7d_hits=$((l7d_hits + 1))
+    fi
+    l7d_i=$((l7d_i + 1))
+done
+if [ "$l7d_hits" = "$REPS" ]; then
+    echo "   measured: $l7d_hits/$REPS runs produced an event naming the target with no"
+    echo "   change to it. The event attributes to the mapping, not to the store — so"
+    echo "   L7c's sensitivity count is NOT evidence that the veto saw a mutation."
+elif [ "$l7d_hits" = "0" ]; then
+    echo "   measured: 0/$REPS. The event does depend on the store, which is stronger"
+    echo "   than what was recorded for #344 — update RESULTS.md and ADR 0045, both of"
+    echo "   which state the opposite from a 2026-09-04 measurement."
+else
+    bad "L7d: $l7d_hits/$REPS — neither all nor none, so the attribution is not settled either way"
+fi
+
 echo "-- L7: what these two numbers do and do not settle"
 echo "   Containment holding says a veto on this relation does not fire on a"
 echo "   quiet run of THIS probe in a directory nothing else is using. It is"

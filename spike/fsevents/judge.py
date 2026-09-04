@@ -392,6 +392,17 @@ def v_veto_sensitivity(events, ops, sentinel, planted):
     Both halves are required. Without the second, a planted path the shim
     happens to record would pass this leg while proving nothing: the veto would
     have been shown to see something the account already covers.
+
+    "The account" is the probe's own op list, which is not the same set as the
+    shim's trace, and the two came apart with #344. The mutation is now an mmap
+    store, and a file must be opened before it can be mapped — so the shim DOES
+    record the planted path, as an `open`, while the probe deliberately leaves it
+    out of the ops it declares. What survey.sh's L7a establishes is therefore
+    narrower than it was: not that the shim is silent about the path, but that it
+    is silent about the CHANGE. This leg is unaffected in what it computes — the
+    planted path is still outside the declared account, measured — but a reader
+    reasoning from "outside the account" to "the shim never saw it" would now be
+    wrong, and that inference used to hold.
     """
     require_liveness(events, sentinel)
     if planted["path"] in set(op_paths(ops)):
@@ -520,9 +531,9 @@ def selftest():
     # rule. The pairs matter more than the individual rows: a judge that always
     # accepts dies on the reject rows, one that always rejects dies on the accept
     # rows, and neither can be told apart by looking at one side.
-    planted_ops = "\n".join([_op(0, "open", "open", "/s/clone-src.txt"),
-                              '{"type":"planted","syscall":"clonefile",'
-                              '"path":"/s/clone-dst.txt","rc":0}',
+    planted_ops = "\n".join([_op(0, "open", "open", "/s/store-src.txt"),
+                              '{"type":"planted","syscall":"mmap+msync",'
+                              '"path":"/s/store-dst.txt","rc":0}',
                               _sent()])
 
     case("containment accepts a capture inside the account",
@@ -573,21 +584,21 @@ def selftest():
          "BROKEN")
     case("sensitivity is BROKEN when the sentinel produced no event",
          lambda: run("veto-sensitivity",
-                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated"])]),
-                     "\n".join([_op(0, "open", "open", "/s/clone-src.txt"),
-                                 '{"type":"planted","syscall":"clonefile",'
-                                 '"path":"/s/clone-dst.txt","rc":0}',
+                     _cap([_ev("/s/store-dst.txt", ["ItemModified"])]),
+                     "\n".join([_op(0, "open", "open", "/s/store-src.txt"),
+                                 '{"type":"planted","syscall":"mmap+msync",'
+                                 '"path":"/s/store-dst.txt","rc":0}',
                                  '{"type":"sentinel","path":"/s/never","rc":0}'])),
          "BROKEN")
     case("sensitivity is BROKEN when the capture disowns itself",
          lambda: run("veto-sensitivity",
-                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated", "KernelDropped"])]),
+                     _cap([_ev("/s/store-dst.txt", ["ItemModified", "KernelDropped"])]),
                      planted_ops), "BROKEN")
     case("a planted record without a syscall is BROKEN, not a blind veto",
          lambda: run("veto-sensitivity",
-                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated"])]),
-                     "\n".join([_op(0, "open", "open", "/s/clone-src.txt"),
-                                 '{"type":"planted","path":"/s/clone-dst.txt","rc":0}',
+                     _cap([_ev("/s/store-dst.txt", ["ItemModified"])]),
+                     "\n".join([_op(0, "open", "open", "/s/store-src.txt"),
+                                 '{"type":"planted","path":"/s/store-dst.txt","rc":0}',
                                  _sent()])), "BROKEN")
 
     case("containment is BROKEN when the capture disowns itself",
@@ -596,19 +607,19 @@ def selftest():
                      one_op), "BROKEN")
     case("sensitivity accepts a planted path the capture names",
          lambda: run("veto-sensitivity",
-                     _cap([_ev("/s/clone-src.txt", ["ItemCreated"]),
-                           _ev("/s/clone-dst.txt", ["ItemCreated"], idx=1, eid=2)]),
+                     _cap([_ev("/s/store-src.txt", ["ItemCreated"]),
+                           _ev("/s/store-dst.txt", ["ItemModified"], idx=1, eid=2)]),
                      planted_ops), 0)
     case("sensitivity rejects a planted path the capture is silent about",
          lambda: run("veto-sensitivity",
-                     _cap([_ev("/s/clone-src.txt", ["ItemCreated"])]),
+                     _cap([_ev("/s/store-src.txt", ["ItemCreated"])]),
                      planted_ops), 1)
     case("sensitivity is BROKEN when the planted path is inside the account",
          lambda: run("veto-sensitivity",
-                     _cap([_ev("/s/clone-dst.txt", ["ItemCreated"])]),
-                     "\n".join([_op(0, "open", "open", "/s/clone-dst.txt"),
-                                 '{"type":"planted","syscall":"clonefile",'
-                                 '"path":"/s/clone-dst.txt","rc":0}',
+                     _cap([_ev("/s/store-dst.txt", ["ItemModified"])]),
+                     "\n".join([_op(0, "open", "open", "/s/store-dst.txt"),
+                                 '{"type":"planted","syscall":"mmap+msync",'
+                                 '"path":"/s/store-dst.txt","rc":0}',
                                  _sent()])), "BROKEN")
 
     # --- accept side: an always-reject judge dies here ---

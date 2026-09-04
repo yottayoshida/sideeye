@@ -90,6 +90,25 @@ jobs:
           test -x zig-out/bin/sideeye-testtracecap-world
           test "$sha_before" = "$sha_after"
 
+      # #344's apparatus, same guard: -Dtrace-ops must ADD a trace reader and leave the
+      # shipped engine and shim byte-identical. It is not an engine variant — it is the
+      # thing `spike/fsevents/survey.sh` L7a reads the trace with, since the leg's
+      # predicate became "what does the trace say about this path" rather than "does the
+      # path appear", and `strings` cannot answer the first. The selftest runs here
+      # because the leg it serves is macOS-only and never runs on this runner: without
+      # it the reader would be built on every push and exercised on none.
+      - name: Build the trace reader, shipped binaries unchanged (#344)
+        run: |
+          sha_engine_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          sha_shim_before=$(sha256sum zig-out/lib/libsideeye_shim.so | cut -d' ' -f1)
+          zig build -Dtrace-ops
+          sha_engine_after=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          sha_shim_after=$(sha256sum zig-out/lib/libsideeye_shim.so | cut -d' ' -f1)
+          test -x zig-out/bin/trace-ops
+          test "$sha_engine_before" = "$sha_engine_after"
+          test "$sha_shim_before" = "$sha_shim_after"
+          ./zig-out/bin/trace-ops --selftest
+
       # #377's apparatus, same guard: -Dtest-trace-budget must ADD one engine with a
       # lowered WHOLE-TRACE ceiling and leave the shipped engine byte-identical. One
       # artifact, not two, and it names no read site — the ceiling is a property of the
