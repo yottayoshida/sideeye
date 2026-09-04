@@ -128,6 +128,32 @@ threshold set from it would be satisfied by construction. So:
   manifest records each trial's full launcher argv; `count.py` reads only
   machine fields (never the report's prose accounts — #94 tracks the
   machine-readable evidence level for PASS).
+- **Each report is bound to the sweep that wrote it** (#349). The manifest
+  carries the report's sha256 beside its path, written by `sweep.sh` from the
+  file the trial had just produced, and `count.py check` recomputes it. Before
+  this, `rpath` said only where a report should be: a report could be
+  substituted between generations and every check still passed — measured, with
+  the twenty-eight A-group reports shared by g1 and g2 copied byte-for-byte
+  from one to the other. The rows that share an id across generations are the
+  vulnerable ones, because the part of a re-measurement that stays the same is
+  the part a substitution leaves no trace in. A funnel wall runs no engine and
+  carries `-`.
+
+  **What this binds, and from when.** The hashes for g1 and g2 were computed
+  from the files as they stand today, not by the sweeps that wrote them — those
+  ran before the column existed. So for the two generations already published
+  the column says "not substituted since this was added", and for every
+  generation after it says "this is the file the sweep wrote". The two-merge
+  discipline still carries the other half: the corpus provably predates the
+  numbers.
+
+  **What it does not bind is the manifest itself.** The column ties a report to
+  its manifest row; the row is trusted because it is in the history, not
+  because anything here checks it. Rewriting a report and its recorded hash in
+  the same commit passes this check and is visible where such things are
+  visible — in the diff, and in the order the merges landed. That is the same
+  footing the define digests have always had, and it is why the two-merge rule
+  is the load-bearing part rather than this column.
 - **Funnel walls (B-group)**: a mechanically-selected target that never
   reaches an explore is published as a wall row, outside the engine-rate
   denominator: **W1** install fails in the pinned container; **W2** its
@@ -335,8 +361,10 @@ into `<artifacts_dir>/apparatus.txt` and per trial into
 own directory from `generations.tsv` — g1's is `artifacts/`; the
 manifest also records each trial's define digest, which `count.py check`
 recomputes from the checkout — that is how "the committed defines ran
-verbatim" becomes machine-checked once the artifacts exist. The images are
-pinned by build, not by manifest (the base tags are mutable — the same
+verbatim" becomes machine-checked once the artifacts exist — and the
+report's sha256 beside it, recomputed the same way, which is how "this is
+the file the sweep wrote" becomes machine-checked rather than assumed from
+the path (#349). The images are pinned by build, not by manifest (the base tags are mutable — the same
 honesty note `spike/assisted/Dockerfile` carries), so environmental
 identity with past runs is recorded, never claimed. `count.py check`
 refuses a complete generation whose `apparatus.txt` is absent, or which

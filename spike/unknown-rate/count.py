@@ -32,6 +32,7 @@ generation's expected set does not include them.
 The counting rules are frozen in docs/unknown-rate.md; this file is their
 implementation. Cells with n < 5 print counts only, never a percentage.
 """
+import hashlib
 import json
 import re
 import sys
@@ -48,6 +49,11 @@ EXCLUSION_COLS = ["id", "reason"]
 GEN_STATUSES = ("complete", "unstarted")
 GROUPS = ("A", "B", "control")
 OUTCOME_COLS = ["tool", "disposition", "source"]
+# The sweep's own record, one row per trial. `rsha` (#349) is the report's sha256, which
+# binds the file at `rpath` to the sweep that wrote it rather than to a name; a funnel
+# wall runs no engine and carries `-` there, as it does in `image`, `rpath` and `rc`.
+MANIFEST_COLS = ["id", "group", "tool", "cls", "judge", "image", "argv",
+                 "digest", "rpath", "rc", "rsha"]
 # The four the outcome table prints, plus one for a tool the record carries
 # no FAIL for. A tool marked no-fail-recorded that then produces a FAIL is
 # caught by the conservation check in check(), not by this list.
@@ -171,11 +177,10 @@ def read_manifest(root, gen_dir):
     rows = []
     for line in p.read_text().splitlines():
         f = line.split("\t")
-        if len(f) != 10:
-            die(f"{gen_dir}/manifest.tsv row does not have 10 columns: {line!r}")
-        rows.append(dict(zip(
-            ["id", "group", "tool", "cls", "judge", "image", "argv",
-             "digest", "rpath", "rc"], f)))
+        if len(f) != len(MANIFEST_COLS):
+            die(f"{gen_dir}/manifest.tsv row does not have {len(MANIFEST_COLS)} "
+                f"columns: {line!r}")
+        rows.append(dict(zip(MANIFEST_COLS, f)))
     return rows
 
 def enum_from_schema_doc(root):
@@ -187,7 +192,6 @@ def enum_from_schema_doc(root):
     return set(re.findall(r"`([a-z0-9_]+)`", m.group(1)))
 
 def sha256_file(p):
-    import hashlib
     h = hashlib.sha256()
     h.update(p.read_bytes())
     return h.hexdigest()
@@ -200,7 +204,6 @@ def digest_for(root, defines):
     # thirteen trials hash the same ops/ tree).
     if defines in _digest_cache:
         return _digest_cache[defines]
-    import hashlib
     lines = []
     for spec in defines.split(";"):
         p = root / spec
@@ -230,13 +233,18 @@ def load_reports(root, gen_dir, manifest):
         rp = arts / row["rpath"]
         if not rp.exists():
             die(f"report missing for {row['id']} in {gen_dir}: {row['rpath']}")
-        doc = json.loads(rp.read_text())
+        # Read once as bytes: the hash and the parse want the same file, and reading it
+        # twice would put the two a window apart as well as costing a second pass over
+        # every report on every check.
+        raw = rp.read_bytes()
+        doc = json.loads(raw)
         if doc.get("schema") != "sideeye/report":
             die(f"{row['id']}: not a sideeye/report document")
         out[row["id"]] = {
             "verdict": doc["verdict"],
             "reason": doc.get("unknown_reason", ""),
             "crash_points": doc.get("crash_points"),
+            "sha": hashlib.sha256(raw).hexdigest(),
         }
     return out
 
@@ -998,6 +1006,9 @@ def check(root):
             wall_c = c["launcher"] == "-"
             if wall_m != wall_c:
                 die(f"{gid}/{row['id']}: wall-ness differs between manifest and corpus")
+            if wall_m and row["rsha"] != "-":
+                die(f"{gid}/{row['id']}: a funnel wall row carries a report hash "
+                    f"({row['rsha']!r}) — a wall runs no engine and produces no report")
             if wall_c and row["argv"] != f"wall:{c['args']}":
                 die(f"{gid}/{row['id']}: wall reason {row['argv']!r} differs from corpus {c['args']!r}")
             if not wall_c:
@@ -1014,6 +1025,19 @@ def check(root):
         reports = load_reports(root, gen["dir"], manifest)
         for row in manifest:
             r = reports[row["id"]]
+            # The report is bound to the sweep by its bytes (#349). Without this the
+            # manifest's `rpath` says only WHERE a report should be, never that the file
+            # there is the one this sweep produced — measured before the fix: the
+            # twenty-eight A-group reports g1 and g2 share, copied byte-for-byte from one
+            # generation into the other, and every check still said OK. Shared rows are
+            # the vulnerable ones: the part of a re-measurement that stays the same is the
+            # part a substitution leaves no trace in. The `digest` column beside it hashes
+            # the DEFINE, which says the recipe was the committed one and nothing about
+            # the result.
+            if "wall" not in r and row["rsha"] != r["sha"]:
+                die(f"{gid}/{row['id']}: the report at {row['rpath']} hashes {r['sha']}, "
+                    f"and the manifest recorded {row['rsha']} — this file is not the one "
+                    f"the sweep wrote")
             if "wall" not in r and r["verdict"] == "UNKNOWN" and r["reason"] not in enum:
                 die(f"{gid}/{row['id']}: unknown_reason {r['reason']!r} not in the documented closed set")
 

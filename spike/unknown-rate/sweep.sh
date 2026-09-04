@@ -18,10 +18,13 @@
 #
 # Manifest columns (tab-separated, <artifacts_dir>/manifest.tsv):
 #   trial_id group tool class judge image_id launcher_argv define_digest
-#   report_path launcher_rc
+#   report_path launcher_rc report_sha256
 # define_digest = sha256 over the sorted "sha256  path" lines of every file
 # the corpus row's `defines` column names, computed from the CLEAN worktree
 # this sweep ran (count.py recomputes it from the checkout and must agree).
+# report_sha256 = sha256 of the report this trial produced, so the file at
+# report_path is bound to the sweep that wrote it and not merely to a name
+# (#349). A funnel wall runs no engine and carries `-`.
 set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
@@ -192,7 +195,7 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
         # Funnel wall: no engine run; the row still reaches the manifest so
         # the funnel table's denominator is asserted, not implied.
         d=$(digest_for "$defines") || exit 2
-        printf '%s\t%s\t%s\t%s\t%s\t-\twall:%s\t%s\t-\t-\n' \
+        printf '%s\t%s\t%s\t%s\t%s\t-\twall:%s\t%s\t-\t-\t-\n' \
             "$id" "$group" "$tool" "$class" "$judge" "$args" "$d" >> "$manifest"
         continue
     fi
@@ -226,9 +229,15 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
         exit 2
     fi
     d=$(digest_for "$defines") || exit 2
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    # Hashed here, from the file the trial just produced, which is what makes the column
+    # mean "this sweep wrote it" rather than "a file of this name exists" (#349). The
+    # existence check above has already run, and `sha256sum` is used three times before
+    # this line, so neither a missing file nor a missing tool can reach it — a guard for
+    # either would be the unreachable kind this change deleted from `count.py`.
+    rsha=$(sha256sum "$ARTS/$artdir/$rpath" | cut -d' ' -f1)
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
         "$id" "$group" "$tool" "$class" "$judge" "$imgid" "$launcher $args" \
-        "$d" "$artdir/$rpath" "$lrc" >> "$manifest"
+        "$d" "$artdir/$rpath" "$lrc" "$rsha" >> "$manifest"
 done < "$corpus_stripped"
 rm -f "$corpus_stripped"
 

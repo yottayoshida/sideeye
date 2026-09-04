@@ -1,3 +1,3 @@
-fx-toyA	A	toyA	c-cli	l0c	img1	fake.sh toyA	ff19a12a242b5f61f984fe2a62ef140ec3224d0ea59e52707eadf3b7b9cb0933	t1/report.json	0
-fx-toyB	B	toyB	python-cli	l0	img1	fake.sh toyB	df379757beff0ee9b6871b17611b83323ba8d2ef9a5fa65e5f20978a42ce7132	t2/report.json	2
-fx-toyC	B	toyC	perl-cli	-	-	wall:W2	73f57cadda69963f631e8b82dda62de4b731b4b3b3b3e098581cdd96cf5f2f7e	-	-
+fx-toyA	A	toyA	c-cli	l0c	img1	fake.sh toyA	ff19a12a242b5f61f984fe2a62ef140ec3224d0ea59e52707eadf3b7b9cb0933	t1/report.json	0	1924fd7885017b818ffc4254848e7e2e3c270e750497d34612b3d12423e94eb5
+fx-toyB	B	toyB	python-cli	l0	img1	fake.sh toyB	df379757beff0ee9b6871b17611b83323ba8d2ef9a5fa65e5f20978a42ce7132	t2/report.json	2	6132971f64f50e4a72f511d4ca23834a6075e9f243328fc3cbab6b6ce051d39f
+fx-toyC	B	toyC	perl-cli	-	-	wall:W2	73f57cadda69963f631e8b82dda62de4b731b4b3b3b3e098581cdd96cf5f2f7e	-	-	-
