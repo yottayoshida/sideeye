@@ -65,6 +65,34 @@ def die(msg):
     print(f"count.py: {msg}", file=sys.stderr)
     sys.exit(1)
 
+def assert_one_marker_pair(text, subject):
+    """At most one of each results marker, in order — the rule the page and the
+    recomputation are both held to (#444).
+
+    The docstring's promise is about "the block between the begin/end markers", and a
+    naive slice reads only the first pair: content between a second pair passes as
+    generated while nothing checks it. The byte-compare cannot see the injection either,
+    because published and computed shorten at the same point.
+
+    Zero of each is legal here — the pre-data page carries none — so the callers that
+    need the pair say so themselves: `check` requires it once anything is measured, and
+    `emit` appends both markers before it calls this.
+
+    Counted as substrings of the whole text, so neither prose nor a table cell can spell
+    a marker: fail-closed, and wider than render-cookbook.py's whole-line match.
+    """
+    for mk, name, why in (
+            (MARK_BEGIN, "begin",
+             "a second begin makes the compared slice start where nobody edits"),
+            (MARK_END, "end",
+             "content after a second end reads as generated while nothing checks it")):
+        n = text.count(mk)
+        if n > 1:
+            die(f"{subject} carries {n} {name} markers, wanted exactly one — {why}")
+    if MARK_BEGIN in text and MARK_END in text \
+            and text.index(MARK_BEGIN) > text.index(MARK_END):
+        die(f"{subject}'s results end marker precedes its begin marker")
+
 def pct_or_counts(k, n):
     if n == 0:
         return f"{k}/{n}"
@@ -773,7 +801,14 @@ def emit(root):
             continue
         L.extend(emit_generation(gen, trials, walls, setup_errors, outcome, exclusions))
     L.append(MARK_END)
-    return "\n".join(L) + "\n"
+    out = "\n".join(L) + "\n"
+    # Held where the block is built, so both modes get the rule (the same reasoning
+    # read_exclusions gives for its shape checks). The pair is appended three lines up,
+    # so the only way it is not well formed here is a corpus or ledger cell carrying the
+    # marker text into the block — the route read_exclusions covers for MARK_END in one
+    # ledger column and for no other cell.
+    assert_one_marker_pair(out, "recomputation")
+    return out
 
 def check_ledgers(root, corpus):
     """The three cohort ledgers partition the committed cohort defines."""
@@ -842,6 +877,14 @@ def check(root):
     exclusions = read_exclusions(root)
     docs = (root / "docs/unknown-rate.md").read_text()
     block = emit(root)
+    # After the recomputation, deliberately, though the page is already in hand: a cell
+    # that poisons the block poisons the published page too (the page is pasted from
+    # `emit`), so checking the page first would take every such tree on the page's
+    # message and leave emit's own guard with nothing that reaches it. Ordering decides
+    # which guard a fixture proves. Still before the pre-data branch, so a duplicated
+    # marker dies on a tree with nothing measured too, and before the row-count and
+    # drift guards, so it is named as a duplication rather than as their symptom.
+    assert_one_marker_pair(docs, "docs/unknown-rate.md")
 
     # The B-group rows must be exactly the committed mechanical selection,
     # order included — "no hand touched the list" is checked, not narrated.
@@ -1051,6 +1094,9 @@ def check(root):
 
     if MARK_BEGIN not in docs or MARK_END not in docs:
         die("docs/unknown-rate.md lacks the results markers")
+    # Cardinality and order were asserted at the top of check(), before the pre-data
+    # branch; together with the existence check above, the measured page carries
+    # exactly one pair, in order, by this line.
     published = docs.split(MARK_BEGIN)[1].split(MARK_END)[0]
     # Row-count first, on the PUBLISHED side: after the byte-compare passes
     # this could never fire (the recomputation always emits one row per

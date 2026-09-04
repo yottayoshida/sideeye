@@ -1,0 +1,10 @@
+# Apparatus failures that could not be fixed (fixture). Same shape as the real
+# spike/unknown-rate/exclusions.tsv; see that file for the rules count.py holds.
+#
+# The reason carries the results block's BEGIN marker. The reason guard at
+# read_exclusions covers MARK_END only, so this reaches emit(), and the byte
+# compare cannot see it — published and computed shorten at the same injected
+# point. Only emit's own marker count refuses this block (#444, emit side).
+#
+# id	reason
+fx-toyD	the pinned image has no perl <!-- unknown-rate:results:begin --> and anything at all after this point
