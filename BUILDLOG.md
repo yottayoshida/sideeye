@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 — Two readers, two error sets, and one measurement that went through the wrong build (#376)
+
+`SnapshotError` typed eight failures for readers that can raise two and six. Splitting it
+is mechanical; the interesting part was measuring the defect.
+
+The first attempt added a trace-only member to `SnapshotError` and ran `zig build test`.
+**No error.** The switches that were supposed to demand an arm live in `src/main.zig`, and
+`zig build test` compiles `src/engine.zig` and `src/mcp.zig` as test roots — it never
+builds the executable. `zig build` shows it immediately: `main.zig:716: switch must handle
+all possibilities`, and `:791` once 716 is filled. The same shape as #344's `link_libc`
+three days ago: a check that passes because the path it ran on does not reach the thing
+being changed.
+
+The scope shrank in review before any of this. The plan had also wanted the trace read to
+say *which* failure it hit — and `PathTooLong` cannot happen. All three call sites format a
+longer sibling path (`stdout-record.txt` beside `trace-record.bin`) into a buffer of the
+same `contract.max_path`, so the one-byte window where the trace path fits and its
+formatting does not is closed before the read. A message for it would have been dead code
+with a falsification check nothing could run.
+
+What is left is one-directional and the type is written to say so: a trace-only member can
+no longer reach the snapshot's switches, and nothing forces the trace side to say anything
+about it, because with one reachable failure there is nothing to switch on.
+
+
 ## 2026-09-04 — The root vets keep their address and gain a relation (#359)
 
 #359 asked whether the root denylists should move out of `engine.zig`, and named two

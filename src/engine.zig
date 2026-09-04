@@ -1080,6 +1080,38 @@ test "a Difference that escapes its snapshot must own its bytes" {
 /// does not satisfy its precondition (#262).
 pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge, TreeTooLarge };
 
+/// What reading one whole file can answer, which is a subset of what walking a tree can
+/// (#376). `readWhole` is the leaf both readers share; it opens, checks the kind, and
+/// reads to EOF, so depth, classification, path length and the tree ceiling are not its
+/// to raise. Widening this into `SnapshotError` at the walk's call site costs nothing —
+/// Zig accepts the narrower set where the wider one is declared.
+pub const ReadWholeError = error{ OutOfMemory, ReadFailed, FileTooLarge };
+
+/// What reading a trace can answer (#376).
+///
+/// Every failure of the underlying read is caught inside `readTraceCappedInner` — the cap
+/// breach becomes `too_large` on the returned `TraceInfo` and everything else becomes an
+/// empty one, which the caller reads as `no_shim_marker`. What escapes is only what this
+/// function does itself: formatting the path (`PathTooLong`) and allocating into the
+/// arena (`OutOfMemory`).
+///
+/// The point of naming it is `main.zig`'s two switches over `SnapshotError`, which are
+/// exhaustive on purpose so that an error member added later cannot silently take a
+/// neighbour's reason. While the trace reader declared `SnapshotError`, a member added
+/// for the trace forced an arm in `snapshotDetail`, whose every sentence describes the
+/// state tree — measured before this change: the compiler demanded an arm at
+/// `main.zig:716`, and at `:791` once that one was filled. `docs/report-schema.md` says
+/// `message` carries "what was observed"; an arm written there for a trace failure
+/// carries what was not.
+///
+/// **What this does not buy:** nothing switches exhaustively over this set. The one
+/// reachable member is `OutOfMemory` (`PathTooLong` cannot be reached from any call site
+/// — every one of them formats a longer sibling path into an equally sized buffer first),
+/// so `readTraceOrRefuse` stays a single `catch`. The guarantee is one-directional: a
+/// trace-only member cannot reach the snapshot's switches, and nothing forces the trace
+/// side to say anything about it.
+pub const TraceReadError = error{ OutOfMemory, PathTooLong };
+
 /// How deep the snapshot walk descends before refusing — **and how deep `deleteTreeAt`
 /// descends before refusing to delete**, which is the reason to think twice before tuning
 /// it: raising this widens what `restore` will empty, not only what the snapshot will
@@ -1262,7 +1294,7 @@ fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u
 /// lseek(SEEK_END) at the moment the cap breaks (null if even that fails): the
 /// refusal that names the file wants to name its size, and the read loop stopped
 /// before it could know.
-fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64) SnapshotError![]const u8 {
+fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64) ReadWholeError![]const u8 {
     const fd = posix.open(path, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return error.ReadFailed;
     defer _ = posix.close(fd);
@@ -2545,7 +2577,7 @@ pub fn unboundedBudget(child: Allocator) TraceBudget {
     return .{ .child = child, .limit = std.math.maxInt(usize) };
 }
 
-pub fn readTrace(budget: *TraceBudget, path: []const u8) SnapshotError!TraceInfo {
+pub fn readTrace(budget: *TraceBudget, path: []const u8) TraceReadError!TraceInfo {
     return readTraceCapped(budget, path, max_trace_bytes);
 }
 
@@ -2561,7 +2593,7 @@ pub fn readTrace(budget: *TraceBudget, path: []const u8) SnapshotError!TraceInfo
 /// directly would have bypassed the ceiling in silence, while the ADR claimed every
 /// `TraceInfo` was built on a budget. Review caught the gap between the claim and the
 /// type. `unboundedBudget` is how a caller opts out, visibly.
-pub fn readTraceCapped(budget: *TraceBudget, path: []const u8, max: usize) SnapshotError!TraceInfo {
+pub fn readTraceCapped(budget: *TraceBudget, path: []const u8, max: usize) TraceReadError!TraceInfo {
     // **A ceiling refusal is an observation, not an error**, and this wrapper is what
     // makes it one. The read below reaches the ceiling by two different doors: during the
     // raw read, where `readWhole`'s failure collapses into an empty TraceInfo returned
@@ -2595,7 +2627,7 @@ pub fn readTraceCapped(budget: *TraceBudget, path: []const u8, max: usize) Snaps
     return info;
 }
 
-fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) SnapshotError!TraceInfo {
+fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) TraceReadError!TraceInfo {
     var info: TraceInfo = .{
         .arena = std.heap.ArenaAllocator.init(budget.allocator()),
         .ops = .empty,
@@ -2622,7 +2654,12 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Snap
             info.too_large_size = too_large_size;
             return info;
         },
-        else => return info,
+        // Exhaustive now that `readWhole` declares its own set (#376): every other
+        // failure of the read collapses into an empty `TraceInfo`, which the caller
+        // reads as `no_shim_marker`, and that is the honest observation for both of
+        // them. Written out rather than left as `else` so a member added to
+        // `ReadWholeError` has to be given an answer here instead of inheriting one.
+        error.OutOfMemory, error.ReadFailed => return info,
     };
     if (bytes.len == 0) return info;
 
