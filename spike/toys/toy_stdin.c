@@ -3,7 +3,8 @@
  * One binary, three roles (`setup`, `op`, `check`), so a single define drives every
  * spawn wrapper a define's commands reach — `runChild` (setup, checker),
  * `runChildCapture` (the recording run), `runChildCaptureWorld` (each explored world)
- * and `runChildCaptureAll` (the falsification probe). Each role FIRST drains fd 0 to
+ * and `runChildCapture` again with `stderr_too` (the falsification probe, which had a
+ * wrapper of its own until #469 folded it into `Capture`). Each role FIRST drains fd 0 to
  * EOF and only then does its work: under an inherited terminal or an open pipe the
  * read blocks forever, so a wrapper that still inherits shows up as a hang, not as a
  * wrong answer. Single process, no fork (a shell one-liner would be a child the boundary

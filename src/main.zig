@@ -1267,13 +1267,20 @@ fn setupError(detail: []const u8) noreturn {
 /// which in a design where every explored world dies by signal becomes a confident
 /// `kill_did_not_land`. The other two failures keep `doing`, which says what was starting.
 ///
-/// `phase` decides the verdict, not just the wording. Exit 3 means the define did not run
-/// (DESIGN's exit-code table: "configuration or environment problem **before exploration
-/// began**"), so a wait that fails while worlds are being explored has to be UNKNOWN — the
-/// distinction `recording_run_failed` and `baseline_run_failed` already draw for the same
-/// phase. A first version of this fix sent every site to `setupError` and would have
-/// published `verdict: "SETUP_ERROR"` for a mid-exploration failure: honest about the
-/// failure, wrong about when it happened, and a silent change to the serialized shape.
+/// `phase` decides the verdict for `WaitFailed`, not just its wording. A child *ran* and
+/// its status was never read, which is a statement about the target's execution, so while
+/// worlds are being explored it has to be UNKNOWN — the distinction `recording_run_failed`
+/// and `baseline_run_failed` already draw for the same phase. A first version of #264's
+/// fix sent every call site to `setupError` and would have published
+/// `verdict: "SETUP_ERROR"` for a mid-exploration wait failure: honest about the failure,
+/// wrong about what it was about, and a silent change to the serialized shape.
+///
+/// **The other members are phase-independent and that is deliberate**, which DESIGN's
+/// exit-code table now says: `ForkFailed`, `OutOfMemory`, `StdinUnavailable` and
+/// `CaptureUnavailable` are all "the engine needed something and could not get it", with
+/// no child whose execution could be described. That row used to read "before exploration
+/// began" and the first three already contradicted it; #469 made the class reachable
+/// (2026-09-04, owner decision) and the row was corrected rather than the code.
 ///
 /// How far the run has got. Three refusals share this one vocabulary rather than
 /// growing a second, and all ask the same question — did any of the define run before
@@ -1322,6 +1329,35 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
     if (e == error.StdinUnavailable) {
         var buf: [512]u8 = undefined;
         setupError(std.fmt.bufPrint(&buf, "{s}: /dev/null could not be opened, so the command could not be started with its stdin at end-of-file", .{doing}) catch doing);
+    }
+    // The child's stdout capture, refused in the parent before any fork (#469). Same
+    // phase-independent SETUP_ERROR as the stdin arm above and for the same reason: the
+    // environment, not the target, is what could not be arranged, and no child ran whose
+    // exit status could be read as anything.
+    //
+    // **This arm is not enforced by the compiler.** The chain above is a run of `if`s
+    // ending in a bare `setupError(doing)`, so a member of `SpawnError` with no arm here
+    // is not a build error — it silently becomes "could not run --operation" with no
+    // reason. Adding a member to that error set means adding a line here, and the only
+    // thing that says so is this paragraph and the acceptance leg that reads the text.
+    //
+    // The message names the path because the operator's remedy is about that path — an
+    // ordinary run has nothing at it, so anything that stopped the open is either
+    // something else's file or a work directory that is not theirs alone.
+    //
+    // **Phase-independent, and unlike its two neighbours this one is reachable during
+    // exploration** — a blocked capture path is the threat the work directory actually
+    // has, which is why #469 exists. Weighed against making it UNKNOWN there, and the
+    // owner chose this (2026-09-04): the frozen `unknown_reason` set has no member for
+    // "the parent could not arrange a world's capture", so the UNKNOWN form would have
+    // had to borrow a name — `recording_run_failed` at one site, `checker_not_falsified`
+    // at another, and nothing honest at the world loop — which is the misattribution
+    // this change removes, reintroduced one layer down. DESIGN's exit-code table said
+    // "before exploration began" and now says what the code does; it was already false
+    // for `ForkFailed` and `OutOfMemory` below, which nothing had made reachable.
+    if (e == error.CaptureUnavailable) {
+        var buf: [512]u8 = undefined;
+        setupError(std.fmt.bufPrint(&buf, "{s}: the command's stdout capture in the work directory could not be opened. The engine refuses a capture path that is a symlink, or that already holds a file or directory the engine did not just create — check --work, and what is at the capture path inside it", .{doing}) catch doing);
     }
     // Fork and allocation failures are environment problems in either phase, and the
     // caller's wording already says which step was starting.
@@ -1373,7 +1409,11 @@ const Appended = struct { text: []const u8, end: u64 };
 fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usize) ?Appended {
     var buf: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
-    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    // `O_NOFOLLOW` for the reason `observeCapture` has it (#469): the one production
+    // caller reads the fs_usage capture out of the work directory, a file `spawnSidecar`
+    // created refusing links, and reading it back *through* one would let somebody else
+    // choose the bytes that decide whether the observer is covering the path.
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
     // The `lseek` below already refuses a FIFO with ESPIPE, and that is not the reason
@@ -1405,17 +1445,22 @@ fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usiz
 ///
 /// Everything that can fail about the observer fails *here*, before the first child of
 /// the measured run exists: the credential check, the launch, and the proof that the
-/// capture is live. That placement is not a preference — **DESIGN's exit-code table**
-/// gives exit 3 as "configuration or environment problem before exploration began", and
-/// `docs/contract-freeze.md` closes the `unknown_reason` set until 2.0, so a new way to
-/// fail that arrives after the recording has begun would have no honest code to leave
-/// under. (An earlier revision of this paragraph attributed the exit-3 phrasing to the
-/// freeze page too; surface 3 fixes which code a verdict carries and says nothing about
-/// phase. Caught by a reader, #406 follow-up.)
+/// capture is live. That placement is not a preference — `docs/contract-freeze.md`
+/// closes the `unknown_reason` set until 2.0, so a new way to fail that arrives after
+/// the recording has begun has no honest name to refuse under, and refusing here means
+/// it never needs one. (Two earlier revisions of this paragraph misattributed its
+/// warrant: first to the freeze page's surface 3, which fixes which code a verdict
+/// carries and says nothing about phase — caught by a reader, #406 follow-up — and then
+/// to DESIGN's exit-code table reading "before exploration began", which #469 corrected
+/// after finding the code had never matched it. The reason that survives both is the
+/// frozen reason set, which is about naming rather than about phase.)
 fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: []const u8, sentinel: []const u8, limit_s: u32) c_int {
     // `sudo -n`: never prompt. A prompt here would block a run nobody is watching, and
     // the caller who *is* watching gets a message naming the one command to run first.
-    const probe = posix.runChildCapture(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/true" }, &.{}, "/dev/null", null) catch |e|
+    // Not `exclusive`: `/dev/null` already exists, so `O_CREAT|O_EXCL` there refuses
+    // every time. This capture is a discard, not evidence — there is nothing in the
+    // work directory for a planted file to stand in front of.
+    const probe = posix.runChildCapture(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/true" }, &.{}, .{ .path = "/dev/null" }, null) catch |e|
         spawnFailure(e, .before_exploration, "could not run sudo to start fs_usage");
     switch (probe) {
         .exited => |c| if (c != 0) setupError("fs_usage needs root and sudo has no cached credentials; run `sudo -v` in this terminal first, then re-run. The credential cache is per-terminal, so a `sudo -v` elsewhere does not reach this process"),
@@ -1571,7 +1616,7 @@ fn runOperationObserved(
             list.append(arena, joined) catch setupError("out of memory");
         }
         for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
-        return posix.runChildCapture(gpa, list.items, &.{}, stdout_path, cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
+        return posix.runChildCapture(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
     }
     return posix.runChildCapture(gpa, op_argv, &.{
         .{ "TOY_STATE", state_abs },
@@ -1581,7 +1626,22 @@ fn runOperationObserved(
         // Pinned empty: see the oracle-path pairs above.
         .{ contract.env.seq_base, "" },
         .{ preload_var, shim },
-    }, stdout_path, cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+    }, recordingCapture(stdout_path), cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+}
+
+/// The capture an observed run writes its evidence to, on both of the two branches
+/// above and for both of the two paths this function is called with
+/// (`<work>/stdout-record.txt`, and `preflight --twice`'s `stdout-record-2.txt`).
+///
+/// `exclusive` because the caller unlinks the path immediately before this (#469):
+/// `O_NOFOLLOW` refuses a *symlink* at the name and does nothing about a **hard link**,
+/// which is the same file rather than a pointer to one — so without `O_EXCL` a work
+/// directory someone else reached can still turn this capture into an arbitrary-file
+/// truncation. Free here precisely because of that unlink, and its reach is bounded by
+/// the same fact: what it covers is the window between the unlink and the open, and the
+/// case where the unlink silently failed.
+fn recordingCapture(stdout_path: []const u8) posix.Capture {
+    return .{ .path = stdout_path, .exclusive = true };
 }
 
 /// Zig 0.16 passes the process's arguments and environment in; `std.process.argsAlloc`
@@ -2755,7 +2815,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // file itself cannot be read, and until #363's adjudication its message
         // claimed the other condition.
         const text = if (args.oracle_fs_usage)
-            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{}) orelse
+            readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{ .no_follow = true }) orelse
                 unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read", .environment)
         else
             readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
@@ -3120,17 +3180,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var fal_buf: [contract.max_path]u8 = undefined;
         const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError("path too long");
         removeFile(fal_out);
-        const probe = posix.runChildCaptureAll(gpa, cargv, &.{
+        const probe = posix.runChildCapture(gpa, cargv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
-        }, fal_out, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
+            // `stderr_too` is what `runChildCaptureAll` used to be a wrapper for; the
+            // reason it exists is on the field. `exclusive` for the same reason as the
+            // recording run's, and free for the same reason — `removeFile` is one line
+            // up.
+        }, .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
         // and the gate's output is evidence in the refusal case too. Blank lines are
         // dropped — an empty line carries nothing harvestable and a bare marker is
         // noise. A capture that cannot be read back is said out loud rather than
         // silently swallowed.
-        if (readFileAllocCapped(arena, fal_out, 1024 * 1024, .{})) |fal_text| {
+        if (readFileAllocCapped(arena, fal_out, 1024 * 1024, .{ .no_follow = true })) |fal_text| {
             var lines = std.mem.splitScalar(u8, fal_text, '\n');
             while (lines.next()) |line| {
                 if (line.len == 0) continue;
@@ -3142,15 +3206,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         switch (probe) {
             .exited => |code| {
-                // 126 is the capture stub's own exit code for a capture it could not
-                // open (runChildImpl). Read as "the checker went red", it let
-                // /bin/true pass the gate whenever the capture path was blocked — a
-                // directory squatting on the default /tmp work dir did it (R1 of
-                // #134). The MCP adapter already discriminates this same stub exit;
-                // a checker that genuinely exits 126 is indistinguishable and gets
-                // the fail-closed reading.
+                // 126 is the fork stub's own exit code. It used to carry a capture the
+                // child could not open — read as "the checker went red", that let
+                // /bin/true pass the gate whenever the capture path was blocked, and a
+                // directory squatting on the default /tmp work dir did it (R1 of #134).
+                // **That cause is gone**: the capture is opened by the parent since
+                // #469 and a refusal arrives as `error.CaptureUnavailable`, above this
+                // switch, before any child exists. What still reaches 126 is a `dup2`
+                // that failed in the child — and a checker that genuinely exits 126,
+                // which is indistinguishable from it and gets the fail-closed reading.
                 if (code == 126)
-                    unknown(.checker_not_falsified, "the checker probe exited 126: either the capture stub could not open its stdout capture in the work directory, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
+                    unknown(.checker_not_falsified, "the checker probe exited 126: either the fork stub could not put the already-opened capture on the child's stdout, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
                 if (code == 0)
                     unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", .fix_define);
             },
@@ -3223,7 +3289,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Pinned empty: see the recording pairs.
             .{ contract.env.seq_base, "" },
             .{ preload_var, shim },
-        }, world_stdout, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null, args.cwd) catch |e| switch (e) {
+            // `exclusive` for the reason on `recordingCapture`, and free for the same
+            // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
+            // of this loop, so a re-run over one work directory never meets its own
+            // leftover here.
+        }, .{ .path = world_stdout, .exclusive = true }, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null, args.cwd) catch |e| switch (e) {
             // Received here, at the one site that passes a budget, so the refusal can
             // name the limit that fired — the rule #323 and #351 shipped under:
             // a failure with a limit reports the limit, because the operator can move
@@ -3244,7 +3314,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 ) catch unreachable;
                 unknown(.child_timed_out, detail, .raise_world_timeout);
             },
-            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable => |se| spawnFailure(se, .exploring, "could not run --operation"),
+            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
 
         var wtrace = readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
@@ -4909,7 +4979,18 @@ const CaptureObservation = struct {
 fn observeCapture(path: []const u8, needle: ?[]const u8) error{Unreadable}!CaptureObservation {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return error.Unreadable;
-    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    // `O_NOFOLLOW` for the reason the write side has it (#469): the same file, the same
+    // threat, and until this line the two answered a planted link differently. The
+    // capture is written refusing to follow a symlink and was read *through* one — so
+    // whoever could reach the work directory chose the bytes the marker scan and the
+    // capture fingerprint are computed from, which is a wrong verdict rather than a
+    // failed run.
+    //
+    // **Symlinks only.** A hard link swapped in between the write and this read is the
+    // same inode by definition and is not detectable here; closing that needs the read
+    // to use the descriptor the write already held, which is a larger change than this
+    // one flag.
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (fd < 0) return error.Unreadable;
     defer _ = posix.close(fd);
     // Same reasoning as `readFileFrom`: the `lseek` refuses a FIFO today, but what this
@@ -5047,6 +5128,54 @@ test "the readers ask what the descriptor is before reading it, at every call si
     _ = posix.rmdir(base.ptr);
 }
 
+test "the work-directory readers refuse a symlink; the operator-named ones still follow one (#469)" {
+    // Both directions in one test, because the flag is a *split* and only one half of it
+    // is a guard. A build that set `no_follow` everywhere would pass the first pair and
+    // fail the second, which is the regression that matters here: `--config` and a saved
+    // case are paths the operator chose, and keeping either behind a link is ordinary.
+    var pb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-nofollow-read-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base.ptr, 0o755);
+    var tb: [200]u8 = undefined;
+    const target_z = std.fmt.bufPrintZ(&tb, "{s}/real", .{base}) catch unreachable;
+    var lb: [200]u8 = undefined;
+    const link_z = std.fmt.bufPrintZ(&lb, "{s}/link", .{base}) catch unreachable;
+    defer {
+        _ = posix.unlink(link_z.ptr);
+        _ = posix.unlink(target_z.ptr);
+        _ = posix.rmdir(base.ptr);
+    }
+
+    const fd = posix.open(target_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    try std.testing.expect(posix.write(fd, "contents", 8) == 8);
+    _ = posix.close(fd);
+    try std.testing.expect(posix.symlink(target_z.ptr, link_z.ptr) == 0);
+
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    const link = std.mem.span(link_z.ptr);
+    const real = std.mem.span(target_z.ptr);
+
+    // The control first: without the flag the link is followed and the bytes arrive, so
+    // the refusal below is about the flag and not about this path or these contents.
+    try std.testing.expectEqualStrings("contents", readFileAllocCapped(arena, link, 4096, .{}).?);
+    try std.testing.expect(readFileAllocCapped(arena, link, 4096, .{ .no_follow = true }) == null);
+
+    // And the flag refuses the link, not reading as such: the same call on the file the
+    // link pointed at still succeeds. Without this leg a build whose `no_follow` open
+    // always failed would satisfy the assertion above.
+    try std.testing.expectEqualStrings("contents", readFileAllocCapped(arena, real, 4096, .{ .no_follow = true }).?);
+
+    // `readFileAlloc` is the oracle capture's reader and sets the flag for its one
+    // caller; asserted here rather than trusted, because it reaches the flag through a
+    // wrapper and a default rather than through an argument at the call site.
+    try std.testing.expect(readFileAlloc(arena, link) == null);
+    try std.testing.expectEqualStrings("contents", readFileAlloc(arena, real).?);
+}
+
 test "observeCapture finds a straddling marker and fingerprints the same bytes" {
     // posix directly, like the engine itself: the std file API wants an `Io` instance
     // threaded through every call, and this test needs one file, not a runtime.
@@ -5149,6 +5278,20 @@ const ReadMode = struct {
     /// Bound the read in wall-clock time as well as in bytes: keep asking while a peer
     /// might still arrive, and refuse at the deadline rather than waiting forever.
     bounded: bool = false,
+    /// Refuse a symlink at the final component (#469).
+    ///
+    /// Off by default because **who names the path decides this**, and it is the same
+    /// split the two flags above already draw. `--config` and a saved case are named by
+    /// the operator, who may legitimately keep either behind a link; `/etc/ld.so.preload`
+    /// is the system's. Set it for the work-directory artifacts the engine produced and
+    /// reads back, where a link at the name can only be somebody else's substitution and
+    /// the bytes decide a verdict.
+    ///
+    /// `<work>/oracle.txt` is the reason this exists rather than staying a per-caller
+    /// argument: **two readers open that one file** — `readFileFrom` at the fs_usage
+    /// handshake and this function at the oracle's account — and #469 gave the flag to
+    /// one of them. The same file answered two ways is the shape that issue is about.
+    no_follow: bool = false,
 };
 
 /// `readFileAlloc` with a ceiling: a caller-named file is input, and reading until EOF
@@ -5201,10 +5344,11 @@ fn readFileAllocCapped(
     // where a blocking read would sit somewhere the deadline cannot see. Plain readers
     // keep the blocking open they had — the flag is not free, and a non-blocking read of
     // a pipe whose writer has not written yet fails where waiting would have succeeded.
-    const flags: c_int = if (mode.require_regular or mode.bounded)
+    const base: c_int = if (mode.require_regular or mode.bounded)
         posix.O_RDONLY | posix.O_NONBLOCK
     else
         posix.O_RDONLY;
+    const flags: c_int = if (mode.no_follow) base | posix.O_NOFOLLOW else base;
     const fd = posix.open(z.ptr, flags, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
@@ -5461,7 +5605,11 @@ fn readFileAlloc(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     // A read error is not end of file (the shared loop returns null for it): treating
     // them alike once turned a truncated oracle file into a complete one, and the
     // comparison that followed was against however much happened to arrive.
-    return readFileAllocCapped(arena, path, std.math.maxInt(usize), .{});
+    //
+    // `no_follow` here rather than at the call site because there is exactly one caller
+    // and it reads `<work>/oracle.txt` (#469). A second caller reading an operator-named
+    // path would have to take the mode as an argument instead.
+    return readFileAllocCapped(arena, path, std.math.maxInt(usize), .{ .no_follow = true });
 }
 
 /// A define command as a bare JSON value, mirroring `config.Command.jsonParse`:

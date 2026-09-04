@@ -290,7 +290,7 @@ This is where §4.5 stops being prose:
 | 0 | **PASS** — no violation found within the declared exploration |
 | 1 | **FAIL** — reproducible violation found |
 | 2 | **UNKNOWN** — could not judge (environment artifact, checker failed to run, unsupported target) |
-| 3 | **SETUP ERROR** — configuration or environment problem before exploration began |
+| 3 | **SETUP ERROR** — configuration or environment problem: something the engine needed and could not get, as opposed to something it observed about the target. Most arise before exploration begins, and the phase is not the rule — a descriptor the parent could not arrange for a child (`/dev/null` for its stdin, the stdout capture in the work directory), a capture or oracle account it could not read back, a `fork` or an allocation that failed, all refuse this way in either phase. What they share is that the target is not what went wrong and no verdict about it is available; a refusal that *is* about the target, however unhelpfully, is UNKNOWN (2). This row said "before exploration began" until 2026-09-04, and the code did not: `fork`, allocation and stdin already contradicted it, and #469 made the class reachable, since a blocked capture path is the threat the work directory actually has |
 
 UNKNOWN is never 0. A caller that treats UNKNOWN as success has to do so deliberately, in its own code, against the contract.
 

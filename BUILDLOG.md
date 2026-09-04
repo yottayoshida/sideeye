@@ -2,6 +2,149 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 — the capture's flags rode on `minimal_env`, and the fix was a rule already written down
+
+#469 filed one line: the capture's `O_NOFOLLOW` is spelled `if (minimal_env)`, so only the
+MCP adapter's spawns get it and every CLI run opens its capture following links. The filing
+asked four questions — whether the guard detaches from that switch, whether `O_EXCL` comes
+with it, whether the refusal stays `_exit(126)`, and whether the shim's trace open travels.
+
+**The plan I wrote first was wrong in four places, and both reviewers found different ones.**
+
+R1 found the one that mattered: I had put "how a 126 is reported" out of scope after reading
+the *world* loop, where `readTraceOrRefuse` refuses first. The **recording** run does not have
+that ordering — `main.zig`'s `switch (rec_term)` runs before `observeCapture` and before the
+trace read, so a refused capture came back as `recording_run_failed` with the message
+"a different success convention is declared with `--expect-status`". Taking that advice makes
+a refused capture indistinguishable from a successful run, because `expected_status` accepts
+0..255. Adding the guard without touching that would have traded a data-loss bug for a
+wrong-verdict one. R1 also caught that my justification for keeping `O_EXCL` on the MCP path
+was **backwards**: `mcp.zig` records `O_EXCL` as the mechanism of a wrong verdict (it killed
+the second server's child at 126 and the parent read the first server's report back), not as
+a defence — the fix there was the two `unlinkPath` lines. And it caught that `O_NOFOLLOW` does
+nothing about a **hard link**, which is the actual reason `O_EXCL` belongs on every capture
+whose caller unlinks first. My threat-model paragraph claimed the default work directory is
+world-writable; it is `mkdir 0755`, and the real precondition is `/tmp` being 1777 with the
+`EEXIST` silently tolerated and the `realpath` after it following links.
+
+R2 killed the acceptance check I had designed. It was going to plant a symlink at
+`<work>/stdout-record.txt` and run `explore` — but the engine unlinks that path immediately
+before the run, and `unlink` removes a symlink itself, so the link would simply be deleted and
+the run would pass. The property sentence had the same defect: "a symlink planted at the
+capture path is refused" is false as written, because planting it before the run is not what
+the flags see. What they see is the window between the unlink and the open, and the case where
+the unlink silently failed. R2 also refused my replacement for the 126 problem — deciding it
+by asking whether the capture file exists — on the grounds that it fails exactly when it is
+needed: if the unlink failed with `EPERM` in a sticky attacker-owned directory, the link is
+still at the path and `stat` answers "present". And it found `observeCapture` reading the
+capture back with no `O_NOFOLLOW`, which is #446's shape one subsystem over.
+
+**What replaced all of it was already written in this repository.** `SpawnError`'s doc
+comment, from #263: *"Raised by the PARENT before any fork, on purpose: the child's exit
+status is the target's namespace … and a failure to arrange the child's descriptors has to
+reach the caller on a channel the target cannot also use."* stdin followed that rule; the
+capture did not. Moving the open to the parent dissolves the 126 problem (the failure never
+enters the exit-status namespace), the existence-probe problem (nothing has to be inferred),
+and the question of which `UnknownReason` a world's blocked capture should use —
+`StdinUnavailable` had already answered it, SETUP_ERROR in either phase, because no child ran.
+
+**One thing the type system does not do.** `spawnFailure` is a chain of `if (e == …)` ending
+in a bare `setupError(doing)`. Adding a member to `SpawnError` breaks three exhaustive
+switches, which the compiler reports — and silently falls through that chain to
+"could not run --operation" with no reason. The acceptance leg's third assertion exists only
+to measure that arm.
+
+**Measured.** `zig build test` green. Three mutations, each killing exactly one test and no
+other: dropping `O_NOFOLLOW` lets the symlink through, never setting `O_EXCL` lets a hard link
+through, setting `O_EXCL` unconditionally breaks the `/dev/null` captures. **The first version
+of the symlink test survived the `O_NOFOLLOW` mutation** — it set `exclusive`, and
+`O_CREAT|O_EXCL` refuses a symlink too, so the flag under test was never consulted. That is
+the whole reason for the seen-red-once rule; the test is non-exclusive now, which is also the
+shape the two `/dev/null` captures actually take. Acceptance in the aarch64 container as
+`--user 1000:1000`: all checks pass, two NOT MEASURED for want of `chown` and `git` in the
+image. MCP acceptance: all pass. Driven by hand against the real binary on macOS — a directory
+squatting on `<work>/stdout-record.txt` gives `SETUP ERROR could not run --operation: the
+command's stdout capture in the work directory could not be opened …`, and the same run with
+nothing there reaches `FAIL 1 of 6 explored worlds violated an invariant`, over the same
+`--work`, which is the leg that says `O_EXCL` does not break sequential re-runs.
+
+**One existing acceptance leg changed its answer, deliberately.** A blocked falsify capture
+used to refuse `checker_not_falsified` (exit 2) with a message admitting it could not tell
+that from a checker genuinely exiting 126. It is SETUP_ERROR (exit 3) naming the capture now.
+Naming the checker for a checker that never ran is the misattribution this change removes, and
+the exit-code freeze fixes which code a verdict carries, not which verdict a failure produces.
+Two reviewers, and both of them independently measured that nothing in `spike/` or CI runs two
+sideeye processes over one shared `--work`, which is what makes `O_EXCL` safe on the CLI paths.
+
+**The diff review found three more, and two of them were mine to have found.**
+
+The property said "on every run", and `spawnSidecar` — the macOS `fs_usage` observer's fork —
+still opened its capture in the child and still `_exit(126)`d. I had touched that line to
+share `captureFlags` and written a comment claiming "the two forks in this file cannot answer
+a planted link differently", which was true about the flags and false about the reporting.
+Worse than a gap: the handshake loop reads that pid, sees the child gone, and reports
+*"another fs_usage still holds the kernel trace facility"* — the misattribution class this
+change exists to remove, in the file the change was in. Moved to the parent. Its call site is
+`.before_exploration`, so nothing about the verdict shape follows from it.
+
+`posix.zig` already had a paragraph enumerating the read side of this exact class —
+`engine.zig`'s `readWhole`, `main.zig`'s `readFileFrom` and `observeCapture`, `mcp.zig`'s
+`readFile` — and asserting "all four read paths the engine itself produced, so nothing
+legitimate is refused". I fixed one of the four. Two more are engine-produced and got the
+flag. **The fourth made the sentence wrong**: `readWhole` reads the trace, and it also reads
+the target's state files from inside the snapshot walk, where symlinks are first-class since
+#122. So the comment now says that instead of counting it in, and the snapshot half is left
+for a call of its own. `mcp.zig`'s `readFile` is the sharpest of the three: its own comment
+already argued the full threat model — the report is written by the child, the work directory
+tolerates `EEXIST`, `unlinkPath` discards its result — and stopped at a planted FIFO without
+asking about a planted link.
+
+**One decision went to the owner.** Moving the failure out of the exit-status namespace put it
+on `spawnFailure`, and my arm sent it to `setupError` in either phase, matching `ForkFailed`
+and `StdinUnavailable`. The reviewer noted that `DESIGN.md`'s exit-code table says exit 3 is a
+problem "before exploration began" — false already for those two neighbours, and **reachable**
+for this one, since a blocked capture path is the threat the work directory actually has. The
+alternative was UNKNOWN mid-exploration, and it fails on the frozen `unknown_reason` set:
+`recording_run_failed` fits one site, `checker_not_falsified` another, and the world loop has
+no honest member at all — borrowing one there is this change's own defect one layer down. A
+third option (open the world capture once before the loop) was raised and dropped: the
+recording run's capture is opened during exploration too, so it shrinks the contradiction
+without closing it, for the largest diff of the three. Owner chose the table (2026-09-04).
+
+**The second round found the same defect inside the fix.** `<work>/oracle.txt` has two
+readers — `readFileFrom` at the fs_usage handshake and `readFileAllocCapped` at the
+oracle's account — and I gave `O_NOFOLLOW` to one of them. One file, two opens, opposite
+answers: the exact shape #469 is about, reproduced while closing it. `ReadMode` gained a
+`no_follow` half, set at the two work-directory callers and left off `--config`, a saved
+case and `/etc/ld.so.preload`, where the path is the operator's or the system's. Seen red
+both ways: with the flag inert the new test fails, with it forced on every caller it fails
+too, and nothing else moves either time. The same round found a **fourth** place calling
+126 "the capture could not be opened" — 110 lines above one the round before had just
+corrected — and two doc paragraphs still quoting `DESIGN.md`'s old exit-code row as their
+warrant, one of them three lines above the arm that changed it. The count of stale
+descriptions went 2 → 3 → 4 over two rounds; a grep for the *number* would have found all
+four at once, and I looked for the sentence instead.
+
+It also corrected my reason for leaving `engine.zig`'s `readWhole` out. I wrote that the
+snapshot walk reads the target's state files, so symlinks there are first-class (#122) and
+the flag would break them. Measured, that is wrong: the walk classifies with
+`kindOfPathNoFollow` first and a symlink goes to the `.symlink` arm, so `readWhole` only
+ever meets one through a race. The honest reason is narrower — the flag would buy
+something there, just not the same thing, and the snapshot half is its own call. Filed
+that way (#489) rather than under the reason I first gave.
+
+**Left open, on purpose.** The shim's own trace open (`shim/src/common.zig`) is the same
+threat in the same directory and is filed separately: it declares its flag constants
+per-platform by hand — the exact class of #316, where `O_NOFOLLOW` carried the x86_64 value
+for all of Linux and was inert on arm64 — and its refusal path is the shim going inactive
+rather than a spawn error, so it needs its own measurement. The default `--work` staying a
+fixed `/tmp` path is #268's other residue and changes documented CLI behaviour. `O_NOFOLLOW`
+covers final components only, so `<work>` itself swapped for a link is not closed. The
+read-back guard is symlinks only; a hard link swapped in there is the same inode and would
+need the read to reuse the write's descriptor. And the sudo probe still reads a 126 as
+"sudo has no cached credentials" (`main.zig`), a third site treating a stub's code as the
+target's — not reachable through this change, since `/dev/null` is a character device.
+
 ## 2026-09-04 — v1.1.0, and the first release that read its own block first
 
 The reading step `CLAUDE.md` gained this morning (#374) ran for the first time on the block
