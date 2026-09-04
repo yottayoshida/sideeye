@@ -2,6 +2,67 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 — The changelog block is read against itself, and the check caught the reader (#374)
+
+#374 was filed while everything was still under `[Unreleased]`, and said the shape would
+repeat "every time a later PR supersedes an earlier one inside one release window". It
+did not have to wait: **v1.0.0 shipped five days later and froze the disagreement.** All
+three instances the filing measured are now inside `## [1.0.0]`, and one of them is still
+false — `readTrace stays deliberately uncapped` sits eleven entries below the `#324` entry
+that capped it, in the same release.
+
+The sweep. Two families extracted from all 116 entries of the two blocks: sentences
+claiming something about a neighbour (143 of them), and sentences carrying a `#N` beside a
+direction word (10). The first list was narrowed to 40 by pairing each sentence with later
+entries naming the same backticked identifier; those 40 were read. Five statements were
+false, and **two of the five were invisible to the phrase list twice running**: the first
+draft looked for `in this same block`, and the file says `in this same **unreleased**
+block`. Picking cross-references by phrase kept losing them, so the check takes every
+sentence with a `#N` and a direction word instead.
+
+The diff review then found three more false statements the sweep had missed, and the
+ratio is the point: **five found by the sweep, three by one reader.** One of them the
+correction itself created — the `#296` entry says a neighbour is wrong, and correcting the
+neighbour left that sentence stale. It sits 56 characters from its issue number, outside
+the 25-character window the reference check uses, so neither the sweep's extraction nor
+the check could see it. The other two are a "the one uncapped read" that was one of two,
+and a present-tense "`readTrace` shares `SnapshotError`" that #376 had ended an hour
+earlier in the same batch.
+
+The same review found the check red on a release. `[Unreleased]` is empty immediately
+after a release rewrites the heading, and the check failed an empty block on the grounds
+that a walk of zero entries proves nothing — which would have reddened the exact commit the
+new reading step in `CLAUDE.md` accompanies. An empty block is now skipped with a note and
+the walk fails only if it read no entries anywhere. Two clauses were also widened: `in this
+same block` without a version name is the commoner spelling and the one a rename leaves
+standing, and the direction is now judged against the number nearest the direction word,
+because `any()` let "fixed by #10 and #12 above" pass on #12 while #10 sat the other way.
+
+The second review found four more, and they are the ones that matter most: `stays open`
+and `still not met` about issues that had closed, two of them falsified by a neighbour in
+the same block — the exact shape #374 names. The sweep's own keyword list contains `stays`
+and `still`. They were extracted and read past. **Five, then three, then four**: the count
+that matters is not eight or twelve but that a second and a third reader each found more,
+which is why the release step is a reading and not a claim that the sweep was complete.
+
+The check reddened three things nobody had asked it to. Two were mine, written minutes
+earlier: correcting `#329 replaced it in this same unreleased block` to `earlier in this
+same 1.0.0 block` got the direction backwards — the `#329` entry is eleven lines *below*
+that sentence — and the new `#374` entry itself said "the `#423` entry above it" from a
+line above `#423`. The third was a false positive worth keeping in mind: `RESULTS.md`'s
+quoted "Every number below is recomputable from them" is not a reference, and the check
+only stopped reading it as one when the direction word was required to sit within 25
+characters of a `#N`.
+
+What is not checked, and is written down rather than implied: whether a later entry
+falsified an earlier claim. That is prose, and a check for it passes on anything. The
+release reading in `CLAUDE.md` is where that lives, along with merging the repeated
+`### Added`/`### Changed`/`### Fixed` headings — `[1.0.0]` has one of each and
+`[Unreleased]` has ten, because the merge happens at release. Forcing it per pull request
+would put every branch in the same region of the file, and this batch alone is three
+branches off one base.
+
+
 ## 2026-09-04 — Two readers, two error sets, and one measurement that went through the wrong build (#376)
 
 `SnapshotError` typed eight failures for readers that can raise two and six. Splitting it
