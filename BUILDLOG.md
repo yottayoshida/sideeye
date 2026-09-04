@@ -2,6 +2,30 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-04 — The changelog check had three gaps, and two of them were reds it should not have (#374 follow-up)
+
+#477 merged and the confirming review's tail arrived after. Three gaps, all reproduced
+before fixing:
+
+- **Sixteen issue numbers head more than one entry** (`#199` heads three). `setdefault`
+  kept the first, so a reference to a later copy was judged against the earlier copy's
+  line. Fixed by keeping every line and holding the direction if it holds for any copy of
+  the nearest number — which is the honest reading of "the `#199` entry above" when three
+  of them exist.
+- **Twenty-seven of the hundred and twelve numbers cited in the two blocks head no entry.**
+  The check failed on those. Nothing was red only because no direction word happened to sit
+  within twenty-five characters of one; `(#5, above)` would have reddened main. Now a note
+  with a count.
+- **The resolve clause had no `--selftest` case.** `CLAUDE.md` says every new check is seen
+  red once before it is trusted, and one clause of the check shipped never having been.
+  Six planted defects now, plus three shapes that must stay green and a walk of two empty
+  blocks that must fail — the "leave this alone" answers need proving too.
+
+Two of the three were reds the check should not have produced, which is the failure mode
+the other direction: a check that fails on the correct file teaches people to ignore it.
+Measured old-versus-new on the same three inputs: the two false reds go green, the real
+direction error stays red.
+
 ## 2026-09-04 — The changelog block is read against itself, and the check caught the reader (#374)
 
 #374 was filed while everything was still under `[Unreleased]`, and said the shape would
