@@ -1104,6 +1104,22 @@ jobs:
   # nothing else. What it can and cannot do is written on the script — it reports
   # a collision that reached main, and cannot stop the merge that creates one,
   # because no status check is required on this repository.
+  changelog-block:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # First, for the reason the ADR job gives: a green from a check that cannot go red
+      # says nothing. Four planted defects, each of which must redden exactly one clause —
+      # a case that reddens two would let one of them rot behind the other.
+      - name: The check proves it can go red
+        run: python3 spike/check-changelog-block.py --selftest
+
+      # `[Unreleased]` and the release beneath it. Older blocks are deliberately out of
+      # scope (#374): they closed before anything read a block back.
+      - name: The changelog block agrees with itself
+        run: python3 spike/check-changelog-block.py CHANGELOG.md
+
   adr-numbering:
     runs-on: ubuntu-latest
     steps:

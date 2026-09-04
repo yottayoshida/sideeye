@@ -63,6 +63,19 @@ The contract:
   citations are checked by nothing and break semantically rather than loudly: after a
   renumber they point at a different decision.
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
+  **A release reads the block against itself before it renames the heading**, and records
+  the reading in `BUILDLOG.md` — which entries a later one falsified, and what was done
+  about each. Appending per merge means the author of an entry reads their own paragraph
+  and nothing else, so entry-to-entry consistency is nobody's job until this moment; and a
+  release that renames the heading without reading freezes whatever disagreed. `[1.0.0]`
+  shipped that way: it carries "`readTrace` stays deliberately uncapped" beside the entry
+  that capped it, two entries calling itself "this same unreleased block", and a filed-not-
+  fixed note the entry above it already called wrong twice (#374). Merging the repeated
+  `### Added`/`### Changed`/`### Fixed` headings into one of each belongs to this reading,
+  not to CI: forcing it per pull request would put every branch in the same region of the
+  file. `spike/check-changelog-block.py` holds the mechanical half on every push —
+  duplicate titles, whole sentences shared by two entries, and references that no longer
+  resolve or no longer point the way they say.
 - **A closing campaign or cohort needs nothing done to `.gitattributes`.** That rule used
   to run the other way, and it was missed on every closure it faced — cohort 4, then
   `spike/macos-oracle/`, then `spike/scout-model-comparison/` — because nothing opens
