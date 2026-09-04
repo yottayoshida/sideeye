@@ -13,6 +13,20 @@ the `#374 follow-up` entry three lines above had grown that set. Neither was wro
 written. Both are now written as "the ok line names how many", because a count in prose
 next to a check that recomputes it is a promise to go stale.
 
+**Thirty-five hard-wrapped lines went out in the tag.** `release-checklist.md` forbids
+wrapping a paragraph because GitHub renders a single newline as a break, and the release
+notes are the CHANGELOG section pasted verbatim — but nothing checks it, and the entries
+that wrapped were written in an editor that did. Found while building the notes, after the
+tag was pushed. Folded on `main` rather than by re-tagging: the wrap is whitespace in a
+document, the binaries the tag builds are identical either way, and re-pointing a published
+tag costs more than it buys. The notes posted to the release are the folded text.
+
+**And the section did not fit.** 137,074 characters against a 125,000-character release
+body. v1.0.0's notes were 96,816 and fit, so the ceremony had never met the ceiling. Seven
+of the seventy-one entries are named rather than reproduced, with a link to the tagged
+CHANGELOG — recorded here because "the release notes are the CHANGELOG section" is now
+true only up to a limit, and the next release will meet it sooner.
+
 **The merge itself falsified a reference, and the check caught it in this commit.** One
 entry said "the `#374 follow-up` entry above"; regrouping moved that entry from four lines
 up to sixteen lines down, and the direction clause went red on the release commit. That is
