@@ -1138,6 +1138,94 @@ fn stopLiveSidecar() posix.SidecarEnd {
     return posix.stopSidecar(live.gpa, live.pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
 }
 
+/// The `child_touched_state_dir` detail, naming what the trace holds (#484): which
+/// process, which operation, which path — the three things the operator's next move
+/// branches on (a config flag, a `scratch` declaration, or a different invocation), and
+/// the three things the old sentence dropped while the engine had them in memory. A
+/// two-path operation names both ends (`rename` and `link` alike — the shim records one
+/// when either end is inside the state directory, so the inside end may be the second).
+/// The path is target-chosen, so the composed sentence goes through `sanitizeForReport`
+/// like every other target-controlled string that reaches the text report (#26): a child
+/// naming a file after a report line must not be able to forge one. `fallback` is the
+/// sentence the site used to print — what comes out if the reader recorded the refusal
+/// without the record (it does not; `first_foreign` is set on the line that sets
+/// `foreign_kill_point`) or if the arena is exhausted: a refusal that names nothing
+/// rather than one that names something wrong.
+fn foreignTouchDetail(arena: std.mem.Allocator, first: ?engine.Op, when: []const u8, oracle_capture: ?[]const u8, fallback: []const u8) []const u8 {
+    const op = first orelse return fallback;
+    const composed = if (op.class == .kill_landed)
+        // The shim's own marker, written by a spawned child that armed itself and was
+        // killed at this path: not an operation the child performed, but where it was
+        // when the kill landed. The marker replaces the operation's record and carries
+        // its path and aux but no class, so the sentence names the place, both ends.
+        (if (op.aux.len > 0)
+            std.fmt.allocPrint(arena, "a process other than the subject (pid {d}) was killed at a state-directory operation on {s} -> {s} {s}", .{ op.pid, op.path, op.aux, when }) catch return fallback
+        else
+            std.fmt.allocPrint(arena, "a process other than the subject (pid {d}) was killed at a state-directory operation on {s} {s}", .{ op.pid, op.path, when }) catch return fallback)
+    else if (op.aux.len > 0)
+        std.fmt.allocPrint(arena, "a process other than the subject (pid {d}) performed {s}({s} -> {s}) {s}", .{ op.pid, op.class.name(), op.path, op.aux, when }) catch return fallback
+    else
+        std.fmt.allocPrint(arena, "a process other than the subject (pid {d}) performed {s}({s}) {s}", .{ op.pid, op.class.name(), op.path, when }) catch return fallback;
+    return withOracleCapture(arena, composed, oracle_capture, fallback);
+}
+
+/// The second half of #484: when an oracle capture exists, the refusal says where it is.
+/// The operator in the issue guessed at `gc.auto` twice; the child's `execve` argv —
+/// `git maintenance run --auto` — was in `<work>/oracle.txt` the whole time, and nothing
+/// said the file existed. `capture` is the strace capture's path or null; the sentence is
+/// what the site would have said anyway. One sanitisation for the whole line, here, so
+/// the two witnesses' sentences reach the report through the same choke point.
+fn withOracleCapture(arena: std.mem.Allocator, sentence: []const u8, capture: ?[]const u8, fallback: []const u8) []const u8 {
+    const cap = capture orelse return sanitizeForReport(arena, sentence) catch fallback;
+    const joined = std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them", .{ sentence, cap }) catch return fallback;
+    return sanitizeForReport(arena, joined) catch fallback;
+}
+
+test "foreignTouchDetail names the record, both ends of a two-path op, and defangs a forged line (#484)" {
+    const t = std.testing;
+    var arena_state = std.heap.ArenaAllocator.init(t.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const old = "a process other than the subject performed a state-directory operation during X";
+    // No record: the sentence the site used to print, untouched.
+    try t.expectEqualStrings(old, foreignTouchDetail(arena, null, "during X", null, old));
+    // A one-path op: pid, class, path.
+    try t.expectEqualStrings(
+        "a process other than the subject (pid 9) performed write(/s/x) during X",
+        foreignTouchDetail(arena, .{ .class = .write, .seq = 1, .pid = 9, .path = "/s/x", .aux = "" }, "during X", null, old),
+    );
+    // A two-path op names both ends — link as well as rename, since the shim records
+    // either when one end is inside the state directory.
+    try t.expectEqualStrings(
+        "a process other than the subject (pid 9) performed link(/elsewhere/a -> /s/b) during X",
+        foreignTouchDetail(arena, .{ .class = .link, .seq = 1, .pid = 9, .path = "/elsewhere/a", .aux = "/s/b" }, "during X", null, old),
+    );
+    // The shim's own marker from a self-armed child: where it was killed, not what it did.
+    try t.expectEqualStrings(
+        "a process other than the subject (pid 9) was killed at a state-directory operation on /s/x during X",
+        foreignTouchDetail(arena, .{ .class = .kill_landed, .seq = 0, .pid = 9, .path = "/s/x", .aux = "" }, "during X", null, old),
+    );
+    // The marker carries the landed operation's second end when it had one.
+    try t.expectEqualStrings(
+        "a process other than the subject (pid 9) was killed at a state-directory operation on /s/x -> /s/y during X",
+        foreignTouchDetail(arena, .{ .class = .kill_landed, .seq = 0, .pid = 9, .path = "/s/x", .aux = "/s/y" }, "during X", null, old),
+    );
+    // A child that names its file after a report line cannot forge one: the newline and
+    // the escape come out as visible bytes, on the line they started on.
+    const forged = foreignTouchDetail(arena, .{ .class = .open, .seq = 1, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land\x1b[1m", .aux = "" }, "during X", null, old);
+    try t.expect(std.mem.indexOfScalar(u8, forged, '\n') == null);
+    try t.expect(std.mem.indexOfScalar(u8, forged, 0x1b) == null);
+    try t.expect(std.mem.indexOf(u8, forged, "\\x0a") != null);
+    // With an oracle capture the sentence ends by saying where it is; without one it is
+    // the sentence alone, through the same choke point.
+    try t.expectEqualStrings(
+        "a process other than the subject (pid 9) performed write(/s/x) during X; the oracle's capture at /w/oracle.txt holds the child's own lines, its execve among them",
+        foreignTouchDetail(arena, .{ .class = .write, .seq = 1, .pid = 9, .path = "/s/x", .aux = "" }, "during X", "/w/oracle.txt", old),
+    );
+    try t.expectEqualStrings("plain; the oracle's capture at /w/oracle.txt holds the child's own lines, its execve among them", withOracleCapture(arena, "plain", "/w/oracle.txt", old));
+    try t.expectEqualStrings("plain", withOracleCapture(arena, "plain", null, old));
+}
+
 /// `next` is required, not optional, on purpose (#274): the site that raises a refusal is
 /// the one that knows why, and the compiler is what holds every site to choosing. The
 /// sentence is rendered exactly once here and handed to both forms — the JSON field and
@@ -2777,7 +2865,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // loaded it, which the oracle sees. Two witnesses with different blind spots, kept
     // deliberately.
     if (trace.foreign_kill_point)
-        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the recording run", .class_wall);
+        unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the recording run", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation during the recording run"), .class_wall);
 
     // A fork/spawn boundary — or any record from another pid — is tolerable only when
     // an oracle can account for what the other processes did. The shim only sees
@@ -2916,7 +3004,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // The tolerance condition, decided by the observer that sees children whether
         // or not they loaded the shim.
         if (parsed.child_touched)
-            unknown(.child_touched_state_dir, "a process other than the subject touched the state directory; its operations have no crash-point address", .class_wall);
+            unknown(.child_touched_state_dir, withOracleCapture(arena, "a process other than the subject touched the state directory; its operations have no crash-point address", if (args.oracle != null) oracle_out else null, "a process other than the subject touched the state directory; its operations have no crash-point address"), .class_wall);
 
         if (parsed.unsupported) |name|
             unknown(.unsupported_syscall_observed, name, .class_wall);
@@ -3335,7 +3423,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // changes which path the child takes — so clearing the recording run clears
         // nothing else.
         if (wtrace.foreign_kill_point)
-            unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation in an explored world", .class_wall);
+            unknown(.child_touched_state_dir, foreignTouchDetail(arena, wtrace.first_foreign, "in an explored world", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation in an explored world"), .class_wall);
         // A world may take a branch the recording run did not (the kill changes what the
         // target sees), so an unmodellable in-scope operation can first appear here.
         if (wtrace.first_unsupported) |name|
@@ -3972,7 +4060,7 @@ fn observeAgain(
         unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown", .retry_then_report);
     // The shim-side witness for a foreign writer, and it does not depend on an oracle.
     if (trace.foreign_kill_point)
-        unknown(.child_touched_state_dir, "a process other than the subject performed a state-directory operation during the second observed run", .class_wall);
+        unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the second observed run", if (oracle_path != null) oracle_out_b else null, "a process other than the subject performed a state-directory operation during the second observed run"), .class_wall);
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run", .rebuild_pair);
     // The boundaries that stay refusals whatever an oracle says, applied to the second

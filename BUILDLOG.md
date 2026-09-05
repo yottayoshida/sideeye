@@ -2,6 +2,50 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (late) — child_touched_state_dir names what it saw, and #491's split is measured on it
+
+#484 is a refusal that was right and useless: "a process other than the subject performed
+a state-directory operation", with the pid, the operation and the path sitting in the
+trace reader's memory. The fix is small and that is the point of doing it now. The trace
+reader keeps the first foreign kill-point record (`first_foreign: ?Op`, set on the line
+that sets `foreign_kill_point`, borrowing from the trace buffer as `first_unsupported`
+does), and a helper in `main.zig` prints it at the three sites where the shim's trace is
+the witness. The oracle-witnessed site is left as it was: no trace record exists there to
+name, and the oracle's own line is #485's material.
+
+**The measurement #491 asked for.** The issue said the refactor would have helped when "a
+subsequent real change" is more local — fewer unrelated helpers and tests read or
+edited, and the trust argument stated without reaching across a boundary. This is that
+change, recorded as it was made: files edited, `src/engine/trace.zig` (a field, a line,
+three assertions in an existing test), `src/main.zig` (one helper, three call sites),
+`spike/acceptance.sh` (one assertion), and the documents; files read to make it,
+`trace.zig` around the decode loop and `TraceInfo`, `main.zig` at the four
+`child_touched_state_dir` sites and `unknown()`, `contract.zig` for `isKillPoint` and the
+`OpClass` vocabulary, `toy.c` for what the child writes, `acceptance.sh` for the leg;
+files not opened, `snapshot.zig`, `judge.zig`, `state_fs.zig`, `read.zig`. The one
+argument the change needs — that `Op.path` is alive when the report is written — is
+answered in `trace.zig`, where the decode loop dupes every path into the reader's arena,
+with `main.zig` using the new field the way it uses `first_unsupported`. (The first
+version of the field's doc said the path *borrows from the trace buffer*, copying the
+`.unsupported` arm's comment; the second review read the loop and found both wrong about
+who owns the bytes — the conclusion held, the reason did not. Both comments now say arena.) Before the split the same change would have
+meant finding the decode loop and the `TraceInfo` fields inside a 6,043-line file of
+which 4,745 lines — what remained after the trace reader left in the first seam — were the
+snapshot types, the walk, the restore and the judges; the lifetime sentence sat at line
+2,328 of that file and the decode loop that honours it at line 2,791, with the restore
+family before them and the judges after. That is the
+whole measurement: one file for the reader, one for the report, no boundary crossed.
+
+Two things the reviews added. The first version printed the child's path raw; every
+other target-controlled string that reaches the text report goes through
+`sanitizeForReport`, and a child naming its file after a report line could have forged
+one (#26's class) — the composed sentence now goes through the same choke point, with a
+unit test that feeds it a newline and an escape. And the issue's "what would close it"
+has a second sentence the first version skipped: when an oracle capture exists, say so.
+The journey's answer — `git maintenance run --auto` — was in `<work>/oracle.txt` the
+whole time; both witnesses' sentences now end by naming that file, and the two acceptance
+legs assert it.
+
 ## 2026-09-05 (night, last) — the walk and the restore leave engine.zig, and the facade is all that is left
 
 The fourth and last seam of #491. What moves is everything that still had a body in
