@@ -2,6 +2,119 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (evening) — the trace reader leaves engine.zig, and the plan was wrong twice about how tests are collected
+
+#491 asks for `engine.zig` (6,043 lines, five semantic boundaries) to be cut along its seams,
+one per PR, behaviour untouched. This is the first cut: the trace reader — `Op`, `TraceInfo`,
+the whole-trace budget, `readTrace*` and its decode loop — goes to `src/engine/trace.zig`.
+
+**Why trace first, measured.** It is the only region the file itself fences off with a
+separator comment (lines 2305 and 2843 are the only two `// ----` rules in the file). Its code
+references exactly two things outside itself: `readWhole` (private, one call) and
+`TraceReadError` (the error-set block, three mentions). Nothing in the judge or corruption
+regions references it back; the one reverse edge is `reconcile` taking `Op` as an argument,
+with 27 tests written against `Op` literals. Its 19 tests use trace identifiers, `readWhole`
+and `joinZ`, and nothing from snapshot, restore or judge. The next candidate, restore +
+corruption, crosses about 23 private helpers and is named by four ADRs. The architect
+subagent's dependency table put numbers on all of that; the numbers were checked.
+
+**`readWhole` is the cut that is not clean, and the plan moved it three times.** It is
+shared by the snapshot walk and the trace read. Draft one put it in a new `read.zig`; the
+architect argued for `posix.zig` on the grounds that it already uses allocators in seventeen
+places, and draft two took that. Review counted **twelve**, all inside one region (the
+sidecar's start and stop, 827-1181), and pointed out that `posix.zig`'s own first line calls
+it "direct libc bindings" — and that the plan's promise names `trace.zig` and `engine.zig`
+and nothing else, so the layering argument was being made outside the promise. It is
+`src/engine/read.zig`: `LinkPolicy`, `ReadWholeError`, `readWhole`, and the `/dev/zero` test,
+imported by both `engine.zig` and `engine/trace.zig`. No cycle.
+
+**Where the tests go was wrong twice, and the reviewers found the answer in my own table.**
+`build.zig:350-355` says a `test` block in an imported file is not reachable from a root and
+names every file in `test_sources`. Draft one believed it, put `trace.zig` flat in `src/` so it
+could be a root, and measured that `src/engine/trace.zig` as a root cannot import
+`../posix.zig` ("outside module path"). Draft two read the step-by-step counts — engine root
+124 = engine 102 + posix 22 — and concluded the opposite: imported files *are* collected, so
+`src/engine/` is fine and `test_sources` need not change. Both are false, and the
+counterexample sits in the same table: **mcp root runs 28 = mcp 6 + posix 22, and mcp.zig
+imports engine.zig** — engine's 102 do not run there. R2 measured why: Zig analyses lazily,
+and an imported file's tests are collected only when a test in the root reaches a declaration
+of that file. mcp.zig's tests reference nothing from `engine.`; main.zig's tests reference
+nothing from `image.` / `oracle.` / `fsusage.`, which is why those three are missing from
+main's 180. The 2026-08-10 note about "19 ran, five uncollected" was almost certainly this
+same effect on a posix.zig that main's tests did not touch. The comment was not wrong; it was
+missing its condition.
+
+So: `src/engine/trace.zig`, and it **cannot** be in `test_sources` (as a root its
+`../posix.zig` is outside the module path). Its tests reach the engine and main roots through
+references from tests that stay in `engine.zig` — 27 mentions of `Op` in the reconcile tests,
+and five in code of the trace surface in main's (`engine.Op`, `engine.max_trace_bytes`,
+`engine.max_trace_bytes_total`; a first count said eight because it took three comment
+mentions along, and an earlier draft named `engine.TraceInfo`, which appears in main.zig
+only outside tests) — which holds today and stops holding the day someone
+rewrites the reconcile tests. `engine.zig` therefore carries
+`test { std.testing.refAllDecls(trace); std.testing.refAllDecls(read); }` to make the reach
+unconditional. No precedent in this repo; the reason is written where it sits.
+
+The plan's second reviewer argued the block is surplus — main's own tests reference
+`engine.max_trace_bytes` directly, the reconcile tests reach `Op`, and the facade test's
+`std.meta.declarations(trace)` resolves the file anyway — and predicted it would add one to
+each root's count. The count is the part that was wrong: an unnamed `test {}` block adds
+nothing (546, not 548, measured). The rest is true today and is exactly the kind of truth
+the block exists to stop depending on; and `read.zig` is reached only through four
+`readWhole` calls inside engine's restore tests, which the facade test does not touch. Kept,
+with that reviewer's objection recorded here rather than argued away.
+
+**The facade has to be measured, not listed.** `readTrace` and `unboundedBudget` are public
+in `engine.zig` and referenced by nothing outside it, so forgetting either re-export would
+leave every build, test and acceptance leg green with the promise false. The plan first wrote
+a coverage test naming eight declarations by hand; R2 pointed out that a ninth public
+declaration added to `trace.zig` would then redden nothing. The test walks
+`std.meta.declarations(trace)` instead, and asserts each re-export `==` the declaration it
+names — the same thing, not a namesake — which compiled first time for types and functions
+alike.
+
+**Measured.** The move is 1,196 lines to `trace.zig` and 145 to `read.zig` — the extraction
+script's own sum over its line ranges, each range widened backwards to take the doc comment
+above its declaration (a count by the three code blocks alone gives 1,185; with
+`TraceReadError`'s 34-line doc, 1,219; the script's figure sits between because it takes doc
+comments per declaration, not per block); `engine.zig` is 4,692 lines
+straight after the move and 4,745 once the module map, the facade test, the `refAllDecls`
+block and review's comments are in (review caught the first number standing in for the
+second; the third is the count at the moment this sentence was last edited, which is the only
+honest thing a line count in a journal can be).
+`trace.zig` imports `std`, `contract`, `../posix.zig` and `read.zig` and nothing else;
+`read.zig` imports `std` and `../posix.zig`. No cycle. Its 22 `fn`s are the 13 the plan
+counted in the region plus `joinZ` and the fixture helpers that moved with the tests.
+
+`zig build test --summary all`: **546/548** (2 skipped), and the per-root counts landed on the
+numbers the plan wrote down before the code existed — engine root **125** (was 124), main root
+**181** (was 180), every other root unchanged. The one extra in each is the facade test; the
+`refAllDecls` block has no name and adds nothing to the count, and `trace.zig`'s nineteen
+tests are in both roots, where they were before under `engine.zig`'s name.
+
+Three mutations, each on the claim it is meant to break:
+
+- Flip one assertion in `trace.zig` (`version_mismatch` → `!version_mismatch`): **1 fail in
+  the engine root, 1 fail in the main root**, both naming
+  `engine.trace.test.a trace written against another contract version …` — the file's name
+  in the test's name, and both roots red. Collected, in both places.
+- Remove the `readTrace` re-export from `engine.zig` — the one nothing outside the file
+  references: **compile error, both roots**,
+  `engine.zig:4733:13: error: engine.zig does not re-export trace.readTrace`. The
+  declaration nobody would have missed is the one the walk catches.
+- Count: `readTraceCappedInner`, `readTraceCapped`, `readTrace`, `unboundedBudget` each appear
+  as `fn` **0** times in `engine.zig` and **1** time in `trace.zig`. Moved, not deleted and
+  not duplicated.
+
+Acceptance in the aarch64 container as `--user 1000:1000`, with `origin/main` merged in:
+**282 ok, 0 FAIL** — the same 282 as before the move, which for a change that promises not to
+change behaviour is the number that matters.
+
+Merged `origin/main` at `b7d1c72` (#495, the dogfood record) before acceptance; the two
+conflicts were this journal's head and the changelog's `[Unreleased]`, both additions on both
+sides, resolved by ordering (this entry above the dogfood one; `Added` before `Changed`
+before `Fixed`).
+
 ## 2026-09-05 (dogfood) — eight targets, four walls forecast correctly and confirmed expensively, and a freshness check that read one repository
 
 Instruction: use Sideeye the way a user would — Linux in Docker, targets picked by
