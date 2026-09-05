@@ -2,6 +2,61 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (night, later) — the judges leave engine.zig, and the order ADR 0048 wrote down is reversed
+
+Third seam of #491, and the first one where the plan's own reason for going in this order
+turned out to be empty. The draft said the walk and the restore had to come after the
+judges because the `#164 pin: restore goes loud` test reaches `judgeL0` and would be
+stranded otherwise. A first-look reviewer read the test: it calls `restore` once, and
+`judgeL0` appears in a comment above it. Measured properly, the two remaining regions name
+each other in code **zero times in both directions** — the judge region's `walk` and `read`
+are comments too. Either could have gone first. The order stands on what is left: about
+830 lines against 2,550, eight public names against nineteen, and five documents (ADRs
+0011, 0022, 0042, 0046 and `docs/freeze-audit.md`) that name where the root vets live and
+will have to be re-pointed when the walk and the restore move. The judges are named that
+way once, in a dated run record (`spike/assisted/buku/RUNLOG.md`), which stays as written
+— it says what was true when that run happened.
+
+That reverses ADR 0048, which had numbered them the other way — "seam 4 (`judge.zig`) will
+import `snapshot.zig`" — and ADR 0049 says so rather than editing 0048, the same way 0048
+recorded that 0047's prediction about the symlink tests did not hold. 0048 also said the
+judges would reach `scratchMatches` "through the facade"; they import `snapshot.zig`
+directly, and take four names from it by **private** alias so the forty-five `testSnapshot`
+call sites and forty-three `Snapshot` mentions keep their spelling. Those aliases have to
+stay private and the facade walk cannot see it if they do not: a `pub` alias would find the
+same name already re-exported from `snapshot.zig`, and the identity check would compare the
+same declaration to itself. The first draft answered that with a paragraph and a count in
+the plan; the second reviewer pointed out the plan lives in another repository, so
+`judge.zig` now ends with a test that counts its own public declarations. Making one alias
+`pub` fails it.
+
+**Two things stay that the word "judge" might claim.** `WorldResult` holds a `?Violation`
+but is a kill's outcome — `k`, `term`, `landed` — produced by `main.zig`'s world loop; it
+stays with the facade, and where it belongs after the last seam is that seam's call.
+`SnapshotError.ClassifyFailed` is raised by `walk` when an entry's kind cannot be
+classified; it shares a word with `classify` and nothing else.
+
+**Baseline at HEAD `a2cf824`, in the worktree, before the move**: `zig build test`
+546/548 (2 skipped), engine root 125 + 1 skip, main root 181 + 1 skip, `^test "` 57;
+acceptance in the aarch64 container as `--user 1000:1000`: 288 `ok`, ALL PASSED, two NOT
+MEASURED (`chown`, and `git` missing from the image at exit 127). Written down before the
+move so the post-move run has something to fail against.
+
+**After the move.** `engine.zig` 3,553 → 2,745 lines, `^test "` 57 → 33; `judge.zig` 877
+lines, 25 tests, eight public declarations, importing `std`, `../posix.zig` and
+`snapshot.zig`. `zig build test` **548/550** — two more than the baseline's 546, because
+the new public-surface test is collected in both the engine and main roots — with the
+per-root counts moving by exactly that one test (125 → 126, 181 → 182). Flipping one
+assertion in `judge.zig` fails one test in each root, named `engine.judge.test.ADR 0043:
+…`; making one alias `pub` fails the new test in each root with `expected 8, found 9`;
+dropping the `pub` from the `FileForm` re-export stops both roots at
+`engine.zig does not re-export judge.FileForm`, and deleting the line does the same. Acceptance: 288 `ok` and the same two NOT MEASURED, with
+one `ok` line differing in a number it measures about itself (a budgeted world took 1s at
+HEAD and 2s after, on a loaded laptop) — same check, same verdict. The first attempt at the
+`judge.zig` red flipped a string that does not appear in the file, so `sed` changed nothing
+and the suite stayed green: a seen-red that measures nothing looks exactly like a passing
+one, and the `git diff --numstat` printed beside it is what caught it.
+
 ## 2026-09-05 (night) — the snapshot types leave engine.zig, after the issue was closed by mistake
 
 The trace seam (below) shipped with `Closes #491` in its commit message. #491 asks for one

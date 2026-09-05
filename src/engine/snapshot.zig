@@ -13,13 +13,14 @@
 //! a snapshot is; they move with the walk. `finalizeEntries` is here because it is the
 //! invariant — sort, then refuse a list `find` cannot search — and both producers end in
 //! it; `testSnapshot` is here because it is the fixture that builds under that same
-//! finalizer. `scratchMatches` is here because `diffSnapshotsExcept` needs it and the
-//! judges can reach it through the facade, whereas the other direction would be a cycle.
+//! finalizer. `scratchMatches` is here because `diffSnapshotsExcept` needs it and
+//! `engine/judge.zig` imports this file for it, whereas the other direction would be a
+//! cycle.
 //!
 //! Comments below name declarations that live elsewhere and are not imported: in
 //! `engine.zig`, `walk`, `takeSnapshot`, `restore`, `deleteTreeAt`, `SnapshotError` and
-//! `SnapshotCaps` (the producers and the destructive side) and `classify`, `classifyWith`
-//! and `L0Plan` (the judges); in `trace.zig`, `isMutation` and the marker classes
+//! `SnapshotCaps` (the producers and the destructive side); in `judge.zig`, `classify`;
+//! in `trace.zig`, `isMutation` and the marker classes
 //! `shim_ready` and `kill_landed`; in `main.zig`, `observeAgain` and
 //! `child_touched_state_dir`. They are prose references, kept so the reasons written next
 //! to this code stay next to it.
@@ -1137,9 +1138,9 @@ test "scratchMatches: the path itself and its subtree, never a sibling sharing t
 /// Sorts, like `takeSnapshot` does. It did not, and that made the sorted order an
 /// accident of one producer rather than a property every `Snapshot` has — which is
 /// exactly what `find` now depends on. Ten of its call sites (most of them the judge
-/// tests, which stayed in `engine.zig`) pass their pairs in an order that is not
-/// lexicographic, so a `find` that assumed sorting would have returned wrong answers
-/// there rather than failing loudly (#262).
+/// tests, in `engine/judge.zig`) pass their pairs in an order that is not lexicographic,
+/// so a `find` that assumed sorting would have returned wrong answers there rather than
+/// failing loudly (#262).
 ///
 /// Sorting can change which violation a test observes: `classify` walks `pre.entries`
 /// in order into `plan.files`, and both judges return on the first violation in that
