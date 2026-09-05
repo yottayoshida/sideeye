@@ -2,6 +2,45 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (ledger) — a report filed into neither record, and a scan that read a truncated window
+
+`andreafrancia/trash-cli#414` was filed 2026-09-04 and written into neither
+`spike/upstream-reports.tsv` nor `docs/target-classes.md`. `check-upstream-ledger.sh`
+stayed green over it the whole time, which is correct behaviour: its header names this
+exact gap — *"a filing in neither record is outside what these two can say"*. The qpdf
+report filed the same afternoon fell into the same hole and was noticed a day later
+(the 09-05 dogfood entry records that); this one was not, because nothing was looking.
+
+Both records gain it together. Either alone is refused, and that was measured rather
+than assumed: with the table's marker and no ledger row, the check exits 1 with
+`marked in the table, not in the ledger: andreafrancia/trash-cli#414 / ledger 10,
+markers 11`. Restoring the pair returns exit 0 at 11 filings. A green run before the
+change and a green run after it would otherwise be indistinguishable, which is the
+whole reason this gap survived.
+
+**The same-class scan was wrong the first time, and the second version is in the PR
+body because of it.** The class is "a filed report in neither record", so the two
+records cannot be its oracle and the scan has to reach the tracker. The first attempt
+used `gh search issues --author @me --limit 100` and got back exactly 100 rows — the
+owner's own repositories filled the window and pushed the older upstream reports out.
+Four of the eleven came back; seven were absent, including `timewarrior#778`, which is
+plainly open. The PR body had already been written against that result, claiming the
+sets matched. **A result sitting exactly at the limit is not a result**, and the tell
+was available without any GitHub knowledge: the ledger says eleven, the scan said four,
+and the scan was believed.
+
+The second version runs `gh api search/issues` with
+`q='author:yottayoshida is:issue -user:yottayoshida -org:raksul'`, `total_count` 13 —
+under the page limit, so nothing is truncated — and checks the other direction too, by
+fetching each of the eleven ledger rows and comparing author and state. Thirteen minus
+two non-reports (listing submissions for `modern-python-guidance` on `cline/mcp-marketplace`
+and `hesreallyhim/awesome-claude-code`) leaves exactly the eleven.
+
+What this does not do is close the gap. The check still holds two records to each other
+and reaches no tracker. Adding a tracker-side leg was considered and left as an option in
+the PR: it would need a maintained exclusion list for non-report issues, which is a second
+record that can fall out of date the same way the first one just did.
+
 ## 2026-09-05 (evening) — the trace reader leaves engine.zig, and the plan was wrong twice about how tests are collected
 
 #491 asks for `engine.zig` (6,043 lines, five semantic boundaries) to be cut along its seams,
