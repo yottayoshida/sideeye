@@ -347,12 +347,25 @@ pub fn build(b: *std.Build) void {
 
     const test_step = b.step("test", "Run tests");
 
-    // Each file that carries tests is named explicitly.
+    // Each file that carries tests is named explicitly, and the reason is narrower than
+    // this comment used to say.
     //
-    // Testing through the executable's root module alone is not enough: Zig analyses
-    // declarations reachable from the root, and a `test` block in an imported file is
-    // not reachable that way. Doing that silently ran 19 tests while five more sat
-    // uncollected — green, and measuring less than it appeared to.
+    // Zig analyses lazily: a `test` block in an imported file is collected only when a
+    // test in the root reaches a declaration of that file. It is not "imported files are
+    // never collected" — the engine root runs posix.zig's 22 tests, because engine's
+    // tests reach posix — and not "always collected" either: mcp.zig imports engine.zig
+    // and its root runs none of engine's 102, because mcp's tests reach nothing in it.
+    // The first version of this build measured 19 tests run and five sitting uncollected,
+    // green and measuring less than it appeared to — almost certainly this same effect on
+    // a posix.zig that main's tests did not reach, though the tree that measured it has
+    // no engine.zig to re-run (#491 re-read the per-root counts and found the condition).
+    // Naming each file makes collection independent of which test happens to mention
+    // what.
+    //
+    // Files under src/engine/ cannot be named here: as a root, their `../posix.zig`
+    // falls outside the module path. engine.zig references them with `refAllDecls`
+    // instead: collection is unconditional either way, though a name here also proves the
+    // file builds as a root on its own, which those two cannot.
     const test_sources = [_][]const u8{
         "src/engine.zig",
         "src/posix.zig",
