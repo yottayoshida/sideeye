@@ -1,0 +1,40 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 13,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "oracle_verified": true,
+  "crash_points": 68,
+  "explored": 69,
+  "violations": 5,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 55,
+    "invariant": "the checker (L2)",
+    "after": {"op": "rename", "path": "/work/rb/bk/rdiff-backup.tmp.1"},
+    "before": {"op": "open", "path": "/work/rb/bk/rdiff-backup-data/mirror_metadata.2026-09-05T03:55:30Z.snapshot.gz"},
+    "subject": "(named by the checker, not by path)",
+    "observed": "the checker exited non-zero after restart"
+  },
+  "checker_earliest": {
+    "crash_point": 55,
+    "invariant": "the checker (L2)",
+    "after": {"op": "rename", "path": "/work/rb/bk/rdiff-backup.tmp.1"},
+    "before": {"op": "open", "path": "/work/rb/bk/rdiff-backup-data/mirror_metadata.2026-09-05T03:55:30Z.snapshot.gz"},
+    "subject": "(named by the checker, not by path)",
+    "observed": "the checker exited non-zero after restart",
+    "case": "/work/wk/rdiff-backup/cases/000001.json",
+    "replay": "sideeye replay /work/wk/rdiff-backup/cases/000001.json --shim /se/lib/libsideeye_shim.so"
+  },
+  "l0": "9 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): rdiff-backup-data/backup.log",
+  "l1": "no marker configured",
+  "case": "/work/wk/rdiff-backup/cases/000001.json",
+  "replay": "sideeye replay /work/wk/rdiff-backup/cases/000001.json --shim /se/lib/libsideeye_shim.so",
+  "oracle": "agreed on 68 operations (5880 syscall lines examined, 600 in scope of the judged state), witness strace",
+  "metadata_writes": "20 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchownat x6, fchmodat x10, utimensat x4. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 69 world(s)",
+  "processes": "1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes", "appended tails (files under the history form)"]
+}

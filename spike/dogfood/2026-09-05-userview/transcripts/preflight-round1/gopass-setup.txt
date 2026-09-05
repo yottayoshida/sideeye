@@ -1,0 +1,19 @@
+
+   __     _    _ _      _ _   ___   ___
+ /'_ '\ /'_'\ ( '_'\  /'_' )/',__)/',__)
+( (_) |( (_) )| (_) )( (_| |\__, \\__, \
+'\__  |'\___/'| ,__/''\__,_)(____/(____/
+( )_) |       | |
+ \___/'       (_)
+
+🌟 Welcome to gopass!
+🌟 Initializing a new password store ...
+🔐 Using crypto backend: age
+💾 Using storage backend: fs
+🔐 No useable cryptographic keys. Generating new key pair
+🧪 Creating cryptographic key pair (age) ...
+Passphrase: never vacation backlands untapped
+⚠ You need to remember this very well!
+✅ Key pair for age generated
+⚠ 🔐 We need to unlock your newly created private key now! Please enter the passphrase you just generated.
+2026/09/05 03:24:30 failed to check private keys: failed to create new private key: failed to list private keys: failed to decrypt /work/gp/.config/gopass/age/identities: pinentry error: pinentry error: pinentry: unexpected response: "S ERROR curses.isatty 83918950 "

@@ -1,0 +1,10 @@
+# 候補スクリーニング用。define を書く前どころか、候補表を作る前に
+# 「動的リンクか」「スレッドを作るか」を実測する。前回の4本はここを予測で済ませて 4/4 壁だった。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates \
+      imagemagick weechat rdiff-backup exiv2 qpdf newsboat rsync \
+      ffmpeg optipng
+
+WORKDIR /work

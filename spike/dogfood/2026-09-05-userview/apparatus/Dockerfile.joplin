@@ -1,0 +1,26 @@
+# 対象4: joplin CLI（Node/libuv）。docs/target-classes.md の「Not yet measured」を埋める枠。
+#
+# ビルドで当たった壁を全部ここに書いてから入れる。ユーザーが Debian trixie に
+# joplin CLI を入れるとき同じ順で当たる:
+#  1回目: keytar の node-gyp が libsecret のヘッダを見つけられない → libsecret-1-dev
+#  2回目: node-gyp が nodejs.org から headers を取りに行き、TLS 傍受プロキシの
+#         自己署名証明書で落ちる → libnode-dev + npm_config_nodedir で取得を不要にする
+#  3回目: `npm config set nodedir` は無効なオプション → 環境変数で渡す
+#  4回目: node-gyp 8.4.1 の gyp が `from distutils.version import StrictVersion` を使うが、
+#         Debian trixie の Python 3.13 に distutils は無い（3.12 で削除）→ setuptools が肩代わりする
+FROM sideeye-userview:base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      nodejs npm make g++ python3-dev libsecret-1-dev pkg-config libnode-dev
+
+RUN pip3 install --break-system-packages \
+      --trusted-host pypi.org --trusted-host files.pythonhosted.org \
+      setuptools \
+ && python3 -c "import distutils; print('distutils ok')"
+
+ENV npm_config_nodedir=/usr
+RUN npm config set registry https://registry.npmjs.org/ \
+ && npm config set strict-ssl false \
+ && npm install -g --unsafe-perm joplin
+
+RUN joplin --help > /dev/null 2>&1; echo "joplin --help rc=$?"

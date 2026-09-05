@@ -1,0 +1,2 @@
+WARNING: Server will be called with deprecated command line interface to guarantee compatibility. It might lead to a deprecation warning from newer rdiff-backup versions. Use '--api-version 201' (or higher) to avoid it.
+NOTE: Starting mirror from source path /work/rb/src to destination path /work/rb/bk

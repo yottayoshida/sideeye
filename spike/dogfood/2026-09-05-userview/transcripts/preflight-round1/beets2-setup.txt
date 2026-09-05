@@ -1,0 +1,12 @@
+/work/bt/in1
+Created database backup at: '/work/bt/lib/library.db-before-items-multi_genre_field.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-albums-multi_genre_field.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-lyrics_metadata_in_flex_fields.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-multi_remixer_field.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-multi_lyricist_field.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-multi_composer_field.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-multi_arranger_field.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-relative_path.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-albums-relative_path.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-remove_inherited_artpath.bak'.
+Created database backup at: '/work/bt/lib/library.db-before-items-instrumental_lyrics_in_flex_field.bak'.

@@ -123,6 +123,20 @@ define's one canonical text is `loop-closure-timew/define/` (checker, setup,
 operation): `stage.sh` and `dogfood-timew-replay.sh` copy its checker and setup
 and read its operation (#65).
 
+## Dogfood runs — open, not sealed
+
+`dogfood/` holds use of Sideeye that is not a cohort: a target somebody actually
+uses, picked by the selection rules, measured and written up. Nothing there is
+sealed, nothing claims blindness, and no run there is evidence for criterion 1.
+`dogfood/README.md` says what a run records and carries the one rule that
+directory adds to the cohort's — **screen linkage and threads before writing the
+candidate table** — which the first run bought by spending four target slots on
+walls it forecast correctly and confirmed expensively.
+
+It is a record, so it is documentation by the `spike/**` default (ADR 0021) and
+needs no entry in `.gitattributes` or in `check-gitattributes.sh`'s
+`exempt_dirs`. It has a sunset condition, in its README.
+
 ## Local outputs
 
 `out/`, `runs/`, `assisted/runs/` are gitignored scratch. Everything worth

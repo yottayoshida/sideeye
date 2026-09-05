@@ -1,0 +1,28 @@
+falsify: img1.png を identify が読めない（25 bytes）
+img1.png が無い
+img1.png を identify が読めない（0 bytes）
+img2.png が無い
+img2.png を identify が読めない（0 bytes）
+img3.png が無い
+img3.png を identify が読めない（0 bytes）
+FAIL  6 of 13 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 12
+            after  rename(/work/im/img1.png)
+            before open(/work/im/img1.png)
+path        img1.png
+observed    present before and after the operation, but gone from the crashed state
+explored    13 worlds (crash points 12 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 12 operations (611 syscall lines examined, 222 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 13 world(s)
+l1          no marker configured
+case        /work/wk/mogrify/cases/000001.json
+replay      sideeye replay /work/wk/mogrify/cases/000001.json --shim /se/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/work/im SIDEEYE_TRACE_PATH=/work/wk/mogrify/trace-repro.bin LD_PRELOAD=/se/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

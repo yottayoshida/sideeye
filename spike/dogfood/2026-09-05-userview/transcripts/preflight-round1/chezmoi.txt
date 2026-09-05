@@ -1,0 +1,13 @@
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; the operation's first word names no path, so the OS resolved it through PATH and Sideeye did not
+next        Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+
+atomicity   0 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: the shim never announced itself in this run, so nothing observed process boundaries
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
