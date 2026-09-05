@@ -3165,7 +3165,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore before falsifying the checker");
         // Through the same disposition as the restore one line up, not setupError:
         // corruption is the other rewrite of the recorded tree, its errors are the
-        // same RestoreError set (UnsafeRoot included — engine.zig's own comment on
+        // same RestoreError set (UnsafeRoot included — engine/state_fs.zig's own comment on
         // corruptState says why it re-checks the root rather than trusting its
         // neighbour), and by this line the define has run, so exit 3 would claim
         // it never did (#363).
@@ -4705,7 +4705,7 @@ fn noShimNext() contract.NextStep {
 ///   - **The observation comes first, and it is small.** The marker's absence is all
 ///     this detector proves. It is not even proof that injection was refused: a trace
 ///     that could not be read collapses to an empty `TraceInfo` and arrives here too
-///     (`engine.zig` says so at three call sites). So the first clause reports the
+///     (`engine/trace.zig` says so at three call sites). So the first clause reports the
 ///     absence, and when nothing was found on the image the line says the cause lies
 ///     elsewhere instead of falling back to the old guesses.
 ///   - **Fields, not blame.** "carries the library-validation flag" — never "library

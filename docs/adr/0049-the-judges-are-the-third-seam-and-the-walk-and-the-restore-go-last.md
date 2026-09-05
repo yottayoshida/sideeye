@@ -56,7 +56,7 @@ to write through a link, `corruptState` refusing a planted link, the three regio
 links as links) exercise `takeSnapshot`, `restore` and `corruptState` only, so they move
 with `state_fs` and cross nothing.
 
-**Two things stay in `engine.zig` that the word "judge" might claim.** `WorldResult`
+**Two things stay in `engine.zig` that the word "judge" might claim.** (Since #491's last seam only `WorldResult` does; `SnapshotError` went to `src/engine/state_fs.zig` with the walk.) `WorldResult`
 (1695–1701) holds a `?Violation`, but its content is a kill's outcome — `k`, `term`,
 `landed` — and `main.zig`'s world loop is what produces it; it is the orchestrator's type
 and stays with the facade. `SnapshotError.ClassifyFailed` is raised by `walk` (322) when an

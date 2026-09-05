@@ -3,7 +3,7 @@
 //!
 //! The third seam out of `engine.zig` (#491, ADR 0049). This is the side that decides
 //! whether something is broken; the side that breaks and rebuilds — the walk, the restore
-//! and the corruption probe — stays in `engine.zig` and is the last seam. The two are
+//! and the corruption probe — is `engine/state_fs.zig`, the last seam (ADR 0050). The two are
 //! independent in code: neither region names the other outside a comment, in either
 //! direction. `engine.zig` does name all eight declarations below in code — in its facade
 //! block, and `Violation` once more in `WorldResult` — but that is the facade's job, not
@@ -17,8 +17,9 @@
 //! holds it is the last test in this file, which counts this file's public declarations.
 //!
 //! Comments below name declarations that live elsewhere and are not imported: in
-//! `engine.zig`, `takeSnapshot` and `restore` (the producers and the destructive side, in
-//! passing) and `WorldResult` (the orchestrator's type, which carries a `?Violation`); and
+//! `state_fs.zig`, `takeSnapshot` and `restore` (the producers and the destructive side, in
+//! passing); in `engine.zig`, `WorldResult` (the orchestrator's type, which carries a
+//! `?Violation`); and
 //! in `main.zig`, the report's `atomicity` line and its `l0` note. They are prose
 //! references, kept so the reasons written next to this code stay next to it.
 

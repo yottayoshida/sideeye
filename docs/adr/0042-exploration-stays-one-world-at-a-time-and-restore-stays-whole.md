@@ -15,7 +15,7 @@ engine does not change.
 One exploration runs the baseline world plus one world per crash point, in kill-index order,
 in one process (`src/main.zig`, the `while (k <= n + 1)` loop). Each world starts with
 `restore`, which deletes the whole state directory and recreates every entry from the
-recorded snapshot (`src/engine.zig`, `restore` → `deleteTreeAt`; every directory is created
+recorded snapshot (`src/engine.zig`, since #491 `src/engine/state_fs.zig`; `restore` → `deleteTreeAt`; every directory is created
 with the same requested mode, `0755`, every file with `0644`, both masked by the process
 umask, and symlinks are recreated from their recorded targets), runs the operation under the shim, and ends with a full snapshot of
 the tree, which the judges compare entry by entry against the recording. Every world

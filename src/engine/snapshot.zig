@@ -18,7 +18,7 @@
 //! cycle.
 //!
 //! Comments below name declarations that live elsewhere and are not imported: in
-//! `engine.zig`, `walk`, `takeSnapshot`, `restore`, `deleteTreeAt`, `SnapshotError` and
+//! `state_fs.zig`, `walk`, `takeSnapshot`, `restore`, `deleteTreeAt`, `SnapshotError` and
 //! `SnapshotCaps` (the producers and the destructive side); in `judge.zig`, `classify`;
 //! in `trace.zig`, `isMutation` and the marker classes
 //! `shim_ready` and `kill_landed`; in `main.zig`, `observeAgain` and

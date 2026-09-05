@@ -218,7 +218,7 @@ pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 /// they do:
 ///
 /// - `image.zig` (#398): flag, then `lseek` — ESPIPE ends it there.
-/// - `engine.zig`'s `readWhole`, `main.zig`'s `readFileFrom` and `observeCapture`,
+/// - `engine/read.zig`'s `readWhole`, `main.zig`'s `readFileFrom` and `observeCapture`,
 ///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`.
 ///
 ///   This list used to add "all four read paths the engine itself produced, so nothing

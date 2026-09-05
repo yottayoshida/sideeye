@@ -5309,8 +5309,9 @@ o=$("$SIDEEYE" explore --state "$vet_denied" --operation /bin/true \
 #     The re-vet covers a different timing: the recorded operation, which runs hundreds
 #     of times, replacing the root between one world's resolution and the next world's
 #     delete. No define can stage that here, because the structural detectors see the
-#     first swap first. It is pinned instead at the call sites in src/engine.zig, where
-#     removing `assertRootUnchanged` from either `restore` or `freshDir` turns a test red.
+#     first swap first. It is pinned instead at the call sites in src/engine/state_fs.zig,
+#     where removing `assertRootResolvesToItself` from either `restore` or `freshDir` turns
+#     a test red.
 #
 #     Two earlier versions of this leg claimed to test the re-vet and did not. The first
 #     used a sentinel inside the link's target, which the snapshot copies and `restore`
