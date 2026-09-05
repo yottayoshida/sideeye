@@ -352,9 +352,11 @@ pub fn build(b: *std.Build) void {
     //
     // Zig analyses lazily: a `test` block in an imported file is collected only when a
     // test in the root reaches a declaration of that file. It is not "imported files are
-    // never collected" — the engine root runs posix.zig's 22 tests, because engine's
-    // tests reach posix — and not "always collected" either: mcp.zig imports engine.zig
-    // and its root runs none of engine's 102, because mcp's tests reach nothing in it.
+    // never collected" — the engine root runs posix.zig's tests, because engine's tests
+    // reach posix — and not "always collected" either: mcp.zig imports engine.zig and its
+    // root runs none of engine's, because mcp's tests reach nothing in it (measured
+    // 2026-09-05 at `b7d1c72`, the tree before the first seam of #491: posix 22,
+    // engine 102).
     // The first version of this build measured 19 tests run and five sitting uncollected,
     // green and measuring less than it appeared to — almost certainly this same effect on
     // a posix.zig that main's tests did not reach, though the tree that measured it has
@@ -365,7 +367,7 @@ pub fn build(b: *std.Build) void {
     // Files under src/engine/ cannot be named here: as a root, their `../posix.zig`
     // falls outside the module path. engine.zig references them with `refAllDecls`
     // instead: collection is unconditional either way, though a name here also proves the
-    // file builds as a root on its own, which those two cannot.
+    // file builds as a root on its own, which the files under src/engine/ cannot.
     const test_sources = [_][]const u8{
         "src/engine.zig",
         "src/posix.zig",
