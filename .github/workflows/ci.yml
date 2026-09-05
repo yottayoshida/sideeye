@@ -63,10 +63,13 @@ jobs:
       # ADD two engines with a lowered trace-read ceiling and leave the shipped engine
       # byte-identical. Two artifacts because the recording read exits before the world
       # read is reached, so one binary can only ever demonstrate the first branch. The
-      # shipped cap is unreachable by any fixture — the engine unlinks the trace before
-      # every run, and the only writer is the shim — so without these the refusal is
-      # untested: its branches live in main.zig, whose refusals exit the process, which
-      # no unit test can drive.
+      # shipped cap is reached by no committed fixture — the engine unlinks the trace
+      # before every run, and the only writer is the shim, a pair that stops being an
+      # argument at the second shim'd process, which opens the same name with nothing in
+      # front of it (#488); a link planted there is read through while the read side
+      # still follows links (#489). Nothing committed aims such a link at a large file. So
+      # without these the refusal is untested: its branches live in main.zig, whose refusals
+      # exit the process, which no unit test can drive.
       #
       # Same blind spot as #270's step above, and the same fix (#365). This comparison
       # sees the flag, not the shipped value: editing `engineOptions(b, 0, 0, false)`
