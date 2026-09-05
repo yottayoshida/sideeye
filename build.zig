@@ -19,8 +19,12 @@ pub fn build(b: *std.Build) void {
     // engine unlinks the trace before every run and the only writer is the shim; the pair
     // stops being an argument at the SECOND shim'd process, which opens the same name with
     // no unlink in front of it (#488), and a link planted there points the read at a file
-    // of any size while the read side still follows links (#489). `TOY_TRACELINK` plants
-    // exactly such a link and aims it at an empty file; nothing aims one at a large file.
+    // of any size — until #489 gave the trace read `O_NOFOLLOW` too, which shuts the
+    // symlink road. Two roads stay open and neither is closed by a flag: a **hard link**,
+    // which `O_NOFOLLOW` does not see, and the target itself, which holds the trace path in
+    // its environment and can write the work directory (README says so). So the claim here
+    // is still the weak one — no committed fixture aims anything at a large file — rather
+    // than the structural one it was before #488.
     // So without these artifacts the
     // refusal is unreachable in acceptance, and no unit test can stand in: the check
     // lives in main.zig, whose refusals exit the process. The shipped engine's value is

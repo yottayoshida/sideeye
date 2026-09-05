@@ -222,17 +222,20 @@ pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 ///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`.
 ///
 ///   This list used to add "all four read paths the engine itself produced, so nothing
-///   legitimate is refused", and that sentence is **wrong about `readWhole`** (#469):
+///   legitimate is refused", and that sentence was **wrong about `readWhole`** (#469):
 ///   its trace read is engine-produced, and its other caller is the snapshot walk, which
-///   reads files inside the *target's* state directory. The distinction matters because
-///   #469 gave the other three `O_NOFOLLOW` on exactly that reasoning — the file was
+///   reads files inside the *target's* state directory. `readWhole` takes a `LinkPolicy`
+///   for that reason now (#489) — **the split is the fix, not a gap in it**. The trace
+///   read passes `.refuse` on the argument #469 gave the other three: the file was
 ///   written by the engine refusing links, so reading it back through one can only be
-///   somebody else's substitution. That argument covers `readWhole`'s trace read and not
-///   its snapshot read, so it did not get the flag (#489). **Not because the flag would
-///   break anything**: the walk classifies with `kindOfPathNoFollow` first and a symlink
-///   goes to the `.symlink` arm, so `readWhole` meets one only through a race — which
-///   is a window worth closing on its own terms, with its own leg, rather than as a
-///   side effect of a list about `O_NONBLOCK`.
+///   somebody else's substitution, and since #488 that is true of the shim's write as
+///   well. The snapshot read keeps `.follow`, and **not because the flag would break
+///   anything**: the walk classifies with `kindFromDirent` (and `kindOfPathNoFollow` when
+///   the dirent has no type) before it reads, so a symlink goes to the `.symlink` arm and
+///   `readWhole` meets one there only through the window between that classification and
+///   the open. Closing *that* window changes what a snapshot refuses — it needs an entry
+///   to be reported rather than silently dropped (#5) — so it stays a promise of its own,
+///   with its own leg, rather than something acquired as a side effect here.
 /// - `main.zig`'s `readFileAllocCapped`: the flag comes with **either** half of its
 ///   `ReadMode`, and the two halves answer the same question differently. The case read
 ///   *classifies*: it needs the open to return so it can ask what the descriptor is, and
