@@ -125,6 +125,25 @@ clock, a random id and a cache keyed on an inode the restore moved all look
 the same from the bytes. For the success marker and the checker, `next_step`
 is `fix_define`.
 
+When the shim's trace is the witness, `child_touched_state_dir`'s `message`
+names the foreign process's pid and the first state-directory operation it
+performed — its class and its path, both ends for a two-path operation (#484): `a process
+other than the subject (pid 4379) performed rename(/…/.git/objects/… ->
+/…/.git/objects/…) during the recording run`. One record carries no class:
+the shim's own `kill_landed` marker, which a spawned child that loaded the shim
+and re-armed itself writes in place of its k-th operation's record when that
+operation is its first inside the state directory. For it the `message` says
+`was killed at a state-directory operation on <path>` — both ends when the
+marker carries two — rather than inventing a class. The refusal stays; what changes
+is that the operator's next move — a config flag, a `scratch` declaration, a
+different invocation — starts from the record rather than from a guess. When
+the oracle is the witness (a child that never loaded the shim), there is no
+trace record to name and the `message` stays the sentence it always was. In
+either case, when a strace capture exists the `message` ends by saying where
+it is — `; the oracle's capture at <work>/oracle.txt holds the child's own
+lines, its execve among them` — because the child's argv is in that file and
+nothing used to say the file existed.
+
 ## The account (always present)
 
 Free-form strings whose *presence* is stable and whose prose may improve

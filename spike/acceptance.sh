@@ -240,12 +240,35 @@ unset TOY_SPAWN
 # for its operation, whatever else is true.
 TOY_FORK_WRITES=1 export TOY_FORK_WRITES
 run_case "fork + writing child is refused"  "$OUT/toy-bug" 2 "child_touched_state_dir"
+# #484: the refusal names what the trace held all along — the child's pid, the operation
+# and its path — so the operator's next move (a config flag, a scratch declaration, a
+# different invocation) does not start from a guess. `run_case` leaves the last run's
+# output in $output.
+if echo "$output" | grep -qE 'subject \(pid [0-9]+\) performed open\(/tmp/acc/state/from-child.txt\)'; then
+    echo "ok   the refusal names the child's pid, its operation and its path (#484)"
+else
+    echo "FAIL the refusal names the child's pid, its operation and its path (#484)"
+    echo "$output" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+if echo "$output" | grep -qF "; the oracle's capture at /tmp/acc/work/oracle.txt holds the child's own lines"; then
+    echo "ok   the refusal points at the oracle capture that holds the child's argv (#484)"
+else
+    echo "FAIL the refusal does not point at the oracle capture (#484)"
+    fails=$((fails + 1))
+fi
 unset TOY_FORK_WRITES
 
 # A spawned shell that writes into the state directory: the child never loaded the shim
 # of the process the engine armed, so only the oracle sees this one.
 TOY_SPAWN_WRITES=1 export TOY_SPAWN_WRITES
 run_case "spawn + writing child is refused" "$OUT/toy-bug" 2 "child_touched_state_dir"
+if echo "$output" | grep -qF "no crash-point address; the oracle's capture at /tmp/acc/work/oracle.txt holds the child's own lines"; then
+    echo "ok   the oracle-witnessed refusal points at the oracle capture (#484)"
+else
+    echo "FAIL the oracle-witnessed refusal does not point at the oracle capture (#484)"
+    fails=$((fails + 1))
+fi
 unset TOY_SPAWN_WRITES
 
 # A child that leaves the process group: the engine cannot claim to have stopped it,

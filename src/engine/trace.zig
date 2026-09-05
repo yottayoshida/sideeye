@@ -103,6 +103,13 @@ pub const TraceInfo = struct {
     /// Crash points are numbered per process, so such an operation has no unique
     /// address; any run containing one is refused rather than mis-attributed.
     foreign_kill_point: bool = false,
+    /// The first such record, kept whole so the refusal can say which process did
+    /// what where (#484): the pid is the shim's own record of who wrote it, the class
+    /// and the path are the record's. `path` and `aux` are owned by this reader's arena
+    /// — the decode loop dupes every record's strings — so they live as long as the
+    /// `TraceInfo` does, the lifetime `Op.path` and `first_unsupported` already live with.
+    /// Set exactly when `foreign_kill_point` is; null otherwise.
+    first_foreign: ?Op = null,
     /// Any record at all from another process — a spawned child announcing itself
     /// counts. Evidence that the run crossed a process boundary even if no boundary
     /// record was written (a raw clone, say).
@@ -536,9 +543,10 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             .unresolved => info.saw_unresolved = true,
             // The record's path field carries the syscall-and-flag spelling, not a
             // path (v12). First one wins: the refusal names one operation, the way
-            // the oracle's `unsupported` does on Linux, and the slice borrows from
-            // the trace buffer the caller keeps alive — the same lifetime `Op.path`
-            // already lives with.
+            // the oracle's `unsupported` does on Linux. The slice is `Op.path`, duped
+            // into this reader's arena by the decode loop above, so it lives as long
+            // as the `TraceInfo` does (#484's review corrected this comment: it used to
+            // say the slice borrowed from the trace buffer).
             .unsupported => {
                 if (info.first_unsupported == null) info.first_unsupported = op.path;
             },
@@ -547,8 +555,10 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         const is_primary = info.primary_pid != null and op.pid == info.primary_pid.?;
         if (!is_primary) {
             info.foreign_pid_seen = true;
-            if (op.class.isKillPoint() or op.class == .kill_landed)
+            if (op.class.isKillPoint() or op.class == .kill_landed) {
                 info.foreign_kill_point = true;
+                if (info.first_foreign == null) info.first_foreign = op;
+            }
         }
         if (op.class.isKillPoint() and is_primary) {
             info.kill_point_count = @max(info.kill_point_count, op.seq);
@@ -804,6 +814,7 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
         .{ .op = .exec, .seq = 0, .pid = 9, .path = "", .aux = "" },
         .{ .op = .write, .seq = 1, .pid = 9, .path = "/tmp/s/c", .aux = "" },
         .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 9, .path = "/tmp/s/d", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -811,6 +822,13 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
     try std.testing.expect(info.hard_boundary == null);
     try std.testing.expect(!info.exec_chain_broken);
     try std.testing.expect(info.foreign_kill_point);
+    // The refusal's material (#484): the first foreign kill-point record, whole. Not
+    // the child's exec (not a kill point), not the subject's own write, and not the
+    // child's second write — first wins, the way `first_unsupported` does.
+    const ff = info.first_foreign orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(contract.OpClass.write, ff.class);
+    try std.testing.expectEqual(@as(u32, 9), ff.pid);
+    try std.testing.expectEqualStrings("/tmp/s/c", ff.path);
     _ = posix.unlink(fz);
 }
 
