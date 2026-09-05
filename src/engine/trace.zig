@@ -8,7 +8,7 @@
 //! file's declarations and fails if one is missing from the facade. Nothing here imports
 //! `engine.zig`.
 //!
-//! Comments below name declarations that live elsewhere: in `engine.zig`
+//! Comments below name declarations that live elsewhere: in `engine/state_fs.zig`
 //! (`max_state_file_bytes`, `max_state_tree_bytes`, `SnapshotError`, `takeSnapshotCapped`),
 //! in `main.zig` (`snapshotDetail`, `readTraceOrRefuse`), in `read.zig` (`ReadWholeError`,
 //! mentioned once inside `readTraceCappedInner`), and in `contract.zig` (`max_path`, written
@@ -592,7 +592,8 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     return info;
 }
 
-/// Copied from `engine.zig` rather than imported (#491): three lines around `bufPrintZ`
+/// Copied rather than imported (#491; the original is in `engine/state_fs.zig` now): three
+/// lines around `bufPrintZ`
 /// with no contract of their own, used here only by the test fixtures below.
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
     const s = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ a, b }) catch return error.PathTooLong;

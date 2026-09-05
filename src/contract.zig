@@ -450,7 +450,7 @@ pub const UnknownReason = enum {
     /// seam one statement wide. It stays SETUP_ERROR.
     ///
     /// **Not every unreadable tree reaches this.** The walk skips a directory it cannot
-    /// open (`engine.zig`'s `opendir … orelse return`), so a tree that is unreadable that
+    /// open (`engine/state_fs.zig`'s `opendir … orelse return`), so a tree that is unreadable that
     /// way snapshots as if the directory were empty. This member covers the failures the
     /// walk reports, not every failure it could in principle notice.
     state_unsnapshotable,

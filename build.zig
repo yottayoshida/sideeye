@@ -67,7 +67,8 @@ pub fn build(b: *std.Build) void {
     const trace_ops = b.option(bool, "trace-ops", "also build trace-ops, a reader that prints one <op> <path> line per shim trace record, used only by spike/fsevents (#344)") orelse false;
 
     // Every options module handed to a build of src/main.zig must carry the same field
-    // set — engine.zig and main.zig read them unconditionally, so a module missing one
+    // set — the parts under src/engine/ and main.zig read them unconditionally, so a
+    // module missing one
     // fails to compile that variant and only that variant. Adding `ancestor_probe` to
     // three of the four modules by hand broke `-Dtest-trace-cap` while `zig build`,
     // `zig build test` and the new option all stayed green; the sibling variant was not
@@ -352,8 +353,9 @@ pub fn build(b: *std.Build) void {
     //
     // Zig analyses lazily: a `test` block in an imported file is collected only when a
     // test in the root reaches a declaration of that file. It is not "imported files are
-    // never collected" — the engine root runs posix.zig's tests, because engine's tests
-    // reach posix — and not "always collected" either: mcp.zig imports engine.zig and its
+    // never collected" — the engine root runs posix.zig's tests, because a test in
+    // engine.zig reaches posix (since the last seam of #491 that test is the `refAllDecls`
+    // block over the parts, whose bodies call `posix.*`) — and not "always collected" either: mcp.zig imports engine.zig and its
     // root runs none of engine's, because mcp's tests reach nothing in it (measured
     // 2026-09-05 at `b7d1c72`, the tree before the first seam of #491: posix 22,
     // engine 102).
@@ -395,8 +397,9 @@ pub fn build(b: *std.Build) void {
                 .link_libc = true,
                 .imports = &.{
                     .{ .name = "contract", .module = contract },
-                    // engine.zig reads this for the ancestor-probe entry (#358), so the
-                    // test build of engine.zig has to resolve it too. Always the shipped
+                    // engine/state_fs.zig reads this for the ancestor-probe entry (#358),
+                    // and it is in engine.zig's module, so the test build of engine.zig
+                    // has to resolve it too. Always the shipped
                     // values: the unit tests assert what a released binary does, and a
                     // probe entry visible to them would make the denied lists they check
                     // differ from the ones users get. It is the SAME module object the

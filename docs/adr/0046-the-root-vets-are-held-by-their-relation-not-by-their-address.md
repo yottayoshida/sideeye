@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-04)
 
 Closes #359. The root denylists (`denied_trees`, `denied_exact`) and the shared shape
-checks stay in `src/engine.zig`. What this adds is the relation between the two vets over
+checks stay in `src/engine.zig` (since #491: now `src/engine/state_fs.zig`). What this adds is the relation between the two vets over
 them, which nothing stated before: **`assertSafeNamingRoot` refuses a subset of what
 `assertSafeRoot` refuses, and the one direction they differ in is the depth rule.**
 
@@ -45,7 +45,7 @@ directions, and neither vet can be given a check without the other getting it.
 
 ## Decision
 
-**Keep the lists in `engine.zig`, and pin the relation with a corpus test.**
+**Keep the lists in `engine.zig` (since #491: now `src/engine/state_fs.zig`), and pin the relation with a corpus test.**
 
 The relation is four assertions over `root_relation_corpus`:
 

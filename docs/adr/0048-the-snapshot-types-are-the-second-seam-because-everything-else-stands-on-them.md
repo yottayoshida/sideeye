@@ -63,7 +63,7 @@ Measured reasons, in the order they decided it (line numbers are `origin/main` a
 | `scratchMatches` | judge region, pub | `snapshot.zig`, pub | `diffSnapshotsExcept` uses it; left on the judge side it would make `snapshot.zig` import the judges, the cycle. The *semantics* — what `classifyWith` does with a match, `L0Plan.isScratch` — stay with the judges |
 | `testSnapshot` | among the judge tests, private | `snapshot.zig`, **pub** | the fixture that builds a snapshot through `finalizeEntries`, used by the `find` tests that move and by the judge tests that stay. Public so the judge tests keep their spelling through the facade |
 
-**Five types the walk fails or reports with stay in `engine.zig`**: `SnapshotError`,
+**Five types the walk fails or reports with stay in `engine.zig`** (since #491: now `src/engine/state_fs.zig`): `SnapshotError`,
 `SnapshotCaps`, `FileTooLargeDiag`, `TreeTooLargeDiag`, `SnapshotDiag`. They are the
 producer's vocabulary — `SnapshotError` is returned by `charge`, `walk`, `takeSnapshot` and
 `takeSnapshotCapped` and by nothing else, and of its eight members only

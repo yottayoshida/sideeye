@@ -565,7 +565,7 @@ fi
 # a refusal. That composition is measured by hand and is unmeasured by CI.
 if [ -d /opt ] && [ -d /var ]; then
     # Was refused before #329, by the depth rule alone: /opt is in neither denylist and
-    # is not an ancestor of anything in them (engine.zig keeps a positive assertion for
+    # is not an ancestor of anything in them (engine/state_fs.zig keeps a positive assertion for
     # /opt/myapp/state saying so). tools/list is driven, not just the exit code — a
     # server that starts and dies on its first message would otherwise pass.
     req="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{$META}}"

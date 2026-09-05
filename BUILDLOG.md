@@ -2,6 +2,101 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (night, last) — the walk and the restore leave engine.zig, and the facade is all that is left
+
+The fourth and last seam of #491. What moves is everything that still had a body in
+`engine.zig` at `19067e2`: the walk with its caps, the destructive side — `restore`,
+`freshDir`, `corruptState` — and the root vets every one of them runs first. Nineteen
+public names, twenty-three private ones, thirty-one tests, 2,552 lines by line range.
+What stays is `WorldResult`, the test that pins the three read error sets together, and
+the checks on the facade.
+
+**The plan's first line ranges could not have been built.** A first-look reviewer read
+them against the file: the corruption probe — `corruption_probe`, its target,
+`corruptState`, `countCorruptible`, seventy-seven lines — was in none of them, and two of
+the ranges cut a doc comment from the declaration it belongs to (`SnapshotError`'s six
+lines left behind at the top, `corruption_probe`'s three carried off without the constant),
+which Zig refuses on both sides. The reviewer also found the range's end six lines into
+the trace facade's header comment. The ranges that shipped — 75–81, 89–1148, 1181–1288,
+1296–1474, 1490–2687 — were the reviewer's, confirmed by a second who concatenated them
+and counted: 2,552 lines, thirty-one tests, every one of the forty-two names inside,
+every one of the five things that stay outside.
+
+**One file, for two reasons that are not the reason the plan first gave.** The draft said
+the walk and the restore had to stay together because both use the root vets; the walk
+(255–415) names no vet — `freshDir` and `restore` are both on the destructive side. What
+does hold them together: `max_depth` is one constant with two meanings, the walk's descent
+bound and `deleteTreeAt`'s, and its doc comment has said so since ADR 0024; and the #122
+test that carries a symlink through `takeSnapshot`, `restore` and `corruptState` is one
+body. A split would put both on one side of a line the other side depends on.
+
+**`WorldResult` stays, and ADR 0049's open question closes on the facade.** It holds a
+kill's outcome — `k`, `term`, `landed`, a `?Violation` — and only `main.zig`'s world loop
+produces it. Moving it to `main.zig` would take a name off `engine.*`, which is not a move.
+So `engine.zig` after this change is not a pure facade: a five-entry module map, four
+re-export blocks, one struct, two named tests, the unnamed `refAllDecls` block, and one
+comptime scan.
+
+**Seven documents say the vets or the restore live in `engine.zig`, and none of their
+sentences is rewritten.** ADRs 0011, 0022, 0042 and 0046, `docs/freeze-audit.md`, and —
+found by the reviews, one each — 0048 ("five types … stay in `engine.zig`") and 0049 ("two
+things stay"). Each gets a parenthesis after the claim naming where the thing is now. The
+rule is the one the first three seams kept: a later ADR corrects, an earlier one is not
+edited into agreement. The sweep that found the last two ran over `.zig`, `.md` and `.sh`;
+the plan's first sweep had left `.sh` out, and two acceptance scripts named `engine.zig`
+for the vets — one of them by a function name (`assertRootUnchanged`) the code lost in a
+rename recorded in the CHANGELOG, fixed in passing.
+
+**Whether `posix.zig`'s tests stay collected in the engine root was the one unmeasured
+premise, and it held.** They were collected there because `engine.zig`'s own tests called
+`posix.*`; after the move neither remaining test does. The count says `refAllDecls` on the
+parts reaches `posix` transitively: engine root 126 → 127, the difference being the one
+new test below, not a loss of twenty-two. `build.zig`'s comment naming the engine root as
+the example stays true — the reach is now through the `refAllDecls` block, which is a test
+in `engine.zig`.
+
+**Baseline at HEAD `19067e2`, measured during the plan**: `zig build test` 548/550, engine
+root 126 + 1 skip, main root 182 + 1 skip, `^test "` 33 in `engine.zig`; acceptance 288
+`ok`, ALL PASSED, two NOT MEASURED (`chown`; `git` absent from the image).
+
+**After the move.** `engine.zig` 2,745 → 224 lines; `state_fs.zig` 2,604 lines, 32 tests
+(31 moved and the public-surface count), 19 public declarations, six imports. `zig build
+test` 550/552 — two more than the baseline, the new count test in both roots — with the
+engine root at 127 + 1 skip and main at 183 + 1 skip. Flipping `assertSafeRoot("/")`'s
+expectation in `state_fs.zig` fails one test in each root, named
+`engine.state_fs.test.assertSafeRoot rejects roots a mistake would produce`; dropping
+`pub` from the `corruption_probe_target` re-export stops both roots at `engine.zig does
+not re-export state_fs.corruption_probe_target`, deleting the line does the same, and
+making one alias `pub` fails the count test with `expected 19, found 20`. Acceptance: 288
+`ok`, the same two NOT MEASURED, and the two `ok` sets identical line for line.
+
+**What the first-look review of the diff found.** No code defect: the reviewer
+concatenated the five HEAD ranges against the new file and found them identical apart from
+two blank lines. What it found was in the paperwork. One of the seven documents,
+`docs/freeze-audit.md`, holds its table inside a generated block whose source is
+`spike/freeze-audit/audit.tsv`, and the hand-written parenthesis would have failed
+`render-audit.sh --check` and vanished at the next render — the note now lives in the
+TSV and the page is re-rendered from it, check green. Two comments left over from the
+first seam still named `engine.zig` for things that had already moved (`posix.zig` for
+`readWhole`, `main.zig` for the trace reader's collapse to an empty `TraceInfo`) — the
+sweep for this seam had been scoped to the walk and the restore, and they are fixed in
+passing. `build.zig`'s sentence about why the engine root collects `posix.zig`'s tests now
+names the `refAllDecls` block as the test that reaches them. And "the two tests left in
+this file", written inside the third — the unnamed `refAllDecls` block is a test too — is
+"two named tests" now, here and in the CHANGELOG.
+
+**What the second review found in the corrections.** Every first-round item confirmed,
+the bodies re-derived as byte-identical, and four more in the words: fixing the second
+`main.zig` comment had made "`main.zig` changes in one comment" false in two documents;
+two `build.zig` comments still named `engine.zig` as what reads the build options, when
+that is `state_fs.zig` now (one of the two had been stale since the first seam); the
+`refAllDecls` block's rewritten justification claimed every part's tests reach the root
+"through this block or not at all", which the facade walk thirty lines below contradicts
+by naming every part's declarations — the block's own job is `posix.zig`, and the
+comment says that now; and ADR 0050 named `docs/freeze-audit.md` as re-pointed without
+saying the table is generated from `spike/freeze-audit/audit.tsv`, leaving the next
+editor to make the same hand edit. All fixed, comment lines and prose only.
+
 ## 2026-09-05 (night, later) — the judges leave engine.zig, and the order ADR 0048 wrote down is reversed
 
 Third seam of #491, and the first one where the plan's own reason for going in this order
