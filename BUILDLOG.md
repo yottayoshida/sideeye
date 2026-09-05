@@ -2,6 +2,132 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (night) — the snapshot types leave engine.zig, after the issue was closed by mistake
+
+The trace seam (below) shipped with `Closes #491` in its commit message. #491 asks for one
+seam per change and names four candidate files; one of four was done. Nobody authorised
+the close — the line was copied from the two fixes shipped the same day, whose PR and
+issue had the same scope — and the issue was reopened within the hour. This entry is the
+second seam, and its commit and PR body say `Refs #491` and put no closing keyword in the
+same clause, negated or not, because GitHub closes on "not closed by" too.
+
+**Which seam is second was measured, not chosen.** Outside the seven line ranges that move,
+`engine.zig` at `2f7067d` spells `Snapshot` 54 times and `Entry` 4 times — the walk, the
+restore and the judges all take or build snapshots — while the moved code reaches outward
+to `Op` (29 times, already in `trace.zig`), `contract.isInsideDir` once, `posix.Kind` twice,
+and three small helpers. (The plan said 58 and 7. That count had excluded only the
+two big ranges and left the helper lines — `finalizeEntries` takes a `Snapshot`,
+`lessThanRel` two `Entry`s — on the outside, and the first-look reviewer re-measured it
+at the named revision. The direction of the argument does not move.) Every other candidate imports the snapshot types; the snapshot types
+import none of them. So extracting the walk, the restore or the judges first would have
+made each import `Snapshot` back from `engine.zig`, the cycle #491 names as the stop
+condition. The snapshot region had to go before any of them could. ADR 0047's prediction
+that "whichever region moves next will cross at least one" of the three symlink-agreement
+tests was written for the walk and restore regions and does not hold here: those tests
+exercise the producers, which stay.
+
+**Three helpers changed owner, and one fixture became public.** `lessThanRel` and
+`finalizeEntries` (walk region) are the sorted-unique invariant — sort, then refuse a list
+`find` cannot search — and both producers end in `finalizeEntries`, so it is `pub` in
+`snapshot.zig` and `takeSnapshotCapped` calls it through the facade. `scratchMatches`
+(judge region) is used by `diffSnapshotsExcept`; left with the judges it would have made
+`snapshot.zig` import them — the same cycle from the other side — so the predicate moved
+and the judges reach it through the facade. That edge is inverted, not removed. The
+`testSnapshot` fixture is used by the `find` tests that move and by forty-odd lines of
+judge tests that stay; it is `pub` rather than copied, because unlike `joinZ` (three
+lines, no claim) its claim is "built under the same finalizer as a real snapshot", and two
+copies would open a path for one to be built under weaker rules.
+
+**The promise was too wide as first written, and a first-look reviewer showed it false at
+merge.** "Owns the snapshot types" — but five types the walk fails or reports with stay:
+`SnapshotError`, `SnapshotCaps`, the two size diagnostics, `SnapshotDiag`. They are the
+producer's vocabulary (`SnapshotError` is returned by `charge`, `walk`, `takeSnapshot` and
+`takeSnapshotCapped` and nothing else), so they move with the walk, and the module map
+says `Entry` and `Snapshot` instead. The same review caught the region's end one doc
+comment too far (1099 instead of 1093 — the five lines that explain
+`EntriesNotSortedUnique` belong to `SnapshotError`), two test counts mixed (`^test ` 84
+against `^test "` 83), and a check whose "nothing references `OrderProblem` by name" was
+true only because the test that does reference it moves too; the check now sacrifices
+`Reconciled`, which nothing outside the moving bodies names. A second reviewer found the
+worktree path written relative — this repository has no `.claude/` and ignores none — and
+three more comments that the move would have made false ("the reconcile tests above",
+"the first part lives beside it", the facade test's own "nine names").
+
+**Built in a linked worktree**, because the shared checkout carried another session's open
+PR. `git branch -f auto/… origin/main` was checked to be a fast-forward first (the branch
+was an ancestor of `main`) and turned out to re-point the branch's upstream at
+`origin/main`, which a plain `git push` would then have targeted; it was set back to the
+branch's own remote before anything else.
+
+**Baseline at HEAD, in the worktree, before the move**: `zig build test` 546/548 (2
+skipped), engine root 125 pass + 1 skip, main root 181 pass + 1 skip; acceptance in the
+aarch64 container as `--user 1000:1000`: 288 `ok` lines, ALL PASSED, and two NOT MEASURED
+(`chown` needs root; `git` is not in the image — exit 127 — so the committed-logs leg is
+NOT MEASURED there whether the tree is a worktree or the checkout). These are the lines
+the post-move run has to reproduce exactly.
+
+**After the move, measured in the same worktree.** `engine.zig` 4,745 → 3,553 lines
+(twenty-seven names gone as bodies — fifteen public, two made public, ten private — and
+seventeen re-exports in their place, plus the facade scan the review asked for;
+`^test "` 83 → 57); `snapshot.zig` 1,282 lines, 26 tests, importing `std`, `contract`,
+`../posix.zig` and `trace.zig` and nothing else.
+The move is by line range and the bodies are byte-identical to HEAD's apart from the two
+`pub` keywords, one blank line added at the first join and one trailing blank line
+dropped (the second reviewer concatenated the seven HEAD ranges against the new file:
+1,247 lines against 1,247), and — after that review — two sentences in `testSnapshot`'s
+doc comment whose "below" and "here" the move had made false (its call sites are mostly
+the judge tests, which stayed).
+`zig build test` 546/548, engine root 125 + 1 skip, main root 181 + 1 skip — the baseline
+numbers. Flipping one assertion in `snapshot.zig` (the `scratchMatches` test's first
+`expect`, negated) fails exactly one test in each root, named
+`engine.snapshot.test.scratchMatches: …`; that is what says the moved tests are collected
+in both roots, and it is the same experiment ADR 0047 used. Deleting the `Reconciled`
+re-export — a name nothing outside the moved bodies spells — stops both roots at
+`engine.zig:3543:17: error: engine.zig does not re-export snapshot.Reconciled` (the line
+number is the final tree's; it moved as the test grew), which is the walk saying what a
+hand-written list would not have. Acceptance in the container: 288
+`ok`, the same two NOT MEASURED lines, and the set of `ok` lines identical to the
+baseline's. `main.zig`, `mcp.zig`, `trace.zig` and `read.zig` are not in the diff.
+
+**What the first-look review of the diff found.** No code defect in the move: the seven
+ranges are byte-identical, which the reviewer checked by concatenating them against the
+new file. What it found was in the words around it. One comment the move made false that
+the plan's sweep had missed: `SnapshotError`'s doc said "the sort above guarantees the
+first", and there is no sort above any more — the sort is `finalizeEntries`, in the other
+file; it now says so. The 58 / 7 count, above. "Five types whose names start with
+`Snapshot`" — two of the five do not. "Every producer finalizes through", in the promise
+itself: `snapWith`, the judge tests' fixture, builds a `Snapshot` from an already-ordered
+slice and never calls `finalizeEntries`, so "every" was a universal the code does not
+hold; the module map, the file header and the CHANGELOG say "the producers" now, the two
+the code calls by that name (`takeSnapshotCapped`, `testSnapshot`). And one hole in the
+facade test itself, inherited from #496: `@hasDecl` from inside `engine.zig` is true for a
+private declaration too, so `const Reconciled = snapshot.Reconciled;` without `pub` would
+have passed both the walk and the identity check while `main.zig` could not spell
+`engine.Reconciled`. The test now searches `std.meta.declarations(@This())`, which lists
+only public declarations, and the seen-red for it is exactly that private re-export.
+The first version of that scan stopped at `evaluation exceeded 1000 backwards branches`:
+a linear pass over this file's public names, byte-comparing each, is past Zig's default
+comptime budget, and the private-re-export red had *looked* right only because the
+`@compileError` for `Reconciled` was reported ahead of the budget error. The scan sets
+`@setEvalBranchQuota(100_000)` now, and the sequence green → private red → deleted red →
+green was run again from the top.
+
+**What the second review found in the corrections.** Every first-round item confirmed
+closed, and the scan's mechanics confirmed from the standard library's own use of the
+same call (`refAllDecls` walks `std.meta.declarations` of a file from inside it; the quota
+raised in the callee reaches the caller's evaluation, as `std/enums.zig` and
+`std/fmt.zig` do). Four things wrong in the words: this entry had said "seven blank
+lines" where the concatenation says one added and one dropped; a line number written
+before the test grew; the ADR's paragraph about the symlink-agreement tests called
+`restore` and `corruptState` "producers", which would make "the producers finalize
+through" false in the ADR's own vocabulary — they are the destructive side, and the
+sentence says so now; and `testSnapshot`'s doc comment, which the move had made false in
+the same way as `SnapshotError`'s ("Ten of the call sites below": they are in the other
+file now). The `Snapshot.find` doc's "every producer sorts and validates" and "the two
+places snapshots are built" are also not true of `snapWith`, but they were not true at
+HEAD either — `snapWith` predates this change — and a move that edits what it moves
+stops being checkable as a move; they are left as found and recorded in the PR body.
+
 ## 2026-09-05 (evening) — the trace reader leaves engine.zig, and the plan was wrong twice about how tests are collected
 
 #491 asks for `engine.zig` (6,043 lines, five semantic boundaries) to be cut along its seams,
