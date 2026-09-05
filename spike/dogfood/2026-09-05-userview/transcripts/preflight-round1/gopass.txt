@@ -1,0 +1,13 @@
+UNKNOWN  boundary_without_oracle
+         the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)
+next        Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.
+
+atomicity   3 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   the shim recorded a process boundary and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

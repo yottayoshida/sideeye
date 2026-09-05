@@ -1,0 +1,468 @@
+== novelty pre-scan: rdiff-backup/rdiff-backup
+== date: 2026-09-05T04:28:03Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          34 hit(s) (all listed)
+      #975 open 2024-01-14 [BUG]  crash on date beyond 2038 (last 32 bits date)
+      #1082 closed 2025-08-18 [BUG] brocken softlinks crash the backup
+      #1072 closed 2025-05-27 Restoring from Increment
+      #789 closed 2022-11-21 [BUG] rdiff-backup crashes on EAs when backing up to an nfs share
+      #1011 closed 2024-08-09 TypeError: '<' not supported between instances of 'RPath' and 'RPath'
+      #1008 closed 2024-06-12 [BUG] 
+      #900 closed 2023-07-08 [BUG] Compressed file ended before the end-of-stream marker was reached
+      #868 closed 2023-04-24 [BUG] Fail gracefully when connection(s) can't be setup e.g. due to network error
+      #861 closed 2023-02-27 [BUG] WinError 206
+      #710 closed 2022-06-29 [BUG] Rdiff 2.0.5 crashes a a certain file every time with source EXT4 and target NFS
+      #211 closed 2019-12-09 Cannot make an incremental backup any more, fails with KeyError on index
+      #662 closed 2022-01-11 [BUG] crash when paths with accents in a file --exclude-globbing-filelist
+      #678 closed 2022-03-06 [BUG] Character device with major/minor 0/0 handled incorrectly
+      #650 closed 2021-12-22 rdiff-backup-statistics assertion
+      #463 closed 2020-09-11 [BUG] restoring a subdirectory doesn't play well with include/exclude filters
+      #603 merged 2021-06-17 Add locking mechanism to repositories
+      #38 closed 2018-11-21 Crash with AssertionError while backing up to exFAT partition
+      #384 closed 2020-05-28 [BUG] Crash on network drive due to handling too specific exceptions
+      #547 closed 2021-03-31 [BUG]does not respect certain folder exclusions and crashes
+      #540 closed 2021-02-28 [BUG] --tempdir causes crash on Windows
+  corrupt        23 hit(s) (all listed)
+      #617 open 2021-08-18 [BUG] verify action should catch regression error 
+      #1084 open 2025-10-04 [ENH] regression should recognize interrupted compressed files and handle them 
+      #972 open 2024-01-12 [BUG] read-only commands should return 2 as warning if last back-up failed
+      #82 open 2019-08-14 Make testing/resourceforktest.py work on OS/X
+      #1024 closed 2024-10-09 [BUG] Invalid cross-device link
+      #1006 closed 2024-06-05 [?] rdiff-backup 1.2.8 freezes while restoring files from backup
+      #1005 closed 2024-05-24 [BUG] "OSError: [Errno 36] File name too long"
+      #900 closed 2023-07-08 [BUG] Compressed file ended before the end-of-stream marker was reached
+      #884 closed 2023-05-26 [BUG] TypeError: '<' not supported between instances of 'RPath' and 'RPath' when regressing data
+      #729 closed 2022-09-08 Backup fails with OSError: [Errno 61] No data available (on some video files ?)
+      #365 closed 2020-05-18 [BUG] Trojan:WIN32/Azden.B!cl
+      #619 closed 2021-08-27 [BUG] Terminating error occurs in the handling of a `PermissionError` produced by certain files in use
+      #236 closed 2020-01-11 Backup stops on too long filename not found under Windows
+      #682 closed 2022-03-17 [BUG] 'utf-8' codec can't encode character '\udcf1'
+      #699 closed 2022-04-27 [BUG] EOFError: Compressed file ended before the end-of-stream marker was reached when running --check-destination-dir
+      #406 closed 2020-06-19 [BUG] --verify never finishes on repository with missing files
+      #628 closed 2021-10-18 [BUG] Backup aborts on files with `Operation not permitted`.
+      #611 closed 2021-08-04 [BUG] Bad file descriptor
+      #615 closed 2021-08-10 Files resulting as changed after swapping disks
+      #8 closed 2016-08-15 Support backup of files changing during backup time
+  corruption     9 hit(s) (all listed)
+      #975 open 2024-01-14 [BUG]  crash on date beyond 2038 (last 32 bits date)
+      #947 merged 2023-11-17 [DOC] Add example script to verify disk space
+      #906 closed 2023-07-20 Backupninja spits individual file warnings 
+      #878 closed 2023-05-09 Cannot regress last successful increment [?] 
+      #122 closed 2019-09-11 Insufficient defense against concurrent operations on a backup repository
+      #355 closed 2020-05-11 [BUG] MemoryError on lost connection.
+      #322 closed 2020-04-17 Exception ''<' not supported between instances of 'RPath' and 'RPath'' at backup
+      #304 closed 2020-03-19 Test failures in librsynctest.py with librsync 2.2.x and 2.3.x
+      #453 closed 2020-08-15 Fail with MemoryError on Windows 64 bits using stattest
+  truncated      18 hit(s) (all listed)
+      #1014 merged 2024-09-03 Bump actions/upload|download-artifact from 3 to 4 in /.github/workflows
+      #872 closed 2023-05-02 [BUG] local 2.0.5 can not backup remote host running 2.2.4
+      #900 closed 2023-07-08 [BUG] Compressed file ended before the end-of-stream marker was reached
+      #868 closed 2023-04-24 [BUG] Fail gracefully when connection(s) can't be setup e.g. due to network error
+      #619 closed 2021-08-27 [BUG] Terminating error occurs in the handling of a `PermissionError` produced by certain files in use
+      #393 closed 2020-06-06 Couldn't start up the remote connection
+      #585 closed 2021-05-15 [BUG] rdiff-backup is too eager to unescape backslashes in locations making it fail for valid Windows paths
+      #565 closed 2021-04-15 [BUG] My 2.1.0a1 client can't talk to 2.1.0a1 server (Win10)
+      #21 closed 2017-09-21 MemoryError exception when remote server does not start
+      #115 closed 2019-09-01 Remote backup fails with truncated pickle data
+      #238 closed 2020-01-15 More binary strings printed.
+      #396 closed 2020-06-09 [BUG] Linux / Windows 2.0.3 not working
+      #382 closed 2020-05-27 [BUG] Problems with german umlaut in filenames
+      #316 closed 2020-04-04 Unable to install on Raspbian (librsync.h/librsync.c)
+      #413 closed 2020-07-02 [BUG] MemoryError when trying to back up to external HDD (sudo needed) on server ( ssh option -t -tt ; stdin stdout)
+      #496 closed 2020-12-21 [BUG] Unexpected MemoryError on increment
+      #494 closed 2020-12-18 [BUG] Unable to connect from windows to linux using remote-schema flag
+      #125 merged 2019-09-19 fix 115 truncated pickle
+  truncate       18 hit(s) (all listed)
+      #1014 merged 2024-09-03 Bump actions/upload|download-artifact from 3 to 4 in /.github/workflows
+      #872 closed 2023-05-02 [BUG] local 2.0.5 can not backup remote host running 2.2.4
+      #900 closed 2023-07-08 [BUG] Compressed file ended before the end-of-stream marker was reached
+      #868 closed 2023-04-24 [BUG] Fail gracefully when connection(s) can't be setup e.g. due to network error
+      #619 closed 2021-08-27 [BUG] Terminating error occurs in the handling of a `PermissionError` produced by certain files in use
+      #393 closed 2020-06-06 Couldn't start up the remote connection
+      #585 closed 2021-05-15 [BUG] rdiff-backup is too eager to unescape backslashes in locations making it fail for valid Windows paths
+      #565 closed 2021-04-15 [BUG] My 2.1.0a1 client can't talk to 2.1.0a1 server (Win10)
+      #21 closed 2017-09-21 MemoryError exception when remote server does not start
+      #115 closed 2019-09-01 Remote backup fails with truncated pickle data
+      #238 closed 2020-01-15 More binary strings printed.
+      #396 closed 2020-06-09 [BUG] Linux / Windows 2.0.3 not working
+      #382 closed 2020-05-27 [BUG] Problems with german umlaut in filenames
+      #316 closed 2020-04-04 Unable to install on Raspbian (librsync.h/librsync.c)
+      #413 closed 2020-07-02 [BUG] MemoryError when trying to back up to external HDD (sudo needed) on server ( ssh option -t -tt ; stdin stdout)
+      #496 closed 2020-12-21 [BUG] Unexpected MemoryError on increment
+      #494 closed 2020-12-18 [BUG] Unable to connect from windows to linux using remote-schema flag
+      #125 merged 2019-09-19 fix 115 truncated pickle
+  empty          42 hit(s) (all listed)
+      #783 open 2022-11-14 [RFE] Make "verify" detect missing empty directories in the mirror
+      #1050 open 2025-01-08 [BUG] list files replaces invalid characther by  Unicode Replacement Character (U+FFFD)
+      #621 open 2021-09-01 [ENH] Ignore or manually set backup file ownership / permission metadata
+      #636 open 2021-11-14 [ENH] improve error handling and return code of individual file errors
+      #82 open 2019-08-14 Make testing/resourceforktest.py work on OS/X
+      #1107 closed 2026-04-21 [BUG] FileNotFoundError on regress
+      #1074 merged 2025-06-08 Run selection function in two pass
+      #866 closed 2023-03-12 [BUG] Recursion depth exceeded during backup
+      #1027 closed 2024-10-11 [BUG] Need to handle OSError EDEADLK/BlockingIOError on MacOS
+      #996 closed 2024-03-26 [ENH] Efficient restore to a populated destination
+      #976 closed 2024-01-16 test action fails with empty error message when using API 201
+      #789 closed 2022-11-21 [BUG] rdiff-backup crashes on EAs when backing up to an nfs share
+      #1011 closed 2024-08-09 TypeError: '<' not supported between instances of 'RPath' and 'RPath'
+      #955 closed 2023-12-01 [?] Is backup to a samba share supported?
+      #897 closed 2023-07-03 [BUG] Test failures
+      #883 merged 2023-05-15 Fix test action for API 201
+      #767 merged 2022-10-26 Fix removal action
+      #765 closed 2022-10-25 [BUG] Further Regression with Permissions in 2.1.3b3
+      #575 closed 2021-05-04 WIP: Reffactoring backup.py
+      #624 closed 2021-09-29 [BUG] Please improve the following message "No space left on the device"
+  atomic         2 hit(s) (all listed)
+      #951 merged 2023-11-23 Improve regression speed
+      #289 closed 2020-03-05 Authors of PRs are not logged in commit messages when merging
+  atomically     0 hit(s)
+  interrupted    29 hit(s) (all listed)
+      #179 open 2019-11-15 Resume interrupted backups
+      #1084 open 2025-10-04 [ENH] regression should recognize interrupted compressed files and handle them 
+      #1121 open 2026-08-30 [BUG] Files with owner names unknown on the destination are re-transferred when metadata is read from the filesystem
+      #1113 open 2026-06-22 [?] Getting a "Bad Index Order" even though I wasn't changing any files
+      #972 open 2024-01-12 [BUG] read-only commands should return 2 as warning if last back-up failed
+      #1107 closed 2026-04-21 [BUG] FileNotFoundError on regress
+      #1027 closed 2024-10-11 [BUG] Need to handle OSError EDEADLK/BlockingIOError on MacOS
+      #1008 closed 2024-06-12 [BUG] 
+      #998 closed 2024-04-03 backup to a pCloud mounted drive[?] 
+      #955 closed 2023-12-01 [?] Is backup to a samba share supported?
+      #891 closed 2023-06-25 Bookworm upgrade: WARNING: this command line interface is deprecated and will disappear
+      #781 closed 2022-11-07 [ENH] Pausing mid-backup.
+      #861 closed 2023-02-27 [BUG] WinError 206
+      #211 closed 2019-12-09 Cannot make an incremental backup any more, fails with KeyError on index
+      #122 closed 2019-09-11 Insufficient defense against concurrent operations on a backup repository
+      #710 closed 2022-06-29 [BUG] Rdiff 2.0.5 crashes a a certain file every time with source EXT4 and target NFS
+      #619 closed 2021-08-27 [BUG] Terminating error occurs in the handling of a `PermissionError` produced by certain files in use
+      #38 closed 2018-11-21 Crash with AssertionError while backing up to exFAT partition
+      #542 closed 2021-03-05 [BUG] Exception '[Errno 31] Too many links:
+      #533 closed 2021-02-20 [BUG] --exclude a relative path on windows is odd.
+  interrupt      35 hit(s) (all listed)
+      #179 open 2019-11-15 Resume interrupted backups
+      #1084 open 2025-10-04 [ENH] regression should recognize interrupted compressed files and handle them 
+      #1121 open 2026-08-30 [BUG] Files with owner names unknown on the destination are re-transferred when metadata is read from the filesystem
+      #1113 open 2026-06-22 [?] Getting a "Bad Index Order" even though I wasn't changing any files
+      #972 open 2024-01-12 [BUG] read-only commands should return 2 as warning if last back-up failed
+      #1107 closed 2026-04-21 [BUG] FileNotFoundError on regress
+      #1027 closed 2024-10-11 [BUG] Need to handle OSError EDEADLK/BlockingIOError on MacOS
+      #1008 closed 2024-06-12 [BUG] 
+      #998 closed 2024-04-03 backup to a pCloud mounted drive[?] 
+      #923 closed 2023-09-16 How to pause a backup to Continue later
+      #955 closed 2023-12-01 [?] Is backup to a samba share supported?
+      #521 closed 2021-01-30 Fatal Error: Target file system isn't deemed reliable enough for a backup.
+      #891 closed 2023-06-25 Bookworm upgrade: WARNING: this command line interface is deprecated and will disappear
+      #781 closed 2022-11-07 [ENH] Pausing mid-backup.
+      #861 closed 2023-02-27 [BUG] WinError 206
+      #211 closed 2019-12-09 Cannot make an incremental backup any more, fails with KeyError on index
+      #122 closed 2019-09-11 Insufficient defense against concurrent operations on a backup repository
+      #710 closed 2022-06-29 [BUG] Rdiff 2.0.5 crashes a a certain file every time with source EXT4 and target NFS
+      #699 closed 2022-04-27 [BUG] EOFError: Compressed file ended before the end-of-stream marker was reached when running --check-destination-dir
+      #686 closed 2022-03-21 [BUG] Exception AttributeError: type object 'ErrorLog' has no attribute 'write'
+  sigkill        1 hit(s) (all listed)
+      #1019 closed 2024-09-30 Flush stderr or stdout when logging
+  sigint         1 hit(s) (all listed)
+      #710 closed 2022-06-29 [BUG] Rdiff 2.0.5 crashes a a certain file every time with source EXT4 and target NFS
+  ctrl-c         4 hit(s) (all listed)
+      #55 open 2019-08-12 Create a PPA for Ubuntu testing
+      #710 closed 2022-06-29 [BUG] Rdiff 2.0.5 crashes a a certain file every time with source EXT4 and target NFS
+      #393 closed 2020-06-06 Couldn't start up the remote connection
+      #540 closed 2021-02-28 [BUG] --tempdir causes crash on Windows
+  power          7 hit(s) (all listed)
+      #55 open 2019-08-12 Create a PPA for Ubuntu testing
+      #1107 closed 2026-04-21 [BUG] FileNotFoundError on regress
+      #997 closed 2024-03-28 [BUG] Recurring Failure to "find the path specified: b'I:/'"
+      #807 closed 2022-12-19 >=rdiff-backup 2.2.0: please provide generated manpages in the release tarballs
+      #211 closed 2019-12-09 Cannot make an incremental backup any more, fails with KeyError on index
+      #537 closed 2021-02-26 Use Asciidoctor instead of Markdown
+      #41 closed 2019-03-04 add --no-fsync support
+  outage         2 hit(s) (all listed)
+      #1107 closed 2026-04-21 [BUG] FileNotFoundError on regress
+      #41 closed 2019-03-04 add --no-fsync support
+  ENOSPC         1 hit(s) (all listed)
+      #1094 merged 2026-03-14 Ignore too big extended attributes
+  disk           58 hit(s) (all listed)
+      #399 open 2020-06-10 [ENH] analyse and fix why rdiff-backup takes so long to delete old increments
+      #711 open 2022-07-02 [ENH] Address poor performance on many small files
+      #862 open 2023-03-01 [ENH] Add an option to exclude a filesystem by type (primarily targeted at NFS)
+      #853 open 2023-02-19 [ENH] Add ways of using the tempdir option
+      #484 open 2020-11-05 [ENH] allow usage of hard- and soft-links under Windows
+      #1114 closed 2026-07-20 Allow UNC-style double slash prefix in glob paths
+      #670 open 2022-02-17 [ENH] Better UID/GID mapping syntax and semantics
+      #1092 closed 2026-03-02 [BUG] Backup takes a very long time (9 hours)
+      #1067 merged 2025-04-30 Allow wildcard drive letter on Windows
+      #1031 closed 2024-11-11 [ENH] Excluding files at root of drive on Windows using wildcard is not working
+      #1058 closed 2025-04-15 [?] Help newbie in recreating rsync incremental backup command with rdiff-backup
+      #1022 closed 2024-10-06 Add timeout when reading files not on disk
+      #866 closed 2023-03-12 [BUG] Recursion depth exceeded during backup
+      #1001 closed 2024-05-14 Warning SpecialFileError: [Errno 95] Operation not supported
+      #947 merged 2023-11-17 [DOC] Add example script to verify disk space
+      #998 closed 2024-04-03 backup to a pCloud mounted drive[?] 
+      #1011 closed 2024-08-09 TypeError: '<' not supported between instances of 'RPath' and 'RPath'
+      #869 closed 2023-04-27 [BUG] Bad Index Order when Regressing Backup
+      #955 closed 2023-12-01 [?] Is backup to a samba share supported?
+      #897 closed 2023-07-03 [BUG] Test failures
+  partial        5 hit(s) (all listed)
+      #629 open 2021-10-27 [ENH] partial "backup" mode
+      #543 open 2021-03-06 [ENH] Retry and resume feature
+      #1012 closed 2024-08-18 [?] Differnt backup levels to the same destination folder
+      #740 closed 2022-09-17 [ENH] when removing increments, optionally show the size of each removed increment
+      #533 closed 2021-02-20 [BUG] --exclude a relative path on windows is odd.
+  incomplete     13 hit(s) (all listed)
+      #1084 open 2025-10-04 [ENH] regression should recognize interrupted compressed files and handle them 
+      #1069 merged 2025-05-12 [DOC] update info on FAQ about regress that now is an official command
+      #757 closed 2022-10-03 Introduce pyproject.toml and keep else setuptools as build toolset
+      #830 closed 2023-01-16 [BUG] Help text for remove increments is incomplete
+      #236 closed 2020-01-11 Backup stops on too long filename not found under Windows
+      #11 closed 2016-09-28 Fail when renaming with different case on case insensitive file system
+      #513 closed 2021-01-07 [BUG] rdiff-backup 1.2.8 (Debian) fails to back up a version 2.0.0 (Ubuntu 20.04) client
+      #322 closed 2020-04-17 Exception ''<' not supported between instances of 'RPath' and 'RPath'' at backup
+      #8 closed 2016-08-15 Support backup of files changing during backup time
+      #115 closed 2019-09-01 Remote backup fails with truncated pickle data
+      #5 merged 2016-03-05 New README for GitHub
+      #7 closed 2016-03-28 rdiff-backup website changes
+      #94 merged 2019-08-20 Update Dockerfile with exact steps on how to run the Tox tests
+  dataloss       0 hit(s)
+  recover        13 hit(s) (all listed)
+      #1113 open 2026-06-22 [?] Getting a "Bad Index Order" even though I wasn't changing any files
+      #853 open 2023-02-19 [ENH] Add ways of using the tempdir option
+      #783 open 2022-11-14 [RFE] Make "verify" detect missing empty directories in the mirror
+      #709 open 2022-06-10 [ENH] add option to allow backup of volatile files
+      #997 closed 2024-03-28 [BUG] Recurring Failure to "find the path specified: b'I:/'"
+      #900 closed 2023-07-08 [BUG] Compressed file ended before the end-of-stream marker was reached
+      #275 closed 2020-02-17 [ENH] create test case to check what happens when files looking like quoted are manipulated
+      #211 closed 2019-12-09 Cannot make an incremental backup any more, fails with KeyError on index
+      #463 closed 2020-09-11 [BUG] restoring a subdirectory doesn't play well with include/exclude filters
+      #583 closed 2021-05-15 Describe implications of FS warning messages
+      #523 closed 2021-02-06 Document parallel usage of rdiff-backup versions and different use cases
+      #322 closed 2020-04-17 Exception ''<' not supported between instances of 'RPath' and 'RPath'' at backup
+      #8 closed 2016-08-15 Support backup of files changing during backup time
+  recovery       8 hit(s) (all listed)
+      #408 open 2020-06-23 [ENH] ignore packaged files to greatly reduce size of backups
+      #1084 open 2025-10-04 [ENH] regression should recognize interrupted compressed files and handle them 
+      #996 closed 2024-03-26 [ENH] Efficient restore to a populated destination
+      #797 closed 2022-11-28 how to restore in a incremental way.
+      #463 closed 2020-09-11 [BUG] restoring a subdirectory doesn't play well with include/exclude filters
+      #699 closed 2022-04-27 [BUG] EOFError: Compressed file ended before the end-of-stream marker was reached when running --check-destination-dir
+      #604 closed 2021-06-30 [ENH] Restore only deltas
+      #401 closed 2020-06-15 [BUG] crash on backup op /dev: FileNotFoundError: rdiff-backup.tmp.22
+  rollback       9 hit(s) (all listed)
+      #1051 open 2025-01-14 [BUG] `--no-compression` and other options no longer supported in server mode
+      #1085 closed 2025-11-20 [?] Is there a way to roll back an incremental backup?
+      #944 closed 2023-11-12 [BUG] Homebrew contains unreleased version 2.4.0 of rdiff-backup
+      #838 closed 2023-02-04 [ENH] improve handling of disk full situations
+      #269 merged 2020-02-12 Document howto publish branch ubuntu-ppa for Launchpad builder
+      #707 closed 2022-05-31 Exception 'Can't mix strings and bytes in path components' raised of class '<class 'TypeError'>'
+      #609 merged 2021-07-27 Fix rdiff-backup manpage with moving restrict and simplifying section referencing
+      #590 merged 2021-05-30 Convert from Markdown to Asciidoc documentation
+      #371 merged 2020-05-21 Explicitly force charset for log file and terminal
+  resume         4 hit(s) (all listed)
+      #179 open 2019-11-15 Resume interrupted backups
+      #543 open 2021-03-06 [ENH] Retry and resume feature
+      #709 open 2022-06-10 [ENH] add option to allow backup of volatile files
+      #1071 open 2025-05-25 [ENH] don't return a warning when there are no increments to remove
+  half-written   2 hit(s) (all listed)
+      #619 closed 2021-08-27 [BUG] Terminating error occurs in the handling of a `PermissionError` produced by certain files in use
+      #322 closed 2020-04-17 Exception ''<' not supported between instances of 'RPath' and 'RPath'' at backup
+  wipe           5 hit(s) (all listed)
+      #694 merged 2022-04-17 Fix restoring of sub-dir with include/exclude
+      #316 closed 2020-04-04 Unable to install on Raspbian (librsync.h/librsync.c)
+      #436 closed 2020-07-26 [ENH] Document in which ways 2.x is incompatible with 1.x
+      #139 closed 2019-10-16 Add the --no-tar option to tools/makedist
+      #144 merged 2019-10-20 Add the --no-tar option to tools/makedist
+  wipes          2 hit(s) (all listed)
+      #139 closed 2019-10-16 Add the --no-tar option to tools/makedist
+      #144 merged 2019-10-20 Add the --no-tar option to tools/makedist
+  erase          4 hit(s) (all listed)
+      #621 open 2021-09-01 [ENH] Ignore or manually set backup file ownership / permission metadata
+      #996 closed 2024-03-26 [ENH] Efficient restore to a populated destination
+      #949 closed 2023-11-19 [ENH] make tox.ini only write to readable places with --current-env
+      #674 closed 2022-02-18 [ENH] Option to ignore user and group names
+  erasing        2 hit(s) (all listed)
+      #621 open 2021-09-01 [ENH] Ignore or manually set backup file ownership / permission metadata
+      #674 closed 2022-02-18 [ENH] Option to ignore user and group names
+  erased         1 hit(s) (all listed)
+      #996 closed 2024-03-26 [ENH] Efficient restore to a populated destination
+  destroy        4 hit(s) (all listed)
+      #1093 merged 2026-03-11 Merge rdiff-backup-delete into the remove action
+      #516 closed 2021-01-13 [ENH] need more Windows docs
+      #208 closed 2019-12-06 Win32: function _librsync_new_patchmaker() may fail with errno 24 "Too many open files"
+      #271 merged 2020-02-15 Add explanation on how to output iterators as lists
+  destroys       0 hit(s)
+  overwrite      14 hit(s) (all listed)
+      #1051 open 2025-01-14 [BUG] `--no-compression` and other options no longer supported in server mode
+      #1020 merged 2024-10-02 Overwrite weekly upload to avoid error
+      #1005 closed 2024-05-24 [BUG] "OSError: [Errno 36] File name too long"
+      #996 closed 2024-03-26 [ENH] Efficient restore to a populated destination
+      #1014 merged 2024-09-03 Bump actions/upload|download-artifact from 3 to 4 in /.github/workflows
+      #954 merged 2023-11-30 Fix regression of long filename
+      #888 merged 2023-06-15 Fix return code when arguments can't be parsed
+      #700 closed 2022-04-29 [BUG] -r now --exclude app/log.txt always overwrites the file that is expected to be excluded
+      #463 closed 2020-09-11 [BUG] restoring a subdirectory doesn't play well with include/exclude filters
+      #403 closed 2020-06-16 [BUG] Exception when trying to remove a directory
+      #615 closed 2021-08-10 Files resulting as changed after swapping disks
+      #133 closed 2019-10-05 Travis CI is called twice on new pull requests
+      #304 closed 2020-03-19 Test failures in librsynctest.py with librsync 2.2.x and 2.3.x
+      #262 merged 2020-02-09 Add workaround because Popen doesn't accept byte commands on Windows
+  clobber        2 hit(s) (all listed)
+      #1034 open 2024-11-18 Instead of git tag 'weekly', use git branch 'weekly'
+      #1018 open 2024-09-25 [ENH] Add an optional RDIFF_BACKUP_BLOCKSIZE environment variable to specify a fixed blocksize
+  blank          10 hit(s) (all listed)
+      #842 closed 2023-02-07 Unclear how to handle "this command line interface is deprecated and will disappear, start using the new one as described with '--new --help'"
+      #620 closed 2021-08-27 Error specifying both base directory and a globbing pattern in an exclude directive in Windows
+      #583 closed 2021-05-15 Describe implications of FS warning messages
+      #590 merged 2021-05-30 Convert from Markdown to Asciidoc documentation
+      #534 closed 2021-02-21 [BUG] issue executing rdiff-backup via bash script
+      #538 merged 2021-02-26 [DOC] Add side by side comparaison of old and new CLI
+      #60 closed 2019-08-13 Clean-up the code with pep8 and replace tabs with spaces
+      #279 closed 2020-02-24 Transform the changelog into Markdown format
+      #486 closed 2020-11-11 [BUG] Windows can't back to ssh linux because its trying to chnage permissions
+      #147 merged 2019-10-26 More documentation cleanups
+  unreadable     6 hit(s) (all listed)
+      #1063 open 2025-04-25 NEW: Add selection parser "--exclude-unreadable"
+      #1064 open 2025-04-25 [BUG] Rdiff-backup trying to read hiberfil.sys and swapfile.sys despite exclusions
+      #836 merged 2023-01-28 Fix unreadable symlink on Samba share
+      #817 closed 2023-01-09 [BUG] cifs share as source fatals because of weird unreadable link as an early-seen file
+      #819 closed 2023-01-09 [BUG] CloseConnections doesn't wait for child processes to die, losing output
+      #628 closed 2021-10-18 [BUG] Backup aborts on files with `Operation not permitted`.
+  garbage        3 hit(s) (all listed)
+      #913 merged 2023-08-19 Add environment variable to change api version
+      #855 closed 2023-02-23 backup failed by "PermissionError: [WinError 5] Access is denied: b'W:/.WDSyncHistory/.WD Hidden Files'"
+      #463 closed 2020-09-11 [BUG] restoring a subdirectory doesn't play well with include/exclude filters
+  mangled        1 hit(s) (all listed)
+      #216 closed 2019-12-16 rdiff-backup v1.3 has changed default date format in repos on Windows
+  contents       17 hit(s) (all listed)
+      #465 open 2020-09-25 [ENH] add hash comparaison option to backup action
+      #711 open 2022-07-02 [ENH] Address poor performance on many small files
+      #996 closed 2024-03-26 [ENH] Efficient restore to a populated destination
+      #1005 closed 2024-05-24 [BUG] "OSError: [Errno 36] File name too long"
+      #816 closed 2023-01-02 [BUG] API 201 backups unchanged hardlinked files with Attempt to rename over same inode
+      #603 merged 2021-06-17 Add locking mechanism to repositories
+      #700 closed 2022-04-29 [BUG] -r now --exclude app/log.txt always overwrites the file that is expected to be excluded
+      #542 closed 2021-03-05 [BUG] Exception '[Errno 31] Too many links:
+      #26 closed 2018-02-09 Does rdiff-backup intelligently handle log file rotation?
+      #270 closed 2020-02-14 Windows 10 failure,  c:\users n:\rdiffbackup
+      #317 closed 2020-04-04 Support: compare directory structures and generate patch-like file
+      #436 closed 2020-07-26 [ENH] Document in which ways 2.x is incompatible with 1.x
+      #495 closed 2020-12-21 [BUG] Only one increment listed
+      #255 merged 2020-02-01 Describe the release process and extend the PR explanations
+      #290 closed 2020-03-08 Fix testing/hashtest.py (#78)
+      #314 merged 2020-03-31 Add documentation to migrate from legacy to new version
+      #285 merged 2020-02-25 Create a new rdiff-backup-delete script
+  in-place       92 hit(s) (all listed)
+      #1101 open 2026-03-29 Remove spurious warning when attempting to delete non-existing increment.
+      #853 open 2023-02-19 [ENH] Add ways of using the tempdir option
+      #530 open 2021-02-18 [ENH] Create custom linting rules to automate validation of coding guidelines
+      #647 open 2021-12-13 [ENH] add a migrate action to move/copy an existing repository between file systems
+      #1034 open 2024-11-18 Instead of git tag 'weekly', use git branch 'weekly'
+      #787 open 2022-11-18 [ENH] Cannot backup remote dir given as symlink in the path /dir1/dir2/symlink -> /dir1/dir2/dir3/dir4
+      #465 open 2020-09-25 [ENH] add hash comparaison option to backup action
+      #55 open 2019-08-12 Create a PPA for Ubuntu testing
+      #1105 merged 2026-04-18 Reduce remote calls in rpath
+      #795 closed 2022-11-26 [ENH] wrap all remote direct calls to Python functions through rdiff-backup methods
+      #1081 merged 2025-08-15 Centralize all conversions between bytes and str
+      #1068 closed 2025-05-01 Use surrogateescape for list files & compare output
+      #866 closed 2023-03-12 [BUG] Recursion depth exceeded during backup
+      #1019 closed 2024-09-30 Flush stderr or stdout when logging
+      #1024 closed 2024-10-09 [BUG] Invalid cross-device link
+      #1005 closed 2024-05-24 [BUG] "OSError: [Errno 36] File name too long"
+      #1011 closed 2024-08-09 TypeError: '<' not supported between instances of 'RPath' and 'RPath'
+      #127 closed 2019-09-19 [ENH] reproduce SSH buffering issues in a test case to avoid regression
+      #971 closed 2024-01-11 [ENH]  populate no_compression_regexp with _something_ so it matches the documentation
+      #951 merged 2023-11-23 Improve regression speed
+  unclean        2 hit(s) (all listed)
+      #66 closed 2019-08-14 Get rid of $version and replace with other mean to centralize versioning
+      #53 merged 2019-08-10 Migration to Python 3 with file paths as bytes instead str
+  shutdown       1 hit(s) (all listed)
+      #819 closed 2023-01-09 [BUG] CloseConnections doesn't wait for child processes to die, losing output
+  reboot         3 hit(s) (all listed)
+      #236 closed 2020-01-11 Backup stops on too long filename not found under Windows
+      #220 closed 2019-12-28 Document step-by-step Windows development
+      #494 closed 2020-12-18 [BUG] Unable to connect from windows to linux using remote-schema flag
+  disk+full      10 hit(s) (all listed)
+      #484 open 2020-11-05 [ENH] allow usage of hard- and soft-links under Windows
+      #866 closed 2023-03-12 [BUG] Recursion depth exceeded during backup
+      #1011 closed 2024-08-09 TypeError: '<' not supported between instances of 'RPath' and 'RPath'
+      #838 closed 2023-02-04 [ENH] improve handling of disk full situations
+      #897 closed 2023-07-03 [BUG] Test failures
+      #615 closed 2021-08-10 Files resulting as changed after swapping disks
+      #545 merged 2021-03-19 When using the --remove-older-than option with --tempdir, the --tempdir flag is not honored
+      #270 closed 2020-02-14 Windows 10 failure,  c:\users n:\rdiffbackup
+      #304 closed 2020-03-19 Test failures in librsynctest.py with librsync 2.2.x and 2.3.x
+      #458 merged 2020-08-26 Add description of the API versioning approach
+  data+loss      10 hit(s) (all listed)
+      #1107 closed 2026-04-21 [BUG] FileNotFoundError on regress
+      #1011 closed 2024-08-09 TypeError: '<' not supported between instances of 'RPath' and 'RPath'
+      #700 closed 2022-04-29 [BUG] -r now --exclude app/log.txt always overwrites the file that is expected to be excluded
+      #694 merged 2022-04-17 Fix restoring of sub-dir with include/exclude
+      #11 closed 2016-09-28 Fail when renaming with different case on case insensitive file system
+      #580 closed 2021-05-14 [ENH] different name for metadata subdir
+      #384 closed 2020-05-28 [BUG] Crash on network drive due to handling too specific exceptions
+      #232 closed 2020-01-04 Backup hangs - Previous backup seems to have failed, regressing destination now.
+      #367 closed 2020-05-19 [BUG] --check-destination fails: Can't mix strings and bytes in path components
+      #387 closed 2020-05-28 [BUG] UnicodeDecodeError when reusing destination from rdiff-backup 1.2.8
+  partial+write  1 hit(s) (all listed)
+      #533 closed 2021-02-20 [BUG] --exclude a relative path on windows is odd.
+  crash+safe     1 hit(s) (all listed)
+      #650 closed 2021-12-22 rdiff-backup-statistics assertion
+  atomic+write   1 hit(s) (all listed)
+      #289 closed 2020-03-05 Authors of PRs are not logged in commit messages when merging
+  lock+file      20 hit(s) (all listed)
+      #1063 open 2025-04-25 NEW: Add selection parser "--exclude-unreadable"
+      #1011 closed 2024-08-09 TypeError: '<' not supported between instances of 'RPath' and 'RPath'
+      #1005 closed 2024-05-24 [BUG] "OSError: [Errno 36] File name too long"
+      #957 closed 2023-12-10 [BUG] CVE-2023-49797 pyinstaller: unauthorized deletion of files
+      #966 closed 2023-12-25 [BUG] rdiff-backup fails on too long filenames under Windows
+      #724 merged 2022-09-08 Fix issue with locking without lock file
+      #619 closed 2021-08-27 [BUG] Terminating error occurs in the handling of a `PermissionError` produced by certain files in use
+      #775 merged 2022-11-04 Improve overall test coverage
+      #752 merged 2022-10-01 Fix terminating PermissionError under Windows
+      #723 closed 2022-09-08 [BUG] lock after error doesn't get removed, even with force option
+      #236 closed 2020-01-11 Backup stops on too long filename not found under Windows
+      #624 closed 2021-09-29 [BUG] Please improve the following message "No space left on the device"
+      #415 closed 2020-07-03 [ENH] make locking of backup repo reliable on network file system
+      #122 closed 2019-09-11 Insufficient defense against concurrent operations on a backup repository
+      #603 merged 2021-06-17 Add locking mechanism to repositories
+      #646 closed 2021-12-12 [BUG] Target directory is empty, exclude is not working as expected
+      #115 closed 2019-09-01 Remote backup fails with truncated pickle data
+      #366 closed 2020-05-18 module 'errno' has no attribute 'EDEADLOCK'
+      #285 merged 2020-02-25 Create a new rdiff-backup-delete script
+      #229 merged 2020-01-03 Add wrapper function to workaround a bug in os.readlink on Windows
+  write+failure  10 hit(s) (all listed)
+      #949 closed 2023-11-19 [ENH] make tox.ini only write to readable places with --current-env
+      #952 merged 2023-11-26 Make sure tox.ini doesn't write if called without venv
+      #934 closed 2023-10-25 [BUG] rdiff-backup fails to build with Python 3.13: Missing <unistd.h> declaration
+      #806 closed 2022-12-18 rdiff-backup 2.2.0 cannot install in Python neither 3.10 nor 3.11 on macOS 10.14 Mojave
+      #347 closed 2020-05-03 [ENH] make as many tox tests work under windows as possible
+      #322 closed 2020-04-17 Exception ''<' not supported between instances of 'RPath' and 'RPath'' at backup
+      #101 closed 2019-08-23 Rpath test fails on major dev bigger 256 with assertion error
+      #370 closed 2020-05-21 [BUG] Test failures in eas_aclstest on recent ArchLinux
+      #418 closed 2020-07-06 [ENH] get rid of setuptools as runtime dependency
+      #496 closed 2020-12-21 [BUG] Unexpected MemoryError on increment
+  file+contents  17 hit(s) (all listed)
+      #465 open 2020-09-25 [ENH] add hash comparaison option to backup action
+      #711 open 2022-07-02 [ENH] Address poor performance on many small files
+      #996 closed 2024-03-26 [ENH] Efficient restore to a populated destination
+      #1005 closed 2024-05-24 [BUG] "OSError: [Errno 36] File name too long"
+      #816 closed 2023-01-02 [BUG] API 201 backups unchanged hardlinked files with Attempt to rename over same inode
+      #700 closed 2022-04-29 [BUG] -r now --exclude app/log.txt always overwrites the file that is expected to be excluded
+      #603 merged 2021-06-17 Add locking mechanism to repositories
+      #542 closed 2021-03-05 [BUG] Exception '[Errno 31] Too many links:
+      #26 closed 2018-02-09 Does rdiff-backup intelligently handle log file rotation?
+      #270 closed 2020-02-14 Windows 10 failure,  c:\users n:\rdiffbackup
+      #317 closed 2020-04-04 Support: compare directory structures and generate patch-like file
+      #436 closed 2020-07-26 [ENH] Document in which ways 2.x is incompatible with 1.x
+      #495 closed 2020-12-21 [BUG] Only one increment listed
+      #255 merged 2020-02-01 Describe the release process and extend the PR explanations
+      #290 closed 2020-03-08 Fix testing/hashtest.py (#78)
+      #314 merged 2020-03-31 Add documentation to migrate from legacy to new version
+      #285 merged 2020-02-25 Create a new rdiff-backup-delete script
+
+== 51 terms run; 48 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

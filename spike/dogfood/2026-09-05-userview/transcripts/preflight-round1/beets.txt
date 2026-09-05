@@ -1,0 +1,14 @@
+/work/bt/in2
+UNKNOWN  multiple_threads_detected
+         the target created a thread; operation order would not be deterministic
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   15 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   the shim recorded a thread
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -1,0 +1,14 @@
+node[54]: pthread_create: Invalid argument
+UNKNOWN  multiple_threads_detected
+         the target created a thread; operation order would not be deterministic
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   5 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   the shim recorded a thread; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

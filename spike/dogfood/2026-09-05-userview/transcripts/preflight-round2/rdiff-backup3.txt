@@ -1,0 +1,14 @@
+WARNING: Server will be called with deprecated command line interface to guarantee compatibility. It might lead to a deprecation warning from newer rdiff-backup versions. Use '--api-version 201' (or higher) to avoid it.
+UNKNOWN  boundary_without_oracle
+         the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)
+next        Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.
+
+atomicity   9 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): rdiff-backup-data/backup.log
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   the shim recorded a process boundary and no second witness ran
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

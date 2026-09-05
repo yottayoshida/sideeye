@@ -2,6 +2,80 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (dogfood) — eight targets, four walls forecast correctly and confirmed expensively, and a freshness check that read one repository
+
+Instruction: use Sideeye the way a user would — Linux in Docker, targets picked by
+the selection rules, four at a time. Two slates ran. The record is
+`spike/dogfood/2026-09-05-userview/`, and the directory that holds it is new
+(`spike/dogfood/`, with its own README and sunset condition).
+
+**Slate 1 reached no verdict.** chezmoi, gopass, beets, joplin: `no_shim_marker`
+twice (both Go, and — measured on the `.tar.gz` *and* the `.deb` — every published
+Linux artifact of either is static, with neither in Debian, so there is no install
+path on Linux that the shim can enter), `multiple_threads_detected` twice. Three
+of the four walls had been forecast. **Being right did not help**: each forecast
+still cost an image build and a preflight to confirm, and the fourth forecast —
+"Python has many verdicts, expect no wall" — was wrong. beets trips the thread
+refusal on `beet ls`, a read-only command, and `threaded: no` does not remove it.
+
+**Slate 2 reached four.** Before writing any candidate table, every survivor of
+the metadata rules was run once in the image and measured with `file` and
+`strace -e trace=clone,clone3` **on a real writing operation**. Twenty minutes,
+eight candidates, four dropped: newsboat (2 threads), oxipng (11 threads by
+default, and **still 2 with `-t 1`** — the flag sizes rayon's pool rather than
+removing it), weechat (no headless binary in Debian's package), rsync (forks).
+mogrify, qpdf, exiv2 and rdiff-backup all reached FAIL. That ordering rule is now
+written into `spike/dogfood/README.md` as the one thing that directory adds to the
+cohort rules, with its own deletion condition.
+
+**Node/libuv is measured.** `docs/target-classes.md` carried it as a labelled
+prediction resting on toys and on Bun, which is neither. joplin CLI 3.6.x meets
+exactly the predicted wall. The row moved out of "Not yet measured", which is now
+empty and says so.
+
+### What went wrong, in the order it went wrong
+
+- **The first slate proposed jrnl.** It had been rejected 2026-08-12 after an
+  `strace` of its write path, then run as the onboarding clock's target for
+  PASS 4/4, and it sits on the taint ledger. The check that missed it read
+  `docs/target-classes.md` and nothing else; jrnl is recorded in three other
+  places. The owner caught it.
+- **The freshness check for qpdf read only this repository.** Zero hits here, so
+  it was called fresh. It is in production in four of the owner's work
+  repositories, and the owner had filed qpdf/qpdf#1773 the previous day —
+  describing the same two-rename window this run then rediscovered. `git grep` in
+  one tree is not a freshness check, and the workspace-wide grep that would have
+  caught it is a known gotcha in the owner's CLAUDE.md, cited in the same session.
+- **The novelty pre-scan was deferred.** Rule 14 is a veto applied at candidate
+  time. It was announced as "after the slate is confirmed" and then not run until
+  four FAILs were in hand — which is exactly the ordering cohort 3 paid a slot to
+  learn was wrong (black, probed and explored before anyone searched the tracker).
+- **The rdiff-backup checker ignored the tool's recovery contract.** It asserted
+  `rdiff-backup verify` immediately after the crash: **FAIL 5 of 69**. With
+  `rdiff-backup regress` ahead of the assert, as `SCOUT-BRIEF.md`'s checker sketch
+  asks for, four of those five heal and the verdict is **1 of 69**. The buku
+  lesson approached from the other side — there, bytes were stricter than the
+  contract; here, skipping the journal was.
+- **Three raw exit codes were read off a pipe**, the failure `docs/scouting.md`
+  names by itself. One of them reported a `docker build` as successful when it
+  had failed four layers earlier.
+- **A verdict count was written from memory** into `docs/target-classes.md`
+  ("6/11") when the report says 6 of 13 explored worlds. Corrected in the same
+  sitting, but it was written before the transcript was reopened.
+
+### Filed
+
+Exiv2/exiv2#9482 (truncate-in-place leaves a zero-byte image, **no backup
+anywhere** — and the same `FileIo::transfer` has a `rename` branch it does not
+take for this path) and ImageMagick/ImageMagick#8939 (rename-aside leaves the
+original name empty; the content survives at `<file>~`, so the report says so and
+invites closing it). Both were confirmed against current upstream source before
+filing, not against the Debian build alone. rdiff-backup's finding is
+rdiff-backup/rdiff-backup#1084's shape, open since 2025-10-04, and was not filed.
+Both new filings, plus qpdf#1773, are in `spike/upstream-reports.tsv` — which had
+been silently missing qpdf#1773, since `check-upstream-ledger.sh` sees only
+findings present in *both* records and that one was in neither.
+
 ## 2026-09-05 (later) — the read side, and an issue that overstates its own defect
 
 #489 is the other half of #488, filed the same afternoon: `readWhole` opens

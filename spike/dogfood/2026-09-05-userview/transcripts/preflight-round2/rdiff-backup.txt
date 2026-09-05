@@ -1,0 +1,16 @@
+WARNING: Server will be called with deprecated command line interface to guarantee compatibility. It might lead to a deprecation warning from newer rdiff-backup versions. Use '--api-version 201' (or higher) to avoid it.
+ERROR: The last backup is not in the past. Aborting.
+ERROR: Action backup failed on step setup
+UNKNOWN  recording_run_failed
+         the operation exited 1 during the recording run where 0 was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: this run was refused before the shim's account of it was read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

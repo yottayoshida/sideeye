@@ -1,0 +1,20 @@
+137   clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffffa3dff230, parent_tid=0xffffa3dff230, exit_signal=0, stack=0xffffa35f0000, stack_size=0x80ea40, tls=0xffffa3dff880}, 88) = -1 ENOSYS (Function not implemented)
+137   clone(child_stack=0xffffa3dfea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[138], tls=0xffffa3dff880, child_tidptr=0xffffa3dff230) = 138
+137   clone(child_stack=0xffffa35eea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[139], tls=0xffffa35ef880, child_tidptr=0xffffa35ef230) = 139
+137   clone(child_stack=0xffffa2ddea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[140], tls=0xffffa2ddf880, child_tidptr=0xffffa2ddf230) = 140
+137   clone(child_stack=0xffffa25cea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[141], tls=0xffffa25cf880, child_tidptr=0xffffa25cf230) = 141
+137   clone(child_stack=0xffffa1dbea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[142], tls=0xffffa1dbf880, child_tidptr=0xffffa1dbf230) = 142
+137   clone(child_stack=0xffffa15aea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[143], tls=0xffffa15af880, child_tidptr=0xffffa15af230) = 143
+137   clone(child_stack=0xffffa0d9ea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[144], tls=0xffffa0d9f880, child_tidptr=0xffffa0d9f230) = 144
+137   clone(child_stack=0xffffa058ea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[145], tls=0xffffa058f880, child_tidptr=0xffffa058f230) = 145
+137   clone(child_stack=0xffff9fd7ea40, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[146], tls=0xffff9fd7f880, child_tidptr=0xffff9fd7f230) = 146
+138   +++ exited with 0 +++
+140   +++ exited with 0 +++
+139   +++ exited with 0 +++
+142   +++ exited with 0 +++
+141   +++ exited with 0 +++
+143   +++ exited with 0 +++
+144   +++ exited with 0 +++
+146   +++ exited with 0 +++
+145   +++ exited with 0 +++
+137   +++ exited with 0 +++

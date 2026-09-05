@@ -1,0 +1,644 @@
+== novelty pre-scan: Exiv2/exiv2
+== date: 2026-09-05T04:22:33Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3530 open 2026-03-26 MemIo::mmap() ignores isWriteable parameter, causing TIFF writes to crash
+      #2588 open 2023-04-17 readMetadata() crashes for a specific image
+      #3225 open 2025-04-01 GIMP crash caused by setlocale bug on Windows (via Exiv2 in the call stack)
+      #3501 open 2026-02-18 Xmp toolkit as a submodule
+      #2671 open 2023-07-01 Make XMP SDK code match scanf/printf format strings and types.
+      #9440 merged 2026-08-24 Call CreateFileMapping correctly on Windows (backport #9431)
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #2670 open 2023-06-30 exiv2 0.28 breaks gimp jpeg metadata export
+      #9395 merged 2026-07-23 Avoid using destNode after deleting (backport #9367)
+      #9433 merged 2026-08-21 Use std::llround for double to int64_t cast
+      #9347 closed 2026-06-21 Increase stack size limit on Linux
+      #9376 closed 2026-07-05 Off by one in RemoteIo::read
+      #9367 merged 2026-06-28 Avoid using destNode after deleting
+      #9331 closed 2026-06-14 Release version 0.28.9
+      #9397 merged 2026-07-25 Add regression test
+      #9391 closed 2026-07-18 out-of-bounds array access in RemoteIo
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #9355 merged 2026-06-21 Update SECURITY.md
+      #9303 closed 2026-05-16 Potential denial-of-service issue in ASF parser (reported privately via GHSA)
+      #9324 closed 2026-06-07 Heap buffer overflow in packIfdId via uint16_t truncation
+  corrupt        93 hit(s) (all listed)
+      #904 open 2019-06-10 Canon 1Ds thumbnail colour corrupted.
+      #3162 open 2025-02-10 JXR file is corrupted after writing metadata to image
+      #2542 open 2023-03-10 olympus makernotes get lost or corrupt with 0.27.6
+      #2150 open 2022-03-13 XMP with Google depth-map gets corrupted when metadata is modified
+      #3166 open 2025-02-15 Nikon Z *
+      #2538 open 2023-03-06 AV1 in MPEG-4 is not recognized
+      #2825 open 2023-11-10 DNG:  exiv2 vs exiftool previewimage inconsistency
+      #1419 open 2020-12-06 Support for tag PrintImageMatching 0xc4a5
+      #1506 open 2021-03-25 JXL/codestream support
+      #9411 merged 2026-08-05 Fix TimeValue::read() losing sign for -00:MM / -00MM timezone offsets (backport #9390)
+      #9407 merged 2026-08-04 Improve performance of decodeAi7Thumbnail
+      #9390 merged 2026-07-18 Fix TimeValue::read() losing sign for -00:MM / -00MM timezone offsets
+      #1934 open 2021-09-28 Problems with `--insert` and `--extract` in `exiv2` app
+      #9323 closed 2026-06-06 Reading one file can poison XMP namespace URIs written for later files
+      #2549 open 2023-03-16 Is that intended that Xmpdatum::tagLabel() might throw an exception but print() won't?
+      #9325 merged 2026-06-07 Fix issue 9324
+      #9369 merged 2026-06-28 Check for duplicates in RiffVideo::readInfoListChunk
+      #2539 open 2023-03-07 x86 Tests Failing
+      #1810 open 2021-07-30 Conan instructions for building with external XMPsdk are broken
+      #1401 open 2020-11-19 XmpParser::encode() swallowing exceptions
+  corruption     30 hit(s) (all listed)
+      #2671 open 2023-07-01 Make XMP SDK code match scanf/printf format strings and types.
+      #1419 open 2020-12-06 Support for tag PrintImageMatching 0xc4a5
+      #9367 merged 2026-06-28 Avoid using destNode after deleting
+      #9408 closed 2026-08-04 Out of bounds write in http.cpp
+      #9368 merged 2026-06-28 add test to improve code coverage of XmpTextValue::read
+      #3529 closed 2026-03-20 Fix/tiff readtiffentry uint32 overflow
+      #9324 closed 2026-06-07 Heap buffer overflow in packIfdId via uint16_t truncation
+      #9391 closed 2026-07-18 out-of-bounds array access in RemoteIo
+      #9299 closed 2026-05-09 Uncaught `std::out_of_range` from `std::stoi` in `TimeValue::read` — DoS via crafted IPTC `TimeCreated` in JPEG
+      #2138 closed 2022-03-10 Canon maker note corruption in v1.0.0 and v0.28.0
+      #968 merged 2019-07-26 027 update conan
+      #2566 closed 2023-03-27 Memory corruption in GIMP possibly caused by getPreviewProperties
+      #2567 merged 2023-03-29 makernotes: workaround for Olympus header corruption
+      #2579 merged 2023-04-04 makernotes: workaround for Olympus header corruption (backport #2567)
+      #2495 merged 2023-02-07 meson: add unit tests
+      #2237 closed 2022-05-15 exiv2 reports "corrupted metadata" where exiftool can extract them all
+      #2406 closed 2022-11-01 Is a new release happening soon?
+      #2067 merged 2022-02-03 Spelling
+      #2083 closed 2022-02-08 Unit test test_issue_1959.py fails when run on a system whose UTC offset is nonzero
+      #1471 closed 2021-02-13 exiv2 corrupts Sony 2010e tags when writing other metadata
+  truncated      35 hit(s) (all listed)
+      #9464 open 2026-08-30 Missing bounds check for uint32_t offset in TiffEntryBase::writeOffset() - silent truncation possible
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #9410 merged 2026-08-05 Check snprintf result to avoid out-of-bounds access
+      #3385 closed 2025-09-01 When building from source in Linux, io_test (testcases.TestCases.io_test) fails
+      #9281 closed 2026-03-29 Matroska parser does not check return values of `io_->read()` in `decodeBlock()`
+      #9301 closed 2026-05-10 Unable to read entire data from exif in webp
+      #9408 closed 2026-08-04 Out of bounds write in http.cpp
+      #9282 merged 2026-03-29 Use readOrThrow in MatroskaVideo::decodeBlock for EOF detection
+      #9315 merged 2026-05-29 Use readOrThrow in MatroskaVideo::decodeBlock for EOF detection (backport #9282)
+      #9370 merged 2026-06-29 Bump actions/cache from 5 to 6
+      #9324 closed 2026-06-07 Heap buffer overflow in packIfdId via uint16_t truncation
+      #9405 merged 2026-08-03 Bump github/codeql-action from 4 to 4.37.4
+      #9364 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #3432 merged 2025-12-15 Bump actions/cache from 4 to 5
+      #3411 merged 2025-10-13 Bump github/codeql-action from 3 to 4
+      #3423 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #3416 merged 2025-10-27 Bump actions/upload-artifact from 4 to 5
+      #3321 merged 2025-08-12 Bump actions/download-artifact from 4 to 5
+      #3320 merged 2025-08-12 Bump actions/checkout from 4 to 5
+      #3393 merged 2025-09-08 Bump actions/github-script from 7 to 8
+  truncate       66 hit(s) (all listed)
+      #9464 open 2026-08-30 Missing bounds check for uint32_t offset in TiffEntryBase::writeOffset() - silent truncation possible
+      #9480 open 2026-09-04 Bound-check the uint32_t offset case in TiffEntryBase::writeOffset
+      #3418 open 2025-11-01 Cannot read metadata from HEIC files
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #1081 open 2020-01-07 Changing Tag shortens MakerNote on Olympus JPEG
+      #9324 closed 2026-06-07 Heap buffer overflow in packIfdId via uint16_t truncation
+      #2512 open 2023-02-18 Machine readable output format?
+      #9410 merged 2026-08-05 Check snprintf result to avoid out-of-bounds access
+      #9475 merged 2026-09-03 canonmn_int: round converted focal lengths
+      #9408 closed 2026-08-04 Out of bounds write in http.cpp
+      #2539 open 2023-03-07 x86 Tests Failing
+      #9325 merged 2026-06-07 Fix issue 9324
+      #2379 open 2022-10-09 Some maker specific tags cannot be deleted
+      #3385 closed 2025-09-01 When building from source in Linux, io_test (testcases.TestCases.io_test) fails
+      #9301 closed 2026-05-10 Unable to read entire data from exif in webp
+      #9281 closed 2026-03-29 Matroska parser does not check return values of `io_->read()` in `decodeBlock()`
+      #2162 open 2022-03-23 No Exif data found in HEIF file
+      #9282 merged 2026-03-29 Use readOrThrow in MatroskaVideo::decodeBlock for EOF detection
+      #9330 merged 2026-06-14 Use integer division in TiffBinaryArray::doCount (backport #9288)
+      #9391 closed 2026-07-18 out-of-bounds array access in RemoteIo
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2355 open 2022-09-15 Initialize a non-empty PNG ICC profile name
+      #3459 open 2026-02-05 Dangling IFD pointer tags persisting after deleting their content
+      #2354 open 2022-09-14 Using setIccProfile on a PNG file without a profile leads to an invalid (empty) profile name
+      #147 open 2017-10-31 Reading metadata methods on PNG images are discarding some custom key/value
+      #1501 open 2021-03-19 make uninstall leaves artefacts in standard locations
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #1081 open 2020-01-07 Changing Tag shortens MakerNote on Olympus JPEG
+      #2836 open 2023-11-17 `exiv2 -m file` / `exiv2 -M` cannot handle whitespaces value
+      #9432 merged 2026-08-21 Delete default methods to avoid accidental copying of DataBufs
+      #9428 merged 2026-08-20 Remove nRealData variable
+      #1343 open 2020-10-03 Comment and EXIF data cannot be read from PNG files
+      #9407 merged 2026-08-04 Improve performance of decodeAi7Thumbnail
+      #9434 merged 2026-08-21 Use Safe::add
+      #9403 merged 2026-08-01 Replace lowblock/highBlock with startBlock/stopBlock and add more error checking
+      #9367 merged 2026-06-28 Avoid using destNode after deleting
+      #9392 merged 2026-07-18 Use std::vector for RemoteIo::Impl::blocksMap_
+      #2637 open 2023-05-28 What happened to wstring support in open() APIs?
+      #9342 merged 2026-06-17 Fix/issue 3318 dx tiff xmp (backport #9341)
+      #9341 merged 2026-06-17 Fix/issue 3318 dx tiff xmp
+      #9368 merged 2026-06-28 add test to improve code coverage of XmpTextValue::read
+  atomic         4 hit(s) (all listed)
+      #2561 open 2023-03-25 [WIP] Experimental WebAssembly Support
+      #3448 merged 2026-01-23 Fix thread safety issues in XmpParser (Race Conditions in  initialize  and  encode)
+      #2063 merged 2022-02-01 Modernise code around iterators & smart pointers
+      #2080 merged 2022-02-08 Revise python test and dependencies to sample applications
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #2542 open 2023-03-10 olympus makernotes get lost or corrupt with 0.27.6
+  interrupt      20 hit(s) (all listed)
+      #9408 closed 2026-08-04 Out of bounds write in http.cpp
+      #2542 open 2023-03-10 olympus makernotes get lost or corrupt with 0.27.6
+      #2261 merged 2022-07-05 fix naming of canon EF 35-80mm. closes #2247 (backport #2248)
+      #950 closed 2019-07-10 CVE-2018-20099 infinite loop in Exiv2::Jp2Image::encodeJp2Header of jp2image.cpp
+      #1449 closed 2021-01-12 Build exiv2 on windows/msys2
+      #440 closed 2018-09-11 Running the test suite on MSVC builds on v0.27
+      #302 closed 2018-05-09 SIGABRT in types.cpp Exiv2::DataBuf::alloc function
+      #263 closed 2018-04-04  out bound reads which could  result to segmentfault
+      #262 closed 2018-04-04 a div-by-zero in printIFD
+      #246 closed 2018-03-23 a bug in Exiv2::Internal::stringFormat
+      #247 closed 2018-03-23 Invalid memory access in Exiv2::Internal::printCsLensFFFF
+      #253 closed 2018-03-29 Another outbound read in Exiv2::Internal::stringFormat
+      #304 closed 2018-05-10 An integer overflow in src/pngimage.cpp#L306
+      #305 closed 2018-05-10 An over-read in src/pngimage.cpp#L161
+      #303 closed 2018-05-10 SIGABRT in src/jp2image.cpp Safe::add
+      #571 closed 2018-11-27 Ugly compiler warning on MinGW/msys2 from src/localhost.c
+      #954 closed 2019-07-12 heap-buffer-overflow in  Exiv2::MrwImage::readMetadata() 
+      #711 closed 2019-02-21 uncontrolled recursion loop in Exiv2::Image::printTiffStructure()
+      #712 closed 2019-02-21 Uncontrolled recursion loop in Exiv2::(anonymous namespace)::BigTiffImage::printIFD( ) 
+      #1004 closed 2019-09-20 Catchup with the latest Canon tags from exiftool
+  sigkill        0 hit(s)
+  sigint         3 hit(s) (all listed)
+      #950 closed 2019-07-10 CVE-2018-20099 infinite loop in Exiv2::Jp2Image::encodeJp2Header of jp2image.cpp
+      #711 closed 2019-02-21 uncontrolled recursion loop in Exiv2::Image::printTiffStructure()
+      #712 closed 2019-02-21 Uncontrolled recursion loop in Exiv2::(anonymous namespace)::BigTiffImage::printIFD( ) 
+  ctrl-c         2 hit(s) (all listed)
+      #950 closed 2019-07-10 CVE-2018-20099 infinite loop in Exiv2::Jp2Image::encodeJp2Header of jp2image.cpp
+      #1449 closed 2021-01-12 Build exiv2 on windows/msys2
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2159 open 2022-03-19 Enable git LFS for storing binary files for testing
+      #1748 open 2021-06-27 Feature Request: Video Support in V1.0
+      #917 open 2019-06-18 ABI compatibility checker
+      #2055 open 2022-01-14 Add more NEF compression details
+      #2235 open 2022-05-11 Fix Canon lens detection (#2057)
+      #3041 open 2024-09-24 Metadata from the iPhone 16 Pro Max DNG file w/ JPEG XL primary image and JPEG preview image
+      #1018 open 2019-10-05 Exiv2 RoadMap
+      #1890 open 2021-09-03 Rehost exiv2.org on pixls.us server
+      #3483 merged 2026-02-15 Fix UBSAN false positive
+      #3485 merged 2026-02-16 Fix UBSAN false positive (backport #3483)
+      #3527 closed 2026-03-19 killed GIMP & Geeqie on  linuxmint machines that ran update
+      #2263 closed 2022-07-05 Fix build error in release workflow
+      #2282 merged 2022-07-16 Don't use long in floatToRationalCast
+      #1976 merged 2021-10-20 Try a newer version of Conan.
+      #1781 merged 2021-07-16 Ignore results in the xmpsdk directory
+      #2280 merged 2022-07-16 Use int32_t in TimeValue
+      #1940 merged 2021-10-01 Add workaround for conan outage
+      #1898 merged 2021-09-09 Standardize on conan 1.39.0
+      #1771 merged 2021-07-11 CodeQL query to detect unsafe uses of std::vector::operator[]
+      #1768 merged 2021-07-08 Add custom CodeQL query for null iterator deref
+  outage         5 hit(s) (all listed)
+      #1940 merged 2021-10-01 Add workaround for conan outage
+      #1018 open 2019-10-05 Exiv2 RoadMap
+      #2406 closed 2022-11-01 Is a new release happening soon?
+      #1939 merged 2021-09-30 Add workaround for conan outage.
+      #1935 closed 2021-09-29 Exiv2 v0.27.5 RC3
+  ENOSPC         1 hit(s) (all listed)
+      #9445 merged 2026-08-24 Bump github/codeql-action from 4.37.7 to 4.37.8
+  disk           22 hit(s) (all listed)
+      #9445 merged 2026-08-24 Bump github/codeql-action from 4.37.7 to 4.37.8
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #9405 merged 2026-08-03 Bump github/codeql-action from 4 to 4.37.4
+      #1890 open 2021-09-03 Rehost exiv2.org on pixls.us server
+      #2748 closed 2023-08-30 Exception in reading exif from a PNG file
+      #2734 closed 2023-08-03 write icc to webp image buffer error
+      #2174 closed 2022-03-29 Compiler cannot find -lexiv2lib after apt-get install exiv2
+      #185 closed 2017-12-05 JP2 images are not consistently reading exif, iptc, and xmp.
+      #1679 closed 2021-05-21 BMFF/JPEG-XL patent discussion
+      #1425 merged 2020-12-08 Promote remaining SHORT/LONG tags default type (0.27 -> master)
+      #24 closed 2017-08-13 Code implementaiton
+      #200 closed 2017-12-25 msvc build: adding new metadata to a TIFF file is extremely slow
+      #714 closed 2019-02-24 Exiv2 and Qt
+      #1236 closed 2020-06-11 ICC Profiles in Jpeg 2000
+      #1248 closed 2020-07-15 What is the maximum size of an image that Exiv2 can handle?
+      #1229 closed 2020-06-05 Add support for ISOBMFF Files (AVIF, HEIF, CR3)
+      #1250 closed 2020-07-17 Windows MSVC 2019 EXV_ICONV_CONST undefined
+      #1120 merged 2020-03-28 sridharb1_contrib_msvc_0.27
+      #194 merged 2017-12-16 [WIP] Add Integer addition overflow checks
+      #227 merged 2018-02-09 Nikon mount - Sigma Lens Updates
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9456 open 2026-08-28 Add RecursionGuard
+      #2740 open 2023-08-08 Add basic UTF-8 type
+      #2421 open 2022-11-14 Fix "Windows MSYS2 UCRT64/Debug/Shared" build
+      #9392 merged 2026-07-18 Use std::vector for RemoteIo::Impl::blocksMap_
+      #9402 merged 2026-07-31 Use std::vector for RemoteIo::Impl::blocksMap_ (backport #9392)
+      #2425 open 2022-11-21 Fix misc `exiv2` app bugs
+      #2159 open 2022-03-19 Enable git LFS for storing binary files for testing
+      #3264 open 2025-04-26 basicio: use fs::path
+      #9399 merged 2026-07-30 Add parameter to the decode functions
+      #9459 merged 2026-08-29 Release Exiv2 version 0.28.9
+      #2671 open 2023-07-01 Make XMP SDK code match scanf/printf format strings and types.
+      #9438 merged 2026-08-23 Check that object->ifdOffset() is within bounds
+      #2055 open 2022-01-14 Add more NEF compression details
+      #9418 merged 2026-08-15 Update DeclareOneNamespace() implementation to match XMP-Toolkit-SDK
+      #2235 open 2022-05-11 Fix Canon lens detection (#2057)
+      #9400 merged 2026-07-31 Fix issue 9324 (backport #9325)
+      #9384 merged 2026-07-11 change unique_ptr to vector (backport #3427)
+      #9401 merged 2026-07-31 Add regression test (backport #9397)
+      #9328 closed 2026-06-12 Fix/xmp namespace uri leak (backport #9326)
+      #9326 merged 2026-06-08 Fix/xmp namespace uri leak
+  incomplete     54 hit(s) (all listed)
+      #1757 open 2021-07-01 Pentax MakerNote duplication and invalid IFD
+      #2642 open 2023-05-29 List major users of exiv2
+      #2634 open 2023-05-19 Conan 2.x does not support the  --settings compiler=Visual Studio flag.
+      #2235 open 2022-05-11 Fix Canon lens detection (#2057)
+      #9372 merged 2026-07-01 catch stoul exceptions in CanonMakerNote print0x000a/print0x000c (backport #9320)
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #1810 open 2021-07-30 Conan instructions for building with external XMPsdk are broken
+      #9324 closed 2026-06-07 Heap buffer overflow in packIfdId via uint16_t truncation
+      #1790 merged 2021-07-18 bufRead needs to be adjusted after seek()
+      #3131 closed 2025-01-21 W10/MSYS2 build fails on recent commits
+      #2980 closed 2024-05-27 Nikon Z8, Nikon F and 3rd-party lenses not being identified in Darktable
+      #2815 merged 2023-11-04 meson backports for 0.28.x
+      #1279 closed 2020-09-06 Exiv2 doesn't correctly handle characters outside the Basic Multilingual Plane
+      #2712 merged 2023-07-20 meson changes
+      #2679 closed 2023-07-04 0.28 broke the build while using std::experimental::filesystem (Ubuntu 18.04, GCC 7.5.0)
+      #2707 closed 2023-07-19 0.28 broke the possible inclusion of the project using CMake's FetchContent
+      #2136 closed 2022-03-09 Exiv2 compatibility 32-bit Debian 10 GCC 8.3 (undefined reference to std::filesystem)
+      #2338 closed 2022-08-24 easyaccess: list of keys for different meta data could be enhanced
+      #2457 merged 2023-01-06 Add inih dependency to release workflow
+      #2406 closed 2022-11-01 Is a new release happening soon?
+  dataloss       0 hit(s)
+  recover        45 hit(s) (all listed)
+      #1506 open 2021-03-25 JXL/codestream support
+      #9435 closed 2026-08-22 TiffReader::visitIfdMakernote pointer overflow on i386 via Fujifilm MakerNote IFD offset
+      #9436 closed 2026-08-22 TiffReader::visitSubIfd pointer overflow on i386 via Olympus2 Sub-IFD offset
+      #9430 closed 2026-08-21 BMFF THMB preview causes pointer overflow in LoaderNative::getData() on i386
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #3455 closed 2026-01-29 SigmaMakerNote::print0x0008() and SigmaMakerNote::print0x0009() crash on empty string
+      #2013 closed 2021-12-01 Workaround for the Sony preview image issue
+      #1557 closed 2021-04-15 C++ Modernisation for Exiv2 v1.00
+      #3117 merged 2025-01-13 another one wide char file API recover
+      #2406 closed 2022-11-01 Is a new release happening soon?
+      #2137 merged 2022-03-10 Recover IptDataSets::recordId in the API
+      #2189 merged 2022-04-04 Fix compilation issues when when using Ubuntu 18.04 + clang12
+      #2078 merged 2022-02-08 Revert "Delete dead code"
+      #2103 closed 2022-02-16 fix_1959_tz
+      #2060 merged 2022-01-27 Extend unit tests for BMP & Datasets 
+      #2084 closed 2022-02-08 Address issue #2083, fixing a time-zone bug in a unit test
+      #1575 closed 2021-04-20 Recover EPS support on main
+      #1580 merged 2021-04-20 Main - Recover EPS 
+      #1583 merged 2021-04-22 Fix -Werror=shadow warning after recovering EPS
+      #1941 closed 2021-10-02 Add a decoder for Exif.Nikon3.FlashInfo
+  recovery       3 hit(s) (all listed)
+      #9408 closed 2026-08-04 Out of bounds write in http.cpp
+      #9299 closed 2026-05-09 Uncaught `std::out_of_range` from `std::stoi` in `TimeValue::read` — DoS via crafted IPTC `TimeCreated` in JPEG
+      #1893 closed 2021-09-05 no preview for cr3 image
+  rollback       2 hit(s) (all listed)
+      #9405 merged 2026-08-03 Bump github/codeql-action from 4 to 4.37.4
+      #342 merged 2018-05-31 Iconv for windows
+  resume         15 hit(s) (all listed)
+      #1235 closed 2020-06-10 WIP - Add ARM job to Travis-CI
+      #2141 merged 2022-03-10 Improvements in the Error class
+      #206 closed 2018-01-09 How to resume a fail build
+      #302 closed 2018-05-09 SIGABRT in types.cpp Exiv2::DataBuf::alloc function
+      #184 closed 2017-12-04 Conan package
+      #304 closed 2018-05-10 An integer overflow in src/pngimage.cpp#L306
+      #305 closed 2018-05-10 An over-read in src/pngimage.cpp#L161
+      #303 closed 2018-05-10 SIGABRT in src/jp2image.cpp Safe::add
+      #318 closed 2018-05-21 Please add support for ISO/IEC 23008-12:2017 HEIF file format
+      #711 closed 2019-02-21 uncontrolled recursion loop in Exiv2::Image::printTiffStructure()
+      #712 closed 2019-02-21 Uncontrolled recursion loop in Exiv2::(anonymous namespace)::BigTiffImage::printIFD( ) 
+      #234 merged 2018-03-02 CONTRUBUTING.md updates
+      #257 closed 2018-03-30 C++ 11 support: replace auto_ptr with unique_ptr
+      #1286 merged 2020-09-08 member init changes
+      #1205 closed 2020-05-09 fix_1165_unix_test_oddities_0.27
+  half-written   10 hit(s) (all listed)
+      #1510 open 2021-04-01 Create project 'exiv2' on Crowdin
+      #1466 open 2021-02-03 Future of Exiv2
+      #3016 closed 2024-07-11 Error parsing -M option arguments: Invalid key Xmp.GCamera.MotionPhoto
+      #1941 closed 2021-10-02 Add a decoder for Exif.Nikon3.FlashInfo
+      #582 closed 2018-12-04 Add support for FocusPosition (Tag9402) in Sony RAW files (ARW)
+      #1463 closed 2021-01-28 Possible null pointer dereference in asfvideo.cpp reported by cppcheck
+      #1492 closed 2021-03-13 Fix issue 1485
+      #908 closed 2019-06-13 libexiv2 saves a part file when attempting to export data that conforms with the multi-segment xmp standard.
+      #1250 closed 2020-07-17 Windows MSVC 2019 EXV_ICONV_CONST undefined
+      #1257 merged 2020-08-02 Rewrite the bash test scripts into Python scripts
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          30 hit(s) (all listed)
+      #1934 open 2021-09-28 Problems with `--insert` and `--extract` in `exiv2` app
+      #9367 merged 2026-06-28 Avoid using destNode after deleting
+      #9342 merged 2026-06-17 Fix/issue 3318 dx tiff xmp (backport #9341)
+      #9341 merged 2026-06-17 Fix/issue 3318 dx tiff xmp
+      #1401 open 2020-11-19 XmpParser::encode() swallowing exceptions
+      #3464 merged 2026-02-08 Fix leak
+      #2884 closed 2024-01-05 Writing XMP metadata to jp2 files erases all XMP metadata in file
+      #2531 merged 2023-03-04 more SonarLint cleanups
+      #521 closed 2018-11-05 How to remove XMP Region tag from JPEG ?
+      #1953 closed 2021-10-09 Wrong description for bool Exiv2::Image::iccProfileDefined()
+      #1969 closed 2021-10-17 -PV option doesn't print the key
+      #1815 closed 2021-07-30 out-of-bounds read in jpgimage.cpp
+      #1758 merged 2021-07-03 Check that the iterator is not end() after calling findKey
+      #1872 merged 2021-08-12 Update exiv2 program and manpage
+      #1603 closed 2021-05-05 Heap-buffer-overflow and OOB memory access in src/jp2image.cpp:911:24
+      #1472 closed 2021-02-13 exiv2 corrupts Sony 2010e tags on import from .exv
+      #1449 closed 2021-01-12 Build exiv2 on windows/msys2
+      #144 closed 2017-10-29 CVE-2017-9953: There is an invalid free in Image::printIFDStructure that leads to a Segmentation fault at exiv2. A crafted input will lead to remote denial of service attack.
+      #124 closed 2017-10-17 CVE-2017-14857:  bad free  in Exiv2::Image::~Image
+      #739 closed 2019-03-10 [bug report] User-controlled heap-based buffer overflow in exiv2 0.27.99.0, Exiv2::Jp2Image::encodeJp2Header(Exiv2::DataBuf const&, Exiv2::DataBuf&)  in jp2image.cpp:673
+  erasing        6 hit(s) (all listed)
+      #9367 merged 2026-06-28 Avoid using destNode after deleting
+      #3464 merged 2026-02-08 Fix leak
+      #1969 closed 2021-10-17 -PV option doesn't print the key
+      #1472 closed 2021-02-13 exiv2 corrupts Sony 2010e tags on import from .exv
+      #1449 closed 2021-01-12 Build exiv2 on windows/msys2
+      #1464 closed 2021-01-31 exiv2 breaks Sony 2010e tags
+  erased         5 hit(s) (all listed)
+      #1934 open 2021-09-28 Problems with `--insert` and `--extract` in `exiv2` app
+      #1401 open 2020-11-19 XmpParser::encode() swallowing exceptions
+      #2884 closed 2024-01-05 Writing XMP metadata to jp2 files erases all XMP metadata in file
+      #1872 merged 2021-08-12 Update exiv2 program and manpage
+      #21 merged 2017-08-08 New way to generate the include/exiv2/exv_conf.h file
+  destroy        16 hit(s) (all listed)
+      #3071 open 2024-11-19 tiff files with large tags are destroyed on metadata update.
+      #3022 merged 2024-08-04 Ignore ASAN failure in UnitTestImpl
+      #3191 merged 2025-02-23 fix python syntax warnings
+      #3026 merged 2024-08-12 Ignore ASAN failure in UnitTestImpl (backport #3022)
+      #3012 closed 2024-07-09 Forward translations to main
+      #421 closed 2018-08-30 MinGW / MSYS2 build fails for v0.26 with gcc 8.2.0
+      #1997 closed 2021-11-12 Build with C++17 possible?
+      #1935 closed 2021-09-29 Exiv2 v0.27.5 RC3
+      #3 closed 2017-05-30 exiv2-0.26: build failure
+      #144 closed 2017-10-29 CVE-2017-9953: There is an invalid free in Image::printIFDStructure that leads to a Segmentation fault at exiv2. A crafted input will lead to remote denial of service attack.
+      #124 closed 2017-10-17 CVE-2017-14857:  bad free  in Exiv2::Image::~Image
+      #95 closed 2017-10-02 Retain msvc/ solution and project files
+      #984 closed 2019-08-15 AddressSanitizer: NULL-pointer READ at XMPMeta.cpp:1134
+      #1206 closed 2020-05-10 Exiv2::XmpProperties::propertyList() doesn't recognize "lr" prefix
+      #1464 closed 2021-01-31 exiv2 breaks Sony 2010e tags
+      #314 merged 2018-05-17 Free potentially allocated regexes from Params::evalGrep
+  destroys       2 hit(s) (all listed)
+      #1935 closed 2021-09-29 Exiv2 v0.27.5 RC3
+      #95 closed 2017-10-02 Retain msvc/ solution and project files
+  overwrite      84 hit(s) (all listed)
+      #3059 open 2024-10-15 Tag from exiftool on MP4 not visible on 0.28
+      #9455 merged 2026-08-28 Remove unnecessary resize
+      #2670 open 2023-06-30 exiv2 0.28 breaks gimp jpeg metadata export
+      #3501 open 2026-02-18 Xmp toolkit as a submodule
+      #9323 closed 2026-06-06 Reading one file can poison XMP namespace URIs written for later files
+      #9369 merged 2026-06-28 Check for duplicates in RiffVideo::readInfoListChunk
+      #9471 merged 2026-08-31 Bump github/codeql-action from 4.37.8 to 4.37.9
+      #9445 merged 2026-08-24 Bump github/codeql-action from 4.37.7 to 4.37.8
+      #9416 merged 2026-08-10 Bump actions/attest-build-provenance from 4.1.1 to 4.2.2
+      #9423 merged 2026-08-17 Bump github/codeql-action from 4.37.6 to 4.37.7
+      #1510 open 2021-04-01 Create project 'exiv2' on Crowdin
+      #9415 merged 2026-08-10 Bump github/codeql-action from 4.37.4 to 4.37.6
+      #9371 merged 2026-06-29 Bump actions/attest-build-provenance from 4.1.0 to 4.1.1
+      #9405 merged 2026-08-03 Bump github/codeql-action from 4 to 4.37.4
+      #3014 closed 2024-07-10 [WIP] Xmp toolkit v2023-12 submodule
+      #9370 merged 2026-06-29 Bump actions/cache from 5 to 6
+      #9290 merged 2026-04-06 Bump mymindstorm/setup-emsdk from 14 to 15
+      #9293 merged 2026-04-13 Bump mymindstorm/setup-emsdk from 15 to 16
+      #9364 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #3522 merged 2026-03-02 Bump actions/upload-artifact from 6 to 7
+  clobber        4 hit(s) (all listed)
+      #1421 closed 2020-12-07 Fix regression in Canon lens detection
+      #1428 closed 2020-12-09 Test all Canon lenses
+      #1206 closed 2020-05-10 Exiv2::XmpProperties::propertyList() doesn't recognize "lr" prefix
+      #1009 closed 2019-09-29 Fix1008 sony2010e
+  blank          95 hit(s) (all listed)
+      #9480 open 2026-09-04 Bound-check the uint32_t offset case in TiffEntryBase::writeOffset
+      #2379 open 2022-10-09 Some maker specific tags cannot be deleted
+      #2836 open 2023-11-17 `exiv2 -m file` / `exiv2 -M` cannot handle whitespaces value
+      #9466 merged 2026-08-30 Remove macos-15-intel
+      #9463 merged 2026-08-30 Fix doxygen error
+      #9448 merged 2026-08-26 Remove unnecessary curl settings
+      #9454 merged 2026-08-28 Nul-terminate strings
+      #9449 merged 2026-08-27 Remove unnecessary curl settings (backport #9448)
+      #9479 merged 2026-09-03 Delete cmake/msvc_conan_profiles
+      #9455 merged 2026-08-28 Remove unnecessary resize
+      #9439 merged 2026-08-23 Avoid integer overflow on 32-bit architectures
+      #9434 merged 2026-08-21 Use Safe::add
+      #9432 merged 2026-08-21 Delete default methods to avoid accidental copying of DataBufs
+      #9459 merged 2026-08-29 Release Exiv2 version 0.28.9
+      #9447 merged 2026-08-25 Remove TaskFactory
+      #9456 open 2026-08-28 Add RecursionGuard
+      #9428 merged 2026-08-20 Remove nRealData variable
+      #9438 merged 2026-08-23 Check that object->ifdOffset() is within bounds
+      #9420 merged 2026-08-16 Use BasicIo::mmap() to avoid quadratic memory allocation
+      #9433 merged 2026-08-21 Use std::llround for double to int64_t cast
+  unreadable     3 hit(s) (all listed)
+      #9392 merged 2026-07-18 Use std::vector for RemoteIo::Impl::blocksMap_
+      #1091 merged 2020-01-23 Bound recursion depth to avoid stack exhaustion
+      #1431 closed 2020-12-11 Exiv2 returns "binary data" for valid content in Exif.Photo.UserComment
+  garbage        15 hit(s) (all listed)
+      #3285 open 2025-06-12 Localisation files out of date on "main" branch
+      #9420 merged 2026-08-16 Use BasicIo::mmap() to avoid quadratic memory allocation
+      #1081 open 2020-01-07 Changing Tag shortens MakerNote on Olympus JPEG
+      #9282 merged 2026-03-29 Use readOrThrow in MatroskaVideo::decodeBlock for EOF detection
+      #3220 closed 2025-03-25 关于exiv2的鸿蒙化适配提案
+      #3271 closed 2025-05-06 Exiv2 reads EXIF headers only as big-endian
+      #3136 merged 2025-01-29 some more fixes
+      #2728 merged 2023-08-01 github CI: remove tags from container names
+      #2160 closed 2022-03-19 float_to_integer_helper doesn't handle fractions correctly
+      #1719 closed 2021-06-17 strange strings from exifData[exif_data_ptr->key()].toString().c_str();
+      #981 closed 2019-08-12 Canon AFInfo seems misinterpreted
+      #1229 closed 2020-06-05 Add support for ISOBMFF Files (AVIF, HEIF, CR3)
+      #239 merged 2018-03-14 Fix CVE-2017-1000126
+      #810 merged 2019-04-28 Fix pixelwidth and pixelheight for raf files
+      #212 merged 2018-01-13 fix for crash in bigtiff (issue #208)
+  mangled        9 hit(s) (all listed)
+      #9387 merged 2026-07-12 Make the io_test more reliable
+      #2637 open 2023-05-28 What happened to wstring support in open() APIs?
+      #3092 closed 2024-12-16 Iconv Target Missing in Wrapper Project with Static Exiv2 Build on Windows 11 (MinGW UCRT)
+      #947 closed 2019-07-06 Throwing an exception crashes a program on FreeBSD because typeinfo for BasicError<char> isn't exported
+      #1003 closed 2019-09-19 Iptc.Envelope.CharacterSet not reported correctly
+      #783 closed 2019-04-18 access violation vs 2017 msvc
+      #1101 closed 2020-02-14 Cannot link exiv2 prebuilt binaries in Qt project
+      #1009 closed 2019-09-29 Fix1008 sony2010e
+      #1257 merged 2020-08-02 Rewrite the bash test scripts into Python scripts
+  contents       70 hit(s) (all listed)
+      #1516 open 2021-04-03 Build is using incorrect include path 
+      #9472 merged 2026-08-31 CI: runner OS bumps
+      #2020 open 2021-12-09 macOS dylib 'current version' and 'compatibility version'
+      #1810 open 2021-07-30 Conan instructions for building with external XMPsdk are broken
+      #9408 closed 2026-08-04 Out of bounds write in http.cpp
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #9391 closed 2026-07-18 out-of-bounds array access in RemoteIo
+      #9281 closed 2026-03-29 Matroska parser does not check return values of `io_->read()` in `decodeBlock()`
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #1890 open 2021-09-03 Rehost exiv2.org on pixls.us server
+      #9324 closed 2026-06-07 Heap buffer overflow in packIfdId via uint16_t truncation
+      #3480 merged 2026-02-14 Backport all changes in .github/workflows from main to 0.28.x
+      #2522 closed 2023-02-23 Fix test failures on 32-bit platforms
+      #1986 merged 2021-10-24 Remove Conan from MacOS build
+      #3511 closed 2026-02-26 Integer Underflow in LoaderNative::getData()
+      #3468 closed 2026-02-08 Invalid Iterator Range in Exiv2::Uri::Parse
+      #3448 merged 2026-01-23 Fix thread safety issues in XmpParser (Race Conditions in  initialize  and  encode)
+      #2968 merged 2024-05-16 In src/futils.cpp Added #include <cstdint>
+      #2980 closed 2024-05-27 Nikon Z8, Nikon F and 3rd-party lenses not being identified in Darktable
+      #2622 merged 2023-05-16 Bump minimum cmake and stop creating build directory
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9461 open 2026-08-30 Upgrade Conan-based dependency setup to Conan 2
+      #3530 open 2026-03-26 MemIo::mmap() ignores isWriteable parameter, causing TIFF writes to crash
+      #3059 open 2024-10-15 Tag from exiftool on MP4 not visible on 0.28
+      #2217 open 2022-04-23 LangAlt value sorting
+      #3496 open 2026-02-17 Add Lens ID for Meike 85mm f/1.8 (DCM)
+      #1405 open 2020-11-23 readMetadata - improve warning & error handling
+      #9399 merged 2026-07-30 Add parameter to the decode functions
+      #1062 open 2019-11-18 Investigate JPG2000 check_boxes
+      #2204 open 2022-04-12 Better documentation for Exiv2::lensName ?
+      #549 open 2018-11-16 Localisation for v1.00
+      #1416 open 2020-11-28 Iptc.Application2.DateCreated/TimeCreated formats are different for read/write
+      #2165 open 2022-03-23 Add support for Fuji RawImageCropTopLeft and RawImageCroppedSize
+      #2642 open 2023-05-29 List major users of exiv2
+      #1018 open 2019-10-05 Exiv2 RoadMap
+      #3013 open 2024-07-10 Update translations
+      #3264 open 2025-04-26 basicio: use fs::path
+      #3319 open 2025-08-11 "warning: Failed to decode Exif metadata" with Google Gemini-generated image
+      #2235 open 2022-05-11 Fix Canon lens detection (#2057)
+      #2637 open 2023-05-28 What happened to wstring support in open() APIs?
+      #2162 open 2022-03-23 No Exif data found in HEIF file
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #1890 open 2021-09-03 Rehost exiv2.org on pixls.us server
+  reboot         2 hit(s) (all listed)
+      #1265 closed 2020-08-26 segfault in libexiv2.so.26.0.0
+      #1257 merged 2020-08-02 Rewrite the bash test scripts into Python scripts
+  disk+full      10 hit(s) (all listed)
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #9405 merged 2026-08-03 Bump github/codeql-action from 4 to 4.37.4
+      #1890 open 2021-09-03 Rehost exiv2.org on pixls.us server
+      #200 closed 2017-12-25 msvc build: adding new metadata to a TIFF file is extremely slow
+      #1248 closed 2020-07-15 What is the maximum size of an image that Exiv2 can handle?
+      #1229 closed 2020-06-05 Add support for ISOBMFF Files (AVIF, HEIF, CR3)
+      #1250 closed 2020-07-17 Windows MSVC 2019 EXV_ICONV_CONST undefined
+      #1120 merged 2020-03-28 sridharb1_contrib_msvc_0.27
+      #227 merged 2018-02-09 Nikon mount - Sigma Lens Updates
+      #1475 merged 2021-02-16 Base Media File Format
+  data+loss      19 hit(s) (all listed)
+      #1748 open 2021-06-27 Feature Request: Video Support in V1.0
+      #1419 open 2020-12-06 Support for tag PrintImageMatching 0xc4a5
+      #1770 closed 2021-07-11 Make -t -r fmt options more flexible
+      #2508 merged 2023-02-11 more fixes
+      #2507 merged 2023-02-10 Video code enhancements
+      #2251 merged 2022-06-20 Change return type of BasicIo::tell() to size_t
+      #2163 merged 2022-03-23 Another cleanup round in main
+      #1941 closed 2021-10-02 Add a decoder for Exif.Nikon3.FlashInfo
+      #2083 closed 2022-02-08 Unit test test_issue_1959.py fails when run on a system whose UTC offset is nonzero
+      #1215 closed 2020-05-21 Rewrite the bash scripts in python
+      #1464 closed 2021-01-31 exiv2 breaks Sony 2010e tags
+      #585 closed 2018-12-06 Ugly compiler warning from src/bigtiffimage.cpp on 32 bit Visual Studio
+      #602 closed 2018-12-19 msvc compiler warning with -DEXIV2_ENABLE_VIDEO=On
+      #646 closed 2019-01-09 Exiv2 does not find certain AF tags for the Nikon D850
+      #1206 closed 2020-05-10 Exiv2::XmpProperties::propertyList() doesn't recognize "lr" prefix
+      #1471 closed 2021-02-13 exiv2 corrupts Sony 2010e tags when writing other metadata
+      #658 closed 2019-01-13 std::istream& operator>>(std::istream& is, Rational& r) fails to convert string False
+      #430 merged 2018-09-02 Fix Issue #428
+      #645 closed 2019-01-09 Mingw cross master
+  partial+write  50 hit(s) (all listed)
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #9408 closed 2026-08-04 Out of bounds write in http.cpp
+      #9392 merged 2026-07-18 Use std::vector for RemoteIo::Impl::blocksMap_
+      #2561 open 2023-03-25 [WIP] Experimental WebAssembly Support
+      #1911 closed 2021-09-18 Update exiv2.pot
+      #2008 closed 2021-11-28 Add previewBuffer type as a workaround for Sony preview images
+      #3036 closed 2024-08-30 Do not interpret OlympusEq.LensType  0 0 0 0 0 0
+      #3289 merged 2025-06-24 simplify header inclusion in public headers
+      #3167 closed 2025-02-16 remove shared_ptr
+      #2872 merged 2023-12-27 Do not require dependencies for static linking when exiv2 was built as shared
+      #2933 merged 2024-03-17 remove time regex from value
+      #2909 merged 2024-01-28 add .editorconfig
+      #2077 closed 2022-02-06 Panasonic Makernotes: Add Distortion Info 0x119 and Chromatic Aberration 0x11B
+      #2727 merged 2023-07-31 Add missing dependency to expat in export set
+      #2711 merged 2023-07-20 Switch from CMAKE_x_DIR to PROJECT_x_DIR, thus isolating build artefacts
+      #2458 merged 2023-01-06 Rework Asf, Riff video, test data and fix OSS-Fuzz issues
+      #2456 closed 2023-01-05 ImageFactory::open() throws error in windows forms, but not command line
+      #2412 merged 2022-11-04 Remove duplicate tag info entries fujifilm
+      #2209 merged 2022-04-13 Improvements around TODO comments
+      #2200 merged 2022-04-10 clang-tidy with headers
+  crash+safe     21 hit(s) (all listed)
+      #2671 open 2023-07-01 Make XMP SDK code match scanf/printf format strings and types.
+      #9433 merged 2026-08-21 Use std::llround for double to int64_t cast
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #9347 closed 2026-06-21 Increase stack size limit on Linux
+      #1018 open 2019-10-05 Exiv2 RoadMap
+      #3484 merged 2026-02-15 Don't call front() on empty string
+      #3514 merged 2026-02-26 Add enforce to check for integer overflow
+      #3333 closed 2025-08-15 DoS vulnerability
+      #2406 closed 2022-11-01 Is a new release happening soon?
+      #2114 closed 2022-02-23 ASAN crashes in exiv2 on 'main' with the command `$ exiv2 -vVg exiv2` (on M1 Mac)
+      #2110 merged 2022-02-19 Make Nikon ContrastDetectAFInFocus tags Bytes that print as "Yes" or "No"
+      #1558 closed 2021-04-15 exiv2 asserts on malicious file
+      #76 closed 2017-09-25 bad free in Exiv2::Image::~Image (image.cpp:173) 
+      #46 closed 2017-08-29 Drop std::auto_ptr usage
+      #57 closed 2017-08-31 CVE-2017-11683: reachable assertion in the Internal::TiffReader::visitDirectory function in tiffvisitor.cpp
+      #303 closed 2018-05-10 SIGABRT in src/jp2image.cpp Safe::add
+      #1223 closed 2020-05-29 use-of-uninitialized-value in XMPMeta::RegisterNamespace
+      #737 merged 2019-03-04 Enum class for image types
+      #833 merged 2019-05-09 NetBSD/FreeBSD Support
+      #316 merged 2018-05-19 Fix issue #306
+  atomic+write   2 hit(s) (all listed)
+      #2561 open 2023-03-25 [WIP] Experimental WebAssembly Support
+      #3448 merged 2026-01-23 Fix thread safety issues in XmpParser (Race Conditions in  initialize  and  encode)
+  lock+file      28 hit(s) (all listed)
+      #1018 open 2019-10-05 Exiv2 RoadMap
+      #9306 closed 2026-05-23 enforce should check height, not width
+      #9370 merged 2026-06-29 Bump actions/cache from 5 to 6
+      #3448 merged 2026-01-23 Fix thread safety issues in XmpParser (Race Conditions in  initialize  and  encode)
+      #3449 closed 2026-01-23 Race condition in xmp
+      #3433 merged 2025-12-15 Bump actions/download-artifact from 6 to 7
+      #3434 merged 2025-12-15 Bump actions/upload-artifact from 5 to 6
+      #3432 merged 2025-12-15 Bump actions/cache from 4 to 5
+      #3011 closed 2024-07-08 [WIP] xmp thread safety
+      #2517 merged 2023-02-22 Bump actions/cache from 2 to 3
+      #1941 closed 2021-10-02 Add a decoder for Exif.Nikon3.FlashInfo
+      #1945 closed 2021-10-04 "Nightly" vs "0.27-nightly" builds
+      #1428 closed 2020-12-09 Test all Canon lenses
+      #525 closed 2018-11-06 c++11: Remove rwlock.hpp and use std::lock_guard 
+      #392 closed 2018-08-01 how to deep copy metadata from one image to another
+      #159 closed 2017-11-10 heap-buffer-overflow in Exiv2::IptcData::printStructure
+      #497 closed 2018-10-27 There is no PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP on FreeBSD
+      #515 closed 2018-11-03 excessively often calls stat()
+      #1065 closed 2019-11-22 exiv2 parse url crash
+      #664 closed 2019-01-24 Old issue tracker is being spammed.
+  write+failure  49 hit(s) (all listed)
+      #9480 open 2026-09-04 Bound-check the uint32_t offset case in TiffEntryBase::writeOffset
+      #9385 merged 2026-07-12 Fix missing throw
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #898 open 2019-06-04 Add Safe::cast<T>
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #2561 open 2023-03-25 [WIP] Experimental WebAssembly Support
+      #9355 merged 2026-06-21 Update SECURITY.md
+      #2539 open 2023-03-07 x86 Tests Failing
+      #9288 merged 2026-03-29 Use integer division in TiffBinaryArray::doCount
+      #1018 open 2019-10-05 Exiv2 RoadMap
+      #9299 closed 2026-05-09 Uncaught `std::out_of_range` from `std::stoi` in `TimeValue::read` — DoS via crafted IPTC `TimeCreated` in JPEG
+      #3448 merged 2026-01-23 Fix thread safety issues in XmpParser (Race Conditions in  initialize  and  encode)
+      #3036 closed 2024-08-30 Do not interpret OlympusEq.LensType  0 0 0 0 0 0
+      #3289 merged 2025-06-24 simplify header inclusion in public headers
+      #2711 merged 2023-07-20 Switch from CMAKE_x_DIR to PROJECT_x_DIR, thus isolating build artefacts
+      #2450 closed 2023-01-02 OSS-Fuzz issues in new video code
+      #2412 merged 2022-11-04 Remove duplicate tag info entries fujifilm
+      #2126 closed 2022-03-06 Support for files from OM System cameras
+      #1228 closed 2020-06-04 UBSan violations
+      #2123 merged 2022-03-03 Add a workflow build/test for macOS+Sanitizers
+  file+contents  60 hit(s) (all listed)
+      #1516 open 2021-04-03 Build is using incorrect include path 
+      #2020 open 2021-12-09 macOS dylib 'current version' and 'compatibility version'
+      #1810 open 2021-07-30 Conan instructions for building with external XMPsdk are broken
+      #9431 merged 2026-08-21 Call CreateFileMapping correctly on Windows
+      #9427 closed 2026-08-20 arithmetic bug in RemoteIo::mmap
+      #1890 open 2021-09-03 Rehost exiv2.org on pixls.us server
+      #9391 closed 2026-07-18 out-of-bounds array access in RemoteIo
+      #9281 closed 2026-03-29 Matroska parser does not check return values of `io_->read()` in `decodeBlock()`
+      #9324 closed 2026-06-07 Heap buffer overflow in packIfdId via uint16_t truncation
+      #2522 closed 2023-02-23 Fix test failures on 32-bit platforms
+      #1986 merged 2021-10-24 Remove Conan from MacOS build
+      #3511 closed 2026-02-26 Integer Underflow in LoaderNative::getData()
+      #3468 closed 2026-02-08 Invalid Iterator Range in Exiv2::Uri::Parse
+      #3448 merged 2026-01-23 Fix thread safety issues in XmpParser (Race Conditions in  initialize  and  encode)
+      #2968 merged 2024-05-16 In src/futils.cpp Added #include <cstdint>
+      #2980 closed 2024-05-27 Nikon Z8, Nikon F and 3rd-party lenses not being identified in Darktable
+      #2622 merged 2023-05-16 Bump minimum cmake and stop creating build directory
+      #2418 closed 2022-11-08 Parsing metadata in BmffImage stumbles over "hdlr" tag in .mp4 file
+      #521 closed 2018-11-05 How to remove XMP Region tag from JPEG ?
+      #2002 merged 2021-11-23 fix_1558_cmake_build_type (backport #1559)
+
+== 51 terms run; 45 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,57 @@
+Traceback (most recent call last):
+  File "/usr/bin/rdiff-backup", line 33, in <module>
+    sys.exit(load_entry_point('rdiff-backup==2.2.6', 'console_scripts', 'rdiff-backup')())
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3/dist-packages/rdiffbackup/run.py", line 35, in main
+    sys.exit(main_run(sys.argv[1:]))
+             ~~~~~~~~^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/rdiffbackup/run.py", line 102, in main_run
+    ret_val |= conn_act.setup()
+               ~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3/dist-packages/rdiffbackup/actions/backup.py", line 102, in setup
+    ret_code = self.repo.setup(self.dir, owners_map=owners_map,
+                               action_name=self.name)
+  File "/usr/lib/python3/dist-packages/rdiffbackup/locations/repository.py", line 120, in setup
+    lock_result = self.lock()
+  File "/usr/lib/python3/dist-packages/rdiffbackup/locations/repository.py", line 264, in lock
+    return self._shadow.lock(self.lockfile, self.must_be_writable)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/rdiffbackup/locations/_repo_shadow.py", line 1115, in lock
+    'cmd': simpleps.get_pid_name(pid),
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/usr/lib/python3/dist-packages/rdiffbackup/utils/simpleps.py", line 54, in _get_pid_name_ps
+    output = subprocess.run(
+             ~~~~~~~~~~~~~~^
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ).stdout.decode().split()
+    ^
+  File "/usr/lib/python3.13/subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/subprocess.py", line 1972, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'ps'
+UNKNOWN  recording_run_failed
+         the operation exited 1 during the recording run where 0 was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: this run was refused before the shim's account of it was read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

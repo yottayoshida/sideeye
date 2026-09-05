@@ -1,0 +1,3 @@
+beets version 2.13.1
+Python version 3.13.5
+plugins: musicbrainz

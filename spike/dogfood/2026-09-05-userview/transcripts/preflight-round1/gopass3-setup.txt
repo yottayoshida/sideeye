@@ -1,0 +1,20 @@
+
+   __     _    _ _      _ _   ___   ___
+ /'_ '\ /'_'\ ( '_'\  /'_' )/',__)/',__)
+( (_) |( (_) )| (_) )( (_| |\__, \\__, \
+'\__  |'\___/'| ,__/''\__,_)(____/(____/
+( )_) |       | |
+ \___/'       (_)
+
+🌟 Welcome to gopass!
+🌟 Initializing a new password store ...
+🔐 Using crypto backend: age
+💾 Using storage backend: fs
+🔐 No useable cryptographic keys. Generating new key pair
+🧪 Creating cryptographic key pair (age) ...
+✅ Key pair for age generated
+⚠ 🔐 We need to unlock your newly created private key now! Please enter the passphrase you just generated.
+✅ Key pair age1pyngyf59xw6049cwr4u8rlq9e24wrrs6c493ppwfrt4ahaj35yzsassp9e validated
+🔐 Cryptographic keys generated
+🌟 Configuring your password store ...
+✅ Configuration written

@@ -1,0 +1,612 @@
+== novelty pre-scan: ImageMagick/ImageMagick
+== date: 2026-09-05T04:16:43Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8222 open 2025-06-25 make use of JXL chunk encoding to hopefully not crash on large inputs
+      #8753 open 2026-05-25 SVG: pointer being freed was not allocated
+      #8035 open 2025-03-15 Expand `-define filename:literal=true` to also encompass inputs
+      #8542 open 2026-01-25 Heap-use-after-free in CLI magick
+      #8562 open 2026-02-08 WriteMNGImage writes MEND chunk to wrong image, causing assertion failure in WriteBlob
+      #8669 closed 2026-04-09 macos crashes on assembling huge image from tiles (libtiff involved)
+      #8601 closed 2026-03-04 malloc error with some SVG's
+      #8582 closed 2026-02-27 SIGABRT (double-free) converting SVG with `gradientTransform` on `<linearGradient>`
+      #8583 merged 2026-02-27 Fix double-free in SVG `gradientTransform` / `transform` parsing
+      #8584 closed 2026-02-27 NULL pointer dereference in WriteHEICImage when heif_nclx_color_profile_alloc fails
+      #8594 closed 2026-03-02 Unbounded Memory Allocation in TraceEllipse via SVG Circle with Extreme Radius at MagickCore/draw.c -- ImageMagick 7.1.2-15
+      #8585 merged 2026-02-27 Fix NULL pointer dereference in HEIC NCLX profile allocation
+      #8487 closed 2025-12-16 display crashes on click
+      #8567 closed 2026-02-14 Potential NULL Pointer Dereference in MagickCore
+      #8534 closed 2026-01-21 Improper Restriction of Operations within the Bounds of a Memory Buffer in Magick++ BlobRef Constructor
+      #1553 closed 2019-04-20 AddressSanitizer: Invalid read at xwd.c:573
+      #8374 closed 2025-10-02 ImageMagick crash when running with specific HEIC sample
+      #7837 closed 2024-12-15 Converting some images to PICT results in files that will crash a classic Mac system
+      #8555 closed 2026-02-03 PCX: cross-row pixel read when columns > bytes_per_line (8bpp, 1 plane)
+      #7198 merged 2024-03-26 add support for encoding/decoding ultrahdr images
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8912 closed 2026-08-11 IPTC corrupted coding
+      #8743 closed 2026-05-19 IM corrupts gain maps when transcoding
+      #8515 open 2026-01-03 Problem with JBIG fileformat, invalid file with wrong extension generated
+      #8579 open 2026-02-24 Resize with some filters and ColorBurn results in pixel value corruption
+      #7790 open 2024-11-19 Encoding is wrong when running with a .bat file
+      #8710 open 2026-05-01 Tiff converted to Group4 displays junk image.
+      #8860 merged 2026-07-14 Fix writing video output to stdout in Windows
+      #7715 closed 2024-10-22 AVIF images are corrupted (NCLX / CICP values improperly change for HDR or wide gamut images)
+      #8706 closed 2026-04-29 High memory/cpu utilization when identifying heic image
+      #8563 closed 2026-02-08 Corrupted chroma output in WriteYUVImage 4:2:2 NoInterlace path
+      #7900 closed 2025-01-15 APNG piping with apng:- is broken
+      #8672 closed 2026-04-13 Protect terminal from binary output
+      #8286 closed 2025-08-04 corrupt auto-oriented jxl image
+      #8552 closed 2026-02-01 Typos in multiple coders
+      #6642 closed 2023-09-14 HDR AVIF to JXR conversion
+      #6918 closed 2023-12-05 -colorspace Gray on HEIC image produces corrupted file
+      #8538 closed 2026-01-22 Integer Overflow in FITS Image Dimension Parsing
+      #7765 closed 2024-11-11 PNG to PDF conversion issue.
+      #6554 closed 2023-08-11 Identify cannot process this ya8 .tif file
+      #8135 closed 2025-05-04 Magick++ Compositing small thumbnail images resutls in corruption
+  corruption     48 hit(s) (all listed)
+      #8579 open 2026-02-24 Resize with some filters and ColorBurn results in pixel value corruption
+      #8743 closed 2026-05-19 IM corrupts gain maps when transcoding
+      #8606 merged 2026-03-09 Amiga Workbench .info coder (image/x-amiga-icon)
+      #8810 closed 2026-06-21 Potential integer overflow / resource exhaustion in LiquidRescaleImage quantum calculation
+      #8811 closed 2026-06-21 ReadDDSImage can hang on tiny DDS file with oversized width/height
+      #8555 closed 2026-02-03 PCX: cross-row pixel read when columns > bytes_per_line (8bpp, 1 plane)
+      #7715 closed 2024-10-22 AVIF images are corrupted (NCLX / CICP values improperly change for HDR or wide gamut images)
+      #8135 closed 2025-05-04 Magick++ Compositing small thumbnail images resutls in corruption
+      #1249 closed 2018-08-16 heap-buffer-overflow bug in  MagickCore/quantum-private.h:
+      #7270 closed 2024-04-23 Image corruption when writing to MIFF from an input image with particular EXIF (Part 3)
+      #7071 closed 2024-01-26 Image corruption when writing to MIFF from an input image with particular EXIF (Part 2)
+      #7341 closed 2024-05-24 identify outputting incorrect sizes for ico file
+      #1946 closed 2020-04-27 identify reports wrong bit depth for 32-bit image
+      #5211 closed 2022-06-09 crashing convert -gaussian-blur with --disable-shared
+      #6052 closed 2023-02-10 Image corruption when writing to MIFF from an input image with particular EXIF
+      #6071 closed 2023-02-16 Trips on some paths and CWD combinations
+      #5637 closed 2022-10-09 There is an error converting a dng image to a jpg image
+      #4839 closed 2022-02-13 HP Printer Command Language (HP PCL) three errors
+      #5521 closed 2022-09-02 Tiff RGB RGBA read issue
+      #4987 closed 2022-03-25 Stack corruption when loading this jpg image
+  truncated      67 hit(s) (all listed)
+      #8809 closed 2026-06-21 BMP encoder resource exhaustion in WriteBMPImage via oversized image dimensions
+      #8781 merged 2026-06-02 reject cineon files with an invalid bits per pixel
+      #8933 merged 2026-09-02 build(deps): bump the codeql-action group with 3 updates
+      #8925 merged 2026-08-28 build(deps): bump the codeql-action group with 3 updates
+      #8750 merged 2026-05-22 reject farbfeld files with zero columns or rows
+      #8917 merged 2026-08-20 build(deps): bump the codeql-action group with 3 updates
+      #8909 merged 2026-08-10 build(deps): bump the codeql-action group across 1 directory with 3 updates
+      #8807 merged 2026-06-19 build(deps): bump msys2/setup-msys2 from 2.31.1 to 2.32.0
+      #8895 merged 2026-07-30 build(deps): bump the codeql-action group with 3 updates
+      #8907 merged 2026-08-06 build(deps): bump the codeql-action group with 3 updates
+      #8881 merged 2026-07-23 build(deps): bump the codeql-action group with 3 updates
+      #8891 merged 2026-07-28 build(deps): bump the codeql-action group with 3 updates
+      #8879 closed 2026-07-23 build(deps): bump github/codeql-action/analyze from 4.37.0 to 4.37.1
+      #8878 closed 2026-07-23 build(deps): bump github/codeql-action/init from 4.37.0 to 4.37.1
+      #8877 closed 2026-07-23 build(deps): bump github/codeql-action/upload-sarif from 4.37.0 to 4.37.1
+      #8851 merged 2026-07-09 build(deps): bump github/codeql-action/upload-sarif from 4.36.2 to 4.36.3
+      #8849 merged 2026-07-09 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #8882 merged 2026-07-24 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+      #8862 merged 2026-07-15 build(deps): bump github/codeql-action/upload-sarif from 4.36.3 to 4.37.0
+      #8863 merged 2026-07-15 build(deps): bump github/codeql-action/analyze from 4.36.3 to 4.37.0
+  truncate       84 hit(s) (all listed)
+      #8938 merged 2026-09-03 Preserve Ultra HDR gain-map metadata precision
+      #8809 closed 2026-06-21 BMP encoder resource exhaustion in WriteBMPImage via oversized image dimensions
+      #8781 merged 2026-06-02 reject cineon files with an invalid bits per pixel
+      #8856 open 2026-07-11 Issue with -compose divide -composite  or  -define compose:clamp=false between IM 6 and IM 7
+      #8933 merged 2026-09-02 build(deps): bump the codeql-action group with 3 updates
+      #8925 merged 2026-08-28 build(deps): bump the codeql-action group with 3 updates
+      #8750 merged 2026-05-22 reject farbfeld files with zero columns or rows
+      #8917 merged 2026-08-20 build(deps): bump the codeql-action group with 3 updates
+      #8909 merged 2026-08-10 build(deps): bump the codeql-action group across 1 directory with 3 updates
+      #8807 merged 2026-06-19 build(deps): bump msys2/setup-msys2 from 2.31.1 to 2.32.0
+      #8895 merged 2026-07-30 build(deps): bump the codeql-action group with 3 updates
+      #8907 merged 2026-08-06 build(deps): bump the codeql-action group with 3 updates
+      #8881 merged 2026-07-23 build(deps): bump the codeql-action group with 3 updates
+      #8891 merged 2026-07-28 build(deps): bump the codeql-action group with 3 updates
+      #8879 closed 2026-07-23 build(deps): bump github/codeql-action/analyze from 4.37.0 to 4.37.1
+      #8878 closed 2026-07-23 build(deps): bump github/codeql-action/init from 4.37.0 to 4.37.1
+      #8877 closed 2026-07-23 build(deps): bump github/codeql-action/upload-sarif from 4.37.0 to 4.37.1
+      #8851 merged 2026-07-09 build(deps): bump github/codeql-action/upload-sarif from 4.36.2 to 4.36.3
+      #8849 merged 2026-07-09 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #8882 merged 2026-07-24 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8816 open 2026-06-22 Writing a multi-image MNG fails with "Valid palette required for paletted images" when two frames share an identical palette
+      #8843 open 2026-07-06 Defaults wrong
+      #7797 open 2024-11-21 removing alpha channel from an HDR png, causes issues in metadata and rendering
+      #6336 open 2023-05-16 Font size 15 cannot make strokewidth effective
+      #8858 open 2026-07-11 Honor -define jxl:distance and jxl:quality in the JXL coder
+      #8776 closed 2026-05-29 reject empty string when pinging a strimg image
+      #8422 open 2025-10-30 Drawing an 1x1 rectangle fails
+      #8807 merged 2026-06-19 build(deps): bump msys2/setup-msys2 from 2.31.1 to 2.32.0
+      #8800 closed 2026-06-16 TGA orientation is shown wrong with identify
+      #8366 open 2025-09-26 Last OS error - No such file or directory with ImageMagick 7.1.2-3
+      #8802 closed 2026-06-16 Support transparent for sixel
+      #8697 merged 2026-04-24 build(deps): bump msys2/setup-msys2 from 2.31.0 to 2.31.1
+      #8778 closed 2026-06-01 `-clip` stopped honoring the clipping-path write mask in 7.1.2-23 (`-alpha transparent -clip -alpha opaque` yields a blank image)
+      #8655 merged 2026-04-05 Support for 4-bit (indexed 16-color) PCX
+      #8528 closed 2026-01-17 Unsigned Integer Underflow in ReadRGFImage
+      #6642 closed 2023-09-14 HDR AVIF to JXR conversion
+      #8383 closed 2025-10-04 Allow raw PICT files (no padding nor magic) to be read (#8381)
+      #8306 closed 2025-08-18 misleading error message on obvious typo (command)
+      #7668 closed 2024-10-04 ImageMagick extracts invalid color profile for gif file
+      #8234 closed 2025-07-01 magick: UnableToReadFont error in ImageMagick 7.1.1-47 when exporting SVG
+  atomic         8 hit(s) (all listed)
+      #8856 open 2026-07-11 Issue with -compose divide -composite  or  -define compose:clamp=false between IM 6 and IM 7
+      #7079 closed 2024-01-30 posterize command line option is ignoring dither option
+      #6363 closed 2023-05-26 magick: MagickCore/opencl.c:1519: CopyMagickCLCacheInfo: Assertion `pixels == info->pixels' failed. on Intel GPU
+      #5311 closed 2022-07-10 Possible bug IM 7.1.0.43 threshold after rasterizing SVG
+      #195 closed 2016-05-06 Fix signal handler
+      #1500 closed 2019-03-06 Heap-Use-After-Free in function VerticalFilter of MagickCore/resize.c
+      #2382 closed 2020-08-06 A heap overflow in resample.c:601:18 might cause Segmentation fault
+      #1860 closed 2020-03-08 Invalid result when converting from SVG to PDF.
+  atomically     0 hit(s)
+  interrupted    3 hit(s) (all listed)
+      #8784 closed 2026-06-03 🔥 Release `7.1.2-24-portable-*-x64` has broken binaries (7.1.2-23 and 7.1.2-22 work OK)
+      #395 closed 2017-03-07 ImageMagick creates huge temporary files
+      #155 closed 2016-03-27 Compiling from source fail on Ubuntu Trusty
+  interrupt      10 hit(s) (all listed)
+      #8784 closed 2026-06-03 🔥 Release `7.1.2-24-portable-*-x64` has broken binaries (7.1.2-23 and 7.1.2-22 work OK)
+      #8180 closed 2025-05-26 Multiple Hangs via Unbounded Image Dimensions in XCF, TIFF, and VIPS Decoders
+      #8038 closed 2025-03-16 Provide command-line option to disable delegates; or, identify is extremely slow on video files
+      #395 closed 2017-03-07 ImageMagick creates huge temporary files
+      #6075 closed 2023-02-17 InitializePixelChannelMap() function: SIGABRT for corrupted data file
+      #155 closed 2016-03-27 Compiling from source fail on Ubuntu Trusty
+      #968 closed 2018-01-31 coders/sixel.c goes to infinite loop.
+      #972 closed 2018-02-07 MagickCore/cache.c goes to long loop and disk bloat.
+      #1134 closed 2018-05-19 convert/ mogrify aborts (SIGABRT or segfault) when resizing an image.
+      #1472 closed 2019-02-05 Incorrect parsing Cineon causing `convert` to take ridiculous time
+  sigkill        5 hit(s) (all listed)
+      #6364 closed 2023-05-26 Specific 90+ Mb gif sigkill during 'convert'
+      #6264 closed 2023-04-18 Identfiy using `format` switch, and other commands, fail when operating on large files
+      #2595 closed 2020-09-17 ImageMagick cannot convert multiple small size image files to PDF with OCP environment
+      #1264 closed 2018-08-24 Memory leak in Convert
+      #1844 closed 2020-02-10 imagemagick 'convert' can't deal with pdf more than 100 pages
+  sigint         5 hit(s) (all listed)
+      #8180 closed 2025-05-26 Multiple Hangs via Unbounded Image Dimensions in XCF, TIFF, and VIPS Decoders
+      #968 closed 2018-01-31 coders/sixel.c goes to infinite loop.
+      #972 closed 2018-02-07 MagickCore/cache.c goes to long loop and disk bloat.
+      #1134 closed 2018-05-19 convert/ mogrify aborts (SIGABRT or segfault) when resizing an image.
+      #1472 closed 2019-02-05 Incorrect parsing Cineon causing `convert` to take ridiculous time
+  ctrl-c         9 hit(s) (all listed)
+      #8549 open 2026-01-29 magick not working, arguments wrong in help or in command
+      #8784 closed 2026-06-03 🔥 Release `7.1.2-24-portable-*-x64` has broken binaries (7.1.2-23 and 7.1.2-22 work OK)
+      #7198 merged 2024-03-26 add support for encoding/decoding ultrahdr images
+      #6377 closed 2023-05-31 Add support for HDR gain maps
+      #6575 closed 2023-08-21 Docs and Magick Vector Graphics
+      #7911 closed 2025-01-19 Conversion from animated GIFs to animated PNGs seems to work with errors
+      #8038 closed 2025-03-16 Provide command-line option to disable delegates; or, identify is extremely slow on video files
+      #6417 closed 2023-06-20 Running against a mapped network drive causes infinite loop that maintains between reboots
+      #1286 closed 2018-08-31 Magick hang on the input file
+  power          24 hit(s) (all listed)
+      #8596 closed 2026-03-02 Colours off when converting SVG on ppc64 w/ librsvg configured
+      #8614 closed 2026-03-13 consider adopting a policy that disallows LLM/"AI" contributions
+      #8223 closed 2025-06-25 JXL -quality option is problematic/invalid
+      #8259 closed 2025-07-17 -region command copies the color of first pixel to its entire row
+      #7490 closed 2024-07-17 imagemagic website is down
+      #1590 closed 2019-06-12 Website is down
+      #7306 closed 2024-05-10 Wrong image auto orientation ?
+      #7252 closed 2024-04-16 MagickCore/memory.c:847 Assertion failed
+      #6924 closed 2023-12-05 -fx reports nan for standard_deviation
+      #6551 closed 2023-08-10 Unable to install ImageMagick 7.1.1-15 on AlmaLinux 8
+      #6135 closed 2023-03-05 how to change the imagemagic 7 script imei.sh in linux bullseye 11 to recompile with -fPIC ?
+      #5950 closed 2023-01-08 identify json output format
+      #5658 closed 2022-10-13 ai Support seems degraded starting between 7.1-0-10 and 7.1-0-16
+      #5702 closed 2022-10-29 magick -script freezes at info: and at -delete mpr:name
+      #4634 closed 2021-12-27 GIF Error: Invalid colormap index when opacity index is outside of colormap
+      #4988 closed 2022-03-25 AddressSanitizer: heap-buffer-overflow /src/imagemagick/./MagickCore/quantum-private.h:256:27 in PushLongPixel
+      #4418 closed 2021-10-28 possible issue converting 8-bit/channel png to 32-bit/channel tif
+      #1668 closed 2019-08-17 netpbm formats incorrectly handled as sRGB.
+      #4176 closed 2021-09-09 imagemagick's /usr/bin/import doesn't work with touchpad
+      #4102 closed 2021-08-22 Washed-out colors for PNG output
+  outage         2 hit(s) (all listed)
+      #7493 open 2024-07-17 Attach tarballs and other artifacts to Github releases
+      #7490 closed 2024-07-17 imagemagic website is down
+  ENOSPC         2 hit(s) (all listed)
+      #8925 merged 2026-08-28 build(deps): bump the codeql-action group with 3 updates
+      #2081 closed 2020-05-31 coders/pnm: Handle write failures
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8859 open 2026-07-13 honor the disk resource limit for the TIFF EXIF temporary file
+      #8607 open 2026-03-10 QuantizeImage fails with "memory allocation failed" memory allocation failed `' @ error/quantize.c/QuantizeImage/3145
+      #8522 open 2026-01-13 Error on converting Tiff to jpeg
+      #8344 open 2025-09-03 Wishlist: actionable error message of which resource gets exhausted
+      #8714 open 2026-05-03 PerlMagick does not preserve the bitdepth of 1-bit grayscale PNGs
+      #8925 merged 2026-08-28 build(deps): bump the codeql-action group with 3 updates
+      #8366 open 2025-09-26 Last OS error - No such file or directory with ImageMagick 7.1.2-3
+      #8822 open 2026-06-24 Convert delay on loading type-ghostscript.xml
+      #8606 merged 2026-03-09 Amiga Workbench .info coder (image/x-amiga-icon)
+      #8851 merged 2026-07-09 build(deps): bump github/codeql-action/upload-sarif from 4.36.2 to 4.36.3
+      #8849 merged 2026-07-09 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #8862 merged 2026-07-15 build(deps): bump github/codeql-action/upload-sarif from 4.36.3 to 4.37.0
+      #8863 merged 2026-07-15 build(deps): bump github/codeql-action/analyze from 4.36.3 to 4.37.0
+      #8861 merged 2026-07-15 build(deps): bump github/codeql-action/init from 4.36.3 to 4.37.0
+      #8850 merged 2026-07-09 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #8810 closed 2026-06-21 Potential integer overflow / resource exhaustion in LiquidRescaleImage quantum calculation
+      #8719 merged 2026-05-08 build(deps): bump github/codeql-action from 4.35.2 to 4.35.3
+      #8789 merged 2026-06-09 build(deps): bump github/codeql-action from 4.36.0 to 4.36.1
+      #8795 merged 2026-06-11 build(deps): bump github/codeql-action from 4.36.1 to 4.36.2
+      #8775 merged 2026-05-29 build(deps): bump github/codeql-action from 4.35.5 to 4.36.0
+  partial        59 hit(s) (all listed)
+      #8198 open 2025-06-13 Improve color matching, specifically with reference to conversion to indexed PNG, aka PNG8
+      #6642 closed 2023-09-14 HDR AVIF to JXR conversion
+      #8200 closed 2025-06-15 Please use `-type PaletteAlpha` rather than boolean transparency for PNG8 output
+      #8397 merged 2025-10-13 Bump github/codeql-action from 3 to 4
+      #7768 merged 2024-11-12 revert map changes breaking ABI
+      #7337 closed 2024-05-22 Tiff converted to Group4 displays only half the image
+      #7751 closed 2024-11-05 Montage, mode Concatenate, tile, exr
+      #1249 closed 2018-08-16 heap-buffer-overflow bug in  MagickCore/quantum-private.h:
+      #395 closed 2017-03-07 ImageMagick creates huge temporary files
+      #6408 closed 2023-06-13 "magick compare" hangs/unusably slow when called from multiple processes.
+      #6163 closed 2023-03-14 Gistesy font - some upper case letters are partially cut in a text box
+      #6249 closed 2023-04-12 -colors method issues
+      #4872 closed 2022-02-21 `magick` produces results changing over time.
+      #2983 closed 2020-12-14 convert tiff to jpg is now creating a stretched, cropped, and partial red only output
+      #3364 closed 2021-03-06 Cannot read partial Targa files
+      #24 closed 2015-08-31 ImageMagick can't detect animated PNG
+      #765 closed 2017-09-19 Heap buffer over read in ReadTIFFImage(coders/tiff.c:2011)
+      #272 closed 2016-09-14 heap-based buffer overflow in IsPixelMonochrome (pixel-accessor.h)
+      #375 closed 2017-02-08 out-of-bounds read in coders/sun.c:582:57
+      #376 closed 2017-02-08 out-of-bounds read in coders/sun.c:536:64
+  incomplete     30 hit(s) (all listed)
+      #8937 merged 2026-09-03 Preserve EXIF dimensions during transforms
+      #8938 merged 2026-09-03 Preserve Ultra HDR gain-map metadata precision
+      #8181 open 2025-05-26 Questions to *.mng images
+      #7232 open 2024-04-08 `CMake` portable build
+      #8740 closed 2026-05-18 Build error with libheif 1.18.2
+      #8508 closed 2025-12-29 CVE-2025-68469  poc
+      #8403 closed 2025-10-20 Many problems converting SVGs
+      #8073 closed 2025-03-29 Release 7.1.1-47: Missing github archive file
+      #8097 closed 2025-04-11 -evaluate RightShift does not actually do bitwise shift
+      #8022 closed 2025-03-11 JXL->JXL processing (to remove alpha channel) drops color profile
+      #6339 closed 2023-05-17 RCE (shell command injection) vulnerability in `OpenBlob` with `--enable-pipes` configured
+      #7728 closed 2024-10-29 Default font regression
+      #6985 closed 2023-12-29 Though no pixel has transparency after -flatten, an alpha channel is added and saved in PNG
+      #5340 closed 2022-07-20 Magick++ documentation for "Quantum" wrong
+      #2996 closed 2020-12-16 svg to png conversion issue
+      #3422 closed 2021-03-19 [Compile problem] in fourier.c at ForwardFourierTransform
+      #627 closed 2017-07-29 coders/mat.c: fix build failure due to incomplete #624 patch
+      #262 closed 2016-09-04 tiff:rows-per-strip not honored in some cases
+      #563 closed 2017-07-16 Memory Leak in WriteMPCImage()
+      #584 closed 2017-07-18 Address Access Except in WritePTIFImage() coders/tiff.c
+  dataloss       0 hit(s)
+  recover        13 hit(s) (all listed)
+      #8473 open 2025-12-02 Proposal: Optional best‑effort support for CgBI (iOS) PNGs
+      #8363 open 2025-09-25 Compare -verbose -metric AE does not output correctly since 7.1.2-0
+      #7976 closed 2025-02-19 Convert date metadata to seconds since unix epoch
+      #8016 closed 2025-03-09 Is it allowed to use the coalesce option for non-gif or non-animated images?
+      #6783 closed 2023-10-14 Windows 11: No decode delegate for this image format 
+      #395 closed 2017-03-07 ImageMagick creates huge temporary files
+      #6341 closed 2023-05-17 Undefined behaviors of casting `double` to `size_t` in svg, mvg and other coders (recurring bugs of CVE-2022-32546)
+      #1752 closed 2019-10-14 heap-buffer-overflow at MagickCore/quantum-private.h
+      #3364 closed 2021-03-06 Cannot read partial Targa files
+      #777 closed 2017-09-22 [bug] MAGICK_DIR location becomes full, creating Magick::Image object SIGBUS
+      #831 closed 2017-10-05 IM GIF decoder detects new frame where there is none
+      #400 closed 2017-03-10 How should I deal with SIGBUS
+      #397 closed 2017-03-10 CacheFatalError.This error will make my process crash
+  recovery       1 hit(s) (all listed)
+      #7490 closed 2024-07-17 imagemagic website is down
+  rollback       6 hit(s) (all listed)
+      #8934 merged 2026-09-02 build(deps): bump azure/login from 3.0.1 to 3.0.2
+      #8907 merged 2026-08-06 build(deps): bump the codeql-action group with 3 updates
+      #5369 closed 2022-07-25 Possible OpenCL Regression in Win64 7.1.0-43-Q16-HDRI-x64-dll
+      #3430 merged 2021-03-22 Add "exact" option for WebP encoder
+      #398 closed 2017-03-10 Issue/Question: Command failed: convert.im6: delegate failed html2ps + no image defined
+      #1551 closed 2019-04-18 identify&convert of DPX file cause error
+  resume         2 hit(s) (all listed)
+      #7296 closed 2024-05-07 ImageMagick stopped working on Windows 7
+      #2534 closed 2020-09-09 New DICOM variant (insufficient image data @ error/dcm.c/ReadDCMImage/3309)
+  half-written   10 hit(s) (all listed)
+      #8855 open 2026-07-11 JXL coder ignores -define jxl:distance=0, falls back to default lossy encoding (-quality 90) instead of true lossless
+      #8606 merged 2026-03-09 Amiga Workbench .info coder (image/x-amiga-icon)
+      #8800 closed 2026-06-16 TGA orientation is shown wrong with identify
+      #7554 closed 2024-08-14 svg to png conversion, using rgba results in a solid white, instead of a color transparent color.
+      #3027 merged 2020-12-24 Improve webp encode
+      #2504 closed 2020-09-03 convert: Unable to write sRGB png
+      #1619 merged 2019-06-29 fix font decorate position, thickness issue
+      #2342 merged 2020-07-31 (DO NOT MERGE) OpenRaster (.ora) decoder support
+      #685 closed 2017-08-19 "Ignoring invalid time value" error is not solved
+      #2320 closed 2020-07-25 convert pdf to png gives surprising result
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          7 hit(s) (all listed)
+      #954 closed 2018-01-23 The option -strip interferes with metadata-writing options on PNG
+      #2621 closed 2020-09-25 convert -extent CMYK tiff broken in 6.9.10.68-3
+      #3782 closed 2021-06-03 connected components area not working
+      #3545 closed 2021-04-14 Resizing GIF with both -coalesce and -deconstruct produces broken output
+      #557 closed 2017-07-10 MP3s with Album Thumbnail are Treated as PNM 
+      #859 closed 2017-11-11 "convert -layers OptimizeFrame" on IM7 won't erase pixels correctly
+      #1747 closed 2019-10-12 Memory leak in Magnify
+  erasing        2 hit(s) (all listed)
+      #3782 closed 2021-06-03 connected components area not working
+      #557 closed 2017-07-10 MP3s with Album Thumbnail are Treated as PNM 
+  erased         1 hit(s) (all listed)
+      #2621 closed 2020-09-25 convert -extent CMYK tiff broken in 6.9.10.68-3
+  destroy        59 hit(s) (all listed)
+      #8759 open 2026-05-25 Improper normalization of PHASH
+      #8432 open 2025-11-07 WriteImage()
+      #8367 open 2025-09-26 When installing with winget, magick cannot access ConfigureFile
+      #8865 merged 2026-07-17 Fix memory leak in ASHLAR coder when action fails
+      #8514 open 2026-01-03 Magick Display negates this specific JPEG image
+      #8621 merged 2026-03-17 Fix composite -dissolve adding random noise
+      #8583 merged 2026-02-27 Fix double-free in SVG `gradientTransform` / `transform` parsing
+      #8071 closed 2025-03-28 JPEG2000 encoder with chroma subsampling causes core dump
+      #8184 closed 2025-05-29 file descriptor leak because without proper release handle
+      #6963 closed 2023-12-21 cr2-file handles exceptions 
+      #8145 closed 2025-05-11 SVG is written incorrectly
+      #7942 closed 2025-02-03 #7941 Added if statement to avoid crash when there are no channels
+      #1455 closed 2019-01-17 Unable to register image format `GiF' 
+      #7244 closed 2024-04-14 identify and display command destroys SVG files
+      #7079 closed 2024-01-30 posterize command line option is ignoring dither option
+      #6570 closed 2023-08-19 webp decoder is incorrectly used to decode mp4 video
+      #6435 closed 2023-06-26 Convert heic to jpg aborted on server but not on local machine
+      #6161 closed 2023-03-13 Weird artifacts when converting PDF to JPG
+      #6272 closed 2023-04-21 ImageMagick fails to convert to PDF with "negative or zero image size @ error/resize.c/ResizeImage/3743" error
+      #6104 closed 2023-02-24 ImageMagick 7.1.0-62 Error: convert: no images defined `favicon.ico' @ error/convert.c/ConvertImageCommand/3342.
+  destroys       5 hit(s) (all listed)
+      #7244 closed 2024-04-14 identify and display command destroys SVG files
+      #7079 closed 2024-01-30 posterize command line option is ignoring dither option
+      #3159 closed 2021-01-26 Completely Destroyed Photos, When Upsizing/Downsizing!
+      #1694 closed 2019-09-07 `-extent` unexpectedly converts to `sRGB` and destroys color count
+      #2514 closed 2020-09-05 Converting an animated GIF destroys the frames of the gif
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8352 open 2025-09-12 Optimize GIF animations with Disposal method 2 (Background)
+      #7379 open 2024-06-07 Changing orientation using "orient" only works if the orientation is already set
+      #5221 open 2022-06-14 VICAR read/write procedure look wrong
+      #8885 open 2026-07-24 magick: no decode delegate for this image format
+      #7900 closed 2025-01-15 APNG piping with apng:- is broken
+      #8923 merged 2026-08-25 build(deps): bump ubuntu from `678c655` to `2260313` in /.devcontainer
+      #8903 merged 2026-08-05 build(deps): bump ubuntu from `3131b4c` to `678c655` in /.devcontainer
+      #8876 merged 2026-07-21 build(deps): bump ubuntu from `b7f4819` to `3131b4c` in /.devcontainer
+      #8910 merged 2026-08-11 build(deps): bump actions/attest from 4.2.1 to 4.2.2
+      #8911 merged 2026-08-11 build(deps): bump azure/login from 3.0.0 to 3.0.1
+      #8834 merged 2026-07-03 build(deps): bump ubuntu from `53958ec` to `b7f4819` in /.devcontainer
+      #8904 merged 2026-08-05 build(deps): bump actions/attest from 4.2.0 to 4.2.1
+      #8485 closed 2025-12-14 Reading PNG bKGD
+      #8814 merged 2026-06-22 build(deps): bump ubuntu from `f3d2860` to `53958ec` in /.devcontainer
+      #8896 merged 2026-07-30 build(deps): bump ossf/scorecard-action from 2.4.3 to 2.4.4
+      #8880 merged 2026-07-23 build(deps): bump actions/attest from 4.1.1 to 4.2.0
+      #8850 merged 2026-07-09 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #8830 merged 2026-06-30 build(deps): bump actions/setup-python from 6.2.0 to 6.3.0
+      #8879 closed 2026-07-23 build(deps): bump github/codeql-action/analyze from 4.37.0 to 4.37.1
+      #8878 closed 2026-07-23 build(deps): bump github/codeql-action/init from 4.37.0 to 4.37.1
+  clobber        2 hit(s) (all listed)
+      #7797 open 2024-11-21 removing alpha channel from an HDR png, causes issues in metadata and rendering
+      #8582 closed 2026-02-27 SIGABRT (double-free) converting SVG with `gradientTransform` on `<linearGradient>`
+  blank          62 hit(s) (all listed)
+      #8164 open 2025-05-18 Compare of image to itself creates a diff image whis is not blank
+      #8352 open 2025-09-12 Optimize GIF animations with Disposal method 2 (Background)
+      #7867 open 2024-12-30 convert png sprite sheet to psd lost first layer "L0"
+      #8821 open 2026-06-24 PNG8 output of an alpha-only image becomes fully transparent (palette quantization ignores alpha)
+      #8695 open 2026-04-23 Bounds-check GPS URATIONAL reads in GetEXIFProperty
+      #3790 open 2021-06-06 -layers should consider layer offsets when calculating the default output size
+      #8778 closed 2026-06-01 `-clip` stopped honoring the clipping-path write mask in 7.1.2-23 (`-alpha transparent -clip -alpha opaque` yields a blank image)
+      #7475 open 2024-07-11 AppImage does not support HEIC/HEIF anymore
+      #8696 closed 2026-04-23 Bounds-check IPTC record header and data in GetIPTCProperty
+      #8606 merged 2026-03-09 Amiga Workbench .info coder (image/x-amiga-icon)
+      #7502 closed 2024-07-22 White background with white text appear as blank(complete black) thumbnail image for .EPS files
+      #8197 closed 2025-06-13 Trim trailing space in ascii PBM files
+      #7062 closed 2024-01-23 Some AVIF images (esp. with smaller dimensions) not working in Safari 16.3
+      #7684 closed 2024-10-10 Request .ico size support of 768px and 512px
+      #7337 closed 2024-05-22 Tiff converted to Group4 displays only half the image
+      #127 closed 2016-02-08 [Text -> Image] Inconsistent width of a monospace font.
+      #7103 closed 2024-02-12 SVG conversion to PNG produces a blank image
+      #7102 closed 2024-02-11 Issue with write/read base64 via variable
+      #5439 closed 2022-08-13 Page offset not working when converting jpg to pdf on macOS
+      #3459 closed 2021-03-29 svg image with xlink:href not including external file reference
+  unreadable     6 hit(s) (all listed)
+      #5278 closed 2022-06-26 -define jpeg:arithmetic-coding=on produce an unreadable jpeg file
+      #3252 closed 2021-02-15 convert -annotate ignores newline chars since (at least IM 6.9.10
+      #168 closed 2016-04-11 Fix multiple DDS output issues [port to ImageMagick-6]
+      #970 closed 2018-01-31 PICT file unreadable despite being seemingly valid
+      #1266 closed 2018-08-26 Bug in writing EXIF metadata during HEIC to JPEG conversion
+      #1762 closed 2019-10-25 No delegate for this image format 'MSG'
+  garbage        17 hit(s) (all listed)
+      #8471 closed 2025-12-01 composing image on solid background stopped working
+      #8557 closed 2026-02-05 Some typos in coders
+      #6872 closed 2023-11-19 The magick command and the -map option suspend processing and do not complete.
+      #5768 closed 2022-11-17 Support Keeping Metadata When Converting From TIFF to JXL
+      #5922 closed 2023-01-02 Issue creating image from list of colors
+      #5604 closed 2022-09-29 smart copy exif item from heic
+      #4634 closed 2021-12-27 GIF Error: Invalid colormap index when opacity index is outside of colormap
+      #3492 closed 2021-04-01 imagemagick 7.0.11-5 produces garbage in DDS mipmaps
+      #3904 closed 2021-07-06 Regression: unable to read or convert a TIFF image
+      #2577 closed 2020-09-15 Regression: handling photoshop multi-layer TIFFs results in garbage
+      #3422 closed 2021-03-19 [Compile problem] in fourier.c at ForwardFourierTransform
+      #42 closed 2015-09-27 Corrected type for ExportLongPixel to use long.
+      #286 closed 2016-10-11 heap-buffer-overflow in GetPixelAlpha (pixel-accessor.h)
+      #1213 closed 2018-07-16 display behaves badly when viewing small images on i3
+      #1266 closed 2018-08-26 Bug in writing EXIF metadata during HEIC to JPEG conversion
+      #1501 closed 2019-03-06 ImageMagic crash. Possible stack overflow
+      #1522 closed 2019-03-21 Use-of-uninitialized-value in function SyncImageSettings.
+  mangled        2 hit(s) (all listed)
+      #8515 open 2026-01-03 Problem with JBIG fileformat, invalid file with wrong extension generated
+      #7198 merged 2024-03-26 add support for encoding/decoding ultrahdr images
+  contents       64 hit(s) (all listed)
+      #8859 open 2026-07-13 honor the disk resource limit for the TIFF EXIF temporary file
+      #8714 open 2026-05-03 PerlMagick does not preserve the bitdepth of 1-bit grayscale PNGs
+      #8515 open 2026-01-03 Problem with JBIG fileformat, invalid file with wrong extension generated
+      #7843 open 2024-12-18 .ico files not being identified
+      #8164 open 2025-05-18 Compare of image to itself creates a diff image whis is not blank
+      #3790 open 2021-06-06 -layers should consider layer offsets when calculating the default output size
+      #8683 merged 2026-04-21 build(deps): bump lxml from 6.0.2 to 6.1.0 in /.github/build/python
+      #8534 closed 2026-01-21 Improper Restriction of Operations within the Bounds of a Memory Buffer in Magick++ BlobRef Constructor
+      #8563 closed 2026-02-08 Corrupted chroma output in WriteYUVImage 4:2:2 NoInterlace path
+      #8248 closed 2025-07-09 PDB writer is completelly wrong
+      #8318 closed 2025-08-26 ImageMagick-7.1.2-0 on source release mirror is actually ImageMagick-7.1.2-1
+      #6479 closed 2023-07-11 Cannot convert animated webp to animated webp
+      #8265 closed 2025-07-20 `compare -metric AE` reports difference for the same image on arm64 (and other platforms with fused multiply-add)
+      #7894 closed 2025-01-12 Cannot install for PHP on MacOS
+      #6646 closed 2023-09-16 unrecognized option with-lcms2
+      #1382 closed 2018-11-10 Support macOS ICNS icon format
+      #6863 closed 2023-11-13 --with-security-option does not work on configure
+      #6538 closed 2023-08-02 Memleak in MagickGetImageBlob()
+      #6507 closed 2023-07-22 FL32 RGBA image reads look like scrambled RGB
+      #6506 closed 2023-07-22 FL32 RGBA image read looks like scrambled RGB 
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8871 open 2026-07-18 Virtual Canvas Created by `+distort` Does Not Reflect Distorted Image Correctly
+      #8859 open 2026-07-13 honor the disk resource limit for the TIFF EXIF temporary file
+      #7493 open 2024-07-17 Attach tarballs and other artifacts to Github releases
+      #8741 open 2026-05-18 dynamic pointsize of a font?
+      #8620 open 2026-03-17 composite -dissolve is broken in latest versions
+      #8381 open 2025-10-04 Cannot read old Quickdraw PICT without a 512 bytes padding
+      #8685 open 2026-04-22 Feature: add Apple .ithmb thumbnail-cache read support
+      #7379 open 2024-06-07 Changing orientation using "orient" only works if the orientation is already set
+      #8164 open 2025-05-18 Compare of image to itself creates a diff image whis is not blank
+      #8641 open 2026-03-26 distort corner case fail
+      #7232 open 2024-04-08 `CMake` portable build
+      #8464 open 2025-11-26 ImageMagick not preserving WebP animations well in JXL and AVIF output
+      #8667 open 2026-04-09 Montage is throwing error: `unable to read font`
+      #8606 merged 2026-03-09 Amiga Workbench .info coder (image/x-amiga-icon)
+      #8766 open 2026-05-27 Grayscale Image Has Incorrect Momemts
+      #7578 open 2024-08-27 Using `-define tiff:alpha=associated` results in modified semi-transparent areas
+      #8424 open 2025-11-01 Precision for metric NCC changed substantially in the last month
+      #8900 closed 2026-08-03 crop +repage +adjoin Generate Only One Image
+      #8799 closed 2026-06-15 Some mono SVGs gain colours when converted.
+      #7296 closed 2024-05-07 ImageMagick stopped working on Windows 7
+  unclean        0 hit(s)
+  shutdown       3 hit(s) (all listed)
+      #8186 closed 2025-05-31 time limit in policy.xml is not honoured
+      #1649 closed 2019-07-29 OpenMP segfault in shutdown.
+      #33 closed 2015-09-21 Segfault on ubuntu since 6.9.1-5
+  reboot         8 hit(s) (all listed)
+      #6628 closed 2023-09-08 Crash with long commands using mpr/big images on Debian 11
+      #6783 closed 2023-10-14 Windows 11: No decode delegate for this image format 
+      #6417 closed 2023-06-20 Running against a mapped network drive causes infinite loop that maintains between reboots
+      #3383 closed 2021-03-09 MacOs PDFDelegateFailed [ghostscript library 9.53] 
+      #5369 closed 2022-07-25 Possible OpenCL Regression in Win64 7.1.0-43-Q16-HDRI-x64-dll
+      #908 closed 2017-12-22 CPU and Memory exhaustion
+      #1306 closed 2018-09-13 Random GIF hangs with 100% CPU 95% mem
+      #1775 closed 2019-11-05 Are there any encoder options for SVG?
+  disk+full      28 hit(s) (all listed)
+      #8366 open 2025-09-26 Last OS error - No such file or directory with ImageMagick 7.1.2-3
+      #8822 open 2026-06-24 Convert delay on loading type-ghostscript.xml
+      #8606 merged 2026-03-09 Amiga Workbench .info coder (image/x-amiga-icon)
+      #8851 merged 2026-07-09 build(deps): bump github/codeql-action/upload-sarif from 4.36.2 to 4.36.3
+      #8849 merged 2026-07-09 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #8862 merged 2026-07-15 build(deps): bump github/codeql-action/upload-sarif from 4.36.3 to 4.37.0
+      #8863 merged 2026-07-15 build(deps): bump github/codeql-action/analyze from 4.36.3 to 4.37.0
+      #8861 merged 2026-07-15 build(deps): bump github/codeql-action/init from 4.36.3 to 4.37.0
+      #8850 merged 2026-07-09 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #8810 closed 2026-06-21 Potential integer overflow / resource exhaustion in LiquidRescaleImage quantum calculation
+      #8789 merged 2026-06-09 build(deps): bump github/codeql-action from 4.36.0 to 4.36.1
+      #8795 merged 2026-06-11 build(deps): bump github/codeql-action from 4.36.1 to 4.36.2
+      #8775 merged 2026-05-29 build(deps): bump github/codeql-action from 4.35.5 to 4.36.0
+      #8749 merged 2026-05-22 build(deps): bump github/codeql-action from 4.35.4 to 4.35.5
+      #8733 merged 2026-05-14 build(deps): bump github/codeql-action from 4.35.3 to 4.35.4
+      #6377 closed 2023-05-31 Add support for HDR gain maps
+      #8209 closed 2025-06-19 ImageMagick-7.1.1-47-Q16-HDRI-x64-dll.exe Windows installation package C++ Api usage failure
+      #3599 closed 2021-04-26 resize sets transparent pixel color to black
+      #395 closed 2017-03-07 ImageMagick creates huge temporary files
+      #6809 closed 2023-10-23 i686 test suite fails + errors
+  data+loss      15 hit(s) (all listed)
+      #8705 open 2026-04-28 documentation error for -contrast-stretch
+      #8473 open 2025-12-02 Proposal: Optional best‑effort support for CgBI (iOS) PNGs
+      #8824 merged 2026-06-25 Preserve CICP and CLLI metadata
+      #6377 closed 2023-05-31 Add support for HDR gain maps
+      #8051 closed 2025-03-22 magick avif is not always lossless
+      #4713 closed 2022-01-15 Auto-Orient on JPEGs Throws out Some XMP Metadata
+      #7337 closed 2024-05-22 Tiff converted to Group4 displays only half the image
+      #4380 closed 2021-10-17 .avif not converted, but just copies .jpg
+      #4121 closed 2021-08-26 Data loss observed with ImageMagick v7.1.0-5 while converting a specific JPG file to a 200 DPI B/W output TIFF file using ImageMagick library APIs.
+      #2418 closed 2020-08-14 MagickImportImagePixels doesn't handle opacity import properly
+      #477 closed 2017-05-06 fix DICOM read with fractional slope
+      #1808 closed 2019-12-16 memory leak:when convert any format pic to heic
+      #1684 closed 2019-09-02 Processing xpm images causes loss of symbolic colour names.
+      #1473 closed 2019-02-05 Failed to allocate memory when using `convert`
+      #291 closed 2016-10-17 Add support for Extended File Format to the WebP coder.
+  partial+write  14 hit(s) (all listed)
+      #8198 open 2025-06-13 Improve color matching, specifically with reference to conversion to indexed PNG, aka PNG8
+      #6642 closed 2023-09-14 HDR AVIF to JXR conversion
+      #7337 closed 2024-05-22 Tiff converted to Group4 displays only half the image
+      #395 closed 2017-03-07 ImageMagick creates huge temporary files
+      #6249 closed 2023-04-12 -colors method issues
+      #3364 closed 2021-03-06 Cannot read partial Targa files
+      #24 closed 2015-08-31 ImageMagick can't detect animated PNG
+      #682 closed 2017-08-18 Heap buffer overflow in ReadSFWImage
+      #286 closed 2016-10-11 heap-buffer-overflow in GetPixelAlpha (pixel-accessor.h)
+      #1523 closed 2019-03-22 stack-buffer-overflow in PopHexPixel of ps.c
+      #1561 closed 2019-04-29 heap-buffer-overflow in WritePNGImage of png.c
+      #1644 closed 2019-07-22 ImageMagick heap-buffer-overflow on  ps.c
+      #2581 closed 2020-09-15 Too many bezier coordinates when drawing an ellipse
+      #1562 closed 2019-04-29 heap-buffer-overflow in WriteSGIImage of coders/sgi.c
+  crash+safe     7 hit(s) (all listed)
+      #8534 closed 2026-01-21 Improper Restriction of Operations within the Bounds of a Memory Buffer in Magick++ BlobRef Constructor
+      #8538 closed 2026-01-22 Integer Overflow in FITS Image Dimension Parsing
+      #7198 merged 2024-03-26 add support for encoding/decoding ultrahdr images
+      #8232 closed 2025-07-01 Fix Potential NULL dereference in WriteJSONImage( ) when SyncNextImageInList returns NULL
+      #7854 closed 2024-12-23 Option to allow importing svg from svg
+      #3904 closed 2021-07-06 Regression: unable to read or convert a TIFF image
+      #1131 closed 2018-05-16 magick++ image.read() method doesn't support multi-thread safe heic decode
+  atomic+write   3 hit(s) (all listed)
+      #8856 open 2026-07-11 Issue with -compose divide -composite  or  -define compose:clamp=false between IM 6 and IM 7
+      #6363 closed 2023-05-26 magick: MagickCore/opencl.c:1519: CopyMagickCLCacheInfo: Assertion `pixels == info->pixels' failed. on Intel GPU
+      #5311 closed 2022-07-10 Possible bug IM 7.1.0.43 threshold after rasterizing SVG
+  lock+file      23 hit(s) (all listed)
+      #8858 open 2026-07-11 Honor -define jxl:distance and jxl:quality in the JXL coder
+      #8661 merged 2026-04-06 build(deps): bump github/codeql-action from 4.32.6 to 4.35.1
+      #8684 merged 2026-04-22 build(deps): bump github/codeql-action from 4.35.1 to 4.35.2
+      #8613 merged 2026-03-13 Bump github/codeql-action from 4.32.2 to 4.32.6
+      #8497 merged 2025-12-22 Bump actions/download-artifact from 6 to 7
+      #8498 merged 2025-12-22 Bump actions/upload-artifact from 5 to 6
+      #8225 closed 2025-06-28 Random SIGBUS error in omp_init_lock
+      #8000 closed 2025-03-01 darktable-cli delegate cannot run in parallel
+      #8038 closed 2025-03-16 Provide command-line option to disable delegates; or, identify is extremely slow on video files
+      #396 closed 2017-03-08 Memory issues
+      #7376 closed 2024-06-06 Exception encountered when trying to compare 2 pdf files. 
+      #6356 closed 2023-05-24 on creating a Magick::Image, it crashes with nullptr access on OpenMP mutex
+      #5360 closed 2022-07-23 SIGSEGV in DefaultFatalErrorHandler
+      #1342 closed 2018-10-09 Convert command always taking policy from global policy.xml file instead of custom path
+      #5189 merged 2022-06-04 Bump actions/upload-artifact from 1 to 3
+      #5148 closed 2022-05-11 TGA orientation is inconsistent with other open-source programs
+      #2933 closed 2020-12-06 Bug reappearing?
+      #3844 closed 2021-06-19 A TGA image converted to PNG is flipped vertically.
+      #3473 closed 2021-03-30 magick outputs truncated files when using OpenCL on Intel in some cases
+      #1404 closed 2018-12-04 CLAHE seems to be just AHE
+  write+failure  28 hit(s) (all listed)
+      #8562 open 2026-02-08 WriteMNGImage writes MEND chunk to wrong image, causing assertion failure in WriteBlob
+      #8816 open 2026-06-22 Writing a multi-image MNG fails with "Valid palette required for paletted images" when two frames share an identical palette
+      #8682 open 2026-04-21 magick should throw error if compression method is not supported
+      #8607 open 2026-03-10 QuantizeImage fails with "memory allocation failed" memory allocation failed `' @ error/quantize.c/QuantizeImage/3145
+      #8055 open 2025-03-22 16bit cmyk tiff conversion broken on s390x
+      #8920 merged 2026-08-22 Fix inline SVG style precedence
+      #8828 merged 2026-06-28 Fix HEIC identity CICP with chroma subsampling
+      #8809 closed 2026-06-21 BMP encoder resource exhaustion in WriteBMPImage via oversized image dimensions
+      #8669 closed 2026-04-09 macos crashes on assembling huge image from tiles (libtiff involved)
+      #6377 closed 2023-05-31 Add support for HDR gain maps
+      #7198 merged 2024-03-26 add support for encoding/decoding ultrahdr images
+      #8209 closed 2025-06-19 ImageMagick-7.1.1-47-Q16-HDRI-x64-dll.exe Windows installation package C++ Api usage failure
+      #6070 closed 2023-02-16 SIGABORT when calling "-distort Perspective" with certain parameters
+      #5553 closed 2022-09-09 FileToBlob() fails on 100K, non-seekable stream
+      #2580 closed 2020-09-15 Example to write text to a graphic file fails on raspberry pi, Ubuntu 20.04
+      #2081 closed 2020-05-31 coders/pnm: Handle write failures
+      #169 closed 2016-04-12 AIX  -  recipe for target 'test-suite.log' failed
+      #289 closed 2016-10-15 display not working
+      #348 closed 2017-01-07 Memory corruption via a PSB file
+      #347 closed 2017-01-07 Memory corruption via PSB file
+  file+contents  48 hit(s) (all listed)
+      #8859 open 2026-07-13 honor the disk resource limit for the TIFF EXIF temporary file
+      #8714 open 2026-05-03 PerlMagick does not preserve the bitdepth of 1-bit grayscale PNGs
+      #8515 open 2026-01-03 Problem with JBIG fileformat, invalid file with wrong extension generated
+      #7843 open 2024-12-18 .ico files not being identified
+      #3790 open 2021-06-06 -layers should consider layer offsets when calculating the default output size
+      #8683 merged 2026-04-21 build(deps): bump lxml from 6.0.2 to 6.1.0 in /.github/build/python
+      #8563 closed 2026-02-08 Corrupted chroma output in WriteYUVImage 4:2:2 NoInterlace path
+      #8248 closed 2025-07-09 PDB writer is completelly wrong
+      #6479 closed 2023-07-11 Cannot convert animated webp to animated webp
+      #7894 closed 2025-01-12 Cannot install for PHP on MacOS
+      #6646 closed 2023-09-16 unrecognized option with-lcms2
+      #1382 closed 2018-11-10 Support macOS ICNS icon format
+      #6863 closed 2023-11-13 --with-security-option does not work on configure
+      #5768 closed 2022-11-17 Support Keeping Metadata When Converting From TIFF to JXL
+      #6507 closed 2023-07-22 FL32 RGBA image reads look like scrambled RGB
+      #6506 closed 2023-07-22 FL32 RGBA image read looks like scrambled RGB 
+      #6210 closed 2023-03-31 non-conforming drawing primitive definition `text' @ error/draw.c/RenderMVGContent/4300
+      #5509 closed 2022-09-01 Aborted (core dumped) when converting large .psb to .png
+      #6809 closed 2023-10-23 i686 test suite fails + errors
+      #6180 closed 2023-03-21 load Magick::Image from string in C++ Magick: NoDecodeDelegateForThisImageFormat ' @ error/blob.c/BlobToImage/458`
+
+== 51 terms run; 46 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
