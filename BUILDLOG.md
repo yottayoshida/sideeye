@@ -2,6 +2,80 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 (later) — the read side, and an issue that overstates its own defect
+
+#489 is the other half of #488, filed the same afternoon: `readWhole` opens
+`O_RDONLY|O_NONBLOCK` with no `O_NOFOLLOW`, and one of its two callers reads the trace. The
+fix is a `LinkPolicy` parameter — the trace read passes `.refuse`, the snapshot walk keeps
+`.follow`, because the walk reads the *target's* tree where a link is first-class (#122) and
+closing the classify-to-open window there is a different promise with its own leg.
+
+**The issue's severity needed measuring, and it took three tries to say what was measured.**
+#489 is filed `wrong-verdict`: "reading it through a planted symlink hands the run an
+operation account somebody else wrote, producing a confident FAIL or PASS about a world that
+did not happen." Four runs against the real binary, before and after the flag:
+
+| trace borrowed from | before | after |
+|---|---|---|
+| a run over a **different** state directory (`toy-bug`, ×3; and `toy-fixed`, a target with no bug at all) | `state_changed_unaccounted` | `no_shim_marker` |
+| a run over the **same** state directory | `kill_did_not_land` | `no_shim_marker` |
+
+**The first two rows misled me twice, and the difference between them is the whole point.**
+`engine.reconcile` skips any recorded op that `relUnderRoot` cannot place under the judged
+root, so an account from a run over *another* state directory is discarded wholesale and
+`reconcileOrRefuse` (`src/main.zig:3050`) refuses before the world loop. I read that as
+"borrowed accounts are caught" and wrote it into the CHANGELOG as "not a hole verdicts escape
+through" — a two-sample generalisation, printed in a shipped document, against the issue's own
+filing. Review took it once; I narrowed it to "for a borrowed account"; review took it again,
+pointing at `relUnderRoot`. The measurement that settles it is the third row: **over the same
+state directory the paths line up, `reconcile` returns clean, and the world loop runs on a
+forged account** — ending in `kill_did_not_land` with `next_step` `.fix_define`, advice to
+change a define that is fine. So the read side is not merely one layer in front of another
+that holds; on that path nothing was holding until this change.
+
+What is still **not** measured: a trace written to explain this run's diff *and* carry a
+landing kill point. Whoever can plant the link can attempt it. The claim stops there.
+
+The reason to do this never rested on any of it: #469 gave the other readers the flag because
+a file the engine wrote refusing links can only meet one through somebody's substitution, and
+#488 made that true of the trace's writer this morning. Leaving the reader open has no
+argument left.
+
+**What review took away from me.** R1 killed the falsifiable check: I had written "currently
+the engine proceeds to judgement on the borrowed account", and the first two rows above say
+otherwise. R2 then killed an instruction in this change's own plan, which said the seven
+places citing #489 should now claim the trace ceiling is *structurally* out of reach again.
+It is not: `O_NOFOLLOW` never sees a **hard link**, and README already states that a target
+can hand Sideeye a trace it wrote itself. Two roads stay open, so the ceiling argument stays
+weak and those places get the weak sentence. **The plan is where that overreach lived — it
+never reached a shipped comment**, and the reason it did not is that
+`spike/acceptance.sh`'s trace-cap comment carries the record of the same overreach being retracted once before
+("'Cannot be planted' is what this used to say, and #488 is why it does not now"), in the very
+paragraph this change rewrites.
+
+**Measured.** `zig build test` **542/544** (2 skipped) on the host; acceptance in the aarch64
+container as `--user 1000:1000` **282 ok, 0 FAIL**. The call-site mutation — flipping
+`readTraceCappedInner`'s `.refuse` back to `.follow` — reddens exactly two things and nothing
+else: the new unit test (twice, once per test binary) and the new acceptance leg, whose
+failure line reads `unknown_reason was 'state_changed_unaccounted', so the link was followed`.
+That is the same value the plan predicted from the pre-implementation runs, arriving from the
+committed leg rather than from a hand-driven session.
+
+**The unit test is the part #488 did not have.** That PR's test measured the *constant* and
+stayed green when the flag was dropped at the open — recorded in its own entry. This one hands
+`readTrace` a link, so it fails on the call site, and it runs under `zig build test` where the
+acceptance container is unavailable. `saw_header` is the observation point because it turns
+true only after bytes were decoded, which is what separates "read nothing" from "read
+something"; the control reads the same file by its direct name in the same test.
+
+**The same-class sweep missed three times, on a different axis each time.** #488: the range
+(`.github/` unsearched). This plan's first draft: the range again (`engine.zig` `main.zig`
+`mcp.zig` only, so `image.zig` fell out). The corrected draft: the *pattern* — `posix.open(`
+does not match `src/posix.zig`'s own unqualified `open(`, which hides `openDevNull`. Four
+production hits, three of them `not filed`: `image.zig` reads a path the target named,
+`readFileAllocCapped`'s three no-follow-off callers are operator- or system-named, and
+`/dev/null` is the system's.
+
 ## 2026-09-05 — the shim's trace open, and a promise cut twice before a line was written
 
 #488 is the shim half of the class #469 left behind: the trace open carries no `O_NOFOLLOW`,

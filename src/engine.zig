@@ -1296,15 +1296,39 @@ fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u
     return s;
 }
 
+/// Whether `readWhole` may follow a symlink at the final component (#489).
+///
+/// The caller's to choose, because `readWhole`'s two callers read files with different
+/// owners. The trace is the engine's own: the shim writes it refusing a link since #488, so
+/// meeting one on the way back in can only be somebody else's substitution, and the bytes
+/// decide a verdict — that read passes `.refuse`. The snapshot walk's `.file` arm reads the
+/// *target's* tree, where a link at a name is ordinary and first-class (#122); the walk
+/// classifies with `kindFromDirent` before it gets here, so that read meets a link only
+/// through the window between the classification and the open. **Closing that window changes
+/// what a snapshot refuses**, with its own promise and its own leg (`src/posix.zig` says so),
+/// and is not something to acquire as a side effect of the trace's flag — so the walk passes
+/// `.follow`.
+///
+/// A parameter rather than an unconditional flag for that reason, and a parameter rather than
+/// a check in front of the open: asking `kindOfPathNoFollow` about the path first would put a
+/// classify-to-open window into *this* read, which is the very thing the paragraph above
+/// declines to inherit.
+const LinkPolicy = enum { follow, refuse };
+
 /// The cap is a parameter for the same reason readLinkTarget's buffer is one: against
 /// the production constant a test would need a 64 MiB fixture to see the refusal fire,
 /// so the boundary would be a claim nobody falsifies — against a small cap the tests
 /// below fire it for real. `size_out`, when given, receives the file's size from
 /// lseek(SEEK_END) at the moment the cap breaks (null if even that fails): the
 /// refusal that names the file wants to name its size, and the read loop stopped
-/// before it could know.
-fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64) ReadWholeError![]const u8 {
-    const fd = posix.open(path, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+/// before it could know. `links` is documented on `LinkPolicy` above.
+fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy) ReadWholeError![]const u8 {
+    const flags: c_int = posix.O_RDONLY | posix.O_NONBLOCK |
+        @as(c_int, switch (links) {
+            .follow => 0,
+            .refuse => posix.O_NOFOLLOW,
+        });
+    const fd = posix.open(path, flags, @as(c_uint, 0));
     if (fd < 0) return error.ReadFailed;
     defer _ = posix.close(fd);
 
@@ -1450,7 +1474,7 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
             },
             .file => {
                 var size: ?u64 = null;
-                const content = readWhole(arena, full.ptr, ctx.caps.file, &size) catch |e| {
+                const content = readWhole(arena, full.ptr, ctx.caps.file, &size, .follow) catch |e| {
                     if (e == error.FileTooLarge) if (ctx.diag) |d| {
                         d.file.rel_len = @min(rel.len, d.file.rel_buf.len);
                         @memcpy(d.file.rel_buf[0..d.file.rel_len], rel[0..d.file.rel_len]);
@@ -2596,12 +2620,14 @@ pub fn readTrace(budget: *TraceBudget, path: []const u8) TraceReadError!TraceInf
 /// on the grounds that the engine unlinks the trace before every run — the recording path
 /// and the world path both — and the only writer is the shim. Both halves are still true
 /// and they stop being an argument at the second shim'd process, which opens that same
-/// name with no unlink in front of it (#488); a link planted there is read through, since
-/// the read this delegates to — `readWhole`, which opens `O_RDONLY|O_NONBLOCK` and no more
-/// — still follows links (#489), so the size that arrives is the link target's. What holds today is the weaker claim: nothing committed aims such a link
-/// at a large file. How many operations the cap takes depends on path lengths and is not
-/// claimed here; what is measured is that no committed define comes near it. Tests drive
-/// this with a small `max`.
+/// name with no unlink in front of it (#488). A link planted there used to be read through
+/// as well — `readWhole` opened `O_RDONLY|O_NONBLOCK` and no more — so the size that arrived
+/// was the link target's; it passes `.refuse` now (#489) and that road is shut. Two are not,
+/// and no open flag shuts either: a **hard link**, which `O_NOFOLLOW` does not see, and the
+/// target itself, which holds the trace path in its own environment. What holds today is
+/// therefore still the weak claim: nothing committed aims anything at a large file. How many
+/// operations the cap takes depends on path lengths and is not claimed here; what is measured
+/// is that no committed define comes near it. Tests drive this with a small `max`.
 /// **Takes the budget, not an allocator.** The first version of #377 left this signature
 /// alone and injected the ceiling in `main.zig`'s private wrapper, which meant the public
 /// API still accepted any allocator: a read site calling `engine.readTrace(gpa, …)`
@@ -2663,7 +2689,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // cap now has a way to say what it is. Every OTHER failure still collapses, because
     // for those the empty TraceInfo is the honest observation.
     var too_large_size: ?u64 = null;
-    const bytes = readWhole(arena, path_z.ptr, max, &too_large_size) catch |err| switch (err) {
+    const bytes = readWhole(arena, path_z.ptr, max, &too_large_size, .refuse) catch |err| switch (err) {
         error.FileTooLarge => {
             info.too_large = true;
             info.too_large_size = too_large_size;
@@ -2671,9 +2697,22 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         },
         // Exhaustive now that `readWhole` declares its own set (#376): every other
         // failure of the read collapses into an empty `TraceInfo`, which the caller
-        // reads as `no_shim_marker`, and that is the honest observation for both of
-        // them. Written out rather than left as `else` so a member added to
-        // `ReadWholeError` has to be given an answer here instead of inheriting one.
+        // reads as `no_shim_marker`. Written out rather than left as `else` so a member
+        // added to `ReadWholeError` has to be given an answer here instead of
+        // inheriting one.
+        //
+        // **That collapse is honest for `OutOfMemory` and no longer honest for every
+        // `ReadFailed`** (#489). This read passes `.refuse` now, so `ReadFailed` also
+        // covers "the trace path was a symlink" — a case where the shim may well have
+        // initialised and written, and the engine simply declined to read what the link
+        // pointed at. `no_shim_marker` says something else. It is still what comes out,
+        // because the three read sites do not land in one place: the recording and
+        // `preflight --twice` both reach `no_shim_marker` (with different prose), while a
+        // world has no shim-marker branch at all and refuses `kill_did_not_land` — a claim
+        // about the engine's own kill, drawn from a trace it declined to read. Naming the
+        // path at all three is a separate promise and is left to its own change. What
+        // changed here is that this comment no longer claims the collapse is accurate for
+        // both members.
         error.OutOfMemory, error.ReadFailed => return info,
     };
     if (bytes.len == 0) return info;
@@ -4090,7 +4129,7 @@ test "the rebuild refuses to write through a symlink at an entry name (#446)" {
     try writeFileEntryAt(fd, "real", "recorded bytes");
     var real_buf: [contract.max_path]u8 = undefined;
     const real_z = try joinZ(&real_buf, root, "real");
-    try std.testing.expectEqualStrings("recorded bytes", try readWhole(arena, real_z.ptr, 4096, null));
+    try std.testing.expectEqualStrings("recorded bytes", try readWhole(arena, real_z.ptr, 4096, null, .follow));
 
     // The link: what a resident racer could leave at an entry name.
     var lbuf: [contract.max_path]u8 = undefined;
@@ -4102,7 +4141,7 @@ test "the rebuild refuses to write through a symlink at an entry name (#446)" {
     // The bytes outside are untouched — the whole point. `expectEqualStrings` rather than
     // a length or an existence check: a followed write truncates first and would leave an
     // empty file that still exists.
-    try std.testing.expectEqualStrings(keep, try readWhole(arena, sentinel_z.ptr, 4096, null));
+    try std.testing.expectEqualStrings(keep, try readWhole(arena, sentinel_z.ptr, 4096, null, .follow));
     // And the link is still a link: the refusal did not replace it with a regular file.
     try std.testing.expectEqual(posix.Kind.symlink, try posix.kindOfPathNoFollow(link_z.ptr));
 }
@@ -4150,8 +4189,8 @@ test "corruptState refuses a planted symlink rather than corrupting what it poin
     const arena = arena_state.allocator();
     // The control: the entry that is a real file was corrupted, so the refusal above is
     // the write path saying no to the link, not this function stopping short of it.
-    try std.testing.expectEqualStrings(corruption_probe, try readWhole(arena, real_z.ptr, 4096, null));
-    try std.testing.expectEqualStrings(keep, try readWhole(arena, sentinel_z.ptr, 4096, null));
+    try std.testing.expectEqualStrings(corruption_probe, try readWhole(arena, real_z.ptr, 4096, null, .follow));
+    try std.testing.expectEqualStrings(keep, try readWhole(arena, sentinel_z.ptr, 4096, null, .follow));
 }
 
 test "the walk drains a directory past its collection bound, in one call (#327)" {
@@ -4973,6 +5012,48 @@ fn writeTraceForTest(dir_tag: []const u8, records: []const contract.Record, fbuf
     }
     _ = posix.close(fd);
     return fz.ptr;
+}
+
+test "the trace read refuses a symlink, and reads the same bytes named directly (#489)" {
+    // The call site, not the constant. `readTrace` is what `main.zig` reaches through at
+    // all three read sites, so passing it a link is the same question the acceptance leg
+    // asks of the real binary — and it asks it on **this** host, where the container that
+    // runs acceptance is not available. A mutation that flips `readTraceCappedInner`'s
+    // `.refuse` back to `.follow` reddens this and nothing else in `zig build test`.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const real = try writeTraceForTest("trace-link", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+
+    // The link sits beside the trace and points at it, so the two names differ in nothing
+    // except being a link. Reading the target directly is the control: without it, a
+    // `readTrace` that had started refusing everything would satisfy the assertion below.
+    var lbuf: [contract.max_path]u8 = undefined;
+    const link = std.fmt.bufPrintZ(&lbuf, "{s}.link", .{std.mem.span(real)}) catch unreachable;
+    _ = posix.unlink(link.ptr);
+    try std.testing.expectEqual(@as(c_int, 0), posix.symlink(real, link.ptr));
+    defer {
+        _ = posix.unlink(link.ptr);
+        _ = posix.unlink(real);
+    }
+
+    var tb_ = unboundedBudget(std.testing.allocator);
+
+    var direct = try readTrace(&tb_, std.mem.span(real));
+    defer direct.deinit();
+    try std.testing.expect(direct.saw_header);
+    try std.testing.expect(direct.saw_shim_ready);
+
+    // Through the link: the open is refused, `readWhole` answers `ReadFailed`, and
+    // `readTraceCappedInner` collapses it to the empty `TraceInfo` the caller reads as
+    // `no_shim_marker`. `saw_header` is the observation point because it is set only after
+    // bytes were decoded (`decodeHeader` succeeded), so it separates "read nothing" from
+    // "read something".
+    var through = try readTrace(&tb_, std.mem.span(link.ptr));
+    defer through.deinit();
+    try std.testing.expect(!through.saw_header);
+    try std.testing.expect(!through.saw_shim_ready);
 }
 
 test "a subject exec followed by a shim_ready carrying the count is a continuation (#123)" {
@@ -5836,7 +5917,7 @@ test "readWhole classifies the descriptor before the loop, and /dev/zero is what
 
     try std.testing.expectError(
         error.ReadFailed,
-        readWhole(arena_state.allocator(), "/dev/zero", 4096, null),
+        readWhole(arena_state.allocator(), "/dev/zero", 4096, null, .follow),
     );
 
     // The control. Without it a classification stuck on "refuse" — or a `kindOfFd` that
@@ -5849,7 +5930,7 @@ test "readWhole classifies the descriptor before the loop, and /dev/zero is what
     const bytes = "abc\n";
     try std.testing.expect(posix.write(fd, bytes.ptr, bytes.len) == @as(isize, @intCast(bytes.len)));
     _ = posix.close(fd);
-    const got = try readWhole(arena_state.allocator(), path_z.ptr, 4096, null);
+    const got = try readWhole(arena_state.allocator(), path_z.ptr, 4096, null, .follow);
     try std.testing.expectEqualStrings(bytes, got);
     _ = posix.unlink(path_z.ptr);
 }
