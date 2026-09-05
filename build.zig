@@ -14,9 +14,14 @@ pub fn build(b: *std.Build) void {
 
     // Test apparatus (#324), generation-gated the way `-Dtest-seq-gap` is below:
     // `-Dtest-trace-cap` ADDITIONALLY builds `sideeye-testtracecap`, an engine whose
-    // trace-read ceiling is a few bytes instead of 64 MiB. The shipped cap cannot be
-    // reached by any fixture — the engine unlinks the trace before every run, so none
-    // can be planted, and the only writer is the shim — so without these artifacts the
+    // trace-read ceiling is a few bytes instead of 64 MiB. No committed fixture reaches the
+    // shipped cap. That used to be stated as "cannot be reached" on the grounds that the
+    // engine unlinks the trace before every run and the only writer is the shim; the pair
+    // stops being an argument at the SECOND shim'd process, which opens the same name with
+    // no unlink in front of it (#488), and a link planted there points the read at a file
+    // of any size while the read side still follows links (#489). `TOY_TRACELINK` plants
+    // exactly such a link and aims it at an empty file; nothing aims one at a large file.
+    // So without these artifacts the
     // refusal is unreachable in acceptance, and no unit test can stand in: the check
     // lives in main.zig, whose refusals exit the process. The shipped engine's value is
     // a literal below, not this flag's default, so no invocation of this build can lower
@@ -45,9 +50,11 @@ pub fn build(b: *std.Build) void {
     // the ceiling is a property of the sum, so what a leg needs is two reads live at once
     // rather than a chosen one of them to break. `preflight --twice` is that shape.
     //
-    // The shipped ceiling is unreachable by any fixture for the same reason the caps are
-    // — the engine unlinks the trace before every run and the only writer is the shim —
-    // and the shipped value is a literal below rather than this flag's default.
+    // No committed fixture reaches the shipped ceiling, for the same reason and with the
+    // same correction as the caps above: the unlink-plus-single-writer argument holds only
+    // until the second shim'd process (#488), and what keeps the ceiling out of reach is
+    // that no fixture aims a planted link at a large file. The shipped value is a literal
+    // below rather than this flag's default.
     const test_trace_budget = b.option(bool, "test-trace-budget", "also build sideeye-testtracebudget, an engine with a tiny whole-trace ceiling used only by acceptance (#377)") orelse false;
     // Not an engine variant: a reader for the shim's trace, used by
     // `spike/fsevents/survey.sh`'s L7a to ask what was recorded ABOUT a path rather than

@@ -2591,12 +2591,17 @@ pub fn readTrace(budget: *TraceBudget, path: []const u8) TraceReadError!TraceInf
     return readTraceCapped(budget, path, max_trace_bytes);
 }
 
-/// The capped form, parameterized for the reason `takeSnapshotCapped` is (#265): the
-/// shipped cap cannot be reached by a fixture. The engine unlinks the trace before
-/// every run — the recording path and the world path both — so no oversized file can be
-/// planted, and the only writer is the shim. How many operations that takes depends on
-/// path lengths and is not claimed here; what is measured is that no committed define
-/// comes near it. Tests drive this with a small `max`.
+/// The capped form, parameterized for the reason `takeSnapshotCapped` is (#265): no
+/// committed fixture reaches the shipped cap. This said "cannot be reached by a fixture",
+/// on the grounds that the engine unlinks the trace before every run — the recording path
+/// and the world path both — and the only writer is the shim. Both halves are still true
+/// and they stop being an argument at the second shim'd process, which opens that same
+/// name with no unlink in front of it (#488); a link planted there is read through, since
+/// the read this delegates to — `readWhole`, which opens `O_RDONLY|O_NONBLOCK` and no more
+/// — still follows links (#489), so the size that arrives is the link target's. What holds today is the weaker claim: nothing committed aims such a link
+/// at a large file. How many operations the cap takes depends on path lengths and is not
+/// claimed here; what is measured is that no committed define comes near it. Tests drive
+/// this with a small `max`.
 /// **Takes the budget, not an allocator.** The first version of #377 left this signature
 /// alone and injected the ceiling in `main.zig`'s private wrapper, which meant the public
 /// API still accepted any allocator: a read site calling `engine.readTrace(gpa, …)`

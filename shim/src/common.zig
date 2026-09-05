@@ -117,6 +117,27 @@ pub const O_EXCL: c_int = if (is_darwin) 0x800 else 0o200;
 /// temp-name creators need it to strip what glibc strips out of a caller's flags.
 pub const O_ACCMODE: c_int = 0o3;
 const O_TRUNC: c_int = if (is_darwin) 0x400 else 0o1000;
+/// Derived from `std.posix.O` rather than written out the way this block's other flags are,
+/// and it is the only one that must be. (Eight neighbours, five of which branch on the
+/// platform: `O_CREAT`, `O_APPEND`, `O_CLOEXEC`, `O_EXCL`, `O_TRUNC`. The other three —
+/// `O_WRONLY`, `O_RDWR`, `O_ACCMODE` — agree everywhere and are plain literals.)
+///
+/// The value differs *within* Linux by architecture — 0o400000 on x86_64, 0o100000 on
+/// aarch64 — so the `is_darwin` shape above cannot express it. The engine's copy carried
+/// the x86_64 number for all of Linux once, which left the one guard that used it inert on
+/// arm64: measured in an arm64 container, a symlink planted at a capture path was opened
+/// straight through (#316). The five literals above were checked on three targets then and
+/// are right; a sixth written the same way is where the next one goes wrong.
+/// `src/posix.zig` derives it for exactly this reason, and this is the same derivation, so
+/// the two sides cannot drift apart.
+///
+/// The `@bitCast` is comptime: no heap, no libc, no runtime code — the rule this file
+/// opens with holds.
+const O_NOFOLLOW: c_int = blk: {
+    var f: std.posix.O = .{};
+    f.NOFOLLOW = true;
+    break :blk @bitCast(f);
+};
 
 /// Is this open capable of changing state? (ADR 0003)
 ///
@@ -541,7 +562,27 @@ pub fn init() void {
         }
     }
 
-    trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0o644);
+    // `O_NOFOLLOW`, and `O_CREAT` stays (#488). The engine unlinks the trace once, before
+    // the run; every process the shim is loaded into then opens this same name, and from
+    // the second one onward there is nothing in front of the open at all. A link planted
+    // there sends these records to whatever it points at — `O_APPEND` with no `O_TRUNC`,
+    // so the target gains bytes rather than losing them, and the engine goes on to read
+    // that file as the run's account.
+    //
+    // `O_EXCL` is not the answer here the way it was for the captures (#469): those are
+    // opened once by a parent that unlinked first, while this channel is shared — every
+    // shim'd process appends to it, so `O_CREAT|O_EXCL` would refuse from the second
+    // process onward. A hard link therefore stays unrefused; README says so rather than
+    // implying this open is now safe against everything.
+    //
+    // Dropping `O_CREAT` is not available either: the reproduce line the engine prints
+    // names `<work>/trace-repro.bin`, which nothing creates but this open, and three
+    // acceptance legs drive the shim directly after removing the file.
+    trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0o644);
+    // Refused is silent-then-not-ready, deliberately for now: the engine reports
+    // `no_shim_marker` (or, in a world, `kill_did_not_land`) and neither names the path.
+    // Saying which of the two it was is a separate promise — it has three call sites that
+    // refuse differently — and it is filed rather than folded in here.
     if (trace_fd < 0) return;
 
     // The channel's one weakness is its number: the shim holds trace_fd as an integer,
@@ -1636,4 +1677,54 @@ test "no second shim build option arrives unchecked (#365)" {
     // would leave the promise false while CI stayed green.
     const decls = @typeInfo(shim_build_options).@"struct".decls;
     try std.testing.expectEqual(@as(usize, 1), decls.len);
+}
+
+test "the shim's O_NOFOLLOW actually refuses a symlink (#488)" {
+    // Asks the kernel rather than asserting the number. A test that spells the value out
+    // is satisfied by whatever the constant happens to say — which is exactly how the
+    // engine's copy carried the x86_64 value for all of Linux and left its one caller
+    // inert on arm64 (#316), the defect this constant's derivation exists to prevent.
+    //
+    // What this does NOT reproduce is the call path. The shim's own open goes through libc
+    // — dlsym'd on Linux, a direct extern on macOS (`callOpen` above) — and on Linux
+    // `real.open` is null in a test binary because `init` never ran.
+    // The bits are the same bits; what is measured is that they reach a kernel and refuse
+    // a link. The call site is held by acceptance instead — a mutation that drops the flag
+    // at the open leaves this test green.
+    //
+    // A pid-unique directory rather than a fixed name: `zig build test` runs this file in
+    // several concurrent binaries, and a shared path passed every single run before
+    // failing 66 of 80 paired ones (#28).
+    var pb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-shim-nofollow-{d}", .{c.getpid()}) catch unreachable;
+    _ = std.c.mkdir(base.ptr, 0o755);
+    var tb: [160]u8 = undefined;
+    const target_z = std.fmt.bufPrintZ(&tb, "{s}/target", .{base}) catch unreachable;
+    var lb: [160]u8 = undefined;
+    const link_z = std.fmt.bufPrintZ(&lb, "{s}/link", .{base}) catch unreachable;
+    defer {
+        _ = std.c.unlink(link_z.ptr);
+        _ = std.c.unlink(target_z.ptr);
+        _ = std.c.rmdir(base.ptr);
+    }
+
+    const create: std.posix.O = @bitCast(O_WRONLY | O_CREAT | O_TRUNC);
+    const tfd = std.c.open(target_z.ptr, create, @as(c_uint, 0o644));
+    try std.testing.expect(tfd >= 0);
+    _ = std.c.close(tfd);
+    try std.testing.expect(std.c.symlink(target_z.ptr, link_z.ptr) == 0);
+
+    // Both directions. "The open failed" alone would also be true of a path that is not
+    // there, so the arm without the flag is what gives the arm with it a meaning.
+    const plain: std.posix.O = @bitCast(O_WRONLY);
+    const followed = std.c.open(link_z.ptr, plain);
+    try std.testing.expect(followed >= 0);
+    _ = std.c.close(followed);
+
+    const guarded: std.posix.O = @bitCast(O_WRONLY | O_NOFOLLOW);
+    const refused = std.c.open(link_z.ptr, guarded);
+    if (refused >= 0) {
+        _ = std.c.close(refused);
+        return error.NofollowDidNotRefuse;
+    }
 }

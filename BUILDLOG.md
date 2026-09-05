@@ -2,6 +2,139 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 — the shim's trace open, and a promise cut twice before a line was written
+
+#488 is the shim half of the class #469 left behind: the trace open carries no `O_NOFOLLOW`,
+and the shim has no such constant at all — it declares its five open flags by hand, per
+platform. The plan is small (derive the flag from `std.posix.O` the way `src/posix.zig` does,
+add it at `shim/src/common.zig:544`, keep `O_CREAT`). What took the time was working out what
+the change is allowed to claim.
+
+**The promise was cut twice, and the second cut came from review.**
+
+The first draft said the run "says so instead of reporting that the shim never loaded". That
+is false: `unknown_reason` is a closed set frozen at v1.0, nothing here moves it, and the
+refusal stays `no_shim_marker`. I caught that one myself, and replaced it with "the refusal
+names what is at that path" — planning to classify the trace path in `noShimDetail` the way
+`image.zig` already re-reads the operation's image.
+
+R1 killed that too, and the reason is worth keeping. `saw_shim_ready` is read in exactly two
+places (`src/main.zig:2697` and `3967`), and **the world loop reads it in neither**. A world
+whose trace open is refused comes back with an empty `TraceInfo`, `kill_landed_seq` stays
+null, and the run refuses `kill_did_not_land` with `next_step` `.fix_define` — "change your
+define", about a define that is fine. Naming the path in one of three places and calling it a
+promise would have been false on a path anyone can reach. The promise is now the write side
+only: **a symlink at the trace path is refused rather than followed, in every process the shim
+is loaded into.** The naming half becomes its own issue covering all three sites.
+
+**My reason for cutting it was also wrong, which R2 caught.** I wrote that dropping the naming
+costs nothing because "the engine reads the same bytes either way" — the child writes through
+the link to somebody else's file, so `trace-record.bin` holds only the parent's records. Both
+halves are wrong. The path *itself* is the symlink, and `readWhole` has no `O_NOFOLLOW`
+(`src/engine.zig:1307` — that is #489), so **the engine follows the same link** and reads the
+target. And planting the link requires unlinking the real trace first, which leaves the
+parent's records on an inode with no name: unreachable, not "what the engine reads". The
+honest reason is different and stronger. Where the link is planted between the engine's unlink
+and the first open, today the whole trace lands in the attacker's file and the engine reads it
+as a complete account — **a verdict computed from records somebody else wrote**. After the fix
+the first open fails, `active` never gets set, nothing is written, and the run refuses. The
+refusal's reason is imprecise; the verdict built on planted evidence is gone. That is what
+makes the naming half postponable, and it is a behaviour change rather than a no-op.
+
+**Six copies, not one — and the count in this paragraph was wrong the first time.**
+`build.zig:48-49` says the shipped trace ceiling is unreachable by any fixture because "the
+engine unlinks the trace before every run". The fixture this change needs is exactly the
+counterexample: a symlink to a large file reaches the ceiling. The sentence lives in
+`build.zig:18-19` and `48-49`, `src/engine.zig:2595-2597`, `spike/acceptance.sh:5385` and
+`6368-6369` — **and `.github/workflows/ci.yml:66-67`**, which the first sweep missed because
+it searched `build.zig src/*.zig spike/*.sh docs/*.md` and never looked at `.github/`. The
+review found the sixth. The irony is on the record: this paragraph already said that
+correcting one would leave the others reading as freshly verified, and it was written while
+leaving one — in the CI file, where a stale claim reads as the most recently checked of all.
+All six move now, and they say what is true while the read side still follows links (#489),
+not "a fixture disproves this". The lesson is the range, not the count: a sweep states the
+directories it covered, or it is a sweep of the directories somebody remembered. So, stated:
+the corrected sweep is `grep -rn "unlinks the trace" . --exclude-dir=.git` plus
+`grep -rniE "unreachable by (a|any) fixture"` over the same range — everything tracked except
+git's own objects. That range finds a **seventh** copy, in `CHANGELOG.md`'s released `[1.0.0]`
+entry for #324, and it stays: a changelog records what a release said at the time, and
+editing a shipped entry to match today's understanding is how a changelog stops being
+evidence. The six that move are the ones a reader would take as current.
+
+**The fixture cannot use `fork`.** `trace_fd` is opened `O_CLOEXEC` and the relocated
+descriptor gets `FD_CLOEXEC` set again (`shim/src/common.zig`, the trace open and the
+`relocate` block just under it), so a forked child inherits the parent's descriptor and never
+reopens the path — the leg would be green before the fix and prove nothing. It needs an exec,
+and it does not need a new file: `toy.c`'s `TOY_SPAWN` already goes through
+`posix_spawn(..., environ)`, which carries `LD_PRELOAD` and `SIDEEYE_TRACE_PATH` into a fresh
+image. One more `TOY_*` mode. (Line numbers are deliberately absent from this paragraph: the
+edit it describes moves them, and a journal entry that cites its own pre-edit line numbers in
+the present tense sends the next reader 35 lines off.)
+
+**Measured, in the aarch64 container as `--user 1000:1000`.** Before the flag, with
+`TOY_TRACELINK` pointing at an empty sentinel: the sentinel gains **44 bytes** — a header
+and a `shim_ready`, written by the spawned child through the link — and the run comes back
+`state_changed_without_ops`, because the engine reads the sentinel as the trace and the
+parent's own records are on the inode the toy unlinked. After: **0 bytes**, and
+`no_shim_marker`. Both are refusals, which is why the leg measures the size and asserts no
+wording; the control (same toy, no link) still reaches `FAIL … crash point 5 of 5`. The unit
+test was seen red by putting the x86_64 literal `0o400000` back in place of the derivation
+and running on macOS, where the real value is `0x100`: `error.NofollowDidNotRefuse`. That
+test does **not** hold the call site — a mutation dropping the flag at the open leaves it
+green, and the acceptance leg is what covers that.
+
+**The host cannot run this.** On macOS the same explore returns `no_shim_marker` with the
+sentinel untouched, before and after the fix, because the shim never loads through the
+engine's spawn — loading it by hand with `DYLD_INSERT_LIBRARIES` writes a 72-byte trace, so
+the library is fine and something in the spawn path is not. Not investigated here; it is why
+the numbers above are the container's, and it is the concrete shape of the gap R1 named
+(`spike/acceptance.sh` hardcodes `.so` and `build-toys.sh` assumes gcc). The unit test does
+run on the host, so the constant is covered on both platforms and the call site is covered
+on one.
+
+**Review found three things this entry had wrong and one older hole.** The count above was
+one of them. The second: the leg was green whenever the spawn silently failed — the link is
+already planted at that point, so `-L` passes and the sentinel stays empty for the wrong
+reason. The toy now writes `<sentinel>.spawned` only after `waitpid` reports exit 0 and the
+leg asserts it, which is the trap `TOY_VFORK`'s own comment says was sprung here once
+before. The control's comment claimed to cover "a toy that stopped spawning" and cannot:
+without `TOY_TRACELINK` the toy never reaches its spawn, so the control covers a refusing
+engine and an absent shim, and the witness covers the third. The third: the CHANGELOG said
+the measured run produced "a verdict computed from them", and it did not — that run refuses,
+because planting the link unlinks the real trace and strands the parent's records. The
+substituted-account case is the *argued* one, and the two were folded into one sentence on
+the measured side.
+
+The older hole is **#492**: a FIFO at the trace path blocks `O_WRONLY` until a reader
+arrives, and the recording run has no budget to stop it (`runChildCapture` takes none; only
+the world loop's `runChildCaptureWorld` does). `O_EXCL` answers this for the captures and
+cannot here — the trace is shared by every shim'd process, so the second opener would be
+refused. `src/posix.zig:748-752` had already written the argument down for the captures;
+nobody read it across to the channel one file over. Filed rather than folded in: the promise
+here is about symlinks and stays true either way, and a guard for it needs its own red.
+
+Three smaller ones from the same review. Two were miscounts of my own prose: "this
+function's own open" in `readTraceCapped`'s doc, which does not open anything — it delegates
+to `readWhole` — and "its five neighbours" for a block that holds eight, five of which branch
+on the platform. Both corrected. The third is left standing on purpose: this leg's control
+runs the same command as the capture leg's control forty lines above, and sharing one would
+couple the two legs — delete or move either and the other goes quiet. One extra `explore` is
+the price of legs that fail independently.
+
+**The witness was seen red too**, because a guard whose own failure mode is silence has to
+be. Pointing the toy's spawn at `/nonexistent/true` and re-running gives `link planted: yes`,
+`witness: no`, `sentinel bytes: 0` — the exact combination that was green before this leg
+asserted the witness. The suite stays 281 ok with the witness in place.
+
+**Acceptance and the mutation.** The full suite in the container: **281 ok, 0 FAIL**, exit 0
+(two checks report NOT MEASURED on this host for reasons that predate this change — a chown
+the container cannot do, and no `git` inside it). Dropping `O_NOFOLLOW` from the open and
+re-running gives **280 ok, 1 FAIL**, and the one is this change's leg — "the sentinel gained
+44 bytes through the link". Nothing else moved, which is what makes the mutation say
+something about that leg rather than about the suite. `zig build test` stays **540/542** with
+the mutation in place: the unit test covers the constant, not the call site, exactly as its
+comment claims.
+
 ## 2026-09-04 — the capture's flags rode on `minimal_env`, and the fix was a rule already written down
 
 #469 filed one line: the capture's `O_NOFOLLOW` is spelled `if (minimal_env)`, so only the

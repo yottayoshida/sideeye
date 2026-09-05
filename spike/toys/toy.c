@@ -196,6 +196,12 @@
  *                     into (new image), and only an oracle can account for it; refuse.
  *   TOY_DETACH        fork a child that calls setsid, escaping the engine's process
  *                     group, then exits. The engine cannot claim to have stopped it.
+ *   TOY_TRACELINK     remove the trace the engine named, put a symlink to this
+ *                     variable's value where the name was, then posix_spawn a child
+ *                     that loads the shim and opens that name (#488). It plays the
+ *                     part of whoever can write the work directory: the engine unlinks
+ *                     the trace once, before the run, so from the second shim'd process
+ *                     onward there is nothing in front of the open at all.
  */
 
 #define _GNU_SOURCE
@@ -367,6 +373,44 @@ static void maybe_leave_the_supported_region(void) {
         if (posix_spawn(&sp, "/bin/sh", NULL, NULL, av, ev) == 0) {
             int st;
             waitpid(sp, &st, 0);
+        }
+    }
+    /* #488's fixture. The second shim'd process is where the trace open has nothing in
+     * front of it: the engine unlinks the trace once, before the run, and every process
+     * the shim is loaded into opens that same name O_APPEND afterwards.
+     *
+     * The link has to replace the name rather than sit beside it, so the real trace is
+     * unlinked first — which also strands the parent's own records on an inode nothing
+     * can name any more. That is why the leg measures the sentinel's SIZE and not the
+     * verdict: the run refuses on both sides of the fix, and only the bytes differ.
+     *
+     * posix_spawn, not fork: trace_fd is O_CLOEXEC and the relocated descriptor has
+     * FD_CLOEXEC set again, so a forked child inherits it and never reopens the path —
+     * a fork here would be green before the fix and prove nothing. `environ` carries
+     * LD_PRELOAD and SIDEEYE_TRACE_PATH into the new image, which is what makes the
+     * child open the name a second time. */
+    const char *tracelink = getenv("TOY_TRACELINK");
+    if (tracelink && *tracelink) {
+        const char *tp = getenv("SIDEEYE_TRACE_PATH");
+        if (tp && *tp && unlink(tp) == 0 && symlink(tracelink, tp) == 0) {
+            static char *const av[] = { (char *)TOY_TRUE, NULL };
+            pid_t sp;
+            if (posix_spawn(&sp, TOY_TRUE, NULL, NULL, av, environ) == 0) {
+                int st;
+                /* The witness, and it is load-bearing. The leg measures an absence — the
+                 * sentinel gaining nothing — and a spawn that failed produces the same
+                 * absence as a refusal does: the link is already in place, so the leg's
+                 * `-L` test passes and the sentinel stays empty for the wrong reason.
+                 * TOY_VFORK's comment above records this exact trap being sprung once
+                 * ("the parent discards the child's status ... the test quietly measures
+                 * less than it says"), so the status is checked here and a file appears
+                 * only when a second process really ran to completion. */
+                if (waitpid(sp, &st, 0) == sp && WIFEXITED(st) && WEXITSTATUS(st) == 0) {
+                    char w[4200];
+                    snprintf(w, sizeof w, "%s.spawned", tracelink);
+                    (void)write_file(w, "");
+                }
+            }
         }
     }
     /* The escape: a child that leaves the process group the engine relies on. */
