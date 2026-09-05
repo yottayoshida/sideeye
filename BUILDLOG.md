@@ -2,6 +2,31 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-05 — v1.2.0, one day after v1.1.0
+
+Fourteen entries and ten commits since the tag (nineteen with the merges): four refusals that say more than they
+did, four seams out of `engine.zig`, and the dogfood ledger's first rows.
+
+**Why minor and not patch.** Two observable moves. `child_touched_state_dir`'s `message`
+carries the pid, the operation and the path where it used to carry one fixed sentence
+(#484), and a capture the parent cannot arrange is `SETUP_ERROR` naming the path where it
+used to arrive as `recording_run_failed` (#469). Neither touches a frozen surface — the
+`unknown_reason` set is unchanged and `docs/report-schema.md` never limited `SETUP_ERROR`
+by phase — so the freeze page needs no new row. `message` is documented as free-form prose
+whose presence is stable, which is exactly the licence this release spends.
+
+**The release notes are shorter than the CHANGELOG section for the first time on purpose.**
+v1.1.0 met the 125,000-character ceiling with 71 entries and named seven rather than
+reproducing them. Fourteen entries fit easily, but the notes are written rather than pasted
+here: the four `#491` entries say the same thing four times, which is right in a changelog
+and wrong in a release page.
+
+**What the version does not record**, again: `engine.zig` went 6,043 lines → 224 across four
+PRs, and nothing an operator can see moved. That is the point — the acceptance suite ran
+identically at every seam — but it means the diff between the tags is 6,000 lines of moved
+code with no behavioural entry to explain it. The `### Changed` block names each seam and
+its ADR for that reason.
+
 ## 2026-09-05 (late) — child_touched_state_dir names what it saw, and #491's split is measured on it
 
 #484 is a refusal that was right and useless: "a process other than the subject performed
