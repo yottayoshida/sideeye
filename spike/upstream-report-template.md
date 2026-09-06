@@ -148,6 +148,43 @@ was not measured (trash-cli's multi-path forms).
   measurement: the owner's own `qpdf#1773` carries eight of them and names
   sideeye four times.
 
+## The second contact: when the maintainer acts on it
+
+Everything above is the **first** report. Once a maintainer engages — and
+especially once they ship a patch — the shape changes, and 2026-09-06 measured
+what changes about it. `ImageMagick/ImageMagick#8939` drew a patch within a day;
+a build of `main` at `3501ef34` then lost the original image **with no crash at
+all**, because the new sequence hard-links the backup to the target before the
+`O_TRUNC`, so an `ENOSPC` write empties both names at once. Measured on a 200 KB
+tmpfs: 7.1.1-43 leaves the original intact at 98,851 bytes with a matching
+sha256, the patched build leaves two names on one inode at 204,800 bytes and
+neither decodes.
+
+What a reply carries that a first report must not:
+
+- **The offer, and the sentence that keeps it an offer.** *"If you would like, I
+  can open a PR along those lines … I will not open one unless you say so."*
+  This is the stage the timewarrior correction was reserving it for.
+- **A fix direction with its unresolved details named.** Three of them there —
+  the coder prefix on the temp path, mode and ownership on a new inode, the
+  `preserve-timestamp` call — introduced by *"which is why I am describing a
+  direction rather than claiming it works as written"*. Detail 2 credits the
+  patch for something the old code did worse.
+- **Reverting named as an acceptable outcome**, when it is one: *"what I
+  reported was minor and fully recoverable; what is in `main` now is not."*
+- **Thanks, and an apology where one is owed.** Not a preamble — the first
+  report's silence about a fix direction is what this round cost, and the reply
+  says so.
+
+Unchanged: measure the patched build yourself before replying, and keep
+`## Not claimed` — the reply's version names the new axis it did not cover
+(other filesystems, the Windows `_wlink` path).
+
+**This is the argument against a bare first report.** The prohibition is on a
+tested patch and on selling a PR, never on saying what a fix would look like. A
+report that stays silent about the direction can be answered by a patch that is
+worse than the finding.
+
 ## After filing
 
 - **Both records, in the same sitting**: a row in `upstream-reports.tsv` and an
@@ -169,6 +206,11 @@ a patch commitment within fourteen hours — on a report that told them closing 
 was fine. That is n=1 against a variable this page does not control: rule 11 in
 `cohort4/SCOUT-BRIEF.md` exists because projects differ in responsiveness, and
 nothing here separates the shape from the project.
+
+**And a fast reply is not the same as a good outcome.** That same patch, shipped
+inside a day, introduced a loss the reported window did not have — see the second
+contact above. A page about how to write reports cannot measure what a report
+causes; only building the patched thing and measuring it again can.
 
 ## Sunset
 

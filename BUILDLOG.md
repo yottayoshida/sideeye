@@ -41,6 +41,21 @@ because projects differ in responsiveness, so the honest statement is that the
 shape and the project are not separated by this evidence, and the page carries
 that sentence rather than the flattering one.
 
+**A second stage exists and the page nearly shipped without it.** While this was
+being written, a parallel session measured a build of ImageMagick `main` at
+`3501ef34` — the patch #8939 drew — and found it loses the original image with no
+crash at all: the new sequence hard-links the backup to the target before the
+`O_TRUNC`, so an `ENOSPC` write empties both names. The reply that went out
+(comment 5555825615) is shaped nothing like a first report: it thanks, it
+apologises for having filed the original *without* a fix direction, it names
+three unresolved details of the direction it now gives, it says reverting would
+be a fine outcome, and it offers a PR while promising not to open one unasked.
+That offer is exactly what the timewarrior correction was holding back for, and
+the page now says so instead of leaving "no PR offer" to read as absolute. The
+same event gets one sentence in "what this page cannot tell you": a fast reply
+is not a good outcome, and only rebuilding the patched thing showed the
+difference.
+
 ## 2026-09-05 (ledger) — a report filed into neither record, and a scan that read a truncated window
 
 `andreafrancia/trash-cli#414` was filed 2026-09-04 and written into neither
