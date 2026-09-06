@@ -16,6 +16,18 @@ committed reports by `spike/unknown-rate/count.py`, wired into the
 acceptance suite — a published figure that drifts from its artifacts goes
 red in CI.
 
+The three sentences **outside** those markers that name the ledgers state how
+the cohort defines are sorted across them: the one counting what was committed between
+the two generations, the one placing each of them into a ledger, and the one
+under the g2 table naming what remains. `PRD.md`'s criterion-4 paragraph
+states the same four counts again. Those eleven figures are recomputed from
+the ledgers and the defines on disk by `spike/check-ledger-prose.sh`, which
+goes red in CI when they drift and when the sentence it reads has moved (#342).
+The rest of the prose on this page is still held by review. Delete that script
+when these pages stop stating the counts in prose, or when the counts move
+inside the markers — there the byte comparison already holds them, and two
+gates on one fact is one too many.
+
 ## Why two groups
 
 A single corpus of already-measured targets cannot carry this criterion.

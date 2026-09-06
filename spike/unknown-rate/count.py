@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Recompute the #84 UNKNOWN-rate tables from the committed artifacts.
 
-Two modes:
+Three modes:
 
   count.py emit  [--root DIR]   print the canonical results block (markdown)
   count.py check [--root DIR]   exit non-zero unless the checked-out docs,
                                 corpus, ledgers, manifests, reports and
                                 define bytes all agree
+  count.py ledger-sizes [--root DIR]
+                                print the five cohort-ledger counts the pages
+                                state in prose, as one key=value line
 
 The published numbers in docs/unknown-rate.md are pasted from `emit` and
 held there by `check` (wired into spike/acceptance.sh): the block between
@@ -818,14 +821,27 @@ def emit(root):
     assert_one_marker_pair(out, "recomputation")
     return out
 
-def check_ledgers(root, corpus):
-    """The three cohort ledgers partition the committed cohort defines."""
+def cohort_ledger_sets(root, corpus):
+    """The three sets the cohort ledgers sort the committed defines into.
+
+    One definition with two callers: `check_ledgers` compares them against each other and
+    against the disk, and `ledger_sizes` prints their sizes for the page checker. Written
+    out twice, a change to how the corpus rows are narrowed would move one and not the
+    other, and the page would then be validated against a set the gate no longer uses
+    (#342 review).
+    """
     sup = read_ledger(root, "supersession.tsv", ["predecessor", "successor", "reason"])
     exc = read_ledger(root, "class-exclusions.tsv", ["define", "row", "reason"])
+    return (
+        {c["defines"] for c in corpus if c["defines"].startswith(COHORT_PREFIX)},
+        {r["predecessor"] for r in sup},
+        {r["define"] for r in exc},
+        sup,
+    )
 
-    in_corpus = {c["defines"] for c in corpus if c["defines"].startswith(COHORT_PREFIX)}
-    in_sup = {r["predecessor"] for r in sup}
-    in_exc = {r["define"] for r in exc}
+def check_ledgers(root, corpus):
+    """The three cohort ledgers partition the committed cohort defines."""
+    in_corpus, in_sup, in_exc, sup = cohort_ledger_sets(root, corpus)
 
     for a, b, na, nb in ((in_corpus, in_sup, "corpus.tsv", "supersession.tsv"),
                          (in_corpus, in_exc, "corpus.tsv", "class-exclusions.tsv"),
@@ -864,6 +880,25 @@ def check_ledgers(root, corpus):
             die(f"supersession.tsv: {r['predecessor']} (revision {pr}) names successor "
                 f"{r['successor']} (revision {sr}), which is not later — a define is not "
                 f"superseded by one that came before it")
+
+def ledger_sizes(root):
+    """The counts the pages state in prose, from the sets `check_ledgers` compares.
+
+    A third mode rather than a second copy, and that goes for the sets as well as for the
+    glob: `cohort_ledger_sets` above is what `check_ledgers` compares, so the page is held
+    to the same three sets the ledger gate uses rather than to a second reading of them.
+    `spike/check-ledger-prose.sh` holds `docs/unknown-rate.md` and `PRD.md` to these
+    numbers; a shell reimplementation of "committed cohort define" would drift from the
+    glob the first time a revision directory appeared or a non-toml file landed under an
+    `ops/` (#342).
+
+    `remaining` is the sum the page states rather than a sixth set: the two ledgers are
+    already checked disjoint by `check_ledgers`, so their sizes add.
+    """
+    in_corpus, in_sup, in_exc, _sup = cohort_ledger_sets(root, read_corpus(root))
+    on_disk = cohort_defines_on_disk(root)
+    print(f"sorted={len(on_disk)} corpus={len(in_corpus)} superseded={len(in_sup)} "
+          f"excluded={len(in_exc)} remaining={len(in_sup) + len(in_exc)}")
 
 def check_dispositions(root, corpus, outcome):
     """Cohort tools are triaged from the record, not parked as new."""
@@ -1198,7 +1233,7 @@ def check(root):
           f"{apparatus_images} apparatus image lines read")
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check"):
+    if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check", "ledger-sizes"):
         print(__doc__)
         sys.exit(2)
     if "--root" in sys.argv:
@@ -1207,6 +1242,8 @@ def main():
         root = Path(__file__).resolve().parents[2]
     if sys.argv[1] == "emit":
         sys.stdout.write(emit(root))
+    elif sys.argv[1] == "ledger-sizes":
+        ledger_sizes(root)
     else:
         check(root)
 

@@ -2,6 +2,74 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — the ledger counts leave the half held by review
+
+`docs/unknown-rate.md` states five counts in prose — eighteen cohort defines sorted, eight
+into the corpus, six superseded, four excluded by class, ten remaining — and `PRD.md`
+states four of them again. They were correct when measured today, and nothing recomputed
+them. The page's own design draws the line: numbers between the results markers are
+regenerated and byte-compared, and `PRD.md` said the surrounding prose was "held by review,
+not by the gate". These counts move whenever a cohort closes, which is not a thing review
+holds.
+
+**The first design was wrong in a way this repository could disprove, again.** It put the
+comparison in `count.py`'s `check_ledgers`, where the four sets already exist. A reviewer
+opened the fixtures: `spike/unknown-rate/fixtures/good/docs/unknown-rate.md` is a 59-line
+toy page carrying none of this prose, its ledgers are comment-only, and all 45 fixtures
+descend from it. A fail-closed reader inside `check_ledgers` would have reddened the two
+fixtures that must pass, and stolen the failures of the roughly thirty-five whose own
+predicates sit between that call and the byte comparison later in `check` — right rc,
+right text, wrong reason, the trap check 12's comment records from #347. (Line numbers are
+left out on purpose: this commit adds to `count.py` and would move any written here.)
+ Skipping when the prose is absent is the other
+direction of the same mistake: delete every cohort directory and the check disappears
+quietly. So it left `count.py`'s check path entirely and took the shape `ci.yml` already
+calls "the repository's shape for a checker's red proof": it is the sixth of the eleven
+`spike/check-*.sh` to carry its own `--selftest` (nine of the eighteen `spike/check-*`
+counting the Python ones — the first draft of this paragraph wrote "ninth" against the
+shell glob, which is a different population).
+
+**The counts still come from `count.py`**, through a third subcommand (`ledger-sizes`). A
+shell reimplementation of "a committed cohort define" would have drifted from the glob that
+defines it the first time a revision directory or a stray non-toml file appeared, and the
+two would have disagreed with nothing to notice. Review found that half-done: the glob was
+shared and the three set expressions were a verbatim copy, so narrowing how corpus rows are
+selected would have moved the gate and left the page checker validating against the set the
+gate no longer used. They are one function now, with two callers.
+
+**The selftest lied once, and now counts.** Its first cut reported "15 proofs" while
+running thirteen: the empty-versus-empty case emptied a full copy with a recursive remove
+that did not happen, so the tree kept its cohorts and the assertion passed on a message
+from a different predicate. It builds that tree empty now, and the proof count is asserted
+against a constant — a proof that is not counted is a proof that can quietly not happen.
+Cleanup is a named removal of exactly the files put into the scratch, which is what
+`check-upstream-ledger.sh` does and for the same reason.
+
+**Seen red before seen green**, both ways: each of the thirteen figures reddens on its own
+message under mutation, and disabling the comparison inside `figure()` makes eleven of the
+eighteen proofs fail with "the mutation produced no FAIL line".
+
+**The same defect, one level up, found by review.** Two guards this check grew during that
+review — an anchor matching twice, and a figure count that disagrees with the number of
+`figure` calls — had no red of their own; the author had tried them by hand and moved on.
+That is the shape this whole script exists to avoid, and CLAUDE.md asks for the opposite in
+as many words. Worse, the sentences added to both pages to explain the change carried
+numbers of their own ("Those eleven figures", "eleven in all") that nothing recomputed —
+#342's defect, reproduced in the paragraph closing it. Both are figures now, read back
+against the count the script computes, so the pages and the check cannot drift apart in
+either direction.
+
+**Run under the shell CI uses, before CI ran it.** The step this repository shipped earlier
+today failed on the macOS runner for a reason the author's laptop could not produce, so the
+question "which machine was this measured on" came first this time rather than after. Both
+modes were run under `/bin/dash` as well as the shell `sh` resolves to here: rc 0 each.
+That is the same dash implementation `ubuntu-latest` runs `sh` as, not the runner's own
+copy of it — what it rules out is a bash-ism, not every difference. Review also named a
+second `set -e` hazard in the same pass: the two `grep '^#'` calls that build the
+empty-versus-empty tree exit 1 when a ledger loses its comment header, which under `set -eu`
+would have ended the selftest with no output and no failing proof. They carry `|| true` and
+an emptiness assertion now, so a missing header is a sentence rather than a silent red.
+
 ## 2026-09-06 — two of the six gaps were a line each, and filing them was the mistake
 
 `#516` shipped the selftest for `#63` and filed six issues beside it: the places where the
