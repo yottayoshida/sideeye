@@ -1,0 +1,16 @@
+# Mutations of judge.sh, and the cases each one killed
+#
+# Programs in MUTATIONS.md. A copy that cmp finds identical is reported BROKEN
+# rather than passing: a no-op edit must not read as 'nothing detected it'.
+# Read as: a mutation that kills more than its own channel means the cases are not independent.
+
+name-unsealed-blind	rc=1	killed: name-unsealed 
+name-mcp-blind	rc=1	killed: name-mcp-foreign 
+network-blind	rc=1	killed: net-bare net-git net-pkg net-url 
+path-blind	rc=1	killed: path-repo path-dotclaude path-tilde 
+docker-blind	rc=1	killed: docker-nonet 
+mount-blind	rc=1	killed: docker-mount 
+unauditable-off	rc=1	killed: unauditable 
+restore-silent	rc=1	killed: restore-fail 
+always-clean	rc=1	killed: name-unsealed name-mcp-foreign net-bare net-git net-pkg net-url path-repo path-dotclaude path-tilde docker-nonet docker-mount 
+case-deleted	rc=1	killed: COUNT 
