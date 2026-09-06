@@ -125,6 +125,25 @@ clock, a random id and a cache keyed on an inode the restore moved all look
 the same from the bytes. For the success marker and the checker, `next_step`
 is `fix_define`.
 
+`no_shim_marker` is raised at two sites, and only one of them chooses its
+`next_step` from an observation (ADR 0040). At the recording run, `noShimNext`
+reads the same image facts the detail line reports. A statically linked ELF, a Mach-O not
+linked against dyld, and one whose code directory names a platform or carries
+the library-validation or hardened-runtime flag take the class wall. A file
+that was read and could not be recognised as an executable image — first
+four bytes unreadable, a magic none of the three families claims (where a `#!`
+script lands), an ELF magic followed by a class or data byte outside the two
+each admits, or a Mach-O slice whose own magic is neither — takes
+`operation_not_an_image`, whose sentence names the define: nothing there is a
+thing a library is inserted into, so `--shim` and the environment are not what
+to look at (#481, #482). Everything else — a first word resolved through
+`PATH`, a file that could not be read, one whose structure ran outside itself
+— is silent about linkage and keeps the shim step, which is the honest default
+rather than a diagnosis. The second site is `preflight --twice`'s second
+observed run, and it keeps the shim step whatever the image says: the first
+run's marker already answered every signing and linkage question about that
+file, so its absence the second time is not about the image.
+
 When the shim's trace is the witness, `child_touched_state_dir`'s `message`
 names the foreign process's pid and the first state-directory operation it
 performed — its class and its path, both ends for a two-path operation (#484): `a process

@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — the arm that was not silent about linkage
+
+`noShimNext` folded four image observations into the shim step, on a reason written into
+its doc comment: an image that could not be read or resolved says nothing about linkage,
+so the shim stays the honest thing to look at. Three of the four fit. `.unrecognised` does
+not — `src/image.zig` defines it as "Read, and neither ELF nor Mach-O", so the file **was**
+read, and what it says is not "nothing about linkage" but "there is no linkage question
+here" (#481). Fixed by giving that arm its own step and narrowing the doc comment's reason
+to the three arms it covers. ADR 0051 carries the decision; ADR 0040 is amended in place,
+because its count and its "otherwise" clause both moved.
+
+**The first draft of the plan was wrong in a way the repository could disprove.** It read
+the two issues as asking for an unconditional limit — "the operation must be an executable
+image" — added to the README's "What the target has to be" and pointed the step at
+`class_wall`. A review found the counterexample inside this repo: `spike/acceptance.sh`
+check 16 runs a `#!/bin/sh` operation and asserts it reaches `path(s) judged`, which only
+appears once worlds have been judged. On Linux the kernel starts the interpreter and
+`LD_PRELOAD` rides along, so the refusal never fires. The PR that was meant to make a
+promise true would have added a false sentence to the one section that claims to enumerate
+the limits. The limit went to the define surface instead, where it is about how the define
+spells one command rather than about what the target is.
+
+**What the new sentence must not do is diagnose.** `noShimDetail`'s doc comment records why
+the old detail line was replaced: it named four candidate causes the engine had looked at
+none of. A second review caught the same shape in the first draft of this step's sentence,
+which said the file is a script and its interpreter is what refused the insertion — the
+engine never resolves or reads the interpreter (`src/image.zig` says so, and calls it a
+separate issue). The shipped sentence states what was read, then gives the mechanism
+conditionally: *a `#!` script hands execution to its interpreter, which is what the
+insertion would have to reach.* It sends a Linux reader who arrives here with a static
+interpreter to the right next observation without claiming to have made it.
+
+**Measured, with the control.** `/bin/sh` carries `Platform identifier=16`, and
+`DYLD_INSERT_LIBRARIES=/nonexistent.dylib /bin/sh -c 'echo reached'` prints `reached` — the
+variable is gone. The same variable handed to a non-platform binary (this build's own
+`sideeye`, adhoc/linker-signed) makes dyld terminate the process. Without the control the
+first result reads as "the dylib was optional".
+
+**Both new checks were seen red before they were seen green.** Reverting the arm makes the
+unit pin fail on the line that asserts the new step, and makes the macOS CI leg fail with
+the shim sentence in its output. Deleting either README clause makes the acceptance leg
+fail, printing both counts so the zero says which of the two places is missing.
 ## 2026-09-06 — a PASS over one crash point says so where the zero case says it (#487)
 
 Written as the work starts. The defect is not that the number is missing — it is in the

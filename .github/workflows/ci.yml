@@ -460,6 +460,50 @@ jobs:
           EOF
           echo "ok   the refusal keeps its shape and states an observation: exit 2, the token, a measured path, no unmeasured guess, JSON message verbatim in the text"
 
+      # The other arm of the same refusal, and the reason it is pinned on this job rather
+      # than in the acceptance suite: it is reachable in practice only here. On Linux the
+      # kernel hands a `#!` script to its interpreter and LD_PRELOAD rides along, so the
+      # marker appears and this refusal never fires — `spike/acceptance.sh` check 16 runs a
+      # script operation through to a judged world and depends on that. On macOS the
+      # interpreter is /bin/sh, whose code directory names a platform (identifier 16), and
+      # DYLD_INSERT_LIBRARIES does not reach it: measured with a non-platform binary as the
+      # control, where dyld terminates on the same variable rather than ignoring it.
+      #
+      # The prefix match is what discriminates: the pre-#481 build answered the shim step
+      # here, whose sentence starts elsewhere. The two negative cases buy nothing against a
+      # rendered constant and are kept for a step ever assembled at run time, and because a
+      # future arm that appends the wall's sentence to this one would still match a prefix.
+      - name: An operation that is not an executable image names the define (#481, #482)
+        run: |
+          set -e
+          d="${RUNNER_TEMP:-/tmp}/nonimage"
+          mkdir -p "$d/state"
+          printf '#!/bin/sh\necho x > "$1"\n' > "$d/op.sh"
+          chmod 755 "$d/op.sh"
+          set +e
+          out=$(./zig-out/bin/sideeye explore --state "$d/state" --setup /usr/bin/true \
+                  --operation "$d/op.sh $d/state/f" \
+                  --shim ./zig-out/lib/libsideeye_shim.dylib \
+                  --work "$d/work" --json "$d/report.json" 2>&1)
+          rc=$?
+          set -e
+          printf '%s\n' "$out" | head -4
+          [ "$rc" = "2" ] || { echo "expected exit 2 from a script operation, got $rc"; exit 1; }
+          reason=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("unknown_reason"))' "$d/report.json")
+          [ "$reason" = "no_shim_marker" ] || { echo "unknown_reason is $reason, wanted no_shim_marker"; exit 1; }
+          nj=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("next_step",""))' "$d/report.json")
+          case "$nj" in
+            "What was read at operation is not something the loader inserts a library into."*) : ;;
+            *) echo "the step is not the one this observation chooses: $nj"; exit 1 ;;
+          esac
+          case "$nj" in
+            *"refuses by design"*) echo "the step fell back to the class wall: $nj"; exit 1 ;;
+            *"--shim"*) echo "the step fell back to the shim: $nj"; exit 1 ;;
+          esac
+          nt=$(printf '%s\n' "$out" | sed -n 's/^next  *//p' | head -1)
+          [ "$nt" = "$nj" ] || { echo "text [$nt] but JSON [$nj]"; exit 1; }
+          echo "ok   a script operation names the define: exit 2, no_shim_marker kept, the step is neither the wall nor the shim, text and JSON byte for byte"
+
       # No oracle here: SIP leaves DTrace's syscall provider with no probes even as
       # root, and the one candidate measured oracle-shaped, fs_usage, is root-gated
       # (#181, spike/macos-oracle/). That is why this job asserts FAIL rather than PASS
