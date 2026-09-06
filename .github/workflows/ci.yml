@@ -472,14 +472,17 @@ jobs:
           EOF
           echo "ok   the refusal keeps its shape and states an observation: exit 2, the token, a measured path, no unmeasured guess, JSON message verbatim in the text"
 
-      # The other arm of the same refusal, and the reason it is pinned on this job rather
-      # than in the acceptance suite: it is reachable in practice only here. On Linux the
-      # kernel hands a `#!` script to its interpreter and LD_PRELOAD rides along, so the
-      # marker appears and this refusal never fires — `spike/acceptance.sh` check 16 runs a
-      # script operation through to a judged world and depends on that. On macOS the
-      # interpreter is /bin/sh, whose code directory names a platform (identifier 16), and
-      # DYLD_INSERT_LIBRARIES does not reach it: measured with a non-platform binary as the
-      # control, where dyld terminates on the same variable rather than ignoring it.
+      # The other arm of the same refusal, pinned the way the step above is: on a decoy
+      # dylib that never writes shim_ready. That is not decoration — the first cut of this
+      # step relied on /bin/sh refusing the insertion, which is true on the author's
+      # machine (Platform identifier=16, and DYLD_INSERT_LIBRARIES silently dropped, with a
+      # non-platform binary as the control where dyld terminates instead) and FALSE on this
+      # runner, where the same define answered `child_process_detected` — the shim reached
+      # the interpreter and announced itself with no exec record behind it. Whether a
+      # script's interpreter takes the insertion is a property of the machine, so a leg
+      # that depends on it measures the runner. The decoy removes that variable: the marker
+      # cannot appear, and what is left to observe is which step the image observation
+      # picks.
       #
       # The prefix match is what discriminates: the pre-#481 build answered the shim step
       # here, whose sentence starts elsewhere. The two negative cases buy nothing against a
@@ -492,10 +495,12 @@ jobs:
           mkdir -p "$d/state"
           printf '#!/bin/sh\necho x > "$1"\n' > "$d/op.sh"
           chmod 755 "$d/op.sh"
+          printf 'int sideeye_decoy;\n' > "$d/decoy.c"
+          zig cc -dynamiclib -o "$d/decoy.dylib" "$d/decoy.c"
           set +e
           out=$(./zig-out/bin/sideeye explore --state "$d/state" --setup /usr/bin/true \
                   --operation "$d/op.sh $d/state/f" \
-                  --shim ./zig-out/lib/libsideeye_shim.dylib \
+                  --shim "$d/decoy.dylib" \
                   --work "$d/work" --json "$d/report.json" 2>&1)
           rc=$?
           set -e

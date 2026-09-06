@@ -34,11 +34,24 @@ conditionally: *a `#!` script hands execution to its interpreter, which is what 
 insertion would have to reach.* It sends a Linux reader who arrives here with a static
 interpreter to the right next observation without claiming to have made it.
 
-**Measured, with the control.** `/bin/sh` carries `Platform identifier=16`, and
+**Measured, with the control — and the control did not widen what the measurement covered.**
+`/bin/sh` carries `Platform identifier=16` here, and
 `DYLD_INSERT_LIBRARIES=/nonexistent.dylib /bin/sh -c 'echo reached'` prints `reached` — the
 variable is gone. The same variable handed to a non-platform binary (this build's own
-`sideeye`, adhoc/linker-signed) makes dyld terminate the process. Without the control the
-first result reads as "the dylib was optional".
+`sideeye`, adhoc/linker-signed) makes dyld terminate the process; without that control the
+first result reads as "the dylib was optional". Both readings were taken on one laptop, and
+the CI leg built on them **went red on the GitHub macOS runner**, where the same define
+answers `child_process_detected` — the shim reached the interpreter and announced itself
+with no exec record behind it. So "on macOS the interpreter does not take the insertion" was
+never measured; "on this machine it does not" was. A control tells you the measurement is
+pointing the right way. It does not tell you the population is one machine wide.
+
+**What the leg measures now.** The decoy shim the neighbouring step has used since #391 — a
+dylib that never writes the marker, so the marker cannot appear whether dyld loads it or
+not. That removes the interpreter from the question entirely and leaves the thing this
+change is about: which step the image observation picks. The prose in `README.md`, `CHANGELOG.md`
+and ADR 0051 moved with it, from "on macOS this refuses" to "whether it refuses is a
+property of the interpreter and the machine, and the same define can do either".
 
 **Both new checks were seen red before they were seen green.** Reverting the arm makes the
 unit pin fail on the line that asserts the new step, and makes the macOS CI leg fail with

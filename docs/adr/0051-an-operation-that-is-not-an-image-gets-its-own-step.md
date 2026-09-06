@@ -20,12 +20,18 @@ lands here, and the operator is sent to check `--shim` and their environment, wh
 find nothing wrong because nothing is (#481). Nowhere on the define surface does it say
 that `operation` is different in kind from the other two (#482).
 
-Measured on this platform, with a control: `/bin/sh` carries a code directory naming a
-platform (identifier 16), and `DYLD_INSERT_LIBRARIES` does not reach it — a non-platform
-binary handed the same variable is terminated by dyld instead of ignoring it. On Linux the
-kernel hands the script to its interpreter and `LD_PRELOAD` rides along, so the refusal
-never fires there; `spike/acceptance.sh` check 16 runs a script operation through to a
-judged world and depends on that.
+**Whether a script operation reaches this refusal at all is a property of the machine, and
+that was measured the expensive way.** On the author's macOS 15.3.1 arm64 it does: `/bin/sh`
+carries a code directory naming a platform (identifier 16), `DYLD_INSERT_LIBRARIES` does not
+reach it — a non-platform binary handed the same variable is terminated by dyld rather than
+ignoring it — and the define answers `no_shim_marker`. On the GitHub macOS runner the same
+define answers `child_process_detected`: the shim reached the interpreter and announced
+itself with no exec record behind it. On Linux the kernel hands the script to its
+interpreter and `LD_PRELOAD` rides along, so `spike/acceptance.sh` check 16 runs a script
+operation through to a judged world. The first cut of this decision's CI leg rested on the
+author's machine and went red on the runner; the control taken beside that first
+measurement was real but was taken on the same machine, which is what a control does not
+widen.
 
 ## Decision
 
@@ -80,8 +86,11 @@ surface says why.**
 - The sentence names no flag, so the #274 test (every step's named flag appears in the help
   text) has nothing to check for it.
 - The step is exercised as a run on the macOS CI job, two-sided: the sentence this
-  observation chooses must be present, and the wall and the shim must be absent. The Linux
-  acceptance suite cannot host it — there, the refusal does not happen.
+  observation chooses must be present, and the wall and the shim must be absent. It runs on
+  a **decoy shim** — a dylib that never writes the marker — for the reason above: a leg that
+  waits for the interpreter to refuse the insertion measures the machine it runs on. The
+  decoy makes the marker's absence unconditional, the way the neighbouring `no_shim_marker`
+  step has done since #391, so what is left to observe is which step the image picks.
 - `.not_resolved` keeps `check_shim` and keeps its known weakness with it
   (`docs/target-classes.md`'s chezmoi/gopass row: the refusal names static linkage only
   when the operation's first word is a path). That arm is a separate question; the pin
