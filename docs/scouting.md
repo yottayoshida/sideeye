@@ -120,7 +120,21 @@ the recorded one has its answer.
   script's exports. A tool that resolves its store through an environment
   variable needs that variable exported where the engine launches — a
   zero-operation PASS ("the operation performed nothing that can change the
-  judged state") is the tell.
+  judged state") is the tell. **A one-crash-point PASS carries a tell of its
+  own** on its verdict line ("over a single crash point", #487), with the check
+  to run underneath it — and the two usually arise differently. Zero is most
+  often the store landing wholly outside the judged directory (though not
+  always: an operation whose only changes are ownership or permissions lands
+  there too, and the report says so). One is most often a target that still
+  left a single mutation inside. #487's trash-cli is that second shape — the
+  doomed file's unlink was inside, the `Trash/{files,info}` writes were not.
+  **Neither count is proof of a mistake.** `docs/target-classes.md` records
+  papis reaching exactly one through a lone `renameat`, which is simply what
+  that target does. Two is not covered and deliberately so: a target that
+  leaves one *written* file inside reaches two kill points (open, write) and
+  gets no clause, because "two is enough" is not a claim this can make. Read
+  the `explored N worlds (crash points M + 1 baseline)` line whenever M is
+  small, and check it against what the define was supposed to touch.
 - Prefer invocations with explicit path flags over environment plumbing.
 - Probe determinism with `sideeye preflight --twice`: it re-runs the
   operation from the restored state at least two seconds later and names

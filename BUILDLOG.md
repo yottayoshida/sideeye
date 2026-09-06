@@ -162,6 +162,265 @@ is "narrower in four places" while six issues had been filed (#510-#515), becaus
 them were folded into one bullet — and none of the six numbers appeared anywhere a reader
 could follow. Both corrected in place.
 
+## 2026-09-06 — a PASS over one crash point says so where the zero case says it (#487)
+
+Written as the work starts. The defect is not that the number is missing — it is in the
+account block, and has been. It is that the number is only there: #487's reporter read the
+ordinary PASS verdict line, took it for a real result, and spent a full exploration and a
+wrong conclusion ("trash-cli holds") before noticing `crash points 1`. The corrected define
+answers **FAIL 2 of 7**.
+
+**Zero already has the register this needs.** `n == 0` replaces the verdict line outright —
+`PASS  the operation performed nothing that can change the judged state` — and
+`docs/scouting.md` names that as the tell for an environment variable the engine's launch
+did not carry. One has nothing.
+
+**And `preflight` already names the count on its own headline**: `recording accepted —
+{d} state-changing operation(s) observed`, with a separate sentence for zero. So this is not
+a new register, it is explore catching up with a sibling command. The plan's first draft
+had that backwards — it argued preflight *should* report the count, as though it did not —
+and the review caught it.
+
+**The first draft also put the sentence in the account block**, which is exactly where the
+reporter's eyes had already passed over the number. Making that layer thicker is not an
+answer to "the only way to notice is to spot the count in the account block". It goes on the
+verdict line.
+
+Two things the reviews established that the plan could not have argued from a reading:
+
+- **What lands on one crash point, and what cannot.** `isKillPoint` and `isMutation` agree on
+  write, rename, unlink, truncate, mkdir, rmdir, link and symlink, so a lone one of any of
+  those is one crash point and one mutation — a bare `unlink` is the shape chosen here, not
+  the only one available. What is ruled out is anything built on `write_file()`: `open` and
+  `write` are counted separately so that is two. An open-only mode is out for a different
+  reason — `isMutation` excludes `open`, so nothing is recorded, and an open that writes
+  nothing changes nothing, which passes over an untouched state rather than tripping
+  `state_changed_without_ops` (that needs a changed state to fire). The new mode deletes one
+  file init made and returns before `cmd_rotate`, which ends in `write_file` + `rename` and
+  would put the floor at four. (The first draft of this paragraph said "only a bare unlink",
+  which the diff review measured against the two predicates and found false.)
+- **The PASS verdict line has an anchored matcher after all** (`spike/acceptance.sh:555`,
+  `^PASS  …invariant$` against `head -1`). The plan claimed, as measured, that none existed;
+  it had looked at lines 528-545 and the match sits at 555. It does not break today because
+  that leg drives toy-fixed at four crash points — the invariant is "do not hand an anchored
+  verdict-line matcher a define with `n == 1`", which is not what the plan wrote down.
+
+**Measured, in the aarch64 container as `--user 1000:1000`**: 290 `ok`, 0 `FAIL`, with the
+two NOT MEASURED this host always reports. Then each leg on its own mutant:
+
+- **The clause never appears** (`if (false and n == 1)`): `one-crash-point` fails alone —
+  *"the verdict line does not name the count: PASS  2/2 explored worlds satisfied the
+  built-in atomicity invariant"*.
+- **The clause always appears** (`n >= 1`): **two** legs fail, and the second is the one
+  worth writing down. The control catches it ("the clause appears on a run with 4 crash
+  points") and so does **#150's PASS-side structural pin**: `FAIL #150 PASS-side structural
+  pin: rc=0 headline shape: 'PASS  5/5 … invariant, over a single crash point'`. That pin is
+  the anchored matcher this plan had claimed, *as measured*, did not exist. It does, at
+  `acceptance.sh:555`, and the review found it by reading further than the draft had. The
+  new leg's comment now carries the invariant it implies.
+
+**The third mutant did not apply on the first attempt, and the run came back with zero
+failures.** The `python3 -c` that was supposed to move the advice into the multiline literal
+had its backslashes eaten by the shell, so `s.count(old)` was 0, the assert fired, and the
+suite ran against an unmutated tree — reporting `total FAIL: 0`, which reads exactly like
+"the leg held". It did not hold anything; nothing had changed. Re-run from a file instead of
+`-c`, with the anchor as a raw string.
+
+Re-run that way, **the advice moved inside the literal** (`\      {s}` with an empty string)
+fails `one-crash-point` alone — *"the report carries a whitespace-only line — the advice is
+inside the literal"* — and both wording legs stay green through it, which is the whole reason
+that leg exists. Three legs, three mutants, one failure each except the always-on clause,
+which trips two. Restored file byte-identical to the measured tree, sha256 checked.
+
+**The diff review took the advice line apart, and it was pointing at a flag two of its three
+callers refuse.** It said to check that the store resolves inside `--state`. `replay` takes
+its define from the case file and rejects the define-surface flags outright
+(`main.zig:2058`); `--config` is mutually exclusive with `--state` (`:2217`). Only the flag
+form of `explore` could act on that sentence, and the recommended shape — a `sideeye.toml`,
+which is one of the five frozen surfaces — is one of the two that could not. It says "the
+judged state directory" now, which is true from all three.
+
+**The same round measured a universal claim in this entry false.** "Only a bare `unlink`
+lands on one crash point" — `isKillPoint` and `isMutation` agree on write, rename, unlink,
+truncate, mkdir, rmdir, link and symlink, so a lone one of any of those does too. The reason
+given (open and write are separate, `isMutation` excludes open) rules out the `write_file()`
+shapes and nothing more. The paragraph above is the corrected one; this is the second entry
+in two PRs where the sentence that went wrong was the one claiming a measurement, and both
+times it was a scope that had not been swept — line range then, predicate set now.
+
+Re-measured after those corrections: 290 `ok`, 0 `FAIL`, unchanged.
+
+**The confirmation round found the advice line had no check at all.** Three legs, three
+mutants, and every one of them reads the *verdict* line — delete
+`saySingleCrashPointNote(n);` and all three stay green, while `CHANGELOG.md` and
+`docs/scouting.md` both promise the line is printed. That is the same shape both plan reviews
+caught before any code existed (a test that does not reach what the change added), arriving
+this time through the back door: the legs were written against the half of the change that
+was easy to grep. The leg now asserts the advice text, and the control asserts its absence.
+
+**Two more sentences here were stronger than what they rest on.** "A mode that only opens
+trips `state_changed_without_ops`" — that refusal needs a *changed* state with no recorded
+mutation (`main.zig:3113`), and an open that writes nothing changes nothing, so it passes
+over an untouched state instead. And `docs/scouting.md`'s new "zero means the store landed
+wholly outside the judged directory" is contradicted by a comment three lines from the zero
+headline itself: a chmod-only operation lands on zero with its store entirely inside. Both
+were written while *correcting* an earlier inaccuracy, which is where this entry keeps
+finding them.
+
+The advice's wording also named `--state`, a flag `replay` and `--config` both refuse, and
+then — corrected — named "the judged state directory", a term this repository does not use
+anywhere else. It says "the state directory" now, which `DESIGN.md` and `config.zig` do.
+
+**A fourth mutant, and the restore that did not restore.** Removing the
+`saySingleCrashPointNote(n);` call fails the one-crash-point leg alone, which is what the new
+assertion is for — before it, that mutant was green everywhere. The revert step then failed
+silently in the same way the third mutant's application had: a `python3 -c` whose `\n` was
+eaten by the shell, so `rindex` raised, the script printed a traceback the caller did not
+read as fatal, and the tree was left with the call still deleted. `RESTORE: MISMATCH` was
+printed and is the only reason it was caught. Restored by hand, verified by counting the call
+(one) and reading the diff's deleted lines (two, both from the format literal being replaced).
+**Twice in one PR, an in-line python heredoc lost a backslash and reported success-shaped
+output.** Anything that mutates and restores gets a file, not a `-c`.
+
+## 2026-09-06 — the trace open refuses what it can see is not an ordinary file (#492)
+
+Written as the work starts, per this repository's contract; it will grow as the work does.
+
+**The defect.** `shim/src/common.zig` opens the trace channel `O_WRONLY` with no
+`O_NONBLOCK`, so a FIFO at that name blocks the open until a reader arrives. The open runs
+from `.init_array`, before `main`, and the recording run has no budget — `src/main.zig`
+calls `posix.runChildCapture`, while the budgeted form `runChildCaptureWorld` is the world
+loop's alone (#263). The run therefore stops with no report and no exit code. README's
+`--work` paragraph has said so since #489: refused by the read, "not by the shim's write,
+which blocks there until something opens the other end".
+
+**Three candidates, decided before any code was written.**
+
+- **`O_NONBLOCK` alone**, the one-line candidate #492 names. Rejected: `ENXIO` comes back
+  only when there is *no* reader. A FIFO somebody is already reading opens fine and takes
+  the records. `src/engine/read.zig` had written the same rejection for the read side
+  already — "the flag above, alone, would turn a path that used to hang into one that
+  succeeds empty. For the trace this is worse than the hang it replaces."
+- **A budget for the recording run.** Rejected here, not dismissed. `runChildCaptureWorld`
+  is deliberately the only entry point that can answer `error.TimedOut`, so that a caller
+  which never passes a budget cannot receive a timeout by type. Moving that boundary is its
+  own change, and it would not refuse the FIFO either way, so README's sentence would stay
+  false. Filed as a separate candidate when #492 closes.
+- **`O_NONBLOCK` plus a kind check after the open.** Taken. It is the shape #400 already
+  gave the read side, and `fdStat`/`fdKind` (contract v8) already sit in this file.
+
+**Two decisions the plan's reviewers moved, before the first line of code.**
+
+- **The check lives in a named function rather than inline in `init()`.** Inline, no unit
+  test reaches it — `init()` does not run in a test binary, which the neighbouring
+  `O_NOFOLLOW` test says about itself ("the call site is held by acceptance instead ... a
+  mutation that drops the flag at the open leaves this test green"). Two rounds of plan
+  review each produced a test suite that would have stayed green with the whole change
+  reverted; the second round is what named the cause.
+- **`fdStat`'s `.failed` arm passes rather than refuses.** `.failed` is a measurement that
+  could not be taken, not a FIFO. Refusing there would turn a host whose kernel has no
+  `statx` from `unresolvable_path` — which names a cause — into `no_shim_marker`, which
+  names nothing. Passing is safe because `O_NONBLOCK` is left on: a write into a FIFO
+  returns `EAGAIN` and `writeAll` gives up rather than blocking. What that does **not**
+  cover is `SIGPIPE` if a reader closes mid-write, which is unchanged from before this PR.
+
+`O_NONBLOCK` is derived from `std.posix.O` the way `O_NOFOLLOW` is rather than written as a
+literal — measured on this host, `std/os/linux.zig` and `std/c.zig` both carry
+`NONBLOCK: bool`. The engine's copy at `src/posix.zig:255` is a literal and stays one:
+`build.zig` gives the shim's test module `contract`, `engine_build_options` and `shim_build_options` by name and three anonymous ones besides, and none of the six is `src/posix.zig`,
+so a test pinning the two against each other cannot be written from this side. Deriving
+removes the need for one.
+
+**Measured, in the aarch64 container as `--user 1000:1000`, both sides of the fix.** The
+"before" tree is this one with the *call site* reverted and the function and its unit test
+kept, which is the honest shape of the question: what does the guard buy where it is used.
+
+Before: `trace fifo` FAIL — the spawned child never exited 0, because the open blocked —
+and `trace fifo read` FAIL, **the pipe took 32 bytes**. Not #488's 44: a FIFO fails
+`lseek(SEEK_END)`, so the shim's header branch does not fire and only the `shim_ready`
+record arrives. That number was predicted from the branch during plan review and confirmed
+here rather than carried over. Exactly two checks failed; the other 287 were unchanged.
+
+After: `ALL ACCEPTANCE CHECKS PASSED`, 287 `ok`, with the two NOT MEASURED this host always
+reports (`chown` and `git` are not in the image).
+
+**The engine came back exit 2 on both sides, and `no_shim_marker` on both sides.** That is
+why neither leg asserts a verdict or a reason. Planting anything at the trace path strands
+the parent's records on a nameless inode, and after the fix the engine also declines to
+read the FIFO (#400) — so the run refuses either way. The exit code does not separate them
+either, because the toy carries its own deadline: `timeout` around the engine signals the
+engine, not the grandchild blocked in a constructor, so a leg resting on 124 would have
+been measuring the toy. What separates them is the `.spawned` witness, which exists only if
+the grandchild reached exit 0.
+
+**The unit test stayed green with the call site reverted** — 554 tests, all passing, on a
+tree that fails both acceptance legs. That is the division of labour this file argued for
+before the code was written, now measured: the named function is what a test can reach, the
+call site is acceptance's, and neither covers the other. The mutation that does kill the
+unit test is `.ok => true`, the whole kind decision removed; one test failed and it was the
+right one. The first attempt at that mutation, `.ok => |_| true`, does not compile — Zig
+refuses a discarded capture — and a mutant that does not compile measures nothing.
+
+**macOS: the leg would measure nothing, which is why none is written.** Run on the host with
+the shipped dylib shim and `TOY_TRACEFIFO`, the FIFO is planted — the toy reads
+`SIDEEYE_TRACE_PATH` from its own environment, which does not depend on the shim — and
+`.spawned` appears, and the run comes back `no_shim_marker` with the reason naming the
+cause: *"its code directory carries no flag this build looks for and names no platform"*.
+The shim never loaded into the **target**, let alone into the grandchild, so the call site
+this change touches is never reached and a leg here would be green before and after. That
+is #488's own note ("the shim never loads through the engine's spawn") confirmed against
+this change rather than carried over, and it answers the question the plan left open:
+`ci.yml`'s #389 leg does reach a verdict on macOS, but through the MCP path, which is a
+different spawn. **macOS coverage for this guard is the unit test and nothing else** — which
+is the whole reason the decision is a named function rather than a branch at the open.
+
+**Each half of the guard was then measured on its own, because "two legs fail" does not say
+which leg holds which half.** Mutant A — the flag off the open, the kind check kept — fails
+`trace fifo` alone. Mutant B — the kind check removed, the flag kept — fails
+`trace fifo read` alone. One failure each, nothing else moved. So the first leg holds
+`O_NONBLOCK` and the second holds the kind check, and neither covers the other's half; that
+division was an inference in the plan and is a measurement now, found missing by the diff
+review rather than by the plan's own checks.
+
+Mutant A is also the only evidence that the *derived* `O_NONBLOCK` reaches the Linux kernel
+as the flag it names. The value is `0x4` measured directly on this macOS host against the
+engine's literal; on Linux it is behavioural, because a derivation that produced the wrong
+bit would leave that leg red with the flag nominally present. Reading the bit position out
+of `std/os/linux.zig` was tried first and went wrong in the obvious way — the struct that
+grep lands on is `MAP`, whose `NONBLOCK` is `MAP_NONBLOCK`, and nothing about that mistake
+would have announced itself in a paragraph claiming the value was confirmed.
+
+The restored file is byte-identical to the tree that measured green (sha256 before and
+after, both times), and the restored tree re-runs `ALL ACCEPTANCE CHECKS PASSED` with the
+diff review's fixes in it.
+
+**The toy's deadline had one hole the review found and a second one that appeared in the
+one-line fix for it.** The first: `waitpid` breaking on `EINTR` would send the SIGKILL to a
+child that was about to exit — a false FAIL — and on `ECHILD` to a pid the kernel may
+already have handed to somebody else. The second: the obvious repair, `if (errno == EINTR)
+continue;`, skips the sleep, so the hundred iterations pass in a burst and the ten-second
+deadline collapses to microseconds — the kill lands at once, on a child that was still
+running normally. The shape that is actually right treats `EINTR` as
+"not yet" — fall through to the sleep, which is what "not yet" costs — and treats `ECHILD`
+and every other error as "not ours to signal", skipping the kill rather than aiming it.
+Read back rather than run: producing `EINTR` there on demand needs a signal this toy never
+receives, so the second hole would have shipped green.
+
+**The diff review's second round caught a claim this PR had strengthened rather than
+recorded, and it is the one worth keeping in this entry.** The first round found
+`writeWholeFile` — `sideeye demo`'s two asset writes — missing from the same-class scan,
+which was right. Answering it, the new scan line said the hit "meets rule 2's predicate": a
+FIFO planted there would hang `demo`, in the same shared work directory the trace path lives
+in. **It does not.** `demo` writes into a directory `mkdtemp` has just created — a random
+name under `TMPDIR`, mode 0700 — and points `--work` at `{tmp}/work` inside it, so there is
+no window in which anyone else can put a FIFO at either name. Left standing, the
+recommendation attached to that line would have opened an issue under `Filed-under: hang` on
+a condition that is false, and the guard would have passed it: `issue-threshold-guard.sh`
+checks that a predicate is declared, not that it is true — which its own comment says. The
+disposition is rule 4, record it and drop it, and the scan line says that now. Answering a
+review finding is where a claim gets stronger than its evidence, because the finding supplies
+the urgency and not the measurement.
+
 ## 2026-09-06 — the third patch for #8939: both reports fixed, and a documented option that stops working
 
 `spike/dogfood/2026-09-06-imagemagick-patch3/`. The comment this project left at 00:35Z

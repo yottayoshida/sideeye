@@ -3806,7 +3806,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     requireCompleteness(arena, args.has_oracle, args.allow_unverified);
 
     say(
-        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant
+        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}
         \\      explored {d} worlds (crash points {d} + 1 baseline)
         \\      expected status: {d}
         \\      atomicity: {s}
@@ -3818,8 +3818,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
+    , .{ explored, explored, singleCrashPointClause(n), explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
     sayApparatus(arena, "      apparatus: {s}\n");
+    saySingleCrashPointNote(n);
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -5545,6 +5546,45 @@ fn setupErrorFmt(arena: std.mem.Allocator, comptime fmt: []const u8, args: anyty
 /// something was declared.
 fn sayApparatus(arena: std.mem.Allocator, comptime fmt: []const u8) void {
     if (apparatus_declared.len > 0) say(fmt, .{apparatusNote(arena)});
+}
+
+/// The verdict line's clause for a run with exactly one crash point (#487).
+///
+/// Zero has a verdict line of its own — "the operation performed nothing that can change the
+/// judged state" — and `docs/scouting.md` names it as the tell for a store that resolved
+/// outside `--state`. One had nothing: the count was in the account block and nowhere else,
+/// which is where #487's reporter read past it, at the price of a full exploration and the
+/// wrong conclusion. `preflight` has named its count on its own headline all along
+/// (`recording accepted — N state-changing operation(s) observed`), so this is explore
+/// catching up with a sibling rather than a new register.
+///
+/// **Not a threshold.** Two crash points get nothing added, deliberately: "two is enough" is
+/// a claim this cannot make, and a genuinely single-syscall operation is a legitimate target
+/// shape — `docs/target-classes.md` records papis reaching exactly one through a lone
+/// `renameat`. What this does is extend zero's
+/// register to the one case sitting next to it, and the cases at two and three are left
+/// where they were — a define whose store resolves outside `--state` but writes one file
+/// still reaches two (`open` + `write`) and gets no tell.
+fn singleCrashPointClause(n: usize) []const u8 {
+    return if (n == 1) ", over a single crash point" else "";
+}
+
+/// The advice that goes with the clause above, in the account block's own style, only when
+/// the run had exactly one crash point.
+///
+/// **The condition is `singleCrashPointClause`'s, spelled a second time.** Changing one
+/// without the other leaves a verdict line that names the count with no advice under it, or
+/// advice under a line that does not. They are two functions rather than one because they
+/// print in two places — the literal and after it — and there is no third caller to make a
+/// shared predicate worth its own name.
+///
+/// A separate call after the block, the way `sayApparatus` is, rather than a `{s}` line
+/// inside the multiline literal: `\\      {s}` prints six spaces on every *other* PASS when
+/// the string is empty, and a check that greps for wording would never see that. The cost is
+/// the position — this lands under `not tested:` rather than beside the count — and the
+/// alternative was splitting the report's one `say` in two for a single line of advice.
+fn saySingleCrashPointNote(n: usize) void {
+    if (n == 1) say("      if the define expected more, check that the target's store resolves inside the state directory\n", .{});
 }
 
 /// A JSON array of strings as a report field; with `only_unchecked`, the entries
