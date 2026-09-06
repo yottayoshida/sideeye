@@ -624,6 +624,46 @@ pub const NextStep = enum {
     /// across two clean runs (the README's "Byte-repeatable writes", measured by
     /// `preflight --twice`).
     class_wall,
+    /// A boundary refusal in the recording run, where the operation may be a `#!` wrapper
+    /// rather than a target of the refused class (#506).
+    ///
+    /// **The sentence does not branch, and that is the whole of it.** The first version read
+    /// "if the operation is a shell script … if it is not …", which cuts off exactly the
+    /// population the second half exists for: the published wall for *"Shell CLIs over helper
+    /// processes"* (pass) is raised here, and those targets **are** shell scripts, so the
+    /// exclusive branch handed them advice that does not apply and took away the entrance to
+    /// the README. Nothing here is detected, so the wrapped case, the genuine class and a
+    /// target that reached the site through threads all read the same words: a question to
+    /// check, then a clause that is true regardless of the answer.
+    ///
+    /// It says "invoke that command as the operation" rather than naming a flag. `--operation`
+    /// is one string and `splitArgs` tokenises it on spaces with no quoting — which is why a
+    /// wrapper gets written — and the argv form lives in a `sideeye.toml`, which `preflight`
+    /// does not take. Naming either would point at a shape one of the two commands cannot
+    /// carry.
+    ///
+    /// **Five sites carry it, and they are two reasons seen by two observers.** The shim
+    /// notices a foreign kill point only in a child that loaded it; a static child, or one
+    /// that drops the preload, is seen by the oracle instead — so `child_touched_state_dir`
+    /// is raised from two places and both need this step. The same split runs through
+    /// `child_process_detected`.
+    ///
+    /// The detached case (setsid/setpgid) does **not** carry it, **and the honest reason is
+    /// the scope ruling, not a property.** The first draft said recommending an argv there
+    /// would be false for that population — true of the sentence as it then read, and not of
+    /// this one, which only asks. But the same is then true of the oracle-block site, whose
+    /// population is threads, `CLONE_FS`, `unshare` and a non-primary setsid: a wrapper
+    /// produces none of those either, so the question is answered "no" at both. One is in and
+    /// one is out because the owner fixed the scope at five, and #506 records that rather than
+    /// dressing it as a distinction.
+    unwrap_or_class_wall,
+    /// `boundary_without_oracle` in the recording run, where the boundary may be the
+    /// operation's own wrapper (#506, owner's scope ruling extending the five).
+    ///
+    /// Two actions, because two things are true at once: an oracle would let this run be
+    /// judged, and a wrapper is a boundary that did not have to exist. Neither is detected,
+    /// and the oracle half stays first because it is the one that works whatever the cause.
+    account_boundary_or_unwrap,
     /// The image is dynamically linked and the marker still never appeared: the shim is
     /// the thing to look at.
     check_shim,
@@ -657,8 +697,10 @@ pub const NextStep = enum {
             .fix_define => "Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.",
             .pass_oracle => "Re-run with --oracle <strace> on Linux or --oracle-fs-usage on macOS, or accept the weaker claim with --allow-unverified.",
             .account_boundary => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.",
+            .account_boundary_or_unwrap => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process — or, if the operation is a shell script wrapping another command, invoke that command as the operation instead; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.",
             .raise_world_timeout => "Raise --world-timeout, or find out what the operation waits on.",
             .class_wall => "This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.",
+            .unwrap_or_class_wall => "Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one the README's 'What the target has to be' names, with DESIGN.md giving the reason.",
             .check_shim => "Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.",
             .operation_not_an_image => "What was read at operation is not something the loader inserts a library into. Point operation at an executable image; a #! script hands execution to its interpreter, which is what the insertion would have to reach.",
             .rebuild_pair => "Use the shim and the engine from the same build: --shim must name the library this binary shipped with.",

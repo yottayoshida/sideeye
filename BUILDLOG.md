@@ -2,6 +2,84 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — a boundary refusal names the wrapper without dropping the wall (#506)
+
+Written as the work starts. Wrapping `--operation` in a `#!` script gets the run refused as
+`child_process_detected` or `child_touched_state_dir` — both true about the process tree the
+shim saw, and both the published names of walls this project measured on cargo and pass. The
+`next_step` says "read the README's limits". The action that works is "stop wrapping", and it
+appears nowhere. On 2026-09-06 fontforge was read that way and nearly reached a
+`docs/target-classes.md` row.
+
+**Three things the reviews established before any code was written, each of them a place the
+draft had not opened.**
+
+- **The draft would have created the mirror of the bug it fixes.** Replacing `.class_wall` at
+  `:2868` takes the wall away from `pass`, whose class is *"Shell CLIs over helper processes"*
+  — the target itself is a shell script. That operator would get advice that does not apply
+  and lose the entrance to the README. The sentence has to carry both halves.
+- **"run the command directly" is not executable.** `--operation` is one string and
+  `splitArgs` tokenises it on spaces with no quoting, which is exactly why the reporter wrapped
+  it (the FontForge argument contains spaces). The only surface that carries an argv is the
+  define file (ADR 0019), so that is what the sentence names — and it names no flag at all.
+- **The sentence must be an action, not a cause.** `src/contract.zig:602` puts ADR 0030's line
+  directly above the enum: *what to do, never why it happened*. The draft opened with "A
+  wrapper counts as a process boundary", a cause, for something it deliberately does not detect.
+
+**Scope: five sites, ruled by the owner.** Three of the sites the draft called "not in the
+recording run" are in it — `:3002`, `:3007` and `:2839`. `:3007` is reachable: `:2868` fires
+only when the child loaded the shim, and a static child or one that drops the preload lands on
+the oracle's side instead, which is the window the issue's "Not claimed" paragraph describes.
+`.detached` (`:2839`) is left out — and the honest reason turned out to be the scope ruling
+rather than a property, since a wrapper produces neither a detached process nor the threads
+behind the oracle-block site, so the question is answered "no" at both.
+
+**A sixth site was added after the diff review, by the same ruling.** `boundary_without_oracle`
+(`:2878`, `:2887`) is a boundary refusal in the recording run too — it is where an `exec`
+wrapper lands *first*, without an oracle — and the promise's universal reading was false while
+it kept the old step. Its sentence now carries two actions, the oracle one first because that
+one works whatever the cause. The leg for it doubles as the reproduction for this entry's
+`exec "$@"` measurement, which the review had noted was written down nowhere runnable.
+
+**Then the driver measurement contradicted the issue, and the legs had to be rebuilt around
+what is actually reachable.** Wrapping the toy and running it:
+
+- `exec "$@"` **with** an oracle reaches `FAIL 1 of 6` — judged, not refused.
+- `exec "$@"` **without** one reaches `boundary_without_oracle`, a refusal this change does
+  not touch, whose step is "re-run with `--oracle`".
+- The non-exec wrapper reaches `child_touched_state_dir` and carries the new step.
+
+So the `child_process_detected` the issue reports came from **fontforge's own behaviour**, not
+from the wrapping. The first version of this paragraph went on to say the reason has no driver
+in the suite at all, and the diff review measured that false: check 2ae's thread oracle reaches
+`:3002`, which is the only site that raises it from the oracle block. A leg reads that run's
+`next_step` now. `:2835` and `:2837` remain untested and the leg's comment says which two.
+
+**The diff review then found the sentence itself broken, in the way it had been written to
+avoid.** Draft 2 read "If the operation is a shell script, … ; if it is not, this is a class
+Sideeye refuses by design …" — an exclusive branch. `pass`'s targets **are** shell scripts, so
+for precisely the population the second half exists for, the first branch fires and the second
+is excluded by construction. The entry above says that operator would "lose the entrance to the
+README"; draft 2 took it away with an `if it is not` instead of a deletion.
+
+The condition that works is not "is it a shell script" but "is it a wrapper", which nothing
+here detects — so the sentence stops branching: a question to check, then a clause true
+whatever the answer is. That also answers `preflight`, which was in the same trap from the
+other side: it takes neither `--config` nor an argv, so a sentence naming the define's argv
+pointed it at a shape it cannot carry.
+
+**Changing the wording turned three legs red, which is the legs working.** They grepped for the
+draft-2 phrasing; the fourth leg — added in the same round because the review found a driver
+for the oracle-block site the earlier paragraph had declared driverless — was already written
+against the new wording and stayed green. Expectations updated, and the pairing is worth
+naming: a leg that greps a sentence is a leg that fails when the sentence changes, which is what
+you want and also what makes it tempting to "fix" by loosening the grep. It was not loosened.
+
+The legs that do exist: the real `#!` wrapper (the only one where the wrapping itself is the
+cause), plus `TOY_FORK_WRITES` and `TOY_SPAWN_WRITES`, which drive the two `child_touched_state_dir`
+sites — the shim's witness at `:2868` and the oracle's at `:3007`. The wrapper leg also asserts
+that the sentence still contains "What the target has to be", which is the half the first draft
+would have deleted.
 ## 2026-09-06 — the arm that was not silent about linkage
 
 `noShimNext` folded four image observations into the shim step, on a reason written into
