@@ -1,0 +1,68 @@
+==================== deb-original ====================
+raw rc=1   (0=PASS  1=FAIL  2=UNKNOWN  3=setup error)
+falsify: img1.png を identify が読めない（25 bytes）
+img1.png が無い
+img1.png を identify が読めない（0 bytes）
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 4
+            after  rename(/work/im/img1.png)
+            before open(/work/im/img1.png)
+path        img1.png
+observed    present before and after the operation, but gone from the crashed state
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 4 operations (441 syscall lines examined, 74 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+
+==================== deb-recoverable ====================
+raw rc=1   (0=PASS  1=FAIL  2=UNKNOWN  3=setup error)
+falsify: どちらの名前にも読める画像が無い: total 12 drwxr-xr-x 2 root root 4096 Sep  6 03:50 . drwxr-xr-x 1 root root 4096 Sep  6 03:50 .. -rw-r--r-- 1 root root   25 Sep  6 03:50 img1.png 
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 4
+            after  rename(/work/im/img1.png)
+            before open(/work/im/img1.png)
+path        img1.png
+observed    present before and after the operation, but gone from the crashed state
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 4 operations (441 syscall lines examined, 74 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+l1          no marker configured
+
+==================== main-original ====================
+raw rc=0   (0=PASS  1=FAIL  2=UNKNOWN  3=setup error)
+falsify: img1.png を identify が読めない（25 bytes）
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 3 operations (203 syscall lines examined, 50 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+
+==================== main-recoverable ====================
+raw rc=0   (0=PASS  1=FAIL  2=UNKNOWN  3=setup error)
+falsify: どちらの名前にも読める画像が無い: total 12 drwxr-xr-x 2 root root 4096 Sep  6 03:50 . drwxr-xr-x 1 root root 4096 Sep  6 03:50 .. -rw-r--r-- 1 root root   25 Sep  6 03:50 img1.png 
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 3 operations (203 syscall lines examined, 50 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+

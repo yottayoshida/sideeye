@@ -1,0 +1,12 @@
+falsify: どちらの名前にも読める画像が無い: total 12 drwxr-xr-x 2 root root 4096 Sep  6 03:50 . drwxr-xr-x 1 root root 4096 Sep  6 03:50 .. -rw-r--r-- 1 root root   25 Sep  6 03:50 img1.png 
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 3 operations (203 syscall lines examined, 50 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes

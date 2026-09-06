@@ -1,0 +1,27 @@
+元画像はすべて 64x64、-resize 50% なので、成功なら 32x32 になる。
+
+======== C: temp 名 (img1.png~xxxxxxxx) の拡張子で coder が決まるか ========
+  patch前-7.1.1-43  rc=0  identify=[PNG 32x32]  file=[PNG image data, 32 x 32, 1-bit colorma]
+  patch後-960adadd  rc=0  identify=[PNG 32x32]  file=[PNG image data, 32 x 32, 1-bit colorma]
+
+======== D: mode が保存されるか（元を 0600 にしてから） ========
+  patch前-7.1.1-43  rc=0  mode 600 -> 644   inode 変わった
+  patch後-960adadd  rc=0  mode 600 -> 644   inode 変わった
+
+======== E: preserve-timestamp が効くか（元の mtime を 2020-01-01 に） ========
+  patch前-7.1.1-43  rc=0  mtime 2020-01-01 00:00:00 -> 2020-01-01 00:00:00
+  patch後-960adadd  rc=0  mtime 2020-01-01 00:00:00 -> 2026-09-06 03:47:18
+
+======== F: 2 フレームの GIF を +adjoin で in-place ========
+  patch前-7.1.1-43  rc=1  frames_before=2  出来たファイル: multi.gif 
+      stderr: mogrify: unrecognized option `+adjoin' @ error/mogrify.c/MogrifyImageCommand/4068. 
+  patch後-960adadd  rc=1  frames_before=2  出来たファイル: multi.gif 
+      stderr: mogrify: unrecognized option `+adjoin' @ error/mogrify.c/MogrifyImageCommand/4097. 
+
+======== J: hard link した別名から見た内容 ========
+  patch前-7.1.1-43  rc=0  img1.png=[32x32 links=1]  alias.png=[64x64 links=1]  別名にも反映: no
+  patch後-960adadd  rc=0  img1.png=[32x32 links=1]  alias.png=[64x64 links=1]  別名にも反映: no
+
+======== K: symlink に対する in-place ========
+  patch前-7.1.1-43  rc=0  link.png は 実体に置き換わった  real.png=[64x64]  link.png=[32x32]
+  patch後-960adadd  rc=0  link.png は 実体に置き換わった  real.png=[64x64]  link.png=[32x32]
