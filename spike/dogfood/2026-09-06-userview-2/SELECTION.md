@@ -247,3 +247,81 @@ screen (threads, in every case), and the ones that passed the screen failed
 rule 8 or had no install path. The slate is short and the rejection table above
 is why; a fourth taken on a relaxed rule would have been a different kind of
 record.
+
+---
+
+# Slate 3 — four asked for, three the rules allowed, and the candidate pool is now empty
+
+The owner asked for four more after slate 2. Three passed; the fourth does not
+exist. This section is mostly the rejection table, because that is the result.
+
+## Metadata screen (rules 1, 2, 3, 12)
+
+| Candidate | repo | ★ | Lang | 6-month commits | authors | Verdict |
+|---|---|---|---|---|---|---|
+| isort | PyCQA/isort | 6,948 | Python | 100 | 11 | passes |
+| pyupgrade | asottile/pyupgrade | 4,112 | Python | 54 | 3 | passes |
+| jpegtran | libjpeg-turbo/libjpeg-turbo | 4,421 | C | 100 | 3 | passes |
+| pngfix | pnggroup/libpng | 1,654 | C | 51 | 11 | passes here, **rule 8** below |
+| jupytext | mwouts/jupytext | 7,239 | Python | 74 | 10 | **no install path** — not in Debian trixie, and pip is unreachable here |
+| copier | copier-org/copier | 3,555 | Python | 100 | 9 | **no install path** — same |
+| yapf | google/yapf | 13,984 | Python | **0** | 0 | **rule 2** |
+| git-crypt | AGWA/git-crypt | 9,889 | C++ | **0** | 0 | **rule 2** |
+| rss2email | rss2email/rss2email | **457** | Python | 0 | 0 | **rules 1, 2** |
+| nbstripout | kynan/nbstripout | 1,480 | Python | **1** | **1** | **rules 2, 3** |
+| bup | bup/bup | 7,339 | Python | 100 | **1** | **rule 3** |
+| git-filter-repo | newren/git-filter-repo | 13,236 | Python | 9 | **2** | **rule 3** — the dotbot reading |
+| autopep8 | hhatto/autopep8 | 4,659 | Python | 24 | **2** | **rule 3** — same |
+| 7zip | ip7z/7zip | 3,858 | C++ | **3** | **1** | **rules 2, 3** |
+| autoflake | PyCQA/autoflake | **952** | Python | 19 | 5 | **rule 1** |
+| vulture | jendrikseipp/vulture | 4,794 | Python | 6 | 3 | **rule 8** — it finds unused code, it does not write |
+| vorbiscomment | xiph/vorbis-tools | **88** | C | 0 | 0 | **rules 1, 2** |
+| opustags | xiph/opus-tools | **285** | C | 3 | 2 | **rule 1** |
+
+**pngfix fails rule 8 in an interesting way.** It has no in-place mode — `--out`
+names a different file — and giving `--out` the input's own name destroys the
+input: the run exits 24 with `not_a_PNG_(too_short)` and leaves **0 bytes**,
+because the output is opened before the input is read. That is the second
+example this day of the shape (`vips copy f.png f.png` was the first, in slate
+2), and neither is a crash: the tool opens the output, truncates it, and then
+fails to read what is now empty. Recorded, not pursued — the operation the rules
+ask for is a mutation of existing state, and pngfix's is a new file.
+
+## The measured screen
+
+`apparatus/screen10.sh`. Same three axes as slate 2.
+
+| Candidate | Linkage | Threads | Children | Writes | Taken |
+|---|---|---|---|---|---|
+| **isort** | script → `python3` | **0** | 1 | 1 | ✅ |
+| **pyupgrade** | script → `python3` | **0** | 1 | 2 | ✅ (exits 1 on a rewrite; the run declares `--expect-status 1`) |
+| **jpegtran** | dynamic | **0** | 1 | 1 | ✅ |
+| pngfix | dynamic | 0 | 1 | 1 | no — rule 8 above |
+
+## Rule 11, measured on bug reports
+
+| Candidate | Receipts |
+|---|---|
+| isort | inherits PyCQA's tracker; not separately measured — see "not claimed" in RESULTS |
+| pyupgrade | not separately measured |
+| jpegtran | #856 (2026-01-24) drew a maintainer reply the same day, and the requested option shipped |
+
+**This is a gap in slate 3 and it is stated rather than hidden.** Slates 1 and 2
+measured rule 11 for every taken candidate; slate 3 measured it only where it
+was cheap (jpegtran, via #856, which was being read anyway for the novelty
+check). isort and pyupgrade were taken on rules 1-10 and 12-16 with rule 11
+unmeasured. For pyupgrade the report was filed regardless, so the rule that
+would have gated it did not gate it.
+
+## The slate
+
+| # | Target | Language | The single operation measured |
+|---|---|---|---|
+| 1 | isort 6.0.1 | Python | `isort a.py b.py` |
+| 2 | pyupgrade 3.19.1 | Python | `pyupgrade --py311-plus a.py` |
+| 3 | jpegtran 2.1.5 | C | `jpegtran -copy all -optimize -outfile a.jpg a.jpg` |
+
+Three again. Across the three slates, **44 candidates were screened and 10 were
+measured**; every remaining name in the pool fails rule 1, 2, 3, or 8, or has no
+install path on this machine. A fourth slot would have to come from relaxing a
+rule, and the rejection tables are where that decision would be visible.

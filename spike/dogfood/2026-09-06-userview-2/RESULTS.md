@@ -250,3 +250,78 @@ and Haskell. The engine phase needed no retries: the three apparatus errors slat
 One finding was seen and not pursued: `vips copy f.png f.png` exits 1 and leaves
 **a zero-byte file**. libvips refuses the engine on threads, so there is no
 verdict here — only the observation, recorded so it is not lost.
+
+---
+
+# Slate 3 — the safe implementation shows up, and it is the whole finding
+
+| Target | Outcome | Where |
+|---|---|---|
+| **isort** | **PASS 7/7** — 6 crash points + baseline, 2 paths judged, `oracle_verified` | `transcripts/explore3/isort.txt` |
+| **pyupgrade** | **FAIL 1/3** — crash point 2 of 2, `--expect-status 1` | `transcripts/explore3/pyupgrade.txt`, `case-pyupgrade.json` |
+| **jpegtran** | **FAIL 1/3** — crash point 2 of 2 | `transcripts/explore3/jpegtran.txt`, `case-jpegtran.json` |
+
+## The three write paths, measured side by side
+
+This is what slate 3 bought, and it is worth more than either failure on its own.
+Same machine, same day, same `strace` invocation:
+
+```
+isort (PASS)      openat("a.py", O_RDONLY)
+                  openat("a.py.isorted", O_RDWR|O_CREAT|O_TRUNC)    writes elsewhere
+                  fchmodat("a.py.isorted", 0644)                    carries the mode over
+                  renameat("a.py.isorted", "a.py")                  atomic replace
+
+pyupgrade (FAIL)  openat("b.py", O_RDONLY)
+                  openat("b.py", O_WRONLY|O_CREAT|O_TRUNC)
+
+jpegtran (FAIL)   openat("c.jpg", O_RDONLY)
+                  openat("c.jpg", O_WRONLY|O_CREAT|O_TRUNC)
+```
+
+isort and pyupgrade rewrite **the same kind of file for the same kind of reason**,
+in the same language, and one of them has no window. Until this slate every FAIL
+in this run could be read as "that is just how in-place tools are written". It
+is not: the temp-plus-rename is three lines away and one of the two tools takes
+them. Both reports filed today lead with that comparison rather than with the
+window.
+
+The engine also saw the difference structurally, not only in the trace: isort's
+run reports **2 paths judged pre-or-post** and *"2 ownership/permission/timestamp
+write(s) observed and excluded from judgement … fchmodat x2"*, which is the
+temp file and its mode being carried across. The failing pair report one path
+and no metadata writes.
+
+## What was filed
+
+| Finding | Already known? | Reported |
+|---|---|---|
+| pyupgrade leaves a zero-byte source file | **No** — `interrupted`, `atomic` and `truncate` each return 0 hits on that tracker | **filed: [asottile/pyupgrade#1101](https://github.com/asottile/pyupgrade/issues/1101)** |
+| jpegtran leaves a zero-byte image | **No for this window** — `interrupted` returns 2 hits (blocky decoding, an infinite loop), `atomic` 4 (thread-safety), and `#856` is about clobbering an *unrelated* file, not about losing the input | **filed: [libjpeg-turbo/libjpeg-turbo#914](https://github.com/libjpeg-turbo/libjpeg-turbo/issues/914)** |
+
+**The jpegtran report is written to be closable, on the owner's instruction.**
+`#856` records the maintainer's position — *"cjpeg, djpeg, and jpegtran are
+example utilities"* — and the report opens by agreeing with it and saying a
+close without a change is reasonable. What it does not say is "this is minor",
+because the file does not survive; the template's three-row branch
+(`spike/upstream-report-template.md`) has no row for *unrecoverable but
+closable*, and this report sits between rows 2 and 3. That is a gap in the
+template, recorded here rather than papered over.
+
+It also states two things the earlier reports did not have to:
+
+- **`-nooverwrite` does not close this.** It is off by default (line 161), and
+  when on it *refuses the operation* (line 696) rather than making it safe. It
+  is a way not to do the thing, not a safer way to do it.
+- **Nothing in `jpegtran -h` invites naming the input in `-outfile`.** The report
+  says so, and claims the consequence rather than a broken promise.
+
+## What slate 3 did not measure
+
+**Rule 11 for isort and pyupgrade.** Slates 1 and 2 measured response times on
+bug reports for every taken candidate; this slate measured it only for jpegtran,
+where `#856` was open in front of me for the novelty check. The two Python
+targets were taken on the other rules, and a report went out against one of them
+with the rule unmeasured. Nothing about the finding depends on it — the window is
+in the source either way — but the slate is not conformant, and saying so is
+cheaper than the alternative.

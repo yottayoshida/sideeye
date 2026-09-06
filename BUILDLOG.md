@@ -32,6 +32,38 @@ that a tag written *before* the operation survives; the engine falsified it agai
 corrupted state first. With that, 9 crash points plus the baseline all hold,
 `oracle_verified`, 123 in-scope syscall lines.
 
+**Slate 3: the contrast case arrives, and it changes what the other reports can say.**
+Four more asked for, three the rules allowed — every remaining candidate fails rule 1, 2,
+3 or 8, or has no install path here, and the rejection table is the result. isort PASS
+7/7, pyupgrade FAIL 1/3, jpegtran FAIL 1/3, filed as asottile/pyupgrade#1101 and
+libjpeg-turbo/libjpeg-turbo#914.
+
+**isort is why this slate was worth running.** It rewrites Python source in place, same
+as pyupgrade, and its trace is `openat(a.py, O_RDONLY)` → `openat(a.py.isorted, …TRUNC)` →
+`fchmodat(a.py.isorted, 0644)` → `renameat(a.py.isorted, a.py)`. Three extra lines and the
+window is gone. Every failure this run has found so far could have been read as "that is
+how tools of this kind are written" — the four FAILs all have the identical
+truncate-then-write shape — and one measurement in the same language, on the same day,
+takes that reading away. Both reports lead with the side-by-side trace instead of with the
+window.
+
+**The template has a gap and jpegtran found it.** `spike/upstream-report-template.md`
+branches three ways on what the crash leaves: recoverable in one command (open with "this
+is minor, closing is fine"), a broken state a human must repair, or nothing at all (no
+mitigating opening, because "minor" would be false). jpegtran is the third kind — 0 bytes,
+no copy — but the owner's instruction was to write it *closable*: the maintainer said on
+#856 that cjpeg/djpeg/jpegtran are example utilities, and that position is reasonable. So
+the report opens by agreeing with it and inviting a close, while refusing to call the
+finding minor. That is a fourth shape the page does not have a row for, and it is recorded
+in the run rather than quietly added to the template.
+
+**What slate 3 did not do: rule 11 for isort and pyupgrade.** Slates 1 and 2 measured
+first-response times on bug reports for every candidate they took. Slate 3 measured it
+only for jpegtran, because #856 was already open for the novelty check. A report went out
+against pyupgrade with the gating rule unmeasured. The finding does not depend on it —
+the window is in `_main.py` either way — but the slate is non-conformant and says so in
+both `SELECTION.md` and `RESULTS.md` rather than being written as though it were not.
+
 **Slate 2, the same day: three more targets, two counterexamples, two reports.** The
 owner asked for four more after slate 1 closed; three is what the rules allowed, and the
 rejection table says why every other candidate fell (threads, in every single case —

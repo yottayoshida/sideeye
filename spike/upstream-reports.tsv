@@ -45,3 +45,5 @@ Exiv2/exiv2	9482	standing	exiv2
 qpdf/qpdf	1773	standing	qpdf
 fonttools/fonttools	4170	standing	fonttools
 beancount/beancount	1051	standing	bean-format
+asottile/pyupgrade	1101	standing	pyupgrade
+libjpeg-turbo/libjpeg-turbo	914	standing	jpegtran

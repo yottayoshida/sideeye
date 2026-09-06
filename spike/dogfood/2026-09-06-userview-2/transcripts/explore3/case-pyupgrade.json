@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.2.0",
+  "contract_version": 13,
+  "define": {
+    "state": "/work/st3/pu",
+    "setup": "/work/ap3/setup-pyupgrade.sh",
+    "operation": "pyupgrade --py311-plus /work/st3/pu/a.py",
+    "check": "/work/ap3/check-pyupgrade.sh",
+    "expected_status": 1
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/work/st3/pu/a.py",
+  "before_class": "write",
+  "before_path": "/work/st3/pu/a.py",
+  "violation": "hybrid"
+}
