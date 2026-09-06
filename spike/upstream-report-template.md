@@ -156,7 +156,7 @@ what changes about it. `ImageMagick/ImageMagick#8939` drew a patch within a day;
 a build of `main` at `3501ef34` then lost the original image **with no crash at
 all**, because the new sequence hard-links the backup to the target before the
 `O_TRUNC`, so an `ENOSPC` write empties both names at once. Measured 2026-09-06
-on a 200 KB tmpfs and recorded in a dogfood run of its own: 7.1.1-43 leaves the
+on a 200 KB tmpfs and recorded in `spike/dogfood/2026-09-06-imagemagick-refix/RESULTS.md`: 7.1.1-43 leaves the
 original intact at 98,851 bytes with a matching sha256, the patched build leaves
 two names on one inode at 204,800 bytes and neither decodes.
 
