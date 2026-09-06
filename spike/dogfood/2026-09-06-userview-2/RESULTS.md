@@ -1,7 +1,12 @@
 # 2026-09-06 — results
 
-Four targets, one verdict, three named walls — and the three walls are the
-finding. Two of them are the same wall, and it is one this project has already
+Two slates the same day. Slate 1 took four targets and produced one verdict and
+three walls; slate 2 took three more and produced two counterexamples, both
+filed upstream. Seven targets, four verdicts, three walls.
+
+# Slate 1 — four targets, one verdict, three named walls
+
+The three walls are the finding. Two of them are the same wall, and it is one this project has already
 written down and decided about: **stdio, past the flush boundary**.
 
 | Target | Outcome | Where |
@@ -136,10 +141,112 @@ apparatus error rather than a target property:
    output. Twice in one run, an empty result came from an instrument that never
    ran; the Bugzilla filter in `SELECTION.md` was the other.
 
-## What moves upward
+## What moves upward (slate 1)
 
 - `docs/target-classes.md`: one refusal row for the stdio-overflow wall naming
   metaflac and fontforge, one for mutool's `unresolvable_path`, and one verdict
   row for mid3v2.
-- `spike/dogfood/RUNS.md`: one row.
-- Nothing for `spike/upstream-reports.tsv` — nothing was filed.
+- `spike/dogfood/RUNS.md`: one row for the day.
+- Nothing for `spike/upstream-reports.tsv` from this slate — nothing was filed.
+
+---
+
+# Slate 2 — three targets, two counterexamples, two reports filed
+
+| Target | Outcome | Where |
+|---|---|---|
+| **fonttools** | **FAIL 1/3** — crash point 2 of 2, `oracle_verified` | `transcripts/explore2/fonttools.txt`, case `case-fonttools.json` |
+| bsdtar | **PASS 3/3** | `transcripts/explore2/bsdtar.txt` |
+| **bean-format** | **FAIL 1/3** — crash point 2 of 2, `oracle_verified` | `transcripts/explore2/beanfmt.txt`, case `case-beanfmt.json` |
+
+Both failures are the exiv2 shape — the truncating `open`, then the write — and
+both leave the file at **zero bytes with the original nowhere**:
+
+```
+fonttools    after  open(f.ttf)          before write(f.ttf)
+             759,720 bytes  ->  0 bytes
+bean-format  after  open(l.beancount)    before write(l.beancount)
+             185 bytes      ->  0 bytes
+```
+
+## What made the two verdicts real: the checker, again
+
+Slate 1's PASS turned on a checker that asserted more than "the file still
+reads". Slate 2's failures turn on the same thing from the other side.
+
+**bean-format's checker caught what `bean-check` does not.** The declared
+checker asserts two things: that `bean-check` accepts the file, *and* that the
+transactions present before the operation are still present. The engine's own
+falsification ran it against corrupted state first. In the failing world, the
+line it printed was `元の取引 lunch が消えた` — the transaction is gone — and
+**`bean-check` passed**. An empty ledger is a valid ledger with no transactions,
+so a checker that ran only the project's own validator would have reported PASS
+on a file that had lost everything.
+
+That property is the reason the report to beancount leads with it rather than
+with the window.
+
+## bsdtar's PASS, and why it is not the same class
+
+`bsdtar -uf` appends to the archive rather than rewriting it: the existing
+entries are never re-opened, so no crash point exists at which `f1.txt` and
+`f2.txt` are absent. The checker asserted exactly that (both original entries
+still listed by `bsdtar -tf`) and it held in both crash points plus the baseline.
+3 worlds, `oracle_verified`, 206 syscall lines examined, 12 in scope.
+
+## A reproduction that needs neither a crash nor this tool
+
+Both failures reproduce with one shell line, because the window is open whenever
+the write **fails**, not only when the process dies:
+
+```sh
+( ulimit -f 0; fonttools subset f.ttf --output-file=f.ttf --unicodes=U+0041-005A )
+( ulimit -f 0; bean-format --in-place l.beancount )
+```
+
+`ulimit -f 0` makes the write fail after the `open` has already truncated the
+file. Both exit 120 and both leave zero bytes. A full disk reaches the same
+place. This is what went into the reports: a maintainer can check the claim
+without installing anything.
+
+## Upstream source, checked before filing
+
+- **fonttools**: current `main`'s `TTFont.save` builds the whole font into a
+  `BytesIO` and *then* does `with open(file, "wb")`. The bytes are in hand
+  before the truncation — which is why the report can say the fix is cheap.
+- **beancount**: the released 3.1.0 has only `-o`; current `main` adds
+  `--in-place`, whose branch does `file.close()` then
+  `open(filename, mode="w")` then `write` — the same window. Measured rather
+  than read: `beancount/scripts/format.py` at `5a27edd2` (2026-05-17) was run in
+  place of the packaged file (`bean-format` does not parse the ledger, so it
+  stands alone), and `--in-place` under `ulimit -f 0` left 0 bytes from 121.
+  The comment above the `-o` path says Click's lazy opening prevents truncation
+  "in case of errors" — true for errors during formatting, not for the write
+  failing.
+
+## Filed
+
+| Finding | Already known? | Reported |
+|---|---|---|
+| fonttools leaves a zero-byte font | **No** — `interrupted` returns 1 hit (a subset-speed PR), `atomic` 13 (BytesIO copies, dependency bumps), none about interruption | **filed: [fonttools/fonttools#4170](https://github.com/fonttools/fonttools/issues/4170)** |
+| bean-format leaves a zero-byte ledger that `bean-check` accepts | **No** — `interrupted` 0 hits, `atomic` 0 | **filed: [beancount/beancount#1051](https://github.com/beancount/beancount/issues/1051)** |
+
+Neither claims a broken promise. `subset`'s documentation does not say
+`--output-file` is atomic, and beancount's says nothing either. What is claimed
+is that the window exists, that the data is not recoverable afterwards, and —
+for beancount — that the project's own validator does not see it.
+
+Both follow `spike/upstream-report-template.md`'s third row: no mitigating
+opening, because calling unrecoverable loss minor would be false.
+
+## What slate 2 cost
+
+Four `docker build`s and about 25 minutes of screening removed six candidates
+(sqlfluff, libvips, zstd, ansible, bundler, git-annex — threads in every case)
+and produced the first linkage/thread measurements this repository has for Ruby
+and Haskell. The engine phase needed no retries: the three apparatus errors slate
+1 made were already fixed in the scripts it reused.
+
+One finding was seen and not pursued: `vips copy f.png f.png` exits 1 and leaves
+**a zero-byte file**. libvips refuses the engine on threads, so there is no
+verdict here — only the observation, recorded so it is not lost.

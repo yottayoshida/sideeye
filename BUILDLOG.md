@@ -32,6 +32,35 @@ that a tag written *before* the operation survives; the engine falsified it agai
 corrupted state first. With that, 9 crash points plus the baseline all hold,
 `oracle_verified`, 123 in-scope syscall lines.
 
+**Slate 2, the same day: three more targets, two counterexamples, two reports.** The
+owner asked for four more after slate 1 closed; three is what the rules allowed, and the
+rejection table says why every other candidate fell (threads, in every single case —
+sqlfluff, libvips, zstd, ansible, bundler, git-annex). fonttools FAIL 1/3 and bean-format
+FAIL 1/3, both the exiv2 shape, both leaving zero bytes with the original nowhere; bsdtar
+PASS 3/3 as the contrast, because `-uf` appends and never re-opens what is already in the
+archive. Filed as fonttools/fonttools#4170 and beancount/beancount#1051.
+
+**The beancount finding is the one worth remembering, and the checker is why it exists.**
+`bean-check` accepts the zero-byte ledger — an empty ledger is a valid ledger with no
+transactions — so a checker running only the project's own validator would have reported
+PASS on a file that had lost everything. The declared checker asserts the pre-existing
+transactions are still there, and that is the assertion that failed. Slate 1's PASS turned
+on the same discipline from the other side. Two runs, two verdicts that would have been
+worthless with the obvious checker.
+
+**Both reports carry a reproduction that needs neither a crash nor sideeye**:
+`( ulimit -f 0; bean-format --in-place l.beancount )` fails the write after the `open` has
+truncated, and leaves 0 bytes. That also let the `--in-place` branch on current `main` be
+*measured* rather than read — `format.py` at `5a27edd2` dropped in place of the packaged
+one, since `bean-format` does not parse the ledger — so the report says measured where the
+draft had said "read from the source".
+
+**And slate 1 got a rejection wrong.** sqlfluff was written off as "pip only, and pypi is
+unreachable here". `apt-cache policy sqlfluff` returns 3.3.1-1 in trixie. The pip failure
+was real and the conclusion drawn from it was about the wrong thing; the row is corrected
+in place and sqlfluff appears in slate 2's screen, where it fails on threads. Right by
+accident is the worst kind of right.
+
 **Three apparatus errors, and two of them printed nothing.** `--state` and `--work` have
 to exist before the engine is called rather than be created by `--setup`. `exec
 fontforge …` in a wrapper produced `child_process_detected` — the subject replaced its

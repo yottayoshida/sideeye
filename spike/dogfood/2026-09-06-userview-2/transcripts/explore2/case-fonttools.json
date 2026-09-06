@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.2.0",
+  "contract_version": 13,
+  "define": {
+    "state": "/work/st2/ft",
+    "setup": "/work/ap2/setup-ttf.sh",
+    "operation": "fonttools subset /work/st2/ft/f.ttf --output-file=/work/st2/ft/f.ttf --unicodes=U+0041-005A",
+    "check": "/work/ap2/check-ttf.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/work/st2/ft/f.ttf",
+  "before_class": "write",
+  "before_path": "/work/st2/ft/f.ttf",
+  "violation": "hybrid"
+}

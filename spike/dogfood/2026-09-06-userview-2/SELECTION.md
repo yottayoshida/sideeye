@@ -82,7 +82,7 @@ threads. Transcripts: `apparatus/screen.sh`, `screen2.sh`, `screen3.sh`,
 | dasel | **static** | 5 | — | no — the only Linux artifact the project publishes |
 | ocrmypdf | script → `python3` | 0 | **execve 31, clone 12** before the operation began | no |
 | vdirsyncer | script → `python3` | 0 | 0 | no — rule 11 below |
-| sqlfluff | — | — | — | no — pip only, and `pypi.org` is unreachable from this machine (`CERTIFICATE_VERIFY_FAILED`, self-signed in chain). The same TLS-intercepting proxy the 2026-09-05 run hit through `node-gyp` |
+| sqlfluff | — | — | — | **this row is wrong — see slate 2's correction below.** What was written: pip only, and `pypi.org` is unreachable from this machine (`CERTIFICATE_VERIFY_FAILED`, self-signed in chain). The same TLS-intercepting proxy the 2026-09-05 run hit through `node-gyp` |
 | MP4Box | — | — | — | no — `gpac` has no installation candidate in Debian trixie. The `weechat-headless` reason |
 
 Two screening results that reading would not have produced:
@@ -150,3 +150,100 @@ mutool's is the sharper form of the qpdf window this project reported: qpdf
 renames the original aside and a crash leaves it recoverable at
 `.~qpdf-orig#`, while mutool removes it first and there is nothing to recover.
 Whether that is reachable is what the run set out to measure.
+
+---
+
+# Slate 2 — same day, four more, and a correction to slate 1
+
+The owner asked for four more after slate 1 closed. Slate 1 had ended with one
+verdict and three walls, two of which were the same wall — **stdio writes that
+overflow the buffer** — so slate 2's screen carries a third axis on top of
+linkage and threads: **does the tool's write go through `FILE*` or through raw
+`open`/`write`?** Measured the same way, before the candidate table.
+
+## A correction to slate 1's rejection table
+
+Slate 1 rejected **sqlfluff** with "pip only, and `pypi.org` is unreachable from
+this machine". The first half is false: `apt-cache policy sqlfluff` in Debian
+trixie returns **3.3.1-1**. The pip attempt failed and the conclusion drawn from
+it was about the wrong thing — the package was one `apt-get install` away. It is
+in slate 2's screen below, where it fails on threads instead. The rejection was
+right by accident, which is the worst kind.
+
+## Metadata screen (rules 1, 2, 3, 12)
+
+| Candidate | repo | ★ | Lang | 6-month commits | authors | Verdict |
+|---|---|---|---|---|---|---|
+| fonttools | fonttools/fonttools | 5,231 | Python | 100 | 13 | passes |
+| bsdtar | libarchive/libarchive | 3,608 | C | 100 | 12 | passes |
+| bean-format | beancount/beancount | 5,973 | Python | 26 | 6 | passes; `bean-format -o FILENAME` satisfies rule 8 |
+| sqlfluff | sqlfluff/sqlfluff | 9,865 | Python | 100 | 43 | passes here, threads below |
+| libvips | libvips/libvips | 11,628 | C | 100 | 15 | passes here, threads below |
+| zstd | facebook/zstd | 27,711 | C | 57 | 8 | passes here, threads below |
+| ansible | ansible/ansible | 70,592 | Python | 100 | 30 | passes here, threads + children below |
+| bundler | rubygems/rubygems | 3,964 | Ruby | 100 | 6 | passes here, threads below |
+| git-annex | (Debian `git-annex`) | — | Haskell | — | — | screened for the language record; threads + children below |
+| certbot | certbot/certbot | 33,233 | Python | 75 | 14 | **not screened** — its state is certificates and renewing them needs an ACME server; out of scope for a local run |
+| csvkit | wireservice/csvkit | 6,411 | Python | 21 | 6 | **rule 8** — `csvformat` and friends write to stdout; there is no in-place mutation |
+| asciidoctor | asciidoctor/asciidoctor | 5,212 | Ruby | 10 | 3 | **rule 8** — generates output beside the input |
+| offlineimap3 | OfflineIMAP/offlineimap3 | **633** | Python | 56 | 7 | **rule 1** |
+| pngquant | kornelski/pngquant | 5,747 | C | **4** | **2** | **rules 2, 3** — the dotbot reading |
+| ruff | astral-sh/ruff | 49,504 | Rust | 100 | 23 | **no install path** — not packaged in Debian trixie |
+| xmlstarlet | — | **28** | C | — | — | **rule 1** — the GitHub repositories are forks; upstream is SourceForge |
+| vdirsyncer | pimutils/vdirsyncer | 1,872 | Python | 18 | 3 | **rule 17**, re-measured — see below |
+
+### vdirsyncer, measured a second time
+
+Slate 1 rejected it on rule 17 after 60 issues. Re-measured over 100, filtering
+to issues whose title or labels name a bug:
+
+| Issue | Created | First reply from someone else |
+|---|---|---|
+| #1225 | 2026-08-30 | none |
+| #1222 | 2026-06-16 | none |
+| #1212 | 2026-03-30 | none |
+| #1208 | 2026-02-10 | 106.2d |
+| #1202 | 2025-10-27 | 34.4d |
+| #1191 | 2025-08-30 | 0.1d |
+| #1188 | 2025-08-27 | 0.1d |
+
+The three most recent bug reports have no reply at all, and the two before them
+were answered after a month and after three. The only replies inside a week are
+from August 2025, which is not "recent" in rule 11's sense. The rejection stands,
+and now it stands on a measurement that looked for the opposite.
+
+## The measured screen (rules 10 and, new here, the stdio axis)
+
+`apparatus/screen6.sh`, `screen7.sh`, `screen8.sh`. Linkage with `file -L`,
+threads with `strace -f -e trace=clone,clone3` on a real writing operation, and
+the write sizes with `strace -f -e trace=write` — a run of writes at exactly 4096
+bytes is the stdio buffer overflowing, which is the wall slate 1 hit.
+
+| Candidate | Linkage | Threads | Children | Writes | Taken |
+|---|---|---|---|---|---|
+| **fonttools** | script → `python3` | **0** | 1 | 1 | ✅ |
+| **bsdtar** | dynamic | **0** | 1 | 1 | ✅ |
+| **bean-format** | script → `python3` | **0** | 1 | — | ✅ |
+| sqlfluff | script → `python3` | **2** | — | 5, none at 4096 | no |
+| libvips | dynamic | **8** | — | — | no — and `vips copy f.png f.png` left **a zero-byte file** and exited 1, which is a finding this run did not pursue |
+| zstd | dynamic | **3** | — | — | no. Its write path is the safe order: create `f.zst`, then `unlink` the input |
+| ansible | script → `python3` | **2** | **43 execve** | — | no |
+| bundler | script → `ruby` | **2** | 3 | 3 | no |
+| git-annex | dynamic | **12** | **113 execve** | 76 | no |
+
+Ruby and Haskell now have a linkage/thread measurement on record, which they did
+not before; both refuse for the same reason as Go, one layer up.
+
+## The slate
+
+| # | Target | Language | The single operation measured |
+|---|---|---|---|
+| 1 | fonttools 4.57.0 | Python | `fonttools subset f.ttf --output-file=f.ttf --unicodes=U+0041-005A` |
+| 2 | bsdtar (libarchive 3.7.4) | C | `bsdtar -uf a.tar -C src f3.txt` |
+| 3 | bean-format (beancount 3.1.0) | Python | `bean-format -o l.beancount l.beancount` |
+
+Three, not four. Every remaining candidate that satisfied rules 1–3 failed the
+screen (threads, in every case), and the ones that passed the screen failed
+rule 8 or had no install path. The slate is short and the rejection table above
+is why; a fourth taken on a relaxed rule would have been a different kind of
+record.
