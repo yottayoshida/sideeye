@@ -60,6 +60,15 @@ Two measured details that reading would not have produced, both from that day:
   `python3 -c "import beets"` does not. The thread belongs to the `beet` entry
   point, not to Python and not to the import.
 
+## Which build a run measures
+
+The shipped one. A dogfood run answers "what happens when a user points Sideeye
+at a tool", and a user has the released binary — so build from the tag on `main`,
+not from the branch the run is being written on. The 2026-09-06 run built from
+its own feature branch first and got `sideeye 1.1.0` while `main` was at v1.2.0;
+it was caught because the version prints in the preflight header, which is luck
+rather than a check. Nothing enforces this.
+
 ## What a run must push upward, in the same sitting
 
 The same rule a cohort close follows (`CLAUDE.md`: "A cohort close moves the

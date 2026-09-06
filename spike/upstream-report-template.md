@@ -1,11 +1,14 @@
 # Filing a finding upstream — the shape
 
-Eleven reports have gone out from this project (`upstream-reports.tsv`; ten
-standing, one withdrawn). **Four** of them, filed 2026-09-04..05, share one
-skeleton, and `ImageMagick/ImageMagick#8939` is the canonical instance — the
-owner's instruction on 2026-09-06 is that later reports go the same way. This
-page is that skeleton written out, so the next report is not re-derived from the
-last four.
+Fifteen reports have gone out from this project (`upstream-reports.tsv`;
+fourteen standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
+the worked examples this page was drawn from, and
+`ImageMagick/ImageMagick#8939` is the canonical instance — the owner's
+instruction on 2026-09-06 is that later reports go the same way. This page is
+that skeleton written out, so the next report is not re-derived from the last
+four. Four more went out the same week and took the same shape
+(`spike/dogfood/2026-09-06-userview-2/RESULTS.md`); one of them, jpegtran, sits
+between two of the rows below, which the sunset note at the end covers.
 
 The worked examples are the real instrument; this page is an index to them.
 
@@ -205,7 +208,8 @@ Whether the shape works. Ten standing reports, measured 2026-09-06 with
 a patch commitment within fourteen hours — on a report that told them closing it
 was fine. That is n=1 against a variable this page does not control: rule 11 in
 `cohort4/SCOUT-BRIEF.md` exists because projects differ in responsiveness, and
-nothing here separates the shape from the project.
+nothing here separates the shape from the project. Four reports filed on
+2026-09-06 are not in that count — they were too new to have drawn anything.
 
 **And a fast reply is not the same as a good outcome.** The reply arrived **51
 seconds** after the commit it announced (`1a0d1b71` at 2026-09-05T18:38:12Z, the

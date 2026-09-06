@@ -5,7 +5,7 @@
   child) and ADR 0009 (replay's implicit pristine-state precondition), found by
   attempting the MCP-mediated loop-closure run (#68, #69)
 - **Scope:** the env construction in `src/mcp.zig`, a `--fresh-state` flag in
-  `src/main.zig`, a guarded `freshDir` in `src/engine.zig`
+  `src/main.zig`, a guarded `freshDir` in `src/engine.zig` (since #491: now `src/engine/state_fs.zig`)
 
 ## Context
 

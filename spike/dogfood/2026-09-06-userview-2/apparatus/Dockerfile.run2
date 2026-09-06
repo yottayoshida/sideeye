@@ -1,0 +1,9 @@
+# slate 2 の箱。sideeye 本体は入れない（ホストからクロスビルドしてマウント）。
+# 3 対象: fonttools(Python) / bsdtar(C, libarchive) / bean-format(Python, beancount)。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates \
+      fonttools python3-fonttools libarchive-tools beancount fonts-dejavu-core
+
+WORKDIR /work

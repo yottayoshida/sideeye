@@ -1,0 +1,9 @@
+# screen 第6弾（slate 2）。第1弾に軸をひとつ足す:
+#   linkage → threads → **write が stdio 経由か raw か**。
+# metaflac と fontforge が oracle_missed_operation で落ちたのは stdio の
+# バッファ溢れ write（ADR 0005 の flush 境界の外側）だったので、候補表の前に測る。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace ltrace file python3 ca-certificates \
+      sqlfluff fonttools libvips-tools beancount csvkit fonts-dejavu-core

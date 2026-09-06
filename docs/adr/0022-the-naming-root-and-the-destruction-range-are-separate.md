@@ -170,5 +170,5 @@ name a directory whose contents are yours to lose.
 
 The relation between the two vets is now pinned rather than left to the shared helper's
 shape: `assertSafeNamingRoot` refuses a subset of what `assertSafeRoot` refuses, differing
-only by the depth rule, held over a corpus in `src/engine.zig`. ADR 0046 records why the
-lists stay in `engine.zig` rather than moving to `contract.zig` or to a file of their own.
+only by the depth rule, held over a corpus in `src/engine.zig` (since #491: now `src/engine/state_fs.zig`). ADR 0046 records why the
+lists stay in `engine.zig` rather than moving to `contract.zig` or to a file of their own. (Since #491 the lists are in `src/engine/state_fs.zig`.)

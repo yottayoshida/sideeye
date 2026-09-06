@@ -21,7 +21,7 @@ Covers macOS on Apple silicon and Linux on x86_64 and aarch64. Everything below 
 Or take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases). Sideeye ships as a binary **and** a shim library, and it looks for the shim beside itself before `../lib`, so run it from the directory you untarred — or pass `--shim`. That search declines a candidate it cannot attribute (a symlink, or a file someone else owns), so an install directory that is not yours alone is refused by name rather than trusted:
 
 ```
-$ tar xzf sideeye-v1.1.0-aarch64-macos.tar.gz && cd sideeye-v1.1.0-aarch64-macos
+$ tar xzf sideeye-v1.2.0-aarch64-macos.tar.gz && cd sideeye-v1.2.0-aarch64-macos
 $ ./sideeye version
 ```
 

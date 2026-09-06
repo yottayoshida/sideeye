@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.2.0",
+  "contract_version": 13,
+  "define": {
+    "state": "/work/st3/jt",
+    "setup": "/work/ap3/setup-jpegtran.sh",
+    "operation": "jpegtran -copy all -optimize -outfile /work/st3/jt/a.jpg /work/st3/jt/a.jpg",
+    "check": "/work/ap3/check-jpegtran.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/work/st3/jt/a.jpg",
+  "before_class": "write",
+  "before_path": "/work/st3/jt/a.jpg",
+  "violation": "hybrid"
+}

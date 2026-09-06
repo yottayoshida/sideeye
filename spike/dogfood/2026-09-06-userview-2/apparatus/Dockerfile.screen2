@@ -1,0 +1,9 @@
+# screen 第2弾: Python 枠。vdirsyncer（vdir 同期）。
+# sqlfluff は pip でしか入らず、この環境の TLS 傍受プロキシで pypi に届かない
+# （2026-09-05 の run で joplin の node-gyp が同じ壁に当たっている）。apt は通る。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates vdirsyncer
+
+WORKDIR /work
