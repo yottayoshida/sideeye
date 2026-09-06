@@ -207,10 +207,15 @@ was fine. That is n=1 against a variable this page does not control: rule 11 in
 `cohort4/SCOUT-BRIEF.md` exists because projects differ in responsiveness, and
 nothing here separates the shape from the project.
 
-**And a fast reply is not the same as a good outcome.** That same patch, shipped
-inside a day, introduced a loss the reported window did not have — see the second
-contact above. A page about how to write reports cannot measure what a report
-causes; only building the patched thing and measuring it again can.
+**And a fast reply is not the same as a good outcome.** The reply arrived **51
+seconds** after the commit it announced (`1a0d1b71` at 2026-09-05T18:38:12Z, the
+comment at 18:39:03Z), so what fourteen hours bought was a declaration rather
+than a reviewed result. That commit added two things: the hard link, which is the
+loss described under the second contact, and a `remove_utf8(image->filename)` on
+the **success** path — deleting the output it had just written — which
+`3501ef34` took back 5h11m later, one line, nothing else. A page about how to
+write reports cannot measure what a report causes. Only building the patched
+thing and measuring it again can, which is what `spike/dogfood/` is for.
 
 ## Sunset
 
