@@ -1259,7 +1259,7 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         // entries, so an operation through one is legitimately none of our business.
         .non_path => return,
         .unresolvable => {
-            noteUnresolvedFd(fd);
+            noteUnresolvedWithOp("", contract.unresolved_kind.fd_without_path, op, fd);
             return;
         },
         .path_backed => {},
@@ -1271,7 +1271,7 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         // A regular file or directory whose path could not be read back. That is a
         // failed measurement, not evidence of innocence — recorded, so the engine
         // refuses to judge a run whose operations it cannot place.
-        noteUnresolvedFd(fd);
+        noteUnresolvedWithOp("", contract.unresolved_kind.fd_without_path, op, fd);
         return;
     };
     if (!isInState(resolved)) return;

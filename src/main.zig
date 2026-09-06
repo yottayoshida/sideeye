@@ -1302,6 +1302,10 @@ fn readSetupCapture(arena: std.mem.Allocator, path: []const u8) SetupCapture {
     return if (line.len == 0) .empty else .{ .line = line };
 }
 
+/// Backing store for the out-of-memory sentence in `setupOutputDetail`, at file scope
+/// because that sentence outlives the call that builds it.
+var setup_oom_buf: [contract.max_path + 64]u8 = undefined;
+
 /// The clause a SETUP_ERROR adds about what the failing `--setup` wrote (#483).
 ///
 /// Three answers, never two. The issue's complaint is that the observation "is not merely
@@ -1325,12 +1329,18 @@ fn setupOutputDetail(arena: std.mem.Allocator, path: []const u8) []const u8 {
     // about, and it would do it silently — the one failure mode where saying less looks
     // exactly like a version that was never fixed. `unresolvedDetail` takes a fallback
     // sentence for the same reason.
-    // Names the file even here. The path is the caller's stack buffer, not something this
-    // function allocated, so an exhausted arena cannot take it away — and "the refusal
-    // names that file" is the half of the promise that still can be kept.
-    var oom_buf: [contract.max_path + 64]u8 = undefined;
+    // Names the file even here: "the refusal names that file" is the half of the promise
+    // an exhausted arena cannot take away, since the path is the caller's and this only
+    // has to copy it.
+    //
+    // The buffer is at file scope, and that is the whole point of it being there. A first
+    // version declared it here, which returns a slice of this function's frame to a caller
+    // that reads it after the frame is gone — the exact shape `unresolved_kind.withFd`'s
+    // doc warns about two files away, written the same day. Safe as a global because every
+    // reader of the result is on the way to `setupError`, which is `noreturn`: there is no
+    // second refusal to overwrite it, and no thread that could be composing another.
     const oom = std.fmt.bufPrint(
-        &oom_buf,
+        &setup_oom_buf,
         "; what it wrote could not be described (out of memory); the capture is at {s}",
         .{path},
     ) catch "; what it wrote could not be described (out of memory)";
@@ -1458,6 +1468,28 @@ test "setupOutputDetail separates read failure, empty output, and a line — and
     // only copy of an output the engine failed to see.
     removeFile(path);
     try t.expect(readSetupCapture(arena, path) == .unreadable);
+
+    // The out-of-memory sentence, through an allocator that refuses. It still names the
+    // file, and — the reason the buffer moved to file scope — the bytes are still there
+    // to read after the call that built them has returned. A stack-local buffer makes
+    // this a read of a dead frame, which no assertion can be relied on to catch: the
+    // check that matters is that the sentence survives the return at all.
+    try t.expect(writeWholeFile(path, &.{"something"}));
+    var failing = std.testing.FailingAllocator.init(std.testing.allocator, .{ .fail_index = 0 });
+    const starved = setupOutputDetail(failing.allocator(), path);
+    try t.expect(std.mem.indexOf(u8, starved, "out of memory") != null);
+    try t.expect(std.mem.indexOf(u8, starved, path) != null);
+    // Read again after another call has had the chance to reuse the frame.
+    var failing2 = std.testing.FailingAllocator.init(std.testing.allocator, .{ .fail_index = 0 });
+    _ = setupOutputDetail(failing2.allocator(), path);
+    try t.expect(std.mem.indexOf(u8, starved, "out of memory") != null);
+    // Naming the buffer is the assertion. Moving it back into `setupOutputDetail` — the
+    // defect this test exists for — stops compiling here rather than failing at run time,
+    // which matters because the run-time failure is undefined behaviour: restoring the
+    // stack-local version and running the suite was measured green. A test that can only
+    // observe the bug by luck is not what pins it; the reference is.
+    try t.expect(std.mem.indexOf(u8, &setup_oom_buf, "out of memory") != null);
+    try t.expect(std.mem.indexOf(u8, &setup_oom_buf, path) != null);
 
     // A capture that is a directory is not a capture. `require_regular` is what makes
     // this the read-failure branch rather than a read that returns nothing.

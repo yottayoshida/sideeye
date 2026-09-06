@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — the review fixes brought their own defects, and one of them was undetectable
+
+`#524` merged, and the reviewer's remaining notes arrived after it. Three findings, all
+three in code added *during* that PR's review rounds rather than in its original change.
+
+The one that matters: the out-of-memory sentence. R1 asked for it — a starved arena was
+silently turning the refusal back into the bare `--setup exited 7` this issue is about — so
+a sentence naming the capture went in, built with `bufPrint` into a local array and
+returned. That returns a slice of a dead frame. The doc for `unresolved_kind.withFd`, in
+this same batch, says exactly why not: "returning a slice of a local would hand back memory
+that dies before the record is written". Writing that sentence did not stop me writing the
+bug two files away, on the same day, in the same PR.
+
+**And the test could not catch it.** Restoring the stack-local version and running the
+whole suite was measured green — undefined behaviour reads whatever is still on the stack,
+which in a short function is usually the right bytes. A mutation that survives is normally
+a sign the test is weak; here no run-time assertion can be strong enough. What pins it is
+that the test *names* `setup_oom_buf`, so moving it back inside the function stops
+compiling. Measured: `error: use of undeclared identifier 'setup_oom_buf'`.
+
+The other two were the same shape at a smaller scale — a promise in `report-schema.md` that
+no longer matched (a setup that wrote nothing names no file, since the empty capture is
+removed), and `fd-without-path` still assuming its operation while the branch beside it had
+just stopped doing that. Both were consequences of edits made to satisfy review, and both
+were found by reading the review's own list against the merged tree rather than against the
+diff I remembered writing.
+
 ## 2026-09-06 — the issues asked for two things each, and #520 shipped one
 
 `#520` closed `#486` and half of `#483` and `#485`. Nobody noticed until after the merge,
