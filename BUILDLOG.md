@@ -2,6 +2,45 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — the upstream report shape, written down, and wrong on its first pass
+
+The owner's instruction: later upstream reports go the same way as
+`ImageMagick/ImageMagick#8939`. `spike/upstream-report-template.md` is that
+shape written out. It is an index to the worked examples rather than a
+replacement for them.
+
+**The first version of the page read three reports and was falsified by the
+fourth, which was on the ledger the whole time.** It called the opening a
+two-way branch — recoverable, so open by saying it is minor; unrecoverable, so
+do not — and it wrote "no fix section, no PR offer" into the prohibitions.
+`andreafrancia/trash-cli#414`, filed 2026-09-04, breaks both. Its damage is a
+third kind: the user's file is untouched and no data is lost, yet the trash
+directory stays inconsistent until a human works out which file to delete, and
+every `trash-list` until then prints a parse error and exits 0. Its opening is
+`**No data is lost by this.**` and it does not say minor, correctly. And it
+carries a section headed `## What would close it`. Re-reading the timewarrior
+correction shows the prohibition was mis-copied: what was struck there was a
+section headed *A fix direction, tested* and the offer *Happy to turn this into
+a PR* — the patch and the sale, not the direction. All four reports name one or
+two directions. The page now carries a three-row branch table and the corrected
+rule, and its sunset paragraph names this failure rather than smoothing it away.
+
+The lesson is the one this repository keeps relearning from the other side: the
+ledger is a record you are supposed to *read*, not only append to. The same file
+that made `trash-cli#414` visible to `check-upstream-ledger.sh` yesterday would
+have made it visible to me today, and I went to the two reports that happened to
+have their text committed in `spike/dogfood/` instead.
+
+**What the page refuses to claim is the interesting half.** Measured with
+`spike/upstream-report-status.sh` on 2026-09-06: ten standing reports, seven at
+zero comments, three with any reply. #8939 is the only Up-front-shaped one and it
+drew `urban-warrior`'s reproduction and a patch commitment 14 hours after filing
+— on a report that told them closing it was fine. That is n=1 against a variable
+nothing here controls. Rule 11 of `cohort4/SCOUT-BRIEF.md` exists precisely
+because projects differ in responsiveness, so the honest statement is that the
+shape and the project are not separated by this evidence, and the page carries
+that sentence rather than the flattering one.
+
 ## 2026-09-05 (ledger) — a report filed into neither record, and a scan that read a truncated window
 
 `andreafrancia/trash-cli#414` was filed 2026-09-04 and written into neither
