@@ -155,10 +155,10 @@ especially once they ship a patch — the shape changes, and 2026-09-06 measured
 what changes about it. `ImageMagick/ImageMagick#8939` drew a patch within a day;
 a build of `main` at `3501ef34` then lost the original image **with no crash at
 all**, because the new sequence hard-links the backup to the target before the
-`O_TRUNC`, so an `ENOSPC` write empties both names at once. Measured on a 200 KB
-tmpfs: 7.1.1-43 leaves the original intact at 98,851 bytes with a matching
-sha256, the patched build leaves two names on one inode at 204,800 bytes and
-neither decodes.
+`O_TRUNC`, so an `ENOSPC` write empties both names at once. Measured 2026-09-06
+on a 200 KB tmpfs and recorded in a dogfood run of its own: 7.1.1-43 leaves the
+original intact at 98,851 bytes with a matching sha256, the patched build leaves
+two names on one inode at 204,800 bytes and neither decodes.
 
 What a reply carries that a first report must not:
 
@@ -212,8 +212,10 @@ seconds** after the commit it announced (`1a0d1b71` at 2026-09-05T18:38:12Z, the
 comment at 18:39:03Z), so what fourteen hours bought was a declaration rather
 than a reviewed result. That commit added two things: the hard link, which is the
 loss described under the second contact, and a `remove_utf8(image->filename)` on
-the **success** path — deleting the output it had just written — which
-`3501ef34` took back 5h11m later, one line, nothing else. A page about how to
+the success path, which `3501ef34` took back 5h11m later as its only change.
+What that line would have done under the link is a reading of the diff and was
+not measured; what was measured is the timing, the two diffs, and that the line
+was taken back. A page about how to
 write reports cannot measure what a report causes. Only building the patched
 thing and measuring it again can, which is what `spike/dogfood/` is for.
 

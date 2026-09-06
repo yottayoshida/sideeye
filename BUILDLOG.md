@@ -54,7 +54,19 @@ That offer is exactly what the timewarrior correction was holding back for, and
 the page now says so instead of leaving "no PR offer" to read as absolute. The
 same event gets one sentence in "what this page cannot tell you": a fast reply
 is not a good outcome, and only rebuilding the patched thing showed the
-difference.
+difference. The timing is the sharper half — the maintainer's comment is 51
+seconds after `1a0d1b71`, so fourteen hours bought a declaration rather than a
+reviewed result, and `3501ef34` five hours later takes back exactly one line of it.
+
+**One sentence of that paragraph was written from a diff and had to come out.**
+The first version said `1a0d1b71`'s `remove_utf8(image->filename)` deleted the
+output it had just written. The diffs and the timestamps are measured — both
+commits read through `gh api` rather than taking the parallel session's word for
+them — but what that line does at runtime under the new hard link is a reading,
+and only `3501ef34` was built and measured. Reporting the effect of a diff you
+did not run is the same move as reporting a measurement nobody made. The page
+now claims the timing, the two diffs and the revert, and nothing about the
+line's behaviour.
 
 ## 2026-09-05 (ledger) — a report filed into neither record, and a scan that read a truncated window
 
