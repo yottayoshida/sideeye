@@ -6,6 +6,7 @@ reached no verdict is a result about Sideeye, not a failed run.
 
 | Run | Targets | Verdicts | Named walls | Reported upstream |
 |---|---|---|---|---|
+| [2026-09-06-imagemagick-refix](2026-09-06-imagemagick-refix/) | 1 re-measured (mogrify, two builds) | **1 regression** — the patch for #8939 makes an interrupted or failed write lose the original outright | none | comment on the existing [ImageMagick#8939](https://github.com/ImageMagick/ImageMagick/issues/8939#issuecomment-5555825615), with a fix direction and a conditional PR offer |
 | [2026-09-05-userview](2026-09-05-userview/) | 8 measured, 12 screened out | **4 FAIL** — mogrify, qpdf, exiv2, rdiff-backup | **4** — chezmoi and gopass `no_shim_marker` (static Go), beets and joplin `multiple_threads_detected` | 2 filed ([Exiv2#9482](https://github.com/Exiv2/exiv2/issues/9482), [ImageMagick#8939](https://github.com/ImageMagick/ImageMagick/issues/8939)); 2 already known ([qpdf#1773](https://github.com/qpdf/qpdf/issues/1773) — this project's own, [rdiff-backup#1084](https://github.com/rdiff-backup/rdiff-backup/issues/1084) — a third party's) |
 
 ## What the first row settled beyond its own targets

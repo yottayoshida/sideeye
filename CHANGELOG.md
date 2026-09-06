@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **The patch upstream wrote for `ImageMagick/ImageMagick#8939`, measured against a build that carries it** (`spike/dogfood/2026-09-06-imagemagick-refix/`). The report filed on 2026-09-05 said an interrupted in-place `mogrify` leaves no file at the original name, with the content at `<file>~`, and said it as a minor finding: the original survived intact and a rename restored it. A maintainer reproduced it and merged a patch the same day, adding a hard link at the original name between the `rename` and the truncating `open`. Measured against a build of 3501ef34, **the window narrows without closing** — crash point 2 of 5, between the `rename` and the `link`, still leaves no file at the name — and **a wider one opens**: both names are one inode now, so the `O_TRUNC` empties the backup along with the target, and at crash point 4 of 5 neither name holds an image. **The same loss needs no crash at all.** A write that fails on a full disk leaves both names holding 204,800 bytes of a partly-written PNG that does not decode, where 7.1.1-43 puts the original back with a matching sha256 — the `rename(backup, filename)` the code already had cannot restore bytes that were truncated under both names. The run's result is in the last column of its table rather than the verdict column: all four explorations say FAIL, and only the checker asking whether the bytes are recoverable anywhere separates the two builds. Answered as a comment on the same issue, carrying the fix direction the first report withheld — a sibling temp name and one `rename`, with the three details that need care — and a PR offer conditional on the maintainer asking. No new identifier enters `spike/upstream-reports.tsv`, so the ledger and the class table are unchanged in their pairing.
+
 ## [1.2.0] - 2026-09-05
 
 ### Added
