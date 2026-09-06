@@ -6914,6 +6914,20 @@ else
     echo "FAIL next_step: the class-wall step names a README section that is not there"
     ns_fails=$((ns_fails + 1))
 fi
+# The define surface has to say which of the three commands the insertion goes into, in
+# both places a reader meets the define: the toml block and the flag line beside it. Its own
+# leg, so a prose edit that drops either one fails here, under a line about the document
+# rather than under the engine's — the same shape as the byte-repeatability wall check
+# above. Two variables rather than one grep, because the two places are what #482 named and
+# a clause in only one of them leaves the other reader where they were.
+img_toml="the shim is inserted into this one"
+img_flags="the one command the shim is inserted into"
+if grep -q "$img_toml" "$ROOT/README.md" && grep -q "$img_flags" "$ROOT/README.md"; then
+    echo "ok   next_step: the define surface says operation is the command the shim goes into, in the toml block and in the flag list"
+else
+    echo "FAIL next_step: the operation-is-an-executable-image clause is missing from a place the define surface presents (toml '$img_toml': $(grep -c "$img_toml" "$ROOT/README.md"); flags '$img_flags': $(grep -c "$img_flags" "$ROOT/README.md"))"
+    ns_fails=$((ns_fails + 1))
+fi
 fails=$((fails + ns_fails))
 rm -rf /tmp/acc-ns
 
