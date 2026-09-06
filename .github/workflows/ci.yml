@@ -232,6 +232,18 @@ jobs:
       - name: The transcript walker goes red where it must
         run: sh spike/check-cohort-transcripts.sh --selftest
 
+      # The loop-closure judge declares a void condition "enforced per escape channel,
+      # against EVERY tool call" and a restore that must not fail silently, and neither had
+      # ever been observed refusing anything (#63) — and no audit record is committed here to
+      # check that against, because the runs wrote to spike/runs/, which .gitignore calls
+      # throwaway. A verdict nobody can re-read is indistinguishable from a classifier that
+      # cannot say anything but clean. The selftest
+      # drives thirteen refusals from synthetic roots and transcripts, each asserting that
+      # the one field its channel owns is the non-empty one, plus a clean control and both
+      # directions of the restore. It needs no container and no stage: sh and python3 only.
+      - name: The loop-closure judge goes red on every channel it declares
+        run: sh spike/loop-closure-timew/judge.sh selftest
+
       # The positive control under the cohort-4 himalaya record is what licenses reading
       # runs 2-6 there, and until now nothing ran it: PRD.md said so in as many words
       # ("Nothing in CI runs either leg"). The sentence the records quote was therefore

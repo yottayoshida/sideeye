@@ -1,0 +1,27 @@
+# define/check.sh, sha256, across the end-to-end measurement
+#
+# The stage_diff records say "restored"; these say the bytes came back. RESULTS.md
+# draws that distinction for the selftest, and it applies here too.
+
+pristine  41c6137d71bbf2e2b28660b458b8ec0fd5ce4933ecdd8eb3d7cccb614a548ced  what stage.sh sealed; the manifest digest
+doctored  0a5794af0f6969aaa8c4b52f3d70f007be9cef4d6a4006f598879332412b0b58  exit 0 inserted after set -eu
+
+# With the seal intact, the file in the stage hashed to the pristine digest after
+# 'eval --mode run' -- the restore put the seal's bytes back before the container
+# built anything, and the verdict was fail_reproduced at crash point 19.
+# The contrast root (seal doctored, that line of manifest.sha256 recomputed to match)
+# had nothing to restore, and its verdict moved to other / rc 2 / explored 0.
+
+# WHAT THE TWO LINES BELOW ARE, AND ARE NOT. They are the root's state AFTER the contrast
+# run, which deliberately wrote the doctored text into seal/files and recomputed that line
+# of the manifest. They are NOT evidence for the restored run: that run's post-restore
+# digest was read at the time and is the `pristine` line above, and its own output was not
+# kept. What these two do show is that the contrast was set up as described — seal and
+# stage agreeing on the doctored digest, which is why the restore found nothing to do and
+# `run-stage-diff.json` came back empty in all four keys.
+#
+# The seal's manifest line for this file, as the contrast root carries it now
+# (the contrast recomputed it; the pristine digest above is what stage.sh sealed):
+#   0a5794af0f6969aaa8c4b52f3d70f007be9cef4d6a4006f598879332412b0b58  ./define/check.sh
+# And the file the stage holds at the end of the two runs:
+#   0a5794af0f6969aaa8c4b52f3d70f007be9cef4d6a4006f598879332412b0b58  <root>/stage/define/check.sh

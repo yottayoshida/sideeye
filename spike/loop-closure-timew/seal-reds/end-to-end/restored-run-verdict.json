@@ -1,0 +1,29 @@
+{
+ "mode": "run",
+ "container_rc": 0,
+ "stage_diff": {
+  "modified": [
+   "./define/check.sh"
+  ],
+  "missing": [],
+  "extra": [],
+  "restored": [
+   "./define/check.sh"
+  ]
+ },
+ "build_ok": true,
+ "replay": {
+  "rc": 1,
+  "verdict": "FAIL",
+  "unknown_reason": null,
+  "explored": 2,
+  "crash_points": 24,
+  "ops_total": 24,
+  "crash_point": 19,
+  "gate": "fail_reproduced"
+ },
+ "func": {
+  "gate": "pass"
+ },
+ "expectation_met": null
+}

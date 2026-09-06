@@ -1,0 +1,25 @@
+{
+ "mode": "run",
+ "container_rc": 0,
+ "stage_diff": {
+  "modified": [],
+  "missing": [],
+  "extra": [],
+  "restored": []
+ },
+ "build_ok": true,
+ "replay": {
+  "rc": 2,
+  "verdict": "UNKNOWN",
+  "unknown_reason": "checker_not_falsified",
+  "explored": 0,
+  "crash_points": 24,
+  "ops_total": 24,
+  "crash_point": null,
+  "gate": "other"
+ },
+ "func": {
+  "gate": "pass"
+ },
+ "expectation_met": null
+}
