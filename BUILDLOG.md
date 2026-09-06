@@ -46,6 +46,85 @@ a normalisation decision about what a transcript's text can be resolved against,
 design question rather than a line. `#512`, `#513` and `#515` stay filed for the same
 reason — they are real, and none of them is small.
 
+
+## 2026-09-06 — a boundary refusal names the wrapper without dropping the wall (#506)
+
+Written as the work starts. Wrapping `--operation` in a `#!` script gets the run refused as
+`child_process_detected` or `child_touched_state_dir` — both true about the process tree the
+shim saw, and both the published names of walls this project measured on cargo and pass. The
+`next_step` says "read the README's limits". The action that works is "stop wrapping", and it
+appears nowhere. On 2026-09-06 fontforge was read that way and nearly reached a
+`docs/target-classes.md` row.
+
+**Three things the reviews established before any code was written, each of them a place the
+draft had not opened.**
+
+- **The draft would have created the mirror of the bug it fixes.** Replacing `.class_wall` at
+  `:2868` takes the wall away from `pass`, whose class is *"Shell CLIs over helper processes"*
+  — the target itself is a shell script. That operator would get advice that does not apply
+  and lose the entrance to the README. The sentence has to carry both halves.
+- **"run the command directly" is not executable.** `--operation` is one string and
+  `splitArgs` tokenises it on spaces with no quoting, which is exactly why the reporter wrapped
+  it (the FontForge argument contains spaces). The only surface that carries an argv is the
+  define file (ADR 0019), so that is what the sentence names — and it names no flag at all.
+- **The sentence must be an action, not a cause.** `src/contract.zig:602` puts ADR 0030's line
+  directly above the enum: *what to do, never why it happened*. The draft opened with "A
+  wrapper counts as a process boundary", a cause, for something it deliberately does not detect.
+
+**Scope: five sites, ruled by the owner.** Three of the sites the draft called "not in the
+recording run" are in it — `:3002`, `:3007` and `:2839`. `:3007` is reachable: `:2868` fires
+only when the child loaded the shim, and a static child or one that drops the preload lands on
+the oracle's side instead, which is the window the issue's "Not claimed" paragraph describes.
+`.detached` (`:2839`) is left out — and the honest reason turned out to be the scope ruling
+rather than a property, since a wrapper produces neither a detached process nor the threads
+behind the oracle-block site, so the question is answered "no" at both.
+
+**A sixth site was added after the diff review, by the same ruling.** `boundary_without_oracle`
+(`:2878`, `:2887`) is a boundary refusal in the recording run too — it is where an `exec`
+wrapper lands *first*, without an oracle — and the promise's universal reading was false while
+it kept the old step. Its sentence now carries two actions, the oracle one first because that
+one works whatever the cause. The leg for it doubles as the reproduction for this entry's
+`exec "$@"` measurement, which the review had noted was written down nowhere runnable.
+
+**Then the driver measurement contradicted the issue, and the legs had to be rebuilt around
+what is actually reachable.** Wrapping the toy and running it:
+
+- `exec "$@"` **with** an oracle reaches `FAIL 1 of 6` — judged, not refused.
+- `exec "$@"` **without** one reaches `boundary_without_oracle`, a refusal this change does
+  not touch, whose step is "re-run with `--oracle`".
+- The non-exec wrapper reaches `child_touched_state_dir` and carries the new step.
+
+So the `child_process_detected` the issue reports came from **fontforge's own behaviour**, not
+from the wrapping. The first version of this paragraph went on to say the reason has no driver
+in the suite at all, and the diff review measured that false: check 2ae's thread oracle reaches
+`:3002`, which is the only site that raises it from the oracle block. A leg reads that run's
+`next_step` now. `:2835` and `:2837` remain untested and the leg's comment says which two.
+
+**The diff review then found the sentence itself broken, in the way it had been written to
+avoid.** Draft 2 read "If the operation is a shell script, … ; if it is not, this is a class
+Sideeye refuses by design …" — an exclusive branch. `pass`'s targets **are** shell scripts, so
+for precisely the population the second half exists for, the first branch fires and the second
+is excluded by construction. The entry above says that operator would "lose the entrance to the
+README"; draft 2 took it away with an `if it is not` instead of a deletion.
+
+The condition that works is not "is it a shell script" but "is it a wrapper", which nothing
+here detects — so the sentence stops branching: a question to check, then a clause true
+whatever the answer is. That also answers `preflight`, which was in the same trap from the
+other side: it takes neither `--config` nor an argv, so a sentence naming the define's argv
+pointed it at a shape it cannot carry.
+
+**Changing the wording turned three legs red, which is the legs working.** They grepped for the
+draft-2 phrasing; the fourth leg — added in the same round because the review found a driver
+for the oracle-block site the earlier paragraph had declared driverless — was already written
+against the new wording and stayed green. Expectations updated, and the pairing is worth
+naming: a leg that greps a sentence is a leg that fails when the sentence changes, which is what
+you want and also what makes it tempting to "fix" by loosening the grep. It was not loosened.
+
+The legs that do exist: the real `#!` wrapper (the only one where the wrapping itself is the
+cause), plus `TOY_FORK_WRITES` and `TOY_SPAWN_WRITES`, which drive the two `child_touched_state_dir`
+sites — the shim's witness at `:2868` and the oracle's at `:3007`. The wrapper leg also asserts
+that the sentence still contains "What the target has to be", which is the half the first draft
+would have deleted.
 ## 2026-09-06 — the arm that was not silent about linkage
 
 `noShimNext` folded four image observations into the shim step, on a reason written into
@@ -519,6 +598,136 @@ checks that a predicate is declared, not that it is true — which its own comme
 disposition is rule 4, record it and drop it, and the scan line says that now. Answering a
 review finding is where a claim gets stronger than its evidence, because the finding supplies
 the urgency and not the measurement.
+## 2026-09-06 (refusals) — three refusals that held the observation and printed its name instead
+
+#483 / #485 / #486, batch `b_2258057a3346`. All three had the same shape: the engine had
+the value in hand on the line above, and the refusal restated its own name.
+
+| issue | held | printed |
+|---|---|---|
+| #483 | `.exited => \|code\|` | `--setup exited non-zero` |
+| #485 | the whole `Op` (`.unresolved => info.saw_unresolved = true`) | one fixed sentence |
+| #486 | `realpath`'s errno | `could not be resolved to an absolute path`, about a path that is absolute |
+
+`trace.zig` showed the shape most plainly: `.kill_landed` takes `seq` and `pid` off the
+same `op` two lines above, and `.unresolved` flattened it to a bool.
+
+**#485 needed the shim, and the plan's first version said it did not.** The initial
+design read `shim/src/common.zig:839` — `writeRecord(.unresolved, 0, path, "")` — as
+"the path is already being sent, the engine just drops it", which is true and
+insufficient: the first two arguments are `class` and `seq`, constants for this record
+type, so the operation class #485 asks for is not in the trace at all. Carrying it means
+`aux`. **The reason `aux` is free here is not that it is unused** — `observe()` writes the
+other end of a two-path operation into it and `snapshot.zig:440` reads it as a path.
+It is that `.unresolved` is in `isMarker()`, so `snapshot.zig:439` drops the record
+before the name matching. That distinction came from the second reviewer; the plan's
+own version of it was wrong in a way that would have shipped.
+
+**The same-class scan found a live one, in the branch next to the one being fixed.**
+`Term` is `union(enum) { exited: u8, signaled: u8, unknown: c_int }`, and
+`else => setupError("--setup did not exit normally")` threw the signal number away. That
+is exactly the case #483 was filed from — its author says *"The setup that produced it
+was one a guard on this machine refused"*, and a guard kills rather than returns. Fixed
+here: `--setup was killed by signal 15` where it used to say nothing. The scan only
+reached it because the type was opened; `grep '\.signal'` returns nothing, because the
+tag is `signaled`.
+
+**One annotation was removed by measurement.** The first version of #483 added "(127 is
+the shell's 'command not found')". Running `exec /no/such/binary` under `/bin/sh` here
+measured **126**. The mapping from a failed exec to a status is the shell's, not this
+program's, so the number ships alone and the comment records why.
+
+**#486's message change moves an acceptance pin, and the pin is load-bearing.**
+`acc_nx=/nonexistent-parent-for-acceptance/child` is a path whose parent does not exist,
+and `spike/acceptance.sh:4967-4968` pinned the old sentence as the *base failure* for the
+flag matrix. When a base stops matching, the loop `continue`s — the preflight and
+explore-define flag sweeps would not have run at all, and the failure would have read
+"declared lines != seen lines" rather than naming the cause. Pin updated in the same
+change, with a comment saying the message moved rather than the pin.
+
+**Materials, before the checks.** `unresolvable_path`'s only existing exercise is
+`TOY_CLOSE_SWEEP`, whose path is the synthetic `trace:closed-by-target`; there was
+nothing in the suite producing the real-path form. `TOY_WRITE_AFTER_UNLINK` (the
+`perl -i` shape: hold the fd, unlink, keep writing) was added first and confirmed to
+produce `unresolvable_path` on the **unmodified** engine, so a red check afterwards
+cannot be read as "the material never ran".
+
+**The cleanup pass moved the design in three places, and one of them was a defect.**
+
+- `trace:closed-by-target` was the *path* on the record the shim writes when the target
+  closes the trace channel. Once the engine started printing "last named {path}", that
+  synthetic marker became a claim that a file by that name existed. It is a reason, not
+  a name, so it moved to `aux` and the path is now empty — the sentence says "no name
+  recorded for it", which is what was observed.
+- The errno name started as a hand-written switch of four arms. `std.posix.E` holds
+  about 130, so `EPERM`, `EIO` and `EBADF` fell through to a bare number — **the shape
+  #486 was filed about, reproduced inside its own fix**. `std.enums.tagName` covers all
+  of them, and the two constants added to `posix.zig` for the switch were no longer
+  needed, so that file is untouched again.
+- The refusal sentence was being built inline in `main()` with two `allocPrint`s and two
+  copies of the same fallback, one PR after #484 extracted exactly that shape into
+  `foreignTouchDetail`. It is `unresolvedDetail` now, beside its neighbour, sanitised at
+  the same choke point instead of per field, and with the five assertions the no-name
+  branch never had.
+
+**`aux` carrying a reason is the type pun ADR 0003 rejected**, and the plan said
+"prerequisite-adr: none" without noticing. The rejection there had two halves: the pun
+itself, and that the predicate would then need to agree in shim, engine and oracle.
+Only the first half applies — `.unresolved` is a marker, so `snapshot.zig` drops it
+before the name matching that reads `aux` as a path, and no predicate agrees on anything
+because the engine only prints the bytes. ADR 0003 says that now, and the vocabulary
+lives in `contract.unresolved_kind` rather than as five literals on the shim side
+(ADR 0006).
+
+**What the cleanup found and this PR does not fix**: `unknown option` and
+`an option is missing its value` drop `argv[i]`; five more `realpath` refusals drop
+their errno, two of them behind the same cleanup-overwrites-errno trap; four `else =>`
+arms still drop `signaled`. All the same class, all outside the sentence this PR makes
+true, all recorded as `not filed` in the PR body. The deeper one is filed: **#518** —
+SETUP_ERROR has no machine-readable field at all, so `spike/acceptance.sh` asserts the
+status by grepping English, which is what this PR had to write.
+
+**The blind review found a P0 the cleanup pass had walked past, and it was mine twice
+over.** The new `--state` / `--work` refusals printed `state`, `args.work` and the
+missing directory raw — no `textShown`, no `sanitizeForReport` — seventy lines below a
+refusal that says in its own comment why that is forbidden: *"a refusal firing on a
+hostile declaration is exactly where a forged control sequence would reach the console"*
+(#266). The path is reachable, not theoretical: `replay` fills `args.state` from
+`define.state` in a case file, JSON decodes `\u001b`, and `config.zig`'s control-byte
+refusal covers toml only. Worse, this refusal fires *before* the `--state-under`
+containment vet that #266 hardened. All three now go through the choke point.
+
+**And the fix for "name the missing directory" was wrong, caught by running it.** For
+`--state /nope-deep/a/b/leaf` it printed *"the directory / does not exist"* — `opendir("/")`
+succeeds, so "stop at the first component that exists" had already walked `probe` up to
+`/`. The loop keeps the last **absent** step instead. A bare relative leaf now says
+"the name has no directory above it" rather than the false *"the directory . does not
+exist"*. That is the second time today a refinement of a refusal introduced a false
+statement into it (the first was annotating 127), and both were caught by executing it,
+not by reading it.
+
+**`path` now means one thing across all five kinds.** Two of them wrote a label there:
+the trace-close marker (`trace:closed-by-target`) and `noteUnresolvedFd` (`fd:7`). Once
+the engine started printing "last named {path}", both became claims that a file by that
+name existed — `last named fd:7`. Both moved to the kind, and `path` is empty when
+nothing was named, which is what the shim's own doc comment already said it meant.
+
+**Tests were absent from exactly the thing the scan bought.** `.signaled` — the case
+#483 was filed from — had no unit test and no acceptance leg, while CHANGELOG asserted
+its output verbatim. `resolveFailure` had six branches and none. `unresolved_op` had no
+test that it keeps `path` and `aux`. All three have them now, and the acceptance leg for
+`.signaled` was seen red against `origin/main` (`--setup did not exit normally`) like
+the other three. The #486 negative leg — "no refusal appeared" — also passed when the
+binary failed to start, so it asserts the directory exists as well.
+
+**One row of `docs/target-classes.md` went false because of this change**: today's
+dogfood wrote that mutool's cause "is unattributed … needs the trace read back, which
+that run did not do", which was true of that run but reads as a standing limit. It says
+so as of that run now. The blind reviewer found it in a file this diff never touched.
+
+All three checks were seen red against a build of `origin/main`: `--setup exited
+non-zero`, the fixed sentence with no kind, and `could not be resolved to an absolute
+path`. 240 unit tests pass.
 
 ## 2026-09-06 — the third patch for #8939: both reports fixed, and a documented option that stops working
 

@@ -4097,6 +4097,99 @@ else
     echo "ok   the control's PASS carries no whitespace-only line (#487, the shape the wording checks cannot see)"
 fi
 
+# #506: a boundary refusal in the recording run names a wrapped operation among its causes,
+# without dropping the class wall it already points at.
+#
+# Both halves matter. `child_touched_state_dir` is the published wall for "Shell CLIs over
+# helper processes" (docs/target-classes.md, pass) — targets that ARE shell scripts — so a
+# sentence that only said "unwrap" would be false for that population and would take away the
+# README entrance. Neither case is detected; the same sentence goes to both.
+#
+# **What a wrapper cannot drive, said out loud — with the way to see it again.** Swap the
+# wrapper below for `printf '#!/bin/sh\nexec "$@"\n'` and the run does not refuse at all: with
+# `--oracle` it reaches FAIL 1 of 6 (judged), and without one it reaches
+# `boundary_without_oracle`, a refusal this change does not touch. So a `#!` wrapper cannot
+# produce `child_process_detected` on this toy; the issue saw that reason on fontforge, whose
+# own behaviour supplies the boundary. **The reason does have a driver** — check 2ae's thread
+# oracle reaches the oracle-block site, and a leg there reads its step — while the two
+# exec-chain sites have none and carry the step untested.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf '#!/bin/sh\n"$@"\n' > /tmp/acc/wrap.sh && chmod 755 /tmp/acc/wrap.sh
+"$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+    --operation "/tmp/acc/wrap.sh $OUT/toy-bug rotate" --shim "$SHIM" \
+    --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/wrap.json >/dev/null 2>&1
+wreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/wrap.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
+wstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/wrap.json')).get('next_step',''))" 2>/dev/null || echo "")
+if [ "$wreason" != "child_touched_state_dir" ]; then
+    echo "FAIL wrapped operation: the run refused '$wreason', not child_touched_state_dir — nothing was measured"
+    fails=$((fails + 1))
+elif ! echo "$wstep" | grep -q "Check whether the operation is a shell script"; then
+    echo "FAIL wrapped operation: the step does not ask about the wrapper: $wstep"
+    fails=$((fails + 1))
+elif ! echo "$wstep" | grep -q "invoke that command as the operation instead"; then
+    # The action half. Every other grep here stops at the question, so a mutation that kept
+    # "Check whether …" and rewrote what to do about it would survive all four legs.
+    echo "FAIL wrapped operation: the step asks the question but names no action: $wstep"
+    fails=$((fails + 1))
+elif ! echo "$wstep" | grep -q "What the target has to be"; then
+    echo "FAIL wrapped operation: the step dropped the class wall the README entrance gives (#506)"
+    fails=$((fails + 1))
+else
+    echo "ok   a wrapped operation's refusal asks about the wrapper AND keeps the class wall (#506)"
+fi
+
+# The sixth site, added by the owner's ruling after the diff review found it inside the promise
+# and untouched: `boundary_without_oracle`. An `exec` wrapper without an oracle lands here
+# first, and the step has to carry two actions at once — an oracle would let the run be judged
+# whatever the cause, and the wrapper is a boundary that did not need to exist. The oracle half
+# stays first because it works either way.
+#
+# This leg is also where the "measured, `exec \"\$@\"` reaches FAIL 1 of 6 with an oracle"
+# claim in the comment above becomes reproducible: add `--oracle /usr/bin/strace` to the run
+# below and the same define is judged rather than refused.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf '#!/bin/sh\nexec "$@"\n' > /tmp/acc/wrap-exec.sh && chmod 755 /tmp/acc/wrap-exec.sh
+"$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+    --operation "/tmp/acc/wrap-exec.sh $OUT/toy-bug rotate" --shim "$SHIM" \
+    --work /tmp/acc/work --json /tmp/acc/nooracle.json >/dev/null 2>&1
+nreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/nooracle.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
+nstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/nooracle.json')).get('next_step',''))" 2>/dev/null || echo "")
+if [ "$nreason" != "boundary_without_oracle" ]; then
+    echo "FAIL oracle-less wrapper: refused '$nreason' — this leg measures nothing"
+    fails=$((fails + 1))
+elif ! echo "$nstep" | grep -q "Re-run with --oracle"; then
+    echo "FAIL oracle-less wrapper: the step lost the oracle action, which works whatever the cause: $nstep"
+    fails=$((fails + 1))
+elif ! echo "$nstep" | grep -q "invoke that command as the operation instead"; then
+    echo "FAIL oracle-less wrapper: the step does not offer unwrapping (#506): $nstep"
+    fails=$((fails + 1))
+else
+    echo "ok   an oracle-less wrapped run is offered both the oracle and the unwrap (#506)"
+fi
+
+# The same step reaches the two sites that DO have drivers, one per observer. Without these,
+# only the site a wrapper happens to hit is covered, and the other two are argued rather than
+# measured. Both existing cases refuse `child_touched_state_dir` (:242 fork — the shim's own
+# witness at :2868; :265 spawn — the oracle's at :3007), so the reason is already pinned by
+# those legs and what is added here is the step.
+for m in TOY_FORK_WRITES TOY_SPAWN_WRITES; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    env "$m=1" "$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+        --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc/work \
+        --oracle /usr/bin/strace --json /tmp/acc/$m.json >/dev/null 2>&1
+    mreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/$m.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
+    mstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/$m.json')).get('next_step',''))" 2>/dev/null || echo "")
+    if [ "$mreason" != "child_touched_state_dir" ]; then
+        echo "FAIL boundary step ($m): refused '$mreason' — this leg measures nothing"
+        fails=$((fails + 1))
+    elif echo "$mstep" | grep -q "Check whether the operation is a shell script"; then
+        echo "ok   $m's boundary refusal carries the wrapper step too (#506)"
+    else
+        echo "FAIL boundary step ($m): still the old class-wall sentence: $mstep"
+        fails=$((fails + 1))
+    fi
+done
+
 # A case recorded under the previous contract refuses honestly. The fixture is a REAL
 # case generated by the current writer with only contract_version mutated to 7 — a
 # hand-written fixture could pass this check by merely failing to parse.
@@ -4597,6 +4690,79 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 11o: a refusal carries the observation it was raised on (#483/#485/#486) ==========="
+# Three refusals used to answer with a restatement of their own name while the engine
+# held the observation. Each leg asserts the observed value appears, and #486's asserts
+# the opposite direction too -- a leaf whose parent exists must still be created, which
+# is the contract the new sentence names.
+#
+# The assertions are whole phrases, not fragments: "7" alone would match a pid or a
+# count somewhere else in the same JSON.
+mkdir -p /tmp/acc-obs/state /tmp/acc-obs/work
+
+# --- #483: the status a failing setup exited with ---
+printf '#!/bin/sh\nexit 7\n' > /tmp/acc-obs/setup7.sh
+chmod 755 /tmp/acc-obs/setup7.sh
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --setup /tmp/acc-obs/setup7.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/work 2>&1)
+if echo "$o" | grep -q -- "--setup exited 7"; then
+    echo "ok   #483: the refusal names the status the setup exited with"
+else
+    echo "     #483: expected [--setup exited 7], got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #485: why the record could not be placed, and the name the file last had ---
+mkdir -p /tmp/acc-obs/u-state /tmp/acc-obs/u-work
+o=$(TOY_WRITE_AFTER_UNLINK=1 "$SIDEEYE" preflight --state /tmp/acc-obs/u-state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-obs/u-work 2>&1)
+if echo "$o" | grep -q "write-after-unlink" && echo "$o" | grep -q "last named"; then
+    echo "ok   #485: the refusal names why it could not be placed and the file's last name"
+else
+    echo "     #485: expected [write-after-unlink] and [last named], got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #486: the missing parent, and the leaf that is still created ---
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-obs-missing-parent/w 2>&1)
+if echo "$o" | grep -q "the directory /tmp/acc-obs-missing-parent does not exist"; then
+    echo "ok   #486: the refusal names the parent that is missing"
+else
+    echo "     #486: expected the missing parent to be named, got: $o"
+    fails=$((fails + 1))
+fi
+# The other direction: a leaf whose parent exists is created, not refused. The --work
+# resolution happens before setup runs, so this needs no target work at all -- the same
+# reason acc_specs above can pin its base failures with /usr/bin/true.
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --operation /usr/bin/true \
+    --shim "$SHIM" --work /tmp/acc-obs/fresh-leaf 2>&1)
+# Positive as well as negative: "no refusal appeared" is also what a binary that failed
+# to start, or a shim that could not load, produces. The directory has to be there.
+if [ -d /tmp/acc-obs/fresh-leaf ] && ! echo "$o" | grep -q "could not be resolved"; then
+    echo "ok   #486: a leaf whose parent exists is created, and the run got past --work"
+else
+    echo "     #486: expected /tmp/acc-obs/fresh-leaf to exist and no resolve refusal, got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #483, the same class the scan found: a setup killed by a signal ---
+# The case the issue was filed from -- "a guard on this machine refused it" -- lands in
+# `.signaled`, not `.exited`, and said only "did not exit normally" until this change.
+printf '#!/bin/sh\nkill -TERM $$\n' > /tmp/acc-obs/sigterm.sh
+chmod 755 /tmp/acc-obs/sigterm.sh
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --setup /tmp/acc-obs/sigterm.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/work 2>&1)
+if echo "$o" | grep -q -- "--setup was killed by signal 15"; then
+    echo "ok   #483: a setup killed by a signal names the signal"
+else
+    echo "     #483: expected [--setup was killed by signal 15], got: $o"
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 11b: each cookbook recipe shows its checker (#276) ==========="
 # docs/checker-cookbook.md's four recipe blocks are rendered from the committed checkers,
 # so the page cannot drift from what those files hold. `check` asserts marker cardinality
@@ -5168,9 +5334,14 @@ acc_flags=$( { parser_literals i
 # the synopsis while the mode refuses a flag its line advertises. Pinning the message
 # turns that into a BROKEN rather than a pass.
 #
+# The pinned text changed with #486: the refusal used to say the path "could not be
+# resolved to an absolute path" about a path that is absolute, and now names the missing
+# parent instead. `acc_nx` is a path whose parent does not exist, so it is exactly the
+# case that moved. The pin follows the message rather than the message following the pin.
+#
 #   key | base argv | flags the line's required part must name | expected failure
-acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|could not be resolved to an absolute path
-explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|could not be resolved to an absolute path
+acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
+explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-config|explore --config $acc_nx.toml|--config|--config could not be read
 replay|replay $acc_nx.json||the case file could not be read"
 
@@ -6485,6 +6656,25 @@ if "crosses a process boundary" not in p:
     sys.exit("the account does not carry the oracle's boundary: %r" % p)
 PYEOF
 fi
+# #506's fourth site, read off the run above rather than driven again. This is the only
+# case in the suite that reaches `src/main.zig:3002` — the oracle's own boundary — and its
+# population is threads, CLONE_FS, unshare and a non-primary setsid, none of them wrappers.
+# That is the point: the sentence asks a question and then says something true regardless of
+# the answer, so it has to be right here as well as on the wrapped case.
+tstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/thread.json')).get('next_step',''))" 2>/dev/null || echo "")
+if [ -z "$tstep" ]; then
+    echo "FAIL boundary step (oracle-seen): no next_step in the thread run's report — nothing was measured"
+    fails=$((fails + 1))
+elif ! echo "$tstep" | grep -q "Check whether the operation is a shell script"; then
+    echo "FAIL boundary step (oracle-seen): still the old class-wall sentence: $tstep"
+    fails=$((fails + 1))
+elif ! echo "$tstep" | grep -q "What the target has to be"; then
+    echo "FAIL boundary step (oracle-seen): the step dropped the class wall (#506)"
+    fails=$((fails + 1))
+else
+    echo "ok   a boundary only the oracle saw carries the step, wall included (#506)"
+fi
+
 if [ "$oe_fails" = "0" ]; then
     echo "ok   a boundary only the oracle saw reaches the account"
 else
