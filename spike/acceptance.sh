@@ -3927,6 +3927,87 @@ else
     fails=$((fails + 1))
 fi
 
+# #492: a FIFO at the trace path is refused by the shim's WRITE, not only by the engine's
+# read. The other end of the name #400 closed.
+#
+# Same standing as #488's leg above: the toy plays whoever can write the work directory,
+# unlinks the trace the engine named, and leaves something else there for the SECOND shim'd
+# process to open. A FIFO rather than a symlink, and `O_WRONLY` on one with no reader blocks
+# until a reader arrives. That open runs in the shim's constructor, before `main`, inside a
+# recording run with no budget (`runChildCapture`, not `runChildCaptureWorld`), so before
+# the fix the whole run stops with no report and no exit code.
+#
+# **The witness is the measurement and the verdict is not.** Both sides of the fix refuse:
+# planting anything here strands the parent's records on a nameless inode, and after the fix
+# the engine also declines to read the FIFO (#400), so `no_shim_marker` comes back either
+# way. The exit code does not separate them either, because the toy carries its own deadline
+# — it has to, since `timeout` around the engine signals the engine and not the grandchild —
+# so the run terminates before the fix as well. What differs is whether the spawned child
+# could ever finish: blocked forever before, `ENXIO` and an exit 0 after.
+#
+# The outer `timeout` is the leg's own net, the way the world-timeout leg's is: the
+# acceptance step in CI has none of its own, and a regression that reintroduced an unbounded
+# wait somewhere the toy's deadline does not reach would hold the runner for hours.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/work
+TOY_TRACEFIFO=/tmp/acc/fifo-w export TOY_TRACEFIFO
+timeout 120 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work >/dev/null 2>&1
+rc=$?
+unset TOY_TRACEFIFO
+if [ ! -p /tmp/acc/work/trace-record.bin ]; then
+    echo "FAIL trace fifo: the toy planted no FIFO at the trace path, so nothing was measured"
+    fails=$((fails + 1))
+elif [ -f /tmp/acc/fifo-w.spawned ]; then
+    echo "ok   a FIFO at the trace path does not hold the shim's open (#492)"
+else
+    echo "FAIL trace fifo: the spawned child never exited 0 — the open blocked (engine exit $rc)"
+    fails=$((fails + 1))
+fi
+
+# The half `O_NONBLOCK` alone cannot answer: a FIFO somebody is ALREADY reading. `ENXIO`
+# comes back only when there is no reader, so with one present the open succeeds and the
+# records go into the pipe — which is why the fix is a kind check after the open rather than
+# the one-line flag. The toy holds a reader across the spawn and reports how much arrived.
+#
+# Three preconditions before the count, because zero has several causes: the FIFO has to be
+# there, the child has to have finished, and `.bytes` has to exist at all — its absence means
+# the toy's own reader never opened, which is the apparatus failing rather than the subject
+# passing.
+#
+# The expected count before the fix is not #488's 44. A FIFO fails `lseek(SEEK_END)`, so the
+# shim's header branch does not fire and only a `shim_ready` record would arrive. The
+# assertion is zero either way, and the measured number is recorded in BUILDLOG.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/work
+TOY_TRACEFIFO=/tmp/acc/fifo-r export TOY_TRACEFIFO
+TOY_TRACEFIFO_READER=1 export TOY_TRACEFIFO_READER
+timeout 120 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work >/dev/null 2>&1
+unset TOY_TRACEFIFO TOY_TRACEFIFO_READER
+fbytes=$(tr -d ' \n' < /tmp/acc/fifo-r.bytes 2>/dev/null || echo "")
+if [ ! -p /tmp/acc/work/trace-record.bin ]; then
+    echo "FAIL trace fifo read: the toy planted no FIFO, so nothing was measured"
+    fails=$((fails + 1))
+elif [ ! -f /tmp/acc/fifo-r.spawned ]; then
+    echo "FAIL trace fifo read: the spawned child never exited 0, so an empty pipe proves nothing"
+    fails=$((fails + 1))
+elif [ -z "$fbytes" ]; then
+    echo "FAIL trace fifo read: no byte count was written — the toy's reader never opened, or the spawn itself failed; either way nothing was measured"
+    fails=$((fails + 1))
+elif [ "$fbytes" = "0" ]; then
+    echo "ok   a FIFO with a reader takes none of the shim's records either (#492)"
+else
+    echo "FAIL trace fifo read: the pipe took $fbytes bytes"
+    fails=$((fails + 1))
+fi
+
+# The control for both legs above is #488's, a few checks up: same toy, same work directory,
+# nothing planted, and the ordinary FAIL with a crash point comes back. It covers a refusing
+# engine and an absent shim for these legs too, because all three drive the same two
+# binaries. What it does not cover — here as there — is the child loading the shim: the
+# `.spawned` witness is about the child finishing, not about what it loaded.
+
 # A case recorded under the previous contract refuses honestly. The fixture is a REAL
 # case generated by the current writer with only contract_version mutated to 7 — a
 # hand-written fixture could pass this check by merely failing to parse.
