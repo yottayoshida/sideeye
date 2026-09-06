@@ -4635,7 +4635,7 @@ fi
 # --- #486: the missing parent, and the leaf that is still created ---
 o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc-obs-missing-parent/w 2>&1)
-if echo "$o" | grep -q "the parent directory /tmp/acc-obs-missing-parent does not exist"; then
+if echo "$o" | grep -q "the directory /tmp/acc-obs-missing-parent does not exist"; then
     echo "ok   #486: the refusal names the parent that is missing"
 else
     echo "     #486: expected the missing parent to be named, got: $o"
