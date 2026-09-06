@@ -113,6 +113,16 @@ verdict reads".
   contract — and the predicate would need to agree in three places (shim recording,
   engine projection, oracle projection) instead of two. The fail-closed oracle plus the
   mutation pair in acceptance covers the drift risk this bought. Rejected.
+
+  > **Narrowed, 2026-09-06 (#485):** `aux` now carries a *reason* on `.unresolved`
+  > records, which is the same type pun this paragraph rejected. What does not carry
+  > over is the second half of the reason: `.unresolved` is a marker
+  > (`OpClass.isMarker`), so the snapshot walk drops it before the name matching that
+  > reads `aux` as a path, and no predicate has to agree anywhere — the engine prints
+  > the bytes and nothing compares them. The rejection stands for classes that reach
+  > judgement, which is every class this ADR is about. The vocabulary lives in
+  > `contract.unresolved_kind` rather than as literals on the shim side, for ADR 0006's
+  > reason.
 - **Track fd → open flags to pair closes.** Leaks on `dup`/`dup2`/inheritance; the
   oracle additionally sees descriptors born outside libc. Rejected.
 - **Exclude `O_RDWR` opens too.** The open itself mutates nothing, but it is the birth

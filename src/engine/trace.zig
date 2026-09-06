@@ -70,9 +70,13 @@ pub const TraceInfo = struct {
     saw_header: bool = false,
     version_mismatch: bool = false,
     saw_shim_ready: bool = false,
-    /// The shim saw an operation it could not place. Any verdict computed from a trace
-    /// containing one is a verdict about an incomplete picture.
-    saw_unresolved: bool = false,
+    /// The first operation the shim could not place, kept whole rather than as a flag
+    /// (#485). Any verdict computed from a trace containing one is a verdict about an
+    /// incomplete picture — and the refusal that follows can now say which record it
+    /// was: `aux` carries why it could not be placed and `path` the name the file had,
+    /// where there was one. `class` and `seq` are constants for this record type, so
+    /// they are not what makes it identifiable.
+    unresolved_op: ?Op = null,
     /// The syscall-and-flag spelling of the first in-scope operation the shim could
     /// place but not model (v12, macOS: `RENAME_SWAP`, `exchangedata`). Borrows from
     /// the trace buffer. On Linux this refusal comes from the oracle instead, and
@@ -540,7 +544,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 info.kill_landed_seq = op.seq;
                 info.kill_landed_pid = op.pid;
             },
-            .unresolved => info.saw_unresolved = true,
+            .unresolved => if (info.unresolved_op == null) { info.unresolved_op = op; },
             // The record's path field carries the syscall-and-flag spelling, not a
             // path (v12). First one wins: the refusal names one operation, the way
             // the oracle's `unsupported` does on Linux. The slice is `Op.path`, duped
@@ -800,6 +804,48 @@ test "a second announcement with no exec record is itself an image change (#123)
     defer info.deinit();
     try std.testing.expect(info.exec_chain_broken);
     try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    _ = posix.unlink(fz);
+}
+
+test "the first unplaceable record is kept whole, with its kind and the name it had (#485)" {
+    // What the refusal needs is not that something was unplaceable but which record it
+    // was. `class` and `seq` identify nothing here — the shim writes `.unresolved` and
+    // `0` for every one — so the material is `aux` (why) and `path` (the name, where
+    // there was one), and first-wins the way `first_foreign` does.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("unresolved-first", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/doomed", .aux = "write-after-unlink" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "", .aux = "link-by-descriptor" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    const u = info.unresolved_op orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqualStrings("write-after-unlink", u.aux);
+    try std.testing.expectEqualStrings("/tmp/s/doomed", u.path);
+    try std.testing.expectEqual(@as(u32, 7), u.pid);
+    _ = posix.unlink(fz);
+}
+
+test "an unplaceable record with no name is still kept, so the refusal can say there was none (#485)" {
+    // The trace-close marker and link-by-descriptor record no path. The old code only
+    // needed to know that one existed; the sentence now has to distinguish "last named
+    // X" from "no name recorded", so the empty path has to survive the read.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("unresolved-noname", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "", .aux = "trace-closed-by-target" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    const u = info.unresolved_op orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqualStrings("trace-closed-by-target", u.aux);
+    try std.testing.expectEqual(@as(usize, 0), u.path.len);
     _ = posix.unlink(fz);
 }
 
