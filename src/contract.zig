@@ -188,14 +188,112 @@ pub const unresolved_kind = struct {
     pub const unresolvable_path = "unresolvable-path";
     /// A descriptor whose file could not be read back to a path.
     pub const fd_without_path = "fd-without-path";
-    /// A write through a descriptor whose file was unlinked while it was open —
+    /// An operation through a descriptor whose file was unlinked while it was open —
     /// the `perl -i` shape.
-    pub const write_after_unlink = "write-after-unlink";
+    ///
+    /// **Any operation, not only a write.** The branch that records it is keyed on the
+    /// descriptor's link count, and `close`, `fsync` and `truncate` reach it as readily as
+    /// `write` does — `perl -i` performs the close itself. This constant was
+    /// `write-after-unlink` for one commit (#485), which made the report say "write" about
+    /// a close; `withOp` is how the operation is named instead of assumed.
+    pub const unlinked_fd = "unlinked-fd";
     /// A link whose source is a descriptor: its old path is empty (ADR 0006).
     pub const link_by_descriptor = "link-by-descriptor";
     /// The target closed the trace channel; nothing was named.
     pub const trace_closed = "trace-closed-by-target";
+
+    /// The longest a kind can be once `withFd` or `withOp` has appended to it.
+    ///
+    /// Derived, not counted by hand: a member added later can be longer than every member
+    /// today, and a hand-written bound would then make `bufPrint` fall back and drop the
+    /// descriptor silently — the exact loss the suffix exists to prevent. The operation
+    /// name comes from `@tagName(OpClass)`, so its longest is derived too.
+    pub const with_fd_max = blk: {
+        var longest_kind: usize = 0;
+        for (all) |k| {
+            if (k.len > longest_kind) longest_kind = k.len;
+        }
+        var longest_op: usize = 0;
+        for (@typeInfo(OpClass).@"enum".fields) |f| {
+            if (f.name.len > longest_op) longest_op = f.name.len;
+        }
+        // kind + " " + op + " fd:" + the widest c_int ("-2147483648").
+        break :blk longest_kind + 1 + longest_op + 4 + 11;
+    };
+
+    /// Every member, so the bound above is derived from the set rather than from whichever
+    /// member the author of a size happened to look at. A kind added without a line here
+    /// keeps working — it just stops contributing to the bound, which a test catches.
+    pub const all = [_][]const u8{
+        unresolvable_path,
+        fd_without_path,
+        unlinked_fd,
+        link_by_descriptor,
+        trace_closed,
+    };
+
+    /// A kind with the descriptor the operation went through appended (#485).
+    ///
+    /// The grammar lives here rather than at the shim's call sites for the reason the
+    /// vocabulary does (ADR 0003's narrowing): a suffix spelled three times in shim
+    /// literals is a format the engine reads and nothing defines. Callers pass a buffer —
+    /// returning a slice of a local would hand back memory that dies before the record is
+    /// written — and a buffer too small keeps the kind and drops the descriptor, so a
+    /// record says less rather than arriving half-written.
+    ///
+    /// **Not always a file descriptor.** `AT_FDCWD` (-100 on Linux, -2 on macOS) reaches
+    /// `linkat`'s empty-path branch like any other value and is recorded as passed:
+    /// the number in the report is the caller's own argument, which is what an operator
+    /// matches against their code.
+    pub fn withFd(buf: []u8, kind: []const u8, fd: c_int) []const u8 {
+        return std.fmt.bufPrint(buf, "{s} fd:{d}", .{ kind, fd }) catch kind;
+    }
+
+    /// `withFd` for the kinds that also know which operation was attempted (#485 asks for
+    /// the operation class, the descriptor and the last resolved name; this is what makes
+    /// the first of the three true rather than assumed by the kind's name).
+    pub fn withOp(buf: []u8, kind: []const u8, op: OpClass, fd: c_int) []const u8 {
+        return std.fmt.bufPrint(buf, "{s} {s} fd:{d}", .{ kind, @tagName(op), fd }) catch kind;
+    }
 };
+
+test "unresolved_kind.withFd appends the descriptor, and its buffer fits every member (#485)" {
+    const t = std.testing;
+    var b: [unresolved_kind.with_fd_max]u8 = undefined;
+
+    try t.expectEqualStrings("unlinked-fd fd:3", unresolved_kind.withFd(&b, unresolved_kind.unlinked_fd, 3));
+    // The operation-bearing form, which is what the unlinked-fd branch actually writes.
+    try t.expectEqualStrings("unlinked-fd close fd:3", unresolved_kind.withOp(&b, unresolved_kind.unlinked_fd, .close, 3));
+    try t.expectEqualStrings("unlinked-fd write fd:3", unresolved_kind.withOp(&b, unresolved_kind.unlinked_fd, .write, 3));
+    try t.expectEqualStrings("fd-without-path fd:0", unresolved_kind.withFd(&b, unresolved_kind.fd_without_path, 0));
+    try t.expectEqualStrings("link-by-descriptor fd:7", unresolved_kind.withFd(&b, unresolved_kind.link_by_descriptor, 7));
+    // `AT_FDCWD`, which `linkat` does reach.
+    try t.expectEqualStrings("link-by-descriptor fd:-100", unresolved_kind.withFd(&b, unresolved_kind.link_by_descriptor, -100));
+
+    // The declared bound holds for the longest member with the widest `c_int`. Asserted
+    // by rendering it: a size computed from the wrong member would leave this one
+    // truncated back to the bare kind, which is exactly the silent loss `with_fd_max`
+    // exists to make unreachable.
+    try t.expectEqualStrings(
+        "trace-closed-by-target fd:-2147483648",
+        unresolved_kind.withFd(&b, unresolved_kind.trace_closed, -2147483648),
+    );
+
+    // Every member, against the widest operation and the widest `c_int`: the bound is
+    // derived, and this is what makes the derivation observable rather than argued. A
+    // member added without a line in `all` shows up here as a truncated rendering.
+    for (unresolved_kind.all) |k| {
+        const rendered = unresolved_kind.withOp(&b, k, .write, -2147483648);
+        try t.expect(std.mem.endsWith(u8, rendered, " write fd:-2147483648"));
+    }
+
+    // Too small a buffer keeps the kind rather than emitting a half-written one.
+    var tiny: [4]u8 = undefined;
+    try t.expectEqualStrings(
+        unresolved_kind.unlinked_fd,
+        unresolved_kind.withFd(&tiny, unresolved_kind.unlinked_fd, 3),
+    );
+}
 
 pub const OpClass = enum(u16) {
     // --- kill-point ops: recorded, eligible as crash points ---

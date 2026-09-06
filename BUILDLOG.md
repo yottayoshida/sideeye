@@ -2,6 +2,75 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — the issues asked for two things each, and #520 shipped one
+
+`#520` closed `#486` and half of `#483` and `#485`. Nobody noticed until after the merge,
+when the "What would close it" sections were read line by line against the built binary
+rather than from memory. `#483`'s title says it: *drops the exit status **and the output
+it observed***. The status shipped. The output was still gone — `--json` had no field for
+it and the work directory was empty, which is the issue's own sentence ("not merely
+unreported; it is gone") still true after the fix that was supposed to end it. `#485` asked
+for the operation class, the descriptor and the last resolved name; two of three shipped,
+and the descriptor was sitting in a variable six lines above the call that dropped it.
+
+The reading that caught it cost about a minute. What it needed was to stop treating a
+closed PR as a closed issue and put the issue's words in one column and the binary's output
+in the other.
+
+**The fix that was nearly the same bug.** The first reviewer said not to write a new
+tail-reading helper: `readFileFrom` exists. Right instinct, and the plan took it. The second
+reviewer opened that function: its last line is
+`lastIndexOfScalar(text, '\n') orelse return .{ .text = "" }`, which is deliberate — its one
+caller polls an fs_usage capture and must leave a half-written line for the next pass. Used
+here it would report `printf 'boom'` as a setup that wrote nothing. That is `#483`, re-made
+inside `#483`'s fix, and no check in the plan would have caught it because every fixture
+ended in a newline. `readFileAllocCapped` has no such rule and is what shipped.
+
+**The name has a pid in it and nothing else here does.** Six work-directory artifacts use
+fixed names and two runs sharing a directory already collide on them. This capture is the
+first whose *contents* reach `message`, and the collision is not symmetric: the unlink that
+`O_EXCL` requires would delete the other run's file, both opens would succeed, and the
+refusal would quote bytes a different subject wrote. `src/mcp.zig` records that exact shape
+from 2026-08-12, when one server returned another's report as its verdict. MCP hands every
+call the same `--work`, so two servers are the concrete case rather than a hypothetical one.
+
+**Two things review reversed, both of them mine.** The test that was supposed to prove the
+defang asserted that `"\nUNKNOWN"` was absent from the sentence — and `lastNonEmptyLine`
+splits on `'\n'`, so no return value of it can ever contain one. Deleting `textShown`
+outright left the whole suite green; measured, not reasoned about. The acceptance leg had
+the same hole (`grep -c "^UNKNOWN"`, always zero). ESC and CR survive the split, so those
+are what the assertions look for now, and the same mutation fails exactly the one test.
+The neighbouring `foreignTouchDetail` test has used ESC since #484 — it was open on screen
+while this one was written with the ESC dropped.
+
+And the first draft deleted the capture whenever the setup succeeded, to stop pid-named
+files accumulating. But capturing had just taken that output off the terminal, so a
+`warning: using a stale fixture` on a green run would have been observable nowhere at all —
+a loss introduced by the fix for a loss. Kept when it holds anything, removed when it does
+not: the empty case is the common one and the only one that piles up.
+
+**A constant that named an operation it never checked.** `write-after-unlink` shipped in
+#520 and is written from a branch keyed on the descriptor's link count — `close`, `fsync`
+and `truncate` reach it exactly as `write` does. A throwaway toy gate that only closes an
+unlinked fd reported `write-after-unlink fd:3`, contradicting the definition two documents
+give it, and `perl -i` — the shape the constant was named after — performs that close. The
+kind is `unlinked-fd <op> fd:N` now. #485 asked for the operation class, the descriptor and
+the last name; the first of the three had been satisfied by a constant's spelling rather
+than by looking, and nobody noticed because the only fixture wrote after unlinking.
+
+**And reusing a helper moved its limit into a range it was never written for.** The line
+clamp borrowed `cutOnBoundary` from the MCP surface, where `max` is 128 KiB. At 200 bytes
+of a target's choosing, a line of continuation bytes walks the cut back to zero: the report
+said `its last output line was: ...` — an ellipsis with nothing before it, which is this
+issue's own complaint in miniature. Sharing the helper was still right; what was missing
+was asking whether its degenerate case is reachable at the new caller's scale.
+
+**What was left.** The world loop never reads `unresolved_op`, so an operation the shim
+could not place is a refusal during recording and is dropped silently in an explored world —
+towards a false PASS. It predates `#485` and is `#522`. Target stderr was captured nowhere
+else in the engine before this change (the falsification gate was the only site with
+`stderr_too`; setup is the second); the `--setup` half is what the issue named, and the
+rest is a `not filed` line in the PR body rather than four new issues.
 ## 2026-09-06 — the ledger counts leave the half held by review
 
 `docs/unknown-rate.md` states five counts in prose — eighteen cohort defines sorted, eight

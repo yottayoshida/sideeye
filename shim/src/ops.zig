@@ -549,7 +549,7 @@ pub fn linkat(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]co
     // AT_EMPTY_PATH links the descriptor `olddirfd` itself; the old path is empty and
     // names nothing to resolve, so the operation is recorded as unplaceable.
     if (old[0] == 0) {
-        common.noteLinkByDescriptor();
+        common.noteLinkByDescriptor(olddirfd);
     } else {
         common.note2(.link, olddirfd, old, newdirfd, new);
     }
