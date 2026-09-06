@@ -2,6 +2,58 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — the patch upstream wrote for #8939 loses the file the report called safe
+
+The 2026-09-05 dogfood run filed `ImageMagick/ImageMagick#8939` as minor and invited
+closure: an interrupted in-place `mogrify` leaves the original name empty, and the bytes
+sit intact at `<file>~`, one rename from recovery. A maintainer reproduced it and merged a
+patch the same day. This entry is what measuring that patch found.
+
+**What it does.** A `link` at the original name, between the `rename` and the truncating
+`open`. That occupies the name again a few microseconds after the rename, which is the
+window the report described — but both names are then one inode, and the `O_TRUNC` on the
+next line empties the backup along with the target. The reported window also survives:
+crash point 2 of 5, between the `rename` and the `link`, still leaves no file at the name.
+
+**The verdict column says nothing.** Two builds by two checkers, and all four explorations
+say FAIL. Reading the verdicts alone would conclude the patch changed nothing. The
+separation is in `checker_earliest`: the invariant "either name holds an image `identify`
+can read" is true in every world under 7.1.1-43, and false at crash point 4 of 5 under
+3501ef34, where both names are 0 bytes with `links=2`. A run whose four verdicts agree can
+still be the whole finding, provided the checkers were written to disagree.
+
+**And it needs no crash.** `WriteImages` failing is a case the code already handles —
+`rename(backup_filename, image->filename)` puts the original back. Under the link there is
+nothing to put back. On a 200 KB tmpfs a failing `mogrify -resize 1600%` leaves both names
+holding 204,800 bytes of a partly-written PNG; 7.1.1-43 restores the original with a
+matching sha256. Four shell lines reproduce it, which makes it the more serious half of the
+finding and the easier half for a maintainer to check.
+
+**What went wrong here.** The first ENOSPC comparison printed "元画像と別物" for *both*
+builds. The equality test was written inside a single-quoted heredoc with `'"$ORIG"'`
+around it, so the shell expanded `$ORIG` on the host — where it did not exist — and every
+sha was compared against the empty string. The sha values themselves were printed and were
+correct, so the conclusion held, but the machine judgement was broken and the run was
+redone with the comparison inside the container. A check that prints its inputs beside its
+verdict is what made that visible; one printing only the verdict would have read as a
+result.
+
+**Two things deliberately not claimed.** `1a0d1b71` was never built. It added a
+`remove_utf8(image->filename)` on the success path that `3501ef34` removed five hours
+later, and what that line would have done under the link is a reading of the diff — the
+record says so rather than describing it as measured. And the reply upstream states a fix
+direction without claiming it works as written: the three details it names (the coder has
+to be explicit for a temp path, a fresh inode needs mode and ownership copied,
+`preserve-timestamp` moves to the temp file) are the reasons it is a direction and not a
+patch.
+
+**The reply departs from `spike/upstream-report-template.md` on purpose**, on the owner's
+call: it apologises for the first report withholding a fix direction, states one, and
+offers a PR conditional on being asked. The template's prohibition is about first reports,
+where a fix pitch arrives before the maintainer has confirmed the mechanism. Here the
+maintainer had already acted, and withholding the direction once is what produced the
+round.
+
 ## 2026-09-05 — v1.2.0, one day after v1.1.0
 
 Fourteen entries and ten commits since the tag (nineteen with the merges): four refusals that say more than they

@@ -1,0 +1,22 @@
+falsify: どちらの名前にも読める画像が無い: total 12 drwxr-xr-x 2 root root 4096 Sep  6 00:39 . drwxr-xr-x 1 root root 4096 Sep  6 00:39 .. -rw-r--r-- 1 root root   25 Sep  6 00:39 img1.png 
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 4
+            after  rename(/work/im/img1.png)
+            before open(/work/im/img1.png)
+path        img1.png
+observed    present before and after the operation, but gone from the crashed state
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 4 operations (441 syscall lines examined, 74 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+l1          no marker configured
+case        /work/wk/deb-recoverable/cases/000001.json
+replay      sideeye replay /work/wk/deb-recoverable/cases/000001.json --shim /se/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/work/im SIDEEYE_TRACE_PATH=/work/wk/deb-recoverable/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
