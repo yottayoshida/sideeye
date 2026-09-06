@@ -1,0 +1,10 @@
+元画像: 98852 bytes  sha256=3bb2698f25c30795
+
+=== patch前 Debian 7.1.1-43 ===
+  mogrify rc=1   stderr: mogrify: WriteBlob Failed `/tiny/img1.png' @ error/png.c/MagickPNGErro
+  /tiny/img1.png  98852 bytes  links=1  sha=3bb2698f25c30795  元画像と同一  完全にデコードできる
+  ディレクトリに残ったファイル数: 1
+=== patch後 main 960adadd ===
+  mogrify rc=1   stderr: mogrify: unable to write blob `/tiny/img1.png~5caa24cd' @ error/png.c/
+  /tiny/img1.png  98852 bytes  links=1  sha=3bb2698f25c30795  元画像と同一  完全にデコードできる
+  ディレクトリに残ったファイル数: 1

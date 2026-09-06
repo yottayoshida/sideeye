@@ -1,0 +1,28 @@
+--- patch前 (abs, 渡した引数=/w/img1.png) → mtime 2020-01-01 00:00:00
+      14    openat(AT_FDCWD, "/w/img1.png", O_RDONLY) = 3
+      14    openat(AT_FDCWD, "/w/img1.png", O_RDONLY) = 3
+      14    openat(AT_FDCWD, "/w/img1.png", O_RDONLY) = 3
+      14    renameat(AT_FDCWD, "/w/img1.png", AT_FDCWD, "/w/img1.png~") = 0
+      14    openat(AT_FDCWD, "/w/img1.png", O_RDWR|O_CREAT|O_TRUNC, 0666) = 3
+      14    utimensat(AT_FDCWD, "/w/img1.png", [{tv_sec=1788666569, tv_nsec=893992009} /* 2026-09-06T03:49:29.893992009+0000 */, {tv_sec=1577836800, tv_nsec=0} /* 2020-01-01T00:00:00+0000 */], 0) = 0
+--- patch後 (abs, 渡した引数=/w/img1.png) → mtime 2026-09-06 03:49:29
+      29    openat(AT_FDCWD, "/w/img1.png", O_RDONLY) = 3
+      29    openat(AT_FDCWD, "/w/img1.png", O_RDONLY) = 3
+      29    openat(AT_FDCWD, "/w/img1.png", O_RDONLY) = 3
+      29    openat(AT_FDCWD, "/w/img1.png~c80954de", O_RDWR|O_CREAT|O_TRUNC, 0666) = 3
+      29    utimensat(AT_FDCWD, "/w/img1.png", [{tv_sec=1788666569, tv_nsec=910992009} /* 2026-09-06T03:49:29.910992009+0000 */, {tv_sec=1577836800, tv_nsec=0} /* 2020-01-01T00:00:00+0000 */], 0) = 0
+      29    renameat(AT_FDCWD, "/w/img1.png~c80954de", AT_FDCWD, "/w/img1.png") = 0
+--- patch前 (rel, 渡した引数=img1.png) → mtime 2020-01-01 00:00:00
+      44    openat(AT_FDCWD, "img1.png", O_RDONLY) = 3
+      44    openat(AT_FDCWD, "img1.png", O_RDONLY) = 3
+      44    openat(AT_FDCWD, "img1.png", O_RDONLY) = 3
+      44    renameat(AT_FDCWD, "img1.png", AT_FDCWD, "img1.png~") = 0
+      44    openat(AT_FDCWD, "img1.png", O_RDWR|O_CREAT|O_TRUNC, 0666) = 3
+      44    utimensat(AT_FDCWD, "img1.png", [{tv_sec=1788666569, tv_nsec=942992009} /* 2026-09-06T03:49:29.942992009+0000 */, {tv_sec=1577836800, tv_nsec=0} /* 2020-01-01T00:00:00+0000 */], 0) = 0
+--- patch後 (rel, 渡した引数=img1.png) → mtime 2026-09-06 03:49:29
+      59    openat(AT_FDCWD, "img1.png", O_RDONLY) = 3
+      59    openat(AT_FDCWD, "img1.png", O_RDONLY) = 3
+      59    openat(AT_FDCWD, "img1.png", O_RDONLY) = 3
+      59    openat(AT_FDCWD, "img1.png~36ca1028", O_RDWR|O_CREAT|O_TRUNC, 0666) = 3
+      59    utimensat(AT_FDCWD, "img1.png", [{tv_sec=1788666569, tv_nsec=960992009} /* 2026-09-06T03:49:29.960992009+0000 */, {tv_sec=1577836800, tv_nsec=0} /* 2020-01-01T00:00:00+0000 */], 0) = 0
+      59    renameat(AT_FDCWD, "img1.png~36ca1028", AT_FDCWD, "img1.png") = 0

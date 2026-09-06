@@ -1,0 +1,23 @@
+== builds
+Version: ImageMagick 7.1.1-43 Q16 aarch64 22550 https://imagemagick.org
+Version: ImageMagick 7.1.2-32 (Beta) Q16-HDRI aarch64 72c71e0d3:20260905 https://imagemagick.org
+
+== Debian-7.1.1-43
+openat(AT_FDCWD, "/work/im/img1.png", O_RDONLY) = 3
+openat(AT_FDCWD, "/work/im/img1.png", O_RDONLY) = 3
+openat(AT_FDCWD, "/work/im/img1.png", O_RDONLY) = 3
+renameat(AT_FDCWD, "/work/im/img1.png", AT_FDCWD, "/work/im/img1.png~") = 0
+openat(AT_FDCWD, "/work/im/img1.png", O_RDWR|O_CREAT|O_TRUNC, 0666) = 3
+utimensat(AT_FDCWD, "/work/im/img1.png", [{tv_sec=1788667118, tv_nsec=129706000} /* 2026-09-06T03:58:38.129706000+0000 */, {tv_sec=1577836800, tv_nsec=0} /* 2020-01-01T00:00:00+0000 */], 0) = 0
+unlinkat(AT_FDCWD, "/work/im/img1.png~", 0) = 0
+   -> mtime after: 2020-01-01 00:00:00
+
+== main-960adadd
+openat(AT_FDCWD, "/work/im/img1.png", O_RDONLY) = 3
+openat(AT_FDCWD, "/work/im/img1.png", O_RDONLY) = 3
+openat(AT_FDCWD, "/work/im/img1.png", O_RDONLY) = 3
+openat(AT_FDCWD, "/work/im/img1.png~c1b4130b", O_RDWR|O_CREAT|O_TRUNC, 0666) = 3
+utimensat(AT_FDCWD, "/work/im/img1.png", [{tv_sec=1788667118, tv_nsec=151706000} /* 2026-09-06T03:58:38.151706000+0000 */, {tv_sec=1577836800, tv_nsec=0} /* 2020-01-01T00:00:00+0000 */], 0) = 0
+renameat(AT_FDCWD, "/work/im/img1.png~c1b4130b", AT_FDCWD, "/work/im/img1.png") = 0
+   -> mtime after: 2026-09-06 03:58:38
+

@@ -1,0 +1,11 @@
+======== F 再測: 2 フレーム GIF を普通に in-place ========
+  patch前 rc=0  frames 2 -> 2  ファイル: multi.gif 
+  patch後 rc=0  frames 2 -> 2  ファイル: multi.gif 
+
+======== magic prefix 付き (PNG:img1.png) ========
+  patch前 rc=0  img1.png=[32x32]  残ったファイル: img1.png 
+  patch後 rc=0  img1.png=[32x32]  残ったファイル: img1.png 
+
+======== preserve-timestamp が文書化されているか（ソース内の使用箇所） ========
+/src/MagickWand/mogrify.c:3960:                "preserve-timestamp"));
+/src/www/defines/index.html:740:    <td>preserve-timestamp=<var>true|false</var></td>

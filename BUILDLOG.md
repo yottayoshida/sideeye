@@ -2,6 +2,55 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — the third patch for #8939: both reports fixed, and a documented option that stops working
+
+`spike/dogfood/2026-09-06-imagemagick-patch3/`. The comment this project left at 00:35Z
+was answered by a revert at 00:58Z and, at 01:53Z, by "we'll push a patch tomorrow after
+we review and test". The patch landed at 02:16Z — twenty-three minutes later, in three
+commits. This run measures the last of them, `960adadd`.
+
+**Both things this project reported are fixed, and the fix is the direction the comment
+described.** `mogrify` now writes to a sibling temp name and renames it over the
+original. The reported window is closed (`check-original-name` goes FAIL 2-of-5 → PASS
+4-of-4) and the ENOSPC loss the second patch introduced is gone (the original comes back
+byte-identical, and the temp file is removed).
+
+**Two of the three cautions attached to that direction were wrong, and the measurement is
+what separated them.** The comment warned about the coder picked from a filename, about
+mode and ownership on a fresh inode, and about `preserve-timestamp`. Only the third was
+real. The coder is fine — the clone carries `magick` from the image it was cloned from,
+so `img1.png~c1b4130b` still writes PNG. Mode is *not* a regression: 7.1.1-43 renames the
+original away and creates a fresh inode at the original name, so an original at 0600 came
+back at 644 before the patch too. Same for a hard-linked second name and for a symlink
+argument. Writing the caution cost nothing; treating it as a finding would have cost the
+maintainer three false reports.
+
+**`preserve-timestamp` is the one that is real, and the syscall order says why.**
+`set_file_timestamp` runs on the success path *before* the rename, against
+`image->filename` — the file the rename is about to replace. The stamp lands on the
+inode that is then discarded. `www/defines/index.html` in the same tree documents the
+option as "Preserve file timestamp (mogrify only)", so this is a documented option that
+no longer does what it says, in the only command it applies to.
+
+**The apparatus lied once, quietly, and the tell was in a field that was not read.** The
+first timestamp run passed `-e trace=futimens` to `strace`. `futimens` is a libc wrapper,
+not a syscall; `strace` refused the whole expression and never started `mogrify`. The
+file kept the mtime that `touch` had given it, and the run printed "2020-01-01" —
+indistinguishable from the option working. Nothing in the output said the target had not
+run, because the run's exit code was never checked and the empty syscall listing read as
+"grep matched nothing". Re-running with the argument removed reversed the result. This is
+the same shape as `gotcha_measurement_harness_lies_quietly`: a measurement that produces
+the *expected* value while measuring nothing.
+
+**The contrast build is what made the run cheap.** Four of the nine things measured here
+look like regressions when only the patched build is run. Putting Debian's 7.1.1-43 in
+the same container and running every case twice turned three of them into "the unpatched
+build does this too" without any extra reading.
+
+Nothing was filed. Both reported items are fixed, the remaining one is a timestamp
+option rather than the data-loss class the report was about, and the owner's call was to
+stop replying on the issue and leave a reaction instead.
+
 ## 2026-09-06 — four targets outside a cohort: one PASS, and the far side of ADR 0005's flush boundary
 
 `spike/dogfood/2026-09-06-userview-2/`. The 2026-09-05 ordering rule held: screening
