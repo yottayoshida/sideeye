@@ -2832,9 +2832,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // self-exec chain — exec record, then a same-pid shim_ready carrying the
         // operation count — is a continuation and never reaches here.
         .exec => if (trace.exec_chain_broken)
-            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)", .class_wall)
+            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)", .unwrap_or_class_wall)
         else
-            unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .class_wall),
+            unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .unwrap_or_class_wall),
         .thread => unknown(.multiple_threads_detected, "the target created a thread; operation order would not be deterministic", .class_wall),
         .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid); the engine cannot claim to have stopped it", .class_wall),
         else => {},
@@ -2865,7 +2865,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // loaded it, which the oracle sees. Two witnesses with different blind spots, kept
     // deliberately.
     if (trace.foreign_kill_point)
-        unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the recording run", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation during the recording run"), .class_wall);
+        unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the recording run", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation during the recording run"), .unwrap_or_class_wall);
 
     // A fork/spawn boundary — or any record from another pid — is tolerable only when
     // an oracle can account for what the other processes did. The shim only sees
@@ -2875,7 +2875,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // quiescence sampling above all — must engage for those too.
     var crossed_boundary = boundary_ev.shim_boundary;
     if (crossed_boundary and !args.has_oracle)
-        unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary);
+        unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
     // The fs_usage oracle cannot account for other processes the way strace does, so a
     // boundary the shim saw is not tolerated under it. fs_usage excludes processes by
     // name — the man page lists Terminal, sshd and the shells, and `-e` does not lift
@@ -2999,12 +2999,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
             unknown(.oracle_saw_nothing, "the oracle produced no output, so nothing was compared against the shim's account", .environment);
 
         if (parsed.boundary) |name|
-            unknown(.child_process_detected, name, .class_wall);
+            unknown(.child_process_detected, name, .unwrap_or_class_wall);
 
         // The tolerance condition, decided by the observer that sees children whether
         // or not they loaded the shim.
         if (parsed.child_touched)
-            unknown(.child_touched_state_dir, withOracleCapture(arena, "a process other than the subject touched the state directory; its operations have no crash-point address", if (args.oracle != null) oracle_out else null, "a process other than the subject touched the state directory; its operations have no crash-point address"), .class_wall);
+            unknown(.child_touched_state_dir, withOracleCapture(arena, "a process other than the subject touched the state directory; its operations have no crash-point address", if (args.oracle != null) oracle_out else null, "a process other than the subject touched the state directory; its operations have no crash-point address"), .unwrap_or_class_wall);
 
         if (parsed.unsupported) |name|
             unknown(.unsupported_syscall_observed, name, .class_wall);
@@ -4092,7 +4092,7 @@ fn observeAgain(
     // does not rest on: the post-states are read from the filesystem, not from either
     // witness. The report's `scope` line says so, and widening it is a separate promise.
     if ((trace.boundary != null or trace.foreign_pid_seen) and oracle_path == null)
-        unknown(.boundary_without_oracle, "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary);
+        unknown(.boundary_without_oracle, "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
 
     var second = snapshotOrRefuse(gpa, state_abs, "could not snapshot the state after the second observed run");
     defer second.deinit();

@@ -4097,6 +4097,99 @@ else
     echo "ok   the control's PASS carries no whitespace-only line (#487, the shape the wording checks cannot see)"
 fi
 
+# #506: a boundary refusal in the recording run names a wrapped operation among its causes,
+# without dropping the class wall it already points at.
+#
+# Both halves matter. `child_touched_state_dir` is the published wall for "Shell CLIs over
+# helper processes" (docs/target-classes.md, pass) — targets that ARE shell scripts — so a
+# sentence that only said "unwrap" would be false for that population and would take away the
+# README entrance. Neither case is detected; the same sentence goes to both.
+#
+# **What a wrapper cannot drive, said out loud — with the way to see it again.** Swap the
+# wrapper below for `printf '#!/bin/sh\nexec "$@"\n'` and the run does not refuse at all: with
+# `--oracle` it reaches FAIL 1 of 6 (judged), and without one it reaches
+# `boundary_without_oracle`, a refusal this change does not touch. So a `#!` wrapper cannot
+# produce `child_process_detected` on this toy; the issue saw that reason on fontforge, whose
+# own behaviour supplies the boundary. **The reason does have a driver** — check 2ae's thread
+# oracle reaches the oracle-block site, and a leg there reads its step — while the two
+# exec-chain sites have none and carry the step untested.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf '#!/bin/sh\n"$@"\n' > /tmp/acc/wrap.sh && chmod 755 /tmp/acc/wrap.sh
+"$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+    --operation "/tmp/acc/wrap.sh $OUT/toy-bug rotate" --shim "$SHIM" \
+    --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/wrap.json >/dev/null 2>&1
+wreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/wrap.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
+wstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/wrap.json')).get('next_step',''))" 2>/dev/null || echo "")
+if [ "$wreason" != "child_touched_state_dir" ]; then
+    echo "FAIL wrapped operation: the run refused '$wreason', not child_touched_state_dir — nothing was measured"
+    fails=$((fails + 1))
+elif ! echo "$wstep" | grep -q "Check whether the operation is a shell script"; then
+    echo "FAIL wrapped operation: the step does not ask about the wrapper: $wstep"
+    fails=$((fails + 1))
+elif ! echo "$wstep" | grep -q "invoke that command as the operation instead"; then
+    # The action half. Every other grep here stops at the question, so a mutation that kept
+    # "Check whether …" and rewrote what to do about it would survive all four legs.
+    echo "FAIL wrapped operation: the step asks the question but names no action: $wstep"
+    fails=$((fails + 1))
+elif ! echo "$wstep" | grep -q "What the target has to be"; then
+    echo "FAIL wrapped operation: the step dropped the class wall the README entrance gives (#506)"
+    fails=$((fails + 1))
+else
+    echo "ok   a wrapped operation's refusal asks about the wrapper AND keeps the class wall (#506)"
+fi
+
+# The sixth site, added by the owner's ruling after the diff review found it inside the promise
+# and untouched: `boundary_without_oracle`. An `exec` wrapper without an oracle lands here
+# first, and the step has to carry two actions at once — an oracle would let the run be judged
+# whatever the cause, and the wrapper is a boundary that did not need to exist. The oracle half
+# stays first because it works either way.
+#
+# This leg is also where the "measured, `exec \"\$@\"` reaches FAIL 1 of 6 with an oracle"
+# claim in the comment above becomes reproducible: add `--oracle /usr/bin/strace` to the run
+# below and the same define is judged rather than refused.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf '#!/bin/sh\nexec "$@"\n' > /tmp/acc/wrap-exec.sh && chmod 755 /tmp/acc/wrap-exec.sh
+"$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+    --operation "/tmp/acc/wrap-exec.sh $OUT/toy-bug rotate" --shim "$SHIM" \
+    --work /tmp/acc/work --json /tmp/acc/nooracle.json >/dev/null 2>&1
+nreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/nooracle.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
+nstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/nooracle.json')).get('next_step',''))" 2>/dev/null || echo "")
+if [ "$nreason" != "boundary_without_oracle" ]; then
+    echo "FAIL oracle-less wrapper: refused '$nreason' — this leg measures nothing"
+    fails=$((fails + 1))
+elif ! echo "$nstep" | grep -q "Re-run with --oracle"; then
+    echo "FAIL oracle-less wrapper: the step lost the oracle action, which works whatever the cause: $nstep"
+    fails=$((fails + 1))
+elif ! echo "$nstep" | grep -q "invoke that command as the operation instead"; then
+    echo "FAIL oracle-less wrapper: the step does not offer unwrapping (#506): $nstep"
+    fails=$((fails + 1))
+else
+    echo "ok   an oracle-less wrapped run is offered both the oracle and the unwrap (#506)"
+fi
+
+# The same step reaches the two sites that DO have drivers, one per observer. Without these,
+# only the site a wrapper happens to hit is covered, and the other two are argued rather than
+# measured. Both existing cases refuse `child_touched_state_dir` (:242 fork — the shim's own
+# witness at :2868; :265 spawn — the oracle's at :3007), so the reason is already pinned by
+# those legs and what is added here is the step.
+for m in TOY_FORK_WRITES TOY_SPAWN_WRITES; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    env "$m=1" "$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+        --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc/work \
+        --oracle /usr/bin/strace --json /tmp/acc/$m.json >/dev/null 2>&1
+    mreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/$m.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
+    mstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/$m.json')).get('next_step',''))" 2>/dev/null || echo "")
+    if [ "$mreason" != "child_touched_state_dir" ]; then
+        echo "FAIL boundary step ($m): refused '$mreason' — this leg measures nothing"
+        fails=$((fails + 1))
+    elif echo "$mstep" | grep -q "Check whether the operation is a shell script"; then
+        echo "ok   $m's boundary refusal carries the wrapper step too (#506)"
+    else
+        echo "FAIL boundary step ($m): still the old class-wall sentence: $mstep"
+        fails=$((fails + 1))
+    fi
+done
+
 # A case recorded under the previous contract refuses honestly. The fixture is a REAL
 # case generated by the current writer with only contract_version mutated to 7 — a
 # hand-written fixture could pass this check by merely failing to parse.
@@ -6450,6 +6543,25 @@ if "crosses a process boundary" not in p:
     sys.exit("the account does not carry the oracle's boundary: %r" % p)
 PYEOF
 fi
+# #506's fourth site, read off the run above rather than driven again. This is the only
+# case in the suite that reaches `src/main.zig:3002` — the oracle's own boundary — and its
+# population is threads, CLONE_FS, unshare and a non-primary setsid, none of them wrappers.
+# That is the point: the sentence asks a question and then says something true regardless of
+# the answer, so it has to be right here as well as on the wrapped case.
+tstep=$(python3 -c "import json;print(json.load(open('/tmp/acc/thread.json')).get('next_step',''))" 2>/dev/null || echo "")
+if [ -z "$tstep" ]; then
+    echo "FAIL boundary step (oracle-seen): no next_step in the thread run's report — nothing was measured"
+    fails=$((fails + 1))
+elif ! echo "$tstep" | grep -q "Check whether the operation is a shell script"; then
+    echo "FAIL boundary step (oracle-seen): still the old class-wall sentence: $tstep"
+    fails=$((fails + 1))
+elif ! echo "$tstep" | grep -q "What the target has to be"; then
+    echo "FAIL boundary step (oracle-seen): the step dropped the class wall (#506)"
+    fails=$((fails + 1))
+else
+    echo "ok   a boundary only the oracle saw carries the step, wall included (#506)"
+fi
+
 if [ "$oe_fails" = "0" ]; then
     echo "ok   a boundary only the oracle saw reaches the account"
 else
