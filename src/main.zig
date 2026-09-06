@@ -1169,6 +1169,63 @@ fn foreignTouchDetail(arena: std.mem.Allocator, first: ?engine.Op, when: []const
     return withOracleCapture(arena, composed, oracle_capture, fallback);
 }
 
+/// The record the trace reader could not place, as a sentence (#485).
+///
+/// Sits beside `foreignTouchDetail` because it is the same job on the same input: a
+/// `?engine.Op` becomes a refusal line, or the caller's fallback when there is none.
+/// `class` and `seq` are not named — this record type writes `.unresolved` and `0` for
+/// every one of them, so they identify nothing; what identifies it is the kind the shim
+/// chose and the pid. The name is said only when there is one: `noteLinkByDescriptor`
+/// and the trace-close marker record no path, and claiming a filename there would be
+/// inventing an observation.
+///
+/// Sanitised once at the end, through the same choke point the neighbouring renderer
+/// uses, rather than per field.
+fn unresolvedDetail(arena: std.mem.Allocator, first: ?engine.Op, fallback: []const u8) []const u8 {
+    const op = first orelse return fallback;
+    const why = if (op.aux.len > 0) op.aux else "reason not recorded";
+    const named = if (op.path.len > 0)
+        std.fmt.allocPrint(arena, "last named {s}", .{op.path}) catch return fallback
+    else
+        "no name recorded for it";
+    const composed = std.fmt.allocPrint(
+        arena,
+        "an operation was observed whose path could not be determined ({s}, pid {d}, {s}), so it cannot be placed among the crash points",
+        .{ why, op.pid, named },
+    ) catch return fallback;
+    return sanitizeForReport(arena, composed) catch fallback;
+}
+
+test "unresolvedDetail names the kind and pid, and only claims a name when there is one (#485)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const fb = "an operation was observed whose path could not be determined";
+
+    // No record: the caller's sentence, unchanged.
+    try std.testing.expectEqualStrings(fb, unresolvedDetail(arena, null, fb));
+
+    // With a name.
+    const named = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/doomed.txt", .aux = "write-after-unlink" }, fb);
+    try std.testing.expect(std.mem.indexOf(u8, named, "write-after-unlink") != null);
+    try std.testing.expect(std.mem.indexOf(u8, named, "pid 9") != null);
+    try std.testing.expect(std.mem.indexOf(u8, named, "last named /s/doomed.txt") != null);
+
+    // Without one: no filename is invented. This is the path the trace-close marker and
+    // link-by-descriptor take, and it had no test until the renderer moved here.
+    const unnamed = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "", .aux = "link-by-descriptor" }, fb);
+    try std.testing.expect(std.mem.indexOf(u8, unnamed, "no name recorded for it") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unnamed, "last named") == null);
+
+    // A shim that wrote no kind still produces a sentence rather than an empty clause.
+    const nokind = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x", .aux = "" }, fb);
+    try std.testing.expect(std.mem.indexOf(u8, nokind, "reason not recorded") != null);
+
+    // Target-influenced bytes are defanged by the same choke point the neighbour uses.
+    const forged = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land", .aux = "write-after-unlink" }, fb);
+    try std.testing.expect(std.mem.indexOf(u8, forged, "\nUNKNOWN") == null);
+}
+
 /// The second half of #484: when an oracle capture exists, the refusal says where it is.
 /// The operator in the issue guessed at `gc.auto` twice; the child's `execve` argv —
 /// `git maintenance run --auto` — was in `<work>/oracle.txt` the whole time, and nothing
@@ -2368,13 +2425,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const state_created = posix.mkdir(state_z.ptr, 0o755) == 0;
     const state_abs = blk: {
         if (posix.realpath(state_z.ptr, &real_buf)) |p| break :blk std.mem.span(p);
+        // The errno is read first: the rmdir below issues its own syscall and would
+        // overwrite it (#486).
+        const why = std.c._errno().*;
         // Reachable from a replayed case (ELOOP, a component raced away), not only
         // from a broken environment — so the mkdir above is undone like every other
         // refusal between it and the first destructive step (security review,
         // Minor-3: this and the two --work refusals below predate the rule's helper
         // and were the last three keeping their side effect).
         if (state_created) _ = posix.rmdir(state_z.ptr);
-        setupError("--state could not be resolved to an absolute path; the shim and the engine would filter on different spellings of it");
+        setupErrorFmt(arena_state.allocator(), "--state {s}: {s}. Until it resolves, the shim and the engine would filter on different spellings of it", .{ textShown(arena_state.allocator(), state), resolveFailure(arena_state.allocator(), state, why) });
     };
 
     // Still before setup runs, so the refusal is a configuration error and nothing has
@@ -2408,8 +2468,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var work_real_buf: [contract.max_path]u8 = undefined;
         const work_abs = blk: {
             if (posix.realpath(work_z.ptr, &work_real_buf)) |p| break :blk std.mem.span(p);
+            // Before undoSetupMkdirs, which issues syscalls of its own (#486).
+            const why = std.c._errno().*;
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError("--work could not be resolved to an absolute path");
+            setupErrorFmt(arena_state.allocator(), "--work {s}: {s}", .{ textShown(arena_state.allocator(), args.work), resolveFailure(arena_state.allocator(), args.work, why) });
         };
         if (contract.isInsideDir(work_abs, state_abs)) {
             // Remove only what this invocation just created: refusing while leaving
@@ -2559,8 +2621,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ "TOY_STATE", state_abs },
         }, args.cwd) catch |e| spawnFailure(e, .before_exploration, "could not run --setup");
         switch (term) {
-            .exited => |code| if (code != 0) setupError("--setup exited non-zero"),
-            else => setupError("--setup did not exit normally"),
+            // The status is the observation; "non-zero" was a restatement of the
+            // refusal's own name (#483). The number alone is what #483 asks for, and it
+            // is all this can honestly carry: a first draft annotated 127 as "command
+            // not found", and `exec /no/such/binary` under /bin/sh measured 126 here —
+            // the mapping from a failed exec to a status is the shell's, not ours.
+            .exited => |code| if (code != 0) setupErrorFmt(arena_state.allocator(), "--setup exited {d}", .{code}),
+            // The same class, found by this PR's own same-class scan: `Term` carries
+            // `signaled: u8` and `unknown: c_int`, and the old `else` threw both away.
+            // A setup killed by a guard on the machine (the case #483 was filed from)
+            // lands here, not in `.exited`.
+            .signaled => |sig| setupErrorFmt(arena_state.allocator(), "--setup was killed by signal {d}", .{sig}),
+            .unknown => |st| setupErrorFmt(arena_state.allocator(), "--setup ended in a way waitpid reported as status {d}", .{st}),
         }
     }
 
@@ -2810,8 +2882,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.truncated)
         unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown", .retry_then_report);
 
-    if (trace.saw_unresolved)
-        unknown(.unresolvable_path, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points", .class_wall);
+    if (trace.unresolved_op != null)
+        unknown(.unresolvable_path, unresolvedDetail(arena, trace.unresolved_op, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
 
     // The shim's own `unsupported` refusal (v12). On Linux this arrives from the
     // oracle instead — same reason, same spelling shape ("renamex_np(RENAME_SWAP)"
@@ -5539,6 +5611,89 @@ fn scratchNote(arena: std.mem.Allocator) []const u8 {
 /// the format string itself is the fallback, so the refusal still names its subject.
 fn setupErrorFmt(arena: std.mem.Allocator, comptime fmt: []const u8, args: anytype) noreturn {
     setupError(std.fmt.allocPrint(arena, fmt, args) catch fmt);
+}
+
+test "resolveFailure names the shallowest missing directory, and the errno otherwise (#486)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    // ENOENT: the answer is a directory the operator can create, not the literal parent.
+    // `/` exists, so a deep absent path must name the shallowest absent step.
+    const deep = resolveFailure(arena, "/nope-for-test/a/b/leaf", posix.ENOENT);
+    try std.testing.expect(std.mem.indexOf(u8, deep, "/nope-for-test does not exist") != null);
+    try std.testing.expect(std.mem.indexOf(u8, deep, "the directory / does not exist") == null);
+
+    // A bare relative leaf has no directory above it: saying "." would be false.
+    const bare = resolveFailure(arena, "leaf", posix.ENOENT);
+    try std.testing.expect(std.mem.indexOf(u8, bare, "no directory above it") != null);
+    try std.testing.expect(std.mem.indexOf(u8, bare, "the directory . ") == null);
+
+    // Any other errno is named, not reduced to a number -- the four-arm switch this
+    // replaced covered four of ~130 and dropped the rest to a bare integer, which is
+    // the shape #486 is about.
+    const denied = resolveFailure(arena, "/x/y", @intFromEnum(std.posix.E.ACCES));
+    try std.testing.expect(std.mem.indexOf(u8, denied, "ACCES") != null);
+    const io = resolveFailure(arena, "/x/y", @intFromEnum(std.posix.E.IO));
+    try std.testing.expect(std.mem.indexOf(u8, io, "IO") != null);
+
+    // Control bytes from a case file's `define.state` do not reach the console raw (#266).
+    const forged = resolveFailure(arena, "/nope-for-test\x1b[1m/leaf", posix.ENOENT);
+    try std.testing.expect(std.mem.indexOf(u8, forged, "\x1b") == null);
+}
+
+/// Why `realpath` refused, in the words of the command the operator types next (#486).
+///
+/// The old sentence said the path "could not be resolved to an absolute path" about a
+/// path that visibly *is* absolute, so the first move it invites is to re-check the
+/// spelling of an already-correct flag. What was observed is the errno, and for the
+/// common case (`ENOENT`) the actionable half of it is which directory is missing:
+/// the engine creates the leaf and never the parent, and that contract is written
+/// nowhere else.
+///
+/// Read the errno BEFORE any cleanup call — `rmdir`/`undoSetupMkdirs` overwrite it.
+fn resolveFailure(arena: std.mem.Allocator, path: []const u8, err: c_int) []const u8 {
+    if (err == posix.ENOENT) {
+        // The *shallowest* missing component, not the literal parent: for
+        // `--state /nope/deep/leaf` with `/nope` absent, naming `/nope/deep` sends the
+        // operator to a `mkdir` that fails the same way. Walking up until something
+        // exists is the only form of this sentence that names a directory they can
+        // actually create.
+        //
+        // `dirname` returning null (a bare relative leaf) means there is no directory
+        // above it to be missing, so the generic clause is the honest one — the earlier
+        // version said "the parent directory . does not exist", which is false.
+        const parent = std.fs.path.dirname(path) orelse
+            return "it could not be resolved: ENOENT, and the name has no directory above it";
+        // Keep the shallowest component that is still missing, rather than stopping on
+        // the first one that exists: the loop below walks up, and the answer is the last
+        // absent step before something existed. Stopping *at* the existing directory
+        // named `/` in the first version, which is both true and useless.
+        var probe = parent;
+        var walk = parent;
+        while (true) {
+            var zbuf: [contract.max_path]u8 = undefined;
+            const z = std.fmt.bufPrintZ(&zbuf, "{s}", .{walk}) catch break;
+            if (posix.isDirPath(z.ptr)) break;
+            probe = walk;
+            const up = std.fs.path.dirname(walk) orelse break;
+            if (up.len == 0 or std.mem.eql(u8, up, walk)) break;
+            walk = up;
+        }
+        // Target- and case-file-influenced (a replayed case supplies `define.state`),
+        // so it goes through the same choke point the neighbouring refusals use (#266).
+        return std.fmt.allocPrint(arena, "the directory {s} does not exist (the leaf is created, the parent is not)", .{textShown(arena, probe)}) catch
+            "a directory above the leaf does not exist (the leaf is created, the parent is not)";
+    }
+    // The tag rather than a hand-written switch, for the reason `OpClass.name` records
+    // (#280): a switch spelling its own tags covers only the arms someone thought of.
+    // The first version here had four, out of the ~130 `std.posix.E` holds, so EPERM,
+    // EIO and EBADF fell to a bare number — which is the "restates its own name" shape
+    // #486 is about. `E` is non-exhaustive, so an unlisted value returns null rather
+    // than trapping, and the number is what remains to say.
+    if (std.enums.tagName(std.posix.E, @as(std.posix.E, @enumFromInt(err)))) |tag|
+        return std.fmt.allocPrint(arena, "it could not be resolved: {s} (errno {d})", .{ tag, err }) catch "it could not be resolved";
+    return std.fmt.allocPrint(arena, "it could not be resolved (errno {d})", .{err}) catch "it could not be resolved";
 }
 
 /// The text report's apparatus line, in the calling block's own style, only when

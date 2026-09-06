@@ -168,6 +168,35 @@ pub const ExitCode = enum(u8) {
 /// describe `close`: it must be recorded (it is real, and the oracle will see it)
 /// yet must never become a crash point, since SIGKILL closes descriptors anyway —
 /// dying just before `close` and just after it leave the same state behind.
+/// Why an `.unresolved` record could not be placed, written by the shim into `aux`
+/// and printed by the engine (#485).
+///
+/// Here rather than as literals on the shim side for ADR 0006's reason: the two
+/// observers must agree on a shared property, and a typo in one of five call sites
+/// would otherwise be silent — the engine passes the bytes through, so nothing
+/// compares them to anything. `aux` normally holds the other endpoint of a two-path
+/// operation; using it for a reason here is the type pun ADR 0003 rejected for open
+/// flags, and it is admissible only because `.unresolved` is a marker: the snapshot
+/// walk drops markers before the name matching that would read `aux` as a path.
+///
+/// Not an enum, and not frozen: `contract_version` is unchanged, so an engine can
+/// meet a record written by an older shim with an empty `aux`, and a closed set
+/// would have to admit that case anyway. These are the values the current shim
+/// writes, named so both sides spell them the same way.
+pub const unresolved_kind = struct {
+    /// The path could not be resolved at all (`resolveAt` failed).
+    pub const unresolvable_path = "unresolvable-path";
+    /// A descriptor whose file could not be read back to a path.
+    pub const fd_without_path = "fd-without-path";
+    /// A write through a descriptor whose file was unlinked while it was open —
+    /// the `perl -i` shape.
+    pub const write_after_unlink = "write-after-unlink";
+    /// A link whose source is a descriptor: its old path is empty (ADR 0006).
+    pub const link_by_descriptor = "link-by-descriptor";
+    /// The target closed the trace channel; nothing was named.
+    pub const trace_closed = "trace-closed-by-target";
+};
+
 pub const OpClass = enum(u16) {
     // --- kill-point ops: recorded, eligible as crash points ---
     open = 1,

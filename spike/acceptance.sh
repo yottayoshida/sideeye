@@ -4427,6 +4427,79 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 11o: a refusal carries the observation it was raised on (#483/#485/#486) ==========="
+# Three refusals used to answer with a restatement of their own name while the engine
+# held the observation. Each leg asserts the observed value appears, and #486's asserts
+# the opposite direction too -- a leaf whose parent exists must still be created, which
+# is the contract the new sentence names.
+#
+# The assertions are whole phrases, not fragments: "7" alone would match a pid or a
+# count somewhere else in the same JSON.
+mkdir -p /tmp/acc-obs/state /tmp/acc-obs/work
+
+# --- #483: the status a failing setup exited with ---
+printf '#!/bin/sh\nexit 7\n' > /tmp/acc-obs/setup7.sh
+chmod 755 /tmp/acc-obs/setup7.sh
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --setup /tmp/acc-obs/setup7.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/work 2>&1)
+if echo "$o" | grep -q -- "--setup exited 7"; then
+    echo "ok   #483: the refusal names the status the setup exited with"
+else
+    echo "     #483: expected [--setup exited 7], got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #485: why the record could not be placed, and the name the file last had ---
+mkdir -p /tmp/acc-obs/u-state /tmp/acc-obs/u-work
+o=$(TOY_WRITE_AFTER_UNLINK=1 "$SIDEEYE" preflight --state /tmp/acc-obs/u-state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-obs/u-work 2>&1)
+if echo "$o" | grep -q "write-after-unlink" && echo "$o" | grep -q "last named"; then
+    echo "ok   #485: the refusal names why it could not be placed and the file's last name"
+else
+    echo "     #485: expected [write-after-unlink] and [last named], got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #486: the missing parent, and the leaf that is still created ---
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-obs-missing-parent/w 2>&1)
+if echo "$o" | grep -q "the parent directory /tmp/acc-obs-missing-parent does not exist"; then
+    echo "ok   #486: the refusal names the parent that is missing"
+else
+    echo "     #486: expected the missing parent to be named, got: $o"
+    fails=$((fails + 1))
+fi
+# The other direction: a leaf whose parent exists is created, not refused. The --work
+# resolution happens before setup runs, so this needs no target work at all -- the same
+# reason acc_specs above can pin its base failures with /usr/bin/true.
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --operation /usr/bin/true \
+    --shim "$SHIM" --work /tmp/acc-obs/fresh-leaf 2>&1)
+# Positive as well as negative: "no refusal appeared" is also what a binary that failed
+# to start, or a shim that could not load, produces. The directory has to be there.
+if [ -d /tmp/acc-obs/fresh-leaf ] && ! echo "$o" | grep -q "could not be resolved"; then
+    echo "ok   #486: a leaf whose parent exists is created, and the run got past --work"
+else
+    echo "     #486: expected /tmp/acc-obs/fresh-leaf to exist and no resolve refusal, got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #483, the same class the scan found: a setup killed by a signal ---
+# The case the issue was filed from -- "a guard on this machine refused it" -- lands in
+# `.signaled`, not `.exited`, and said only "did not exit normally" until this change.
+printf '#!/bin/sh\nkill -TERM $$\n' > /tmp/acc-obs/sigterm.sh
+chmod 755 /tmp/acc-obs/sigterm.sh
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --setup /tmp/acc-obs/sigterm.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/work 2>&1)
+if echo "$o" | grep -q -- "--setup was killed by signal 15"; then
+    echo "ok   #483: a setup killed by a signal names the signal"
+else
+    echo "     #483: expected [--setup was killed by signal 15], got: $o"
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 11b: each cookbook recipe shows its checker (#276) ==========="
 # docs/checker-cookbook.md's four recipe blocks are rendered from the committed checkers,
 # so the page cannot drift from what those files hold. `check` asserts marker cardinality
@@ -4963,9 +5036,14 @@ acc_flags=$( { parser_literals i
 # the synopsis while the mode refuses a flag its line advertises. Pinning the message
 # turns that into a BROKEN rather than a pass.
 #
+# The pinned text changed with #486: the refusal used to say the path "could not be
+# resolved to an absolute path" about a path that is absolute, and now names the missing
+# parent instead. `acc_nx` is a path whose parent does not exist, so it is exactly the
+# case that moved. The pin follows the message rather than the message following the pin.
+#
 #   key | base argv | flags the line's required part must name | expected failure
-acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|could not be resolved to an absolute path
-explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|could not be resolved to an absolute path
+acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
+explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-config|explore --config $acc_nx.toml|--config|--config could not be read
 replay|replay $acc_nx.json||the case file could not be read"
 

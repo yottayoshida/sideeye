@@ -521,6 +521,25 @@ static int cmd_rotate(void) {
         for (int fd = 3; fd <= hi; fd++) close(fd);
     }
 
+    /* Write through a descriptor whose file was unlinked while it was still open —
+     * the shape `perl -i` has (perlrun: "the original file is kept open without a
+     * name while the output is redirected to a new file"). The bytes change and the
+     * engine cannot address them, so the shim records an unresolved operation
+     * carrying the name the file last had. Before #485 the refusal that followed
+     * named neither the operation nor that name, and the only material in the suite
+     * for it was TOY_CLOSE_SWEEP, whose path is a synthetic string rather than a
+     * real one — so this gate is what makes the real-path form measurable. */
+    if (getenv("TOY_WRITE_AFTER_UNLINK")) {
+        char p[512];
+        join_path(p, sizeof p, "doomed.txt");
+        int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "before\n", 7) != 7) { close(fd); return 1; }
+        if (unlink(p) != 0) { close(fd); return 1; }
+        if (write(fd, "after\n", 6) != 6) { close(fd); return 1; }
+        close(fd);
+    }
+
     /* Descriptors that are provably not files; opening and closing them must not
      * move the verdict. */
     if (getenv("TOY_ANONFD")) {

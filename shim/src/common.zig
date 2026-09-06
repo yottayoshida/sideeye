@@ -713,7 +713,10 @@ fn writeRecord(op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) 
 /// close, fclose, freopen — before the real call retires it.
 pub fn noteTraceClose(fd: c_int) void {
     if (!active or fd < 0 or fd != trace_fd) return;
-    writeRecord(.unresolved, 0, "trace:closed-by-target", "");
+    // The path is empty on purpose: nothing was named here. Before #485 the reason
+    // rode in the path field as "trace:closed-by-target", which the engine would
+    // now print as the name the file last had — a filename that never existed.
+    writeRecord(.unresolved, 0, "", contract.unresolved_kind.trace_closed);
     trace_fd = -1;
 }
 
@@ -835,8 +838,20 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) 
 /// Dropping it silently is the failure this whole tool exists to avoid: the engine
 /// would then see a trace that is complete as far as it can tell, and PASS is the
 /// honest-looking answer to that. Recorded instead, so the engine can refuse to judge.
-fn noteUnresolved(path: []const u8) void {
-    writeRecord(.unresolved, 0, path, "");
+/// `kind` names WHY the operation could not be placed, in the `aux` field (#485).
+///
+/// The refusal used to be one fixed sentence for every one of these call sites, so two
+/// targets failing for different reasons produced identical output and the operator
+/// could not tell them apart. `class` and `seq` cannot carry it — this record type
+/// always writes `.unresolved` and `0` — and `path` is already spoken for (it is the
+/// name the file had, where there was one). `aux` is free here: for `.unresolved` the
+/// engine never reads it as a path, because `isMarker()` takes the record out of the
+/// snapshot walk's name matching (`engine/snapshot.zig`).
+///
+/// The argument has no default on purpose: a new call site has to choose a kind, and
+/// forgetting it is a compile error rather than a record that says nothing.
+fn noteUnresolved(path: []const u8, kind: []const u8) void {
+    writeRecord(.unresolved, 0, path, kind);
 }
 
 /// The single place where an operation becomes a counted event, and the single place
@@ -901,7 +916,7 @@ pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
     const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
         // Recorded only when the path genuinely could not be determined. A descriptor
         // that names no path at all says the operation is elsewhere, which is an answer.
-        if (unresolvable) noteUnresolved(std.mem.span(path));
+        if (unresolvable) noteUnresolved(std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     };
     observe(op, resolved, "");
@@ -941,7 +956,7 @@ pub fn noteUnsupportedInScope2(
     } else if (unresolvable) {
         // Cannot place it, so cannot clear it: the unconditional channel is right
         // exactly here, for the reason its own doc gives.
-        noteUnresolved(std.mem.span(path));
+        noteUnresolved(std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     }
     if (!in_scope) {
@@ -952,7 +967,7 @@ pub fn noteUnsupportedInScope2(
             if (resolveAt(&abuf, adirfd, ap, &aunresolvable)) |ares| {
                 in_scope = contract.isInsideDir(canonical(&acbuf, ares), stateDir());
             } else if (aunresolvable) {
-                noteUnresolved(std.mem.span(ap));
+                noteUnresolved(std.mem.span(ap), contract.unresolved_kind.unresolvable_path);
                 return;
             }
         }
@@ -975,12 +990,12 @@ pub fn note2(
     var abuf: [contract.max_path]u8 = undefined;
     var unresolvable = false;
     const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
-        if (unresolvable) noteUnresolved(std.mem.span(path));
+        if (unresolvable) noteUnresolved(std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     };
     const aresolved = resolveAt(&abuf, adirfd, apath, &unresolvable) orelse {
         // Half of a rename is not something to record as a rename.
-        if (unresolvable) noteUnresolved(std.mem.span(apath));
+        if (unresolvable) noteUnresolved(std.mem.span(apath), contract.unresolved_kind.unresolvable_path);
         return;
     };
     observe(op, resolved, aresolved);
@@ -1078,9 +1093,13 @@ fn fdKind(fd: c_int, deleted: *bool) FdKind {
 /// the descriptor because there is no path to name — the point of recording it is
 /// that the engine refuses instead of passing.
 fn noteUnresolvedFd(fd: c_int) void {
-    var b: [16]u8 = undefined;
-    const s = std.fmt.bufPrint(&b, "fd:{d}", .{fd}) catch "fd:?";
-    noteUnresolved(s);
+    // The descriptor goes in the kind, not the path. Its own doc says "there is no path
+    // to name", and since #485 the engine prints `path` as the name the file last had —
+    // so `fd:7` sitting there produced "last named fd:7", a filename that never was.
+    var b: [32]u8 = undefined;
+    const kind = std.fmt.bufPrint(&b, "{s} fd:{d}", .{ contract.unresolved_kind.fd_without_path, fd }) catch
+        contract.unresolved_kind.fd_without_path;
+    noteUnresolved("", kind);
 }
 
 /// The fd-taking form of `noteUnsupportedInScope2` (v12): `fsetattrlist` names its file
@@ -1151,7 +1170,7 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         // The file was inside the state directory and has since been unlinked. Writing
         // through such a descriptor still changes bytes the engine cannot see in any
         // snapshot, so the operation exists but has no address.
-        noteUnresolved(resolved);
+        noteUnresolved(resolved, contract.unresolved_kind.write_after_unlink);
         return;
     }
     observe(op, resolved, "");
@@ -1589,7 +1608,7 @@ pub fn noteLinkByDescriptor() void {
     if (!active or busy) return;
     busy = true;
     defer busy = false;
-    noteUnresolved("");
+    noteUnresolved("", contract.unresolved_kind.link_by_descriptor);
 }
 
 /// Boundary detectors carry no path. Since v3 their presence no longer forces UNKNOWN
