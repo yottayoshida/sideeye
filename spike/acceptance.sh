@@ -4669,13 +4669,14 @@ echo "=========== check 11f: the loop-closure judge is seen refusing (#63) =====
 # been observed refusing anything. `judge.sh selftest` drives thirteen refusals with
 # synthetic roots and transcripts (two by name, four by network alternation, three path
 # markers, two docker, the transcript with no tool calls, and a seal that does not match
-# its manifest) plus four greens: a clean transcript stays clean, a doctored file comes
-# back from the seal, a deleted one is put back, and `check` records without copying.
-# The eleven voiding refusals each assert that the ONE field their channel owns is the
+# its manifest) plus five greens: a clean transcript stays clean, the trusted mcp
+# server's own tool is counted rather than voided, a doctored file comes back from the
+# seal, a deleted one is put back, and `check` records without copying.
+# The thirteen voiding refusals each assert that the ONE field their channel owns is the
 # non-empty one, so a case that voided for another reason does not stand in for the
 # branch it names; the no-tool-calls and restore-failure cases are judged on their own
 # terms, since neither reaches the field-by-field classification.
-# Seen red: nine mutations of judge.sh plus one of the case list, each killing exactly
+# Seen red: twelve mutations of judge.sh plus one of the case list, each killing exactly
 # the cases it should --
 # UNSEALED blinded (name-unsealed), the mcp branch blinded (name-mcp-foreign), the network
 # regex unmatchable (all four net-*), the path test made False (all three path-*), the
@@ -4684,7 +4685,7 @@ echo "=========== check 11f: the loop-closure judge is seen refusing (#63) =====
 # removed (unauditable), the post-restore hash check removed (restore-fail), and the
 # verdict forced to clean (all eleven void cases, not unauditable, which exits earlier).
 if sh "$ROOT/spike/loop-closure-timew/judge.sh" selftest > /tmp/acc-judge-selftest.txt 2>&1; then
-    echo "ok   judge.sh selftest: thirteen refusals and four greens"
+    echo "ok   judge.sh selftest: fifteen refusals and five greens"
 else
     echo "FAIL judge.sh selftest (rc=$?): a channel stopped refusing, or a red moved"
     # Every failing line, not a tail: a green run is already 20 lines, so `tail -20` would
