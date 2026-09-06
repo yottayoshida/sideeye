@@ -213,6 +213,17 @@
  *                     shim's open cannot answer — with a reader present the child's
  *                     O_WRONLY succeeds — and `<value>.bytes` reports how much the
  *                     child managed to put in.
+ *   TOY_ONE_UNLINK    rotate deletes the key and returns, without the rewrite that
+ *                     follows: exactly ONE kill point, which is the shape #487's tell
+ *                     is about. It is the only mode in this file that reaches one, not
+ *                     the only shape that could — a lone rename, mkdir, rmdir, link,
+ *                     symlink or truncate is also one kill point and a mutation, and
+ *                     docs/target-classes.md records papis reaching one through a lone
+ *                     renameat. What is ruled out is anything built on write_file(),
+ *                     which is two: open and write are separate kill points. A mode
+ *                     that only opens is not ruled out by state_changed_without_ops —
+ *                     that fires on a changed state with no recorded mutation, and an
+ *                     open that writes nothing changes nothing.
  */
 
 #define _GNU_SOURCE
@@ -570,6 +581,23 @@ static int cmd_rotate(void) {
     char key[4096], tmp[4096];
     join_path(key, sizeof key, KEY_NAME);
     join_path(tmp, sizeof tmp, TMP_NAME);
+
+    /* Exactly one kill point (#487). Not the only shape that could reach one — `isKillPoint`
+     * and `isMutation` (src/contract.zig) agree on write, rename, unlink, truncate, mkdir,
+     * rmdir, link and symlink, so a lone one of any of those would do — `docs/target-classes.md`
+     * records papis reaching one through a lone `renameat`. What is ruled out is anything
+     * built on `write_file()`, which is two: `open` and `write` are separate kill points.
+     * An open-only mode is ruled out for a different reason — `isMutation` excludes `open`,
+     * so it records no mutation, and it also changes nothing, which is a PASS over an
+     * untouched state rather than the shape this leg needs. Deleting a file init created is one
+     * recorded operation and one crash point, and it is atomic — the world killed before it
+     * holds the file, the world after does not, and both satisfy pre-or-post, so the run is
+     * a PASS rather than a refusal. Returns before the rotate body below, which ends in
+     * write_file + rename and would put the floor at four whatever else is set. */
+    if (getenv("TOY_ONE_UNLINK")) {
+        if (unlink(key) != 0) return 1;
+        return 0;
+    }
 
     /* The poetry shape, shrunk (#231, ADR 0020): two in-place truncate-and-write
      * rewrites, derived first, primary second — exactly four kill points (open,
