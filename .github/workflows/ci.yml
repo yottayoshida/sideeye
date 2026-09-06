@@ -238,9 +238,11 @@ jobs:
       # check that against, because the runs wrote to spike/runs/, which .gitignore calls
       # throwaway. A verdict nobody can re-read is indistinguishable from a classifier that
       # cannot say anything but clean. The selftest
-      # drives thirteen refusals from synthetic roots and transcripts, each asserting that
-      # the one field its channel owns is the non-empty one, plus a clean control and both
-      # directions of the restore. It needs no container and no stage: sh and python3 only.
+      # drives fifteen refusals from synthetic roots and transcripts. The thirteen that void
+      # each assert that the one field their channel owns is the non-empty one; the other two
+      # (no tool calls, a seal failing its own hash check) never reach that classification.
+      # Five greens beside them, including the granting side of --allow-mcp. It needs no
+      # container and no stage: sh and python3 only.
       - name: The loop-closure judge goes red on every channel it declares
         run: sh spike/loop-closure-timew/judge.sh selftest
 

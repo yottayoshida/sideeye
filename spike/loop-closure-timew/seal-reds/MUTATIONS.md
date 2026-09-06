@@ -17,6 +17,9 @@ green.
 |---|---|---|
 | `name-unsealed-blind` | `s\|    elif name in UNSEALED:\|    elif False:\|` | the eleven listed tool names |
 | `name-mcp-blind` | `s\|    if name.startswith("mcp__"):\|    if False:\|` | any `mcp__` server that is not the allowed one |
+| `off-allowlist-blind` | `s\|if network_hits or context_hits or docker_hits or unsealed_hits or off_allowlist:\|if network_hits or context_hits or docker_hits or unsealed_hits:\|` | the #511 fix: a tool in neither set voids |
+| `mcp-prefix-loose` | `s\|                and "__" not in name[len(allow_prefix):]:\|                and True:\|` | the #514 fix: the trusted prefix names one segment |
+| `mcp-allow-broken` | `s\|        if allow_prefix and name.startswith(allow_prefix) \\\|        if False and allow_prefix and name.startswith(allow_prefix) \\\|` | the granting side — kills the green, not a red |
 | `network-blind` | `s\|^NETWORK = re.compile($\|NETWORK = re.compile(r"(?!x)x") or re.compile(\|` | the whole network regex |
 | `path-blind` | `s\|    if repo in text or "/.claude/" in text or "~/.claude" in text:\|    if False:\|` | all three path markers |
 | `docker-blind` | `s\|            escaped = "--network none" not in cmd\|            escaped = False\|` | the missing-`--network none` test |
@@ -28,11 +31,18 @@ green.
 
 ## What the attribution says
 
-**Ten mutations, ten exact sets** — nine of the judge, one of the selftest's own case
-list. No mutation killed a case outside its own channel,
-and none of the thirteen refusals survived the mutation aimed at it.
+**Thirteen mutations, thirteen exact sets** — twelve of the judge, one of the selftest's
+own case list. No mutation killed a case outside its own channel,
+and none of the fifteen refusals survived the mutation aimed at it.
 
-Two rows are worth reading twice:
+The two fixes shipped with `#511`/`#514` are falsified in **both** directions, which is
+the part a one-sided mutation would miss. Reverting either fix kills exactly its own red
+(`off-allowlist-blind` → `name-off-allowlist`, `mcp-prefix-loose` → `name-mcp-nested`),
+and breaking the *granting* branch kills exactly the green (`mcp-allow-broken` →
+`mcp-allowed`). Without that third one, tightening the prefix test could have closed the
+surface the mcp variant actually runs on and every red here would still have passed.
+
+Two more rows are worth reading twice:
 
 - **`docker-blind` kills `docker-nonet` only.** `docker-mount` survives it, and that is
   correct: an absolute mount source outside the stage sets `escaped` through a different

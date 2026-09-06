@@ -2,6 +2,51 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — two of the six gaps were a line each, and filing them was the mistake
+
+`#516` shipped the selftest for `#63` and filed six issues beside it: the places where the
+declared void condition is wider than what `cmd_audit` implements. Two of those, `#511` and
+`#514`, are one and two lines. They should have been fixed in that PR, and this entry is
+about why they were not.
+
+**The disposition rules have no exit for "fixes in a line".** `orchestrator.md` §2.5 sorts
+a finding into out of four: block (the promise is false), issue (a *different* promise, and
+only when it meets the hang/crash/data-loss, silently-wrong-result, or broken-documented-
+promise predicate), decide it now, or drop it with a reason. Both of these met the predicate
+— a run that breached the seal came back `clean` — so the guard passed them
+(`issue-threshold-guard.sh` checks that a predicate is *declared*, and its own record says
+it does not judge truth). Nothing in that path asks how big the fix is.
+
+**And the classification itself was wrong.** §2.5 says the boundary is the promise, not the
+mechanism: adding a new user-facing capability is a different promise. `#511` and `#514` add
+nothing. `judge.sh` already says the void condition is "enforced per escape channel, against
+EVERY tool call" — these two make the code do what that sentence says. That is the *same*
+promise, which puts them in disposition 1, not 2.
+
+The fixes. **`#511`**: a tool in neither `ALLOWED` nor `UNSEALED` went to `off_allowlist`
+under the comment "local-only tool outside the allowlist: recorded, not void". Nothing
+established "local-only" — the set is whatever the harness presents that this launcher did
+not ask for, and its reach is unknown by construction. An allowlist that only records the
+calls it did not allow is a deny-list of eleven names wearing an allowlist's comment.
+`off_allowlist` now joins the void condition. **`#514`**: `allow_prefix` was a prefix match,
+so `--allow-mcp sideeye` trusted `mcp__sideeye__evil__x` as readily as the real tool. The
+allowed server names one segment after its prefix; a deeper name is another surface wearing
+it. Both fixes are three lines between them.
+
+Three new cases, and the third is the one worth having. `name-off-allowlist` and
+`name-mcp-nested` are the reds. **`mcp-allowed` is a green**: the trusted server's own tool
+must still be counted in `allowed_mcp_calls` and leave the run `clean`. Without it, the
+`#514` tightening could have closed the surface the mcp variant actually runs on, and every
+red above would still have passed. Seen red in both directions — reverting either fix kills
+exactly its own red, and breaking the granting branch kills exactly the green. Thirteen
+mutations now, thirteen exact sets.
+
+`#510` (the path channel matching only the absolute spelling) is not here: closing it needs
+a normalisation decision about what a transcript's text can be resolved against, which is a
+design question rather than a line. `#512`, `#513` and `#515` stay filed for the same
+reason — they are real, and none of them is small.
+
+
 ## 2026-09-06 — a boundary refusal names the wrapper without dropping the wall (#506)
 
 Written as the work starts. Wrapping `--operation` in a `#!` script gets the run refused as

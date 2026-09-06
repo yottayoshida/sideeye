@@ -62,18 +62,20 @@
 #       in this process cannot drive them at all. restore_and_diff's own argument
 #       check is unreachable for a different reason: every caller passes a literal.
 #
-#       Thirteen refusals. The eleven that void assert that the ONE field their
+#       Fifteen refusals. The thirteen that void assert that the ONE field their
 #       channel owns is the non-empty one, so a case that voided for another reason
 #       is not a red for the branch it claims; the other two are judged on their own
 #       terms (a transcript with no tool calls writes two keys and exits before a
 #       verdict exists, and a seal that fails its own hash check never reaches the
-#       classifier). Plus four greens: a clean transcript stays clean, a
+#       classifier). Plus five greens: a clean transcript stays clean, the trusted
+#       mcp server's own tool is counted rather than voided, a
 #       doctored file comes back from the seal, a DELETED one is put back too (a
 #       different path through the restore), and the `check` action records
 #       without copying. Per-branch and not per-field: the network regex alone
 #       has four alternations, and one `curl` would otherwise stand in for all of
-#       them. By NAME it is the membership test that is driven, with one listed
-#       name and one foreign mcp server — not all eleven names, which the judge
+#       them. By NAME four branches are driven: a listed name, a foreign mcp
+#       server, a tool in neither set (#511), and the trusted prefix worn by a
+#       deeper name (#514) — but not all eleven listed names, which the judge
 #       keeps in step with the launchers by hand (#65 owns that drift).
 set -eu
 
@@ -619,14 +621,23 @@ for call in tool_calls:
     name = call["name"] or ""
     text = json.dumps(call["input"], ensure_ascii=False)
     if name.startswith("mcp__"):
-        if allow_prefix and name.startswith(allow_prefix):
+        # A prefix match alone trusts `mcp__<server>__evil__x` as readily as the real
+        # tool (#514): the allowed server names ONE segment after its prefix, so a
+        # deeper name is some other surface wearing the trusted prefix.
+        if allow_prefix and name.startswith(allow_prefix) \
+                and "__" not in name[len(allow_prefix):]:
             mcp_calls += 1  # the trusted server; its inputs still pass the path checks below
         else:
             unsealed_hits.append({"tool": name, "input": call["input"]})
     elif name in UNSEALED:
         unsealed_hits.append({"tool": name, "input": call["input"]})
     elif name not in ALLOWED:
-        off_allowlist.append(name)  # local-only tool outside the allowlist: recorded, not void
+        # Recorded AND void (#511). The older reading called these "local-only tools",
+        # but nothing here establishes that: the set is everything the harness might
+        # present that this launcher did not ask for, and its reach is unknown by
+        # construction. An allowlist that records the calls it did not allow is a
+        # deny-list of eleven names wearing an allowlist's comment.
+        off_allowlist.append(name)
     if repo in text or "/.claude/" in text or "~/.claude" in text:
         context_hits.append({"tool": name, "input": call["input"]})
     if name == "Bash":
@@ -650,7 +661,7 @@ for call in tool_calls:
                 docker_hits.append(cmd)
 
 verdict = "clean"
-if network_hits or context_hits or docker_hits or unsealed_hits:
+if network_hits or context_hits or docker_hits or unsealed_hits or off_allowlist:
     verdict = "void"
 audit = {
     "verdict": verdict,
@@ -757,7 +768,7 @@ cmd_selftest() { # the red proof for what this judge refuses on (#63)
     # case left the suite green with the same wording. The tally below demands the exact
     # number of cases, which makes a silently shortened list a failure.
     passes=0
-    WANT_CASES=17
+    WANT_CASES=20
 
     # The path channel matches $SIDEEYE_REPO as a SUBSTRING of any tool input, so the
     # synthetic repo must not be an ancestor of the synthetic roots: a stage path under it
@@ -787,7 +798,8 @@ cmd_selftest() { # the red proof for what this judge refuses on (#63)
         if python3 - "$RESULTS/audit.json" "$1" "$2" "$arc" <<'PY'
 import json, sys
 path, name, want, rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
-VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits")
+VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits",
+        "off_allowlist")
 try:
     a = json.load(open(path))
 except (OSError, ValueError) as e:
@@ -814,13 +826,22 @@ PY
         then passes=$((passes + 1)); else fails=$((fails + 1)); fi
     }
 
-    echo "=== judge.sh selftest: thirteen refusals ==="
+    echo "=== judge.sh selftest: fifteen refusals ==="
 
     # by NAME (2): the eleven listed tools, and any mcp__ server that is not the allowed one
     tx_tool name-unsealed WebFetch url "https://example.invalid"
     audit_case name-unsealed unsealed_tool_hits
     tx_tool name-mcp-foreign mcp__other__lookup query "anything"
     audit_case name-mcp-foreign unsealed_tool_hits
+    # A tool in neither ALLOWED nor UNSEALED: not "local-only", just unknown (#511).
+    tx_tool name-off-allowlist NotebookEdit notebook_path /tmp/x.ipynb
+    audit_case name-off-allowlist off_allowlist
+    # The trusted prefix worn by a deeper name (#514). Needs the allow list set, and
+    # reset afterwards so the cases below are judged with no server trusted.
+    ALLOW_MCP=sideeye
+    tx_tool name-mcp-nested mcp__sideeye__evil__x query "anything"
+    audit_case name-mcp-nested unsealed_tool_hits
+    ALLOW_MCP=""
 
     # by TEXT (4): the network regex is four alternations, and one curl is not four reds
     tx_bash net-bare "curl -sS example.invalid"
@@ -881,7 +902,7 @@ PY
         fails=$((fails + 1))
     fi
 
-    echo "=== judge.sh selftest: four greens ==="
+    echo "=== judge.sh selftest: five greens ==="
 
     # The control. Without it, "void" could be this classifier's only answer and every
     # red above would still pass.
@@ -894,12 +915,40 @@ PY
     if python3 - "$RESULTS/audit.json" "$crc" <<'PY'
 import json, sys
 a = json.load(open(sys.argv[1])); rc = int(sys.argv[2])
-VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits")
+VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits",
+        "off_allowlist")
 hot = [f for f in VOID if a.get(f)]
 if a.get("verdict") != "clean" or rc != 0 or hot:
     sys.exit("FAIL judge.sh: clean — verdict %r rc %d non-empty %r, wanted clean / 0 / none"
              % (a.get("verdict"), rc, hot))
 print("ok   judge.sh: clean — a transcript that escapes nothing stays clean, rc 0")
+PY
+    then passes=$((passes + 1)); else fails=$((fails + 1)); fi
+
+    # The granting side of --allow-mcp, which had no case at all: the tightened test
+    # must still let the trusted server's own tools through, or #514's fix would have
+    # closed the surface the mcp variant runs on.
+    ALLOW_MCP=sideeye
+    tx_tool mcp-allowed mcp__sideeye__sideeye_replay_case case /tmp/x.json
+    RESULTS="$work/out/mcp-allowed"; mkdir -p "$RESULTS"
+    STAGE="$work/root-mcp-allowed/stage"; mkdir -p "$STAGE"
+    TRANSCRIPT="$work/tx-mcp-allowed.jsonl"
+    mrc=0
+    cmd_audit > "$RESULTS/stdout.txt" 2>&1 || mrc=$?
+    ALLOW_MCP=""
+    if python3 - "$RESULTS/audit.json" "$mrc" <<'PY'
+import json, sys
+a = json.load(open(sys.argv[1])); rc = int(sys.argv[2])
+VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits",
+        "off_allowlist")
+hot = [f for f in VOID if a.get(f)]
+if a.get("verdict") != "clean" or rc != 0 or hot:
+    sys.exit("FAIL judge.sh: mcp-allowed — verdict %r rc %d non-empty %r, wanted clean / 0 / none"
+             % (a.get("verdict"), rc, hot))
+if a.get("allowed_mcp_calls") != 1:
+    sys.exit("FAIL judge.sh: mcp-allowed — allowed_mcp_calls %r, wanted 1: the call has to be\n"
+             "counted as the trusted server's, not merely left un-voided" % a.get("allowed_mcp_calls"))
+print("ok   judge.sh: mcp-allowed — the trusted server's own tool is counted, not voided")
 PY
     then passes=$((passes + 1)); else fails=$((fails + 1)); fi
 
@@ -967,7 +1016,7 @@ PY
         echo "selftest: ran $passes case(s), expected $WANT_CASES — the case list changed" >&2
         exit 1
     fi
-    echo "selftest: thirteen refusals and four greens hold ($passes cases)"
+    echo "selftest: fifteen refusals and five greens hold ($passes cases)"
 }
 
 case "$CMD" in
