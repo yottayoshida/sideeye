@@ -1,0 +1,9 @@
+# 候補スクリーニング用。候補表を書く前に「動的リンクか」「実際の書き込み操作で
+# スレッドを作るか」を実測する（2026-09-05 の run が買った ordering rule）。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates \
+      flac python3-mutagen miller shfmt fontforge fonts-dejavu-core lame
+
+WORKDIR /work

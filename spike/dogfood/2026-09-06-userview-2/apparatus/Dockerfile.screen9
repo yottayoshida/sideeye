@@ -1,0 +1,2 @@
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends strace file python3 ca-certificates ansible-core

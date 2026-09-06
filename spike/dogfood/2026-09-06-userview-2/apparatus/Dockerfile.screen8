@@ -1,0 +1,6 @@
+# screen 第8弾（slate 2 の残り2枠）。zstd --rm（圧縮して元を消す＝unlink を含む
+# write path）と bean-format -o（同じ名前へ書き戻す）。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates zstd beancount

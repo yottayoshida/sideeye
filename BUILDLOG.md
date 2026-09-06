@@ -2,6 +2,161 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — four targets outside a cohort: one PASS, and the far side of ADR 0005's flush boundary
+
+`spike/dogfood/2026-09-06-userview-2/`. The 2026-09-05 ordering rule held: screening
+linkage and threads before writing the candidate table cost about fifteen minutes and
+four image builds, and removed five candidates — three Go (`mlr` threads; `shfmt` and
+`dasel` static *and* threading), `ocrmypdf` (31 `execve` and 12 `clone` before the
+operation even started), and `sqlfluff` (pip-only, and pypi is unreachable behind this
+machine's TLS-intercepting proxy — the wall the joplin install hit yesterday).
+
+**The finding is a wall, and it is one this repository decided about a month ago.**
+metaflac and fontforge both refuse `oracle_missed_operation`, and in both the shim
+recorded the `open` and no `write` while the oracle saw a write of **exactly 4096
+bytes**. That is a full stdio buffer, not a flush. ADR 0005 chose flush granularity
+because "a flush of pending data normally issues exactly one `write(2)`", and named the
+exception in the same paragraph: a large `fwrite` writes *inside* the call. The targets
+it was measured on — taskwarrior, git's `COMMIT_EDITMSG` — sit on the near side of that
+boundary. Two of two C candidates that reached the engine here sit on the far side. The
+distinguishing property is not the language: `mogrify`, `qpdf` and `exiv2` reached
+verdicts on 2026-09-05 because they write through raw `open`/`write` rather than
+`FILE*`. Nothing is filed — the refusal is fail-closed and named, ADR 0005 documents the
+boundary rather than promising past it, and no clause of the §2.5 threshold is met.
+
+**The one verdict is a PASS, and the checker is why it means anything.** mutagen
+rewrites ID3 through `openat(O_RDWR)` with no temp file and no backup, so the file
+stays readable after a crash — a checker asserting "`mid3v2 -l` succeeds" would have
+passed in all ten worlds while examining nothing. The declared checker also requires
+that a tag written *before* the operation survives; the engine falsified it against
+corrupted state first. With that, 9 crash points plus the baseline all hold,
+`oracle_verified`, 123 in-scope syscall lines.
+
+**Slate 3: the contrast case arrives, and it changes what the other reports can say.**
+Four more asked for, three the rules allowed — every remaining candidate fails rule 1, 2,
+3 or 8, or has no install path here, and the rejection table is the result. isort PASS
+7/7, pyupgrade FAIL 1/3, jpegtran FAIL 1/3, filed as asottile/pyupgrade#1101 and
+libjpeg-turbo/libjpeg-turbo#914.
+
+**isort is why this slate was worth running.** It rewrites Python source in place, same
+as pyupgrade, and its trace is `openat(a.py, O_RDONLY)` → `openat(a.py.isorted, …TRUNC)` →
+`fchmodat(a.py.isorted, 0644)` → `renameat(a.py.isorted, a.py)`. Three extra lines and the
+window is gone. Every failure this run has found so far could have been read as "that is
+how tools of this kind are written" — the four FAILs all have the identical
+truncate-then-write shape — and one measurement in the same language, on the same day,
+takes that reading away. Both reports lead with the side-by-side trace instead of with the
+window.
+
+**The template has a gap and jpegtran found it.** `spike/upstream-report-template.md`
+branches three ways on what the crash leaves: recoverable in one command (open with "this
+is minor, closing is fine"), a broken state a human must repair, or nothing at all (no
+mitigating opening, because "minor" would be false). jpegtran is the third kind — 0 bytes,
+no copy — but the owner's instruction was to write it *closable*: the maintainer said on
+#856 that cjpeg/djpeg/jpegtran are example utilities, and that position is reasonable. So
+the report opens by agreeing with it and inviting a close, while refusing to call the
+finding minor. That is a fourth shape the page does not have a row for, and it is recorded
+in the run rather than quietly added to the template.
+
+**What slate 3 did not do: rule 11 for isort and pyupgrade.** Slates 1 and 2 measured
+first-response times on bug reports for every candidate they took. Slate 3 measured it
+only for jpegtran, because #856 was already open for the novelty check. A report went out
+against pyupgrade with the gating rule unmeasured. The finding does not depend on it —
+the window is in `_main.py` either way — but the slate is non-conformant and says so in
+both `SELECTION.md` and `RESULTS.md` rather than being written as though it were not.
+
+**Slate 2, the same day: three more targets, two counterexamples, two reports.** The
+owner asked for four more after slate 1 closed; three is what the rules allowed, and the
+rejection table says why every other candidate fell (threads, in every single case —
+sqlfluff, libvips, zstd, ansible, bundler, git-annex). fonttools FAIL 1/3 and bean-format
+FAIL 1/3, both the exiv2 shape, both leaving zero bytes with the original nowhere; bsdtar
+PASS 3/3 as the contrast, because `-uf` appends and never re-opens what is already in the
+archive. Filed as fonttools/fonttools#4170 and beancount/beancount#1051.
+
+**The beancount finding is the one worth remembering, and the checker is why it exists.**
+`bean-check` accepts the zero-byte ledger — an empty ledger is a valid ledger with no
+transactions — so a checker running only the project's own validator would have reported
+PASS on a file that had lost everything. The declared checker asserts the pre-existing
+transactions are still there, and that is the assertion that failed. Slate 1's PASS turned
+on the same discipline from the other side. Two runs, two verdicts that would have been
+worthless with the obvious checker.
+
+**Both reports carry a reproduction that needs neither a crash nor sideeye**:
+`( ulimit -f 0; bean-format --in-place l.beancount )` fails the write after the `open` has
+truncated, and leaves 0 bytes. That also let the `--in-place` branch on current `main` be
+*measured* rather than read — `format.py` at `5a27edd2` dropped in place of the packaged
+one, since `bean-format` does not parse the ledger — so the report says measured where the
+draft had said "read from the source".
+
+**And slate 1 got a rejection wrong.** sqlfluff was written off as "pip only, and pypi is
+unreachable here". `apt-cache policy sqlfluff` returns 3.3.1-1 in trixie. The pip failure
+was real and the conclusion drawn from it was about the wrong thing; the row is corrected
+in place and sqlfluff appears in slate 2's screen, where it fails on threads. Right by
+accident is the worst kind of right.
+
+**Three apparatus errors, and two of them printed nothing.** `--state` and `--work` have
+to exist before the engine is called rather than be created by `--setup`. `exec
+fontforge …` in a wrapper produced `child_process_detected` — the subject replaced its
+own image — which read exactly like #123's wall and was mine: passing the command to
+`--operation` directly is accepted at 3 operations. And twice an empty result came from
+an instrument that had not run: a Bugzilla query whose `f1/o1/v1` filter was silently
+ignored returned "0 bugs" for a project with five reports in the preceding fortnight,
+and `nm` — absent from the image — printed nothing for five binaries through a
+`2>/dev/null`, which reads identically to "these binaries reference no write functions".
+Neither empty answer was believed, but only because both were checked; a wall reported
+on the first attempt is a claim about the apparatus until the apparatus is varied.
+
+## 2026-09-06 — the patch upstream wrote for #8939 loses the file the report called safe
+
+The 2026-09-05 dogfood run filed `ImageMagick/ImageMagick#8939` as minor and invited
+closure: an interrupted in-place `mogrify` leaves the original name empty, and the bytes
+sit intact at `<file>~`, one rename from recovery. A maintainer reproduced it and merged a
+patch the same day. This entry is what measuring that patch found.
+
+**What it does.** A `link` at the original name, between the `rename` and the truncating
+`open`. That occupies the name again a few microseconds after the rename, which is the
+window the report described — but both names are then one inode, and the `O_TRUNC` on the
+next line empties the backup along with the target. The reported window also survives:
+crash point 2 of 5, between the `rename` and the `link`, still leaves no file at the name.
+
+**The verdict column says nothing.** Two builds by two checkers, and all four explorations
+say FAIL. Reading the verdicts alone would conclude the patch changed nothing. The
+separation is in `checker_earliest`: the invariant "either name holds an image `identify`
+can read" is true in every world under 7.1.1-43, and false at crash point 4 of 5 under
+3501ef34, where both names are 0 bytes with `links=2`. A run whose four verdicts agree can
+still be the whole finding, provided the checkers were written to disagree.
+
+**And it needs no crash.** `WriteImages` failing is a case the code already handles —
+`rename(backup_filename, image->filename)` puts the original back. Under the link there is
+nothing to put back. On a 200 KB tmpfs a failing `mogrify -resize 1600%` leaves both names
+holding 204,800 bytes of a partly-written PNG; 7.1.1-43 restores the original with a
+matching sha256. Four shell lines reproduce it, which makes it the more serious half of the
+finding and the easier half for a maintainer to check.
+
+**What went wrong here.** The first ENOSPC comparison printed "元画像と別物" for *both*
+builds. The equality test was written inside a single-quoted heredoc with `'"$ORIG"'`
+around it, so the shell expanded `$ORIG` on the host — where it did not exist — and every
+sha was compared against the empty string. The sha values themselves were printed and were
+correct, so the conclusion held, but the machine judgement was broken and the run was
+redone with the comparison inside the container. A check that prints its inputs beside its
+verdict is what made that visible; one printing only the verdict would have read as a
+result.
+
+**Two things deliberately not claimed.** `1a0d1b71` was never built. It added a
+`remove_utf8(image->filename)` on the success path that `3501ef34` removed five hours
+later, and what that line would have done under the link is a reading of the diff — the
+record says so rather than describing it as measured. And the reply upstream states a fix
+direction without claiming it works as written: the three details it names (the coder has
+to be explicit for a temp path, a fresh inode needs mode and ownership copied,
+`preserve-timestamp` moves to the temp file) are the reasons it is a direction and not a
+patch.
+
+**The reply departs from `spike/upstream-report-template.md` on purpose**, on the owner's
+call: it apologises for the first report withholding a fix direction, states one, and
+offers a PR conditional on being asked. The template's prohibition is about first reports,
+where a fix pitch arrives before the maintainer has confirmed the mechanism. Here the
+maintainer had already acted, and withholding the direction once is what produced the
+round.
+
 ## 2026-09-05 (ledger) — a report filed into neither record, and a scan that read a truncated window
 
 `andreafrancia/trash-cli#414` was filed 2026-09-04 and written into neither
@@ -40,6 +195,350 @@ What this does not do is close the gap. The check still holds two records to eac
 and reaches no tracker. Adding a tracker-side leg was considered and left as an option in
 the PR: it would need a maintained exclusion list for non-report issues, which is a second
 record that can fall out of date the same way the first one just did.
+## 2026-09-05 — v1.2.0, one day after v1.1.0
+
+Fourteen entries and ten commits since the tag (nineteen with the merges): four refusals that say more than they
+did, four seams out of `engine.zig`, and the dogfood ledger's first rows.
+
+**Why minor and not patch.** Two observable moves. `child_touched_state_dir`'s `message`
+carries the pid, the operation and the path where it used to carry one fixed sentence
+(#484), and a capture the parent cannot arrange is `SETUP_ERROR` naming the path where it
+used to arrive as `recording_run_failed` (#469). Neither touches a frozen surface — the
+`unknown_reason` set is unchanged and `docs/report-schema.md` never limited `SETUP_ERROR`
+by phase — so the freeze page needs no new row. `message` is documented as free-form prose
+whose presence is stable, which is exactly the licence this release spends.
+
+**The release notes are shorter than the CHANGELOG section for the first time on purpose.**
+v1.1.0 met the 125,000-character ceiling with 71 entries and named seven rather than
+reproducing them. Fourteen entries fit easily, but the notes are written rather than pasted
+here: the four `#491` entries say the same thing four times, which is right in a changelog
+and wrong in a release page.
+
+**What the version does not record**, again: `engine.zig` went 6,043 lines → 224 across four
+PRs, and nothing an operator can see moved. That is the point — the acceptance suite ran
+identically at every seam — but it means the diff between the tags is 6,000 lines of moved
+code with no behavioural entry to explain it. The `### Changed` block names each seam and
+its ADR for that reason.
+
+## 2026-09-05 (late) — child_touched_state_dir names what it saw, and #491's split is measured on it
+
+#484 is a refusal that was right and useless: "a process other than the subject performed
+a state-directory operation", with the pid, the operation and the path sitting in the
+trace reader's memory. The fix is small and that is the point of doing it now. The trace
+reader keeps the first foreign kill-point record (`first_foreign: ?Op`, set on the line
+that sets `foreign_kill_point`, borrowing from the trace buffer as `first_unsupported`
+does), and a helper in `main.zig` prints it at the three sites where the shim's trace is
+the witness. The oracle-witnessed site is left as it was: no trace record exists there to
+name, and the oracle's own line is #485's material.
+
+**The measurement #491 asked for.** The issue said the refactor would have helped when "a
+subsequent real change" is more local — fewer unrelated helpers and tests read or
+edited, and the trust argument stated without reaching across a boundary. This is that
+change, recorded as it was made: files edited, `src/engine/trace.zig` (a field, a line,
+three assertions in an existing test), `src/main.zig` (one helper, three call sites),
+`spike/acceptance.sh` (one assertion), and the documents; files read to make it,
+`trace.zig` around the decode loop and `TraceInfo`, `main.zig` at the four
+`child_touched_state_dir` sites and `unknown()`, `contract.zig` for `isKillPoint` and the
+`OpClass` vocabulary, `toy.c` for what the child writes, `acceptance.sh` for the leg;
+files not opened, `snapshot.zig`, `judge.zig`, `state_fs.zig`, `read.zig`. The one
+argument the change needs — that `Op.path` is alive when the report is written — is
+answered in `trace.zig`, where the decode loop dupes every path into the reader's arena,
+with `main.zig` using the new field the way it uses `first_unsupported`. (The first
+version of the field's doc said the path *borrows from the trace buffer*, copying the
+`.unsupported` arm's comment; the second review read the loop and found both wrong about
+who owns the bytes — the conclusion held, the reason did not. Both comments now say arena.) Before the split the same change would have
+meant finding the decode loop and the `TraceInfo` fields inside a 6,043-line file of
+which 4,745 lines — what remained after the trace reader left in the first seam — were the
+snapshot types, the walk, the restore and the judges; the lifetime sentence sat at line
+2,328 of that file and the decode loop that honours it at line 2,791, with the restore
+family before them and the judges after. That is the
+whole measurement: one file for the reader, one for the report, no boundary crossed.
+
+Two things the reviews added. The first version printed the child's path raw; every
+other target-controlled string that reaches the text report goes through
+`sanitizeForReport`, and a child naming its file after a report line could have forged
+one (#26's class) — the composed sentence now goes through the same choke point, with a
+unit test that feeds it a newline and an escape. And the issue's "what would close it"
+has a second sentence the first version skipped: when an oracle capture exists, say so.
+The journey's answer — `git maintenance run --auto` — was in `<work>/oracle.txt` the
+whole time; both witnesses' sentences now end by naming that file, and the two acceptance
+legs assert it.
+
+## 2026-09-05 (night, last) — the walk and the restore leave engine.zig, and the facade is all that is left
+
+The fourth and last seam of #491. What moves is everything that still had a body in
+`engine.zig` at `19067e2`: the walk with its caps, the destructive side — `restore`,
+`freshDir`, `corruptState` — and the root vets every one of them runs first. Nineteen
+public names, twenty-three private ones, thirty-one tests, 2,552 lines by line range.
+What stays is `WorldResult`, the test that pins the three read error sets together, and
+the checks on the facade.
+
+**The plan's first line ranges could not have been built.** A first-look reviewer read
+them against the file: the corruption probe — `corruption_probe`, its target,
+`corruptState`, `countCorruptible`, seventy-seven lines — was in none of them, and two of
+the ranges cut a doc comment from the declaration it belongs to (`SnapshotError`'s six
+lines left behind at the top, `corruption_probe`'s three carried off without the constant),
+which Zig refuses on both sides. The reviewer also found the range's end six lines into
+the trace facade's header comment. The ranges that shipped — 75–81, 89–1148, 1181–1288,
+1296–1474, 1490–2687 — were the reviewer's, confirmed by a second who concatenated them
+and counted: 2,552 lines, thirty-one tests, every one of the forty-two names inside,
+every one of the five things that stay outside.
+
+**One file, for two reasons that are not the reason the plan first gave.** The draft said
+the walk and the restore had to stay together because both use the root vets; the walk
+(255–415) names no vet — `freshDir` and `restore` are both on the destructive side. What
+does hold them together: `max_depth` is one constant with two meanings, the walk's descent
+bound and `deleteTreeAt`'s, and its doc comment has said so since ADR 0024; and the #122
+test that carries a symlink through `takeSnapshot`, `restore` and `corruptState` is one
+body. A split would put both on one side of a line the other side depends on.
+
+**`WorldResult` stays, and ADR 0049's open question closes on the facade.** It holds a
+kill's outcome — `k`, `term`, `landed`, a `?Violation` — and only `main.zig`'s world loop
+produces it. Moving it to `main.zig` would take a name off `engine.*`, which is not a move.
+So `engine.zig` after this change is not a pure facade: a five-entry module map, four
+re-export blocks, one struct, two named tests, the unnamed `refAllDecls` block, and one
+comptime scan.
+
+**Seven documents say the vets or the restore live in `engine.zig`, and none of their
+sentences is rewritten.** ADRs 0011, 0022, 0042 and 0046, `docs/freeze-audit.md`, and —
+found by the reviews, one each — 0048 ("five types … stay in `engine.zig`") and 0049 ("two
+things stay"). Each gets a parenthesis after the claim naming where the thing is now. The
+rule is the one the first three seams kept: a later ADR corrects, an earlier one is not
+edited into agreement. The sweep that found the last two ran over `.zig`, `.md` and `.sh`;
+the plan's first sweep had left `.sh` out, and two acceptance scripts named `engine.zig`
+for the vets — one of them by a function name (`assertRootUnchanged`) the code lost in a
+rename recorded in the CHANGELOG, fixed in passing.
+
+**Whether `posix.zig`'s tests stay collected in the engine root was the one unmeasured
+premise, and it held.** They were collected there because `engine.zig`'s own tests called
+`posix.*`; after the move neither remaining test does. The count says `refAllDecls` on the
+parts reaches `posix` transitively: engine root 126 → 127, the difference being the one
+new test below, not a loss of twenty-two. `build.zig`'s comment naming the engine root as
+the example stays true — the reach is now through the `refAllDecls` block, which is a test
+in `engine.zig`.
+
+**Baseline at HEAD `19067e2`, measured during the plan**: `zig build test` 548/550, engine
+root 126 + 1 skip, main root 182 + 1 skip, `^test "` 33 in `engine.zig`; acceptance 288
+`ok`, ALL PASSED, two NOT MEASURED (`chown`; `git` absent from the image).
+
+**After the move.** `engine.zig` 2,745 → 224 lines; `state_fs.zig` 2,604 lines, 32 tests
+(31 moved and the public-surface count), 19 public declarations, six imports. `zig build
+test` 550/552 — two more than the baseline, the new count test in both roots — with the
+engine root at 127 + 1 skip and main at 183 + 1 skip. Flipping `assertSafeRoot("/")`'s
+expectation in `state_fs.zig` fails one test in each root, named
+`engine.state_fs.test.assertSafeRoot rejects roots a mistake would produce`; dropping
+`pub` from the `corruption_probe_target` re-export stops both roots at `engine.zig does
+not re-export state_fs.corruption_probe_target`, deleting the line does the same, and
+making one alias `pub` fails the count test with `expected 19, found 20`. Acceptance: 288
+`ok`, the same two NOT MEASURED, and the two `ok` sets identical line for line.
+
+**What the first-look review of the diff found.** No code defect: the reviewer
+concatenated the five HEAD ranges against the new file and found them identical apart from
+two blank lines. What it found was in the paperwork. One of the seven documents,
+`docs/freeze-audit.md`, holds its table inside a generated block whose source is
+`spike/freeze-audit/audit.tsv`, and the hand-written parenthesis would have failed
+`render-audit.sh --check` and vanished at the next render — the note now lives in the
+TSV and the page is re-rendered from it, check green. Two comments left over from the
+first seam still named `engine.zig` for things that had already moved (`posix.zig` for
+`readWhole`, `main.zig` for the trace reader's collapse to an empty `TraceInfo`) — the
+sweep for this seam had been scoped to the walk and the restore, and they are fixed in
+passing. `build.zig`'s sentence about why the engine root collects `posix.zig`'s tests now
+names the `refAllDecls` block as the test that reaches them. And "the two tests left in
+this file", written inside the third — the unnamed `refAllDecls` block is a test too — is
+"two named tests" now, here and in the CHANGELOG.
+
+**What the second review found in the corrections.** Every first-round item confirmed,
+the bodies re-derived as byte-identical, and four more in the words: fixing the second
+`main.zig` comment had made "`main.zig` changes in one comment" false in two documents;
+two `build.zig` comments still named `engine.zig` as what reads the build options, when
+that is `state_fs.zig` now (one of the two had been stale since the first seam); the
+`refAllDecls` block's rewritten justification claimed every part's tests reach the root
+"through this block or not at all", which the facade walk thirty lines below contradicts
+by naming every part's declarations — the block's own job is `posix.zig`, and the
+comment says that now; and ADR 0050 named `docs/freeze-audit.md` as re-pointed without
+saying the table is generated from `spike/freeze-audit/audit.tsv`, leaving the next
+editor to make the same hand edit. All fixed, comment lines and prose only.
+
+## 2026-09-05 (night, later) — the judges leave engine.zig, and the order ADR 0048 wrote down is reversed
+
+Third seam of #491, and the first one where the plan's own reason for going in this order
+turned out to be empty. The draft said the walk and the restore had to come after the
+judges because the `#164 pin: restore goes loud` test reaches `judgeL0` and would be
+stranded otherwise. A first-look reviewer read the test: it calls `restore` once, and
+`judgeL0` appears in a comment above it. Measured properly, the two remaining regions name
+each other in code **zero times in both directions** — the judge region's `walk` and `read`
+are comments too. Either could have gone first. The order stands on what is left: about
+830 lines against 2,550, eight public names against nineteen, and five documents (ADRs
+0011, 0022, 0042, 0046 and `docs/freeze-audit.md`) that name where the root vets live and
+will have to be re-pointed when the walk and the restore move. The judges are named that
+way once, in a dated run record (`spike/assisted/buku/RUNLOG.md`), which stays as written
+— it says what was true when that run happened.
+
+That reverses ADR 0048, which had numbered them the other way — "seam 4 (`judge.zig`) will
+import `snapshot.zig`" — and ADR 0049 says so rather than editing 0048, the same way 0048
+recorded that 0047's prediction about the symlink tests did not hold. 0048 also said the
+judges would reach `scratchMatches` "through the facade"; they import `snapshot.zig`
+directly, and take four names from it by **private** alias so the forty-five `testSnapshot`
+call sites and forty-three `Snapshot` mentions keep their spelling. Those aliases have to
+stay private and the facade walk cannot see it if they do not: a `pub` alias would find the
+same name already re-exported from `snapshot.zig`, and the identity check would compare the
+same declaration to itself. The first draft answered that with a paragraph and a count in
+the plan; the second reviewer pointed out the plan lives in another repository, so
+`judge.zig` now ends with a test that counts its own public declarations. Making one alias
+`pub` fails it.
+
+**Two things stay that the word "judge" might claim.** `WorldResult` holds a `?Violation`
+but is a kill's outcome — `k`, `term`, `landed` — produced by `main.zig`'s world loop; it
+stays with the facade, and where it belongs after the last seam is that seam's call.
+`SnapshotError.ClassifyFailed` is raised by `walk` when an entry's kind cannot be
+classified; it shares a word with `classify` and nothing else.
+
+**Baseline at HEAD `a2cf824`, in the worktree, before the move**: `zig build test`
+546/548 (2 skipped), engine root 125 + 1 skip, main root 181 + 1 skip, `^test "` 57;
+acceptance in the aarch64 container as `--user 1000:1000`: 288 `ok`, ALL PASSED, two NOT
+MEASURED (`chown`, and `git` missing from the image at exit 127). Written down before the
+move so the post-move run has something to fail against.
+
+**After the move.** `engine.zig` 3,553 → 2,745 lines, `^test "` 57 → 33; `judge.zig` 877
+lines, 25 tests, eight public declarations, importing `std`, `../posix.zig` and
+`snapshot.zig`. `zig build test` **548/550** — two more than the baseline's 546, because
+the new public-surface test is collected in both the engine and main roots — with the
+per-root counts moving by exactly that one test (125 → 126, 181 → 182). Flipping one
+assertion in `judge.zig` fails one test in each root, named `engine.judge.test.ADR 0043:
+…`; making one alias `pub` fails the new test in each root with `expected 8, found 9`;
+dropping the `pub` from the `FileForm` re-export stops both roots at
+`engine.zig does not re-export judge.FileForm`, and deleting the line does the same. Acceptance: 288 `ok` and the same two NOT MEASURED, with
+one `ok` line differing in a number it measures about itself (a budgeted world took 1s at
+HEAD and 2s after, on a loaded laptop) — same check, same verdict. The first attempt at the
+`judge.zig` red flipped a string that does not appear in the file, so `sed` changed nothing
+and the suite stayed green: a seen-red that measures nothing looks exactly like a passing
+one, and the `git diff --numstat` printed beside it is what caught it.
+
+## 2026-09-05 (night) — the snapshot types leave engine.zig, after the issue was closed by mistake
+
+The trace seam (below) shipped with `Closes #491` in its commit message. #491 asks for one
+seam per change and names four candidate files; one of four was done. Nobody authorised
+the close — the line was copied from the two fixes shipped the same day, whose PR and
+issue had the same scope — and the issue was reopened within the hour. This entry is the
+second seam, and its commit and PR body say `Refs #491` and put no closing keyword in the
+same clause, negated or not, because GitHub closes on "not closed by" too.
+
+**Which seam is second was measured, not chosen.** Outside the seven line ranges that move,
+`engine.zig` at `2f7067d` spells `Snapshot` 54 times and `Entry` 4 times — the walk, the
+restore and the judges all take or build snapshots — while the moved code reaches outward
+to `Op` (29 times, already in `trace.zig`), `contract.isInsideDir` once, `posix.Kind` twice,
+and three small helpers. (The plan said 58 and 7. That count had excluded only the
+two big ranges and left the helper lines — `finalizeEntries` takes a `Snapshot`,
+`lessThanRel` two `Entry`s — on the outside, and the first-look reviewer re-measured it
+at the named revision. The direction of the argument does not move.) Every other candidate imports the snapshot types; the snapshot types
+import none of them. So extracting the walk, the restore or the judges first would have
+made each import `Snapshot` back from `engine.zig`, the cycle #491 names as the stop
+condition. The snapshot region had to go before any of them could. ADR 0047's prediction
+that "whichever region moves next will cross at least one" of the three symlink-agreement
+tests was written for the walk and restore regions and does not hold here: those tests
+exercise the producers, which stay.
+
+**Three helpers changed owner, and one fixture became public.** `lessThanRel` and
+`finalizeEntries` (walk region) are the sorted-unique invariant — sort, then refuse a list
+`find` cannot search — and both producers end in `finalizeEntries`, so it is `pub` in
+`snapshot.zig` and `takeSnapshotCapped` calls it through the facade. `scratchMatches`
+(judge region) is used by `diffSnapshotsExcept`; left with the judges it would have made
+`snapshot.zig` import them — the same cycle from the other side — so the predicate moved
+and the judges reach it through the facade. That edge is inverted, not removed. The
+`testSnapshot` fixture is used by the `find` tests that move and by forty-odd lines of
+judge tests that stay; it is `pub` rather than copied, because unlike `joinZ` (three
+lines, no claim) its claim is "built under the same finalizer as a real snapshot", and two
+copies would open a path for one to be built under weaker rules.
+
+**The promise was too wide as first written, and a first-look reviewer showed it false at
+merge.** "Owns the snapshot types" — but five types the walk fails or reports with stay:
+`SnapshotError`, `SnapshotCaps`, the two size diagnostics, `SnapshotDiag`. They are the
+producer's vocabulary (`SnapshotError` is returned by `charge`, `walk`, `takeSnapshot` and
+`takeSnapshotCapped` and nothing else), so they move with the walk, and the module map
+says `Entry` and `Snapshot` instead. The same review caught the region's end one doc
+comment too far (1099 instead of 1093 — the five lines that explain
+`EntriesNotSortedUnique` belong to `SnapshotError`), two test counts mixed (`^test ` 84
+against `^test "` 83), and a check whose "nothing references `OrderProblem` by name" was
+true only because the test that does reference it moves too; the check now sacrifices
+`Reconciled`, which nothing outside the moving bodies names. A second reviewer found the
+worktree path written relative — this repository has no `.claude/` and ignores none — and
+three more comments that the move would have made false ("the reconcile tests above",
+"the first part lives beside it", the facade test's own "nine names").
+
+**Built in a linked worktree**, because the shared checkout carried another session's open
+PR. `git branch -f auto/… origin/main` was checked to be a fast-forward first (the branch
+was an ancestor of `main`) and turned out to re-point the branch's upstream at
+`origin/main`, which a plain `git push` would then have targeted; it was set back to the
+branch's own remote before anything else.
+
+**Baseline at HEAD, in the worktree, before the move**: `zig build test` 546/548 (2
+skipped), engine root 125 pass + 1 skip, main root 181 pass + 1 skip; acceptance in the
+aarch64 container as `--user 1000:1000`: 288 `ok` lines, ALL PASSED, and two NOT MEASURED
+(`chown` needs root; `git` is not in the image — exit 127 — so the committed-logs leg is
+NOT MEASURED there whether the tree is a worktree or the checkout). These are the lines
+the post-move run has to reproduce exactly.
+
+**After the move, measured in the same worktree.** `engine.zig` 4,745 → 3,553 lines
+(twenty-seven names gone as bodies — fifteen public, two made public, ten private — and
+seventeen re-exports in their place, plus the facade scan the review asked for;
+`^test "` 83 → 57); `snapshot.zig` 1,282 lines, 26 tests, importing `std`, `contract`,
+`../posix.zig` and `trace.zig` and nothing else.
+The move is by line range and the bodies are byte-identical to HEAD's apart from the two
+`pub` keywords, one blank line added at the first join and one trailing blank line
+dropped (the second reviewer concatenated the seven HEAD ranges against the new file:
+1,247 lines against 1,247), and — after that review — two sentences in `testSnapshot`'s
+doc comment whose "below" and "here" the move had made false (its call sites are mostly
+the judge tests, which stayed).
+`zig build test` 546/548, engine root 125 + 1 skip, main root 181 + 1 skip — the baseline
+numbers. Flipping one assertion in `snapshot.zig` (the `scratchMatches` test's first
+`expect`, negated) fails exactly one test in each root, named
+`engine.snapshot.test.scratchMatches: …`; that is what says the moved tests are collected
+in both roots, and it is the same experiment ADR 0047 used. Deleting the `Reconciled`
+re-export — a name nothing outside the moved bodies spells — stops both roots at
+`engine.zig:3543:17: error: engine.zig does not re-export snapshot.Reconciled` (the line
+number is the final tree's; it moved as the test grew), which is the walk saying what a
+hand-written list would not have. Acceptance in the container: 288
+`ok`, the same two NOT MEASURED lines, and the set of `ok` lines identical to the
+baseline's. `main.zig`, `mcp.zig`, `trace.zig` and `read.zig` are not in the diff.
+
+**What the first-look review of the diff found.** No code defect in the move: the seven
+ranges are byte-identical, which the reviewer checked by concatenating them against the
+new file. What it found was in the words around it. One comment the move made false that
+the plan's sweep had missed: `SnapshotError`'s doc said "the sort above guarantees the
+first", and there is no sort above any more — the sort is `finalizeEntries`, in the other
+file; it now says so. The 58 / 7 count, above. "Five types whose names start with
+`Snapshot`" — two of the five do not. "Every producer finalizes through", in the promise
+itself: `snapWith`, the judge tests' fixture, builds a `Snapshot` from an already-ordered
+slice and never calls `finalizeEntries`, so "every" was a universal the code does not
+hold; the module map, the file header and the CHANGELOG say "the producers" now, the two
+the code calls by that name (`takeSnapshotCapped`, `testSnapshot`). And one hole in the
+facade test itself, inherited from #496: `@hasDecl` from inside `engine.zig` is true for a
+private declaration too, so `const Reconciled = snapshot.Reconciled;` without `pub` would
+have passed both the walk and the identity check while `main.zig` could not spell
+`engine.Reconciled`. The test now searches `std.meta.declarations(@This())`, which lists
+only public declarations, and the seen-red for it is exactly that private re-export.
+The first version of that scan stopped at `evaluation exceeded 1000 backwards branches`:
+a linear pass over this file's public names, byte-comparing each, is past Zig's default
+comptime budget, and the private-re-export red had *looked* right only because the
+`@compileError` for `Reconciled` was reported ahead of the budget error. The scan sets
+`@setEvalBranchQuota(100_000)` now, and the sequence green → private red → deleted red →
+green was run again from the top.
+
+**What the second review found in the corrections.** Every first-round item confirmed
+closed, and the scan's mechanics confirmed from the standard library's own use of the
+same call (`refAllDecls` walks `std.meta.declarations` of a file from inside it; the quota
+raised in the callee reaches the caller's evaluation, as `std/enums.zig` and
+`std/fmt.zig` do). Four things wrong in the words: this entry had said "seven blank
+lines" where the concatenation says one added and one dropped; a line number written
+before the test grew; the ADR's paragraph about the symlink-agreement tests called
+`restore` and `corruptState` "producers", which would make "the producers finalize
+through" false in the ADR's own vocabulary — they are the destructive side, and the
+sentence says so now; and `testSnapshot`'s doc comment, which the move had made false in
+the same way as `SnapshotError`'s ("Ten of the call sites below": they are in the other
+file now). The `Snapshot.find` doc's "every producer sorts and validates" and "the two
+places snapshots are built" are also not true of `snapWith`, but they were not true at
+HEAD either — `snapWith` predates this change — and a move that edits what it moves
+stops being checkable as a move; they are left as found and recorded in the PR body.
 
 ## 2026-09-05 (evening) — the trace reader leaves engine.zig, and the plan was wrong twice about how tests are collected
 

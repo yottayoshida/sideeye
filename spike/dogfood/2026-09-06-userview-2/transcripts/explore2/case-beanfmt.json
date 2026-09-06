@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.2.0",
+  "contract_version": 13,
+  "define": {
+    "state": "/work/st2/bc",
+    "setup": "/work/ap2/setup-bean.sh",
+    "operation": "bean-format -o /work/st2/bc/l.beancount /work/st2/bc/l.beancount",
+    "check": "/work/ap2/check-bean.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/work/st2/bc/l.beancount",
+  "before_class": "write",
+  "before_path": "/work/st2/bc/l.beancount",
+  "violation": "hybrid"
+}

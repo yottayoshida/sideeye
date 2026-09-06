@@ -1,0 +1,10 @@
+元画像: 98852 bytes  sha256=55e8416f3f3a503e
+
+=== Debian 7.1.1-43 (patch 前) ===
+  mogrify rc=1
+  /tiny/img1.png  98852 bytes  links=1  sha=55e8416f3f3a503e  元画像と同一  完全にデコードできる
+  /tiny/img1.png~  存在しない
+=== main 3501ef34 (patch 後) ===
+  mogrify rc=1
+  /tiny/img1.png  204800 bytes  links=2  sha=2cff5b38c53343d2  元画像と別物  デコードが途中で失敗
+  /tiny/img1.png~  204800 bytes  links=2  sha=2cff5b38c53343d2  元画像と別物  デコードが途中で失敗
