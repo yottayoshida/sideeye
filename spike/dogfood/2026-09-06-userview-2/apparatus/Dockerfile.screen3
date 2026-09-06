@@ -1,0 +1,9 @@
+# screen 第3弾: 4件目の枠。gpac(MP4Box, C, 動画コンテナ) と ocrmypdf(Python, 文書処理)。
+# ocrmypdf は ghostscript/tesseract を subprocess で呼ぶ設計なので child 壁を予測している
+# ——予測を測るのがこの screen の役目（前回の run が buy した ordering rule）。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates ffmpeg ocrmypdf
+
+WORKDIR /work

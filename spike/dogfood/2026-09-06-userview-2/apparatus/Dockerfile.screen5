@@ -1,0 +1,7 @@
+# screen 第5弾: 4件目に決まった mupdf(mutool)。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates mupdf-tools
+
+WORKDIR /work

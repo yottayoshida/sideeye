@@ -2,6 +2,109 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — four targets outside a cohort: one PASS, and the far side of ADR 0005's flush boundary
+
+`spike/dogfood/2026-09-06-userview-2/`. The 2026-09-05 ordering rule held: screening
+linkage and threads before writing the candidate table cost about fifteen minutes and
+four image builds, and removed five candidates — three Go (`mlr` threads; `shfmt` and
+`dasel` static *and* threading), `ocrmypdf` (31 `execve` and 12 `clone` before the
+operation even started), and `sqlfluff` (pip-only, and pypi is unreachable behind this
+machine's TLS-intercepting proxy — the wall the joplin install hit yesterday).
+
+**The finding is a wall, and it is one this repository decided about a month ago.**
+metaflac and fontforge both refuse `oracle_missed_operation`, and in both the shim
+recorded the `open` and no `write` while the oracle saw a write of **exactly 4096
+bytes**. That is a full stdio buffer, not a flush. ADR 0005 chose flush granularity
+because "a flush of pending data normally issues exactly one `write(2)`", and named the
+exception in the same paragraph: a large `fwrite` writes *inside* the call. The targets
+it was measured on — taskwarrior, git's `COMMIT_EDITMSG` — sit on the near side of that
+boundary. Two of two C candidates that reached the engine here sit on the far side. The
+distinguishing property is not the language: `mogrify`, `qpdf` and `exiv2` reached
+verdicts on 2026-09-05 because they write through raw `open`/`write` rather than
+`FILE*`. Nothing is filed — the refusal is fail-closed and named, ADR 0005 documents the
+boundary rather than promising past it, and no clause of the §2.5 threshold is met.
+
+**The one verdict is a PASS, and the checker is why it means anything.** mutagen
+rewrites ID3 through `openat(O_RDWR)` with no temp file and no backup, so the file
+stays readable after a crash — a checker asserting "`mid3v2 -l` succeeds" would have
+passed in all ten worlds while examining nothing. The declared checker also requires
+that a tag written *before* the operation survives; the engine falsified it against
+corrupted state first. With that, 9 crash points plus the baseline all hold,
+`oracle_verified`, 123 in-scope syscall lines.
+
+**Slate 3: the contrast case arrives, and it changes what the other reports can say.**
+Four more asked for, three the rules allowed — every remaining candidate fails rule 1, 2,
+3 or 8, or has no install path here, and the rejection table is the result. isort PASS
+7/7, pyupgrade FAIL 1/3, jpegtran FAIL 1/3, filed as asottile/pyupgrade#1101 and
+libjpeg-turbo/libjpeg-turbo#914.
+
+**isort is why this slate was worth running.** It rewrites Python source in place, same
+as pyupgrade, and its trace is `openat(a.py, O_RDONLY)` → `openat(a.py.isorted, …TRUNC)` →
+`fchmodat(a.py.isorted, 0644)` → `renameat(a.py.isorted, a.py)`. Three extra lines and the
+window is gone. Every failure this run has found so far could have been read as "that is
+how tools of this kind are written" — the four FAILs all have the identical
+truncate-then-write shape — and one measurement in the same language, on the same day,
+takes that reading away. Both reports lead with the side-by-side trace instead of with the
+window.
+
+**The template has a gap and jpegtran found it.** `spike/upstream-report-template.md`
+branches three ways on what the crash leaves: recoverable in one command (open with "this
+is minor, closing is fine"), a broken state a human must repair, or nothing at all (no
+mitigating opening, because "minor" would be false). jpegtran is the third kind — 0 bytes,
+no copy — but the owner's instruction was to write it *closable*: the maintainer said on
+#856 that cjpeg/djpeg/jpegtran are example utilities, and that position is reasonable. So
+the report opens by agreeing with it and inviting a close, while refusing to call the
+finding minor. That is a fourth shape the page does not have a row for, and it is recorded
+in the run rather than quietly added to the template.
+
+**What slate 3 did not do: rule 11 for isort and pyupgrade.** Slates 1 and 2 measured
+first-response times on bug reports for every candidate they took. Slate 3 measured it
+only for jpegtran, because #856 was already open for the novelty check. A report went out
+against pyupgrade with the gating rule unmeasured. The finding does not depend on it —
+the window is in `_main.py` either way — but the slate is non-conformant and says so in
+both `SELECTION.md` and `RESULTS.md` rather than being written as though it were not.
+
+**Slate 2, the same day: three more targets, two counterexamples, two reports.** The
+owner asked for four more after slate 1 closed; three is what the rules allowed, and the
+rejection table says why every other candidate fell (threads, in every single case —
+sqlfluff, libvips, zstd, ansible, bundler, git-annex). fonttools FAIL 1/3 and bean-format
+FAIL 1/3, both the exiv2 shape, both leaving zero bytes with the original nowhere; bsdtar
+PASS 3/3 as the contrast, because `-uf` appends and never re-opens what is already in the
+archive. Filed as fonttools/fonttools#4170 and beancount/beancount#1051.
+
+**The beancount finding is the one worth remembering, and the checker is why it exists.**
+`bean-check` accepts the zero-byte ledger — an empty ledger is a valid ledger with no
+transactions — so a checker running only the project's own validator would have reported
+PASS on a file that had lost everything. The declared checker asserts the pre-existing
+transactions are still there, and that is the assertion that failed. Slate 1's PASS turned
+on the same discipline from the other side. Two runs, two verdicts that would have been
+worthless with the obvious checker.
+
+**Both reports carry a reproduction that needs neither a crash nor sideeye**:
+`( ulimit -f 0; bean-format --in-place l.beancount )` fails the write after the `open` has
+truncated, and leaves 0 bytes. That also let the `--in-place` branch on current `main` be
+*measured* rather than read — `format.py` at `5a27edd2` dropped in place of the packaged
+one, since `bean-format` does not parse the ledger — so the report says measured where the
+draft had said "read from the source".
+
+**And slate 1 got a rejection wrong.** sqlfluff was written off as "pip only, and pypi is
+unreachable here". `apt-cache policy sqlfluff` returns 3.3.1-1 in trixie. The pip failure
+was real and the conclusion drawn from it was about the wrong thing; the row is corrected
+in place and sqlfluff appears in slate 2's screen, where it fails on threads. Right by
+accident is the worst kind of right.
+
+**Three apparatus errors, and two of them printed nothing.** `--state` and `--work` have
+to exist before the engine is called rather than be created by `--setup`. `exec
+fontforge …` in a wrapper produced `child_process_detected` — the subject replaced its
+own image — which read exactly like #123's wall and was mine: passing the command to
+`--operation` directly is accepted at 3 operations. And twice an empty result came from
+an instrument that had not run: a Bugzilla query whose `f1/o1/v1` filter was silently
+ignored returned "0 bugs" for a project with five reports in the preceding fortnight,
+and `nm` — absent from the image — printed nothing for five binaries through a
+`2>/dev/null`, which reads identically to "these binaries reference no write functions".
+Neither empty answer was believed, but only because both were checked; a wall reported
+on the first attempt is a claim about the apparatus until the apparatus is varied.
+
 ## 2026-09-06 — the patch upstream wrote for #8939 loses the file the report called safe
 
 The 2026-09-05 dogfood run filed `ImageMagick/ImageMagick#8939` as minor and invited

@@ -1,0 +1,8 @@
+# screen 第10弾（slate 3）。isort / pyupgrade (Python formatter 系)、
+# jpegtran (C, libjpeg-turbo)、pngfix (C, libpng)。
+# 3 軸: linkage / threads / write が stdio か raw か。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates \
+      isort pyupgrade libjpeg-turbo-progs libpng-tools

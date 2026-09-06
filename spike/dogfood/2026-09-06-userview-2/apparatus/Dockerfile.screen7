@@ -1,0 +1,8 @@
+# screen 第7弾（slate 2 の残り枠）。言語を散らす:
+# bsdtar(C, libarchive) / bundler(Ruby) / git-annex(Haskell)。
+# Ruby と Haskell はこの repo に linkage/thread の記録が無い。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates git \
+      libarchive-tools ruby-bundler ruby git-annex

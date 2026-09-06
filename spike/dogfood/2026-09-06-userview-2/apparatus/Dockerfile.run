@@ -1,0 +1,10 @@
+# 2026-09-06 dogfood run の箱。sideeye 本体は入れない（ホストからクロスビルドしてマウント）。
+# 4 対象: metaflac(flac) / mid3v2(python3-mutagen) / fontforge / mutool(mupdf-tools)。
+# apt lists の掃除はしない（omamori がホスト側で rm -rf の文字列を止めるため）。
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates \
+      flac python3-mutagen fontforge fonts-dejavu-core lame mupdf-tools
+
+WORKDIR /work
