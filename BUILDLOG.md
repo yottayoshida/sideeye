@@ -2,6 +2,126 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — a PASS over one crash point says so where the zero case says it (#487)
+
+Written as the work starts. The defect is not that the number is missing — it is in the
+account block, and has been. It is that the number is only there: #487's reporter read the
+ordinary PASS verdict line, took it for a real result, and spent a full exploration and a
+wrong conclusion ("trash-cli holds") before noticing `crash points 1`. The corrected define
+answers **FAIL 2 of 7**.
+
+**Zero already has the register this needs.** `n == 0` replaces the verdict line outright —
+`PASS  the operation performed nothing that can change the judged state` — and
+`docs/scouting.md` names that as the tell for an environment variable the engine's launch
+did not carry. One has nothing.
+
+**And `preflight` already names the count on its own headline**: `recording accepted —
+{d} state-changing operation(s) observed`, with a separate sentence for zero. So this is not
+a new register, it is explore catching up with a sibling command. The plan's first draft
+had that backwards — it argued preflight *should* report the count, as though it did not —
+and the review caught it.
+
+**The first draft also put the sentence in the account block**, which is exactly where the
+reporter's eyes had already passed over the number. Making that layer thicker is not an
+answer to "the only way to notice is to spot the count in the account block". It goes on the
+verdict line.
+
+Two things the reviews established that the plan could not have argued from a reading:
+
+- **What lands on one crash point, and what cannot.** `isKillPoint` and `isMutation` agree on
+  write, rename, unlink, truncate, mkdir, rmdir, link and symlink, so a lone one of any of
+  those is one crash point and one mutation — a bare `unlink` is the shape chosen here, not
+  the only one available. What is ruled out is anything built on `write_file()`: `open` and
+  `write` are counted separately so that is two. An open-only mode is out for a different
+  reason — `isMutation` excludes `open`, so nothing is recorded, and an open that writes
+  nothing changes nothing, which passes over an untouched state rather than tripping
+  `state_changed_without_ops` (that needs a changed state to fire). The new mode deletes one
+  file init made and returns before `cmd_rotate`, which ends in `write_file` + `rename` and
+  would put the floor at four. (The first draft of this paragraph said "only a bare unlink",
+  which the diff review measured against the two predicates and found false.)
+- **The PASS verdict line has an anchored matcher after all** (`spike/acceptance.sh:555`,
+  `^PASS  …invariant$` against `head -1`). The plan claimed, as measured, that none existed;
+  it had looked at lines 528-545 and the match sits at 555. It does not break today because
+  that leg drives toy-fixed at four crash points — the invariant is "do not hand an anchored
+  verdict-line matcher a define with `n == 1`", which is not what the plan wrote down.
+
+**Measured, in the aarch64 container as `--user 1000:1000`**: 290 `ok`, 0 `FAIL`, with the
+two NOT MEASURED this host always reports. Then each leg on its own mutant:
+
+- **The clause never appears** (`if (false and n == 1)`): `one-crash-point` fails alone —
+  *"the verdict line does not name the count: PASS  2/2 explored worlds satisfied the
+  built-in atomicity invariant"*.
+- **The clause always appears** (`n >= 1`): **two** legs fail, and the second is the one
+  worth writing down. The control catches it ("the clause appears on a run with 4 crash
+  points") and so does **#150's PASS-side structural pin**: `FAIL #150 PASS-side structural
+  pin: rc=0 headline shape: 'PASS  5/5 … invariant, over a single crash point'`. That pin is
+  the anchored matcher this plan had claimed, *as measured*, did not exist. It does, at
+  `acceptance.sh:555`, and the review found it by reading further than the draft had. The
+  new leg's comment now carries the invariant it implies.
+
+**The third mutant did not apply on the first attempt, and the run came back with zero
+failures.** The `python3 -c` that was supposed to move the advice into the multiline literal
+had its backslashes eaten by the shell, so `s.count(old)` was 0, the assert fired, and the
+suite ran against an unmutated tree — reporting `total FAIL: 0`, which reads exactly like
+"the leg held". It did not hold anything; nothing had changed. Re-run from a file instead of
+`-c`, with the anchor as a raw string.
+
+Re-run that way, **the advice moved inside the literal** (`\      {s}` with an empty string)
+fails `one-crash-point` alone — *"the report carries a whitespace-only line — the advice is
+inside the literal"* — and both wording legs stay green through it, which is the whole reason
+that leg exists. Three legs, three mutants, one failure each except the always-on clause,
+which trips two. Restored file byte-identical to the measured tree, sha256 checked.
+
+**The diff review took the advice line apart, and it was pointing at a flag two of its three
+callers refuse.** It said to check that the store resolves inside `--state`. `replay` takes
+its define from the case file and rejects the define-surface flags outright
+(`main.zig:2058`); `--config` is mutually exclusive with `--state` (`:2217`). Only the flag
+form of `explore` could act on that sentence, and the recommended shape — a `sideeye.toml`,
+which is one of the five frozen surfaces — is one of the two that could not. It says "the
+judged state directory" now, which is true from all three.
+
+**The same round measured a universal claim in this entry false.** "Only a bare `unlink`
+lands on one crash point" — `isKillPoint` and `isMutation` agree on write, rename, unlink,
+truncate, mkdir, rmdir, link and symlink, so a lone one of any of those does too. The reason
+given (open and write are separate, `isMutation` excludes open) rules out the `write_file()`
+shapes and nothing more. The paragraph above is the corrected one; this is the second entry
+in two PRs where the sentence that went wrong was the one claiming a measurement, and both
+times it was a scope that had not been swept — line range then, predicate set now.
+
+Re-measured after those corrections: 290 `ok`, 0 `FAIL`, unchanged.
+
+**The confirmation round found the advice line had no check at all.** Three legs, three
+mutants, and every one of them reads the *verdict* line — delete
+`saySingleCrashPointNote(n);` and all three stay green, while `CHANGELOG.md` and
+`docs/scouting.md` both promise the line is printed. That is the same shape both plan reviews
+caught before any code existed (a test that does not reach what the change added), arriving
+this time through the back door: the legs were written against the half of the change that
+was easy to grep. The leg now asserts the advice text, and the control asserts its absence.
+
+**Two more sentences here were stronger than what they rest on.** "A mode that only opens
+trips `state_changed_without_ops`" — that refusal needs a *changed* state with no recorded
+mutation (`main.zig:3113`), and an open that writes nothing changes nothing, so it passes
+over an untouched state instead. And `docs/scouting.md`'s new "zero means the store landed
+wholly outside the judged directory" is contradicted by a comment three lines from the zero
+headline itself: a chmod-only operation lands on zero with its store entirely inside. Both
+were written while *correcting* an earlier inaccuracy, which is where this entry keeps
+finding them.
+
+The advice's wording also named `--state`, a flag `replay` and `--config` both refuse, and
+then — corrected — named "the judged state directory", a term this repository does not use
+anywhere else. It says "the state directory" now, which `DESIGN.md` and `config.zig` do.
+
+**A fourth mutant, and the restore that did not restore.** Removing the
+`saySingleCrashPointNote(n);` call fails the one-crash-point leg alone, which is what the new
+assertion is for — before it, that mutant was green everywhere. The revert step then failed
+silently in the same way the third mutant's application had: a `python3 -c` whose `\n` was
+eaten by the shell, so `rindex` raised, the script printed a traceback the caller did not
+read as fatal, and the tree was left with the call still deleted. `RESTORE: MISMATCH` was
+printed and is the only reason it was caught. Restored by hand, verified by counting the call
+(one) and reading the diff's deleted lines (two, both from the format literal being replaced).
+**Twice in one PR, an in-line python heredoc lost a backslash and reported success-shaped
+output.** Anything that mutates and restores gets a file, not a `-c`.
+
 ## 2026-09-06 — the trace open refuses what it can see is not an ordinary file (#492)
 
 Written as the work starts, per this repository's contract; it will grow as the work does.

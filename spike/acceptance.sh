@@ -4008,6 +4008,95 @@ fi
 # binaries. What it does not cover — here as there — is the child loading the shim: the
 # `.spawned` witness is about the child finishing, not about what it loaded.
 
+# #487: a PASS over exactly one crash point says so on its verdict line.
+#
+# Zero already had this — `PASS  the operation performed nothing that can change the judged
+# state` — and `docs/scouting.md` names it as the tell for a store that resolved outside
+# `--state`. One had the count in the account block and nowhere else, which is where #487's
+# reporter read past it: a full exploration and the conclusion "trash-cli holds", against a
+# corrected define that answers FAIL 2 of 7.
+#
+# `TOY_ONE_UNLINK` is the only mode in `toy.c` that reaches one, not the only shape that
+# could: `isKillPoint` and `isMutation` agree on eight classes, and `docs/target-classes.md`
+# records papis reaching one through a lone `renameat`. What it rules out is `write_file()`,
+# which is two — `open` and `write` are separate kill points.
+#
+# **Do not hand an anchored verdict-line matcher a define with one crash point.** The #150
+# structure pin — `^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity
+# invariant$` against `head -1`, at line 557, some three thousand lines ABOVE this — drives
+# toy-fixed at four crash points and would fail on this define, because the clause is part of
+# the line it anchors.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_ONE_UNLINK=1 export TOY_ONE_UNLINK
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_ONE_UNLINK
+cp=$(echo "$o" | grep -o 'crash points [0-9][0-9]*' | awk '{print $3}')
+if [ "$rc" != "0" ]; then
+    echo "FAIL one-crash-point: the run did not PASS (exit $rc), so its verdict line proves nothing"
+    echo "$o" | sed 's/^/     | /' | head -3
+    fails=$((fails + 1))
+elif [ "${cp:-0}" != "1" ]; then
+    echo "FAIL one-crash-point: the toy produced ${cp:-no} crash point(s), not 1 — nothing was measured"
+    fails=$((fails + 1))
+elif ! echo "$o" | head -1 | grep -q "over a single crash point"; then
+    echo "FAIL one-crash-point: the verdict line does not name the count: $(echo "$o" | head -1)"
+    fails=$((fails + 1))
+elif ! echo "$o" | grep -q "check that the target's store resolves inside the state directory"; then
+    # The advice is a second call, and without this arm nothing in the suite reaches it:
+    # deleting `saySingleCrashPointNote` would leave all three legs green while CHANGELOG
+    # and docs/scouting.md both promise the line is there.
+    echo "FAIL one-crash-point: the verdict line names the count, but the advice line is missing"
+    fails=$((fails + 1))
+else
+    echo "ok   a PASS over one crash point says so on its verdict line, with the advice under it (#487)"
+fi
+
+# The control, and it has to be a PASS. toy-bug would be the obvious choice and is the wrong
+# one: it FAILs, so there is no PASS block at all and an absence-of-wording check would pass
+# against an implementation that prints the clause unconditionally. Same toy as the leg
+# above, without the one-unlink mode, so the only difference is the crash point count.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+# Held in its own name here, beside the run that produced it, rather than after the checks
+# below: the whitespace check wants THIS run's output (the `n != 1` side, where an empty
+# `{s}` would print), and anything inserted between the run and the assignment would
+# redirect it silently.
+o_ctl=$o
+cp=$(echo "$o" | grep -o 'crash points [0-9][0-9]*' | awk '{print $3}')
+if [ "$rc" != "0" ]; then
+    echo "FAIL one-crash-point control: the run did not PASS (exit $rc)"
+    fails=$((fails + 1))
+elif [ "${cp:-0}" -lt 2 ]; then
+    echo "FAIL one-crash-point control: ${cp:-no} crash point(s) — the control needs more than one"
+    fails=$((fails + 1))
+elif echo "$o" | head -1 | grep -q "over a single crash point"; then
+    echo "FAIL one-crash-point control: the clause appears on a run with $cp crash points"
+    fails=$((fails + 1))
+elif echo "$o" | grep -q "check that the target's store resolves inside the state directory"; then
+    echo "FAIL one-crash-point control: the advice appears on a run with $cp crash points"
+    fails=$((fails + 1))
+else
+    echo "ok   a PASS over $cp crash points carries neither the clause nor the advice (control)"
+fi
+
+# The advice line is emitted by a separate call rather than as a `{s}` inside the report's
+# multiline literal, because `\      {s}` prints six spaces on every PASS where the string is
+# empty — and both checks above grep for wording, so neither would ever see that. This one
+# does. A whitespace-ONLY line, not a blank one: the report ends its block with a genuine
+# empty line, which is not the failure being looked for.
+if echo "$o_ctl" | grep -qE '^ +$'; then
+    echo "FAIL one-crash-point: the control's report carries a whitespace-only line — the advice is inside the literal"
+    fails=$((fails + 1))
+else
+    echo "ok   the control's PASS carries no whitespace-only line (#487, the shape the wording checks cannot see)"
+fi
+
 # A case recorded under the previous contract refuses honestly. The fixture is a REAL
 # case generated by the current writer with only contract_version mutated to 7 — a
 # hand-written fixture could pass this check by merely failing to parse.
