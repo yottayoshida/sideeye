@@ -2,6 +2,48 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-06 — four targets outside a cohort: one PASS, and the far side of ADR 0005's flush boundary
+
+`spike/dogfood/2026-09-06-userview-2/`. The 2026-09-05 ordering rule held: screening
+linkage and threads before writing the candidate table cost about fifteen minutes and
+four image builds, and removed five candidates — three Go (`mlr` threads; `shfmt` and
+`dasel` static *and* threading), `ocrmypdf` (31 `execve` and 12 `clone` before the
+operation even started), and `sqlfluff` (pip-only, and pypi is unreachable behind this
+machine's TLS-intercepting proxy — the wall the joplin install hit yesterday).
+
+**The finding is a wall, and it is one this repository decided about a month ago.**
+metaflac and fontforge both refuse `oracle_missed_operation`, and in both the shim
+recorded the `open` and no `write` while the oracle saw a write of **exactly 4096
+bytes**. That is a full stdio buffer, not a flush. ADR 0005 chose flush granularity
+because "a flush of pending data normally issues exactly one `write(2)`", and named the
+exception in the same paragraph: a large `fwrite` writes *inside* the call. The targets
+it was measured on — taskwarrior, git's `COMMIT_EDITMSG` — sit on the near side of that
+boundary. Two of two C candidates that reached the engine here sit on the far side. The
+distinguishing property is not the language: `mogrify`, `qpdf` and `exiv2` reached
+verdicts on 2026-09-05 because they write through raw `open`/`write` rather than
+`FILE*`. Nothing is filed — the refusal is fail-closed and named, ADR 0005 documents the
+boundary rather than promising past it, and no clause of the §2.5 threshold is met.
+
+**The one verdict is a PASS, and the checker is why it means anything.** mutagen
+rewrites ID3 through `openat(O_RDWR)` with no temp file and no backup, so the file
+stays readable after a crash — a checker asserting "`mid3v2 -l` succeeds" would have
+passed in all ten worlds while examining nothing. The declared checker also requires
+that a tag written *before* the operation survives; the engine falsified it against
+corrupted state first. With that, 9 crash points plus the baseline all hold,
+`oracle_verified`, 123 in-scope syscall lines.
+
+**Three apparatus errors, and two of them printed nothing.** `--state` and `--work` have
+to exist before the engine is called rather than be created by `--setup`. `exec
+fontforge …` in a wrapper produced `child_process_detected` — the subject replaced its
+own image — which read exactly like #123's wall and was mine: passing the command to
+`--operation` directly is accepted at 3 operations. And twice an empty result came from
+an instrument that had not run: a Bugzilla query whose `f1/o1/v1` filter was silently
+ignored returned "0 bugs" for a project with five reports in the preceding fortnight,
+and `nm` — absent from the image — printed nothing for five binaries through a
+`2>/dev/null`, which reads identically to "these binaries reference no write functions".
+Neither empty answer was believed, but only because both were checked; a wall reported
+on the first attempt is a claim about the apparatus until the apparatus is varied.
+
 ## 2026-09-06 — the patch upstream wrote for #8939 loses the file the report called safe
 
 The 2026-09-05 dogfood run filed `ImageMagick/ImageMagick#8939` as minor and invited

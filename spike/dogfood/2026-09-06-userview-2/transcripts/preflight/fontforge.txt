@@ -1,0 +1,28 @@
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       not run (no --oracle given)
+processes    not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+
+next         sideeye explore --state /work/st/ff --setup "/work/ap/setup-ttf.sh" --operation "fontforge -lang=ff -c Open("/work/st/ff/f.ttf");Generate("/work/st/ff/f.ttf"); " \
+               --check <your-invariant.sh> --shim /se/lib/libsideeye_shim.so --oracle /usr/bin/strace
