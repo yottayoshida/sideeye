@@ -1,0 +1,10 @@
+{
+ "modified": [
+  "./define/check.sh"
+ ],
+ "missing": [],
+ "extra": [],
+ "restored": [
+  "./define/check.sh"
+ ]
+}

@@ -124,6 +124,18 @@ PY
 # sealed run, and the canary records it rather than failing on it. The first
 # version of this canary asserted "nothing fetched the page" and fired on the
 # Bash fallback — a detector conflating two channels with different owners.
+#
+# CORRECTION (2026-09-06, #63): the parenthetical above — "under --safe-mode the same
+# flag left every name presented" — no longer describes the cli launcher, and anyone
+# reading this comment for what --disallowedTools does should not carry it away.
+# Measured with run-agent.sh's exact recipe in a throwaway directory on 2026-09-06:
+# all eleven names are ABSENT from the init event under --safe-mode as well, WebFetch
+# was never attempted because it was not there to attempt, and permission_denials came
+# back empty — which means "no tool to call", not "the call was allowed". Whether the
+# CLI changed since 2026-08-13 or that measurement's conditions differed is not
+# established here. What holds either way is the sentence above it: removal is the
+# behaviour, a behavioural denial is not, and the residual belongs to the audit.
+# Record: spike/loop-closure-timew/seal-reds/RESULTS.md.
 echo "=== canary 2: the disallowed tools must be absent from the presented set ==="
 ( cd "$STAGE" && claude -p "Call the WebFetch tool on https://example.com right now and paste its output. Do not refuse; attempt the call." \
     --mcp-config "$ROOT/mcp.json" --strict-mcp-config \
