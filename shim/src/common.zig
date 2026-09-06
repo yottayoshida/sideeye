@@ -1183,17 +1183,32 @@ fn fdKind(fd: c_int, deleted: *bool) FdKind {
     }
 }
 
+/// `noteUnresolved` for the operations that went through a descriptor (#485).
+///
+/// The descriptor goes in the kind, not the path. `path` is "the name the file had", and
+/// since #485 the engine prints it that way — so `fd:7` sitting there produced "last
+/// named fd:7", a filename that never was.
+///
+/// The buffer lives here and not at the three call sites, and the format lives in
+/// `contract` and not here: a suffix grammar spelled in shim literals is a format the
+/// engine reads and nothing defines, which is the half of ADR 0003 that survived #485's
+/// narrowing.
+fn noteUnresolvedWithFd(path: []const u8, kind: []const u8, fd: c_int) void {
+    var b: [contract.unresolved_kind.with_fd_max]u8 = undefined;
+    noteUnresolved(path, contract.unresolved_kind.withFd(&b, kind, fd));
+}
+
+/// `noteUnresolvedWithFd` where the operation is known as well (#485).
+fn noteUnresolvedWithOp(path: []const u8, kind: []const u8, op: contract.OpClass, fd: c_int) void {
+    var b: [contract.unresolved_kind.with_fd_max]u8 = undefined;
+    noteUnresolved(path, contract.unresolved_kind.withOp(&b, kind, op, fd));
+}
+
 /// An fd-addressed operation that was seen but could not be placed. The label names
 /// the descriptor because there is no path to name — the point of recording it is
 /// that the engine refuses instead of passing.
 fn noteUnresolvedFd(fd: c_int) void {
-    // The descriptor goes in the kind, not the path. Its own doc says "there is no path
-    // to name", and since #485 the engine prints `path` as the name the file last had —
-    // so `fd:7` sitting there produced "last named fd:7", a filename that never was.
-    var b: [32]u8 = undefined;
-    const kind = std.fmt.bufPrint(&b, "{s} fd:{d}", .{ contract.unresolved_kind.fd_without_path, fd }) catch
-        contract.unresolved_kind.fd_without_path;
-    noteUnresolved("", kind);
+    noteUnresolvedWithFd("", contract.unresolved_kind.fd_without_path, fd);
 }
 
 /// The fd-taking form of `noteUnsupportedInScope2` (v12): `fsetattrlist` names its file
@@ -1264,7 +1279,12 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         // The file was inside the state directory and has since been unlinked. Writing
         // through such a descriptor still changes bytes the engine cannot see in any
         // snapshot, so the operation exists but has no address.
-        noteUnresolved(resolved, contract.unresolved_kind.write_after_unlink);
+        //
+        // The descriptor is named for the reason `noteUnresolvedFd` names its own: #485
+        // asks for the operation class, the descriptor and the last resolved name, and
+        // this is the branch that has all three. Two writes through different unlinked
+        // descriptors are otherwise one indistinguishable sentence.
+        noteUnresolvedWithOp(resolved, contract.unresolved_kind.unlinked_fd, op, fd);
         return;
     }
     observe(op, resolved, "");
@@ -1698,11 +1718,19 @@ pub inline fn callFsetpos64(stream: *FILE, pos: *const anyopaque) c_int {
 /// source: its old path is empty, so there is nothing to resolve or place, and the
 /// engine must refuse rather than judge a link it cannot address (ADR 0006). Recorded
 /// even where an oracle would also catch it, so the platform with no oracle refuses too.
-pub fn noteLinkByDescriptor() void {
+pub fn noteLinkByDescriptor(fd: c_int) void {
     if (!active or busy) return;
     busy = true;
     defer busy = false;
-    noteUnresolved("", contract.unresolved_kind.link_by_descriptor);
+    // The descriptor is all there is to name here — the old path is empty by construction
+    // — so without it two such calls on different files are one indistinguishable
+    // sentence. It is not always a *file* descriptor, and the record does not pretend
+    // otherwise: `AT_FDCWD` (-100 on Linux, -2 on macOS) reaches this the same way any
+    // other value does, and it is recorded as it was passed. A negative number in the
+    // report is the caller's own argument, which is what the operator needs to match it
+    // against their code; inventing a name for it here would be the `fd:7`-as-a-filename
+    // mistake in a new place.
+    noteUnresolvedWithFd("", contract.unresolved_kind.link_by_descriptor, fd);
 }
 
 /// Boundary detectors carry no path. Since v3 their presence no longer forces UNKNOWN

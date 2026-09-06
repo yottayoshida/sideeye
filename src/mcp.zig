@@ -1033,6 +1033,24 @@ fn isActionable(arena: std.mem.Allocator, report_min: []const u8) bool {
     return !(std.mem.eql(u8, verdict, "PASS") or std.mem.eql(u8, verdict, "FAIL"));
 }
 
+test "cutOnBoundary keeps a cut it cannot align, rather than returning nothing (#483)" {
+    const t = std.testing;
+    // Short input is returned whole; a cut on a lead byte stays where it was asked.
+    try t.expectEqualStrings("abc", cutOnBoundary("abc", 10));
+    try t.expectEqualStrings("ab", cutOnBoundary("abcd", 2));
+    // Two three-byte sequences: a cut at 4 falls back to 3 rather than splitting one.
+    try t.expectEqualStrings("\xe3\x81\x82", cutOnBoundary("\xe3\x81\x82\xe3\x81\x84", 4));
+
+    // `max` bytes of continuation with no lead byte anywhere. Walking back finds no
+    // boundary and reaches the front; returning `s[0..0]` there would print as an empty
+    // quotation with an ellipsis after it — "too long to show" while showing none of it.
+    // The engine clamps a target's output line with this (#483), so the input is a target's
+    // to choose and this shape is reachable, where the 128 KiB MCP limit made it academic.
+    const cont = "\x80" ** 40;
+    try t.expectEqual(@as(usize, 8), cutOnBoundary(cont, 8).len);
+    try t.expect(cutOnBoundary(cont, 8).len > 0);
+}
+
 test "isError derives from the verdict field, not a reason list" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
@@ -1162,11 +1180,20 @@ const max_text_block = 128 * 1024;
 /// Truncate on a UTF-8 boundary. `appendJsonString` below passes bytes >= 0x20 through
 /// unchanged, so a cut through the middle of a sequence would leave the whole JSON-RPC
 /// response invalid UTF-8 — a transport failure produced by a length limit.
-fn cutOnBoundary(s: []const u8, max: usize) []const u8 {
+///
+/// `pub` because `src/main.zig` clamps a failing setup's output line with it (#483). Two
+/// spellings of "where a UTF-8 sequence begins" would be two things to keep in step, and
+/// both of their tests would stay green while they drifted.
+pub fn cutOnBoundary(s: []const u8, max: usize) []const u8 {
     if (s.len <= max) return s;
     var end = max;
     while (end > 0 and (s[end] & 0xC0) == 0x80) end -= 1;
-    return s[0..end];
+    // Walking back off the front means there was no boundary to find: `max` bytes of
+    // continuation with no lead byte, which is not UTF-8 at all. Cutting there would
+    // return nothing and read as "too long to show" while showing zero bytes of it —
+    // the loss #483 is about, re-made at a smaller scale. Keep the flat `max` instead
+    // and let the caller's defang render the bytes; that is what it is for.
+    return if (end == 0) s[0..max] else s[0..end];
 }
 
 /// Wrap target-influenced text in a counted region.

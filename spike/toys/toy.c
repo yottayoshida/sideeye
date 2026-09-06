@@ -660,6 +660,33 @@ static int cmd_rotate(void) {
         close(fd);
     }
 
+    /* linkat() with an empty source path: the link names a descriptor, not a file, so
+     * there is nothing to resolve and the operation cannot be placed (ADR 0006).
+     *
+     * The kernel refuses this without AT_EMPTY_PATH, and refuses it with AT_EMPTY_PATH
+     * unless the caller holds CAP_DAC_READ_SEARCH — which is why there was no material
+     * for this refusal in the suite and #485's clearest example shipped unmeasured. It
+     * does not matter: the shim records BEFORE it calls through (shim/src/ops.zig), and
+     * its branch tests the empty path rather than the flag, so the record exists whatever
+     * the kernel then answers. The return value is deliberately ignored for that reason.
+     *
+     * AT_EMPTY_PATH is Linux-only; where it is absent, 0 reaches the same shim branch. */
+    if (getenv("TOY_LINK_BY_DESCRIPTOR")) {
+        char p[512];
+        join_path(p, sizeof p, "linksrc.txt");
+        int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "x\n", 2) != 2) { close(fd); return 1; }
+        char np[512];
+        join_path(np, sizeof np, "linkdst.txt");
+#ifdef AT_EMPTY_PATH
+        (void)linkat(fd, "", AT_FDCWD, np, AT_EMPTY_PATH);
+#else
+        (void)linkat(fd, "", AT_FDCWD, np, 0);
+#endif
+        close(fd);
+    }
+
     /* Descriptors that are provably not files; opening and closing them must not
      * move the verdict. */
     if (getenv("TOY_ANONFD")) {

@@ -1206,8 +1206,8 @@ test "unresolvedDetail names the kind and pid, and only claims a name when there
     try std.testing.expectEqualStrings(fb, unresolvedDetail(arena, null, fb));
 
     // With a name.
-    const named = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/doomed.txt", .aux = "write-after-unlink" }, fb);
-    try std.testing.expect(std.mem.indexOf(u8, named, "write-after-unlink") != null);
+    const named = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/doomed.txt", .aux = "unlinked-fd write" }, fb);
+    try std.testing.expect(std.mem.indexOf(u8, named, "unlinked-fd write") != null);
     try std.testing.expect(std.mem.indexOf(u8, named, "pid 9") != null);
     try std.testing.expect(std.mem.indexOf(u8, named, "last named /s/doomed.txt") != null);
 
@@ -1222,7 +1222,7 @@ test "unresolvedDetail names the kind and pid, and only claims a name when there
     try std.testing.expect(std.mem.indexOf(u8, nokind, "reason not recorded") != null);
 
     // Target-influenced bytes are defanged by the same choke point the neighbour uses.
-    const forged = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land", .aux = "write-after-unlink" }, fb);
+    const forged = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land", .aux = "unlinked-fd write" }, fb);
     try std.testing.expect(std.mem.indexOf(u8, forged, "\nUNKNOWN") == null);
 }
 
@@ -1236,6 +1236,238 @@ fn withOracleCapture(arena: std.mem.Allocator, sentence: []const u8, capture: ?[
     const cap = capture orelse return sanitizeForReport(arena, sentence) catch fallback;
     const joined = std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them", .{ sentence, cap }) catch return fallback;
     return sanitizeForReport(arena, joined) catch fallback;
+}
+
+/// How much of a failing setup's capture is read back before the read is given up on.
+/// A megabyte is far past any diagnosis and far short of a size that matters here; what
+/// it really bounds is `readFileAllocCapped`'s arena growth, since that function reads
+/// from the start and answers `null` — indistinguishably from "could not open" — the
+/// moment the file exceeds the cap. That indistinguishability is why the sentence for
+/// `null` says the output could not be read *back*, and names the file: an operator whose
+/// setup wrote 4 MiB is told where the 4 MiB is rather than told it wrote nothing.
+const setup_capture_cap: usize = 1024 * 1024;
+
+/// The longest run of a target's own bytes that reaches `message`: a setup writing one
+/// 8 KiB line must not push the status and the path it is quoted beside out of view.
+///
+/// **Counted before defanging, not after.** The whole sentence goes through
+/// `sanitizeForReport`, which spells a defanged byte `\xNN` — four characters for one —
+/// so a line of 200 control bytes reaches the report as 800. That is bounded and it is
+/// arena-allocated rather than written into a fixed buffer, so nothing overflows; it is
+/// only not the same number, and saying "clipped to 200 bytes" of the *output* would be
+/// wrong. `textShown`'s one-`?`-per-unit spelling does hold that stronger property, and
+/// it is the right choice where a fixed buffer is downstream — here the single choke
+/// point at the end matters more (two spellings of a defanged byte in one sentence is
+/// what per-field sanitising produced).
+const setup_line_max: usize = 200;
+
+/// The last line with something on it, with trailing newlines and blank lines skipped.
+///
+/// "Last" and not "first" because #483 asks for the child's last stderr, and a command
+/// that fails usually says why on its way out. Blank lines are skipped rather than
+/// returned because a trailing `echo` is common and an empty quote would read as though
+/// nothing was written — the exact confusion the "wrote nothing" branch exists to keep
+/// honest.
+fn lastNonEmptyLine(text: []const u8) []const u8 {
+    var it = std.mem.splitBackwardsScalar(u8, text, '\n');
+    while (it.next()) |raw| {
+        const line = std.mem.trim(u8, raw, " \t\r");
+        if (line.len > 0) return line;
+    }
+    return "";
+}
+
+/// What a setup's capture had in it, as the three answers the report distinguishes.
+///
+/// One reader for both callers. The refusal's sentence and the success path's
+/// keep-or-remove decision have to agree about what "empty" means, and prose saying they
+/// do is not the same as their being one function: two spellings of the read options
+/// (`require_regular`, `no_follow`) is a way for one of them to lose a guard silently.
+///
+/// `unreadable` and `empty` stay apart. A file that cannot be opened is not an empty one:
+/// the refusal must not assert something about a file it failed to read, and the success
+/// path must not delete the only copy of an output the engine could not see. A capture
+/// past `setup_capture_cap` also lands here — `readFileAllocCapped` answers `null` for it
+/// — and "could not be read back" is the honest word for a file this engine did not read.
+///
+/// "Empty" is about content, not bytes: a lone newline is what a bare `echo` leaves.
+const SetupCapture = union(enum) { unreadable, empty, line: []const u8 };
+
+fn readSetupCapture(arena: std.mem.Allocator, path: []const u8) SetupCapture {
+    const text = readFileAllocCapped(arena, path, setup_capture_cap, .{
+        .require_regular = true,
+        .no_follow = true,
+    }) orelse return .unreadable;
+    const line = lastNonEmptyLine(text);
+    return if (line.len == 0) .empty else .{ .line = line };
+}
+
+/// The clause a SETUP_ERROR adds about what the failing `--setup` wrote (#483).
+///
+/// Three answers, never two. The issue's complaint is that the observation "is not merely
+/// unreported; it is gone", and collapsing "could not read it back" into "wrote nothing"
+/// would put a second, quieter version of that same loss into the fix: the run would
+/// assert something about a file it failed to open. `snapshotRefusal`'s neighbour at the
+/// falsification gate says a capture it cannot read back out loud for the same reason.
+///
+/// Sanitised once at the end, like `unresolvedDetail` and `withOracleCapture` beside it,
+/// rather than per field — and it is needed here more than there, because `setupError`
+/// prints its detail through `say` with no defang of its own, and every byte of the line
+/// is the target's. One choke point also means one spelling: `textShown` per field and
+/// `sanitizeForReport` at the end defang differently, so mixing them put two renderings of
+/// a control byte in the same sentence.
+///
+/// The ellipsis is derived from what the cut returned rather than from a second comparison
+/// against `setup_line_max`, so the mark cannot disagree with the cut.
+fn setupOutputDetail(arena: std.mem.Allocator, path: []const u8) []const u8 {
+    // Every `catch` below lands here rather than on `""`. An exhausted arena would
+    // otherwise turn the refusal back into the bare `--setup exited 7` this issue is
+    // about, and it would do it silently — the one failure mode where saying less looks
+    // exactly like a version that was never fixed. `unresolvedDetail` takes a fallback
+    // sentence for the same reason.
+    // Names the file even here. The path is the caller's stack buffer, not something this
+    // function allocated, so an exhausted arena cannot take it away — and "the refusal
+    // names that file" is the half of the promise that still can be kept.
+    var oom_buf: [contract.max_path + 64]u8 = undefined;
+    const oom = std.fmt.bufPrint(
+        &oom_buf,
+        "; what it wrote could not be described (out of memory); the capture is at {s}",
+        .{path},
+    ) catch "; what it wrote could not be described (out of memory)";
+    const composed = switch (readSetupCapture(arena, path)) {
+        .unreadable => std.fmt.allocPrint(arena, "; its output could not be read back from {s}", .{path}) catch return oom,
+        .empty => blk: {
+            // Nothing was written, so there is nothing for the file to hold and no reason
+            // for the sentence to name it. Removed here because this is the only place
+            // that knows: `setupErrorFmt` never returns, so the failing path has no line
+            // after this one, and the MCP adapter hands every call the same `--work` —
+            // zero-byte pid-named files would accumulate there without bound.
+            removeFile(path);
+            break :blk "; it wrote nothing";
+        },
+        .line => |l| blk: {
+            const cut = mcp.cutOnBoundary(l, setup_line_max);
+            break :blk std.fmt.allocPrint(
+                arena,
+                "; its last output line was: {s}{s} (all of it is in {s})",
+                .{ cut, if (cut.len < l.len) "..." else "", path },
+            ) catch return oom;
+        },
+    };
+    return sanitizeForReport(arena, composed) catch oom;
+}
+
+test "lastNonEmptyLine takes the last line that has something on it (#483)" {
+    const t = std.testing;
+    try t.expectEqualStrings("boom", lastNonEmptyLine("boom"));
+    try t.expectEqualStrings("boom", lastNonEmptyLine("boom\n"));
+    try t.expectEqualStrings("second", lastNonEmptyLine("first\nsecond\n"));
+    // A trailing blank line is what an `echo` at the end of a script leaves.
+    try t.expectEqualStrings("why it failed", lastNonEmptyLine("noise\nwhy it failed\n\n\n"));
+    try t.expectEqualStrings("why it failed", lastNonEmptyLine("noise\nwhy it failed\n   \n"));
+    try t.expectEqualStrings("crlf", lastNonEmptyLine("crlf\r\n"));
+    // Nothing but whitespace is nothing: the caller's "wrote nothing" branch is correct
+    // for these, and a bare `""` return is how it learns that.
+    try t.expectEqualStrings("", lastNonEmptyLine(""));
+    try t.expectEqualStrings("", lastNonEmptyLine("\n\n"));
+    try t.expectEqualStrings("", lastNonEmptyLine("   \n\t\n"));
+}
+
+test "setupOutputDetail separates read failure, empty output, and a line — and defangs it (#483)" {
+    const t = std.testing;
+    var arena_state = std.heap.ArenaAllocator.init(t.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    var pb: [contract.max_path]u8 = undefined;
+    const path = std.fmt.bufPrint(&pb, ".zig-cache/tmp-setupout-{d}.txt", .{posix.getpid()}) catch unreachable;
+    defer removeFile(path);
+
+    // A file that is not there is not an empty file. Saying "wrote nothing" here would
+    // repeat #483's own defect inside its fix.
+    removeFile(path);
+    const missing = setupOutputDetail(arena, path);
+    try t.expect(std.mem.indexOf(u8, missing, "could not be read back") != null);
+    try t.expect(std.mem.indexOf(u8, missing, "wrote nothing") == null);
+
+    try t.expect(writeWholeFile(path, &.{""}));
+    const empty = setupOutputDetail(arena, path);
+    try t.expect(std.mem.indexOf(u8, empty, "wrote nothing") != null);
+    try t.expect(std.mem.indexOf(u8, empty, "could not be read back") == null);
+    // An empty capture is removed rather than named: nothing to hold, nothing to point at.
+    try t.expect(readSetupCapture(arena, path) == .unreadable);
+
+    // The line the operator needs, and the file for the rest of it.
+    try t.expect(writeWholeFile(path, &.{"opening\nthe setup could not find its input\n"}));
+    const line = setupOutputDetail(arena, path);
+    try t.expect(std.mem.indexOf(u8, line, "the setup could not find its input") != null);
+    try t.expect(std.mem.indexOf(u8, line, "all of it is in") != null);
+
+    // A target that tries to forge a report line is the reason the sentence goes through
+    // `sanitizeForReport`: `setupError` hands its detail straight to `say`.
+    //
+    // The control bytes are asserted, not the newline. A first version of this test wrote
+    // `"x\nUNKNOWN  kill_did_not_land\n"` and checked that `"\nUNKNOWN"` was absent — but
+    // `lastNonEmptyLine` splits on `'\n'`, so no return value of it can ever contain one.
+    // That assertion held with `textShown` deleted outright (measured), which makes it a
+    // check on the splitter rather than on the defang. ESC and CR survive the split, so
+    // they are what proves the defang ran; the neighbouring `foreignTouchDetail` test has
+    // used ESC for the same reason since #484.
+    try t.expect(writeWholeFile(path, &.{"safe\n\x1b[1mUNKNOWN  kill_did_not_land\rmore\n"}));
+    const forged = setupOutputDetail(arena, path);
+    try t.expect(std.mem.indexOfScalar(u8, forged, 0x1b) == null);
+    try t.expect(std.mem.indexOfScalar(u8, forged, '\r') == null);
+    try t.expect(std.mem.indexOf(u8, forged, "\nUNKNOWN") == null);
+    // The line is still quoted — defanging must not silently drop the observation, which
+    // is the whole point of #483.
+    try t.expect(std.mem.indexOf(u8, forged, "kill_did_not_land") != null);
+
+    // The clamp counts the target's bytes, and defanging spells each removed one `\xNN`.
+    // A line of control bytes therefore reaches the report longer than the cap -- bounded
+    // and arena-allocated, but not the same number, which is why the constant's doc says
+    // "before defanging". Pinned so that swapping the choke point back to a one-`?`
+    // spelling cannot silently change what the constant means.
+    const ctrl = "\x01" ** (setup_line_max + 20);
+    try t.expect(writeWholeFile(path, &.{ctrl}));
+    const defanged = setupOutputDetail(arena, path);
+    try t.expect(std.mem.indexOfScalar(u8, defanged, 0x01) == null);
+    try t.expect(std.mem.indexOf(u8, defanged, "\\x01") != null);
+    try t.expect(defanged.len > setup_line_max);
+
+    // Longer than the cap: clamped, marked, and the file still named.
+    const long = "E" ** (setup_line_max + 50);
+    try t.expect(writeWholeFile(path, &.{long}));
+    const clamped = setupOutputDetail(arena, path);
+    try t.expect(std.mem.indexOf(u8, clamped, "...") != null);
+    // Not `clamped.len < long.len`: the sentence carries a prefix and the file's path as
+    // well, so its total length says nothing about whether the line was cut. What the
+    // clamp promises is that the whole line is not in there.
+    try t.expect(std.mem.indexOf(u8, clamped, long) == null);
+    try t.expect(std.mem.indexOf(u8, clamped, "E" ** setup_line_max) != null);
+
+    // The same reader the success path deletes on. It has to agree with the sentences
+    // above about what "nothing" means, or a setup would be told it wrote nothing while
+    // its file was kept (or the reverse).
+    try t.expect(writeWholeFile(path, &.{""}));
+    try t.expect(readSetupCapture(arena, path) == .empty);
+    try t.expect(writeWholeFile(path, &.{"\n \n"}));
+    try t.expect(readSetupCapture(arena, path) == .empty);
+    try t.expect(writeWholeFile(path, &.{"using a stale fixture\n"}));
+    try t.expectEqualStrings("using a stale fixture", readSetupCapture(arena, path).line);
+    // A capture that cannot be read is not an empty one: deleting it would destroy the
+    // only copy of an output the engine failed to see.
+    removeFile(path);
+    try t.expect(readSetupCapture(arena, path) == .unreadable);
+
+    // A capture that is a directory is not a capture. `require_regular` is what makes
+    // this the read-failure branch rather than a read that returns nothing.
+    removeFile(path);
+    var db: [contract.max_path]u8 = undefined;
+    const dz = try std.fmt.bufPrintZ(&db, "{s}", .{path});
+    try t.expect(posix.mkdir(dz.ptr, @as(c_uint, 0o755)) == 0);
+    defer _ = posix.rmdir(dz.ptr);
+    const dir = setupOutputDetail(arena, path);
+    try t.expect(std.mem.indexOf(u8, dir, "could not be read back") != null);
 }
 
 test "foreignTouchDetail names the record, both ends of a two-path op, and defangs a forged line (#484)" {
@@ -1993,37 +2225,26 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         if (i + 1 >= argv.len) setupError("an option is missing its value");
         const v = argv[i + 1];
-        if (std.mem.eql(u8, argv[i], "--state")) args.state = v
-        else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v }
-        else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v }
-        else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v
-        else if (std.mem.eql(u8, argv[i], "--work")) args.work = v
-        else if (std.mem.eql(u8, argv[i], "--oracle")) {
+        if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).
             noteOracle(.{ .named = .strace });
-        }
-        else if (std.mem.eql(u8, argv[i], "--check")) {
+        } else if (std.mem.eql(u8, argv[i], "--check")) {
             args.check = .{ .str = v };
             checker_note = checkerNoteFor(.named);
-        }
-        else if (std.mem.eql(u8, argv[i], "--marker")) {
+        } else if (std.mem.eql(u8, argv[i], "--marker")) {
             args.marker = v;
             l1_note = l1NoteFor(.named);
         }
         // Taken as spelled, unlike the toml's, which resolves against the file's own
         // directory: a flag is typed at a cwd, so a relative one already means what the
         // caller meant. It is absolutized with the rest of them further down.
-        else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v
-        else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v)
-        else if (std.mem.eql(u8, argv[i], "--scratch")) appendScratchFlag(&args, v)
-        else if (std.mem.eql(u8, argv[i], "--expect-status")) {
+        else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--scratch")) appendScratchFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--expect-status")) {
             args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
             // Mirrored immediately: a refusal between here and the canonical binding
             // below must not report the declaration as 0 (R1 finding).
             expected_status_val = args.expect_status.?;
-        }
-        else if (std.mem.eql(u8, argv[i], "--world-timeout")) {
+        } else if (std.mem.eql(u8, argv[i], "--world-timeout")) {
             // #263. Worlds only — the recording run, setup and checkers have no
             // budget, and the help text says so: the flag must not read as a promise
             // of a hang-free run.
@@ -2039,8 +2260,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // checkers — now inherits the same default. Idempotent, so a repeated
             // flag is harmless. Documented in the flag's help text.
             _ = posix.signal(posix.SIGCHLD, posix.SIG_DFL);
-        }
-        else if (std.mem.eql(u8, argv[i], "--state-under")) {
+        } else if (std.mem.eql(u8, argv[i], "--state-under")) {
             // #266. Replay only: an explore's config is the trust boundary and its
             // state is part of what the operator vets (#96); accepting the flag there
             // would be a second confinement feature nobody asked for, and preflight
@@ -2051,9 +2271,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // ride behind a narrow-looking one.
             if (args.state_under != null) setupError("--state-under was given twice; refusing rather than letting the second spelling win");
             args.state_under = v;
-        }
-        else if (std.mem.eql(u8, argv[i], "--config")) args.config = v
-        else if (std.mem.eql(u8, argv[i], "--json")) {
+        } else if (std.mem.eql(u8, argv[i], "--config")) args.config = v else if (std.mem.eql(u8, argv[i], "--json")) {
             // Rejected before the removeFile below: a rejection that had already deleted
             // the caller's previous report would be a refusal with a side effect.
             if (mode == .preflight) setupError("preflight has no machine-readable form; sideeye explore --config answers strictly more, and --json lives there");
@@ -2063,8 +2281,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // an exit that never reaches a writer leaves *no* report rather than a stale
             // one: absence is unambiguous, a previous verdict is not.
             removeFile(v);
-        }
-        else setupError("unknown option");
+        } else setupError("unknown option");
         i += 2;
     }
 
@@ -2615,10 +2832,42 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     // ---- setup -------------------------------------------------------------------
     if (args.setup) |cmd| {
-        const setup_argv = commandArgv(arena_state.allocator(), cmd) catch setupError("--setup is empty");
+        const a = arena_state.allocator();
+        const setup_argv = commandArgv(a, cmd) catch setupError("--setup is empty");
         if (setup_argv.len == 0) setupError("--setup is empty");
-        const term = posix.runChild(gpa, setup_argv, &.{
+        // The pid is in the name and every other work-directory artifact's is not, and
+        // that asymmetry is deliberate: this is the first capture whose *contents* reach
+        // `message`. Two runs sharing a work directory already collide on
+        // `stdout-record.txt`, but there the loser reads its own trace and gets a wrong
+        // count; here the `removeFile` below would delete the other run's file, both
+        // `O_EXCL` opens would succeed, and the refusal would quote bytes a different
+        // subject wrote — the shape `src/mcp.zig`'s work-directory comment records from
+        // 2026-08-12, where one server returned another's report as its own verdict. The
+        // MCP adapter hands every call the same `--work`, so two servers are the concrete
+        // case rather than a hypothetical one.
+        var setup_out_buf: [contract.max_path]u8 = undefined;
+        const setup_out = std.fmt.bufPrint(
+            &setup_out_buf,
+            "{s}/setup-output-{d}.txt",
+            .{ args.work, posix.getpid() },
+        ) catch setupError("path too long");
+        // `exclusive` needs it, and `Capture.exclusive`'s doc asks for both halves by
+        // name: without the unlink a second run refuses on its own leftover, and without
+        // `O_EXCL` a FIFO planted at the name blocks the parent's `O_WRONLY` before any
+        // budget exists to time it out.
+        removeFile(setup_out);
+        const term = posix.runChildCapture(gpa, setup_argv, &.{
             .{ "TOY_STATE", state_abs },
+        }, .{
+            .path = setup_out,
+            // #483 names stderr, which is where a setup writes its diagnosis. Capturing
+            // stdout alone would leave the file empty for the ordinary failure and the
+            // refusal would say "wrote nothing" about a command that wrote a paragraph.
+            // Not folded into `recordingCapture`: that one deliberately leaves stderr
+            // alone, and sharing the constructor would widen the recording run's capture
+            // as a side effect of this change.
+            .stderr_too = true,
+            .exclusive = true,
         }, args.cwd) catch |e| spawnFailure(e, .before_exploration, "could not run --setup");
         switch (term) {
             // The status is the observation; "non-zero" was a restatement of the
@@ -2626,14 +2875,29 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // is all this can honestly carry: a first draft annotated 127 as "command
             // not found", and `exec /no/such/binary` under /bin/sh measured 126 here —
             // the mapping from a failed exec to a status is the shell's, not ours.
-            .exited => |code| if (code != 0) setupErrorFmt(arena_state.allocator(), "--setup exited {d}", .{code}),
+            .exited => |code| if (code != 0) setupErrorFmt(a, "--setup exited {d}{s}", .{ code, setupOutputDetail(a, setup_out) }),
             // The same class, found by this PR's own same-class scan: `Term` carries
             // `signaled: u8` and `unknown: c_int`, and the old `else` threw both away.
             // A setup killed by a guard on the machine (the case #483 was filed from)
             // lands here, not in `.exited`.
-            .signaled => |sig| setupErrorFmt(arena_state.allocator(), "--setup was killed by signal {d}", .{sig}),
-            .unknown => |st| setupErrorFmt(arena_state.allocator(), "--setup ended in a way waitpid reported as status {d}", .{st}),
+            .signaled => |sig| setupErrorFmt(a, "--setup was killed by signal {d}{s}", .{ sig, setupOutputDetail(a, setup_out) }),
+            .unknown => |st| setupErrorFmt(a, "--setup ended in a way waitpid reported as status {d}{s}", .{ st, setupOutputDetail(a, setup_out) }),
         }
+        // The setup succeeded and nothing in the report names this file — but it is now
+        // the only place its output exists at all, because capturing it took it off the
+        // terminal where it used to appear. A setup that prints `warning: using a stale
+        // fixture` on a run that succeeds would otherwise be unobservable to anyone, which
+        // is a loss this change would have introduced while fixing the same shape (#483).
+        //
+        // So: kept when there is something in it, removed when there is not. The failing
+        // path removes an empty capture too, inside `setupOutputDetail` — between them,
+        // a capture survives a run only when it holds something a reader would want.
+        // A short-lived arena: `arena_state` lives to the end of the process, and a
+        // successful setup that talked (a `make`, a `git clone`) would otherwise keep its
+        // whole output resident through every world that follows.
+        var probe = std.heap.ArenaAllocator.init(gpa);
+        defer probe.deinit();
+        if (readSetupCapture(probe.allocator(), setup_out) == .empty) removeFile(setup_out);
     }
 
     // ---- apparatus (ADR 0041) -----------------------------------------------------
@@ -3160,7 +3424,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // is what the wholesale replacement this replaced had to remember to do.
         if (parsed.children > 0) crossed_boundary = true;
     }
-
 
     // Quiescence, observed rather than proven. A tolerated child was killed with the
     // group, but a grandchild reparented away is nobody's child to wait for — so when a
@@ -3820,23 +4083,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\replay      {s}
             \\
         , .{
-            violations, explored,
-            invariant,
-            f.k,        n,
+            violations,                    explored,
+            invariant,                     f.k,
+            n,
             // The three target-chosen operands go to the text defanged; the
             // JSON block below reads the raw variables (#26).
-            after,      textShown(arena, after_path),
-            before,     textShown(arena, before_path),
-            textShown(arena, path_shown),
-            what,
-            explored,   n,
-            expected_status_val,
-            l0_note,
-            oracle_note,
-            metadata_note,
-            checker_note,
-            l1_note,
-            case_shown,
+                                        after,
+            textShown(arena, after_path),  before,
+            textShown(arena, before_path), textShown(arena, path_shown),
+            what,                          explored,
+            n,                             expected_status_val,
+            l0_note,                       oracle_note,
+            metadata_note,                 checker_note,
+            l1_note,                       case_shown,
             replay_cmd,
         });
         sayApparatus(arena, "apparatus   {s}\n");
@@ -3860,7 +4119,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
         , .{
             boundaryAccount(),
             notTestedText(),
-            state_abs, alt_env, repro_trace, preload_var, shim, f.k,
+            state_abs,
+            alt_env,
+            repro_trace,
+            preload_var,
+            shim,
+            f.k,
         });
         if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
             .k = f.k,
@@ -5505,9 +5769,11 @@ const ReadMode = struct {
 /// way to tell them apart — so it waits out the deadline and is reported unreadable
 /// rather than empty. Both are measured and disclosed in the CHANGELOG.
 ///
-/// The two captures ask for neither. They are written by this process or its child
-/// inside the work directory: demanding regularity would refuse nothing that happens,
-/// and a deadline would bound something the run already bounds.
+/// The falsification and world captures ask for neither. They are written by this process
+/// or its child inside the work directory: demanding regularity would refuse nothing that
+/// happens, and a deadline would bound something the run already bounds. The setup capture
+/// (#483) does ask for `require_regular`, because its path is the one an operator can aim
+/// somewhere else with `--work`, and because the answer decides whether a file is deleted.
 fn readFileAllocCapped(
     arena: std.mem.Allocator,
     path: []const u8,
@@ -6646,8 +6912,7 @@ fn divergenceDetail(
         // with a timestamp, not a call name).
         if (index < oracle_names.len and oracle_names[index].len > 0) divergence_syscall = oracle_names[index];
         break :blk std.fmt.allocPrint(arena, "the oracle saw: {s}", .{oracle_lines[index]}) catch return lead;
-    } else
-        std.fmt.allocPrint(arena, "the oracle's account ends after {d} operation(s)", .{index}) catch return lead;
+    } else std.fmt.allocPrint(arena, "the oracle's account ends after {d} operation(s)", .{index}) catch return lead;
     const shim_part = if (index < shim_ops.len) blk: {
         const op = shim_ops[index];
         break :blk if (op.aux.len > 0)

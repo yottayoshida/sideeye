@@ -4699,6 +4699,12 @@ echo "=========== check 11o: a refusal carries the observation it was raised on 
 #
 # The assertions are whole phrases, not fragments: "7" alone would match a pid or a
 # count somewhere else in the same JSON.
+#
+# `rm -rf` first, like every other check here. Without it the leaf-creation leg below
+# reads the previous run's directory instead of one this run's engine created, and the
+# control silently stops controlling for anything. CI is a fresh runner so it stayed
+# green; a second local run is where it showed.
+rm -rf /tmp/acc-obs /tmp/acc-obs-missing-parent
 mkdir -p /tmp/acc-obs/state /tmp/acc-obs/work
 
 # --- #483: the status a failing setup exited with ---
@@ -4713,15 +4719,127 @@ else
     fails=$((fails + 1))
 fi
 
+# --- #483, second half: what the setup wrote, and where the rest of it is ---
+# A setup that writes two lines and a verdict-shaped line among them. Three things are
+# asserted together because each fails on a different wrong implementation: the last
+# line (a capture that only took stdout leaves the file empty and says "wrote nothing"),
+# the file's path in the sentence, and the file's existence with BOTH lines in it.
+mkdir -p /tmp/acc-obs/o-state /tmp/acc-obs/o-work
+printf '#!/bin/sh\nprintf "opening line\\n" >&2\nprintf "the setup could not find its input\\n" >&2\nexit 7\n' > /tmp/acc-obs/setup-talks.sh
+chmod 755 /tmp/acc-obs/setup-talks.sh
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/o-state --setup /tmp/acc-obs/setup-talks.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/o-work 2>&1)
+cap=$(ls /tmp/acc-obs/o-work/setup-output-*.txt 2>/dev/null | head -1)
+if echo "$o" | grep -q "its last output line was: the setup could not find its input" &&
+   echo "$o" | grep -q "all of it is in /tmp/acc-obs/o-work/setup-output-" &&
+   [ -n "$cap" ] && grep -q "opening line" "$cap" &&
+   grep -q "the setup could not find its input" "$cap"; then
+    echo "ok   #483: a failing setup's last line is in the refusal and all of it is in the work directory"
+else
+    echo "     #483: expected the last stderr line and the capture path, got: $o"
+    echo "     capture=[$cap]"
+    fails=$((fails + 1))
+fi
+
+# The same run's bytes must not be able to forge a report line. `setupError` prints its
+# detail through `say` with no defang of its own, so the sentence's single pass through
+# `sanitizeForReport` is the only thing between a target's control bytes and the terminal.
+#
+# ESC and CR, not a newline: the sentence quotes ONE line, so a newline cannot reach it
+# whatever the defang does, and asserting its absence measures the line splitter instead.
+# The control bytes here survive the split, so only the defang removes them.
+mkdir -p /tmp/acc-obs/f-state /tmp/acc-obs/f-work
+printf '#!/bin/sh\nprintf "safe\\n\\033[1mUNKNOWN  kill_did_not_land\\rmore\\n" >&2\nexit 7\n' > /tmp/acc-obs/setup-forges.sh
+chmod 755 /tmp/acc-obs/setup-forges.sh
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/f-state --setup /tmp/acc-obs/setup-forges.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/f-work 2>&1)
+if ! printf '%s' "$o" | LC_ALL=C grep -q '[[:cntrl:]]' && echo "$o" | grep -q "kill_did_not_land"; then
+    echo "ok   #483: control bytes in the setup's output are defanged, and the line is still quoted"
+else
+    echo "     #483: expected the forged line defanged and still quoted, got: $(printf '%s' "$o" | cat -v)"
+    fails=$((fails + 1))
+fi
+
+# A setup that says nothing must not be described with an empty quotation, and must not
+# be confused with a capture that could not be read.
+mkdir -p /tmp/acc-obs/q-state /tmp/acc-obs/q-work
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/q-state --setup /tmp/acc-obs/setup7.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/q-work 2>&1)
+# And it leaves no file: a capture with nothing in it names nothing and is removed, on the
+# failing path as well as the succeeding one. Without the second assertion the MCP work
+# directory -- one path shared by every call -- fills with zero-byte pid-named files.
+qleft=$(ls /tmp/acc-obs/q-work/setup-output-*.txt 2>/dev/null | wc -l | tr -d ' ')
+if echo "$o" | grep -q "it wrote nothing" &&
+   ! echo "$o" | grep -q "could not be read back" && [ "$qleft" = "0" ]; then
+    echo "ok   #483: a silent setup is reported as silent, leaves no capture, and is not called unreadable"
+else
+    echo "     #483: expected [it wrote nothing] and no leftover capture (found $qleft), got: $o"
+    fails=$((fails + 1))
+fi
+
+# A successful setup that SAID something keeps its capture -- capturing took that output
+# off the terminal, so removing the file too would lose it outright. A successful setup
+# that said nothing leaves no file, which is what stops pid-named artefacts piling up.
+#
+# Both directions in one leg, and that is the point: `left=0` alone is also what a run
+# that never created the file, or refused before setup, produces. The talking case
+# asserts a non-empty value (the file, with the line in it), so a partial implementation
+# cannot satisfy this pair by doing nothing.
+mkdir -p /tmp/acc-obs/k-state /tmp/acc-obs/k-work /tmp/acc-obs/kq-state /tmp/acc-obs/kq-work
+printf '#!/bin/sh\necho "using a stale fixture"\nexit 0\n' > /tmp/acc-obs/setup-ok-talks.sh
+chmod 755 /tmp/acc-obs/setup-ok-talks.sh
+"$SIDEEYE" preflight --state /tmp/acc-obs/k-state --setup /tmp/acc-obs/setup-ok-talks.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/k-work >/dev/null 2>&1
+kept=$(ls /tmp/acc-obs/k-work/setup-output-*.txt 2>/dev/null | head -1)
+printf '#!/bin/sh\nexit 0\n' > /tmp/acc-obs/setup-ok-quiet.sh
+chmod 755 /tmp/acc-obs/setup-ok-quiet.sh
+"$SIDEEYE" preflight --state /tmp/acc-obs/kq-state --setup /tmp/acc-obs/setup-ok-quiet.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/kq-work >/dev/null 2>&1
+left=$(ls /tmp/acc-obs/kq-work/setup-output-*.txt 2>/dev/null | wc -l | tr -d ' ')
+if [ -n "$kept" ] && grep -q "using a stale fixture" "$kept" && [ "$left" = "0" ]; then
+    echo "ok   #483: a successful setup's output is kept when there is any, and no file is left when there is none"
+else
+    echo "     #483: expected the talking setup's capture kept (got [$kept]) and the quiet one's removed (got $left)"
+    fails=$((fails + 1))
+fi
+
 # --- #485: why the record could not be placed, and the name the file last had ---
 mkdir -p /tmp/acc-obs/u-state /tmp/acc-obs/u-work
 o=$(TOY_WRITE_AFTER_UNLINK=1 "$SIDEEYE" preflight --state /tmp/acc-obs/u-state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc-obs/u-work 2>&1)
-if echo "$o" | grep -q "write-after-unlink" && echo "$o" | grep -q "last named"; then
-    echo "ok   #485: the refusal names why it could not be placed and the file's last name"
+# All three of what #485 asked for, anchored together: the operation, the descriptor and
+# the last name. The operation is asserted because the kind alone used to imply it -- this
+# branch is keyed on the descriptor's link count, so `close`, `fsync` and `truncate` reach
+# it too, and a constant spelled `write-after-unlink` said "write" about all of them.
+# Not a bare `fd:` grep either: a run that recorded a `fd-without-path fd:N` first would
+# satisfy that while this record still named nothing, since the message quotes only the
+# first unplaceable record.
+if echo "$o" | grep -q "unlinked-fd write fd:" && echo "$o" | grep -q "last named"; then
+    echo "ok   #485: the refusal names the operation, the descriptor and the file's last name"
 else
-    echo "     #485: expected [write-after-unlink] and [last named], got: $o"
+    echo "     #485: expected [unlinked-fd write fd:] and [last named], got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #485: the kind whose path is empty by construction ---
+# `linkat` with an empty source names a descriptor and nothing else, so the descriptor is
+# the whole of the operation's identity -- the sharpest case for #485 and, until this leg,
+# the one with no material behind it. The kernel refuses the call (AT_EMPTY_PATH needs
+# CAP_DAC_READ_SEARCH), which does not matter: the shim records before it calls through,
+# and its branch tests the empty path rather than the flag.
+#
+# `no name recorded for it` is asserted as well. This is the branch that must NOT invent a
+# filename, and the same sentence with `last named` in it would mean the renderer had
+# started reading an empty path as a name -- the `fd:7`-as-a-filename defect in reverse.
+mkdir -p /tmp/acc-obs/l-state /tmp/acc-obs/l-work
+o=$(TOY_LINK_BY_DESCRIPTOR=1 "$SIDEEYE" preflight --state /tmp/acc-obs/l-state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-obs/l-work 2>&1)
+if echo "$o" | grep -q "link-by-descriptor fd:" && echo "$o" | grep -q "no name recorded for it"; then
+    echo "ok   #485: a link by descriptor names the descriptor and invents no filename"
+else
+    echo "     #485: expected [link-by-descriptor fd:] and [no name recorded for it], got: $o"
     fails=$((fails + 1))
 fi
 
@@ -4751,14 +4869,21 @@ fi
 # --- #483, the same class the scan found: a setup killed by a signal ---
 # The case the issue was filed from -- "a guard on this machine refused it" -- lands in
 # `.signaled`, not `.exited`, and said only "did not exit normally" until this change.
-printf '#!/bin/sh\nkill -TERM $$\n' > /tmp/acc-obs/sigterm.sh
+# It speaks before it dies, on purpose. A signal-killed setup that wrote nothing would
+# exercise the "wrote nothing" branch a leg above already covers, and would say nothing
+# about whether this arm carries output at all -- which is the miss this check exists for:
+# a fix threaded through `.exited` alone leaves the other two arms saying half as much.
+printf '#!/bin/sh\nprintf "about to be killed\\n" >&2\nkill -TERM $$\n' > /tmp/acc-obs/sigterm.sh
 chmod 755 /tmp/acc-obs/sigterm.sh
-o=$("$SIDEEYE" preflight --state /tmp/acc-obs/state --setup /tmp/acc-obs/sigterm.sh \
-    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/work 2>&1)
-if echo "$o" | grep -q -- "--setup was killed by signal 15"; then
-    echo "ok   #483: a setup killed by a signal names the signal"
+mkdir -p /tmp/acc-obs/s-state /tmp/acc-obs/s-work
+o=$("$SIDEEYE" preflight --state /tmp/acc-obs/s-state --setup /tmp/acc-obs/sigterm.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/s-work 2>&1)
+if echo "$o" | grep -q -- "--setup was killed by signal 15" &&
+   echo "$o" | grep -q "its last output line was: about to be killed" &&
+   echo "$o" | grep -q "all of it is in /tmp/acc-obs/s-work/setup-output-"; then
+    echo "ok   #483: a setup killed by a signal names the signal, its last line and its capture"
 else
-    echo "     #483: expected [--setup was killed by signal 15], got: $o"
+    echo "     #483: expected [--setup was killed by signal 15] with the line and the capture path, got: $o"
     fails=$((fails + 1))
 fi
 
