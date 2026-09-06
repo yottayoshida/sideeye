@@ -139,6 +139,24 @@ const O_NOFOLLOW: c_int = blk: {
     break :blk @bitCast(f);
 };
 
+/// Derived the same way `O_NOFOLLOW` above is, for a weaker reason: this value does not
+/// vary within a platform, so a literal would have been right here. It is derived anyway
+/// because the warning in that comment is about the *writing*, not about which values
+/// happen to be safe — the next flag written by hand is where the next one goes wrong.
+/// Its example is not one of the five literals above; those were checked on three targets
+/// and are right. It is the engine's `O_NOFOLLOW`, which carried the x86_64 number for all
+/// of Linux and left its one caller inert on arm64 (#316).
+/// `src/posix.zig` keeps a literal for the engine's copy of this flag and
+/// stays that way: `build.zig` gives this file's test module `contract`,
+/// `engine_build_options` and `shim_build_options`, with no edge to `posix.zig`, so a test
+/// pinning the two against each other cannot be written from this side. Deriving is what
+/// removes the need for one.
+const O_NONBLOCK: c_int = blk: {
+    var f: std.posix.O = .{};
+    f.NONBLOCK = true;
+    break :blk @bitCast(f);
+};
+
 /// Is this open capable of changing state? (ADR 0003)
 ///
 /// True iff the access mode is not read-only, or the call can create or truncate. The
@@ -578,12 +596,40 @@ pub fn init() void {
     // Dropping `O_CREAT` is not available either: the reproduce line the engine prints
     // names `<work>/trace-repro.bin`, which nothing creates but this open, and three
     // acceptance legs drive the shim directly after removing the file.
-    trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0o644);
+    // `O_NONBLOCK` is the half of #492 that has to be on the open itself: a FIFO with no
+    // reader answers `O_WRONLY` by blocking until one arrives, and this open runs from
+    // `.init_array` inside a recording run that has nothing to time it out. With the flag
+    // it answers `ENXIO` instead. The flag is without effect on a regular file, so the
+    // ordinary path is unchanged.
+    trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK, 0o644);
     // Refused is silent-then-not-ready, deliberately for now: the engine reports
     // `no_shim_marker` (or, in a world, `kill_did_not_land`) and neither names the path.
     // Saying which of the two it was is a separate promise — it has three call sites that
     // refuse differently — and it is filed rather than folded in here.
     if (trace_fd < 0) return;
+
+    // The other half of #492, and the flag alone does not cover it: a FIFO somebody is
+    // *already reading* opens fine, and the records would go into it. So would a device or
+    // a socket planted at the name. `traceTargetIsOrdinary` reads what the descriptor
+    // turned out to be — the same question `kindOfFd` answers for the engine's read (#400),
+    // asked on this side for the first time.
+    //
+    // **`trace_fd = -1` is not decoration here.** This exit is reached through a
+    // *successful* open, which the `trace_fd < 0` path above never is, and a closed
+    // positive number left in the global is exactly the descriptor-reuse hazard the
+    // relocation below and `noteTraceClose` exist to close. `active` is still false at this
+    // point, so nothing would write through it today; that is an invariant of the order of
+    // two statements, not something the type or a test holds.
+    //
+    // `O_NONBLOCK` stays on the descriptor from here. POSIX leaves it without effect on a
+    // regular file, and clearing it would mean `F_SETFL`, which replaces the whole status
+    // word: `F_GETFL` and a mask, or `O_APPEND` silently goes with it and every shim'd
+    // process starts writing from its own offset over the records already there.
+    if (!traceTargetIsOrdinary(trace_fd)) {
+        _ = callClose(trace_fd);
+        trace_fd = -1;
+        return;
+    }
 
     // The channel's one weakness is its number: the shim holds trace_fd as an integer,
     // and a target that closes that number — daemonize loops sweep 3..255 as ordinary
@@ -1044,6 +1090,54 @@ const S_IFBLK: u32 = 0o060000;
 const S_IFDIR: u32 = 0o040000;
 const S_IFCHR: u32 = 0o020000;
 const S_IFIFO: u32 = 0o010000;
+
+/// Is the trace channel's descriptor backed by an ordinary file? (#492)
+///
+/// The write side of the answer #400 gave the read. A FIFO at the trace path blocks
+/// `O_WRONLY` until a reader arrives, and that open runs from `.init_array` — before
+/// `main` — inside a recording run with no budget to time it out (`runChildCapture`, not
+/// `runChildCaptureWorld`). `O_NONBLOCK` on the open answers the readerless case with
+/// `ENXIO`; this answers every other kind an open can succeed on: a FIFO somebody is
+/// already reading, a device, a socket, a directory.
+///
+/// **Not `fdKind` below**, which answers a neighbouring question and would be the obvious
+/// thing to reach for. Its `.path_backed` covers a directory as well as a regular file, and
+/// its three values are about whether an *operation* can be placed inside the state
+/// directory — evidence of innocence, evidence of guilt, or a measurement that failed. This
+/// asks whether one descriptor can hold an append-only log. Sharing them would tie two
+/// questions that move for different reasons.
+///
+/// **A named function rather than a branch at the open, so that a test can reach it.**
+/// `init` does not run in a test binary — which the `O_NOFOLLOW` test at the bottom of
+/// this file says about itself ("the call site is held by acceptance instead ... a
+/// mutation that drops the flag at the open leaves this test green"). Two rounds of plan
+/// review each produced a test that would have stayed green with the whole guard reverted,
+/// and the shape of the code is what decided that, not the wording of the tests.
+///
+/// **`.failed` passes.** It means the measurement could not be taken — a kernel without
+/// `statx` — not that a FIFO was found. Refusing on it would turn a host that today
+/// refuses `unresolvable_path`, which names a cause, into one that refuses
+/// `no_shim_marker`, which names nothing. The same `fdStat` failure usually reaches
+/// `noteFd` on the target's first descriptor operation and is answered there — *usually*,
+/// because a target that only renames and unlinks by path never reaches `noteFd` at all,
+/// and a failed stat with a FIFO actually at the name still ends at `no_shim_marker`,
+/// since the engine declines to read one (#400).
+///
+/// **What passing buys is narrower than "safe", and the narrow claim is the true one.**
+/// For a FIFO the write answers `EAGAIN` and `writeAll` gives up, because `O_NONBLOCK`
+/// stays on the descriptor. That says nothing about a **block device**: block I/O is
+/// synchronous and `O_NONBLOCK` does not reach it, so a stalled device node at this name
+/// would block the write the way the open used to block, in the same constructor with the
+/// same absent budget. Planting one needs `mknod` and therefore root — which is why this
+/// arm is still the right trade, not evidence that the hang is impossible. Nor is any of
+/// it safe against `SIGPIPE` if a reader closes mid-write, unchanged from before.
+fn traceTargetIsOrdinary(fd: c_int) bool {
+    return switch (fdStat(fd)) {
+        .ok => |st| (st.mode & S_IFMT) == S_IFREG,
+        .failed => true,
+        .bad_fd => false,
+    };
+}
 
 fn fdKind(fd: c_int, deleted: *bool) FdKind {
     switch (fdStat(fd)) {
@@ -1727,4 +1821,63 @@ test "the shim's O_NOFOLLOW actually refuses a symlink (#488)" {
         _ = std.c.close(refused);
         return error.NofollowDidNotRefuse;
     }
+}
+
+test "the trace open's kind check refuses a pipe and accepts a regular file (#492)" {
+    // `pipe()`, not a FIFO opened by name. A FIFO at the trace path is the hazard this
+    // guard exists for, so opening one by name here would be reaching through the hazard
+    // to check the guard — and a unit test cannot bound its own runtime: the unit-test
+    // steps in CI carry no `timeout-minutes`, so an open that blocked would hold a runner
+    // for the GitHub default of six hours. `src/posix.zig`'s `kindOfFd` test makes the
+    // same choice for the same reason. A pipe is `S_IFIFO` to `fstat`, which is the field
+    // this function reads, and it has no filesystem and no possibility of blocking.
+    //
+    // Unlike the `O_NOFOLLOW` test above, this one **does** hold the call site's decision:
+    // the check is a named function, so reverting it turns these assertions red. What it
+    // still does not hold is that `init` calls it, or that the open carries `O_NONBLOCK`;
+    // those two are acceptance's (`spike/acceptance.sh`, #492 legs).
+    var fds: [2]std.c.fd_t = undefined;
+    try std.testing.expect(std.c.pipe(&fds) == 0);
+    defer _ = std.c.close(fds[0]);
+    defer _ = std.c.close(fds[1]);
+    try std.testing.expect(!traceTargetIsOrdinary(fds[0]));
+    try std.testing.expect(!traceTargetIsOrdinary(fds[1]));
+
+    // The control, and it is what gives the assertions above a meaning: a function that
+    // answered `false` for everything would satisfy them while refusing every real trace
+    // in every run — the guard failing closed on the whole product rather than on a FIFO.
+    //
+    // A pid-unique directory: `zig build test` runs this file in several concurrent
+    // binaries, and a fixed shared name passed every single run before failing 66 of 80
+    // paired ones (#28).
+    var bb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-tracekind-{d}", .{c.getpid()}) catch unreachable;
+    _ = std.c.mkdir(base.ptr, 0o755);
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/f", .{base}) catch unreachable;
+    defer {
+        _ = std.c.unlink(file_z.ptr);
+        _ = std.c.rmdir(base.ptr);
+    }
+    const create: std.posix.O = @bitCast(O_WRONLY | O_CREAT | O_TRUNC);
+    const wfd = std.c.open(file_z.ptr, create, @as(c_uint, 0o644));
+    try std.testing.expect(wfd >= 0);
+    defer _ = std.c.close(wfd);
+    try std.testing.expect(traceTargetIsOrdinary(wfd));
+
+    // A directory answers `false` as well. The call site cannot produce one — `O_WRONLY`
+    // on a directory is `EISDIR` — but the property under test is "an ordinary file",
+    // not "not a pipe", and a mask that only excluded `S_IFIFO` would pass without this.
+    const rdonly: std.posix.O = @bitCast(@as(c_int, 0));
+    const dfd = std.c.open(base.ptr, rdonly, @as(c_uint, 0));
+    try std.testing.expect(dfd >= 0);
+    defer _ = std.c.close(dfd);
+    try std.testing.expect(!traceTargetIsOrdinary(dfd));
+
+    // The `.bad_fd` arm. It cannot arrive at the call site, where the descriptor has just
+    // been opened successfully, but the function answers for it and the answer is `false`:
+    // there is no file to put records in. `.failed` is deliberately not tested — producing
+    // a live descriptor whose `fstat` fails takes a kernel this test cannot arrange, and
+    // faking it would be testing the fake.
+    try std.testing.expect(!traceTargetIsOrdinary(-1));
 }

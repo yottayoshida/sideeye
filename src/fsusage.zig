@@ -602,7 +602,18 @@ pub fn read(
         // `fseventsd`'s `lstat64` of the file — with a security agent's read-only
         // `open`s before it — so the daemon became the subject and every one of the
         // toy's writes was "a thread other than the subject". Only the shim opens the
-        // trace to write; `O_WRONLY|O_CREAT|O_APPEND`, `(_WCA_______X)` on disk.
+        // trace to write; `O_WRONLY|O_CREAT|O_APPEND` printed `(_WCA_______X)` when this
+        // was measured, and #492 added `O_NONBLOCK` to that open, so the bracket a real
+        // capture prints now is whatever fs_usage gives that combination. **Not
+        // re-measured, and it does not have to be**: `openIsWriteCapable` reads index 1, 2
+        // and 4 for `W`, `C` and `T` and counts an unrecognised bracket as write-capable,
+        // so a flag added to this open cannot drop the subject. Widening is not free in
+        // general — two threads matching would set `subject_ambiguous` and refuse the run —
+        // but that needs some other process's bracket to change, which adding a flag here
+        // does not do.
+        // The fixtures below keep the pre-#492 spelling for the same reason — they pin the
+        // predicate, not the kernel's printing, and rewriting them to a spelling nobody
+        // measured would be the worse of the two.
         if (samePath(path, trace_path) and classOf(ln.call) == .open and openIsWriteCapable(ln.middle)) {
             if (subject_tid) |prev| {
                 if (!std.mem.eql(u8, prev, ln.tid)) subject_ambiguous = true;

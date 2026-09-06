@@ -202,6 +202,17 @@
  *                     part of whoever can write the work directory: the engine unlinks
  *                     the trace once, before the run, so from the second shim'd process
  *                     onward there is nothing in front of the open at all.
+ *   TOY_TRACEFIFO     the same shape with a FIFO in place of the symlink (#492), and
+ *                     this variable's value is a witness BASE rather than a target:
+ *                     `<value>.spawned` appears only if the spawned child exited 0
+ *                     within a deadline. TOY_TRACELINK could point its variable at the
+ *                     link's target and measure that file's size; a FIFO has no second
+ *                     path, so the two measurements are split.
+ *   TOY_TRACEFIFO_READER  with TOY_TRACEFIFO: open the FIFO for reading before the
+ *                     spawn and hold it across. That is the case O_NONBLOCK on the
+ *                     shim's open cannot answer — with a reader present the child's
+ *                     O_WRONLY succeeds — and `<value>.bytes` reports how much the
+ *                     child managed to put in.
  */
 
 #define _GNU_SOURCE
@@ -215,6 +226,7 @@
 #include <sys/event.h>
 #endif
 #include <pthread.h>
+#include <signal.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -411,6 +423,86 @@ static void maybe_leave_the_supported_region(void) {
                     (void)write_file(w, "");
                 }
             }
+        }
+    }
+    /* A FIFO where the trace goes (#492). Same standing as TOY_TRACELINK above — whoever
+     * can write the work directory — and the same reason it reaches the SECOND shim'd
+     * process: the engine unlinks the trace once, before the run, and nothing stands in
+     * front of the opens after that.
+     *
+     * The witness is what the leg measures, not the verdict. Planting anything here
+     * unlinks the real trace and strands the parent's records on a nameless inode, so the
+     * run refuses on both sides of the fix — and after the fix the engine ALSO refuses the
+     * read of the FIFO itself (#400), so `no_shim_marker` comes back either way. What
+     * separates them is whether the child could finish: before the fix it blocks forever
+     * in the shim's constructor, after it the open answers ENXIO (no reader) or the kind
+     * check closes the descriptor (a reader), and either way /usr/bin/true exits 0. */
+    const char *tracefifo = getenv("TOY_TRACEFIFO");
+    if (tracefifo && *tracefifo) {
+        const char *tp = getenv("SIDEEYE_TRACE_PATH");
+        if (tp && *tp && unlink(tp) == 0 && mkfifo(tp, 0644) == 0) {
+            /* O_NONBLOCK on this side too, or the reader waits for a writer and the toy
+             * hangs before the child even starts — the hazard being measured, sprung on
+             * the apparatus instead of on the subject. */
+            int rfd = getenv("TOY_TRACEFIFO_READER") ? open(tp, O_RDONLY | O_NONBLOCK) : -1;
+            static char *const av[] = { (char *)TOY_TRUE, NULL };
+            pid_t sp;
+            if (posix_spawn(&sp, TOY_TRUE, NULL, NULL, av, environ) == 0) {
+                /* A deadline, and the SIGKILL that has to go with it. A plain waitpid
+                 * would block here before the fix, the engine would block on us, and the
+                 * run would have nothing to time it out — #492 itself, reproduced one
+                 * level up in the apparatus. And `timeout` around the engine does not
+                 * clean this up: it signals the engine, not the tree below it, so the
+                 * grandchild would outlive the run holding the FIFO open. Reaping is this
+                 * process's job because this process is the one that knows the pid.
+                 *
+                 * Not alarm(): with no handler SIGALRM kills the toy, and the engine then
+                 * sees its target die by signal — a different run from the one the leg
+                 * means to measure. With a handler, waitpid returns EINTR and the child
+                 * stays exactly where it was. */
+                int st = 0;
+                pid_t got = 0;
+                int gone = 0; /* the pid is no longer ours to signal */
+                for (int i = 0; i < 100; i++) { /* 100 x 100ms = 10s */
+                    got = waitpid(sp, &st, WNOHANG);
+                    if (got == sp) break;
+                    /* Two things that are not "still running". ECHILD means there is no
+                     * child left to wait for, and the pid may already belong to somebody
+                     * else — killing it below would signal a stranger. Any other error is
+                     * unexpected and treated the same way, on the same reasoning.
+                     *
+                     * EINTR is neither: it is not an answer about the child, and it must
+                     * not shorten the deadline. Falling through to the sleep treats it as
+                     * "not yet", which is what it is. `continue` here would skip the sleep
+                     * and spend the hundred iterations in a burst, collapsing ten
+                     * seconds to microseconds: the SIGKILL would land almost at once, on a
+                     * child that was still running normally. Read back rather than run —
+                     * producing EINTR here on demand needs a signal this toy never gets. */
+                    if (got < 0 && errno != EINTR) { gone = 1; break; }
+                    usleep(100000);
+                }
+                if (got != sp && !gone) {
+                    kill(sp, SIGKILL);
+                    (void)waitpid(sp, &st, 0);
+                } else if (got == sp && WIFEXITED(st) && WEXITSTATUS(st) == 0) {
+                    char w[4200];
+                    snprintf(w, sizeof w, "%s.spawned", tracefifo);
+                    (void)write_file(w, "");
+                }
+                if (rfd >= 0) {
+                    /* What the child put in, read after it is gone and non-blocking, so
+                     * this returns whether or not anything was written. Zero is the
+                     * answer the fix produces; a shim that only gained O_NONBLOCK would
+                     * write here, because a reader is present and the open succeeds. */
+                    char buf[65536];
+                    ssize_t n = read(rfd, buf, sizeof buf);
+                    char b[4200], num[32];
+                    snprintf(b, sizeof b, "%s.bytes", tracefifo);
+                    snprintf(num, sizeof num, "%ld\n", (long)(n > 0 ? n : 0));
+                    (void)write_file(b, num);
+                }
+            }
+            if (rfd >= 0) close(rfd);
         }
     }
     /* The escape: a child that leaves the process group the engine relies on. */
