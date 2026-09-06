@@ -3927,6 +3927,176 @@ else
     fails=$((fails + 1))
 fi
 
+# #492: a FIFO at the trace path is refused by the shim's WRITE, not only by the engine's
+# read. The other end of the name #400 closed.
+#
+# Same standing as #488's leg above: the toy plays whoever can write the work directory,
+# unlinks the trace the engine named, and leaves something else there for the SECOND shim'd
+# process to open. A FIFO rather than a symlink, and `O_WRONLY` on one with no reader blocks
+# until a reader arrives. That open runs in the shim's constructor, before `main`, inside a
+# recording run with no budget (`runChildCapture`, not `runChildCaptureWorld`), so before
+# the fix the whole run stops with no report and no exit code.
+#
+# **The witness is the measurement and the verdict is not.** Both sides of the fix refuse:
+# planting anything here strands the parent's records on a nameless inode, and after the fix
+# the engine also declines to read the FIFO (#400), so `no_shim_marker` comes back either
+# way. The exit code does not separate them either, because the toy carries its own deadline
+# — it has to, since `timeout` around the engine signals the engine and not the grandchild —
+# so the run terminates before the fix as well. What differs is whether the spawned child
+# could ever finish: blocked forever before, `ENXIO` and an exit 0 after.
+#
+# The outer `timeout` is the leg's own net, the way the world-timeout leg's is: the
+# acceptance step in CI has none of its own, and a regression that reintroduced an unbounded
+# wait somewhere the toy's deadline does not reach would hold the runner for hours.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/work
+TOY_TRACEFIFO=/tmp/acc/fifo-w export TOY_TRACEFIFO
+timeout 120 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work >/dev/null 2>&1
+rc=$?
+unset TOY_TRACEFIFO
+if [ ! -p /tmp/acc/work/trace-record.bin ]; then
+    echo "FAIL trace fifo: the toy planted no FIFO at the trace path, so nothing was measured"
+    fails=$((fails + 1))
+elif [ -f /tmp/acc/fifo-w.spawned ]; then
+    echo "ok   a FIFO at the trace path does not hold the shim's open (#492)"
+else
+    echo "FAIL trace fifo: the spawned child never exited 0 — the open blocked (engine exit $rc)"
+    fails=$((fails + 1))
+fi
+
+# The half `O_NONBLOCK` alone cannot answer: a FIFO somebody is ALREADY reading. `ENXIO`
+# comes back only when there is no reader, so with one present the open succeeds and the
+# records go into the pipe — which is why the fix is a kind check after the open rather than
+# the one-line flag. The toy holds a reader across the spawn and reports how much arrived.
+#
+# Three preconditions before the count, because zero has several causes: the FIFO has to be
+# there, the child has to have finished, and `.bytes` has to exist at all — its absence means
+# the toy's own reader never opened, which is the apparatus failing rather than the subject
+# passing.
+#
+# The expected count before the fix is not #488's 44. A FIFO fails `lseek(SEEK_END)`, so the
+# shim's header branch does not fire and only a `shim_ready` record would arrive. The
+# assertion is zero either way, and the measured number is recorded in BUILDLOG.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/work
+TOY_TRACEFIFO=/tmp/acc/fifo-r export TOY_TRACEFIFO
+TOY_TRACEFIFO_READER=1 export TOY_TRACEFIFO_READER
+timeout 120 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work >/dev/null 2>&1
+unset TOY_TRACEFIFO TOY_TRACEFIFO_READER
+fbytes=$(tr -d ' \n' < /tmp/acc/fifo-r.bytes 2>/dev/null || echo "")
+if [ ! -p /tmp/acc/work/trace-record.bin ]; then
+    echo "FAIL trace fifo read: the toy planted no FIFO, so nothing was measured"
+    fails=$((fails + 1))
+elif [ ! -f /tmp/acc/fifo-r.spawned ]; then
+    echo "FAIL trace fifo read: the spawned child never exited 0, so an empty pipe proves nothing"
+    fails=$((fails + 1))
+elif [ -z "$fbytes" ]; then
+    echo "FAIL trace fifo read: no byte count was written — the toy's reader never opened, or the spawn itself failed; either way nothing was measured"
+    fails=$((fails + 1))
+elif [ "$fbytes" = "0" ]; then
+    echo "ok   a FIFO with a reader takes none of the shim's records either (#492)"
+else
+    echo "FAIL trace fifo read: the pipe took $fbytes bytes"
+    fails=$((fails + 1))
+fi
+
+# The control for both legs above is #488's, a few checks up: same toy, same work directory,
+# nothing planted, and the ordinary FAIL with a crash point comes back. It covers a refusing
+# engine and an absent shim for these legs too, because all three drive the same two
+# binaries. What it does not cover — here as there — is the child loading the shim: the
+# `.spawned` witness is about the child finishing, not about what it loaded.
+
+# #487: a PASS over exactly one crash point says so on its verdict line.
+#
+# Zero already had this — `PASS  the operation performed nothing that can change the judged
+# state` — and `docs/scouting.md` names it as the tell for a store that resolved outside
+# `--state`. One had the count in the account block and nowhere else, which is where #487's
+# reporter read past it: a full exploration and the conclusion "trash-cli holds", against a
+# corrected define that answers FAIL 2 of 7.
+#
+# `TOY_ONE_UNLINK` is the only mode in `toy.c` that reaches one, not the only shape that
+# could: `isKillPoint` and `isMutation` agree on eight classes, and `docs/target-classes.md`
+# records papis reaching one through a lone `renameat`. What it rules out is `write_file()`,
+# which is two — `open` and `write` are separate kill points.
+#
+# **Do not hand an anchored verdict-line matcher a define with one crash point.** The #150
+# structure pin — `^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity
+# invariant$` against `head -1`, at line 557, some three thousand lines ABOVE this — drives
+# toy-fixed at four crash points and would fail on this define, because the clause is part of
+# the line it anchors.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+TOY_ONE_UNLINK=1 export TOY_ONE_UNLINK
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+unset TOY_ONE_UNLINK
+cp=$(echo "$o" | grep -o 'crash points [0-9][0-9]*' | awk '{print $3}')
+if [ "$rc" != "0" ]; then
+    echo "FAIL one-crash-point: the run did not PASS (exit $rc), so its verdict line proves nothing"
+    echo "$o" | sed 's/^/     | /' | head -3
+    fails=$((fails + 1))
+elif [ "${cp:-0}" != "1" ]; then
+    echo "FAIL one-crash-point: the toy produced ${cp:-no} crash point(s), not 1 — nothing was measured"
+    fails=$((fails + 1))
+elif ! echo "$o" | head -1 | grep -q "over a single crash point"; then
+    echo "FAIL one-crash-point: the verdict line does not name the count: $(echo "$o" | head -1)"
+    fails=$((fails + 1))
+elif ! echo "$o" | grep -q "check that the target's store resolves inside the state directory"; then
+    # The advice is a second call, and without this arm nothing in the suite reaches it:
+    # deleting `saySingleCrashPointNote` would leave all three legs green while CHANGELOG
+    # and docs/scouting.md both promise the line is there.
+    echo "FAIL one-crash-point: the verdict line names the count, but the advice line is missing"
+    fails=$((fails + 1))
+else
+    echo "ok   a PASS over one crash point says so on its verdict line, with the advice under it (#487)"
+fi
+
+# The control, and it has to be a PASS. toy-bug would be the obvious choice and is the wrong
+# one: it FAILs, so there is no PASS block at all and an absence-of-wording check would pass
+# against an implementation that prints the clause unconditionally. Same toy as the leg
+# above, without the one-unlink mode, so the only difference is the crash point count.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+# Held in its own name here, beside the run that produced it, rather than after the checks
+# below: the whitespace check wants THIS run's output (the `n != 1` side, where an empty
+# `{s}` would print), and anything inserted between the run and the assignment would
+# redirect it silently.
+o_ctl=$o
+cp=$(echo "$o" | grep -o 'crash points [0-9][0-9]*' | awk '{print $3}')
+if [ "$rc" != "0" ]; then
+    echo "FAIL one-crash-point control: the run did not PASS (exit $rc)"
+    fails=$((fails + 1))
+elif [ "${cp:-0}" -lt 2 ]; then
+    echo "FAIL one-crash-point control: ${cp:-no} crash point(s) — the control needs more than one"
+    fails=$((fails + 1))
+elif echo "$o" | head -1 | grep -q "over a single crash point"; then
+    echo "FAIL one-crash-point control: the clause appears on a run with $cp crash points"
+    fails=$((fails + 1))
+elif echo "$o" | grep -q "check that the target's store resolves inside the state directory"; then
+    echo "FAIL one-crash-point control: the advice appears on a run with $cp crash points"
+    fails=$((fails + 1))
+else
+    echo "ok   a PASS over $cp crash points carries neither the clause nor the advice (control)"
+fi
+
+# The advice line is emitted by a separate call rather than as a `{s}` inside the report's
+# multiline literal, because `\      {s}` prints six spaces on every PASS where the string is
+# empty — and both checks above grep for wording, so neither would ever see that. This one
+# does. A whitespace-ONLY line, not a blank one: the report ends its block with a genuine
+# empty line, which is not the failure being looked for.
+if echo "$o_ctl" | grep -qE '^ +$'; then
+    echo "FAIL one-crash-point: the control's report carries a whitespace-only line — the advice is inside the literal"
+    fails=$((fails + 1))
+else
+    echo "ok   the control's PASS carries no whitespace-only line (#487, the shape the wording checks cannot see)"
+fi
+
 # A case recorded under the previous contract refuses honestly. The fixture is a REAL
 # case generated by the current writer with only contract_version mutated to 7 — a
 # hand-written fixture could pass this check by merely failing to parse.
@@ -4565,6 +4735,40 @@ for lib in lib/probes lib/drills lib/snapshot lib/check-transcript check-cohort-
     fi
 done
 [ "$lib_fails" = 0 ] || fails=$((fails + 1))
+
+echo "=========== check 11f: the loop-closure judge is seen refusing (#63) ==========="
+# The judge declares a void condition "enforced per escape channel, against EVERY tool
+# call" and a restore that must not fail silently -- and until this check neither had ever
+# been observed refusing anything. `judge.sh selftest` drives thirteen refusals with
+# synthetic roots and transcripts (two by name, four by network alternation, three path
+# markers, two docker, the transcript with no tool calls, and a seal that does not match
+# its manifest) plus four greens: a clean transcript stays clean, a doctored file comes
+# back from the seal, a deleted one is put back, and `check` records without copying.
+# The eleven voiding refusals each assert that the ONE field their channel owns is the
+# non-empty one, so a case that voided for another reason does not stand in for the
+# branch it names; the no-tool-calls and restore-failure cases are judged on their own
+# terms, since neither reaches the field-by-field classification.
+# Seen red: nine mutations of judge.sh plus one of the case list, each killing exactly
+# the cases it should --
+# UNSEALED blinded (name-unsealed), the mcp branch blinded (name-mcp-foreign), the network
+# regex unmatchable (all four net-*), the path test made False (all three path-*), the
+# --network none test made False (docker-nonet only, because the mount test is separate),
+# the out-of-stage mount test made False (docker-mount only), the no-tool-calls exit
+# removed (unauditable), the post-restore hash check removed (restore-fail), and the
+# verdict forced to clean (all eleven void cases, not unauditable, which exits earlier).
+if sh "$ROOT/spike/loop-closure-timew/judge.sh" selftest > /tmp/acc-judge-selftest.txt 2>&1; then
+    echo "ok   judge.sh selftest: thirteen refusals and four greens"
+else
+    echo "FAIL judge.sh selftest (rc=$?): a channel stopped refusing, or a red moved"
+    # Every failing line, not a tail: a green run is already 20 lines, so `tail -20` would
+    # have dropped the first FAIL as soon as four channels went at once — which is exactly
+    # what one blinded regex does (all four net-* cases fail together).
+    # BROKEN and the restore's own message are in the pattern too: the first is how a
+    # missing work directory reports itself, and the second is what a green-side
+    # restore_and_diff prints when it dies under set -e. Neither starts with FAIL.
+    grep -E '^(FAIL|BROKEN|selftest:)|restore failed for' /tmp/acc-judge-selftest.txt | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
 
 echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
 # Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
@@ -6786,6 +6990,20 @@ if grep -q '^## What the target has to be' "$ROOT/README.md"; then
     echo "ok   next_step: README still has the 'What the target has to be' section the class-wall step names"
 else
     echo "FAIL next_step: the class-wall step names a README section that is not there"
+    ns_fails=$((ns_fails + 1))
+fi
+# The define surface has to say which of the three commands the insertion goes into, in
+# both places a reader meets the define: the toml block and the flag line beside it. Its own
+# leg, so a prose edit that drops either one fails here, under a line about the document
+# rather than under the engine's — the same shape as the byte-repeatability wall check
+# above. Two variables rather than one grep, because the two places are what #482 named and
+# a clause in only one of them leaves the other reader where they were.
+img_toml="the shim is inserted into this one"
+img_flags="the one command the shim is inserted into"
+if grep -q "$img_toml" "$ROOT/README.md" && grep -q "$img_flags" "$ROOT/README.md"; then
+    echo "ok   next_step: the define surface says operation is the command the shim goes into, in the toml block and in the flag list"
+else
+    echo "FAIL next_step: the operation-is-an-executable-image clause is missing from a place the define surface presents (toml '$img_toml': $(grep -c "$img_toml" "$ROOT/README.md"); flags '$img_flags': $(grep -c "$img_flags" "$ROOT/README.md"))"
     ns_fails=$((ns_fails + 1))
 fi
 fails=$((fails + ns_fails))

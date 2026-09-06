@@ -656,6 +656,12 @@ pub const NextStep = enum {
     /// The image is dynamically linked and the marker still never appeared: the shim is
     /// the thing to look at.
     check_shim,
+    /// The file `operation` names was read and could not be recognised as an executable
+    /// image, so the insertion the run relies on had nothing to go into. Not `class_wall`:
+    /// the limit is on how the define spells this one command, not on what the target
+    /// under test is, and the README section that sentence names enumerates the latter.
+    /// Not `fix_define`: nothing the define declared was contradicted (#481, #482).
+    operation_not_an_image,
     /// Shim and engine speak different trace contracts.
     rebuild_pair,
     /// A saved case that this recording no longer matches.
@@ -683,6 +689,7 @@ pub const NextStep = enum {
             .raise_world_timeout => "Raise --world-timeout, or find out what the operation waits on.",
             .class_wall => "This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.",
             .check_shim => "Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.",
+            .operation_not_an_image => "What was read at operation is not something the loader inserts a library into. Point operation at an executable image; a #! script hands execution to its interpreter, which is what the insertion would have to reach.",
             .rebuild_pair => "Use the shim and the engine from the same build: --shim must name the library this binary shipped with.",
             .re_record => "Explore the define again under this build; the saved case does not apply here, and a fresh recording yields a fresh case.",
             .environment => "Fix what the detail above names in the environment, then re-run; the define itself is unchanged.",

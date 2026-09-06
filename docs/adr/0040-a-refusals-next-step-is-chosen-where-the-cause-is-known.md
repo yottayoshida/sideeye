@@ -46,6 +46,17 @@ and `unknown()` takes it as a required argument.**
   answers the wall for a static ELF, a Mach-O not linked against dyld, or a code
   directory that names a platform or carries the library-validation or hardened-runtime
   flag; the shim step otherwise.
+
+  **Amended 2026-09-06 (ADR 0051, #481 #482).** Two things in this section moved: the
+  enum count in the first bullet, and what this bullet's last clause covers. The enum is
+  **fifteen**: `operation_not_an_image` was added for one arm this bullet
+  folded into "otherwise". A file the engine read and could not recognise as an executable
+  image is not silent about linkage the way an unresolved path or an unreadable file is —
+  there is no linkage question, because nothing there is a thing a library is inserted
+  into — so it names the define. The wall list above is unchanged; what changed is what
+  "otherwise" covers, which is now the three arms that really are silent. The paragraph is
+  left standing rather than rewritten, because it states the branching the decision was
+  made under.
 - The sentence is rendered once in `unknown()` and handed to both forms: the JSON
   `next_step` field (after `message`) and the text report's `next` line (after the
   detail line, which the acceptance suite reads as the line following the reason). The

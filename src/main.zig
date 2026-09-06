@@ -3878,7 +3878,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     requireCompleteness(arena, args.has_oracle, args.allow_unverified);
 
     say(
-        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant
+        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}
         \\      explored {d} worlds (crash points {d} + 1 baseline)
         \\      expected status: {d}
         \\      atomicity: {s}
@@ -3890,8 +3890,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
+    , .{ explored, explored, singleCrashPointClause(n), explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
     sayApparatus(arena, "      apparatus: {s}\n");
+    saySingleCrashPointNote(n);
     if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
@@ -4833,9 +4834,18 @@ fn reconcileOrRefuse(
 /// lists, and the step is the wall. A dynamically linked image with nothing on it that
 /// this build looks for: the marker's absence has another cause, and the shim is the
 /// thing to check. An image that could not be read or resolved says nothing about
-/// linkage, so it takes the shim step too — the honest default, not a diagnosis.
+/// linkage, so it takes the shim step too — the honest default, not a diagnosis. That reason
+/// covers `.not_resolved`, `.unreadable` and `.undecidable`, and stops there: `.unrecognised`
+/// means the file WAS read, and what it says is not "nothing about linkage" but "no library
+/// goes into this", so that arm names the define instead (#481).
 fn noShimNext() contract.NextStep {
-    const obs = rec_image orelse return .check_shim;
+    return noShimNextFor(rec_image);
+}
+
+/// The observation-to-step table above, taking its observation as an argument rather than
+/// reading the global — so every arm can be pinned in a test without a recording behind it.
+fn noShimNextFor(observed: ?image.Observation) contract.NextStep {
+    const obs = observed orelse return .check_shim;
     return switch (obs.facts) {
         .elf => |e| if (e.has_interp) .check_shim else .class_wall,
         // Read in the same order `noShimDetail` reads them, so the step never contradicts
@@ -4847,7 +4857,14 @@ fn noShimNext() contract.NextStep {
             if (s.platformNamed() or s.libraryValidation() or s.hardenedRuntime()) break :blk .class_wall;
             break :blk .check_shim;
         },
-        .not_resolved, .unreadable, .unrecognised, .undecidable => .check_shim,
+        // Read, and not recognised as an executable image. `image.zig` reaches this from
+        // five places: the first four bytes unreadable, a magic none of the three families
+        // claims (where a `#!` script lands), an ELF class or data byte outside the two each
+        // admits, and a Mach-O slice whose own magic is neither. The other three arms are
+        // silent about linkage; this one is not — there is no linkage question, because
+        // nothing here is a thing a library is inserted into (#481).
+        .unrecognised => .operation_not_an_image,
+        .not_resolved, .unreadable, .undecidable => .check_shim,
     };
 }
 
@@ -5700,6 +5717,45 @@ fn resolveFailure(arena: std.mem.Allocator, path: []const u8, err: c_int) []cons
 /// something was declared.
 fn sayApparatus(arena: std.mem.Allocator, comptime fmt: []const u8) void {
     if (apparatus_declared.len > 0) say(fmt, .{apparatusNote(arena)});
+}
+
+/// The verdict line's clause for a run with exactly one crash point (#487).
+///
+/// Zero has a verdict line of its own — "the operation performed nothing that can change the
+/// judged state" — and `docs/scouting.md` names it as the tell for a store that resolved
+/// outside `--state`. One had nothing: the count was in the account block and nowhere else,
+/// which is where #487's reporter read past it, at the price of a full exploration and the
+/// wrong conclusion. `preflight` has named its count on its own headline all along
+/// (`recording accepted — N state-changing operation(s) observed`), so this is explore
+/// catching up with a sibling rather than a new register.
+///
+/// **Not a threshold.** Two crash points get nothing added, deliberately: "two is enough" is
+/// a claim this cannot make, and a genuinely single-syscall operation is a legitimate target
+/// shape — `docs/target-classes.md` records papis reaching exactly one through a lone
+/// `renameat`. What this does is extend zero's
+/// register to the one case sitting next to it, and the cases at two and three are left
+/// where they were — a define whose store resolves outside `--state` but writes one file
+/// still reaches two (`open` + `write`) and gets no tell.
+fn singleCrashPointClause(n: usize) []const u8 {
+    return if (n == 1) ", over a single crash point" else "";
+}
+
+/// The advice that goes with the clause above, in the account block's own style, only when
+/// the run had exactly one crash point.
+///
+/// **The condition is `singleCrashPointClause`'s, spelled a second time.** Changing one
+/// without the other leaves a verdict line that names the count with no advice under it, or
+/// advice under a line that does not. They are two functions rather than one because they
+/// print in two places — the literal and after it — and there is no third caller to make a
+/// shared predicate worth its own name.
+///
+/// A separate call after the block, the way `sayApparatus` is, rather than a `{s}` line
+/// inside the multiline literal: `\\      {s}` prints six spaces on every *other* PASS when
+/// the string is empty, and a check that greps for wording would never see that. The cost is
+/// the position — this lands under `not tested:` rather than beside the count — and the
+/// alternative was splitting the report's one `say` in two for a single line of advice.
+fn saySingleCrashPointNote(n: usize) void {
+    if (n == 1) say("      if the define expected more, check that the target's store resolves inside the state directory\n", .{});
 }
 
 /// A JSON array of strings as a report field; with `only_unchecked`, the entries
@@ -7060,6 +7116,45 @@ test "a bare single-process claim is scoped the moment anything follows it" {
     boundary_ev = witnessed;
     boundary_ev.second_run = "a thread";
     try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
+}
+
+test "noShimNextFor: the step each image observation takes (#481)" {
+    const obs = struct {
+        fn of(f: image.Facts) image.Observation {
+            return .{ .path = "/x", .size = 0, .facts = f };
+        }
+    }.of;
+
+    // The arm this test exists for. Read, and not recognised as an executable image: the
+    // insertion had nothing to go into, and the define is what changes. `image.zig` reaches
+    // it from five places — unreadable first four bytes, an unknown magic (where a `#!`
+    // script lands), an ELF class or data byte outside the two each admits, and a Mach-O
+    // slice whose own magic is neither — and all of them take the same step, because the
+    // step is about what the file is not.
+    try std.testing.expectEqual(contract.NextStep.operation_not_an_image, noShimNextFor(obs(.unrecognised)));
+
+    // The three that stay on the shim step: each is silent about linkage, so the shim is
+    // still the honest thing to look at.
+    //
+    // `.not_resolved` is the weakest of the three and a known reading problem rather than a
+    // settled answer — `docs/target-classes.md`'s chezmoi/gopass row records that the
+    // refusal names static linkage only when the operation's first word is a path, and says
+    // something else through PATH. A change that moves THIS arm is fixing that; it is not
+    // breaking this pin.
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.not_resolved)));
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .unreadable = .no_such_file })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .undecidable = .slice_not_unique })));
+
+    // Unchanged, and here so that widening the new arm to the whole switch fails: the two
+    // that read real image facts still split the wall from the shim.
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .elf = .{ .has_interp = true, .class64 = true } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .elf = .{ .has_interp = false, .class64 = true } })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .macho = .{ .dyldlink = true, .signing = null } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .macho = .{ .dyldlink = false, .signing = null } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } })));
+
+    // No observation at all — the run stopped before the image was read.
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(null));
 }
 
 test "every NextStep renders one sentence whose flags the help text accepts (#274)" {
