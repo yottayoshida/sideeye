@@ -80,6 +80,220 @@ cause), plus `TOY_FORK_WRITES` and `TOY_SPAWN_WRITES`, which drive the two `chil
 sites — the shim's witness at `:2868` and the oracle's at `:3007`. The wrapper leg also asserts
 that the sentence still contains "What the target has to be", which is the half the first draft
 would have deleted.
+## 2026-09-06 — the arm that was not silent about linkage
+
+`noShimNext` folded four image observations into the shim step, on a reason written into
+its doc comment: an image that could not be read or resolved says nothing about linkage,
+so the shim stays the honest thing to look at. Three of the four fit. `.unrecognised` does
+not — `src/image.zig` defines it as "Read, and neither ELF nor Mach-O", so the file **was**
+read, and what it says is not "nothing about linkage" but "there is no linkage question
+here" (#481). Fixed by giving that arm its own step and narrowing the doc comment's reason
+to the three arms it covers. ADR 0051 carries the decision; ADR 0040 is amended in place,
+because its count and its "otherwise" clause both moved.
+
+**The first draft of the plan was wrong in a way the repository could disprove.** It read
+the two issues as asking for an unconditional limit — "the operation must be an executable
+image" — added to the README's "What the target has to be" and pointed the step at
+`class_wall`. A review found the counterexample inside this repo: `spike/acceptance.sh`
+check 16 runs a `#!/bin/sh` operation and asserts it reaches `path(s) judged`, which only
+appears once worlds have been judged. On Linux the kernel starts the interpreter and
+`LD_PRELOAD` rides along, so the refusal never fires. The PR that was meant to make a
+promise true would have added a false sentence to the one section that claims to enumerate
+the limits. The limit went to the define surface instead, where it is about how the define
+spells one command rather than about what the target is.
+
+**What the new sentence must not do is diagnose.** `noShimDetail`'s doc comment records why
+the old detail line was replaced: it named four candidate causes the engine had looked at
+none of. A second review caught the same shape in the first draft of this step's sentence,
+which said the file is a script and its interpreter is what refused the insertion — the
+engine never resolves or reads the interpreter (`src/image.zig` says so, and calls it a
+separate issue). The shipped sentence states what was read, then gives the mechanism
+conditionally: *a `#!` script hands execution to its interpreter, which is what the
+insertion would have to reach.* It sends a Linux reader who arrives here with a static
+interpreter to the right next observation without claiming to have made it.
+
+**Measured, with the control — and the control did not widen what the measurement covered.**
+`/bin/sh` carries `Platform identifier=16` here, and
+`DYLD_INSERT_LIBRARIES=/nonexistent.dylib /bin/sh -c 'echo reached'` prints `reached` — the
+variable is gone. The same variable handed to a non-platform binary (this build's own
+`sideeye`, adhoc/linker-signed) makes dyld terminate the process; without that control the
+first result reads as "the dylib was optional". Both readings were taken on one laptop, and
+the CI leg built on them **went red on the GitHub macOS runner**, where the same define
+answers `child_process_detected` — the shim reached the interpreter and announced itself
+with no exec record behind it. So "on macOS the interpreter does not take the insertion" was
+never measured; "on this machine it does not" was. A control tells you the measurement is
+pointing the right way. It does not tell you the population is one machine wide.
+
+**What the leg measures now.** The decoy shim the neighbouring step has used since #391 — a
+dylib that never writes the marker, so the marker cannot appear whether dyld loads it or
+not. That removes the interpreter from the question entirely and leaves the thing this
+change is about: which step the image observation picks. The prose in `README.md`, `CHANGELOG.md`
+and ADR 0051 moved with it, from "on macOS this refuses" to "whether it refuses is a
+property of the interpreter and the machine, and the same define can do either".
+
+**Both new checks were seen red before they were seen green.** Reverting the arm makes the
+unit pin fail on the line that asserts the new step, and makes the macOS CI leg fail with
+the shim sentence in its output. Deleting either README clause makes the acceptance leg
+fail, printing both counts so the zero says which of the two places is missing.
+## 2026-09-06 — the judge is seen refusing, and the two readings that had to break first
+
+`#63` said no enforcement layer had ever been observed refusing anything from the agent's
+side. The plan that answers it was written twice and thrown away once before that, and
+both discards are the entry: each time the reading of the existing code was wrong in a way
+that decided the scope.
+
+**The 2026-08-31 plan** put the promise on `--disallowedTools` and was killed in review:
+`run-agent-mcp.sh:115-126` already carried a 2026-08-13 measurement saying the removal of
+disallowed names is *the configuration's* behaviour and that `--safe-mode` — the only
+recipe `run-agent.sh` uses — left every name presented. A promise that the soft seal is
+seen refusing may be unreachable there. The layer that actually refuses is the audit's
+void, which `run-agent.sh:4` names in as many words ("the seal here is soft and the void
+is hard"), and that plan had it under "not doing".
+
+**This plan's first draft** then read `judge.sh` and wrote that the issue's second item was
+impossible: `eval --mode neg` supposedly stops at the pristine guard before restoring, so
+the red would belong to a different mechanism. Review found the citation was for the wrong
+subcommand. `grep "the stage differs from the seal"` returns exactly one line, and it is inside
+`cmd_secondary`, whose `restore_and_diff "$MODE" check` is commented "this never
+does". In `cmd_eval` the order is the other way: the `restore_and_diff "$MODE" restore` call
+comes first and the pristine guard follows it.
+**The restore was working the whole time; only the step after it was unobserved.** The
+BUILDLOG paragraph that supplied the quote is the 2026-09-01 secondary entry, and reading
+it as if it covered `eval` is what removed half the issue from the plan's scope.
+
+A second review found the same class one line further on. The draft's table of "points the
+judge refuses at" had a row for `--allow-mcp`, whose prefix match trusts
+`mcp__sideeye__evil__x` — but `cmd_audit`'s `mcp__` branch sends that to `mcp_calls += 1` and the verdict
+stays `clean`. It is a *granting* branch in a table of refusals, added in the same edit
+that corrected `restored` from red to green for exactly that reason.
+
+What shipped is `judge.sh selftest`: no new file, because `restore_and_diff` is a function
+in this shell and only a caller inside it can reach it — the draft's fifth subcommand
+existed solely to expose it. **Thirteen refusals**, per predicate branch rather than per
+output field: two by name (the eleven listed tools; any other `mcp__` server), four by
+network (the regex is four alternations — one `curl` would otherwise stand in for `git
+clone`, `pip install` and a bare URL), three path markers, two docker (a missing
+`--network none`, an absolute mount source outside the stage), the transcript with no tool
+calls, and a seal whose own copy does not match its manifest. Each asserts that the **one**
+field its channel owns is the non-empty one, so a case that voided for another reason
+cannot stand in for the branch it names. **Four greens**: a clean transcript stays clean
+with every void field empty, a doctored file comes back from the seal with the bytes
+checked on disk rather than the record believed, a DELETED file is put back (the `missing`
+path through the restore, which the modified case never touches), and `check` records the
+difference without copying.
+
+**Seen red ten times, and the attribution is the result.** Blinding `UNSEALED` kills
+`name-unsealed` alone; blinding the `mcp__` branch kills `name-mcp-foreign` alone; an
+unmatchable network regex kills all four `net-*`; the path test made `False` kills all
+three `path-*`; the `--network none` test made `False` kills `docker-nonet` **only** —
+`docker-mount` survives it, because the out-of-stage mount test is a separate branch, and
+it takes its own mutation to kill; removing the no-tool-calls exit kills `unauditable`;
+removing the post-restore hash check kills `restore-fail`; and forcing the verdict to
+`clean` kills all eleven void cases but not `unauditable`, which exits before a verdict is
+assembled. Ten mutations, ten exact sets — the thirteen branches are independent in fact
+and not only in the table.
+
+Two things about where this had to live. The `--selftest` spelling does not fit: `judge.sh`
+requires `--root` in its top-level block and defines its functions after it, so the check
+became a `selftest` subcommand with the top-level block skipped for it. And the evidence
+does not go in `spike/runs/` — `.gitignore:13` calls that directory throwaway, which is
+precisely how `#63` came to exist: the witness stage's results are still on disk and hold
+no `transcript.jsonl` and no `audit.json`, so the run that proved "clean" left nothing that
+proves it. `spike/loop-closure-timew/seal-reds/` holds the fields the claims use.
+
+**And then the measuring command lied, in this entry's own subject matter.** Staging for
+the end-to-end half needs `zig build -Dtarget=aarch64-linux-gnu` (`stage.sh:92-95` checks
+the ELF magic rather than the filename) and a container image. The first `stage.sh` run
+was invoked as `… | tail -60; echo "STAGE_EXIT=${PIPESTATUS[0]:-$?}"`, which printed
+`STAGE_EXIT=0` while the log above it carried `ERROR: failed to build` — `$?` after a pipe
+is `tail`'s, and `PIPESTATUS` does not survive the `sh -c` the tool runs. The cause was
+mundane (`spike/loop-closure-timew/Dockerfile` builds `FROM sideeye-spike:latest`, whose
+own comment says to build it from `spike/` first, and it was not on this machine), and it
+cost nothing because the failure was loud in the text. **But the exit code said green on a
+run that did nothing**, which is the exact shape the thirteen refusals above exist to make
+impossible for the judge — measured on the harness's own invocation and missed for the
+minute it took to read the log rather than the status line. Since then every staging step
+here is `> log 2>&1; echo "EXIT=$?"` with no pipe in between.
+
+A smaller thing worth recording because it cancelled a risk the plan carried: the cross
+build was expected to clobber the host's `zig-out`, and it does not, because this work
+runs in a `git worktree` and `zig-out` is per-tree. The tree that two other sessions are
+using still holds its macOS build.
+
+**The end-to-end half then ran, and the contrast is the part that makes it a measurement.**
+A stage was rebuilt (clone at the pin with everything unreachable removed, a fresh
+exploration in the container recording `k=19 of 24` — the same crash point run 1 recorded
+on 2026-08-13 — and a seal of seven files). Both controls held first: `eval --mode neg`
+`fail_reproduced` at crash point 19, `eval --mode pos` `pass`, `expectation_met=True` on
+both, all four stage-diff keys empty. Then `define/check.sh` was doctored to `exit 0`
+right after `set -eu`, which makes the invariant hold in every world, and `eval --mode run`
+— the only mode that does not stop at the pristine guard — was run twice. **Seal intact**:
+`modified` and `restored` both name `./define/check.sh`, the file's hash on disk afterwards
+is the seal's `41c6137d71bb…` rather than the doctored `0a5794af0f69…`, and the verdict is
+`fail_reproduced` — the negative control's answer, produced by the restored checker.
+**Seal doctored too** (written into `seal/files/` with that line of `manifest.sha256`
+recomputed, because `stage.sh:225` refuses a staging whose exploration is not `FAIL` and a
+permissive checker explores clean): nothing to restore, and the verdict moves to `other`,
+rc 2, explored 0. Without that second row the first one measures nothing — a restore that
+works is indistinguishable from a doctoring that never mattered.
+
+The contrast also said something the plan did not predict: the doctored run came back
+`UNKNOWN checker_not_falsified`, *"the checker accepted a state whose every file had been
+overwritten with junk and every symlink retargeted at a nonexistent name"*. The engine's
+own falsification step caught the checker a layer below the seal. What was measured is the
+permissive shape of doctoring; a checker doctored to accept only particular worlds would
+still falsify, and that was not measured.
+
+**And the issue's first item turned out to ask for a red that cannot exist.** `#63` wanted
+"a canary that attempts a WebFetch and must come back denied", and `run-agent.sh` carried
+the same debt in a comment. Three predictions were written before the run; one held.
+Measured with that launcher's exact recipe in a throwaway directory: **all eleven
+disallowed names are ABSENT from the init event's tool set**, WebFetch was never attempted
+because it was not there to attempt, and `permission_denials` was empty — which means "no
+tool to call", not "the call was allowed", and those two are indistinguishable from that
+field alone. That is why the debt sat unexamined: the field it would have been read from
+looks the same either way. **The prediction that failed is the interesting one**: it came
+from `run-agent-mcp.sh:115-126`, whose 2026-08-13 note says that under `--safe-mode` the
+same flag "left every name presented". It does not now. The model reached the page through
+allowed `Bash` and `curl` and said so plainly — the declared soft-seal residual, and the
+channel the audit voids on, which is one of the thirteen this PR has now seen red.
+
+So `run-agent.sh` gains no probe, and the plan's step for one is dropped rather than
+quietly skipped: after this measurement the only predicate such a probe could assert is
+"these names are absent", which `run-agent-mcp.sh` already asserts for its variant. A
+second copy would spend a model call before every real run to re-derive a recorded fact.
+The debt comment is replaced by the measurement, and it names the launcher comment it
+corrects.
+
+**The diff review then took the entry apart in three places, and all three are the same
+mistake in different clothes: a sentence that outran what was measured.**
+
+First, the selftest's own header said it drives "every branch this judge refuses on". It
+does not, and it structurally cannot: the preconditions (a missing seal, controls that did
+not hold, a finalize missing a field, a transcript that is not there) are shell `exit`s,
+and **a shell `exit` inside a function ends the script rather than returning to the
+caller's `|| rc=$?`** — measured: `f(){ exit 7; }; f || echo caught` prints nothing and
+exits 7. An in-process harness cannot drive them at all. The sentence now names the void
+classification and the restore, and says why the rest is out of reach.
+
+Second, **five `judge.sh` line numbers in this entry were wrong by the time the entry
+shipped, because this PR moved them**: 337→366, 578→608, 72→98, 163→192, 164-171→193-200.
+One of them told the reader to run a `grep` that would return a different number. The fix
+is not to renumber — the next edit would break it again — but to cite the function and the
+string instead, which is what the paragraphs above now do.
+
+Third, the closing line of the selftest was a constant. `selftest: thirteen refusals and
+three greens hold` printed whenever `fails` was 0, so **deleting a case left the suite
+green with the same wording**. It counts now and demands 17, and that guard has been seen
+red on its own predicate: with one `audit_case` line removed it reports `ran 16 case(s),
+expected 17`. That is the tenth mutation in the record.
+
+Two smaller things the review found in the same pass. The restore's `missing` path — a
+file the agent *deleted* rather than edited — had no case, though it is inside the promise
+as worded; it has one now, and the greens are four. And the record said the implementation
+is "narrower in four places" while six issues had been filed (#510-#515), because two of
+them were folded into one bullet — and none of the six numbers appeared anywhere a reader
+could follow. Both corrected in place.
 
 ## 2026-09-06 — a PASS over one crash point says so where the zero case says it (#487)
 

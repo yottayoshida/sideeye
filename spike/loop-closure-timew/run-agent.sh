@@ -103,11 +103,25 @@ PROMPT_SHA=$(shasum -a 256 "$PROMPT" | cut -d' ' -f1)
 # on purpose — the judge trusts nothing this script writes. Change both or the
 # audit's classification silently drifts.
 ALLOWED="Bash,Read,Edit,Write,Glob,Grep"
-# Deny the network-by-construction and delegation tools by name. This flag's
-# enforcement has not been seen red yet — before trusting it, the next staging
-# must probe the seal once (a WebFetch attempt that must come back denied).
-# The outbound and delegation surface, denied by name — kept in step with
-# run-agent-mcp.sh and the judge's UNSEALED set by hand.
+# Deny the network-by-construction and delegation tools by name. The outbound and
+# delegation surface, denied by name — kept in step with run-agent-mcp.sh and the
+# judge's UNSEALED set by hand.
+#
+# The debt that stood here — "enforcement has not been seen red yet; the next staging
+# must probe the seal once (a WebFetch attempt that must come back denied)" — was paid
+# on 2026-09-06 (#63), and the answer is that **the red it asked for cannot exist**.
+# Measured with this exact recipe in a throwaway directory: all eleven names are ABSENT
+# from the init event's tool set, so there is nothing to attempt and nothing to deny.
+# `permission_denials` came back empty, and empty here means "no tool was there to
+# call", not "the call was allowed". The model reached the page through allowed Bash
+# and curl instead — the declared soft-seal residual, which the audit's network channel
+# voids, and that channel HAS now been seen red (judge.sh selftest).
+#
+# This also corrects the canary 2 comment in run-agent-mcp.sh, which records the
+# opposite for the cli recipe: "under --safe-mode the same flag left every name presented" (2026-08-13).
+# It does not now. Either the CLI changed or that measurement's conditions differed;
+# what is measured today is that removal happens here too. Record and raw fields:
+# spike/loop-closure-timew/seal-reds/.
 DISALLOWED="WebFetch,WebSearch,Task,Agent,Workflow,SendMessage,PushNotification,RemoteTrigger,ScheduleWakeup,CronCreate,CronDelete"
 
 echo "=== the run: one agent, the sealed stage, the transcript records everything ==="

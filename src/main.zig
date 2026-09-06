@@ -4762,9 +4762,18 @@ fn reconcileOrRefuse(
 /// lists, and the step is the wall. A dynamically linked image with nothing on it that
 /// this build looks for: the marker's absence has another cause, and the shim is the
 /// thing to check. An image that could not be read or resolved says nothing about
-/// linkage, so it takes the shim step too — the honest default, not a diagnosis.
+/// linkage, so it takes the shim step too — the honest default, not a diagnosis. That reason
+/// covers `.not_resolved`, `.unreadable` and `.undecidable`, and stops there: `.unrecognised`
+/// means the file WAS read, and what it says is not "nothing about linkage" but "no library
+/// goes into this", so that arm names the define instead (#481).
 fn noShimNext() contract.NextStep {
-    const obs = rec_image orelse return .check_shim;
+    return noShimNextFor(rec_image);
+}
+
+/// The observation-to-step table above, taking its observation as an argument rather than
+/// reading the global — so every arm can be pinned in a test without a recording behind it.
+fn noShimNextFor(observed: ?image.Observation) contract.NextStep {
+    const obs = observed orelse return .check_shim;
     return switch (obs.facts) {
         .elf => |e| if (e.has_interp) .check_shim else .class_wall,
         // Read in the same order `noShimDetail` reads them, so the step never contradicts
@@ -4776,7 +4785,14 @@ fn noShimNext() contract.NextStep {
             if (s.platformNamed() or s.libraryValidation() or s.hardenedRuntime()) break :blk .class_wall;
             break :blk .check_shim;
         },
-        .not_resolved, .unreadable, .unrecognised, .undecidable => .check_shim,
+        // Read, and not recognised as an executable image. `image.zig` reaches this from
+        // five places: the first four bytes unreadable, a magic none of the three families
+        // claims (where a `#!` script lands), an ELF class or data byte outside the two each
+        // admits, and a Mach-O slice whose own magic is neither. The other three arms are
+        // silent about linkage; this one is not — there is no linkage question, because
+        // nothing here is a thing a library is inserted into (#481).
+        .unrecognised => .operation_not_an_image,
+        .not_resolved, .unreadable, .undecidable => .check_shim,
     };
 }
 
@@ -6945,6 +6961,45 @@ test "a bare single-process claim is scoped the moment anything follows it" {
     boundary_ev = witnessed;
     boundary_ev.second_run = "a thread";
     try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
+}
+
+test "noShimNextFor: the step each image observation takes (#481)" {
+    const obs = struct {
+        fn of(f: image.Facts) image.Observation {
+            return .{ .path = "/x", .size = 0, .facts = f };
+        }
+    }.of;
+
+    // The arm this test exists for. Read, and not recognised as an executable image: the
+    // insertion had nothing to go into, and the define is what changes. `image.zig` reaches
+    // it from five places — unreadable first four bytes, an unknown magic (where a `#!`
+    // script lands), an ELF class or data byte outside the two each admits, and a Mach-O
+    // slice whose own magic is neither — and all of them take the same step, because the
+    // step is about what the file is not.
+    try std.testing.expectEqual(contract.NextStep.operation_not_an_image, noShimNextFor(obs(.unrecognised)));
+
+    // The three that stay on the shim step: each is silent about linkage, so the shim is
+    // still the honest thing to look at.
+    //
+    // `.not_resolved` is the weakest of the three and a known reading problem rather than a
+    // settled answer — `docs/target-classes.md`'s chezmoi/gopass row records that the
+    // refusal names static linkage only when the operation's first word is a path, and says
+    // something else through PATH. A change that moves THIS arm is fixing that; it is not
+    // breaking this pin.
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.not_resolved)));
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .unreadable = .no_such_file })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .undecidable = .slice_not_unique })));
+
+    // Unchanged, and here so that widening the new arm to the whole switch fails: the two
+    // that read real image facts still split the wall from the shim.
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .elf = .{ .has_interp = true, .class64 = true } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .elf = .{ .has_interp = false, .class64 = true } })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .macho = .{ .dyldlink = true, .signing = null } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .macho = .{ .dyldlink = false, .signing = null } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } })));
+
+    // No observation at all — the run stopped before the image was read.
+    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(null));
 }
 
 test "every NextStep renders one sentence whose flags the help text accepts (#274)" {
