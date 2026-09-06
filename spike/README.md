@@ -29,6 +29,10 @@ rehearsal green is required before a Seal A PR and after any tool change).
 | `cohort4/preflight.sh`, `cohort4/visibility-logger.c`, `cohort4/preflight-analyse.py` | probe conditions 8 (every state-root mutation passed through an interposable function) and 9 (how many kill points the operation has). Engine-free. `--selftest` falsifies both against `toys/toy.c` and `toys/toy_raw.c` |
 | `cohort4/novelty-prescan.sh` | the recorded tracker search a novelty judgement cites, with the controls that make a zero mean something. Refuses multi-word terms: they silently return zero |
 
+Not tooling, but read beside `upstream-report-status.sh` and
+`upstream-reports.tsv`: `upstream-report-template.md` is the shape a filed
+report takes, indexed to the three worked examples it was drawn from.
+
 ## Closed campaign records — sealed; do not move, do not add files
 
 | Path | Campaign | Outcome |

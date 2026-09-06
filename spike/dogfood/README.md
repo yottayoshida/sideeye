@@ -87,7 +87,9 @@ gap, and the check was green the whole time.
 - **It does not claim blindness.** `docs/scouting.md`'s "what a scout must never
   do" applies in full; every run here reads its targets.
 - **It does not decide reporting.** Whether a finding goes upstream is the
-  owner's call, made per run and recorded in that run's `RESULTS.md`.
+  owner's call, made per run and recorded in that run's `RESULTS.md`. What
+  shape a report takes once that call is yes is
+  `spike/upstream-report-template.md`.
 - **It does not hold maintained code.** `apparatus/` is what was run that day,
   kept so the run can be repeated, not a harness anything else imports. That is
   why this directory needs no entry in `.gitattributes` or in

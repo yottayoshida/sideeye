@@ -156,6 +156,71 @@ offers a PR conditional on being asked. The template's prohibition is about firs
 where a fix pitch arrives before the maintainer has confirmed the mechanism. Here the
 maintainer had already acted, and withholding the direction once is what produced the
 round.
+## 2026-09-06 — the upstream report shape, written down, and wrong on its first pass
+
+The owner's instruction: later upstream reports go the same way as
+`ImageMagick/ImageMagick#8939`. `spike/upstream-report-template.md` is that
+shape written out. It is an index to the worked examples rather than a
+replacement for them.
+
+**The first version of the page read three reports and was falsified by the
+fourth, which was on the ledger the whole time.** It called the opening a
+two-way branch — recoverable, so open by saying it is minor; unrecoverable, so
+do not — and it wrote "no fix section, no PR offer" into the prohibitions.
+`andreafrancia/trash-cli#414`, filed 2026-09-04, breaks both. Its damage is a
+third kind: the user's file is untouched and no data is lost, yet the trash
+directory stays inconsistent until a human works out which file to delete, and
+every `trash-list` until then prints a parse error and exits 0. Its opening is
+`**No data is lost by this.**` and it does not say minor, correctly. And it
+carries a section headed `## What would close it`. Re-reading the timewarrior
+correction shows the prohibition was mis-copied: what was struck there was a
+section headed *A fix direction, tested* and the offer *Happy to turn this into
+a PR* — the patch and the sale, not the direction. All four reports name one or
+two directions. The page now carries a three-row branch table and the corrected
+rule, and its sunset paragraph names this failure rather than smoothing it away.
+
+The lesson is the one this repository keeps relearning from the other side: the
+ledger is a record you are supposed to *read*, not only append to. The same file
+that made `trash-cli#414` visible to `check-upstream-ledger.sh` yesterday would
+have made it visible to me today, and I went to the two reports that happened to
+have their text committed in `spike/dogfood/` instead.
+
+**What the page refuses to claim is the interesting half.** Measured with
+`spike/upstream-report-status.sh` on 2026-09-06: ten standing reports, seven at
+zero comments, three with any reply. #8939 is the only Up-front-shaped one and it
+drew `urban-warrior`'s reproduction and a patch commitment 14 hours after filing
+— on a report that told them closing it was fine. That is n=1 against a variable
+nothing here controls. Rule 11 of `cohort4/SCOUT-BRIEF.md` exists precisely
+because projects differ in responsiveness, so the honest statement is that the
+shape and the project are not separated by this evidence, and the page carries
+that sentence rather than the flattering one.
+
+**A second stage exists and the page nearly shipped without it.** While this was
+being written, a parallel session measured a build of ImageMagick `main` at
+`3501ef34` — the patch #8939 drew — and found it loses the original image with no
+crash at all: the new sequence hard-links the backup to the target before the
+`O_TRUNC`, so an `ENOSPC` write empties both names. The reply that went out
+(comment 5555825615) is shaped nothing like a first report: it thanks, it
+apologises for having filed the original *without* a fix direction, it names
+three unresolved details of the direction it now gives, it says reverting would
+be a fine outcome, and it offers a PR while promising not to open one unasked.
+That offer is exactly what the timewarrior correction was holding back for, and
+the page now says so instead of leaving "no PR offer" to read as absolute. The
+same event gets one sentence in "what this page cannot tell you": a fast reply
+is not a good outcome, and only rebuilding the patched thing showed the
+difference. The timing is the sharper half — the maintainer's comment is 51
+seconds after `1a0d1b71`, so fourteen hours bought a declaration rather than a
+reviewed result, and `3501ef34` five hours later takes back exactly one line of it.
+
+**One sentence of that paragraph was written from a diff and had to come out.**
+The first version said `1a0d1b71`'s `remove_utf8(image->filename)` deleted the
+output it had just written. The diffs and the timestamps are measured — both
+commits read through `gh api` rather than taking the parallel session's word for
+them — but what that line does at runtime under the new hard link is a reading,
+and only `3501ef34` was built and measured. Reporting the effect of a diff you
+did not run is the same move as reporting a measurement nobody made. The page
+now claims the timing, the two diffs and the revert, and nothing about the
+line's behaviour.
 
 ## 2026-09-05 (ledger) — a report filed into neither record, and a scan that read a truncated window
 
