@@ -183,6 +183,20 @@ Two caveats kept in the record rather than in my head: the image is a **rebuild*
 sweep's artifact; and the transcripts are not committed, which makes `bgroup.sh` itself
 the reproduction.
 
+**And the escape this change leaves open has no measured demand, which is what closes the
+slice rather than my saying it is closed.** `execl` and its four siblings are still
+uninterposed. They are indistinguishable from `execve` at the syscall layer, so the
+instrument has to be the engine's own signature — a second `shim_ready` from one pid with
+no `exec` record of that pid between them. 33 of 514 dynamic executables in the sweep image
+import one of the five (`tar`, `perl`, `python3.13`, `git`, `rsync`, `dpkg`, `sort`,
+`split`, `install` among them), and **0 of 35 produced the signature** when run under the
+shim; `tar` driven through a real define reaches PASS over 2 crash points. Both controls
+ran, so the zero is distinguishable from a dead instrument. The first instrument was NOT
+pid-aware — it counted announcements across the whole trace, which a child's announcement
+or a child's exec record would have masked — and was rewritten before the number was
+believed. What the measurement does not cover is stated where the number is: one `--help`
+invocation reaches a startup self-exec, not an `execl` on a write path.
+
 **What is not touched.** The trace contract stays at v13, so saved cases keep replaying;
 the uninterposed exec family is still an escape with a contract bump attached; and the
 published B-group figures stand as measured on that day's engine, with only the causal

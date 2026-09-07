@@ -215,9 +215,30 @@ of the encode.
 
 **What this does not change.** The trace contract stays at v13 — no record shape, no op
 class and no `unknown_reason` moves, so saved cases keep replaying. The uninterposed exec
-family (`execl`, `execle`, `execlp`, `execvpe`, `fexecve`) is still an escape, still caught
-by the double-announcement rule, and interposing it is a separate question with a contract
-bump attached. Both of the report's sentences about this were wrong in ways this change also
+family (`execl`, `execle`, `execlp`, `execvpe`, `fexecve`) is still an escape and is still
+caught by the double-announcement rule.
+
+**The demand for closing that escape was measured on 2026-09-07, and it is zero.** The
+question is not whether the escape exists — the double-announcement rule exists because it
+does — but whether a real target reaches it. `execl` and its siblings become `execve` at
+the syscall layer, so `strace` cannot tell them apart; what can is the engine's own
+signature, a second `shim_ready` from one pid with no `exec` record of that pid between the
+two. Reading ELF `.dynsym` for undefined `STT_FUNC` entries, **33 of 514 dynamic
+executables in the sweep image import one of the five** — among them `tar`, `perl`,
+`python3.13`, `git`, `rsync`, the `dpkg` family, `sort`, `split` and `install`. Run under
+the shim, **0 of 35 produced the signature**: every one execs exactly once, through a path
+the shim already interposes. `tar` was then driven through a real define and reaches **PASS
+over 2 crash points**. An import is not a call — the same reading ADR 0036 records for
+cargo's `rename@GLIBC_2.17`.
+
+Both controls ran: `TOY_EXECL` produces the signature (`readies=2 execs=0`) and
+`TOY_SELFEXEC` does not (`readies=2 execs=1`), so a zero here is distinguishable from an
+instrument that stopped working. **What the measurement did not cover**: it invoked each
+binary once (`--help`), which reaches a launcher that re-execs itself at startup and does
+*not* reach an `execl` on a write path. Closing the escape would cost a shim change and an
+account change for targets that are refused today; the reach it buys is unmeasured and, on
+this evidence, small. Declined on that basis rather than on a demonstration that it cannot
+work — the shape ADR 0034 records for the generated interposer. Both of the report's sentences about this were wrong in ways this change also
 fixes: the account said "chain unbroken" over a run whose chain had broken, and it reported
 a disagreement between witnesses on a run where the shim claimed no second process. The
 second is a `docs/report-schema.md` promise about the `processes` field, which is why it is
