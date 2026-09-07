@@ -179,6 +179,24 @@ by disassembly, since no local environment can execute it: the only x86_64 machi
 an emulated container and it refuses `seccomp(SET_MODE_FILTER)`), which is what makes the
 figure the real one.
 
+**Measured again, properly, while planning the follow-up — and the number is worse and the
+cause is this mode's own configuration.** metaflac reaches a verdict in **1 of 8** runs with an
+oracle attached and **6 of 8** without one (N=8 each, same box and define). The `unlinked-fd`
+record that produces the refusal appears **only in the recording run, never in the oracle's**
+(0 of 8), and never at all when the operation runs once. So the two-run arrangement this mode
+uses under an oracle is what produces the refusals, not the target alone.
+
+**The cause is unattributed and this entry does not claim one.** `preflight --twice` also runs
+the operation twice with a restore between, in this mode, and reports no refusal — so "the
+second execution differs" is not the whole story. The difference between the two is that
+`--twice` traps both runs while `explore` leaves the oracle's run untrapped, and nothing here
+measures why that would matter to metaflac.
+
+What survives: the boundary is crossed — 12 crash points where there were 0, and fontforge's
+184 with a real FAIL. **How often a target then reaches a verdict is a separate number, and
+this mode makes it worse for metaflac than the default mode does.** That is the mode's own cost
+and it belongs beside the reach it buys.
+
 **The real-target numbers in the first draft of this entry were single runs, and two of
 them did not reproduce.** Re-measured: metaflac reaches PASS over 12 crash points in **3 of
 5** runs and refuses `unresolvable_path` in 2; fontforge reaches its FAIL in **2 of 3**. The

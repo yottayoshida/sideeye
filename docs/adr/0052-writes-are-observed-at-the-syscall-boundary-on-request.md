@@ -22,16 +22,14 @@ Measured on this branch, with the engine's own defines:
 
 | target | `--observe wrappers` | `--observe syscalls` |
 |---|---|---|
-| metaflac 1.5.0 | `UNKNOWN oracle_missed_operation`, 0 crash points | **PASS over 12 crash points**, oracle agreeing on 12 operations — in 3 of 5 runs |
-| fontforge 20230101 | `UNKNOWN oracle_missed_operation`, 0 crash points | **FAIL, 183 of 185 worlds**, 184 crash points, oracle agreeing on 184 operations over 40187 syscall lines — in 2 of 3 runs |
+| metaflac 1.5.0 | `UNKNOWN oracle_missed_operation`, 0 crash points | **12 crash points reached**, oracle agreeing on 12 operations |
+| fontforge 20230101 | `UNKNOWN oracle_missed_operation`, 0 crash points | **FAIL, 183 of 185 worlds**, 184 crash points, oracle agreeing on 184 operations over 40187 syscall lines |
 
-The runs that do not reach a verdict refuse `unresolvable_path` (a descriptor whose file was
-unlinked while open) rather than answering wrongly. An earlier revision of this paragraph called that the class recorded for mutool; it is not — `docs/target-classes.md` records mutool's cause as unattributed, and its write path is `unlinkat` then a fresh `openat`, which is a different descriptor. The default mode is
-itself non-deterministic on metaflac — 2 of 3, with `kill_did_not_land` for the third — and
-`preflight --twice` reports equal state in both modes with stable operation counts, so what
-varies is the operation path rather than the bytes. Unattributed, and stated rather than
-smoothed: what these numbers support is that the mode **reaches** verdicts the default path
-cannot, not that either target is stable under it.
+**How often either target reaches a verdict is a separate number from whether the boundary is
+crossed, and the second one is worse than a first sample suggested.** **metaflac reaches a verdict in 1 of 8 runs with an oracle attached and 6 of 8 without one** (N=8 each, same box and define). The gap is this mode's two-run configuration: the `unlinked-fd` record that produces the refusal appears **only in the recording run and never in the oracle's run** (0 of 8), and never at all when the operation runs once. Cause unattributed — `preflight --twice`, which also runs the operation twice with a restore between, reports no refusal, so "the second execution differs" is not the whole story. The refusals are `unresolvable_path` (an operation through a descriptor whose file was unlinked while open) and `kill_did_not_land`, which the default mode also produces on this target (2 of 8 in the one-run arm). So what
+these figures support is that the mode **reaches** operations the default path cannot see —
+12 crash points where there were 0 — not that a target is stable under it. The refusal rate is
+the mode's own cost and it is stated here rather than smoothed.
 
 fontforge's is a real defect in a real tool: `Generate()` rewrites the font in place, so a
 crash inside the write leaves a file its own `Open()` cannot read.
