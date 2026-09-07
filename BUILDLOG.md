@@ -186,11 +186,18 @@ record that produces the refusal appears **only in the recording run, never in t
 (0 of 8), and never at all when the operation runs once. So the two-run arrangement this mode
 uses under an oracle is what produces the refusals, not the target alone.
 
-**The cause is unattributed and this entry does not claim one.** `preflight --twice` also runs
-the operation twice with a restore between, in this mode, and reports no refusal — so "the
-second execution differs" is not the whole story. The difference between the two is that
-`--twice` traps both runs while `explore` leaves the oracle's run untrapped, and nothing here
-measures why that would matter to metaflac.
+**Narrowed once more: it takes an strace'd run BEFORE the run that produces the record.**
+`preflight --twice` in this mode refuses **1 of 6** with `--oracle` attached and **0 of 6**
+without it, which matches `explore`'s 5 of 8 against 0 of 8. The record never appears in the
+strace'd run itself — only in a later one. So what correlates is not "a second execution" and
+not "trapped versus untrapped", but **an earlier run of the operation under strace**.
+
+**Why that would matter is still unmeasured, and this entry does not guess.** The state
+directory is restored between the runs and `--twice` reports it equal; the record appears in a
+run that carries no strace at all. Three plausible carriers — a temp file the restore removes,
+a timing difference, something in the work directory — were not distinguished. What the numbers
+support is the attribution (this mode's oracle arrangement, not the target alone), not the
+mechanism.
 
 What survives: the boundary is crossed — 12 crash points where there were 0, and fontforge's
 184 with a real FAIL. **How often a target then reaches a verdict is a separate number, and
