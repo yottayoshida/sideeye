@@ -278,6 +278,14 @@ pub fn build(b: *std.Build) void {
     // installation is what keeps the variant out of releases: brew builds from
     // source with plain `zig build`, where the variant does not exist at all.
     const test_seq_gap = b.option(bool, "test-seq-gap", "also build libsideeye_shim_testgap, a numbering-gap shim used only by acceptance (#270)") orelse false;
+    // Test apparatus for contract v14, generation-gated the same way: ADDITIONALLY builds
+    // `libsideeye_shim_observefail`, a shim whose `--observe syscalls` install always
+    // reports failure. The engine refuses such a run as a setup error, and that refusal is
+    // otherwise UNREACHABLE in acceptance — every machine the suite runs on installs the
+    // filter successfully, which is what makes the check that reads the announcement an
+    // unfalsified guard without this artifact. No unit test can stand in: the check lives
+    // in main.zig, whose refusals exit the process.
+    const test_observe_fail = b.option(bool, "test-observe-fail", "also build libsideeye_shim_observefail, a shim that always fails to install its syscall filter, used only by acceptance (contract v14)") orelse false;
 
     // Declared outside the platform branch below because the unit tests import it too and
     // `test_step` lives out here. One options module and one module object, shared by the
@@ -287,6 +295,7 @@ pub fn build(b: *std.Build) void {
     // held by a test in shim/src/common.zig rather than by this comment.
     const shim_opts = b.addOptions();
     shim_opts.addOption(bool, "test_seq_gap", false);
+    shim_opts.addOption(bool, "test_observe_fail", false);
     const shipped_shim_opts = shim_opts.createModule();
 
     if (target.result.os.tag == .linux or target.result.os.tag == .macos) {
@@ -323,9 +332,33 @@ pub fn build(b: *std.Build) void {
         assertBuiltWith(shim.root_module, "shim_build_options", shipped_shim_opts, "the shipped shim");
         b.installArtifact(shim);
 
+        if (test_observe_fail) {
+            const of_opts = b.addOptions();
+            of_opts.addOption(bool, "test_seq_gap", false);
+            of_opts.addOption(bool, "test_observe_fail", true);
+            const shim_of = b.addLibrary(.{
+                .name = "sideeye_shim_observefail",
+                .linkage = .dynamic,
+                .use_llvm = true,
+                .root_module = b.createModule(.{
+                    .root_source_file = b.path("shim/src/shim.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                    .link_libc = true,
+                    .imports = &.{
+                        .{ .name = "contract", .module = contract },
+                        .{ .name = "shim_build_options", .module = of_opts.createModule() },
+                    },
+                }),
+            });
+            if (target.result.os.tag == .macos) shim_of.headerpad_max_install_names = true;
+            b.installArtifact(shim_of);
+        }
+
         if (test_seq_gap) {
             const gap_opts = b.addOptions();
             gap_opts.addOption(bool, "test_seq_gap", true);
+            gap_opts.addOption(bool, "test_observe_fail", false);
             const shim_gap = b.addLibrary(.{
                 .name = "sideeye_shim_testgap",
                 .linkage = .dynamic,
@@ -385,10 +418,28 @@ pub fn build(b: *std.Build) void {
         "shim/src/common.zig",
     };
 
+    // Linux-only, so it is appended rather than listed above: `shim/src/syscalls.zig`
+    // speaks seccomp, `SIGSYS` and `ucontext` register offsets, none of which a macOS
+    // build can compile.
+    //
+    // It has to be a root of its own. Its tests were written expecting `common.zig`'s
+    // root to collect them — `common.zig` imports it behind a platform test — and for one
+    // build it did. They then stopped being collected, silently, and a test that no longer
+    // compiled went unnoticed until review: `zig test` with `common.zig` as the root
+    // returned 0 on both Linux architectures while the same file as its own root returned
+    // 1 with `no field named 'nr'`. Relying on collection through an import is what made
+    // that possible; naming the file here is what makes it deterministic.
+    const linux_test_sources = [_][]const u8{"shim/src/syscalls.zig"};
+
     const contract_tests = b.addTest(.{ .root_module = contract });
     test_step.dependOn(&b.addRunArtifact(contract_tests).step);
 
-    for (test_sources) |src| {
+    var all_test_sources: std.ArrayList([]const u8) = .empty;
+    all_test_sources.appendSlice(b.allocator, &test_sources) catch @panic("out of memory");
+    if (target.result.os.tag == .linux)
+        all_test_sources.appendSlice(b.allocator, &linux_test_sources) catch @panic("out of memory");
+
+    for (all_test_sources.items) |src| {
         const t = b.addTest(.{
             .root_module = b.createModule(.{
                 .root_source_file = b.path(src),

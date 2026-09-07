@@ -69,7 +69,7 @@ var scratch_flag_buf: [max_scratch][]const u8 = undefined;
 /// as apparatus, and a test below holds the two lists together: a pair added to the
 /// children without being refused here would be a device the parent has and the child
 /// does not — the silent-different-run the refusal exists to stop.
-const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, preload_var };
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.observe, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
@@ -137,6 +137,10 @@ const Args = struct {
     has_oracle: bool = false,
     check: ?config.Command = null,
     allow_unverified: bool = false,
+    /// Which observation path counts the write family (contract v14). The default is
+    /// the only one that existed through v13, so an invocation that never names this
+    /// flag behaves exactly as it did.
+    observe: contract.ObserveMode = .wrappers,
     fresh_state: bool = false,
     /// Preflight only (#199): observe the operation a second time from the restored
     /// pre-state and compare the two post-snapshots. Opt-in, because it doubles the
@@ -256,7 +260,28 @@ var oracle_note: []const u8 = initialOracleNote(.unparsed);
 /// above it (the two flags are not exclusive: an oracle that ran and agreed sets
 /// true even beside an inert --allow-unverified). A fact
 /// about the run, never about the verdict — a FAIL stands without an oracle.
+/// Which observation path this run asked for, for the two report helpers that name the
+/// oracle's capture and cannot reach `args`.
+///
+/// Module-level for the reason `oracle_verified` and `oracle_note` beside it are: the
+/// report is assembled from several sites and threading a parameter through
+/// `foreignTouchDetail` and `withOracleCapture` — both of which exist to turn one value
+/// into one sentence — would put the mode in every caller that has nothing to do with it.
+/// `.wrappers` until the parse sets it, which is the value every pre-v14 run had.
+var observe_mode: contract.ObserveMode = .wrappers;
+
 var oracle_verified: bool = false;
+/// The same fact for a comparison whose two witnesses watched two runs (contract v14).
+///
+/// Set instead of `oracle_verified`, never beside it, and only under `--observe
+/// syscalls`: there the oracle watches an untrapped run and the trace comes from a
+/// trapped one, because a trapped write reaches strace twice and the positional
+/// comparison would refuse every run. "Two witnesses of the same execution agreed" and
+/// "two witnesses of two executions agreed" are different claims, and
+/// `docs/contract-freeze.md` surface 2 says a machine field would change name before it
+/// changed meaning — so the weaker claim gets a name rather than the stronger field's.
+/// A new optional field, which surface 2 keeps open (#320).
+var oracle_verified_across_runs: bool = false;
 /// Ownership/permission writes on the state directory (#121, option b): observed by
 /// the oracle alone — the shim does not interpose them — and excluded from every
 /// verdict input. The default says why absence of a note is not absence of writes:
@@ -846,10 +871,10 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--work <dir>] [--twice]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls] [--work <dir>] [--twice]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye mcp
     \\  sideeye help
     \\  sideeye version
@@ -937,6 +962,26 @@ const usage_fmt =
     \\               case may point the deletion. The MCP server passes its
     \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
     \\               replay
+    \\  --observe wrappers|syscalls
+    \\               where the write family is counted. Default `wrappers`: the
+    \\               interposed libc entry points, with buffered stdio observed at
+    \\               flush granularity (ADR 0005). `syscalls` (Linux) counts writes
+    \\               at the kernel boundary instead, through a seccomp filter and a
+    \\               SIGSYS handler in the target's own process, which is the only
+    \\               way to see a write libc issues from inside itself — an `fwrite`
+    \\               past the buffer, or a raw `syscall(SYS_write, ...)`. Everything
+    \\               else stays at the libc entry points in both modes, so a raw
+    \\               `openat` or `rename` is no more visible than before. Under an
+    \\               oracle this mode takes its second witness from a separate
+    \\               untrapped run, because a trapped write reaches strace twice; the
+    \\               report says so, and the claim it earns is
+    \\               `oracle_verified_across_runs` rather than `oracle_verified`.
+    \\               **Do not use it on a target that execs an image the shim cannot be
+    \\               loaded into.** A filter is inherited across exec and cannot be
+    \\               replaced, while exec resets the SIGSYS handler that makes it
+    \\               survivable, so a statically linked helper dies on its first write
+    \\               (measured: exit 0 under wrappers, killed by SIGSYS under this).
+    \\               A child the shim IS loaded into is unaffected
     \\  --allow-unverified
     \\               accept PASS with no completeness check. On macOS this is the
     \\               answer when no privilege is available: SIP leaves DTrace's
@@ -1234,7 +1279,15 @@ test "unresolvedDetail names the kind and pid, and only claims a name when there
 /// the two witnesses' sentences reach the report through the same choke point.
 fn withOracleCapture(arena: std.mem.Allocator, sentence: []const u8, capture: ?[]const u8, fallback: []const u8) []const u8 {
     const cap = capture orelse return sanitizeForReport(arena, sentence) catch fallback;
-    const joined = std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them", .{ sentence, cap }) catch return fallback;
+    // Which run the capture is of, said where the capture is named. Under `--observe
+    // syscalls` the oracle watches a separate untrapped run, so the lines in that file are
+    // of the same operation and not of the run this refusal is about — the agreement line
+    // already says so and this side did not, which left the two halves of one report
+    // disagreeing about what was compared (review, P2).
+    const joined = if (observe_mode == .syscalls)
+        std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them — from the separate untrapped run this mode takes its second witness from, so it is the same operation and not this run", .{ sentence, cap }) catch return fallback
+    else
+        std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them", .{ sentence, cap }) catch return fallback;
     return sanitizeForReport(arena, joined) catch fallback;
 }
 
@@ -1993,6 +2046,13 @@ fn runOperationObserved(
     /// invocation and the operation strace execs starts there too, because strace does
     /// not chdir between its own start and the exec.
     cwd: ?[]const u8,
+    /// Which observation path this spawn asks the shim for.
+    ///
+    /// A parameter rather than a read of `args`, because the two runs a `--observe
+    /// syscalls` recording performs disagree about it on purpose: the oracle's run is
+    /// spawned as `wrappers` so that no write is trapped while strace is attached, and
+    /// the recording run is spawned as `syscalls` with no oracle. See the call site.
+    observe: contract.ObserveMode,
 ) posix.Term {
     if (oracle_path) |strace_path| {
         // Environment goes to the target via strace's -E, not through our own
@@ -2017,6 +2077,7 @@ fn runOperationObserved(
             // Pinned empty so an ambient value in the operator's shell cannot
             // become the first image's numbering base (R1; parseU32("") is 0).
             .{ contract.env.seq_base, "" },
+            .{ contract.env.observe, observe.name() },
             .{ preload_var, shim },
         };
         for (pairs) |kv| {
@@ -2034,6 +2095,7 @@ fn runOperationObserved(
         .{ contract.env.trace_path, trace_path },
         // Pinned empty: see the oracle-path pairs above.
         .{ contract.env.seq_base, "" },
+        .{ contract.env.observe, observe.name() },
         .{ preload_var, shim },
     }, recordingCapture(stdout_path), cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 }
@@ -2257,7 +2319,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         if (i + 1 >= argv.len) setupError("an option is missing its value");
         const v = argv[i + 1];
-        if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
+        if (std.mem.eql(u8, argv[i], "--observe")) {
+            args.observe = contract.ObserveMode.parse(v) orelse
+                setupError("--observe takes `wrappers` (the default) or `syscalls`");
+            // Published the moment the flag is read, the way `noteOracle` is above: a
+            // refusal raised anywhere after this line names the capture correctly.
+            observe_mode = args.observe;
+        } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).
             noteOracle(.{ .named = .strace });
@@ -2995,6 +3063,26 @@ pub fn main(init: std.process.Init.Minimal) !void {
             setupError("--oracle is not an executable file; the completeness check cannot run");
     }
 
+    // Checked here for the reason the line above is: before the operation runs, so that
+    // "this kernel cannot do it" and "the target misbehaved" stay distinguishable, and so
+    // that the OPERATION has not run when the refusal arrives. Not "the state directory is
+    // untouched" — `--setup` runs above this line and is allowed to write there, which is
+    // what it is for (review, P2). What this placement buys is that the target's own
+    // operation, the thing whose crash points the run is about, has not started.
+    //
+    // Asked of the kernel in this process rather than measured by a probe run of the
+    // target under the shim. The probe was the plan's design; `SECCOMP_GET_ACTION_AVAIL`
+    // answers the same question without a spawn and without the target's side effects
+    // landing before the engine has decided it can proceed. It is not the whole check —
+    // the shim announces its own install result and the trace is checked for it below —
+    // it is the half that catches the ordinary environment before anything runs.
+    if (args.observe == .syscalls) {
+        if (builtin.os.tag != .linux)
+            setupError("--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default)");
+        if (!posix.seccompTrapAvailable())
+            setupError("--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere");
+    }
+
     // Read before the spawn, not after: `--twice` reports the interval between the two
     // runs' STARTS (the cohort protocol's definition, PROTOCOL.md "two or more seconds
     // apart"), and a mark taken after this run returned would measure the gap between
@@ -3047,8 +3135,75 @@ pub fn main(init: std.process.Init.Minimal) !void {
         fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
     }
 
+    // `--observe syscalls` takes its two witnesses from two runs rather than one.
+    //
+    // A trapped write is not executed by the kernel: it raises SIGSYS and the shim's
+    // handler re-issues it, so strace sees each write twice — once refused, once
+    // performed — plus the handler's own record writes. Measured on a 40010-byte
+    // `fwrite`: four real writes, thirteen strace lines. `oracle.compare` is positional
+    // and answers `.missed` as soon as the oracle's list is longer, so EVERY
+    // oracle-attached run in this mode would refuse with `oracle_missed_operation`.
+    //
+    // So the oracle watches an untrapped run, and the run whose trace is used is trapped
+    // with no oracle attached. What that leans on is the reproducibility the exploration
+    // already requires of every target it judges — `kill_at` is an index into the
+    // recording's sequence, replayed in each world — and it is measured here too: the
+    // untrapped and trapped runs of the stdio toy, the raw-syscall toy and the
+    // planted-bug toy produced identical operation sequences.
+    //
+    // It is also exactly why the claim this earns is `oracle_verified_across_runs` and
+    // not `oracle_verified`. Two witnesses of two executions is weaker than two
+    // witnesses of one, `docs/report-schema.md` calls the older field "a fact about the
+    // run", and `docs/contract-freeze.md` surface 2 says a machine field would change
+    // name before it changed meaning. The shim's own rule is the same one from the other
+    // side: a discovered strace is named and never attached, because "a second witness
+    // joining on its own would silently strengthen what a flagless verdict claims".
+    if (args.observe == .syscalls and args.oracle != null) {
+        var owt_buf: [contract.max_path]u8 = undefined;
+        const oracle_trace = std.fmt.bufPrint(&owt_buf, "{s}/trace-oracle-run.bin", .{args.work}) catch setupError("path too long");
+        removeFile(oracle_trace);
+        var ows_buf: [contract.max_path]u8 = undefined;
+        const oracle_stdout = std.fmt.bufPrint(&ows_buf, "{s}/stdout-oracle-run.txt", .{args.work}) catch setupError("path too long");
+        removeFile(oracle_stdout);
+
+        const oracle_term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, args.oracle, oracle_out, oracle_trace, oracle_stdout, args.cwd, .wrappers);
+        // Held to the same status expectation as the recording, and for a sharper
+        // reason: this run is the one the completeness claim rests on, and a run that
+        // ended differently from the recording is not a witness of it.
+        switch (oracle_term) {
+            .exited => |code| if (code != expect_status)
+                unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the oracle's run of the operation exited {d} where {d} was expected, so nothing watched an execution the recording could be compared against", .{ code, expect_status }) catch "the oracle's run of the operation exited with an unexpected status", .fix_define),
+            else => unknown(.recording_run_failed, "the oracle's run of the operation did not exit normally, so nothing watched an execution the recording could be compared against", .fix_define),
+        }
+        // The recording has to start from the state the oracle's run started from, or
+        // the two executions are not the same execution twice.
+        engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory between the oracle's run and the recording run");
+    }
+
+    // Taken AFTER the oracle's run, so that `--twice` measures the interval between the
+    // two runs it compares. Its first home was above the block, where the oracle run's own
+    // duration counted toward the two-second floor `observeAgain` enforces and toward the
+    // "two runs N ms apart" the report prints — the report could then claim a gap the two
+    // observed runs never had, which is the precise defect that loop's comment says it
+    // exists to prevent (review, P1). Still before the spawn, which is where the existing
+    // comment on this mark says it belongs.
     const rec_started_ms = posix.monotonicMs();
-    const rec_term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, args.oracle, oracle_out, rec_trace, rec_stdout, args.cwd);
+
+    const rec_term = runOperationObserved(
+        gpa,
+        arena,
+        op_argv,
+        state_abs,
+        state_alt,
+        shim,
+        // Not attached in syscalls mode: the oracle already watched its own run above.
+        if (args.observe == .syscalls) null else args.oracle,
+        oracle_out,
+        rec_trace,
+        rec_stdout,
+        args.cwd,
+        args.observe,
+    );
 
     if (fsu_pid) |pid| {
         // The closing sentinel proves the capture was still live when the recording
@@ -3152,6 +3307,38 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // verdict and the exit are unchanged, so no frozen surface moves.
     if (!trace.saw_shim_ready)
         unknown(.no_shim_marker, noShimDetail(arena), noShimNext());
+
+    // What the subject says it installed, against what was asked for.
+    //
+    // Without this the mode is a request and not a fact: a shim that could not install
+    // its filter records the write family through the wrappers instead, and the report
+    // would carry a verdict for flush granularity while the invocation said syscalls.
+    // The kernel check before the run catches the ordinary cause; this catches the rest
+    // — a target that drops privileges, a process spawned into a context of its own, a
+    // shim built for a platform that has no filter to install.
+    //
+    // **Placed here, after the three checks that explain an empty announcement**, and not
+    // where it was first written — between the trace read and the oversized-trace answer.
+    // From there it intercepted a run whose shim never loaded at all (a wrong `--shim`, a
+    // static or setuid target, a mismatched architecture), a v13 shim, and a capped read,
+    // and told all three that "the trace was written by a shim that did not read the
+    // request". For the first of those no shim wrote the trace, and the sentence made
+    // `no_shim_marker` — which `docs/report-schema.md` documents for exactly that input —
+    // unreachable in this mode, turning the most ordinary environment failure there is
+    // from UNKNOWN into a SETUP ERROR (review, P0).
+    //
+    // A SETUP ERROR rather than an UNKNOWN because `docs/report-schema.md`'s
+    // `unknown_reason` set is closed by name and `docs/contract-freeze.md` surface 2
+    // calls gaining a member a breaking change — and because this is what a setup error
+    // is: the run could not be arranged the way the invocation declared, which is the
+    // same reading the `apparatus` check uses for a device that was not there.
+    if (args.observe == .syscalls and !std.mem.eql(u8, trace.observe_aux, contract.observe_aux.armed)) {
+        if (std.mem.eql(u8, trace.observe_aux, contract.observe_aux.unsupported))
+            setupError("--observe syscalls was asked for and the shim reports it cannot install a filter at all: this shim was built for a platform or an architecture whose trap frame it does not know. Rebuild the pair, or use --observe wrappers");
+        if (std.mem.eql(u8, trace.observe_aux, contract.observe_aux.failed))
+            setupError("--observe syscalls was asked for and the shim's filter installation was refused inside the target's own process, although this kernel accepts SECCOMP_RET_TRAP. A target that drops privileges or clears PR_SET_NO_NEW_PRIVS reaches this; --observe wrappers does not need a filter");
+        setupError("--observe syscalls was asked for and the subject's announcement does not say the filter was installed: the trace was written by a shim that did not read the request. Rebuild the engine and the shim from the same tree");
+    }
 
     // The shim's half of the boundary evidence, recorded the moment the trace is known
     // to be the shim's — before every refusal below, because each of them writes a
@@ -3395,10 +3582,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
             shim_ops.append(arena, op) catch setupError("out of memory");
         }
 
+        // In syscalls mode the two accounts describe two runs, so a divergence has a
+        // third possible cause the default mode does not have: the target did not repeat.
+        // The agreement line says "of a SEPARATE untrapped run" and the refusal side said
+        // nothing, which left the two halves of the same report disagreeing about what was
+        // compared (review, P2). `docs/report-schema.md` allows two refusals with the same
+        // `unknown_reason` to carry different steps for exactly this — the step is chosen
+        // where the cause is known — so `oracle_saw_phantom` stops telling a caller to
+        // file a Sideeye defect when non-reproducibility is as likely an explanation.
+        const cross_run = if (args.observe == .syscalls)
+            " — and under --observe syscalls the two accounts are of two runs of the same operation, so this can also mean the target did not repeat"
+        else
+            "";
         if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
             .missed => |m| unknown(.oracle_missed_operation, divergenceDetail(
                 arena,
-                "the oracle saw a state-directory operation the shim did not record",
+                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the shim did not record{s}", .{cross_run}) catch
+                    "the oracle saw a state-directory operation the shim did not record",
                 m.index,
                 shim_ops.items,
                 parsed.lines.items,
@@ -3406,16 +3606,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
             ), .class_wall),
             .phantom => |p| unknown(.oracle_saw_phantom, divergenceDetail(
                 arena,
-                "the shim recorded an operation the oracle did not see",
+                std.fmt.allocPrint(arena, "the shim recorded an operation the oracle did not see{s}", .{cross_run}) catch
+                    "the shim recorded an operation the oracle did not see",
                 p.index,
                 shim_ops.items,
                 parsed.lines.items,
                 parsed.names.items,
-            ), .sideeye_defect),
+            ), if (args.observe == .syscalls) .retry_then_report else .sideeye_defect),
             .unsupported => |name| unknown(.unsupported_syscall_observed, name, .class_wall),
         };
 
-        oracle_verified = true;
+        if (args.observe == .syscalls) oracle_verified_across_runs = true else oracle_verified = true;
         // The account names the witness and, where the witness is narrower, what it did
         // not check. The promise this flag makes is that a macOS run *naming its oracle*
         // carries the Linux claim — and a reader could not tell the two apart from this
@@ -3443,6 +3644,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
                     "operands unplaceable; a pathname cut by the display width refuses. Two things it cannot " ++
                     "see at all: a process leaving the containment group, and a neighbour's descriptor into " ++
                     "the state directory opened before the capture began",
+                .{agreed},
+            ) catch agreed
+        else if (args.observe == .syscalls)
+            // Says which claim was made, in the same line a reader already looks at for
+            // the witness. Without this the strongest and the weaker agreement read
+            // identically — the defect the fs_usage arm above exists to avoid, one mode
+            // over. Appended after "witness strace" so the two acceptance checks that
+            // match `agreed on N operations` as a substring keep matching.
+            std.fmt.allocPrint(
+                arena,
+                "{s}, witness strace — of a SEPARATE untrapped run, because a trapped write reaches " ++
+                    "strace twice (once refused, once re-issued) and the comparison is positional. So the " ++
+                    "two accounts are of two executions of the same operation, not of one: this is " ++
+                    "`oracle_verified_across_runs`, and `oracle_verified` stays false. What it rests on is " ++
+                    "the reproducibility the exploration already requires, which `preflight --twice` measures",
                 .{agreed},
             ) catch agreed
         else
@@ -3563,10 +3779,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // unchecked; with it, the second run happens here and the report carries what
         // the comparison found — including, when they differ, the refusal to accept.
         const repeat: ?Repeat = if (args.twice)
-            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd)
+            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe)
         else
             null;
-        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.expect_status, repeat);
+        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.observe, args.expect_status, repeat);
     }
 
     if (n == 0) {
@@ -3743,6 +3959,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ contract.env.kill_at, kstr },
             // Pinned empty: see the recording pairs.
             .{ contract.env.seq_base, "" },
+            // The same observation path the recording used, necessarily: `kill_at` is an
+            // index into the sequence the recording produced, and a world counting
+            // through the other path would number differently and stop somewhere else.
+            .{ contract.env.observe, args.observe.name() },
             .{ preload_var, shim },
             // `exclusive` for the reason on `recordingCapture`, and free for the same
             // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
@@ -3775,6 +3995,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var wtrace = readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
         answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
         defer wtrace.deinit();
+
+        // The same question the recording's announcement answers, asked of the run that
+        // actually produces the verdict (review, P1). `SIDEEYE_KILL_AT` is an index into
+        // the sequence the RECORDING counted, and in syscalls mode that sequence is at
+        // syscall granularity; a world whose filter did not install counts the write
+        // family through the wrappers instead, so its k-th operation is a different
+        // operation and the kill lands somewhere nobody chose. Everything above about
+        // "the mode is a fact and not a request" applies here more sharply than to the
+        // recording, because a wrong answer here is a verdict rather than a refusal.
+        if (args.observe == .syscalls and !std.mem.eql(u8, wtrace.observe_aux, contract.observe_aux.armed))
+            setupError("--observe syscalls was asked for and an explored world's shim does not report the filter installed, although the recording run's did: the crash point this world was told to stop at is an index into a sequence it did not count. Re-run, and if it repeats the environment is refusing the filter for some processes and not others");
 
         // The world's own boundary evidence, before the refusals that read it. Without
         // this the account for a world-side refusal is the *recording's* clause, which
@@ -4341,6 +4572,9 @@ fn observeAgain(
     /// where the first did — a repeatability comparison between two different working
     /// directories would be measuring the directories.
     cwd: ?[]const u8,
+    /// The same observation path the first run used. A repeatability comparison between
+    /// two runs counted by different observers would be measuring the observers.
+    observe: contract.ObserveMode,
 ) Repeat {
     // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
     // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
@@ -4353,6 +4587,18 @@ fn observeAgain(
         if (elapsed >= repeat_gap_ms) break;
         posix.sleepForMs(repeat_gap_ms - elapsed);
     }
+
+    // Two different questions that were one variable until review separated them.
+    //
+    // `oracle_path` answers "did the caller name an oracle?", which is what the refusals
+    // below are about — telling someone who passed `--oracle` to pass `--oracle` is the
+    // defect review found once this function started nulling it. `attached` answers "does
+    // run B carry it?", which is false in syscalls mode for the reason the recording run
+    // does not carry it either: strace sees a trapped write twice, so a trapped run under
+    // strace is the shape the whole design avoids. Nulling the parameter at the call site
+    // collapsed the two and made the refusal message and the report's own disclosure lie
+    // in opposite directions (review, P1).
+    const attached: ?[]const u8 = if (observe == .syscalls) null else oracle_path;
     engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory before the second observed run");
 
     var trace_buf: [contract.max_path]u8 = undefined;
@@ -4371,7 +4617,7 @@ fn observeAgain(
     removeFile(oracle_out_b);
 
     const started = posix.monotonicMs();
-    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, oracle_path, oracle_out_b, trace_b, stdout_b, cwd);
+    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, attached, oracle_out_b, trace_b, stdout_b, cwd, observe);
 
     // The same question the recording run's own status check asks, and the same reason
     // it matters: a second run that failed says nothing about repeatability, and
@@ -4429,7 +4675,7 @@ fn observeAgain(
         unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown", .retry_then_report);
     // The shim-side witness for a foreign writer, and it does not depend on an oracle.
     if (trace.foreign_kill_point)
-        unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the second observed run", if (oracle_path != null) oracle_out_b else null, "a process other than the subject performed a state-directory operation during the second observed run"), .class_wall);
+        unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the second observed run", if (attached != null) oracle_out_b else null, "a process other than the subject performed a state-directory operation during the second observed run"), .class_wall);
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run", .rebuild_pair);
     // The boundaries that stay refusals whatever an oracle says, applied to the second
@@ -4523,7 +4769,7 @@ fn observeAgain(
 /// behavior, checker falsification) have not run, and the fixed `not checked` list
 /// names them. The acceptance suite pins this wording — the claim cannot quietly grow
 /// back into one this command does not earn.
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, observe: contract.ObserveMode, expect_status: ?u8, repeat: ?Repeat) noreturn {
     // "not accepted", not "accepted but split". `docs/contract-freeze.md` says a
     // preflight that ACCEPTS the recording exits 0; under `--twice` the caller asked a
     // second question, so acceptance means the recording held *and* the two runs
@@ -4593,18 +4839,28 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             \\               not compared, and two runs are not all runs
             \\
         , .{ r.gap_ms, verdict });
-        // Stated only when an oracle ran, because otherwise it describes nothing. The
-        // second run executes under the same wrapper the first did, so its capture
-        // exists; what it does not get is the account comparison run A performs. The
-        // post-states this line is about are read from the filesystem, not from either
-        // witness — but a reader who passed --oracle would otherwise assume the second
-        // run was checked the way the first was.
-        if (oracle_path != null)
-            say(
-                \\               the second run's oracle capture is written but not
-                \\               compared; only the first run's account was checked
-                \\
-            , .{});
+        // Stated only when run B actually carried the oracle, because otherwise it
+        // describes a file that does not exist. In `wrappers` mode run B executes under
+        // the same wrapper run A did, so its capture exists and what it lacks is the
+        // account comparison run A performs. In `syscalls` mode run B is trapped and
+        // therefore carries no oracle at all — the mode's whole arrangement — so this
+        // sentence said a capture was written where nothing wrote one (review, P1). The
+        // second branch says what is true there instead: a reader who passed `--oracle`
+        // still needs to know run B was not watched.
+        if (oracle_path != null) {
+            if (observe == .syscalls)
+                say(
+                    \\               run B is trapped, so no oracle watched it at all;
+                    \\               only the first run's account was checked
+                    \\
+                , .{})
+            else
+                say(
+                    \\               the second run's oracle capture is written but not
+                    \\               compared; only the first run's account was checked
+                    \\
+                , .{});
+        }
         // ADR 0043: the declaration is the same one the atomicity line above carries; this
         // says what it did to the comparison, which the atomicity line is not about.
         if (scratch_declared.len > 0)
@@ -6391,6 +6647,12 @@ fn buildJson(
     // gates on `verdict == "PASS" && oracle_verified`, never on the prose `oracle` string.
     try w.appendSlice(arena, ",\n  \"oracle_verified\": ");
     try w.appendSlice(arena, if (oracle_verified) "true" else "false");
+    // Emitted only when it is true, so a report from a `--observe wrappers` run — every
+    // report a v13 consumer has ever seen — is byte-identical to what it was. A consumer
+    // that gates on `verdict == "PASS" && oracle_verified` therefore keeps treating this
+    // mode's PASS as unverified, which is the conservative reading and the correct one.
+    if (oracle_verified_across_runs)
+        try w.appendSlice(arena, ",\n  \"oracle_verified_across_runs\": true");
     // Read from the run's own counters rather than passed in as zeroes. An UNKNOWN raised
     // at world 4 of 6 used to report `"explored": 0`, so a caller aggregating coverage
     // from the JSON recorded nothing for every run that ended early.

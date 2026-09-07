@@ -71,28 +71,57 @@ pub fn creat(path: [*:0]const u8, mode: c_uint) callconv(.c) c_int {
 
 // --- kill-point ops: write family ------------------------------------------------
 
+// Four of these five ask `writeCountedAtSyscall()` first. Under `--observe syscalls`
+// the syscall each one is about to issue is trapped and counted by the handler, so
+// recording here as well would count one operation twice — and the engine compares the
+// two accounts position by position, so a doubled shim account refuses every run
+// (`oracle_saw_phantom`) and doubles every crash-point number.
+//
+// `pwritev2` is refused in syscalls mode rather than counted, and it took two wrong
+// answers to get there.
+//
+// It takes six arguments, so the filter has no free register for the re-issue sentinel and
+// cannot trap it. The first version therefore left its wrapper recording unconditionally,
+// on the reasoning that something has to count it. Review found the hole: **glibc falls
+// back to `pwritev` or `writev` when the kernel does not implement `pwritev2`, and both of
+// those ARE trapped** — so on such a kernel the wrapper and the handler would each record
+// one operation for one write. The second version gated the wrapper like the other four,
+// which review found was worse: on a kernel that DOES implement `pwritev2` — every kernel
+// since 4.6 — the call then reaches no trapped number and no wrapper, so nobody counts it,
+// the kill lands on a different operation, and under `--allow-unverified` that is a
+// silently wrong verdict where the default mode had been correct.
+//
+// Neither kernel can be counted correctly without knowing which one it is, so the honest
+// answer is the one v12 already built for exactly this shape: record `.unsupported` and
+// let the engine refuse (`unsupported_syscall_observed`, already in the closed set). A
+// target using `pwritev2` is refused under `--observe syscalls` and judged under the
+// default mode, on either kernel, with no oracle required to notice.
+
 pub fn write(fd: c_int, buf: [*]const u8, count: usize) callconv(.c) isize {
-    common.noteFd(.write, fd);
+    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
     return common.callWrite(fd, buf, count);
 }
 
 pub fn pwrite(fd: c_int, buf: [*]const u8, count: usize, offset: i64) callconv(.c) isize {
-    common.noteFd(.write, fd);
+    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
     return common.callPwrite(fd, buf, count, offset);
 }
 
 pub fn writev(fd: c_int, iov: *const anyopaque, iovcnt: c_int) callconv(.c) isize {
-    common.noteFd(.write, fd);
+    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
     return common.callWritev(fd, iov, iovcnt);
 }
 
 pub fn pwritev(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64) callconv(.c) isize {
-    common.noteFd(.write, fd);
+    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
     return common.callPwritev(fd, iov, iovcnt, offset);
 }
 
 pub fn pwritev2(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64, flags: c_int) callconv(.c) isize {
-    common.noteFd(.write, fd);
+    if (common.writeCountedAtSyscall())
+        common.noteUnsupportedInScopeFd("pwritev2 (--observe syscalls)", fd)
+    else
+        common.noteFd(.write, fd);
     return common.callPwritev2(fd, iov, iovcnt, offset, flags);
 }
 
@@ -668,6 +697,16 @@ pub fn fflush_unlocked(stream: ?*common.FILE) callconv(.c) c_int {
 pub fn fclose(stream: *common.FILE) callconv(.c) c_int {
     // The pending write first, then the close — the order of the syscalls fclose is
     // about to issue. Both resolved before the call: afterwards the descriptor is gone.
+    //
+    // In syscalls mode the write is not recorded by this function at all: it is counted
+    // when the flush's `write(2)` traps, and that happens inside `callFclose` — after
+    // this function has already recorded the close. So the flush is performed here
+    // first, the way `freopenCommon` below does it and for the same reason: the recorded
+    // order has to be the order the syscalls happen in, or the oracle's
+    // position-by-position comparison diverges. Measured before the fix — the trace came
+    // back `.close` and then the `.write` it should have preceded.
+    if (common.writeCountedAtSyscall() and common.stdioHasPending(stream))
+        _ = common.callFflush(stream);
     common.noteStdioFlush(stream);
     common.noteStdioClose(stream);
     // Unconditional, unlike the stdio notes above: fdopen(N) + fclose retires the
