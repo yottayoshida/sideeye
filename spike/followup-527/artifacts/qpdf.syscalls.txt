@@ -1,0 +1,18 @@
+WARNING: /localrun/st/syscalls/qpdf/a.pdf (object 4 0, offset 281): expected endstream
+WARNING: /localrun/st/syscalls/qpdf/a.pdf (object 4 0, offset 239): attempting to recover stream length
+WARNING: /localrun/st/syscalls/qpdf/a.pdf (object 4 0, offset 239): recovered stream length: 51
+qpdf: there are warnings; original file kept in /localrun/st/syscalls/qpdf/a.pdf.~qpdf-orig
+qpdf: operation succeeded with warnings; resulting file may have some problems
+UNKNOWN  recording_run_failed
+         the oracle's run of the operation exited 3 where 0 was expected, so nothing watched an execution the recording could be compared against
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: this run was refused before the shim's account of it was read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

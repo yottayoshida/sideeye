@@ -1,0 +1,8 @@
+# engine identity, recorded inside the box that ran the measurement
+## sideeye --version
+sideeye 1.2.0 (trace contract v14)
+## sha256
+3a49ccf70c04a625d0ccb03a068d95bce0c09904a4111fc042bf46f57a80da11  /se/bin/sideeye
+47abb2281c1e290f401442274514e765c33a16933145cedab9e016a4ea18fc72  /se/lib/libsideeye_shim.so
+## uname
+aarch64

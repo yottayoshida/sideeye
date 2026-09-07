@@ -2,6 +2,109 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-07 — the two changes, measured everywhere they were not measured
+
+Both of today's changes were measured against the targets their own defect refused. #526
+was measured on the three defines whose `exec` chains it stopped miscounting; #527 on the
+two targets that refuse at the stdio flush boundary. Neither had any evidence about the
+targets it was *not* about, and one of them ships a mode that rewrites how every write is
+counted. `spike/followup-527/` is that sweep: fourteen of the eighteen targets the two dogfood
+runs put on `docs/target-classes.md`, each run twice — once per observation mode — from
+one image, against the engine at `main` `05ed142`, with the state directory on a
+**container-local filesystem** for the reason the entry below gives. The four left out
+are the walls this mode is not about: chezmoi and gopass (static linkage), beets and
+joplin (threads).
+
+**Eleven of the fourteen reach a verdict under the default mode — nine in the sweep as
+run, plus mogrify and qpdf once the two apparatus faults below were removed — and all
+eleven reach the same verdict under `--observe syscalls`** — same world count, same crash-point count, same
+oracle operation count, and the syscall-line count equal across modes for **ten of the
+eleven** (mid3v2 2020, fonttools 4031, bsdtar 207, bean-format 2169, isort 2737,
+pyupgrade 1728, jpegtran 87, exiv2 286, mogrify 672, qpdf 525) — the sole exception
+being rdiff-backup, 6862 against 6859, the largest account in the set. **Two of the three that the default refuses cross**:
+metaflac PASS 13/13 over 12 crash points, fontforge FAIL 183 of 185 over 184. **One does
+not**, and it is the interesting row.
+
+**It also retires a standing suspicion.** The entry below says every dogfood number
+measured on that bind mount is suspect. For these fourteen rows it is not: **twelve
+reproduce their recorded result exactly, down to the earliest crash-point index wherever
+the row states one** — mogrify at 2 of 12, qpdf at 7 of 8, exiv2 at 2 of 6, four rows at 2
+of 2 — and every index is identical between the two modes. The two that do not are isort
+(above) and rdiff-backup, and rdiff-backup's is a different checker rather than a different
+answer: this sweep used the verify-only one, which gives FAIL 4 of 69 at crash point 60
+where that day's verify-only variant flagged 5 and its regress variant left 1 at 51. So the
+mount cost that day's measurement its *rates*, not its verdicts.
+
+**#526's third define is answered, and the wrapper is transparent.** That change's own
+record says "one of three, not three of three": hnb reached a verdict, lbdb moved out to
+the multi-process wall, and fontforge-through-a-wrapper hit the stdio boundary instead —
+which #527 then lifted. Run today through a shell wrapper that `exec`s a bare name, so the
+`PATH` lookup #526 is about happens, fontforge answers **FAIL 183 of 185 over 184 crash
+points with the oracle agreeing on 184 operations**: the same verdict and the same counts
+as the direct spelling, 40251 syscall lines against 40187. And the chain was exercised
+rather than assumed — that report's `processes` field carries "the subject's image replaced
+1 time(s), chain unbroken (#123)" where the direct spelling's says only "single process".
+Two of three now.
+
+**What does change for an already-judged target is the evidence field, by design.** A PASS
+under this mode carries `oracle_verified_across_runs` and leaves `oracle_verified` false,
+because the oracle's account is of a separate untrapped run. Identical verdict, identical
+counts, different field — and a consumer keyed on the old field alone reads the weaker
+claim as absent rather than as weaker. That is documented for v14; the sweep is what makes
+it concrete on real tools rather than on toys.
+
+**Three rows needed a second look, and all three second looks were about the apparatus, not
+the mode.**
+
+- **mogrify is not byte-repeatable — and the first version of this measurement did not
+  measure that.** `followup.sh` called `preflight --twice` without `--observe`, so both runs
+  were the default mode while three documents said "in both modes". The two outputs were
+  **byte identical**, which is what one measurement copied looks like, and the initial
+  review caught it. Re-run with the flag: **both modes refuse**, all three PNGs
+  `content differs`, 2010 ms apart under `wrappers` and 2007 under `syscalls`. **A preflight
+  report does not name its observation mode** unless `--oracle` was given, which is why the
+  omission left no trace in the artifact — the engine identity files exist for the same
+  reason. The conclusion holds on the seven explore runs, which did carry the flag: six
+  FAIL 6 of 13 and one refused (one of four under `wrappers`, none of three under
+  `syscalls`), so the refusal is the target's own non-determinism arriving in
+  whichever run it arrives in. The published window is unaffected; what the row gains is
+  the caveat that this define fails the README's byte-repeatability limit.
+- **qpdf's refusal was my PDF, not qpdf.** The minimal PDF `mkpdf.py` writes is accepted by
+  mupdf and rejected by qpdf, which recovers the stream length, warns, and exits 3 — so the
+  operation missed its declared status and the run was refused `recording_run_failed` in
+  **both** modes. With the PDF the 2026-09-05 apparatus generates, both modes answer FAIL 1
+  of 9 at crash point 7 of 8, which is the recorded row exactly.
+- **isort's crash-point count moved, and not because of these changes.** The 2026-09-06 row
+  records 6 crash points; today both modes give 8. The engine at `4083db2` — *before* both
+  changes — gives the same 8 on the same apparatus. Not chased further, because whatever
+  moved it is older than what this sweep is about; the isort in this image is 6.0.1 and the
+  package version is the first place to look. **A recorded count belongs to an engine
+  generation and a package set, and this page has been reading them as properties of the
+  target.**
+
+**The wall that did not move is one `close` wide.** mutool refuses `unresolvable_path` in
+both modes, and #485's message now names the operation: `unlinked-fd close fd:3`. Under
+`strace -y`, after the `unlinkat` that removes the file it still holds open, fd 3 receives
+fifteen `read`s and one `close` and nothing else — and read-only calls are not recorded at
+all, so the **only** recordable operation on that descriptor is the close. Every other
+operation in the run is placeable. A `close` cannot be a crash point: ADR 0003 §2 excludes
+it from both class sequences, `src/contract.zig:382` says "recorded, never a crash point",
+and `src/fsusage.zig:837` and `:850` — the macOS oracle's reader — already exempt it with
+`if (c != .close)`. The shim path has no such clause. So a real tool, on a normal
+filesystem, in both modes, is refused for the address of an operation the engine has
+decided it needs no address for, and two readers disagree about a rule they both cite.
+
+The plan written for that rule this morning was killed at its own step 0, because its
+motivating target was metaflac and metaflac's refusals turned out to be the bind mount.
+**mutool is the target it should have named.** Nothing is fixed here; the row now says what
+the wall is, which is what it needs before anything is.
+
+**The standing lesson.** A change measured only where its own defect fired carries no
+evidence about where it did not fire. Both of today's changes were shipped that way, and
+both survived the sweep — but "survived" is a measurement that did not exist until it was
+taken, and for `--observe syscalls` the thing it rules out is a silently different verdict
+on a target that was already working.
+
 ## 2026-09-07 — three attributions for one number, and the third one is the filesystem
 
 `--observe syscalls` shipped with a verdict rate attached to it, and that rate was wrong three

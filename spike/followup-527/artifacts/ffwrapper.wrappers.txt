@@ -1,0 +1,27 @@
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 4: the oracle saw: 1255  write(4</localrun/st/wrappers/ffwrapper/f.ttf>, "\10y\0\311\6\320\0F\6\320\0F\4\315\0\211\3\237\0\211\4\315\0\211\6\320\0w\6\320\0F"..., 4096) = 4096; the shim's account ends after 3 operation(s)
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+divergence  write
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
