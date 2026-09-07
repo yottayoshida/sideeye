@@ -70,6 +70,14 @@ pub const TraceInfo = struct {
     saw_header: bool = false,
     version_mismatch: bool = false,
     saw_shim_ready: bool = false,
+    /// The `aux` of the FIRST `shim_ready` — the subject's own announcement of which
+    /// observation path it installed (contract v14, `contract.observe_aux`).
+    ///
+    /// The first, not the last: a self-exec chain announces once per image and every
+    /// image installs its own filter, so a later image's answer would let a failed
+    /// install in the first one pass unseen. Empty from a shim asked for the default
+    /// mode, which is also what the field carried through v13.
+    observe_aux: []const u8 = "",
     /// The first operation the shim could not place, kept whole rather than as a flag
     /// (#485). Any verdict computed from a trace containing one is a verdict about an
     /// incomplete picture — and the refusal that follows can now say which record it
@@ -572,6 +580,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 info.saw_shim_ready = true;
                 if (info.primary_pid == null) {
                     info.primary_pid = op.pid;
+                    info.observe_aux = op.aux;
                 } else if (pending_exec and op.pid == info.primary_pid.?) {
                     // The new image announcing itself. Its seq is the carried base
                     // (v10); anything else — a fresh 0 from a stripped environment

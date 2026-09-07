@@ -71,10 +71,14 @@
  *                      pending: the wrapper must record [write, close, open] in the
  *                      order freopen issues the syscalls.
  *   TOY_STDIO_BIG      3000 lines overflow the buffer inside fprintf; those writes
- *                      bypass the flush wrappers by construction. Pins that the
- *                      boundary refuses (UNKNOWN) instead of quietly miscounting.
+ *                      bypass the flush wrappers by construction. Pins BOTH sides of
+ *                      the boundary: under the default observation path it refuses
+ *                      (UNKNOWN) instead of quietly miscounting, and under
+ *                      `--observe syscalls` (contract v14) the same run reaches a
+ *                      verdict — the pair is what makes either leg mean anything.
  *   TOY_STDIO_NOCLOSE  fprintf and never fclose: the bytes land in libc's exit-time
- *                      cleanup, internal and invisible. Pins the same boundary.
+ *                      cleanup, internal and invisible. Pins the same boundary, from
+ *                      both sides for the same reason.
  *   TOY_STDIO_SEEK     the taskwarrior shape: an "r+" update stream made dirty and
  *                      then repositioned — libc flushes inside the fseek, so the seek
  *                      family are flush points too. init creates the file so it is in

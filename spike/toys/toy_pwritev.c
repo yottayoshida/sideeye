@@ -11,6 +11,13 @@
  * The state file's contents are asserted by the acceptance leg, not just the
  * verdict: a wrapper with the arguments in the wrong order records the operation
  * correctly and still writes the wrong bytes.
+ *
+ * TOY_PWRITEV2 switches the write to `pwritev2` (contract v14). That call is the one
+ * member of the write family `--observe syscalls` cannot count — six arguments leave the
+ * filter no free register for its re-issue marker — so the shim records `unsupported`
+ * there and the engine refuses, while the default mode counts it as it always has. The
+ * acceptance leg drives both, because a refusal that is also the default mode's answer
+ * would prove nothing about the mode.
  */
 
 #define _GNU_SOURCE
@@ -42,7 +49,11 @@ static int pwritev_file(const char *path, const char *head, const char *tail) {
     iov[1].iov_base = (void *)tail;
     iov[1].iov_len = strlen(tail);
     ssize_t want = (ssize_t)(iov[0].iov_len + iov[1].iov_len);
-    ssize_t got = pwritev(fd, iov, 2, 0);
+    /* `flags = 0` is the plain form: no RWF_* behaviour, so the two calls differ only in
+       which symbol the target reached. That is the point — the observation path has to be
+       what separates them, not the semantics. */
+    ssize_t got = getenv("TOY_PWRITEV2") ? pwritev2(fd, iov, 2, 0, 0)
+                                         : pwritev(fd, iov, 2, 0);
     if (got != want) { close(fd); return -1; }
     if (fsync(fd) != 0) { close(fd); return -1; }
     close(fd);

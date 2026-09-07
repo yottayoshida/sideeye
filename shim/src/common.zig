@@ -24,6 +24,36 @@ const contract = @import("contract");
 /// leaves it green.
 const shim_build_options = @import("shim_build_options");
 
+/// The syscall-layer observation path (contract v14, Linux only).
+///
+/// Imported behind a platform test rather than unconditionally: the module speaks
+/// seccomp, `ucontext` register offsets and `SIGSYS`, none of which exist on Darwin, and
+/// an unconditional import would make the macOS build analyse them. The stub carries the
+/// same three names so every use site below reads the same on both platforms.
+const syscalls = if (builtin.os.tag == .linux) @import("syscalls.zig") else struct {
+    pub var armed: bool = false;
+    pub const Install = enum { armed, unsupported, failed };
+    pub fn install() Install {
+        return .unsupported;
+    }
+    pub fn traceWrite(_: c_int, _: [*]const u8, _: usize) isize {
+        return -1;
+    }
+};
+
+/// Whether a `write` recorded at a libc entry point would be recorded a second time at
+/// the syscall boundary.
+///
+/// True for exactly the four syscalls `syscalls.zig` traps. `copy_file_range` and
+/// `sendfile` are not among them and their wrappers keep recording, because libc never
+/// issues those from inside stdio so the wrapper sees every call that is not raw.
+/// `pwritev2` is not among them either and is handled a third way — refused rather than
+/// counted, for the reason spelled out where its wrapper is (`ops.zig`): neither counting
+/// it here nor silencing it is correct on both kernels.
+pub inline fn writeCountedAtSyscall() bool {
+    return syscalls.armed;
+}
+
 pub const c = struct {
     pub extern "c" fn dlsym(handle: ?*anyopaque, symbol: [*:0]const u8) ?*anyopaque;
     pub extern "c" fn getenv(name: [*:0]const u8) ?[*:0]const u8;
@@ -343,6 +373,20 @@ fn pendingBytes(stream: *FILE) usize {
 pub fn noteStdioFlush(stream: *FILE) void {
     if (!active or busy) return;
     if (!stdioActive()) return;
+    // The flush's own `write(2)` is trapped and counted by the handler in syscalls mode,
+    // so recording it here as well would count one operation twice.
+    //
+    // Gated HERE and not in `stdioActive()`, which was the first attempt: that predicate
+    // also decides whether `fopen` and `freopen` record their `.open` and whether
+    // `fclose` records its `.close`, so switching it off cost all three. Measured — the
+    // syscalls-mode trace came back with four correct writes and no `.open` and no
+    // `.close` at all, while the mode's own writes looked right.
+    //
+    // `stdioHasPending` deliberately keeps answering truthfully: the freopen wrapper
+    // uses it to decide whether to perform an explicit `fflush`, and answering "no"
+    // there would change what the target does rather than what the shim records. That
+    // flush still happens, its `write(2)` still traps, and the handler still counts it.
+    if (writeCountedAtSyscall()) return;
     if (pendingBytes(stream) == 0) return;
     noteFd(.write, c.fileno(stream));
 }
@@ -663,6 +707,26 @@ pub fn init() void {
 
     armed_pid = c.getpid();
 
+    // The filter goes up before the first byte of the trace is written, because
+    // `writeAll` has to know which way to issue its own writes. `active` is still false
+    // here, so a failed install records nothing and leaves the announcement to say so.
+    var observe_note: []const u8 = "";
+    if (c.getenv(contract.env.observe)) |raw| {
+        if (contract.ObserveMode.parse(std.mem.span(raw))) |mode| switch (mode) {
+            .wrappers => {},
+            .syscalls => observe_note = switch (syscalls.install()) {
+                .armed => contract.observe_aux.armed,
+                .failed => contract.observe_aux.failed,
+                .unsupported => contract.observe_aux.unsupported,
+            },
+        } else {
+            // An unparseable value is the engine's bug, not the target's. Announcing it
+            // as a failed install is what makes the engine refuse rather than silently
+            // fall back to the default mode and report a verdict for the wrong one.
+            observe_note = contract.observe_aux.failed;
+        }
+    }
+
     // The shim writes the header, not the engine.
     //
     // If the engine wrote it, the version field would be one the engine had just
@@ -690,7 +754,7 @@ pub fn init() void {
     // trace is unchanged. After a primary exec record, the engine requires the next
     // shim_ready from the same pid to carry the count the chain left off at — the
     // one piece of evidence a broken chain cannot fake.
-    writeRecord(.shim_ready, seq, stateDir(), "");
+    writeRecord(.shim_ready, seq, stateDir(), observe_note);
 }
 
 pub fn stateDir() []const u8 {
@@ -734,7 +798,13 @@ fn writeAll(bytes: []const u8) bool {
     if (trace_fd < 0) return false;
     var off: usize = 0;
     while (off < bytes.len) {
-        const w = callWrite(trace_fd, bytes[off..].ptr, bytes.len - off);
+        // Through the thunk when the filter is up: libc's `write` would trap, the
+        // handler would record, and recording writes another record — recursion with
+        // no bottom. `traceWrite` carries the sentinel the filter allows.
+        const w = if (syscalls.armed)
+            syscalls.traceWrite(trace_fd, bytes[off..].ptr, bytes.len - off)
+        else
+            callWrite(trace_fd, bytes[off..].ptr, bytes.len - off);
         if (w <= 0) return false;
         off += @intCast(w);
     }
@@ -1819,13 +1889,18 @@ test "the shipped shim options carry the shipped value (#365)" {
     // failure arrives at `zig build test` instead of minutes later in acceptance; and it
     // runs on macOS, where the acceptance suite does not.
     try std.testing.expect(!shim_build_options.test_seq_gap);
+    // `test_observe_fail` (contract v14) is the same shape and the same argument: a bool
+    // whose only edit is false -> true, and that edit is loud — a shipped shim reporting a
+    // failed install makes every `--observe syscalls` run a setup error. The reason it is
+    // held here anyway is the one above: the promise is universal over the shipped values.
+    try std.testing.expect(!shim_build_options.test_observe_fail);
 }
 
 test "no second shim build option arrives unchecked (#365)" {
     // The ratchet, as in the engine's: a second option added later with no assertion above
     // would leave the promise false while CI stayed green.
     const decls = @typeInfo(shim_build_options).@"struct".decls;
-    try std.testing.expectEqual(@as(usize, 1), decls.len);
+    try std.testing.expectEqual(@as(usize, 2), decls.len);
 }
 
 test "the shim's O_NOFOLLOW actually refuses a symlink (#488)" {

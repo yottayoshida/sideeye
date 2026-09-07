@@ -120,7 +120,20 @@ const std = @import("std");
 /// because the account of an unchanged target does — a target using the canonical C
 /// atomic-replace idiom gains crash points it did not have — and crash-point
 /// numbering does not carry across versions.
-pub const contract_version: u32 = 13;
+/// v14 adds a second observation path (`--observe syscalls`). A seccomp filter answers
+/// `SECCOMP_RET_TRAP` for `write`/`pwrite64`/`writev`/`pwritev` and the shim's SIGSYS
+/// handler counts each one through the same `noteFd` the wrappers use, so a write that
+/// leaves libc's *inside* — `fwrite` past the buffer, a raw `syscall(SYS_write, …)` —
+/// becomes a countable operation. The default mode is unchanged and this bump is not
+/// about it: the version moves because the countable operation set of an unchanged
+/// target moves under the new mode, which is the same reason v5 (stdio at flush
+/// granularity) and v13 (the temp-name creators) moved, and crash-point numbering does
+/// not carry across versions. `shim_ready`'s `aux` — empty through v13 — now carries the
+/// filter's installation result (`observe_aux`), so a run cannot claim syscall-layer
+/// observation that never got installed. Measured motivation: metaflac and fontforge,
+/// both recorded in `docs/target-classes.md` as refusing with `oracle_missed_operation`
+/// because the shim recorded the `open` and no `write`.
+pub const contract_version: u32 = 14;
 
 pub const magic = "SIDEEYE1";
 
@@ -151,6 +164,10 @@ pub const env = struct {
     /// it as its seq. Absent means a fresh start — which after an exec record is
     /// exactly the broken-chain evidence the engine refuses on.
     pub const seq_base = "SIDEEYE_SEQ_BASE";
+    /// Which observation path to use — one of `ObserveMode`'s names. Absent means
+    /// `wrappers`, so a shim carried into a process by an engine that never set it
+    /// behaves exactly as v13 did.
+    pub const observe = "SIDEEYE_OBSERVE";
 };
 
 /// The exit-code contract from DESIGN.md §13. UNKNOWN is never 0: a caller that
@@ -183,6 +200,49 @@ pub const ExitCode = enum(u8) {
 /// meet a record written by an older shim with an empty `aux`, and a closed set
 /// would have to admit that case anyway. These are the values the current shim
 /// writes, named so both sides spell them the same way.
+/// Which observation path counts the write family.
+///
+/// A flag rather than a replacement: `wrappers` is the default and its behaviour is
+/// byte-for-byte what v13 did. See ADR (0052) for why the syscall path is not the
+/// default and why its trap set stops at the write family.
+pub const ObserveMode = enum {
+    /// libc entry points, interposed. Buffered stdio is observed at flush granularity
+    /// (ADR 0005); writes issued inside libc, and raw syscalls, are not observed.
+    wrappers,
+    /// The syscall boundary, for the write family only. Everything else — `openat`,
+    /// `rename`, `unlink`, `fsync`, `copy_file_range`, `sendfile` — is still observed at
+    /// the libc entry points in this mode. `pwritev2` is the exception in the other
+    /// direction: it cannot be trapped and cannot be counted correctly on both kernels,
+    /// so it is refused (`unsupported_syscall_observed`) rather than counted.
+    syscalls,
+
+    pub fn parse(text: []const u8) ?ObserveMode {
+        if (std.mem.eql(u8, text, "wrappers")) return .wrappers;
+        if (std.mem.eql(u8, text, "syscalls")) return .syscalls;
+        return null;
+    }
+
+    pub fn name(self: ObserveMode) []const u8 {
+        return @tagName(self);
+    }
+};
+
+/// What `shim_ready`'s `aux` says about the syscall-layer filter (v14).
+///
+/// Empty means `wrappers`: the field carried nothing through v13, so an empty `aux` from
+/// a v14 shim is the default mode and not an absence of information. The engine refuses
+/// a `--observe syscalls` run whose announcement does not say `armed`, which is what
+/// stops a report from claiming an observation path that was never installed.
+pub const observe_aux = struct {
+    /// The filter is in place; the handler counts the write family.
+    pub const armed = "observe:syscalls";
+    /// The kernel refused the filter or the handler could not be installed.
+    pub const failed = "observe:syscalls-failed";
+    /// This build cannot install one at all — not Linux, or an architecture whose trap
+    /// frame layout the shim does not know.
+    pub const unsupported = "observe:syscalls-unsupported";
+};
+
 pub const unresolved_kind = struct {
     /// The path could not be resolved at all (`resolveAt` failed).
     pub const unresolvable_path = "unresolvable-path";

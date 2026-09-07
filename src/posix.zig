@@ -458,6 +458,31 @@ fn statNoFollow(dirfd_: c_int, path: [*:0]const u8, want_uid: bool) ClassifyErro
     }
 }
 
+/// Whether this kernel will accept a seccomp filter that answers `SECCOMP_RET_TRAP`.
+///
+/// Asked with `SECCOMP_GET_ACTION_AVAIL`, which exists for exactly this question and
+/// answers it without installing anything, in this process, with no child spawned and
+/// nothing written. The alternative considered was a probe run of the target under the
+/// shim, which measures the same thing later, costs a spawn, and leaves the target's
+/// side effects in the state directory before the engine has decided it can proceed.
+///
+/// A `false` here is not the only way the mode can be unavailable — a process the target
+/// spawns under different privileges can still fail to install one — so the shim
+/// announces its own result too and the engine checks both. This is the cheap half that
+/// catches the ordinary case (no `CONFIG_SECCOMP_FILTER`) before anything runs.
+pub fn seccompTrapAvailable() bool {
+    if (builtin.os.tag != .linux) return false;
+    const lnx = std.os.linux;
+    var action: u32 = lnx.SECCOMP.RET.TRAP;
+    const rc = lnx.syscall3(
+        .seccomp,
+        lnx.SECCOMP.GET_ACTION_AVAIL,
+        0,
+        @intFromPtr(&action),
+    );
+    return lnx.errno(rc) == .SUCCESS;
+}
+
 /// The effective user this process runs as — the identity the kernel checks writes
 /// against, which is the one that matters for "could someone else have put this here".
 pub fn geteuid() u32 {
