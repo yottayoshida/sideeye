@@ -156,6 +156,29 @@ or `uncounted`. The disclosure is on the page now, with two more residuals the r
 named — a target that manages `SIGSYS` itself, and the handler running on the target's own
 stack. Writing "disclosed in X" is a claim about X, and it went in unchecked.
 
+**CI found the one defect two review rounds and every local measurement missed, and it was
+a hole in the design's own disclosure.** The re-issue marker lives in the sixth argument
+register because a filter is inherited across `exec` and cannot be keyed on an address.
+What the design did not account for is that the register is **caller-saved and nothing sets
+it for a three-argument call** — so the marker survived the thunk's return, and the next
+`write(2)` libc issued arrived at the filter carrying it and was allowed. The shim's own
+trace writes go through that thunk, which makes the sequence ordinary rather than rare: a
+record is written, and the write it was recording about becomes invisible.
+
+On x86_64 every syscalls-mode acceptance leg failed; on aarch64 the same legs passed, and
+had passed locally all day. The register survives one architecture's allocation and not the
+other's. The divergence named exactly one missing operation — the direct `write(2)` in the
+toy's `write_file`, issued right after the shim had recorded the `open` through the thunk —
+which is what made it findable at all.
+
+The disclosure was wrong in the same place. `docs/report-schema.md` and ADR 0052 both said a
+marker collision is 2^-64 per call. That is the odds of a *target* holding it by chance; the
+shim was producing collisions itself. The thunk now zeroes the register before returning
+(`xor %r9,%r9` on x86_64, `mov x5, xzr` on aarch64 — confirmed in the emitted x86_64 code
+by disassembly, since no local environment can execute it: the only x86_64 machine here is
+an emulated container and it refuses `seccomp(SET_MODE_FILTER)`), which is what makes the
+figure the real one.
+
 **The real-target numbers in the first draft of this entry were single runs, and two of
 them did not reproduce.** Re-measured: metaflac reaches PASS over 12 crash points in **3 of
 5** runs and refuses `unresolvable_path` in 2; fontforge reaches its FAIL in **2 of 3**. The

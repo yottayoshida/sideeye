@@ -152,9 +152,18 @@ what a flagless verdict claims".
 - **A process executing in another syscall ABI (32-bit compat) is allowed through
   uncounted**, because the filter cannot read `nr` in an ABI it does not know. The oracle
   sees those writes and the comparison refuses.
-- **A target that itself issues one of the four syscalls with the sentinel already in its
+- **A target that itself issues one of the four syscalls with the marker already in its
   sixth argument register** would be allowed uncounted. 2^-64 per call, disclosed in
-  `docs/report-schema.md`.
+  `docs/report-schema.md` — **and that figure was not true until the thunk started clearing
+  the register.** The sixth argument register is caller-saved and nothing sets it for a
+  three-argument call, so the marker survived the thunk's return and the next `write(2)`
+  libc issued inherited it. The shim's own trace writes go through that thunk, so the shim
+  was producing the collision itself, systematically: a record is written, and the write it
+  was recording about becomes invisible. **Found by CI, not locally**: every syscalls-mode
+  acceptance leg failed on x86_64 while the same legs passed on aarch64, and the divergence
+  named exactly one missing operation — the direct `write(2)` immediately after a recorded
+  `open`. The register survives on one architecture's allocation and not the other's. The
+  thunk zeroes it before returning, which is what makes the disclosed odds the real ones.
 - **A target that manages `SIGSYS` itself is outside what this mode accounts for**, and
   far likelier than the marker collision above: installing its own `SIGSYS` handler,
   blocking the signal, or installing a `SECCOMP_RET_TRAP` filter of its own. Nothing

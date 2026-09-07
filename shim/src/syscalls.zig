@@ -250,7 +250,39 @@ const program = buildProgram(audit_arch, &trapped_numbers);
 /// `syscall6`'s sixth argument is the sentinel's slot; the caller never passes a real
 /// sixth argument because no trapped syscall has one.
 pub fn thunk(nr: u32, a0: u64, a1: u64, a2: u64, a3: u64, a4: u64) u64 {
-    return linux.syscall6(@enumFromInt(nr), a0, a1, a2, a3, a4, reissue_sentinel);
+    const r = linux.syscall6(@enumFromInt(nr), a0, a1, a2, a3, a4, reissue_sentinel);
+    // Clear the marker register before returning, or the NEXT syscall inherits it.
+    //
+    // This is not tidiness. The sixth argument register is caller-saved and nothing in
+    // the C calling convention sets it for a three-argument call, so after this function
+    // returns it still holds the marker — and the very next `write(2)` libc issues, with
+    // no sixth argument of its own, arrives at the filter carrying it and is ALLOWED.
+    // The shim's own trace writes go through this thunk, so that sequence is not rare: a
+    // record is written, and the write it was recording about is then invisible.
+    //
+    // Measured in CI, which is where it surfaced: on x86_64 every syscalls-mode
+    // acceptance leg failed while the same legs passed on aarch64, and the divergence
+    // named exactly one missing operation — the direct `write(2)` in the toy's
+    // `write_file`, issued immediately after the shim had recorded the `open` through
+    // this thunk. The register survives on one architecture's allocation and not the
+    // other's, which is why a local aarch64 run could not see it.
+    //
+    // It also corrects what `docs/report-schema.md` disclosed: the collision was
+    // described as 2^-64 per call, and while that is the odds of a TARGET holding the
+    // marker by chance, the shim was producing the collision itself, systematically.
+    // Zeroing here is what makes the disclosed figure the true one.
+    //
+    // A separate `volatile` statement rather than one asm block: the register is an
+    // input to `syscall6` above, and an operand that is also clobbered is not
+    // expressible. Nothing between the two can issue a syscall — this function returns
+    // immediately — and any value other than the marker is correct, so a compiler that
+    // clobbers the register in between does the same job.
+    switch (builtin.cpu.arch) {
+        .aarch64 => asm volatile ("mov x5, xzr" ::: .{ .x5 = true }),
+        .x86_64 => asm volatile ("xorq %%r9, %%r9" ::: .{ .r9 = true }),
+        else => {},
+    }
+    return r;
 }
 
 /// A `write` the shim itself performs, issued so the handler never sees it.
