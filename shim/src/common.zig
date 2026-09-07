@@ -676,6 +676,14 @@ pub fn init() void {
         _ = writeAll(head[0..n]);
     }
 
+    // **These two statements must stay adjacent, and the engine depends on it.** Once
+    // `active` is set this image can write records; `src/engine/trace.zig`'s exec rule
+    // reads "a record with no announcement in front of it was written by the image that
+    // announced last", which is only true while nothing can be recorded between the flag
+    // and the announcement. Putting a statement here that writes a record — or that can
+    // fail and return — makes that rule unsound without making any test red, because the
+    // property is an ordering rather than a value (ADR 0018's amendment carries the
+    // argument and the one case it does not cover).
     active = true;
     // shim_ready re-announces the continuation base as its seq (#123). Through v9
     // this field was always 0; a fresh start still writes 0, so a plain single-image

@@ -684,8 +684,14 @@ o=$(TOY_SELFEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "1" ] && echo "$o" | grep -q "oracle      agreed" && echo "$o" | grep -q "^FAIL" && echo "$o" | grep -q "image replaced"; then
-    echo "ok   the planted bug is found across a self-exec, oracle agreeing, image change disclosed (exit 1)"
+# The last predicate has wider reach than the leg it was written for (review): a plain
+# self-exec is the state whose `processes` wording changed on 2026-09-07 — the shim
+# recorded a boundary, strace saw one process, and the account called that a disagreement.
+# Retried attempts reach the same state, so asserting it here covers every self-exec run
+# rather than only the retry shape.
+if [ "$rc" = "1" ] && echo "$o" | grep -q "oracle      agreed" && echo "$o" | grep -q "^FAIL" \
+    && echo "$o" | grep -q "image replaced" && ! echo "$o" | grep -q "accounts disagree"; then
+    echo "ok   the planted bug is found across a self-exec, oracle agreeing, image change disclosed, no invented disagreement (exit 1)"
 else
     echo "FAIL self-exec judged run: exit $rc"
     echo "$o" | sed 's/^/     | /'
@@ -761,6 +767,82 @@ if [ "$rc" = "2" ] && echo "$o" | grep -q "announced itself again without an exe
 else
     echo "FAIL execl uninterposed: exit $rc"
     echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+unset TOY
+
+# Failed exec attempts are not image changes (2026-09-07). An interpreter resolving a
+# bare name execs once per PATH entry, and the shim records BEFORE each call because it
+# cannot know which attempt will land — so the attempts that returned ENOENT are in the
+# trace. The engine read every record after the first as a further image change and
+# refused `child_process_detected`, while the next `shim_ready` carried exactly the
+# count the chain left off at. ADR 0018's decision said such a record means "the
+# intermediate image was never observed"; that is false, and the amendment says why.
+#
+# **Hermetic on purpose.** The failing attempts are the toy's own, at an absolute path
+# outside every state directory, so this leg does not rest on which shell the image
+# ships. The leg below it does, and says so — ADR 0051 is the precedent for the
+# distinction: a leg that waits for the machine's /bin/sh measures the machine.
+#
+# Seen red on the binary before the reader rule: exit 2, `child_process_detected`, with
+# the account saying "whose chain of observation broke" and "chain unbroken" in ONE
+# sentence. Both halves are asserted here — the verdict, and that the account no longer
+# claims a disagreement between witnesses that did not disagree (a same-pid image change
+# claims no second process, so strace seeing one process agrees with the shim).
+TOY=$OUT/toy-bug
+export TOY
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_SELFEXEC=1 TOY_EXEC_RETRY=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" != "1" ]; then
+    echo "FAIL retried exec attempts: exit $rc, wanted 1 (the planted bug, found across the image change)"
+    echo "$o" | sed 's/^/     | /' | head -10
+    fails=$((fails + 1))
+elif ! echo "$o" | grep -q "oracle      agreed"; then
+    echo "FAIL retried exec attempts: the oracle did not agree, so the verdict rests on one witness"
+    echo "$o" | sed 's/^/     | /' | head -10
+    fails=$((fails + 1))
+elif ! echo "$o" | grep -q "image replaced"; then
+    echo "FAIL retried exec attempts: the image change is not disclosed"
+    echo "$o" | sed 's/^/     | /' | head -10
+    fails=$((fails + 1))
+elif echo "$o" | grep -q "accounts disagree"; then
+    echo "FAIL retried exec attempts: the account reports a disagreement between witnesses that agree"
+    echo "$o" | grep "^processes" | sed 's/^/     | /'
+    fails=$((fails + 1))
+else
+    echo "ok   failed exec attempts are judged as one image change, with no invented disagreement"
+fi
+unset TOY
+
+# The same shape as three real defines meet it: an operation written as a `#!/bin/sh`
+# script ending in `exec <name>`, resolved through PATH. hnb and lbdb reached it through
+# the uniform protocol's op.sh (`spike/unknown-rate/defines-b/`), fontforge through a
+# wrapper written because the FontForge script argument carries spaces (#506).
+#
+# **This leg measures this image's /bin/sh.** Under dash — what Debian ships, and what
+# `spike/Dockerfile` builds on — the shell issues one execve per PATH entry and the retry
+# path above is exercised. Under a shell that stats before it execs there is one attempt
+# and the leg passes for a different reason. The assertion holds either way, which is why
+# it is worth having and why it is NOT what pins the rule: the hermetic leg above is.
+# The toy directory goes LAST on PATH so there are entries to miss.
+TOY=$OUT/toy-bug
+export TOY
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf '#!/bin/sh\nexec toy-bug rotate\n' > /tmp/acc/wrap-path.sh && chmod 755 /tmp/acc/wrap-path.sh
+o=$(PATH="$PATH:$OUT" "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "/tmp/acc/wrap-path.sh" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "^FAIL" && echo "$o" | grep -q "image replaced"; then
+    echo "ok   a PATH-resolved exec wrapper reaches a verdict (the hnb/lbdb/fontforge shape)"
+else
+    echo "FAIL PATH-resolved exec wrapper: exit $rc, wanted 1"
+    echo "$o" | sed 's/^/     | /' | head -10
     fails=$((fails + 1))
 fi
 unset TOY
