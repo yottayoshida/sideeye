@@ -26,7 +26,7 @@ Measured on this branch, with the engine's own defines:
 | fontforge 20230101 | `UNKNOWN oracle_missed_operation`, 0 crash points | **FAIL, 183 of 185 worlds**, 184 crash points, oracle agreeing on 184 operations over 40187 syscall lines — in 2 of 3 runs |
 
 The runs that do not reach a verdict refuse `unresolvable_path` (a descriptor whose file was
-unlinked, the class recorded for mutool) rather than answering wrongly. The default mode is
+unlinked while open) rather than answering wrongly. An earlier revision of this paragraph called that the class recorded for mutool; it is not — `docs/target-classes.md` records mutool's cause as unattributed, and its write path is `unlinkat` then a fresh `openat`, which is a different descriptor. The default mode is
 itself non-deterministic on metaflac — 2 of 3, with `kill_did_not_land` for the third — and
 `preflight --twice` reports equal state in both modes with stable operation counts, so what
 varies is the operation path rather than the bytes. Unattributed, and stated rather than
