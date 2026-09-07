@@ -118,15 +118,50 @@ pub const TraceInfo = struct {
     /// counts. Evidence that the run crossed a process boundary even if no boundary
     /// record was written (a raw clone, say).
     foreign_pid_seen: bool = false,
-    /// Subject execs whose chain was proven unbroken (#123): the exec record was
-    /// followed by a `shim_ready` from the same pid carrying exactly the operation
-    /// count the chain left off at. Such an exec is a continuation, not a boundary.
+    /// Image changes by the subject whose chain was proven unbroken (#123): a run of
+    /// exec records closed by a `shim_ready` from the same pid carrying exactly the
+    /// operation count the chain left off at. Such a change is a continuation, not a
+    /// boundary.
+    ///
+    /// **Records and changes are not the same count.** Several exec records can precede
+    /// one announcement — an interpreter resolving a name through `PATH` execs once per
+    /// entry — and they are one image change with failed attempts in front of it, so
+    /// this counts the announcements rather than the records (the `.exec` arm of the
+    /// boundary switch says why). The doc said "subject execs" until 2026-09-07, which
+    /// read as the records.
     exec_continuations: u32 = 0,
-    /// A subject exec whose continuation evidence never arrived, arrived with the
-    /// wrong count, or was pre-empted by another exec. `hard_boundary` is set to
-    /// `.exec` alongside this; the flag exists so the refusal can say WHICH way the
-    /// image change escaped observation.
+    /// A subject exec whose continuation evidence never arrived or arrived with the
+    /// wrong count. `hard_boundary` is set to `.exec` alongside this; the flag exists
+    /// so the refusal can say WHICH way the image change escaped observation.
+    ///
+    /// "or was pre-empted by another exec" stood here until 2026-09-07. It described a
+    /// reading of repeated exec records that is false — they are one image change and
+    /// the attempts that failed before it (the `.exec` arm of the boundary switch says
+    /// why).
     exec_chain_broken: bool = false,
+    /// A recorded boundary that is **not** the subject replacing its own image. Read by
+    /// the report's account, never by a refusal: the oracle requirement keys on
+    /// `boundary` (any boundary at all, image changes included), while the sentence "the
+    /// two witnesses disagree" is only true when the shim claimed another PROCESS and
+    /// the oracle saw none. A same-pid image change claims no such thing, so a witness
+    /// that saw one process agrees with it.
+    ///
+    /// **Stated as a negative on purpose, because the positive would be false.** Three of
+    /// the classes it admits imply no second process either: a `.thread` (a thread is not
+    /// a process), the subject's own `setsid` or `setpgid` (`.detached`), and an exec
+    /// record written before the subject is known, which fails the primary test and so is
+    /// not excluded. All three set `hard_boundary`, which the recording clause returns on
+    /// before reaching this field — but the **world** clause does not consult
+    /// `hard_boundary`, so a world that starts a thread renders "a process boundary
+    /// appeared in an explored world" on its way to `multiple_threads_detected`. That
+    /// wording predates this field and is not corrected here: it is a third distinction
+    /// (thread against process, not image change against process), and the refusal names
+    /// the thread. Recorded so the field's invariant is the one the code holds rather
+    /// than the one the account happens to need.
+    ///
+    /// Not derivable from `boundary`, which keeps the FIRST class only: a target that
+    /// execs and then forks would report the exec and hide the fork.
+    process_boundary: bool = false,
     /// How many kill-point records the subject wrote. `kill_point_count` is the
     /// MAXIMUM seq; if the two disagree the numbering has gaps or duplicates — a
     /// restarted counter after an unobserved exec is exactly a duplicate — and any
@@ -158,6 +193,26 @@ pub const TraceInfo = struct {
 
     pub fn deinit(self: *TraceInfo) void {
         self.arena.deinit();
+    }
+
+    /// Did this run cross a boundary at all — the question the oracle requirement, the
+    /// quiescence sampling and the world arming all ask. A record from another pid counts
+    /// even with no boundary record: a raw `clone` leaves the second, never the first.
+    ///
+    /// A method rather than the expression at each site, because there are nine of them
+    /// across two predicates and the sites drift. `src/main.zig` carries the receipt: the
+    /// world-only site was generalised once and four siblings were not, "same class, same
+    /// file", and adding the second predicate put two more sites in the same shape.
+    pub fn crossedBoundary(self: TraceInfo) bool {
+        return self.boundary != null or self.foreign_pid_seen;
+    }
+
+    /// Did something other than the subject's own image change cross one. The narrower
+    /// question, and the only one that makes "the two witnesses disagree" a true sentence
+    /// when an oracle reports a single process (`process_boundary`'s own doc says which
+    /// classes it admits, and why it is stated as a negative).
+    pub fn crossedProcessBoundary(self: TraceInfo) bool {
+        return self.process_boundary or self.foreign_pid_seen;
     }
 
     /// The logical address of crash point k: the operation it happens before, and the
@@ -571,6 +626,9 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         }
         if (op.class.isBoundary()) {
             if (info.boundary == null) info.boundary = op.class;
+            // Everything except the subject's own image change means a second process
+            // exists — a child's exec included, which is a spawn doing what spawns do.
+            if (!(op.class == .exec and is_primary)) info.process_boundary = true;
             const hard = switch (op.class) {
                 .detached => true,
                 // A record written before the primary announced itself is attributed
@@ -579,14 +637,32 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 .exec => blk: {
                     // A subject exec opens the continuation window instead of
                     // refusing outright (#123). Before the subject is known, v9's
-                    // safe misreading stands; a second exec while a window is
-                    // still open means the intermediate image was never observed.
+                    // safe misreading stands.
                     if (info.primary_pid == null) break :blk true;
                     if (!is_primary) break :blk false;
-                    if (pending_exec) {
-                        info.exec_chain_broken = true;
-                        break :blk true;
-                    }
+                    // A SECOND exec record from the subject with no `shim_ready`
+                    // between them was written by the SAME image, so the earlier
+                    // attempt failed and returned — an interpreter resolving a name
+                    // through PATH execs once per entry, and the shim records before
+                    // each call. ADR 0018 read such a record as "the intermediate image
+                    // was never observed" and refused; its amendment carries the
+                    // measurement, what the removed net covered, and the three layers
+                    // that stand in its place.
+                    //
+                    // The invariant this rests on is the one the double-announcement
+                    // rule below already uses: an image that can write a record has
+                    // announced itself first, because the shim sets `active` immediately
+                    // before writing `shim_ready` with no statement between them
+                    // (`shim/src/common.zig`, `init` — which carries the reverse
+                    // reference). A forked or vfork'd child answers `getpid()`
+                    // differently and left by `is_primary` above.
+                    //
+                    // The base is REFRESHED rather than left standing, and that is part
+                    // of the fix rather than a courtesy: the shim carries the count as it
+                    // stands when `exec` is CALLED, and the call that succeeds is the
+                    // last attempt, so a wrapper that writes state between two attempts
+                    // announces the later count. A stale base would fail the comparison
+                    // below and refuse a chain that held.
                     pending_exec = true;
                     pending_base = info.kill_point_count;
                     break :blk false;
@@ -846,6 +922,124 @@ test "an unplaceable record with no name is still kept, so the refusal can say t
     const u = info.unresolved_op orelse return error.TestUnexpectedResult;
     try std.testing.expectEqualStrings("trace-closed-by-target", u.aux);
     try std.testing.expectEqual(@as(usize, 0), u.path.len);
+    _ = posix.unlink(fz);
+}
+
+test "failed exec attempts before the one that lands are not image changes" {
+    // dash's `exec <name>` issues one execve per PATH entry, and the shim records
+    // before the call, so the attempts that returned ENOENT are in the trace too. One
+    // image change, three records. Read as three image changes this refused
+    // `child_process_detected` while the next shim_ready carried the right count.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-retry", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 1, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.hard_boundary == null);
+    try std.testing.expect(!info.exec_chain_broken);
+    // One image change, not three: the count is of chains that closed.
+    try std.testing.expectEqual(@as(u32, 1), info.exec_continuations);
+    // Records and highest-seq agree, so the numbering detector is not weakened by the
+    // attempts: `.exec` is not a kill point, so three of them consume no sequence number.
+    // The sibling test at the top of this family asserts the same pair for the shape
+    // where numbering DID break, which is what makes this one worth stating.
+    try std.testing.expectEqual(@as(u32, 2), info.kill_point_count);
+    try std.testing.expectEqual(@as(u32, 2), info.primary_kill_records);
+    _ = posix.unlink(fz);
+}
+
+test "the continuation base follows the attempts, so a write between them still lands" {
+    // The shim carries the count as it stands when exec is CALLED, and the call that
+    // succeeds is the last attempt. A wrapper that writes state between two attempts
+    // therefore announces the LATER count. Holding the first attempt's base refuses a
+    // chain that held — which is why refreshing it is part of the rule and not a
+    // courtesy. Delete the refresh and this is the test that goes red.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-retry-write", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 1, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.hard_boundary == null);
+    try std.testing.expect(!info.exec_chain_broken);
+    try std.testing.expectEqual(@as(u32, 1), info.exec_continuations);
+    _ = posix.unlink(fz);
+}
+
+test "retried attempts do not excuse a wrong base: the chain still breaks (#123)" {
+    // Negative control 1 of 3. The attempts are tolerated; the comparison that decides
+    // whether the count survived is not weakened. Here the new image restarts at zero
+    // with two operations behind it.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-retry-wrongbase", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.exec_chain_broken);
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    _ = posix.unlink(fz);
+}
+
+test "retried attempts with nobody announcing at the end still break the chain (#123)" {
+    // Negative control 2 of 3. The window is open at end of trace: the last attempt
+    // reached an image that loads no shim, or reached none at all.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-retry-dark", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expect(info.exec_chain_broken);
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    _ = posix.unlink(fz);
+}
+
+test "an exec recorded before the subject announced itself is still hard (#123)" {
+    // Negative control 3 of 3, and the one the other two cannot stand in for. Both of
+    // those go red through code that sets `exec_chain_broken` on its own — the
+    // wrong-base comparison and the end-of-trace check — so a mutation that stops the
+    // `.exec` arm returning `hard` at all survives them. After this change that arm
+    // has exactly one path left to `hard`: a record before the subject is known, which
+    // is also the arm whose refusal says "before the subject announced itself".
+    // Distinguished from the two above by `exec_chain_broken` being FALSE: nothing
+    // established that a chain broke, and refusing is the safe misreading.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("exec-before-ready", &.{
+        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    try std.testing.expect(!info.exec_chain_broken);
     _ = posix.unlink(fz);
 }
 

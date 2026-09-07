@@ -16,10 +16,14 @@
 # engine spawns directly — the preferred form, used whenever the documented
 # invocation fits the engine's space-split contract; op.sh is the ADR 0007
 # fallback for invocations that cannot be spelled that way (an argument
-# carrying a space, a stdin redirect). A zero-prior-op script wrapper is an
-# exec chain the v10 observation rules refuse structurally — so for op.sh
-# targets that refusal, if it comes, is the trial's honest verdict: the
-# define budget could not spell the target inside the contract.
+# carrying a space, a stdin redirect). An op.sh target that refuses is a
+# define-budget miss: the target could not be spelled inside the contract.
+#
+# This comment said a zero-prior-op script wrapper is an exec chain the v10 rules
+# refuse structurally. Corrected 2026-09-07: that rule is false as stated — such a
+# wrapper naming an absolute path reaches a verdict, and what refused is the PATH
+# lookup inside the wrapper (ADR 0018's amendment). The launcher's behaviour is
+# unchanged; only the reason written here was wrong.
 #
 # Usage: bgroup.sh <target> <artifact-dir>
 set -u

@@ -2,13 +2,20 @@
 
 **What this is.** The #84 sweep's hnb trial refused: its documented invocation
 carries a space inside one argument (`-e "add second"`), the space-split
-operation contract could not spell it, and the `op.sh` wrapper fallback is a
-zero-prior-op exec chain the v10 observation rules refuse
+operation contract could not spell it, and the `op.sh` wrapper fallback refused
 (`spike/unknown-rate/defines-b/hnb/`, the B-group table in
 `docs/unknown-rate.md`). ADR 0019's argv form exists for exactly that
 argument. This follow-up re-poses the same question with the same target,
 same seeded state and same operation — spelled as argv — and keeps the
 refused spelling beside it as the control.
+
+**Corrected 2026-09-07:** the paragraph above said the wrapper was refused for
+being a zero-prior-op exec chain. It was not. A wrapper of that shape naming an
+absolute path reaches a verdict; hnb's names `hnb` for `PATH` to resolve, and the
+shell execs once per entry while the engine counted the failed attempts as image
+changes (ADR 0018's amendment). The control refused as recorded — what is
+corrected is why, and that reason is now fixed in the engine rather than
+documented as a property of the wrapper.
 
 **This is not a corpus change.** The #84 corpus is frozen and its B-group
 record stands as measured under the contract of its day; nothing here touches
@@ -22,6 +29,24 @@ labeled follow-up in the `spike/followup-144/` shape.
   refusal: UNKNOWN, `child_process_detected`, the v10 broken-chain message.
   If the control does not refuse, the apparatus differs from the sweep's and
   the green side proves nothing.
+
+  **This reading is retired as of 2026-09-07, and the sentence above is left
+  standing because it is what was declared.** The engine stopped refusing this
+  spelling: the refusal was it counting a shell's PATH lookup as several image
+  changes, and the reader no longer does that (ADR 0018's amendment). **Measured
+  the same day, not inferred**: `bgroup.sh hnb` under the engine at `4083db2`
+  answers `UNKNOWN child_process_detected` over 0 crash points, and under the fix
+  **FAIL, 1 violation over 3 crash points** with the oracle agreeing on 3
+  operations — the same verdict and the same count `artifacts/report-argv.json`
+  holds for the argv form. So the two spellings do answer one question, and a
+  control that does not refuse now means the engine changed rather than that the
+  apparatus differs — the opposite reading to the one declared. The re-measurement
+  ran in a **rebuilt** `sideeye-ur-extra` (image id `9fec97c7`, not the sweep's
+  `df66b6e1`), so it is the recipe's apparatus rather than the sweep's artifact,
+  and its transcripts are not committed. `run.sh`'s control pin is retired with
+  the same date and keeps the original assertion quoted beside it. What the
+  argv side measured is unaffected: its counterexample rests on its own report,
+  case and replay, none of which the control was holding up.
 - **The argv form:** `operation = ["hnb", "<state>/notes.hnb", "-ui", "cli",
   "-e", "add second", "save"]` — the claim is a verdict with a real
   exploration behind it: **crash points > 0** (a PASS with zero explored
