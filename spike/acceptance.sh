@@ -1719,6 +1719,269 @@ for pair in "TOY_STDIO_BIG:a buffer overflow inside fprintf" "TOY_STDIO_NOCLOSE:
     fi
 done
 
+# ---- contract v14: the same two targets under --observe syscalls ----
+# The leg above is this one's control, and they share their targets: what refuses at the
+# libc boundary has to be JUDGED at the syscall boundary, or the second observation path
+# buys nothing. `oracle_missed_operation` must be absent for a reason stated in the
+# report rather than by luck, so the oracle's own account is asserted too — and
+# `oracle_verified` must stay false, because the two witnesses watched two runs.
+for pair in "TOY_STDIO_BIG:a buffer overflow inside fprintf" "TOY_STDIO_NOCLOSE:an exit-time flush of a never-closed stream"; do
+    var=${pair%%:*}; desc=${pair#*:}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env "$var=1" "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --observe syscalls --json /tmp/acc/r.json \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    ver=$(python3 -c 'import json,sys; d=json.load(open("/tmp/acc/r.json")); print("%s %s %s" % (d["verdict"], d["oracle_verified"], d.get("oracle_verified_across_runs", False)))' 2>/dev/null)
+    if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } &&
+       ! echo "$o" | grep -q "oracle_missed_operation" &&
+       echo "$o" | grep -q "of a SEPARATE untrapped run" &&
+       [ "$ver" = "PASS False True" ]; then
+        echo "ok   $desc is judged under --observe syscalls (was UNKNOWN above)"
+    else
+        echo "FAIL $var under syscalls: exit $rc json='${ver:-unreadable}'"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+done
+
+# ---- contract v14: the mode does not move the count for a target libc already showed ----
+# The other half of the property. A second observation path that changed the numbering of
+# targets the first one already handled would move every saved case's crash points and
+# every `kill_at` index. Measured on the planted-bug toy — where the answer is a specific
+# world, so an agreement here is agreement about something.
+sy_out=""
+for m in wrappers syscalls; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY="$OUT/toy-bug" "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+        --check "$ROOT/spike/check.sh" --observe "$m" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    # The verdict, the crash-point count and the address of the earliest world — the
+    # three things a consumer of a case file depends on.
+    line=$(printf '%s\n' "$o" | grep -E "^(FAIL|PASS|UNKNOWN)|^earliest|^ +after |^ +before " | tr -d ' ' | tr '\n' '|')
+    sy_out="$sy_out$m=$rc:$line
+"
+done
+if [ "$(printf '%s' "$sy_out" | grep -c .)" = "2" ] &&
+   [ "$(printf '%s\n' "$sy_out" | sed 's/^[a-z]*=//' | sort -u | grep -c .)" = "1" ]; then
+    echo "ok   both observation paths reach the same verdict, count and earliest address"
+else
+    echo "FAIL the two observation paths disagree about the planted bug:"
+    printf '%s' "$sy_out" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# ---- contract v14: a self-exec chain still crosses under the filter ----
+# The negation of the failure this design was chosen to avoid. A filter keyed on the
+# thunk's ADDRESS was measured dying two ways across an exec — exit 159 (an unhandled
+# SIGSYS in the new image, when the trap set included openat) and exit 139 (the inherited
+# filter's allowance pointing at the old image's mapping). The sentinel lives in an
+# argument register instead, so neither can happen; this is what says so on every push.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_SELFEXEC=1 TOY="$OUT/toy-bug" "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" --observe syscalls \
+    --apparatus env:TOY_SELFEXEC=1 --apparatus env:TOY \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ] && echo "$o" | grep -q "chain unbroken"; then
+    echo "ok   a self-exec chain is judged under --observe syscalls (no 139, no 159)"
+else
+    echo "FAIL self-exec under syscalls: exit $rc (139=SIGSEGV, 159=SIGSYS would be the"
+    echo "     address-keyed designs this one replaced)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# ---- contract v14: a direct libc write() is counted exactly once ----
+# The leg the mutation asked for. `toy-bug` and the stdio toys all reach the kernel from
+# INSIDE libc, so none of them passes through the exported `write` wrapper — and removing
+# that wrapper's syscalls-mode guard, which doubles every direct write, was measured
+# leaving all four legs above green. `TOY_LINK` is the loose-object idiom built on
+# `write_file()`: `open` then a libc `write(2)`, so the wrapper and the handler are both on
+# its path and only one of them may count. The pin is the exact kill sequence, so a second
+# record shows up as an extra address rather than as a number nobody compares.
+#
+# Measured on the doubling mutation: a target calling `write(2)` 2000 times went from 2003
+# records to 4003.
+observe_case() { # $1 label, $2 env var, $3 toy, $4 mode, $5 expected kill sequence
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env "$2=1" "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$3 init" --operation "$3 rotate" --observe "$4" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    seq_got=$(kill_sequence /tmp/acc/work/trace-record.bin)
+    if [ "$rc" = "0" ] && [ "$seq_got" = "$5" ]; then
+        echo "ok   $1"
+    else
+        echo "FAIL $1: exit $rc"
+        echo "     | want: $5"
+        echo "     | got:  $seq_got"
+        echo "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+}
+# Spelled here rather than borrowed from `link_tail` below, which is defined after this
+# point: an unset variable would make both legs assert the empty string and agree.
+observe_link_tail="open:obj.tmp write:obj.tmp fsync:obj.tmp link:obj.tmp unlink:obj.tmp $rotate_tail"
+observe_case "a libc write() is one address under wrappers…" TOY_LINK "$OUT/toy-fixed" wrappers \
+    "$observe_link_tail"
+observe_case "  …and exactly one under syscalls, not two" TOY_LINK "$OUT/toy-fixed" syscalls \
+    "$observe_link_tail"
+
+# ---- contract v14: a mode that was asked for and not installed is refused ----
+# The check that reads the subject's announcement is the difference between "the mode is a
+# fact" and "the mode is a request". On every machine this suite runs on the filter
+# installs, so the refusal is unreachable without an apparatus — which is what would leave
+# that check an unfalsified guard. `-Dtest-observe-fail` builds a shim whose install always
+# reports failure; the engine must refuse as a setup error and name the cause, rather than
+# recording the write family through the wrappers and reporting a verdict for the mode
+# nobody got.
+OBSFAIL=$ROOT/zig-out/lib/libsideeye_shim_observefail.so
+if [ ! -f "$OBSFAIL" ]; then
+    echo "FAIL observe-fail apparatus missing: build with zig build -Dtest-observe-fail (add -Dtarget=... for the container)"
+    fails=$((fails + 1))
+else
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$("$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --observe syscalls \
+        --shim "$OBSFAIL" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "3" ] && echo "$o" | grep -q "filter installation was refused inside the target"; then
+        echo "ok   a filter that did not install refuses the run instead of quietly using the wrappers"
+    else
+        echo "FAIL observe-fail: exit $rc (wanted 3, naming the target's own process)"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+    # …and the same shim under the DEFAULT mode is untouched: the apparatus must break
+    # exactly one thing, or a green leg above could be green because the shim is broken.
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$("$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$OBSFAIL" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "0" ]; then
+        echo "ok   …and the same shim passes under the default mode, so the apparatus is narrow"
+    else
+        echo "FAIL observe-fail control: exit $rc under --observe wrappers (wanted 0)"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+fi
+
+# ---- contract v14: pwritev2 is refused rather than counted, on either kernel ----
+# The one member of the write family this mode cannot count. Six arguments leave the filter
+# no free register for the re-issue marker, and neither of the two obvious answers is right
+# on both kernels: counting it in the wrapper double-counts where glibc falls back to a
+# trapped number, and silencing the wrapper counts it nowhere where the kernel implements
+# it — which under `--allow-unverified` would be a silently wrong verdict in the mode that
+# is supposed to see MORE. Both wrong answers shipped in this branch before review found
+# them, which is why the leg drives both modes: the refusal only means something if the
+# default mode counts the same call.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_PWRITEV2=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-pwritev init" --operation "$OUT/toy-pwritev rotate" \
+    --apparatus env:TOY_PWRITEV2=1 --observe wrappers \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+w_rc=$?
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o2=$(TOY_PWRITEV2=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-pwritev init" --operation "$OUT/toy-pwritev rotate" \
+    --apparatus env:TOY_PWRITEV2=1 --observe syscalls \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+s_rc=$?
+ok=1
+# The default mode reaches a verdict — 1 for this toy's planted window, and 0 would do:
+# what must not happen is a refusal, which would make the syscalls answer unremarkable.
+{ [ "$w_rc" = "0" ] || [ "$w_rc" = "1" ]; } || ok=0
+[ "$s_rc" = "2" ] || ok=0
+echo "$o2" | grep -q "unsupported_syscall_observed" || ok=0
+# The label names the call AND the mode, so the refusal says why it is refusing here and
+# not everywhere.
+echo "$o2" | grep -q "pwritev2 (--observe syscalls)" || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   pwritev2 is counted under wrappers and refused by name under syscalls"
+else
+    echo "FAIL pwritev2 legs: wrappers exit $w_rc (wanted 0 or 1), syscalls exit $s_rc"
+    echo "     (wanted 2 unsupported_syscall_observed naming the mode)"
+    echo "$o2" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+# ---- contract v14: an empty announcement is explained by the check that owns it ----
+# The announcement check has to sit BELOW the three checks that explain an empty
+# announcement, not above them. Above, it intercepted a run whose shim never loaded and
+# told it "the trace was written by a shim that did not read the request" — untrue, and it
+# made `no_shim_marker` unreachable in this mode, turning the most ordinary environment
+# failure there is from UNKNOWN into a SETUP ERROR. A statically linked target is the
+# cheapest input of that shape, and the answer must be the same one the default mode gives.
+for m in wrappers syscalls; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \
+        --observe "$m" --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "2" ] && echo "$o" | grep -q "no_shim_marker"; then
+        echo "ok   a target the shim cannot be loaded into answers no_shim_marker under --observe $m"
+    else
+        echo "FAIL toy-static under --observe $m: exit $rc (wanted 2 no_shim_marker)"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
+
+# ---- contract v14: the inherited filter's cost, pinned so it cannot drift silently ----
+# The mode's sharpest limit, and the only one here that changes what the TARGET does rather
+# than what Sideeye can see: a seccomp filter is inherited across exec and cannot be
+# replaced, while exec resets the SIGSYS disposition, so an image the shim is not loaded
+# into dies on its first write. README's limits list says so; this is what holds the list to
+# the behaviour. Both directions, because a leg asserting only the death would also pass if
+# the mode stopped working entirely.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+cat > /tmp/acc/exec-static.sh <<'XEOF'
+#!/bin/sh
+exec "$@"
+XEOF
+chmod 755 /tmp/acc/exec-static.sh
+# `TOY_STATE` is set because the toy's default is a RELATIVE `./state` — without it these
+# two lines wrote a `state/` directory into the repository's working tree, which the first
+# version of this leg did, and `.gitignore` does not cover it.
+TOY_STATE=/tmp/acc/state SIDEEYE_STATE_DIR=/tmp/acc/state SIDEEYE_TRACE_PATH=/tmp/acc/t.bin \
+    LD_PRELOAD="$SHIM" /tmp/acc/exec-static.sh "$OUT/toy-static" init >/dev/null 2>&1
+plain_rc=$?
+TOY_STATE=/tmp/acc/state SIDEEYE_OBSERVE=syscalls SIDEEYE_STATE_DIR=/tmp/acc/state SIDEEYE_TRACE_PATH=/tmp/acc/t2.bin \
+    LD_PRELOAD="$SHIM" /tmp/acc/exec-static.sh "$OUT/toy-static" init >/dev/null 2>&1
+trap_rc=$?
+# 159 = 128 + 31 (SIGSYS). Named rather than spelled as a bare number in the message.
+if [ "$plain_rc" = "0" ] && [ "$trap_rc" = "159" ]; then
+    echo "ok   a non-shimmed exec'd image runs under wrappers and is killed by SIGSYS under"
+    echo "     syscalls — the documented cost of an inherited filter, measured not assumed"
+else
+    echo "FAIL the inherited-filter cost moved: wrappers exit $plain_rc (wanted 0),"
+    echo "     syscalls exit $trap_rc (wanted 159 = SIGSYS). README's limits list names this"
+    echo "     behaviour; either the list or the code is now wrong"
+    fails=$((fails + 1))
+fi
+
+# ---- contract v14: the flag refuses a value it does not know ----
+# Cheap, and it pins the shape of the refusal rather than just its existence: a mode
+# silently falling back to the default is the failure that would make every leg above
+# pass for the wrong reason.
+o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-fixed rotate" \
+    --observe sycsalls --shim "$SHIM" --work /tmp/acc/work 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "wrappers.*syscalls"; then
+    echo "ok   an unknown --observe value is a setup error naming both modes"
+else
+    echo "FAIL --observe typo: exit $rc (wanted 3)"
+    echo "$o" | sed 's/^/     | /' | head -3
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 2v: typed path resolution and first-class links (ADR 0006) ==========="
 # git's last wall (#31): the oracle scoped by scanning the whole line for an absolute
 # state-directory string, so a relative mkdir/link with only a dirfd annotation was
@@ -2907,10 +3170,16 @@ echo "=========== check 2sx: every classified syscall is interposed or explained
 # as set equality — before this batch that comparison had 32 differences and 29 of
 # them were legitimate — but as "classified implies interposed or explained". CI runs
 # it too; here it sits beside the behaviour it protects.
-o=$(python3 "$ROOT/spike/check-shim-coverage.py" "$ROOT/src/oracle.zig" "$ROOT/shim/src/linux.zig" 2>&1)
+o=$(python3 "$ROOT/spike/check-shim-coverage.py" "$ROOT/src/oracle.zig" "$ROOT/shim/src/linux.zig" "$ROOT/shim/src/syscalls.zig" 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "interposed or explained"; then
-    echo "ok   the shim covers every syscall the oracle classifies (or says why not)"
+# Both sections asserted by name, not just the exit code: the trap comparison is
+# optional in the script's own signature (a two-argument call skips it), so a leg that
+# only read `rc` would go green on an invocation that never ran the second half.
+if [ "$rc" = "0" ] &&
+   echo "$o" | grep -q "interposed or explained" &&
+   echo "$o" | grep -q "trapped or explained"; then
+    echo "ok   the shim covers every syscall the oracle classifies (or says why not),"
+    echo "     and every write it classifies is trapped in syscalls mode or explained"
 else
     echo "FAIL shim coverage: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
@@ -3199,9 +3468,32 @@ if ! grep -q '"scratch"' "$SD/scratch.json" 2>/dev/null; then
     echo "FAIL the scratch fixture carries no scratch field, so the schema check below cannot see the row it documents"
     fails=$((fails + 1))
 fi
+# An eighth report, for the field only the syscall-layer observation path carries
+# (contract v14): `oracle_verified_across_runs` appears when that mode's comparison
+# agreed, and nowhere else, for the reason the two reports above exist. Made with a
+# target the DEFAULT path also handles, so the fixture is about the field and not about
+# the reach — the reach has its own legs in check 2u.
+mkdir -p "$SD/sob"
+TOY_STATE=$SD/sob "$SIDEEYE" explore --state "$SD/sob" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --observe syscalls \
+    --shim "$SHIM" --work "$SD/wob" --oracle /usr/bin/strace \
+    --json "$SD/observe.json" >/dev/null 2>&1
+if ! grep -q '"oracle_verified_across_runs": true' "$SD/observe.json" 2>/dev/null; then
+    echo "FAIL the syscalls fixture carries no oracle_verified_across_runs, so the schema check below cannot see the row it documents"
+    fails=$((fails + 1))
+fi
+# …and the older field must be false in the same report. The two are not alternatives by
+# accident: `oracle_verified` means the two witnesses watched ONE run, which this mode
+# cannot claim, and a fixture that carried both would be the silent-strengthening this
+# whole design was arranged to avoid.
+if grep -q '"oracle_verified": true' "$SD/observe.json" 2>/dev/null; then
+    echo "FAIL the syscalls fixture claims oracle_verified as well: the weaker claim must not set the stronger field"
+    fails=$((fails + 1))
+fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/main.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/observe.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -5416,6 +5708,9 @@ acc_dummy() {
         --apparatus)      printf 'note:x' ;;
         # A well-formed relative path: the dummy below is absolute, which --scratch refuses.
         --scratch)        printf 'x' ;;
+        # One of the two mode names: the value is checked at parse time, so the dummy
+        # path below would make the flag read as refused by every synopsis line.
+        --observe)        printf 'wrappers' ;;
         *)                printf '%s' "$acc_nx.dummy" ;;
     esac
 }
@@ -6563,6 +6858,35 @@ else
     echo "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
+# The same fixture under `--observe syscalls`, where the answer must be DIFFERENT and the
+# difference is the whole point. That mode runs the operation three times: the oracle's
+# untrapped run first, then the recording, then run B. `TOY_TWICE_SLOW_FIRST` makes the
+# first of those slow, so the two runs `--twice` actually COMPARES — the recording and run
+# B — are both fast, and the floor has to make them two seconds apart. A gap in the 3000s
+# here would mean the floor was satisfied by the oracle run's three seconds while the two
+# compared runs started milliseconds apart, and the report would be claiming an interval
+# they never had. Measured before the fix: 3035. After: 2002.
+mkdir -p /tmp/acc-tw3/state
+o=$(TOY_TWICE_COUNTER=/tmp/acc-tw3/count TOY_TWICE_SLOW_FIRST=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw3/state \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" \
+    --observe syscalls --oracle /usr/bin/strace \
+    --shim "$SHIM" --work /tmp/acc-tw3/work 2>&1)
+rc=$?
+ok=1
+[ "$rc" = "0" ] || ok=0
+echo "$o" | grep -qE 'two runs 2[0-9]{3} ms apart left equal state' || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   --twice under syscalls measures the gap between the two runs it compares,"
+    echo "     not from the oracle's separate run"
+else
+    echo "FAIL --twice under syscalls: exit $rc (wanted 0 with a gap in the 2000s; a gap in"
+    echo "     the 3000s means the mark was taken before the oracle's run)"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-tw3
+
 rm -rf /tmp/acc-tw2 /tmp/acc-tw
 
 echo "=========== check 2cw: a define declares where it runs, and the case freezes it ==========="

@@ -34,7 +34,16 @@ export the shim does not have cannot pass.
 Exit 0 when every classified syscall is accounted for, 1 when one is not, 2 when the
 check could not read what it needs — never read a 2 as a pass.
 
-Usage: check-shim-coverage.py <src/oracle.zig> <shim/src/linux.zig>
+Since contract v14 the check runs a SECOND comparison, for `--observe syscalls`. That
+mode counts the write family at the syscall boundary, which is the only way to see a
+write libc issues from inside itself — so for a write-class syscall the two ways of
+being covered are not equivalent: being in the trap set catches a raw call as well, while
+a libc wrapper alone catches only the calls that pass through libc. The check therefore asks,
+of every `.write` member of `known`, either it is in the shim's trap set or this file
+says why it is covered at the libc boundary only. That keeps the mode's residual
+written down where forgetting fails closed, rather than in prose that drifts.
+
+Usage: check-shim-coverage.py <src/oracle.zig> <shim/src/linux.zig> [shim/src/syscalls.zig]
 """
 
 import re
@@ -57,6 +66,104 @@ NOT_INTERPOSED = {
 }
 
 
+# Why a `.write` member of `known` is NOT in the syscall-mode trap set. Same discipline
+# as NOT_INTERPOSED: a standing decision, and the fix for a wrong one is to add the
+# syscall to `trapped` and delete the line.
+#
+# What being here costs is precise and worth stating: the syscall is counted only when
+# it passes through the libc entry point the shim exports, so a RAW call to it is
+# invisible in this mode — the same class of hole `--observe syscalls` exists to close
+# for `write`.
+NOT_TRAPPED = {
+    "pwritev2": "six arguments, so no free register for the re-issue sentinel, and"
+                " glibc falls back to a trapped number on a kernel that lacks it while"
+                " issuing the real thing on one that has it — so neither counting it in"
+                " the wrapper nor silencing the wrapper is right on both. Its wrapper"
+                " records .unsupported in syscalls mode and the run refuses",
+    "copy_file_range": "never issued from inside libc's stdio, so the wrapper sees"
+                       " every call that is not raw (#244)",
+    "sendfile": "as copy_file_range",
+    "sendfile64": "as copy_file_range",
+}
+
+
+def oracle_write_class(path):
+    """The `.write` members of `known` in src/oracle.zig, in declaration order."""
+    text = open(path).read()
+    start = text.index("const known = [_]Mapping{")
+    end = text.index("};", start)
+    return [
+        m.group(1)
+        for m in re.finditer(
+            r'\.name = "([a-z0-9_]+)", \.class = \.write\b', text[start:end]
+        )
+    ]
+
+
+def shim_trap_set(path):
+    """The members of `const trapped = [_]SYS{…}` in shim/src/syscalls.zig.
+
+    Read from the declaration the filter is built from, for the reason `shim_exports`
+    is read from the export calls: a transcribed list would verify itself.
+    """
+    text = open(path).read()
+    start = text.index("const trapped = [_]SYS{")
+    end = text.index("};", start)
+    return set(re.findall(r"\.([a-z0-9_]+)", text[start:end]))
+
+
+def check_trap_set(oracle_path, syscalls_path):
+    """The second comparison. Returns (exit code, printed already)."""
+    try:
+        writes = oracle_write_class(oracle_path)
+        trapped = shim_trap_set(syscalls_path)
+    except (OSError, ValueError) as exc:
+        print("  BROKEN could not read the trap set: %s" % exc)
+        return 2
+    if not writes or not trapped:
+        print("  BROKEN one side parsed empty (write-class=%d, trapped=%d) — a zero"
+              " here means the declaration moved, not that the sets agree"
+              % (len(writes), len(trapped)))
+        return 2
+
+    # The trap set is written in kernel spelling and `known` in libc spelling; the
+    # names that differ are the LFS aliases, which the kernel does not have. `pwrite`
+    # and `pwrite64` are one syscall, and so are `sendfile` and `sendfile64`.
+    def kernel_name(libc_name):
+        return {"pwrite": "pwrite64", "pwritev64": "pwritev"}.get(libc_name, libc_name)
+
+    unaccounted = sorted(
+        n for n in writes
+        if kernel_name(n) not in trapped and n not in NOT_TRAPPED
+    )
+    contradicted = sorted(
+        n for n in NOT_TRAPPED if kernel_name(n) in trapped
+    )
+    stale = sorted(n for n in NOT_TRAPPED if n not in writes)
+
+    print("  oracle classifies %d syscalls as writes; the trap set holds %d; %d of the"
+          " write class covered at the libc boundary only"
+          % (len(writes), len(trapped), len(NOT_TRAPPED)))
+    if unaccounted:
+        print("  FAILED write-class but neither trapped nor explained: %s"
+              % ", ".join(unaccounted))
+        print("         add it to `trapped` in shim/src/syscalls.zig, or to NOT_TRAPPED"
+              " in this file with what a raw call to it would cost")
+    if contradicted:
+        print("  FAILED explained as not-trapped, but the trap set holds it: %s"
+              % ", ".join(contradicted))
+        print("         the reason is stale; delete the NOT_TRAPPED entry")
+    if stale:
+        print("  FAILED explained here but not classified as a write: %s"
+              % ", ".join(stale))
+        print("         this reason covers no syscall — a typo, or a name whose class"
+              " moved")
+    if unaccounted or contradicted or stale:
+        return 1
+    print("  ok   every write the oracle classifies is trapped or explained")
+    return 0
+
+
 def oracle_known(path):
     """Names from `const known = [_]Mapping{…}` in src/oracle.zig."""
     text = open(path).read()
@@ -77,8 +184,9 @@ def shim_exports(path):
 
 
 def main(argv):
-    if len(argv) != 3:
-        print("  BROKEN usage: check-shim-coverage.py <oracle.zig> <linux.zig>")
+    if len(argv) not in (3, 4):
+        print("  BROKEN usage: check-shim-coverage.py <oracle.zig> <linux.zig>"
+              " [syscalls.zig]")
         return 2
     try:
         known = oracle_known(argv[1])
@@ -122,6 +230,12 @@ def main(argv):
     if unaccounted or contradicted or stale:
         return 1
     print("  ok   every syscall the oracle classifies is interposed or explained")
+    # Optional so the older two-argument invocation keeps working; the acceptance suite
+    # and CI pass the third path, so the trap comparison is not optional in practice.
+    if len(argv) == 4:
+        rc = check_trap_set(argv[1], argv[3])
+        if rc != 0:
+            return rc
     return 0
 
 
