@@ -38,10 +38,11 @@ provably survived the image change (trace contract v10):
   whose seq was always 0 through v9 — re-announces it.
 - The engine opens a continuation window at a subject exec record and closes
   it only on a same-pid `shim_ready` carrying exactly the count the chain left
-  off at. Wrong base, a second exec while the window is open, or end of trace:
-  the chain broke, and the refusal names the ways an image change escapes
-  observation (execl family and `fexecve` are not interposed; a static image
-  loads no shim; a stripped environment carries nothing).
+  off at. Wrong base or end of trace: the chain broke, and the refusal names
+  the ways an image change escapes observation (execl family and `fexecve` are
+  not interposed; a static image loads no shim; a stripped environment carries
+  nothing). **This clause said "a second exec while the window is open" as a
+  third way until 2026-09-07; see the amendment below, which removes it.**
 - A new numbering-integrity refusal (`sequence_numbering_broken`) compares the
   subject's kill-point record COUNT with its highest sequence number, in the
   recording and in every world. A restarted counter is a duplicate number, and
@@ -123,3 +124,85 @@ refusal is the promised behaviour. The freeze audit's manifest records the same 
 `spike/freeze-audit/audit.tsv`'s row for #123 carries a surface forecast of **none**, with
 that sentence as its reason. So the freeze is not what stands in the way of the
 multi-process slice. What stands in the way is the determinism above.
+
+**Amended 2026-09-07: a second exec record while the window is open is removed from the
+ways a chain breaks. It named a failed attempt, not an image change.**
+
+The clause's stated reason was that such a record "means the intermediate image was never
+observed". That is false, and the measurement is ordinary: an operation written as
+`#!/bin/sh` ending in `exec <name>` resolves the name through `PATH`, and dash issues one
+`execve` per entry. Six returned ENOENT before the seventh landed. The shim records before
+each call — it cannot know which attempt will succeed — so the trace carried **seven exec
+records for one image change**, and the run was refused `child_process_detected` while the
+next `shim_ready` carried **exactly the count the chain left off at**. Three real defines
+meet this: `spike/unknown-rate/defines-b/hnb` and `.../lbdb` through the uniform protocol's
+`op.sh`, and fontforge through a wrapper written for an argument carrying spaces (#506).
+
+**Why a second record cannot be a new image.** Its writer has the shim active and answers
+`getpid()` with the subject's pid. Any image that can write a record announces itself
+first: the shim sets `active` immediately before writing `shim_ready`, with no statement
+between them, and that record's path is the state directory whose length `init` has already
+bounded — so the announcement is not the one write that fails while later ones succeed. A
+forked or vfork'd child answers `getpid()` differently and is excluded before this point
+(the pid is read live per record, ADR 0002 decision 6). So a second record with no
+announcement between was written by the image that wrote the first, which is to say the
+first attempt returned.
+
+The base is now **refreshed** at each attempt rather than fixed at the first. That is part
+of the correction, not a courtesy: the shim carries the count as it stands when `exec` is
+*called*, and the call that succeeds is the last attempt, so a wrapper that writes state
+between two attempts announces the later count and a fixed base would refuse a chain that
+held.
+
+**What the removed net covered, and what still does.** The comparison it stood beside —
+does the announced count equal the count the chain left off at — is untouched, and it is
+what catches a chain that genuinely broke. The one case where that comparison cannot speak
+is a subject with **zero** in-scope operations before the exec: both sides are then
+trivially equal, which this ADR already recorded above. Until now a second exec record
+refused such a run; from here it does not, so the shape is reachable through repeated
+attempts as well as through the single record that already reached it. **Three layers
+stand between that and a wrong verdict. The first was run; the other two were read, and
+the difference is marked on each rather than dissolved into the count:**
+
+1. A recorded boundary with no oracle refuses `boundary_without_oracle` — and `.exec`
+   counts as a boundary for that purpose whether or not the chain held, so a self-exec
+   chain requires `strace` on Linux and is refused under `--oracle-fs-usage`.
+   **Measured rather than read**: the retried-attempt define run without an oracle
+   refuses `boundary_without_oracle` on this change, where the build before it refused
+   `child_process_detected` first and never reached the question.
+2. With `strace`, an intermediate image that reached the state directory without the shim
+   leaves the two accounts short of each other and the run refuses
+   `oracle_missed_operation`. An `exec` preserves the pid, so such an image is the subject
+   as far as scope is concerned. **Read, not run**: the mechanism is the same one
+   metaflac and fontforge met (`docs/target-classes.md`), and no target was built here to
+   put an unshimmed image inside a surviving chain.
+3. Independently of any oracle, a path that changed with no recorded operation naming it
+   refuses `state_changed_unaccounted` (#405). Layers 1 and 2 need an oracle and this one
+   does not, which is why all three are listed rather than one standing for the others.
+   **Read, not run**, for the same reason as layer 2.
+
+Numbering is also unharmed in that case: zero plus a fresh count is the correct sequence,
+not a duplicate, so the `sequence_numbering_broken` check has nothing to catch.
+
+**One case the three layers do not cover, named rather than left out** (review). An
+intermediate image that loads the shim and whose `shim_ready` write is *lost* — `writeRecord`
+discards `writeAll`'s result — would leave its exec record behind with no announcement, and
+the refreshed base would then match whatever the last image announced. The old rule refused
+that shape by refusing every repeated record. Two things bound it: the realistic write
+failures on an `O_APPEND` regular file (`ENOSPC`, `EIO`) are not transient, so the records
+after the lost one fail too and the window stays open to the end of the trace, which refuses;
+and an image whose records *do* land has its operations recorded and its numbering
+continuous, so no crash point addresses an operation other than the one that ran. What is
+genuinely uncovered is a transient loss of exactly that one write, and the structural
+argument in `src/engine/trace.zig` does not exclude it — it only excludes the failure modes
+of the encode.
+
+**What this does not change.** The trace contract stays at v13 — no record shape, no op
+class and no `unknown_reason` moves, so saved cases keep replaying. The uninterposed exec
+family (`execl`, `execle`, `execlp`, `execvpe`, `fexecve`) is still an escape, still caught
+by the double-announcement rule, and interposing it is a separate question with a contract
+bump attached. Both of the report's sentences about this were wrong in ways this change also
+fixes: the account said "chain unbroken" over a run whose chain had broken, and it reported
+a disagreement between witnesses on a run where the shim claimed no second process. The
+second is a `docs/report-schema.md` promise about the `processes` field, which is why it is
+here rather than filed.

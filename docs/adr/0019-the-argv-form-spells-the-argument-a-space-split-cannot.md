@@ -13,13 +13,28 @@ complexity is not removed, it is relocated into shell wrappers the user must
 write, version and point the config at, for the one common case of an argument
 containing a space.
 
-The #84 sweep then measured the wrapper path failing structurally. Two of the
+The #84 sweep then measured the wrapper path failing. Two of the
 B-group's twenty machine-selected targets (hnb — a space-carrying argument;
-lbdb — a stdin redirect) could only be spelled through `op.sh` wrappers, and a
-wrapper that performs nothing state-changing before its `exec` is an image
-change the v10 observation rules refuse (`spike/unknown-rate/defines-b/`,
-BUILDLOG 2026-08-16). The escape hatch ADR 0007 pointed at is, for exactly the
-targets that need it most, a wall.
+lbdb — a stdin redirect) could only be spelled through `op.sh` wrappers, and both
+refused (`spike/unknown-rate/defines-b/`, BUILDLOG 2026-08-16). The escape hatch
+ADR 0007 pointed at was, for exactly the targets that need it most, a wall — **and that
+sentence is retired by the correction below rather than standing above it**: the wall was
+the engine's, and it is gone.
+
+**Corrected 2026-09-07.** This paragraph said the refusal followed from a wrapper
+performing nothing state-changing before its `exec` — an image change the v10 rules
+refuse structurally. **That reading is false**, and it was reproduced from
+`defines-b/hnb/NOTES.md` rather than measured here: such a wrapper naming its target
+by an absolute path reaches a verdict. What refused is the `PATH` lookup inside the
+wrapper, which execs once per entry and left the engine counting failed attempts as
+image changes (ADR 0018's amendment carries the measurement and the fix). Both `op.sh`
+files name their program that way, so the observation that they refused stands; its
+cause is corrected, and those two trials are not re-measured. **The "wall" sentence in
+this same paragraph goes with it** — it rested on the refusal and nothing else, which is
+why it is marked retired where it stands rather than left for a reader to discover.
+**None of this weakens the motivation for the argv form**: the wrapper is still a shape a
+define should not need, and the reasons below — a space inside one argument cannot be
+spelled by splitting on spaces — never rested on the wrapper refusing at all.
 
 Two facts stated against the motivation, not hidden under it. First, no met
 v1.0 criterion depends on this change: criterion 4 was met with the spelling

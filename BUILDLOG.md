@@ -2,6 +2,174 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-07 — the refusal was ours: a shell looking down PATH is not seven image changes
+
+An operation written as `#!/bin/sh` ending in `exec <name>` is refused
+`child_process_detected`, and the refusal is a wall this project measured on cargo and
+published. It is not the target. dash resolves a bare name by issuing one `execve` per
+`PATH` entry, and the shim records **before** each call because it cannot know which
+attempt will land — so six ENOENT attempts left six exec records in front of the one that
+worked, and the engine read each of them as another image change. The next `shim_ready`
+carried **exactly the count the chain left off at**; the count had survived the whole time.
+
+**The reader was doing what ADR 0018 told it to.** This was not implementation drift: the
+decision says, in as many words, that "a second exec while the window is open" is one of
+the three ways a chain breaks, and gives as its reason that such a record means "the
+intermediate image was never observed". So this change reverses a clause of an accepted
+decision rather than fixing code that disagreed with one. The first draft of the plan had
+it the other way round — "the implementation does not satisfy `DESIGN.md:153`" — and the
+plan review found the ADR and said so. Worth recording because the two framings lead to
+different work: one amends a document, the other rewrites a decision and has to say what
+the removed net was holding up.
+
+**Why a second record cannot be a new image, structurally.** Its writer has the shim
+active and answers `getpid()` with the subject's pid. Any image that can write a record
+announces itself first — `active` is set immediately before `shim_ready`, with no statement
+between them — and a forked or vfork'd child is excluded earlier by the pid, which is read
+live per record. So the writer is the image that wrote the first record, which is to say
+the first attempt returned. The base is refreshed at each attempt rather than fixed at the
+first, and that is part of the fix: the shim carries the count as it stands when `exec` is
+*called*, and the call that succeeds is the last one, so a wrapper that writes state
+between two attempts announces the later count.
+
+**What the removed net was holding up, honestly.** The comparison beside it — does the
+announced count equal the count the chain left off at — is untouched and is what catches a
+real break. The one place it cannot speak is a subject with zero in-scope operations
+before the exec, where both sides are trivially equal; ADR 0018 recorded that hole in
+2026-08-15. Until now a second exec record refused such a run, so this change makes that
+shape reachable through repeated attempts too. Three layers were read in the code before
+claiming no verdict is endangered: a recorded boundary with no oracle refuses
+`boundary_without_oracle` (and `.exec` counts, chain held or not, so these runs require
+strace); with strace, an intermediate image that touched the state without the shim
+diverges the two accounts; and independently of any oracle, a changed path no recorded
+operation names refuses `state_changed_unaccounted`. The first two need an oracle and the
+third does not, which is why all three are listed instead of one standing in for the rest.
+
+**Two sentences in the report were false, and the second one is a documented promise.**
+The measured refusal said, in one sentence, "an image replacement whose chain of
+observation broke" and "chain unbroken" — the account branched on the continuation count
+alone. And a *judged* self-exec said "the two accounts disagree and this run does not
+resolve them" while nothing disagreed: the shim recorded a same-pid image change, which
+claims no second process, so strace seeing one process agrees with it.
+`docs/report-schema.md` promises this field reports both witnesses only "where the two
+witnesses disagree", so that one could not be recorded and dropped. It needed a
+distinction the evidence did not carry — a boundary implying another **process** versus
+the subject replacing its own image — which is a new field on the trace rather than
+something derivable from `boundary`, since that keeps the first class only and a target
+that execs and then forks would report the exec and hide the fork.
+
+**The tests, and the one that was missing until review asked twice.** Five reader tests:
+two positive (attempts before the landing, and a write between attempts, which is what
+goes red if the base stops being refreshed) and three negative controls. The third
+negative control is the one that matters and it is not obvious: the other two go red
+through code that sets `exec_chain_broken` on its own — the wrong-base comparison and the
+end-of-trace check — so a mutation that stops the `.exec` arm returning `hard` at all
+survives both, and survived the existing five #123 tests as well. After this change that
+arm has exactly one path left to `hard`, a record before the subject is known, and now a
+test stands on it. Measured: that mutation reddens **one** test, 220 pass 1 crash, and
+nothing else in the suite notices.
+
+**Red before green, with the build order written down.** The apparatus is a toy variant
+(`TOY_EXEC_RETRY`) rather than the machine's `/bin/sh`, because a leg that waits for the
+local shell measures the local shell — ADR 0051 learned that on the macOS runner. The
+engine at `origin/main` and the engine with the fix were built separately and run against
+the *same* toy binary in the same container: exit 2 `child_process_detected` with the
+contradictory sentence, then exit 1 with the oracle agreeing on 4 operations across both
+images and the account down to "single process in the recording". A second leg drives the
+real shape through this image's `/bin/sh` and says in its comment that it measures the
+image, since the assertion holds under either shell and only the retry path varies.
+
+**The claim had leaked into four published places and two that cannot be touched.**
+"A script wrapper that performs nothing state-changing before its `exec` is an image change
+the v10 observation rules refuse structurally" appears in `docs/unknown-rate.md` twice, in
+ADR 0019, in the B-group launcher and in `spike/followup-95/NOTES.md` — and the run's own
+table falsifies it, because a wrapper of exactly that shape naming an absolute path reaches
+a verdict. All four are corrected to say the rule is false as stated, and no further: **the
+2026-08-16 trials are not re-measured**, and the define the original claim cites as its
+evidence no longer has the `op.sh` it was measured on. The two grounds files under
+`spike/unknown-rate/defines-b/` are left alone because `count.py` recomputes a hash over
+those directories and compares it to the sweep's manifest — the audit trail's whole point —
+so the correction on the page names both files instead. That constraint was nearly
+recorded backwards: the plan said the digest is *not* checked, having grepped `count.py`
+for `define_digest` and found nothing, because the column is called `digest` there. The
+second review caught it. The conclusion held; the reason in the PR body would have been a
+lie.
+
+**The review found the same overclaim three arms to the left, and one pin this change
+falsifies.** The disagreement sentence was the one measured, so it was the one fixed; the
+three sibling arms of the same `if (shim_boundary)` — no second witness ran, the account
+was not read, the capture was empty — all still opened with "the shim recorded a process
+boundary" over a run whose only boundary was the subject's own image change. The first of
+those is not hypothetical: an oracle-less self-exec renders it on the way to
+`boundary_without_oracle`, and an acceptance leg builds that state on every suite run. My
+same-class scan had grepped for "accounts disagree", "observed no other process" and
+"single process" and missed "recorded a process boundary" — the scan's own exclusion
+dropping the quarry, which is a shape this workspace has written down before. All four arms
+now name what was recorded, and the `.unread` arm also stops promising to account for
+"what the other process did" when there was no other process.
+
+The falsified pin is `spike/followup-95/run.sh`: its control is this exact spelling and it
+asserts `child_process_detected`, with `NOTES.md` declaring that a control which does not
+refuse means the apparatus differs from the sweep's. Both are true of every engine before
+today and false of this one. The pin is retired with the original quoted beside it and the
+declaration left standing with its retirement dated, because what it recorded is what was
+declared — and the argv side's counterexample never rested on it.
+
+**The confirmation round found the same overclaim twice more, and one of them was
+printed in the measurement this entry quotes.** The world clause and the preflight
+clause branch on their own `world_boundary` / `second_run` evidence, which counts a
+subject exec the same way the recording side did — so the account of the measured run
+reads "single process in the recording; **a process boundary appeared in an explored
+world**; the subject's image replaced 1 time(s)". A world re-runs the operation, so a
+self-exec target crosses that boundary in *every* world: the recording half was fixed
+and the world half of the same sentence was left saying the thing the fix was about. I
+had the string in front of me and read past it. The `world_only` refusal message and
+preflight's second-observed-run clause are the same class; all three take the
+distinction now, at the granularity the fields already had, and four table rows plus two
+new states pin them.
+
+**A one-sided assertion is not a pin.** The disclosure test asserted that a broken chain
+is not called unbroken, and nothing anywhere asserted the converse — so replacing the
+branch condition with `if (true)`, reporting every chain as escaped, passed the whole
+suite. Measured, then closed: both directions now, and the same mutation reddens.
+
+**The quality pass found three unpinned wordings, which is the same defect one level up.**
+Four cleanup readings ran over the finished diff. The one that mattered: mutations that
+delete the world-side distinction — either arm — survived the whole suite, because the
+table rows I had added pinned phrases that both wordings contain, and the broken-chain
+wording itself was pinned by nothing. Three mutations, three reds, after raising the pins.
+The rest was structure: the predicate `X.boundary != null or X.foreign_pid_seen` had been
+written at nine sites across two variants, and `src/main.zig`'s own comment records the
+accident that shape produces ("the world-only site was generalised and these four siblings
+were not") — two `TraceInfo` methods now hold both. The ordering property the reader rule
+rests on got a note on the **shim** side, where the edit that would break it happens; it
+cannot be pinned by a test, so a reverse reference is the whole of the net. And retiring
+`followup-95`'s control pin had quietly removed the thing it was for, so the apparatus
+check came back in a form this change cannot invalidate: the two spellings of one question
+must reach the same verdict over the same number of crash points.
+
+One collateral edit, made and undone: `zig fmt` over `src/` reformatted three files this
+change never touched. Reverted, along with the one hunk it moved inside `trace.zig`, so the
+formatting state is byte-identical to `main`'s.
+
+**Layer 1 of the safety argument stopped being a reading.** The amendment claims a
+self-exec chain cannot reach a verdict without an oracle. Run without one, the retried
+define now refuses `boundary_without_oracle` — where the build before this change refused
+`child_process_detected` first and never got to the question.
+
+**What is not touched.** The trace contract stays at v13, so saved cases keep replaying;
+the uninterposed exec family is still an escape with a contract bump attached; and the
+published B-group figures stand as measured on that day's engine, with only the causal
+sentence corrected.
+
+A sentence claiming a residual defect stood here and was removed before the review: it said
+a self-exec run reaching the witness matrix through a *different* boundary keeps the false
+wording. Trying to name that case says otherwise — every state that still reaches the
+disagreement clause has a boundary claiming a second process (a failed `vfork`, a spawn
+whose child the oracle lost, a record from another pid), and in each of those the two
+accounts really do disagree. Writing down a defect nobody constructed is the same error as
+writing down a measurement nobody took.
+
 ## 2026-09-06 — the review fixes brought their own defects, and one of them was undetectable
 
 `#524` merged, and the reviewer's remaining notes arrived after it. Three findings, all
