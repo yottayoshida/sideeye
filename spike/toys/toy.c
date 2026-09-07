@@ -18,6 +18,12 @@
  *                  in the second image (#123's judged shape: a tail-exec chain)
  *   TOY_FORKEXEC   fork a child that execs /bin/sh and writes into the state
  *                  directory (#123's still-refused shape: pass's mkdir/mv children)
+ *   TOY_EXEC_RETRY with TOY_SELFEXEC, try two execs that CANNOT succeed before the one
+ *                  that does. An interpreter resolving a name through PATH does exactly
+ *                  this — dash issues one execve per entry — and the shim records
+ *                  before the call, so the failed attempts are in the trace. One image
+ *                  change, three records: the shape the engine read as three image
+ *                  changes and refused (measured 2026-09-07)
  *   TOY_EXECL      like TOY_SELFEXEC but through execl, which the shim does not
  *                  interpose: no exec record, no carried count — the second image
  *                  announces itself again, which the engine must catch structurally
@@ -1063,6 +1069,17 @@ int main(int argc, char **argv) {
         join_path(staged, sizeof staged, "staged.txt");
         if (write_file(staged, "stage one was here\n") != 0) return 1;
         setenv("TOY_SELFEXEC_STAGE2", "1", 1);
+        /* Attempts that cannot succeed, before the one that can. This is what a shell
+         * resolving a bare name does: one exec per PATH entry, each returning ENOENT
+         * until one does not. The shim records before the call — it has no way to know
+         * which attempt will land — so each failure leaves an exec record behind. The
+         * path is absolute and outside any state directory, so a machine cannot make it
+         * exist and turn this into a different test. */
+        if (getenv("TOY_EXEC_RETRY")) {
+            char *const nope[] = { (char *)"/nonexistent/toy-attempt", (char *)"rotate", NULL };
+            execv(nope[0], nope);
+            execv(nope[0], nope);
+        }
         execv(argv[0], argv);
         _exit(127);
     }

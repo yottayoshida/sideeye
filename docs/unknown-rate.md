@@ -366,11 +366,37 @@ while authoring (BUILDLOG 2026-08-16): `op.txt` — one static command line
 by the launcher) that the engine spawns directly — is used wherever the
 documented invocation fits the engine's space-split contract; `op.sh` is
 the ADR 0007 fallback for invocations that cannot be spelled that way (an
-argument carrying a space — hnb; a stdin redirect — lbdb). A script
-wrapper that performs nothing state-changing before its `exec` is an image
-change the v10 observation rules refuse structurally, so for the two
-`op.sh` targets that refusal, if it comes, is the trial's honest verdict:
-the define budget could not spell the target inside the contract. The
+argument carrying a space — hnb; a stdin redirect — lbdb). The two `op.sh`
+targets refused, and the sweep read that refusal as a property of the
+spelling: a script wrapper performing nothing state-changing before its
+`exec` was taken to be an image change the v10 observation rules refuse
+structurally. **That rule is false as stated, measured 2026-09-07.** A
+wrapper of exactly that shape, naming its target by an absolute path,
+reaches a verdict. What refuses is a wrapper whose `exec` names a program
+to be found on `PATH`: the shell then execs once per entry, the shim
+records before each call, and the engine counted the attempts that
+returned ENOENT as further image changes (ADR 0018's amendment carries the
+measurement, and the reader no longer does this). Both `op.sh` files here
+name their program that way. **What the same two defines do on today's
+engine was measured on 2026-09-07**, and the two answers differ: hnb reaches
+**FAIL over 3 crash points** — the verdict and the count the argv spelling of
+the same question reached on 2026-08-16 — while lbdb advances one wall further
+out, to `child_touched_state_dir`, its image change followed and another pid
+unlinking a temp file in the judged state. So one of the two was refused by the
+engine and one is refused by the target's process structure, which the sweep's
+single reason could not distinguish. That re-measurement ran under a **rebuilt**
+`sideeye-ur-extra` (image id `9fec97c7`, not the sweep's `df66b6e1`), so it
+speaks for the recipe rather than for the sweep's own apparatus, and the
+transcripts are not committed. **What is still not re-measured is the sweep
+itself**: its figures below are what that engine measured on that image, and
+nothing here re-runs the other five trials. The define the original rule cites
+as its evidence is neither of these two — `defines-b/hnb/NOTES.md` names
+2vcard, whose define carries only an `op.txt`, so the rule cannot be re-derived
+from the corpus at all. Both `op.sh` files here are present and unchanged.
+The figures below stand as measured on that day's engine; the grounds
+recorded in `defines-b/hnb/NOTES.md` and `defines-b/lbdb/NOTES.md` carry
+the superseded rule, and are left untouched because the sweep's audit
+trail hashes those directories. The
 `sideeye preflight` answer (#77) is recorded beside each verdict as the
 funnel instrument — in text + exit code, since preflight has no
 machine-readable form (a deliberate constraint: `explore --config` answers
@@ -694,9 +720,17 @@ evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 contract v10 at main `b5b23fd`; apparatus identity in
 `spike/unknown-rate/artifacts/apparatus.txt`): all three are
 **define-budget refusals, none are target-origin**. hnb and lbdb refused
-exactly as their NOTES predicted — their documented invocations cannot be
-spelled inside the engine's space-split operation contract, and the op.sh
-wrapper is an exec chain the v10 observation rules refuse; cookietool's
+after their documented invocations could not be spelled inside the
+engine's space-split operation contract, which sent both to an `op.sh`
+wrapper — the outcome their NOTES predicted, on a rule about wrappers that
+2026-09-07 measured to be false as stated (see the correction above; what
+refuses is the `PATH` lookup inside the wrapper, and these two trials were
+not re-measured). **The classification in this paragraph is against the engine
+of the sweep's day.** The engine no longer refuses that shape at all, so a
+re-run would not reproduce these two refusals — from which nothing follows
+about the figures, which are what that engine measured, and everything follows
+about reading "define-budget refusal" as a property of the define rather than
+of the pairing. cookietool's
 recording was refused because the tool's exit convention (10, apparently
 its deleted-cookie count) does not match the protocol's fixed
 `expected_status 0`. Of the five targets whose documented invocations
