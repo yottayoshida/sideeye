@@ -1,0 +1,75 @@
+# fontforge.syscalls.txt の抜粋（全文     2604 行。183 world 分の world 報告を落とした）。
+# 前半 24 行 = 開始と最初の world、後半 46 行 = 判定・件数・oracle・processes。全文と json は同ディレクトリの .json にある。
+# ---------- head 24 ----------
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+# ---------- (中略: world 報告 2534 行) ----------
+# ---------- tail 46 ----------
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+FAIL  183 of 185 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 184
+            after  open(/localrun/st/syscalls/fontforge/f.ttf)
+            before write(/localrun/st/syscalls/fontforge/f.ttf)
+path        f.ttf
+observed    holding neither the old nor the new content
+explored    185 worlds (crash points 184 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 184 operations (40187 syscall lines examined, 10802 in scope of the judged state), witness strace — of a SEPARATE untrapped run, because a trapped write reaches strace twice (once refused, once re-issued) and the comparison is positional. So the two accounts are of two executions of the same operation, not of one: this is `oracle_verified_across_runs`, and `oracle_verified` stays false. What it rests on is the reproducibility the exploration already requires, which `preflight --twice` measures
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 185 world(s)
+l1          no marker configured
+case        /localrun/wk/syscalls/fontforge/cases/000001.json
+replay      sideeye replay /localrun/wk/syscalls/fontforge/cases/000001.json --shim /se/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/syscalls/fontforge SIDEEYE_TRACE_PATH=/localrun/wk/syscalls/fontforge/trace-repro.bin LD_PRELOAD=/se/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

@@ -1,0 +1,4 @@
+# engine identity of the PRE-CHANGE build (4083db2), recorded inside the box
+sideeye 1.2.0 (trace contract v13)
+99ed641c802e31120cbdb448ad57db1f920f61ec9a959ba12cba15560c3e9ce2  /se/bin/sideeye
+1181212ec02a8946fa776ef16cd24fdd5a1ef57cdeb8580c3c466f697222ecf7  /se/lib/libsideeye_shim.so
