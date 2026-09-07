@@ -33,10 +33,17 @@ labeled follow-up in the `spike/followup-144/` shape.
   **This reading is retired as of 2026-09-07, and the sentence above is left
   standing because it is what was declared.** The engine stopped refusing this
   spelling: the refusal was it counting a shell's PATH lookup as several image
-  changes, and the reader no longer does that (ADR 0018's amendment). So a
-  re-run reaches a verdict on both spellings, and a control that does not refuse
-  now means the engine changed rather than that the apparatus differs — the
-  opposite reading to the one declared. `run.sh`'s control pin is retired with
+  changes, and the reader no longer does that (ADR 0018's amendment). **Measured
+  the same day, not inferred**: `bgroup.sh hnb` under the engine at `4083db2`
+  answers `UNKNOWN child_process_detected` over 0 crash points, and under the fix
+  **FAIL, 1 violation over 3 crash points** with the oracle agreeing on 3
+  operations — the same verdict and the same count `artifacts/report-argv.json`
+  holds for the argv form. So the two spellings do answer one question, and a
+  control that does not refuse now means the engine changed rather than that the
+  apparatus differs — the opposite reading to the one declared. The re-measurement
+  ran in a **rebuilt** `sideeye-ur-extra` (image id `9fec97c7`, not the sweep's
+  `df66b6e1`), so it is the recipe's apparatus rather than the sweep's artifact,
+  and its transcripts are not committed. `run.sh`'s control pin is retired with
   the same date and keeps the original assertion quoted beside it. What the
   argv side measured is unaffected: its counterexample rests on its own report,
   case and replay, none of which the control was holding up.

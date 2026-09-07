@@ -377,13 +377,22 @@ to be found on `PATH`: the shell then execs once per entry, the shim
 records before each call, and the engine counted the attempts that
 returned ENOENT as further image changes (ADR 0018's amendment carries the
 measurement, and the reader no longer does this). Both `op.sh` files here
-name their program that way. **What caused these two trials to refuse in
-2026-08-16 is not re-measured.** The define the original rule cites as its
-evidence is neither of these two: `defines-b/hnb/NOTES.md` names 2vcard,
-whose define carries only an `op.txt` — the `op.sh` that measurement ran on
-is in no commit — so the rule cannot be re-derived from the corpus at all.
-Both `op.sh` files here are still present and unchanged. This correction is
-therefore about the rule, not about a re-reading of these results.
+name their program that way. **What the same two defines do on today's
+engine was measured on 2026-09-07**, and the two answers differ: hnb reaches
+**FAIL over 3 crash points** — the verdict and the count the argv spelling of
+the same question reached on 2026-08-16 — while lbdb advances one wall further
+out, to `child_touched_state_dir`, its image change followed and another pid
+unlinking a temp file in the judged state. So one of the two was refused by the
+engine and one is refused by the target's process structure, which the sweep's
+single reason could not distinguish. That re-measurement ran under a **rebuilt**
+`sideeye-ur-extra` (image id `9fec97c7`, not the sweep's `df66b6e1`), so it
+speaks for the recipe rather than for the sweep's own apparatus, and the
+transcripts are not committed. **What is still not re-measured is the sweep
+itself**: its figures below are what that engine measured on that image, and
+nothing here re-runs the other five trials. The define the original rule cites
+as its evidence is neither of these two — `defines-b/hnb/NOTES.md` names
+2vcard, whose define carries only an `op.txt`, so the rule cannot be re-derived
+from the corpus at all. Both `op.sh` files here are present and unchanged.
 The figures below stand as measured on that day's engine; the grounds
 recorded in `defines-b/hnb/NOTES.md` and `defines-b/lbdb/NOTES.md` carry
 the superseded rule, and are left untouched because the sweep's audit

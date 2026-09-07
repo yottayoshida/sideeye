@@ -103,8 +103,18 @@ fi
 # asserted the control refuses `child_process_detected`, which was true of every engine
 # up to that date and is false of this one: the refusal was the engine counting a shell's
 # PATH lookup as several image changes, and the reader no longer does that (ADR 0018's
-# amendment). Re-running this script against current main therefore reaches a verdict on
-# BOTH spellings. That does not weaken what this follow-up measured — the argv side's
+# amendment).
+#
+# **Measured, not inferred** (2026-09-07, `bgroup.sh hnb` under both engines, in a REBUILT
+# `sideeye-ur-extra` — image id 9fec97c7, not the sweep's df66b6e1, so the apparatus is
+# the recipe rather than the artifact; hnb 1.9.18 either way). The engine at 4083db2:
+# `UNKNOWN child_process_detected`, 0 crash points. With the fix: **FAIL, 1 violation over
+# 3 crash points**, the oracle agreeing on 3 operations — which is the verdict and the
+# crash-point count `artifacts/report-argv.json` recorded for the argv form on 2026-08-16.
+# The first sentence of this comment was written as a prediction and is now a
+# measurement; the transcripts live outside the repository.
+#
+# That does not weaken what this follow-up measured — the argv side's
 # counterexample stands on its own artifacts — but the control can no longer establish
 # that the apparatus matches the sweep's, because nothing about the engine refuses that
 # shape any more. The retired assertion, verbatim:

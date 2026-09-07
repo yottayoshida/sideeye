@@ -138,6 +138,22 @@ next `shim_ready` carried **exactly the count the chain left off at**. Three rea
 meet this: `spike/unknown-rate/defines-b/hnb` and `.../lbdb` through the uniform protocol's
 `op.sh`, and fontforge through a wrapper written for an argument carrying spaces (#506).
 
+**What the three do on this engine, measured 2026-09-07 rather than forecast.** The wall
+this removes was one wall of several for two of them, and saying which is the point of
+listing them:
+
+| Define | At `4083db2` | With this change |
+|---|---|---|
+| hnb | `child_process_detected`, 0 crash points | **FAIL, 1 violation over 3 crash points**, oracle agreeing on 3 operations — the verdict and the count `spike/followup-95/artifacts/report-argv.json` recorded for the *argv* spelling of the same question on 2026-08-16 |
+| lbdb | `child_process_detected`, 0 crash points | `child_touched_state_dir` — the chain is followed (`the subject's image replaced 1 time(s), chain unbroken`) and then another pid unlinks a temp file in the judged state. The multi-process slice, which this ADR still declines |
+| fontforge | `child_process_detected` on the wrapper | the wrapper refusal is gone; the target's own wall is `oracle_missed_operation`, stdio past ADR 0005's flush boundary, measured 2026-09-06 (`spike/dogfood/2026-09-06-userview-2/`) |
+
+So: one of three reaches a verdict, one advances to the next wall, and one advances to a
+wall of its own that predates this. The hnb and lbdb runs used `bgroup.sh` under both
+engines in a **rebuilt** `sideeye-ur-extra` — image id `9fec97c7`, not the sweep's
+`df66b6e1` — so the apparatus is the recipe rather than the sweep's artifact, and the
+transcripts are not committed.
+
 **Why a second record cannot be a new image.** Its writer has the shim active and answers
 `getpid()` with the subject's pid. Any image that can write a record announces itself
 first: the shim sets `active` immediately before writing `shim_ready`, with no statement

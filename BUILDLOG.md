@@ -157,6 +157,32 @@ self-exec chain cannot reach a verdict without an oracle. Run without one, the r
 define now refuses `boundary_without_oracle` — where the build before this change refused
 `child_process_detected` first and never got to the question.
 
+**The reach claim had no evidence until it was asked for, and one of the three targets
+does not support it.** Everything above measures the engine on a toy I wrote and on a
+wrapper around that toy. The PR went out saying "three real defines meet this shape",
+which is a claim about their spelling — verified by reading their `op.sh` — and not about
+what they now do. Asked for the verification, I had none, and two sentences I had already
+committed said a re-run "reaches a verdict on both spellings" as though it had been run.
+It had not. Built the sweep image from its recipe and ran `bgroup.sh` under both engines:
+
+| Define | 4083db2 | with the fix |
+|---|---|---|
+| hnb | `child_process_detected`, 0 crash points | **FAIL, 1 violation over 3 crash points**, oracle agreeing on 3 operations |
+| lbdb | `child_process_detected`, 0 crash points | `child_touched_state_dir` — chain followed, another pid unlinks a temp file in the judged state |
+| fontforge | wrapper refusal | gone; its own wall is stdio (ADR 0005), measured 2026-09-06 |
+
+hnb's numbers are the ones `followup-95/artifacts/report-argv.json` holds for the **argv**
+spelling of the same question from 2026-08-16 — same verdict, same crash-point count —
+which is the apparatus check the retired pin was replaced by, satisfied by measurement
+rather than by argument. lbdb is the honest half: the wall moved one out, to the
+multi-process slice this ADR declines, and the sweep's single reason for the two
+refusals could not have told them apart. **So one of three, not three of three.**
+
+Two caveats kept in the record rather than in my head: the image is a **rebuild** (id
+`9fec97c7`, not the sweep's `df66b6e1`), so it is the recipe's apparatus and not the
+sweep's artifact; and the transcripts are not committed, which makes `bgroup.sh` itself
+the reproduction.
+
 **What is not touched.** The trace contract stays at v13, so saved cases keep replaying;
 the uninterposed exec family is still an escape with a contract bump attached; and the
 published B-group figures stand as measured on that day's engine, with only the causal
