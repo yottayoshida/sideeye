@@ -25,11 +25,9 @@ Measured on this branch, with the engine's own defines:
 | metaflac 1.5.0 | `UNKNOWN oracle_missed_operation`, 0 crash points | **12 crash points reached**, oracle agreeing on 12 operations |
 | fontforge 20230101 | `UNKNOWN oracle_missed_operation`, 0 crash points | **FAIL, 183 of 185 worlds**, 184 crash points, oracle agreeing on 184 operations over 40187 syscall lines |
 
-**How often either target reaches a verdict is a separate number from whether the boundary is
-crossed, and the second one is worse than a first sample suggested.** **metaflac reaches a verdict in 1 of 8 runs with an oracle attached and 6 of 8 without one** (N=8 each, same box and define). The gap is this mode's two-run configuration: the `unlinked-fd` record that produces the refusal appears **only in the recording run and never in the oracle's run** (0 of 8), and never at all when the operation runs once. Cause unattributed. Narrowed to **an earlier run of the operation under strace**: `preflight --twice` in this mode refuses 1 of 6 with `--oracle` and 0 of 6 without, matching the explore figures, and the record never appears in the strace'd run itself — only in a later one that carries no strace. Why that matters is unmeasured. The refusals are `unresolvable_path` (an operation through a descriptor whose file was unlinked while open) and `kill_did_not_land`, which the default mode also produces on this target (2 of 8 in the one-run arm). So what
-these figures support is that the mode **reaches** operations the default path cannot see —
-12 crash points where there were 0 — not that a target is stable under it. The refusal rate is
-the mode's own cost and it is stated here rather than smoothed.
+Measured with the state directory on a **container-local filesystem**: under `--observe wrappers` both targets refuse `oracle_missed_operation` in **every** run (metaflac 8 of 8, fontforge 4 of 4), and under `--observe syscalls` both reach a verdict in every run — metaflac **PASS over 12 crash points** (8 of 8) and fontforge **FAIL, 183 of 185 worlds over 184 crash points** (4 of 4). Both directions are deterministic.
+
+**The rates this line carried before were an artefact of the box they were measured in.** With the state directory on a macOS bind mount, the same syscalls-mode define returned 5 PASS, 2 `unresolvable_path` and 1 `kill_did_not_land` out of 8 — and the **default mode was affected the same way**, which is what should have given it away. Every one of those refusals disappears on a container-local filesystem. Two attributions were published before this one and both were wrong: first to the target's own non-determinism, then to this mode's two-run oracle arrangement. The cause was the filesystem the state directory lived on, which none of the earlier measurements controlled for.
 
 fontforge's is a real defect in a real tool: `Generate()` rewrites the font in place, so a
 crash inside the write leaves a file its own `Open()` cannot read.
