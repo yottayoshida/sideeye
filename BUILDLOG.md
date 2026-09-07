@@ -2,6 +2,244 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-07 — the gate closed, and the design that replaced it is honest about what it earns
+
+`--observe syscalls` (contract v14, ADR 0052). The write family is counted at the kernel
+boundary by a seccomp filter and a `SIGSYS` handler in the target's own process, so a write
+libc issues from inside itself — an `fwrite` past the buffer, the ordinary way a C program
+writes a file — becomes a countable operation. **metaflac 1.5.0 goes from
+`oracle_missed_operation` at 0 crash points to PASS over 12; fontforge 20230101 goes from
+the same refusal to FAIL, 183 of 185 worlds, 184 crash points**, the oracle agreeing on 184
+operations over 40187 syscall lines. fontforge's is a real defect in a real tool:
+`Generate()` rewrites the font in place, so a crash inside the write leaves a file its own
+`Open()` cannot read.
+
+**The plan's gate closed.** Step 0 said: measure whether strace and the filter can be
+resident in one process, and if not, come back for a decision. They cannot. A trapped write
+is not executed — the handler re-issues it — so strace records each one twice, plus the
+handler's own record writes: four real writes came back as **thirteen** strace lines
+against four, and `oracle.compare` answers `.missed` as soon as the oracle's list is longer,
+which would refuse every oracle-attached run in the mode. The plan's own text had the
+mechanism half wrong on the way in: it said `RET_TRAP` leaves `-ENOSYS` in the return
+register. It leaves the **SIGSYS number**, 31, which is what the measurement actually
+showed.
+
+What replaced it: **the oracle watches an untrapped run and the trace comes from a trapped
+one**, restored to the same initial state in between. Three alternatives were each declined
+against something specific rather than on taste — a handler writing two records doubles
+every crash-point number; an errno-keyed exclusion in the oracle's parser collides with
+cohort 4's `seccomp-enosys.json`, which returns the same errno, and would break the
+himalaya and unison runs that currently agree; `USER_NOTIF` was already declined by review
+on the frozen meaning of `oracle_verified`. And **the replacement does not get to use that
+field either.** Two witnesses of two executions is a weaker claim than two witnesses of
+one, so it is reported as `oracle_verified_across_runs` and `oracle_verified` stays false.
+Surface 2 of the freeze says a machine field changes name before it changes meaning, ADR
+0035 had already decided a weaker claim needs a name, and the shim states the same rule
+from the other side — a discovered strace is named and never attached, because "a second
+witness joining on its own would silently strengthen what a flagless verdict claims". That
+sentence is about this situation from the opposite direction and it was already in the tree.
+
+**Four things went wrong on the way, three of them caught by measurement rather than by
+reading.**
+
+The BPF program's array was **one instruction short**, which put the final ALLOW and the
+final TRAP at the same index; the TRAP was written second, so it won, and the handler's own
+re-issue was trapped as well — recursion with no bottom. Nothing about the code looked
+wrong. The test that found it, on its first run, simulates the program against synthetic
+`seccomp_data` rather than reading its offsets back, which is now the argument in that
+test's own comment.
+
+The first silencing of the stdio flush record went into **`stdioActive()`**, whose comment
+in that draft asserted that `noteStdioClose` "asks this question separately". It does not —
+it asks the same predicate, and so do `fopen` and `freopen` — so the syscalls-mode trace
+came back with four correct writes and **no `.open` and no `.close` at all**. The gate
+belongs on the flush record alone. `stdioHasPending` was deliberately left answering
+truthfully afterwards, because the freopen wrapper uses it to decide whether to perform a
+real `fflush`, and switching that off would change what the target does rather than what the
+shim records.
+
+Then `fclose` recorded the close **before** the flush write it precedes: the wrapper records
+both and calls through, and in this mode the write is not recorded by the wrapper at all —
+it is counted when the flush's `write(2)` traps, inside `callFclose`. The trace came back
+`.close` then `.write`. The fix is what `freopenCommon` two functions down already does for
+the same reason, with the same reason on the field, which is the second time in two days
+that the answer to a new problem was a sentence already written for the old one.
+
+And the aarch64 `ucontext` offset was **derived at 168 and measured at 176**: `struct
+sigcontext` carries a 16-aligned member, so `uc_mcontext` is padded. Both platforms' offsets
+are measured now, with a C program compiled against each platform's own header and run on
+that platform, and the numbers are in the code beside the note that deriving them failed.
+
+**Two of my own measuring instruments broke, both silently, both before the number they
+produced would have been believed.** The first gate script filtered strace by the state
+directory, which matched only the probe's own log writes and dropped every write the target
+made — I was one step from reporting `ENOSYS 0` as "the gate is open". The second wrapped
+the operation in `sh -c`, so `LD_PRELOAD` hit `sh`, `sh` exec'd the target, and **the exec
+defect fixed in this morning's PR** made the handler record nothing. Raw output caught both.
+
+**Two changes from the plan, both recorded because they are changes.** Installation
+availability is asked of the kernel with `SECCOMP_GET_ACTION_AVAIL` in the engine's own
+process, not measured by a probe run of the target under the shim: same question, no spawn,
+and the target's side effects do not land in the state directory before the engine has
+decided it can proceed. And the trap-set completeness check went into
+`spike/check-shim-coverage.py` as a second comparison rather than into a new script —
+that file already holds "for each name the oracle classifies, either the shim covers it or
+this table says why not", and the write class needs exactly that sentence with a different
+predicate. Seen red four ways: a member removed from the trap set, a reason deleted, a
+reason misspelled, and an unreadable input (exit 1, 1, 1, 2 read raw, not through a pipe —
+the first reading of two of them was `tail`'s exit code).
+
+**One reviewer finding was wrong and is worth recording as wrong.** M8 said the 1.5µs
+per-trap figure was measured without the `/proc/self/fd` resolution the real handler needs.
+The probe that produced it resolves the descriptor on every trap with no cache —
+`scjudge.c:94` — so the figure already included it. Re-measured on the right workloads
+anyway, because the other half of the finding was right: contract v8 forbids exempting fd
+0/1/2, so a target that prints progress traps on every line. **1.8µs per trap in scope,
+1.6µs out of scope**, which is +2.1% of a world at 2000 writes and a doubling at 100000.
+
+**Review round 1 found two things that would have shipped broken, and one of them is on
+the platform CI runs.**
+
+The first: the handler read the syscall number from a **register**, `x8` on aarch64 and
+`RAX` on x86_64 — and those two are not the same kind of place. `x8` is an argument
+register the kernel does not write, which is why the platform I could measure worked.
+`RAX` is where the *result* goes, and on x86_64 a syscall that is not executed leaves
+`-ENOSYS` there before the signal frame is built. If that is right, every trapped write on
+x86_64 re-issued whatever `-ENOSYS` decoded to. **I could not measure it**: the only
+x86_64 environment here is an emulated container and it refuses
+`seccomp(SET_MODE_FILTER)` with `EINVAL`, so CI would have been the first x86_64 execution
+of this code. What settles it is that there was never a reason to depend on that register:
+`si_syscall` is the channel seccomp fills for exactly this purpose, its offset measured
+**identical on both platforms** (24, in a 128-byte `siginfo_t`), and on aarch64 it agrees
+with `x8`. The handler had the `siginfo` pointer and was discarding it.
+
+The second: the announcement check sat **above** the three checks that explain an empty
+announcement. From there it intercepted a run whose shim never loaded — a wrong `--shim`, a
+static or setuid target, a mismatched architecture — and told it "the trace was written by a
+shim that did not read the request", which is untrue, and it made `no_shim_marker`
+unreachable in this mode, turning the most ordinary environment failure there is from
+UNKNOWN into a SETUP ERROR. `docs/report-schema.md` documents `no_shim_marker` for exactly
+that input. Moving the block below `saw_shim_ready` fixes all three inputs, and the mutation
+that disables `saw_shim_ready` reproduces the old behaviour exactly (`exit 3 (wanted 2
+no_shim_marker)`), so the ordering is now load-bearing rather than incidental.
+
+Four more from the same round, each with its own measurement:
+
+- **The worlds never checked their own announcement.** The recording's was verified and the
+  worlds' was not — and the worlds are the runs that produce the verdict. A world whose
+  filter did not install counts the write family through the wrappers while
+  `SIDEEYE_KILL_AT` indexes a syscall-granularity sequence, so the kill lands on a
+  different operation. That is a wrong verdict where the recording's version of the same
+  gap is a refusal.
+- **`--twice` measured its two-second floor from the oracle run's start.** The mark sat
+  above the inserted oracle run, so with `--observe syscalls --twice` the floor could be
+  satisfied by the oracle run's duration while the two runs actually compared started
+  milliseconds apart — and the report printed the larger figure. Measured on the slow-first
+  fixture: **3035 ms printed before the fix, 2002 after**, and the wrappers-mode answer for
+  the same fixture is 3025, so the two modes now disagree for a reason and an acceptance
+  leg reads each.
+- **`pwritev2`'s wrapper could double-count.** It was left recording unconditionally
+  because the syscall is not trapped — six arguments, no free register for the marker. What
+  that missed is that **glibc falls back to `pwritev` or `writev` when the kernel does not
+  implement `pwritev2`, and both of those ARE trapped**. Gated like the other four now, and
+  what a `pwritev2` costs in this mode is written down instead: counted once on a kernel
+  that lacks it, counted nowhere on one that has it, where the oracle refuses.
+- **The handler did not preserve the target's `errno`.** `noteFd` reaches `statx` and
+  `readlinkat` through the C library, both of which write it, and the libc wrapper the
+  target called sets it only when the syscall *fails* — so on the ordinary success path a
+  clobbered value simply stayed there.
+
+And one that was **already claimed and not true**: two places said the marker's 2^-64
+residual and the 32-bit-ABI hole were "disclosed in `docs/report-schema.md`", and the page
+said nothing about either. `grep` found no output for `sentinel`, `2^-64`, `sixth argument`
+or `uncounted`. The disclosure is on the page now, with two more residuals the review
+named — a target that manages `SIGSYS` itself, and the handler running on the target's own
+stack. Writing "disclosed in X" is a claim about X, and it went in unchecked.
+
+**The real-target numbers in the first draft of this entry were single runs, and two of
+them did not reproduce.** Re-measured: metaflac reaches PASS over 12 crash points in **3 of
+5** runs and refuses `unresolvable_path` in 2; fontforge reaches its FAIL in **2 of 3**. The
+refusal is an operation through a descriptor whose file had been unlinked — no crash-point
+address, the class `docs/target-classes.md` already records for mutool — so it is a refusal
+and never a wrong verdict. Three measurements bound it without explaining it: `--observe
+syscalls` with **no** oracle, which is one run of the operation instead of two, is 5 of 5;
+the **default** mode is itself non-deterministic on this target (2 of 3, with a
+`kill_did_not_land` for the third), so metaflac was never stable here; and `preflight
+--twice` reports equal state in both modes with stable operation counts (6 and 12), so the
+bytes repeat and it is the operation *path* that varies — which `--twice` compares nothing
+about. **I could not attribute it and the entry does not claim to.** What stays true is the
+narrower statement: the mode reaches verdicts these two targets could not reach at all
+before, and when it does not reach one it refuses.
+
+**Review round 2 found the round-1 fixes carrying three defects of their own, and one of
+them I had introduced myself.**
+
+**The `pwritev2` answer was wrong twice.** Round 1 pointed out that leaving its wrapper
+recording double-counts on a kernel that lacks `pwritev2`, because glibc falls back to
+`pwritev`/`writev` and both of those are trapped. I gated the wrapper — and round 2 found
+that this is worse: on a kernel that *has* `pwritev2`, which is every kernel since 4.6, the
+call then reaches no trapped number and no wrapper, so nobody counts it, the kill lands on
+a different operation, and under `--allow-unverified` that is a **silently wrong verdict in
+the mode that is supposed to see more**. Neither answer is right without knowing which
+kernel this is. What is right was already built for this shape in v12: record
+`.unsupported` and let the engine refuse. A target using `pwritev2` is now refused under
+`--observe syscalls` and judged under the default mode, on either kernel, with no oracle
+required to notice — and `toy_pwritev.c` gained a `TOY_PWRITEV2` mode so the refusal has a
+fixture, because there was none and the guard was therefore unfalsified. Four of the five
+places describing `pwritev2` were still describing the second wrong answer; all five say
+the same thing now.
+
+**My own test had stopped compiling and nothing said so.** Moving the syscall number to
+`siginfo` deleted `Layout.nr`, and the layout test still read it. Measured: `shim/src/syscalls.zig`
+as its own test root returns **1** (`no field named 'nr'`), while `shim/src/common.zig` as
+the root — which is what `zig build test` builds — returns **0 on both Linux
+architectures**. The four tests in that file, including the BPF simulation this entry
+credits with finding a real defect, **were not being collected**. They were once: an
+earlier run of the same command listed them, 14 tests where there are now 10. Relying on
+collection through an import is what made a broken test invisible, so the file is a root of
+its own in `test_sources` now (Linux only — it speaks seccomp), and the four tests are
+measured passing on **both** architectures, the x86_64 pair under emulation. That is also
+the first x86_64 execution of any of this code.
+
+**Two round-1 fixes left false sentences behind them.** Nulling `observeAgain`'s oracle
+argument collapsed two questions into one variable: "did the caller name an oracle?" — which
+the boundary refusal is about, and which now told someone who had passed `--oracle` to pass
+`--oracle` — and "does run B carry it?". They are two names now. And the preflight report
+said "the second run's oracle capture is written but not compared" in a mode where nothing
+writes one; it says what is true there instead.
+
+**And `surface-changes.tsv` gains no row here, deliberately.** The ledger's `commit` column
+holds a sha, and `PRD.md` records that rows land in the follow-up audit commit rather than
+in the change itself — `sc-07` (contract 10→11) and `sc-08` (11→12) are that shape, and
+v12→v13 is missing entirely, so the precedent has a hole rather than a rule. What the row
+should say when the sweep writes it: **surface 2, `report-schema`,
+`oracle_verified_across_runs`, `add`, `-` → `present`, legality `declared-not-a-break`** —
+additive optional field under #320's allowance — and a second row for the contract version,
+**`13` → `14`**. Round 2 found this reason was nowhere in the tree while I had written it in
+the pull request only; putting it in a place a sweep reads is the point.
+
+**The sharpest cost was found by asking a question the plan had not asked.** A seccomp
+filter is inherited across `exec` and cannot be replaced — that fact was already in the
+design, as the reason the sentinel lives in a register rather than at an address. What had
+not been followed through is the other half: `exec` also **resets the SIGSYS disposition**,
+so an image the shim is not loaded into inherits a filter with no handler behind it and
+takes an unhandled `SIGSYS` on its first write. Measured on `toy-static` exec'd from a
+shimmed parent: **exit 0 under `wrappers`, exit 159 under `syscalls`**. No mitigation
+exists — nothing of ours runs in that image to install a handler, and the filter cannot be
+lifted. This is the one limit in this work that changes what the target *does* rather than
+what Sideeye can *see*, which is ADR 0002's vfork lesson exactly, so it went into the
+README's limits list rather than only into the ADR, and acceptance pins both directions
+(0 and 159) so neither the list nor the behaviour can drift alone. What bounds it: a child
+the shim IS loaded into installs its own handler — a `fork` + `exec /bin/sh` define reaches
+the identical `child_touched_state_dir` refusal in both modes — and a child that touches
+the judged state is already refused in both modes whatever it does.
+
+Not in this: raw `openat`, `rename` and `unlink`, so **cargo (#217) is not released**. A
+trap set containing `openat` was measured killing the process — the new image's `ld.so`
+opens libraries before any constructor has installed a handler, and an unhandled `SIGSYS` is
+fatal (exit 159). The morning's read of "one mechanism, two walls" does not hold in this
+shape, and the plan said so before the work started.
+
 ## 2026-09-06 — the review fixes brought their own defects, and one of them was undetectable
 
 `#524` merged, and the reviewer's remaining notes arrived after it. Three findings, all

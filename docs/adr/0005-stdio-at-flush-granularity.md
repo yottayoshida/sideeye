@@ -67,6 +67,17 @@ test loudly instead of the judgement quietly.
 
 ### 3. What is deliberately not modelled (the fail-closed boundary)
 
+**Amended 2026-09-07: this section is now true of the default observation path, not of
+every run.** The decision above stands — `--observe wrappers` is the default and observes
+stdio exactly as this ADR describes — but `--observe syscalls` (ADR 0052, contract v14)
+counts the write family at the kernel boundary instead, which reaches the first three
+shapes listed below: a direct large `fwrite`, the overflow flushes inside
+`fprintf`/`fwrite`, and the exit-time cleanup of streams that were never `fclose`d. Read
+every sentence in this section as describing `wrappers`. The two targets that made the
+cost of this boundary measurable, metaflac and fontforge, reach verdicts under the second
+path (`docs/target-classes.md`), and what *stays* outside both paths is the rest of the
+list — an unrecorded `open`, in particular, since only the write family is trapped.
+
 Writes that bypass the flush path are not recorded: a large `fwrite` that goes direct,
 overflow flushes inside `fprintf`/`fwrite`, `fflush(NULL)` and `fcloseall` (no API
 enumerates open streams), line-buffered flushes, and the exit-time cleanup of streams
