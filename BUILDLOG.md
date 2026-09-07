@@ -2,6 +2,52 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-07 — three attributions for one number, and the third one is the filesystem
+
+`--observe syscalls` shipped with a verdict rate attached to it, and that rate was wrong three
+times in a row. The corrected measurement, taken with the state directory on a
+**container-local filesystem** instead of a macOS bind mount:
+
+| | `--observe wrappers` | `--observe syscalls` |
+|---|---|---|
+| metaflac 1.5.0 | `oracle_missed_operation`, **8 of 8** | **PASS over 12 crash points, 8 of 8** |
+| fontforge 20230101 | `oracle_missed_operation`, **4 of 4** | **FAIL, 183 of 185 worlds, 4 of 4** |
+
+Both directions deterministic. The boundary is crossed and the targets are judged; nothing in
+between.
+
+**What the three attributions were.** The first sample said metaflac PASSes 3 of 5 and blamed
+the target's own non-determinism. Re-measured at N=8 it became 1 of 8, and the blame moved to
+this mode's two-run oracle arrangement — a plausible story with a measurement behind it: the
+refusing record appeared only in the recording run, never in the oracle's, and never when the
+operation ran once. Then the same define measured **8 of 8** with the state directory moved off
+the bind mount, and the story collapsed.
+
+**The tell was there and I read past it.** In the controlled batch the **default mode** was
+affected the same way — `unresolvable_path` 5 of 8 under `--observe wrappers`, which the new
+mode cannot be responsible for. A cause that reaches a code path the change does not touch is
+not the change's cause. Both earlier attributions had that shape available and neither was
+checked against it.
+
+**The mechanism, as far as it was measured.** On the bind mount, `/proc/self/fd/N` for a file
+the engine had restored resolved to a path ending ` (deleted)`, so writes and closes through
+that descriptor recorded as `unlinked-fd`. metaflac itself never unlinks or renames anything
+(measured directly: 4 iterations, three files, zero `unlink`, zero `renameat`, zero
+`(deleted)`), and under `strace` on the engine the refusal stopped reproducing in 6 runs —
+a timing dependency. Nothing here explains the mount's behaviour beyond that, and this entry
+does not guess.
+
+**What it cost.** A whole plan was written and reviewed twice against the wrong motivation
+(`unresolvable_path` firing on a `close` that can never be a crash point). That plan's step 0
+was "measure whether the apparatus creates this shape, and stop if it does" — it fired, which
+is the one thing that went right. The rule it was about is still wrong, and `src/fsusage.zig`
+still exempts `close` where the shim path does not; what is gone is the evidence that anyone is
+hurt by it today.
+
+**The standing lesson is about the box, not the code.** Every dogfood number in this file
+measured on that bind mount is suspect for the same reason. The state directory's filesystem is
+now part of what a measurement has to state.
+
 ## 2026-09-07 — the gate closed, and the design that replaced it is honest about what it earns
 
 `--observe syscalls` (contract v14, ADR 0052). The write family is counted at the kernel
