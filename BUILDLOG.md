@@ -110,6 +110,27 @@ MEASURE table in `max_trace_bytes_total`'s doc and ADR 0033 was produced under v
 says so by date; its `s100` row would read higher today, and the ceiling it sized
 (512 MiB) has the same headroom argument it had.
 
+**Commit 3: the oracle reads a thread of the subject as the subject.** Three things in
+`src/oracle.zig`, one in `src/main.zig`. (1) `Parsed.subject_tids` and `isSubject`: the
+subject's own `clone` lines carrying `CLONE_THREAD` enter the new task's id, from the one
+line when the number is on it and from the `<... clone resumed>` half otherwise, paired
+to its unfinished half by the pid column (`pending_thread_clone`). `is_primary`, the touch
+predicate and the cwd tracker all ask `isSubject` now, so a thread's write is in the class
+list the shim is compared against, its relative path resolves against the process's cwd,
+and it is not a child's touch. A thread a *child* creates is not entered — the caller is
+not a subject id — and stays the child's. (2) The `CLONE_THREAD` boundary is gone; `CLONE_FS`
+without it still refuses (ADR 0006), and with it does not, because a thread's `chdir`
+moves the subject's own cwd and the tracker follows it. (3) `syscallArg` returns the
+argument an unfinished call ran out on, which is the fix for the third wall above. In
+`main.zig`, `childrenMayBeJudged` skips the subject's threads the way it skips the
+subject. Fifteen new tests, one reversed: "a raw clone carrying CLONE_THREAD is a thread,
+not a child" asserted `boundary != null` and asserts the opposite now, with the thread's
+write in `classes` and `children == 0`. **Measured, same container, same toy, the shim's
+`.thread` arm lifted and nothing else: `TOY_THREAD_BUSY` reaches the recording's end
+with `crash_points 5, oracle_verified: true` in both observation modes, three of three
+rounds** — where commit 1's shim alone still refused `oracle_missed_operation`. What
+refuses now is the world loop's own `.thread` arm, which is the slice commit's.
+
 
 ## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run
 

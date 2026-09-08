@@ -183,7 +183,6 @@ fn isTruncated(middle: []const u8) bool {
     return false;
 }
 
-
 /// `[ 22]` — the call failed. Needed for one thing: a failed `F_DUPFD` produced no
 /// descriptor, and the shim's first attempt fails on purpose (it asks for 900 before
 /// settling for 200, measured), so the mapping must wait for the one that succeeded.
@@ -356,9 +355,9 @@ fn openIsWriteCapable(middle: []const u8) bool {
 fn isMetadataCall(call_in: []const u8) bool {
     const call = canonicalCall(call_in);
     const names = [_][]const u8{
-        "chmod",    "fchmod",  "fchmodat", "chown", "fchown", "lchown",
-        "fchownat", "utimes",  "futimes",  "utimensat", "setattrlist",
-        "chflags",  "fchflags",
+        "chmod",    "fchmod", "fchmodat", "chown",     "fchown",      "lchown",
+        "fchownat", "utimes", "futimes",  "utimensat", "setattrlist", "chflags",
+        "fchflags",
     };
     for (names) |n| if (std.mem.eql(u8, call, n)) return true;
     return false;
@@ -375,13 +374,13 @@ fn isMetadataCall(call_in: []const u8) bool {
 fn isReadOnlyCall(call_in: []const u8) bool {
     const call = canonicalCall(call_in);
     const names = [_][]const u8{
-        "stat64",     "stat",       "lstat64",    "lstat",     "fstat64",   "fstat",
-        "fstatat64",  "fstatat",    "getattrlist", "getattrlistat", "fgetattrlist",
-        "listxattr",  "flistxattr", "getxattr",   "fgetxattr", "access",    "faccessat",
-        "readlink",   "readlinkat", "fsgetpath",  "getdirentries64",
-        "getdirentries", "opendir",  "readdir",   "closedir",  "pathconf",  "fpathconf",
-        "statfs64",   "fstatfs64",  "getfsstat64", "read",     "pread",     "readv",
-        "lseek",      "mmap",       "munmap",     "ioctl",     "select",    "exit",
+        "stat64",     "stat",      "lstat64",         "lstat",         "fstat64",      "fstat",
+        "fstatat64",  "fstatat",   "getattrlist",     "getattrlistat", "fgetattrlist", "listxattr",
+        "flistxattr", "getxattr",  "fgetxattr",       "access",        "faccessat",    "readlink",
+        "readlinkat", "fsgetpath", "getdirentries64", "getdirentries", "opendir",      "readdir",
+        "closedir",   "pathconf",  "fpathconf",       "statfs64",      "fstatfs64",    "getfsstat64",
+        "read",       "pread",     "readv",           "lseek",         "mmap",         "munmap",
+        "ioctl",      "select",    "exit",
     };
     for (names) |n| if (std.mem.eql(u8, call, n)) return true;
     return false;
@@ -557,7 +556,7 @@ pub fn read(
     /// placed and refuses if it could have changed state.
     cwd: []const u8,
 ) !Reading {
-    var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty } };
+    var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty } };
     var fds: FdTable = .{};
     var dup_pending: std.ArrayList(FdKey) = .empty;
     // Set once a relevant thread issues `chdir`/`fchdir`. This reader does not follow
@@ -968,7 +967,6 @@ test "both measured truncation shapes are stumps, and a whole path is not" {
     // Neither is a line with no operand at all.
     try testing.expect(!isTruncated("F=3    B=0x5"));
 }
-
 
 test "fd and operand come out of the middle, in both spellings" {
     const ln = parseLine(cap_line).?;
