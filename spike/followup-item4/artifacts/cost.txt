@@ -1,0 +1,3 @@
+no shim      median    85555 us over 200000 iterations = 0.428 us per open+close pair
+v15 shim     median   135154 us over 200000 iterations = 0.676 us per open+close pair
+v16 shim     median   170279 us over 200000 iterations = 0.851 us per open+close pair

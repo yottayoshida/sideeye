@@ -131,6 +131,74 @@ with `crash_points 5, oracle_verified: true` in both observation modes, three of
 rounds** — where commit 1's shim alone still refused `oracle_missed_operation`. What
 refuses now is the world loop's own `.thread` arm, which is the slice commit's.
 
+**A correction to the paragraph above, found by the next commit's compile.** Commit 3
+(`81e84e3`) does not contain the `src/main.zig` half it describes — `childrenMayBeJudged`
+asking `isSubject`, and two `Parsed` literals in its tests naming `subject_tids`. Those
+edits were made and tested (the 714-pass run above had them), and then lost: the
+measurement engine for that paragraph was built by editing the `.thread` arm in
+`main.zig` and **restored with `git checkout -- src/main.zig`**, which restores the whole
+file to HEAD and took the uncommitted edits with it. The first measurement, under commit
+1, had put the temporary edit in and taken it out with the same script, touching only
+the lines it changed; this one reached for the shorter command. `81e84e3` therefore
+builds (`zig build` is green — nothing outside tests names the missing field) and does
+not pass its tests. The three edits are in the slice commit below, and the lesson is
+the one this repository already has for snapshots: restoring from a copy taken before
+the edit discards the edit.
+
+**Commit 4: the slice.** `engine.trace` reads every kill-point record's `tid` and keeps
+the first writing thread of each process; a record from that process under another id
+is `second_writer_thread`, and the three sites that refused `.thread` as a hard boundary
+— the recording, the world loop, preflight's run B — refuse on that instead, each from
+its own trace, naming the process, the thread, the operation and the path
+(`threadDetail`). Nothing is inherited: the record carries the answer. `.thread` leaves
+`hard_boundary` and `process_boundary`; it stays in `boundary`, so the quiescence
+sampling and the world arming, which key on `crossedBoundary`, still see it, while the
+three oracle requirements and the world-only refusal key on the new `needsOracle`, which
+is every boundary class but a lone thread — a thread's writes reach the shim, which
+shares its process, so there is no writer a second witness exists to catch. The account
+gains a clause: how many threads the shim saw created (a floor; a raw clone leaves no
+record) and how many thread ids wrote, appended the way the image-change clause is, so
+a judged threaded run never reads as "single process" alone.
+
+Four toy shapes carry it in `spike/acceptance.sh`: `TOY_THREAD` (a thread that never
+writes) is judged — the leg that asserted `multiple_threads_detected` since v0.1 asserts
+`crash point 5 of 5` now; `TOY_THREAD_WRITES` refuses and the refusal names
+`from-thread.txt` and the thread id; `TOY_THREAD_BUSY` and `TOY_THREAD_ONLY_WORKER` are
+read from their JSON — FAIL with `oracle_verified: true` over 5 crash points — because
+their whole point is the oracle's agreement, and the account of the last one is checked
+for its thread clause. Check 2ae's fixture (`spike/thread-oracle.sh`) carried
+`CLONE_THREAD`; a thread is not a boundary any more, so it carries `CLONE_FS` without
+it, which is the member of the same population that still refuses.
+
+**Two things the first container run of the slice showed, both fixed before the commit.**
+(1) The refusal named the wrong thread. `TOY_THREAD_WRITES` joins its worker inside the
+rotate's setup phase, so the worker's `open(from-thread.txt)` precedes the main thread's
+`open(key.json.tmp)` in the trace, and "a second thread (tid 169)" named the main
+thread's own open — the one operation the operator did not need pointing to. The reader
+keeps the first writer's record beside the second's now, and `threadDetail` names both:
+`two threads of process 169 wrote in the judged directory: tid 170 performed
+open(/tmp/m/state/from-thread.txt) and tid 169 performed open(/tmp/m/state/key.json.tmp)`.
+(2) The account lied twice, exactly as the confirmation review's M6 predicted: with
+`.thread` out of `process_boundary`, a run whose only boundary was a thread fell into the
+"image replacement" arm of both the recording clause and the world clause — the judged
+toy printed `the subject replaced its own image in an explored world` over a rotate that
+execs nothing. `shim_thread_only` and `world_thread_only` give both clauses a third
+shape (`the shim recorded a thread` / `a thread was created in an explored world`), and
+the thread clause after them says what the threads did. `boundary_buf` grew from 1024 to
+1280 bytes for the new clause. Re-measured: all four shapes in both modes, the control
+engine (commit 3) refusing all eight with the v15 sentence, this one judging six and
+refusing two with both threads named; acceptance in the container **304 ok** with the
+one leg still asserting the old sentence, rewritten to the new one.
+
+**The slot's cost, measured before it is claimed.** `spike/followup-item4/bench.c` opens
+and closes `/dev/null` 200,000 times — every call interposed, none in scope, so the trace
+is never written to and what is measured is the guard's cost alone. Medians of seven in
+the acceptance container: **0.428 µs a pair with no shim, 0.676 under the v15 shim,
+0.851 under v16.** The v16 shim adds 0.175 µs a pair, 0.09 µs per interposed call, for
+a `gettid` syscall and a scan of up to sixty-four slots; the v15 shim's own 0.25 µs is
+the resolution and the scope test the two share. An order of magnitude under the 1.6–1.8
+µs a syscall-mode trap costs (#527), and the CHANGELOG entry carries the numbers.
+
 
 ## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run
 

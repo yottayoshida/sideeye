@@ -118,6 +118,16 @@ The oracle has neither problem: `strace -f` prefixes every line with a pid (meas
 `execve`, with the child's pid visible. It sees children whether or not they load the
 shim.
 
+**Amended 2026-09-08 (contract v16, ADR 0055).** The refusal table's row "`thread` in the
+subject — operation order stops being deterministic — the core claim" stands for two
+threads that write the judged directory and is withdrawn for one: a single thread's writes
+are in program order whatever runs beside them, and since v15 a crash point is an address
+in the run. A run whose state-directory writes come from one thread of each process is
+judged; a second writing thread of one process refuses, naming both. What the row's reason
+did not say, and what the wall was actually made of, is in ADR 0055's Context — the
+shim's process-wide guard, the oracle reader's notion of the subject, and a record that
+named its process only.
+
 **Amended 2026-09-08 (contract v15, ADR 0053).** Decisions 1, 2 and 4 all move, and the
 amendment sits here because a reader arriving at any of them needs it:
 

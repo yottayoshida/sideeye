@@ -8,6 +8,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- **A run whose state-directory writes come from one thread of each process is explored
+  and judged, however many threads it created** (contract v16, ADR 0055). Until now any
+  thread refused the run (`multiple_threads_detected`), and the reason the wall gave —
+  no per-thread order for the kill to address — was true of two writing threads and not
+  of one: a single thread's writes are in program order whatever else runs beside them,
+  and since v15 a crash point is an address in the run. What actually stood in the way
+  was three things, none of them that reason. The shim's re-entrancy guard, record
+  buffer and count scan were process-wide globals, safe only because threads were
+  refused — measured with the refusal lifted, a worker opening `/dev/null` in a loop cost
+  the main thread two of its seven records. The oracle's reader told the subject's lines
+  from a child's by pid, and strace prints a thread under its own task id, so a thread's
+  writes went to the touch list and the clone that made it was a boundary. And the
+  record named its process only, so an explored world — which runs with no oracle — had
+  no witness for a thread that wrote. **Each record names its thread now** (the
+  contract moves for that, v15 → v16; crash-point numbering does not carry across
+  versions and a stale shim refuses `contract_version_mismatch`); the shim keeps its
+  per-call state in a slot keyed by `gettid()` — a syscall and a compare-and-swap,
+  async-signal-safe by construction, chosen over `threadlocal` because a shared
+  object's TLS takes the loader lock on a thread's first access and whether that access
+  is inside the `SIGSYS` handler depends on the target; 64 slots, never freed, the 65th
+  thread refuses `thread-slots-exhausted`; **costs 0.09 µs per interposed call** —
+  open+close on `/dev/null` 200,000 times, medians of seven: 0.428 µs a pair with no
+  shim, 0.676 under v15, 0.851 under v16 (`spike/followup-item4/artifacts/cost.txt`),
+  an order of magnitude under the 1.6–1.8 µs a syscall-mode trap costs; and the oracle
+  reads a thread of the subject as the subject. **What refuses** is a second thread of one process writing in the
+  judged directory, and the refusal names both threads' first operations there, because
+  which one the trace saw first is the scheduler's choice. A thread needs no oracle —
+  its writes reach the shim, which shares its process — so the `boundary_without_oracle`
+  requirement no longer keys on it, while the quiescence sampling still does. The
+  `processes` account gains a clause: threads created (a floor — a raw `clone` leaves
+  no record) and thread ids that wrote. **Measured on four toy shapes, both observation
+  modes, against the previous engine as a control** (`spike/acceptance.sh`): a thread
+  that never writes is judged (FAIL over 5 crash points, the planted bug); a second
+  writing thread refuses naming `from-thread.txt` and both thread ids; a worker busy
+  outside the state directory costs no record (`oracle_verified: true`); a run whose
+  one writing thread is not the main thread is judged with the oracle agreeing. The
+  control refused all four with the v15 sentence. Real targets are measured in
+  `spike/followup-item4/` and recorded in `docs/target-classes.md`. Not decided here:
+  two threads that take turns (the thread analogue of ADR 0053's reaped child) — a
+  second stage, if a target asks for it.
+
 - **`--observe syscalls` earns `oracle_verified`, and composes with the multi-process
   slice** (ADR 0054). That mode's oracle used to watch a *separate untrapped run* — a
   trapped write reaches strace twice, once refused and once re-issued, and the completeness

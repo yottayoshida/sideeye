@@ -131,6 +131,28 @@ pub const TraceInfo = struct {
     /// Kept separately from `boundary` because "first boundary" can be a tolerable
     /// fork that arrives before the record that must refuse the run.
     hard_boundary: ?contract.OpClass = null,
+    /// `.thread` records the shim wrote — one per successful `pthread_create` in a
+    /// shimmed process (v16). For the account only: a thread is not a refusal since
+    /// v16, and a raw `clone` leaves no such record, so this is a floor on the number of
+    /// threads and never the number.
+    thread_records: u32 = 0,
+    /// Distinct thread ids that wrote a kill-point record under the subject's pid (v16).
+    /// One is the judged case; the account prints the number either way.
+    subject_writer_tids: u32 = 0,
+    /// The first kill-point record from a SECOND thread of one process (v16): `pid` says
+    /// which process, `tid` which thread, `class` and `path` what it did — the refusal
+    /// names all four, and the thread that wrote first is named beside them. Null while
+    /// every process's state-directory writes came from one thread of it. Asked of every
+    /// process, not only the subject: a child whose two threads write is as unordered as
+    /// a subject whose two do. This is the whole of the thread rule — one writing thread
+    /// per process — and it is answered from the trace alone, so a world and preflight's
+    /// second run decide it for themselves rather than inherit the recording's answer.
+    second_writer_thread: ?Op = null,
+    /// The first kill-point record of the thread that wrote before `second_writer_thread`
+    /// did, in the same process (v16). Set exactly when that is; the refusal names both,
+    /// because which of the two is "the second" is the scheduler's choice on that run and
+    /// the operator's own code has both of them.
+    first_writer_thread: ?Op = null,
     truncated: bool = false,
     /// The subject: whoever wrote the first `shim_ready`. The trace file is created by
     /// the first process to initialise, which is the process the engine launched —
@@ -180,18 +202,15 @@ pub const TraceInfo = struct {
     /// the oracle saw none. A same-pid image change claims no such thing, so a witness
     /// that saw one process agrees with it.
     ///
-    /// **Stated as a negative on purpose, because the positive would be false.** Three of
-    /// the classes it admits imply no second process either: a `.thread` (a thread is not
-    /// a process), the subject's own `setsid` or `setpgid` (`.detached`), and an exec
-    /// record written before the subject is known, which fails the primary test and so is
-    /// not excluded. All three set `hard_boundary`, which the recording clause returns on
-    /// before reaching this field — but the **world** clause does not consult
-    /// `hard_boundary`, so a world that starts a thread renders "a process boundary
-    /// appeared in an explored world" on its way to `multiple_threads_detected`. That
-    /// wording predates this field and is not corrected here: it is a third distinction
-    /// (thread against process, not image change against process), and the refusal names
-    /// the thread. Recorded so the field's invariant is the one the code holds rather
-    /// than the one the account happens to need.
+    /// **Stated as a negative on purpose, because the positive would be false.** Two of
+    /// the classes it admits imply no second process either: the subject's own `setsid`
+    /// or `setpgid` (`.detached`), and an exec record written before the subject is known,
+    /// which fails the primary test and so is not excluded. Both set `hard_boundary`,
+    /// which the recording clause returns on before reaching this field. A `.thread` is
+    /// excluded here since v16: it is not a process, it is judged rather than refused,
+    /// and a run whose only boundary is a thread must read as one process to the account
+    /// and to the oracle requirement — `needsOracle` — while still arming the quiescence
+    /// sampling through `crossedBoundary`, which keeps every boundary class.
     ///
     /// Not derivable from `boundary`, which keeps the FIRST class only: a target that
     /// execs and then forks would report the exec and hide the fork.
@@ -252,6 +271,19 @@ pub const TraceInfo = struct {
     /// when an oracle reports a single process (`process_boundary`'s own doc says which
     /// classes it admits, and why it is stated as a negative).
     pub fn crossedProcessBoundary(self: TraceInfo) bool {
+        return self.process_boundary or self.foreign_pid_seen;
+    }
+
+    /// Did this run cross a boundary an oracle has to account for (v16)? Every class
+    /// `crossedBoundary` counts except a thread on its own: a thread's writes reach the
+    /// shim — it shares the process, the PLT and the trace descriptor — so there is no
+    /// writer the shim could have missed for want of a second witness, which is what the
+    /// oracle requirement exists for (ADR 0002 decision 3). A thread beside a fork, a
+    /// spawn or a foreign record still needs one, for those.
+    pub fn needsOracle(self: TraceInfo) bool {
+        if (self.boundary) |b| {
+            if (b != .thread) return true;
+        }
         return self.process_boundary or self.foreign_pid_seen;
     }
 
@@ -599,6 +631,12 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     var pending_exec = false;
     var pending_base: u32 = 0;
 
+    // The first thread to write a kill-point record in each process (v16). A second
+    // thread of the same process writing is the refusal; the list is what tells a second
+    // thread from the first. Arena-backed like everything else this reader keeps.
+    const WriterTid = struct { pid: u32, tid: u64, op: Op };
+    var writer_tids: std.ArrayList(WriterTid) = .empty;
+
     while (off < bytes.len) {
         const dec = contract.decodeRecord(bytes[off..]) catch {
             info.truncated = true;
@@ -681,17 +719,43 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             info.kill_point_count = @max(info.kill_point_count, op.seq);
             info.kill_records += 1;
             if (op.class.isMutation()) info.mutation_count += 1;
+            // Which thread of which process (v16). The first writer of a process is
+            // remembered; a record from that process under another thread id is the
+            // second writer, and the first such record is what the refusal names.
+            var first: ?WriterTid = null;
+            for (writer_tids.items) |w| {
+                if (w.pid == op.pid) {
+                    first = w;
+                    break;
+                }
+            }
+            if (first) |w| {
+                if (w.tid != op.tid) {
+                    if (info.second_writer_thread == null) {
+                        info.second_writer_thread = op;
+                        info.first_writer_thread = w.op;
+                    }
+                    if (is_primary) info.subject_writer_tids = 2;
+                }
+            } else {
+                try writer_tids.append(arena, .{ .pid = op.pid, .tid = op.tid, .op = op });
+                if (is_primary and info.subject_writer_tids == 0) info.subject_writer_tids = 1;
+            }
         }
         if (op.class.isBoundary()) {
             if (info.boundary == null) info.boundary = op.class;
+            if (op.class == .thread) info.thread_records += 1;
             // Everything except the subject's own image change means a second process
             // exists — a child's exec included, which is a spawn doing what spawns do.
-            if (!(op.class == .exec and is_primary)) info.process_boundary = true;
+            // A thread is not one (v16), and is left out here so a run whose only
+            // boundary is a thread reads as one process to the account and to
+            // `needsOracle`.
+            if (!((op.class == .exec and is_primary) or op.class == .thread)) info.process_boundary = true;
             const hard = switch (op.class) {
                 .detached => true,
-                // A record written before the primary announced itself is attributed
-                // to the primary: refusing is the safe misreading.
-                .thread => is_primary or info.primary_pid == null,
+                // Not hard since v16: a thread is judged by what it wrote, above, and
+                // the record stays for the account's count only.
+                .thread => false,
                 .exec => blk: {
                     // A subject exec opens the continuation window instead of
                     // refusing outright (#123). Before the subject is known, v9's
