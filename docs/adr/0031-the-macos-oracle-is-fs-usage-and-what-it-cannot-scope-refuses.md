@@ -131,7 +131,7 @@ a descriptor never seen opened, a CALL on the state root this version does not m
 each is a hole in the account, and an account with a hole is not agreement. (**Narrowed
 2026-09-08**: a line the grammar cannot read whole — a tail cut short of its duration and
 process is the measured shape, attributable to no thread — whose CALL is one the reader
-knows to read only is skipped rather than counted as a hole, for the reason a parsed
+knows to read only, or a disk-io line (not an operation), is skipped rather than counted as a hole, for the reason a parsed
 read-only line already is: it could not have changed state whoever issued it and
 wherever. Measured on the CI runner, where a daemon's `getattrlist` on a file named in
 combining characters pushed both fields off the line and refused the PASS leg twice in a
@@ -171,8 +171,8 @@ path; the destination's bytes are not verified, and the account says so.
      are not verified. The account says so per run.
   2. **Path depth.** A pathname cut by the display width refuses rather than being
      scoped, and a state root deep enough to be cut is refused before the run. (Narrowed
-     2026-09-08 the same way as §5: a cut line whose CALL this module knows to read only
-     is skipped, as a parsed read-only line already was; a cut line with a mutating CALL
+     2026-09-08 the same way as §5: a cut line whose CALL this module knows to read only,
+     or a disk-io line, is skipped, as a parsed line of the same kind already was; a cut line with a mutating CALL
      still refuses.)
   3. **Containment-group departure.** `oracle.zig` watches `setsid`/`setpgid` because
      it "is the only observer of an unshimmed child detaching"; this capture runs under

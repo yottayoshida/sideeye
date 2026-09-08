@@ -39,7 +39,8 @@ CALL that reads only" where the code says "a CALL in this list", and the list la
 calls the same daemon issues beside `getattrlist` — `getattrlistbulk`, `getdirentriesattr`,
 `searchfs`, the un-suffixed `statfs`/`fstatfs` — so the runner's next line could have
 refused the same way with every document already claiming otherwise. Both corrected: the
-list gains the five, and every sentence says "a CALL the reader knows to read only". Six
+list gains the five, and every sentence says a CALL the reader knows to read only — or, after the
+confirming review, a disk-io line, since the code takes both and five sentences had said only one. Six
 smaller ones, all taken: the skip is wider than "tail-less" (any line the grammar cannot
 read whole — the documents say so now), disk-io lines take the same exit as parsed ones,
 the dup-window comment names what a skipped line does to a pending dup (nothing: it has

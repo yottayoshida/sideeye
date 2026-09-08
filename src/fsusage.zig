@@ -28,9 +28,9 @@
 //! not know, a line the grammar does not match: each of those is a hole in the account,
 //! and an account with a hole must not be reported as agreement. One exception, from
 //! 2026-09-08: a line the grammar cannot read whole — a tail cut short at the display
-//! width is the measured shape — whose CALL is one this module knows to read only is
-//! skipped, for the reason a parsed read-only line is: it could not have changed state
-//! whoever issued it. The grammar itself is
+//! width is the measured shape — whose CALL is one this module knows to read only, or a
+//! disk-io line (not an operation), is skipped, for the reason a parsed line of the same
+//! kind is: it could not have changed state whoever issued it. The grammar itself is
 //! ported from `spike/fsusage/classify.py`, which was written against real captures on
 //! two machines rather than from the man page.
 
@@ -44,8 +44,8 @@ const oracle = @import("oracle.zig");
 pub const Defect = union(enum) {
     /// The grammar did not match a line. Skipped only when the line's CALL — the one
     /// field a cut at the display width cannot reach — is one this module knows to read
-    /// only (2026-09-08); every other unparsed line is an operation this module cannot
-    /// rule out.
+    /// only, or a disk-io line, which is not an operation (2026-09-08); every other
+    /// unparsed line is an operation this module cannot rule out.
     unparsed: []const u8,
     /// A pathname cut by the display cap. The state root's own prefix may be gone, so
     /// the line cannot be scoped either way.
