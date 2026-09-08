@@ -1,0 +1,74 @@
+18    execve("/work/spike/out/toy-fixed", ["/work/spike/out/toy-fixed", "rotate"], 0xfffff9d04bc8 /* 12 vars */) = 0
+18    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8da99000
+18    openat(AT_FDCWD</work>, "/work/zig-out/lib/libsideeye_shim.so", O_RDONLY|O_CLOEXEC) = 3</work/zig-out/lib/libsideeye_shim.so>
+18    read(3</work/zig-out/lib/libsideeye_shim.so>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+18    newfstatat(3</work/zig-out/lib/libsideeye_shim.so>, "", {st_mode=S_IFREG|0755, st_size=4421528, ...}, AT_EMPTY_PATH) = 0
+18    mmap(NULL, 2032320, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8d870000
+18    mmap(0xffff8d870000, 1966784, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0) = 0xffff8d870000
+18    mmap(0xffff8d8c9000, 1409024, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x49000) = 0xffff8d8c9000
+18    mmap(0xffff8da30000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x1a0000) = 0xffff8da30000
+18    mmap(0xffff8da44000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x1a4000) = 0xffff8da44000
+18    mmap(0xffff8da4a000, 25280, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff8da4a000
+18    close(3</work/zig-out/lib/libsideeye_shim.so>) = 0
+18    faccessat(AT_FDCWD</work>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+18    openat(AT_FDCWD</work>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+18    newfstatat(3</etc/ld.so.cache>, "", {st_mode=S_IFREG|0644, st_size=7747, ...}, AT_EMPTY_PATH) = 0
+18    mmap(NULL, 7747, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffff8da97000
+18    close(3</etc/ld.so.cache>)        = 0
+18    openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+18    read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0000y\2\0\0\0\0\0"..., 832) = 832
+18    newfstatat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "", {st_mode=S_IFREG|0755, st_size=1651408, ...}, AT_EMPTY_PATH) = 0
+18    mmap(NULL, 1826912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8d6b1000
+18    mmap(0xffff8d6c0000, 1761376, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffff8d6c0000
+18    mmap(0xffff8d85c000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x18c000) = 0xffff8d85c000
+18    mmap(0xffff8d862000, 49248, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff8d862000
+18    close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+18    openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+18    read(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+18    newfstatat(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "", {st_mode=S_IFREG|0644, st_size=67528, ...}, AT_EMPTY_PATH) = 0
+18    mmap(NULL, 196640, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8d68f000
+18    mmap(0xffff8d690000, 131104, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0) = 0xffff8d690000
+18    mmap(0xffff8d6af000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0xf000) = 0xffff8d6af000
+18    close(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>) = 0
+18    openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+18    read(3</usr/lib/aarch64-linux-gnu/libdl.so.2>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+18    newfstatat(3</usr/lib/aarch64-linux-gnu/libdl.so.2>, "", {st_mode=S_IFREG|0644, st_size=67528, ...}, AT_EMPTY_PATH) = 0
+18    mmap(NULL, 196640, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8d65f000
+18    mmap(0xffff8d660000, 131104, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libdl.so.2>, 0) = 0xffff8d660000
+18    mmap(0xffff8d67f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libdl.so.2>, 0xf000) = 0xffff8d67f000
+18    close(3</usr/lib/aarch64-linux-gnu/libdl.so.2>) = 0
+18    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8da95000
+18    mmap(NULL, 270336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8d61e000
+18    openat(AT_FDCWD</work>, "/tmp/u/t.bin", O_RDWR|O_CREAT|O_APPEND|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC, 0644) = 3</tmp/u/t.bin>
+18    statx(3</tmp/u/t.bin>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=114, ...}) = 0
+18    fcntl(3</tmp/u/t.bin>, F_DUPFD, 900) = 900</tmp/u/t.bin>
+18    fcntl(900</tmp/u/t.bin>, F_SETFD, FD_CLOEXEC) = 0
+18    close(3</tmp/u/t.bin>)            = 0
+18    lseek(900</tmp/u/t.bin>, 0, SEEK_END) = 114
+18    write(900</tmp/u/t.bin>, "\204\3\0\0\0\0\22\0\0\0\f\0\0\0/tmp/u/state\0\0\0\0", 30) = 30
+18    lseek(900</tmp/u/t.bin>, 0, SEEK_END) = 144
+18    pread64(900</tmp/u/t.bin>, "\204\3\0\0\0\0\17\0\0\0\f\0\0\0/tmp/u/state\0\0\0\0\310\0"..., 132, 12) = 132
+18    write(900</tmp/u/t.bin>, "\1\0\1\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 43) = 43
+18    openat(AT_FDCWD</work>, "/tmp/u/state/key.json.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/u/state/key.json.tmp>
+18    statx(3</tmp/u/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+18    readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/u/state/key.json.tmp", 4096) = 25
+18    lseek(900</tmp/u/t.bin>, 0, SEEK_END) = 187
+18    pread64(900</tmp/u/t.bin>, "\1\0\1\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 43, 144) = 43
+18    write(900</tmp/u/t.bin>, "\2\0\2\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 43) = 43
+18    write(3</tmp/u/state/key.json.tmp>, "key=2\n", 6) = 6
+18    statx(3</tmp/u/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=6, ...}) = 0
+18    readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/u/state/key.json.tmp", 4096) = 25
+18    lseek(900</tmp/u/t.bin>, 0, SEEK_END) = 230
+18    pread64(900</tmp/u/t.bin>, "\2\0\2\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 43, 187) = 43
+18    write(900</tmp/u/t.bin>, "\5\0\3\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 43) = 43
+18    fsync(3</tmp/u/state/key.json.tmp>) = 0
+18    statx(3</tmp/u/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=6, ...}) = 0
+18    readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/u/state/key.json.tmp", 4096) = 25
+18    write(900</tmp/u/t.bin>, "d\0\0\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 43) = 43
+18    close(3</tmp/u/state/key.json.tmp>) = 0
+18    lseek(900</tmp/u/t.bin>, 0, SEEK_END) = 316
+18    pread64(900</tmp/u/t.bin>, "\5\0\3\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 86, 230) = 86
+18    write(900</tmp/u/t.bin>, "\3\0\4\0\0\0\22\0\0\0\31\0\0\0/tmp/u/state/key.j"..., 64) = 64
+18    renameat(AT_FDCWD</work>, "/tmp/u/state/key.json.tmp", AT_FDCWD</work>, "/tmp/u/state/key.json") = 0
+18    exit_group(0)                     = ?
+18    +++ exited with 0 +++

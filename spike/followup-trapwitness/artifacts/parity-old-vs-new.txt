@@ -1,0 +1,14 @@
+Same box, same toys, two engines: `old` is 41b9a8b (the oracle watches a separate
+untrapped run), `new` is this change (it watches the judged run). Both under
+`--observe syscalls --oracle /usr/bin/strace`, run one after the other in one container so
+the only difference between the two halves is the binary.
+
+Verdict, crash points, worlds explored and violations are identical. What moves is the
+claim: `oracle_verified` false -> true, and `oracle_verified_across_runs` gone.
+`None` in the new rows means the key is absent from the report, which is what withdrawing
+the field looks like from a consumer's side.
+
+old TOY_STDIO_BIG {'verdict': 'PASS', 'crash_points': 14, 'explored': 15, 'violations': 0, 'oracle_verified': False, 'oracle_verified_across_runs': True}
+old TOY_STDIO_NOCLOSE {'verdict': 'PASS', 'crash_points': 6, 'explored': 7, 'violations': 0, 'oracle_verified': False, 'oracle_verified_across_runs': True}
+new TOY_STDIO_BIG {'verdict': 'PASS', 'crash_points': 14, 'explored': 15, 'violations': 0, 'oracle_verified': True, 'oracle_verified_across_runs': None}
+new TOY_STDIO_NOCLOSE {'verdict': 'PASS', 'crash_points': 6, 'explored': 7, 'violations': 0, 'oracle_verified': True, 'oracle_verified_across_runs': None}
