@@ -2,6 +2,46 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — Two exit-126 children in one macOS CI day, and the code could not say which call
+
+The `macos` job failed twice today on pull requests that changed comments and documents
+(#537 at 12:01, the demo's un-killed baseline world; #545 at 13:00, a `--setup` in the
+descriptor-hygiene step), on the same runner image (`macos-26-arm64` 20260831.0337.3) as
+twelve passes around them. Both children exited 126 — not the toy (`spike/toys/toy.c` exits
+0, 1 or 127) but the value `src/posix.zig` keeps for the fork stub's own failure before
+`exec`: `setpgid(0, 0)`, `dup2(capture, 1)` or `dup2(1, 2)`. Which one, and with what errno,
+the code could not say; the baseline refusal then said "the restored state differs from
+the recorded one", which is not what a 126 from the stub means, while the checker gate
+(`main.zig`, #134) has read the same code as "either the stub or the checker" all along.
+
+**What the evidence allows.** `dup2(2)` on macOS documents `EINTR`; `adoptStdin`'s stdin
+`dup2` has retried it since #263 and the capture `dup2` three lines later did not, so a
+signal landing between the two exits is one candidate. `setpgid(0, 0)` fails only for a
+session leader, which a fresh fork child is not. Nothing reproduces it here: `sideeye demo`
+ten of ten on macOS 15. The rule in `CLAUDE.md` — a test that has flaked twice is fixed
+before anything else merges — is what stopped the v1.3.0 bump (#545) behind this.
+
+**What was done, and what it is.** Every `dup2` before `exec` goes through `dup2Bounded`
+(the nine-attempt `EINTR` bound, the stdin call included — `adoptStdin` reuses it), and a
+failure before `exec` calls `childArrangeFailed`, which writes one line on fd 2 — the
+engine's own stderr at that point, since nothing has been redirected — naming the call and
+the errno, then exits 126. The `--setup` sentence and the baseline arm say what a 126 can
+be. This is a name, not a cure: if the runner's cause is not `EINTR` on the capture `dup2`,
+the next occurrence will say what it is, which the last two could not.
+
+**Seen red.** Three mutations, each killed by the test written for it: the bound 9→8
+("expected 9, found 8"); the note printed without its errno (the note test — a first
+attempt at this mutation removed the parameter and was a compile error, which is not a
+mutation and is recorded as one); `exit126Note` silent for 126 (its test). And two runs on
+the real code path: with the `setpgid` check inverted, every child of `sideeye demo`
+printed `setpgid(0, 0) failed, errno 22` (EINVAL, from the inverted branch's success —
+the line reaches the terminal; the refusal that followed was the compiler's, because the
+compiler is the first child); and a `--setup` script exiting 126 on its own reached
+`SETUP ERROR --setup exited 126; it wrote nothing; 126 is also the code the engine's own
+fork stub uses…`, end to end. The baseline arm is covered by its message test only — a
+world whose baseline exits 126 while the recording did not is not a shape a toy makes on
+purpose.
+
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
 **What is being built.** The last of the four reach items measured on 2026-09-07

@@ -932,12 +932,90 @@ pub fn runChildCaptureMinimalEnv(
 /// and closing it would be the EBADF-at-exec trap this function exists to avoid.
 fn adoptStdin(nfd: c_int) void {
     if (nfd == 0) return;
-    var tries: u32 = 0;
-    while (dup2(nfd, 0) < 0) {
-        tries += 1;
-        if (std.c._errno().* != EINTR or tries >= 9) abort();
-    }
+    if (!dup2Bounded(dup2, nfd, 0)) abort();
     _ = close(nfd);
+}
+
+/// `dup2` under the same nine-attempt `EINTR` bound `adoptStdin` has carried since #263,
+/// for every `dup2` the child issues before `exec`. macOS documents `EINTR` for
+/// `dup2(2)`; the stdin call retried it and the capture call three lines later did not,
+/// so a signal landing between the two was an exit 126 with nothing to say which call.
+/// Any failure that is not `EINTR`, or the tenth `EINTR`, is returned to the caller,
+/// which decides between `abort` (stdin) and 126 (the capture). `dup2_fn` is a
+/// parameter so the bound can be measured without a signal: the test hands in a fake.
+fn dup2Bounded(dup2_fn: anytype, old_fd: c_int, new_fd: c_int) bool {
+    var tries: u32 = 0;
+    while (dup2_fn(old_fd, new_fd) < 0) {
+        tries += 1;
+        if (std.c._errno().* != EINTR or tries >= 9) return false;
+    }
+    return true;
+}
+
+/// Child side, after `fork` and before `exec`: a call the child needs before it can run
+/// has failed. Say which one, and with what errno, on fd 2 — still the engine's own
+/// stderr at this point, because nothing has been redirected yet — and exit 126, the
+/// code this path keeps for "the child could not be arranged". One stack buffer and one
+/// `write`, no allocation, no lock: this runs where `adoptStdin` runs. Written on
+/// 2026-09-08 after the macOS CI job produced two exit-126 children in one day (a
+/// baseline world, then a `--setup`) and the code alone could not say whether it was
+/// `setpgid`, the capture `dup2` or the stderr `dup2`, or with what errno.
+fn childArrangeFailed(what: []const u8) noreturn {
+    var buf: [160]u8 = undefined;
+    const line = fmtChildArrangeNote(&buf, what, std.c._errno().*);
+    _ = write(2, line.ptr, line.len);
+    _exit(126);
+}
+
+fn fmtChildArrangeNote(buf: []u8, what: []const u8, err: c_int) []const u8 {
+    return std.fmt.bufPrint(buf, "sideeye: the child could not be arranged before exec: {s} failed, errno {d}\n", .{ what, err }) catch "sideeye: the child could not be arranged before exec\n";
+}
+
+test "dup2Bounded retries EINTR up to nine times and returns any other failure at once" {
+    const Fake = struct {
+        var calls: u32 = 0;
+        var fail_eintr: u32 = 0; // how many leading calls fail with EINTR
+        var fail_other: bool = false; // the first call fails with a non-EINTR errno
+        fn dup2(_: c_int, _: c_int) c_int {
+            calls += 1;
+            if (fail_other) {
+                std.c._errno().* = ENOENT;
+                return -1;
+            }
+            if (calls <= fail_eintr) {
+                std.c._errno().* = EINTR;
+                return -1;
+            }
+            return 0;
+        }
+    };
+    // Three interruptions, then success: four calls, true.
+    Fake.calls = 0;
+    Fake.fail_eintr = 3;
+    Fake.fail_other = false;
+    try std.testing.expect(dup2Bounded(Fake.dup2, 5, 1));
+    try std.testing.expectEqual(@as(u32, 4), Fake.calls);
+    // An interruption that never stops is bounded: nine calls, false.
+    Fake.calls = 0;
+    Fake.fail_eintr = 1000;
+    try std.testing.expect(!dup2Bounded(Fake.dup2, 5, 1));
+    try std.testing.expectEqual(@as(u32, 9), Fake.calls);
+    // Any other errno is not retried: one call, false.
+    Fake.calls = 0;
+    Fake.fail_eintr = 0;
+    Fake.fail_other = true;
+    try std.testing.expect(!dup2Bounded(Fake.dup2, 5, 1));
+    try std.testing.expectEqual(@as(u32, 1), Fake.calls);
+}
+
+test "the child's arrangement note names the call and the errno, on one line" {
+    var buf: [160]u8 = undefined;
+    const line = fmtChildArrangeNote(&buf, "dup2(capture, 1)", 4);
+    try std.testing.expectEqualStrings("sideeye: the child could not be arranged before exec: dup2(capture, 1) failed, errno 4\n", line);
+    // A buffer too small for the line falls back to a sentence that still ends the line.
+    var tiny: [8]u8 = undefined;
+    const fallback = fmtChildArrangeNote(&tiny, "setpgid(0, 0)", 1);
+    try std.testing.expect(std.mem.endsWith(u8, fallback, "\n"));
 }
 
 /// A child the caller does not wait for: started, left running, stopped later.
@@ -1013,10 +1091,10 @@ pub fn spawnSidecar(
         // holds for the engine's own group kill. It says nothing about one sent from
         // inside, which is what this exit covers. 126 is the code this path already
         // keeps for "the child could not be arranged", distinct from exec's 127.
-        if (setpgid(0, 0) != 0) _exit(126);
+        if (setpgid(0, 0) != 0) childArrangeFailed("setpgid(0, 0)");
         adoptStdin(nfd);
         if (cfd != 1) {
-            if (dup2(cfd, 1) < 0) _exit(126);
+            if (!dup2Bounded(dup2, cfd, 1)) childArrangeFailed("dup2(capture, 1)");
             _ = close(cfd);
         }
         _ = execvp(cargv[0].?, cargv.ptr);
@@ -1294,7 +1372,7 @@ fn runChildImplWithOps(
         // than a discarded result, for the reason `runChildImpl`'s copy of this line
         // carries: the shim's crash-point kill now addresses the caller's whole group,
         // so a target sharing the engine's group could kill the exploration.
-        if (setpgid(0, 0) != 0) _exit(126);
+        if (setpgid(0, 0) != 0) childArrangeFailed("setpgid(0, 0)");
         // stdin first, before any capture: a child that could not be given its stdin
         // must not run at all. The retry bound, the abort, and the fd-0 case are all
         // in `adoptStdin`, shared with the sidecar's fork.
@@ -1307,14 +1385,14 @@ fn runChildImplWithOps(
             // stdout: a world whose evidence went to the wrong stream would read as
             // "marker never appeared".
             if (cfd != 1) {
-                if (dup2(cfd, 1) < 0) _exit(126);
+                if (!dup2Bounded(dup2, cfd, 1)) childArrangeFailed("dup2(capture, 1)");
                 _ = close(cfd);
             }
             if (capture.?.stderr_too) {
                 // Both streams into the capture: a partial capture would leak the
                 // other stream to the inherited fds — the exact failure this variant
                 // exists to prevent. 126 for the same reason as the dup2 above.
-                if (dup2(1, 2) < 0) _exit(126);
+                if (!dup2Bounded(dup2, 1, 2)) childArrangeFailed("dup2(1, 2)");
             }
             if (minimal_env) {
                 // The child (a config's operation, untrusted) must not write to the MCP
