@@ -1,0 +1,13 @@
+UNKNOWN  unresolvable_path
+         an operation was observed whose path could not be determined (unlinked-fd close fd:3, pid 17, last named /localrun/s0/noor-1/mutool/a.pdf), so it cannot be placed among the crash points
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

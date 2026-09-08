@@ -1,0 +1,4 @@
+# mut-m5: 変異を当てた acceptance 全走行のうち、失敗した行の全部と末尾の集計。
+# フィルタしていない——新しい 8 セル以外が落ちていればここに出る。
+     run-B unresolved: wanted rc=2 unresolvable_path in the second observed run, got rc=0: PREFLIGHT  recording accepted — 8 state-changing operation(s) observed  atomicity    1 path(s) judged pre-or-post 
+1 ACCEPTANCE CHECK(S) FAILED

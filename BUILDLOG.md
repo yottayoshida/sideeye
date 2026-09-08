@@ -2,6 +2,94 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — a refusal that was one `close` wide, and the second wall behind it
+
+`mutool clean a.pdf a.pdf` could not be judged. The refusal was `unresolvable_path`, and
+#485's message named the operation: `unlinked-fd close fd:3`. Under `strace -y`, after the
+`unlinkat` that removes the file it still holds open, fd 3 receives fifteen `read`s and one
+`close` and nothing else — and read-only calls are not recorded at all, so **the only
+recordable operation on that descriptor was the close**. Everything else in the run is
+placeable. The engine was throwing away the whole run over the address of an operation it
+had already decided it needs no address for: ADR 0003 §2 excludes `close` from both class
+sequences, and `src/fsusage.zig` — the macOS oracle's reader — has skipped such lines since
+#406, the change that created it. Two readers were disagreeing about a rule both cite.
+
+**The exemption is decided per record, not per run.** The reader used to keep the first
+unplaceable record whatever it was; had the exemption been applied to that, an exempt close
+arriving ahead of an unlinked *write* would have switched the wall off for everything behind
+it — and a target can append to its own trace, so one forged `unlinked-fd close fd:3` would
+do it. The field the refusals read is the first **refusing** record instead, and there is
+deliberately no second field for the other one: the version that had both shipped nothing
+that read it (found in the simplification pass, and its comment had claimed the report's
+forensics named it). The order that produces the hazard is what `TOY_CLOSE_THEN_UNLINKED_WRITE`
+performs — two descriptors on one unlinked file, close the first and write through the
+second. An earlier draft of this entry credited `TOY_CLOSE_SWEEP` with it, which it cannot
+do: it closes descriptors before anything is unlinked, so its closes are placeable or reach
+`trace_closed`, which refuses.
+
+**Two refusal sites did not exist, and this closes `#522`.** `unresolved_op` was read in
+one place: the recording run. The per-world checks re-ask `first_unsupported`,
+`hard_boundary` and the numbering — with a comment saying "a world may take a branch the
+recording run did not" — and did not ask this one; nor did `preflight --twice`'s run B,
+whose own comment says it is the third trace read and has no leg. **A first draft of this
+entry said the gap had been unreachable until the exemption made it reachable. That was
+false, and this file said so three hundred entries up**: `#522` records exactly this hole,
+filed with `#485`, "a refusal during recording and dropped silently in an explored world —
+towards a false PASS". Review caught the contradiction. What the exemption changes is how
+ordinary the hole becomes, not whether it existed. **Measured, not argued**: with the
+exemption applied per run instead of per record, the world toy returns `rc=1` — a verdict
+over a world that wrote bytes nothing can name.
+
+**The mutation matrix, with attribution.** Five mutations, each against the eight new
+acceptance cells — **the counts are over those eight; M2 and M3 also redden three and one
+pre-existing cells, which the transcripts show**: the exemption removed → 6 red (the old
+behaviour); the exemption made unconditional → 5 red, including the world cell reaching a
+verdict; **the rejected shim-side
+design** (give the close an address) → 6 red, and the one that matters is `#405`, which goes
+`rc=0 recording accepted` — `reconcile` reads the close's path as the alibi for the very diff
+`state_changed_unaccounted` exists to raise; **the world check removed → exactly one cell
+red**; **the run-B check removed → exactly one cell red**. The unit-level parse has its own
+three: prefix-matching the kind (`trace-closed-by-target` contains "close"), dropping the
+class gate, and weakening the predicate to `isKillPoint` alone.
+
+**A test caught a design defect in the fix.** `unresolvedDetail`'s third argument is the
+fallback used only when there is no record; the composed sentence is built inside the
+function. So the wordings passed for the world and run-B sites were never printed — all
+three sites reported the recording run's sentence, and "which run was this about" was lost.
+The location is a parameter now, interpolated into the sentence, and a test pins that the
+fallback appears only when there is no record. Found because the cells asserted the wording
+rather than the exit code.
+
+**The plan's own sentence was falsified by the measurement, and is corrected rather than
+quietly re-scoped.** It said "the run is not refused"; the registered check was mutool
+reaching a verdict in at least 14 of 16 runs after the fix. Measured: **before, 16/16
+`unresolvable_path`** (`unlinked-fd close fd:3`) — the arm that also validates the box;
+**after, under the default mode, 0/16 reach a verdict**, all sixteen refusing
+`oracle_missed_operation` at `write(4, …, 563)`. The close wall is gone and a **second wall
+stands behind it** — mutool writes from inside libc, which `--observe wrappers` declines by
+design (ADR 0005) and `--observe syscalls` was built for. **With both of yesterday's and
+today's changes: 16/16 FAIL, two of four explored worlds, earliest crash point 2 of 3, after
+the `unlink` and before the `open`** — a real window in a real tool, identical in every run.
+The claim is now about the refusal *ground*, which is what was measured, and the narrowing
+happened after the measurement rather than before it.
+
+**One more thing review caught, and it was mine going the wrong way.** The first draft of
+the `fsusage.zig` cleanup deleted the `if (cls_opt) |c|` unwrap along with the `c != .close`
+test inside it — so a line `classOf` does not map, which used to fall through, would have
+refused the run. `fcntl`'s non-inert commands are deliberately outside that table, and the
+capture that motivated ADR 0031 contains them. Fail-closed, so no verdict was at risk, but
+an undeclared change to the refusal surface of the only oracle macOS has — under the same
+refusal name this change is about. The unwrap is back and only the test is gone.
+
+**Also corrected: a sentence this repository shipped yesterday.** `docs/target-classes.md`
+and `spike/followup-527/NOTES.md` said the macOS reader exempts close "at lines 837 and 850,
+both guarded by `if (c != .close)`". Those guards are unreachable for `.close` — the
+descriptor bookkeeping `continue`s on a close line before them. The conclusion was right and
+the mechanism was not; a reviewer found it by opening the file. The dead guards are removed,
+and nothing can pin their removal: the branch cannot be entered by a close, so mutating them
+changes no behaviour. The reachability argument is what holds it, and it is written where
+they were.
+
 ## 2026-09-07 — the two changes, measured everywhere they were not measured
 
 Both of today's changes were measured against the targets their own defect refused. #526

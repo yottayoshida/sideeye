@@ -1,0 +1,9 @@
+ok   an unplaceable close alone does not refuse the recording
+ok   the same target reaches a verdict (exit 1), not a class wall
+ok   an exempt close first does not let an unlinked write past, and the write is what is named
+ok   an unplaceable fsync still refuses, and is named
+ok   an unplaceable truncate still refuses, and is named
+ok   an unplaceable write that only a world performs refuses in that world
+ok   an unplaceable write only the second observed run performs refuses there
+ok   #405 still refuses a change nothing accounts for, with the close exempt
+ALL ACCEPTANCE CHECKS PASSED — but 2 check(s) could not run on this host (see NOT MEASURED above)

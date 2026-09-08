@@ -832,12 +832,24 @@ pub fn read(
         if (scope_known) |in| {
             in_scope = in;
         } else if (path_unresolvable) {
+            // The `c != .close` test that used to sit inside this unwrap is gone: a close
+            // line left this loop at the descriptor bookkeeping above, which clears the
+            // descriptor and `continue`s, so the test was unreachable for `.close` while
+            // `docs/target-classes.md` published it as the mechanism of that exemption.
+            //
+            // **The unwrap itself stays**, and a first draft of this change dropped it
+            // together with the test — which was not behaviour-preserving and was caught
+            // in review. A line `classOf` does not map returns null here and must go on
+            // falling through to `continue`: `fcntl`'s non-inert commands are deliberately
+            // outside that table (see the comment above the `fcntl` handling), and
+            // refusing on one would make a single lock call from a thread that once
+            // touched the judged directory refuse the whole run. Nothing pins the removal
+            // of the test — the branch cannot be entered by a close, so mutating it
+            // changes no behaviour — and what holds it is the reachability above.
             if (is_relevant) {
-                if (cls_opt) |c| {
-                    if (c != .close) {
-                        out.defect = .{ .unresolvable_path = raw };
-                        return out;
-                    }
+                if (cls_opt) |_| {
+                    out.defect = .{ .unresolvable_path = raw };
+                    return out;
                 }
             }
             continue;
@@ -846,8 +858,11 @@ pub fn read(
             const known = fds.get(.{ .tid = ln.tid, .fd = f }) orelse {
                 // Only calls that could change state make an unresolved descriptor a
                 // hole; a read on an inherited descriptor is not this module's problem.
-                if (cls_opt) |c| {
-                    if (c != .close and is_relevant) {
+                // Same reachability as above: a close never gets here. The unwrap is kept
+                // for the same reason it is kept there — an unmapped call must fall
+                // through, not refuse.
+                if (cls_opt) |_| {
+                    if (is_relevant) {
                         out.defect = .{ .unresolved_fd = raw };
                         return out;
                     }

@@ -139,3 +139,58 @@ verdict reads".
   drift detector.
 - The completeness comparison loses close-position corroboration. Accepted: it
   contributed no verdict information, and the recording is still pinned.
+
+## Amendment 2026-09-08 — the same sentence settles the refusal path
+
+**§2's decision is unchanged.** It was about the *completeness comparison*: `close` leaves
+it because matching closes across two views needs descriptor provenance neither observer
+keeps. This amendment adds that the sentence §2 rests on — "`close` is neither a kill point
+nor a mutation" — also settles a question §2 did not name: whether a `close` the shim
+could not **place** should refuse the run.
+
+It should not, and the refusal's own words are why. `main.zig` says an unplaceable
+operation "cannot be placed among the crash points" — and a `close` was never going to be
+placed among them. The bytes under `--state` are identical either side of it, so no world
+is lost by having no address for it. Refusing on that ground was refusing for a reason
+that does not hold.
+
+**Measured**: `mutool clean a.pdf a.pdf` opens the input, unlinks it while still open,
+creates the output at the same name, and closes the original descriptor last. Under
+`strace -y`, after the `unlinkat` that descriptor receives fifteen `read`s and one
+`close` — and read-only calls are not recorded at all (§1), so the only recordable
+operation on it is that close. **Sixteen runs of sixteen refused identically** under the
+default observation mode with an oracle (`spike/followup-522/`), and the same refusal
+with the same kind was recorded in four further arrangements before that measurement:
+`--observe syscalls` with an oracle, and `explore` and `preflight` each without one — so it
+is not the oracle's two-run arrangement producing it. **The wall this rule put up was one
+`close` wide.**
+
+**A second wall stands behind it, and this decision does not move it.** With the
+exemption in place the same target refuses `oracle_missed_operation` under the default
+observation mode, sixteen runs of sixteen: mutool writes its output from inside libc, which
+`--observe wrappers` does not see and ADR 0005 declines by design. Under
+`--observe syscalls` both walls are down and the target reaches a verdict — **FAIL, two of
+four explored worlds, earliest crash point 2 of 3, after the `unlink` and before the
+`open`**, identical in all sixteen runs. So an unplaceable close is no longer a *ground*
+for refusal, which is what this amendment claims; whether a given target is judged is a
+question about every other limit as well.
+
+**Scope: the `unlinked-fd` kind only.** `fd-without-path` keeps refusing whatever the
+operation was, because there the path query itself failed and where the descriptor pointed
+is unknown — ADR 0013's "a failed measurement never passes as a clean one". An unlinked
+descriptor reaches *that* kind too when `fdPath` fails, which is why the exemption is keyed
+on the recorded kind rather than on "the descriptor was unlinked".
+
+**The other reader already behaved this way.** `src/fsusage.zig`'s descriptor bookkeeping
+`continue`s on a `.close` line before any unresolvable check runs, so the macOS oracle has
+skipped unplaceable closes since #406, the change that created it. Two readers were disagreeing about a rule both cite;
+the shim path now agrees. (The `if (c != .close)` guards further down that file are
+unreachable for `.close` because of that `continue`, and are removed here rather than left
+looking like the mechanism.)
+
+**Where the exemption stops, and what would reopen it.** The predicate is
+`!isKillPoint() and !isBoundary() and !isMarker()` — not `== .close`. The property belongs
+to the class, and anything that changes state is a kill point by construction (this
+document's own `isMutation` ⊆ `isKillPoint` invariant). If that invariant is ever weakened
+— a state-changing class that is not a kill point — this exemption must be re-read before
+that class ships, because it would be exempted silently.

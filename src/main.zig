@@ -1314,7 +1314,14 @@ fn foreignTouchDetail(arena: std.mem.Allocator, first: ?engine.Op, when: []const
 ///
 /// Sanitised once at the end, through the same choke point the neighbouring renderer
 /// uses, rather than per field.
-fn unresolvedDetail(arena: std.mem.Allocator, first: ?engine.Op, fallback: []const u8) []const u8 {
+/// `where` names the run this record came from — "" for the recording run, " in an
+/// explored world", " in the second observed run". It is interpolated into the composed
+/// sentence rather than passed as the fallback, because the fallback is used ONLY when
+/// there is no record at all: a caller that put its location there would see it dropped
+/// on every run that actually has one, and all three sites would report the recording
+/// run's wording. Measured: the world and run-B legs asked for their own wording and got
+/// the recording run's, which is what caught it.
+fn unresolvedDetail(arena: std.mem.Allocator, first: ?engine.Op, where: []const u8, fallback: []const u8) []const u8 {
     const op = first orelse return fallback;
     const why = if (op.aux.len > 0) op.aux else "reason not recorded";
     const named = if (op.path.len > 0)
@@ -1323,10 +1330,34 @@ fn unresolvedDetail(arena: std.mem.Allocator, first: ?engine.Op, fallback: []con
         "no name recorded for it";
     const composed = std.fmt.allocPrint(
         arena,
-        "an operation was observed whose path could not be determined ({s}, pid {d}, {s}), so it cannot be placed among the crash points",
-        .{ why, op.pid, named },
+        "an operation was observed{s} whose path could not be determined ({s}, pid {d}, {s}), so it cannot be placed among the crash points",
+        .{ where, why, op.pid, named },
     ) catch return fallback;
     return sanitizeForReport(arena, composed) catch fallback;
+}
+
+test "unresolvedDetail puts the run it happened in into the sentence, not into the fallback" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const op: engine.Op = .{ .class = .unresolved, .seq = 0, .pid = 7, .path = "/s/d.txt", .aux = "unlinked-fd write fd:3" };
+
+    // The three sites' wordings, each of which must reach the reader. The fallback is
+    // deliberately something no assertion below accepts: if `where` were ignored and the
+    // fallback used instead, every one of these would carry it.
+    const rec = unresolvedDetail(arena, op, "", "FALLBACK");
+    try std.testing.expect(std.mem.indexOf(u8, rec, "an operation was observed whose path") != null);
+    try std.testing.expect(std.mem.indexOf(u8, rec, "FALLBACK") == null);
+
+    const world = unresolvedDetail(arena, op, " in an explored world", "FALLBACK");
+    try std.testing.expect(std.mem.indexOf(u8, world, "observed in an explored world whose path") != null);
+    try std.testing.expect(std.mem.indexOf(u8, world, "unlinked-fd write fd:3") != null);
+
+    const run_b = unresolvedDetail(arena, op, " in the second observed run", "FALLBACK");
+    try std.testing.expect(std.mem.indexOf(u8, run_b, "observed in the second observed run whose path") != null);
+
+    // With no record there is nothing to compose, and only then is the fallback the answer.
+    try std.testing.expectEqualStrings("FALLBACK", unresolvedDetail(arena, null, " in an explored world", "FALLBACK"));
 }
 
 test "unresolvedDetail names the kind and pid, and only claims a name when there is one (#485)" {
@@ -1336,26 +1367,26 @@ test "unresolvedDetail names the kind and pid, and only claims a name when there
     const fb = "an operation was observed whose path could not be determined";
 
     // No record: the caller's sentence, unchanged.
-    try std.testing.expectEqualStrings(fb, unresolvedDetail(arena, null, fb));
+    try std.testing.expectEqualStrings(fb, unresolvedDetail(arena, null, "", fb));
 
     // With a name.
-    const named = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/doomed.txt", .aux = "unlinked-fd write" }, fb);
+    const named = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/doomed.txt", .aux = "unlinked-fd write" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, named, "unlinked-fd write") != null);
     try std.testing.expect(std.mem.indexOf(u8, named, "pid 9") != null);
     try std.testing.expect(std.mem.indexOf(u8, named, "last named /s/doomed.txt") != null);
 
     // Without one: no filename is invented. This is the path the trace-close marker and
     // link-by-descriptor take, and it had no test until the renderer moved here.
-    const unnamed = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "", .aux = "link-by-descriptor" }, fb);
+    const unnamed = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "", .aux = "link-by-descriptor" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, unnamed, "no name recorded for it") != null);
     try std.testing.expect(std.mem.indexOf(u8, unnamed, "last named") == null);
 
     // A shim that wrote no kind still produces a sentence rather than an empty clause.
-    const nokind = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x", .aux = "" }, fb);
+    const nokind = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x", .aux = "" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, nokind, "reason not recorded") != null);
 
     // Target-influenced bytes are defanged by the same choke point the neighbour uses.
-    const forged = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land", .aux = "unlinked-fd write" }, fb);
+    const forged = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land", .aux = "unlinked-fd write" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, forged, "\nUNKNOWN") == null);
 }
 
@@ -3456,8 +3487,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     if (trace.truncated)
         unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown", .retry_then_report);
 
-    if (trace.unresolved_op != null)
-        unknown(.unresolvable_path, unresolvedDetail(arena, trace.unresolved_op, "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
+    // Keyed on the record that refuses, not on the first unplaceable one: an
+    // `unlinked-fd close` is exempt (ADR 0003 §2 — close is neither a kill point nor a
+    // mutation, so no crash point was going to be computed from it), and it can arrive
+    // ahead of one that is not. The message names the refusing record for the same
+    // reason #485 exists: a refusal that names a different operation than the one it is
+    // about sends the reader looking in the wrong place.
+    if (trace.unresolved_refusing != null)
+        unknown(.unresolvable_path, unresolvedDetail(arena, trace.unresolved_refusing, "", "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
 
     // The shim's own `unsupported` refusal (v12). On Linux this arrives from the
     // oracle instead — same reason, same spelling shape ("renamex_np(RENAME_SWAP)"
@@ -4120,6 +4157,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // target sees), so an unmodellable in-scope operation can first appear here.
         if (wtrace.first_unsupported) |name|
             unknown(.unsupported_syscall_observed, name, .class_wall);
+        // The same sentence, for the same reason, about an operation the shim could not
+        // place. **This closes #522**, which is exactly this gap and was filed before the
+        // `close` exemption existed: an unplaceable operation refused during recording and
+        // was dropped silently in an explored world, towards a false PASS. An earlier
+        // draft of this comment argued the gap had been unreachable until the exemption
+        // made it reachable; that was false, and this repository's own BUILDLOG had said
+        // so since #485 (review caught it). A world takes branches the recording run did
+        // not — the comment above says so — so a world-only unplaceable operation was
+        // always possible. What the exemption changes is how ordinary it becomes: a target
+        // whose recording run holds only exempt records now reaches the worlds, and a
+        // world that performs an unlinked-fd WRITE there wrote bytes this run cannot name.
+        if (wtrace.unresolved_refusing != null)
+            unknown(.unresolvable_path, unresolvedDetail(arena, wtrace.unresolved_refusing, " in an explored world", "an operation was observed in an explored world whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
         if (wtrace.hard_boundary) |hb| switch (hb) {
             .detached => unknown(.child_process_detected, "a process left the containment group in an explored world", .class_wall),
             .thread => unknown(.multiple_threads_detected, "the target created a thread in an explored world", .class_wall),
@@ -4810,6 +4860,19 @@ fn observeAgain(
     // witness. The report's `scope` line says so, and widening it is a separate promise.
     if (trace.crossedBoundary() and oracle_path == null)
         unknown(.boundary_without_oracle, "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
+
+    // The third trace read's share of the same rule. Run A's copy is above (and it is
+    // what a refusing record in the recording run trips), but run B is a second
+    // execution: `--twice` exists because the two can differ, and the difference is
+    // exactly what an unplaceable operation here would be about.
+    //
+    // **Below `boundary_ev.second_run`, not above it.** A first draft sat between the
+    // comment that documents that assignment and the assignment itself, so a run B that
+    // both crossed a boundary and held a refusing record printed an account with no
+    // run-B boundary evidence — the same defect the world loop's own comment records
+    // review catching once. Caught in review again, here.
+    if (trace.unresolved_refusing != null)
+        unknown(.unresolvable_path, unresolvedDetail(arena, trace.unresolved_refusing, " in the second observed run", "an operation was observed in the second observed run whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
 
     var second = snapshotOrRefuse(gpa, state_abs, "could not snapshot the state after the second observed run");
     defer second.deinit();

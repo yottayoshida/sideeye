@@ -119,6 +119,13 @@ that window sits.
 
 ### 5. Everything unresolvable refuses
 
+> **Narrower than this heading says, and it always was (2026-09-08).** This reader's own
+> descriptor bookkeeping `continue`s on a `.close` line before any of the checks below
+> run, so an unplaceable close has never refused here. ADR 0003 §2's amendment of the
+> same date is the decision — a `close` is neither a kill point nor a mutation, so there
+> is no crash point it needed an address for — and the shim path now matches this one
+> rather than the other way round. Everything else in this section stands as written.
+
 A line the grammar does not match, a pathname cut by the display cap, an operation on
 a descriptor never seen opened, a CALL on the state root this version does not model:
 each is a hole in the account, and an account with a hole is not agreement. A state

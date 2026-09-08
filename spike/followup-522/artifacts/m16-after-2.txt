@@ -1,0 +1,14 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 37    write(4</localrun/m16/after-2/mutool/a.pdf>, "%PDF-1.4\n%\302\265\302\266\n\n1 0 obj\n<</Type/"..., 563) = 563; the shim's account ends after 2 operation(s)
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+divergence  write
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

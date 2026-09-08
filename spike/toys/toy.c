@@ -36,6 +36,38 @@
  *                  silently wrong, not a crash. The wrapper is now a recorded boundary
  *                  followed by a guaranteed tail jump, and this toy is what pins that:
  *                  the target has to survive being observed.
+ *   TOY_CLOSE_AFTER_UNLINK  open a file, write it, unlink it while open, and CLOSE the
+ *                  descriptor without writing again. The close is the only operation the
+ *                  shim cannot place, and ADR 0003 §2 excludes close from the crash
+ *                  points — so this is the shape that must reach a verdict rather than
+ *                  refuse. Kept separate from TOY_WRITE_AFTER_UNLINK because there the
+ *                  unlinked WRITE is recorded first and this branch can never be reached
+ *   TOY_CLOSE_THEN_UNLINKED_WRITE  the control for that exemption: an exempt record
+ *                  FIRST and a refusing one after it. Two descriptors on the same file,
+ *                  because a closed descriptor cannot be written — close the first, then
+ *                  write through the second. Must keep refusing, and must name the write
+ *   TOY_FSYNC_AFTER_UNLINK / TOY_TRUNCATE_AFTER_UNLINK  the other two operations that
+ *                  reach the unlinked-descriptor branch. Both are kill points, so both
+ *                  keep refusing: the contrast that makes the close exemption a decision
+ *                  about the class rather than about the branch
+ *   TOY_UNLINKED_WRITE_WORLD  the same unlinked write, but only where SIDEEYE_KILL_AT is
+ *                  set: the recording run holds an exempt close and the explored worlds
+ *                  hold a refusing write. The engine's per-world checks have to raise it,
+ *                  because the recording run's account is clean. Placed before the
+ *                  rotation on purpose — the kill lands BEFORE the k-th operation, so the
+ *                  rotation's own kill points are what let a world reach this branch
+ *   TOY_UNLINKED_WRITE_RUN2  the same again, but only on the SECOND observed run, keyed
+ *                  on a marker whose path comes from TOY_RUN2_MARK. That marker must live
+ *                  OUTSIDE --state: `preflight --twice` compares the state directory, and
+ *                  a marker inside it would split the two runs before run B's trace is
+ *                  read. This is the only material in the suite for the third trace read
+ *   TOY_RAW_UNLINK_LIBC_CLOSE  (Linux) open and unlink a file through raw syscalls the
+ *                  shim cannot see, and close the descriptor through libc. The state
+ *                  changes and no recorded operation names the file, so
+ *                  state_changed_unaccounted must still fire (#405) — it is what breaks
+ *                  if the exemption ever gives that close an address. The file is created
+ *                  by the SETUP, not here: a libc open in this run would name the path
+ *                  and alibi the diff by itself
  *   TOY_READ_FIRST if set, read the current key (a read-only open) before rotating.
  *                  A write-incapable open is not an address (ADR 0003): this toy must
  *                  reach the same crash point count as a plain rotate, and the old
@@ -242,6 +274,7 @@
 #ifdef __linux__
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
+#include <sys/syscall.h>
 #endif
 #ifdef __APPLE__
 #include <sys/event.h>
@@ -669,6 +702,119 @@ static int cmd_rotate(void) {
         if (write(fd, "after\n", 6) != 6) { close(fd); return 1; }
         close(fd);
     }
+
+    /* The same descriptor, closed and not written: the ONE operation ADR 0003 §2 excludes
+     * from both class sequences. Nothing here can be a crash point that the close would
+     * have to be placed among, and the bytes on disk are identical either side of it. */
+    if (getenv("TOY_CLOSE_AFTER_UNLINK")) {
+        char p[512];
+        join_path(p, sizeof p, "doomed-close.txt");
+        int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "before\n", 7) != 7) { close(fd); return 1; }
+        if (unlink(p) != 0) { close(fd); return 1; }
+        close(fd);
+    }
+
+    /* The other two operations that reach the same branch (the branch is keyed on the
+     * descriptor's link count, not on the operation). Both are kill points, so both keep
+     * refusing — which is the contrast that makes the close exemption a class decision
+     * rather than a blanket one. */
+    if (getenv("TOY_FSYNC_AFTER_UNLINK")) {
+        char p[512];
+        join_path(p, sizeof p, "doomed-fsync.txt");
+        int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "before\n", 7) != 7) { close(fd); return 1; }
+        if (unlink(p) != 0) { close(fd); return 1; }
+        if (fsync(fd) != 0) { close(fd); return 1; }
+        close(fd);
+    }
+
+    if (getenv("TOY_TRUNCATE_AFTER_UNLINK")) {
+        char p[512];
+        join_path(p, sizeof p, "doomed-trunc.txt");
+        int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "before\n", 7) != 7) { close(fd); return 1; }
+        if (unlink(p) != 0) { close(fd); return 1; }
+        if (ftruncate(fd, 3) != 0) { close(fd); return 1; }
+        close(fd);
+    }
+
+    /* An exempt record first, a refusing one second. Two descriptors because a closed one
+     * cannot be written — and the order is the point: an exemption applied to the run
+     * rather than to the record would let the write through behind the close. */
+    if (getenv("TOY_CLOSE_THEN_UNLINKED_WRITE")) {
+        char p[512];
+        join_path(p, sizeof p, "doomed-both.txt");
+        int a = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (a < 0) return 1;
+        int b = open(p, O_WRONLY);
+        if (b < 0) { close(a); return 1; }
+        if (write(a, "before\n", 7) != 7) { close(a); close(b); return 1; }
+        if (unlink(p) != 0) { close(a); close(b); return 1; }
+        close(a);
+        if (write(b, "after\n", 6) != 6) { close(b); return 1; }
+        close(b);
+    }
+
+    /* World-only. The recording run's account holds an exempt close; a world that runs
+     * past the unlink writes through the descriptor as well. */
+    if (getenv("TOY_UNLINKED_WRITE_WORLD")) {
+        char p[512];
+        join_path(p, sizeof p, "doomed-world.txt");
+        int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "before\n", 7) != 7) { close(fd); return 1; }
+        if (unlink(p) != 0) { close(fd); return 1; }
+        const char *ka = getenv("SIDEEYE_KILL_AT");
+        if (ka && *ka) {
+            if (write(fd, "world\n", 6) != 6) { close(fd); return 1; }
+        }
+        close(fd);
+    }
+
+    /* Second-observed-run only, for `preflight --twice`'s run B. The marker is outside
+     * --state by construction: its path is given, and the caller puts it somewhere the
+     * comparison does not look. */
+    if (getenv("TOY_UNLINKED_WRITE_RUN2")) {
+        const char *mark = getenv("TOY_RUN2_MARK");
+        if (!mark || !*mark) return 1;
+        int second = (access(mark, F_OK) == 0);
+        if (!second) {
+            int m = open(mark, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (m < 0) return 1;
+            close(m);
+        }
+        char p[512];
+        join_path(p, sizeof p, "doomed-run2.txt");
+        int fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) return 1;
+        if (write(fd, "before\n", 7) != 7) { close(fd); return 1; }
+        if (unlink(p) != 0) { close(fd); return 1; }
+        if (second) {
+            if (write(fd, "run2\n", 5) != 5) { close(fd); return 1; }
+        }
+        close(fd);
+    }
+
+#ifdef __linux__
+    /* #405's control. Raw openat and unlinkat are invisible to an LD_PRELOAD shim, so the
+     * only record this leaves is the libc close of an unlinked descriptor. The state
+     * changed — a file the setup created is gone — and no recorded operation names it, so
+     * `state_changed_unaccounted` must fire. If the close ever carried the path as its
+     * address, `reconcile` would read that as the alibi for this very diff and the
+     * refusal would go silent. */
+    if (getenv("TOY_RAW_UNLINK_LIBC_CLOSE")) {
+        char p[512];
+        join_path(p, sizeof p, "victim.txt");
+        long fd = syscall(SYS_openat, AT_FDCWD, p, O_RDONLY, 0);
+        if (fd < 0) return 1;
+        if (syscall(SYS_unlinkat, AT_FDCWD, p, 0) != 0) { close((int)fd); return 1; }
+        close((int)fd);
+    }
+#endif
 
     /* linkat() with an empty source path: the link names a descriptor, not a file, so
      * there is nothing to resolve and the operation cannot be placed (ADR 0006).

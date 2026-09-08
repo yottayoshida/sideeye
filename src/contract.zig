@@ -315,7 +315,99 @@ pub const unresolved_kind = struct {
     pub fn withOp(buf: []u8, kind: []const u8, op: OpClass, fd: c_int) []const u8 {
         return std.fmt.bufPrint(buf, "{s} {s} fd:{d}", .{ kind, @tagName(op), fd }) catch kind;
     }
+
+    /// The reader for what `withOp` wrote, answering the one question the engine asks of
+    /// an unplaceable record: which operation was it, if this is the kind whose
+    /// descriptor is known to have pointed at a real file in the judged directory?
+    ///
+    /// Returns the class only for `unlinked_fd`. `fd_without_path` is deliberately not
+    /// read: there the path query itself failed, so where the descriptor pointed is
+    /// unknown and a close on it cannot be said to be out of harm's way — ADR 0013's
+    /// "a failed measurement never passes as a clean one", and `README.md`'s promise that
+    /// a host without `statx` keeps refusing. It reaches this record from an unlinked
+    /// descriptor too (`shim/src/common.zig` writes it before the `deleted` branch), which
+    /// is exactly why the caller's question has to be about the recorded kind rather than
+    /// about "an unlinked descriptor".
+    ///
+    /// **Parsed, not prefix-matched.** `trace_closed` is the string
+    /// "trace-closed-by-target", which CONTAINS "close": a `startsWith` or a substring
+    /// test reads it as a close and would exempt a record that names no operation at all.
+    /// So: exactly three space-separated tokens, the first equal to `unlinked_fd`, the
+    /// second a tag name of this enum, the third a well-formed `fd:<int>`. Anything else
+    /// returns null, which the caller treats as "refuses".
+    ///
+    /// `class` is required because `aux` is not one field with one meaning: on a rename or
+    /// a link it carries the operation's second path (`Op.aux`), and a target chooses
+    /// those. Requiring `.unresolved` keeps a path named "unlinked-fd close fd:3" from
+    /// being read as this vocabulary. **The one production caller reads inside the
+    /// `.unresolved` arm of its own switch, so the gate is vacuous there** — it is here
+    /// for the next caller, and the unit test is where it is exercised. Stated rather
+    /// than left to look like a live check (review).
+    pub fn opOfUnlinkedFd(class: OpClass, aux: []const u8) ?OpClass {
+        if (class != .unresolved) return null;
+        var it = std.mem.splitScalar(u8, aux, ' ');
+        const kind = it.next() orelse return null;
+        if (!std.mem.eql(u8, kind, unlinked_fd)) return null;
+        const op = it.next() orelse return null;
+        const fd = it.next() orelse return null;
+        if (it.next() != null) return null;
+        if (!std.mem.startsWith(u8, fd, "fd:")) return null;
+        _ = std.fmt.parseInt(c_int, fd["fd:".len..], 10) catch return null;
+        return std.meta.stringToEnum(OpClass, op);
+    }
 };
+
+test "unplaceableRefuses is exactly `not close` today, and says so out loud" {
+    const t = std.testing;
+    // Every member of the enum, so a new class cannot be added without this failing or
+    // being thought about. The claim in the doc comment is the assertion.
+    inline for (@typeInfo(OpClass).@"enum".fields) |f| {
+        const c: OpClass = @enumFromInt(f.value);
+        try t.expectEqual(c != .close, c.unplaceableRefuses());
+    }
+}
+
+test "opOfUnlinkedFd reads the operation, and every other shape refuses (#485's vocabulary)" {
+    const t = std.testing;
+    const U = unresolved_kind;
+
+    // The positive cases: what the shim actually writes.
+    try t.expectEqual(OpClass.close, U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:3").?);
+    try t.expectEqual(OpClass.write, U.opOfUnlinkedFd(.unresolved, "unlinked-fd write fd:3").?);
+    try t.expectEqual(OpClass.fsync, U.opOfUnlinkedFd(.unresolved, "unlinked-fd fsync fd:9").?);
+    try t.expectEqual(OpClass.truncate, U.opOfUnlinkedFd(.unresolved, "unlinked-fd truncate fd:0").?);
+    // AT_FDCWD reaches withOp's `{d}` like any other value.
+    try t.expectEqual(OpClass.close, U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:-100").?);
+
+    // The negative cases, written before the reader had a caller. Each one is a shape the
+    // shim or an older shim really produces, and each must come back null so the caller
+    // refuses.
+    //
+    // `trace_closed` contains the substring "close" — the whole reason this is a parse.
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, U.trace_closed));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "trace-closed-by-target fd:900"));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, U.unresolvable_path));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "link-by-descriptor fd:-100"));
+    // A v13-or-older shim records no reason at all; `docs/report-schema.md` promises the
+    // engine says so rather than guessing.
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, ""));
+    // The kind without an operation: `withFd`'s spelling, which the unlinked-fd branch no
+    // longer writes but an older shim did.
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd fd:3"));
+    // The other kind that an unlinked descriptor reaches. Refuses by kind, not by class.
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "fd-without-path close fd:3"));
+
+    // Malformed tails and extra tokens.
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:"));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd close 3"));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:3 extra"));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd nosuchop fd:3"));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fdclose fd:3"));
+
+    // The class gate: the same string on a record whose `aux` means a second path.
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.rename, "unlinked-fd close fd:3"));
+    try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.close, "unlinked-fd close fd:3"));
+}
 
 test "unresolved_kind.withFd appends the descriptor, and its buffer fits every member (#485)" {
     const t = std.testing;
@@ -446,6 +538,31 @@ pub const OpClass = enum(u16) {
             .shim_ready, .kill_landed, .unresolved, .unsupported => true,
             else => false,
         };
+    }
+
+    /// Whether an operation of this class, recorded as unplaceable, refuses the run.
+    ///
+    /// The refusal exists because an operation that cannot be placed cannot be given a
+    /// crash point — `main.zig`'s own message says "so it cannot be placed among the
+    /// crash points". `close` is the one class for which that reasoning does not apply:
+    /// ADR 0003 §2 excludes it from both class sequences ("`close` is neither a kill
+    /// point nor a mutation"), so no crash point was ever going to be computed from it,
+    /// and the bytes on disk are the same either side of it. The macOS oracle's reader
+    /// has skipped close lines outright since #406, the change that created that reader
+    /// (`fsusage.zig`, the `.close` arm of
+    /// the descriptor bookkeeping, which `continue`s before the unresolvable checks).
+    ///
+    /// Written as three predicates rather than `!= .close` on purpose. The property is
+    /// the class's, not the name's: anything that changes state is a kill point by
+    /// construction (a mutation is a kill point — the `isMutation` ⊆ `isKillPoint`
+    /// invariant below pins that), so a future state-changing class refuses here without
+    /// anyone remembering to add it. Boundary and marker classes stay refusing because
+    /// nothing measured says they can arrive on this path at all; letting them through
+    /// would be exempting a shape no measurement covers. Today the three together are
+    /// equal to `!= .close` — every other class is a kill point, a boundary or a
+    /// marker — and that equality is asserted in the test below so a drift is loud.
+    pub fn unplaceableRefuses(self: OpClass) bool {
+        return self.isKillPoint() or self.isBoundary() or self.isMarker();
     }
 
     /// Operations that can change what is left on disk.

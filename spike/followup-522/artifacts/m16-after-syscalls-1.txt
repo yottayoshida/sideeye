@@ -1,0 +1,24 @@
+falsify: a.pdf を mutool が読めない（25 bytes）
+a.pdf が無い
+a.pdf を mutool が読めない（0 bytes）
+FAIL  2 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 3
+            after  unlink(/localrun/m16/after-syscalls-1/mutool/a.pdf)
+            before open(/localrun/m16/after-syscalls-1/mutool/a.pdf)
+path        a.pdf
+observed    present before and after the operation, but gone from the crashed state
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (272 syscall lines examined, 66 in scope of the judged state), witness strace — of a SEPARATE untrapped run, because a trapped write reaches strace twice (once refused, once re-issued) and the comparison is positional. So the two accounts are of two executions of the same operation, not of one: this is `oracle_verified_across_runs`, and `oracle_verified` stays false. What it rests on is the reproducibility the exploration already requires, which `preflight --twice` measures
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+l1          no marker configured
+case        /localrun/wk/m16-after-syscalls-1/cases/000001.json
+replay      sideeye replay /localrun/wk/m16-after-syscalls-1/cases/000001.json --shim /se/lib/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/m16/after-syscalls-1/mutool SIDEEYE_TRACE_PATH=/localrun/wk/m16-after-syscalls-1/trace-repro.bin LD_PRELOAD=/se/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

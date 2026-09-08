@@ -1,0 +1,10 @@
+# mut-m2: 変異を当てた acceptance 全走行のうち、失敗した行の全部と末尾の集計。
+# フィルタしていない——新しい 8 セル以外が落ちていればここに出る。
+     #485: expected [unlinked-fd write fd:] and [last named], got: PREFLIGHT  recording accepted — 8 state-changing operation(s) observed
+     close-then-write: wanted rc=2 naming [unlinked-fd write fd:], got rc=0: PREFLIGHT  recording accepted — 9 state-changing operation(s) observed
+     unlinked fsync: wanted rc=2 naming [unlinked-fd fsync fd:], got rc=0: PREFLIGHT  recording accepted — 8 state-changing operation(s) observed
+     unlinked truncate: wanted rc=2 naming [unlinked-fd truncate fd:], got rc=0: PREFLIGHT  recording accepted — 8 state-changing operation(s) observed
+     world unresolved: wanted rc=2 unresolvable_path in an explored world, got rc=1: falsify: doctor says 'healthy' but the key is unloadable doctor says 'healthy' but the key is unloadable FAIL  1 of 9 explored worlds violated an invariant 
+     run-B unresolved: wanted rc=2 unresolvable_path in the second observed run, got rc=0: PREFLIGHT  recording accepted — 8 state-changing operation(s) observed  atomicity    1 path(s) judged pre-or-post 
+     #485: expected [link-by-descriptor fd:] and [no name recorded for it], got: UNKNOWN  state_changed_unaccounted
+8 ACCEPTANCE CHECK(S) FAILED
