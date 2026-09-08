@@ -66,8 +66,10 @@ under no budget, which is the silent hang this change exists to remove.
   There is no exit code the engine can mean something by.
   (**That example moved on 2026-09-04.** #469 applied this decision's own reasoning to
   the capture, so 126 no longer carries "the capture could not be opened" — a refusal
-  reaches the caller as `error.CaptureUnavailable`. What it still carries is a `dup2`
-  that failed in the child, against a checker that exits 126 itself. The decision this
+  reaches the caller as `error.CaptureUnavailable`. What it still carries is `setpgid` or a
+  `dup2` that failed in the child — which, since 2026-09-08, writes a line on the
+  engine's stderr naming the call and the errno before the 126 — against a checker that
+  exits 126 itself. The decision this
   ADR records is unchanged; the sentence illustrating it named a case that has since
   been fixed by applying it.)
 - **A one-time `/dev/null` check at startup, then the child-side open.** A window between

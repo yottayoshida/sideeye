@@ -2,9 +2,126 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — A daemon's file name cut a fs_usage line short, and the reader called it a hole
+
+The third `macos` failure of the day, and the first that was not a 126: the fs_usage
+step's PASS leg refused `oracle_saw_nothing` — "a line of the fs_usage capture did not match
+the grammar" — twice in a row (13:41 and 13:47, the second a re-run), on the branch that
+fixes the 126s (#546) and touches nothing near `src/fsusage.zig`. The line, 173 bytes,
+verbatim from the log: a `getattrlist` with `[  2]` on `…ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81…`,
+a pathname of combining characters, and then nothing — no duration, no `proc.tid`.
+`fs_usage` had cut the line at its display width and the cut took the whole tail.
+
+**What the rule said, and what it meant.** ADR 0031 and the module's own doc: a line the
+grammar does not match is a hole, and an account with a hole is not agreement. Written for
+the subject's lines and for a mutation nobody can be named for. This line is neither — a
+read-only CALL, from a daemon walking its own directory — and the rule refused the run for
+it, on a runner where the daemon writes such names all day, which is why the re-run did not
+help. The narrowing is the one the reader already applies to a parsed line: a read-only
+CALL cannot have changed state whoever issued it, so it is skipped before the truncation
+check (the dyld `stat64` case, 353 in one capture). The left edge of the grammar — the
+timestamp and the CALL — is factored out as `callOf` and asked on its own when the whole
+line does not parse; a tail-less line with a mutating CALL is still a hole.
+
+**Seen red.** The unit test carries the runner's bytes verbatim: the daemon's line leaves
+the account whole, the same line with `write` as its CALL refuses `.unparsed`. With the
+skip removed (`and false`) the test fails on the first assertion; restored, green. The
+real-path measurement is the fs_usage step on the runner itself, which will say whether
+the daemon is still there.
+
+Filed as its own pull request rather than folded into the 126 change: a different
+promise (the reader's account, not the fork stub's exit), its own review.
+
+**What the fresh reader found.** Two things the change itself had left false. The
+`Defect.unparsed` doc in the same file still said "never skipped" — the module doc and
+the ADR were corrected and the type's own comment was not. And the documents said "a
+CALL that reads only" where the code says "a CALL in this list", and the list lacked the
+calls the same daemon issues beside `getattrlist` — `getattrlistbulk`, `getdirentriesattr`,
+`searchfs`, the un-suffixed `statfs`/`fstatfs` — so the runner's next line could have
+refused the same way with every document already claiming otherwise. Both corrected: the
+list gains the five, and every sentence says a CALL the reader knows to read only — or, after the
+confirming review, a disk-io line, since the code takes both and five sentences had said only one. Six
+smaller ones, all taken: the skip is wider than "tail-less" (any line the grammar cannot
+read whole — the documents say so now), disk-io lines take the same exit as parsed ones,
+the dup-window comment names what a skipped line does to a pending dup (nothing: it has
+no thread, and it cannot be the inert `fcntl`), the ADR's Consequences repeated the rule
+un-narrowed, the test's control was not the same bytes, and the list's provenance comment
+claimed a measurement for names added by hand — `mmap` among them, the one member not
+strictly read-only, symmetric with the shim not interposing it. The unit test also
+asserts no mutation was recorded, which it had not.
+
+## 2026-09-08 — Two exit-126 children in one macOS CI day, and the code could not say which call
+
+The `macos` job failed twice today on pull requests that changed comments and documents
+(#537 at 12:01, the demo's un-killed baseline world; #545 at 13:00, a `--setup` in the
+descriptor-hygiene step), on the same runner image (`macos-26-arm64` 20260831.0337.3) as
+twelve passes around them. Both children exited 126 — not the toy (`spike/toys/toy.c` exits
+0, 1 or 127) but the value `src/posix.zig` keeps for the fork stub's own failure before
+`exec`: `setpgid(0, 0)`, `dup2(capture, 1)` or `dup2(1, 2)`. Which one, and with what errno,
+the code could not say; the baseline refusal then said "the restored state differs from
+the recorded one", which is not what a 126 from the stub means, while the checker gate
+(`main.zig`, #134) has read the same code as "either the stub or the checker" all along.
+
+**What the evidence allows.** `dup2(2)` on macOS documents `EINTR`; `adoptStdin`'s stdin
+`dup2` has retried it since #263 and the capture `dup2` three lines later did not, so a
+signal landing between the two exits is one candidate. `setpgid(0, 0)` fails only for a
+session leader, which a fresh fork child is not. Nothing reproduces it here: `sideeye demo`
+ten of ten on macOS 15. The rule in `CLAUDE.md` — a test that has flaked twice is fixed
+before anything else merges — is what stopped the v1.3.0 bump (#545) behind this.
+
+**What was done, and what it is.** Every `dup2` before `exec` goes through `dup2Bounded`
+(the nine-attempt `EINTR` bound, the stdin call included — `adoptStdin` reuses it), and a
+failure before `exec` calls `childArrangeFailed`, which writes one line on fd 2 — the
+engine's own stderr at that point, since nothing has been redirected — naming the call and
+the errno, then exits 126. The `--setup` sentence and the baseline arm say what a 126 can
+be. This is a name, not a cure: if the runner's cause is not `EINTR` on the capture `dup2`,
+the next occurrence will say what it is, which the last two could not.
+
+**Seen red.** Three mutations, each killed by the test written for it: the bound 9→8
+("expected 9, found 8"); the note printed without its errno (the note test — a first
+attempt at this mutation removed the parameter and was a compile error, which is not a
+mutation and is recorded as one); `exit126Note` silent for 126 (its test). And two runs on
+the real code path: with the `setpgid` check inverted, every child of `sideeye demo`
+printed `setpgid(0, 0) failed, errno 22` (EINVAL, from the inverted branch's success —
+the line reaches the terminal; the refusal that followed was the compiler's, because the
+compiler is the first child); and a `--setup` script exiting 126 on its own reached
+`SETUP ERROR --setup exited 126; it wrote nothing; 126 is also the code the engine's own
+fork stub uses…`, end to end. The first draft of this entry said the baseline arm was
+"covered by its message test" — there was no such test; review read the diff and said so.
+
+**What the fresh reader found, and what was done.** One P0 in the same class the change
+had not touched: the recording run's own 126 still answered "declare `--expect-status`",
+and a define that took the advice would read a child that never ran as a successful
+recording and derive crash points from it — the exact shape #469's entry names, closed
+there for the capture open and still open for `setpgid` and the `dup2`s. Fixed with an
+arm of its own, and so was the second observed run's. The MCP path's stderr redirect
+(`minimal_env`) was a `dup2` outside the bounded helper — the first cut's claim "every
+`dup2` before `exec`" was false by one — and the note's own `write` ignored `EINTR`, the
+condition the change was written for; both bounded now. `mcp.zig` read a 126 as the
+capture `dup2` alone; `setpgid` exits the same code. The stdin failure aborted without a
+word; it prints the line first now. The checker gate's sentence names the stderr line.
+Two readers of a 126 are left as they were, recorded rather than folded in: the sudo
+probe ("no cached credentials") and the demo's compiler probe ("no compiler") — neither
+claims a state or a convention, and the stderr line now prints beside each, which is what
+this change's own measurement showed for the compiler.
+
+**The baseline arm has a test now, on the real path.** A toy whose counter lives outside
+the state exits 0 on run 0 and 126 after every later write: the killed worlds die at the
+write, and only the un-killed baseline reaches the status. A macOS CI step runs that and
+the recording-run case, asserts the two new sentences — for the recording run the new
+"`--expect-status` is not the answer" (the old advice cannot be asserted absent, since the
+new sentence names the flag too) and for the baseline the absence of "restored state
+differs" — and was seen red twice before it was trusted — with both
+arms disabled (the recording half fails first, printing the old advice) and with the
+baseline arm alone (its half fails). Locally the step's `rm -rf` was refused by the
+machine's own guard and the step uses `mktemp -d` instead; the guard that stops the next
+measurement is a shape this workspace has met before.
+
 ## 2026-09-08 — v1.3.0: the block read against itself, and six sentences a later entry had already overtaken
 
-Twenty entries, four days and 99 commits since v1.2.0 (31 on the first parent, 34 merges).
+Twenty entries, four days and 99 commits since v1.2.0 when this was read (31 on the first
+parent, 34 merges); twenty-two, five days and 110 (35 and 38) by the time it merged — see the
+addendum.
 Three contract versions in one block — v14 (ADR 0052), v15 (ADR 0053), v16 (ADR 0055) —
 plus the oracle that watches the trapped run (ADR 0054), the `close` exemption (ADR 0003
 amended), the exec-chain fix (ADR 0018 amended), and the dogfood ledger's second and third
@@ -42,6 +159,18 @@ Release notes are written rather than pasted (v1.2.0's precedent), one paragraph
 under the 125,000-character ceiling. Version in three places (`build.zig.zon`,
 `src/main.zig`, the README's tarball line); `check-changelog-block.py` run on the renamed
 block before the commit.
+
+**Addendum, 2026-09-09.** The bump waited a day behind two fixes the same CI day forced —
+#546 (a child the fork stub could not arrange says which call and which errno; six
+sentences that read a 126 corrected) and #547 (a tail-less read-only fs_usage line is not
+a hole) — and both entered `[Unreleased]` after the reading above. Read against the block
+before the heading moved again: neither is overtaken by anything in it and neither overtakes
+anything (the v14 entry's "a trap set containing `openat` was measured killing the process"
+is a different mechanism from the one #546 names; the fs_usage rows in the v16 entry are
+about attribution, not the grammar). Moved into `[1.3.0]`'s `Fixed`, at its head: 12 Added,
+1 Removed, 9 Fixed, 22 entries. The heading's date is the day it merges, not the day it was
+read. Nothing else in the release commit changed.
+
 
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
