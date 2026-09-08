@@ -2,6 +2,85 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — a crash point becomes an address in the run, not in the process
+
+Written as the first half of item 3 lands (contract v15). The half after it — deciding
+which runs may be judged with children in them — is a second commit on the same branch,
+and this entry grows when it does.
+
+**What was wrong.** `seq` was a per-process counter while a crash point has to be a
+globally unique address. ADR 0002's Context measured the collision in 2026-08: a parent and
+a forked child each hold a 1, so `SIDEEYE_KILL_AT=3` names no single operation. That is the
+real reason a child touching the judged directory has been refused since v3 — not
+"single-process only", which is what the comments said — and it is why `pass mv`, whose
+rename and remove run in awaited children, has never had its dangerous operations addressed
+at all.
+
+**Where the count comes from, and the two candidates that lost.** The shim now reads the
+trace back and takes the highest number any process has written, plus one. Passing a base
+down through the environment cannot work: it travels one way, so a parent cannot learn what
+its children consumed, and `system()`/`popen()` spawn and wait from inside libc where no
+wrapper sees either end. A shared mmap'd counter would be O(1) and was rejected for being a
+second source of truth — the trace is written by every process that records anything and is
+created fresh per world, so a number read from it cannot be stale from a previous world,
+which is the property `SIDEEYE_KILL_AT` leaking between worlds (`src/posix.zig`) is the
+cautionary tale for.
+
+**It reads through the write descriptor, not a second open.** The first draft opened the
+trace path again read-only. Review killed it: this open's own comment records that a hard
+link at the trace path stays unrefused, so a second resolution is a second chance to land on
+another inode — and the number that came back would be the crash point's address, making the
+address choosable from outside. `O_WRONLY` became `O_RDWR` instead. Written as a replacement
+rather than an added flag because `O_WRONLY | O_RDWR` is 3, which is not an access mode:
+adding it would have failed the open and reported `no_shim_marker` with nothing saying why.
+The `O_NONBLOCK` reasoning on that line no longer holds either — a readerless FIFO opens
+straight away for read-write — so what refuses a FIFO now is `traceTargetIsOrdinary`, which
+was already the half of #492 covering a FIFO someone is reading. The comment says so rather
+than keeping a reason that stopped being true.
+
+**A torn record at the end is an operation, not an error.** Records are appended with one
+`write(2)` each, so a partial one is being written right now. The scan stops in front of it,
+leaves `count_scanned` where it is, and reads it next time. In a run whose operations do not
+interleave that record can only be this process's own; in one where they do, two processes
+can take the same number — and the engine refuses `sequence_numbering_broken` rather than
+judging a world at an ambiguous address. Bytes that are not a record at all refuse outright
+(`count-read-failed`, a new `unresolved_kind`): numbering past them would mean numbering
+from whatever this process happened to remember, which is another operation's address.
+
+**`kill_landed` counts toward the maximum although it is a marker.** It carries the number
+of the operation the world died in front of, and that operation's own record is never
+written. Leaving it out lets a sibling still running in the microseconds before the group
+kill lands take that same number for a real operation: the world would then hold an
+operation at the address it claims to have died before, with the record count and the
+maximum agreeing, and nothing would notice. Counting it makes the sibling leave a gap
+instead, and a gap is what `sequence_numbering_broken` is for.
+
+**Two things stayed put on purpose.** `shim_ready` still announces the base it was GIVEN
+rather than one read from the trace — that announcement is the evidence #123's chain check
+compares against, and a value read from the trace would agree with the trace by construction
+and check nothing. And the base the exec carries is now refreshed from the trace before it is
+formatted: without that, a subject that awaited a writing child and then replaced its own
+image would announce a number lower than the trace's maximum, and the chain check would
+refuse a chain that in fact held. Review found that one; the plan had the first half and not
+the second.
+
+**The engine's numbering check moved below the child-touch refusal.** Both are refusals, and
+the count is run-wide now, so a run whose operations interleave across processes can trip
+either. "A process other than the subject touched the state directory" is the more useful
+sentence to hand an operator. Still above the oracle comparison, whose precedence
+`spike/acceptance.sh` check 2sp pins — and that leg's comment demands the experiment be
+redone before the ordering is trusted, so it was: the suite ran with this check in its new
+place.
+
+**Measured.** 610 of 612 unit tests pass (2 skipped), up three: an awaited child's operations
+numbered in one run with the child's rename holding crash point 2's address; two processes
+taking one number showing up as three records against a maximum of two; and the shim's own
+read-back against a real file, including the torn tail and the refusing garbage. Both new
+paths were seen red — restoring the `is_primary` filter fails the first two with `expected 3,
+found 2`, and making `refreshCount` answer without reading fails the third with `expected 2,
+found 0`. What is NOT measured yet: any verdict change. This commit is meant to change none,
+and nothing here proves that beyond the suite — CI runs the PR head, not each commit.
+
 ## 2026-09-08 — a refusal that was one `close` wide, and the second wall behind it
 
 `mutool clean a.pdf a.pdf` could not be judged. The refusal was `unresolvable_path`, and

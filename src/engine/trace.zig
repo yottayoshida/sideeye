@@ -197,13 +197,19 @@ pub const TraceInfo = struct {
     /// Not derivable from `boundary`, which keeps the FIRST class only: a target that
     /// execs and then forks would report the exec and hide the fork.
     process_boundary: bool = false,
-    /// How many kill-point records the subject wrote. `kill_point_count` is the
-    /// MAXIMUM seq; if the two disagree the numbering has gaps or duplicates — a
-    /// restarted counter after an unobserved exec is exactly a duplicate — and any
-    /// address computed from the trace may name a different operation than the one
-    /// that ran (#123, R1 C7: prefixHash misses duplicates, logicalAddress takes
-    /// the last match; a verdict over renumbered ops is a verdict about nothing).
-    primary_kill_records: u32 = 0,
+    /// How many kill-point records the RUN holds. `kill_point_count` is the MAXIMUM
+    /// seq; if the two disagree the numbering has gaps or duplicates — a restarted
+    /// counter after an unobserved exec is exactly a duplicate — and any address
+    /// computed from the trace may name a different operation than the one that ran
+    /// (#123, R1 C7: prefixHash misses duplicates, logicalAddress takes the last
+    /// match; a verdict over renumbered ops is a verdict about nothing).
+    ///
+    /// Counted over every process, not only the subject (v15). Through v14 a number was
+    /// a position in the writing process, so counting anyone else's records against the
+    /// subject's maximum compared two different sequences; a number is now a position in
+    /// the run, and the same comparison is what detects two processes taking one number.
+    /// The name said `primary_` while that was true and would lie now.
+    kill_records: u32 = 0,
     /// The trace read broke its cap (#324). Distinct from `truncated`, which is the
     /// writer's side: a record that ends mid-way says the shim stopped writing, while
     /// this says the reader refused to hold what the shim did write. Without the
@@ -252,14 +258,19 @@ pub const TraceInfo = struct {
 
     /// The logical address of crash point k: the operation it happens before, and the
     /// one it happens after. Reported instead of a bare counter so a saved case can be
-    /// recognised as no longer applying when the code changes. Only the subject's
-    /// operations are addresses; a child's seq counts different things.
+    /// recognised as no longer applying when the code changes.
+    ///
+    /// Every process's operations are addresses (v15). The filter that stood here —
+    /// "only the subject's operations are addresses; a child's seq counts different
+    /// things" — was true while a number was a position in the writing process. It is a
+    /// position in the run now, so filtering by pid would leave crash point k with no
+    /// address at all whenever k belongs to an awaited child, which is exactly the case
+    /// this version exists to judge.
     pub fn logicalAddress(self: TraceInfo, k: u32) struct { after: ?Op, before: ?Op } {
         var after: ?Op = null;
         var before: ?Op = null;
         for (self.ops.items) |op| {
             if (!op.class.isKillPoint()) continue;
-            if (self.primary_pid != null and op.pid != self.primary_pid.?) continue;
             if (op.seq == k) before = op;
             if (op.seq == k - 1) after = op;
         }
@@ -658,9 +669,13 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 if (info.first_foreign == null) info.first_foreign = op;
             }
         }
-        if (op.class.isKillPoint() and is_primary) {
+        // Every process's records, not only the subject's (v15). A number is a position
+        // in the run now, so the run is what the count and the maximum are over — and a
+        // mutation performed by an awaited child is a mutation this run made, which is
+        // the question the zero-operations detector asks of `mutation_count`.
+        if (op.class.isKillPoint()) {
             info.kill_point_count = @max(info.kill_point_count, op.seq);
-            info.primary_kill_records += 1;
+            info.kill_records += 1;
             if (op.class.isMutation()) info.mutation_count += 1;
         }
         if (op.class.isBoundary()) {
@@ -857,7 +872,67 @@ test "a subject exec followed by a shim_ready carrying the count is a continuati
     try std.testing.expect(!info.exec_chain_broken);
     try std.testing.expectEqual(@as(u32, 1), info.exec_continuations);
     try std.testing.expectEqual(@as(u32, 3), info.kill_point_count);
-    try std.testing.expectEqual(@as(u32, 3), info.primary_kill_records);
+    try std.testing.expectEqual(@as(u32, 3), info.kill_records);
+    _ = posix.unlink(fz);
+}
+
+test "an awaited child's operations are numbered in the run, and hold crash-point addresses (v15)" {
+    // The shape `pass mv` has: the subject writes, an awaited child writes, the subject
+    // writes again — one sequence across two processes. Through v14 the count and the
+    // addresses were the subject's alone, so the child's operation had neither.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("run-numbering", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 8, .path = "/tmp/s", .aux = "" },
+        .{ .op = .rename, .seq = 2, .pid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" },
+        .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/c", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    // Three records, highest number three: the numbering integrity check the caller runs
+    // is satisfied by a run whose operations came from two processes.
+    try std.testing.expectEqual(@as(u32, 3), info.kill_records);
+    try std.testing.expectEqual(@as(u32, 3), info.kill_point_count);
+    // Two of the three are mutations (the rename and the two writes are all mutations —
+    // so three), which is what the zero-operations detector reads.
+    try std.testing.expectEqual(@as(u32, 3), info.mutation_count);
+    // The child is still reported as a foreign writer: this version does not stop
+    // noticing, it stops refusing on the notice alone.
+    try std.testing.expect(info.foreign_kill_point);
+    try std.testing.expectEqual(@as(u32, 8), info.first_foreign.?.pid);
+
+    // The address of crash point 2 is the CHILD's rename, and crash point 3's "after" is
+    // that same operation. A pid filter here reports both as absent.
+    const addr2 = info.logicalAddress(2);
+    try std.testing.expectEqual(contract.OpClass.rename, addr2.before.?.class);
+    try std.testing.expectEqual(@as(u32, 8), addr2.before.?.pid);
+    try std.testing.expectEqualStrings("/tmp/s/a", addr2.after.?.path);
+    const addr3 = info.logicalAddress(3);
+    try std.testing.expectEqual(contract.OpClass.rename, addr3.after.?.class);
+    _ = posix.unlink(fz);
+}
+
+test "two processes taking one number disagree with the record count (v15)" {
+    // The negative control for the test above, and the shape a run whose operations
+    // interleave produces: both processes read the same maximum and both took 2. The
+    // fields the caller refuses on must show it — three records, highest number two.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("run-numbering-dup", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 8, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 9, .path = "/tmp/s/c", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 3), info.kill_records);
+    try std.testing.expectEqual(@as(u32, 2), info.kill_point_count);
+    try std.testing.expect(info.kill_records != info.kill_point_count);
     _ = posix.unlink(fz);
 }
 
@@ -880,7 +955,7 @@ test "a subject exec whose shim_ready restarts at zero is a broken chain, and th
     try std.testing.expect(info.exec_chain_broken);
     try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
     // records = 3, max = 2: the duplicate seq 1 collapses under @max.
-    try std.testing.expectEqual(@as(u32, 3), info.primary_kill_records);
+    try std.testing.expectEqual(@as(u32, 3), info.kill_records);
     try std.testing.expectEqual(@as(u32, 2), info.kill_point_count);
     _ = posix.unlink(fz);
 }
@@ -1027,7 +1102,7 @@ test "failed exec attempts before the one that lands are not image changes" {
     // The sibling test at the top of this family asserts the same pair for the shape
     // where numbering DID break, which is what makes this one worth stating.
     try std.testing.expectEqual(@as(u32, 2), info.kill_point_count);
-    try std.testing.expectEqual(@as(u32, 2), info.primary_kill_records);
+    try std.testing.expectEqual(@as(u32, 2), info.kill_records);
     _ = posix.unlink(fz);
 }
 

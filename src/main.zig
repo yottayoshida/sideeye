@@ -3523,12 +3523,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else => {},
     };
 
-    // Numbering integrity (#123): records vs highest number. A gap or a duplicate —
-    // a restarted counter after an unobserved exec is a duplicate — means any
-    // crash-point address may name a different operation than the one that ran.
-    if (trace.primary_kill_records != trace.kill_point_count)
-        unknown(.sequence_numbering_broken, "the subject's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted", .class_wall);
-
     // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid count
     // would otherwise read as one process while the crash points span more than one
     // image, and every other note in this report says what the judgement covered — this
@@ -3549,6 +3543,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // deliberately.
     if (trace.foreign_kill_point)
         unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the recording run", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation during the recording run"), .unwrap_or_class_wall);
+
+    // Numbering integrity (#123): records vs highest number, over the whole run (v15).
+    // A gap or a duplicate — a restarted counter after an unobserved exec is a
+    // duplicate, and so is two processes taking one number — means any crash-point
+    // address may name a different operation than the one that ran.
+    //
+    // **Below the child-touch refusal, not above it.** The two answered in the other
+    // order until v15, when this count stopped being the subject's own: a run whose
+    // operations interleave across processes can now trip this check as well, and
+    // "a process other than the subject touched the state directory" is the more
+    // useful of the two sentences to hand an operator — it names what to do next.
+    // Still above the oracle comparison, which is what `spike/acceptance.sh` check 2sp
+    // pins the precedence of (and that leg's own comment demands the experiment be
+    // redone before the ordering is trusted: it was, by moving this below the
+    // child-touch site and re-running the suite).
+    if (trace.kill_records != trace.kill_point_count)
+        unknown(.sequence_numbering_broken, "the run's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted", .class_wall);
 
     // A fork/spawn boundary — or any record from another pid — is tolerable only when
     // an oracle can account for what the other processes did. The shim only sees
@@ -4176,8 +4187,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world without an unbroken chain of observation", .class_wall),
             else => {},
         };
-        if (wtrace.primary_kill_records != wtrace.kill_point_count)
-            unknown(.sequence_numbering_broken, "the subject's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
+        // Run-wide since v15, like the recording run's copy. The world-side order needs
+        // no change: the child-touch refusal above already answers first here.
+        if (wtrace.kill_records != wtrace.kill_point_count)
+            unknown(.sequence_numbering_broken, "the run's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
 
         // Landing evidence: the kill must have happened where it was asked for, *to the
         // subject*. seq alone is not enough — a spawned child inherits SIDEEYE_KILL_AT
@@ -7198,7 +7211,11 @@ fn prefixHash(trace: engine.TraceInfo, k: u32, out: *[16]u8) bool {
         var found = false;
         for (trace.ops.items) |op| {
             if (!op.class.isKillPoint()) continue;
-            if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
+            // Every process's operations, for the reason `logicalAddress` carries (v15):
+            // a number is a position in the run, so a prefix that skipped a child's
+            // operations would hash a sequence the run never had — and would find no
+            // record at all for a number a child holds, reporting the case as no longer
+            // applying when nothing had changed.
             if (op.seq != seq) continue;
             for (op.class.name()) |ch| {
                 h ^= ch;
