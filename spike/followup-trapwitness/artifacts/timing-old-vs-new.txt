@@ -1,0 +1,27 @@
+Wall clock of one full `explore` under `--observe syscalls --oracle /usr/bin/strace`,
+TOY_STDIO_BIG on toy-fixed: 14 crash points, 15 worlds. Same container, one warm-up
+discarded, seven timed runs each, engines alternating by block. `old` is 41b9a8b.
+
+  old  40
+  old  43
+  old  42
+  old  42
+  old  45
+  old  44
+  old  44
+  new 44
+  new 42
+  new 44
+  new 43
+  new 43
+  new 45
+  new 44
+
+  old  median 43 ms  (40 42 42 43 44 44 45)
+  new  median 44 ms  (42 43 43 44 44 44 45)
+
+The recording phase runs the operation once instead of twice, and the difference does
+not show here: the removed run is one execution of a toy that costs about a
+millisecond, while both engines explore fifteen worlds. The distributions overlap
+almost entirely. **No speedup is claimed.** A target whose operation is expensive
+would be the place to look for one, and none was timed.

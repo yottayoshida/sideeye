@@ -1,0 +1,19 @@
+UNKNOWN  state_unsnapshotable
+         could not snapshot a crashed state: a file or symlink inside the state tree could not be read
+next        Fix what the detail above names in the environment, then re-run; the define itself is unchanged.
+
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because it runs without an oracle; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+total 12
+drwxrwxrwx 2 root   root    4096 Sep  8 05:19 .
+drwxrwxrwx 4 root   root    4096 Sep  8 05:19 ..
+-rw-r--r-- 1 nobody nogroup    0 Sep  8 05:19 m_inmail
+---------- 1 nobody nogroup    0 Sep  8 05:19 m_inmail.6c3e5d5f2b0e.69
+-rw-r--r-- 1 nobody nogroup  104 Sep  8 05:19 mail.eml

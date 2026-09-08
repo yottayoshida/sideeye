@@ -1,0 +1,76 @@
+12    execve("/work/spike/out/toy-fixed", ["/work/spike/out/toy-fixed", "rotate"], 0xffffd80e6488 /* 13 vars */) = 0
+12    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9e8c3000
+12    openat(AT_FDCWD</work>, "/work/zig-out/lib/libsideeye_shim.so", O_RDONLY|O_CLOEXEC) = 3</work/zig-out/lib/libsideeye_shim.so>
+12    read(3</work/zig-out/lib/libsideeye_shim.so>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+12    newfstatat(3</work/zig-out/lib/libsideeye_shim.so>, "", {st_mode=S_IFREG|0755, st_size=4421528, ...}, AT_EMPTY_PATH) = 0
+12    mmap(NULL, 2032320, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9e69a000
+12    mmap(0xffff9e6a0000, 1966784, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0) = 0xffff9e6a0000
+12    mmap(0xffff9e6f9000, 1409024, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x49000) = 0xffff9e6f9000
+12    mmap(0xffff9e860000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x1a0000) = 0xffff9e860000
+12    mmap(0xffff9e874000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x1a4000) = 0xffff9e874000
+12    mmap(0xffff9e87a000, 25280, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff9e87a000
+12    close(3</work/zig-out/lib/libsideeye_shim.so>) = 0
+12    faccessat(AT_FDCWD</work>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+12    openat(AT_FDCWD</work>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+12    newfstatat(3</etc/ld.so.cache>, "", {st_mode=S_IFREG|0644, st_size=7747, ...}, AT_EMPTY_PATH) = 0
+12    mmap(NULL, 7747, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffff9e8c1000
+12    close(3</etc/ld.so.cache>)        = 0
+12    openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+12    read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0000y\2\0\0\0\0\0"..., 832) = 832
+12    newfstatat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "", {st_mode=S_IFREG|0755, st_size=1651408, ...}, AT_EMPTY_PATH) = 0
+12    mmap(NULL, 1826912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9e4e1000
+12    mmap(0xffff9e4f0000, 1761376, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffff9e4f0000
+12    mmap(0xffff9e68c000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x18c000) = 0xffff9e68c000
+12    mmap(0xffff9e692000, 49248, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff9e692000
+12    close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+12    openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+12    read(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+12    newfstatat(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "", {st_mode=S_IFREG|0644, st_size=67528, ...}, AT_EMPTY_PATH) = 0
+12    mmap(NULL, 196640, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9e4bf000
+12    mmap(0xffff9e4c0000, 131104, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0) = 0xffff9e4c0000
+12    mmap(0xffff9e4df000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0xf000) = 0xffff9e4df000
+12    close(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>) = 0
+12    openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+12    read(3</usr/lib/aarch64-linux-gnu/libdl.so.2>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+12    newfstatat(3</usr/lib/aarch64-linux-gnu/libdl.so.2>, "", {st_mode=S_IFREG|0644, st_size=67528, ...}, AT_EMPTY_PATH) = 0
+12    mmap(NULL, 196640, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9e48f000
+12    mmap(0xffff9e490000, 131104, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libdl.so.2>, 0) = 0xffff9e490000
+12    mmap(0xffff9e4af000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libdl.so.2>, 0xf000) = 0xffff9e4af000
+12    close(3</usr/lib/aarch64-linux-gnu/libdl.so.2>) = 0
+12    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9e8bf000
+12    mmap(NULL, 270336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9e44e000
+12    openat(AT_FDCWD</work>, "/tmp/m/t.bin", O_RDWR|O_CREAT|O_APPEND|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC, 0644) = 3</tmp/m/t.bin>
+12    statx(3</tmp/m/t.bin>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=130, ...}) = 0
+12    fcntl(3</tmp/m/t.bin>, F_DUPFD, 900) = 900</tmp/m/t.bin>
+12    fcntl(900</tmp/m/t.bin>, F_SETFD, FD_CLOEXEC) = 0
+12    close(3</tmp/m/t.bin>)            = 0
+12    lseek(900</tmp/m/t.bin>, 0, SEEK_END) = 130
+12    write(900</tmp/m/t.bin>, "\204\3\0\0\0\0\f\0\0\0\f\0\0\0/tmp/m/state\20\0\0\0ob"..., 46) = 46
+12    lseek(900</tmp/m/t.bin>, 0, SEEK_END) = 176
+12    pread64(900</tmp/m/t.bin>, "\204\3\0\0\0\0\t\0\0\0\f\0\0\0/tmp/m/state\20\0\0\0ob"..., 164, 12) = 164
+12    write(900</tmp/m/t.bin>, "\1\0\1\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 43) = 43
+12    openat(AT_FDCWD</work>, "/tmp/m/state/key.json.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/m/state/key.json.tmp>
+12    write(3</tmp/m/state/key.json.tmp>, "key=2\n", 6) = 3
+12    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff9e5cdc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+12    statx(3</tmp/m/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+12    readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/m/state/key.json.tmp", 4096) = 25
+12    lseek(900</tmp/m/t.bin>, 0, SEEK_END) = 219
+12    pread64(900</tmp/m/t.bin>, "\1\0\1\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 43, 176) = 43
+12    write(900</tmp/m/t.bin>, "\2\0\2\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 43) = 43
+12    write(3</tmp/m/state/key.json.tmp>, "key=2\n", 6) = 6
+12    statx(3</tmp/m/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=6, ...}) = 0
+12    readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/m/state/key.json.tmp", 4096) = 25
+12    lseek(900</tmp/m/t.bin>, 0, SEEK_END) = 262
+12    pread64(900</tmp/m/t.bin>, "\2\0\2\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 43, 219) = 43
+12    write(900</tmp/m/t.bin>, "\5\0\3\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 43) = 43
+12    fsync(3</tmp/m/state/key.json.tmp>) = 0
+12    statx(3</tmp/m/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=6, ...}) = 0
+12    readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/m/state/key.json.tmp", 4096) = 25
+12    write(900</tmp/m/t.bin>, "d\0\0\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 43) = 43
+12    close(3</tmp/m/state/key.json.tmp>) = 0
+12    lseek(900</tmp/m/t.bin>, 0, SEEK_END) = 348
+12    pread64(900</tmp/m/t.bin>, "\5\0\3\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 86, 262) = 86
+12    write(900</tmp/m/t.bin>, "\3\0\4\0\0\0\f\0\0\0\31\0\0\0/tmp/m/state/key.j"..., 64) = 64
+12    renameat(AT_FDCWD</work>, "/tmp/m/state/key.json.tmp", AT_FDCWD</work>, "/tmp/m/state/key.json") = 0
+12    exit_group(0)                     = ?
+12    +++ exited with 0 +++

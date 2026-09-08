@@ -117,10 +117,15 @@ child reached its write before the parent reached its wait.
 
 ### 4. `--observe syscalls` is outside the slice
 
-That mode takes its two witnesses from two runs: the oracle watches an untrapped
-execution and the run whose trace is used is trapped with no oracle attached (ADR 0052).
-Condition 1 has no second witness for the run the trace came from, so a child touching the
-judged directory refuses there, and the message says which mode and why.
+**Withdrawn 2026-09-08 (ADR 0054).** The reason this section gave was true when it was
+written and is no longer: that mode took its two witnesses from two runs — the oracle
+watched an untrapped execution while the run whose trace was used was trapped with no
+oracle attached (ADR 0052) — so condition 1 had no second witness for the run the trace
+came from, and a child touching the judged directory refused there with a message naming
+the mode. The oracle watches the judged run in that mode now, so the condition has its
+witness and `childrenMayBeJudged` no longer takes the mode at all. This decision is left
+standing rather than rewritten, for the reason the ADR convention gives: it records what
+was decided and why.
 
 ### 5. No new `unknown_reason`
 
@@ -182,6 +187,11 @@ and a world that reached its k-th operation through a different sequence refuses
   twice) — or the worlds gaining oracles. Both are their own change; this one records that
   the gap is real and reached, with the run beside it
   (`spike/followup-item3/artifacts/lbdb-transcript.txt` and the two files beside it).
+  **Closed 2026-09-08 by ADR 0054**, which took the first of the two routes named above:
+  the syscalls mode's oracle now watches the run its trace came from. The measured reason
+  ADR 0052 gave still holds — a trapped write does reach strace twice — and what it did not
+  examine is that the refusal prints its own line between them. `lbdb`'s row in
+  `docs/target-classes.md` records what the composition buys on that target.
 - Saved cases from v14 and earlier refuse `contract_version_mismatch`, as at every bump.
   The committed `spike/assisted/*/cases*` are records rather than live artifacts and are
   not re-recorded, which is what v11 through v14 did with them too.

@@ -1,0 +1,158 @@
+124   execve("/work/spike/out/toy-fixed", ["/work/spike/out/toy-fixed", "rotate"], 0xaaaaeaad48c0 /* 16 vars */) = 0
+124   mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff99205000
+124   openat(AT_FDCWD</work>, "/work/zig-out/lib/libsideeye_shim.so", O_RDONLY|O_CLOEXEC) = 3</work/zig-out/lib/libsideeye_shim.so>
+124   read(3</work/zig-out/lib/libsideeye_shim.so>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+124   newfstatat(3</work/zig-out/lib/libsideeye_shim.so>, "", {st_mode=S_IFREG|0755, st_size=4421552, ...}, AT_EMPTY_PATH) = 0
+124   mmap(NULL, 2032320, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff98fdc000
+124   mmap(0xffff98fe0000, 1966784, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0) = 0xffff98fe0000
+124   mmap(0xffff99039000, 1409024, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x49000) = 0xffff99039000
+124   mmap(0xffff991a0000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x1a0000) = 0xffff991a0000
+124   mmap(0xffff991b4000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x1a4000) = 0xffff991b4000
+124   mmap(0xffff991ba000, 25280, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff991ba000
+124   close(3</work/zig-out/lib/libsideeye_shim.so>) = 0
+124   faccessat(AT_FDCWD</work>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+124   openat(AT_FDCWD</work>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+124   newfstatat(3</etc/ld.so.cache>, "", {st_mode=S_IFREG|0644, st_size=7747, ...}, AT_EMPTY_PATH) = 0
+124   mmap(NULL, 7747, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffff99203000
+124   close(3</etc/ld.so.cache>)        = 0
+124   openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+124   read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0000y\2\0\0\0\0\0"..., 832) = 832
+124   newfstatat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "", {st_mode=S_IFREG|0755, st_size=1651408, ...}, AT_EMPTY_PATH) = 0
+124   mmap(NULL, 1826912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff98e21000
+124   mmap(0xffff98e30000, 1761376, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffff98e30000
+124   mmap(0xffff98fcc000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x18c000) = 0xffff98fcc000
+124   mmap(0xffff98fd2000, 49248, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff98fd2000
+124   close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+124   openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+124   read(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+124   newfstatat(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "", {st_mode=S_IFREG|0644, st_size=67528, ...}, AT_EMPTY_PATH) = 0
+124   mmap(NULL, 196640, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff98dff000
+124   mmap(0xffff98e00000, 131104, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0) = 0xffff98e00000
+124   mmap(0xffff98e1f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0xf000) = 0xffff98e1f000
+124   close(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>) = 0
+124   openat(AT_FDCWD</work>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+124   read(3</usr/lib/aarch64-linux-gnu/libdl.so.2>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+124   newfstatat(3</usr/lib/aarch64-linux-gnu/libdl.so.2>, "", {st_mode=S_IFREG|0644, st_size=67528, ...}, AT_EMPTY_PATH) = 0
+124   mmap(NULL, 196640, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff98dcf000
+124   mmap(0xffff98dd0000, 131104, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libdl.so.2>, 0) = 0xffff98dd0000
+124   mmap(0xffff98def000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libdl.so.2>, 0xf000) = 0xffff98def000
+124   close(3</usr/lib/aarch64-linux-gnu/libdl.so.2>) = 0
+124   mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff99201000
+124   mmap(NULL, 270336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff98d8e000
+124   openat(AT_FDCWD</work>, "/tmp/c/work/trace-record.bin", O_RDWR|O_CREAT|O_APPEND|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC, 0644) = 3</tmp/c/work/trace-record.bin>
+124   statx(3</tmp/c/work/trace-record.bin>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+124   fcntl(3</tmp/c/work/trace-record.bin>, F_DUPFD, 900) = 900</tmp/c/work/trace-record.bin>
+124   fcntl(900</tmp/c/work/trace-record.bin>, F_SETFD, FD_CLOEXEC) = 0
+124   close(3</tmp/c/work/trace-record.bin>) = 0
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 0
+124   write(900</tmp/c/work/trace-record.bin>, "SIDEEYE1\17\0\0\0", 12) = 12
+124   write(900</tmp/c/work/trace-record.bin>, "\204\3\0\0\0\0|\0\0\0\f\0\0\0/tmp/c/state\20\0\0\0ob"..., 46) = 46
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 58
+124   pread64(900</tmp/c/work/trace-record.bin>, "\204\3\0\0\0\0|\0\0\0\f\0\0\0/tmp/c/state\20\0\0\0ob"..., 46, 12) = 46
+124   write(900</tmp/c/work/trace-record.bin>, "\1\0\1\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   openat(AT_FDCWD</work>, "/tmp/c/state/stdio.txt", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3</tmp/c/state/stdio.txt>
+124   newfstatat(3</tmp/c/state/stdio.txt>, "", {st_mode=S_IFREG|0644, st_size=0, ...}, AT_EMPTY_PATH) = 0
+124   write(3</tmp/c/state/stdio.txt>, "0123456789\n0123456789\n0123456789"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 98
+124   pread64(900</tmp/c/work/trace-record.bin>, "\1\0\1\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 58) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\2\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "0123456789\n0123456789\n0123456789"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "456789\n0123456789\n0123456789\n012"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=4096, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 138
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\2\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 98) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\3\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "456789\n0123456789\n0123456789\n012"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "89\n0123456789\n0123456789\n0123456"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=8192, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 178
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\3\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 138) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\4\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "89\n0123456789\n0123456789\n0123456"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "123456789\n0123456789\n0123456789\n"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=12288, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 218
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\4\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 178) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\5\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "123456789\n0123456789\n0123456789\n"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "56789\n0123456789\n0123456789\n0123"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=16384, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 258
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\5\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 218) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\6\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "56789\n0123456789\n0123456789\n0123"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "9\n0123456789\n0123456789\n01234567"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=20480, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 298
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\6\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 258) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\7\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "9\n0123456789\n0123456789\n01234567"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "23456789\n0123456789\n0123456789\n0"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=24576, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 338
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\7\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 298) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\10\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "23456789\n0123456789\n0123456789\n0"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "6789\n0123456789\n0123456789\n01234"..., 4096) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=28672, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 378
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\10\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 338) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\t\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "6789\n0123456789\n0123456789\n01234"..., 4096) = 4096
+124   write(3</tmp/c/state/stdio.txt>, "\n0123456789\n0123456789\n012345678"..., 232) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=32768, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 418
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\t\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40, 378) = 40
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\n\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   write(3</tmp/c/state/stdio.txt>, "\n0123456789\n0123456789\n012345678"..., 232) = 232
+124   statx(3</tmp/c/state/stdio.txt>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=33000, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/stdio.txt", 4096) = 22
+124   write(900</tmp/c/work/trace-record.bin>, "d\0\0\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 40) = 40
+124   close(3</tmp/c/state/stdio.txt>)  = 0
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 498
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\n\0\0\0|\0\0\0\26\0\0\0/tmp/c/state/stdio"..., 80, 418) = 80
+124   write(900</tmp/c/work/trace-record.bin>, "\1\0\v\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 43) = 43
+124   openat(AT_FDCWD</work>, "/tmp/c/state/key.json.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/c/state/key.json.tmp>
+124   write(3</tmp/c/state/key.json.tmp>, "key=2\n", 6) = 3
+124   --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff98f0dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+124   statx(3</tmp/c/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/key.json.tmp", 4096) = 25
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 541
+124   pread64(900</tmp/c/work/trace-record.bin>, "\1\0\v\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 43, 498) = 43
+124   write(900</tmp/c/work/trace-record.bin>, "\2\0\f\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 43) = 43
+124   write(3</tmp/c/state/key.json.tmp>, "key=2\n", 6) = 6
+124   statx(3</tmp/c/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=6, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/key.json.tmp", 4096) = 25
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 584
+124   pread64(900</tmp/c/work/trace-record.bin>, "\2\0\f\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 43, 541) = 43
+124   write(900</tmp/c/work/trace-record.bin>, "\5\0\r\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 43) = 43
+124   fsync(3</tmp/c/state/key.json.tmp>) = 0
+124   statx(3</tmp/c/state/key.json.tmp>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=6, ...}) = 0
+124   readlinkat(AT_FDCWD</work>, "/proc/self/fd/3", "/tmp/c/state/key.json.tmp", 4096) = 25
+124   write(900</tmp/c/work/trace-record.bin>, "d\0\0\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 43) = 43
+124   close(3</tmp/c/state/key.json.tmp>) = 0
+124   lseek(900</tmp/c/work/trace-record.bin>, 0, SEEK_END) = 670
+124   pread64(900</tmp/c/work/trace-record.bin>, "\5\0\r\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 86, 584) = 86
+124   write(900</tmp/c/work/trace-record.bin>, "\3\0\16\0\0\0|\0\0\0\31\0\0\0/tmp/c/state/key.j"..., 64) = 64
+124   renameat(AT_FDCWD</work>, "/tmp/c/state/key.json.tmp", AT_FDCWD</work>, "/tmp/c/state/key.json") = 0
+124   exit_group(0)                     = ?
+124   +++ exited with 0 +++
