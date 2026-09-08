@@ -27,10 +27,15 @@
 //! opened in the window, a path truncated by the display cap, a CALL this module does
 //! not know, a line the grammar does not match: each of those is a hole in the account,
 //! and an account with a hole must not be reported as agreement. One exception, from
-//! 2026-09-08: a line the grammar cannot read whole — a tail cut short at the display
-//! width is the measured shape — whose CALL is one this module knows to read only, or a
-//! disk-io line (not an operation), is skipped, for the reason a parsed line of the same
-//! kind is: it could not have changed state whoever issued it. The grammar itself is
+//! 2026-09-08: a line the grammar cannot read whole — a head whose physical line ended
+//! inside the name, before its tail, is the measured shape — whose CALL is one this
+//! module knows to read only, or a disk-io line (not an operation), is skipped, for the reason a parsed line of the same
+//! kind is: it could not have changed state whoever issued it — and so are the physical
+//! lines that follow it without a timestamp of their own, up to the one carrying the
+//! duration and `proc.tid` the head lost: fragments of that same event, not events
+//! (measured on the CI runner as two lines; why the event spans lines is not measured —
+//! the fragment's bytes read like a pax record, so a newline inside the name is the
+//! likely mechanism, and `fs_usage` prints names raw). The grammar itself is
 //! ported from `spike/fsusage/classify.py`, which was written against real captures on
 //! two machines rather than from the man page.
 
@@ -42,10 +47,12 @@ const oracle = @import("oracle.zig");
 /// at the call site; none of them is a divergence, because a divergence is a statement
 /// about what the two witnesses saw and these say the witness itself is unreadable.
 pub const Defect = union(enum) {
-    /// The grammar did not match a line. Skipped only when the line's CALL — the one
-    /// field a cut at the display width cannot reach — is one this module knows to read
-    /// only, or a disk-io line, which is not an operation (2026-09-08); every other
-    /// unparsed line is an operation this module cannot rule out.
+    /// The grammar did not match a line. Skipped in two cases only (2026-09-08/09): the
+    /// line has a timestamp and a CALL and that CALL is one this module knows to read
+    /// only or a disk-io line — a head whose physical line ended before its tail — or the
+    /// line has no timestamp and follows such a head with no whole line between, before
+    /// its tail has arrived, which makes it a fragment of that same event and not an
+    /// event. Every other unparsed line is an operation this module cannot rule out.
     unparsed: []const u8,
     /// A pathname cut by the display cap. The state root's own prefix may be gone, so
     /// the line cannot be scoped either way.
@@ -83,18 +90,11 @@ const Line = struct {
     raw: []const u8,
 };
 
-/// `HH:MM:SS.uuuuuu  CALL  <middle>  D.DDDDDD [W ]proc.tid`
-///
-/// Process names contain spaces (`Google Chrome He.64625821`, measured on the owner's
-/// laptop and absent from the CI runner, which is why a `\S+` grammar passed there and
-/// refused here), so the process field is taken as everything before the LAST dot on
-/// the line's tail. The duration is the anchor: it is the only field whose shape is
-/// fixed, and everything left of it is the CALL plus its arguments.
 /// The left edge of the grammar — the timestamp and the CALL — on its own, because a
-/// line can lose its right edge and keep this one: `fs_usage` cuts a line at the
-/// display width, and a pathname of the wrong bytes (a daemon's file named in
-/// combining characters, 2026-09-08 on the CI runner) pushes the duration and the
-/// process off the end. Returns the CALL and the index where the middle begins.
+/// line can lose its right edge and keep this one (a daemon's file named in combining
+/// characters, 2026-09-08 on the CI runner: the physical line ended inside the name,
+/// and the duration and the process arrived on the next one). Returns the CALL and the
+/// index where the middle begins.
 fn callOf(line: []const u8) ?struct { call: []const u8, call_start: usize, middle_start: usize } {
     if (line.len < 20) return null;
     // Timestamp: HH:MM:SS.uuuuuu — wide mode always carries the fractional part.
@@ -110,13 +110,35 @@ fn callOf(line: []const u8) ?struct { call: []const u8, call_start: usize, middl
     return .{ .call = line[call_start..i], .call_start = call_start, .middle_start = i };
 }
 
+/// One whole line: `callOf`'s left edge, `tailOf`'s right edge, the middle between.
 fn parseLine(raw: []const u8) ?Line {
     const line = std.mem.trimEnd(u8, raw, " \t\r");
     const left = callOf(line) orelse return null;
     const call = left.call;
     const call_start = left.call_start;
     const i = left.middle_start;
+    const right = tailOf(line) orelse return null;
+    const middle_end = right.dur_start;
+    if (middle_end <= call_start) return null;
+    const middle = std.mem.trim(u8, line[i..middle_end], " \t");
+    return .{ .call = call, .middle = middle, .tid = right.tid, .raw = raw };
+}
 
+/// The right edge of the grammar — the duration and `proc.tid` — on its own, for the
+/// same reason `callOf` is: when a physical line ends inside a name, the tail arrives on
+/// a later physical line with no timestamp and no CALL in front of it (measured
+/// 2026-09-08 on the CI runner, the line after a daemon's cut `getattrlist`:
+/// `133 LIBARCHIVE.xattr.com.apple.macl=B    0.000039   promotedcontentd.13451`).
+/// Returns the tid and the index where the duration starts.
+///
+/// `HH:MM:SS.uuuuuu  CALL  <middle>  D.DDDDDD [W ]proc.tid`
+///
+/// Process names contain spaces (`Google Chrome He.64625821`, measured on the owner's
+/// laptop and absent from the CI runner, which is why a `\S+` grammar passed there and
+/// refused here), so the process field is taken as everything before the LAST dot on
+/// the line's tail. The duration is the anchor: it is the only field whose shape is
+/// fixed, and everything left of it is the CALL plus its arguments.
+fn tailOf(line: []const u8) ?struct { tid: []const u8, dur_start: usize } {
     // The tail: `proc.tid`, tid being the digits after the LAST dot of the LAST field.
     //
     // Process names carry dots of their own — `com.apple.Virtualization.Virtua.80341932`
@@ -155,10 +177,8 @@ fn parseLine(raw: []const u8) ?Line {
         // Not a duration: part of the process name, or the `W` flag. Keep walking left.
         scan = w_start;
     }
-    const middle_end = dur_end orelse return null;
-    if (middle_end <= call_start) return null;
-    const middle = std.mem.trim(u8, line[i..middle_end], " \t");
-    return .{ .call = call, .middle = middle, .tid = tid, .raw = raw };
+    const dur_start = dur_end orelse return null;
+    return .{ .tid = tid, .dur_start = dur_start };
 }
 
 fn isDuration(w: []const u8) bool {
@@ -583,6 +603,10 @@ pub fn read(
     var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty } };
     var fds: FdTable = .{};
     var dup_pending: std.ArrayList(FdKey) = .empty;
+    // A head this reader skipped (read-only or disk-io) whose physical line ended before
+    // its tail: the lines that follow without a timestamp are fragments of that event,
+    // up to the one carrying the tail (see the second pass).
+    var in_cut_event: bool = false;
     // Set once a relevant thread issues `chdir`/`fchdir`. This reader does not follow
     // the cwd — the strace reader does, through `initial_cwd` plus every successful
     // chdir it sees — so from that point an `AT_FDCWD`-relative operand can no longer
@@ -693,11 +717,32 @@ pub fn read(
         out.parsed.lines_seen += 1;
 
         const ln = parseLine(raw) orelse {
+            const line = std.mem.trimEnd(u8, raw, " \t\r");
+            if (callOf(line) == null) {
+                // No timestamp, no CALL: not an event. Inside a cut event — the line
+                // above was a head this reader skipped, and its tail has not arrived —
+                // this is a fragment of that event: the rest of the name, or the tail
+                // itself (the duration and `proc.tid`), which ends the event (measured
+                // 2026-09-08 on the CI runner: the head, then `133 LIBARCHIVE.xattr…=B
+                // 0.000039 promotedcontentd.13451`; how many fragments a name makes is
+                // not measured, so every one up to the tail is taken). Nothing is lost:
+                // the head's CALL could not change state. Outside a cut event the same
+                // shape is a hole — a fragment of nothing anyone skipped.
+                if (in_cut_event) {
+                    if (tailOf(line) != null) in_cut_event = false;
+                    continue;
+                }
+                out.defect = .{ .unparsed = raw };
+                return out;
+            }
+            // A timestamped line that did not parse: a new event, whatever came before —
+            // and the state below is set or the run refused, so nothing reads the old one.
             // A line the grammar cannot read whole cannot be attributed to a thread.
-            // The measured shape is a tail cut short: `fs_usage` cuts at the display
-            // width, which a pathname of the wrong bytes does (2026-09-08 on the CI
-            // runner: a daemon's `getattrlist` on a name made of combining characters,
-            // the duration and the process pushed off the line); any other way the
+            // The measured shape is a head whose physical line ended inside the name
+            // (2026-09-08 on the CI runner: a daemon's `getattrlist` on a name made of
+            // combining characters — the left cut is the display cap's, and why the
+            // duration and the process landed on the next line is not measured; a
+            // newline inside the name is the likely mechanism); any other way the
             // grammar fails lands here too. If the CALL — the field a cut cannot reach
             // — is one this module knows to read only, or a disk-io line, the line could
             // not have changed state whoever issued it and wherever, which is the reason
@@ -705,12 +750,19 @@ pub fn read(
             // Anything else still is: a mutating call nobody can be named for is exactly
             // what the account must not omit. A pending dup is untouched by the skip —
             // it is consumed only by a line of its own thread, and this line has none.
-            if (callOf(std.mem.trimEnd(u8, raw, " \t\r"))) |left| {
-                if (isReadOnlyCall(left.call) or isDiskIo(left.call)) continue;
+            // The fragments that may follow this head are taken above.
+            if (callOf(line)) |left| {
+                if (isReadOnlyCall(left.call) or isDiskIo(left.call)) {
+                    in_cut_event = true;
+                    continue;
+                }
             }
             out.defect = .{ .unparsed = raw };
             return out;
         };
+        // A whole line ends any cut event: whatever fragments were due did not come, and
+        // a fragment after this line is nobody's.
+        in_cut_event = false;
 
         const is_subject = std.mem.eql(u8, ln.tid, subject);
         // Asked once per line, not once per test. `classOf` is a linear walk of the
@@ -1139,8 +1191,9 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
     defer arena_state.deinit();
     const a = arena_state.allocator();
     // Verbatim bytes from the CI runner (2026-09-08): a daemon's `getattrlist` on a name
-    // made of combining characters. `fs_usage` cut the line at its display width, so
-    // there is no duration and no `proc.tid` — nothing to attribute it to.
+    // made of combining characters. The physical line ends inside the name, so there is
+    // no duration and no `proc.tid` — nothing to attribute it to (the rest of the event
+    // arrived on the next line; see the fragment test below).
     const daemon = "13:47:23.434908  getattrlist            [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
     const head =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
@@ -1158,6 +1211,49 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
     const r2 = try read(a, text2, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r2.defect != null);
     try testing.expect(r2.defect.? == .unparsed);
+}
+
+test "the lines after a skipped cut head, up to its tail, are fragments of that event; the same lines elsewhere are holes" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // Verbatim from the CI runner (2026-09-08, two runs): the cut head, then the line
+    // carrying the rest of the name with the duration and the process — no timestamp,
+    // no CALL.
+    const head_line = "13:47:23.434908  getattrlist            [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
+    const tail_line = "133 LIBARCHIVE.xattr.com.apple.macl=B    0.000039   promotedcontentd.13451";
+    const middle_line = "just bytes with no timestamp and no tail";
+    const whole_line = "10:00:00.000003  stat64                 [  2]           /tmp/elsewhere                       0.000010   other.222";
+    const before =
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n";
+    const after = "\n10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const Case = struct { text: []const u8, hole: bool, why: []const u8 };
+    const cases = [_]Case{
+        .{ .text = before ++ head_line ++ "\n" ++ tail_line ++ after, .hole = false, .why = "head then tail: one event, skipped whole" },
+        .{ .text = before ++ head_line ++ "\n" ++ middle_line ++ "\n" ++ tail_line ++ after, .hole = false, .why = "a name that makes three fragments: all of them the same event" },
+        .{ .text = before ++ head_line ++ "\n" ++ whole_line ++ "\n" ++ tail_line ++ after, .hole = true, .why = "a whole line ends the event; a tail after it is nobody's" },
+        .{ .text = before ++ tail_line ++ after, .hole = true, .why = "a tail with no cut head before it" },
+        .{ .text = before ++ middle_line ++ after, .hole = true, .why = "a fragment with no cut head before it" },
+        .{ .text = before ++ head_line ++ "\n" ++ tail_line ++ "\n" ++ tail_line ++ after, .hole = true, .why = "the first tail ended the event; the second is nobody's" },
+    };
+    for (cases) |c| {
+        const r = try read(a, c.text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+        if (c.hole) {
+            testing.expect(r.defect != null) catch |e| {
+                std.debug.print("expected a hole: {s}\n", .{c.why});
+                return e;
+            };
+            try testing.expect(r.defect.? == .unparsed);
+        } else {
+            testing.expect(r.defect == null) catch |e| {
+                std.debug.print("expected no hole: {s}\n", .{c.why});
+                return e;
+            };
+            try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
+            try testing.expectEqual(@as(usize, 0), r.parsed.mutations.items.len);
+        }
+    }
 }
 
 test "the shim's dup of its own trace descriptor is followed, and a daemon reading the trace is not the subject" {
