@@ -663,8 +663,8 @@ fn boundaryAccount() []const u8 {
     // combination measured was **626 of 1024 bytes** (2026-09-07, over `boundary_cases`
     // crossed with both chain states, both continuation states and every `second_run`
     // value; it read 494 before that day's wordings), and v16 widened the buffer to 1280
-    // for a thread clause of at most about 150 bytes, which keeps at least the margin the
-    // measurement had; the crossing itself was not re-run — but "unreachable" is not a
+    // for a thread clause of at most 178 bytes (the literal and two u32 values; review
+    // counted it), which keeps at least the margin the measurement had; the crossing itself was not re-run — but "unreachable" is not a
     // lifetime.
     return std.fmt.bufPrint(&boundary_buf, "{s}{s}{s}{s}", .{ recording, world, second, threads }) catch
         "the process-boundary account did not fit its buffer; treat it as not established";
@@ -3849,7 +3849,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // `child_touched_state_dir` — the right exit for the wrong reason, calling a thread
     // another process. Refusing here, with the thread named as the cause, keeps the
     // account true; teaching that reader which thread belongs to which process is a
-    // separate change that cannot be measured on the machine this was written on.
+    // separate change that cannot be measured on the machine this was written on. A
+    // thread reached through a raw `clone` leaves no `pthread_create` record for this
+    // arm to key on, and under that oracle refuses `child_touched_state_dir` as it did
+    // before v16 — UNKNOWN either way, so no verdict is wrong, only the sentence.
     if (args.oracle_fs_usage and trace.thread_records > 0)
         unknown(.multiple_threads_detected, "the target created a thread and the fs_usage oracle cannot attribute a thread's operations to its process (ADR 0031), so its account cannot be compared against the shim's; a threaded run is judged on Linux, or on macOS without --oracle-fs-usage", .class_wall);
     if (trace.needsOracle() and args.oracle_fs_usage)

@@ -96,7 +96,13 @@ one, so a shim that forgot to write it would be a compile error rather than a ze
 **The scan missed one**: `spike/fsevents/trace-ops.zig` builds a `Record` too, and the
 `-Dtrace-ops` cross-build found it three commits later — the grep had been scoped to
 `src/` and `shim/`, and the reader under `spike/` is code, not a record (ADR 0021 names
-it in `.gitattributes` for exactly that reason). Fixed in the review commit. Three readers outside
+it in `.gitattributes` for exactly that reason). Fixed in the review commit. **What that
+means for the branch's history**: from the v16 commit to the sweep commit this file did not
+compile, and `ci.yml` builds `-Dtrace-ops` and runs its `--selftest` on every push — so
+those four commits would have been red on that leg. They never were, because the branch
+was not pushed until the review commit was on it; the local cross-build with every
+apparatus flag is what found the file, one commit before the first push. The confirmation
+reviewer read the five commits and said the CI "was red"; it would have been. Three readers outside
 Zig knew the byte layout and had to be told: `spike/acceptance.sh` decodes the trace
 in three places (`count_op_records`, `kill_sequence`, and the `#358` leg), each with
 `struct.unpack_from("<HIII")` and a hard-coded 14; they read `"<HIIQI"` and 22 now.
