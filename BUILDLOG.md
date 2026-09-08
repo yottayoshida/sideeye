@@ -2,6 +2,206 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — the second half: a run whose writers take turns is judged, and three things that were not true
+
+The other commit on the same branch. The first made the number a position in the run; this
+one decides which runs may be judged with children in them, kills the process group instead
+of the process, and moves the class row (ADR 0053).
+
+**The rule, and where it is decided.** Two conditions on the recording run, where both
+witnesses are in hand: the shim's writers and the oracle's are the same set in both
+directions, and each writing child was collected before anyone else wrote again.
+
+**Condition 2 was implemented twice, and the first one was wrong.** It read the trace's own
+record order — which is the order operations happened in, and is the same coordinate system
+the numbering uses, so it looked like the obvious place. It cannot answer this question. An
+awaited child's records sit between its parent's, and so do a racing sibling's:
+`parent, child, parent` and `child A, child B, child A` are the same shape in a trace. The
+unit test written for the poster-child shape failed on the poster-child shape, which is
+what a test written before the implementation is for. What separates a hand-off from a race
+is the wait, and the wait and the writes are in one order only in the oracle's capture — so
+the oracle now records where each mutation and each reap was seen, and the rule reads
+positions there.
+
+**The kill killed the wrong thing, and only the acceptance suite could have found it.**
+`kill(0, SIGKILL)` addresses the caller's process group, which is the target's own because
+the engine makes the direct child a group leader. The report also prints a `reproduce` line
+for an operator to type, and a shell that has done no `setpgid` shares its group with
+whatever it is. The suite ran that line and died — SIGKILL, exit 137, at check 2j, with 53
+of its checks still unrun. So the group kill is gated on `SIDEEYE_KILL_GROUP`, set on a
+world's spawn and nowhere else. It cannot be the shim's own judgement: `getpgrp() ==
+getpid()` is true for the subject and false for every child, and a child that fell back to
+killing itself alone would leave the shell running, which is the whole defect. What differs
+is not the process but how the run was started, and only the starter knows.
+
+**A hole review found is narrower than review thought, measured rather than argued.** The
+reverse direction of condition 1 — the shim records a writer the oracle cannot place —
+was raised against a child that moves its own working directory and writes through a
+relative path, on the grounds that `oracle.zig` resolves relative paths against the
+SUBJECT's cwd. A toy was written for it. The toy is judged, not refused: `strace -y`
+annotates the dirfd with the writing process's own cwd
+(`openat(AT_FDCWD</tmp/y/state>, "from-chdir-child.txt", …)`), so the oracle resolves it
+correctly. The condition stays — it fails closed and costs nothing — but the toy and its
+acceptance leg are gone, because a leg asserting a refusal that never comes measures
+nothing. Its only exercise is the unit test, and `src/main.zig`'s comment about the oracle
+missing "a child's relative spelling" is weaker than it reads whenever `-y` is on, which is
+every run the engine starts.
+
+**What the toys actually produce, and why two answers are both right.** The concurrent and
+the uncollected controls refuse `sequence_numbering_broken` rather than the admission's own
+sentence, because two processes writing at once read the same highest number and both take
+it — the numbering check sees the collision first. That refusal is true, and its wording
+now names the cause when more than one process wrote. Which of the two arrives is a race,
+so the legs accept either; asserting one would be asserting which way a race went.
+
+**Measured, in the container, against the same suite run on `main` in the same box.**
+Acceptance: 329 ok, and the four that fail (three `state_rewrite_failed` legs and the vfork
+shape) fail identically on `main` — they are this host, not this change. The forked writing
+child goes from `child_touched_state_dir` at 0 crash points to FAIL at crash point 8 of 8
+over 9 worlds, with the oracle agreeing on the subject's 5; the fork+exec writing child goes
+from the same refusal to PASS; `TOY_SPAWN_WRITES` still refuses and now names the writer
+that recorded nothing; the same admitted run under `--observe syscalls` refuses and names
+the mode. Unit tests 658 of 660 (2 skipped).
+
+**`rsync -a --delete` is the negative control on a real target, and it names the right
+thing**: "a process other than the subject (pid 20) performed unlink(…/gone/old), and
+process 21 wrote in the judged directory while it was still running — nothing had
+collected it yet". Those two are the generator and the receiver, whose overlap
+`spike/followup-item3/NOTES.md` measured on 2026-09-07 with strace alone. The engine now
+reaches the same conclusion from its own witnesses.
+
+**Both directions of the crash-point mechanism were seen red.** Reverting the kill to
+`raise(SIGKILL)` — one process instead of the group — turns the judged toy into
+`sequence_numbering_broken` in an explored world: the parent survives its child's death and
+keeps writing past the crash point, so the world's records and its highest number stop
+agreeing. Removing the trace read and numbering per process again turns it into "two
+processes took the same number", which is the parent and the child each holding a 1 — the
+collision ADR 0002's Context measured in 2026-08, reproduced on demand.
+
+**`pass mv` reaches a verdict: PASS, 6 worlds, crash points 5 + 1 baseline.** The target
+this slice exists for, run from its committed define (`spike/assisted/pass/ops/`) with
+`--oracle`. Its committed transcript records `UNKNOWN child_touched_state_dir` at 0 crash
+points; the `processes` line now says the children's operations hold addresses.
+
+Two things that run says out loud and this entry will not bury. **The oracle agreed on
+zero operations** — 3786 syscall lines examined, 25 in scope — because the subject is a
+shell that writes nothing itself, so all five crash points are children's and the
+completeness comparison covers the subject only. What the oracle contributes for a child
+is existence (condition 1) and order (condition 2), not content; the net for a write
+neither observer places is the per-path reconciliation (#405). That is the residual the
+plan scoped out, and it is at its widest exactly here. And the define's own checker
+falsifies before the run in this container ("corrupted state -> check failed"), which is
+the define's business rather than the engine's.
+
+**One refusal on the way there was mine, not the engine's, and it took a measurement to
+say so.** The first run of this define came back `baseline_violates_invariant`, with the
+checker reporting a bystander ciphertext that differed from the recorded one. It differed
+because I had run `setup.sh` by hand before `explore.sh`, and the define's setup runs
+again under the engine: `cp -R "$PASSWORD_STORE_DIR" .../expected` with `expected` already
+present nests a second copy inside it instead of replacing it, so the comparison was
+against a store encrypted in a different gpg session. Attribution came from running the
+same sequence by hand — setup, snapshot, operation, restore, operation, checker: all green
+— which is what separated "the engine's restore broke this" from "the operator ran setup
+twice".
+
+**Before that, `chdir` had to stop counting as a mutation.** The same define first refused
+with "process 129 mutated the judged directory", and process 129 was
+`git -C <store> rev-parse --is-inside-work-tree` — a read. The oracle's conservative net
+counts everything that is not a known read as a child touching the judged directory, and
+`chdir` was not on the read list. It changes no byte and no directory entry, and `getcwd`
+was already there with the same argument written beside it. Under the old rule the
+over-count cost nothing visible (the run refused either way, for a child that did write);
+under this one it refused a run whose only unrecorded "writer" had written nothing.
+
+**Review round 1 moved three things the tests had agreed with, and each one was a way the
+promise could be false while everything was green.**
+
+- **`oracle_verified: true` on a PASS the oracle had verified none of.** The completeness
+  comparison is the subject's account against the oracle's view of the subject; a run whose
+  crash points are all children's — `pass mv`, whose shell writes nothing itself — reached
+  `oracle_verified: true` beside "agreed on 0 operations". The field's documented meaning is
+  "the comparison completed and agreed", and the gate consumers are told to use is
+  `verdict == "PASS" && oracle_verified`. The fix is the one v14 already established for a
+  weaker claim: `oracle_verified` stays false and the weaker fact gets its own name
+  (`oracle_verified_subject_only`), because a machine field changes name before it changes
+  meaning. `pass mv` now reports `oracle_verified: false` beside
+  `oracle_verified_subject_only: true`.
+- **The window began at the child's first write, so `fork, parent writes, child writes,
+  wait` was admitted.** Nothing orders those two writes — the child was already running —
+  and `spike/followup-item3/NOTES.md` had recorded that exact counterexample the day before.
+  The window now runs from the `clone` that returned the child to the wait that reaped it,
+  which needed the oracle to record where each child was created. `TOY_PARENT_WRITES_IN_WINDOW`
+  is the toy; without the change it is judged, with it the refusal names the parent's write.
+- **A pid coming back from a wait is not a collection.** `wait4(…, [{WIFSTOPPED…}],
+  WUNTRACED, …) = 53` reports a child that is still alive, and `waitid(…, WEXITED|WNOWAIT, …)`
+  leaves it reapable. Both closed the window early, which admits rather than refuses. The
+  reap predicate now requires a status that says the child ended, and rejects `WNOWAIT`
+  outright.
+
+**Two more that were about scope rather than correctness.** The per-world prefix check was
+running on every target, which would have added a new refusal to single-process runs inside
+a change about children — it is gated on the admission now, so the cost and the new refusal
+land only where the compensation is needed. And the class row in `docs/target-classes.md`
+asserted "judged since v15" while citing a directory that held no sideeye run at all: the
+`pass` transcript and report JSON are committed beside the strace captures now, which is
+what the claim was resting on in prose.
+
+**One finding taken and not fixed, recorded here rather than argued away.** The
+`if (setpgid(0, 0) != 0) _exit(126)` guard cannot be seen red against its own predicate:
+`setpgid(0, 0)` on a freshly forked child has no failing path in practice, and `setpgid` is
+not on the `RealOps` seam that would let a fake return an error. What is measured is the
+accident that motivated it — an unconditional group kill killing the acceptance suite's own
+shell — and not the guard itself. It stays because its absence is what that measurement
+cost, and this paragraph is the disclosure that it is a guard held by an argument.
+
+**Review round 2 found that one of the round-1 fixes had opened a hole, and that another
+had been made in the machine field and not in the sentence people read.**
+
+- **The `oracle` account line still read as full agreement.** Round 1 stopped
+  `oracle_verified` from claiming what the comparison had not covered, and left the line a
+  reader looks at first saying "agreed on 0 operations … witness strace" beside a PASS over
+  five crash points. The code's own comment two statements up says the account names "where
+  the witness is narrower, what it did not check", and v14's mode arm does exactly that. The
+  v15 arm does now too, and `spike/followup-item3/artifacts/pass-mv-transcript.txt` carries
+  the result.
+- **Making `chdir` a read opened a fail-open for a child the shim never loaded.** Under the
+  old conservative net, a child's `chdir` into the judged directory was a touch, so a
+  shimless child that chdir'd and wrote through a relative path refused. With `chdir`
+  reclassified, nothing saw it: the shim recorded nothing, and the oracle resolved the
+  relative path against the SUBJECT's working directory and placed it outside. The toy
+  comment that said this cannot happen cited a measurement taken on aarch64, where glibc
+  issues the `*at` forms and `strace -y` annotates the dirfd with the writer's own cwd —
+  and `src/oracle.zig`'s own comment on the tracked cwd says the legacy forms carry no
+  annotation on x86-64. One architecture's answer, generalised. **The engine no longer
+  resolves any non-subject relative path against the subject's directory**: such a line is
+  unplaceable, which the child branch already treats the way it treats an in-scope one.
+- **A comment claimed an order the code did not have.** The numbering check was moved below
+  the child-touch refusal in the first commit, and the second commit then moved the child
+  decision itself into the oracle block — several hundred lines further down. The comment
+  still described the intermediate state, and the acceptance leg accepts either refusal (the
+  collision is a race), so nothing was red. The behaviour is right — the numbering message
+  names the cause when more than one process wrote — and the comment now says what is true.
+- **A claim wider than its evidence, again.** The class row said the dangerous slice is
+  "the rename and the remove"; the committed transcript shows five crash points and an
+  oracle comparing none of the subject's operations, and names neither call. The row now
+  says what the artifact says.
+- Smaller: an unreachable duplicate of the reap check (the same three tests were made twice,
+  and the comment explaining them sat above the copy that never ran), the `mutations` doc
+  overstating what the `fs_usage` reader fills in, a leg comment whose stated reason v15 made
+  false, and the branch order in the process account — which is safe because a hard boundary
+  exits before the admission is reached, an argument that was not written down.
+
+**And the admission's own scan was quadratic in the runs it exists for.** It asked each
+question inside a loop over every record and every mutation; a target with many operations in
+many children is exactly the shape this version newly judges, and exactly the shape that
+paid. One entry per writing process now, built once from each witness.
+
+**Two legs lost their driver and were re-pointed rather than deleted.** The wrapped-operation
+step (#506) and the process-account-on-a-refusal leg (#123) both drove a refusal that no
+longer happens; both now drive `TOY_SPAWN_WRITES`, which is refused for a reason this change
+does not touch. A leg whose driver disappears silently measures nothing, which is the failure
+mode the suite's own comments keep warning about.
+
 ## 2026-09-08 — a crash point becomes an address in the run, not in the process
 
 Written as the first half of item 3 lands (contract v15). The half after it — deciding

@@ -60,14 +60,22 @@ pub const c = struct {
     pub extern "c" fn getcwd(buf: [*]u8, size: usize) ?[*:0]u8;
     pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
     pub extern "c" fn raise(sig: c_int) c_int;
+    /// Sent with pid 0 — the caller's own process group — when a world reaches its crash
+    /// point (v15). `raise` would kill only the process that got there, and the shell
+    /// that spawned it would carry on to the next command.
+    pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
     /// Reads the trace back to find the run's highest operation number (v15). Not
     /// interposed — the shim wraps writes, not reads — so this extern reaches libc
     /// directly on both platforms, and `--observe syscalls` does not trap it either
     /// (`syscalls.zig` traps `write`/`pwrite64`/`writev`/`pwritev` and nothing else).
-    /// Positional on purpose: the descriptor's offset is shared with a forked child and
-    /// with `O_APPEND` writes, and this must not be the thing that moves it.
+    /// Positional because the read must not depend on where the descriptor happens to be:
+    /// the offset is shared with a forked child, and `refreshCount` moves it itself with
+    /// `lseek(SEEK_END)` to find the file's size. Moving it is harmless — every write here
+    /// is `O_APPEND`, which ignores the offset — and `init` reads it once for the same
+    /// reason (an offset of zero means nobody has written the header yet), so a read that
+    /// consumed it would be the thing that broke.
     pub extern "c" fn pread(fd: c_int, buf: [*]u8, count: usize, offset: i64) isize;
     /// Read live for every record, never cached: a forked child inherits every global
     /// in this file, and a cached pid would be the parent's — in the one process the
@@ -498,6 +506,9 @@ var alt_dir_buf: [contract.max_path]u8 = undefined;
 var alt_dir_len: usize = 0;
 var trace_fd: c_int = -1;
 var kill_at: u32 = 0;
+/// Whether the crash-point kill may reach the whole process group (v15). False unless the
+/// engine says so, which it does only where it has made the target a group leader.
+var kill_group: bool = false;
 /// The highest in-scope operation number this process knows the RUN to have reached
 /// (v15) — not the count of this process's own operations, which is what it held through
 /// v14. `refreshCount` brings it up to what the trace holds before every number is
@@ -513,16 +524,17 @@ var count_scanned: u64 = 0;
 /// reason `seq` itself is a plain global: a second thread is refused, not shared with.
 var scan_buf: [contract.max_record_len]u8 = undefined;
 var active: bool = false;
-/// The pid this shim instance initialised in. Only that process may raise the kill.
+/// The pid this shim instance initialised in. Read by `execCarryAllowed` — only the
+/// subject carries its operation count across an image change (#123).
 ///
-/// A forked child inherits this value but answers `getpid()` differently, so it can
-/// never arm — which is the point: `SIDEEYE_KILL_AT` names the k-th operation *of the
-/// subject*, and a child that counted its own operations to k would kill the wrong
-/// process at an address that belongs to nobody. A spawned or exec'd child re-runs
-/// `init()` and does arm itself; that is tolerable because the kill only fires on a
-/// state-directory operation, and a child's state-directory operation already makes the
-/// engine refuse the run (`child_touched_state_dir`) — the arm can only go off in a
-/// world that is thrown away.
+/// **It no longer gates the kill** (v15). It did, and the reason was addressing: a forked
+/// child counted its own operations, so its k-th belonged to nobody and killing there
+/// would have reported a landing at the right number from the wrong process. The number
+/// is a position in the run now, so the process that reaches k is the one the engine
+/// asked about — and gating on this pid would mean a world armed at an awaited child's
+/// operation never dies at all. The constraint outlived nothing here: its reason went
+/// away and it went with it, rather than staying on as a rule whose comment still cites
+/// a mechanism that changed.
 var armed_pid: c_int = -1;
 
 /// Guards against observing our own work. The path resolution below calls libc, and
@@ -732,6 +744,9 @@ pub fn init() void {
     }
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
+    // Only a run the engine put in its own process group may take the group down; see
+    // `contract.env.kill_group` for why the shim cannot decide this for itself.
+    kill_group = c.getenv(contract.env.kill_group) != null;
 
     // A self-exec'd image continues the subject's numbering (#123): the exec wrapper
     // of the previous image carried the count here. Absent means a fresh start —
@@ -1117,17 +1132,37 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         // the value the gap moves.
         if (shim_build_options.test_seq_gap and seq == 2) seq += 1;
         s = seq;
-        // Only the process that initialised this shim instance may die here. A forked
-        // child inherits `kill_at` and its own copy of `seq`, and without this guard it
-        // would count its own operations up to k and kill *itself* — the engine would
-        // then read a kill_landed at the right seq from the wrong process. See
-        // `armed_pid` for why a spawned child arming itself is tolerable and this is not.
-        if (kill_at != 0 and s == kill_at and c.getpid() == armed_pid) {
+        // Whoever performs the run's k-th operation dies here (v15), and the whole
+        // process group dies with it.
+        //
+        // Both halves changed together and neither works without the other. The pid
+        // guard that stood here — only the process that ran `init` may die — existed
+        // because a forked child counted its own operations, so its k-th belonged to
+        // nobody; a number is a position in the run now, so `s == kill_at` is exactly the
+        // one operation the engine asked about, whichever process reached it. And the
+        // death has to reach the group: a child that kills only itself leaves the shell
+        // that spawned it to run the next command, so the world would carry operations
+        // from after the crash point it claims to have died at. `kill(0, …)` addresses
+        // the caller's process group, which is the target's own — the engine makes the
+        // direct child a group leader before it execs, and kills that group itself when
+        // the run ends (ADR 0002 decision 1).
+        //
+        // **That containment is now load-bearing in a way it was not.** `raise` could
+        // not reach the engine however the group turned out; `kill(0, …)` can, if the
+        // `setpgid` in `src/posix.zig` ever failed silently. It no longer can: the child
+        // exits 126 rather than exec'ing into a group it does not lead. ADR 0002's
+        // amendment carries that argument — the decision's original reasoning covers
+        // `kill(-N, …)` sent from outside and says nothing about a signal sent from
+        // inside.
+        if (kill_at != 0 and s == kill_at) {
             // Landing evidence first, then die. Without this record the claim "we died
             // before the k-th operation" would rest on the engine having set a variable,
             // not on anything the target actually did.
             writeRecord(.kill_landed, s, path, aux);
-            _ = c.raise(SIGKILL);
+            // The group where the engine arranged one, this process alone otherwise —
+            // which is what an operator typing the report's `reproduce` line gets, and
+            // what every run got before v15.
+            _ = if (kill_group) c.kill(0, SIGKILL) else c.raise(SIGKILL);
             // SIGKILL cannot be caught or ignored, so this is unreachable. If it is ever
             // reached, the run is not what it claims to be — refuse to continue quietly.
             c._exit(@intFromEnum(contract.ExitCode.setup_error));

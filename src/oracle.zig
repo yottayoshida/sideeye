@@ -187,17 +187,29 @@ fn isFdSyscall(name: []const u8) bool {
 /// measurement — the first real target to clear the boundary gate (omamori) stopped
 /// here instead, on the lock it takes around its audit log.
 const read_only = [_][]const u8{
-    "stat",   "lstat",     "fstat",   "newfstatat", "statx",
-    "access", "faccessat", "readlink", "readlinkat", "read",
-    "pread64", "readv",    "lseek",   "getdents64", "fcntl",
-    "fadvise64", "statfs",  "fstatfs", "dup",       "dup2",
-    "dup3",   "ioctl",     "mmap",    "munmap",     "mprotect",
+    "stat",      "lstat",     "fstat",    "newfstatat", "statx",
+    "access",    "faccessat", "readlink", "readlinkat", "read",
+    "pread64",   "readv",     "lseek",    "getdents64", "fcntl",
+    "fadvise64", "statfs",    "fstatfs",  "dup",        "dup2",
+    "dup3",      "ioctl",     "mmap",     "munmap",     "mprotect",
     "flock",
     // `getcwd` reads the working directory and changes nothing; it reaches this list
     // rather than the path table because it has no path *argument* — its result is a
     // string the conservative net would otherwise scope in once the cwd is inside the
     // state directory (a relative-spelling target does exactly that).
-    "getcwd",
+        "getcwd",
+    // `chdir` and `fchdir` move the CALLING PROCESS's working directory and change no
+    // byte and no directory entry (v15). They are here for the same reason `getcwd` is,
+    // and the omission had a cost that only showed once a child's operations could be
+    // judged: the conservative net — "everything that is not a read is a child touching
+    // what only the subject may" — counted a child's `chdir` into the judged directory as
+    // a touch. Measured on `pass mv`, whose `git -C <store> rev-parse
+    // --is-inside-work-tree` reads and writes nothing: the run refused for that `chdir`,
+    // naming a process that "mutated the judged directory". It did not.
+    //
+    // The subject's own `chdir` never reaches this list — it is handled above, where a
+    // successful one moves the cwd this reader resolves relative paths against.
+       "chdir",    "fchdir",
 };
 
 /// Syscalls that cross a process boundary.
@@ -262,6 +274,136 @@ fn syscallName(raw: []const u8) ?[]const u8 {
         if (!std.ascii.isAlphanumeric(ch) and ch != '_') return null;
     }
     return name;
+}
+
+/// Which child a process-creating line reports having created, or null (v15).
+///
+/// The window a writing child is judged in starts here rather than at its first write.
+/// Between the two, the parent is running with the child already alive: a mutation of its
+/// own in that gap is ordered against the child's by nothing, and would be admitted if the
+/// window began at the child's first operation. `spike/followup-item3/NOTES.md` recorded
+/// that counterexample the day before this was written and the first implementation
+/// shipped past it — review caught it.
+///
+/// `fork` and `posix_spawn` both reach the kernel as `clone` on Linux, and the resumed
+/// spelling appears whenever the child's own lines interleave with the call (measured: the
+/// committed `inv-todoman` capture, where the child's first line precedes the resumption
+/// that names it).
+fn spawnedPid(raw: []const u8) ?u64 {
+    const line = stripPidPrefix(raw);
+    const family = [_][]const u8{ "clone", "clone3", "fork", "vfork" };
+    var is_spawn = false;
+    if (std.mem.startsWith(u8, line, "<... ")) {
+        const rest = line["<... ".len..];
+        const end = std.mem.indexOf(u8, rest, " resumed>") orelse return null;
+        for (family) |f| {
+            if (std.mem.eql(u8, rest[0..end], f)) is_spawn = true;
+        }
+    } else {
+        for (family) |f| {
+            if (std.mem.startsWith(u8, line, f) and line.len > f.len and line[f.len] == '(') is_spawn = true;
+        }
+    }
+    if (!is_spawn) return null;
+    // A thread is not a child to be waited for, and is refused elsewhere by name; counting
+    // its creation as a window would be reading the wrong event.
+    if (std.mem.indexOf(u8, line, "CLONE_THREAD") != null) return null;
+
+    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
+    const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
+    var end: usize = 0;
+    while (end < tail.len and std.ascii.isDigit(tail[end])) end += 1;
+    if (end == 0) return null;
+    const v = std.fmt.parseInt(u64, tail[0..end], 10) catch return null;
+    return if (v == 0) null else v;
+}
+
+/// Which child a wait-family line reports having been reaped, or null (v15).
+///
+/// Its own parser rather than `syscallName` plus a suffix, for two reasons the real
+/// captures show. A wait that another child's exit interrupted comes back as
+/// `<... wait4 resumed>…) = 29`, and `syscallName` answers null for that line — the first
+/// `(` it finds is inside `WIFEXITED(s)`, whose prefix is not a name. And `waitid` reports
+/// the reaped child in its siginfo (`si_pid=`) while returning 0, so the return value is
+/// the wrong field to read for that one member of the family.
+///
+/// A pid here means "somebody waited for this process and collected it". It is not a
+/// claim that the waiter was blocked while the child ran: the real captures show a shell
+/// blocking in `wait4` for a foreground command and reaping a pipeline stage with
+/// `WNOHANG` afterwards, and the second shape is common enough that treating it as a
+/// refusal would refuse `pass`. `spike/followup-item3/NOTES.md` measured both.
+fn reapedPid(raw: []const u8) ?u64 {
+    const line = stripPidPrefix(raw);
+    const family = [_][]const u8{ "wait4", "waitid", "wait3", "waitpid" };
+    var is_wait = false;
+    if (std.mem.startsWith(u8, line, "<... ")) {
+        const rest = line["<... ".len..];
+        const end = std.mem.indexOf(u8, rest, " resumed>") orelse return null;
+        for (family) |f| {
+            if (std.mem.eql(u8, rest[0..end], f)) is_wait = true;
+        }
+    } else {
+        for (family) |f| {
+            if (std.mem.startsWith(u8, line, f) and line.len > f.len and line[f.len] == '(') is_wait = true;
+        }
+    }
+    if (!is_wait) return null;
+
+    // **A pid coming back is not a collection.** Two shapes return one without reaping it,
+    // and both would close a window early — which admits a run that should refuse, the
+    // direction that matters:
+    //
+    //   `wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGTSTP}], WUNTRACED, …) = 53`
+    //   `waitid(P_PID, 53, {…si_pid=53…}, WEXITED|WNOWAIT, …) = 0`
+    //
+    // The first reports a child that stopped and is still alive; the second asks for the
+    // status and leaves the child reapable. So a status, where the line carries one, has
+    // to say the child ended, and `WNOWAIT` disqualifies the line whatever the status
+    // says. A line with no status field at all falls through to the return value, which is
+    // the shape `wait4(pid, NULL, 0, NULL) = pid` has — nothing there says "stopped", and
+    // a caller passing no status buffer has no way to see one either.
+    //
+    // Before the siginfo read below, not after it: that is where `waitid` answers, so a
+    // check placed after it would never see a `waitid` line.
+    if (std.mem.indexOf(u8, line, "WNOWAIT") != null) return null;
+    if (std.mem.indexOf(u8, line, "WIFSTOPPED") != null or
+        std.mem.indexOf(u8, line, "WIFCONTINUED") != null) return null;
+    if (std.mem.indexOf(u8, line, "CLD_STOPPED") != null or
+        std.mem.indexOf(u8, line, "CLD_CONTINUED") != null or
+        std.mem.indexOf(u8, line, "CLD_TRAPPED") != null) return null;
+
+    // `waitid`'s answer, when it has one. Read before the return value because that one
+    // is 0 on success and says nothing about which child it was.
+    if (std.mem.indexOf(u8, line, "si_pid=")) |at| {
+        const tail = line[at + "si_pid=".len ..];
+        var end: usize = 0;
+        while (end < tail.len and std.ascii.isDigit(tail[end])) end += 1;
+        if (end > 0) return std.fmt.parseInt(u64, tail[0..end], 10) catch null;
+    }
+
+    // The return value, for the rest of the family. `= -1 ECHILD` and
+    // `= ? ERESTARTSYS` both fail to parse, which is the answer: nothing was reaped.
+    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
+    const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
+    var end: usize = 0;
+    while (end < tail.len and std.ascii.isDigit(tail[end])) end += 1;
+    if (end == 0) return null;
+    const v = std.fmt.parseInt(u64, tail[0..end], 10) catch return null;
+    return if (v == 0) null else v;
+}
+
+/// Note an event. Duplicates are kept deliberately: two operations by one process are two
+/// positions, and the ordering rule reads positions.
+pub fn noteEvent(arena: std.mem.Allocator, list: *std.ArrayList(Event), id: u64, at: usize) !void {
+    try list.append(arena, .{ .id = id, .at = at });
+}
+
+/// Whether any event in the list carries this id.
+pub fn holdsId(list: []const Event, id: u64) bool {
+    for (list) |e| {
+        if (e.id == id) return true;
+    }
+    return false;
 }
 
 fn isProcessSyscall(name: []const u8) bool {
@@ -378,7 +520,6 @@ fn renameat2Flag(line: []const u8, symbol: []const u8, bit: u64) bool {
     const v = std.fmt.parseInt(u64, std.mem.trim(u8, flags, " "), 0) catch return false;
     return (v & bit) != 0;
 }
-
 
 fn classify(name: []const u8) ?contract.OpClass {
     for (known) |m| {
@@ -590,9 +731,9 @@ const fd_write_args = [_]FdWriteArg{
 /// that really does use argument 0 costs a line here — which is the point, because the
 /// line is where the reader learns it was decided rather than defaulted.
 const fd_arg0 = [_][]const u8{
-    "close", "fdatasync", "fsync", "ftruncate",
-    "ftruncate64", "pwrite", "pwrite64", "pwritev",
-    "pwritev2", "sendfile", "sendfile64", "write",
+    "close",       "fdatasync", "fsync",      "ftruncate",
+    "ftruncate64", "pwrite",    "pwrite64",   "pwritev",
+    "pwritev2",    "sendfile",  "sendfile64", "write",
     "writev",
 };
 
@@ -612,6 +753,11 @@ fn fdSyscallInScope(line: []const u8, name: []const u8, state: []const u8, alt: 
     const p = argAnnotation(arg) orelse return false;
     return insideEither(p, state, alt);
 }
+
+/// Something a witness saw, and where in its capture it saw it. The position is an
+/// ordinal over the lines this reader examined, which is all any comparison here needs:
+/// nothing outside this file reads it as anything but "before" and "after".
+pub const Event = struct { id: u64, at: usize };
 
 pub const Parsed = struct {
     /// The subject's state-directory operation classes, in order.
@@ -639,12 +785,52 @@ pub const Parsed = struct {
     /// A syscall that stays a hard refusal whoever tolerates what: the subject
     /// replacing its own image, or namespace surgery.
     boundary: ?[]const u8 = null,
-    /// A process other than the subject performed a non-read-only operation on the
-    /// state directory. This is the condition that decides tolerance, and the oracle is
-    /// the only observer that sees it whether or not the child loaded the shim.
-    child_touched: bool = false,
+    /// The processes other than the subject that performed a non-read-only operation on
+    /// the state directory. The oracle is the only observer that sees these whether or
+    /// not the child loaded the shim.
+    ///
+    /// **A set rather than a flag** (v15). A flag could only answer "refuse or not";
+    /// judging a run with children in it needs the names, because the admission compares
+    /// this set against the pids the shim recorded IN BOTH DIRECTIONS. A pid the oracle
+    /// saw and the shim did not is a writer with no record and therefore no number
+    /// (`TOY_SPAWN_WRITES` is exactly that). A pid the shim recorded and the oracle did
+    /// not is a writer this parser could not place — its `chdir` moved the cwd that
+    /// resolves its relative paths, and only the subject's `chdir` is tracked here — so
+    /// nothing checks whether its operations interleaved with anyone else's.
+    /// Every non-read-only state-directory operation this witness placed, with **where in
+    /// the capture** it was seen, in the order the lines came (v15).
+    ///
+    /// Under `strace` that is every process, the subject included, which is what the
+    /// ordering rule needs — the writer it most often has to order a child against is the
+    /// parent. The `fs_usage` reader fills in the non-subject ids only: it has no oracle
+    /// role beyond detection on that platform, where a run with another process in it is
+    /// refused for want of an oracle that can account for one. That refusal is
+    /// `boundary_without_oracle` and it keys on the SHIM having seen a boundary, so a
+    /// child the shim never loaded reaches the admission — and is refused there too,
+    /// because a tid is not the pid the shim recorded and no writer will match it.
+    ///
+    /// The position is the point. Whether a run's operations interleave cannot be decided
+    /// from the shim's trace: an awaited child's records sit BETWEEN its parent's, and so
+    /// do a racing sibling's, so the record order shows the same picture for the hand-off
+    /// and for the race. What separates them is when the child was collected, and the
+    /// wait and the writes are in one order only here.
+    ///
+    /// The id is what the WITNESS attributes a line to: a pid under `strace -f`, and a
+    /// tid under `fs_usage`, which is the only identifier that reader has. For a
+    /// single-threaded process the two are the same number, and a run whose thread
+    /// mutated the judged directory refuses (`multiple_threads_detected`) before this is
+    /// compared against anything. 64-bit because a mach thread id is not bounded by the
+    /// width of a pid.
+    mutations: std.ArrayList(Event),
+    /// The processes some other process waited for and collected, and where. See
+    /// `reapedPid` for what this does and does not claim.
+    reaps: std.ArrayList(Event),
+    /// Where each child process was created. The other end of the window a writing child
+    /// is judged in; `spawnedPid` says why it is the creation and not the first write.
+    spawns: std.ArrayList(Event),
     /// Distinct pids other than the subject's that appeared at all.
     children: usize = 0,
+
     /// The subject's pid: whoever performed the launch execve. Null when the trace
     /// carries no pid prefixes, in which case every line is attributed to the subject —
     /// the v0.1 reading, still right for a trace of one process.
@@ -658,10 +844,20 @@ pub const Parsed = struct {
     /// them — and excluded from every verdict input (#121, option b); the report
     /// carries them so the exclusion is visible per run.
     metadata_observed: std.ArrayList([]const u8),
+
+    /// Did a process other than the subject mutate the judged directory? Derived from
+    /// `mutations` rather than stored beside it: a flag and a list that answer the same
+    /// question are two things that can disagree.
+    pub fn childTouched(self: Parsed) bool {
+        for (self.mutations.items) |m| {
+            if (self.primary_pid == null or m.id != self.primary_pid.?) return true;
+        }
+        return false;
+    }
 };
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8) !Parsed {
-    var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty };
+    var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
 
@@ -684,6 +880,14 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         out.lines_seen += 1;
 
         const pid = pidOf(line);
+        // Before the name test, which drops every `<... wait4 resumed>` line: that form
+        // has no name this parser can read and it is the one carrying the reaped pid
+        // (v15). Gated on `launched` so the apparatus's own waits — strace reaping the
+        // process it started the target from — are not the target's.
+        if (launched) {
+            if (reapedPid(line)) |r| try noteEvent(arena, &out.reaps, r, out.lines_seen);
+            if (spawnedPid(line)) |c| try noteEvent(arena, &out.spawns, c, out.lines_seen);
+        }
         const name = syscallName(line) orelse continue;
 
         // The first execve is strace starting the target: it names the subject.
@@ -797,8 +1001,25 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // arguments; an fd syscall reads only its descriptor annotation; anything else
         // falls to the conservative whole-line net, which only ever routes to
         // `unsupported`. `unresolvable` is a refusal, never a silent drop.
+        // **The tracked cwd is the SUBJECT's, so no other process's relative path may be
+        // resolved against it** (v15). `resolvePath` falls back to it whenever a line
+        // carries no dirfd annotation, which is every legacy-form path syscall — and on
+        // x86-64 glibc issues the legacy forms for `rename`, `unlink` and `mkdir`, as the
+        // comment on `cwd` above says. A child that moved its own working directory and
+        // wrote through a relative path would then be placed at a path it never touched:
+        // outside the judged state, silently, and a run with an unaccounted writer in it
+        // would be judged.
+        //
+        // Passing null instead makes that line `.unresolvable`, which the child branch
+        // below already treats the way it treats an in-scope one — "nobody can say which
+        // kind it was". The hole was opened by this version, not found in it: `chdir`
+        // joined the read-only list here (a child changing its own directory changes no
+        // byte), and until then the `chdir` itself was the touch that refused the run.
+        // The measurement that said the annotation always carries the child's cwd was
+        // taken on aarch64 only, where glibc issues the *at forms; review caught the
+        // generalisation.
         const scope: Scope = if (pathSpec(name)) |spec|
-            pathSyscallScope(spec, line, cwd, state_dir, state_alt)
+            pathSyscallScope(spec, line, if (is_primary) cwd else null, state_dir, state_alt)
         else if (isFdSyscall(name))
             (if (fdSyscallInScope(line, name, state_dir, state_alt)) .inside else .outside)
         else
@@ -821,7 +1042,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // child touching what only the subject may. `changesPersistentState` is the
             // single predicate for "not a read, not a close, not a write-incapable open"
             // (ADR 0003), so an in-scope and an unresolvable operation are judged alike.
-            if (is_shared_write_map or changesPersistentState(name, line)) out.child_touched = true;
+            if (is_shared_write_map or changesPersistentState(name, line)) try noteEvent(arena, &out.mutations, pid.?, out.lines_seen);
             continue;
         }
 
@@ -879,6 +1100,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // lists cannot drift apart (#337).
             try out.names.append(arena, name);
             try out.lines.append(arena, line);
+            // And into the positioned list, where the SUBJECT's operations matter as much
+            // as a child's (v15): the ordering rule asks whether anyone else wrote while
+            // a child had not been collected yet, and the parent is the anyone else that
+            // most often has.
+            if (pid) |me| try noteEvent(arena, &out.mutations, me, out.lines_seen);
         } else if (out.unsupported == null) {
             out.unsupported = try arena.dupe(u8, name);
         }
@@ -954,7 +1180,7 @@ test "parse extracts the class sequence the shim should have recorded" {
     // the close is still *examined* (in scope), just not compared.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
-    try std.testing.expect(!p.child_touched);
+    try std.testing.expect(!p.childTouched());
     try std.testing.expectEqual(@as(usize, 0), p.children);
 }
 
@@ -1086,7 +1312,7 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
         \\
     ;
     const c = try parse(arena_state.allocator(), child, "/tmp/s", "", "/work");
-    try std.testing.expect(!c.child_touched);
+    try std.testing.expect(!c.childTouched());
     try std.testing.expectEqual(@as(usize, 1), c.metadata_observed.items.len);
 
     // Outside the state directory: none of our business, not even as a note.
@@ -1532,7 +1758,7 @@ test "a child that stays out of the state directory is not a refusal" {
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
-    try std.testing.expect(!p.child_touched);
+    try std.testing.expect(!p.childTouched());
     try std.testing.expectEqual(@as(usize, 1), p.children);
     try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
 }
@@ -1550,7 +1776,7 @@ test "a child that writes into the state directory is the refusal condition" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
-    try std.testing.expect(p.child_touched);
+    try std.testing.expect(p.childTouched());
     try std.testing.expectEqual(@as(usize, 1), p.children);
 }
 
@@ -1566,7 +1792,7 @@ test "a child reading the state directory is tolerated" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
-    try std.testing.expect(!p.child_touched);
+    try std.testing.expect(!p.childTouched());
 
     const unknown_sys =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
@@ -1574,7 +1800,7 @@ test "a child reading the state directory is tolerated" {
         \\
     ;
     const q = try parse(arena_state.allocator(), unknown_sys, "/tmp/s", "", "/work");
-    try std.testing.expect(q.child_touched);
+    try std.testing.expect(q.childTouched());
 }
 
 test "the launch execve is not mistaken for the target creating a child" {
@@ -1683,7 +1909,7 @@ test "a shared writable mapping of a state file is a mutation nobody models" {
         \\
     ;
     const q = try parse(arena_state.allocator(), child, "/tmp/s", "", "/work");
-    try std.testing.expect(q.child_touched);
+    try std.testing.expect(q.childTouched());
 
     // A private or read-only mapping changes nothing on disk and stays tolerated.
     const private =
@@ -1692,7 +1918,7 @@ test "a shared writable mapping of a state file is a mutation nobody models" {
         \\
     ;
     const r = try parse(arena_state.allocator(), private, "/tmp/s", "", "/work");
-    try std.testing.expect(!r.child_touched);
+    try std.testing.expect(!r.childTouched());
 }
 
 test "a child's read-only open is a read, and its writing open is the touch" {
@@ -1704,7 +1930,7 @@ test "a child's read-only open is a read, and its writing open is the touch" {
         \\
     ;
     const p = try parse(arena_state.allocator(), reading, "/tmp/s", "", "/work");
-    try std.testing.expect(!p.child_touched);
+    try std.testing.expect(!p.childTouched());
 
     const writing =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
@@ -1712,7 +1938,7 @@ test "a child's read-only open is a read, and its writing open is the touch" {
         \\
     ;
     const q = try parse(arena_state.allocator(), writing, "/tmp/s", "", "/work");
-    try std.testing.expect(q.child_touched);
+    try std.testing.expect(q.childTouched());
 
     // creat never spells its flags, and it always creates.
     const creating =
@@ -1721,7 +1947,7 @@ test "a child's read-only open is a read, and its writing open is the touch" {
         \\
     ;
     const r = try parse(arena_state.allocator(), creating, "/tmp/s", "", "/work");
-    try std.testing.expect(r.child_touched);
+    try std.testing.expect(r.childTouched());
 }
 
 test "a filename spelling a flag does not change how the call is classified" {
@@ -1735,7 +1961,7 @@ test "a filename spelling a flag does not change how the call is classified" {
         \\
     ;
     const p = try parse(arena_state.allocator(), read_with_scary_name, "/tmp/s", "", "/work");
-    try std.testing.expect(!p.child_touched);
+    try std.testing.expect(!p.childTouched());
 
     const private_map_of_scary_name =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
@@ -1743,7 +1969,7 @@ test "a filename spelling a flag does not change how the call is classified" {
         \\
     ;
     const q = try parse(arena_state.allocator(), private_map_of_scary_name, "/tmp/s", "", "/work");
-    try std.testing.expect(!q.child_touched);
+    try std.testing.expect(!q.childTouched());
 }
 
 test "pids are read from both prefix spellings" {
@@ -1817,4 +2043,172 @@ test "every fd syscall the classifier knows declares which argument holds its de
         try std.testing.expect(classify(w.name) != null);
         try std.testing.expect(pathSpec(w.name) == null);
     }
+}
+
+test "a wait's reaped child is read from both spellings, and from waitid's siginfo (v15)" {
+    // Every line here except the `waitid` one is copied out of a capture taken with the
+    // engine's own flags (`spike/followup-item3/artifacts/`), because the shapes this has
+    // to survive are not the ones a hand-written example produces: a wait interrupted by
+    // another child comes back as a `resumed>` line whose first parenthesis belongs to
+    // `WIFEXITED(s)`, and `syscallName` answers null for it.
+    try std.testing.expectEqual(@as(?u64, 29), reapedPid("28    <... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 29"));
+    try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG, NULL) = 53"));
+    try std.testing.expectEqual(@as(?u64, 40), reapedPid("38    wait4(40, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 40"));
+
+    // The call going in carries no answer yet — the child is still running.
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("28    wait4(29,  <unfinished ...>"));
+    // Nothing to reap, and a wait the arrival of another child's SIGCHLD restarted.
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("47    wait4(-1, 0xffffd4dafb20, WNOHANG, NULL) = -1 ECHILD (No child processes)"));
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("38    <... wait4 resumed>0xffffd8be1d4c, 0, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)"));
+
+    // `waitid` returns 0 and names the child in its siginfo, so the return value is the
+    // wrong field for this one member of the family.
+    try std.testing.expectEqual(@as(?u64, 4242), reapedPid("42    waitid(P_PID, 4242, {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=4242, si_uid=0, si_status=0}, WEXITED, NULL) = 0"));
+
+    // Not waits. The second is the control that matters: a line ending in a number is
+    // not a reap, and a reader that only looked at the tail would count every successful
+    // `openat` as one.
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("28    exit_group(0)                     = ?"));
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("28    openat(AT_FDCWD</w>, \"/tmp/s/a\", O_WRONLY|O_CREAT, 0644) = 29"));
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("28    <... openat resumed>) = 29"));
+    // A name that merely starts with one of the family's.
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("28    wait4ever(1) = 7"));
+}
+
+test "the parse collects who wrote and who was reaped (v15)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The slice's shape: the subject writes, an awaited child writes, the subject writes
+    // again. Both sets are what the admission compares against the shim's own account.
+    const text =
+        \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/a", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/a>
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\42    wait4(4242,  <unfinished ...>
+        \\4242  rename("/tmp/s/a", "/tmp/s/b") = 0
+        \\4242  +++ exited with 0 +++
+        \\42    <... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 4242
+        \\42    openat(AT_FDCWD, "/tmp/s/c", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/c>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    // Three mutations in line order: the subject's, the child's, the subject's again —
+    // and the reap between the child's and the subject's second, which is what makes the
+    // shape a hand-off rather than a race.
+    try std.testing.expectEqual(@as(usize, 3), p.mutations.items.len);
+    try std.testing.expectEqual(@as(u64, 42), p.mutations.items[0].id);
+    try std.testing.expectEqual(@as(u64, 4242), p.mutations.items[1].id);
+    try std.testing.expectEqual(@as(u64, 42), p.mutations.items[2].id);
+    try std.testing.expectEqual(@as(usize, 1), p.reaps.items.len);
+    try std.testing.expectEqual(@as(u64, 4242), p.reaps.items[0].id);
+    try std.testing.expect(p.reaps.items[0].at > p.mutations.items[1].at);
+    try std.testing.expect(p.reaps.items[0].at < p.mutations.items[2].at);
+    // The subject's own two operations are still the ones compared against the shim's
+    // account, unchanged by any of this.
+    try std.testing.expectEqual(@as(usize, 2), p.classes.items.len);
+}
+
+test "a child nobody waited for leaves the reaped set empty (v15)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The control for the test above, and the one condition of the three that this
+    // parser alone decides: the same capture with the wait removed.
+    const text =
+        \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  rename("/tmp/s/a", "/tmp/s/b") = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/c", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/c>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expect(p.childTouched());
+    try std.testing.expectEqual(@as(usize, 0), p.reaps.items.len);
+}
+
+test "a pid coming back from a wait is not always a collection (v15)" {
+    // The two shapes that report a child without collecting it. Both would close the
+    // window a writing child is judged in, which admits a run that should refuse — the
+    // direction a guard must not fail in.
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("47    wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGTSTP}], WUNTRACED, NULL) = 53"));
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("47    wait4(-1, [{WIFCONTINUED(s)}], WCONTINUED, NULL) = 53"));
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("42    waitid(P_PID, 4242, {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=4242, si_status=0}, WEXITED|WNOWAIT, NULL) = 0"));
+    try std.testing.expectEqual(@as(?u64, null), reapedPid("42    waitid(P_PID, 4242, {si_signo=SIGCHLD, si_code=CLD_STOPPED, si_pid=4242, si_status=SIGTSTP}, WSTOPPED, NULL) = 0"));
+
+    // The control: the same calls when the child really did end. Without these the four
+    // above would be satisfied by a function that answered null to everything.
+    try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WUNTRACED, NULL) = 53"));
+    try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(-1, [{WIFSIGNALED(s) && WTERMSIG(s) == SIGKILL}], 0, NULL) = 53"));
+    // A wait with no status buffer says nothing about stopping, and a caller that passed
+    // none could not have seen a stop either.
+    try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(53, NULL, 0, NULL) = 53"));
+}
+
+test "where a child was created, read from both spellings (v15)" {
+    // `fork` and `posix_spawn` both reach the kernel as `clone` here; the resumed form
+    // appears whenever the child's own lines interleave with the call, which the
+    // committed `inv-todoman` capture shows happening for an ordinary fork+exec.
+    try std.testing.expectEqual(@as(?u64, 29), spawnedPid("28    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|SIGCHLD, child_tidptr=0xff) = 29"));
+    try std.testing.expectEqual(@as(?u64, 26), spawnedPid("25    <... clone resumed>)              = 26"));
+    try std.testing.expectEqual(@as(?u64, 50), spawnedPid("49    clone(child_stack=0xffff97ff0000, flags=CLONE_VM|CLONE_VFORK|SIGCHLD) = 50"));
+    try std.testing.expectEqual(@as(?u64, 4242), spawnedPid("42    clone3({flags=0, exit_signal=SIGCHLD}, 88) = 4242"));
+
+    // A thread is not a child something waits for; it is refused by name elsewhere, and
+    // reading its creation as a window would be reading the wrong event.
+    try std.testing.expectEqual(@as(?u64, null), spawnedPid("42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND) = 43"));
+    // The call going in, and the failure.
+    try std.testing.expectEqual(@as(?u64, null), spawnedPid("28    clone(child_stack=NULL, flags=SIGCHLD <unfinished ...>"));
+    try std.testing.expectEqual(@as(?u64, null), spawnedPid("28    clone(child_stack=NULL, flags=SIGCHLD) = -1 EAGAIN (Resource temporarily unavailable)"));
+    // In the child, where clone returns 0. The child does not learn its own pid here.
+    try std.testing.expectEqual(@as(?u64, null), spawnedPid("29    <... clone resumed>)              = 0"));
+    // Not spawns. The second is the control: a line ending in a number is not a creation.
+    try std.testing.expectEqual(@as(?u64, null), spawnedPid("28    wait4(29, NULL, 0, NULL) = 29"));
+    try std.testing.expectEqual(@as(?u64, null), spawnedPid("28    openat(AT_FDCWD, \"/tmp/s/a\", O_WRONLY) = 29"));
+}
+
+test "a child's relative path is not resolved against the subject's directory (v15)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The x86-64 shape: glibc issues the legacy `rename`, so the line carries no dirfd
+    // annotation and nothing in it says where the child's working directory was. The
+    // subject's is `/work`, and resolving against it would place this write outside the
+    // judged state — silently, in a run that has no other witness for it, because this
+    // child never loaded the shim.
+    const text =
+        \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  chdir("/tmp/s") = 0
+        \\4242  rename("a", "b") = 0
+        \\42    wait4(4242, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 4242
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    // Unplaceable, and unplaceable is judged the way in-scope is: the run has a writer
+    // whose operations nobody can locate.
+    try std.testing.expect(p.childTouched());
+
+    // The control, and the reason this test is not satisfied by a parser that gave up on
+    // every child: the same child writing through an absolute path is placed, and placed
+    // OUTSIDE, so it is not a touch at all.
+    const outside =
+        \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  rename("/elsewhere/a", "/elsewhere/b") = 0
+        \\42    wait4(4242, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 4242
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), outside, "/tmp/s", "", "/work");
+    try std.testing.expect(!q.childTouched());
+
+    // And the subject's own relative path still resolves against its cwd, which is what
+    // the tracked directory is for. `/work/key` is outside `/tmp/s`; the point is that it
+    // was placed at all rather than falling to unresolvable.
+    const subject_relative =
+        \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\42    rename("key", "key.bak") = 0
+        \\
+    ;
+    const r = try parse(arena_state.allocator(), subject_relative, "/tmp/s", "", "/work");
+    try std.testing.expect(!r.childTouched());
+    try std.testing.expectEqual(@as(usize, 0), r.classes.items.len);
 }

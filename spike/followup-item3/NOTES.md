@@ -28,8 +28,27 @@ Ran 2026-09-08, before the plan was finalised, with the engine's own oracle flag
 - The reverse case is why blocking is needed at all: a parent that runs concurrently with a
   writing child could write in either order between runs.
 
-So the rule is both: writing processes' lifetimes pairwise disjoint, AND the subject blocked
-in an unfinished call across each of them.
+So the rule needs both a window and something inside it — but **neither of the two forms
+above is what shipped**, and this note is corrected rather than left standing.
+
+What shipped (contract v15, ADR 0053) asks, for each writing child: from the `clone` that
+returned it to the wait that reaped it, did any other process perform a state-directory
+operation? Two differences from the sentence this paragraph first carried:
+
+- **Not "lifetimes", write intervals — and then not those either.** A process's lifetime is
+  not containable in a parent's wait: the capture above shows the child running before the
+  `clone` that names it has even resumed. And a write interval cannot be read from the
+  trace, where a parent's records always straddle its children's. The window is the child's
+  creation to its collection, both read from the oracle's own line order.
+- **Not "the parent was blocked".** The `pass` measurement above is why: a shell blocks in
+  `wait4` for a foreground command and reaps a pipeline stage with `WNOHANG` afterwards, so
+  a blocking requirement would admit a target on one run and refuse it on the next.
+
+The counterexample this note recorded — "a parent that runs concurrently with a writing
+child could write in either order between runs" — is what the creation-to-collection window
+answers, and the first implementation of the rule got it wrong by starting the window at the
+child's first write instead. Review caught that; `TOY_PARENT_WRITES_IN_WINDOW` is the toy
+that now measures it.
 
 ## A false alarm worth recording
 

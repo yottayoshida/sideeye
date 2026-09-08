@@ -118,10 +118,7 @@ pub const TraceInfo = struct {
     /// this field stays null.
     first_unsupported: ?[]const u8 = null,
     kill_landed_seq: ?u32 = null,
-    /// Who wrote the kill_landed record. `seq == k` alone is not landing evidence: a
-    /// child inheriting SIDEEYE_KILL_AT counts its own operations, and its k-th is not
-    /// the subject's.
-    kill_landed_pid: ?u32 = null,
+
     kill_point_count: u32 = 0,
     mutation_count: u32 = 0,
     boundary: ?contract.OpClass = null,
@@ -642,9 +639,13 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                     if (info.hard_boundary == null) info.hard_boundary = .exec;
                 }
             },
+            // Only the number. Who wrote it was kept beside it until v15, because a
+            // child inheriting `SIDEEYE_KILL_AT` counted its own operations and its k-th
+            // was not the subject's. The number is the run's now, so the writer is
+            // whichever process reached it — and the field went with its reason rather
+            // than staying on as a value nothing reads.
             .kill_landed => {
                 info.kill_landed_seq = op.seq;
-                info.kill_landed_pid = op.pid;
             },
             .unresolved => {
                 if (info.unresolved_refusing == null and unplacedRefuses(op))

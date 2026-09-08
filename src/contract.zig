@@ -174,6 +174,23 @@ pub const env = struct {
     /// 1-based index of the kill-point op to die immediately before.
     /// Absent or 0 means the recording run: observe everything, kill nothing.
     pub const kill_at = "SIDEEYE_KILL_AT";
+    /// Whether the shim may take the whole process group down with it (v15).
+    ///
+    /// Set by the engine on a world's spawn and nowhere else, because the engine is what
+    /// puts the target in its own process group first (`src/posix.zig`). Killing one
+    /// process is not a crash: a shell whose child died runs the next command, so a world
+    /// armed at an awaited child's operation would carry operations from after the crash
+    /// point it claims to have died at. Killing the group is.
+    ///
+    /// **It is a flag rather than the shim's own judgement because the shim cannot make
+    /// one.** `getpgrp() == getpid()` is true for the subject and false for every child,
+    /// and a child that fell back to killing only itself would leave the shell running —
+    /// the exact thing this exists to prevent. What differs is not the process, it is how
+    /// the run was started, and only the starter knows. Measured: without this, the
+    /// `reproduce` line the report prints — which an operator types into a shell that has
+    /// done no `setpgid` — killed the acceptance suite's own shell (SIGKILL, exit 137,
+    /// at the leg that runs that line).
+    pub const kill_group = "SIDEEYE_KILL_GROUP";
     /// Operation count carried across a self-exec (#123): the shim's exec wrappers
     /// set it for the subject only (never for a forked or vfork'd child), the
     /// re-run `init()` continues numbering from it, and `shim_ready` re-announces

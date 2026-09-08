@@ -118,6 +118,31 @@ The oracle has neither problem: `strace -f` prefixes every line with a pid (meas
 `execve`, with the child's pid visible. It sees children whether or not they load the
 shim.
 
+**Amended 2026-09-08 (contract v15, ADR 0053).** Decisions 1, 2 and 4 all move, and the
+amendment sits here because a reader arriving at any of them needs it:
+
+- **Decision 2's "no cross-process counter is needed" was true of the rule it stated and is
+  no longer the rule.** A child that stays out of the judged directory still consumes no
+  numbers; a child that writes in it now takes one from the run's own sequence, read back
+  from the trace. The tolerance condition is no longer "no process other than the subject
+  touched the state directory" but "the two witnesses name the same writers, and each
+  writing child was collected before anyone else wrote again".
+- **Decision 4 is retired.** Only the subject could land the kill because a forked child
+  counted its own operations and its k-th belonged to nobody. The number is the run's now,
+  so the process that reaches k is the one the engine asked about — and requiring the
+  subject would mean a world armed at an awaited child's operation never dies at all.
+- **Decision 1's containment argument does not cover the new kill, and the code no longer
+  relies on it doing so.** The `getpgid` confirmation was removed here on the grounds that
+  `kill(-N, …)` is safe by construction: N is a freshly allocated pid, so a child that never
+  got its own group is signalled by nothing. That reasoning is about a signal sent from
+  OUTSIDE. The shim's crash-point kill is `kill(0, SIGKILL)`, sent from inside, and a
+  target sharing the engine's group would take the exploration with it — so the child now
+  exits 126 rather than exec'ing into a group it does not lead, and the shim group-kills
+  only where the engine says it made the group (`SIDEEYE_KILL_GROUP`).
+
+Decision 3 stands unchanged and is what makes the above safe to build: the oracle decides,
+not the child.
+
 **Therefore: a target that crosses a boundary can be judged only when an oracle is
 present.** In practice that means Linux. macOS has no usable oracle (ADR 0001, DESIGN §9),
 so multi-process targets stay UNKNOWN there — which is what happens today, so nothing

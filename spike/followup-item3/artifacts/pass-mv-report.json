@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "experimental",
+  "contract_version": 15,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "oracle_verified": false,
+  "oracle_verified_subject_only": true,
+  "crash_points": 5,
+  "explored": 6,
+  "violations": 0,
+  "expected_status": 0,
+  "l0": "7 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "agreed on 0 operations (3766 syscall lines examined, 25 in scope of the judged state), witness strace — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and ordered rather than compared one by one: this is `oracle_verified_subject_only`, and `oracle_verified` stays false. What accounts for a write neither observer placed is the per-path reconciliation, not this comparison",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 6 world(s)",
+  "processes": "a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; a process other than the subject operated on the judged directory in an explored world; the subject's image replaced 1 time(s), chain unbroken (#123)",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}
