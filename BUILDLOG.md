@@ -2,6 +2,54 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — A daemon's file name cut a fs_usage line short, and the reader called it a hole
+
+The third `macos` failure of the day, and the first that was not a 126: the fs_usage
+step's PASS leg refused `oracle_saw_nothing` — "a line of the fs_usage capture did not match
+the grammar" — twice in a row (13:41 and 13:47, the second a re-run), on the branch that
+fixes the 126s (#546) and touches nothing near `src/fsusage.zig`. The line, 173 bytes,
+verbatim from the log: a `getattrlist` with `[  2]` on `…ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81…`,
+a pathname of combining characters, and then nothing — no duration, no `proc.tid`.
+`fs_usage` had cut the line at its display width and the cut took the whole tail.
+
+**What the rule said, and what it meant.** ADR 0031 and the module's own doc: a line the
+grammar does not match is a hole, and an account with a hole is not agreement. Written for
+the subject's lines and for a mutation nobody can be named for. This line is neither — a
+read-only CALL, from a daemon walking its own directory — and the rule refused the run for
+it, on a runner where the daemon writes such names all day, which is why the re-run did not
+help. The narrowing is the one the reader already applies to a parsed line: a read-only
+CALL cannot have changed state whoever issued it, so it is skipped before the truncation
+check (the dyld `stat64` case, 353 in one capture). The left edge of the grammar — the
+timestamp and the CALL — is factored out as `callOf` and asked on its own when the whole
+line does not parse; a tail-less line with a mutating CALL is still a hole.
+
+**Seen red.** The unit test carries the runner's bytes verbatim: the daemon's line leaves
+the account whole, the same line with `write` as its CALL refuses `.unparsed`. With the
+skip removed (`and false`) the test fails on the first assertion; restored, green. The
+real-path measurement is the fs_usage step on the runner itself, which will say whether
+the daemon is still there.
+
+Filed as its own pull request rather than folded into the 126 change: a different
+promise (the reader's account, not the fork stub's exit), its own review.
+
+**What the fresh reader found.** Two things the change itself had left false. The
+`Defect.unparsed` doc in the same file still said "never skipped" — the module doc and
+the ADR were corrected and the type's own comment was not. And the documents said "a
+CALL that reads only" where the code says "a CALL in this list", and the list lacked the
+calls the same daemon issues beside `getattrlist` — `getattrlistbulk`, `getdirentriesattr`,
+`searchfs`, the un-suffixed `statfs`/`fstatfs` — so the runner's next line could have
+refused the same way with every document already claiming otherwise. Both corrected: the
+list gains the five, and every sentence says a CALL the reader knows to read only — or, after the
+confirming review, a disk-io line, since the code takes both and five sentences had said only one. Six
+smaller ones, all taken: the skip is wider than "tail-less" (any line the grammar cannot
+read whole — the documents say so now), disk-io lines take the same exit as parsed ones,
+the dup-window comment names what a skipped line does to a pending dup (nothing: it has
+no thread, and it cannot be the inert `fcntl`), the ADR's Consequences repeated the rule
+un-narrowed, the test's control was not the same bytes, and the list's provenance comment
+claimed a measurement for names added by hand — `mmap` among them, the one member not
+strictly read-only, symmetric with the shim not interposing it. The unit test also
+asserts no mutation was recorded, which it had not.
+
 ## 2026-09-08 — Two exit-126 children in one macOS CI day, and the code could not say which call
 
 The `macos` job failed twice today on pull requests that changed comments and documents
@@ -68,6 +116,7 @@ arms disabled (the recording half fails first, printing the old advice) and with
 baseline arm alone (its half fails). Locally the step's `rm -rf` was refused by the
 machine's own guard and the step uses `mktemp -d` instead; the guard that stops the next
 measurement is a shape this workspace has met before.
+
 
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
