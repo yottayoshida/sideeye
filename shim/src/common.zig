@@ -592,11 +592,14 @@ pub fn currentTid() u64 {
 /// BUILDLOG (2026-09-08) before the cost is claimed anywhere.
 fn mine() *ThreadState {
     const tid = currentTid();
-    for (&slots) |*s| {
-        if (@atomicLoad(u64, &s.tid, .acquire) == tid) return s;
-    }
-    for (&slots) |*s| {
-        if (@cmpxchgStrong(u64, &s.tid, 0, tid, .acq_rel, .acquire) == null) return s;
+    // One pass: our own slot if we have one, else the first free one seen on the way —
+    // claimed by compare-and-swap, and if another thread took it meanwhile, the scan
+    // continues from there. Slots are never freed, so a slot seen taken stays taken.
+    var i: usize = 0;
+    while (i < slots.len) : (i += 1) {
+        const owner = @atomicLoad(u64, &slots[i].tid, .acquire);
+        if (owner == tid) return &slots[i];
+        if (owner == 0 and @cmpxchgStrong(u64, &slots[i].tid, 0, tid, .acq_rel, .acquire) == null) return &slots[i];
     }
     // Announced HERE, at the moment of exhaustion, not at the next `writeRecord` — the
     // first version deferred it there, and review found the gap: the harm exhaustion does

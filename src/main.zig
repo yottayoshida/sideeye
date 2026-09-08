@@ -1550,7 +1550,10 @@ fn secondRunLabel(trace: engine.TraceInfo) ?[]const u8 {
         if (trace.boundary == .thread and trace.exec_continuations == 0) return "a thread";
         return "the subject replacing its own image";
     }
-    if (trace.foreign_kill_point) return "an operation by a process other than the subject";
+    // The inline chain this replaced had a fourth arm here, on `foreign_kill_point`. It was
+    // unreachable: that flag is set together with `foreign_pid_seen`, which `crossedBoundary`
+    // already answers to, so the branch above takes every such run as "a process boundary".
+    // Struck rather than kept as documentation of a case that cannot happen.
     return null;
 }
 

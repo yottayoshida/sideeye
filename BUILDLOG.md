@@ -305,6 +305,18 @@ under `unresolvedDetail`'s doc comment, which is back on its own function. The t
 fresh reader is not opened (`orchestrator.md` §2.5: R2 closes the round); what R2 found
 is fixed and the whole suite is run again below.
 
+**simplify, one pass, applied 2 / declined 4.** Applied: `mine()` scanned the table twice
+(own slot, then a free one) and scans it once, claiming the first free slot it passes;
+`secondRunLabel` carried the inline chain's fourth arm, on `foreign_kill_point`, which
+was unreachable in the chain too (`foreign_pid_seen` is set with it, and `crossedBoundary`
+answers first) — struck. Declined: folding `isResumedClone` into `spawnedPid`'s return
+(ten test sites compare it as `?u64`, for eight lines); the two `*_thread_only` flags
+are the account's third shape bolted onto a two-valued (`process_boundary`) design,
+and the deeper fix — a boundary *kind* the account switches on — moves the existing
+`*_process_boundary` fields with it, outside this change; the fs_usage arm is a special
+case by ruling, the root being a reader with no `primary_pid`; and the `gettid` per
+interposed call is measured, not guessed.
+
 
 ## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run
 
