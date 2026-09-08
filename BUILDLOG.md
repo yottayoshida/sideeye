@@ -2,27 +2,49 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-09-09 — The other half of the cut line: fs_usage wraps the tail onto the next line
+## 2026-09-09 — The other half of the cut line: the fragments after a skipped head
 
 With #547 merged, the v1.3.0 bump's CI (#545) refused the same fs_usage leg again — on a
 different line. 74 bytes, verbatim: `133 LIBARCHIVE.xattr.com.apple.macl=B    0.000039
-promotedcontentd.13451`. No timestamp, no CALL: it is the tail of the daemon's cut line
-(the same `promotedcontentd`, the same combining-character name), which `fs_usage` had
-wrapped rather than dropped. #547 skipped the head and the reader then refused the tail as
-the next unparsed line. The first fix had measured one physical line of a shape that is
-two.
+promotedcontentd.13451`. No timestamp, no CALL: the tail of the daemon's cut line (the
+same `promotedcontentd`, the same combining-character name), arriving as a physical line
+of its own. #547 skipped the head and the reader then refused the tail as the next
+unparsed line. The first fix had measured one physical line of a shape that is two.
 
-The tail is the rest of the line just skipped and not an event, so it is taken as such —
-and only as such: directly after a head this reader skipped as read-only, and only when it
-carries what a head loses (a duration and a `proc.tid`, read by `tailOf`, the right edge of
-the grammar factored out the way `callOf` was). A mutating head refused before its tail was
-reached, so a tail that is taken always belongs to a read-only head. A tail-shaped line
-after a whole line, a line with neither edge after a cut head, and a second tail in a row
-are shapes nobody has measured and stay holes — each pinned in the test beside the two real
-lines. Seen red with the continuation branch disabled: the two-line case refuses.
+**The first draft of this entry said `fs_usage` "wraps" the line, and the fresh reader
+read the repository's own measurement back at it**: `spike/fsusage/RESULTS.md` says wide
+mode cuts a name from the left at about 153 characters and never wraps, the sidecar's
+stdout is a file with no terminal width, and the two fragments' bytes add up to 154 —
+inside the cap, printed once. The fragment's own bytes, `133 LIBARCHIVE.xattr…=B`, read
+like a pax extended-header record, which is newline-terminated: a newline inside the
+name, printed raw, is the likely mechanism. Not measured (it needs root and `fs_usage
+-w` over a file so named); recorded as an inference everywhere it is stated. Its
+consequence is measured in the design: a name with two newlines makes three fragments,
+and the middle one has neither edge — the first draft would have refused it as "a shape
+nobody has measured", on the very leg this change exists to keep green.
 
-Same promise as #547 (the reader's account is not holed by a foreign read-only line the
-grammar cannot read whole), so its CHANGELOG entry grows a sentence rather than gaining a
+So the reader keeps a state, `in_cut_event`, set when it skips a head (read-only or
+disk-io — the first draft said "read-only" in three places and the code took both), and
+every following physical line without a timestamp is a fragment of that event until the
+one carrying the tail (`tailOf`, the right edge factored out the way `callOf` was); a
+timestamped line ends the event whether or not its tail came. Nothing is lost: the head's
+CALL could not change state. The same lines anywhere else stay holes. Six cases in one
+test, the two real lines among them; seen red twice — the fragment branch disabled (head
+then tail refuses), and the reset on a whole line removed (a tail after a whole line is
+swallowed). The reader also found the `Defect.unparsed` doc saying "only when" of a
+condition that had grown a second case — the same class of stale sentence #547's review
+caught in the same place — and the grammar's tail paragraph sitting on `callOf`'s doc;
+both moved.
+
+**Left as they are, and named.** `lines_seen` counts fragments as lines, so the report's
+"N syscall lines examined" is high by one per fragment — the head skip in #547 already
+had this property. Blank lines between fragments neither end nor extend an event. And a
+name that can end a physical line can begin one: a filename holding a newline and then a
+grammatical `fs_usage` line would be read as that line — a forged sentinel `open` could
+satisfy the handshake while no observer was alive, which is the false-PASS direction. Not
+this promise, not introduced here, and filed as #549 (`wrong-verdict`) rather than folded in.
+
+Same promise as #547, so its CHANGELOG entry grows a paragraph rather than gaining a
 sibling; its own pull request because #547 had merged.
 
 ## 2026-09-08 — A daemon's file name cut a fs_usage line short, and the reader called it a hole
