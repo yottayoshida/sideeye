@@ -1,0 +1,50 @@
+=============== engine: /c3/bin/sideeye ===============
+noop        [wrappers] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+WRITES      [wrappers] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+BUSY        [wrappers] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+ONLY_WORKER [wrappers] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+noop        [syscalls] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+WRITES      [syscalls] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+BUSY        [syscalls] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+ONLY_WORKER [syscalls] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          the target created a thread; operation order would not be deterministic
+    | processes: the shim recorded a thread
+=============== engine: /work/zig-out-linux/bin/sideeye ===============
+noop        [wrappers] rc=1 FAIL  cp=5 ov=True
+    | 
+    | processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one
+WRITES      [wrappers] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          two threads of process 169 wrote in the judged directory: tid 170 performed open(/tmp/m/state/from-thread.txt) and tid 169 performed open(/tm
+    | processes: the shim recorded a thread; the strace account was not read; the shim recorded 1 thread(s) created, and 2 thread id(s) wrote the judged directory (v16: one per process is
+BUSY        [wrappers] rc=1 FAIL  cp=5 ov=True
+    | 
+    | processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one
+ONLY_WORKER [wrappers] rc=1 FAIL  cp=5 ov=True
+    | 
+    | processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one
+noop        [syscalls] rc=1 FAIL  cp=5 ov=True
+    | 
+    | processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one
+WRITES      [syscalls] rc=2 UNKNOWN multiple_threads_detected cp=0 ov=False
+    |          two threads of process 265 wrote in the judged directory: tid 266 performed open(/tmp/m/state/from-thread.txt) and tid 265 performed open(/tm
+    | processes: the shim recorded a thread; the strace account was not read; the shim recorded 1 thread(s) created, and 2 thread id(s) wrote the judged directory (v16: one per process is
+BUSY        [syscalls] rc=1 FAIL  cp=5 ov=True
+    | 
+    | processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one
+ONLY_WORKER [syscalls] rc=1 FAIL  cp=5 ov=True
+    | 
+    | processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one

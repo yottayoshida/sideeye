@@ -100,6 +100,9 @@ pub const execvp = @extern(*const fn ([*:0]const u8, [*]const ?[*:0]const u8) ca
 pub const posix_spawn = @extern(*const fn (?*anyopaque, [*:0]const u8, ?*const anyopaque, ?*const anyopaque, [*]const ?[*:0]const u8, [*]const ?[*:0]const u8) callconv(.c) c_int, .{ .name = "posix_spawn" });
 pub const posix_spawnp = @extern(*const fn (?*anyopaque, [*:0]const u8, ?*const anyopaque, ?*const anyopaque, [*]const ?[*:0]const u8, [*]const ?[*:0]const u8) callconv(.c) c_int, .{ .name = "posix_spawnp" });
 pub const pthread_create = @extern(*const fn (*anyopaque, ?*const anyopaque, *const anyopaque, ?*anyopaque) callconv(.c) c_int, .{ .name = "pthread_create" });
+/// The calling thread's 64-bit id (v16). Not interposed — the shim reads it, the target
+/// does not see it — so a plain extern is right here, the way `getpid` is in `common.c`.
+pub const pthread_threadid_np = @extern(*const fn (?*anyopaque, *u64) callconv(.c) c_int, .{ .name = "pthread_threadid_np" });
 pub const setsid = @extern(*const fn () callconv(.c) c_int, .{ .name = "setsid" });
 pub const setpgid = @extern(*const fn (c_int, c_int) callconv(.c) c_int, .{ .name = "setpgid" });
 pub const fopen = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) ?*anyopaque, .{ .name = "fopen" });

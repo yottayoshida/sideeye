@@ -149,7 +149,21 @@ const std = @import("std");
 /// #123's chain check compares against. Measured motivation: `pass mv`, whose dangerous
 /// operations (the rename, the remove) run in awaited children and were therefore never
 /// addressed at all (`spike/assisted/pass/explore-v10-transcript.txt`).
-pub const contract_version: u32 = 15;
+/// v16 adds the writing THREAD to every record (`tid`, 64 bits). Through v15 a record
+/// named its process and no more, which was enough while a target that created a thread
+/// was refused outright. A run whose threads never write the judged directory is judged
+/// now, and the question the engine has to answer for it — did exactly one thread
+/// write? — has no witness without this field: an explored world runs with no oracle,
+/// and two threads of one process write the same `pid`. The byte shape changes (eight
+/// bytes after `pid`), so a v15 shim's records are unreadable to a v16 engine, and the
+/// version guard turns that pairing into `contract_version_mismatch` rather than a
+/// decode that lands eight bytes into the path. A single-threaded run numbers exactly as
+/// it did and its `tid` equals its `pid` on Linux. The shim's own per-thread state (the
+/// re-entrancy guard, the record buffer, the count scan) moved with it, for the reason
+/// `shim/src/common.zig`'s first paragraph gives. Measured motivation: the five targets
+/// of eight behind the thread wall whose one writing thread is the main one
+/// (`docs/target-classes.md`, and `BUILDLOG.md` 2026-09-08).
+pub const contract_version: u32 = 16;
 
 pub const magic = "SIDEEYE1";
 
@@ -302,6 +316,13 @@ pub const unresolved_kind = struct {
     /// A torn record at the end of the trace is NOT this — that is an operation still being
     /// written, and the read stops there and tries again on the next one.
     pub const count_read_failed = "count-read-failed";
+    /// The shim's per-thread slot table filled up (v16): the 65th thread of one process
+    /// records through a shared reserve buffer, and this notice is written once, in front
+    /// of that thread's first record, so the engine refuses the run before it reads a
+    /// record whose buffer may have been shared. Slots are never freed — the shim sees no
+    /// thread end — so a target that creates and retires threads past the table is
+    /// refused rather than judged.
+    pub const thread_slots_exhausted = "thread-slots-exhausted";
 
     /// The longest a kind can be once `withFd` or `withOp` has appended to it.
     ///
@@ -1083,6 +1104,13 @@ pub const Record = struct {
     /// would be the parent's inside a forked child, which is precisely the case the
     /// field exists to distinguish.
     pid: u32,
+    /// The thread that performed the operation (v16): `gettid` on Linux, the Mach
+    /// thread id on Darwin, which is why the field is 64 bits wide — the same reason the
+    /// oracle's `Event.id` is. Read live per record, like `pid`. For a single-threaded
+    /// process on Linux it equals `pid`; the engine never assumes that, because the
+    /// question this field answers — did exactly one thread write the judged directory —
+    /// is asked precisely of the runs where it does not hold.
+    tid: u64,
     path: []const u8,
     /// Second path for two-path operations (`rename`), empty otherwise.
     aux: []const u8,
@@ -1093,7 +1121,7 @@ pub const header_len = magic.len + 4;
 /// Largest byte length a single record can occupy. The shim builds a record in a
 /// stack buffer of this size and writes it with one `write(2)`, so a trace never
 /// contains a half-written record even if the process dies mid-run.
-pub const max_record_len = 2 + 4 + 4 + 4 + max_path + 4 + max_path;
+pub const max_record_len = 2 + 4 + 4 + 8 + 4 + max_path + 4 + max_path;
 
 pub const EncodeError = error{ BufferTooSmall, PathTooLong };
 
@@ -1106,7 +1134,7 @@ pub fn encodeHeader(buf: []u8) EncodeError!usize {
 
 pub fn encodeRecord(buf: []u8, rec: Record) EncodeError!usize {
     if (rec.path.len > max_path or rec.aux.len > max_path) return error.PathTooLong;
-    const needed = 2 + 4 + 4 + 4 + rec.path.len + 4 + rec.aux.len;
+    const needed = 2 + 4 + 4 + 8 + 4 + rec.path.len + 4 + rec.aux.len;
     if (buf.len < needed) return error.BufferTooSmall;
 
     var i: usize = 0;
@@ -1116,6 +1144,8 @@ pub fn encodeRecord(buf: []u8, rec: Record) EncodeError!usize {
     i += 4;
     std.mem.writeInt(u32, buf[i..][0..4], rec.pid, .little);
     i += 4;
+    std.mem.writeInt(u64, buf[i..][0..8], rec.tid, .little);
+    i += 8;
     std.mem.writeInt(u32, buf[i..][0..4], @intCast(rec.path.len), .little);
     i += 4;
     @memcpy(buf[i..][0..rec.path.len], rec.path);
@@ -1144,7 +1174,7 @@ pub const Decoded = struct {
 
 /// Borrows from `bytes`; the returned slices stay valid as long as the buffer does.
 pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
-    if (bytes.len < 14) return error.Truncated;
+    if (bytes.len < 22) return error.Truncated;
     var i: usize = 0;
 
     const raw_op = std.mem.readInt(u16, bytes[i..][0..2], .little);
@@ -1156,6 +1186,9 @@ pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
 
     const pid = std.mem.readInt(u32, bytes[i..][0..4], .little);
     i += 4;
+
+    const tid = std.mem.readInt(u64, bytes[i..][0..8], .little);
+    i += 8;
 
     const path_len = std.mem.readInt(u32, bytes[i..][0..4], .little);
     i += 4;
@@ -1172,7 +1205,7 @@ pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
     i += aux_len;
 
     return .{
-        .rec = .{ .op = op, .seq = seq, .pid = pid, .path = path, .aux = aux },
+        .rec = .{ .op = op, .seq = seq, .pid = pid, .tid = tid, .path = path, .aux = aux },
         .consumed = i,
     };
 }
@@ -1378,6 +1411,7 @@ test "record round-trips including the two-path form" {
         .op = .rename,
         .seq = 7,
         .pid = 4242,
+        .tid = 4242,
         .path = "/s/key.json.tmp",
         .aux = "/s/key.json",
     });
@@ -1386,16 +1420,35 @@ test "record round-trips including the two-path form" {
     try std.testing.expectEqual(OpClass.rename, got.rec.op);
     try std.testing.expectEqual(@as(u32, 7), got.rec.seq);
     try std.testing.expectEqual(@as(u32, 4242), got.rec.pid);
+    try std.testing.expectEqual(@as(u64, 4242), got.rec.tid);
     try std.testing.expectEqualStrings("/s/key.json.tmp", got.rec.path);
     try std.testing.expectEqualStrings("/s/key.json", got.rec.aux);
+}
+
+test "a thread id wider than a pid survives the round trip (v16)" {
+    // A Mach thread id does not fit in 32 bits; the field is 64 wide so it is not
+    // truncated on the way in, and this pins that the shim's write and the engine's read
+    // agree on the width.
+    var buf: [512]u8 = undefined;
+    const written = try encodeRecord(&buf, .{
+        .op = .write,
+        .seq = 1,
+        .pid = 7,
+        .tid = 0x1_0000_0000_2a,
+        .path = "/s/a",
+        .aux = "",
+    });
+    const got = try decodeRecord(buf[0..written]);
+    try std.testing.expectEqual(@as(u64, 0x1_0000_0000_2a), got.rec.tid);
+    try std.testing.expectEqual(@as(u32, 7), got.rec.pid);
 }
 
 test "records decode back to back" {
     var buf: [512]u8 = undefined;
     var i: usize = 0;
-    i += try encodeRecord(buf[i..], .{ .op = .shim_ready, .seq = 0, .pid = 10, .path = "", .aux = "" });
-    i += try encodeRecord(buf[i..], .{ .op = .write, .seq = 1, .pid = 10, .path = "/s/a", .aux = "" });
-    i += try encodeRecord(buf[i..], .{ .op = .unlink, .seq = 2, .pid = 11, .path = "/s/b", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .shim_ready, .seq = 0, .pid = 10, .tid = 10, .path = "", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .write, .seq = 1, .pid = 10, .tid = 10, .path = "/s/a", .aux = "" });
+    i += try encodeRecord(buf[i..], .{ .op = .unlink, .seq = 2, .pid = 11, .tid = 11, .path = "/s/b", .aux = "" });
 
     var off: usize = 0;
     const first = try decodeRecord(buf[off..i]);
@@ -1415,20 +1468,20 @@ test "records decode back to back" {
 
 test "a truncated record is reported, not silently accepted" {
     var buf: [512]u8 = undefined;
-    const written = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .pid = 1, .path = "/s/a", .aux = "" });
+    const written = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .pid = 1, .tid = 1, .path = "/s/a", .aux = "" });
     try std.testing.expectError(error.Truncated, decodeRecord(buf[0 .. written - 1]));
 }
 
 test "an unknown op class is rejected rather than guessed" {
     var buf: [64]u8 = undefined;
-    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .pid = 1, .path = "", .aux = "" });
+    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 1, .pid = 1, .tid = 1, .path = "", .aux = "" });
     std.mem.writeInt(u16, buf[0..2], 4242, .little);
     try std.testing.expectError(error.BadOpClass, decodeRecord(&buf));
 }
 
 test "the encoding is little-endian regardless of host" {
     var buf: [64]u8 = undefined;
-    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 0x01020304, .pid = 0x0a0b0c0d, .path = "", .aux = "" });
+    _ = try encodeRecord(&buf, .{ .op = .write, .seq = 0x01020304, .pid = 0x0a0b0c0d, .tid = 0x0a0b0c0d, .path = "", .aux = "" });
     // op class 2 = write, as two little-endian bytes
     try std.testing.expectEqual(@as(u8, 2), buf[0]);
     try std.testing.expectEqual(@as(u8, 0), buf[1]);

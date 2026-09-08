@@ -305,17 +305,12 @@ fn spawnedPid(raw: []const u8) ?u64 {
         }
     }
     if (!is_spawn) return null;
-    // A thread is not a child to be waited for, and is refused elsewhere by name; counting
-    // its creation as a window would be reading the wrong event.
+    // A thread is not a child to be waited for; counting its creation as a window would be
+    // reading the wrong event. This catches the one-line form only — a split clone's
+    // flags are on the unfinished half and its number on the resumed half, and the
+    // caller pairs those through `pending_thread_clone` before asking here (v16).
     if (std.mem.indexOf(u8, line, "CLONE_THREAD") != null) return null;
-
-    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
-    const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
-    var end: usize = 0;
-    while (end < tail.len and std.ascii.isDigit(tail[end])) end += 1;
-    if (end == 0) return null;
-    const v = std.fmt.parseInt(u64, tail[0..end], 10) catch return null;
-    return if (v == 0) null else v;
+    return returnedPid(line);
 }
 
 /// Which child a wait-family line reports having been reaped, or null (v15).
@@ -609,7 +604,44 @@ fn syscallArg(raw: []const u8, index: usize) ?[]const u8 {
             else => {},
         }
     }
+    // An unfinished call has no closing parenthesis: strace printed ` <unfinished ...>`
+    // where the rest of the line would have gone, because another task's line landed
+    // inside the call. The argument being read when the line ran out is whole — strace
+    // prints arguments entire — so it is returned the way a `)` would have returned it.
+    // Measured (BUILDLOG 2026-09-08): `fsync(4</tmp/s/k> <unfinished ...>` is the shape,
+    // and under a second thread it is the shape of every call with one argument; before
+    // this arm the oracle's list had no `fsync` and the run refused
+    // `oracle_missed_operation` with all seven of the shim's records present.
+    if (arg == index) {
+        if (std.mem.lastIndexOf(u8, line, "<unfinished ...>")) |uf| {
+            if (uf >= start) return std.mem.trim(u8, line[start..uf], " \t");
+        }
+    }
     return null;
+}
+
+/// The value after the last ` = ` on a line, or null where there is none or it is not a
+/// non-negative number — the shape a successful `clone` returns its child (or thread) in.
+/// Shared by `spawnedPid` and the thread-clone reader so the two cannot disagree about
+/// where the number is.
+fn returnedPid(line: []const u8) ?u64 {
+    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
+    const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
+    var end: usize = 0;
+    while (end < tail.len and std.ascii.isDigit(tail[end])) end += 1;
+    if (end == 0) return null;
+    const v = std.fmt.parseInt(u64, tail[0..end], 10) catch return null;
+    return if (v == 0) null else v;
+}
+
+/// Whether this is the `<... clone resumed>` half of a split clone line. The flags live
+/// on the other half, so which kind of clone it was has to have been remembered.
+fn isResumedClone(raw: []const u8) bool {
+    const line = stripPidPrefix(raw);
+    if (!std.mem.startsWith(u8, line, "<... ")) return false;
+    const rest = line["<... ".len..];
+    const end = std.mem.indexOf(u8, rest, " resumed>") orelse return false;
+    return std.mem.eql(u8, rest[0..end], "clone") or std.mem.eql(u8, rest[0..end], "clone3");
 }
 
 /// `AT_REMOVEDIR` as Linux spells it.
@@ -937,13 +969,23 @@ pub const Parsed = struct {
     /// and for the race. What separates them is when the child was collected, and the
     /// wait and the writes are in one order only here.
     ///
-    /// The id is what the WITNESS attributes a line to: a pid under `strace -f`, and a
-    /// tid under `fs_usage`, which is the only identifier that reader has. For a
-    /// single-threaded process the two are the same number, and a run whose thread
-    /// mutated the judged directory refuses (`multiple_threads_detected`) before this is
-    /// compared against anything. 64-bit because a mach thread id is not bounded by the
-    /// width of a pid.
+    /// The id is what the WITNESS attributes a line to: the task id under `strace -f` —
+    /// a pid for a process's main thread and a tid for any other thread, which strace
+    /// prints in the same column — and a tid under `fs_usage`, which is the only
+    /// identifier that reader has. Through v15 the distinction never reached a
+    /// comparison, because a run with a thread in it was refused first; since v16 a
+    /// thread of the subject is the subject (`subject_tids`, `isSubject`), so an id
+    /// here that is not the subject's is a child's. 64-bit because a mach thread id is
+    /// not bounded by the width of a pid.
     mutations: std.ArrayList(Event),
+    /// Threads of the subject, by the id strace prints for them (v16). Filled from the
+    /// subject's own `clone` lines carrying `CLONE_THREAD`, in both spellings strace uses
+    /// (one line, or an unfinished half and a resumed half). A line from one of these
+    /// is the subject's line: its operations go to `classes`, its relative paths resolve
+    /// against the subject's cwd, and its writes are not a child's touch. What this list
+    /// does NOT decide is whether more than one of them wrote — that is the shim's
+    /// trace to answer, record by record, since every record names its thread.
+    subject_tids: std.ArrayList(u64),
     /// The processes some other process waited for and collected, and where. See
     /// `reapedPid` for what this does and does not claim.
     reaps: std.ArrayList(Event),
@@ -967,21 +1009,41 @@ pub const Parsed = struct {
     /// carries them so the exclusion is visible per run.
     metadata_observed: std.ArrayList([]const u8),
 
+    /// Is this id the subject — its main thread, or any thread it created (v16)? The
+    /// one place the question is answered, so the child branch of `parse`, the touch
+    /// predicate below and the engine's admission (`childrenMayBeJudged`) cannot drift
+    /// on what "the subject" means.
+    pub fn isSubject(self: Parsed, id: u64) bool {
+        if (self.primary_pid) |p| {
+            if (id == p) return true;
+        }
+        for (self.subject_tids.items) |t| {
+            if (id == t) return true;
+        }
+        return false;
+    }
+
     /// Did a process other than the subject mutate the judged directory? Derived from
     /// `mutations` rather than stored beside it: a flag and a list that answer the same
     /// question are two things that can disagree.
     pub fn childTouched(self: Parsed) bool {
         for (self.mutations.items) |m| {
-            if (self.primary_pid == null or m.id != self.primary_pid.?) return true;
+            if (self.primary_pid == null or !self.isSubject(m.id)) return true;
         }
         return false;
     }
 };
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8) !Parsed {
-    var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty };
+    var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
+    // Callers whose `clone` carried `CLONE_THREAD` and has not resumed yet (v16). strace
+    // splits a call whenever another task's line lands inside it, and for a clone that
+    // puts the flags on one half and the new task's id on the other; the pid column is
+    // what joins them. A thread created by a thread is the same case — the caller is a
+    // subject id either way, which is what `isSubject` is asked before the entry is made.
+    var pending_thread_clone: std.ArrayList(u32) = .empty;
 
     // Writes appended but not yet known to have run, and the entries a refusal retracts.
     // See `PendingWrite` and `dropRetracted` for why the removal is deferred to the end.
@@ -1014,7 +1076,16 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // process it started the target from — are not the target's.
         if (launched) {
             if (reapedPid(line)) |r| try noteEvent(arena, &out.reaps, r, out.lines_seen);
-            if (spawnedPid(line)) |c| try noteEvent(arena, &out.spawns, c, out.lines_seen);
+            // The resumed half of a split clone carries the number and not the flags.
+            // Whether it was a thread was decided on the unfinished half and remembered
+            // by caller; a remembered one is the subject's new thread and not a spawn.
+            if (spawnedPid(line)) |c| {
+                if (isResumedClone(line) and takeThreadClone(&pending_thread_clone, pid)) {
+                    try out.subject_tids.append(arena, c);
+                } else {
+                    try noteEvent(arena, &out.spawns, c, out.lines_seen);
+                }
+            }
             // The kernel refusing a trapped write means the entry appended for it
             // describes a call that did not run (`--observe syscalls`). Here for the same
             // reason as the two readers above: `syscallName` answers null for a
@@ -1054,7 +1125,13 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
 
-        const is_primary = pid == null or out.primary_pid == null or pid.? == out.primary_pid.?;
+        // "The subject" is the process AND its threads (v16). A thread's line can precede
+        // the resumption of the clone that names it, the ordering `spawnedPid`'s doc
+        // records for a child; such a line is read as a child's here and the process is
+        // struck from `child_pids` once the clone resumes, below. If it wrote in the
+        // judged directory in that gap it stays a touch — the run refuses rather than
+        // admits, which is the direction to be wrong in.
+        const is_primary = pid == null or out.primary_pid == null or out.isSubject(pid.?);
         if (!is_primary) {
             var seen = false;
             for (child_pids.items) |p| {
@@ -1074,22 +1151,39 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // these syscalls — the completeness comparison below refuses on that
             // divergence. A child's execve is just a child becoming what it spawns.
             // unshare is refused from anyone — this tool does not model namespaces.
-            // And a clone that carries CLONE_THREAD is not a child at all: it is a
-            // thread reached through a raw syscall, past the pthread_create wrapper,
-            // and threads are refused for the determinism of the subject itself.
-            // Whole-line search is fine *here*, unlike the flag checks below: clone's
-            // arguments carry no target-chosen strings for a false CLONE_THREAD to
-            // hide in, and clone3 prints its flags inside a struct at no fixed index.
+            // A clone that carries CLONE_THREAD is not a child at all: it is a thread,
+            // and since v16 a thread of the subject IS the subject — its id joins
+            // `subject_tids`, from this line when the number is on it and from the
+            // resumed half otherwise. Through v15 this line refused the run; what it
+            // refused for (one order for the kill to address) is decided by the shim's
+            // trace now, thread by thread. A thread a CHILD created is not entered: the
+            // caller is not a subject id, so the thread's lines stay a child's, and a
+            // write from it is a touch. Whole-line search is fine *here*, unlike the
+            // flag checks below: clone's arguments carry no target-chosen strings for a
+            // false CLONE_THREAD to hide in, and clone3 prints its flags inside a struct
+            // at no fixed index.
             const is_raw_thread = std.mem.startsWith(u8, name, "clone") and
                 std.mem.indexOf(u8, line, "CLONE_THREAD") != null;
             // CLONE_FS shares the working directory: a child holding it can move the
             // subject's cwd out from under the resolution above, so this tool refuses it
             // rather than track a shared fs context (ADR 0006). Same whole-line check as
-            // CLONE_THREAD, and safe for the same reason — clone's arguments carry no
-            // target-chosen strings for a false token to hide in.
+            // CLONE_THREAD, and safe for the same reason. A thread holds it too — every
+            // pthread does — and is not refused for it: a thread's chdir moves the
+            // process's cwd, which is the subject's, and the tracker above follows any
+            // subject id's chdir since v16.
             const is_shared_fs = std.mem.startsWith(u8, name, "clone") and
                 std.mem.indexOf(u8, line, "CLONE_FS") != null;
-            if (is_raw_thread or is_shared_fs or std.mem.eql(u8, name, "unshare")) {
+            if (is_raw_thread) {
+                if (is_primary) {
+                    if (returnedPid(line)) |t| {
+                        try out.subject_tids.append(arena, t);
+                    } else if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                        try pending_thread_clone.append(arena, pid orelse 0);
+                    }
+                    // A failed clone (`= -1 ENOSYS`, the clone3 a kernel declines before
+                    // libc falls back to clone) made no thread and enters nothing.
+                }
+            } else if (is_shared_fs or std.mem.eql(u8, name, "unshare")) {
                 if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
             }
             continue;
@@ -1272,9 +1366,32 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             out.unsupported = try arena.dupe(u8, name);
         }
     }
-    out.children = child_pids.items.len;
+    // A thread's first line can precede the resumption of the clone that names it, so
+    // it may have been listed as a child before it was known to be the subject's (v16).
+    // Struck now, once every clone has resumed: `children` is a count of PROCESSES the
+    // report prints as such, and a thread is not one.
+    var kept: usize = 0;
+    for (child_pids.items) |c| {
+        if (!out.isSubject(c)) {
+            child_pids.items[kept] = c;
+            kept += 1;
+        }
+    }
+    out.children = kept;
     try dropRetracted(arena, &out, dead_ops.items, dead_muts.items);
     return out;
+}
+
+/// Take `pid`'s remembered thread clone out of the list, answering whether there was one.
+fn takeThreadClone(list: *std.ArrayList(u32), pid: ?u32) bool {
+    const want = pid orelse 0;
+    for (list.items, 0..) |p, i| {
+        if (p == want) {
+            _ = list.swapRemove(i);
+            return true;
+        }
+    }
+    return false;
 }
 
 /// Compare the two class sequences position by position.
@@ -2274,19 +2391,119 @@ test "a child's execve is the child becoming something, not a refusal" {
     try std.testing.expectEqual(@as(usize, 1), p.children);
 }
 
-test "a raw clone carrying CLONE_THREAD is a thread, not a child" {
+test "a raw clone carrying CLONE_THREAD is a thread of the subject, not a child and not a boundary (v16)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // pthread_create is interposed; syscall(SYS_clone, CLONE_THREAD|…) is not. Without
-    // this the raw form would be tolerated as a quiet child, and threads are refused
-    // for the subject's own determinism, not for what they touch.
+    // Through v15 this line refused the run (`p.boundary != null` was the assertion
+    // here). The thread's id is the subject's now, and CLONE_FS — which every pthread
+    // carries — does not refuse on its own when CLONE_THREAD is beside it.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_THREAD|CLONE_SIGHAND) = 43
+        \\43    write(3</tmp/s/key.json>, "k", 1) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(?[]const u8, null), p.boundary);
+    try std.testing.expect(p.isSubject(43));
+    try std.testing.expect(!p.childTouched());
+    try std.testing.expectEqual(@as(usize, 0), p.children);
+    // The thread's write is the subject's write: it is in the class list the shim's
+    // account is compared against, not in a child's touch.
+    const want = [_]contract.OpClass{.write};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(usize, 0), p.spawns.items.len);
+}
+
+test "CLONE_FS without CLONE_THREAD still refuses (v16)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The control for the test above: the reason a thread is admitted (its chdir is the
+    // subject's) does not hold for a separate process sharing the fs context, so the
+    // ADR 0006 refusal stands for it.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    clone(child_stack=0x7f, flags=CLONE_FS|SIGCHLD) = 43
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expect(p.boundary != null);
+    try std.testing.expect(!p.isSubject(43));
+}
+
+test "a thread clone split across an unfinished and a resumed line is still the subject's (v16)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The shape a second thread produces for the third: strace prints the flags on the
+    // unfinished half and the new id on the resumed half. The measured capture that
+    // motivated `pending_thread_clone` is the busy-thread toy's; a `clone3` refused
+    // `ENOSYS` in front of it is the shape a kernel without clone3 produces, and it
+    // enters nothing.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    clone3({flags=CLONE_VM|CLONE_FS|CLONE_THREAD, exit_signal=0}, 88) = -1 ENOSYS (Function not implemented)
+        \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND, parent_tid=[43]) = 43
+        \\43    clone(child_stack=0x7e, flags=CLONE_VM|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND <unfinished ...>
+        \\42    write(3</tmp/s/key.json>, "k", 1) = 1
+        \\43    <... clone resumed>, parent_tid=[44]) = 44
+        \\44    write(3</tmp/s/key.json>, "k", 1) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expect(p.isSubject(43));
+    try std.testing.expect(p.isSubject(44));
+    try std.testing.expect(!p.childTouched());
+    try std.testing.expectEqual(@as(usize, 0), p.children);
+    try std.testing.expectEqual(@as(usize, 0), p.spawns.items.len);
+    try std.testing.expectEqual(@as(usize, 2), p.classes.items.len);
+}
+
+test "a thread whose first line precedes its clone's resumption is not a child (v16)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The ordering `spawnedPid`'s doc records for a child, on a thread: the new task is
+    // scheduled before the parent's clone returns. Its out-of-scope line is read as a
+    // child's at the time and struck from the count once the clone resumes.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND <unfinished ...>
+        \\43    set_robust_list(0x7e, 24) = 0
+        \\42    <... clone resumed>, parent_tid=[43]) = 43
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expect(p.isSubject(43));
+    try std.testing.expectEqual(@as(usize, 0), p.children);
+}
+
+test "a thread a child created stays the child's (v16)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The caller of the thread clone is a child, not a subject id, so the thread is not
+    // entered — and its write is a touch, the way any of the child's writes would be.
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND) = 4243
+        \\4243  write(3</tmp/s/key.json>, "k", 1) = 1
+        \\42    wait4(4242, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 4242
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expect(!p.isSubject(4243));
+    try std.testing.expect(p.childTouched());
+}
+
+test "syscallArg reads the argument an unfinished call ran out on (v16)" {
+    // The measured shape: an fd-only call, split by another thread's line. Before this
+    // the reader found no `)` and answered null, so `fsync` never reached the class list.
+    try std.testing.expectEqualStrings("4</tmp/s/k>", syscallArg("50    fsync(4</tmp/s/k> <unfinished ...>", 0).?);
+    // A later argument of a wider call, same ending.
+    try std.testing.expectEqualStrings("6", syscallArg("50    write(4</tmp/s/k>, \"key=2\\n\", 6 <unfinished ...>", 2).?);
+    // And an index past the arguments that were printed is still nothing.
+    try std.testing.expectEqual(@as(?[]const u8, null), syscallArg("50    fsync(4</tmp/s/k> <unfinished ...>", 1));
+    // The finished shapes read as they did.
+    try std.testing.expectEqualStrings("4</tmp/s/k>", syscallArg("50    fsync(4</tmp/s/k>) = 0", 0).?);
 }
 
 test "an unshimmed child detaching is caught by the oracle" {

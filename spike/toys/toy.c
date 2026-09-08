@@ -214,6 +214,20 @@
  *                  refuse as recording_run_failed naming both statuses; with it, the
  *                  same run explores normally and the baseline is held to N too.
  *   TOY_THREAD     if set, create and join a trivial thread before rotating
+ *   TOY_THREAD_BUSY  if set, a second thread opens and closes /dev/null in a loop for
+ *                  the whole of the rotate, and is joined after it. Every one of those
+ *                  opens passes through the shim's wrapper and none is in the state
+ *                  directory. Through contract v15 the wrapper's re-entrancy guard was
+ *                  one flag for the whole process, so a main-thread state write arriving
+ *                  while the worker held it was dropped without a record — measured as
+ *                  `oracle_missed_operation` with the thread refusal lifted. The loop is
+ *                  what makes the overlap certain rather than lucky: the worker is
+ *                  started before the first state operation and stopped after the last
+ *   TOY_THREAD_WRITES  if set, a second thread writes one file in the state directory
+ *                  and is joined, so the process's state writes come from two threads —
+ *                  the shape v16 refuses, naming the second thread's first operation
+ *   TOY_THREAD_ONLY_WORKER  if set, the whole rotate runs on a second thread while the
+ *                  main thread only waits: one writing thread, and not the main one
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
  *                  state directory after a delay, then rotate without waiting for it.
  *                  The parent finishing (or being killed) must not leave that write to
@@ -345,6 +359,41 @@ static void *noop_thread(void *arg) {
     return NULL;
 }
 
+/* TOY_THREAD_BUSY's worker. Nothing it opens is in the state directory; what matters is
+ * that every open reaches the shim's wrapper while the main thread is writing there. */
+static volatile int busy_stop = 0;
+static void *busy_thread(void *arg) {
+    (void)arg;
+    while (!busy_stop) {
+        int fd = open("/dev/null", O_RDONLY);
+        if (fd >= 0) close(fd);
+    }
+    return NULL;
+}
+
+/* TOY_THREAD_WRITES's worker: one file in the state directory, written from a thread
+ * that is not the main one. */
+static void *writing_thread(void *arg) {
+    (void)arg;
+    char p[4096];
+    join_path(p, sizeof p, "from-thread.txt");
+    write_file(p, "a thread wrote this\n");
+    return NULL;
+}
+
+/* TOY_THREAD_ONLY_WORKER's worker: the whole rotate, from a thread that is not the main
+ * one, while the main thread only waits. The judged run then has exactly one writing
+ * thread and it is not the process's main thread — the shape the oracle's reader had
+ * to be taught (a thread's lines carry the thread's id, not the pid), and the shape no
+ * real target measured so far has, which is why a toy carries it. */
+static int cmd_rotate_body(void);
+static int only_worker_rc = 0;
+static void *rotating_thread(void *arg) {
+    (void)arg;
+    only_worker_rc = cmd_rotate_body();
+    return NULL;
+}
+
 /* Optional boundary behaviour, requested through the environment so one binary
  * can play both the supported and the unsupported target. */
 static void maybe_leave_the_supported_region(void) {
@@ -392,6 +441,14 @@ static void maybe_leave_the_supported_region(void) {
     if (getenv("TOY_THREAD")) {
         pthread_t t;
         if (pthread_create(&t, NULL, noop_thread, NULL) == 0) pthread_join(t, NULL);
+    }
+    /* The refusal case for a thread (v16): a second thread of THIS process writes in the
+     * judged directory, and is joined, so the process's writes come from two threads.
+     * The write is a whole file rather than a byte so the shim records an open and a
+     * write under the worker's id — the refusal names the first of them. */
+    if (getenv("TOY_THREAD_WRITES")) {
+        pthread_t t;
+        if (pthread_create(&t, NULL, writing_thread, NULL) == 0) pthread_join(t, NULL);
     }
     /* Deliberately not waited for. The child sleeps past anything the parent will do,
      * so its write lands only if the engine let it survive. */
@@ -703,7 +760,29 @@ static int plant_once_flag(void) { /* 0 on success or when there is nothing to p
     return 0;
 }
 
+static int cmd_rotate_body(void);
+
+/* The rotate, with TOY_THREAD_BUSY's worker running for exactly its duration. A wrapper
+ * rather than a start and a stop inside the body, because the body returns from a dozen
+ * places and a worker left running past any of them would be a leaked thread, not a
+ * measurement. */
 static int cmd_rotate(void) {
+    if (getenv("TOY_THREAD_ONLY_WORKER")) {
+        pthread_t t;
+        if (pthread_create(&t, NULL, rotating_thread, NULL) != 0) return 1;
+        pthread_join(t, NULL);
+        return only_worker_rc;
+    }
+    if (!getenv("TOY_THREAD_BUSY")) return cmd_rotate_body();
+    pthread_t t;
+    if (pthread_create(&t, NULL, busy_thread, NULL) != 0) return 1;
+    int rc = cmd_rotate_body();
+    busy_stop = 1;
+    pthread_join(t, NULL);
+    return rc;
+}
+
+static int cmd_rotate_body(void) {
     char key[4096], tmp[4096];
     join_path(key, sizeof key, KEY_NAME);
     join_path(tmp, sizeof tmp, TMP_NAME);

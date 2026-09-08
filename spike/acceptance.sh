@@ -215,9 +215,57 @@ else
     fails=$((fails + 1))
 fi
 
+# Threads (contract v16). Four shapes of one binary, and an engine that decides by
+# anything other than which threads WROTE cannot pass all four: a refuse-on-any-thread
+# engine fails the first, a tolerate-every-thread engine fails the second, a shim whose
+# re-entrancy guard is process-wide fails the third's oracle agreement, and an oracle
+# reader that takes a thread's lines for a child's fails the fourth.
 TOY_THREAD=1 export TOY_THREAD
-run_case "thread is UNKNOWN"     "$OUT/toy-bug"    2 "multiple_threads_detected"
+run_case "a thread that never writes is judged (v16)" "$OUT/toy-bug" 1 "crash point 5 of 5"
 unset TOY_THREAD
+TOY_THREAD_WRITES=1 export TOY_THREAD_WRITES
+run_case "a second writing thread is UNKNOWN (v16)" "$OUT/toy-bug" 2 "multiple_threads_detected"
+run_case "  ...and the refusal names the worker's operation" "$OUT/toy-bug" 2 "from-thread.txt"
+run_case "  ...and both thread ids" "$OUT/toy-bug" 2 "two threads of process "
+# Both, because which one the trace saw first is the scheduler's: on this toy the worker
+# writes before the main thread, so a refusal naming only "the second" named the main
+# thread's own open — the one operation the operator did not need pointing to.
+run_case "  ...each with what it did" "$OUT/toy-bug" 2 " performed open("
+# Both operations by name, not one: a refusal that names the worker's file and the
+# sentence's shape could still have dropped the main thread's — review read the leg
+# above as pinning one `performed open(` where the sentence has two.
+run_case "  ...the main thread's too" "$OUT/toy-bug" 2 "key.json.tmp"
+unset TOY_THREAD_WRITES
+# The two shapes that need the oracle's agreement to mean anything, so they are read
+# from the JSON rather than the headline: BUSY is the process-wide `busy` race (commit 1
+# of v16 — the v15 shim drops two of seven records under it), ONLY_WORKER is the oracle
+# reading a non-main thread's lines as the subject's (commit 3 — the v15 reader refused
+# it `oracle_missed_operation`).
+thread_json_case() { # thread_json_case <label> <envvar>
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env "$2=1" "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/t.json 2>&1)
+    rc=$?
+    verdict=$(python3 -c "import json;d=json.load(open('/tmp/acc/t.json'));print(d.get('verdict'), d.get('oracle_verified'), d.get('crash_points'))" 2>/dev/null)
+    if [ "$rc" = "1" ] && [ "$verdict" = "FAIL True 5" ]; then
+        echo "ok   $1 (exit 1, oracle agreed over 5 crash points)"
+    else
+        echo "FAIL $1: exit $rc, verdict/oracle/crash_points = $verdict"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+}
+thread_json_case "a worker thread busy outside the state directory does not cost a record (v16)" TOY_THREAD_BUSY
+thread_json_case "a run whose one writing thread is not the main thread is judged (v16)" TOY_THREAD_ONLY_WORKER
+# And the account says what a judged threaded run was, so "single process" cannot be
+# read as "single-threaded".
+if python3 -c "import json,sys; p=json.load(open('/tmp/acc/t.json')).get('processes',''); sys.exit(0 if ('thread(s) created' in p and '1 thread id(s) of the subject' in p) else 1)" 2>/dev/null; then
+    echo "ok   the account of a judged threaded run names its threads and its one writer"
+else
+    echo "FAIL the account of a judged threaded run does not name its threads: $(python3 -c "import json;print(json.load(open('/tmp/acc/t.json')).get('processes'))" 2>/dev/null)"
+    fails=$((fails + 1))
+fi
 
 echo ""
 echo "=========== check 2q: a boundary is judged by what the child did ==========="
@@ -1147,8 +1195,8 @@ except OSError:
     print(0); raise SystemExit
 want = int(sys.argv[2])
 i, n = 12, 0
-while i + 14 <= len(b):
-    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
+while i + 22 <= len(b):
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22 + plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
     if op == want: n += 1
@@ -1831,8 +1879,8 @@ import struct, sys
 b = open(sys.argv[1], "rb").read()
 names = {1:"open",2:"write",3:"rename",4:"unlink",5:"fsync",6:"truncate",7:"mkdir",8:"rmdir",9:"link"}
 i, out = 12, []
-while i + 14 <= len(b):
-    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14
+while i + 22 <= len(b):
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22
     path = b[i:i+plen].decode("utf-8", "replace"); i += plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
@@ -3547,8 +3595,8 @@ norm_trace() { python3 -c '
 import struct, sys
 b = open(sys.argv[1], "rb").read()
 i, out, pids = 12, [], {}
-while i + 14 <= len(b):
-    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
+while i + 22 <= len(b):
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22 + plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
     out.append("%d:%d:p%d" % (op, seq, pids.setdefault(pid, len(pids))))
@@ -7454,11 +7502,14 @@ fi
 
 echo ""
 echo "=========== check 2ae: a boundary only the oracle saw is in the account (#405) ==========="
-# `clone(CLONE_THREAD)` crosses a process boundary and emits no second pid, so the child
-# count stays zero and the witness matrix would read the run as single-process. The
-# engine refuses it (`child_process_detected`, from `parsed.boundary`), and on the
-# pre-change binary the report for that refusal said `processes: single process`
-# — measured, and the red this leg exists to show.
+# `clone(CLONE_FS)` without CLONE_THREAD — a process sharing the subject's fs context —
+# crosses a process boundary and emits no pid the child count reads, so the count stays
+# zero and the witness matrix would read the run as single-process. The engine refuses
+# it (`child_process_detected`, from `parsed.boundary`), and on the pre-change binary the
+# report for that refusal said `processes: single process` — measured, and the red this
+# leg exists to show. The fixture carried `CLONE_THREAD` until v16, when a thread of the
+# subject stopped being a boundary at all; CLONE_FS on its own is the member of the same
+# population (ADR 0006) that still is.
 oe_fails=0
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \

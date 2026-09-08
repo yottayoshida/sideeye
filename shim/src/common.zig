@@ -4,10 +4,16 @@
 //! no heap, no standard-library I/O, no locks, no assumptions about what the target
 //! has already initialised. State lives in globals; buffers are fixed and static.
 //!
-//! v0.1 supports single-threaded targets only. A target that creates a thread is
-//! reported as UNKNOWN rather than measured, so the globals below do not need
-//! synchronisation — and adding a lock would be worse than useless, because it would
-//! hide the very condition we must report.
+//! Through contract v15 this module supported single-threaded targets only — a target
+//! that created a thread was refused, so the globals needed no synchronisation, and a
+//! lock would have hidden the very condition to report. A run whose threads never write
+//! the judged directory is judged now (v16), and its other threads still pass through
+//! every interposed entry point, so the state one interposed call needs — the
+//! re-entrancy guard, the record buffer, the count scan — is **per thread**, held in a
+//! slot keyed by thread id (`ThreadState`, below). What stays process-wide is read-only
+//! after `init`. There is still no lock: two threads writing the judged directory are
+//! refused by the engine, not serialised here, and `refreshCount`'s comment says why the
+//! numbering survives the race that leaves.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -386,7 +392,7 @@ fn pendingBytes(stream: *FILE) usize {
 /// `noteFd` would refuse the record anyway, but an inactive or re-entered shim must
 /// not so much as read `__sFILE` fields of a stream it was never armed to observe.
 pub fn noteStdioFlush(stream: *FILE) void {
-    if (!active or busy) return;
+    if (!active or mine().busy) return;
     if (!stdioActive()) return;
     // The flush's own `write(2)` is trapped and counted by the handler in syscalls mode,
     // so recording it here as well would count one operation twice.
@@ -407,7 +413,7 @@ pub fn noteStdioFlush(stream: *FILE) void {
 }
 
 pub fn noteStdioClose(stream: *FILE) void {
-    if (!active or busy) return;
+    if (!active or mine().busy) return;
     if (!stdioActive()) return;
     noteFd(.close, c.fileno(stream));
 }
@@ -415,7 +421,7 @@ pub fn noteStdioClose(stream: *FILE) void {
 /// Whether a flush is due, for the freopen wrapper's explicit pre-flush. Same guards
 /// as noteStdioFlush: an inactive shim answers "no" without touching the stream.
 pub fn stdioHasPending(stream: *FILE) bool {
-    if (!active or busy) return false;
+    if (!active or mine().busy) return false;
     if (!stdioActive()) return false;
     return pendingBytes(stream) != 0;
 }
@@ -509,21 +515,147 @@ var kill_at: u32 = 0;
 /// Whether the crash-point kill may reach the whole process group (v15). False unless the
 /// engine says so, which it does only where it has made the target a group leader.
 var kill_group: bool = false;
-/// The highest in-scope operation number this process knows the RUN to have reached
-/// (v15) — not the count of this process's own operations, which is what it held through
-/// v14. `refreshCount` brings it up to what the trace holds before every number is
-/// handed out, so a parent that resumes after an awaited child continues from the
-/// child's last number instead of from its own.
-var seq: u32 = 0;
-/// How far into the trace `seq` has been read. Only complete records advance it, so a
-/// record still being written is read again next time rather than skipped.
-var count_scanned: u64 = 0;
-/// Where `refreshCount` decodes. A global rather than a stack array because this runs
-/// from arbitrary interposed calls and, under `--observe syscalls`, from inside the
-/// SIGSYS handler — 8 KB of stack is not a thing to spend there. Safe for the same
-/// reason `seq` itself is a plain global: a second thread is refused, not shared with.
-var scan_buf: [contract.max_record_len]u8 = undefined;
+/// Per-thread state (contract v16).
+///
+/// Through v15 the five fields below were plain globals, and this module's first
+/// paragraph said why that was safe: a target that created a thread was refused, so
+/// nothing ever shared them. A run whose threads never write the judged directory is
+/// judged now, and its worker threads still pass through every interposed entry point —
+/// `open` on a library, `write` on a pipe — so the re-entrancy guard, the record buffer
+/// and the count scan would be shared between threads the design never meant to share
+/// them. Measured before this existed: a worker opening `/dev/null` in a loop set the
+/// process-wide `busy`, and the main thread's in-scope write, arriving inside that
+/// window, was dropped without a record.
+///
+/// **Slots keyed by thread id, not `threadlocal`.** A shared object's `threadlocal`
+/// compiles to the general-dynamic TLS model, whose first access from a thread takes
+/// `__tls_get_addr`'s slow path under the loader's lock; under `--observe syscalls` that
+/// first access can happen inside the `SIGSYS` handler, and a lock taken in a signal
+/// handler is what this module's rules forbid. Whether it happens depends on the target
+/// and on the C library, so a run that worked would prove nothing about the next one. A
+/// fixed array keyed by `gettid()` — one syscall, one compare-and-swap — is
+/// async-signal-safe by construction. Slots are never freed: nothing here sees a thread
+/// end. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
+/// and the run records `thread-slots-exhausted` once so the engine refuses it rather
+/// than judges it.
+///
+/// Zero-initialised on purpose, not `undefined`: an all-zero global lands in `.bss`,
+/// and sixty-four of these are a megabyte the file need not carry.
+const ThreadState = struct {
+    /// Owner's thread id; 0 is free. Written once, by the compare-and-swap in `mine`.
+    tid: u64 = 0,
+    /// Guards against observing our own work. The path resolution below calls libc, and
+    /// while none of those calls are interposed today, a future addition to the symbol
+    /// list would silently start recording the shim's own behaviour as the target's.
+    busy: bool = false,
+    /// The highest in-scope operation number this thread knows the RUN to have reached
+    /// (v15) — not a count of its own operations. `refreshCount` brings it up to what the
+    /// trace holds before every number is handed out, so a parent that resumes after an
+    /// awaited child continues from the child's last number instead of from its own.
+    seq: u32 = 0,
+    /// How far into the trace `seq` has been read. Only complete records advance it, so a
+    /// record still being written is read again next time rather than skipped.
+    count_scanned: u64 = 0,
+    /// Where `refreshCount` decodes. Static rather than a stack array because this runs
+    /// from arbitrary interposed calls and, under `--observe syscalls`, from inside the
+    /// SIGSYS handler — 8 KB of stack is not a thing to spend there.
+    scan_buf: [contract.max_record_len]u8 = [_]u8{0} ** contract.max_record_len,
+    /// One record is built here and written with a single `write(2)`, so a trace never
+    /// ends with half a record even when the process dies mid-run.
+    record_buf: [contract.max_record_len]u8 = [_]u8{0} ** contract.max_record_len,
+};
+const max_threads = 64;
+var slots: [max_threads]ThreadState = [_]ThreadState{.{}} ** max_threads;
+var reserve: ThreadState = .{};
+/// Whether the exhaustion notice has been written (v16). Taken with a compare-and-swap by
+/// the one thread that writes it — two threads overflowing together race for it and one
+/// wins — and cleared only by `resetSlotsInChild`. There is no separate "exhausted" flag:
+/// one existed and nothing in production read it.
+var exhaustion_announced: bool = false;
 var active: bool = false;
+
+/// The calling thread's id: `gettid` on Linux, `pthread_threadid_np` on Darwin. A raw
+/// syscall on Linux, which is what makes `mine` safe to call from the `SIGSYS` handler.
+/// 64 bits because a Mach thread id is not bounded by the width of a pid — the same
+/// reason the oracle's `Event.id` is.
+pub fn currentTid() u64 {
+    if (is_darwin) {
+        var t: u64 = 0;
+        _ = darwin.pthread_threadid_np(null, &t);
+        return t;
+    }
+    return @intCast(std.os.linux.gettid());
+}
+
+/// This thread's slot, claimed on first sight. Linear over the array on every interposed
+/// call: the syscall for the id costs more than the scan does, and both are measured in
+/// BUILDLOG (2026-09-08) before the cost is claimed anywhere.
+fn mine() *ThreadState {
+    const tid = currentTid();
+    // One pass: our own slot if we have one, else the first free one seen on the way —
+    // claimed by compare-and-swap, and if another thread took it meanwhile, the scan
+    // continues from there. Slots are never freed, so a slot seen taken stays taken.
+    var i: usize = 0;
+    while (i < slots.len) : (i += 1) {
+        const owner = @atomicLoad(u64, &slots[i].tid, .acquire);
+        if (owner == tid) return &slots[i];
+        if (owner == 0 and @cmpxchgStrong(u64, &slots[i].tid, 0, tid, .acq_rel, .acquire) == null) return &slots[i];
+    }
+    // Announced HERE, at the moment of exhaustion, not at the next `writeRecord` — the
+    // first version deferred it there, and review found the gap: the harm exhaustion does
+    // is two reserve-sharing threads racing on one `busy`, which drops a record before
+    // `writeRecord` is reached, and if no thread writes anything afterwards the trace
+    // holds no notice and the run is judged over the hole. Written from a buffer on THIS
+    // thread's stack, not the reserve's: the reserve is shared from this call on, and a
+    // second thread overflowing at the same moment would be encoding its own record into
+    // that buffer while the notice was being written (review, second round — the first
+    // version said "nobody else holds it yet", which was true of the first caller and not
+    // of the second). The notice is 44 bytes; the stack cost is nothing the SIGSYS
+    // handler cannot bear. Written once: the compare-and-swap picks the thread that
+    // writes it, and every later overflow finds it written. It is written before the
+    // re-entrancy check, so a shim re-entered mid-call announces too — a change from
+    // "busy writes nothing", and the safe direction.
+    if (@cmpxchgStrong(bool, &exhaustion_announced, false, true, .acq_rel, .acquire) == null) {
+        var notice: [64]u8 = undefined;
+        const n = contract.encodeRecord(&notice, .{
+            .op = .unresolved,
+            .seq = 0,
+            .pid = @bitCast(c.getpid()),
+            .tid = tid,
+            .path = "",
+            .aux = contract.unresolved_kind.thread_slots_exhausted,
+        }) catch return &reserve;
+        _ = writeAll(notice[0..n]);
+    }
+    return &reserve;
+}
+
+/// After `fork`, in the child (v16). The child inherits the table as the parent had it —
+/// every parent thread still claiming its slot, `busy` flags mid-call included — and has
+/// exactly one thread, with a new id. Left alone, a parent that had used the table up
+/// would leave its single-threaded child no slot at all (a false `thread-slots-exhausted`),
+/// and a later thread of the child that reuses a parent thread's id would inherit a slot
+/// whose `busy` was true at the fork and record nothing through it. Review found both.
+/// Called from the fork wrapper's child arm, before the child records anything. `vfork`
+/// must not do this — the child runs in the parent's memory — and a raw `clone` bypasses
+/// the wrapper and inherits the table as it stands: a parent past sixty-four threads that
+/// forks through a raw syscall keeps the false refusal, which is the honest direction.
+/// The claim words and the counters are cleared and the buffers are not: 64 × 16 KB is a
+/// megabyte of copy-on-write pages the child would otherwise touch at once, and every
+/// buffer is written whole before it is read.
+pub fn resetSlotsInChild() void {
+    for (&slots) |*s| {
+        s.tid = 0;
+        s.busy = false;
+        s.seq = 0;
+        s.count_scanned = 0;
+    }
+    reserve.tid = 0;
+    reserve.busy = false;
+    reserve.seq = 0;
+    reserve.count_scanned = 0;
+    exhaustion_announced = false;
+}
 /// The pid this shim instance initialised in. Read by `execCarryAllowed` — only the
 /// subject carries its operation count across an image change (#123).
 ///
@@ -536,15 +668,6 @@ var active: bool = false;
 /// away and it went with it, rather than staying on as a rule whose comment still cites
 /// a mechanism that changed.
 var armed_pid: c_int = -1;
-
-/// Guards against observing our own work. The path resolution below calls libc, and
-/// while none of those calls are interposed today, a future addition to the symbol
-/// list would silently start recording the shim's own behaviour as the target's.
-var busy: bool = false;
-
-/// One record is built here and written with a single `write(2)`, so a trace never
-/// ends with half a record even when the process dies mid-run.
-var record_buf: [contract.max_record_len]u8 = undefined;
 
 fn lookup(comptime T: type, name: [*:0]const u8) ?T {
     const p = c.dlsym(rtld_next, name) orelse return null;
@@ -753,7 +876,11 @@ pub fn init() void {
     // for the first image that is correct, and for an image that arrived through a
     // non-interposed exec path (execl family, fexecve, a stripped environment) the
     // fresh start is what the engine's continuation predicate refuses on.
-    if (c.getenv(contract.env.seq_base)) |b| seq = parseU32(std.mem.span(b));
+    // Into the initialising thread's own slot: `init` runs from `.init_array`, before the
+    // target has created any thread, so this is the main thread's, and the announcement
+    // below is written from the same slot.
+    const ts = mine();
+    if (c.getenv(contract.env.seq_base)) |b| ts.seq = parseU32(std.mem.span(b));
 
     armed_pid = c.getpid();
 
@@ -804,7 +931,7 @@ pub fn init() void {
     // trace is unchanged. After a primary exec record, the engine requires the next
     // shim_ready from the same pid to carry the count the chain left off at — the
     // one piece of evidence a broken chain cannot fake.
-    writeRecord(.shim_ready, seq, stateDir(), observe_note);
+    writeRecord(ts, .shim_ready, ts.seq, stateDir(), observe_note);
 }
 
 pub fn stateDir() []const u8 {
@@ -863,16 +990,26 @@ fn writeAll(bytes: []const u8) bool {
 
 /// The pid is taken here, once for every record, rather than accepted from the caller:
 /// there is exactly one correct value and it is whoever is executing this line.
-fn writeRecord(op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
+///
+/// The buffer is the calling thread's (v16). The exhaustion notice is the one record
+/// written through the shared `reserve` buffer, and `mine` writes it at the moment of
+/// overflow rather than here, so it is in the trace whether or not anything is recorded
+/// afterwards.
+fn writeRecord(ts: *ThreadState, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
+    encodeAndWrite(&ts.record_buf, op, s, path, aux);
+}
+
+fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
     const rec: contract.Record = .{
         .op = op,
         .seq = s,
         .pid = @bitCast(c.getpid()),
+        .tid = currentTid(),
         .path = path,
         .aux = aux,
     };
-    const n = contract.encodeRecord(&record_buf, rec) catch return;
-    _ = writeAll(record_buf[0..n]);
+    const n = contract.encodeRecord(buf, rec) catch return;
+    _ = writeAll(buf[0..n]);
 }
 
 /// The target is closing the shim's own trace descriptor.
@@ -890,7 +1027,7 @@ pub fn noteTraceClose(fd: c_int) void {
     // The path is empty on purpose: nothing was named here. Before #485 the reason
     // rode in the path field as "trace:closed-by-target", which the engine would
     // now print as the name the file last had — a filename that never existed.
-    writeRecord(.unresolved, 0, "", contract.unresolved_kind.trace_closed);
+    writeRecord(mine(), .unresolved, 0, "", contract.unresolved_kind.trace_closed);
     trace_fd = -1;
 }
 
@@ -1024,8 +1161,8 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) 
 ///
 /// The argument has no default on purpose: a new call site has to choose a kind, and
 /// forgetting it is a compile error rather than a record that says nothing.
-fn noteUnresolved(path: []const u8, kind: []const u8) void {
-    writeRecord(.unresolved, 0, path, kind);
+fn noteUnresolved(ts: *ThreadState, path: []const u8, kind: []const u8) void {
+    writeRecord(ts, .unresolved, 0, path, kind);
 }
 
 /// Bring `seq` up to the highest operation number the trace holds (v15).
@@ -1046,22 +1183,25 @@ fn noteUnresolved(path: []const u8, kind: []const u8) void {
 /// operations do not interleave that partial record can only be this process's own; in
 /// one where they do, two processes can take the same number, and the engine refuses
 /// `sequence_numbering_broken` rather than judging a world at an ambiguous address.
-fn refreshCount() bool {
+/// Two threads of one process are the same case (v16): each scans from its own slot,
+/// both read the trace's maximum, and if both take it the engine refuses — after having
+/// refused the run for its second writing thread first.
+fn refreshCount(ts: *ThreadState) bool {
     if (trace_fd < 0) return false;
     const end = c.lseek(trace_fd, 0, SEEK_END);
     if (end < 0) return false;
     const size: u64 = @intCast(end);
-    if (size <= count_scanned) return true;
+    if (size <= ts.count_scanned) return true;
 
-    var off: u64 = @max(count_scanned, contract.header_len);
+    var off: u64 = @max(ts.count_scanned, contract.header_len);
     while (off < size) {
-        const want: usize = @intCast(@min(@as(u64, scan_buf.len), size - off));
-        const got = c.pread(trace_fd, &scan_buf, want, @intCast(off));
+        const want: usize = @intCast(@min(@as(u64, ts.scan_buf.len), size - off));
+        const got = c.pread(trace_fd, &ts.scan_buf, want, @intCast(off));
         if (got <= 0) return false;
         const n: usize = @intCast(got);
         var i: usize = 0;
         while (i < n) {
-            const d = contract.decodeRecord(scan_buf[i..n]) catch |e| switch (e) {
+            const d = contract.decodeRecord(ts.scan_buf[i..n]) catch |e| switch (e) {
                 // The tail of a record that is still being written, or one that runs past
                 // this window. Either way the answer is to stop here: `off` advances by
                 // what was consumed, so the next read starts on a record boundary.
@@ -1080,20 +1220,20 @@ fn refreshCount() bool {
             // the record count and the maximum agreeing, and nothing would notice.
             // Counting it makes the sibling take the next number instead, which leaves a
             // gap, and a gap is what `sequence_numbering_broken` is for.
-            if ((d.rec.op.isKillPoint() or d.rec.op == .kill_landed) and d.rec.seq > seq)
-                seq = d.rec.seq;
+            if ((d.rec.op.isKillPoint() or d.rec.op == .kill_landed) and d.rec.seq > ts.seq)
+                ts.seq = d.rec.seq;
             i += d.consumed;
         }
         if (i == 0) break;
         off += i;
     }
-    count_scanned = off;
+    ts.count_scanned = off;
     return true;
 }
 
 /// The single place where an operation becomes a counted event, and the single place
 /// where the process dies.
-fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void {
+fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void {
     // Both spellings count; one is recorded.
     var pbuf: [contract.max_path]u8 = undefined;
     var abuf: [contract.max_path]u8 = undefined;
@@ -1113,11 +1253,11 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         // The number comes from the run, not from this process (v15). Read before the
         // increment and inside the scope test, so a target that never writes in the judged
         // directory reads nothing at all and an out-of-scope operation costs no syscall.
-        if (!refreshCount()) {
-            noteUnresolved(path, contract.unresolved_kind.count_read_failed);
+        if (!refreshCount(ts)) {
+            noteUnresolved(ts, path, contract.unresolved_kind.count_read_failed);
             return;
         }
-        seq += 1;
+        ts.seq += 1;
         // The test-apparatus gap (#270): skip number 2, so the second in-scope
         // operation onward is numbered one high — records count n, highest number
         // n+1, with the announcement untouched. This is the one shape the engine's
@@ -1130,8 +1270,8 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         // `refreshCount` reads 3 back as the run's maximum and hands out 4. Numbering from
         // the trace would only silence this apparatus if `s` were computed separately from
         // the value the gap moves.
-        if (shim_build_options.test_seq_gap and seq == 2) seq += 1;
-        s = seq;
+        if (shim_build_options.test_seq_gap and ts.seq == 2) ts.seq += 1;
+        s = ts.seq;
         // Whoever performs the run's k-th operation dies here (v15), and the whole
         // process group dies with it.
         //
@@ -1158,7 +1298,7 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
             // Landing evidence first, then die. Without this record the claim "we died
             // before the k-th operation" would rest on the engine having set a variable,
             // not on anything the target actually did.
-            writeRecord(.kill_landed, s, path, aux);
+            writeRecord(ts, .kill_landed, s, path, aux);
             // The group where the engine arranged one, this process alone otherwise —
             // which is what an operator typing the report's `reproduce` line gets, and
             // what every run got before v15.
@@ -1173,23 +1313,25 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         // same bytes on disk.
         if (!contract.isInsideDir(path, stateDir())) return;
     }
-    writeRecord(op, s, path, aux);
+    writeRecord(ts, op, s, path, aux);
 }
 
 pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
-    if (!active or busy) return;
-    busy = true;
-    defer busy = false;
+    if (!active) return;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
 
     var buf: [contract.max_path]u8 = undefined;
     var unresolvable = false;
     const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
         // Recorded only when the path genuinely could not be determined. A descriptor
         // that names no path at all says the operation is elsewhere, which is an answer.
-        if (unresolvable) noteUnresolved(std.mem.span(path), contract.unresolved_kind.unresolvable_path);
+        if (unresolvable) noteUnresolved(ts, std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     };
-    observe(op, resolved, "");
+    observe(ts, op, resolved, "");
 }
 
 /// Record that an operation the shim can place but not model touched the state
@@ -1213,9 +1355,11 @@ pub fn noteUnsupportedInScope2(
     adirfd: c_int,
     apath: ?[*:0]const u8,
 ) void {
-    if (!active or busy) return;
-    busy = true;
-    defer busy = false;
+    if (!active) return;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
 
     var buf: [contract.max_path]u8 = undefined;
     var cbuf: [contract.max_path]u8 = undefined;
@@ -1226,7 +1370,7 @@ pub fn noteUnsupportedInScope2(
     } else if (unresolvable) {
         // Cannot place it, so cannot clear it: the unconditional channel is right
         // exactly here, for the reason its own doc gives.
-        noteUnresolved(std.mem.span(path), contract.unresolved_kind.unresolvable_path);
+        noteUnresolved(ts, std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     }
     if (!in_scope) {
@@ -1237,12 +1381,12 @@ pub fn noteUnsupportedInScope2(
             if (resolveAt(&abuf, adirfd, ap, &aunresolvable)) |ares| {
                 in_scope = contract.isInsideDir(canonical(&acbuf, ares), stateDir());
             } else if (aunresolvable) {
-                noteUnresolved(std.mem.span(ap), contract.unresolved_kind.unresolvable_path);
+                noteUnresolved(ts, std.mem.span(ap), contract.unresolved_kind.unresolvable_path);
                 return;
             }
         }
     }
-    if (in_scope) writeRecord(.unsupported, 0, std.mem.span(label), "");
+    if (in_scope) writeRecord(ts, .unsupported, 0, std.mem.span(label), "");
 }
 
 pub fn note2(
@@ -1252,23 +1396,25 @@ pub fn note2(
     adirfd: c_int,
     apath: [*:0]const u8,
 ) void {
-    if (!active or busy) return;
-    busy = true;
-    defer busy = false;
+    if (!active) return;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
 
     var buf: [contract.max_path]u8 = undefined;
     var abuf: [contract.max_path]u8 = undefined;
     var unresolvable = false;
     const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
-        if (unresolvable) noteUnresolved(std.mem.span(path), contract.unresolved_kind.unresolvable_path);
+        if (unresolvable) noteUnresolved(ts, std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     };
     const aresolved = resolveAt(&abuf, adirfd, apath, &unresolvable) orelse {
         // Half of a rename is not something to record as a rename.
-        if (unresolvable) noteUnresolved(std.mem.span(apath), contract.unresolved_kind.unresolvable_path);
+        if (unresolvable) noteUnresolved(ts, std.mem.span(apath), contract.unresolved_kind.unresolvable_path);
         return;
     };
-    observe(op, resolved, aresolved);
+    observe(ts, op, resolved, aresolved);
 }
 
 /// What stands behind a descriptor, asked of fstat before any path query.
@@ -1417,38 +1563,40 @@ fn fdKind(fd: c_int, deleted: *bool) FdKind {
 /// `contract` and not here: a suffix grammar spelled in shim literals is a format the
 /// engine reads and nothing defines, which is the half of ADR 0003 that survived #485's
 /// narrowing.
-fn noteUnresolvedWithFd(path: []const u8, kind: []const u8, fd: c_int) void {
+fn noteUnresolvedWithFd(ts: *ThreadState, path: []const u8, kind: []const u8, fd: c_int) void {
     var b: [contract.unresolved_kind.with_fd_max]u8 = undefined;
-    noteUnresolved(path, contract.unresolved_kind.withFd(&b, kind, fd));
+    noteUnresolved(ts, path, contract.unresolved_kind.withFd(&b, kind, fd));
 }
 
 /// `noteUnresolvedWithFd` where the operation is known as well (#485).
-fn noteUnresolvedWithOp(path: []const u8, kind: []const u8, op: contract.OpClass, fd: c_int) void {
+fn noteUnresolvedWithOp(ts: *ThreadState, path: []const u8, kind: []const u8, op: contract.OpClass, fd: c_int) void {
     var b: [contract.unresolved_kind.with_fd_max]u8 = undefined;
-    noteUnresolved(path, contract.unresolved_kind.withOp(&b, kind, op, fd));
+    noteUnresolved(ts, path, contract.unresolved_kind.withOp(&b, kind, op, fd));
 }
 
 /// An fd-addressed operation that was seen but could not be placed. The label names
 /// the descriptor because there is no path to name — the point of recording it is
 /// that the engine refuses instead of passing.
-fn noteUnresolvedFd(fd: c_int) void {
-    noteUnresolvedWithFd("", contract.unresolved_kind.fd_without_path, fd);
+fn noteUnresolvedFd(ts: *ThreadState, fd: c_int) void {
+    noteUnresolvedWithFd(ts, "", contract.unresolved_kind.fd_without_path, fd);
 }
 
 /// The fd-taking form of `noteUnsupportedInScope2` (v12): `fsetattrlist` names its file
 /// by descriptor. Resolution mirrors `noteFd` below — the same three-way answer, the
 /// same refusal on a measurement that failed — and the scope gate is the same one.
 pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
-    if (!active or busy) return;
+    if (!active) return;
     if (fd < 0) return;
-    busy = true;
-    defer busy = false;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
 
     var deleted = false;
     switch (fdKind(fd, &deleted)) {
         .non_path => return,
         .unresolvable => {
-            noteUnresolvedFd(fd);
+            noteUnresolvedFd(ts, fd);
             return;
         },
         .path_backed => {},
@@ -1456,15 +1604,15 @@ pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
     var buf: [contract.max_path]u8 = undefined;
     var link_deleted = false;
     const resolved = fdPath(&buf, fd, &link_deleted) orelse {
-        noteUnresolvedFd(fd);
+        noteUnresolvedFd(ts, fd);
         return;
     };
     if (!isInState(resolved)) return;
-    writeRecord(.unsupported, 0, std.mem.span(label), "");
+    writeRecord(ts, .unsupported, 0, std.mem.span(label), "");
 }
 
 pub fn noteFd(op: contract.OpClass, fd: c_int) void {
-    if (!active or busy) return;
+    if (!active) return;
     // The ONLY early return keyed on the descriptor itself. Contract v8: no descriptor
     // number is exempt from observation — not 0/1/2 (a target can dup2 a state file
     // onto any of them; measured as a false PASS before this change), and not the
@@ -1474,8 +1622,10 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
     // of it announces the channel's death (noteTraceClose) so the engine refuses.
     // Where a descriptor points is decided by asking the kernel, below, every time.
     if (fd < 0) return;
-    busy = true;
-    defer busy = false;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
 
     var deleted = false;
     switch (fdKind(fd, &deleted)) {
@@ -1483,7 +1633,7 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         // entries, so an operation through one is legitimately none of our business.
         .non_path => return,
         .unresolvable => {
-            noteUnresolvedWithOp("", contract.unresolved_kind.fd_without_path, op, fd);
+            noteUnresolvedWithOp(ts, "", contract.unresolved_kind.fd_without_path, op, fd);
             return;
         },
         .path_backed => {},
@@ -1495,7 +1645,7 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         // A regular file or directory whose path could not be read back. That is a
         // failed measurement, not evidence of innocence — recorded, so the engine
         // refuses to judge a run whose operations it cannot place.
-        noteUnresolvedWithOp("", contract.unresolved_kind.fd_without_path, op, fd);
+        noteUnresolvedWithOp(ts, "", contract.unresolved_kind.fd_without_path, op, fd);
         return;
     };
     if (!isInState(resolved)) return;
@@ -1508,10 +1658,10 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         // asks for the operation class, the descriptor and the last resolved name, and
         // this is the branch that has all three. Two writes through different unlinked
         // descriptors are otherwise one indistinguishable sentence.
-        noteUnresolvedWithOp(resolved, contract.unresolved_kind.unlinked_fd, op, fd);
+        noteUnresolvedWithOp(ts, resolved, contract.unresolved_kind.unlinked_fd, op, fd);
         return;
     }
-    observe(op, resolved, "");
+    observe(ts, op, resolved, "");
 }
 
 // --- reaching the real function ---------------------------------------------------
@@ -1811,9 +1961,10 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
     // trace's own maximum, would refuse a chain that in fact held. A failed read leaves
     // the old value, which the engine then refuses as a broken chain: fail closed either
     // way, and the honest direction of the two.
-    _ = refreshCount();
+    const ts = mine();
+    _ = refreshCount(ts);
     var entry_buf: [64]u8 = undefined;
-    const entry = std.fmt.bufPrintZ(&entry_buf, "{s}={d}", .{ contract.env.seq_base, seq }) catch return callExecve(p, a, e);
+    const entry = std.fmt.bufPrintZ(&entry_buf, "{s}={d}", .{ contract.env.seq_base, ts.seq }) catch return callExecve(p, a, e);
     const prefix = contract.env.seq_base ++ "=";
     var new_env: [max_env_entries + 1]?[*:0]const u8 = undefined;
     var n: usize = 0;
@@ -1836,9 +1987,10 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
 pub fn execSeqCarrySet() bool {
     if (!execCarryAllowed()) return false;
     // Same refresh, same reason as `callExecveSeqCarry`: the base is the run's count.
-    _ = refreshCount();
+    const ts = mine();
+    _ = refreshCount(ts);
     var val_buf: [16]u8 = undefined;
-    const v = std.fmt.bufPrintZ(&val_buf, "{d}", .{seq}) catch return false;
+    const v = std.fmt.bufPrintZ(&val_buf, "{d}", .{ts.seq}) catch return false;
     return c.setenv(contract.env.seq_base, v.ptr, 1) == 0;
 }
 
@@ -1953,9 +2105,11 @@ pub inline fn callFsetpos64(stream: *FILE, pos: *const anyopaque) c_int {
 /// engine must refuse rather than judge a link it cannot address (ADR 0006). Recorded
 /// even where an oracle would also catch it, so the platform with no oracle refuses too.
 pub fn noteLinkByDescriptor(fd: c_int) void {
-    if (!active or busy) return;
-    busy = true;
-    defer busy = false;
+    if (!active) return;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
     // The descriptor is all there is to name here — the old path is empty by construction
     // — so without it two such calls on different files are one indistinguishable
     // sentence. It is not always a *file* descriptor, and the record does not pretend
@@ -1964,7 +2118,7 @@ pub fn noteLinkByDescriptor(fd: c_int) void {
     // report is the caller's own argument, which is what the operator needs to match it
     // against their code; inventing a name for it here would be the `fd:7`-as-a-filename
     // mistake in a new place.
-    noteUnresolvedWithFd("", contract.unresolved_kind.link_by_descriptor, fd);
+    noteUnresolvedWithFd(ts, "", contract.unresolved_kind.link_by_descriptor, fd);
 }
 
 /// Boundary detectors carry no path. Since v3 their presence no longer forces UNKNOWN
@@ -1972,10 +2126,12 @@ pub fn noteLinkByDescriptor(fd: c_int) void {
 /// tolerable — but they must still all be recorded, because "no boundary seen" is an
 /// input to that decision.
 pub fn noteBoundary(op: contract.OpClass) void {
-    if (!active or busy) return;
-    busy = true;
-    defer busy = false;
-    writeRecord(op, 0, "", "");
+    if (!active) return;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
+    writeRecord(ts, op, 0, "", "");
 }
 
 // ---------------------------------------------------------------------------------
@@ -2192,19 +2348,13 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     try std.testing.expect(fd >= 0);
     defer _ = std.c.close(fd);
 
-    // The globals this function reads and writes. Restored on the way out: the rest of
-    // this file's tests run in the same binary and must not inherit a live descriptor.
+    // The one global this function reads. Restored on the way out: the rest of this
+    // file's tests run in the same binary and must not inherit a live descriptor. The
+    // count state is a slot of this test's own (v16), so nothing else needs restoring.
     const saved_fd = trace_fd;
-    const saved_seq = seq;
-    const saved_scanned = count_scanned;
-    defer {
-        trace_fd = saved_fd;
-        seq = saved_seq;
-        count_scanned = saved_scanned;
-    }
+    defer trace_fd = saved_fd;
     trace_fd = fd;
-    seq = 0;
-    count_scanned = 0;
+    var ts: ThreadState = .{};
 
     const append = struct {
         fn record(f: c_int, rec: contract.Record) !void {
@@ -2220,65 +2370,183 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     // An empty file, then a header and nothing else: both answer "read fine, nothing to
     // count". A version that treated an empty trace as unreadable would refuse every
     // first operation of every run.
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 0), seq);
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 0), ts.seq);
     var hbuf: [contract.header_len]u8 = undefined;
     const hn = try contract.encodeHeader(&hbuf);
     try append.bytes(fd, hbuf[0..hn]);
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 0), seq);
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 0), ts.seq);
 
     // Another process's operations raise the count. This is the whole point: pid 8 is not
     // this process, and its numbers are positions in the same run.
-    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" });
-    try append.record(fd, .{ .op = .rename, .seq = 2, .pid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" });
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 2), seq);
+    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" });
+    try append.record(fd, .{ .op = .rename, .seq = 2, .pid = 8, .tid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" });
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 2), ts.seq);
 
     // Records that carry no number leave it alone — a close, and an unplaceable operation.
-    try append.record(fd, .{ .op = .close, .seq = 0, .pid = 8, .path = "/tmp/s/b", .aux = "" });
-    try append.record(fd, .{ .op = .unresolved, .seq = 0, .pid = 8, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:3" });
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 2), seq);
+    try append.record(fd, .{ .op = .close, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s/b", .aux = "" });
+    try append.record(fd, .{ .op = .unresolved, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:3" });
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 2), ts.seq);
 
     // A torn tail: the first bytes of a record and no more. The scan stops in front of it
     // and the count does not move — the operation is still being written, and taking its
     // number now would hand the same number out twice.
-    const scanned_before = count_scanned;
+    const scanned_before = ts.count_scanned;
     var partial: [2 * contract.max_path]u8 = undefined;
-    const pn = try contract.encodeRecord(&partial, .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/c", .aux = "" });
+    const pn = try contract.encodeRecord(&partial, .{ .op = .write, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/c", .aux = "" });
     try append.bytes(fd, partial[0 .. pn - 4]);
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 2), seq);
-    try std.testing.expectEqual(scanned_before, count_scanned);
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 2), ts.seq);
+    try std.testing.expectEqual(scanned_before, ts.count_scanned);
 
     // Completed, it counts — and the read resumes from where it stopped rather than from
     // the start, which is what `count_scanned` is for.
     try append.bytes(fd, partial[pn - 4 .. pn]);
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 3), seq);
-    try std.testing.expect(count_scanned > scanned_before);
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 3), ts.seq);
+    try std.testing.expect(ts.count_scanned > scanned_before);
 
     // `kill_landed` is a marker and still counts. A world that died in front of operation
     // 9 never wrote 9's own record, so leaving this out would let a sibling still running
     // take 9 for a real operation at the address the world claims to have died before.
-    try append.record(fd, .{ .op = .kill_landed, .seq = 9, .pid = 7, .path = "/tmp/s/d", .aux = "" });
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 9), seq);
+    try append.record(fd, .{ .op = .kill_landed, .seq = 9, .pid = 7, .tid = 7, .path = "/tmp/s/d", .aux = "" });
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 9), ts.seq);
 
     // The count never goes backwards: a later record with a smaller number cannot lower
     // it. (The shim does not write this; a hard link at the trace path could.)
-    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/e", .aux = "" });
-    try std.testing.expect(refreshCount());
-    try std.testing.expectEqual(@as(u32, 9), seq);
+    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/e", .aux = "" });
+    try std.testing.expect(refreshCount(&ts));
+    try std.testing.expectEqual(@as(u32, 9), ts.seq);
+
+    // A second slot scanning the same trace reads the same maximum from its own start
+    // (v16): the count is the run's, not the slot's, and a fresh thread does not begin
+    // at zero because its scan does.
+    var other: ThreadState = .{};
+    try std.testing.expect(refreshCount(&other));
+    try std.testing.expectEqual(@as(u32, 9), other.seq);
+    try std.testing.expectEqual(ts.count_scanned, other.count_scanned);
 
     // Bytes that are not a record refuse. Numbering past them would mean numbering from
     // whatever this process happened to remember, which is the address of another
     // operation. The caller records `count-read-failed` and the engine refuses the run.
-    try append.bytes(fd, &[_]u8{ 0xff, 0xff, 1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0 });
-    try std.testing.expect(!refreshCount());
+    // At least a record's fixed prefix long (22 bytes since v16), or the decoder would
+    // read them as a record still being written and the scan would stop politely in
+    // front of them instead of refusing — which is what happened when the prefix grew
+    // and this array did not.
+    try append.bytes(fd, &[_]u8{ 0xff, 0xff, 1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+    try std.testing.expect(!refreshCount(&ts));
 
     // A closed channel refuses too, rather than answering from memory.
     trace_fd = -1;
-    try std.testing.expect(!refreshCount());
+    try std.testing.expect(!refreshCount(&ts));
+}
+
+test "slots: one per thread id, claimed once, and the reserve past the last" {
+    // Nothing here touches the live table: the test builds its own, the way a fresh
+    // process would find it, and drives the claim logic by hand with made-up ids.
+    var table = [_]ThreadState{.{}} ** 3;
+    var exhausted = false;
+    const claim = struct {
+        fn run(t: []ThreadState, res: *ThreadState, flag: *bool, tid: u64) *ThreadState {
+            for (t) |*s| {
+                if (@atomicLoad(u64, &s.tid, .acquire) == tid) return s;
+            }
+            for (t) |*s| {
+                if (@cmpxchgStrong(u64, &s.tid, 0, tid, .acq_rel, .acquire) == null) return s;
+            }
+            flag.* = true;
+            return res;
+        }
+    };
+    var res: ThreadState = .{};
+    const a = claim.run(&table, &res, &exhausted, 101);
+    const b = claim.run(&table, &res, &exhausted, 202);
+    // The same id comes back to the same slot, not a new one.
+    try std.testing.expectEqual(a, claim.run(&table, &res, &exhausted, 101));
+    try std.testing.expect(a != b);
+    try std.testing.expect(!exhausted);
+    _ = claim.run(&table, &res, &exhausted, 303);
+    try std.testing.expect(!exhausted);
+    // The fourth id finds no free slot: it gets the reserve. (In the live table `mine`
+    // writes the exhaustion notice at this moment; the test below drives that path on the
+    // real function.)
+    const d = claim.run(&table, &res, &exhausted, 404);
+    try std.testing.expectEqual(&res, d);
+    try std.testing.expect(exhausted);
+    // Slots are never freed, so the earlier owners still resolve to theirs.
+    try std.testing.expectEqual(b, claim.run(&table, &res, &exhausted, 202));
+}
+
+test "the fork child starts from an empty slot table, however full the parent's was (v16)" {
+    // Three slots claimed, one of them mid-call, the table marked exhausted — the shape a
+    // fork can catch the parent in. The child must see none of it.
+    slots[0].tid = 1001;
+    slots[0].busy = true;
+    slots[0].seq = 5;
+    slots[0].count_scanned = 99;
+    slots[1].tid = 1002;
+    slots[2].tid = 1003;
+    reserve.tid = 1004;
+    reserve.busy = true;
+    exhaustion_announced = true;
+
+    resetSlotsInChild();
+
+    for (slots) |s| {
+        try std.testing.expectEqual(@as(u64, 0), s.tid);
+        try std.testing.expect(!s.busy);
+        try std.testing.expectEqual(@as(u32, 0), s.seq);
+        try std.testing.expectEqual(@as(u64, 0), s.count_scanned);
+    }
+    try std.testing.expectEqual(@as(u64, 0), reserve.tid);
+    try std.testing.expect(!reserve.busy);
+    try std.testing.expect(!exhaustion_announced);
+}
+
+test "mine: the 65th thread takes the reserve, and the notice is in the trace at that moment (v16)" {
+    // The live table this time, filled by hand with ids no real thread has, and the trace
+    // descriptor pointed at a file this test owns — so `mine()` itself runs the overflow
+    // path, and what it wrote is read back and decoded. The hand-copied claim logic in the
+    // test above cannot show this; review said so.
+    if (builtin.os.tag != .macos) resolveAll();
+    var bb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-slots-{d}", .{c.getpid()}) catch unreachable;
+    _ = std.c.mkdir(base.ptr, 0o755);
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/trace.bin", .{base}) catch unreachable;
+    defer {
+        _ = std.c.unlink(file_z.ptr);
+        _ = std.c.rmdir(base.ptr);
+    }
+    const flags: std.posix.O = @bitCast(O_RDWR | O_CREAT | O_TRUNC | O_APPEND);
+    const fd = std.c.open(file_z.ptr, flags, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    defer _ = std.c.close(fd);
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    trace_fd = fd;
+    // Leaves the live table the way the other tests in this binary expect to find it.
+    defer resetSlotsInChild();
+    for (&slots, 0..) |*s, i| s.tid = 100_000_000 + @as(u64, i);
+    exhaustion_announced = false;
+
+    const got = mine();
+    try std.testing.expectEqual(&reserve, got);
+    try std.testing.expect(exhaustion_announced);
+    // Read back: exactly one record, the notice, carrying this thread's id.
+    var buf: [128]u8 = undefined;
+    const n = c.pread(fd, &buf, buf.len, 0);
+    try std.testing.expect(n > 0);
+    const d = try contract.decodeRecord(buf[0..@intCast(n)]);
+    try std.testing.expectEqual(contract.OpClass.unresolved, d.rec.op);
+    try std.testing.expectEqualStrings(contract.unresolved_kind.thread_slots_exhausted, d.rec.aux);
+    try std.testing.expectEqual(currentTid(), d.rec.tid);
+    try std.testing.expectEqual(@as(usize, d.consumed), @as(usize, @intCast(n)));
+    // A second overflow takes the reserve again and writes nothing more.
+    try std.testing.expectEqual(&reserve, mine());
+    try std.testing.expectEqual(n, c.pread(fd, &buf, buf.len, 0));
 }

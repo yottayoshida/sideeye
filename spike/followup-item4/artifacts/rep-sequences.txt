@@ -1,0 +1,18 @@
+# Kill-point sequences of the recording trace, five runs of the same define (2026-09-08, contract v16).
+# Columns: class, basename, writing tid. Decoded from trace-record.bin with the v16 record layout.
+
+== sqlfluff ==
+run 1: open:q.sqlpl757zfm.sql(tid 281)  write:q.sqlpl757zfm.sql(tid 281)  fsync:q.sqlpl757zfm.sql(tid 281)  rename:q.sqlpl757zfm.sql(tid 281)
+run 2: open:q.sqlj7c9opi0.sql(tid 316)  write:q.sqlj7c9opi0.sql(tid 316)  fsync:q.sqlj7c9opi0.sql(tid 316)  rename:q.sqlj7c9opi0.sql(tid 316)
+run 3: open:q.sqlgr8m53aw.sql(tid 351)  write:q.sqlgr8m53aw.sql(tid 351)  fsync:q.sqlgr8m53aw.sql(tid 351)  rename:q.sqlgr8m53aw.sql(tid 351)
+run 4: open:q.sqlxg8e5aph.sql(tid 386)  write:q.sqlxg8e5aph.sql(tid 386)  fsync:q.sqlxg8e5aph.sql(tid 386)  rename:q.sqlxg8e5aph.sql(tid 386)
+run 5: open:q.sqlggamfpso.sql(tid 421)  write:q.sqlggamfpso.sql(tid 421)  fsync:q.sqlggamfpso.sql(tid 421)  rename:q.sqlggamfpso.sql(tid 421)
+distinct class sequences across the five runs: 1 -> ['open write fsync rename']
+
+== vips ==
+run 1: open:out.png(tid 463)  write:out.png(tid 463)
+run 2: open:out.png(tid 520)  write:out.png(tid 520)
+run 3: open:out.png(tid 578)  write:out.png(tid 578)
+run 4: open:out.png(tid 637)  write:out.png(tid 637)
+run 5: open:out.png(tid 693)  write:out.png(tid 693)
+distinct class sequences across the five runs: 1 -> ['open write']

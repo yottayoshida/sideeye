@@ -801,6 +801,10 @@ pub fn fork() callconv(.c) c_int {
     // Parent only. The child's rc is 0 and its operations carry its own pid; recording
     // the boundary twice would claim two forks happened.
     if (rc > 0) common.noteBoundary(.fork);
+    // The child: one thread with a new id, and a per-thread slot table inherited from a
+    // process that may have used it up (v16). Cleared before the child records anything;
+    // `resetSlotsInChild` says why `vfork` gets no such call.
+    if (rc == 0) common.resetSlotsInChild();
     return rc;
 }
 

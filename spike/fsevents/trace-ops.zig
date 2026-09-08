@@ -23,13 +23,28 @@ fn selfTest() !void {
     var n: usize = 0;
     n += try contract.encodeHeader(buf[n..]);
     n += try contract.encodeRecord(buf[n..], .{
-        .op = .open, .seq = 1, .pid = 7, .path = "/tmp/a", .aux = "",
+        .op = .open,
+        .seq = 1,
+        .pid = 7,
+        .tid = 7,
+        .path = "/tmp/a",
+        .aux = "",
     });
     n += try contract.encodeRecord(buf[n..], .{
-        .op = .write, .seq = 2, .pid = 7, .path = "/tmp/a", .aux = "",
+        .op = .write,
+        .seq = 2,
+        .pid = 7,
+        .tid = 7,
+        .path = "/tmp/a",
+        .aux = "",
     });
     n += try contract.encodeRecord(buf[n..], .{
-        .op = .unlink, .seq = 3, .pid = 7, .path = "/tmp/b", .aux = "",
+        .op = .unlink,
+        .seq = 3,
+        .pid = 7,
+        .tid = 7,
+        .path = "/tmp/b",
+        .aux = "",
     });
 
     var out: std.ArrayList(u8) = .empty;
