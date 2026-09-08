@@ -135,7 +135,10 @@ knows to read only, or a disk-io line (not an operation), is skipped rather than
 read-only line already is: it could not have changed state whoever issued it and
 wherever. Measured on the CI runner, where a daemon's `getattrlist` on a file named in
 combining characters pushed both fields off the line and refused the PASS leg twice in a
-row. A tail-less line with a mutating CALL is still a hole.) A state
+row. The tail `fs_usage` wraps onto
+the next line — no timestamp, no CALL, the rest of the operand and the duration and
+`proc.tid` the head lost — is the rest of that same line: taken directly after a skipped
+head and nowhere else. A tail-less line with a mutating CALL is still a hole.) A state
 root long enough to be cut by the cap is refused before the observer starts, because
 scope is decided by path and a cut path takes the root's own prefix with it.
 

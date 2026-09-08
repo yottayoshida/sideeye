@@ -2,6 +2,29 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-09 — The other half of the cut line: fs_usage wraps the tail onto the next line
+
+With #547 merged, the v1.3.0 bump's CI (#545) refused the same fs_usage leg again — on a
+different line. 74 bytes, verbatim: `133 LIBARCHIVE.xattr.com.apple.macl=B    0.000039
+promotedcontentd.13451`. No timestamp, no CALL: it is the tail of the daemon's cut line
+(the same `promotedcontentd`, the same combining-character name), which `fs_usage` had
+wrapped rather than dropped. #547 skipped the head and the reader then refused the tail as
+the next unparsed line. The first fix had measured one physical line of a shape that is
+two.
+
+The tail is the rest of the line just skipped and not an event, so it is taken as such —
+and only as such: directly after a head this reader skipped as read-only, and only when it
+carries what a head loses (a duration and a `proc.tid`, read by `tailOf`, the right edge of
+the grammar factored out the way `callOf` was). A mutating head refused before its tail was
+reached, so a tail that is taken always belongs to a read-only head. A tail-shaped line
+after a whole line, a line with neither edge after a cut head, and a second tail in a row
+are shapes nobody has measured and stay holes — each pinned in the test beside the two real
+lines. Seen red with the continuation branch disabled: the two-line case refuses.
+
+Same promise as #547 (the reader's account is not holed by a foreign read-only line the
+grammar cannot read whole), so its CHANGELOG entry grows a sentence rather than gaining a
+sibling; its own pull request because #547 had merged.
+
 ## 2026-09-08 — A daemon's file name cut a fs_usage line short, and the reader called it a hole
 
 The third `macos` failure of the day, and the first that was not a 126: the fs_usage
