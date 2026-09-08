@@ -2,6 +2,36 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — A daemon's file name cut a fs_usage line short, and the reader called it a hole
+
+The third `macos` failure of the day, and the first that was not a 126: the fs_usage
+step's PASS leg refused `oracle_saw_nothing` — "a line of the fs_usage capture did not match
+the grammar" — twice in a row (13:41 and 13:47, the second a re-run), on the branch that
+fixes the 126s (#546) and touches nothing near `src/fsusage.zig`. The line, 173 bytes,
+verbatim from the log: a `getattrlist` with `[  2]` on `…ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81…`,
+a pathname of combining characters, and then nothing — no duration, no `proc.tid`.
+`fs_usage` had cut the line at its display width and the cut took the whole tail.
+
+**What the rule said, and what it meant.** ADR 0031 and the module's own doc: a line the
+grammar does not match is a hole, and an account with a hole is not agreement. Written for
+the subject's lines and for a mutation nobody can be named for. This line is neither — a
+read-only CALL, from a daemon walking its own directory — and the rule refused the run for
+it, on a runner where the daemon writes such names all day, which is why the re-run did not
+help. The narrowing is the one the reader already applies to a parsed line: a read-only
+CALL cannot have changed state whoever issued it, so it is skipped before the truncation
+check (the dyld `stat64` case, 353 in one capture). The left edge of the grammar — the
+timestamp and the CALL — is factored out as `callOf` and asked on its own when the whole
+line does not parse; a tail-less line with a mutating CALL is still a hole.
+
+**Seen red.** The unit test carries the runner's bytes verbatim: the daemon's line leaves
+the account whole, the same line with `write` as its CALL refuses `.unparsed`. With the
+skip removed (`and false`) the test fails on the first assertion; restored, green. The
+real-path measurement is the fs_usage step on the runner itself, which will say whether
+the daemon is still there.
+
+Filed as its own pull request rather than folded into the 126 change: a different
+promise (the reader's account, not the fork stub's exit), its own review.
+
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
 **What is being built.** The last of the four reach items measured on 2026-09-07

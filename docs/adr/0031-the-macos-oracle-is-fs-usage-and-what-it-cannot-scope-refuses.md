@@ -128,7 +128,13 @@ that window sits.
 
 A line the grammar does not match, a pathname cut by the display cap, an operation on
 a descriptor never seen opened, a CALL on the state root this version does not model:
-each is a hole in the account, and an account with a hole is not agreement. A state
+each is a hole in the account, and an account with a hole is not agreement. (**Narrowed
+2026-09-08**: a line cut short of its duration and process — attributable to no thread
+— whose CALL reads only is skipped rather than counted as a hole, for the reason a parsed
+read-only line already is: it could not have changed state whoever issued it and
+wherever. Measured on the CI runner, where a daemon's `getattrlist` on a file named in
+combining characters pushed both fields off the line and refused the PASS leg twice in a
+row. A tail-less line with a mutating CALL is still a hole.) A state
 root long enough to be cut by the cap is refused before the observer starts, because
 scope is decided by path and a cut path takes the root's own prefix with it.
 
