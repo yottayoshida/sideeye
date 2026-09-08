@@ -89,6 +89,17 @@ both files, so it compares the two lists now, in both directions, and was seen r
 ways (a member dropped, a member invented, the parse broken). Every test here used `write`;
 one now puts `pwrite64`, `writev` and `pwritev` through the retraction as well.
 
+**And the fix for the version-dating produced two more of the same.** The surface-2 note
+had one sentence naming both weaker members of the `oracle_verified` channel, dated "since
+contract v14" — the date of the first of them. I deleted the first and left the date, so
+the sentence then dated `oracle_verified_subject_only`, which arrived with v15, to v14.
+Two paragraphs down I wrote that `oracle_verified_across_runs` "stood here from contract
+v14" and, in the same passage, that "both the addition and the removal are inside contract
+v15". The addition came with the v14 bump; only the removal is inside v15, which is exactly
+why that note is dated. **Deleting one of two parallel subjects leaves the survivor wearing
+the modifier that belonged to the one that went.** A sixth site, inside a shell string in
+`acceptance.sh`, survived the prose sweep for the same spellings and needed a fifth commit.
+
 **The confirmation round found the promise itself overstated, using this change's own
 measurement.** I had written that under this mode "a completed and agreeing comparison
 earns `oracle_verified`". `lbdb` — the target the whole change was aimed at — completes and
