@@ -25,7 +25,7 @@ is removed at startup, so a report at the path always describes *this* run.
 |---|---|---|---|
 | `schema` | string | yes | The literal `"sideeye/report"`. Reject anything else before reading further. |
 | `schema_status` | string | yes | `"experimental"` until the v1.0 freeze. |
-| `contract_version` | int | yes | The trace contract the binary speaks (v15 today). Crash-point numbering does not carry across contract versions; a saved case from another version replays as `case_no_longer_applies`, never as a verdict. |
+| `contract_version` | int | yes | The trace contract the binary speaks (v16 today). Crash-point numbering does not carry across contract versions; a saved case from another version replays as `case_no_longer_applies`, never as a verdict. |
 | `verdict` | string | yes | `"PASS"`, `"FAIL"`, `"UNKNOWN"`, or `"SETUP_ERROR"`. The one field everything else hangs off. |
 | `exit_code` | int | yes | Mirrors the verdict: 0 PASS / 1 FAIL / 2 UNKNOWN / 3 SETUP_ERROR. The process exits with the same value. |
 | `oracle_verified` | bool | yes | True only when the completeness oracle's comparison completed and agreed with the shim's account; false in every other case — no oracle named (`--oracle` on Linux, `--oracle-fs-usage` on macOS), `--allow-unverified` with no oracle, or a comparison cut short by a refusal. A fact about the run, never about the verdict: a FAIL stands without an oracle. The "verified PASS only" gate is `verdict == "PASS" && oracle_verified` — the prose `oracle` string below is an account, not a field to branch on. |
@@ -132,7 +132,7 @@ the case file — nothing else in the report was load-bearing for them.
 | `scratch` | string[] | the define declared it | The define's `[define] scratch` entries (or `--scratch` flags), each as spelled after normalisation (trailing slashes dropped), in order: paths relative to the state directory that the built-in invariants judged in no world — not their bytes, not their presence, whether the recording had them before, after, or both — each entry covering the path itself and everything beneath it (ADR 0043). The `l0` line says how many recorded paths the declaration matched, and `not_tested` names the declaration. Absent when the define declared nothing, so a report from a define without the key reads as it always did. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 | `next_step` | string | UNKNOWN | One sentence saying what to do about the refusal — change the define, pass a flag, narrow the state directory, fix the environment, or file it as Sideeye's defect. Chosen at the site that raised the refusal, where the cause is known, so two refusals sharing an `unknown_reason` may carry different steps; `message` keeps the observation and this keeps the action (ADR 0030's line). A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 
-`unknown_reason` values (closed set, contract v15 — the set is unchanged from v12;
+`unknown_reason` values (closed set, contract v16 — the set is unchanged from v12;
 the version moved because the recorded account did, not the vocabulary):
 `no_shim_marker`,
 `state_changed_without_ops`, `contract_version_mismatch`,

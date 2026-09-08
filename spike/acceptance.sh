@@ -1147,8 +1147,8 @@ except OSError:
     print(0); raise SystemExit
 want = int(sys.argv[2])
 i, n = 12, 0
-while i + 14 <= len(b):
-    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
+while i + 22 <= len(b):
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22 + plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
     if op == want: n += 1
@@ -1831,8 +1831,8 @@ import struct, sys
 b = open(sys.argv[1], "rb").read()
 names = {1:"open",2:"write",3:"rename",4:"unlink",5:"fsync",6:"truncate",7:"mkdir",8:"rmdir",9:"link"}
 i, out = 12, []
-while i + 14 <= len(b):
-    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14
+while i + 22 <= len(b):
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22
     path = b[i:i+plen].decode("utf-8", "replace"); i += plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
@@ -3547,8 +3547,8 @@ norm_trace() { python3 -c '
 import struct, sys
 b = open(sys.argv[1], "rb").read()
 i, out, pids = 12, [], {}
-while i + 14 <= len(b):
-    op, seq, pid, plen = struct.unpack_from("<HIII", b, i); i += 14 + plen
+while i + 22 <= len(b):
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22 + plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
     out.append("%d:%d:p%d" % (op, seq, pids.setdefault(pid, len(pids))))

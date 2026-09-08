@@ -1526,7 +1526,7 @@ test "unresolvedDetail puts the run it happened in into the sentence, not into t
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
-    const op: engine.Op = .{ .class = .unresolved, .seq = 0, .pid = 7, .path = "/s/d.txt", .aux = "unlinked-fd write fd:3" };
+    const op: engine.Op = .{ .class = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "/s/d.txt", .aux = "unlinked-fd write fd:3" };
 
     // The three sites' wordings, each of which must reach the reader. The fallback is
     // deliberately something no assertion below accepts: if `where` were ignored and the
@@ -1556,23 +1556,23 @@ test "unresolvedDetail names the kind and pid, and only claims a name when there
     try std.testing.expectEqualStrings(fb, unresolvedDetail(arena, null, "", fb));
 
     // With a name.
-    const named = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/doomed.txt", .aux = "unlinked-fd write" }, "", fb);
+    const named = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .tid = 9, .path = "/s/doomed.txt", .aux = "unlinked-fd write" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, named, "unlinked-fd write") != null);
     try std.testing.expect(std.mem.indexOf(u8, named, "pid 9") != null);
     try std.testing.expect(std.mem.indexOf(u8, named, "last named /s/doomed.txt") != null);
 
     // Without one: no filename is invented. This is the path the trace-close marker and
     // link-by-descriptor take, and it had no test until the renderer moved here.
-    const unnamed = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "", .aux = "link-by-descriptor" }, "", fb);
+    const unnamed = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .tid = 9, .path = "", .aux = "link-by-descriptor" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, unnamed, "no name recorded for it") != null);
     try std.testing.expect(std.mem.indexOf(u8, unnamed, "last named") == null);
 
     // A shim that wrote no kind still produces a sentence rather than an empty clause.
-    const nokind = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x", .aux = "" }, "", fb);
+    const nokind = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .tid = 9, .path = "/s/x", .aux = "" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, nokind, "reason not recorded") != null);
 
     // Target-influenced bytes are defanged by the same choke point the neighbour uses.
-    const forged = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land", .aux = "unlinked-fd write" }, "", fb);
+    const forged = unresolvedDetail(arena, .{ .class = .unresolved, .seq = 0, .pid = 9, .tid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land", .aux = "unlinked-fd write" }, "", fb);
     try std.testing.expect(std.mem.indexOf(u8, forged, "\nUNKNOWN") == null);
 }
 
@@ -1868,27 +1868,27 @@ test "foreignTouchDetail names the record, both ends of a two-path op, and defan
     // A one-path op: pid, class, path.
     try t.expectEqualStrings(
         "a process other than the subject (pid 9) performed write(/s/x) during X",
-        foreignTouchDetail(arena, .{ .class = .write, .seq = 1, .pid = 9, .path = "/s/x", .aux = "" }, "during X", null, old),
+        foreignTouchDetail(arena, .{ .class = .write, .seq = 1, .pid = 9, .tid = 9, .path = "/s/x", .aux = "" }, "during X", null, old),
     );
     // A two-path op names both ends — link as well as rename, since the shim records
     // either when one end is inside the state directory.
     try t.expectEqualStrings(
         "a process other than the subject (pid 9) performed link(/elsewhere/a -> /s/b) during X",
-        foreignTouchDetail(arena, .{ .class = .link, .seq = 1, .pid = 9, .path = "/elsewhere/a", .aux = "/s/b" }, "during X", null, old),
+        foreignTouchDetail(arena, .{ .class = .link, .seq = 1, .pid = 9, .tid = 9, .path = "/elsewhere/a", .aux = "/s/b" }, "during X", null, old),
     );
     // The shim's own marker from a self-armed child: where it was killed, not what it did.
     try t.expectEqualStrings(
         "a process other than the subject (pid 9) was killed at a state-directory operation on /s/x during X",
-        foreignTouchDetail(arena, .{ .class = .kill_landed, .seq = 0, .pid = 9, .path = "/s/x", .aux = "" }, "during X", null, old),
+        foreignTouchDetail(arena, .{ .class = .kill_landed, .seq = 0, .pid = 9, .tid = 9, .path = "/s/x", .aux = "" }, "during X", null, old),
     );
     // The marker carries the landed operation's second end when it had one.
     try t.expectEqualStrings(
         "a process other than the subject (pid 9) was killed at a state-directory operation on /s/x -> /s/y during X",
-        foreignTouchDetail(arena, .{ .class = .kill_landed, .seq = 0, .pid = 9, .path = "/s/x", .aux = "/s/y" }, "during X", null, old),
+        foreignTouchDetail(arena, .{ .class = .kill_landed, .seq = 0, .pid = 9, .tid = 9, .path = "/s/x", .aux = "/s/y" }, "during X", null, old),
     );
     // A child that names its file after a report line cannot forge one: the newline and
     // the escape come out as visible bytes, on the line they started on.
-    const forged = foreignTouchDetail(arena, .{ .class = .open, .seq = 1, .pid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land\x1b[1m", .aux = "" }, "during X", null, old);
+    const forged = foreignTouchDetail(arena, .{ .class = .open, .seq = 1, .pid = 9, .tid = 9, .path = "/s/x\nUNKNOWN  kill_did_not_land\x1b[1m", .aux = "" }, "during X", null, old);
     try t.expect(std.mem.indexOfScalar(u8, forged, '\n') == null);
     try t.expect(std.mem.indexOfScalar(u8, forged, 0x1b) == null);
     try t.expect(std.mem.indexOf(u8, forged, "\\x0a") != null);
@@ -1896,7 +1896,7 @@ test "foreignTouchDetail names the record, both ends of a two-path op, and defan
     // the sentence alone, through the same choke point.
     try t.expectEqualStrings(
         "a process other than the subject (pid 9) performed write(/s/x) during X; the oracle's capture at /w/oracle.txt holds the child's own lines, its execve among them",
-        foreignTouchDetail(arena, .{ .class = .write, .seq = 1, .pid = 9, .path = "/s/x", .aux = "" }, "during X", "/w/oracle.txt", old),
+        foreignTouchDetail(arena, .{ .class = .write, .seq = 1, .pid = 9, .tid = 9, .path = "/s/x", .aux = "" }, "during X", "/w/oracle.txt", old),
     );
     try t.expectEqualStrings("plain; the oracle's capture at /w/oracle.txt holds the child's own lines, its execve among them", withOracleCapture(arena, "plain", "/w/oracle.txt", old));
     try t.expectEqualStrings("plain", withOracleCapture(arena, "plain", null, old));
@@ -7748,6 +7748,7 @@ test "divergence detail escapes a control byte a target put in a path" {
         .class = .open,
         .seq = 1,
         .pid = 1,
+        .tid = 1,
         .path = "/tmp/s/evil\nUNKNOWN  forged_reason",
         .aux = "",
     }};
@@ -7771,8 +7772,8 @@ test "a phantom divergence names no syscall: the oracle's account does not reach
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const ops = [_]engine.Op{
-        .{ .class = .open, .seq = 1, .pid = 1, .path = "/tmp/s/a", .aux = "" },
-        .{ .class = .write, .seq = 2, .pid = 1, .path = "/tmp/s/a", .aux = "" },
+        .{ .class = .open, .seq = 1, .pid = 1, .tid = 1, .path = "/tmp/s/a", .aux = "" },
+        .{ .class = .write, .seq = 2, .pid = 1, .tid = 1, .path = "/tmp/s/a", .aux = "" },
     };
     // The oracle saw one operation; the shim recorded two. `compare` answers
     // `.phantom` at index 1, which is one past the end of both oracle lists.
@@ -8462,11 +8463,11 @@ test "the two conditions on a run with a writing child (v15)" {
     // The slice: subject writes, awaited child writes, subject writes again.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try traceFileForTest("slice-ok", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .fork, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .rename, .seq = 2, .pid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" },
-        .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/c", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .rename, .seq = 2, .pid = 8, .tid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" },
+        .{ .op = .write, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/c", .aux = "" },
     }, &fbuf);
     defer _ = posix.unlink(fz);
     var tb = engine.unboundedBudget(std.testing.allocator);
@@ -8565,10 +8566,10 @@ test "two children writing before either is collected are refused (v15)" {
     // the trace to `parent, child, parent`.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try traceFileForTest("slice-interleaved", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 8, .path = "/tmp/s/x", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 9, .path = "/tmp/s/y", .aux = "" },
-        .{ .op = .write, .seq = 3, .pid = 8, .path = "/tmp/s/x", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 8, .tid = 8, .path = "/tmp/s/x", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 9, .tid = 9, .path = "/tmp/s/y", .aux = "" },
+        .{ .op = .write, .seq = 3, .pid = 8, .tid = 8, .path = "/tmp/s/x", .aux = "" },
     }, &fbuf);
     defer _ = posix.unlink(fz);
     var tb = engine.unboundedBudget(std.testing.allocator);

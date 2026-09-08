@@ -60,6 +60,8 @@ pub const Op = struct {
     class: contract.OpClass,
     seq: u32,
     pid: u32,
+    /// The thread that performed it (v16). See `contract.Record.tid` for the width.
+    tid: u64,
     path: []const u8,
     aux: []const u8,
 };
@@ -607,6 +609,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             .class = dec.rec.op,
             .seq = dec.rec.seq,
             .pid = dec.rec.pid,
+            .tid = dec.rec.tid,
             .path = try arena.dupe(u8, dec.rec.path),
             .aux = try arena.dupe(u8, dec.rec.aux),
         };
@@ -822,8 +825,8 @@ test "the trace read refuses a symlink, and reads the same bytes named directly 
     // `.refuse` back to `.follow` reddens this and nothing else in `zig build test`.
     var fbuf: [contract.max_path]u8 = undefined;
     const real = try writeTraceForTest("trace-link", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
     }, &fbuf);
 
     // The link sits beside the trace and points at it, so the two names differ in nothing
@@ -859,12 +862,12 @@ test "the trace read refuses a symlink, and reads the same bytes named directly 
 test "a subject exec followed by a shim_ready carrying the count is a continuation (#123)" {
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-cont", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .shim_ready, .seq = 2, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/b", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -883,12 +886,12 @@ test "an awaited child's operations are numbered in the run, and hold crash-poin
     // addresses were the subject's alone, so the child's operation had neither.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("run-numbering", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .fork, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .shim_ready, .seq = 0, .pid = 8, .path = "/tmp/s", .aux = "" },
-        .{ .op = .rename, .seq = 2, .pid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" },
-        .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/c", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+        .{ .op = .rename, .seq = 2, .pid = 8, .tid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" },
+        .{ .op = .write, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/c", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -923,10 +926,10 @@ test "two processes taking one number disagree with the record count (v15)" {
     // fields the caller refuses on must show it — three records, highest number two.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("run-numbering-dup", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 8, .path = "/tmp/s/b", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 9, .path = "/tmp/s/c", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 8, .tid = 8, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 9, .tid = 9, .path = "/tmp/s/c", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -943,12 +946,12 @@ test "a subject exec whose shim_ready restarts at zero is a broken chain, and th
     // predicate (wrong base) and the records-vs-max disagreement.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-restart", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/b", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -966,9 +969,9 @@ test "a subject exec with no shim_ready after it is a broken chain (#123)" {
     // the image change was never observed at all.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-dark", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -986,9 +989,9 @@ test "a second announcement with no exec record is itself an image change (#123)
     // prior ops make records == max trivially).
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("dup-announce", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1005,10 +1008,10 @@ test "the first unplaceable record is kept whole, with its kind and the name it 
     // there was one), and first-wins the way `first_foreign` does.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("unresolved-first", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/doomed", .aux = "write-after-unlink" },
-        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "", .aux = "link-by-descriptor" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/doomed", .aux = "write-after-unlink" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "link-by-descriptor" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1028,9 +1031,9 @@ test "an exempt record does not hide the refusing one behind it" {
     // this pins the reader that decides it.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("unresolved-order", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/a", .aux = "unlinked-fd close fd:3" },
-        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:4" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "unlinked-fd close fd:3" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:4" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1045,9 +1048,9 @@ test "an exempt record does not hide the refusing one behind it" {
 test "a trace whose only unplaceable record is an exempt close leaves nothing to refuse on" {
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("unresolved-exempt", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/a", .aux = "unlinked-fd close fd:3" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "unlinked-fd close fd:3" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1063,8 +1066,8 @@ test "an unplaceable record with no name is still kept, so the refusal can say t
     // X" from "no name recorded", so the empty path has to survive the read.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("unresolved-noname", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "", .aux = "trace-closed-by-target" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "trace-closed-by-target" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1083,13 +1086,13 @@ test "failed exec attempts before the one that lands are not image changes" {
     // `child_process_detected` while the next shim_ready carried the right count.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .shim_ready, .seq = 1, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/b", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1115,12 +1118,12 @@ test "the continuation base follows the attempts, so a write between them still 
     // courtesy. Delete the refresh and this is the test that goes red.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry-write", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .shim_ready, .seq = 1, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/b", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1137,13 +1140,13 @@ test "retried attempts do not excuse a wrong base: the chain still breaks (#123)
     // with two operations behind it.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry-wrongbase", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/b", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1158,10 +1161,10 @@ test "retried attempts with nobody announcing at the end still break the chain (
     // reached an image that loads no shim, or reached none at all.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry-dark", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1182,9 +1185,9 @@ test "an exec recorded before the subject announced itself is still hard (#123)"
     // established that a chain broke, and refusing is the safe misreading.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-before-ready", &.{
-        .{ .op = .exec, .seq = 0, .pid = 7, .path = "", .aux = "" },
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1200,12 +1203,12 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
     // foreign_kill_point — the boundary stays a spawn doing what spawns do.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-child", &.{
-        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .exec, .seq = 0, .pid = 9, .path = "", .aux = "" },
-        .{ .op = .write, .seq = 1, .pid = 9, .path = "/tmp/s/c", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 7, .path = "/tmp/s/a", .aux = "" },
-        .{ .op = .write, .seq = 2, .pid = 9, .path = "/tmp/s/d", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 9, .tid = 9, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 9, .tid = 9, .path = "/tmp/s/c", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 9, .tid = 9, .path = "/tmp/s/d", .aux = "" },
     }, &fbuf);
     var tb_ = unboundedBudget(std.testing.allocator);
     var info = try readTrace(&tb_, std.mem.span(fz));
@@ -1248,8 +1251,8 @@ fn budgetFixture(tag: []const u8, n: usize, gpa: Allocator, fbuf: *[contract.max
     const recs = try gpa.alloc(contract.Record, n + 1);
     defer gpa.free(recs);
     const p16 = "pppppppppppppppp";
-    recs[0] = .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" };
-    for (recs[1..], 0..) |*r, i| r.* = .{ .op = .write, .seq = @intCast(i + 1), .pid = 7, .path = p16, .aux = "" };
+    recs[0] = .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" };
+    for (recs[1..], 0..) |*r, i| r.* = .{ .op = .write, .seq = @intCast(i + 1), .pid = 7, .tid = 7, .path = p16, .aux = "" };
     return writeTraceForTest(tag, recs, fbuf);
 }
 
@@ -1287,11 +1290,12 @@ test "MEASURE what a trace costs the budget, by shape (#377, ADR 0033)" {
         @memset(&abuf, 'x');
         const recs = try gpa.alloc(contract.Record, s.n + 1);
         defer gpa.free(recs);
-        recs[0] = .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" };
+        recs[0] = .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" };
         for (recs[1..], 0..) |*r, i| r.* = .{
             .op = .write,
             .seq = @intCast(i + 1),
             .pid = 7,
+            .tid = 7,
             .path = pbuf[0..s.plen],
             .aux = abuf[0..s.alen],
         };
@@ -1404,10 +1408,16 @@ test "the whole-trace ceiling is shared: a second live trace is refused on the s
     const a = try budgetFixture("budget-sum-a", 100, gpa, &fbuf_a);
     const b = try budgetFixture("budget-sum-b", 100, gpa, &fbuf_b);
 
-    // 32 KiB admits one 22,580-byte trace and not two. **Neither trace is too large by
+    // 48 KiB admits one of these traces and not two. **Neither trace is too large by
     // itself** — that is the whole distinction between this and `trace_too_large`, and
-    // the reason the two carry different `unknown_reason` values.
-    var budget: TraceBudget = .{ .child = gpa, .limit = 32 * 1024 };
+    // the reason the two carry different `unknown_reason` values. The limit was 32 KiB
+    // through v15, when one trace cost the budget 22,580 bytes; v16's eight-byte `tid`
+    // grew `Op`, the ops list crossed an arena chunk boundary, and the first read was
+    // refused before the second could be — measured as `first.refused=26398, ops=0`,
+    // with the test still red for the right reason. The cost is printed by the MEASURE
+    // test below; the arithmetic here is "one fits, two do not", not a fixed number
+    // (one of these costs 44,688 bytes under v16, measured the day the limit moved).
+    var budget: TraceBudget = .{ .child = gpa, .limit = 48 * 1024 };
     var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
     var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
     try std.testing.expect(refused.budget_refused != null);
@@ -1439,7 +1449,8 @@ test "a read that allocates nothing does not inherit the previous refusal (#377)
     // `open`, before the arena takes a byte, and returns the empty TraceInfo that means
     // "the shim never ran". Without the reset it would carry the previous read's refusal
     // and be reported as a ceiling that never stopped it.
-    var budget: TraceBudget = .{ .child = gpa, .limit = 32 * 1024 };
+    // Same limit as the test above, for the same reason: one of these fits, two do not.
+    var budget: TraceBudget = .{ .child = gpa, .limit = 48 * 1024 };
     var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
     defer first.deinit();
     var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);

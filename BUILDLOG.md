@@ -88,6 +88,28 @@ and the apparatus-complete run is taken once before the slice commit. Thread ref
 untouched here: `TOY_THREAD` still refuses `multiple_threads_detected` at the world, and
 `TOY_THREAD_BUSY` refuses the same way until the slice lands.
 
+**Commit 2: the record names its thread (contract v16).** Eight bytes after `pid`, read
+live per record like `pid` is; `max_record_len` and the decoder's minimum length move
+with it (14 → 22). `tid` has no default, on purpose: every literal that builds a
+`Record` or an `Op` — 151 of them, all in tests — had to name one, so a shim that
+forgot to write it would be a compile error rather than a zero. Three readers outside
+Zig knew the byte layout and had to be told: `spike/acceptance.sh` decodes the trace
+in three places (`count_op_records`, `kill_sequence`, and the `#358` leg), each with
+`struct.unpack_from("<HIII")` and a hard-coded 14; they read `"<HIIQI"` and 22 now.
+Nothing under `spike/` reads a committed `.bin` trace through the engine — the cohort
+captures are records, not fixtures — so no fixture needed regenerating.
+
+**What the extra eight bytes cost the budget, and one test that measured it by going
+red.** `engine.trace.Op` grew from 48 to 56 bytes, and the `#377` ceiling test that
+pins "32 KiB admits one 100-record trace and not two" started refusing the *first*
+trace: `first.refused=26398, ops=0`. The ops list crossed an arena chunk boundary, so one
+trace costs the budget 44,688 bytes now against 22,580 under v15 — the chunk doubled,
+not the records. The two tests that hold that arithmetic use 48 KiB; the relation they
+pin ("one fits, two do not") is unchanged and the numbers are in their comments. The
+MEASURE table in `max_trace_bytes_total`'s doc and ADR 0033 was produced under v15 and
+says so by date; its `s100` row would read higher today, and the ceiling it sized
+(512 MiB) has the same headroom argument it had.
+
 
 ## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run
 

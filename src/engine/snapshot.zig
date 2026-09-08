@@ -548,8 +548,8 @@ test "reconcile: a change no operation names is unaccounted (#405)" {
         .{ .rel = "from-raw-child", .how = .only_in_second },
     };
     const ops = [_]Op{
-        .{ .class = .open, .seq = 1, .pid = 7, .path = "/tmp/s/from-parent", .aux = "" },
-        .{ .class = .write, .seq = 2, .pid = 7, .path = "/tmp/s/from-parent", .aux = "" },
+        .{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/from-parent", .aux = "" },
+        .{ .class = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/from-parent", .aux = "" },
     };
     var buf: [4]Unaccounted = undefined;
     const r = reconcileIn(&diffs, &ops, &.{}, root, "", &buf);
@@ -565,7 +565,7 @@ test "reconcile: an open with no write still names the path it created" {
     // Here the same exclusion would be wrong: a file created by open and never written
     // is a change its own record explains, and refusing on it is a false refusal.
     const diffs = [_]Difference{.{ .rel = "made", .how = .only_in_second }};
-    const ops = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .path = "/tmp/s/made", .aux = "" }};
+    const ops = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/made", .aux = "" }};
     var buf: [2]Unaccounted = undefined;
     try std.testing.expect(reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).clean());
 }
@@ -584,14 +584,14 @@ test "reconcile: only a rename grants a subtree, and only from outside the root"
     var buf: [4]Unaccounted = undefined;
 
     // Moved in from outside: the umbrella applies, and the child is counted, not refused.
-    const moved_in = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/staging", .aux = "/tmp/s/d" }};
+    const moved_in = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/outside/staging", .aux = "/tmp/s/d" }};
     const r_in = reconcileIn(&diffs, &moved_in, &.{}, "/tmp/s", "", &buf);
     try std.testing.expect(r_in.clean());
     try std.testing.expectEqual(@as(usize, 1), r_in.by_rename_prefix);
 
     // Renamed within the root: the source subtree IS in the snapshot, so nothing is
     // absorbed and the unnamed child is refused.
-    const within = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/s/old", .aux = "/tmp/s/d" }};
+    const within = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/old", .aux = "/tmp/s/d" }};
     const r_within = reconcileIn(&diffs, &within, &.{}, "/tmp/s", "", &buf);
     try std.testing.expectEqual(@as(usize, 1), r_within.total);
     try std.testing.expectEqualStrings("d/child", buf[0].rel);
@@ -600,8 +600,8 @@ test "reconcile: only a rename grants a subtree, and only from outside the root"
     // Not a rename at all: an `open` on the directory names the directory and nothing
     // below it.
     const opened = [_]Op{
-        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/staging", .aux = "/tmp/s/elsewhere" },
-        .{ .class = .open, .seq = 2, .pid = 7, .path = "/tmp/s/d", .aux = "" },
+        .{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/outside/staging", .aux = "/tmp/s/elsewhere" },
+        .{ .class = .open, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/d", .aux = "" },
     };
     const r_open = reconcileIn(&diffs, &opened, &.{}, "/tmp/s", "", &buf);
     try std.testing.expectEqual(@as(usize, 1), r_open.total);
@@ -619,7 +619,7 @@ test "reconcile: a rename whose destination is the root itself absorbs nothing" 
         .{ .rel = "a", .how = .only_in_second },
         .{ .rel = "a/b", .how = .only_in_second },
     };
-    const ops = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/x", .aux = "/tmp/s" }};
+    const ops = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/outside/x", .aux = "/tmp/s" }};
     var buf: [4]Unaccounted = undefined;
     const r = reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf);
     try std.testing.expectEqual(@as(usize, 2), r.total);
@@ -636,8 +636,8 @@ test "reconcile: a rename is read at both ends (papis, TOY_LINK_IN)" {
         .{ .rel = "linked-in", .how = .only_in_second },
     };
     const ops = [_]Op{
-        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/outside/staging", .aux = "/tmp/s/probe-doc" },
-        .{ .class = .link, .seq = 2, .pid = 7, .path = "/tmp/outside/src", .aux = "/tmp/s/linked-in" },
+        .{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/outside/staging", .aux = "/tmp/s/probe-doc" },
+        .{ .class = .link, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/outside/src", .aux = "/tmp/s/linked-in" },
     };
     var buf: [4]Unaccounted = undefined;
     const r = reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf);
@@ -654,8 +654,8 @@ test "reconcile: a rename is read at both ends (papis, TOY_LINK_IN)" {
     // difference just the same. A control that cannot fail is the same evidence as no
     // control, and only running it tells the two apart.
     const path_only = [_]Op{
-        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/outside/staging", .aux = "" },
-        .{ .class = .link, .seq = 2, .pid = 7, .path = "/tmp/outside/src", .aux = "" },
+        .{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/outside/staging", .aux = "" },
+        .{ .class = .link, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/outside/src", .aux = "" },
     };
     const r_control = reconcileIn(&diffs, &path_only, &.{}, "/tmp/s", "", &buf);
     try std.testing.expectEqual(@as(usize, 2), r_control.total);
@@ -673,7 +673,7 @@ test "reconcile: a renamed-in directory carries its children, and the count says
         .{ .rel = "probe-doc/paper.pdf", .how = .only_in_second },
     };
     const ops = [_]Op{
-        .{ .class = .rename, .seq = 1, .pid = 7, .path = "/tmp/outside/staging", .aux = "/tmp/s/probe-doc" },
+        .{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/outside/staging", .aux = "/tmp/s/probe-doc" },
     };
     var buf: [4]Unaccounted = undefined;
     const r = reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf);
@@ -697,7 +697,7 @@ test "reconcile: the alt spelling of the root joins the same paths" {
     // A join that knew one spelling would count operations under the other as naming
     // nothing, and refuse a fully observed run.
     const diffs = [_]Difference{.{ .rel = "key.json", .how = .content_differs }};
-    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/private/tmp/s/key.json", .aux = "" }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/private/tmp/s/key.json", .aux = "" }};
     var buf: [2]Unaccounted = undefined;
     try std.testing.expect(reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "/private/tmp/s", &buf).clean());
     // Control: with no alt spelling the same operation names nothing.
@@ -709,11 +709,11 @@ test "reconcile: an operation naming the root itself is a name, not a skip" {
     // null instead reads as "this operation is outside the judged tree", and the change
     // at the root would be refused with the record that explains it sitting right there.
     const diffs = [_]Difference{.{ .rel = "", .how = .kind_differs }};
-    const ops = [_]Op{.{ .class = .rmdir, .seq = 1, .pid = 7, .path = "/tmp/s", .aux = "" }};
+    const ops = [_]Op{.{ .class = .rmdir, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" }};
     var buf: [2]Unaccounted = undefined;
     try std.testing.expect(reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).clean());
     // Control: the same difference with the operation one level up is outside the tree.
-    const outside = [_]Op{.{ .class = .rmdir, .seq = 1, .pid = 7, .path = "/tmp", .aux = "" }};
+    const outside = [_]Op{.{ .class = .rmdir, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp", .aux = "" }};
     try std.testing.expect(!reconcileIn(&diffs, &outside, &.{}, "/tmp/s", "", &buf).clean());
 }
 
@@ -734,11 +734,11 @@ test "reconcile: markers and out-of-scope operations never name a path" {
         .{ .rel = "decoy-c", .how = .only_in_second },
     };
     const ops = [_]Op{
-        .{ .class = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
-        .{ .class = .unsupported, .seq = 0, .pid = 7, .path = "/tmp/s/decoy-a", .aux = "" },
-        .{ .class = .kill_landed, .seq = 0, .pid = 7, .path = "/tmp/s/decoy-b", .aux = "" },
-        .{ .class = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/decoy-c", .aux = "" },
-        .{ .class = .write, .seq = 1, .pid = 7, .path = "/elsewhere/f", .aux = "" },
+        .{ .class = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .class = .unsupported, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/decoy-a", .aux = "" },
+        .{ .class = .kill_landed, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/decoy-b", .aux = "" },
+        .{ .class = .unresolved, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/decoy-c", .aux = "" },
+        .{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/elsewhere/f", .aux = "" },
     };
     var buf: [8]Unaccounted = undefined;
     try std.testing.expectEqual(@as(usize, 4), reconcileIn(&diffs, &ops, &.{}, "/tmp/s", "", &buf).total);
@@ -750,7 +750,7 @@ test "reconcile: a path recorded through an interior symlink names what the snap
     // a spelling. The shim normalises path arguments lexically and records `cur/f`; the
     // snapshot never follows a link and holds the difference at `v1/f`.
     const diffs = [_]Difference{.{ .rel = "v1/f", .how = .only_in_first }};
-    const ops = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    const ops = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
     var buf: [4]Unaccounted = undefined;
 
     // Absolute link target, and the relative spelling of the same link.
@@ -759,7 +759,7 @@ test "reconcile: a path recorded through an interior symlink names what the snap
     const rel_target = [_]Link{.{ .rel = "cur", .target = "v1" }};
     try std.testing.expect(reconcileIn(&diffs, &ops, &rel_target, "/tmp/s", "", &buf).clean());
     const dotted = [_]Link{.{ .rel = "links/cur", .target = "../v1" }};
-    const via_dotted = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/links/cur/f", .aux = "" }};
+    const via_dotted = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/links/cur/f", .aux = "" }};
     try std.testing.expect(reconcileIn(&diffs, &via_dotted, &dotted, "/tmp/s", "", &buf).clean());
 
     // Control: with no link recorded, the same operation names nothing — so the leg above
@@ -775,7 +775,7 @@ test "reconcile: link substitution follows a chain and survives a cycle" {
     // overwrite its own input; the cycle is why the hop count is bounded. Neither shape
     // is exotic — `latest -> stable -> v1` is an ordinary release layout.
     const diffs = [_]Difference{.{ .rel = "v1/f", .how = .content_differs }};
-    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/latest/f", .aux = "" }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/latest/f", .aux = "" }};
     const chain = [_]Link{
         .{ .rel = "latest", .target = "stable" },
         .{ .rel = "stable", .target = "v1" },
@@ -789,7 +789,7 @@ test "reconcile: link substitution follows a chain and survives a cycle" {
         .{ .rel = "a", .target = "b" },
         .{ .rel = "b", .target = "a" },
     };
-    const cyc_ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a/f", .aux = "" }};
+    const cyc_ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a/f", .aux = "" }};
     try std.testing.expect(!reconcileIn(&diffs, &cyc_ops, &cyc, "/tmp/s", "", &buf).clean());
 }
 
@@ -803,22 +803,22 @@ test "reconcile: an operation on the link itself names the link, not its target"
     var buf: [4]Unaccounted = undefined;
 
     const removed = [_]Difference{.{ .rel = "cur", .how = .only_in_first }};
-    const unlink_link = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur", .aux = "" }};
+    const unlink_link = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur", .aux = "" }};
     try std.testing.expect(reconcileIn(&removed, &unlink_link, &links, "/tmp/s", "", &buf).clean());
 
     // The generation swap ADR 0032 names as the motivating layout: build the new link
     // beside the old one, then rename it over. Both records are on the link itself.
     const swapped = [_]Difference{.{ .rel = "cur", .how = .content_differs }};
     const swap_ops = [_]Op{
-        .{ .class = .symlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur.tmp", .aux = "" },
-        .{ .class = .rename, .seq = 2, .pid = 7, .path = "/tmp/s/cur.tmp", .aux = "/tmp/s/cur" },
+        .{ .class = .symlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur.tmp", .aux = "" },
+        .{ .class = .rename, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/cur.tmp", .aux = "/tmp/s/cur" },
     };
     try std.testing.expect(reconcileIn(&swapped, &swap_ops, &links, "/tmp/s", "", &buf).clean());
 
     // Control: the substituted spelling still works alongside it, so accepting the
     // literal one has not replaced the resolution with a join that ignores links.
     const through = [_]Difference{.{ .rel = "v1/f", .how = .only_in_first }};
-    const unlink_through = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    const unlink_through = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
     try std.testing.expect(reconcileIn(&through, &unlink_through, &links, "/tmp/s", "", &buf).clean());
     // Control: accepting both spellings is not accepting everything.
     const other = [_]Difference{.{ .rel = "v2/f", .how = .only_in_first }};
@@ -836,14 +836,14 @@ test "reconcile: only a rename grants a subtree — a link into the root does no
         .{ .rel = "d/child", .how = .only_in_second },
     };
     var buf: [4]Unaccounted = undefined;
-    const linked = [_]Op{.{ .class = .link, .seq = 1, .pid = 7, .path = "/outside/src", .aux = "/tmp/s/d" }};
+    const linked = [_]Op{.{ .class = .link, .seq = 1, .pid = 7, .tid = 7, .path = "/outside/src", .aux = "/tmp/s/d" }};
     const r = reconcileIn(&diffs, &linked, &.{}, "/tmp/s", "", &buf);
     try std.testing.expectEqual(@as(usize, 1), r.total);
     try std.testing.expectEqualStrings("d/child", buf[0].rel);
     try std.testing.expectEqual(@as(usize, 0), r.by_rename_prefix);
     // Control: the same shape as a rename does take it, so the leg measures the class and
     // not something both records fail.
-    const renamed = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .path = "/outside/src", .aux = "/tmp/s/d" }};
+    const renamed = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/outside/src", .aux = "/tmp/s/d" }};
     try std.testing.expectEqual(@as(usize, 1), reconcileIn(&diffs, &renamed, &.{}, "/tmp/s", "", &buf).by_rename_prefix);
 }
 
@@ -857,7 +857,7 @@ test "reconcile: a link matches whole components, and never picks between two" {
     // record on `current/f` must not name it. Asserting instead that `current/f` itself
     // stays clean measures nothing: the literal spelling names it either way, which is
     // exactly what the first version of this leg did and why the mutation survived it.
-    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/current/f", .aux = "" }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/current/f", .aux = "" }};
     const near = [_]Link{.{ .rel = "cur", .target = "v1" }};
     const mangled = [_]Difference{.{ .rel = "v1/rent/f", .how = .content_differs }};
     try std.testing.expect(!reconcileIn(&mangled, &ops, &near, "/tmp/s", "", &buf).clean());
@@ -881,7 +881,7 @@ test "reconcile: a link matches whole components, and never picks between two" {
         .{ .rel = "a", .target = "/tmp/s/x" },
         .{ .rel = "a/b", .target = "/tmp/s/y" },
     };
-    const deep_ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a/b/f", .aux = "" }};
+    const deep_ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a/b/f", .aux = "" }};
     const one_reading = [_]Difference{.{ .rel = "y/f", .how = .content_differs }};
     try std.testing.expect(!reconcileIn(&one_reading, &deep_ops, &ambiguous, "/tmp/s", "", &buf).clean());
     // Control: on its own that link does resolve to exactly this spelling, so the leg
@@ -898,7 +898,7 @@ test "reconcile: a link retargeted mid-run is not used to name anything" {
     // so any choice invents one. Dropping the link refuses, which is the side a detector
     // belongs on.
     const diffs = [_]Difference{.{ .rel = "v1/f", .how = .only_in_second }};
-    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
     var buf: [4]Unaccounted = undefined;
 
     var links: std.ArrayList(Link) = .empty;
@@ -929,7 +929,7 @@ test "reconcile: an absolute link target is folded like a relative one" {
     // resolved to `v1/../v2/f` — a spelling no snapshot `rel` can hold, because those are
     // built by walking the tree. A refusal on a run whose record names the path.
     const diffs = [_]Difference{.{ .rel = "v2/f", .how = .content_differs }};
-    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
     var buf: [4]Unaccounted = undefined;
     const dotted = [_]Link{.{ .rel = "cur", .target = "/tmp/s/v1/../v2" }};
     try std.testing.expect(reconcileIn(&diffs, &ops, &dotted, "/tmp/s", "", &buf).clean());

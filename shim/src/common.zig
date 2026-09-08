@@ -953,6 +953,7 @@ fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u3
         .op = op,
         .seq = s,
         .pid = @bitCast(c.getpid()),
+        .tid = currentTid(),
         .path = path,
         .aux = aux,
     };
@@ -2328,14 +2329,14 @@ test "the run's operation count is read back from the trace, and a torn tail is 
 
     // Another process's operations raise the count. This is the whole point: pid 8 is not
     // this process, and its numbers are positions in the same run.
-    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" });
-    try append.record(fd, .{ .op = .rename, .seq = 2, .pid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" });
+    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" });
+    try append.record(fd, .{ .op = .rename, .seq = 2, .pid = 8, .tid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 2), ts.seq);
 
     // Records that carry no number leave it alone — a close, and an unplaceable operation.
-    try append.record(fd, .{ .op = .close, .seq = 0, .pid = 8, .path = "/tmp/s/b", .aux = "" });
-    try append.record(fd, .{ .op = .unresolved, .seq = 0, .pid = 8, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:3" });
+    try append.record(fd, .{ .op = .close, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s/b", .aux = "" });
+    try append.record(fd, .{ .op = .unresolved, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:3" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 2), ts.seq);
 
@@ -2344,7 +2345,7 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     // number now would hand the same number out twice.
     const scanned_before = ts.count_scanned;
     var partial: [2 * contract.max_path]u8 = undefined;
-    const pn = try contract.encodeRecord(&partial, .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/c", .aux = "" });
+    const pn = try contract.encodeRecord(&partial, .{ .op = .write, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/c", .aux = "" });
     try append.bytes(fd, partial[0 .. pn - 4]);
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 2), ts.seq);
@@ -2360,13 +2361,13 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     // `kill_landed` is a marker and still counts. A world that died in front of operation
     // 9 never wrote 9's own record, so leaving this out would let a sibling still running
     // take 9 for a real operation at the address the world claims to have died before.
-    try append.record(fd, .{ .op = .kill_landed, .seq = 9, .pid = 7, .path = "/tmp/s/d", .aux = "" });
+    try append.record(fd, .{ .op = .kill_landed, .seq = 9, .pid = 7, .tid = 7, .path = "/tmp/s/d", .aux = "" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 9), ts.seq);
 
     // The count never goes backwards: a later record with a smaller number cannot lower
     // it. (The shim does not write this; a hard link at the trace path could.)
-    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/e", .aux = "" });
+    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/e", .aux = "" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 9), ts.seq);
 
@@ -2381,7 +2382,11 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     // Bytes that are not a record refuse. Numbering past them would mean numbering from
     // whatever this process happened to remember, which is the address of another
     // operation. The caller records `count-read-failed` and the engine refuses the run.
-    try append.bytes(fd, &[_]u8{ 0xff, 0xff, 1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0 });
+    // At least a record's fixed prefix long (22 bytes since v16), or the decoder would
+    // read them as a record still being written and the scan would stop politely in
+    // front of them instead of refusing — which is what happened when the prefix grew
+    // and this array did not.
+    try append.bytes(fd, &[_]u8{ 0xff, 0xff, 1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
     try std.testing.expect(!refreshCount(&ts));
 
     // A closed channel refuses too, rather than answering from memory.
