@@ -868,9 +868,11 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     //
     // 126 no longer means "the capture could not be opened": that open moved to the
     // parent in #469 and its failure is `error.CaptureUnavailable`, answered above
-    // before any child exists. What remains here is the `dup2` that puts the
-    // already-opened capture on the child's fd 1.
-    if (exit_code == 126) return emitToolError(arena, id, "the child could not be given the stdout capture the server had already opened for it");
+    // before any child exists. What remains here is `setpgid` and the `dup2`s the
+    // child issues before exec — each of which, since 2026-09-08, writes a line on
+    // this server's stderr naming the call and the errno before exiting 126 — and a
+    // child that itself exited 126, indistinguishable from those.
+    if (exit_code == 126) return emitToolError(arena, id, "the child exited 126: either the engine's fork stub could not arrange it before exec — setpgid, or a dup2; a line on the server's stderr names the call and the errno — or the child itself exited 126");
     if (exit_code == 127) return emitToolError(arena, id, "self-exec failed: the canonical sideeye binary could not be executed");
 
     const report = readFile(arena, temp_json, 4 * 1024 * 1024) orelse

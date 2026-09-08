@@ -38,9 +38,34 @@ printed `setpgid(0, 0) failed, errno 22` (EINVAL, from the inverted branch's suc
 the line reaches the terminal; the refusal that followed was the compiler's, because the
 compiler is the first child); and a `--setup` script exiting 126 on its own reached
 `SETUP ERROR --setup exited 126; it wrote nothing; 126 is also the code the engine's own
-fork stub uses…`, end to end. The baseline arm is covered by its message test only — a
-world whose baseline exits 126 while the recording did not is not a shape a toy makes on
-purpose.
+fork stub uses…`, end to end. The first draft of this entry said the baseline arm was
+"covered by its message test" — there was no such test; review read the diff and said so.
+
+**What the fresh reader found, and what was done.** One P0 in the same class the change
+had not touched: the recording run's own 126 still answered "declare `--expect-status`",
+and a define that took the advice would read a child that never ran as a successful
+recording and derive crash points from it — the exact shape #469's entry names, closed
+there for the capture open and still open for `setpgid` and the `dup2`s. Fixed with an
+arm of its own, and so was the second observed run's. The MCP path's stderr redirect
+(`minimal_env`) was a `dup2` outside the bounded helper — the first cut's claim "every
+`dup2` before `exec`" was false by one — and the note's own `write` ignored `EINTR`, the
+condition the change was written for; both bounded now. `mcp.zig` read a 126 as the
+capture `dup2` alone; `setpgid` exits the same code. The stdin failure aborted without a
+word; it prints the line first now. The checker gate's sentence names the stderr line.
+Two readers of a 126 are left as they were, recorded rather than folded in: the sudo
+probe ("no cached credentials") and the demo's compiler probe ("no compiler") — neither
+claims a state or a convention, and the stderr line now prints beside each, which is what
+this change's own measurement showed for the compiler.
+
+**The baseline arm has a test now, on the real path.** A toy whose counter lives outside
+the state exits 0 on run 0 and 126 after every later write: the killed worlds die at the
+write, and only the un-killed baseline reaches the status. A macOS CI step runs that and
+the recording-run case, asserts the two new sentences and the absence of "`--expect-status`"
+and "restored state differs", and was seen red twice before it was trusted — with both
+arms disabled (the recording half fails first, printing the old advice) and with the
+baseline arm alone (its half fails). Locally the step's `rm -rf` was refused by the
+machine's own guard and the step uses `mktemp -d` instead; the guard that stops the next
+measurement is a shape this workspace has met before.
 
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 

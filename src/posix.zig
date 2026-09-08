@@ -932,7 +932,10 @@ pub fn runChildCaptureMinimalEnv(
 /// and closing it would be the EBADF-at-exec trap this function exists to avoid.
 fn adoptStdin(nfd: c_int) void {
     if (nfd == 0) return;
-    if (!dup2Bounded(dup2, nfd, 0)) abort();
+    if (!dup2Bounded(dup2, nfd, 0)) {
+        childArrangeNote("dup2(stdin, 0)");
+        abort();
+    }
     _ = close(nfd);
 }
 
@@ -961,10 +964,24 @@ fn dup2Bounded(dup2_fn: anytype, old_fd: c_int, new_fd: c_int) bool {
 /// baseline world, then a `--setup`) and the code alone could not say whether it was
 /// `setpgid`, the capture `dup2` or the stderr `dup2`, or with what errno.
 fn childArrangeFailed(what: []const u8) noreturn {
+    childArrangeNote(what);
+    _exit(126);
+}
+
+/// The note alone, for the one failure that aborts rather than exits (stdin): format
+/// from the errno the failed call left, one `write` to fd 2 under the same `EINTR`
+/// bound as the `dup2`s. Anything else the `write` answers — a reader that is gone
+/// (`EPIPE`; with `SIGPIPE` at its default the child dies of that instead), a short
+/// write — ends the attempt: the line is worth less than the exit it precedes, so it
+/// is never retried past the bound and never waits on anything but the kernel.
+fn childArrangeNote(what: []const u8) void {
     var buf: [160]u8 = undefined;
     const line = fmtChildArrangeNote(&buf, what, std.c._errno().*);
-    _ = write(2, line.ptr, line.len);
-    _exit(126);
+    var tries: u32 = 0;
+    while (write(2, line.ptr, line.len) < 0) {
+        tries += 1;
+        if (std.c._errno().* != EINTR or tries >= 9) return;
+    }
 }
 
 fn fmtChildArrangeNote(buf: []u8, what: []const u8, err: c_int) []const u8 {
@@ -1400,7 +1417,7 @@ fn runChildImplWithOps(
                 // already pointed at /dev/null above, for every child, not only this
                 // path — #263.) Higher fds are closed so no inherited descriptor (the
                 // JSON-RPC stdin among them) survives into the child.
-                _ = dup2(1, 2); // stderr → capture
+                if (!dup2Bounded(dup2, 1, 2)) childArrangeFailed("dup2(1, 2)"); // stderr → capture
                 var fd: c_int = 3;
                 while (fd < 256) : (fd += 1) _ = close(fd);
             }
