@@ -34,11 +34,13 @@ then tail refuses), and the reset on a whole line removed (a tail after a whole 
 swallowed). The reader also found the `Defect.unparsed` doc saying "only when" of a
 condition that had grown a second case — the same class of stale sentence #547's review
 caught in the same place — and the grammar's tail paragraph sitting on `callOf`'s doc;
-both moved.
+both moved. The confirming reader found the first draft of this fix had left the
+display-width sentence #547 wrote in four places beside the new "not measured", and a
+dead store the draft claimed to have deleted; both fixed before merge.
 
 **Left as they are, and named.** `lines_seen` counts fragments as lines, so the report's
-"N syscall lines examined" is high by one per fragment — the head skip in #547 already
-had this property. Blank lines between fragments neither end nor extend an event. And a
+"N syscall lines examined" is high by one per fragment (the head #547 skips is a real
+syscall line and counts honestly; the fragments are not). Blank lines between fragments neither end nor extend an event. And a
 name that can end a physical line can begin one: a filename holding a newline and then a
 grammatical `fs_usage` line would be read as that line — a forged sentinel `open` could
 satisfy the handshake while no observer was alive, which is the false-PASS direction. Not

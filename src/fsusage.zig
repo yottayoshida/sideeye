@@ -27,9 +27,9 @@
 //! opened in the window, a path truncated by the display cap, a CALL this module does
 //! not know, a line the grammar does not match: each of those is a hole in the account,
 //! and an account with a hole must not be reported as agreement. One exception, from
-//! 2026-09-08: a line the grammar cannot read whole — a tail cut short at the display
-//! width is the measured shape — whose CALL is one this module knows to read only, or a
-//! disk-io line (not an operation), is skipped, for the reason a parsed line of the same
+//! 2026-09-08: a line the grammar cannot read whole — a head whose physical line ended
+//! inside the name, before its tail, is the measured shape — whose CALL is one this
+//! module knows to read only, or a disk-io line (not an operation), is skipped, for the reason a parsed line of the same
 //! kind is: it could not have changed state whoever issued it — and so are the physical
 //! lines that follow it without a timestamp of their own, up to the one carrying the
 //! duration and `proc.tid` the head lost: fragments of that same event, not events
@@ -49,10 +49,10 @@ const oracle = @import("oracle.zig");
 pub const Defect = union(enum) {
     /// The grammar did not match a line. Skipped in two cases only (2026-09-08/09): the
     /// line has a timestamp and a CALL and that CALL is one this module knows to read
-    /// only or a disk-io line — a head the display cut short of its tail — or the line
-    /// has no timestamp and follows such a head before its tail has arrived, which makes
-    /// it a fragment of that same event and not an event. Every other unparsed line is an
-    /// operation this module cannot rule out.
+    /// only or a disk-io line — a head whose physical line ended before its tail — or the
+    /// line has no timestamp and follows such a head with no whole line between, before
+    /// its tail has arrived, which makes it a fragment of that same event and not an
+    /// event. Every other unparsed line is an operation this module cannot rule out.
     unparsed: []const u8,
     /// A pathname cut by the display cap. The state root's own prefix may be gone, so
     /// the line cannot be scoped either way.
@@ -735,13 +735,14 @@ pub fn read(
                 out.defect = .{ .unparsed = raw };
                 return out;
             }
-            // A timestamped line that did not parse: a new event, whatever came before.
-            in_cut_event = false;
+            // A timestamped line that did not parse: a new event, whatever came before —
+            // and the state below is set or the run refused, so nothing reads the old one.
             // A line the grammar cannot read whole cannot be attributed to a thread.
-            // The measured shape is a tail cut short: `fs_usage` cuts at the display
-            // width, which a pathname of the wrong bytes does (2026-09-08 on the CI
-            // runner: a daemon's `getattrlist` on a name made of combining characters,
-            // the duration and the process pushed off the line); any other way the
+            // The measured shape is a head whose physical line ended inside the name
+            // (2026-09-08 on the CI runner: a daemon's `getattrlist` on a name made of
+            // combining characters — the left cut is the display cap's, and why the
+            // duration and the process landed on the next line is not measured; a
+            // newline inside the name is the likely mechanism); any other way the
             // grammar fails lands here too. If the CALL — the field a cut cannot reach
             // — is one this module knows to read only, or a disk-io line, the line could
             // not have changed state whoever issued it and wherever, which is the reason
@@ -1190,8 +1191,9 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
     defer arena_state.deinit();
     const a = arena_state.allocator();
     // Verbatim bytes from the CI runner (2026-09-08): a daemon's `getattrlist` on a name
-    // made of combining characters. `fs_usage` cut the line at its display width, so
-    // there is no duration and no `proc.tid` — nothing to attribute it to.
+    // made of combining characters. The physical line ends inside the name, so there is
+    // no duration and no `proc.tid` — nothing to attribute it to (the rest of the event
+    // arrived on the next line; see the fragment test below).
     const daemon = "13:47:23.434908  getattrlist            [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
     const head =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
