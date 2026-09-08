@@ -224,6 +224,22 @@ than gaining a sibling) merged before the tag as well. The block re-read with th
 entry: still twenty-two entries, nothing overtaken. #549 was filed from its review and is
 not in this release.
 
+**Shipped, 2026-09-09.** Merge commit `2d49470`, tag `v1.3.0` on it, Release "v1.3.0 —
+Threads, awaited children, and the syscall boundary" with notes written for the page
+rather than the section pasted. `release.yml` built the three assets on publish and the
+version check against the tag passed; each asset's sha256 was computed from the
+downloaded bytes and matched the release's own digest (aarch64-macos `eb27ac75…`,
+x86_64-linux `c2014f30…`, aarch64-linux `ef94464f…`). The two Linux tarballs were
+started in `debian:trixie-slim` on amd64 and on arm64 — a different CPU from the build
+machine for the first — and both print `sideeye 1.3.0 (trace contract v16)`; the macOS
+tarball runs `sideeye demo` to its planted FAIL. The tap formula (`homebrew-tap` #64)
+carries the three url/sha256 pairs, `brew audit --strict` rc=0, and `brew upgrade` on the
+machine this was written on went 1.2.0 → 1.3.0 with the PATH binary resolving into the
+1.3.0 cellar; `sideeye demo` from that binary exits 1 on the planted bug. Four macOS CI
+failures stood between the bump commit and the tag — two exit-126 children (#546) and
+two shapes of one daemon's file name (#547, #548) — and the release went out a day after
+its reading.
+
 
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
