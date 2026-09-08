@@ -112,6 +112,66 @@ def shim_trap_set(path):
     return set(re.findall(r"\.([a-z0-9_]+)", text[start:end]))
 
 
+def oracle_trap_copy(path):
+    """The members of `isTrappedWrite`'s own list in src/oracle.zig.
+
+    The oracle parses text and the shim builds a BPF program, so the two cannot share a
+    declaration; the oracle keeps its own copy of the trapped set, spelled the way strace
+    prints it. Read from the function rather than transcribed here, for the reason
+    `shim_trap_set` is read from the declaration the filter is built from.
+    """
+    text = open(path).read()
+    start = text.index("fn isTrappedWrite(")
+    end = text.index("\n}", start)
+    body = text[start:end]
+    start = body.index("const family = [_][]const u8{")
+    end = body.index("};", start)
+    return set(re.findall(r'"([a-z0-9_]+)"', body[start:end]))
+
+
+def check_trap_copy(oracle_path, syscalls_path):
+    """The third comparison: the oracle's copy of the trap set against the shim's.
+
+    The copy decides which appended entry a `--- SIGSYS ---` retracts (ADR 0054). A member
+    the oracle's copy lacks costs a retraction that should have happened, and the
+    completeness comparison then refuses on the extra operation — loud rather than silent,
+    but loud in a place that names neither list. A member the oracle's copy has and the
+    filter does not is worse and quieter: nothing raises a signal for it, so nothing is
+    retracted and nothing says the copy disagrees.
+    """
+    try:
+        copy = oracle_trap_copy(oracle_path)
+        trapped = shim_trap_set(syscalls_path)
+    except (OSError, ValueError) as exc:
+        print("  BROKEN could not read the trap set or the oracle's copy: %s" % exc)
+        return 2
+    if not copy or not trapped:
+        print("  BROKEN one side parsed empty (oracle copy=%d, trapped=%d) — a zero here"
+              " means the parse broke, not that the two agree" % (len(copy), len(trapped)))
+        return 2
+    # No libc-to-kernel mapping on either side here, unlike `check_trap_set` above: the
+    # `SYS` enum members ARE kernel names, and strace prints kernel names, so the oracle's
+    # copy is already spelled that way. A mapping would only hide a real disagreement.
+    missing = sorted(trapped - copy)
+    extra = sorted(copy - trapped)
+    print("  the shim traps %d syscalls; the oracle's copy holds %d"
+          % (len(trapped), len(copy)))
+    if missing:
+        print("  FAILED trapped by the filter but missing from isTrappedWrite: %s"
+              % ", ".join(missing))
+        print("         a refusal for one of these retracts nothing, and the completeness"
+              " comparison refuses on the operation that was counted twice")
+    if extra:
+        print("  FAILED in isTrappedWrite but not in the filter's trap set: %s"
+              % ", ".join(extra))
+        print("         nothing ever raises SIGSYS for these, so the entry says a rule"
+              " applies where no rule can fire")
+    if missing or extra:
+        return 1
+    print("  ok   the oracle's copy of the trap set is the shim's trap set")
+    return 0
+
+
 def check_trap_set(oracle_path, syscalls_path):
     """The second comparison. Returns (exit code, printed already)."""
     try:
@@ -234,6 +294,9 @@ def main(argv):
     # and CI pass the third path, so the trap comparison is not optional in practice.
     if len(argv) == 4:
         rc = check_trap_set(argv[1], argv[3])
+        if rc != 0:
+            return rc
+        rc = check_trap_copy(argv[1], argv[3])
         if rc != 0:
             return rc
     return 0

@@ -2,6 +2,141 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run
+
+ADR 0052 decision 4 declined to attach an oracle to a `--observe syscalls` run, and it
+measured the reason: a trapped write reaches strace twice, once refused and once re-issued,
+and `oracle.compare` is positional. So the oracle watched a separate untrapped run, the
+report carried the weaker `oracle_verified_across_runs`, and — once v15 landed — the
+multi-process slice could not be used in that mode at all, because it needs both witnesses
+on one run. `lbdb` needs both improvements and was refused whichever one it asked for.
+
+What the decision did not examine is whether the two lines can be told apart. They can. The
+kernel prints `--- SIGSYS {... si_code=SYS_SECCOMP ...} ---` between them, and strace prints
+it without being asked: `-e trace=` filters syscalls, not signals. Measured before writing
+any code, with the engine's own oracle flags, in `spike/followup-trapwitness/`.
+
+**The design changed twice under review, and both times toward less machinery.** The first
+draft dropped the refused entry in the comparison; R1 said the comparison is not the only
+consumer — `mutations` is what the v15 child admission reads, and the child branch leaves
+`parse` before `classes` is ever touched — so the drop moved into `parse`. The second draft
+paired each refusal with its re-issue by lookahead; R2 pointed out that reading the SIGSYS
+and **retracting** what that process last appended needs no pairing at all. That removed the
+delayed commit, the end-of-input flush, the "is this a re-issue" rule, and one whole
+falsifiable check whose control R2 had already flagged as possibly unreachable.
+
+**A third thing changed after the code was written, and the mutation run is what found it.**
+The retraction has to be closed by any other line from the same process — a write to a file
+*outside* the judged state is trapped too, since the filter keys on the syscall number and
+not the path, and its signal would otherwise retract an unrelated earlier operation. I wrote
+a control for that line: a `renameat`, then an out-of-scope write, then the signal. It
+passed with the window-closing line deleted. It had to: `renameat` is not in the trapped
+family, so nothing was pending for the signal to take. The control pinned a state the tool
+cannot produce. The reachable shape is an in-scope write that has already been retracted
+**and re-issued** — the re-issue leaves an entry standing — followed by an out-of-scope
+write whose signal must not take it. Three mutations, three correct attributions after that:
+the retraction itself kills four parse tests, the window-closing line kills exactly the
+control, and the `si_code` discriminator kills the format test.
+
+**And one piece of the plan turned out not to be needed.** The `--twice` acceptance leg for
+this mode existed because the mode ran the operation three times and the floor could be
+satisfied by the run nobody compared; `toy_twice.c`'s `TOY_TWICE_SLOW_FIRST` was going to
+need a new condition. With the leading run gone the mode runs twice like every other, the
+slow run is one of the two compared, and the leg's expectation simply inverts from the
+2000s to the 3000s — no toy change. It is kept rather than deleted because the inversion is
+the regression guard for this change: a gap in the 2000s means a third run came back.
+
+`oracle_verified_across_runs` is **removed**, not deprecated. `check-report-schema.py` fails
+a field the page documents and the code never generates, so keeping the row was not on the
+table. That is the third break of surface 2 and the first that is a removal, recorded in
+`docs/contract-freeze.md`. It is a strengthening for a consumer — a syscalls-mode PASS that
+used to present as unverified now presents as verified — which is the thing surface 2 exists
+to stop happening quietly, so the note says it in those words.
+
+**The external review found five more things, and two of them are the same mistake in
+different clothes.**
+
+The sweep above was run with a pattern that spelled the claim the way the sites I already
+knew about spelled it — `separate untrapped run`, or a past-tense `watched a … run`.
+`DESIGN.md:153` says "whose oracle **watches** a separate run": present tense, no
+"untrapped", and it matched neither alternative. `CHANGELOG.md:40` had the same sentence
+inside the v15 entry, so the same unreleased block would have shipped one entry saying the
+two improvements compose and another saying the mode still refuses the whole class. The
+lesson is not "grep harder" — it is that a pattern built from the hits you have found
+already will keep finding those. `separate[^.]{0,40}run` found both immediately.
+
+`observeAgain` kept the old asymmetry: run B carried no oracle in this mode, and the
+comment said why — "for the reason the recording run does not carry it either". The
+recording run carries one now, so the reason was false and `--twice` was comparing two runs
+for equal state after observing one of them under strace and the other not. Run B carries
+it in every mode now, the two-branch disclosure collapsed back to one sentence, and the
+acceptance leg asserts both halves — the sentence and the `oracle-2.txt` it names — because
+the branch this replaced had once printed a sentence about a file nothing wrote.
+
+**Two numbers were written from the design rather than from a measurement.** "157 lines
+against 97" cited a 97 that is in no committed capture; re-measured with the engine itself
+so both halves come from the same command, it is 98 against 158, and both files are
+committed now. And "so it is faster" was read off the run count. Timed seven runs per
+engine, the medians are 43 ms before and 44 ms after, distributions overlapping: the run
+that went away is one execution of a millisecond-scale toy while both engines still explore
+fifteen worlds. No speedup is claimed, and the record says why one would not show here.
+
+The last one is a guard that was asserted rather than built. `isTrappedWrite` copies the
+shim's trap set by hand, and its own comment claimed a missing member "refuses loudly" —
+unfalsified, and only half true: a member the filter does not trap is *silent*, because
+nothing raises the signal that would use it. `spike/check-shim-coverage.py` already read
+both files, so it compares the two lists now, in both directions, and was seen red three
+ways (a member dropped, a member invented, the parse broken). Every test here used `write`;
+one now puts `pwrite64`, `writev` and `pwritev` through the retraction as well.
+
+**The confirmation round found the promise itself overstated, using this change's own
+measurement.** I had written that under this mode "a completed and agreeing comparison
+earns `oracle_verified`". `lbdb` — the target the whole change was aimed at — completes and
+agrees and reports `oracle_verified: false` with `oracle_verified_subject_only: true`,
+because its crash points are a child's (ADR 0053). One page said both things three lines
+apart. The code was never wrong: what the mode gains is that it stops *capping* the claim,
+not that the claim is always the strongest one. The sentence conflated those, and the file
+that disproved it was committed in the same diff.
+
+A second batch in that round was one mistake wearing a new hat. Having been caught writing
+the two-run arrangement in the present tense, I rewrote the sites in the past tense — and
+dated them by contract version: "until contract v15". The version does not move here (ADR
+0054 §5), and `41b9a8b` is v15 and emits the field, so v15 is exactly the version that has
+it. Six sites said the opposite of the truth. The one site that was right, `target-classes`
+row 55, was the one written as a date. Everything is dated or ADR-numbered now.
+
+**The review's own tail arrived after I had answered its head, and one item in it made a
+paragraph of mine untrue.** The freeze note and the CHANGELOG both said a consumer gating
+on `oracle_verified` "counts runs it used to exclude" and was "entitled to have been
+surprised". Measured: `v1.0.0`, `v1.1.0` and `v1.2.0` all contain the string
+`oracle_verified_across_runs` zero times. **No tagged release ever emitted the field.** It
+was added after `v1.2.0` and withdrawn in the same unreleased block, so the consumer I was
+apologising to does not exist. The break is still a break — the page documented the field —
+but it is the mildest of the three and now says so. Writing the consequence from the shape
+of the change instead of from the tags is the same habit as writing "so it is faster" from
+the run count.
+
+Three smaller ones in the same batch were guards that could not fire or could not be seen
+fail. `setPending` took the pid's entry before appending, which the window-closing take on
+the same line had already removed — dead code that read as though two entries for one
+process were reachable. `dropRetracted` skipped an out-of-range index instead of asserting,
+so a bookkeeping bug would have shown up as a count quietly disagreeing with a list. And
+`lines_in_scope -= 1` leant on an invariant nothing stated; it asserts now rather than
+saturating, because `-|` is how the count would go wrong silently later.
+
+The last three were tests I had not written. Every retraction test used `write`, and every
+interleaving test had the process that appended first refused first. A mutation that makes
+`takePending` ignore the pid and return the last entry **passes** the forward-order test —
+so the reverse order, the subject's own unfinished/resumed shape, and the shape where no
+re-issue ever comes (the static helper README warns about, killed by its first write) each
+got one. The same mutation kills exactly the two new order-sensitive ones, which is the
+attribution I wanted to see.
+
+The same-class sweep found three sites the plan had not listed: `withOracleCapture`, which
+told a reader which run the named capture was of; the `oracle_saw_phantom` next-step, which
+suggested the target had failed to repeat; and a stale comment above the divergence hint.
+All three were written around the two-run arrangement and would have gone on saying so.
+
 ## 2026-09-08 — "crossed" was a denominator I chose after seeing the answer
 
 Asked twice whether item 3 had fully crossed. The first answer was "yes, wherever that wall

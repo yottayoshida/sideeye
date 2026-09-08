@@ -88,6 +88,16 @@ a name, and the shim states the same rule from the other side: a discovered stra
 and never attached, because "a second witness joining on its own would silently strengthen
 what a flagless verdict claims".
 
+**Amended 2026-09-08 (ADR 0054): decision 4 is reversed.** The oracle watches the trapped
+run — the run whose trace is judged — and the claim is the ordinary `oracle_verified`.
+`oracle_verified_across_runs` no longer exists. What was measured here stands and was the
+reason the decision was taken: a trapped write does reach strace twice. What was not
+examined was whether the two can be told apart, and they can, because the refusal prints
+its own line (`--- SIGSYS ... si_code=SYS_SECCOMP ---`) between them. The reader retracts
+the entry it appended for the refused call when it reads that line. The paragraph above is
+left standing rather than rewritten: it records what was decided and why, and ADR 0054
+records what replaced it.
+
 ## Alternatives Considered
 
 - **Make it the default.** Declined. Not because of the 38 committed cases — a version bump

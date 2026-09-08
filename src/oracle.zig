@@ -406,6 +406,140 @@ pub fn holdsId(list: []const Event, id: u64) bool {
     return false;
 }
 
+/// Is this the kernel refusing a syscall under a seccomp filter?
+///
+/// `--observe syscalls` traps the write family with `SECCOMP_RET_TRAP`, so a write the
+/// target issued reaches this reader twice: the refused entry, and the handler's re-issue
+/// carrying the sentinel. Only the second one ran. strace prints the signal without being
+/// asked — `-e trace=` filters syscalls, not signals — so the flags the engine already
+/// passes carry it, measured in `spike/followup-trapwitness/`:
+///
+///   `14    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0x…, si_syscall=__NR_write, si_arch=…} ---`
+///
+/// `syscallName` answers null for this shape, so the read has to happen before the name
+/// test, beside the reap and spawn readers.
+///
+/// `si_code` is the discriminator rather than `si_syscall`: a SIGSYS from anywhere else
+/// says nothing about a call this reader appended, while the syscall name could only ever
+/// repeat what the append side already established — the entry a refusal retracts was
+/// restricted to the trapped family when it was recorded, and no filter in this tool traps
+/// anything else. An older strace that spells `si_syscall` as a bare number is read the
+/// same way here, because the name was never what the decision rested on.
+fn isSeccompRefusal(raw: []const u8) bool {
+    const line = stripPidPrefix(raw);
+    if (!std.mem.startsWith(u8, line, "--- SIGSYS ")) return false;
+    return std.mem.indexOf(u8, line, "si_code=SYS_SECCOMP") != null;
+}
+
+/// The syscalls `--observe syscalls` traps, spelled as strace prints them.
+///
+/// The shim builds a BPF program and this reader parses text, so there is no declaration
+/// for the two to share and this is a copy. **The standing drift detector is
+/// `spike/check-shim-coverage.py`**, which reads both lists from the code that uses them
+/// and compares them in both directions; it runs in CI and inside the acceptance suite.
+/// Without it the two failure modes are unequal: a member missing here costs a retraction
+/// that should have happened, which the completeness comparison refuses on loudly but in a
+/// place that names neither list — while a member here that the filter does not trap is
+/// silent, because nothing ever raises the signal that would use it.
+fn isTrappedWrite(name: []const u8) bool {
+    const family = [_][]const u8{ "write", "pwrite64", "writev", "pwritev" };
+    for (family) |f| {
+        if (std.mem.eql(u8, name, f)) return true;
+    }
+    return false;
+}
+
+/// A write this reader appended that the kernel may not have executed.
+///
+/// One per process, because the refused call and its signal are not adjacent in the file:
+/// another process's lines fall between them freely (measured — see
+/// `spike/followup-trapwitness/artifacts/trapped-children.txt`). What cannot fall between
+/// them is another line from the SAME process, which is stopped waiting for the signal to
+/// be delivered; the refused call's own `<... write resumed>` may, and has no name for
+/// `syscallName` to return, so it never reaches the clearing point.
+/// The pid is the one `pidOf` read from the line that appended, and the refusal has to
+/// carry the same one. A capture whose prefixes appear part-way through — strace omits
+/// them while one process runs and starts printing them when a second appears — would set
+/// an entry under `null` and offer a numbered refusal for it, so the retraction would not
+/// happen. That is the existing fragility of reading pids from prefixes rather than a new
+/// one, and it is loud where it lands: the un-retracted entry leaves the oracle one
+/// operation ahead and the comparison refuses `oracle_missed_operation`.
+const PendingWrite = struct {
+    pid: ?u32,
+    /// Index into `classes`/`names`/`lines`, or null for a child's write, which only ever
+    /// reached `mutations`.
+    op: ?usize,
+    /// Index into `mutations`, or null where the line carried no pid to attribute it to.
+    mutation: ?usize,
+};
+
+/// Take this process's pending write out of the list, if it has one.
+fn takePending(list: *std.ArrayList(PendingWrite), pid: ?u32) ?PendingWrite {
+    for (list.items, 0..) |it, i| {
+        // `==` on two optionals is the comparison this needs, `null` to `null` included.
+        if (it.pid == pid) return list.swapRemove(i);
+    }
+    return null;
+}
+
+/// Record a write this process may not have executed.
+///
+/// A plain append, and it stays one: the window-closing `takePending` runs on every line
+/// that reaches an append site, so this process has no entry by the time it gets here. An
+/// earlier version took first, which was dead code that read as though two entries for one
+/// process were reachable.
+fn setPending(arena: std.mem.Allocator, list: *std.ArrayList(PendingWrite), w: PendingWrite) !void {
+    try list.append(arena, w);
+}
+
+/// Rebuild the lists without the retracted entries, once, at the end of the parse.
+///
+/// Removing an entry the moment its refusal was read would have been wrong: every index
+/// another process's pending write holds shifts under it, and the interleaving that makes
+/// that possible is in the measured capture. Indices stay stable for the whole parse and
+/// the lists are compacted here. `classes`, `names` and `lines` share one mask because
+/// they are index-aligned and must stay so (#337).
+fn dropRetracted(arena: std.mem.Allocator, out: *Parsed, dead_ops: []const usize, dead_muts: []const usize) !void {
+    if (dead_ops.len != 0) {
+        const keep = try arena.alloc(bool, out.classes.items.len);
+        @memset(keep, true);
+        for (dead_ops) |i| {
+            // Every index here was `classes.items.len - 1` when it was recorded and the
+            // list only grows, so an out-of-range one is a bookkeeping bug. Skipping it
+            // would drop the retraction while `lines_in_scope` had already been decremented
+            // for it — the count and the list would disagree, and nothing would say so.
+            std.debug.assert(i < keep.len);
+            keep[i] = false;
+        }
+        var w: usize = 0;
+        for (keep, 0..) |k, i| {
+            if (!k) continue;
+            out.classes.items[w] = out.classes.items[i];
+            out.names.items[w] = out.names.items[i];
+            out.lines.items[w] = out.lines.items[i];
+            w += 1;
+        }
+        out.classes.shrinkRetainingCapacity(w);
+        out.names.shrinkRetainingCapacity(w);
+        out.lines.shrinkRetainingCapacity(w);
+    }
+    if (dead_muts.len != 0) {
+        const keep = try arena.alloc(bool, out.mutations.items.len);
+        @memset(keep, true);
+        for (dead_muts) |i| {
+            std.debug.assert(i < keep.len);
+            keep[i] = false;
+        }
+        var w: usize = 0;
+        for (keep, 0..) |k, i| {
+            if (!k) continue;
+            out.mutations.items[w] = out.mutations.items[i];
+            w += 1;
+        }
+        out.mutations.shrinkRetainingCapacity(w);
+    }
+}
+
 fn isProcessSyscall(name: []const u8) bool {
     for (process_syscalls) |p| {
         if (std.mem.eql(u8, p, name)) return true;
@@ -849,6 +983,12 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
 
+    // Writes appended but not yet known to have run, and the entries a refusal retracts.
+    // See `PendingWrite` and `dropRetracted` for why the removal is deferred to the end.
+    var pending: std.ArrayList(PendingWrite) = .empty;
+    var dead_ops: std.ArrayList(usize) = .empty;
+    var dead_muts: std.ArrayList(usize) = .empty;
+
     // The subject's working directory, tracked so a relative path with no dirfd
     // annotation (every path syscall on x86-64, where glibc issues the legacy forms)
     // can still be resolved (ADR 0006). Starts at the engine's cwd; the subject's own
@@ -875,8 +1015,34 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         if (launched) {
             if (reapedPid(line)) |r| try noteEvent(arena, &out.reaps, r, out.lines_seen);
             if (spawnedPid(line)) |c| try noteEvent(arena, &out.spawns, c, out.lines_seen);
+            // The kernel refusing a trapped write means the entry appended for it
+            // describes a call that did not run (`--observe syscalls`). Here for the same
+            // reason as the two readers above: `syscallName` answers null for a
+            // `--- … ---` line, and a test in this file pins that.
+            if (isSeccompRefusal(line)) {
+                if (takePending(&pending, pid)) |q| {
+                    if (q.op) |i| {
+                        try dead_ops.append(arena, i);
+                        // A pending entry carrying an `op` index was set on the subject
+                        // path, which increments this counter before it appends — so the
+                        // count cannot be zero here. Asserted rather than saturated: `-|`
+                        // would absorb a future path that sets `.op` without counting the
+                        // line, and absorbing it is how the count would go quietly wrong.
+                        std.debug.assert(out.lines_in_scope > 0);
+                        out.lines_in_scope -= 1;
+                    }
+                    if (q.mutation) |i| try dead_muts.append(arena, i);
+                }
+                continue;
+            }
         }
         const name = syscallName(line) orelse continue;
+
+        // Any other line from this process closes the window a refusal could retract in.
+        // Without it, a write to a file OUTSIDE the judged state — trapped too, since the
+        // filter keys on the syscall number and not on the path — would raise a signal
+        // that retracted an unrelated earlier operation of the same process.
+        _ = takePending(&pending, pid);
 
         // The first execve is strace starting the target: it names the subject.
         // Everything before knowing the subject is the measuring apparatus itself.
@@ -1030,7 +1196,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // child touching what only the subject may. `changesPersistentState` is the
             // single predicate for "not a read, not a close, not a write-incapable open"
             // (ADR 0003), so an in-scope and an unresolvable operation are judged alike.
-            if (is_shared_write_map or changesPersistentState(name, line)) try noteEvent(arena, &out.mutations, pid.?, out.lines_seen);
+            if (is_shared_write_map or changesPersistentState(name, line)) {
+                try noteEvent(arena, &out.mutations, pid.?, out.lines_seen);
+                if (isTrappedWrite(name))
+                    try setPending(arena, &pending, .{ .pid = pid, .op = null, .mutation = out.mutations.items.len - 1 });
+            }
             continue;
         }
 
@@ -1093,11 +1263,17 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // a child had not been collected yet, and the parent is the anyone else that
             // most often has.
             if (pid) |me| try noteEvent(arena, &out.mutations, me, out.lines_seen);
+            if (isTrappedWrite(name)) try setPending(arena, &pending, .{
+                .pid = pid,
+                .op = out.classes.items.len - 1,
+                .mutation = if (pid == null) null else out.mutations.items.len - 1,
+            });
         } else if (out.unsupported == null) {
             out.unsupported = try arena.dupe(u8, name);
         }
     }
     out.children = child_pids.items.len;
+    try dropRetracted(arena, &out, dead_ops.items, dead_muts.items);
     return out;
 }
 
@@ -1131,6 +1307,265 @@ test "syscall names are read from the start of the line" {
     try std.testing.expectEqualStrings("pwrite64", syscallName("pwrite64(3, \"x\", 1, 0) = 1").?);
     try std.testing.expectEqual(@as(?[]const u8, null), syscallName("--- SIGKILL ---"));
     try std.testing.expectEqual(@as(?[]const u8, null), syscallName("+++ killed by SIGKILL +++"));
+}
+
+test "a seccomp refusal is told apart from every other signal line" {
+    try std.testing.expect(isSeccompRefusal("14    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffffb8fddc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---"));
+    // An older strace spelling the syscall as a number decides the same way: the name
+    // was never what the retraction rested on.
+    try std.testing.expect(isSeccompRefusal("--- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=64, si_arch=AUDIT_ARCH_X86_64} ---"));
+    // A SIGSYS from anywhere else says nothing about a call this reader appended.
+    try std.testing.expect(!isSeccompRefusal("14    --- SIGSYS {si_signo=SIGSYS, si_code=SI_USER, si_pid=1, si_uid=0} ---"));
+    // Signals this reader has no business retracting on, and an ordinary syscall line.
+    try std.testing.expect(!isSeccompRefusal("14    --- SIGKILL ---"));
+    try std.testing.expect(!isSeccompRefusal("+++ killed by SIGKILL +++"));
+    try std.testing.expect(!isSeccompRefusal("write(3</tmp/o/state/k>, \"x\", 1) = 1"));
+}
+
+test "a refused write and its re-issue are one operation (--observe syscalls)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The single-process shape, measured in spike/followup-trapwitness/artifacts/
+    // trapped-engine-flags.txt: the refused call, the signal, the re-issue.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = 6
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    const want = [_]contract.OpClass{.write};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    // The three aligned lists shrink together, and the line kept is the one that ran.
+    try std.testing.expectEqual(@as(usize, 1), p.names.items.len);
+    try std.testing.expectEqual(@as(usize, 1), p.lines.items.len);
+    try std.testing.expect(std.mem.endsWith(u8, p.lines.items[0], "= 6"));
+    // Both lines were in scope of the judged state; only one of them happened.
+    try std.testing.expectEqual(@as(usize, 1), p.lines_in_scope);
+    // And the positioned list the child admission reads (v15) holds one, not two.
+    try std.testing.expectEqual(@as(usize, 1), p.mutations.items.len);
+}
+
+test "every member of the trapped family is retracted, not just write" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // `write` is the member every other test here uses, and it is the one member whose
+    // retraction working proves least about the other three: they reach `isTrappedWrite`
+    // through the same list but the oracle spells and places them differently.
+    // `spike/check-shim-coverage.py` holds the list against the filter's; this holds the
+    // list against the reader that consumes it.
+    try std.testing.expect(isTrappedWrite("write"));
+    try std.testing.expect(isTrappedWrite("pwrite64"));
+    try std.testing.expect(isTrappedWrite("writev"));
+    try std.testing.expect(isTrappedWrite("pwritev"));
+    // Not trapped: six arguments leave the filter no register for the re-issue marker,
+    // so nothing raises a signal for it and an entry here could never fire (ADR 0052).
+    try std.testing.expect(!isTrappedWrite("pwritev2"));
+    try std.testing.expect(!isTrappedWrite("openat"));
+
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    pwrite64(3</tmp/o/state/a>, "x", 1, 0) = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_pwrite64, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    pwrite64(3</tmp/o/state/a>, "x", 1, 0) = 1
+        \\10    writev(3</tmp/o/state/a>, [{iov_base="y", iov_len=1}], 1) = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_writev, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    writev(3</tmp/o/state/a>, [{iov_base="y", iov_len=1}], 1) = 1
+        \\10    pwritev(3</tmp/o/state/a>, [{iov_base="z", iov_len=1}], 1, 0) = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_pwritev, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    pwritev(3</tmp/o/state/a>, [{iov_base="z", iov_len=1}], 1, 0) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    // Three operations, not six.
+    const want = [_]contract.OpClass{ .write, .write, .write };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(usize, 3), p.lines_in_scope);
+    try std.testing.expectEqual(@as(usize, 3), p.mutations.items.len);
+    // And the line kept for each is the one that ran.
+    for (p.lines.items) |l| try std.testing.expect(std.mem.endsWith(u8, l, "= 1"));
+}
+
+test "a refused write is retracted whatever the register held (x86-64)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // On aarch64 the refused call's return reads as the fd; on x86-64 glibc renders it
+    // `-1 ENOSYS`. Neither is promised, so the retraction keys on the signal — this is
+    // the shape that would break a rule keyed on the return value instead.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = -1 ENOSYS (Function not implemented)
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_X86_64} ---
+        \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = 6
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    const want = [_]contract.OpClass{.write};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+}
+
+test "a refusal retracts only its own process's write, whoever wrote in between" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The interleaving is the reason the retraction cannot pop the last entry: pid 11
+    // appends between pid 10's write and pid 10's signal, and pid 10's is retracted
+    // first. Both writes are one operation each once their refusals are read.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    write(3</tmp/o/state/a>, "x", 1) = 3
+        \\11    write(4</tmp/o/state/b>, "y", 1) = 4
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    write(3</tmp/o/state/a>, "x", 1) = 1
+        \\11    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\11    write(4</tmp/o/state/b>, "y", 1) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    // The subject's list: its own write, once.
+    const want = [_]contract.OpClass{.write};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    // The positioned list carries both processes, one entry each.
+    try std.testing.expectEqual(@as(usize, 2), p.mutations.items.len);
+    try std.testing.expect(holdsId(p.mutations.items, 10));
+    try std.testing.expect(holdsId(p.mutations.items, 11));
+    try std.testing.expect(p.childTouched());
+}
+
+test "the subject's own refused write survives the unfinished shape too" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The split entry/resumption shape is not a child's: it appears whenever another
+    // process's lines interleave with the call, and the subject is as exposed to that as a
+    // child is. The child test above covers `mutations`; this one covers the three aligned
+    // lists and the in-scope count, which the child path never touches.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    write(3</tmp/o/state/key.json>, "k", 1 <unfinished ...>
+        \\11    openat(AT_FDCWD</work>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+        \\10    <... write resumed>)              = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    write(3</tmp/o/state/key.json>, "k", 1) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    const want = [_]contract.OpClass{.write};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(usize, 1), p.names.items.len);
+    try std.testing.expectEqual(@as(usize, 1), p.lines.items.len);
+    try std.testing.expectEqual(@as(usize, 1), p.lines_in_scope);
+    try std.testing.expect(std.mem.endsWith(u8, p.lines.items[0], "= 1"));
+}
+
+test "the process that appended last is not the one whose refusal comes first" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The mirror of the interleaving test above: pid 11 appends second and is refused
+    // first. `takePending` uses `swapRemove`, so the list's order after a take is not the
+    // order things were added in — a lookup that leant on that order would pass one of
+    // these two tests and fail the other.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    write(3</tmp/o/state/a>, "x", 1) = 3
+        \\11    write(4</tmp/o/state/b>, "y", 1) = 4
+        \\11    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\11    write(4</tmp/o/state/b>, "y", 1) = 1
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    write(3</tmp/o/state/a>, "x", 1) = 1
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    const want = [_]contract.OpClass{.write};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(usize, 2), p.mutations.items.len);
+    try std.testing.expect(holdsId(p.mutations.items, 10));
+    try std.testing.expect(holdsId(p.mutations.items, 11));
+    try std.testing.expectEqual(@as(usize, 1), p.lines_in_scope);
+}
+
+test "a refusal with no re-issue leaves nothing behind at end of input" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The shape README warns about: a process the shim could not be loaded into inherits
+    // the filter, has no handler to re-issue with, and dies on its first write. The refused
+    // entry is the only one, and the capture ends with the retraction already recorded — so
+    // the write must not survive as an operation, and nothing may be left pending for a
+    // later line to consume.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    write(3</tmp/o/state/key.json>, "k", 1) = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    +++ killed by SIGSYS +++
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
+    try std.testing.expectEqual(@as(usize, 0), p.names.items.len);
+    try std.testing.expectEqual(@as(usize, 0), p.lines.items.len);
+    try std.testing.expectEqual(@as(usize, 0), p.mutations.items.len);
+    try std.testing.expectEqual(@as(usize, 0), p.lines_in_scope);
+}
+
+test "a trapped write OUTSIDE the judged state retracts nothing" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The filter keys on the syscall number, not on the path, so a write to stdout is
+    // refused and re-issued exactly like an in-scope one — and nothing was appended for
+    // it to retract. What must survive is the in-scope write that ALREADY RAN: the
+    // re-issue leaves an entry standing, and the next signal belongs to a different call.
+    //
+    // The control for the line that closes the window. Delete the `takePending` after the
+    // name test and stdout's signal retracts the write to the judged state, leaving the
+    // sequence empty. An earlier draft of this test put a `renameat` where the first write
+    // is, which set no pending entry at all — it passed with the window-closing line
+    // deleted, and the mutation run is what said so.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    write(3</tmp/o/state/key.json>, "x", 1) = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    write(3</tmp/o/state/key.json>, "x", 1) = 1
+        \\10    write(1</dev/null>, "hi", 2) = 3
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    write(1</dev/null>, "hi", 2) = 2
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    const want = [_]contract.OpClass{.write};
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(usize, 1), p.mutations.items.len);
+    try std.testing.expectEqual(@as(usize, 1), p.lines_in_scope);
+}
+
+test "a child's refused write is one mutation, across the unfinished shape" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The shape measured with children running: the refused call is split across an
+    // unfinished entry and a resumption, the signal arrives after BOTH, and the handler's
+    // own record write sits between the signal and the re-issue. `syscallName` answers
+    // null for the resumption, which is why it does not close the window.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\11    write(3</tmp/o/state/from-child-b.txt>, "b\n", 2 <unfinished ...>
+        \\11    <... write resumed>)              = 3
+        \\11    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\11    write(900</tmp/o/t.bin>, "rec", 3) = 47
+        \\11    write(3</tmp/o/state/from-child-b.txt>, "b\n", 2) = 2
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    // One write by one child, not two. This is the count the child admission reads.
+    try std.testing.expectEqual(@as(usize, 1), p.mutations.items.len);
+    try std.testing.expectEqual(@as(u64, 11), p.mutations.items[0].id);
+    try std.testing.expect(p.childTouched());
 }
 
 test "parse extracts the class sequence the shim should have recorded" {

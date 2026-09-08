@@ -260,28 +260,7 @@ var oracle_note: []const u8 = initialOracleNote(.unparsed);
 /// above it (the two flags are not exclusive: an oracle that ran and agreed sets
 /// true even beside an inert --allow-unverified). A fact
 /// about the run, never about the verdict — a FAIL stands without an oracle.
-/// Which observation path this run asked for, for the two report helpers that name the
-/// oracle's capture and cannot reach `args`.
-///
-/// Module-level for the reason `oracle_verified` and `oracle_note` beside it are: the
-/// report is assembled from several sites and threading a parameter through
-/// `foreignTouchDetail` and `withOracleCapture` — both of which exist to turn one value
-/// into one sentence — would put the mode in every caller that has nothing to do with it.
-/// `.wrappers` until the parse sets it, which is the value every pre-v14 run had.
-var observe_mode: contract.ObserveMode = .wrappers;
-
 var oracle_verified: bool = false;
-/// The same fact for a comparison whose two witnesses watched two runs (contract v14).
-///
-/// Set instead of `oracle_verified`, never beside it, and only under `--observe
-/// syscalls`: there the oracle watches an untrapped run and the trace comes from a
-/// trapped one, because a trapped write reaches strace twice and the positional
-/// comparison would refuse every run. "Two witnesses of the same execution agreed" and
-/// "two witnesses of two executions agreed" are different claims, and
-/// `docs/contract-freeze.md` surface 2 says a machine field would change name before it
-/// changed meaning — so the weaker claim gets a name rather than the stronger field's.
-/// A new optional field, which surface 2 keeps open (#320).
-var oracle_verified_across_runs: bool = false;
 /// The same fact for a comparison that covered the subject's operations and not the
 /// children's (contract v15).
 ///
@@ -290,10 +269,10 @@ var oracle_verified_across_runs: bool = false;
 /// account against the oracle's view of the subject, so a crash point performed by a child
 /// is one the oracle placed and ordered but did not compare operation by operation. "Both
 /// witnesses agreed about every operation the verdict rests on" and "both agreed about the
-/// subject's, and the children's were seen but not compared" are different claims, and the
-/// field carrying the weaker one gets its own name for the reason
-/// `oracle_verified_across_runs` does. A new optional field, which surface 2 keeps open
-/// (#320).
+/// subject's, and the children's were seen but not compared" are different claims, and
+/// `docs/contract-freeze.md` surface 2 says a machine field changes name before it changes
+/// meaning — so the weaker claim gets a name rather than the stronger field's. A new
+/// optional field, which surface 2 keeps open (#320).
 var oracle_verified_subject_only: bool = false;
 /// Ownership/permission writes on the state directory (#121, option b): observed by
 /// the oracle alone — the shim does not interpose them — and excluded from every
@@ -1092,11 +1071,12 @@ const usage_fmt =
     \\               way to see a write libc issues from inside itself — an `fwrite`
     \\               past the buffer, or a raw `syscall(SYS_write, ...)`. Everything
     \\               else stays at the libc entry points in both modes, so a raw
-    \\               `openat` or `rename` is no more visible than before. Under an
-    \\               oracle this mode takes its second witness from a separate
-    \\               untrapped run, because a trapped write reaches strace twice; the
-    \\               report says so, and the claim it earns is
-    \\               `oracle_verified_across_runs` rather than `oracle_verified`.
+    \\               `openat` or `rename` is no more visible than before. An oracle
+    \\               watches this mode's own run, as it does every other mode's: a
+    \\               trapped write reaches strace twice, once refused and once
+    \\               re-issued, and the refused entry is retracted on the SIGSYS that
+    \\               refused it. So the claim is `oracle_verified`, and the report's
+    \\               oracle line says how the capture was read.
     \\               **Do not use it on a target that execs an image the shim cannot be
     \\               loaded into.** A filter is inherited across exec and cannot be
     \\               replaced, while exec resets the SIGSYS handler that makes it
@@ -1356,19 +1336,17 @@ fn stopLiveSidecar() posix.SidecarEnd {
 /// it on the next, depending on whether the child reached its write before the parent
 /// reached its wait.
 ///
-/// The mode gate is not a third condition, it is the absence of the first: under
-/// `--observe syscalls` the run whose trace is used has no oracle attached (the oracle
-/// watched a separate untrapped run), so there is no second witness to agree with.
+/// There is no mode gate. There used to be one, and it was not a third condition but the
+/// absence of the first: `--observe syscalls` took its second witness from a separate
+/// untrapped run, so nothing accounted for a child in the run the trace came from. The
+/// oracle now watches the run it judges in that mode too, and the two conditions below are
+/// asked of it the way they are asked of any other run.
 fn childrenMayBeJudged(
     arena: std.mem.Allocator,
     trace: engine.TraceInfo,
     parsed: oracle.Parsed,
-    observe: contract.ObserveMode,
 ) ?[]const u8 {
     if (!trace.foreign_kill_point and !parsed.childTouched()) return null;
-
-    if (observe == .syscalls)
-        return "a process other than the subject performed a state-directory operation, and under --observe syscalls the oracle watched a separate untrapped run: nothing accounts for that process in the run this trace came from. Judging a child's operations needs both witnesses on one run — re-run with the default --observe wrappers";
 
     const primary = trace.primary_pid orelse return "the trace holds state-directory operations but no process announced itself, so none of them can be attributed";
 
@@ -1606,15 +1584,12 @@ test "unresolvedDetail names the kind and pid, and only claims a name when there
 /// the two witnesses' sentences reach the report through the same choke point.
 fn withOracleCapture(arena: std.mem.Allocator, sentence: []const u8, capture: ?[]const u8, fallback: []const u8) []const u8 {
     const cap = capture orelse return sanitizeForReport(arena, sentence) catch fallback;
-    // Which run the capture is of, said where the capture is named. Under `--observe
-    // syscalls` the oracle watches a separate untrapped run, so the lines in that file are
-    // of the same operation and not of the run this refusal is about — the agreement line
-    // already says so and this side did not, which left the two halves of one report
-    // disagreeing about what was compared (review, P2).
-    const joined = if (observe_mode == .syscalls)
-        std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them — from the separate untrapped run this mode takes its second witness from, so it is the same operation and not this run", .{ sentence, cap }) catch return fallback
-    else
-        std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them", .{ sentence, cap }) catch return fallback;
+    // The capture is of this run in every mode. It said otherwise under `--observe
+    // syscalls` for as long as that mode's oracle watched a separate untrapped run, and
+    // the sentence had to disclose which run the reader was being pointed at — the
+    // agreement line said so and this side did not, which left the two halves of one
+    // report disagreeing about what was compared (review, P2). One run, one sentence.
+    const joined = std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them", .{ sentence, cap }) catch return fallback;
     return sanitizeForReport(arena, joined) catch fallback;
 }
 
@@ -2649,9 +2624,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (std.mem.eql(u8, argv[i], "--observe")) {
             args.observe = contract.ObserveMode.parse(v) orelse
                 setupError("--observe takes `wrappers` (the default) or `syscalls`");
-            // Published the moment the flag is read, the way `noteOracle` is above: a
-            // refusal raised anywhere after this line names the capture correctly.
-            observe_mode = args.observe;
         } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).
@@ -3462,58 +3434,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
     }
 
-    // `--observe syscalls` takes its two witnesses from two runs rather than one.
-    //
-    // A trapped write is not executed by the kernel: it raises SIGSYS and the shim's
-    // handler re-issues it, so strace sees each write twice — once refused, once
-    // performed — plus the handler's own record writes. Measured on a 40010-byte
-    // `fwrite`: four real writes, thirteen strace lines. `oracle.compare` is positional
-    // and answers `.missed` as soon as the oracle's list is longer, so EVERY
-    // oracle-attached run in this mode would refuse with `oracle_missed_operation`.
-    //
-    // So the oracle watches an untrapped run, and the run whose trace is used is trapped
-    // with no oracle attached. What that leans on is the reproducibility the exploration
-    // already requires of every target it judges — `kill_at` is an index into the
-    // recording's sequence, replayed in each world — and it is measured here too: the
-    // untrapped and trapped runs of the stdio toy, the raw-syscall toy and the
-    // planted-bug toy produced identical operation sequences.
-    //
-    // It is also exactly why the claim this earns is `oracle_verified_across_runs` and
-    // not `oracle_verified`. Two witnesses of two executions is weaker than two
-    // witnesses of one, `docs/report-schema.md` calls the older field "a fact about the
-    // run", and `docs/contract-freeze.md` surface 2 says a machine field would change
-    // name before it changed meaning. The shim's own rule is the same one from the other
-    // side: a discovered strace is named and never attached, because "a second witness
-    // joining on its own would silently strengthen what a flagless verdict claims".
-    if (args.observe == .syscalls and args.oracle != null) {
-        var owt_buf: [contract.max_path]u8 = undefined;
-        const oracle_trace = std.fmt.bufPrint(&owt_buf, "{s}/trace-oracle-run.bin", .{args.work}) catch setupError("path too long");
-        removeFile(oracle_trace);
-        var ows_buf: [contract.max_path]u8 = undefined;
-        const oracle_stdout = std.fmt.bufPrint(&ows_buf, "{s}/stdout-oracle-run.txt", .{args.work}) catch setupError("path too long");
-        removeFile(oracle_stdout);
-
-        const oracle_term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, args.oracle, oracle_out, oracle_trace, oracle_stdout, args.cwd, .wrappers);
-        // Held to the same status expectation as the recording, and for a sharper
-        // reason: this run is the one the completeness claim rests on, and a run that
-        // ended differently from the recording is not a witness of it.
-        switch (oracle_term) {
-            .exited => |code| if (code != expect_status)
-                unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the oracle's run of the operation exited {d} where {d} was expected, so nothing watched an execution the recording could be compared against", .{ code, expect_status }) catch "the oracle's run of the operation exited with an unexpected status", .fix_define),
-            else => unknown(.recording_run_failed, "the oracle's run of the operation did not exit normally, so nothing watched an execution the recording could be compared against", .fix_define),
-        }
-        // The recording has to start from the state the oracle's run started from, or
-        // the two executions are not the same execution twice.
-        engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory between the oracle's run and the recording run");
-    }
-
-    // Taken AFTER the oracle's run, so that `--twice` measures the interval between the
-    // two runs it compares. Its first home was above the block, where the oracle run's own
-    // duration counted toward the two-second floor `observeAgain` enforces and toward the
-    // "two runs N ms apart" the report prints — the report could then claim a gap the two
-    // observed runs never had, which is the precise defect that loop's comment says it
-    // exists to prevent (review, P1). Still before the spawn, which is where the existing
-    // comment on this mark says it belongs.
+    // Before the spawn, where the comment on this mark says it belongs, so `--twice`
+    // measures the interval between the two runs it compares. Its placement used to carry
+    // more than that: it sat AFTER a leading oracle-only run whose own duration would
+    // otherwise have counted toward the two-second floor `observeAgain` enforces and toward
+    // the "two runs N ms apart" the report prints, letting the report claim a gap the two
+    // observed runs never had (review, P1). That run is gone — every mode now takes both
+    // witnesses from this one — so only the obvious reason is left.
     const rec_started_ms = posix.monotonicMs();
 
     const rec_term = runOperationObserved(
@@ -3523,8 +3450,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         state_abs,
         state_alt,
         shim,
-        // Not attached in syscalls mode: the oracle already watched its own run above.
-        if (args.observe == .syscalls) null else args.oracle,
+        args.oracle,
         oracle_out,
         rec_trace,
         rec_stdout,
@@ -3931,7 +3857,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // them, which is why this is the site — the shim's own view is in `trace` and the
         // oracle's has just been parsed.
         if (trace.foreign_kill_point or parsed.childTouched()) {
-            if (childrenMayBeJudged(arena, trace, parsed, args.observe)) |why|
+            if (childrenMayBeJudged(arena, trace, parsed)) |why|
                 unknown(.child_touched_state_dir, withOracleCapture(arena, why, if (args.oracle != null) oracle_out else null, why), .unwrap_or_class_wall);
             children_admitted = true;
             boundary_ev.children_judged = true;
@@ -3958,22 +3884,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
             shim_ops.append(arena, op) catch setupError("out of memory");
         }
 
-        // In syscalls mode the two accounts describe two runs, so a divergence has a
-        // third possible cause the default mode does not have: the target did not repeat.
-        // The agreement line says "of a SEPARATE untrapped run" and the refusal side said
-        // nothing, which left the two halves of the same report disagreeing about what was
-        // compared (review, P2). `docs/report-schema.md` allows two refusals with the same
-        // `unknown_reason` to carry different steps for exactly this — the step is chosen
-        // where the cause is known — so `oracle_saw_phantom` stops telling a caller to
-        // file a Sideeye defect when non-reproducibility is as likely an explanation.
-        const cross_run = if (args.observe == .syscalls)
-            " — and under --observe syscalls the two accounts are of two runs of the same operation, so this can also mean the target did not repeat"
+        // Both witnesses are of this one run in every mode now, so the hint is no longer
+        // about the target repeating itself. What it names instead is this mode's own
+        // reading: a trapped write reaches the oracle twice, and the refused entry is
+        // retracted when its `--- SIGSYS … si_code=SYS_SECCOMP ---` is read.
+        const mode_hint = if (args.observe == .syscalls)
+            " — and under --observe syscalls each trapped write reaches the oracle twice, once refused and once re-issued, so this can also mean a refusal the capture did not carry (one operation too many) or a retraction that fired on an entry that had run (one too few)"
         else
             "";
         if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
             .missed => |m| unknown(.oracle_missed_operation, divergenceDetail(
                 arena,
-                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the shim did not record{s}", .{cross_run}) catch
+                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the shim did not record{s}", .{mode_hint}) catch
                     "the oracle saw a state-directory operation the shim did not record",
                 m.index,
                 shim_ops.items,
@@ -3982,13 +3904,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
             ), .class_wall),
             .phantom => |p| unknown(.oracle_saw_phantom, divergenceDetail(
                 arena,
-                std.fmt.allocPrint(arena, "the shim recorded an operation the oracle did not see{s}", .{cross_run}) catch
+                std.fmt.allocPrint(arena, "the shim recorded an operation the oracle did not see{s}", .{mode_hint}) catch
                     "the shim recorded an operation the oracle did not see",
                 p.index,
                 shim_ops.items,
                 parsed.lines.items,
                 parsed.names.items,
-            ), if (args.observe == .syscalls) .retry_then_report else .sideeye_defect),
+            ), .sideeye_defect),
             .unsupported => |name| unknown(.unsupported_syscall_observed, name, .class_wall),
         };
 
@@ -4005,9 +3927,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // `docs/contract-freeze.md` surface 2 says a machine field changes name before it
         // changes meaning. So the `verdict == "PASS" && oracle_verified` gate keeps
         // treating this class as unverified, which is the conservative reading.
-        if (args.observe == .syscalls)
-            oracle_verified_across_runs = true
-        else if (children_admitted)
+        if (children_admitted)
             oracle_verified_subject_only = true
         else
             oracle_verified = true;
@@ -4041,41 +3961,45 @@ pub fn main(init: std.process.Init.Minimal) !void {
                     "the state directory opened before the capture began",
                 .{agreed},
             ) catch agreed
-        else if (args.observe == .syscalls)
-            // Says which claim was made, in the same line a reader already looks at for
-            // the witness. Without this the strongest and the weaker agreement read
-            // identically — the defect the fs_usage arm above exists to avoid, one mode
-            // over. Appended after "witness strace" so the two acceptance checks that
-            // match `agreed on N operations` as a substring keep matching.
-            std.fmt.allocPrint(
-                arena,
-                "{s}, witness strace — of a SEPARATE untrapped run, because a trapped write reaches " ++
-                    "strace twice (once refused, once re-issued) and the comparison is positional. So the " ++
-                    "two accounts are of two executions of the same operation, not of one: this is " ++
-                    "`oracle_verified_across_runs`, and `oracle_verified` stays false. What it rests on is " ++
-                    "the reproducibility the exploration already requires, which `preflight --twice` measures",
-                .{agreed},
-            ) catch agreed
-        else if (children_admitted)
-            // The same narrowing, one class over (v15). This comparison is the subject's
-            // account against the oracle's view of the subject, so a crash point performed
-            // by an awaited child is one the oracle placed and ordered and did not compare.
-            // Without this the line reads as full agreement — and on a target whose own
-            // process writes nothing it reads "agreed on 0 operations" beside a PASS over
-            // five crash points, which is exactly the shape a reader would take for
-            // "verified". Appended after "witness strace" for the reason the mode arm above
-            // is: two acceptance checks match `agreed on N operations` as a substring.
-            std.fmt.allocPrint(
-                arena,
-                "{s}, witness strace — the SUBJECT's operations only. This run's crash points include " ++
-                    "operations performed by an awaited child, and those the oracle placed and ordered " ++
-                    "rather than compared one by one: this is `oracle_verified_subject_only`, and " ++
-                    "`oracle_verified` stays false. What accounts for a write neither observer placed is " ++
-                    "the per-path reconciliation, not this comparison",
-                .{agreed},
-            ) catch agreed
-        else
-            std.fmt.allocPrint(arena, "{s}, witness strace", .{agreed}) catch agreed;
+        else blk: {
+            // strace. Two disclosures can apply to one run — a syscalls-mode run whose
+            // writing children were admitted is exactly the shape this release opened —
+            // so they are appended in turn rather than chosen between. Both go AFTER
+            // "witness strace" because two acceptance legs match `agreed on N operations`
+            // as a substring, and a prefix would break them.
+            var note = std.fmt.allocPrint(arena, "{s}, witness strace", .{agreed}) catch agreed;
+            if (args.observe == .syscalls)
+                // How this mode's capture was read, in the same line a reader already
+                // looks at for the witness. It is a disclosure, not a narrowing: the
+                // oracle watches the run whose trace is judged, so the claim is the full
+                // `oracle_verified`. What a reader needs to know is that the capture holds
+                // each trapped write twice and the refused entry was dropped.
+                note = std.fmt.allocPrint(
+                    arena,
+                    "{s} of THIS run — the kernel refuses each trapped write and the handler re-issues it, " ++
+                        "so the capture carries the refused entry beside the one that ran; each refused entry " ++
+                        "is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read",
+                    .{note},
+                ) catch note;
+            if (children_admitted)
+                // The narrowing (v15). This comparison is the subject's account against
+                // the oracle's view of the subject, so a crash point performed by an
+                // awaited child is one the oracle placed and ordered and did not compare.
+                // Without this the line reads as full agreement — and on a target whose
+                // own process writes nothing it reads "agreed on 0 operations" beside a
+                // PASS over five crash points, which is exactly the shape a reader would
+                // take for "verified".
+                note = std.fmt.allocPrint(
+                    arena,
+                    "{s} — the SUBJECT's operations only. This run's crash points include " ++
+                        "operations performed by an awaited child, and those the oracle placed and ordered " ++
+                        "rather than compared one by one: this is `oracle_verified_subject_only`, and " ++
+                        "`oracle_verified` stays false. What accounts for a write neither observer placed is " ++
+                        "the per-path reconciliation, not this comparison",
+                    .{note},
+                ) catch note;
+            break :blk note;
+        };
 
         // The oracle can reveal children the shim never saw (a raw clone whose child
         // loads nothing), and every consequence of having crossed a boundary — the
@@ -4195,7 +4119,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
-        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.observe, args.expect_status, repeat);
+        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.expect_status, repeat);
     }
 
     if (n == 0) {
@@ -5091,12 +5015,19 @@ fn observeAgain(
     // `oracle_path` answers "did the caller name an oracle?", which is what the refusals
     // below are about — telling someone who passed `--oracle` to pass `--oracle` is the
     // defect review found once this function started nulling it. `attached` answers "does
-    // run B carry it?", which is false in syscalls mode for the reason the recording run
-    // does not carry it either: strace sees a trapped write twice, so a trapped run under
-    // strace is the shape the whole design avoids. Nulling the parameter at the call site
-    // collapsed the two and made the refusal message and the report's own disclosure lie
+    // run B carry it?". The two were separated because they used to have different
+    // answers: run B carried no oracle in syscalls mode, for the reason the recording run
+    // did not either — strace saw a trapped write twice. Nulling the parameter at the call
+    // site collapsed them and made the refusal message and the report's own disclosure lie
     // in opposite directions (review, P1).
-    const attached: ?[]const u8 = if (observe == .syscalls) null else oracle_path;
+    //
+    // **They have the same answer now** (ADR 0054): the recording run carries an oracle in
+    // that mode, so the reason for the asymmetry is gone, and leaving it would have made
+    // `--twice` measure run A under strace and run B without it — two runs compared for
+    // equal state after being observed differently. The distinction is kept rather than
+    // collapsed back into one variable, because the refusals below still ask the other
+    // question and that is what made them lie the first time.
+    const attached: ?[]const u8 = oracle_path;
     engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory before the second observed run");
 
     var trace_buf: [contract.max_path]u8 = undefined;
@@ -5302,7 +5233,7 @@ fn observeAgain(
 /// behavior, checker falsification) have not run, and the fixed `not checked` list
 /// names them. The acceptance suite pins this wording — the claim cannot quietly grow
 /// back into one this command does not earn.
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, observe: contract.ObserveMode, expect_status: ?u8, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, repeat: ?Repeat) noreturn {
     // "not accepted", not "accepted but split". `docs/contract-freeze.md` says a
     // preflight that ACCEPTS the recording exits 0; under `--twice` the caller asked a
     // second question, so acceptance means the recording held *and* the two runs
@@ -5373,27 +5304,18 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             \\
         , .{ r.gap_ms, verdict });
         // Stated only when run B actually carried the oracle, because otherwise it
-        // describes a file that does not exist. In `wrappers` mode run B executes under
-        // the same wrapper run A did, so its capture exists and what it lacks is the
-        // account comparison run A performs. In `syscalls` mode run B is trapped and
-        // therefore carries no oracle at all — the mode's whole arrangement — so this
-        // sentence said a capture was written where nothing wrote one (review, P1). The
-        // second branch says what is true there instead: a reader who passed `--oracle`
-        // still needs to know run B was not watched.
-        if (oracle_path != null) {
-            if (observe == .syscalls)
-                say(
-                    \\               run B is trapped, so no oracle watched it at all;
-                    \\               only the first run's account was checked
-                    \\
-                , .{})
-            else
-                say(
-                    \\               the second run's oracle capture is written but not
-                    \\               compared; only the first run's account was checked
-                    \\
-                , .{});
-        }
+        // describes a file that does not exist. Run B carries it in every mode since
+        // ADR 0054, so there is one sentence again: its capture exists and what it lacks
+        // is the account comparison run A performs. A second branch stood here while
+        // syscalls-mode run B carried no oracle — the sentence above had claimed a
+        // capture was written where nothing wrote one (review, P1) — and it is gone with
+        // the asymmetry it described.
+        if (oracle_path != null)
+            say(
+                \\               the second run's oracle capture is written but not
+                \\               compared; only the first run's account was checked
+                \\
+            , .{});
         // ADR 0043: the declaration is the same one the atomicity line above carries; this
         // says what it did to the comparison, which the atomicity line is not about.
         if (scratch_declared.len > 0)
@@ -7180,14 +7102,8 @@ fn buildJson(
     // gates on `verdict == "PASS" && oracle_verified`, never on the prose `oracle` string.
     try w.appendSlice(arena, ",\n  \"oracle_verified\": ");
     try w.appendSlice(arena, if (oracle_verified) "true" else "false");
-    // Emitted only when it is true, so a report from a `--observe wrappers` run — every
-    // report a v13 consumer has ever seen — is byte-identical to what it was. A consumer
-    // that gates on `verdict == "PASS" && oracle_verified` therefore keeps treating this
-    // mode's PASS as unverified, which is the conservative reading and the correct one.
-    if (oracle_verified_across_runs)
-        try w.appendSlice(arena, ",\n  \"oracle_verified_across_runs\": true");
-    // The same shape and the same reason (v15): present only when true, so every report a
-    // v14 consumer has seen is byte-identical, and the `verdict == "PASS" &&
+    // Emitted only when it is true, so every report a v14 consumer has seen is
+    // byte-identical, and the `verdict == "PASS" &&
     // oracle_verified` gate keeps treating a run whose crash points include a child's
     // operations as unverified.
     if (oracle_verified_subject_only)
@@ -8577,27 +8493,27 @@ test "the two conditions on a run with a writing child (v15)" {
         .spawns = try events.list(arena, &.{.{ .id = 8, .at = 15 }}),
         .primary_pid = 7,
     };
-    try std.testing.expectEqual(@as(?[]const u8, null), childrenMayBeJudged(arena, trace, handoff, .wrappers));
+    try std.testing.expectEqual(@as(?[]const u8, null), childrenMayBeJudged(arena, trace, handoff));
 
     // Condition 2: the parent's second write moves to BEFORE the wait returned. Nothing
     // else changes — same processes, same operations, same reap — so this is the
     // ordering condition on its own.
     var overlap = handoff;
     overlap.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 25 } });
-    const raced = childrenMayBeJudged(arena, trace, overlap, .wrappers) orelse return error.TestExpectedRefusal;
+    const raced = childrenMayBeJudged(arena, trace, overlap) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, raced, "(pid 8) performed rename(/tmp/s/a)") != null);
     try std.testing.expect(std.mem.indexOf(u8, raced, "process 7 wrote in the judged directory while it was still running") != null);
 
     // Condition 2's other half: nothing collected the child at all.
     var no_reap = handoff;
     no_reap.reaps = .empty;
-    const unreaped = childrenMayBeJudged(arena, trace, no_reap, .wrappers) orelse return error.TestExpectedRefusal;
+    const unreaped = childrenMayBeJudged(arena, trace, no_reap) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, unreaped, "(pid 8) performed rename(/tmp/s/a) and nothing waited for it") != null);
 
     // Condition 1, the direction that catches a child the oracle could not place.
     var oracle_blind = handoff;
     oracle_blind.mutations = try events.list(arena, &.{.{ .id = 7, .at = 10 }});
-    const unplaced = childrenMayBeJudged(arena, trace, oracle_blind, .wrappers) orelse return error.TestExpectedRefusal;
+    const unplaced = childrenMayBeJudged(arena, trace, oracle_blind) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, unplaced, "(pid 8) performed rename(/tmp/s/a) and the oracle's account does not place it") != null);
 
     // Condition 1, the other direction: a writer the shim never recorded — the shape
@@ -8611,7 +8527,7 @@ test "the two conditions on a run with a writing child (v15)" {
     // nothing about which check caught them.
     unshimmed.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 99, .at = 35 }, .{ .id = 7, .at = 40 } });
     unshimmed.reaps = try events.list(arena, &.{ .{ .id = 8, .at = 30 }, .{ .id = 99, .at = 37 } });
-    const no_records = childrenMayBeJudged(arena, trace, unshimmed, .wrappers) orelse return error.TestExpectedRefusal;
+    const no_records = childrenMayBeJudged(arena, trace, unshimmed) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, no_records, "process 99 mutated the judged directory") != null);
 
     // Condition 2's window starts at the FORK, not at the child's first write. Same
@@ -8621,20 +8537,22 @@ test "the two conditions on a run with a writing child (v15)" {
     // that began at the child's own first operation, refused by this one.
     var parent_in_window = handoff;
     parent_in_window.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 7, .at = 18 }, .{ .id = 8, .at = 20 } });
-    const straddled = childrenMayBeJudged(arena, trace, parent_in_window, .wrappers) orelse return error.TestExpectedRefusal;
+    const straddled = childrenMayBeJudged(arena, trace, parent_in_window) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, straddled, "process 7 wrote in the judged directory while it was still running") != null);
 
     // And a capture that does not show where the writer came from cannot be asked the
     // question at all.
     var no_spawn = handoff;
     no_spawn.spawns = .empty;
-    const unplaced_child = childrenMayBeJudged(arena, trace, no_spawn, .wrappers) orelse return error.TestExpectedRefusal;
+    const unplaced_child = childrenMayBeJudged(arena, trace, no_spawn) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, unplaced_child, "does not show where process 8 was created") != null);
 
-    // The mode gate. Same run, same witnesses, and under `--observe syscalls` the oracle
-    // watched a different execution — so there is no second witness for THIS one.
-    const wrong_mode = childrenMayBeJudged(arena, trace, handoff, .syscalls) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, wrong_mode, "--observe syscalls") != null);
+    // A mode gate stood here: `--observe syscalls` refused every one of these shapes,
+    // because its oracle watched a separate untrapped run and nothing accounted for a
+    // child in the run the trace came from. The oracle watches the judged run in that mode
+    // now, so the function does not take the mode at all and there is nothing left to
+    // assert about it here. What proves the two are composed is the Linux acceptance leg
+    // that runs `toy_children serial` under `--observe syscalls` and reaches a verdict.
 }
 
 test "two children writing before either is collected are refused (v15)" {
@@ -8676,7 +8594,7 @@ test "two children writing before either is collected are refused (v15)" {
         .spawns = l_spawn,
         .primary_pid = 7,
     };
-    const why = childrenMayBeJudged(arena, trace, racing, .wrappers) orelse return error.TestExpectedRefusal;
+    const why = childrenMayBeJudged(arena, trace, racing) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, why, "(pid 8) performed write(/tmp/s/x)") != null);
     try std.testing.expect(std.mem.indexOf(u8, why, "process 9 wrote in the judged directory while it was still running") != null);
 }
