@@ -170,6 +170,18 @@ and a world that reached its k-th operation through a different sequence refuses
   where neither observer places it is caught by the per-path reconciliation instead
   (`state_changed_unaccounted`, #405), which is the net that shape has had since it was
   filed.
+- **This decision and ADR 0052's do not compose, and a target has already been measured in
+  the gap.** `lbdb`'s writing child flushes a buffered stdout at exit, which is the far side
+  of the wrapper boundary ADR 0005 documents and the reason `--observe syscalls` exists —
+  and that mode is the one §4 excludes here, because its oracle watched a different
+  execution. So a run needing both is refused by whichever of the two it asks for second.
+  Nothing about the shape is exotic: a shell redirecting a helper's stdout into the judged
+  file is the ordinary way to spell "append to it". Closing it means the syscalls mode
+  gaining a second witness for the run its trace came from — an oracle on the trapped run,
+  which is what ADR 0052 rejected for a measured reason (a trapped write reaches strace
+  twice) — or the worlds gaining oracles. Both are their own change; this one records that
+  the gap is real and reached, with the run beside it
+  (`spike/followup-item3/artifacts/lbdb-transcript.txt` and the two files beside it).
 - Saved cases from v14 and earlier refuse `contract_version_mismatch`, as at every bump.
   The committed `spike/assisted/*/cases*` are records rather than live artifacts and are
   not re-recorded, which is what v11 through v14 did with them too.

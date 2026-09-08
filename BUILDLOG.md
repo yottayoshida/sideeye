@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — lbdb does not cross, and the reason is that items 2 and 3 exclude each other
+
+Asked after the merge whether item 3 had fully crossed, which is the question the ledger can
+answer rather than the toys. Four targets are recorded behind a child-shaped wall: `pass`
+(crossed here, PASS over 5 crash points), `hnb` (crossed at #526, FAIL 1 of 3), `cargo`
+(a thread inside `rustc -vV`, which is item 4's), and **`lbdb`, which ADR 0018 named as
+landing on `child_touched_state_dir` — the wall this change removes**. It still refuses.
+
+Measured against `853a090` in the b-group image: the run refuses naming process 33, which
+"mutated the judged directory in the oracle's account and recorded nothing of its own". The
+trace agrees — 33 has an `exec` and a `shim_ready` and no operation — and the capture says
+why. `/usr/lib/lbdb/fetchaddr` never opens the judged file; fd 1 is the parent shell's
+redirect, and what the child does with it is `newfstatat(1)`, one `write(1, …, 94)` and
+`exit_group`. That is a buffered stdout flushed by `exit()`, which leaves libc without
+crossing the PLT — ADR 0005's far side, and the reason `--observe syscalls` was built.
+
+**And `--observe syscalls` is the mode this slice cannot be admitted in.** There the oracle
+watches an untrapped run while the trace comes from a trapped one, so the two witnesses the
+admission compares are not witnesses of the same execution. A target that needs both
+improvements is refused by whichever it asks for second. The refusal is precise and the
+verdict is honest; what is new is knowing that the gap between the two is reachable, by an
+ordinary shape — a shell redirecting a helper's stdout into the file it is judging.
+
+So item 3 crossed its own wall wherever that wall was the only one, and `lbdb` is the
+counterexample to "wherever". The row and ADR 0053's consequences carry it now, with the
+transcript, the report and the six capture lines that identify the writer.
+
 ## 2026-09-08 — the second half: a run whose writers take turns is judged, and three things that were not true
 
 The other commit on the same branch. The first made the number a position in the run; this

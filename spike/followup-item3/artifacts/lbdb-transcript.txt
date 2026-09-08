@@ -1,0 +1,13 @@
+UNKNOWN  child_touched_state_dir
+         process 33 mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle; the oracle's capture at /tmp/bgroup/lbdb/work/oracle.txt holds the child's own lines, its execve among them
+next        Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one the README's 'What the target has to be' names, with DESIGN.md giving the reason.
+
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   a process other than the subject operated on the judged directory; its operations have no crash-point address; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

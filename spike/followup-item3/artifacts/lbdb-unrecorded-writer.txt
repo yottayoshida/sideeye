@@ -1,0 +1,12 @@
+# The unrecorded writer in lbdb, from the capture of the run beside this file.
+# pid 33 is /usr/lib/lbdb/fetchaddr. It never opens the judged file: fd 1 is the
+# parent shell redirect. What it does with it is an fstat, one write and exit —
+# the shape of a buffered stdout flushed by exit(), which leaves libc without
+# crossing the PLT (ADR 0005). The shim recorded exec and shim_ready for this
+# process and no operation at all.
+
+2:33    execve("/usr/lib/lbdb/fetchaddr", ["/usr/lib/lbdb/fetchaddr", "-d", "%Y-%m-%d %H:%M"], 0xaaaad48dfd68 /* 11 vars */ <unfinished ...>
+3:33    <... execve resumed>)             = 0
+60:33    newfstatat(1</tmp/bgroup/lbdb/state/m_inmail>, "", {st_mode=S_IFREG|0644, st_size=0, ...}, AT_EMPTY_PATH) = 0
+62:33    write(1</tmp/bgroup/lbdb/state/m_inmail>, "grace@example.org\tGrace Hopper\t2"..., 94) = 94
+64:33    exit_group(0)                     = ?
