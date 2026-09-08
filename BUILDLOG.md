@@ -164,6 +164,66 @@ baseline arm alone (its half fails). Locally the step's `rm -rf` was refused by 
 machine's own guard and the step uses `mktemp -d` instead; the guard that stops the next
 measurement is a shape this workspace has met before.
 
+## 2026-09-08 — v1.3.0: the block read against itself, and six sentences a later entry had already overtaken
+
+Twenty entries, four days and 99 commits since v1.2.0 when this was read (31 on the first
+parent, 34 merges); twenty-two, five days and 115 (34 and 40) as of the commit that wrote this line, the
+merge commit not yet among them — see the addendum.
+Three contract versions in one block — v14 (ADR 0052), v15 (ADR 0053), v16 (ADR 0055) —
+plus the oracle that watches the trapped run (ADR 0054), the `close` exemption (ADR 0003
+amended), the exec-chain fix (ADR 0018 amended), and the dogfood ledger's second and third
+slates.
+
+**Why minor.** One removal, `oracle_verified_across_runs`, was added and withdrawn inside
+the block; no tagged binary emitted it, and `docs/contract-freeze.md` records the break as
+the third by owner ruling. Everything else is admission width (a writing child, a writing
+thread), a mode behind a flag, and refusals that say more than they did. Saved cases from
+v13 replay as `case_no_longer_applies`, as at every bump before this one.
+
+**The reading found six sentences the block had overtaken, and one count.** The v14 entry
+said mutool "refuses identically in both modes" — the `close` exemption below it made mutool
+FAIL 16/16 under `--observe syscalls`. The exec-chain entry said lbdb reached "the
+multi-process slice ADR 0018 still declines" and fontforge's wall "is stdio" — v15, ADR 0054
+and v14 moved both. The slate-2 entry said sqlfluff "fails on threads" — v16 judges it PASS
+5/5. The second-dogfood entry counted three walls, two of them "the finding" — all three are
+judged now. And the ledger-prose entry gave the changelog check's selftest "four defects"
+where its ok line prints six. Each got a clause naming the entry that overtook it rather
+than a rewrite: the entries describe the state they shipped in, which the v14 entry already
+says of itself. The count became "its ok line names how many" — the shape v1.1.0's reading
+named for the same check.
+
+**`### Added` ×2 became one** — 12, 1 and 7 entries under Added, Removed and Fixed. Moving
+the older eight after the v14 entry put a different entry directly above `Removed`, whose
+"the entry above" then pointed at the ImageMagick measurement; it names the v14 entry now.
+A positional word surviving the thing that moved its referent, for the fourth time in this
+file's history and the second caught before a tag.
+
+**Three issue numbers entered the v16 entry** (#539 the join, #543 the raw clone and the
+65th thread, #544 the fs_usage attribution): the entry said "not decided here" and "a
+second stage", and those are queued now (2026-09-08, `Filed-under: reach`).
+
+Release notes are written rather than pasted (v1.2.0's precedent), one paragraph a line,
+under the 125,000-character ceiling. Version in three places (`build.zig.zon`,
+`src/main.zig`, the README's tarball line); `check-changelog-block.py` run on the renamed
+block before the commit.
+
+**Addendum, 2026-09-09.** The bump waited a day behind two fixes the same CI day forced —
+#546 (a child the fork stub could not arrange says which call and which errno; six
+sentences that read a 126 corrected) and #547 (a tail-less read-only fs_usage line is not
+a hole) — and both entered `[Unreleased]` after the reading above. Read against the block
+before the heading moved again: neither is overtaken by anything in it and neither overtakes
+anything (the v14 entry's "a trap set containing `openat` was measured killing the process"
+is a different mechanism from the one #546 names; the fs_usage rows in the v16 entry are
+about attribution, not the grammar). Moved into `[1.3.0]`'s `Fixed`, at its head: 12 Added,
+1 Removed, 9 Fixed, 22 entries. The heading's date is the day it merges, not the day it was
+read. Nothing else in the release commit changed.
+
+The same CI leg refused once more on the merge commit — the other half of #547's shape —
+and #548 (the fragments after a skipped head; same promise, so #547's entry grew rather
+than gaining a sibling) merged before the tag as well. The block re-read with the grown
+entry: still twenty-two entries, nothing overtaken. #549 was filed from its review and is
+not in this release.
+
 
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
