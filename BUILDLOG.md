@@ -2,6 +2,47 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — v1.3.0: the block read against itself, and six sentences a later entry had already overtaken
+
+Twenty entries, four days and 99 commits since v1.2.0 (31 on the first parent, 34 merges).
+Three contract versions in one block — v14 (ADR 0052), v15 (ADR 0053), v16 (ADR 0055) —
+plus the oracle that watches the trapped run (ADR 0054), the `close` exemption (ADR 0003
+amended), the exec-chain fix (ADR 0018 amended), and the dogfood ledger's second and third
+slates.
+
+**Why minor.** One removal, `oracle_verified_across_runs`, was added and withdrawn inside
+the block; no tagged binary emitted it, and `docs/contract-freeze.md` records the break as
+the third by owner ruling. Everything else is admission width (a writing child, a writing
+thread), a mode behind a flag, and refusals that say more than they did. Saved cases from
+v13 replay as `case_no_longer_applies`, as at every bump before this one.
+
+**The reading found six sentences the block had overtaken, and one count.** The v14 entry
+said mutool "refuses identically in both modes" — the `close` exemption below it made mutool
+FAIL 16/16 under `--observe syscalls`. The exec-chain entry said lbdb reached "the
+multi-process slice ADR 0018 still declines" and fontforge's wall "is stdio" — v15, ADR 0054
+and v14 moved both. The slate-2 entry said sqlfluff "fails on threads" — v16 judges it PASS
+5/5. The second-dogfood entry counted three walls, two of them "the finding" — all three are
+judged now. And the ledger-prose entry gave the changelog check's selftest "four defects"
+where its ok line prints six. Each got a clause naming the entry that overtook it rather
+than a rewrite: the entries describe the state they shipped in, which the v14 entry already
+says of itself. The count became "its ok line names how many" — the shape v1.1.0's reading
+named for the same check.
+
+**`### Added` ×2 became one** — 12, 1 and 7 entries under Added, Removed and Fixed. Moving
+the older eight after the v14 entry put a different entry directly above `Removed`, whose
+"the entry above" then pointed at the ImageMagick measurement; it names the v14 entry now.
+A positional word surviving the thing that moved its referent, for the fourth time in this
+file's history and the second caught before a tag.
+
+**Three issue numbers entered the v16 entry** (#539 the join, #543 the raw clone and the
+65th thread, #544 the fs_usage attribution): the entry said "not decided here" and "a
+second stage", and those are queued now (2026-09-08, `Filed-under: reach`).
+
+Release notes are written rather than pasted (v1.2.0's precedent), one paragraph a line,
+under the 125,000-character ceiling. Version in three places (`build.zig.zon`,
+`src/main.zig`, the README's tarball line); `check-changelog-block.py` run on the renamed
+block before the commit.
+
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
 **What is being built.** The last of the four reach items measured on 2026-09-07
