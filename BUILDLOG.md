@@ -32,6 +32,23 @@ the daemon is still there.
 Filed as its own pull request rather than folded into the 126 change: a different
 promise (the reader's account, not the fork stub's exit), its own review.
 
+**What the fresh reader found.** Two things the change itself had left false. The
+`Defect.unparsed` doc in the same file still said "never skipped" — the module doc and
+the ADR were corrected and the type's own comment was not. And the documents said "a
+CALL that reads only" where the code says "a CALL in this list", and the list lacked the
+calls the same daemon issues beside `getattrlist` — `getattrlistbulk`, `getdirentriesattr`,
+`searchfs`, the un-suffixed `statfs`/`fstatfs` — so the runner's next line could have
+refused the same way with every document already claiming otherwise. Both corrected: the
+list gains the five, and every sentence says "a CALL the reader knows to read only". Six
+smaller ones, all taken: the skip is wider than "tail-less" (any line the grammar cannot
+read whole — the documents say so now), disk-io lines take the same exit as parsed ones,
+the dup-window comment names what a skipped line does to a pending dup (nothing: it has
+no thread, and it cannot be the inert `fcntl`), the ADR's Consequences repeated the rule
+un-narrowed, the test's control was not the same bytes, and the list's provenance comment
+claimed a measurement for names added by hand — `mmap` among them, the one member not
+strictly read-only, symmetric with the shim not interposing it. The unit test also
+asserts no mutation was recorded, which it had not.
+
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
 **What is being built.** The last of the four reach items measured on 2026-09-07

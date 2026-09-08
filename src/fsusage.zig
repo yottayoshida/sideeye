@@ -27,9 +27,10 @@
 //! opened in the window, a path truncated by the display cap, a CALL this module does
 //! not know, a line the grammar does not match: each of those is a hole in the account,
 //! and an account with a hole must not be reported as agreement. One exception, from
-//! 2026-09-08: a line cut short of its duration and process — attributable to nobody —
-//! whose CALL reads only is skipped, for the reason a parsed read-only line is: it could
-//! not have changed state whoever issued it. The grammar itself is
+//! 2026-09-08: a line the grammar cannot read whole — a tail cut short at the display
+//! width is the measured shape — whose CALL is one this module knows to read only is
+//! skipped, for the reason a parsed read-only line is: it could not have changed state
+//! whoever issued it. The grammar itself is
 //! ported from `spike/fsusage/classify.py`, which was written against real captures on
 //! two machines rather than from the man page.
 
@@ -41,8 +42,10 @@ const oracle = @import("oracle.zig");
 /// at the call site; none of them is a divergence, because a divergence is a statement
 /// about what the two witnesses saw and these say the witness itself is unreadable.
 pub const Defect = union(enum) {
-    /// The grammar did not match a line. Never skipped: an unparsed line is an
-    /// operation this module cannot rule out.
+    /// The grammar did not match a line. Skipped only when the line's CALL — the one
+    /// field a cut at the display width cannot reach — is one this module knows to read
+    /// only (2026-09-08); every other unparsed line is an operation this module cannot
+    /// rule out.
     unparsed: []const u8,
     /// A pathname cut by the display cap. The state root's own prefix may be gone, so
     /// the line cannot be scoped either way.
@@ -380,20 +383,28 @@ fn isMetadataCall(call_in: []const u8) bool {
 /// the rule below refuses anything it does not recognise: a state-directory call this
 /// module cannot classify is a hole, and "probably harmless" is not a classification.
 ///
-/// The list is the one a real capture produced. Measured against the state root of an
-/// end-to-end run: `lstat64` and `getattrlist` dominate (Spotlight and fseventsd walking
-/// a directory that just changed), with `listxattr`, `getxattr` and `access` behind
-/// them, and the subject's own `fstat64`/`fcntl` bracketing pairs from the shim.
+/// The core of the list is what real captures produced, measured against the state root
+/// of an end-to-end run: `lstat64` and `getattrlist` dominate (Spotlight and fseventsd
+/// walking a directory that just changed), with `listxattr`, `getxattr` and `access`
+/// behind them, and the subject's own `fstat64`/`fcntl` bracketing pairs from the shim.
+/// The rest is the read-only family filled in by hand — `read`, `pread`, `readv`,
+/// `lseek`, `mmap`, `munmap`, `ioctl`, `select`, and since 2026-09-08 `getattrlistbulk`,
+/// `getdirentriesattr`, `searchfs` and the un-suffixed `statfs`/`fstatfs`: the calls a
+/// daemon walking a directory issues beside `getattrlist`, which is what a tail-less
+/// line's CALL is tested against (see `read`). `mmap` is the one member that is not
+/// strictly read-only — a shared writable mapping's writes leave no syscall line — and
+/// the shim does not interpose it either, so the two witnesses are symmetric there.
 fn isReadOnlyCall(call_in: []const u8) bool {
     const call = canonicalCall(call_in);
     const names = [_][]const u8{
-        "stat64",     "stat",      "lstat64",         "lstat",         "fstat64",      "fstat",
-        "fstatat64",  "fstatat",   "getattrlist",     "getattrlistat", "fgetattrlist", "listxattr",
-        "flistxattr", "getxattr",  "fgetxattr",       "access",        "faccessat",    "readlink",
-        "readlinkat", "fsgetpath", "getdirentries64", "getdirentries", "opendir",      "readdir",
-        "closedir",   "pathconf",  "fpathconf",       "statfs64",      "fstatfs64",    "getfsstat64",
-        "read",       "pread",     "readv",           "lseek",         "mmap",         "munmap",
-        "ioctl",      "select",    "exit",
+        "stat64",     "stat",      "lstat64",         "lstat",           "fstat64",           "fstat",
+        "fstatat64",  "fstatat",   "getattrlist",     "getattrlistat",   "fgetattrlist",      "listxattr",
+        "flistxattr", "getxattr",  "fgetxattr",       "access",          "faccessat",         "readlink",
+        "readlinkat", "fsgetpath", "getdirentries64", "getdirentries",   "opendir",           "readdir",
+        "closedir",   "pathconf",  "fpathconf",       "statfs64",        "fstatfs64",         "getfsstat64",
+        "read",       "pread",     "readv",           "lseek",           "mmap",              "munmap",
+        "ioctl",      "select",    "exit",            "getattrlistbulk", "getdirentriesattr", "searchfs",
+        "statfs",     "fstatfs",
     };
     for (names) |n| if (std.mem.eql(u8, call, n)) return true;
     return false;
@@ -682,16 +693,20 @@ pub fn read(
         out.parsed.lines_seen += 1;
 
         const ln = parseLine(raw) orelse {
-            // A line with no tail cannot be attributed to a thread — `fs_usage` cut it
-            // at the display width, which a pathname of the wrong bytes does (measured
-            // 2026-09-08 on the CI runner: a daemon's `getattrlist` on a name made of
-            // combining characters, the duration and the process pushed off the line).
-            // If its CALL reads only, the line could not have changed state whoever
-            // issued it and wherever, which is the reason a parsed read-only line is
-            // skipped below; so it is not a hole. Anything else still is: a mutating
-            // call nobody can be named for is exactly what the account must not omit.
+            // A line the grammar cannot read whole cannot be attributed to a thread.
+            // The measured shape is a tail cut short: `fs_usage` cuts at the display
+            // width, which a pathname of the wrong bytes does (2026-09-08 on the CI
+            // runner: a daemon's `getattrlist` on a name made of combining characters,
+            // the duration and the process pushed off the line); any other way the
+            // grammar fails lands here too. If the CALL — the field a cut cannot reach
+            // — is one this module knows to read only, or a disk-io line, the line could
+            // not have changed state whoever issued it and wherever, which is the reason
+            // a parsed line of the same kind is skipped below; so it is not a hole.
+            // Anything else still is: a mutating call nobody can be named for is exactly
+            // what the account must not omit. A pending dup is untouched by the skip —
+            // it is consumed only by a line of its own thread, and this line has none.
             if (callOf(std.mem.trimEnd(u8, raw, " \t\r"))) |left| {
-                if (isReadOnlyCall(left.call)) continue;
+                if (isReadOnlyCall(left.call) or isDiskIo(left.call)) continue;
             }
             out.defect = .{ .unparsed = raw };
             return out;
@@ -712,9 +727,11 @@ pub fn read(
         // on an inherited state descriptor, and that write is filed as the log's. The
         // rule is now the one measured shape and nothing wider: the very next line by
         // the same thread, an inert `fcntl` (`<SETFD>`, the CLOEXEC the shim sets on its
-        // fresh descriptor) on a number the table does not know. Anything else drops
-        // the pending dup, and the real target's later writes refuse as unresolved —
-        // the fail-closed side.
+        // fresh descriptor) on a number the table does not know. Anything else by that
+        // thread drops the pending dup, and the real target's later writes refuse as
+        // unresolved — the fail-closed side. A line skipped above as tail-less and
+        // read-only has no thread and neither completes nor drops anything: it cannot
+        // be the inert `fcntl` (not in the read-only list), so no dup completes on it.
         {
             var i: usize = 0;
             while (i < dup_pending.items.len) {
@@ -1133,9 +1150,10 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
-    // The same line with a mutating CALL is a hole: a write nobody can be named for is
+    try testing.expectEqual(@as(usize, 0), r.parsed.mutations.items.len);
+    // The same bytes with a mutating CALL are a hole: a write nobody can be named for is
     // what the account must not omit.
-    const mutating = "13:47:23.434908  write                  [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?";
+    const mutating = "13:47:23.434908  write                  [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
     const text2 = head ++ mutating ++ tail;
     const r2 = try read(a, text2, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r2.defect != null);
