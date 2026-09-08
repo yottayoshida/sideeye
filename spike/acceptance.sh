@@ -3703,7 +3703,7 @@ fi
 # the field outlived it — and the schema check below only sees the page, not the reports,
 # in that direction.
 if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
-    echo "FAIL the syscalls fixture still carries oracle_verified_across_runs, withdrawn in contract v15"
+    echo "FAIL the syscalls fixture still carries oracle_verified_across_runs, withdrawn 2026-09-08"
     fails=$((fails + 1))
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
