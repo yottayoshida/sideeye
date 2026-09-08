@@ -60,8 +60,10 @@ this change's own measurement showed for the compiler.
 **The baseline arm has a test now, on the real path.** A toy whose counter lives outside
 the state exits 0 on run 0 and 126 after every later write: the killed worlds die at the
 write, and only the un-killed baseline reaches the status. A macOS CI step runs that and
-the recording-run case, asserts the two new sentences and the absence of "`--expect-status`"
-and "restored state differs", and was seen red twice before it was trusted — with both
+the recording-run case, asserts the two new sentences — for the recording run the new
+"`--expect-status` is not the answer" (the old advice cannot be asserted absent, since the
+new sentence names the flag too) and for the baseline the absence of "restored state
+differs" — and was seen red twice before it was trusted — with both
 arms disabled (the recording half fails first, printing the old advice) and with the
 baseline arm alone (its half fails). Locally the step's `rm -rf` was refused by the
 machine's own guard and the step uses `mktemp -d` instead; the guard that stops the next
