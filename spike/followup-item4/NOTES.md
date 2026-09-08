@@ -76,6 +76,13 @@ wording) — so the rule fired on a child's two threads, which is what "every pr
 only the subject" means. (The first draft of this note said "the subject
 process itself"; review read the artifact and it does not say that.)
 
+One more thing the artifacts carry from the implementation they were taken under: the
+account's `N thread id(s) wrote` was computed by a version that stopped counting at 2, so
+`2` in a committed report means "two or more" — for beets and git-annex it happens to be
+exactly two, which the refusal text (capture-derived) shows, but the count itself was not
+what the shipped engine computes. The engine counts distinct ids since the review round;
+the sweep was not re-run for a number the refusal already carries.
+
 ## Determinism
 
 The same define five times, `--observe wrappers` (`rep-sequences.txt`, decoded from each
