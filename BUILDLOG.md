@@ -146,6 +146,15 @@ asserted "judged since v15" while citing a directory that held no sideeye run at
 `pass` transcript and report JSON are committed beside the strace captures now, which is
 what the claim was resting on in prose.
 
+**A second guard held by an argument, disclosed for the same reason.** Condition 1's reverse
+direction — the shim recorded a writer the oracle could not place — has no toy that drives
+it. The one written for it is judged rather than refused, because `strace -y` annotates the
+dirfd with the writer's own cwd on the architecture it was measured on; the shape that
+would drive it needs the legacy x86-64 spellings, and the engine no longer produces the
+misplacement anyway now that no non-subject relative path is resolved against the subject's
+directory. Its red is a unit test over a hand-built `Parsed`, which is a weaker thing than a
+target that does it.
+
 **One finding taken and not fixed, recorded here rather than argued away.** The
 `if (setpgid(0, 0) != 0) _exit(126)` guard cannot be seen red against its own predicate:
 `setpgid(0, 0)` on a freshly forked child has no failing path in practice, and `setpgid` is

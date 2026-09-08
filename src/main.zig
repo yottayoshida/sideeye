@@ -588,7 +588,12 @@ fn boundaryAccount() []const u8 {
     // world, and calling that "a process boundary appeared" is the overclaim this change
     // is about. `world_only`'s wording keeps the refusal it names.
     const world_proc = boundary_ev.world_process_boundary;
-    const world: []const u8 = if (boundary_ev.world_foreign_touch)
+    const world: []const u8 = if (boundary_ev.world_foreign_touch and boundary_ev.children_judged)
+        // The same observation, said as what it is (v15): the class the recording admitted,
+        // reappearing where a world cannot re-decide it. Without this the account ends on
+        // an unqualified finding, which reads as a discovery rather than as the expected.
+        "; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because it runs without an oracle"
+    else if (boundary_ev.world_foreign_touch)
         "; a process other than the subject operated on the judged directory in an explored world"
     else if (boundary_ev.world_only and world_proc)
         "; a process boundary appeared in an explored world — refused: nothing accounts for what it did"
@@ -1433,9 +1438,18 @@ fn childrenMayBeJudged(
         // running — would be admitted.
         var spawned_at: ?usize = null;
         for (parsed.spawns.items) |c| {
-            if (c.id == w.id and c.at <= w.at) spawned_at = c.at;
+            // The earliest, and **not required to precede the child's first write**: a
+            // child can reach the judged directory before the `clone` that names it has
+            // resumed — `spawnedPid`'s own doc records that ordering — and a `posix_spawn`
+            // whose file actions open a redirect before the exec is the shape that does
+            // it. Requiring the spawn to come first turned that into a refusal for a run
+            // nothing was wrong with. Taking the earlier of the two keeps the window at
+            // least as wide as the child's own activity, which is the property the check
+            // needs.
+            if (c.id == w.id and (spawned_at == null or c.at < spawned_at.?)) spawned_at = c.at;
         }
-        const from = spawned_at orelse return std.fmt.allocPrint(
+        const window_from = if (spawned_at) |sp| @min(sp, w.at) else null;
+        const from = window_from orelse return std.fmt.allocPrint(
             arena,
             "the oracle's capture does not show where process {d} was created, and it wrote in the judged directory: without that point there is no window in which to ask whether anything else wrote while it ran",
             .{w.id},
@@ -5169,6 +5183,19 @@ fn observeAgain(
     // this version exists to judge.
     if (trace.foreign_kill_point and !children_admitted)
         unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the second observed run", if (attached != null) oracle_out_b else null, "a process other than the subject performed a state-directory operation during the second observed run"), .class_wall);
+
+    // Numbering integrity, which run B has never had and now needs (v15). The recording
+    // run and every explored world check that their records and their highest number
+    // agree; run B did not, and while a foreign writer refused here unconditionally that
+    // cost nothing — a second process could not reach this point. It can now: run B
+    // inherits run A's admission, so two of its processes taking one number is a state
+    // nothing else in this function would notice. `--twice` compares post-state bytes and
+    // says so; it does not compare accounts.
+    if (trace.kill_records != trace.kill_point_count)
+        unknown(.sequence_numbering_broken, if (trace.foreign_kill_point)
+            "two processes took the same number in the second observed run: its kill-point records and its highest sequence number disagree, which is what happens when their operations run at the same time"
+        else
+            "the second observed run's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates", .class_wall);
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run", .rebuild_pair);
     // The boundaries that stay refusals whatever an oracle says, applied to the second

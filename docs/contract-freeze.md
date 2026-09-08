@@ -96,11 +96,14 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    is the caller's own explicit consent, macOS — where no oracle exists —
    would lose exit-0 passes entirely, and the distinction already lives in
    the designed channel (`oracle_verified`). Declining now means declining
-   permanently; that is understood. **Since contract v14 that channel has a
-   second, weaker member** — `oracle_verified_across_runs`, set under
+   permanently; that is understood. **Since contract v14 that channel has
+   weaker members beside it** — `oracle_verified_across_runs`, set under
    `--observe syscalls`, where the two witnesses watched two runs of the same
-   operation rather than one (ADR 0052). It is additive and `oracle_verified`
-   stays `false` beside it, so the reading above is unchanged: such a PASS
+   operation rather than one (ADR 0052); and `oracle_verified_subject_only` since
+   v15, set where a run's crash points include operations performed by an awaited
+   child, which the oracle placed and ordered rather than compared (ADR 0053).
+   Both are additive and `oracle_verified`
+   stays `false` beside either, so the reading above is unchanged: such a PASS
    presents as unverified, which is the conservative direction. That decision is about which code a PASS
    carries, and is untouched by the paragraph above.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses

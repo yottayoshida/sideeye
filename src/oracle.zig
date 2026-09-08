@@ -785,18 +785,6 @@ pub const Parsed = struct {
     /// A syscall that stays a hard refusal whoever tolerates what: the subject
     /// replacing its own image, or namespace surgery.
     boundary: ?[]const u8 = null,
-    /// The processes other than the subject that performed a non-read-only operation on
-    /// the state directory. The oracle is the only observer that sees these whether or
-    /// not the child loaded the shim.
-    ///
-    /// **A set rather than a flag** (v15). A flag could only answer "refuse or not";
-    /// judging a run with children in it needs the names, because the admission compares
-    /// this set against the pids the shim recorded IN BOTH DIRECTIONS. A pid the oracle
-    /// saw and the shim did not is a writer with no record and therefore no number
-    /// (`TOY_SPAWN_WRITES` is exactly that). A pid the shim recorded and the oracle did
-    /// not is a writer this parser could not place — its `chdir` moved the cwd that
-    /// resolves its relative paths, and only the subject's `chdir` is tracked here — so
-    /// nothing checks whether its operations interleaved with anyone else's.
     /// Every non-read-only state-directory operation this witness placed, with **where in
     /// the capture** it was seen, in the order the lines came (v15).
     ///

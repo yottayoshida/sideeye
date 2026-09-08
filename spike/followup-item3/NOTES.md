@@ -61,4 +61,4 @@ never from a path that appears anywhere in the line — the same rule the engine
 already follows, and the same trap the symlink exclusion exists for (ADR 0006).
 
 Files: `serial.c`, `conc.c`, `sys.c`, `run.sh`, `pass.sh`, `an.py` (the loose first pass),
-`an2.py` (scoped), `out/*.strace`.
+`an2.py` (scoped), `artifacts/*.strace`, and `artifacts/pass-mv-{transcript.txt,report.json}` — the sideeye run this record's claims rest on.
