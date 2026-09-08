@@ -557,7 +557,7 @@ pub fn read(
     /// placed and refuses if it could have changed state.
     cwd: []const u8,
 ) !Reading {
-    var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty } };
+    var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty } };
     var fds: FdTable = .{};
     var dup_pending: std.ArrayList(FdKey) = .empty;
     // Set once a relevant thread issues `chdir`/`fchdir`. This reader does not follow
@@ -797,7 +797,7 @@ pub fn read(
                 // 26,228 distinct (tid, fd) pairs — and 22 lines touching the judged
                 // directory. Anything the subject opens is kept (its own descriptors
                 // decide its account), and anything under the root whoever opened it
-                // (that is what `child_touched` is read from).
+                // (that is what the touch set is read from).
                 const keep = is_subject or (scope_known orelse false);
                 if (keep) {
                     if (fd) |f| {
@@ -902,7 +902,20 @@ pub fn read(
             // The condition #405 is about, and the reason the capture is unfiltered:
             // a process other than the subject mutated the judged directory, and this
             // witness is the only one that sees it whether or not the shim was loaded.
-            out.parsed.child_touched = true;
+            // The id, not just the fact (v15). What this witness has is a **tid**, which
+            // is what `fs_usage` attributes lines to. `Parsed.mutations` says why that is
+            // the honest thing to put there: a run this platform reaches with another
+            // process in it is refused for want of an oracle that can account for one —
+            // but that refusal keys on the shim having seen the boundary, so a child the
+            // shim never loaded reaches the admission instead. It is refused there, since
+            // no recorded writer can match a tid; what it costs is a sentence that calls a
+            // thread id a process, on a platform where the run was never going to be
+            // judged.
+            // Digits by construction (`parseLine` refuses a tid that is not all digits),
+            // so this cannot silently record a zero for something unparseable.
+            if (std.fmt.parseInt(u64, ln.tid, 10)) |n| {
+                try oracle.noteEvent(arena, &out.parsed.mutations, n, out.parsed.lines_seen);
+            } else |_| {}
             try appendUnique(arena, &other_tids, ln.tid);
             out.parsed.children = other_tids.items.len;
             continue;
@@ -1108,7 +1121,7 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
     try testing.expectEqualStrings("111", r.subject_tid.?);
-    try testing.expect(!r.parsed.child_touched);
+    try testing.expect(!r.parsed.childTouched());
     // Two, not three: `close` is a lifecycle op the shim records and the strace oracle
     // drops from the compared sequence (`oracle.zig`, `if (cls == .close) continue`),
     // and the two accounts have to be shaped alike. This test first asserted three and
@@ -1142,7 +1155,7 @@ test "a neighbour that only read the judged directory is not made relevant by it
         "10:36:22.000005  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
-    try testing.expect(!r.parsed.child_touched);
+    try testing.expect(!r.parsed.childTouched());
 }
 
 test "a neighbour that opened the judged directory for writing is relevant, and its unknown write is a hole" {
@@ -1315,7 +1328,7 @@ test "no tid writes the trace: the subject cannot be named and the run refuses" 
     }
 }
 
-test "a second tid mutating the judged directory sets child_touched" {
+test "a second tid mutating the judged directory is recorded in the touch set" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
@@ -1331,7 +1344,7 @@ test "a second tid mutating the judged directory sets child_touched" {
         "10:00:00.000007  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
     try testing.expect(r.defect == null);
-    try testing.expect(r.parsed.child_touched);
+    try testing.expect(r.parsed.childTouched());
     try testing.expectEqual(@as(usize, 1), r.parsed.children);
     // The subject's own account is unaffected by the intruder's lines.
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);

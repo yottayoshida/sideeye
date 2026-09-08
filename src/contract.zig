@@ -133,7 +133,23 @@ const std = @import("std");
 /// observation that never got installed. Measured motivation: metaflac and fontforge,
 /// both recorded in `docs/target-classes.md` as refusing with `oracle_missed_operation`
 /// because the shim recorded the `open` and no `write`.
-pub const contract_version: u32 = 14;
+/// v15 makes `seq` an address in the RUN rather than in the process (#123's remaining
+/// half). Through v14 every shim instance counted its own in-scope operations from its
+/// own `seq`, so a parent and a child each held a number 1 and `SIDEEYE_KILL_AT=3` named
+/// no single operation — the measured defect ADR 0002's Context records, and the reason a
+/// child touching the judged directory has been refused since v3. The shim now takes its
+/// number from the trace itself: the highest `seq` any process has written, plus one.
+/// Nothing about a record's byte shape changed and a single-process run numbers exactly
+/// as it did, but the shim↔engine protocol did: a v14 shim under a v15 engine would
+/// number per process where the engine now tolerates a second writer, and two operations
+/// would answer to one address. The version guard turns that pairing into an explicit
+/// refusal. `env.seq_base` moves with it — it carried the process's own count across an
+/// exec and now carries the run's — and `shim_ready` still announces the value it was
+/// given rather than one read from the trace, because that announcement is the evidence
+/// #123's chain check compares against. Measured motivation: `pass mv`, whose dangerous
+/// operations (the rename, the remove) run in awaited children and were therefore never
+/// addressed at all (`spike/assisted/pass/explore-v10-transcript.txt`).
+pub const contract_version: u32 = 15;
 
 pub const magic = "SIDEEYE1";
 
@@ -158,6 +174,23 @@ pub const env = struct {
     /// 1-based index of the kill-point op to die immediately before.
     /// Absent or 0 means the recording run: observe everything, kill nothing.
     pub const kill_at = "SIDEEYE_KILL_AT";
+    /// Whether the shim may take the whole process group down with it (v15).
+    ///
+    /// Set by the engine on a world's spawn and nowhere else, because the engine is what
+    /// puts the target in its own process group first (`src/posix.zig`). Killing one
+    /// process is not a crash: a shell whose child died runs the next command, so a world
+    /// armed at an awaited child's operation would carry operations from after the crash
+    /// point it claims to have died at. Killing the group is.
+    ///
+    /// **It is a flag rather than the shim's own judgement because the shim cannot make
+    /// one.** `getpgrp() == getpid()` is true for the subject and false for every child,
+    /// and a child that fell back to killing only itself would leave the shell running —
+    /// the exact thing this exists to prevent. What differs is not the process, it is how
+    /// the run was started, and only the starter knows. Measured: without this, the
+    /// `reproduce` line the report prints — which an operator types into a shell that has
+    /// done no `setpgid` — killed the acceptance suite's own shell (SIGKILL, exit 137,
+    /// at the leg that runs that line).
+    pub const kill_group = "SIDEEYE_KILL_GROUP";
     /// Operation count carried across a self-exec (#123): the shim's exec wrappers
     /// set it for the subject only (never for a forked or vfork'd child), the
     /// re-run `init()` continues numbering from it, and `shim_ready` re-announces
@@ -261,6 +294,14 @@ pub const unresolved_kind = struct {
     pub const link_by_descriptor = "link-by-descriptor";
     /// The target closed the trace channel; nothing was named.
     pub const trace_closed = "trace-closed-by-target";
+    /// The shim could not read the trace back to find the run's highest sequence number,
+    /// so it could not tell which position in the run this operation holds (v15).
+    ///
+    /// Recorded rather than guessed for the reason every kind here exists: numbering from
+    /// a stale local count would give the operation an address that belongs to another one.
+    /// A torn record at the end of the trace is NOT this — that is an operation still being
+    /// written, and the read stops there and tries again on the next one.
+    pub const count_read_failed = "count-read-failed";
 
     /// The longest a kind can be once `withFd` or `withOp` has appended to it.
     ///
@@ -290,6 +331,7 @@ pub const unresolved_kind = struct {
         unlinked_fd,
         link_by_descriptor,
         trace_closed,
+        count_read_failed,
     };
 
     /// A kind with the descriptor the operation went through appended (#485).
@@ -1023,8 +1065,17 @@ pub const max_path = 4096;
 
 pub const Record = struct {
     op: OpClass,
-    /// 1-based position among kill-point ops inside the state directory.
+    /// 1-based position among kill-point ops inside the state directory — **in the run,
+    /// not in the writing process** (v15). Through v14 each shim instance counted from
+    /// its own copy, so a parent and a child both held a 1 and no crash point had a
+    /// unique address; the number now comes from the trace's own highest value plus one,
+    /// which makes it a position in one sequence however many processes wrote it.
     /// Zero for lifecycle ops, boundary detectors and markers.
+    ///
+    /// The exception is `shim_ready`, which carries the continuation base it was GIVEN
+    /// (#123) rather than one it read: that announcement is the evidence a chain of
+    /// observation survived an image change, and a value read from the trace would agree
+    /// with the trace by construction and check nothing.
     seq: u32,
     /// The process that performed the operation. Several processes append to one
     /// O_APPEND trace, and which one an operation belongs to is the difference between

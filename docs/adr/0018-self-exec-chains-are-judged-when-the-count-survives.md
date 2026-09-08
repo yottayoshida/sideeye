@@ -125,6 +125,28 @@ refusal is the promised behaviour. The freeze audit's manifest records the same 
 that sentence as its reason. So the freeze is not what stands in the way of the
 multi-process slice. What stands in the way is the determinism above.
 
+**Amended 2026-09-08: the multi-process slice is built, and the blocker this page named is
+answered by measurement rather than by argument (contract v15, ADR 0053).** What stood in
+the way was written here as determinism: "crash points are addressed by one deterministic
+operation count, and across processes the engine cannot reproduce the interleaving that
+count depends on — so the slice is not a widening of coverage but a wager on the
+reproducibility the product rests on". Both halves moved.
+
+The count is no longer the writing process's: the shim reads the trace back and takes the
+highest number any process has written, so one sequence spans the run. And the interleaving
+is not wagered on — it is refused. A run is judged only where the oracle's own order shows
+each writing child collected before anyone else wrote again, which is what a hand-off looks
+like and a race does not; every explored world then re-checks that the operations before its
+crash point are the ones the recording numbered. `pass`, the target this page named as
+parked at the child refusal, is the shape that admits.
+
+What this page decided about ITS OWN slice is unchanged: a single-pid exec chain is judged
+when the carried count survives the image change, and the announcement that carries it is
+still the value the shim was given rather than one read from the trace — a number read from
+the trace would agree with the trace by construction and check nothing. The base the exec
+carries is refreshed from the trace before it is written, so a subject that awaited a
+writing child and then replaced its own image announces the run's count rather than its own.
+
 **Amended 2026-09-07: a second exec record while the window is open is removed from the
 ways a chain breaks. It named a failed attempt, not an image change.**
 

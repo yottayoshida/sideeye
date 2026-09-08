@@ -716,6 +716,16 @@ evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 13/36 (36.1%)
 <!-- unknown-rate:results:end -->
 
+**The `ctl-pass-mv` control above predates contract v15, and its reason has moved twice.**
+The trial ran without `--oracle` (its flags column says so), and that is the shape of the
+change: a run whose children write is now decided by both witnesses together, so with no
+oracle to consult it refuses `boundary_without_oracle` — which names the flag to pass — and
+with one it is judged (ADR 0053). The row is left as it was measured rather than re-run:
+this page is a record of a sweep, and re-measuring one control inside it would make the
+denominator something other than what the sweep sampled. The note sits outside the results
+markers for the same reason — everything between them is recomputed byte for byte, so prose
+belongs on this side of the line.
+
 **Reading the B-group's three UNKNOWNs** (swept 2026-08-16, engine 0.9.0 /
 contract v10 at main `b5b23fd`; apparatus identity in
 `spike/unknown-rate/artifacts/apparatus.txt`): all three are

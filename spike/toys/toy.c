@@ -441,6 +441,89 @@ static void maybe_leave_the_supported_region(void) {
             waitpid(sp, &st, 0);
         }
     }
+    /* The two controls the multi-process slice is measured against (v15). Each one
+     * fails one of the two conditions in `childrenMayBeJudged`, so a refusal naming the
+     * wrong condition is visible rather than merely a refusal.
+     *
+     * A third one existed for a day: a child that moved its own working directory and
+     * wrote through a relative path, meant to fail condition 1 from the shim's side —
+     * the oracle placing a path against the SUBJECT's cwd and missing it. On aarch64 it
+     * does not: `strace -y` annotates the dirfd with the writing process's own cwd
+     * (`openat(AT_FDCWD</tmp/y/state>, "from-chdir-child.txt", …)`), so the oracle
+     * resolves it correctly and the run is judged. **That measurement does not carry to
+     * x86-64**, where glibc issues the legacy `rename`/`unlink`/`mkdir` with no dirfd to
+     * annotate — `src/oracle.zig`'s own comment on the tracked cwd says so — and review
+     * caught the generalisation. The engine no longer resolves any non-subject relative
+     * path against the subject's directory at all, so the shape refuses on both, and the
+     * toy is gone because it measured one architecture's answer to a question the engine
+     * now answers the same way everywhere.
+     */
+    /* Fails condition 2: two children forked before either is awaited, both writing.
+     * Their operations are ordered by the scheduler, so the sequence they were numbered
+     * in is the one this run happened to produce. The sleeps are what make the overlap
+     * reliable rather than lucky — without them the first child usually finishes before
+     * the second is even forked, and the toy would pass the condition it exists to
+     * fail. */
+    if (getenv("TOY_CONCURRENT_CHILDREN")) {
+        pid_t a = fork();
+        if (a == 0) {
+            char f[4096];
+            join_path(f, sizeof f, "from-child-a.txt");
+            usleep(30000);
+            write_file(f, "a\n");
+            _exit(0);
+        }
+        pid_t b = fork();
+        if (b == 0) {
+            char f[4096];
+            join_path(f, sizeof f, "from-child-b.txt");
+            usleep(30000);
+            write_file(f, "b\n");
+            _exit(0);
+        }
+        if (a > 0) { int st; waitpid(a, &st, 0); }
+        if (b > 0) { int st; waitpid(b, &st, 0); }
+    }
+    /* Fails condition 2 through the half of the window that is easy to leave out: the
+     * parent writes AFTER forking and BEFORE the child does, then waits. The two writes
+     * are ordered by nothing — the child was already running when the parent wrote — so
+     * on another run they could land the other way round. A window that began at the
+     * child's first operation would admit this; one that begins at the fork refuses it. */
+    if (getenv("TOY_PARENT_WRITES_IN_WINDOW")) {
+        pid_t p = fork();
+        if (p == 0) {
+            char f[4096];
+            join_path(f, sizeof f, "from-child-late.txt");
+            usleep(40000);
+            write_file(f, "the child wrote second\n");
+            _exit(0);
+        }
+        if (p > 0) {
+            char f[4096];
+            join_path(f, sizeof f, "from-parent-first.txt");
+            write_file(f, "the parent wrote first, with the child already running\n");
+            int st;
+            waitpid(p, &st, 0);
+        }
+    }
+    /* Fails the other half of condition 2: a child that writes and is never collected.
+     * The parent goes straight on to its own write, so the two are ordered by the
+     * scheduler rather than by a join — the child could as easily have written after.
+     * The engine's group kill is what eventually removes it; nothing here waits. */
+    if (getenv("TOY_UNWAITED_CHILD")) {
+        pid_t p = fork();
+        if (p == 0) {
+            char f[4096];
+            join_path(f, sizeof f, "from-unwaited-child.txt");
+            write_file(f, "nobody waited for me\n");
+            _exit(0);
+        }
+        if (p > 0) {
+            char f[4096];
+            join_path(f, sizeof f, "after-unwaited.txt");
+            write_file(f, "and the parent carried on\n");
+        }
+    }
     /* #488's fixture. The second shim'd process is where the trace open has nothing in
      * front of it: the engine unlinks the trace once, before the run, and every process
      * the shim is loaded into opens that same name O_APPEND afterwards.

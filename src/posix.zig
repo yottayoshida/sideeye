@@ -998,7 +998,22 @@ pub fn spawnSidecar(
         return error.ForkFailed;
     }
     if (pid == 0) {
-        _ = setpgid(0, 0);
+        // **A failure here must not be exec'd through** (v15). Since the shim kills the
+        // run's crash point with `kill(0, SIGKILL)` — the caller's whole process group,
+        // because killing one process leaves the shell that spawned it to run the next
+        // command — a target that never got its own group is a target in the ENGINE's
+        // group, and that signal would take the exploration with it. The result used to
+        // be discarded, which was safe while the kill was a `raise`: it could reach
+        // nobody but the caller however the group turned out.
+        //
+        // ADR 0002 decision 1 removed a `getpgid` confirmation on the grounds that
+        // `kill(-N, …)` is safe by construction — N being a freshly allocated pid that
+        // cannot equal a live group id, so a child that never got its group is signalled
+        // by nothing. That argument is about a signal sent from OUTSIDE and it still
+        // holds for the engine's own group kill. It says nothing about one sent from
+        // inside, which is what this exit covers. 126 is the code this path already
+        // keeps for "the child could not be arranged", distinct from exec's 127.
+        if (setpgid(0, 0) != 0) _exit(126);
         adoptStdin(nfd);
         if (cfd != 1) {
             if (dup2(cfd, 1) < 0) _exit(126);
@@ -1275,8 +1290,11 @@ fn runChildImplWithOps(
         return error.ForkFailed;
     }
     if (pid == 0) {
-        // Before exec, so the target never runs in the engine's group.
-        _ = setpgid(0, 0);
+        // Before exec, so the target never runs in the engine's group — and 126 rather
+        // than a discarded result, for the reason `runChildImpl`'s copy of this line
+        // carries: the shim's crash-point kill now addresses the caller's whole group,
+        // so a target sharing the engine's group could kill the exploration.
+        if (setpgid(0, 0) != 0) _exit(126);
         // stdin first, before any capture: a child that could not be given its stdin
         // must not run at all. The retry bound, the abort, and the fd-0 case are all
         // in `adoptStdin`, shared with the sidecar's fork.

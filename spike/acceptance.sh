@@ -236,40 +236,139 @@ TOY_SPAWN=1 export TOY_SPAWN
 run_case "spawn + quiet child explores"     "$OUT/toy-bug" 1 "crash point 5 of 5"
 unset TOY_SPAWN
 
-# A forked child that writes into the state directory: no crash-point address exists
-# for its operation, whatever else is true.
+# A forked child that writes into the state directory, and its parent waits for it: the
+# slice contract v15 judges (#123's remaining half). Its operations hold numbers in the
+# run's own sequence, so the exploration covers them — three more crash points than the
+# same toy without the child, and the planted bug is still found.
+#
+# This leg REFUSED until v15, and the refusal was the published wall for the whole class
+# ("Shell CLIs over helper processes" in docs/target-classes.md). What changed is not the
+# tolerance — every condition below still refuses — but that a number is now a position in
+# the run rather than in the writing process, so an awaited child's operation has an
+# address to be killed at.
 TOY_FORK_WRITES=1 export TOY_FORK_WRITES
-run_case "fork + writing child is refused"  "$OUT/toy-bug" 2 "child_touched_state_dir"
-# #484: the refusal names what the trace held all along — the child's pid, the operation
-# and its path — so the operator's next move (a config flag, a scratch declaration, a
-# different invocation) does not start from a guess. `run_case` leaves the last run's
-# output in $output.
-if echo "$output" | grep -qE 'subject \(pid [0-9]+\) performed open\(/tmp/acc/state/from-child.txt\)'; then
-    echo "ok   the refusal names the child's pid, its operation and its path (#484)"
+run_case "fork + writing child is judged"   "$OUT/toy-bug" 1 "crash point 8 of 8"
+# The child's operations really are among them: five of the eight are the subject's (the
+# oracle compares those), and the exploration covers eight. A version that judged the run
+# while dropping the child's operations would report five.
+if echo "$output" | grep -qF "explored    9 worlds (crash points 8 + 1 baseline)"; then
+    echo "ok   the awaited child's operations are crash points too (8, against 5 for the subject alone)"
 else
-    echo "FAIL the refusal names the child's pid, its operation and its path (#484)"
-    echo "$output" | sed 's/^/     | /'
+    echo "FAIL the awaited child's operations did not become crash points"
+    echo "$output" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
-if echo "$output" | grep -qF "; the oracle's capture at /tmp/acc/work/oracle.txt holds the child's own lines"; then
-    echo "ok   the refusal points at the oracle capture that holds the child's argv (#484)"
+# And the report says so rather than leaving a reader to infer it from the count. The
+# second half is the disclosure R1 asked for: a world runs without an oracle, so it
+# inherits this finding instead of re-deciding it.
+if echo "$output" | grep -qF "those operations hold crash-point addresses" \
+    && echo "$output" | grep -qF "An explored world does not re-check that"; then
+    echo "ok   the account says the child's operations were admitted, and what a world does not re-check"
 else
-    echo "FAIL the refusal does not point at the oracle capture (#484)"
+    echo "FAIL the account does not disclose the admitted children"
     fails=$((fails + 1))
 fi
 unset TOY_FORK_WRITES
 
+# The same child, under the observation mode whose oracle watched a different run.
+# Condition 1 has no second witness to consult, so the run is refused — the one asymmetry
+# between the two modes, and it is named rather than left to be discovered by a sweep.
+TOY_FORK_WRITES=1 export TOY_FORK_WRITES
+rm -rf /tmp/acc-obs && mkdir -p /tmp/acc-obs/state
+o=$("$SIDEEYE" explore --state /tmp/acc-obs/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-obs/work --oracle /usr/bin/strace --observe syscalls 2>&1)
+rc=$?
+if refused child_touched_state_dir "$rc" "$o" && echo "$o" | grep -qF "under --observe syscalls the oracle watched a separate untrapped run"; then
+    echo "ok   the same run refuses under --observe syscalls, naming the missing witness"
+else
+    echo "FAIL --observe syscalls: exit $rc, wanted 2 + child_touched_state_dir naming the mode"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-obs
+unset TOY_FORK_WRITES
+
 # A spawned shell that writes into the state directory: the child never loaded the shim
-# of the process the engine armed, so only the oracle sees this one.
+# of the process the engine armed, so only the oracle sees this one. Condition 1's
+# forward direction — the writer holds no records, so its operations hold no numbers, and
+# the sequence the crash points were read from is incomplete.
+#
+# **This is the leg that keeps the admission from being vacuous.** An implementation that
+# took the writers from the trace alone would find none here, find nothing to check, and
+# admit the run.
 TOY_SPAWN_WRITES=1 export TOY_SPAWN_WRITES
 run_case "spawn + writing child is refused" "$OUT/toy-bug" 2 "child_touched_state_dir"
-if echo "$output" | grep -qF "no crash-point address; the oracle's capture at /tmp/acc/work/oracle.txt holds the child's own lines"; then
-    echo "ok   the oracle-witnessed refusal points at the oracle capture (#484)"
+if echo "$output" | grep -qF "recorded nothing of its own" \
+    && echo "$output" | grep -qF "; the oracle's capture at /tmp/acc/work/oracle.txt holds the child's own lines"; then
+    echo "ok   the oracle-witnessed refusal names the unrecorded writer and points at the capture (#484)"
 else
-    echo "FAIL the oracle-witnessed refusal does not point at the oracle capture (#484)"
+    echo "FAIL the oracle-witnessed refusal does not name the unrecorded writer (#484)"
+    echo "$output" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
 unset TOY_SPAWN_WRITES
+
+# Condition 2: two children forked before either is awaited, both writing. Their order is
+# the scheduler's, so the sequence they were numbered in is one sample — and the trace's
+# own record order cannot tell this apart from the awaited hand-off above, which is why
+# the check reads the oracle's order and the reap that separates them.
+#
+# **Two refusals are correct here and which one arrives is a race.** Writing at the same
+# time means both processes can read the same highest number and take it, which the
+# numbering check catches first (`sequence_numbering_broken`); when they miss each other
+# by enough, the admission catches the overlap itself. Both name the same defect and the
+# leg accepts either — asserting one would be asserting which way a race went.
+TOY_CONCURRENT_CHILDREN=1 export TOY_CONCURRENT_CHILDREN
+rm -rf /tmp/acc-conc && mkdir -p /tmp/acc-conc/state
+o=$(TOY_CONCURRENT_CHILDREN=1 "$SIDEEYE" explore --state /tmp/acc-conc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-conc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -qE "took the same number|while it was still running"; then
+    echo "ok   children writing at once are refused, naming the overlap (exit 2)"
+else
+    echo "FAIL children writing at once: exit $rc, wanted 2 naming the overlap"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-conc
+unset TOY_CONCURRENT_CHILDREN
+
+# Condition 2's other half: a child that writes and is never collected. Nothing orders it
+# against the parent's own later write, so the sequence is one sample again — this time
+# with a single child, which is what separates "took turns" from "happened not to
+# collide this time".
+# Condition 2's window runs from the fork, not from the child's first write, and this is
+# the shape that tells the two apart: the parent writes after forking and before the child
+# does, then waits. Deterministic — the child sleeps — so this leg asserts one answer.
+TOY_PARENT_WRITES_IN_WINDOW=1 export TOY_PARENT_WRITES_IN_WINDOW
+run_case "a parent writing while its child runs is refused" "$OUT/toy-bug" 2 "child_touched_state_dir"
+if echo "$output" | grep -qF "while it was still running"; then
+    echo "ok   the refusal names the parent's write inside the child's window"
+else
+    echo "FAIL the refusal does not name the write inside the window"
+    echo "$output" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+unset TOY_PARENT_WRITES_IN_WINDOW
+
+# Same race, same two acceptable answers as the leg above.
+TOY_UNWAITED_CHILD=1 export TOY_UNWAITED_CHILD
+rm -rf /tmp/acc-unwaited && mkdir -p /tmp/acc-unwaited/state
+o=$(TOY_UNWAITED_CHILD=1 "$SIDEEYE" explore --state /tmp/acc-unwaited/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-unwaited/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -qE "took the same number|nothing waited for it afterwards"; then
+    echo "ok   an uncollected writing child is refused, naming the missing join (exit 2)"
+else
+    echo "FAIL an uncollected writing child: exit $rc, wanted 2 naming the missing join"
+    echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-unwaited
+unset TOY_UNWAITED_CHILD
 
 # A child that leaves the process group: the engine cannot claim to have stopped it,
 # oracle or no oracle.
@@ -715,29 +814,33 @@ o=$(TOY_FORKEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "child_touched_state_dir"; then
-    echo "ok   a child that execs and writes stays refused (exit 2)"
+# v15: the child execs, writes, and is waited for, so its operations hold numbers in the
+# run's sequence and the toy is judged. It refused until then — for want of an address,
+# not for want of trust — and the exec across the boundary was never the problem.
+if [ "$rc" = "0" ] && echo "$o" | grep -qF "those operations hold crash-point addresses"; then
+    echo "ok   a child that execs, writes and is waited for is judged (exit 0)"
 else
-    echo "FAIL fork+exec refusal: exit $rc"
-    echo "$o" | sed 's/^/     | /'
+    echo "FAIL fork+exec: exit $rc, wanted 0 with the child's operations admitted"
+    echo "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
 
-# The refusal says which slice stopped it (#123). pass's shape, reproduced from the toys:
-# stage 1 self-execs, stage 2 forks a writing child (TOY_SELFEXEC_STAGE2 makes the second
-# image take the fork branch), so the run is refused for the child while the chain across
-# the image change was followed. The engine has carried that account in the JSON since
+# The refusal says which slice stopped it (#123). The driver is the child the ORACLE alone
+# sees — a spawned shell with an emptied environment, so it records nothing and its
+# operations hold no numbers — beside a subject that replaces its own image. It was the
+# forked writing child until v15, which is judged now; what this leg measures is the
+# account on an UNKNOWN, so it needs a shape that is still refused. The engine has carried that account in the JSON since
 # #405 and printed it on FAIL and PASS; until #123 the UNKNOWN text left it out, which is
 # what this asserts. The control is the same run without TOY_SELFEXEC: no image change, so
 # the image clause must be absent while the `processes` line itself stays.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$(TOY_SELFEXEC=1 TOY_FORKEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
+o=$(TOY_SELFEXEC=1 TOY_SPAWN_WRITES=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o_ctl=$(TOY_FORKEXEC=1 "$SIDEEYE" explore --state /tmp/acc/state \
+o_ctl=$(TOY_SPAWN_WRITES=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --check "$ROOT/spike/check.sh" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
@@ -1260,8 +1363,11 @@ echo "=========== check 2ac: a hostile file name cannot forge text-report lines 
 # three sides: the forged line is ABSENT from the text, the defanged spelling
 # is present, and the JSON round-trips the raw bytes (the machine side's
 # contract is the exact name). The operation is a single-process python file —
-# a shell script spawning rm/mv is refused as child_touched_state_dir
-# (measured while building this check).
+# a shell script spawning rm/mv was refused as child_touched_state_dir when this
+# check was built (measured then). **Since contract v15 that is no longer the
+# reason**: an awaited writing child is judged. The operation stays a single
+# process because this leg is about a forged report line and nothing else, and a
+# spawning one would put a second question in the same measurement.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 printf 'old' > "/tmp/acc/state/log
 not tested  nothing"
@@ -3537,6 +3643,23 @@ if ! grep -q '"apparatus_unchecked"' "$SD/apparatus.json" 2>/dev/null; then
     echo "FAIL the apparatus fixture carries no apparatus_unchecked field, so the schema check below cannot see the rows it documents"
     fails=$((fails + 1))
 fi
+# An eighth report, for the field only an admitted-children run carries (v15, ADR 0053):
+# `oracle_verified_subject_only` appears when a run's writing children became crash points
+# and nowhere else, for the reason the divergence and apparatus reports above exist. The
+# fixture is the awaited writing child — the same one check 2q judges.
+mkdir -p "$SD/skid"
+TOY_FORK_WRITES=1 TOY_STATE=$SD/skid "$SIDEEYE" explore --state "$SD/skid" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$SD/wkid" --oracle /usr/bin/strace \
+    --json "$SD/children.json" >/dev/null 2>&1
+# And it has to BE an admitted-children run, or the schema check's red would say "the page
+# drifted" when the truth is "the toy stopped being judged" — the same trap the divergence
+# fixture's own guard names.
+if ! grep -q '"oracle_verified_subject_only": true' "$SD/children.json" 2>/dev/null; then
+    echo "FAIL the admitted-children fixture carries no oracle_verified_subject_only, so the schema check below cannot see the row it documents"
+    fails=$((fails + 1))
+fi
+
 # A seventh report, for the field only a scratch declaration carries (#261, ADR 0043):
 # `scratch` appears when the define declares it and nowhere else, for the reason the
 # apparatus report above exists.
@@ -3575,7 +3698,7 @@ if grep -q '"oracle_verified": true' "$SD/observe.json" 2>/dev/null; then
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/main.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/observe.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/observe.json" "$SD/children.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -4487,9 +4610,15 @@ fi
 # own behaviour supplies the boundary. **The reason does have a driver** — check 2ae's thread
 # oracle reaches the oracle-block site, and a leg there reads its step — while the two
 # exec-chain sites have none and carry the step untested.
+#
+# **The driver changed at v15 and the sentence did not.** A `#!/bin/sh` wrapper that runs
+# `"$@"` forks the toy and waits for it, which is now judged — so the wrapper alone no
+# longer produces this refusal. `TOY_SPAWN_WRITES` supplies one that survives the slice
+# (a child the shim never loaded), and the operation stays wrapped, so what is measured is
+# still the step a wrapped run is given.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 printf '#!/bin/sh\n"$@"\n' > /tmp/acc/wrap.sh && chmod 755 /tmp/acc/wrap.sh
-"$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+TOY_SPAWN_WRITES=1 "$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
     --operation "/tmp/acc/wrap.sh $OUT/toy-bug rotate" --shim "$SHIM" \
     --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/wrap.json >/dev/null 2>&1
 wreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/wrap.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
@@ -4541,12 +4670,11 @@ else
     echo "ok   an oracle-less wrapped run is offered both the oracle and the unwrap (#506)"
 fi
 
-# The same step reaches the two sites that DO have drivers, one per observer. Without these,
-# only the site a wrapper happens to hit is covered, and the other two are argued rather than
-# measured. Both existing cases refuse `child_touched_state_dir` (:242 fork — the shim's own
-# witness at :2868; :265 spawn — the oracle's at :3007), so the reason is already pinned by
-# those legs and what is added here is the step.
-for m in TOY_FORK_WRITES TOY_SPAWN_WRITES; do
+# The same step reaches the site that has a driver. It was two, one per observer, until
+# v15 judged the forked writing child: the shim's own witness no longer produces this
+# refusal on its own, because seeing a child is not a reason to refuse one any more. What
+# still does is a writer the shim never saw, which is the oracle's side.
+for m in TOY_SPAWN_WRITES; do
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     env "$m=1" "$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
         --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc/work \

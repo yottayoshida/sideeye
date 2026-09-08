@@ -60,8 +60,23 @@ pub const c = struct {
     pub extern "c" fn getcwd(buf: [*]u8, size: usize) ?[*:0]u8;
     pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
     pub extern "c" fn raise(sig: c_int) c_int;
+    /// Sent with pid 0 — the caller's own process group — when a world reaches its crash
+    /// point (v15). `raise` would kill only the process that got there, and the shell
+    /// that spawned it would carry on to the next command.
+    pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
+    /// Reads the trace back to find the run's highest operation number (v15). Not
+    /// interposed — the shim wraps writes, not reads — so this extern reaches libc
+    /// directly on both platforms, and `--observe syscalls` does not trap it either
+    /// (`syscalls.zig` traps `write`/`pwrite64`/`writev`/`pwritev` and nothing else).
+    /// Positional because the read must not depend on where the descriptor happens to be:
+    /// the offset is shared with a forked child, and `refreshCount` moves it itself with
+    /// `lseek(SEEK_END)` to find the file's size. Moving it is harmless — every write here
+    /// is `O_APPEND`, which ignores the offset — and `init` reads it once for the same
+    /// reason (an offset of zero means nobody has written the header yet), so a read that
+    /// consumed it would be the thing that broke.
+    pub extern "c" fn pread(fd: c_int, buf: [*]u8, count: usize, offset: i64) isize;
     /// Read live for every record, never cached: a forked child inherits every global
     /// in this file, and a cached pid would be the parent's — in the one process the
     /// pid field exists to tell apart.
@@ -491,18 +506,35 @@ var alt_dir_buf: [contract.max_path]u8 = undefined;
 var alt_dir_len: usize = 0;
 var trace_fd: c_int = -1;
 var kill_at: u32 = 0;
+/// Whether the crash-point kill may reach the whole process group (v15). False unless the
+/// engine says so, which it does only where it has made the target a group leader.
+var kill_group: bool = false;
+/// The highest in-scope operation number this process knows the RUN to have reached
+/// (v15) — not the count of this process's own operations, which is what it held through
+/// v14. `refreshCount` brings it up to what the trace holds before every number is
+/// handed out, so a parent that resumes after an awaited child continues from the
+/// child's last number instead of from its own.
 var seq: u32 = 0;
+/// How far into the trace `seq` has been read. Only complete records advance it, so a
+/// record still being written is read again next time rather than skipped.
+var count_scanned: u64 = 0;
+/// Where `refreshCount` decodes. A global rather than a stack array because this runs
+/// from arbitrary interposed calls and, under `--observe syscalls`, from inside the
+/// SIGSYS handler — 8 KB of stack is not a thing to spend there. Safe for the same
+/// reason `seq` itself is a plain global: a second thread is refused, not shared with.
+var scan_buf: [contract.max_record_len]u8 = undefined;
 var active: bool = false;
-/// The pid this shim instance initialised in. Only that process may raise the kill.
+/// The pid this shim instance initialised in. Read by `execCarryAllowed` — only the
+/// subject carries its operation count across an image change (#123).
 ///
-/// A forked child inherits this value but answers `getpid()` differently, so it can
-/// never arm — which is the point: `SIDEEYE_KILL_AT` names the k-th operation *of the
-/// subject*, and a child that counted its own operations to k would kill the wrong
-/// process at an address that belongs to nobody. A spawned or exec'd child re-runs
-/// `init()` and does arm itself; that is tolerable because the kill only fires on a
-/// state-directory operation, and a child's state-directory operation already makes the
-/// engine refuse the run (`child_touched_state_dir`) — the arm can only go off in a
-/// world that is thrown away.
+/// **It no longer gates the kill** (v15). It did, and the reason was addressing: a forked
+/// child counted its own operations, so its k-th belonged to nobody and killing there
+/// would have reported a landing at the right number from the wrong process. The number
+/// is a position in the run now, so the process that reaches k is the one the engine
+/// asked about — and gating on this pid would mean a world armed at an awaited child's
+/// operation never dies at all. The constraint outlived nothing here: its reason went
+/// away and it went with it, rather than staying on as a rule whose comment still cites
+/// a mechanism that changed.
 var armed_pid: c_int = -1;
 
 /// Guards against observing our own work. The path resolution below calls libc, and
@@ -640,12 +672,27 @@ pub fn init() void {
     // Dropping `O_CREAT` is not available either: the reproduce line the engine prints
     // names `<work>/trace-repro.bin`, which nothing creates but this open, and three
     // acceptance legs drive the shim directly after removing the file.
+    // **`O_RDWR`, not `O_WRONLY`** (v15): the shim reads this file back to learn the run's
+    // highest operation number, and it reads it through THIS descriptor rather than a
+    // second open of the same path. A second open would be a second chance for the path to
+    // resolve somewhere else — the hard-link hole this open's own comment above leaves
+    // open — and the number it produced would be the crash point's address, so the address
+    // would become choosable from outside. Written as a replacement rather than an added
+    // flag because `O_WRONLY | O_RDWR` is 3, which is not an access mode at all
+    // (`openIsWriteCapable` pins 3 as invalid); adding it would make this open fail and the
+    // engine report `no_shim_marker` with nothing saying why.
+    //
     // `O_NONBLOCK` is the half of #492 that has to be on the open itself: a FIFO with no
     // reader answers `O_WRONLY` by blocking until one arrives, and this open runs from
     // `.init_array` inside a recording run that has nothing to time it out. With the flag
     // it answers `ENXIO` instead. The flag is without effect on a regular file, so the
-    // ordinary path is unchanged.
-    trace_fd = callOpen(tp, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK, 0o644);
+    // ordinary path is unchanged. **Under `O_RDWR` that reason no longer holds** — a
+    // readerless FIFO opens straight away for read-write — so the flag is no longer what
+    // keeps this open from hanging. What refuses a FIFO now is `traceTargetIsOrdinary`
+    // below, which was already the half of #492 covering a FIFO someone is reading, a
+    // device and a socket. The flag stays because it costs nothing on a regular file and
+    // because dropping it would need `F_SETFL`, which replaces the whole status word.
+    trace_fd = callOpen(tp, O_RDWR | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK, 0o644);
     // Refused is silent-then-not-ready, deliberately for now: the engine reports
     // `no_shim_marker` (or, in a world, `kill_did_not_land`) and neither names the path.
     // Saying which of the two it was is a separate promise — it has three call sites that
@@ -697,6 +744,9 @@ pub fn init() void {
     }
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
+    // Only a run the engine put in its own process group may take the group down; see
+    // `contract.env.kill_group` for why the shim cannot decide this for itself.
+    kill_group = c.getenv(contract.env.kill_group) != null;
 
     // A self-exec'd image continues the subject's numbering (#123): the exec wrapper
     // of the previous image carried the count here. Absent means a fresh start —
@@ -978,6 +1028,69 @@ fn noteUnresolved(path: []const u8, kind: []const u8) void {
     writeRecord(.unresolved, 0, path, kind);
 }
 
+/// Bring `seq` up to the highest operation number the trace holds (v15).
+///
+/// The trace is the source of the count because nothing else can be. A parent cannot be
+/// told what its children consumed — an environment variable travels one way, and
+/// `system()` and `popen()` spawn and wait from inside libc where no wrapper sees them —
+/// while the trace is written by every process that records anything and is created fresh
+/// for every run, so a number read from it cannot be stale from a previous world.
+///
+/// Returns false when the trace could not be read. The caller records
+/// `count-read-failed` and lets the engine refuse: numbering from a count this process
+/// happens to remember would give the operation an address that belongs to another one.
+///
+/// A torn record at the end is not a failure. Records are appended with one `write(2)`
+/// each, so a partial one is an operation still being written — the scan stops in front
+/// of it, leaves `count_scanned` where it is, and reads it next time. In a run whose
+/// operations do not interleave that partial record can only be this process's own; in
+/// one where they do, two processes can take the same number, and the engine refuses
+/// `sequence_numbering_broken` rather than judging a world at an ambiguous address.
+fn refreshCount() bool {
+    if (trace_fd < 0) return false;
+    const end = c.lseek(trace_fd, 0, SEEK_END);
+    if (end < 0) return false;
+    const size: u64 = @intCast(end);
+    if (size <= count_scanned) return true;
+
+    var off: u64 = @max(count_scanned, contract.header_len);
+    while (off < size) {
+        const want: usize = @intCast(@min(@as(u64, scan_buf.len), size - off));
+        const got = c.pread(trace_fd, &scan_buf, want, @intCast(off));
+        if (got <= 0) return false;
+        const n: usize = @intCast(got);
+        var i: usize = 0;
+        while (i < n) {
+            const d = contract.decodeRecord(scan_buf[i..n]) catch |e| switch (e) {
+                // The tail of a record that is still being written, or one that runs past
+                // this window. Either way the answer is to stop here: `off` advances by
+                // what was consumed, so the next read starts on a record boundary.
+                error.Truncated => break,
+                // Anything else means the bytes at this offset are not a record this
+                // contract can produce. Whoever wrote them is not the shim, and the count
+                // derived from them would be a guess.
+                else => return false,
+            };
+            // `kill_landed` counts towards the maximum even though it is a marker, and
+            // that is deliberate. It carries the number of the operation the world died
+            // in front of, and that operation's own record is never written. Leaving it
+            // out would let a sibling still running in the microseconds before the group
+            // kill lands take that same number for a real operation — the world would
+            // then hold an operation at the address it claims to have died before, with
+            // the record count and the maximum agreeing, and nothing would notice.
+            // Counting it makes the sibling take the next number instead, which leaves a
+            // gap, and a gap is what `sequence_numbering_broken` is for.
+            if ((d.rec.op.isKillPoint() or d.rec.op == .kill_landed) and d.rec.seq > seq)
+                seq = d.rec.seq;
+            i += d.consumed;
+        }
+        if (i == 0) break;
+        off += i;
+    }
+    count_scanned = off;
+    return true;
+}
+
 /// The single place where an operation becomes a counted event, and the single place
 /// where the process dies.
 fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void {
@@ -997,6 +1110,13 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         const in_scope = contract.isInsideDir(path, stateDir()) or
             (op.isTwoPath() and aux.len > 0 and contract.isInsideDir(aux, stateDir()));
         if (!in_scope) return;
+        // The number comes from the run, not from this process (v15). Read before the
+        // increment and inside the scope test, so a target that never writes in the judged
+        // directory reads nothing at all and an out-of-scope operation costs no syscall.
+        if (!refreshCount()) {
+            noteUnresolved(path, contract.unresolved_kind.count_read_failed);
+            return;
+        }
         seq += 1;
         // The test-apparatus gap (#270): skip number 2, so the second in-scope
         // operation onward is numbered one high — records count n, highest number
@@ -1004,19 +1124,45 @@ fn observe(op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void
         // sequence_numbering_broken refusal exists for and that no interposed path
         // produces on its own: a shim that renumbers without re-announcing. Fixed at
         // 2 so any target with two in-scope operations fires it deterministically.
+        //
+        // Still effective under v15's trace-derived count, and by construction rather
+        // than by luck: the gap is applied to the number that gets WRITTEN, so the next
+        // `refreshCount` reads 3 back as the run's maximum and hands out 4. Numbering from
+        // the trace would only silence this apparatus if `s` were computed separately from
+        // the value the gap moves.
         if (shim_build_options.test_seq_gap and seq == 2) seq += 1;
         s = seq;
-        // Only the process that initialised this shim instance may die here. A forked
-        // child inherits `kill_at` and its own copy of `seq`, and without this guard it
-        // would count its own operations up to k and kill *itself* — the engine would
-        // then read a kill_landed at the right seq from the wrong process. See
-        // `armed_pid` for why a spawned child arming itself is tolerable and this is not.
-        if (kill_at != 0 and s == kill_at and c.getpid() == armed_pid) {
+        // Whoever performs the run's k-th operation dies here (v15), and the whole
+        // process group dies with it.
+        //
+        // Both halves changed together and neither works without the other. The pid
+        // guard that stood here — only the process that ran `init` may die — existed
+        // because a forked child counted its own operations, so its k-th belonged to
+        // nobody; a number is a position in the run now, so `s == kill_at` is exactly the
+        // one operation the engine asked about, whichever process reached it. And the
+        // death has to reach the group: a child that kills only itself leaves the shell
+        // that spawned it to run the next command, so the world would carry operations
+        // from after the crash point it claims to have died at. `kill(0, …)` addresses
+        // the caller's process group, which is the target's own — the engine makes the
+        // direct child a group leader before it execs, and kills that group itself when
+        // the run ends (ADR 0002 decision 1).
+        //
+        // **That containment is now load-bearing in a way it was not.** `raise` could
+        // not reach the engine however the group turned out; `kill(0, …)` can, if the
+        // `setpgid` in `src/posix.zig` ever failed silently. It no longer can: the child
+        // exits 126 rather than exec'ing into a group it does not lead. ADR 0002's
+        // amendment carries that argument — the decision's original reasoning covers
+        // `kill(-N, …)` sent from outside and says nothing about a signal sent from
+        // inside.
+        if (kill_at != 0 and s == kill_at) {
             // Landing evidence first, then die. Without this record the claim "we died
             // before the k-th operation" would rest on the engine having set a variable,
             // not on anything the target actually did.
             writeRecord(.kill_landed, s, path, aux);
-            _ = c.raise(SIGKILL);
+            // The group where the engine arranged one, this process alone otherwise —
+            // which is what an operator typing the report's `reproduce` line gets, and
+            // what every run got before v15.
+            _ = if (kill_group) c.kill(0, SIGKILL) else c.raise(SIGKILL);
             // SIGKILL cannot be caught or ignored, so this is unreachable. If it is ever
             // reached, the run is not what it claims to be — refuse to continue quietly.
             c._exit(@intFromEnum(contract.ExitCode.setup_error));
@@ -1658,6 +1804,14 @@ const max_env_entries = 1024;
 /// exec's leftover) is dropped rather than duplicated.
 pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
     if (!execCarryAllowed()) return callExecve(p, a, e);
+    // The count carried across the image change is the RUN's, not this process's (v15).
+    // Without this the base would be whatever this process last handed out, so a subject
+    // that awaited a writing child and then replaced its own image would announce a
+    // number lower than the trace's — and the engine, whose continuation check reads the
+    // trace's own maximum, would refuse a chain that in fact held. A failed read leaves
+    // the old value, which the engine then refuses as a broken chain: fail closed either
+    // way, and the honest direction of the two.
+    _ = refreshCount();
     var entry_buf: [64]u8 = undefined;
     const entry = std.fmt.bufPrintZ(&entry_buf, "{s}={d}", .{ contract.env.seq_base, seq }) catch return callExecve(p, a, e);
     const prefix = contract.env.seq_base ++ "=";
@@ -1681,6 +1835,8 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
 /// returns (failure), so a later fork's child does not inherit a stale count.
 pub fn execSeqCarrySet() bool {
     if (!execCarryAllowed()) return false;
+    // Same refresh, same reason as `callExecveSeqCarry`: the base is the run's count.
+    _ = refreshCount();
     var val_buf: [16]u8 = undefined;
     const v = std.fmt.bufPrintZ(&val_buf, "{d}", .{seq}) catch return false;
     return c.setenv(contract.env.seq_base, v.ptr, 1) == 0;
@@ -2010,4 +2166,119 @@ test "the trace open's kind check refuses a pipe and accepts a regular file (#49
     // a live descriptor whose `fstat` fails takes a kernel this test cannot arrange, and
     // faking it would be testing the fake.
     try std.testing.expect(!traceTargetIsOrdinary(-1));
+}
+
+test "the run's operation count is read back from the trace, and a torn tail is not a failure (v15)" {
+    // `refreshCount` is where a number stops being this process's own. The cases below are
+    // the ones the mechanism turns on: another process's record raises the count, a
+    // partially written record does NOT (it is an operation still happening), a marker
+    // that carries a number does, and bytes that are not records at all refuse rather
+    // than produce a guess.
+    //
+    // A pid-unique directory, for the reason the trace-kind test above gives: several
+    // concurrent test binaries run this file.
+    var bb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-count-{d}", .{c.getpid()}) catch unreachable;
+    _ = std.c.mkdir(base.ptr, 0o755);
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/trace.bin", .{base}) catch unreachable;
+    defer {
+        _ = std.c.unlink(file_z.ptr);
+        _ = std.c.rmdir(base.ptr);
+    }
+
+    const flags: std.posix.O = @bitCast(O_RDWR | O_CREAT | O_TRUNC | O_APPEND);
+    const fd = std.c.open(file_z.ptr, flags, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    defer _ = std.c.close(fd);
+
+    // The globals this function reads and writes. Restored on the way out: the rest of
+    // this file's tests run in the same binary and must not inherit a live descriptor.
+    const saved_fd = trace_fd;
+    const saved_seq = seq;
+    const saved_scanned = count_scanned;
+    defer {
+        trace_fd = saved_fd;
+        seq = saved_seq;
+        count_scanned = saved_scanned;
+    }
+    trace_fd = fd;
+    seq = 0;
+    count_scanned = 0;
+
+    const append = struct {
+        fn record(f: c_int, rec: contract.Record) !void {
+            var rbuf: [2 * contract.max_path]u8 = undefined;
+            const n = try contract.encodeRecord(&rbuf, rec);
+            try std.testing.expectEqual(@as(isize, @intCast(n)), std.c.write(f, &rbuf, n));
+        }
+        fn bytes(f: c_int, b: []const u8) !void {
+            try std.testing.expectEqual(@as(isize, @intCast(b.len)), std.c.write(f, b.ptr, b.len));
+        }
+    };
+
+    // An empty file, then a header and nothing else: both answer "read fine, nothing to
+    // count". A version that treated an empty trace as unreadable would refuse every
+    // first operation of every run.
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 0), seq);
+    var hbuf: [contract.header_len]u8 = undefined;
+    const hn = try contract.encodeHeader(&hbuf);
+    try append.bytes(fd, hbuf[0..hn]);
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 0), seq);
+
+    // Another process's operations raise the count. This is the whole point: pid 8 is not
+    // this process, and its numbers are positions in the same run.
+    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" });
+    try append.record(fd, .{ .op = .rename, .seq = 2, .pid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" });
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 2), seq);
+
+    // Records that carry no number leave it alone — a close, and an unplaceable operation.
+    try append.record(fd, .{ .op = .close, .seq = 0, .pid = 8, .path = "/tmp/s/b", .aux = "" });
+    try append.record(fd, .{ .op = .unresolved, .seq = 0, .pid = 8, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:3" });
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 2), seq);
+
+    // A torn tail: the first bytes of a record and no more. The scan stops in front of it
+    // and the count does not move — the operation is still being written, and taking its
+    // number now would hand the same number out twice.
+    const scanned_before = count_scanned;
+    var partial: [2 * contract.max_path]u8 = undefined;
+    const pn = try contract.encodeRecord(&partial, .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/c", .aux = "" });
+    try append.bytes(fd, partial[0 .. pn - 4]);
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 2), seq);
+    try std.testing.expectEqual(scanned_before, count_scanned);
+
+    // Completed, it counts — and the read resumes from where it stopped rather than from
+    // the start, which is what `count_scanned` is for.
+    try append.bytes(fd, partial[pn - 4 .. pn]);
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 3), seq);
+    try std.testing.expect(count_scanned > scanned_before);
+
+    // `kill_landed` is a marker and still counts. A world that died in front of operation
+    // 9 never wrote 9's own record, so leaving this out would let a sibling still running
+    // take 9 for a real operation at the address the world claims to have died before.
+    try append.record(fd, .{ .op = .kill_landed, .seq = 9, .pid = 7, .path = "/tmp/s/d", .aux = "" });
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 9), seq);
+
+    // The count never goes backwards: a later record with a smaller number cannot lower
+    // it. (The shim does not write this; a hard link at the trace path could.)
+    try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/e", .aux = "" });
+    try std.testing.expect(refreshCount());
+    try std.testing.expectEqual(@as(u32, 9), seq);
+
+    // Bytes that are not a record refuse. Numbering past them would mean numbering from
+    // whatever this process happened to remember, which is the address of another
+    // operation. The caller records `count-read-failed` and the engine refuses the run.
+    try append.bytes(fd, &[_]u8{ 0xff, 0xff, 1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0 });
+    try std.testing.expect(!refreshCount());
+
+    // A closed channel refuses too, rather than answering from memory.
+    trace_fd = -1;
+    try std.testing.expect(!refreshCount());
 }

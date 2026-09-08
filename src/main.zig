@@ -69,7 +69,7 @@ var scratch_flag_buf: [max_scratch][]const u8 = undefined;
 /// as apparatus, and a test below holds the two lists together: a pair added to the
 /// children without being refused here would be a device the parent has and the child
 /// does not — the silent-different-run the refusal exists to stop.
-const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.observe, preload_var };
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.observe, contract.env.kill_group, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
@@ -282,6 +282,19 @@ var oracle_verified: bool = false;
 /// changed meaning — so the weaker claim gets a name rather than the stronger field's.
 /// A new optional field, which surface 2 keeps open (#320).
 var oracle_verified_across_runs: bool = false;
+/// The same fact for a comparison that covered the subject's operations and not the
+/// children's (contract v15).
+///
+/// Set instead of `oracle_verified`, never beside it, and only where a run's writing
+/// children were admitted as crash points: the completeness comparison is the subject's
+/// account against the oracle's view of the subject, so a crash point performed by a child
+/// is one the oracle placed and ordered but did not compare operation by operation. "Both
+/// witnesses agreed about every operation the verdict rests on" and "both agreed about the
+/// subject's, and the children's were seen but not compared" are different claims, and the
+/// field carrying the weaker one gets its own name for the reason
+/// `oracle_verified_across_runs` does. A new optional field, which surface 2 keeps open
+/// (#320).
+var oracle_verified_subject_only: bool = false;
 /// Ownership/permission writes on the state directory (#121, option b): observed by
 /// the oracle alone — the shim does not interpose them — and excluded from every
 /// verdict input. The default says why absence of a note is not absence of writes:
@@ -491,6 +504,12 @@ const BoundaryEvidence = struct {
     shim_process_boundary: bool = false,
     /// The oracle saw a non-subject operation on the judged directory.
     oracle_child_touched: bool = false,
+    /// Those operations were admitted as crash points (v15): the two witnesses named the
+    /// same writers, no two writers' operations interleaved in the trace, and every
+    /// writing child was reaped. Read only by the account — the refusal is decided at the
+    /// site — and it is what keeps a FAIL from saying "no crash-point address" about a
+    /// run whose crash points include a child's operations.
+    children_judged: bool = false,
     /// What the oracle's *own* account called a boundary — a `clone` carrying
     /// `CLONE_THREAD` or `CLONE_FS`, an `unshare`, a non-primary `setsid`/`setpgid`
     /// (`src/oracle.zig`). The child count cannot express this: a thread emits no pid of
@@ -569,7 +588,12 @@ fn boundaryAccount() []const u8 {
     // world, and calling that "a process boundary appeared" is the overclaim this change
     // is about. `world_only`'s wording keeps the refusal it names.
     const world_proc = boundary_ev.world_process_boundary;
-    const world: []const u8 = if (boundary_ev.world_foreign_touch)
+    const world: []const u8 = if (boundary_ev.world_foreign_touch and boundary_ev.children_judged)
+        // The same observation, said as what it is (v15): the class the recording admitted,
+        // reappearing where a world cannot re-decide it. Without this the account ends on
+        // an unqualified finding, which reads as a discovery rather than as the expected.
+        "; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because it runs without an oracle"
+    else if (boundary_ev.world_foreign_touch)
         "; a process other than the subject operated on the judged directory in an explored world"
     else if (boundary_ev.world_only and world_proc)
         "; a process boundary appeared in an explored world — refused: nothing accounts for what it did"
@@ -653,8 +677,17 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
         return "not established: this run was refused before the shim's account of it was read";
     if (!ev.shim_reported)
         return "not established: the shim never announced itself in this run, so nothing observed process boundaries";
+    // Above `shim_hard` deliberately, and the combination that would make the order
+    // matter is unreachable rather than merely unlikely: `children_judged` is set inside
+    // the oracle block, which a run with a hard boundary never reaches — the
+    // `hard_boundary` refusal exits several statements earlier. What CAN hold together is
+    // a foreign touch and a hard boundary with the children REFUSED, and that pair reads
+    // the same sentence it always did.
     if (ev.shim_foreign_touch or ev.oracle_child_touched)
-        return "a process other than the subject operated on the judged directory; its operations have no crash-point address";
+        return if (ev.children_judged)
+            "a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered"
+        else
+            "a process other than the subject operated on the judged directory; its operations have no crash-point address";
     if (ev.shim_hard) |name|
         return std.fmt.bufPrint(scratch, "the shim recorded {s}", .{name}) catch "the shim recorded a boundary that is refused by name";
     // The oracle's own boundary, which the child count cannot carry: a thread emits no
@@ -1284,6 +1317,181 @@ fn stopLiveSidecar() posix.SidecarEnd {
 /// without the record (it does not; `first_foreign` is set on the line that sets
 /// `foreign_kill_point`) or if the arena is exhausted: a refusal that names nothing
 /// rather than one that names something wrong.
+/// May a run whose children wrote in the judged directory be judged (v15)? Returns null
+/// when it may, and the sentence naming what stopped it when it may not.
+///
+/// Two conditions, and each one is here because a run that fails it would be judged at an
+/// address that is not reproducible or not there at all:
+///
+/// 1. **The two witnesses name the same writers**, in both directions. A process the
+///    oracle saw mutate and the shim did not record wrote operations that hold no number
+///    — `TOY_SPAWN_WRITES` spawns exactly that, a `/bin/sh` with an emptied environment —
+///    and a run judged over the rest would be judged over an incomplete sequence. The
+///    other direction is not symmetry for its own sake: `oracle.zig` resolves a relative
+///    path against the SUBJECT's working directory, so a child that changed its own is
+///    invisible to it, and condition 2 would then be asked about a set that does not
+///    contain the writer it was meant to be asked about.
+/// 2. **Each writing child had the judged directory to itself from its creation until it
+///    was collected.** In the oracle's line order: from the `clone` that returned it to
+///    the wait that reaped it, no other process performs a state-directory operation.
+///    **The window starts at the creation and not at the child's first write**, and the
+///    difference is a shape that would otherwise be admitted: fork, then the PARENT
+///    writes, then the child writes, then the parent waits. Nothing orders those two
+///    writes — the child was already running — and on the next run they could land the
+///    other way round. `spike/followup-item3/NOTES.md` recorded that counterexample the
+///    day before this was implemented, and the first implementation shipped past it. That is what a hand-off looks like
+///    and what a race does not — and it is why this is decided in the oracle's order
+///    rather than the trace's. **The trace cannot answer it.** An awaited child's records
+///    sit between its parent's, and so do a racing sibling's; the record sequence
+///    `parent, child, parent` and `child A, child B, child A` are the same shape. The
+///    wait is the thing that tells them apart, and the wait and the writes are in one
+///    order only in the capture. A first draft of this function did use record order and
+///    was caught by its own test: it called the poster-child shape an interleaving,
+///    because a parent's first and last records always straddle its children's.
+///
+/// What condition 2 does NOT require is that the parent was blocked across the child's
+/// writes. The measurement in `spike/followup-item3/NOTES.md` shows a shell blocking in
+/// `wait4` for a foreground command and reaping a pipeline stage with `WNOHANG`
+/// afterwards; gating on the stronger reading would admit a target on one run and refuse
+/// it on the next, depending on whether the child reached its write before the parent
+/// reached its wait.
+///
+/// The mode gate is not a third condition, it is the absence of the first: under
+/// `--observe syscalls` the run whose trace is used has no oracle attached (the oracle
+/// watched a separate untrapped run), so there is no second witness to agree with.
+fn childrenMayBeJudged(
+    arena: std.mem.Allocator,
+    trace: engine.TraceInfo,
+    parsed: oracle.Parsed,
+    observe: contract.ObserveMode,
+) ?[]const u8 {
+    if (!trace.foreign_kill_point and !parsed.childTouched()) return null;
+
+    if (observe == .syscalls)
+        return "a process other than the subject performed a state-directory operation, and under --observe syscalls the oracle watched a separate untrapped run: nothing accounts for that process in the run this trace came from. Judging a child's operations needs both witnesses on one run — re-run with the default --observe wrappers";
+
+    const primary = trace.primary_pid orelse return "the trace holds state-directory operations but no process announced itself, so none of them can be attributed";
+
+    // Both witnesses, collapsed to one entry per writing process before anything is
+    // compared. Written this way for cost as much as for shape: the first version asked
+    // each question inside a loop over every record and every mutation, which is quadratic
+    // in exactly the runs this version exists to judge — a target with many operations in
+    // many children is the one that pays. One writer per process, and the comparisons are
+    // then between two short lists.
+    // The shim's writers, one entry each, carrying that process's first recorded operation
+    // — which is what a refusal names (#484: the pid, the operation and its path).
+    var shim_writers: std.ArrayList(engine.Op) = .empty;
+    for (trace.ops.items) |op| {
+        if (!op.class.isKillPoint() or op.pid == primary) continue;
+        var seen = false;
+        for (shim_writers.items) |w| {
+            if (w.pid == op.pid) seen = true;
+        }
+        if (!seen) shim_writers.append(arena, op) catch
+            return "out of memory while reading which processes wrote in the judged directory";
+    }
+    // The oracle's, carrying where each one first wrote — the point the window is measured
+    // from and the one the reap has to follow.
+    var oracle_writers: std.ArrayList(oracle.Event) = .empty;
+    for (parsed.mutations.items) |m| {
+        if (m.id == primary) continue;
+        var seen = false;
+        for (oracle_writers.items) |w| {
+            if (w.id == m.id) seen = true;
+        }
+        if (!seen) oracle_writers.append(arena, m) catch
+            return "out of memory while reading which processes the oracle saw write";
+    }
+
+    // Condition 1, from the shim's side: every process the shim recorded writing is one
+    // the oracle placed too.
+    for (shim_writers.items) |w| {
+        var in_oracle = false;
+        for (oracle_writers.items) |o| {
+            if (o.id == w.pid) in_oracle = true;
+        }
+        if (!in_oracle)
+            return std.fmt.allocPrint(
+                arena,
+                "a process other than the subject (pid {d}) performed {s}({s}) and the oracle's account does not place it. That reader resolves a relative path against the subject's working directory, so a child that changed its own is invisible to it — and with only one witness for those operations, nothing can check that nobody else wrote while they ran",
+                .{ w.pid, w.class.name(), w.path },
+            ) catch "a process recorded state-directory operations the oracle's account does not place";
+    }
+
+    // Condition 1's other direction, and condition 2, once per writing child.
+    for (oracle_writers.items) |w| {
+        // The same list built above, not a fresh walk of every record: it already holds
+        // one entry per writing process, with the operation a refusal names.
+        var recorded: ?engine.Op = null;
+        for (shim_writers.items) |sw| {
+            if (sw.pid == w.id) recorded = sw;
+        }
+        if (recorded == null)
+            return std.fmt.allocPrint(
+                arena,
+                "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle",
+                .{w.id},
+            ) catch "a process mutated the judged directory without recording anything of its own";
+
+        // Where this child was created. Without it the window would start at the child's
+        // own first write, and a parent that wrote in between — with the child already
+        // running — would be admitted.
+        var spawned_at: ?usize = null;
+        for (parsed.spawns.items) |c| {
+            // The earliest, and **not required to precede the child's first write**: a
+            // child can reach the judged directory before the `clone` that names it has
+            // resumed — `spawnedPid`'s own doc records that ordering — and a `posix_spawn`
+            // whose file actions open a redirect before the exec is the shape that does
+            // it. Requiring the spawn to come first turned that into a refusal for a run
+            // nothing was wrong with. Taking the earlier of the two keeps the window at
+            // least as wide as the child's own activity, which is the property the check
+            // needs.
+            if (c.id == w.id and (spawned_at == null or c.at < spawned_at.?)) spawned_at = c.at;
+        }
+        const window_from = if (spawned_at) |sp| @min(sp, w.at) else null;
+        const from = window_from orelse return std.fmt.allocPrint(
+            arena,
+            "the oracle's capture does not show where process {d} was created, and it wrote in the judged directory: without that point there is no window in which to ask whether anything else wrote while it ran",
+            .{w.id},
+        ) catch "the capture does not show where a writing process was created";
+
+        // The first reap after that first write. Not "the first reap of it at all": a pid
+        // can be reaped once, but reading the first one that follows keeps the comparison
+        // honest if a capture ever holds two.
+        var reaped_at: ?usize = null;
+        for (parsed.reaps.items) |r| {
+            if (r.id == w.id and r.at >= w.at) {
+                reaped_at = r.at;
+                break;
+            }
+        }
+        const until = reaped_at orelse return std.fmt.allocPrint(
+            arena,
+            "a process other than the subject (pid {d}) performed {s}({s}) and nothing waited for it afterwards: its operations and the subject's are ordered by the scheduler rather than by a join, so the sequence they were numbered in is one sample rather than the order the program imposes",
+            .{ w.id, if (recorded) |o| o.class.name() else "an operation", if (recorded) |o| o.path else "" },
+        ) catch "nothing waited for a process that wrote in the judged directory";
+
+        for (parsed.mutations.items) |other| {
+            if (other.id == w.id) continue;
+            if (other.at > from and other.at < until)
+                // Named the way #484's refusal names things — pid, operation, path — for
+                // the same reason: the operator's next move should not start from a guess.
+                return std.fmt.allocPrint(
+                    arena,
+                    "a process other than the subject (pid {d}) performed {s}({s}), and process {d} wrote in the judged directory while it was still running — nothing had collected it yet. Two processes writing at once are ordered by the scheduler, so the sequence they were numbered in is the one this run happened to produce and a crash point would not name the same operation on the next. A run whose writers take turns is judged; one whose writers overlap is not",
+                    .{
+                        w.id,
+                        if (recorded) |o| o.class.name() else "an operation",
+                        if (recorded) |o| o.path else "",
+                        other.id,
+                    },
+                ) catch "two processes wrote in the judged directory at the same time";
+        }
+    }
+
+    return null;
+}
+
 fn foreignTouchDetail(arena: std.mem.Allocator, first: ?engine.Op, when: []const u8, oracle_capture: ?[]const u8, fallback: []const u8) []const u8 {
     const op = first orelse return fallback;
     const composed = if (op.class == .kill_landed)
@@ -3523,12 +3731,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else => {},
     };
 
-    // Numbering integrity (#123): records vs highest number. A gap or a duplicate —
-    // a restarted counter after an unobserved exec is a duplicate — means any
-    // crash-point address may name a different operation than the one that ran.
-    if (trace.primary_kill_records != trace.kill_point_count)
-        unknown(.sequence_numbering_broken, "the subject's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted", .class_wall);
-
     // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid count
     // would otherwise read as one process while the crash points span more than one
     // image, and every other note in this report says what the judgement covered — this
@@ -3537,18 +3739,58 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // so no later assignment can drop it. One did: the world-only site overwrote the
     // whole sentence and lost this.
 
-    // The shim-side second witness, on the recording run. Crash points are numbered per
-    // process; an operation by anyone else has no unique address and cannot be judged.
+    // Whether this recording's writing children were admitted (v15). Read by the world
+    // loop and by `preflight --twice`'s second run, neither of which can decide it for
+    // itself: a world runs without an oracle and run B's capture is written and not
+    // parsed (`observeAgain` says so, and the report's `scope` line promises it). Both
+    // inherit this answer and disclose that they did.
+    var children_admitted = false;
+
+    // **The shim-side refusal that stood here is gone** (v15), and what replaced it is
+    // one decision made where both witnesses are in hand (`childrenMayBeJudged`, called
+    // from the oracle block below). The two witnesses have different blind spots — the
+    // oracle reads paths textually and misses a child's relative spelling of a state
+    // path, which the shim resolves against the child's own cwd; the shim misses any
+    // child that never loaded it, which the oracle sees — and a slice that admits a run
+    // has to hear from both. Refusing here, before the oracle has been read, could only
+    // ever answer "no".
     //
-    // Under an oracle this overlaps the oracle's own touch check for children the shim
-    // can see — measured: disabling this line alone changes no toy's verdict — but the
-    // overlap is not subsumption in either direction. The oracle reads paths textually
-    // from strace output and misses a child's *relative* spelling of a state path, which
-    // the shim resolves against the child's cwd; the shim misses any child that never
-    // loaded it, which the oracle sees. Two witnesses with different blind spots, kept
-    // deliberately.
-    if (trace.foreign_kill_point)
-        unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the recording run", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation during the recording run"), .unwrap_or_class_wall);
+    // A run that crosses a boundary with no oracle at all still refuses, two statements
+    // down (`boundary_without_oracle`), and that is the more useful sentence for it: it
+    // names the flag to pass. `docs/unknown-rate.md`'s `ctl-pass-mv` row was measured
+    // without one and records the old reason; the row moves with this change.
+
+    // Numbering integrity (#123): records vs highest number, over the whole run (v15).
+    // A gap or a duplicate — a restarted counter after an unobserved exec is a
+    // duplicate, and so is two processes taking one number — means any crash-point
+    // address may name a different operation than the one that ran.
+    //
+    // **This answers before the child decision, and the message is what carries the
+    // difference.** The refusal that used to sit above this line is gone — deciding
+    // whether a run's children may be judged needs the oracle, which is parsed further
+    // down — so a run whose operations interleave across processes reaches this check
+    // first, and two processes taking one number is exactly what interleaving produces.
+    // Rather than move the check (it must run for a run with no oracle at all, which
+    // never reaches the later site), the sentence names the cause when more than one
+    // process wrote. An earlier version of this comment claimed the opposite order and
+    // was wrong about its own code; review caught it, and `spike/acceptance.sh`'s
+    // concurrent-children leg accepts either refusal precisely because which one arrives
+    // is a race.
+    //
+    // Still above the oracle comparison, whose precedence check 2sp pins — and that leg's
+    // comment demands the experiment be redone before the ordering is trusted, which the
+    // suite run behind this change did.
+    if (trace.kill_records != trace.kill_point_count)
+        unknown(.sequence_numbering_broken, if (trace.foreign_kill_point)
+            // The same defect, named by its cause where the evidence for one is in hand.
+            // Two processes writing at the same time can read the same highest number and
+            // both take it, and that is what this disagreement means when more than one
+            // process wrote: they took the same number. `docs/report-schema.md` allows one
+            // reason to carry different wordings where the cause is known, which is the
+            // allowance `oracle_saw_phantom` already ships under.
+            "two processes took the same number: the run's kill-point records and its highest sequence number disagree, which is what happens when their operations run at the same time — each reads the highest number the trace holds and both take the next one. No crash-point address can be trusted"
+        else
+            "the run's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted", .class_wall);
 
     // A fork/spawn boundary — or any record from another pid — is tolerable only when
     // an oracle can account for what the other processes did. The shim only sees
@@ -3634,7 +3876,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .children = parsed.children,
             .lines = parsed.lines_seen,
         } };
-        boundary_ev.oracle_child_touched = parsed.child_touched;
+        boundary_ev.oracle_child_touched = parsed.childTouched();
         boundary_ev.oracle_boundary = parsed.boundary;
 
         // Set before any exit below, like oracle_note: an UNKNOWN raised by this
@@ -3684,10 +3926,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
 
-        // The tolerance condition, decided by the observer that sees children whether
-        // or not they loaded the shim.
-        if (parsed.child_touched)
-            unknown(.child_touched_state_dir, withOracleCapture(arena, "a process other than the subject touched the state directory; its operations have no crash-point address", if (args.oracle != null) oracle_out else null, "a process other than the subject touched the state directory; its operations have no crash-point address"), .unwrap_or_class_wall);
+        // The tolerance condition, now decided by both witnesses at once (v15). Either
+        // one seeing a writing child brings the question up; the answer needs the two of
+        // them, which is why this is the site — the shim's own view is in `trace` and the
+        // oracle's has just been parsed.
+        if (trace.foreign_kill_point or parsed.childTouched()) {
+            if (childrenMayBeJudged(arena, trace, parsed, args.observe)) |why|
+                unknown(.child_touched_state_dir, withOracleCapture(arena, why, if (args.oracle != null) oracle_out else null, why), .unwrap_or_class_wall);
+            children_admitted = true;
+            boundary_ev.children_judged = true;
+        }
 
         if (parsed.unsupported) |name|
             unknown(.unsupported_syscall_observed, name, .class_wall);
@@ -3744,7 +3992,25 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .unsupported => |name| unknown(.unsupported_syscall_observed, name, .class_wall),
         };
 
-        if (args.observe == .syscalls) oracle_verified_across_runs = true else oracle_verified = true;
+        // **Not `oracle_verified` when the run's crash points include operations this
+        // comparison did not cover** (v15). The comparison is the subject's account
+        // against the oracle's view of the subject; a run with admitted children has
+        // crash points the oracle testified to the existence and the ORDER of, and not
+        // the content of. `pass mv` is the shape that makes it visible: the subject is a
+        // shell that writes nothing itself, so "agreed on 0 operations" sits beside a
+        // PASS over five crash points, all of them children's.
+        //
+        // The pattern is the one v14 set for `--observe syscalls` and for the same stated
+        // reason: a weaker claim gets a name rather than the stronger field's, because
+        // `docs/contract-freeze.md` surface 2 says a machine field changes name before it
+        // changes meaning. So the `verdict == "PASS" && oracle_verified` gate keeps
+        // treating this class as unverified, which is the conservative reading.
+        if (args.observe == .syscalls)
+            oracle_verified_across_runs = true
+        else if (children_admitted)
+            oracle_verified_subject_only = true
+        else
+            oracle_verified = true;
         // The account names the witness and, where the witness is narrower, what it did
         // not check. The promise this flag makes is that a macOS run *naming its oracle*
         // carries the Linux claim — and a reader could not tell the two apart from this
@@ -3788,6 +4054,24 @@ pub fn main(init: std.process.Init.Minimal) !void {
                     "two accounts are of two executions of the same operation, not of one: this is " ++
                     "`oracle_verified_across_runs`, and `oracle_verified` stays false. What it rests on is " ++
                     "the reproducibility the exploration already requires, which `preflight --twice` measures",
+                .{agreed},
+            ) catch agreed
+        else if (children_admitted)
+            // The same narrowing, one class over (v15). This comparison is the subject's
+            // account against the oracle's view of the subject, so a crash point performed
+            // by an awaited child is one the oracle placed and ordered and did not compare.
+            // Without this the line reads as full agreement — and on a target whose own
+            // process writes nothing it reads "agreed on 0 operations" beside a PASS over
+            // five crash points, which is exactly the shape a reader would take for
+            // "verified". Appended after "witness strace" for the reason the mode arm above
+            // is: two acceptance checks match `agreed on N operations` as a substring.
+            std.fmt.allocPrint(
+                arena,
+                "{s}, witness strace — the SUBJECT's operations only. This run's crash points include " ++
+                    "operations performed by an awaited child, and those the oracle placed and ordered " ++
+                    "rather than compared one by one: this is `oracle_verified_subject_only`, and " ++
+                    "`oracle_verified` stays false. What accounts for a write neither observer placed is " ++
+                    "the per-path reconciliation, not this comparison",
                 .{agreed},
             ) catch agreed
         else
@@ -3908,7 +4192,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // unchecked; with it, the second run happens here and the report carries what
         // the comparison found — including, when they differ, the refusal to accept.
         const repeat: ?Repeat = if (args.twice)
-            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe)
+            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
         preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.observe, args.expect_status, repeat);
@@ -4086,6 +4370,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, world_trace },
             .{ contract.env.kill_at, kstr },
+            // The engine has put this child in its own process group (`runChildImpl`),
+            // so the shim may take the group down rather than one process. Set here and
+            // nowhere else: the recording run is not armed, and the `reproduce` line an
+            // operator types has no engine behind it to have made the group.
+            .{ contract.env.kill_group, "1" },
             // Pinned empty: see the recording pairs.
             .{ contract.env.seq_base, "" },
             // The same observation path the recording used, necessarily: `kill_at` is an
@@ -4151,7 +4440,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // behaviour is allowed to differ between worlds — the parent dying earlier
         // changes which path the child takes — so clearing the recording run clears
         // nothing else.
-        if (wtrace.foreign_kill_point)
+        // A world runs without an oracle, so it cannot ask the three conditions itself;
+        // it inherits the recording's answer (v15). What a world does NOT inherit is
+        // permission for a child it did not have: a boundary that appears only in an
+        // explored world refuses above (#169), and a recording with no writing child
+        // leaves `children_admitted` false, so the first one to appear here still stops
+        // the run. The residual — a run whose admitted children behave differently in a
+        // world — is the window ADR 0002 already records, narrowed by the prefix check
+        // below, and named in the report rather than left to be discovered.
+        if (wtrace.foreign_kill_point and !children_admitted)
             unknown(.child_touched_state_dir, foreignTouchDetail(arena, wtrace.first_foreign, "in an explored world", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation in an explored world"), .class_wall);
         // A world may take a branch the recording run did not (the kill changes what the
         // target sees), so an unmodellable in-scope operation can first appear here.
@@ -4176,17 +4473,55 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world without an unbroken chain of observation", .class_wall),
             else => {},
         };
-        if (wtrace.primary_kill_records != wtrace.kill_point_count)
-            unknown(.sequence_numbering_broken, "the subject's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
+        // Run-wide since v15, like the recording run's copy. The world-side order needs
+        // no change: the child-touch refusal above already answers first here.
+        if (wtrace.kill_records != wtrace.kill_point_count)
+            unknown(.sequence_numbering_broken, "the run's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
 
-        // Landing evidence: the kill must have happened where it was asked for, *to the
-        // subject*. seq alone is not enough — a spawned child inherits SIDEEYE_KILL_AT
-        // and counts its own operations, and its k-th is a different address entirely.
-        const landed = wtrace.kill_landed_seq != null and wtrace.kill_landed_seq.? == k and
-            wtrace.kill_landed_pid != null and wtrace.primary_pid != null and
-            wtrace.kill_landed_pid.? == wtrace.primary_pid.?;
+        // Landing evidence: the kill must have happened where it was asked for.
+        //
+        // **The pid condition is gone** (v15), and its reason went with it: it required
+        // the landing to be the subject's because "a spawned child inherits
+        // SIDEEYE_KILL_AT and counts its own operations, and its k-th is a different
+        // address entirely". A number is a position in the run now, so a child's k IS
+        // the k the engine asked about — and requiring the subject would mean a world
+        // armed at an awaited child's operation could never report a landing at all.
+        const landed = wtrace.kill_landed_seq != null and wtrace.kill_landed_seq.? == k;
         if (k <= n and !landed)
             unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not", .fix_define);
+
+        // And it must have been the same operation. The address is an index into the
+        // sequence the RECORDING produced, so a world that reached its k-th operation
+        // through a different sequence died in front of something else — the number
+        // landed and the operation did not. Compared by class, which is what a saved
+        // case's `prefix_hash` compares for the same reason and with the same
+        // deliberate blind spot: paths that carry a pid or a random suffix legitimately
+        // differ between runs (the timewarrior shape), so they warn there and are not
+        // compared here.
+        //
+        // This is the check that keeps the multi-process slice from resting on an
+        // assumption. The slice is admitted on the recording run, where both witnesses
+        // are present; a world runs without an oracle, so nothing there re-checks that
+        // the writers still took turns. What every world CAN check is whether the
+        // sequence it produced is the one the address was read from, and n+1 worlds
+        // checking that is a stronger statement about reproducibility than the two
+        // samples `preflight --twice` compares.
+        //
+        // **Only where children were admitted** (review, P1). A world's operations could
+        // differ from the recording's on any target, and refusing that is a promise this
+        // change does not make: single-process runs have never had the check, the
+        // reproducibility they rest on is the one `preflight --twice` measures, and adding
+        // a new refusal to every target is not something to do inside a change about
+        // children. Where children were admitted it is the compensation for a world that
+        // cannot re-ask the two conditions, so the cost — two prefix hashes per world,
+        // each a walk of the trace — is paid by the runs that need it.
+        if (children_admitted and k <= n and k > 1) {
+            var wh: [16]u8 = undefined;
+            var rh: [16]u8 = undefined;
+            const both = prefixHash(wtrace, k - 1, &wh) and prefixHash(trace, k - 1, &rh);
+            if (!both or !std.mem.eql(u8, &wh, &rh))
+                unknown(.kill_did_not_land, "a world died at the operation number it was given, but the operations leading up to it are not the ones the recording numbered: the address names a different operation in this world than in the recording, so nothing died in front of the operation the crash point stands for. An operation whose sequence of state-directory calls varies between runs cannot be explored at a fixed index", .fix_define);
+        }
         if (k <= n and !term.isSignal(posix.SIGKILL))
             unknown(.kill_did_not_land, "a world that should have been killed exited on its own", .sideeye_defect);
         // The baseline world is not killed, so nothing above inspects it — which is
@@ -4520,6 +4855,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 \\
             , .{ cd.e.k, n, cd.e.invariant, cd.case, cd.replay });
         }
+        // **`SIDEEYE_KILL_GROUP` is deliberately not on this line** (v15). A world gets it
+        // because the engine put the target in its own process group first; a shell an
+        // operator types this into has done no such thing, and the kill would take that
+        // shell down with the target. Measured: an earlier draft group-killed
+        // unconditionally and the acceptance suite's own shell died at the leg that runs
+        // this line (SIGKILL, exit 137).
+        //
+        // What that costs is honest and small: the line dies in front of the same
+        // operation, in the process that reaches it. Where that process is an awaited
+        // child, the rest of the tree keeps running afterwards, so the line reproduces the
+        // crash point rather than the whole world. Adding the variable by hand reproduces
+        // the world exactly — from a shell you are willing to lose.
         say(
             \\processes   {s}
             \\not tested  {s}
@@ -4722,6 +5069,10 @@ fn observeAgain(
     /// The same observation path the first run used. A repeatability comparison between
     /// two runs counted by different observers would be measuring the observers.
     observe: contract.ObserveMode,
+    /// Whether run A's writing children were admitted (v15). This function cannot decide
+    /// it: `oracle-2.txt` is written and not parsed, and reading it is a promise this
+    /// flag deliberately does not make on its own.
+    children_admitted: bool,
 ) Repeat {
     // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
     // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
@@ -4827,8 +5178,24 @@ fn observeAgain(
     if (trace.truncated)
         unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown", .retry_then_report);
     // The shim-side witness for a foreign writer, and it does not depend on an oracle.
-    if (trace.foreign_kill_point)
+    // Inherited from run A, for the reason the parameter's doc gives, and refusing a
+    // child run A was admitted for would make `--twice` unusable on exactly the targets
+    // this version exists to judge.
+    if (trace.foreign_kill_point and !children_admitted)
         unknown(.child_touched_state_dir, foreignTouchDetail(arena, trace.first_foreign, "during the second observed run", if (attached != null) oracle_out_b else null, "a process other than the subject performed a state-directory operation during the second observed run"), .class_wall);
+
+    // Numbering integrity, which run B has never had and now needs (v15). The recording
+    // run and every explored world check that their records and their highest number
+    // agree; run B did not, and while a foreign writer refused here unconditionally that
+    // cost nothing — a second process could not reach this point. It can now: run B
+    // inherits run A's admission, so two of its processes taking one number is a state
+    // nothing else in this function would notice. `--twice` compares post-state bytes and
+    // says so; it does not compare accounts.
+    if (trace.kill_records != trace.kill_point_count)
+        unknown(.sequence_numbering_broken, if (trace.foreign_kill_point)
+            "two processes took the same number in the second observed run: its kill-point records and its highest sequence number disagree, which is what happens when their operations run at the same time"
+        else
+            "the second observed run's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates", .class_wall);
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run", .rebuild_pair);
     // The boundaries that stay refusals whatever an oracle says, applied to the second
@@ -6819,6 +7186,12 @@ fn buildJson(
     // mode's PASS as unverified, which is the conservative reading and the correct one.
     if (oracle_verified_across_runs)
         try w.appendSlice(arena, ",\n  \"oracle_verified_across_runs\": true");
+    // The same shape and the same reason (v15): present only when true, so every report a
+    // v14 consumer has seen is byte-identical, and the `verdict == "PASS" &&
+    // oracle_verified` gate keeps treating a run whose crash points include a child's
+    // operations as unverified.
+    if (oracle_verified_subject_only)
+        try w.appendSlice(arena, ",\n  \"oracle_verified_subject_only\": true");
     // Read from the run's own counters rather than passed in as zeroes. An UNKNOWN raised
     // at world 4 of 6 used to report `"explored": 0`, so a caller aggregating coverage
     // from the JSON recorded nothing for every run that ended early.
@@ -7198,7 +7571,11 @@ fn prefixHash(trace: engine.TraceInfo, k: u32, out: *[16]u8) bool {
         var found = false;
         for (trace.ops.items) |op| {
             if (!op.class.isKillPoint()) continue;
-            if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
+            // Every process's operations, for the reason `logicalAddress` carries (v15):
+            // a number is a position in the run, so a prefix that skipped a child's
+            // operations would hash a sequence the run never had — and would find no
+            // record at all for a number a child holds, reporting the case as no longer
+            // applying when nothing had changed.
             if (op.seq != seq) continue;
             for (op.class.name()) |ch| {
                 h ^= ch;
@@ -7783,6 +8160,11 @@ const boundary_cases = [_]struct {
     .{ .what = "strace reported a clone that crosses a boundary the shim missed", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 120 } }, .oracle_boundary = "clone" }, .may_say_single = false, .pins = "crosses a process boundary the shim did not record" },
     .{ .what = "another process performed a kill-point operation (shim)", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .shim_foreign_touch = true }, .may_say_single = false, .pins = "no crash-point address" },
     .{ .what = "another process touched the judged directory (oracle)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 1, .lines = 900 } }, .oracle_child_touched = true }, .may_say_single = false, .pins = "no crash-point address" },
+    // The same evidence with the slice admitted (v15). Pinned separately because the two
+    // sentences differ in what they claim about the SAME observation, and a table that
+    // held only the refusing one would let the admitting one drift into saying the
+    // window is the subject's alone.
+    .{ .what = "another process's operations were admitted as crash points", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .shim_foreign_touch = true, .children_judged = true }, .may_say_single = false, .pins = "hold crash-point addresses" },
     .{ .what = "the shim recorded a thread", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .shim_hard = "a thread" }, .may_say_single = false, .pins = "the shim recorded a thread" },
     // The subject replaced its own image and nothing else crossed a boundary. The shim
     // DID record a boundary (which is why the run needs an oracle), and it claims no
@@ -8129,4 +8511,172 @@ test "the checker and marker accounts say none was configured only once every so
     // touches only the flag.
     try std.testing.expectEqualStrings(checkerNoteFor(.unparsed), checker_note);
     try std.testing.expectEqualStrings(l1NoteFor(.unparsed), l1_note);
+}
+
+/// A trace on disk for the tests below, in the shape `writeTraceForTest` builds one in
+/// `src/engine/trace.zig` — the same reason it exists there: the decision under test reads
+/// a `TraceInfo`, and building one by hand would let a test pass over a shape the reader
+/// cannot actually produce.
+fn traceFileForTest(tag: []const u8, records: []const contract.Record, fbuf: *[contract.max_path]u8) ![*:0]const u8 {
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const dz = std.fmt.bufPrintZ(&pbuf, "{s}", .{dir}) catch unreachable;
+    _ = posix.mkdir(dz.ptr, 0o755);
+    const fz = std.fmt.bufPrintZ(fbuf, "{s}/trace.bin", .{dir}) catch unreachable;
+    const fd = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    var hbuf: [contract.header_len]u8 = undefined;
+    const hn = try contract.encodeHeader(&hbuf);
+    try std.testing.expectEqual(@as(isize, @intCast(hn)), posix.write(fd, &hbuf, hn));
+    for (records) |rec| {
+        var rbuf: [2 * contract.max_path]u8 = undefined;
+        const rn = try contract.encodeRecord(&rbuf, rec);
+        try std.testing.expectEqual(@as(isize, @intCast(rn)), posix.write(fd, &rbuf, rn));
+    }
+    _ = posix.close(fd);
+    return fz.ptr;
+}
+
+test "the two conditions on a run with a writing child (v15)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    // The slice: subject writes, awaited child writes, subject writes again.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try traceFileForTest("slice-ok", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .path = "", .aux = "" },
+        .{ .op = .rename, .seq = 2, .pid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" },
+        .{ .op = .write, .seq = 3, .pid = 7, .path = "/tmp/s/c", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(fz);
+    var tb = engine.unboundedBudget(std.testing.allocator);
+    var trace = try engine.readTrace(&tb, std.mem.span(fz));
+    defer trace.deinit();
+
+    // The oracle's view of the same run: the parent writes at line 10, the child at 20,
+    // the wait returns at 30, the parent writes again at 40. A hand-off.
+    const events = struct {
+        fn list(a: std.mem.Allocator, items: []const oracle.Event) !std.ArrayList(oracle.Event) {
+            var l: std.ArrayList(oracle.Event) = .empty;
+            for (items) |e| try l.append(a, e);
+            return l;
+        }
+    };
+    const handoff = oracle.Parsed{
+        .classes = .empty,
+        .names = .empty,
+        .lines = .empty,
+        .metadata_observed = .empty,
+        .mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 40 } }),
+        .reaps = try events.list(arena, &.{.{ .id = 8, .at = 30 }}),
+        // The fork, which is where the window opens — not the child's first write.
+        .spawns = try events.list(arena, &.{.{ .id = 8, .at = 15 }}),
+        .primary_pid = 7,
+    };
+    try std.testing.expectEqual(@as(?[]const u8, null), childrenMayBeJudged(arena, trace, handoff, .wrappers));
+
+    // Condition 2: the parent's second write moves to BEFORE the wait returned. Nothing
+    // else changes — same processes, same operations, same reap — so this is the
+    // ordering condition on its own.
+    var overlap = handoff;
+    overlap.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 25 } });
+    const raced = childrenMayBeJudged(arena, trace, overlap, .wrappers) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, raced, "(pid 8) performed rename(/tmp/s/a)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, raced, "process 7 wrote in the judged directory while it was still running") != null);
+
+    // Condition 2's other half: nothing collected the child at all.
+    var no_reap = handoff;
+    no_reap.reaps = .empty;
+    const unreaped = childrenMayBeJudged(arena, trace, no_reap, .wrappers) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, unreaped, "(pid 8) performed rename(/tmp/s/a) and nothing waited for it") != null);
+
+    // Condition 1, the direction that catches a child the oracle could not place.
+    var oracle_blind = handoff;
+    oracle_blind.mutations = try events.list(arena, &.{.{ .id = 7, .at = 10 }});
+    const unplaced = childrenMayBeJudged(arena, trace, oracle_blind, .wrappers) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, unplaced, "(pid 8) performed rename(/tmp/s/a) and the oracle's account does not place it") != null);
+
+    // Condition 1, the other direction: a writer the shim never recorded — the shape
+    // `TOY_SPAWN_WRITES` produces, and the one that would otherwise make the whole
+    // question vacuous.
+    var unshimmed = handoff;
+    // Its write sits AFTER pid 8 was collected and before the parent's, so the ordering
+    // condition is satisfied and the only thing wrong with the run is that this writer
+    // left no records. A first version of this fixture put it inside pid 8's window and
+    // measured the interleaving refusal instead — two defects in one input tell you
+    // nothing about which check caught them.
+    unshimmed.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 99, .at = 35 }, .{ .id = 7, .at = 40 } });
+    unshimmed.reaps = try events.list(arena, &.{ .{ .id = 8, .at = 30 }, .{ .id = 99, .at = 37 } });
+    const no_records = childrenMayBeJudged(arena, trace, unshimmed, .wrappers) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, no_records, "process 99 mutated the judged directory") != null);
+
+    // Condition 2's window starts at the FORK, not at the child's first write. Same
+    // processes, same reap, same operations — only the parent's second write moves back
+    // to a point where the child was already running. Nothing orders those two, and the
+    // shape is `fork, parent writes, child writes, parent waits`: admitted by a window
+    // that began at the child's own first operation, refused by this one.
+    var parent_in_window = handoff;
+    parent_in_window.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 7, .at = 18 }, .{ .id = 8, .at = 20 } });
+    const straddled = childrenMayBeJudged(arena, trace, parent_in_window, .wrappers) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, straddled, "process 7 wrote in the judged directory while it was still running") != null);
+
+    // And a capture that does not show where the writer came from cannot be asked the
+    // question at all.
+    var no_spawn = handoff;
+    no_spawn.spawns = .empty;
+    const unplaced_child = childrenMayBeJudged(arena, trace, no_spawn, .wrappers) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, unplaced_child, "does not show where process 8 was created") != null);
+
+    // The mode gate. Same run, same witnesses, and under `--observe syscalls` the oracle
+    // watched a different execution — so there is no second witness for THIS one.
+    const wrong_mode = childrenMayBeJudged(arena, trace, handoff, .syscalls) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, wrong_mode, "--observe syscalls") != null);
+}
+
+test "two children writing before either is collected are refused (v15)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    // The `rsync` shape, and the one the trace's own record order cannot tell apart from
+    // the hand-off above: pid 8 writes, pid 9 writes, pid 8 writes again. Identical in
+    // the trace to `parent, child, parent`.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try traceFileForTest("slice-interleaved", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 8, .path = "/tmp/s/x", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 9, .path = "/tmp/s/y", .aux = "" },
+        .{ .op = .write, .seq = 3, .pid = 8, .path = "/tmp/s/x", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(fz);
+    var tb = engine.unboundedBudget(std.testing.allocator);
+    var trace = try engine.readTrace(&tb, std.mem.span(fz));
+    defer trace.deinit();
+
+    // Both witnesses agree on who wrote and both children are collected in the end —
+    // every part of condition 1 is satisfied, which is what makes this the control that
+    // shows condition 2 is the one doing the work here.
+    var l_mut: std.ArrayList(oracle.Event) = .empty;
+    for ([_]oracle.Event{ .{ .id = 8, .at = 10 }, .{ .id = 9, .at = 11 }, .{ .id = 8, .at = 12 } }) |e| try l_mut.append(arena, e);
+    var l_reap: std.ArrayList(oracle.Event) = .empty;
+    for ([_]oracle.Event{ .{ .id = 8, .at = 20 }, .{ .id = 9, .at = 21 } }) |e| try l_reap.append(arena, e);
+    var l_spawn: std.ArrayList(oracle.Event) = .empty;
+    for ([_]oracle.Event{ .{ .id = 8, .at = 1 }, .{ .id = 9, .at = 2 } }) |e| try l_spawn.append(arena, e);
+    const racing = oracle.Parsed{
+        .classes = .empty,
+        .names = .empty,
+        .lines = .empty,
+        .metadata_observed = .empty,
+        .mutations = l_mut,
+        .reaps = l_reap,
+        .spawns = l_spawn,
+        .primary_pid = 7,
+    };
+    const why = childrenMayBeJudged(arena, trace, racing, .wrappers) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, why, "(pid 8) performed write(/tmp/s/x)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, why, "process 9 wrote in the judged directory while it was still running") != null);
 }
