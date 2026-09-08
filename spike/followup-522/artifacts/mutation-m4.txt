@@ -1,0 +1,4 @@
+# mut-m4: 変異を当てた acceptance 全走行のうち、失敗した行の全部と末尾の集計。
+# フィルタしていない——新しい 8 セル以外が落ちていればここに出る。
+     world unresolved: wanted rc=2 unresolvable_path in an explored world, got rc=1: falsify: doctor says 'healthy' but the key is unloadable doctor says 'healthy' but the key is unloadable FAIL  1 of 9 explored worlds violated an invariant 
+1 ACCEPTANCE CHECK(S) FAILED

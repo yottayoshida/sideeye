@@ -1,0 +1,9 @@
+# mut-m1: 変異を当てた acceptance 全走行のうち、失敗した行の全部と末尾の集計。
+# フィルタしていない——新しい 8 セル以外が落ちていればここに出る。
+     close-exempt: expected rc=0 and no unresolvable_path, got rc=2: UNKNOWN  unresolvable_path
+     close-exempt explore: wanted a verdict (0 or 1), got 2: UNKNOWN  unresolvable_path          an operation was observed whose path could not be determined (unlinked-fd close fd:3, pid 3853, last named /tmp/acc-cls/b-state/doomed-close.txt), so it cannot be placed among the crash points next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal. 
+     close-then-write: wanted rc=2 naming [unlinked-fd write fd:], got rc=2: UNKNOWN  unresolvable_path
+     world unresolved: wanted rc=2 unresolvable_path in an explored world, got rc=2: UNKNOWN  unresolvable_path          an operation was observed whose path could not be determined (unlinked-fd close fd:3, pid 3878, last named /tmp/acc-cls/w-state/doomed-world.txt), so it cannot be placed among the crash points next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal. 
+     run-B unresolved: wanted rc=2 unresolvable_path in the second observed run, got rc=2: UNKNOWN  unresolvable_path          an operation was observed whose path could not be determined (unlinked-fd close fd:3, pid 3888, last named /tmp/acc-cls/t-state/doomed-run2.txt), so it cannot be placed among the crash points next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal. 
+     #405 control: wanted state_changed_unaccounted, got rc=2: UNKNOWN  unresolvable_path
+6 ACCEPTANCE CHECK(S) FAILED

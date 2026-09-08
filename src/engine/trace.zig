@@ -64,6 +64,22 @@ pub const Op = struct {
     aux: []const u8,
 };
 
+/// Whether an unplaceable record refuses the run, decided from the record alone.
+///
+/// The vocabulary and the class predicate both live in `contract` beside the writer
+/// (`unresolved_kind.withOp`), so this is the `Op`-shaped call site and nothing more.
+/// A record this reader cannot read — an older shim's empty reason, a kind whose
+/// operation is not named, anything malformed — refuses: not knowing which operation it
+/// was is not a reason to let it past.
+///
+/// Not `pub`: the answer leaves this file as `TraceInfo.unresolved_refusing`, and
+/// `engine.zig`'s facade check (#491) requires every public declaration here to be
+/// re-exported — a helper with one call site in this file is not facade material.
+fn unplacedRefuses(op: Op) bool {
+    const what = contract.unresolved_kind.opOfUnlinkedFd(op.class, op.aux) orelse return true;
+    return what.unplaceableRefuses();
+}
+
 pub const TraceInfo = struct {
     arena: std.heap.ArenaAllocator,
     ops: std.ArrayList(Op),
@@ -78,13 +94,24 @@ pub const TraceInfo = struct {
     /// install in the first one pass unseen. Empty from a shim asked for the default
     /// mode, which is also what the field carried through v13.
     observe_aux: []const u8 = "",
-    /// The first operation the shim could not place, kept whole rather than as a flag
-    /// (#485). Any verdict computed from a trace containing one is a verdict about an
-    /// incomplete picture — and the refusal that follows can now say which record it
-    /// was: `aux` carries why it could not be placed and `path` the name the file had,
-    /// where there was one. `class` and `seq` are constants for this record type, so
-    /// they are not what makes it identifiable.
-    unresolved_op: ?Op = null,
+    /// The first unplaceable record whose operation REFUSES the run — the one every
+    /// refusal is keyed on and the one its message names.
+    ///
+    /// First-wins over the *refusing* records, not over every unplaceable one. An exempt
+    /// record arriving first must not hide a refusing one behind it: `close` on a low
+    /// descriptor before `write` on an unlinked one is an ordinary order
+    /// (`TOY_CLOSE_THEN_UNLINKED_WRITE` performs exactly it — two descriptors on one
+    /// unlinked file; `TOY_CLOSE_SWEEP` does NOT, because it closes descriptors before
+    /// anything is unlinked, and an earlier draft of this comment credited it), and a
+    /// target can append to its own trace,
+    /// so a single `unlinked-fd close fd:3` written early would otherwise switch the wall
+    /// off for everything after it.
+    ///
+    /// There is deliberately no second field holding the first unplaceable record
+    /// whatever it was: one existed while this change was being written, nothing read it,
+    /// and its comment claimed the report's forensics named it — which was false. The
+    /// trace file holds every record; a field nobody reads is a claim nobody checks.
+    unresolved_refusing: ?Op = null,
     /// The syscall-and-flag spelling of the first in-scope operation the shim could
     /// place but not model (v12, macOS: `RENAME_SWAP`, `exchangedata`). Borrows from
     /// the trace buffer. On Linux this refusal comes from the oracle instead, and
@@ -608,7 +635,10 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 info.kill_landed_seq = op.seq;
                 info.kill_landed_pid = op.pid;
             },
-            .unresolved => if (info.unresolved_op == null) { info.unresolved_op = op; },
+            .unresolved => {
+                if (info.unresolved_refusing == null and unplacedRefuses(op))
+                    info.unresolved_refusing = op;
+            },
             // The record's path field carries the syscall-and-flag spelling, not a
             // path (v12). First one wins: the refusal names one operation, the way
             // the oracle's `unsupported` does on Linux. The slice is `Op.path`, duped
@@ -908,10 +938,46 @@ test "the first unplaceable record is kept whole, with its kind and the name it 
     var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
 
-    const u = info.unresolved_op orelse return error.TestUnexpectedResult;
+    const u = info.unresolved_refusing orelse return error.TestUnexpectedResult;
     try std.testing.expectEqualStrings("write-after-unlink", u.aux);
     try std.testing.expectEqualStrings("/tmp/s/doomed", u.path);
     try std.testing.expectEqual(@as(u32, 7), u.pid);
+    _ = posix.unlink(fz);
+}
+
+test "an exempt record does not hide the refusing one behind it" {
+    // The order `TOY_CLOSE_THEN_UNLINKED_WRITE` produces and a target can forge: an exempt close first,
+    // a refusing write second. Deciding per run instead of per record would stop at the
+    // close and let the write reach a verdict — the acceptance suite pins that end to end,
+    // this pins the reader that decides it.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("unresolved-order", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/a", .aux = "unlinked-fd close fd:3" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:4" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    const u = info.unresolved_refusing orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqualStrings("unlinked-fd write fd:4", u.aux);
+    try std.testing.expectEqualStrings("/tmp/s/b", u.path);
+    _ = posix.unlink(fz);
+}
+
+test "a trace whose only unplaceable record is an exempt close leaves nothing to refuse on" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("unresolved-exempt", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .path = "/tmp/s/a", .aux = "unlinked-fd close fd:3" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    try std.testing.expect(info.unresolved_refusing == null);
     _ = posix.unlink(fz);
 }
 
@@ -928,7 +994,7 @@ test "an unplaceable record with no name is still kept, so the refusal can say t
     var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
 
-    const u = info.unresolved_op orelse return error.TestUnexpectedResult;
+    const u = info.unresolved_refusing orelse return error.TestUnexpectedResult;
     try std.testing.expectEqualStrings("trace-closed-by-target", u.aux);
     try std.testing.expectEqual(@as(usize, 0), u.path.len);
     _ = posix.unlink(fz);

@@ -5196,6 +5196,147 @@ else
     fails=$((fails + 1))
 fi
 
+# --- close needs no crash-point address: the exemption, and its four controls ---
+# Every path in this section hangs off one variable, and the variable carries this shell's
+# pid: re-running the suite in the same container starts from a fresh tree without any
+# directory being deleted. The neighbouring sections open with `rm -rf` on a fixed path,
+# which works because the CI container is new each time — but a killed world leaves
+# `doomed-world.txt` behind and `toy-bug init` does not clean the tree, so a second local
+# run would explore a different initial snapshot. Review caught that; a unique name is the
+# form that cannot go wrong rather than the one that has to remember (`rules/yagni.md`'s
+# "足すより消す" and the workspace's prefer-impossible-over-detected rule).
+CLS=/tmp/acc-cls.$$
+# ADR 0003 §2 excludes `close` from both class sequences, so an unplaceable close is not a
+# reason to refuse: no crash point was going to be computed from it, and the bytes are the
+# same either side of it. Everything else on the same branch keeps refusing, and the four
+# cells after this one are what make that a class decision rather than a blanket one.
+mkdir -p "$CLS/a-state" "$CLS/a-work"
+o=$(TOY_CLOSE_AFTER_UNLINK=1 "$SIDEEYE" preflight --state "$CLS/a-state" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$CLS/a-work" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && ! echo "$o" | grep -q "unresolvable_path"; then
+    echo "ok   an unplaceable close alone does not refuse the recording"
+else
+    echo "     close-exempt: expected rc=0 and no unresolvable_path, got rc=$rc: $o"
+    fails=$((fails + 1))
+fi
+
+# The same target through a whole exploration, because "the recording is accepted" and "a
+# verdict comes out" are different claims and this rule is about the second.
+mkdir -p "$CLS/b-state" "$CLS/b-work"
+TOY="$OUT/toy-bug" TOY_CLOSE_AFTER_UNLINK=1 "$SIDEEYE" explore --state "$CLS/b-state" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" --shim "$SHIM" --allow-unverified \
+    --work "$CLS/b-work" > "$CLS/b.txt" 2>&1
+rc=$?
+if [ "$rc" -eq 0 ] || [ "$rc" -eq 1 ]; then
+    echo "ok   the same target reaches a verdict (exit $rc), not a class wall"
+else
+    echo "     close-exempt explore: wanted a verdict (0 or 1), got $rc: $(head -3 "$CLS/b.txt" | tr '\n' ' ')"
+    fails=$((fails + 1))
+fi
+
+# Control 1 of 4: an exempt record FIRST and a refusing one after it. This is what an
+# exemption applied to the run rather than to each record would let through -- the reader
+# keeps only the first unplaceable record, so the close would hide the write behind it.
+# The message must name the WRITE: a refusal that names the close it exempted would send
+# the reader after the wrong operation (#485's whole subject).
+mkdir -p "$CLS/c-state" "$CLS/c-work"
+o=$(TOY_CLOSE_THEN_UNLINKED_WRITE=1 "$SIDEEYE" preflight --state "$CLS/c-state" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$CLS/c-work" 2>&1)
+rc=$?
+if [ "$rc" -eq 2 ] && echo "$o" | grep -q "unlinked-fd write fd:"; then
+    echo "ok   an exempt close first does not let an unlinked write past, and the write is what is named"
+else
+    echo "     close-then-write: wanted rc=2 naming [unlinked-fd write fd:], got rc=$rc: $o"
+    fails=$((fails + 1))
+fi
+
+# Controls 2 and 3: the other two operations that reach the same branch. Both are kill
+# points, so both keep refusing.
+for pair in "TOY_FSYNC_AFTER_UNLINK fsync" "TOY_TRUNCATE_AFTER_UNLINK truncate"; do
+    var=${pair% *}; op=${pair#* }
+    mkdir -p "$CLS/$op-state" "$CLS/$op-work"
+    o=$(env "$var=1" "$SIDEEYE" preflight --state "$CLS/$op-state" \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work "$CLS/$op-work" 2>&1)
+    rc=$?
+    if [ "$rc" -eq 2 ] && echo "$o" | grep -q "unlinked-fd $op fd:"; then
+        echo "ok   an unplaceable $op still refuses, and is named"
+    else
+        echo "     unlinked $op: wanted rc=2 naming [unlinked-fd $op fd:], got rc=$rc: $o"
+        fails=$((fails + 1))
+    fi
+done
+
+# Control 4: the world side. The recording run holds only the exempt close, so this target
+# reaches the worlds -- and a world that runs past the unlink writes through the
+# descriptor. Until the exemption existed no target could get here, which is why this
+# check did not exist: the recording run's wall stopped them all first.
+mkdir -p "$CLS/w-state" "$CLS/w-work"
+TOY="$OUT/toy-bug" TOY_UNLINKED_WRITE_WORLD=1 "$SIDEEYE" explore --state "$CLS/w-state" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" --shim "$SHIM" --allow-unverified \
+    --work "$CLS/w-work" > "$CLS/w.txt" 2>&1
+rc=$?
+if [ "$rc" -eq 2 ] && grep -q "unresolvable_path" "$CLS/w.txt" \
+   && grep -q "in an explored world" "$CLS/w.txt"; then
+    echo "ok   an unplaceable write that only a world performs refuses in that world"
+else
+    echo "     world unresolved: wanted rc=2 unresolvable_path in an explored world, got rc=$rc: $(head -3 "$CLS/w.txt" | tr '\n' ' ')"
+    fails=$((fails + 1))
+fi
+
+# The third trace read -- `preflight --twice`'s run B. Nothing else in this suite reaches
+# it: a target with a refusing record is refused in run A and never gets here, and a
+# deterministic one is exempt in both. So the toy performs the unlinked write only on the
+# second run, keyed on a marker OUTSIDE --state (a marker inside it would split the two
+# runs and refuse before the trace is read).
+mkdir -p "$CLS/t-state" "$CLS/t-work"
+/bin/rm -f "$CLS/run2.mark" 2>/dev/null || true
+TOY_UNLINKED_WRITE_RUN2=1 TOY_RUN2_MARK="$CLS/run2.mark" \
+    "$SIDEEYE" preflight --state "$CLS/t-state" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$CLS/t-work" --twice > "$CLS/t.txt" 2>&1
+rc=$?
+if [ "$rc" -eq 2 ] && grep -q "unresolvable_path" "$CLS/t.txt" \
+   && grep -q "in the second observed run" "$CLS/t.txt"; then
+    echo "ok   an unplaceable write only the second observed run performs refuses there"
+else
+    echo "     run-B unresolved: wanted rc=2 unresolvable_path in the second observed run, got rc=$rc: $(head -3 "$CLS/t.txt" | tr '\n' ' ')"
+    fails=$((fails + 1))
+fi
+
+# #405 stays loud. The file is created by the setup and removed through raw syscalls the
+# shim cannot see, so the only record the run leaves is the exempt close. The state moved
+# and nothing accounts for it, which must refuse -- and would go silent if the exemption
+# ever gave that close an address, because `reconcile` reads every non-marker record's
+# path as an alibi for a diff. Linux only: the raw-syscall branch is compiled there.
+if [ "$(uname -s)" = "Linux" ]; then
+    mkdir -p "$CLS/r-state" "$CLS/r-work"
+    cat > "$CLS/r-setup.sh" <<'EOSETUP'
+#!/bin/sh
+"$1" init || exit 1
+printf 'victim\n' > "$TOY_STATE/victim.txt"
+EOSETUP
+    chmod 755 "$CLS/r-setup.sh"
+    o=$(TOY_RAW_UNLINK_LIBC_CLOSE=1 TOY_STATE="$CLS/r-state" \
+        "$SIDEEYE" preflight --state "$CLS/r-state" \
+        --setup ""$CLS/r-setup.sh" $OUT/toy-bug" --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work "$CLS/r-work" 2>&1)
+    rc=$?
+    if echo "$o" | grep -q "state_changed_unaccounted"; then
+        echo "ok   #405 still refuses a change nothing accounts for, with the close exempt"
+    else
+        echo "     #405 control: wanted state_changed_unaccounted, got rc=$rc: $o"
+        fails=$((fails + 1))
+    fi
+else
+    echo "NOT MEASURED  #405 control needs the raw-syscall branch, which is Linux-only"
+fi
+
 # --- #485: the kind whose path is empty by construction ---
 # `linkat` with an empty source names a descriptor and nothing else, so the descriptor is
 # the whole of the operation's identity -- the sharpest case for #485 and, until this leg,

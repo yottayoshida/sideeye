@@ -1,0 +1,17 @@
+# arm=after-syscalls  engine: sideeye 1.2.0 (trace contract v14)
+run1   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run2   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run3   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run4   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run5   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run6   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run7   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run8   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run9   rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run10  rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run11  rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run12  rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run13  rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run14  rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run15  rc=1  FAIL 2 of 4 explored worlds violated an invariant         
+run16  rc=1  FAIL 2 of 4 explored worlds violated an invariant         

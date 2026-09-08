@@ -214,11 +214,16 @@ of 563 bytes, and the close of fd 4.
   corroboration. It is now excluded from both class sequences."
 - `src/contract.zig:382` — "lifecycle ops: recorded, never a crash point",
   directly above `close = 100`.
-- `src/fsusage.zig:837` and `:850` — the macOS oracle's reader **already
-  exempts it**: an unresolvable path or an unresolved descriptor raises its
-  defect only `if (c != .close)`. The shim path has no such clause, which is why
-  the same target refuses under Linux and the two readers disagree about a rule
-  both cite.
+- `src/fsusage.zig` — the macOS oracle's reader **already exempts it**, but this
+  entry named the wrong lines and is **corrected here (2026-09-07)**. The
+  exemption is positional: the descriptor bookkeeping has an `else if (cls ==
+  .close)` arm that clears the descriptor and `continue`s, so a close line never
+  reaches the unresolvable checks below. The `if (c != .close)` guards that used to
+  sit further down were therefore unreachable for `.close` and were never the
+  mechanism — a reviewer reading the file found it, and **they were removed on
+  2026-09-08** by the change that gave the shim path the same exemption. The conclusion this rested on stands: the
+  exemption exists on that side, the shim path has none, and the two readers
+  disagree about a rule both cite.
 
 This directory does not fix that. What it establishes is that a real tool, on a
 normal filesystem, in both observation modes, is refused for the address of an

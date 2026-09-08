@@ -1,0 +1,17 @@
+# arm=after  engine: sideeye 1.2.0 (trace contract v14)
+run1   rc=2  UNKNOWN oracle_missed_operation                           
+run2   rc=2  UNKNOWN oracle_missed_operation                           
+run3   rc=2  UNKNOWN oracle_missed_operation                           
+run4   rc=2  UNKNOWN oracle_missed_operation                           
+run5   rc=2  UNKNOWN oracle_missed_operation                           
+run6   rc=2  UNKNOWN oracle_missed_operation                           
+run7   rc=2  UNKNOWN oracle_missed_operation                           
+run8   rc=2  UNKNOWN oracle_missed_operation                           
+run9   rc=2  UNKNOWN oracle_missed_operation                           
+run10  rc=2  UNKNOWN oracle_missed_operation                           
+run11  rc=2  UNKNOWN oracle_missed_operation                           
+run12  rc=2  UNKNOWN oracle_missed_operation                           
+run13  rc=2  UNKNOWN oracle_missed_operation                           
+run14  rc=2  UNKNOWN oracle_missed_operation                           
+run15  rc=2  UNKNOWN oracle_missed_operation                           
+run16  rc=2  UNKNOWN oracle_missed_operation                           
