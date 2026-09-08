@@ -167,8 +167,8 @@ measurement is a shape this workspace has met before.
 ## 2026-09-08 — v1.3.0: the block read against itself, and six sentences a later entry had already overtaken
 
 Twenty entries, four days and 99 commits since v1.2.0 when this was read (31 on the first
-parent, 34 merges); twenty-two, five days and 110 (35 and 38) by the time it merged — see the
-addendum.
+parent, 34 merges); twenty-two, five days and 115 (34 and 40) as of the commit that wrote this line, the
+merge commit not yet among them — see the addendum.
 Three contract versions in one block — v14 (ADR 0052), v15 (ADR 0053), v16 (ADR 0055) —
 plus the oracle that watches the trapped run (ADR 0054), the `close` exemption (ADR 0003
 amended), the exec-chain fix (ADR 0018 amended), and the dogfood ledger's second and third
@@ -217,6 +217,12 @@ is a different mechanism from the one #546 names; the fs_usage rows in the v16 e
 about attribution, not the grammar). Moved into `[1.3.0]`'s `Fixed`, at its head: 12 Added,
 1 Removed, 9 Fixed, 22 entries. The heading's date is the day it merges, not the day it was
 read. Nothing else in the release commit changed.
+
+The same CI leg refused once more on the merge commit — the other half of #547's shape —
+and #548 (the fragments after a skipped head; same promise, so #547's entry grew rather
+than gaining a sibling) merged before the tag as well. The block re-read with the grown
+entry: still twenty-two entries, nothing overtaken. #549 was filed from its review and is
+not in this release.
 
 
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
