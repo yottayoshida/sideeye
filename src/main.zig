@@ -1683,6 +1683,20 @@ fn withOracleCapture(arena: std.mem.Allocator, sentence: []const u8, capture: ?[
     return sanitizeForReport(arena, joined) catch fallback;
 }
 
+/// A clause for a status of 126 from any child the engine forked: since 2026-09-08 that
+/// is also the code `posix.childArrangeFailed` exits with when `setpgid` or a `dup2`
+/// failed in the child before `exec`, and the child says which on the engine's stderr.
+/// Empty for every other status, so the sentence a caller already prints is unchanged.
+fn exit126Note(code: anytype) []const u8 {
+    return if (code == 126) "; 126 is also the code the engine's own fork stub uses for a child it could not arrange before exec — if that was it, a line on the engine's stderr names the call and the errno" else "";
+}
+
+test "exit126Note speaks only for 126" {
+    try std.testing.expectEqualStrings("", exit126Note(@as(u8, 1)));
+    try std.testing.expectEqualStrings("", exit126Note(@as(u8, 127)));
+    try std.testing.expect(std.mem.startsWith(u8, exit126Note(@as(u8, 126)), "; 126 is also the code"));
+}
+
 /// How much of a failing setup's capture is read back before the read is given up on.
 /// A megabyte is far past any diagnosis and far short of a size that matters here; what
 /// it really bounds is `readFileAllocCapped`'s arena growth, since that function reads
@@ -3364,7 +3378,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // is all this can honestly carry: a first draft annotated 127 as "command
             // not found", and `exec /no/such/binary` under /bin/sh measured 126 here —
             // the mapping from a failed exec to a status is the shell's, not ours.
-            .exited => |code| if (code != 0) setupErrorFmt(a, "--setup exited {d}{s}", .{ code, setupOutputDetail(a, setup_out) }),
+            .exited => |code| if (code != 0) setupErrorFmt(a, "--setup exited {d}{s}{s}", .{ code, setupOutputDetail(a, setup_out), exit126Note(code) }),
             // The same class, found by this PR's own same-class scan: `Term` carries
             // `signaled: u8` and `unknown: c_int`, and the old `else` threw both away.
             // A setup killed by a guard on the machine (the case #483 was filed from)
@@ -3584,7 +3598,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // never finishes. `--setup` was already checked here; the operation is the one whose
     // result the entire trace depends on.
     switch (rec_term) {
-        .exited => |code| if (code != expect_status)
+        // 126 before the status comparison, and without the --expect-status advice: it
+        // is the code the engine's own fork stub keeps for a child it could not arrange
+        // before exec (`posix.childArrangeFailed`, which says which call on stderr), and
+        // a define that declared 126 as success on that advice would read a child that
+        // never ran as a successful recording — the shape #469 named and closed for the
+        // capture open, still open for `setpgid` and the `dup2`s until 2026-09-08.
+        .exited => |code| if (code == 126 and code != expect_status)
+            unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
+        else if (code != expect_status)
             unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", .fix_define),
         else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run", .fix_define),
     }
@@ -4341,11 +4363,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 // directory squatting on the default /tmp work dir did it (R1 of #134).
                 // **That cause is gone**: the capture is opened by the parent since
                 // #469 and a refusal arrives as `error.CaptureUnavailable`, above this
-                // switch, before any child exists. What still reaches 126 is a `dup2`
-                // that failed in the child — and a checker that genuinely exits 126,
+                // switch, before any child exists. What still reaches 126 is `setpgid`
+                // or a `dup2` that failed in the child — which says so on the engine's
+                // stderr since 2026-09-08 — and a checker that genuinely exits 126,
                 // which is indistinguishable from it and gets the fail-closed reading.
                 if (code == 126)
-                    unknown(.checker_not_falsified, "the checker probe exited 126: either the fork stub could not put the already-opened capture on the child's stdout, or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
+                    unknown(.checker_not_falsified, "the checker probe exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
                 if (code == 0)
                     unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", .fix_define);
             },
@@ -4585,7 +4608,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // the restored state is not the state that was recorded, and every other world
         // started from it too.
         if (k > n) switch (term) {
-            .exited => |code| if (code != expect_status)
+            // 126 first, because it is not evidence about the state: it is the code the
+            // engine's own fork stub keeps for a child it could not arrange before exec
+            // (`posix.childArrangeFailed` — its stderr line names the call and the errno),
+            // and a target that itself exits 126 is indistinguishable from that here. The
+            // checker gate reads the same code the same way.
+            .exited => |code| if (code == 126 and code != expect_status)
+                unknown(.baseline_run_failed, "the un-killed baseline world exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here, and not a statement about the restored state", .environment)
+            else if (code != expect_status)
                 unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status", .fix_define),
             else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .fix_define),
         };
@@ -5189,7 +5219,10 @@ fn observeAgain(
     // rests on did not complete" — no new closed-set name, which the v1.0 freeze
     // forbids until 2.0.
     switch (term) {
-        .exited => |code| if (code != expect_status)
+        // 126 first, for the reason the recording run's own check gives: the stub's code.
+        .exited => |code| if (code == 126 and code != expect_status)
+            unknown(.recording_run_failed, "the second observed run exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here, and not a statement about repeatability", .environment)
+        else if (code != expect_status)
             unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the second observed run exited {d} where {d} was expected, although the first run of the same command succeeded: the two runs cannot be compared", .{ code, expect_status }) catch "the second observed run exited with an unexpected status", .fix_define),
         else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded", .fix_define),
     }

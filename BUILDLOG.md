@@ -50,6 +50,74 @@ claimed a measurement for names added by hand — `mmap` among them, the one mem
 strictly read-only, symmetric with the shim not interposing it. The unit test also
 asserts no mutation was recorded, which it had not.
 
+## 2026-09-08 — Two exit-126 children in one macOS CI day, and the code could not say which call
+
+The `macos` job failed twice today on pull requests that changed comments and documents
+(#537 at 12:01, the demo's un-killed baseline world; #545 at 13:00, a `--setup` in the
+descriptor-hygiene step), on the same runner image (`macos-26-arm64` 20260831.0337.3) as
+twelve passes around them. Both children exited 126 — not the toy (`spike/toys/toy.c` exits
+0, 1 or 127) but the value `src/posix.zig` keeps for the fork stub's own failure before
+`exec`: `setpgid(0, 0)`, `dup2(capture, 1)` or `dup2(1, 2)`. Which one, and with what errno,
+the code could not say; the baseline refusal then said "the restored state differs from
+the recorded one", which is not what a 126 from the stub means, while the checker gate
+(`main.zig`, #134) has read the same code as "either the stub or the checker" all along.
+
+**What the evidence allows.** `dup2(2)` on macOS documents `EINTR`; `adoptStdin`'s stdin
+`dup2` has retried it since #263 and the capture `dup2` three lines later did not, so a
+signal landing between the two exits is one candidate. `setpgid(0, 0)` fails only for a
+session leader, which a fresh fork child is not. Nothing reproduces it here: `sideeye demo`
+ten of ten on macOS 15. The rule in `CLAUDE.md` — a test that has flaked twice is fixed
+before anything else merges — is what stopped the v1.3.0 bump (#545) behind this.
+
+**What was done, and what it is.** Every `dup2` before `exec` goes through `dup2Bounded`
+(the nine-attempt `EINTR` bound, the stdin call included — `adoptStdin` reuses it), and a
+failure before `exec` calls `childArrangeFailed`, which writes one line on fd 2 — the
+engine's own stderr at that point, since nothing has been redirected — naming the call and
+the errno, then exits 126. The `--setup` sentence and the baseline arm say what a 126 can
+be. This is a name, not a cure: if the runner's cause is not `EINTR` on the capture `dup2`,
+the next occurrence will say what it is, which the last two could not.
+
+**Seen red.** Three mutations, each killed by the test written for it: the bound 9→8
+("expected 9, found 8"); the note printed without its errno (the note test — a first
+attempt at this mutation removed the parameter and was a compile error, which is not a
+mutation and is recorded as one); `exit126Note` silent for 126 (its test). And two runs on
+the real code path: with the `setpgid` check inverted, every child of `sideeye demo`
+printed `setpgid(0, 0) failed, errno 22` (EINVAL, from the inverted branch's success —
+the line reaches the terminal; the refusal that followed was the compiler's, because the
+compiler is the first child); and a `--setup` script exiting 126 on its own reached
+`SETUP ERROR --setup exited 126; it wrote nothing; 126 is also the code the engine's own
+fork stub uses…`, end to end. The first draft of this entry said the baseline arm was
+"covered by its message test" — there was no such test; review read the diff and said so.
+
+**What the fresh reader found, and what was done.** One P0 in the same class the change
+had not touched: the recording run's own 126 still answered "declare `--expect-status`",
+and a define that took the advice would read a child that never ran as a successful
+recording and derive crash points from it — the exact shape #469's entry names, closed
+there for the capture open and still open for `setpgid` and the `dup2`s. Fixed with an
+arm of its own, and so was the second observed run's. The MCP path's stderr redirect
+(`minimal_env`) was a `dup2` outside the bounded helper — the first cut's claim "every
+`dup2` before `exec`" was false by one — and the note's own `write` ignored `EINTR`, the
+condition the change was written for; both bounded now. `mcp.zig` read a 126 as the
+capture `dup2` alone; `setpgid` exits the same code. The stdin failure aborted without a
+word; it prints the line first now. The checker gate's sentence names the stderr line.
+Two readers of a 126 are left as they were, recorded rather than folded in: the sudo
+probe ("no cached credentials") and the demo's compiler probe ("no compiler") — neither
+claims a state or a convention, and the stderr line now prints beside each, which is what
+this change's own measurement showed for the compiler.
+
+**The baseline arm has a test now, on the real path.** A toy whose counter lives outside
+the state exits 0 on run 0 and 126 after every later write: the killed worlds die at the
+write, and only the un-killed baseline reaches the status. A macOS CI step runs that and
+the recording-run case, asserts the two new sentences — for the recording run the new
+"`--expect-status` is not the answer" (the old advice cannot be asserted absent, since the
+new sentence names the flag too) and for the baseline the absence of "restored state
+differs" — and was seen red twice before it was trusted — with both
+arms disabled (the recording half fails first, printing the old advice) and with the
+baseline arm alone (its half fails). Locally the step's `rm -rf` was refused by the
+machine's own guard and the step uses `mktemp -d` instead; the guard that stops the next
+measurement is a shape this workspace has met before.
+
+
 ## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
 
 **What is being built.** The last of the four reach items measured on 2026-09-07
