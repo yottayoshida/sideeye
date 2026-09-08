@@ -2,6 +2,93 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — A thread that never writes the judged directory is not a reason to refuse the run (item 4, contract v16)
+
+**What is being built.** The last of the four reach items measured on 2026-09-07
+(`spike/followup-527/`, and the thread measurement in `~/.cctmp/reach-ugxdCF/m4.out`): of
+the eight targets `docs/target-classes.md` records behind the thread wall, five have
+exactly one thread that writes in the judged directory, and in all five that thread is the
+main one (sqlfluff tid 13 = pid, vips 29, zstd 44, bundler 97, beets). The wall's stated
+reason — "there is no per-thread order the kill can address deterministically" — is not
+true of those five once a number is a position in the run (v15): one writer, one order.
+
+**The first plan did not survive review, and the reason is worth keeping.** It admitted a
+threaded run on the oracle's word alone — no shim change, no contract bump — because the
+five measured targets all write from the main thread, so a tid in the trace "buys no
+target". A fresh reviewer read `shim/src/common.zig` and found three things that plan had
+not: the module's first paragraph says its globals need no synchronisation *because
+threads are refused*; `note1` sets `busy` before it resolves the path, so a worker
+opening `/dev/null` drops the main thread's in-scope record on the floor; and
+`writeRecord` writes `getpid()`, so an explored world — which runs with no oracle — has
+no witness at all for a thread that writes. The tid buys detection where there is no
+oracle, not admission width. That plan is kept under `.claude/plans/` marked withdrawn.
+
+**Decision: per-thread state by `gettid()` slot, not `threadlocal`.** The plan left this
+to be measured. It is decided without measuring, because the measurement cannot answer
+the question: a shared object's `threadlocal` compiles to the general-dynamic model, whose
+*first* access from a thread takes `__tls_get_addr`'s slow path under `dl_load_lock`, and
+whether that first access happens inside the `SIGSYS` handler depends on the target and
+on the glibc. A run that worked would be evidence about that glibc and that ordering. A
+fixed array of 64 slots keyed by `gettid()` — one syscall, one CAS — is async-signal-safe
+by construction and does not depend on any TLS model. The 65th thread takes a shared
+reserve slot and the run records `thread-slots-exhausted`, which the engine refuses on;
+slots are never freed, because nothing in the shim sees a thread end, and a target that
+creates and retires threads past 64 is refused rather than misjudged. Cost is measured
+below before it is claimed.
+
+**Five things move per thread, not one.** `busy` (the re-entrancy guard), `record_buf`,
+`scan_buf`, `count_scanned`, `seq`. The plan's first draft moved `busy` alone; the review
+of the second draft showed `noteBoundary`, `noteUnresolved`, `noteLinkByDescriptor` and
+`noteTraceClose` reach `writeRecord` from outside the scope test, so a worker's boundary
+record and the main thread's operation record would share one `record_buf` with the
+accidental exclusion `busy` used to provide gone. `seq` is *not* protected by a lock and
+is not meant to be: `refreshCount` reads the run's maximum back from the trace before every
+number, and two writers that take the same number are refused by the engine's
+`sequence_numbering_broken` — the design `refreshCount`'s own comment already describes
+for two processes. A run with two writing threads is refused by name before that check
+runs, so the numbering check is the net under the net, not the first line.
+
+**Measured, red then green, in the Linux container (`sideeye-acc:2026-09-07`, unprivileged,
+`~/.cctmp/se-v15-*/m2/`).** A measurement engine with both thread refusals lifted — the
+shim's `.thread` arm in `src/main.zig` and the oracle's `CLONE_THREAD` boundary in
+`src/oracle.zig`, neither committed — drove `toy-bug rotate` under `TOY_THREAD_BUSY`
+against the v15 shim built from `7a2d443` and against this branch's. **The v15 shim's
+trace holds five in-scope records where the rotate performs seven**: `open`, `write`,
+`close`, `rename` — no `fsync`, no `unlink`. Both arrived while the worker held the
+process-wide `busy`. **This branch's trace holds all seven**, byte-identical in class and
+order to the `TOY_THREAD` (noop) run. The lifting alone took two rounds, because the
+oracle's boundary stood behind the shim's: the first measurement returned
+`child_process_detected` / `clone3` for every case, the shape mutool's wall had on
+2026-09-07 — two walls, one refusal, and lifting the first shows the second.
+
+**And a third wall, which the plan did not have and neither review found.** With both
+lifted and the seven records present, the engine still refused `oracle_missed_operation`,
+naming a divergence at operation 3 — the oracle's side had no `fsync`. It is in the
+capture: `50    fsync(4</tmp/m/state/key.json.tmp> <unfinished ...>` and, twenty lines
+later, `50    <... fsync resumed>) = 0`. strace splits a call whenever another task's line
+lands inside it, and `src/oracle.zig` reads neither half as an operation — the first has
+no `= N` (`syscallSucceeded` answers false), the second has no name (`syscallName` answers
+null). The parser already handles that pair for one case, the trapped write under
+`--observe syscalls` (`PendingWrite`, and the test "the subject's own refused write
+survives the unfinished shape too"); it handles it for nothing else. Children never made
+this common — a parent blocked in `wait4` issues nothing while the child runs — and a
+second task that keeps issuing calls makes it the ordinary shape. This moves into the
+oracle commit: an unfinished line opens an operation, its `resumed` line closes it with the
+return value, and the pair counts once.
+
+**Commit 1 stands on its own.** `zig build test`: 698 pass, 2 skip, including a new test
+that drives the slot claim by hand (same id returns the same slot, the fourth id of three
+slots gets the reserve and sets the flag). The Linux shim's `.bss` grew to 1,082,944
+bytes and `.data` stayed at 20,064 — the table is zero-initialised on purpose, so the
+file does not carry it. Acceptance in the container against this branch's Linux build:
+**297 ok**; the seven FAILs are all "apparatus missing" (`-Dtest-seq-gap`,
+`-Dtest-observe-fail`, `-Dtest-trace-cap`, `-Dtest-ancestor-probe` not passed to the
+cross-build, and the `zig-out layout` leg reading a symlink) — none names this change,
+and the apparatus-complete run is taken once before the slice commit. Thread refusal is
+untouched here: `TOY_THREAD` still refuses `multiple_threads_detected` at the world, and
+`TOY_THREAD_BUSY` refuses the same way until the slice lands.
+
+
 ## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run
 
 ADR 0052 decision 4 declined to attach an oracle to a `--observe syscalls` run, and it

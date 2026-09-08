@@ -302,6 +302,13 @@ pub const unresolved_kind = struct {
     /// A torn record at the end of the trace is NOT this — that is an operation still being
     /// written, and the read stops there and tries again on the next one.
     pub const count_read_failed = "count-read-failed";
+    /// The shim's per-thread slot table filled up (v16): the 65th thread of one process
+    /// records through a shared reserve buffer, and this notice is written once, in front
+    /// of that thread's first record, so the engine refuses the run before it reads a
+    /// record whose buffer may have been shared. Slots are never freed — the shim sees no
+    /// thread end — so a target that creates and retires threads past the table is
+    /// refused rather than judged.
+    pub const thread_slots_exhausted = "thread-slots-exhausted";
 
     /// The longest a kind can be once `withFd` or `withOp` has appended to it.
     ///
