@@ -2,6 +2,33 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-08 — "crossed" was a denominator I chose after seeing the answer
+
+Asked twice whether item 3 had fully crossed. The first answer was "yes, wherever that wall
+was the only one" — a clause invented after the measurement, and the measurement is what it
+was invented to survive. The ledger records two targets at this wall. One reaches a verdict.
+
+That is not what crossing meant for the two changes before it. Items 1 and 2 were called
+crossed on a fourteen-target, two-mode sweep (#529) that measured reach across the ledger;
+this one has one target, and `docs/unknown-rate.md` — the page that decides what a class is
+worth — counts nothing below five trials as a rate and calls this class unsupported for
+having no recorded verdict at all. One verdict does not settle it, and the one verdict is
+the weakest kind the tool produces: `pass mv` PASSes over five crash points the completeness
+comparison covered none of.
+
+**The class row said "Judged since contract v15", which reads as a claim about the class.**
+It is a claim about one target. The row now leads with the count and says what would settle
+it. Nothing else changes: the mechanism is measured, the toys and the mutations hold, and
+`pass` really does reach a verdict where it could not before.
+
+This is the fourth time today the same shape has come back — the first three were
+generalising from a single measurement (a pipe write read as in-scope, the trace's record
+order read as an ordering, one architecture's strace annotation read as every
+architecture's). This one runs the other way: the population was cut to fit the result
+instead of the claim being cut to fit the population. Both are the gap between what was
+measured and what was said, which is the gap this tool exists to close in other people's
+software.
+
 ## 2026-09-08 — lbdb does not cross, and the reason is that items 2 and 3 exclude each other
 
 Asked after the merge whether item 3 had fully crossed, which is the question the ledger can
