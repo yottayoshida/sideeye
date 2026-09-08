@@ -44,8 +44,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   writing thread refuses naming `from-thread.txt` and both thread ids; a worker busy
   outside the state directory costs no record (`oracle_verified: true`); a run whose
   one writing thread is not the main thread is judged with the oracle agreeing. The
-  control refused all four with the v15 sentence. Real targets are measured in
-  `spike/followup-item4/` and recorded in `docs/target-classes.md`. Not decided here:
+  control refused all four with the v15 sentence. **Measured on the real targets behind
+  the wall** (`spike/followup-item4/`, both modes, in the 2026-09-07 image): sqlfluff
+  **PASS** 5/5 and bundler **FAIL** 1/3 in both modes, vips **FAIL** 1/3 in both (six
+  threads, one writer, a zero-byte output between its `open` and its `write`), zstd
+  **PASS** 9/9 under `--observe syscalls` and `oracle_missed_operation` under wrappers
+  (ADR 0005's far side, not the thread); **beets, which the 2026-09-07 count had as one
+  writer, refuses under the thread rule with two threads opening `library.db`** — four
+  of the five predicted, and the fifth refused for what it does rather than for having
+  threads; git-annex refuses as the control. Five runs of the same define give the same
+  class sequence for sqlfluff and byte-identical sequences for vips. Every judged run
+  writes from the main thread; the non-main shape is the toy's. Not decided here:
   two threads that take turns (the thread analogue of ADR 0053's reaped child) — a
   second stage, if a target asks for it.
 

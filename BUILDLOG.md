@@ -199,6 +199,25 @@ a `gettid` syscall and a scan of up to sixty-four slots; the v15 shim's own 0.25
 the resolution and the scope test the two share. An order of magnitude under the 1.6–1.8
 µs a syscall-mode trap costs (#527), and the CHANGELOG entry carries the numbers.
 
+**The real targets, in the image the thread measurement used (`spike/followup-item4/`).**
+Seven defines, two modes each, then the two judged ones five times over. sqlfluff PASS
+5/5 in both modes; vips FAIL 1/3 in both — six threads, one writer, `out.png` zero bytes
+between its `open` and its `write`, byte-identical kill-point sequences over five runs;
+zstd PASS 9/9 under `--observe syscalls` and `oracle_missed_operation` under wrappers, a
+4096-byte `write` from inside `fwrite`, the metaflac class, not the thread; bundler FAIL
+1/3 in both, on the third define — an empty state refuses `checker_not_falsified`, a
+presence-only checker accepts junk, a content checker falsifies. **beets refuses**, and
+the plan had it as one of the five: the shim's record names two threads of the `beet`
+process opening `library.db` (tids 364 and 366), in seven of seven runs, where the
+2026-09-07 analyser had counted one writer. The shim's record is the one the rule reads.
+Four of eight, then, not five, and the fifth refused for what it does. git-annex refuses
+as the control should — two of its own threads, `mkdir(fsckdb.tmp)` and `open(fsckdb/db)`
+— and mlr never reaches the rule: `epoll_ctl` under wrappers, and under syscalls the
+recording does not exit normally (Go and a seccomp trap; not chased here). Every judged
+run writes from its main thread; the worker-only shape is the toy's, as the 2026-09-07
+measurement predicted. The plan's third falsifiable check named beets for the five-run
+determinism measurement; the two judged threaded targets carry it instead.
+
 
 ## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run
 

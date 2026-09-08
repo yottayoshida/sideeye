@@ -1,0 +1,23 @@
+falsify: README.md is gone or overwritten
+Gemfile present without a source line (0 bytes)
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 2 of 2
+            after  open(/localrun/st/wrappers/bundler/Gemfile)
+            before write(/localrun/st/wrappers/bundler/Gemfile)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (5889 syscall lines examined, 12 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /localrun/wk/wrappers/bundler/cases/000001.json
+replay      sideeye replay /localrun/wk/wrappers/bundler/cases/000001.json --shim /se/lib/libsideeye_shim.so
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/wrappers/bundler SIDEEYE_TRACE_PATH=/localrun/wk/wrappers/bundler/trace-repro.bin LD_PRELOAD=/se/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

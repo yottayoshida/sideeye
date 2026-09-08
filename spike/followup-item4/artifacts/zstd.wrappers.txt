@@ -1,0 +1,14 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 237   write(4</localrun/st/wrappers/zstd/a.bin.zst>, "\327\204%\332\366-\10\360BN-\374\0\0\20\240K4=\27\271\225\307(\241\16\207|\24\2412F"..., 4096) = 4096; the shim recorded: unlink("/localrun/st/wrappers/zstd/a.bin")
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+divergence  write
+
+atomicity   0 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process in the recording; the shim recorded 2 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

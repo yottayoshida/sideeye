@@ -1,0 +1,242 @@
+sideeye 1.2.0 (trace contract v16)
+
+usage:
+  sideeye demo [--shim <lib>]
+  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls] [--work <dir>] [--twice]
+  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+  sideeye mcp
+  sideeye help
+  sideeye version
+
+demo compiles a small planted-bug tool on this machine (it needs a C compiler)
+and explores it, printing the same FAIL report a real finding produces. The
+expected exit code is 1 — the planted bug found — so the demo doubles as a
+smoke test of this binary and its shim.
+
+preflight answers "does the recording phase accept this target?" before a
+define exists: it runs the operation under observation and either accepts
+the recording (exit 0) or refuses with the same named detector a real run
+would use (exit 2). With --twice it observes a second run and compares the
+two, adding one outcome: the runs left different state (exit 1, and no
+verdict — see --twice below). What only a real exploration can check — kill
+landing, world-side process boundaries, baseline behavior, checker
+falsification — is listed as not checked, never silently claimed.
+
+replay re-runs one saved counterexample: the same pipeline as explore — the
+oracle comparison, the structural detectors, checker falsification, landing
+evidence — restricted to the case's crash point plus the baseline (ADR 0009).
+When the recording no longer matches the case's landing context, the answer
+is "case no longer applies" (exit 2), never a verdict about a shifted point.
+
+  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
+               mutually exclusive with --state/--setup/--operation/--check.
+               Relative paths in the file resolve against its own directory
+  --state      directory whose contents define the target's state
+  --cwd        directory the define's commands run in (default: this process's).
+               The engine's own cwd does not move: --work, --json and --state
+               are still read against it
+  --apparatus  a device the operation's environment must carry, kind:value, repeatable:
+               env:NAME, env:NAME=VALUE, preload:LIB (a line of /etc/ld.so.preload),
+               pythonpath:FILE, note:TEXT. Checked after setup, before anything is
+               recorded; a missing one is a SETUP ERROR naming it. The report carries
+               the list as declared (docs/apparatus.md). The engine applies nothing
+  --scratch    a path under --state the built-in invariants leave alone, repeatable:
+               the path itself and everything beneath it, judged in no world — not
+               its bytes, not its presence. The report carries the declaration and
+               counts what it matched; the saved case carries it too (ADR 0043)
+  stdin        not a flag: every command sideeye runs (setup, operation, checker)
+               starts with its standard input at end-of-file, on the CLI and MCP
+               paths alike. A target that reads stdin sees EOF, never the
+               terminal or pipe sideeye itself was started from
+  --setup      command that produces the initial state (run once)
+  --operation  command to explore; killed before each operation that can change state
+  --expect-status  the exit status that means the operation completed (0..255,
+               default 0). Governs the recording run and the un-killed baseline
+               world alike; killed worlds still require the kill signal itself
+  --shim       path to libsideeye_shim.so; when omitted it is looked for
+               beside this binary (its sibling, then ../lib — the tarball
+               and zig-out layouts). Absence is a loud error naming both
+               places it looks, and so is a candidate the search will not
+               attribute: a symlink, or one owned by neither you, nor
+               root, nor the owner of this binary. A path given here is
+               used as named and not checked
+  --work       scratch directory for traces (default /tmp/sideeye-work)
+  --oracle     path to strace; the recording run is compared against it
+  --oracle-fs-usage
+               macOS: compare the recording run against fs_usage instead. Needs
+               root, so sudo must already hold credentials (`sudo -v` first, in
+               this terminal — the cache is per-terminal); the run refuses
+               rather than prompting. Narrower than strace by two measured
+               limits: fs_usage prints only a rename's old path, and it cuts
+               long pathnames from the left, so a rename it cannot match and a
+               state directory deep enough to be cut are both refusals rather
+               than agreements. Everything it cannot resolve refuses
+  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
+  --marker     success marker: a byte string the operation prints on stdout when
+               it has committed. In worlds where it appeared before the kill,
+               the post-success invariant is enforced: the new state must
+               survive (ADR 0008)
+  --json       write the machine-readable report to this path
+  --fresh-state
+               (replay only) empty and recreate the case's state directory
+               before setup runs — for callers that cannot hand over a
+               pristine directory themselves. The MCP server passes it on
+               every replay: it lives for the whole client session, and the
+               second replay used to die in the leftovers of the first
+  --state-under
+               (replay only) the directory the case's state must resolve
+               strictly inside; anything else is refused before setup runs.
+               The case file names its own state directory, and this flag is
+               how a caller that only vetted the case's PATH bounds where the
+               case may point the deletion. The MCP server passes its
+               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
+               replay
+  --observe wrappers|syscalls
+               where the write family is counted. Default `wrappers`: the
+               interposed libc entry points, with buffered stdio observed at
+               flush granularity (ADR 0005). `syscalls` (Linux) counts writes
+               at the kernel boundary instead, through a seccomp filter and a
+               SIGSYS handler in the target's own process, which is the only
+               way to see a write libc issues from inside itself — an `fwrite`
+               past the buffer, or a raw `syscall(SYS_write, ...)`. Everything
+               else stays at the libc entry points in both modes, so a raw
+               `openat` or `rename` is no more visible than before. An oracle
+               watches this mode's own run, as it does every other mode's: a
+               trapped write reaches strace twice, once refused and once
+               re-issued, and the refused entry is retracted on the SIGSYS that
+               refused it. So the claim is `oracle_verified`, and the report's
+               oracle line says how the capture was read.
+               **Do not use it on a target that execs an image the shim cannot be
+               loaded into.** A filter is inherited across exec and cannot be
+               replaced, while exec resets the SIGSYS handler that makes it
+               survivable, so a statically linked helper dies on its first write
+               (measured: exit 0 under wrappers, killed by SIGSYS under this).
+               A child the shim IS loaded into is unaffected
+  --allow-unverified
+               accept PASS with no completeness check. On macOS this is the
+               answer when no privilege is available: SIP leaves DTrace's
+               syscall provider with no probes even as root (#181), and the
+               one candidate measured oracle-shaped, fs_usage, requires it —
+               which is what --oracle-fs-usage pays for. The report says which
+               claim was made, and this one is weaker.
+  --stop-when-orphaned
+               stop at the next world boundary if the process that launched
+               this run exits (UNKNOWN, parent_exited). The MCP server passes
+               it on every explore and replay: agent hosts restart MCP servers
+               routinely, and an orphaned exploration otherwise keeps killing
+               processes and rewriting its state directory with nobody left to
+               report to. A run that hangs before a boundary is out of reach.
+  --world-timeout <s>
+               wall-clock budget per explored world, in seconds (1..86400,
+               off by default). A world's operation still running when the
+               budget expires is sent SIGKILL and refused UNKNOWN
+               child_timed_out, with the budget in the message. Worlds only: a
+               recording run, setup command or checker that hangs still hangs —
+               this flag is not a promise of a hang-free run. Setting it also
+               resets SIGCHLD to its default disposition for the whole run.
+               Not settable over MCP today.
+  --twice
+               (preflight only) observe the operation a SECOND time from the
+               restored pre-state, at least two seconds after the first start,
+               and compare the two post-states. Byte repeatability is a
+               property of two runs, so one observation structurally cannot
+               see it. Equal: exit 0. Different: the differing paths are named
+               and the command exits 1 — not a FAIL verdict, which preflight
+               never produces, but the negative answer to the question --twice
+               asked. A second run that ends abnormally refuses by name
+               instead, the way the first one would.
+               What this does NOT establish: that the target is
+               deterministic. The comparison covers file bytes, entry kinds
+               and symlink targets under --state; modes, ownership,
+               timestamps, inode identity, a symlink's destination and
+               everything outside --state are not compared, the pre-state
+               run B starts from is rebuilt rather than byte-identical, and
+               two runs are not all runs. The two-second gap is what
+               epoch-second stamping needs to move — not a measured
+               sufficiency threshold for nondeterminism in general.
+               It also REWRITES --state: the directory is restored from the
+               pre-run snapshot before the second run, so the first run's
+               output is gone and file modes come back as 0644/0755. A
+               preflight without this flag leaves the directory as the run
+               left it.
+
+exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
+            (preflight produces no verdict: it exits 0 when it accepts, 1 when
+             --twice found a split, 2 when a detector refused, 3 on setup)
+
+--operation must exit its declared success status when it is not being killed
+(--expect-status, default 0). The crash points are read off the recording run,
+so a target that fails partway through would be explored against a sequence it
+never performs; v0.1 reports UNKNOWN rather than guess.
+==================== sqlfluff / wrappers ====================
+op: sqlfluff fix --dialect ansi /localrun/st/wrappers/sqlfluff/q.sql
+raw rc=0   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+2:PASS  5/5 explored worlds satisfied the built-in atomicity invariant
+3:      explored 5 worlds (crash points 4 + 1 baseline)
+11:      processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+
+==================== sqlfluff / syscalls ====================
+op: sqlfluff fix --dialect ansi /localrun/st/syscalls/sqlfluff/q.sql
+raw rc=0   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+2:PASS  5/5 explored worlds satisfied the built-in atomicity invariant
+3:      explored 5 worlds (crash points 4 + 1 baseline)
+11:      processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+processes: single process in the recording; a thread was created in an explored world; the shim recorded 1 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+
+==================== vips / wrappers ====================
+op: vips copy /localrun/st/wrappers/vips/img.png /localrun/st/wrappers/vips/out.png
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+3:FAIL  1 of 3 explored worlds violated an invariant
+6:earliest    crash point 2 of 2
+11:explored    3 worlds (crash points 2 + 1 baseline)
+20:processes   single process in the recording; a thread was created in an explored world; the shim recorded 7 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+processes: single process in the recording; a thread was created in an explored world; the shim recorded 7 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+
+==================== vips / syscalls ====================
+op: vips copy /localrun/st/syscalls/vips/img.png /localrun/st/syscalls/vips/out.png
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+3:FAIL  1 of 3 explored worlds violated an invariant
+6:earliest    crash point 2 of 2
+11:explored    3 worlds (crash points 2 + 1 baseline)
+20:processes   single process in the recording; a thread was created in an explored world; the shim recorded 7 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+processes: single process in the recording; a thread was created in an explored world; the shim recorded 7 thread(s) created, and 1 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+
+==================== mlr / wrappers ====================
+op: mlr -I --csv put $c=1 /localrun/st/wrappers/mlr/f.csv
+raw rc=2   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+1:UNKNOWN  unsupported_syscall_observed
+9:processes   single process in the recording; the shim recorded 6 thread(s) created, and 0 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+processes: single process in the recording; the shim recorded 6 thread(s) created, and 0 thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)
+
+==================== mlr / syscalls ====================
+op: mlr -I --csv put $c=1 /localrun/st/syscalls/mlr/f.csv
+raw rc=2   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+1:UNKNOWN  recording_run_failed
+processes: not established: this run was refused before the shim's account of it was read
+
+==================== sqlfluff x5 / wrappers (prefix_hash, crash_points, verdict) ====================
+run 1 PASS  cp=4 hash=None
+run 2 PASS  cp=4 hash=None
+run 3 PASS  cp=4 hash=None
+run 4 PASS  cp=4 hash=None
+run 5 PASS  cp=4 hash=None
+
+==================== vips x5 / wrappers (prefix_hash, crash_points, verdict) ====================
+run 1 FAIL  cp=2 hash=None
+run 2 FAIL  cp=2 hash=None
+run 3 FAIL  cp=2 hash=None
+run 4 FAIL  cp=2 hash=None
+run 5 FAIL  cp=2 hash=None
+
+==================== mlr x5 / wrappers (prefix_hash, crash_points, verdict) ====================
+run 1 UNKNOWN unsupported_syscall_observed cp=0 hash=None
+run 2 UNKNOWN unsupported_syscall_observed cp=0 hash=None
+run 3 UNKNOWN unsupported_syscall_observed cp=0 hash=None
+run 4 UNKNOWN unsupported_syscall_observed cp=0 hash=None
+run 5 UNKNOWN unsupported_syscall_observed cp=0 hash=None
+
+SWEEP rc=0
+done rc=0
