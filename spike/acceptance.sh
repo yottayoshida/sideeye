@@ -270,19 +270,23 @@ else
 fi
 unset TOY_FORK_WRITES
 
-# The same child, under the observation mode whose oracle watched a different run.
-# Condition 1 has no second witness to consult, so the run is refused — the one asymmetry
-# between the two modes, and it is named rather than left to be discovered by a sweep.
+# The same child, under the other observation mode. This refused until 2026-09-08 —
+# that mode's oracle watched a separate untrapped run, so condition 1 had no second
+# witness to consult — and the two improvements could not be used together. They compose
+# now: the oracle watches the judged run in every mode, and this leg is the proof, run on
+# the same toy as the admission above so a difference can only be the mode.
 TOY_FORK_WRITES=1 export TOY_FORK_WRITES
 rm -rf /tmp/acc-obs && mkdir -p /tmp/acc-obs/state
 o=$("$SIDEEYE" explore --state /tmp/acc-obs/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc-obs/work --oracle /usr/bin/strace --observe syscalls 2>&1)
 rc=$?
-if refused child_touched_state_dir "$rc" "$o" && echo "$o" | grep -qF "under --observe syscalls the oracle watched a separate untrapped run"; then
-    echo "ok   the same run refuses under --observe syscalls, naming the missing witness"
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } &&
+   ! echo "$o" | grep -q "child_touched_state_dir" &&
+   echo "$o" | grep -qF "those operations hold crash-point addresses"; then
+    echo "ok   the same run reaches a verdict under --observe syscalls: the two slices compose"
 else
-    echo "FAIL --observe syscalls: exit $rc, wanted 2 + child_touched_state_dir naming the mode"
+    echo "FAIL --observe syscalls: exit $rc, wanted a verdict with the child's operations admitted"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
@@ -1912,7 +1916,7 @@ done
 # libc boundary has to be JUDGED at the syscall boundary, or the second observation path
 # buys nothing. `oracle_missed_operation` must be absent for a reason stated in the
 # report rather than by luck, so the oracle's own account is asserted too — and
-# `oracle_verified` must stay false, because the two witnesses watched two runs.
+# `oracle_verified` must be TRUE, because both witnesses are of this one run.
 for pair in "TOY_STDIO_BIG:a buffer overflow inside fprintf" "TOY_STDIO_NOCLOSE:an exit-time flush of a never-closed stream"; do
     var=${pair%%:*}; desc=${pair#*:}
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
@@ -1921,11 +1925,11 @@ for pair in "TOY_STDIO_BIG:a buffer overflow inside fprintf" "TOY_STDIO_NOCLOSE:
         --observe syscalls --json /tmp/acc/r.json \
         --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
     rc=$?
-    ver=$(python3 -c 'import json,sys; d=json.load(open("/tmp/acc/r.json")); print("%s %s %s" % (d["verdict"], d["oracle_verified"], d.get("oracle_verified_across_runs", False)))' 2>/dev/null)
+    ver=$(python3 -c 'import json,sys; d=json.load(open("/tmp/acc/r.json")); print("%s %s %s" % (d["verdict"], d["oracle_verified"], "oracle_verified_across_runs" in d))' 2>/dev/null)
     if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } &&
        ! echo "$o" | grep -q "oracle_missed_operation" &&
-       echo "$o" | grep -q "of a SEPARATE untrapped run" &&
-       [ "$ver" = "PASS False True" ]; then
+       echo "$o" | grep -q "witness strace of THIS run" &&
+       [ "$ver" = "PASS True False" ]; then
         echo "ok   $desc is judged under --observe syscalls (was UNKNOWN above)"
     else
         echo "FAIL $var under syscalls: exit $rc json='${ver:-unreadable}'"
@@ -3360,14 +3364,19 @@ echo "=========== check 2sx: every classified syscall is interposed or explained
 # it too; here it sits beside the behaviour it protects.
 o=$(python3 "$ROOT/spike/check-shim-coverage.py" "$ROOT/src/oracle.zig" "$ROOT/shim/src/linux.zig" "$ROOT/shim/src/syscalls.zig" 2>&1)
 rc=$?
-# Both sections asserted by name, not just the exit code: the trap comparison is
-# optional in the script's own signature (a two-argument call skips it), so a leg that
-# only read `rc` would go green on an invocation that never ran the second half.
+# All THREE sections asserted by name, not just the exit code: the trap comparisons are
+# optional in the script's own signature (a two-argument call skips them), so a leg that
+# only read `rc` would go green on an invocation that never ran them. The third was added
+# with the retraction (ADR 0054) and named here in the same breath — the first two were
+# already asserted by name and the third would otherwise have been the one that could
+# vanish silently.
 if [ "$rc" = "0" ] &&
    echo "$o" | grep -q "interposed or explained" &&
-   echo "$o" | grep -q "trapped or explained"; then
+   echo "$o" | grep -q "trapped or explained" &&
+   echo "$o" | grep -q "copy of the trap set is the shim's trap set"; then
     echo "ok   the shim covers every syscall the oracle classifies (or says why not),"
-    echo "     and every write it classifies is trapped in syscalls mode or explained"
+    echo "     every write it classifies is trapped in syscalls mode or explained, and the"
+    echo "     oracle's own copy of the trap set is the filter's"
 else
     echo "FAIL shim coverage: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
@@ -3673,9 +3682,10 @@ if ! grep -q '"scratch"' "$SD/scratch.json" 2>/dev/null; then
     echo "FAIL the scratch fixture carries no scratch field, so the schema check below cannot see the row it documents"
     fails=$((fails + 1))
 fi
-# An eighth report, for the field only the syscall-layer observation path carries
-# (contract v14): `oracle_verified_across_runs` appears when that mode's comparison
-# agreed, and nowhere else, for the reason the two reports above exist. Made with a
+# An eighth report, for the syscall-layer observation path (contract v14, ADR 0052).
+# It carried `oracle_verified_across_runs` until 2026-09-08, when that mode's oracle stopped
+# watching a separate run; what it pins now is that the mode earns the ordinary field and
+# that the withdrawn one is gone from the reports as well as from the page. Made with a
 # target the DEFAULT path also handles, so the fixture is about the field and not about
 # the reach — the reach has its own legs in check 2u.
 mkdir -p "$SD/sob"
@@ -3684,16 +3694,16 @@ TOY_STATE=$SD/sob "$SIDEEYE" explore --state "$SD/sob" \
     --observe syscalls \
     --shim "$SHIM" --work "$SD/wob" --oracle /usr/bin/strace \
     --json "$SD/observe.json" >/dev/null 2>&1
-if ! grep -q '"oracle_verified_across_runs": true' "$SD/observe.json" 2>/dev/null; then
-    echo "FAIL the syscalls fixture carries no oracle_verified_across_runs, so the schema check below cannot see the row it documents"
+if ! grep -q '"oracle_verified": true' "$SD/observe.json" 2>/dev/null; then
+    echo "FAIL the syscalls fixture does not carry oracle_verified: true, so its oracle did not watch the run it judged"
     fails=$((fails + 1))
 fi
-# …and the older field must be false in the same report. The two are not alternatives by
-# accident: `oracle_verified` means the two witnesses watched ONE run, which this mode
-# cannot claim, and a fixture that carried both would be the silent-strengthening this
-# whole design was arranged to avoid.
-if grep -q '"oracle_verified": true' "$SD/observe.json" 2>/dev/null; then
-    echo "FAIL the syscalls fixture claims oracle_verified as well: the weaker claim must not set the stronger field"
+# …and the withdrawn field must not be in it. A report still carrying
+# `oracle_verified_across_runs` would mean the leading untrapped run came back, or that
+# the field outlived it — and the schema check below only sees the page, not the reports,
+# in that direction.
+if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
+    echo "FAIL the syscalls fixture still carries oracle_verified_across_runs, withdrawn in contract v15"
     fails=$((fails + 1))
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
@@ -7199,7 +7209,9 @@ ok=1
 # Both runs succeed in this mode, so the comparison is reached and the repeatability
 # line exists to be read. A refusal would exit before it.
 [ "$rc" = "0" ] || ok=0
-echo "$o" | grep -qE 'two runs [3-9][0-9]{3} ms apart left equal state' || ok=0
+# Three digits or more above 3000, not exactly four: a loaded box can take longer than
+# 9999 ms and a four-digit pattern would read that as a failure.
+echo "$o" | grep -qE 'two runs ([3-9][0-9]{3}|[0-9]{5,}) ms apart left equal state' || ok=0
 # The constant mutant prints exactly 2000; the measured value here cannot be under 3000.
 echo "$o" | grep -q 'two runs 2[0-9][0-9][0-9] ms' && ok=0
 if [ "$ok" = "1" ]; then
@@ -7209,30 +7221,46 @@ else
     echo "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
-# The same fixture under `--observe syscalls`, where the answer must be DIFFERENT and the
-# difference is the whole point. That mode runs the operation three times: the oracle's
-# untrapped run first, then the recording, then run B. `TOY_TWICE_SLOW_FIRST` makes the
-# first of those slow, so the two runs `--twice` actually COMPARES — the recording and run
-# B — are both fast, and the floor has to make them two seconds apart. A gap in the 3000s
-# here would mean the floor was satisfied by the oracle run's three seconds while the two
-# compared runs started milliseconds apart, and the report would be claiming an interval
-# they never had. Measured before the fix: 3035. After: 2002.
-mkdir -p /tmp/acc-tw3/state
-o=$(TOY_TWICE_COUNTER=/tmp/acc-tw3/count TOY_TWICE_SLOW_FIRST=1 "$SIDEEYE" preflight --twice \
-    --state /tmp/acc-tw3/state \
+# The same fixture under `--observe syscalls`, where the answer must now be the SAME. That
+# mode ran the operation three times until 2026-09-08 — the oracle's untrapped run
+# first, then the recording, then run B — and `TOY_TWICE_SLOW_FIRST`, which slows the
+# first of them, therefore left the two runs `--twice` compares both fast and two seconds
+# apart. The oracle watches the recording now, so the slow run IS one of the two compared
+# and the gap is its own duration, over 3000 like every other mode.
+#
+# The leg is kept rather than deleted because the inversion is the regression guard for
+# this change: a gap in the 2000s here means a third run reappeared between the mark and
+# run B. Measured 3035 with the leading run, 2002 without the fix that moved the mark,
+# and over 3000 once the leading run was gone.
+# A counter of its own. `/tmp/acc-tw3/count` belongs to the fork-on-second leg above and
+# is at 2 by the time this one runs, so `TOY_TWICE_SLOW_FIRST` — which slows run number 1 —
+# never fired here. The leg passed anyway while it wanted a gap in the 2000s, because that
+# is also what the floor produces with no slow run at all: it was measuring the floor and
+# saying it measured the three-run arrangement. Found when the expectation inverted.
+mkdir -p /tmp/acc-tw3/state-slow
+o=$(TOY_TWICE_COUNTER=/tmp/acc-tw3/count-slow TOY_TWICE_SLOW_FIRST=1 "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-tw3/state-slow \
     --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" \
     --observe syscalls --oracle /usr/bin/strace \
     --shim "$SHIM" --work /tmp/acc-tw3/work 2>&1)
 rc=$?
 ok=1
 [ "$rc" = "0" ] || ok=0
-echo "$o" | grep -qE 'two runs 2[0-9]{3} ms apart left equal state' || ok=0
+echo "$o" | grep -qE 'two runs ([3-9][0-9]{3}|[0-9]{5,}) ms apart left equal state' || ok=0
+echo "$o" | grep -q 'two runs 2[0-9][0-9][0-9] ms' && ok=0
+# And run B carries the oracle here, which it did not while this mode's recording run went
+# unwatched: the two runs `--twice` compares are now observed the same way, and comparing
+# state after observing them differently is what the asymmetry would have meant. Both
+# halves are asserted — the sentence a reader sees, and the capture file it names — because
+# the sentence alone passed while the file did not exist, once, in the branch this replaced.
+echo "$o" | grep -q "the second run's oracle capture is written but not" || ok=0
+[ -s /tmp/acc-tw3/work/oracle-2.txt ] || ok=0
 if [ "$ok" = "1" ]; then
-    echo "ok   --twice under syscalls measures the gap between the two runs it compares,"
-    echo "     not from the oracle's separate run"
+    echo "ok   --twice under syscalls measures the same two runs every other mode does, both watched"
 else
-    echo "FAIL --twice under syscalls: exit $rc (wanted 0 with a gap in the 2000s; a gap in"
-    echo "     the 3000s means the mark was taken before the oracle's run)"
+    echo "FAIL --twice under syscalls: exit $rc (wanted 0, a gap over 3000 ms, and run B's"
+    echo "     own capture; a gap in the 2000s means a third run stands between the mark and"
+    echo "     run B again, and a missing oracle-2.txt means run B went unwatched)"
     echo "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi

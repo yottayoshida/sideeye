@@ -82,6 +82,39 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    a sweep re-reads the surfaces and moves the pin in one commit. **The rule for
    1.x is still unchanged**, and a third member would need a third ruling; two
    is not a pattern that grants the next one.
+   **Amended 2026-09-08: this promise was broken a third time, deliberately, by
+   owner ruling — and this one is a REMOVAL, not an addition.**
+   `oracle_verified_across_runs` is gone. It was set under `--observe syscalls`,
+   where the oracle watched a separate untrapped run, and it said that the two
+   witnesses were of two executions of one operation. The oracle now watches the
+   run whose trace is judged in that mode, so the run that produced the weaker
+   claim does not exist and a field named for it would be a name with nothing
+   behind it. Leaving the row documented was not available: `check-report-schema.py`
+   fails a field the page documents and the code never generates, in that
+   direction on purpose.
+
+   **No released consumer ever saw the field**, and that is stated here rather
+   than left for a reader to work out: `oracle_verified_across_runs` was added
+   after `v1.2.0` and withdrawn before the next tag, so both movements sit inside
+   one `[Unreleased]` block and no tagged binary emits it. That is what makes this
+   the mildest of the three breaks, not a reason it needed no ruling — the page
+   documented the field, and a field this page documents is what surface 2 is
+   about.
+
+   **The direction is the one surface 2 exists to forbid silently**, so it is
+   named. A syscalls-mode run that reported `oracle_verified: false` beside
+   `oracle_verified_across_runs: true` now reports `oracle_verified: true`, so a
+   `verdict == "PASS" && oracle_verified` gate counts runs it excluded. What
+   changed is not the gate's meaning but the run: both witnesses are of one
+   execution now, which is what the field always asked for. Anyone reading a
+   report written by a build between the two — the committed measurements under
+   `spike/followup-527/` are such reports — is reading the older claim.
+   The additive allowance (#320) does not cover this and was not invoked: it
+   permits a new optional field, not the withdrawal of one. **The rule for 1.x is
+   unchanged** — a fourth ruling would be its own, and three is no more a pattern
+   than two was. Its ledger row is a sweep's job for the reason the note above
+   gives.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
@@ -96,15 +129,16 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    is the caller's own explicit consent, macOS — where no oracle exists —
    would lose exit-0 passes entirely, and the distinction already lives in
    the designed channel (`oracle_verified`). Declining now means declining
-   permanently; that is understood. **Since contract v14 that channel has
-   weaker members beside it** — `oracle_verified_across_runs`, set under
-   `--observe syscalls`, where the two witnesses watched two runs of the same
-   operation rather than one (ADR 0052); and `oracle_verified_subject_only` since
-   v15, set where a run's crash points include operations performed by an awaited
-   child, which the oracle placed and ordered rather than compared (ADR 0053).
-   Both are additive and `oracle_verified`
-   stays `false` beside either, so the reading above is unchanged: such a PASS
-   presents as unverified, which is the conservative direction. That decision is about which code a PASS
+   permanently; that is understood. **Since contract v14 that channel has had
+   a weaker member beside it**: `oracle_verified_subject_only`, set where a run's
+   crash points include operations performed by an awaited child, which the oracle
+   placed and ordered rather than compared (ADR 0053). It is additive and
+   `oracle_verified` stays `false` beside it, so the reading above is unchanged:
+   such a PASS presents as unverified, which is the conservative direction.
+   A second weaker member, `oracle_verified_across_runs`, stood here from contract
+   v14 until 2026-09-08 and was then **removed** — see the break recorded below.
+   Both the addition and the removal are inside contract v15, which never moved
+   for either. That decision is about which code a PASS
    carries, and is untouched by the paragraph above.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies`, whether the code changed underneath
