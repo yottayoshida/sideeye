@@ -36,10 +36,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   judged directory, and the refusal names both threads' first operations there, because
   which one the trace saw first is the scheduler's choice. A thread needs no oracle —
   its writes reach the shim, which shares its process — so the `boundary_without_oracle`
-  requirement no longer keys on it, while the quiescence sampling still does. The
+  requirement no longer keys on it, while the quiescence sampling still does. **Under
+  `--oracle-fs-usage` a threaded run is still refused**, by name: that oracle attributes
+  a line to a thread id and knows no process for it (ADR 0031), so its account could not
+  be compared against the shim's, and refusing on the thread keeps the account true where
+  the alternative called the thread another process. The
   `processes` account gains a clause: threads created (a floor — a raw `clone` leaves
   no record) and thread ids that wrote. **Measured on four toy shapes, both observation
-  modes, against the previous engine as a control** (`spike/acceptance.sh`): a thread
+  modes, against the previous engine as a control** (`spike/acceptance.sh` carries the
+  shapes; the control run is `spike/followup-item4/artifacts/toys-vs-commit3-control.txt`): a thread
   that never writes is judged (FAIL over 5 crash points, the planted bug); a second
   writing thread refuses naming `from-thread.txt` and both thread ids; a worker busy
   outside the state directory costs no record (`oracle_verified: true`); a run whose

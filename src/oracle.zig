@@ -985,7 +985,7 @@ pub const Parsed = struct {
     /// against the subject's cwd, and its writes are not a child's touch. What this list
     /// does NOT decide is whether more than one of them wrote — that is the shim's
     /// trace to answer, record by record, since every record names its thread.
-    subject_tids: std.ArrayList(u32),
+    subject_tids: std.ArrayList(u64),
     /// The processes some other process waited for and collected, and where. See
     /// `reapedPid` for what this does and does not claim.
     reaps: std.ArrayList(Event),
@@ -1081,7 +1081,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // by caller; a remembered one is the subject's new thread and not a spawn.
             if (spawnedPid(line)) |c| {
                 if (isResumedClone(line) and takeThreadClone(&pending_thread_clone, pid)) {
-                    try out.subject_tids.append(arena, @intCast(c));
+                    try out.subject_tids.append(arena, c);
                 } else {
                     try noteEvent(arena, &out.spawns, c, out.lines_seen);
                 }
@@ -1176,7 +1176,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             if (is_raw_thread) {
                 if (is_primary) {
                     if (returnedPid(line)) |t| {
-                        try out.subject_tids.append(arena, @intCast(t));
+                        try out.subject_tids.append(arena, t);
                     } else if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
                         try pending_thread_clone.append(arena, pid orelse 0);
                     }

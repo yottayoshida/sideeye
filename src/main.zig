@@ -501,6 +501,12 @@ const BoundaryEvidence = struct {
     /// account prints both so a reader can see that a judged run had threads and that
     /// one of them did the writing — the claim the thread rule rests on.
     threads: u32 = 0,
+    /// Under the subject's pid only. A child's threads are judged by the same rule and
+    /// refused by the same sentence, but they are not counted here — the committed
+    /// git-annex report (`spike/followup-item4/artifacts/annex.*.json`, recorded under the
+    /// clause's first wording) carries "0 thread id(s) wrote the judged directory" beside
+    /// a refusal naming two threads of a child, and the clause says "of the subject's own
+    /// process" now so the two do not read as a contradiction.
     writer_threads: u32 = 0,
     /// The shim's boundary is a thread and nothing else (v16): no other process, no image
     /// change. The account's recording clause has three shapes for a boundary the oracle
@@ -627,7 +633,7 @@ fn boundaryAccount() []const u8 {
     // single-threaded one. The shim's count is a floor — a raw clone leaves no record.
     var thread_buf: [200]u8 = undefined;
     const threads: []const u8 = if (boundary_ev.threads > 0)
-        std.fmt.bufPrint(&thread_buf, "; the shim recorded {d} thread(s) created, and {d} thread id(s) wrote the judged directory (v16: one per process is judged, two refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
+        std.fmt.bufPrint(&thread_buf, "; the shim recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
             "; the shim recorded threads created (v16)"
     else
         "";
@@ -654,9 +660,11 @@ fn boundaryAccount() []const u8 {
     // Not `catch recording`: that slice points into `scratch`, a stack local of this
     // frame, and returning it would hand the caller a dangling pointer on the one path
     // where the buffer is too small. Unreachable at the current lengths — the longest
-    // combination measured is **626 of 1024 bytes** (2026-09-07, over `boundary_cases`
+    // combination measured was **626 of 1024 bytes** (2026-09-07, over `boundary_cases`
     // crossed with both chain states, both continuation states and every `second_run`
-    // value; it read 494 before this change's wordings) — but "unreachable" is not a
+    // value; it read 494 before that day's wordings), and v16 widened the buffer to 1280
+    // for a thread clause of at most about 150 bytes, which keeps at least the margin the
+    // measurement had; the crossing itself was not re-run — but "unreachable" is not a
     // lifetime.
     return std.fmt.bufPrint(&boundary_buf, "{s}{s}{s}{s}", .{ recording, world, second, threads }) catch
         "the process-boundary account did not fit its buffer; treat it as not established";
@@ -1523,25 +1531,29 @@ fn foreignTouchDetail(arena: std.mem.Allocator, first: ?engine.Op, when: []const
     return withOracleCapture(arena, composed, oracle_capture, fallback);
 }
 
-/// The record the trace reader could not place, as a sentence (#485).
-///
-/// Sits beside `foreignTouchDetail` because it is the same job on the same input: a
-/// `?engine.Op` becomes a refusal line, or the caller's fallback when there is none.
-/// `class` and `seq` are not named — this record type writes `.unresolved` and `0` for
-/// every one of them, so they identify nothing; what identifies it is the kind the shim
-/// chose and the pid. The name is said only when there is one: `noteLinkByDescriptor`
-/// and the trace-close marker record no path, and claiming a filename there would be
-/// inventing an observation.
-///
-/// Sanitised once at the end, through the same choke point the neighbouring renderer
-/// uses, rather than per field.
-/// `where` names the run this record came from — "" for the recording run, " in an
-/// explored world", " in the second observed run". It is interpolated into the composed
-/// sentence rather than passed as the fallback, because the fallback is used ONLY when
-/// there is no record at all: a caller that put its location there would see it dropped
-/// on every run that actually has one, and all three sites would report the recording
-/// run's wording. Measured: the world and run-B legs asked for their own wording and got
-/// the recording run's, which is what caught it.
+/// What preflight's second run recorded, in the account's words, or null for nothing. A
+/// function rather than the inline chain it was, so the shapes can be pinned from a trace:
+/// the review of v16 found the recording and world clauses given their thread arm and this
+/// site not, with a thread-only run B reported as "the subject replacing its own image" —
+/// the same overclaim those clauses had stopped making the day before. An unbroken
+/// self-exec chain leaves `hard_boundary` null, so it reaches the second branch rather than
+/// the `.exec` arm, and calling it "a process boundary" would be the overclaim from the
+/// other direction.
+fn secondRunLabel(trace: engine.TraceInfo) ?[]const u8 {
+    if (trace.hard_boundary) |b| switch (b) {
+        .exec => return "an image replacement",
+        .detached => return "a process leaving the containment group",
+        else => {},
+    };
+    if (trace.crossedBoundary()) {
+        if (trace.crossedProcessBoundary()) return "a process boundary";
+        if (trace.boundary == .thread and trace.exec_continuations == 0) return "a thread";
+        return "the subject replacing its own image";
+    }
+    if (trace.foreign_kill_point) return "an operation by a process other than the subject";
+    return null;
+}
+
 /// The thread refusal's sentence (v16): which process, which two threads, what each did
 /// and where — what an operator needs to find both writers in their own code — with the
 /// rule in one sentence after them. Both threads are named because which one the trace
@@ -1563,6 +1575,25 @@ fn threadDetail(arena: std.mem.Allocator, first: ?engine.Op, second: engine.Op, 
     return sanitizeForReport(arena, composed) catch fallback;
 }
 
+/// The record the trace reader could not place, as a sentence (#485).
+///
+/// Sits beside `foreignTouchDetail` because it is the same job on the same input: a
+/// `?engine.Op` becomes a refusal line, or the caller's fallback when there is none.
+/// `class` and `seq` are not named — this record type writes `.unresolved` and `0` for
+/// every one of them, so they identify nothing; what identifies it is the kind the shim
+/// chose and the pid. The name is said only when there is one: `noteLinkByDescriptor`
+/// and the trace-close marker record no path, and claiming a filename there would be
+/// inventing an observation.
+///
+/// Sanitised once at the end, through the same choke point the neighbouring renderer
+/// uses, rather than per field.
+/// `where` names the run this record came from — "" for the recording run, " in an
+/// explored world", " in the second observed run". It is interpolated into the composed
+/// sentence rather than passed as the fallback, because the fallback is used ONLY when
+/// there is no record at all: a caller that put its location there would see it dropped
+/// on every run that actually has one, and all three sites would report the recording
+/// run's wording. Measured: the world and run-B legs asked for their own wording and got
+/// the recording run's, which is what caught it.
 fn unresolvedDetail(arena: std.mem.Allocator, first: ?engine.Op, where: []const u8, fallback: []const u8) []const u8 {
     const op = first orelse return fallback;
     const why = if (op.aux.len > 0) op.aux else "reason not recorded";
@@ -3806,6 +3837,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // child that execs one of them mutates the judged directory in nobody's account.
     // Children that are visible are still caught by path scope (#405's shape refuses
     // `child_touched_state_dir`); what this refuses is the tolerance, not the detection.
+    // A thread under `--oracle-fs-usage` is refused by name (v16, owner ruling 2026-09-08).
+    // The rule that judges one writing thread per process is decided from the shim's
+    // trace and needs no oracle — but where an oracle IS given, its account is compared
+    // against the shim's, and the fs_usage reader attributes a line to a thread id and
+    // knows no process for it (`src/fsusage.zig` sets no `primary_pid`), so a subject
+    // thread's write reaches `childTouched()` as a child's and the run would refuse
+    // `child_touched_state_dir` — the right exit for the wrong reason, calling a thread
+    // another process. Refusing here, with the thread named as the cause, keeps the
+    // account true; teaching that reader which thread belongs to which process is a
+    // separate change that cannot be measured on the machine this was written on.
+    if (args.oracle_fs_usage and trace.thread_records > 0)
+        unknown(.multiple_threads_detected, "the target created a thread and the fs_usage oracle cannot attribute a thread's operations to its process (ADR 0031), so its account cannot be compared against the shim's; a threaded run is judged on Linux, or on macOS without --oracle-fs-usage", .class_wall);
     if (trace.needsOracle() and args.oracle_fs_usage)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .class_wall);
 
@@ -5167,22 +5210,7 @@ fn observeAgain(
     // is what makes it name run B. (A refusal that exits through `setupError` still prints
     // one line and no account — `restoreFailure` above and the snapshot OOM paths below take
     // that route — so the claim is about this block, not about every exit from here.)
-    if (trace.hard_boundary) |b| boundary_ev.second_run = switch (b) {
-        .exec => "an image replacement",
-        .thread => "a thread",
-        .detached => "a process leaving the containment group",
-        else => null,
-    };
-    if (boundary_ev.second_run == null and trace.crossedBoundary())
-        // An unbroken self-exec chain leaves `hard_boundary` null, so it reaches here
-        // rather than the `.exec` arm above, and calling it "a process boundary" is the
-        // same overclaim the recording and world clauses just stopped making.
-        boundary_ev.second_run = if (trace.crossedProcessBoundary())
-            "a process boundary"
-        else
-            "the subject replacing its own image";
-    if (boundary_ev.second_run == null and trace.foreign_kill_point)
-        boundary_ev.second_run = "an operation by a process other than the subject";
+    boundary_ev.second_run = secondRunLabel(trace);
     // The property says "the two runs OBSERVED in this invocation". A run whose shim
     // never initialised was not observed, and reporting it as one half of a comparison
     // would make that word false — the flag exists for targets that take a different
@@ -8169,7 +8197,23 @@ const boundary_cases = [_]struct {
     // held only the refusing one would let the admitting one drift into saying the
     // window is the subject's alone.
     .{ .what = "another process's operations were admitted as crash points", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .shim_foreign_touch = true, .children_judged = true }, .may_say_single = false, .pins = "hold crash-point addresses" },
-    .{ .what = "the shim recorded a thread", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .shim_hard = "a thread" }, .may_say_single = false, .pins = "the shim recorded a thread" },
+    // A `.shim_hard = "a thread"` case stood here until v16. `hard_boundary` no longer takes
+    // `.thread`, so the case pinned a state the engine cannot produce — the defect this
+    // file names for the fs_usage arm below — and review struck it. The two below are what
+    // a threaded run renders now: the committed vips report's shape (six threads, one
+    // writer, judged, oracle read), and a world that created a thread the recording did
+    // not. Both must say "single process" only as scoped to the recording, and both must
+    // carry the thread clause, or a reader takes "single process" for single-threaded.
+    .{ .what = "a judged run whose only boundary was a thread (v16)", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_thread_only = true, .threads = 6, .writer_threads = 1, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 1262 } } }, .may_say_single = true, .pins = "6 thread(s) created, and 1 thread id(s) of the subject's own process wrote" },
+    // `threads` is set from the same records that set `boundary`, so a run with threads
+    // has `shim_boundary` — the first version of this case had `threads = 1` and no
+    // boundary, a state the engine cannot produce (review, second round). The vips report
+    // is this shape: recording judged, a thread in a world too.
+    .{ .what = "a thread created in an explored world, on a run that had threads (v16)", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_thread_only = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } }, .world_boundary = true, .world_thread_only = true, .threads = 1, .writer_threads = 1 }, .may_say_single = true, .pins = "a thread was created in an explored world" },
+    // The refused shape, and the commonest in the sweep (beets): the shim recorded a
+    // thread, the run refused before the oracle's capture was read, and the recording
+    // clause has to say "a thread" rather than fall into the image-change arm.
+    .{ .what = "the shim recorded a thread and the run refused before the oracle was read (v16)", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_thread_only = true, .witness = .{ .unread = .strace }, .threads = 3, .writer_threads = 2 }, .may_say_single = false, .pins = "the shim recorded a thread" },
     // The subject replaced its own image and nothing else crossed a boundary. The shim
     // DID record a boundary (which is why the run needs an oracle), and it claims no
     // second process, so a witness reporting one process agrees with it rather than
@@ -8687,4 +8731,45 @@ test "two children writing before either is collected are refused (v15)" {
     const why = childrenMayBeJudged(arena, trace, racing) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, why, "(pid 8) performed write(/tmp/s/x)") != null);
     try std.testing.expect(std.mem.indexOf(u8, why, "process 9 wrote in the judged directory while it was still running") != null);
+}
+
+test "preflight's second run names a thread as a thread, not as an image change (v16)" {
+    // The shape review measured as wrong: run B creates a thread and nothing else, and
+    // the account said "the subject replacing its own image". The control is a fork,
+    // which is the process boundary the same branch has always named.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try traceFileForTest("secondrun-thread", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(fz);
+    var tb = engine.unboundedBudget(std.testing.allocator);
+    var threaded = try engine.readTrace(&tb, std.mem.span(fz));
+    defer threaded.deinit();
+    try std.testing.expectEqualStrings("a thread", secondRunLabel(threaded).?);
+
+    var fbuf2: [contract.max_path]u8 = undefined;
+    const fz2 = try traceFileForTest("secondrun-fork", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf2);
+    defer _ = posix.unlink(fz2);
+    var tb2 = engine.unboundedBudget(std.testing.allocator);
+    var forked = try engine.readTrace(&tb2, std.mem.span(fz2));
+    defer forked.deinit();
+    try std.testing.expectEqualStrings("a process boundary", secondRunLabel(forked).?);
+
+    // And nothing at all reads as nothing.
+    var fbuf3: [contract.max_path]u8 = undefined;
+    const fz3 = try traceFileForTest("secondrun-plain", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf3);
+    defer _ = posix.unlink(fz3);
+    var tb3 = engine.unboundedBudget(std.testing.allocator);
+    var plain = try engine.readTrace(&tb3, std.mem.span(fz3));
+    defer plain.deinit();
+    try std.testing.expectEqual(@as(?[]const u8, null), secondRunLabel(plain));
 }

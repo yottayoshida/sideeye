@@ -122,6 +122,17 @@ trace descriptor; there is no writer a second witness exists to catch (ADR 0002
 decision 3's reason). A thread beside a fork, a spawn or a foreign record still needs one,
 for those.
 
+**Except under `--oracle-fs-usage`, where a threaded run is refused by name** (owner
+ruling, 2026-09-08). Where an oracle is given its account is compared against the
+shim's, and the fs_usage reader attributes a line to a thread id and knows no process for
+it — it sets no `primary_pid` (ADR 0031) — so a subject thread's write reaches the touch
+predicate as a child's and the run would refuse `child_touched_state_dir`: the right exit
+for the wrong reason, calling a thread another process. The refusal names the thread and
+the oracle's limit instead, keyed on the shim's `pthread_create` records; a thread reached
+through a raw `clone` leaves none, and under that oracle refuses as a child's touch, as it
+did before this decision. Teaching that reader which thread belongs to which process is
+a separate change, for a machine on which the shim loads.
+
 ### 6. The account says what a judged threaded run was
 
 `processes` gains a clause: how many threads the shim saw created (a floor — a raw

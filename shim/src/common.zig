@@ -567,9 +567,10 @@ const ThreadState = struct {
 const max_threads = 64;
 var slots: [max_threads]ThreadState = [_]ThreadState{.{}} ** max_threads;
 var reserve: ThreadState = .{};
-/// Set by `mine` the first time no slot was free; `writeRecord` announces it once, in
-/// front of whatever the thread that overflowed was about to record. Never cleared.
-var slots_exhausted: bool = false;
+/// Whether the exhaustion notice has been written (v16). Taken with a compare-and-swap by
+/// the one thread that writes it — two threads overflowing together race for it and one
+/// wins — and cleared only by `resetSlotsInChild`. There is no separate "exhausted" flag:
+/// one existed and nothing in production read it.
 var exhaustion_announced: bool = false;
 var active: bool = false;
 
@@ -597,8 +598,60 @@ fn mine() *ThreadState {
     for (&slots) |*s| {
         if (@cmpxchgStrong(u64, &s.tid, 0, tid, .acq_rel, .acquire) == null) return s;
     }
-    @atomicStore(bool, &slots_exhausted, true, .release);
+    // Announced HERE, at the moment of exhaustion, not at the next `writeRecord` — the
+    // first version deferred it there, and review found the gap: the harm exhaustion does
+    // is two reserve-sharing threads racing on one `busy`, which drops a record before
+    // `writeRecord` is reached, and if no thread writes anything afterwards the trace
+    // holds no notice and the run is judged over the hole. Written from a buffer on THIS
+    // thread's stack, not the reserve's: the reserve is shared from this call on, and a
+    // second thread overflowing at the same moment would be encoding its own record into
+    // that buffer while the notice was being written (review, second round — the first
+    // version said "nobody else holds it yet", which was true of the first caller and not
+    // of the second). The notice is 44 bytes; the stack cost is nothing the SIGSYS
+    // handler cannot bear. Written once: the compare-and-swap picks the thread that
+    // writes it, and every later overflow finds it written. It is written before the
+    // re-entrancy check, so a shim re-entered mid-call announces too — a change from
+    // "busy writes nothing", and the safe direction.
+    if (@cmpxchgStrong(bool, &exhaustion_announced, false, true, .acq_rel, .acquire) == null) {
+        var notice: [64]u8 = undefined;
+        const n = contract.encodeRecord(&notice, .{
+            .op = .unresolved,
+            .seq = 0,
+            .pid = @bitCast(c.getpid()),
+            .tid = tid,
+            .path = "",
+            .aux = contract.unresolved_kind.thread_slots_exhausted,
+        }) catch return &reserve;
+        _ = writeAll(notice[0..n]);
+    }
     return &reserve;
+}
+
+/// After `fork`, in the child (v16). The child inherits the table as the parent had it —
+/// every parent thread still claiming its slot, `busy` flags mid-call included — and has
+/// exactly one thread, with a new id. Left alone, a parent that had used the table up
+/// would leave its single-threaded child no slot at all (a false `thread-slots-exhausted`),
+/// and a later thread of the child that reuses a parent thread's id would inherit a slot
+/// whose `busy` was true at the fork and record nothing through it. Review found both.
+/// Called from the fork wrapper's child arm, before the child records anything. `vfork`
+/// must not do this — the child runs in the parent's memory — and a raw `clone` bypasses
+/// the wrapper and inherits the table as it stands: a parent past sixty-four threads that
+/// forks through a raw syscall keeps the false refusal, which is the honest direction.
+/// The claim words and the counters are cleared and the buffers are not: 64 × 16 KB is a
+/// megabyte of copy-on-write pages the child would otherwise touch at once, and every
+/// buffer is written whole before it is read.
+pub fn resetSlotsInChild() void {
+    for (&slots) |*s| {
+        s.tid = 0;
+        s.busy = false;
+        s.seq = 0;
+        s.count_scanned = 0;
+    }
+    reserve.tid = 0;
+    reserve.busy = false;
+    reserve.seq = 0;
+    reserve.count_scanned = 0;
+    exhaustion_announced = false;
 }
 /// The pid this shim instance initialised in. Read by `execCarryAllowed` — only the
 /// subject carries its operation count across an image change (#123).
@@ -935,16 +988,11 @@ fn writeAll(bytes: []const u8) bool {
 /// The pid is taken here, once for every record, rather than accepted from the caller:
 /// there is exactly one correct value and it is whoever is executing this line.
 ///
-/// The buffer is the calling thread's (v16). The one thing ever written through the
-/// shared `reserve` buffer is the exhaustion notice, announced once and in front of
-/// whatever the overflowing thread was about to record, so the engine meets the refusal
-/// before any record whose buffer may have been shared. Two threads can both find the
-/// flag unannounced and both write the notice; a second notice refuses nothing new.
+/// The buffer is the calling thread's (v16). The exhaustion notice is the one record
+/// written through the shared `reserve` buffer, and `mine` writes it at the moment of
+/// overflow rather than here, so it is in the trace whether or not anything is recorded
+/// afterwards.
 fn writeRecord(ts: *ThreadState, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
-    if (@atomicLoad(bool, &slots_exhausted, .acquire) and !exhaustion_announced) {
-        exhaustion_announced = true;
-        encodeAndWrite(&reserve.record_buf, .unresolved, 0, "", contract.unresolved_kind.thread_slots_exhausted);
-    }
     encodeAndWrite(&ts.record_buf, op, s, path, aux);
 }
 
@@ -2420,11 +2468,82 @@ test "slots: one per thread id, claimed once, and the reserve past the last" {
     try std.testing.expect(!exhausted);
     _ = claim.run(&table, &res, &exhausted, 303);
     try std.testing.expect(!exhausted);
-    // The fourth id finds no free slot: it gets the reserve, and the flag that makes the
-    // next record announce the overflow.
+    // The fourth id finds no free slot: it gets the reserve. (In the live table `mine`
+    // writes the exhaustion notice at this moment; the test below drives that path on the
+    // real function.)
     const d = claim.run(&table, &res, &exhausted, 404);
     try std.testing.expectEqual(&res, d);
     try std.testing.expect(exhausted);
     // Slots are never freed, so the earlier owners still resolve to theirs.
     try std.testing.expectEqual(b, claim.run(&table, &res, &exhausted, 202));
+}
+
+test "the fork child starts from an empty slot table, however full the parent's was (v16)" {
+    // Three slots claimed, one of them mid-call, the table marked exhausted — the shape a
+    // fork can catch the parent in. The child must see none of it.
+    slots[0].tid = 1001;
+    slots[0].busy = true;
+    slots[0].seq = 5;
+    slots[0].count_scanned = 99;
+    slots[1].tid = 1002;
+    slots[2].tid = 1003;
+    reserve.tid = 1004;
+    reserve.busy = true;
+    exhaustion_announced = true;
+
+    resetSlotsInChild();
+
+    for (slots) |s| {
+        try std.testing.expectEqual(@as(u64, 0), s.tid);
+        try std.testing.expect(!s.busy);
+        try std.testing.expectEqual(@as(u32, 0), s.seq);
+        try std.testing.expectEqual(@as(u64, 0), s.count_scanned);
+    }
+    try std.testing.expectEqual(@as(u64, 0), reserve.tid);
+    try std.testing.expect(!reserve.busy);
+    try std.testing.expect(!exhaustion_announced);
+}
+
+test "mine: the 65th thread takes the reserve, and the notice is in the trace at that moment (v16)" {
+    // The live table this time, filled by hand with ids no real thread has, and the trace
+    // descriptor pointed at a file this test owns — so `mine()` itself runs the overflow
+    // path, and what it wrote is read back and decoded. The hand-copied claim logic in the
+    // test above cannot show this; review said so.
+    if (builtin.os.tag != .macos) resolveAll();
+    var bb: [160]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-slots-{d}", .{c.getpid()}) catch unreachable;
+    _ = std.c.mkdir(base.ptr, 0o755);
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/trace.bin", .{base}) catch unreachable;
+    defer {
+        _ = std.c.unlink(file_z.ptr);
+        _ = std.c.rmdir(base.ptr);
+    }
+    const flags: std.posix.O = @bitCast(O_RDWR | O_CREAT | O_TRUNC | O_APPEND);
+    const fd = std.c.open(file_z.ptr, flags, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    defer _ = std.c.close(fd);
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    trace_fd = fd;
+    // Leaves the live table the way the other tests in this binary expect to find it.
+    defer resetSlotsInChild();
+    for (&slots, 0..) |*s, i| s.tid = 100_000_000 + @as(u64, i);
+    exhaustion_announced = false;
+
+    const got = mine();
+    try std.testing.expectEqual(&reserve, got);
+    try std.testing.expect(exhaustion_announced);
+    // Read back: exactly one record, the notice, carrying this thread's id.
+    var buf: [128]u8 = undefined;
+    const n = c.pread(fd, &buf, buf.len, 0);
+    try std.testing.expect(n > 0);
+    const d = try contract.decodeRecord(buf[0..@intCast(n)]);
+    try std.testing.expectEqual(contract.OpClass.unresolved, d.rec.op);
+    try std.testing.expectEqualStrings(contract.unresolved_kind.thread_slots_exhausted, d.rec.aux);
+    try std.testing.expectEqual(currentTid(), d.rec.tid);
+    try std.testing.expectEqual(@as(usize, d.consumed), @as(usize, @intCast(n)));
+    // A second overflow takes the reserve again and writes nothing more.
+    try std.testing.expectEqual(&reserve, mine());
+    try std.testing.expectEqual(n, c.pread(fd, &buf, buf.len, 0));
 }

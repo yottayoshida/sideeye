@@ -91,8 +91,12 @@ untouched here: `TOY_THREAD` still refuses `multiple_threads_detected` at the wo
 **Commit 2: the record names its thread (contract v16).** Eight bytes after `pid`, read
 live per record like `pid` is; `max_record_len` and the decoder's minimum length move
 with it (14 → 22). `tid` has no default, on purpose: every literal that builds a
-`Record` or an `Op` — 151 of them, all in tests — had to name one, so a shim that
-forgot to write it would be a compile error rather than a zero. Three readers outside
+`Record` or an `Op` — 151 of them under `src/` and `shim/`, all in tests — had to name
+one, so a shim that forgot to write it would be a compile error rather than a zero.
+**The scan missed one**: `spike/fsevents/trace-ops.zig` builds a `Record` too, and the
+`-Dtrace-ops` cross-build found it three commits later — the grep had been scoped to
+`src/` and `shim/`, and the reader under `spike/` is code, not a record (ADR 0021 names
+it in `.gitattributes` for exactly that reason). Fixed in the review commit. Three readers outside
 Zig knew the byte layout and had to be told: `spike/acceptance.sh` decodes the trace
 in three places (`count_op_records`, `kill_sequence`, and the `#358` leg), each with
 `struct.unpack_from("<HIII")` and a hard-coded 14; they read `"<HIIQI"` and 22 now.
@@ -211,12 +215,95 @@ the plan had it as one of the five: the shim's record names two threads of the `
 process opening `library.db` (tids 364 and 366), in seven of seven runs, where the
 2026-09-07 analyser had counted one writer. The shim's record is the one the rule reads.
 Four of eight, then, not five, and the fifth refused for what it does. git-annex refuses
-as the control should — two of its own threads, `mkdir(fsckdb.tmp)` and `open(fsckdb/db)`
-— and mlr never reaches the rule: `epoll_ctl` under wrappers, and under syscalls the
+as the control should — two threads of one process, `mkdir(fsckdb.tmp)` and
+`open(fsckdb/db)`; the process is a git-annex child, not the subject, which the same
+report's account says and the first draft of this sentence did not — and mlr never
+reaches the rule: `epoll_ctl` under wrappers, and under syscalls the
 recording does not exit normally (Go and a seccomp trap; not chased here). Every judged
 run writes from its main thread; the worker-only shape is the toy's, as the 2026-09-07
 measurement predicted. The plan's third falsifiable check named beets for the five-run
 determinism measurement; the two judged threaded targets carry it instead.
+
+**Review of the five commits (fresh reader, 2026-09-08 evening): no P0, four P1, thirteen P2 — of which seven arrived whole, the report having been cut off mid-list, and the rest on request as one-line summaries.**
+What each did to the branch:
+
+- *P1-1, the third sibling.* Recording and world clauses were given a thread arm the day
+  before; `preflight --twice`'s run B was not, and a thread-only run B reported "the
+  subject replacing its own image" — the very overclaim those clauses had stopped making.
+  The chain is a function now (`secondRunLabel`) and a test drives it from three traces
+  (a thread, a fork, nothing). The file's own comment on `crossedBoundary` names this
+  pattern: one site generalised, its siblings not.
+- *P1-2, the notice that came too late.* `thread-slots-exhausted` was written by the next
+  `writeRecord`, and the harm exhaustion does is a record that never reaches
+  `writeRecord` — two reserve-sharing threads racing on one `busy`. A run whose last
+  state write was that one would have been judged over the hole with no notice in the
+  trace. `mine` writes the notice at the moment of overflow now, through the reserve's
+  own buffer, which nobody else holds yet. And the reviewer's second axis was right that
+  the guard had never been seen red: a synthetic trace carrying the notice is a test in
+  `engine/trace.zig` now, refusing as `unresolvable_path` names the kind. The shim side —
+  a 65th thread actually overflowing — is not driven by any toy; the engine's half is
+  what is pinned.
+- *P1-3, the count that contradicted the refusal.* `subject_writer_tids` counts under the
+  subject's pid only; the clause said "thread id(s) wrote", and the committed git-annex
+  report carried "0 thread id(s) wrote" beside a refusal naming two threads. The clause
+  says "of the subject's own process" now. And the NOTES entry for git-annex said "the
+  subject process itself writes from two threads" — the artifact says a child's do, and
+  the note says that now, with its first draft's error kept beside it.
+- *P1-4, macOS.* `src/fsusage.zig` sets no `primary_pid`, so under `--oracle-fs-usage` a
+  subject thread's write reaches `childTouched()` as a child's and the run refuses
+  `child_touched_state_dir` — the right exit for the wrong reason, and a README sentence
+  with no platform in it. Three exits were put to the owner: refuse a threaded run under
+  that oracle by name and say so in the docs; teach the fs_usage reader thread-to-process
+  attribution, on a machine where the shim does not load; or write "on Linux" and leave
+  the wrong reason standing. **Ruled: the first.** `multiple_threads_detected` names the
+  thread and the oracle's limit (ADR 0031), README and DESIGN carry the condition, and the
+  reader is a separate change for a machine that can measure it.
+- *P2s taken:* the `boundary_cases` entry pinning `.shim_hard = "a thread"` — a state
+  `hard_boundary` cannot produce since v16 — is struck and two entries that a threaded
+  run does produce stand in its place (the vips shape, and a world-only thread); the
+  "626 of 1024 bytes" comment says the buffer is 1280 now and that the crossing was not
+  re-run; unit tests for the trace reader's thread rule (two writers named, one writer
+  among several, a child's two threads counted as a child's) exist now — the acceptance
+  legs had been the only pin.
+- *The P2s that arrived late* (the report had been cut off; the reviewer sent the rest on
+  request): the subject's writer count saturated at 2 while its doc promised distinct ids
+  — it counts them now, and a three-writer trace pins 3; `subject_tids` in the oracle was
+  `u32` and the append cast a `u64` the parser had accepted, a panic on a wide id — it is
+  `u64`; **a forked child inherited the parent's slot table** — every parent thread's
+  claim, and any `busy` caught mid-call — so a parent past sixty-four threads would leave
+  its single-threaded child no slot, and a child thread reusing a parent thread's id would
+  record nothing through a slot that was busy at the fork. `resetSlotsInChild` clears the
+  claims and counters (not the megabyte of buffers) from the fork wrapper's child arm;
+  `vfork` shares the parent's memory and must not, and a raw `clone` bypasses the wrapper
+  and keeps the inherited table, which is the false-refusal direction. One acceptance leg
+  pinned one of the two `performed open(` the refusal carries — a second pins the other;
+  the CHANGELOG cited `spike/acceptance.sh` for the control run whose artifact is
+  `toys-vs-commit3-control.txt`.
+
+**Confirmation round (a second fresh reader, on the fixes): one item still ship-blocking,
+six more, and the reading that the P1-2 fix was not yet safe.** The owner's fs_usage ruling
+had been written into README and DESIGN and into none of the other places the promise
+lives — `docs/target-classes.md`'s Threads line, the CHANGELOG entry, the freeze-audit
+row, ADR 0055 — so a macOS user reading the class page would have been told a threaded
+run is judged under an oracle that refuses it. All four carry the condition now, and the
+raw-clone case under that oracle (no `pthread_create` record to key on, so it refuses as a
+child's touch, as before) is named beside it. The P1-3 wording fix had left the code's doc
+and the NOTES quoting the *new* clause as if the committed artifacts carried it; they carry
+the old one, and both quotations say so now. The `boundary_cases` entry that replaced the
+struck one pinned `threads = 1` with no `shim_boundary`, a state the engine cannot produce
+either — the same class as what it replaced; it has the boundary now, and a second entry
+pins the refused shape (`the shim recorded a thread; the strace account was not read`),
+which the sweep's beets report shows is the common one. On the shim: `slots_exhausted`
+had no reader left in production and its doc described the old announcement; it is gone,
+`exhaustion_announced` is taken by compare-and-swap, and the notice is encoded on the
+announcing thread's own stack — the reserve buffer is shared from the first overflow on,
+and the comment claiming otherwise was true of the first overflowing thread and not of a
+second arriving at the same moment. The announcement now runs ahead of the re-entrancy
+check, so a re-entered shim announces where it used to write nothing: recorded here as the
+behaviour change it is, in the refusing direction. `secondRunLabel` had been inserted
+under `unresolvedDetail`'s doc comment, which is back on its own function. The third
+fresh reader is not opened (`orchestrator.md` §2.5: R2 closes the round); what R2 found
+is fixed and the whole suite is run again below.
 
 
 ## 2026-09-08 — the refusal prints its own line, so the two witnesses can watch one run

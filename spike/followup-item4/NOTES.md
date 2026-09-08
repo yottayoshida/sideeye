@@ -20,7 +20,7 @@ re-counted (#528's rule).
 | zstd | 2 created, 1 wrote | `oracle_missed_operation` — a 4096-byte `write` the shim did not see | **PASS** 9/9 (8 + baseline), `oracle_verified` | thread rule passed; the wrappers-mode refusal is ADR 0005's far side (the metaflac class) |
 | bundler | 1 created, 1 wrote | **FAIL** 1/3, crash point 2 of 2 | **FAIL** 1/3, crash point 2 of 2 | judged; `Gemfile` is 0 bytes between its `open` and its `write` (third define — see below) |
 | beets | 3 created, **2 wrote** | `multiple_threads_detected` | `multiple_threads_detected` | **refused by the thread rule, correctly**: two threads open `library.db` |
-| git-annex (control) | 5 created, 2 wrote (+17 git children) | `multiple_threads_detected` | `multiple_threads_detected` | refused: tid 413 `mkdir(fsckdb.tmp)`, tid 418 `open(fsckdb/db)` |
+| git-annex (control) | 5 created (subject), 0 subject writers; a child's two threads wrote | `multiple_threads_detected` | `multiple_threads_detected` | refused: tid 413 `mkdir(fsckdb.tmp)`, tid 418 `open(fsckdb/db)` — a child process's threads |
 | mlr (control) | 5 created, 0 wrote | `unsupported_syscall_observed` (`epoll_ctl`) | `recording_run_failed` | refused before the thread rule is reached, in both modes |
 
 Four of the five reach a verdict. The fifth does not, and that is the measurement's most
@@ -66,9 +66,15 @@ The second is the Go runtime under a seccomp trap and is not investigated here; 
 2026-09-07 note that mlr's writer count changes between runs could not be re-measured,
 because the rule that would read it is never reached.
 
-**git-annex is the control it was meant to be.** The subject process itself writes from two
-threads — one makes `fsckdb.tmp`, another opens `fsckdb/db` — and the refusal names both,
-ahead of the seventeen git children that ADR 0053's slice would have refused next.
+**git-annex is the control it was meant to be.** Two threads of one process write —
+one makes `fsckdb.tmp`, another opens `fsckdb/db` — and the refusal names both. That
+process is a child, not the subject: the same report's account reads `a process other
+than the subject operated on the judged directory` and `0 thread id(s) wrote the judged
+directory` — the count is of the subject's own threads, which the clause says in so many
+words since the review of this sweep (the committed artifact carries the earlier
+wording) — so the rule fired on a child's two threads, which is what "every process, not
+only the subject" means. (The first draft of this note said "the subject
+process itself"; review read the artifact and it does not say that.)
 
 ## Determinism
 

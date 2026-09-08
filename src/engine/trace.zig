@@ -636,6 +636,9 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // thread from the first. Arena-backed like everything else this reader keeps.
     const WriterTid = struct { pid: u32, tid: u64, op: Op };
     var writer_tids: std.ArrayList(WriterTid) = .empty;
+    // Every distinct thread id that wrote under the subject's pid, for the account's
+    // count; `writer_tids` above keeps the first per process only.
+    var subject_tids: std.ArrayList(u64) = .empty;
 
     while (off < bytes.len) {
         const dec = contract.decodeRecord(bytes[off..]) catch {
@@ -735,11 +738,26 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                         info.second_writer_thread = op;
                         info.first_writer_thread = w.op;
                     }
-                    if (is_primary) info.subject_writer_tids = 2;
+                    // Distinct, not "two or more": the account prints this number, and a
+                    // subject writing from three threads is three. The first version
+                    // saturated at 2 — review read the field's doc against it.
+                    if (is_primary) {
+                        var seen = false;
+                        for (subject_tids.items) |t| {
+                            if (t == op.tid) seen = true;
+                        }
+                        if (!seen) {
+                            try subject_tids.append(arena, op.tid);
+                            info.subject_writer_tids = @intCast(subject_tids.items.len);
+                        }
+                    }
                 }
             } else {
                 try writer_tids.append(arena, .{ .pid = op.pid, .tid = op.tid, .op = op });
-                if (is_primary and info.subject_writer_tids == 0) info.subject_writer_tids = 1;
+                if (is_primary) {
+                    try subject_tids.append(arena, op.tid);
+                    info.subject_writer_tids = @intCast(subject_tids.items.len);
+                }
             }
         }
         if (op.class.isBoundary()) {
@@ -1733,4 +1751,133 @@ test "a cap breach and an unreadable trace are different observations (#324)" {
     var big = try readTraceCapped(&gb_, path, 4);
     defer big.deinit();
     try std.testing.expect(big.too_large);
+}
+
+test "two threads of one process writing the judged directory are the refusal, and both are named (v16)" {
+    // The main thread writes first, a worker second: `second_writer_thread` is the
+    // worker's first record and `first_writer_thread` the main thread's, so the refusal
+    // can name both — which of the two the trace saw first is the scheduler's choice on
+    // that run (the toy has its worker write first). A thread record is not hard and not
+    // a process boundary, and a lone thread needs no oracle.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("two-writing-threads", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .open, .seq = 3, .pid = 7, .tid = 9, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .write, .seq = 4, .pid = 7, .tid = 9, .path = "/tmp/s/b", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    const second = info.second_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 9), second.tid);
+    try std.testing.expectEqual(contract.OpClass.open, second.class);
+    try std.testing.expectEqualStrings("/tmp/s/b", second.path);
+    const first = info.first_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 7), first.tid);
+    try std.testing.expectEqualStrings("/tmp/s/a", first.path);
+    try std.testing.expectEqual(@as(u32, 2), info.subject_writer_tids);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_records);
+    try std.testing.expectEqual(@as(?contract.OpClass, null), info.hard_boundary);
+    try std.testing.expect(!info.process_boundary);
+    try std.testing.expect(!info.needsOracle());
+    // Still a boundary for the quiescence sampling and the world arming.
+    try std.testing.expect(info.crossedBoundary());
+    _ = posix.unlink(fz);
+}
+
+test "one writing thread among several is judged: no second writer, one id counted (v16)" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("one-writing-thread", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        // The worker writes and the main thread never does: the one writer need not be
+        // the main thread, and the count is of writers, not of threads.
+        .{ .op = .open, .seq = 1, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .close, .seq = 0, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
+    try std.testing.expectEqual(@as(?Op, null), info.first_writer_thread);
+    try std.testing.expectEqual(@as(u32, 1), info.subject_writer_tids);
+    try std.testing.expectEqual(@as(u32, 2), info.thread_records);
+    try std.testing.expect(!info.needsOracle());
+    _ = posix.unlink(fz);
+}
+
+test "a child's two writing threads refuse the same way, and are not the subject's count (v16)" {
+    // The rule is asked of every process. The committed git-annex report is this shape:
+    // the refusal names two threads of a child, and the account's count of the SUBJECT's
+    // writing threads reads 0 — which is why the clause says whose it counts.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("child-two-threads", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .mkdir, .seq = 1, .pid = 8, .tid = 8, .path = "/tmp/s/d.tmp", .aux = "" },
+        .{ .op = .open, .seq = 2, .pid = 8, .tid = 11, .path = "/tmp/s/d/db", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    const second = info.second_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u32, 8), second.pid);
+    try std.testing.expectEqual(@as(u64, 11), second.tid);
+    try std.testing.expectEqual(@as(u32, 0), info.subject_writer_tids);
+    // A forked child is a process boundary whatever its threads did.
+    try std.testing.expect(info.needsOracle());
+    _ = posix.unlink(fz);
+}
+
+test "the shim's slot-exhaustion notice is an unplaceable record the run refuses on (v16)" {
+    // The 65th thread of a process writes this through the shared reserve slot, at the
+    // moment of overflow. It is a `.unresolved` record like any other the shim cannot
+    // place, so the reader keeps it as the refusing one and the engine refuses
+    // `unresolvable_path` naming the kind — seen red here before the shim side was
+    // trusted: with the notice missing, this trace reads as a clean two-operation run.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("slots-exhausted", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .unresolved, .seq = 0, .pid = 7, .tid = 71, .path = "", .aux = contract.unresolved_kind.thread_slots_exhausted },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    const u = info.unresolved_refusing orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqualStrings(contract.unresolved_kind.thread_slots_exhausted, u.aux);
+    try std.testing.expectEqual(@as(u64, 71), u.tid);
+    _ = posix.unlink(fz);
+}
+
+test "the subject's writer count is distinct thread ids, not a flag that stops at two (v16)" {
+    // Three threads write under the subject's pid. The refusal names the first two; the
+    // account's count reads three — the first version saturated at 2, and the field's doc
+    // promised distinct ids (review read one against the other).
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest("three-writing-threads", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 9, .path = "/tmp/s/b", .aux = "" },
+        .{ .op = .write, .seq = 3, .pid = 7, .tid = 11, .path = "/tmp/s/c", .aux = "" },
+        .{ .op = .write, .seq = 4, .pid = 7, .tid = 9, .path = "/tmp/s/b", .aux = "" },
+    }, &fbuf);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(fz));
+    defer info.deinit();
+
+    try std.testing.expectEqual(@as(u32, 3), info.subject_writer_tids);
+    const second = info.second_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 9), second.tid);
+    _ = posix.unlink(fz);
 }

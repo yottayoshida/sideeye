@@ -231,6 +231,10 @@ run_case "  ...and both thread ids" "$OUT/toy-bug" 2 "two threads of process "
 # writes before the main thread, so a refusal naming only "the second" named the main
 # thread's own open — the one operation the operator did not need pointing to.
 run_case "  ...each with what it did" "$OUT/toy-bug" 2 " performed open("
+# Both operations by name, not one: a refusal that names the worker's file and the
+# sentence's shape could still have dropped the main thread's — review read the leg
+# above as pinning one `performed open(` where the sentence has two.
+run_case "  ...the main thread's too" "$OUT/toy-bug" 2 "key.json.tmp"
 unset TOY_THREAD_WRITES
 # The two shapes that need the oracle's agreement to mean anything, so they are read
 # from the JSON rather than the headline: BUSY is the process-wide `busy` race (commit 1
@@ -256,7 +260,7 @@ thread_json_case "a worker thread busy outside the state directory does not cost
 thread_json_case "a run whose one writing thread is not the main thread is judged (v16)" TOY_THREAD_ONLY_WORKER
 # And the account says what a judged threaded run was, so "single process" cannot be
 # read as "single-threaded".
-if python3 -c "import json,sys; p=json.load(open('/tmp/acc/t.json')).get('processes',''); sys.exit(0 if ('thread(s) created' in p and '1 thread id(s) wrote' in p) else 1)" 2>/dev/null; then
+if python3 -c "import json,sys; p=json.load(open('/tmp/acc/t.json')).get('processes',''); sys.exit(0 if ('thread(s) created' in p and '1 thread id(s) of the subject' in p) else 1)" 2>/dev/null; then
     echo "ok   the account of a judged threaded run names its threads and its one writer"
 else
     echo "FAIL the account of a judged threaded run does not name its threads: $(python3 -c "import json;print(json.load(open('/tmp/acc/t.json')).get('processes'))" 2>/dev/null)"
