@@ -5744,29 +5744,32 @@ done
 echo "=========== check 11f: the loop-closure judge is seen refusing (#63) ==========="
 # The judge declares a void condition "enforced per escape channel, against EVERY tool
 # call" and a restore that must not fail silently -- and until this check neither had ever
-# been observed refusing anything. `judge.sh selftest` drives thirteen refusals with
-# synthetic roots and transcripts (two by name, four by network alternation, three path
+# been observed refusing anything. `judge.sh selftest` drives eighteen refusals with
+# synthetic roots and transcripts (four by name, four by network alternation, three path
 # markers, two docker, the transcript with no tool calls, and a seal that does not match
-# its manifest) plus five greens: a clean transcript stays clean, the trusted mcp
+# its manifest, a record that disagrees with its digest, a record holding a line the reader
+# cannot parse, a manifest whose audit verified no digest) plus six greens: a clean transcript stays clean, the trusted mcp
 # server's own tool is counted rather than voided, a doctored file comes back from the
 # seal, a deleted one is put back, and `check` records without copying.
-# The thirteen voiding refusals each assert that the ONE field their channel owns is the
+# The fifteen voiding refusals each assert that the ONE field their channel owns is the
 # non-empty one, so a case that voided for another reason does not stand in for the
 # branch it names; the no-tool-calls and restore-failure cases are judged on their own
 # terms, since neither reaches the field-by-field classification.
-# Seen red: twelve mutations of judge.sh plus one of the case list, each killing exactly
+# Seen red: fifteen mutations of judge.sh plus one of the case list, each killing exactly
 # the cases it should --
 # UNSEALED blinded (name-unsealed), the mcp branch blinded (name-mcp-foreign), the network
 # regex unmatchable (all four net-*), the path test made False (all three path-*), the
 # --network none test made False (docker-nonet only, because the mount test is separate),
 # the out-of-stage mount test made False (docker-mount only), the no-tool-calls exit
 # removed (unauditable), the post-restore hash check removed (restore-fail), and the
-# verdict forced to clean (all eleven void cases, not unauditable, which exits earlier).
+# verdict forced to clean (twelve of them; not unauditable or the two record cases, which
+# exit earlier, not name-off-allowlist, whose field that program does not empty, and not
+# the two cases that never reach the audit).
 if sh "$ROOT/spike/loop-closure-timew/judge.sh" selftest > /tmp/acc-judge-selftest.txt 2>&1; then
-    echo "ok   judge.sh selftest: fifteen refusals and five greens"
+    echo "ok   judge.sh selftest: eighteen refusals and six greens"
 else
     echo "FAIL judge.sh selftest (rc=$?): a channel stopped refusing, or a red moved"
-    # Every failing line, not a tail: a green run is already 20 lines, so `tail -20` would
+    # Every failing line, not a tail: a green run is already twenty-odd lines, so `tail -20` would
     # have dropped the first FAIL as soon as four channels went at once — which is exactly
     # what one blinded regex does (all four net-* cases fail together).
     # BROKEN and the restore's own message are in the pattern too: the first is how a

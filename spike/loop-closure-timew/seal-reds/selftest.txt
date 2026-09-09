@@ -1,4 +1,4 @@
-=== judge.sh selftest: fifteen refusals ===
+=== judge.sh selftest: eighteen refusals ===
 ok   judge.sh: name-unsealed — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-mcp-foreign — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-off-allowlist — void via off_allowlist alone, rc 1
@@ -13,11 +13,15 @@ ok   judge.sh: path-tilde — void via context_hits alone, rc 1
 ok   judge.sh: docker-nonet — void via docker_hits alone, rc 1
 ok   judge.sh: docker-mount — void via docker_hits alone, rc 1
 ok   judge.sh: unauditable — unauditable, rc 1
+ok   judge.sh: record-sha — void via record_sha_mismatch alone, rc 1
+ok   judge.sh: record-torn — void via record_lines_unparsed alone, rc 1
 ok   judge.sh: restore-fail — rc 1, refuses rather than trusting its own copy
-=== judge.sh selftest: five greens ===
+ok   judge.sh: finalize-unverified — refuses a manifest whose audit verified no digest, rc 1
+=== judge.sh selftest: six greens ===
+ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0
 ok   judge.sh: clean — a transcript that escapes nothing stays clean, rc 0
 ok   judge.sh: mcp-allowed — the trusted server's own tool is counted, not voided
 ok   judge.sh: restore-ok — a doctored file is listed and the bytes are the seal's
 ok   judge.sh: restore-missing — a deleted file is put back from the seal
 ok   judge.sh: check-only — records the difference and copies nothing
-selftest: fifteen refusals and five greens hold (20 cases)
+selftest: eighteen refusals and six greens hold (24 cases)

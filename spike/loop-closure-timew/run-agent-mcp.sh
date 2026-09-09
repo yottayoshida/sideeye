@@ -248,7 +248,15 @@ if not model:
 PY
 
 echo ""
-echo "next: judge.sh audit --root $ROOT --transcript $RESULTS/transcript.jsonl --allow-mcp sideeye"
+# See run-agent.sh for why the digest is computed here and not while recording (#515).
+echo "next: judge.sh audit --root $ROOT --transcript $RESULTS/transcript.jsonl --allow-mcp sideeye \\"
+if [ -f "$RESULTS/transcript.jsonl" ]; then
+    echo "        --record-sha $(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$RESULTS/transcript.jsonl")"
+else
+    # No transcript, no digest: printing an empty --record-sha would read as one that
+    # was supplied, and the substitution would put a traceback in the operator's way.
+    echo "        (no transcript at $RESULTS/transcript.jsonl — nothing to digest)"
+fi
 echo "      judge.sh eval  --root $ROOT --mode run"
 echo "      judge.sh secondary --root $ROOT --mode run   (evidence: after eval, which restores; this only verifies)"
 echo "      judge.sh finalize --root $ROOT"
