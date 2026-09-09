@@ -125,6 +125,9 @@ the case file — nothing else in the report was load-bearing for them.
 | Field | Type | Present | Meaning |
 |---|---|---|---|
 | `unknown_reason` | string | UNKNOWN | Machine-readable reason, one of the closed set below. |
+| `setup_error_reason` | string | SETUP_ERROR | Machine-readable class of the refusal, one of the second closed set below (#518, ADR 0057): which of the define, the setup command, the machine, this platform, or Sideeye itself could not be got past. Classes, not one-to-one with the sites that raise them — the thing a caller branches on. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open; the set itself is closed by name from the release that carries it. |
+| `setup_exit_code` | integer | SETUP_ERROR, `setup_failed`, the setup exited | The status `--setup` exited with — the number `message` quotes as `--setup exited N` — as data. An image that could not be executed is the child's 127 (the exec failed), and a child the engine could not arrange before exec is 126, with the message saying so. Absent when the setup was killed by a signal or ended in a status the engine does not decode. Added after the v1.0 tag under the same allowance. |
+| `setup_signal` | integer | SETUP_ERROR, `setup_failed`, the setup was killed | The signal that killed `--setup`, the number `message` quotes. Absent when it exited, or ended in a status the engine does not decode (then `message` quotes the raw status and neither integer is present). Added after the v1.0 tag under the same allowance. |
 | `message` | string | UNKNOWN and SETUP_ERROR | Human-readable detail: what was observed, and often which operation it happened at. The failure that produced it is typed by the reader that can raise it (#376): the snapshot walk and the trace read declare separate error sets, so a failure only one of them can produce cannot be described by a sentence written for the other. The trace read used to carry one sentence for all of its failures, chosen by the call site rather than by the failure; the split stopped a trace failure from reaching the snapshot's wording without making the trace side distinguish its own. **`unresolvable_path` no longer shares that sentence** (#485): the shim records why the operation could not be placed, and the refusal names that reason, the pid, and the last name the file had where there was one — so two targets that fail for different reasons no longer produce identical output. The rest of the trace read's failures still share their sentence. The kinds it can name are `unresolvable-path` (the path could not be resolved at all), `fd-without-path <op> fd:N` (a descriptor whose file could not be read back to a path), `unlinked-fd <op> fd:N` (an operation through a descriptor whose file was unlinked while open — the `perl -i` shape; the operation is named because `fsync` and `truncate` reach this too, not only `write`. **`close` reaches it and no longer refuses** — ADR 0003 §2's amendment of 2026-09-08 exempts the one class that can be neither a kill point nor a mutation, so `unlinked-fd close` appears in a trace and not in this field. It still appears here as `fd-without-path close`, where the path query itself failed and the descriptor's target is unknown), `link-by-descriptor fd:N` (a link whose source is a descriptor), `trace-closed-by-target`, and `count-read-failed` (v15: the shim could not read the trace back to find the run's highest number, so it could not tell which position in the run the operation holds — numbering from a count it happened to remember would give the operation another one's address). They are defined in `contract.unresolved_kind` rather than as literals on either side, and the list is open: an engine meeting a record from an older shim sees an empty reason and says so. **A `--setup` that fails leaves what it wrote where this field names it** (#483): its output — both streams — is captured to `setup-output-<pid>.txt` in the work directory, and the refusal carries the command's last non-empty line beside the file's path. The line is a target's own bytes, so it is defanged and clipped the way every other target-chosen string in a report is; the file holds the rest untouched. Three answers and not two: a capture that could not be read back says so rather than reporting that nothing was written — which is also what a capture past the read cap reports, since a file too large to read back is one this engine did not see. A setup that wrote nothing is said to have written nothing and names no file: there is no capture to point at, because an empty one is removed rather than kept. When the setup succeeds the file is kept if it holds anything and removed if it does not, so a warning printed by a setup on a green run is still somewhere after capture took it off the terminal. The pid is in the name because this is the one capture whose contents reach `message`, and two runs sharing a work directory would otherwise quote each other. |
 | `divergence_syscall` | string | `oracle_missed_operation` | The operation the oracle saw at the diverging position, named the way that oracle names it — `openat` / `renameat2` from strace, `open` / `rename` from fs_usage. Each observer's own spelling, not a normalised one, so a reader going back to the capture can find the line again. The quoted line stays in `message`; this is the same fact in a form nobody has to parse, and it is the observer's vocabulary rather than the target's. Not present on `oracle_saw_phantom`: that refusal is raised at an index the oracle's account does not reach, so there is nothing there to name. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 | `apparatus` | string[] | the define declared it | The define's `[define] apparatus` entries (or `--apparatus` flags), each as spelled — `env:NAME`, `env:NAME=VALUE`, `preload:LIB`, `pythonpath:FILE`, `note:TEXT` — in order. The engine checked every entry it can after `setup` and before recording, and refused the run as SETUP ERROR when one was missing; a report that carries this field is a run those devices reached (ADR 0041). Absent when the define declared nothing, so a report from a define without the key reads as it always did. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
@@ -152,6 +155,31 @@ the version moved because the recorded account did, not the vocabulary):
 
 A new refusal joins this list in the change that introduces it, and the
 acceptance check above holds this page to that.
+
+`setup_error_reason` values (closed set — added with #518, ADR 0057, held to the
+contract's enum by the same acceptance check, and carrying no version of its own: the
+paragraph above is the one the version check reads; the list below is what the set check
+reads, so it names members and nothing else):
+`define_invalid`, `setup_failed`, `environment`, `platform_unsupported`, `internal`.
+
+What each class means: define_invalid — the refusal is about what the define says and
+could have been raised from its text and declared values alone (a flag the mode refuses,
+an empty command, a case file of the wrong version, a path spelled too long, a work
+directory inside the state directory); setup_failed — the setup command was handed to
+exec and exited non-zero, was killed by a signal, or ended in a status the engine does not
+decode, with the status beside it as the two integer fields above; environment — the
+engine asked the machine for something and was refused (memory, a path that would not
+resolve, a file it could not open or create, a process, a privilege, a tool, the state
+tree it could not snapshot or rewrite before exploration, an apparatus entry the
+environment does not carry); platform_unsupported — what the define asks for does not
+exist on this platform or kernel (the fs_usage oracle off macOS, syscall observation off
+Linux or on a kernel that refuses the trap, a preload apparatus on macOS); internal — the
+engine contradicted itself.
+
+The classes are coarse on purpose, and the rule above places a site: resolving a path the
+define names is the machine's answer (`environment`), a path too long as written is the
+define's (`define_invalid`). A class added later is the same break the `unknown_reason`
+paragraph in `docs/contract-freeze.md` records.
 
 `baseline_violates_invariant` says which layer failed in the world that was
 never killed (#199). For the byte layer the `message` names the first path and
@@ -226,5 +254,9 @@ the tool result's `structuredContent`, minified. `isError` is derived from
 `verdict`: a real verdict (PASS/FAIL) is `isError: false`; every refusal
 (UNKNOWN, SETUP_ERROR) is `isError: true` — retry after doing what `next_step`
 says and fixing what the `message` names, don't parse the error text (ADR 0010).
-The text block carries `next_step` too, as a `next:` line after the marked
-region and before `case`/`replay`.
+A SETUP_ERROR says which class it is in `setup_error_reason` (#518), and a
+failing setup's status in `setup_exit_code` / `setup_signal`; branch on those,
+never on the sentence. The text block's first line carries the class the way it
+carries `unknown_reason` — `SETUP_ERROR (setup_failed):` — ahead of the marked
+region, since it is a closed set the engine spells. It carries `next_step` too,
+as a `next:` line after the marked region and before `case`/`replay`.

@@ -3704,6 +3704,21 @@ TOY_STATE=$SD/s3 "$SIDEEYE" explore --state "$SD/s3" \
 TOY_STATE=$SD/s4 "$SIDEEYE" explore --state "$SD/s4" \
     --setup "/bin/false" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work "$SD/w4" --json "$SD/setup.json" >/dev/null 2>&1
+# A report for the field only a setup killed by a signal carries (#518): `setup_signal`
+# appears on that shape and nowhere else, so without it the page's row would be
+# "documented but never generated" and claim 2 goes red — the reason the divergence and
+# apparatus reports below exist. A script file, not an inline command: `splitArgs` splits
+# on spaces with no quoting (ADR 0007), so `sh -c 'kill -KILL $$'` cannot be spelled there.
+mkdir -p "$SD/s4k"
+printf '#!/bin/sh\nkill -KILL $$\n' > "$SD/setup-kill.sh"
+chmod 755 "$SD/setup-kill.sh"
+TOY_STATE=$SD/s4k "$SIDEEYE" explore --state "$SD/s4k" \
+    --setup "$SD/setup-kill.sh" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$SD/w4k" --json "$SD/setup-signal.json" >/dev/null 2>&1
+if ! grep -q '"setup_signal": 9' "$SD/setup-signal.json" 2>/dev/null; then
+    echo "FAIL the signal fixture carries no setup_signal 9, so the schema check below cannot see the row it documents"
+    fails=$((fails + 1))
+fi
 # A fifth report, for the fields only a divergence carries (#337). `divergence_syscall`
 # appears on `oracle_missed_operation` and nowhere else, so without a report of that
 # shape the page's row would be "documented but never generated" and claim 2 goes red —
@@ -3792,7 +3807,7 @@ if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/main.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/observe.json" "$SD/children.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/observe.json" "$SD/children.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -5312,6 +5327,41 @@ if echo "$o" | grep -q -- "--setup exited 7"; then
     echo "ok   #483: the refusal names the status the setup exited with"
 else
     echo "     #483: expected [--setup exited 7], got: $o"
+    fails=$((fails + 1))
+fi
+
+# --- #518: the same observation as data, read off the JSON rather than the sentence ---
+# `explore` rather than `preflight`, which refuses --json. Whole-key matches with the
+# leading newline and indentation, as buildJson writes them: a bare `7` would match a pid.
+mkdir -p /tmp/acc-obs/j-state /tmp/acc-obs/j-work
+"$SIDEEYE" explore --state /tmp/acc-obs/j-state --setup /tmp/acc-obs/setup7.sh \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/j-work \
+    --json /tmp/acc-obs/j.json >/dev/null 2>&1
+if grep -q '^  "setup_error_reason": "setup_failed"' /tmp/acc-obs/j.json 2>/dev/null &&
+   grep -q '^  "setup_exit_code": 7' /tmp/acc-obs/j.json 2>/dev/null &&
+   ! grep -q '"setup_signal"' /tmp/acc-obs/j.json 2>/dev/null; then
+    echo "ok   #518: the JSON carries setup_error_reason setup_failed and setup_exit_code 7, and no signal"
+else
+    echo "FAIL #518: expected setup_error_reason setup_failed + setup_exit_code 7 in /tmp/acc-obs/j.json, got:"
+    grep -E '"(verdict|setup_error_reason|setup_exit_code|setup_signal|message)"' /tmp/acc-obs/j.json 2>/dev/null | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+# The script is check 4's (`$SD` lives to the end of the suite); only the directories are
+# this leg's. Its own (`ks-`) because the capture-kept leg below re-uses `k-state`/`k-work`
+# and reads `setup-output-*.txt` with `head -1`, so sharing those would be safe only while
+# a SIGKILLed setup writes nothing (review).
+mkdir -p /tmp/acc-obs/ks-state /tmp/acc-obs/ks-work
+o=$("$SIDEEYE" explore --state /tmp/acc-obs/ks-state --setup "$SD/setup-kill.sh" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-obs/ks-work \
+    --json /tmp/acc-obs/k.json 2>&1)
+if echo "$o" | grep -q -- "--setup was killed by signal 9" &&
+   grep -q '^  "setup_error_reason": "setup_failed"' /tmp/acc-obs/k.json 2>/dev/null &&
+   grep -q '^  "setup_signal": 9' /tmp/acc-obs/k.json 2>/dev/null &&
+   ! grep -q '"setup_exit_code"' /tmp/acc-obs/k.json 2>/dev/null; then
+    echo "ok   #518: a setup killed by a signal carries setup_signal 9 and no exit code"
+else
+    echo "FAIL #518: expected setup_signal 9 (and no exit code) for a setup that kills itself, got: $o"
+    grep -E '"(setup_error_reason|setup_exit_code|setup_signal)"' /tmp/acc-obs/k.json 2>/dev/null | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
 
@@ -6932,10 +6982,11 @@ rc=$?
 if [ "$rc" = "3" ] \
     && echo "$o" | grep -q "fresh-state could not empty" \
     && grep -q '"verdict": "SETUP_ERROR"' /tmp/acc-rw-case/r.json \
-    && ! grep -q '"unknown_reason"' /tmp/acc-rw-case/r.json; then
-    echo "ok   the same failure before the define runs honestly stays a SETUP ERROR, with no reason claimed"
+    && ! grep -q '"unknown_reason"' /tmp/acc-rw-case/r.json \
+    && grep -q '"setup_error_reason": "environment"' /tmp/acc-rw-case/r.json; then
+    echo "ok   the same failure before the define runs honestly stays a SETUP ERROR, with no unknown_reason claimed and the environment class (#518)"
 else
-    echo "FAIL rewrite failure before the define: exit $rc (wanted 3 + fresh-state wording + no unknown_reason)"
+    echo "FAIL rewrite failure before the define: exit $rc (wanted 3 + fresh-state wording + no unknown_reason + setup_error_reason environment)"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
@@ -8263,6 +8314,59 @@ else
     # One, not the number of problems: every other check in this suite contributes at
     # most one to the total, and a leg that adds two makes the closing count mean
     # something different from the others.
+    fails=$((fails + 1))
+fi
+
+echo "=========== check 2sr: every SETUP_ERROR report this suite leaves under /tmp/acc* carries a class from the closed set (#518) ==========="
+# The classification is 193 hand decisions and a compile-time rule that every site names
+# one; what the rule cannot see is a funnel handed a class that is not in the documented
+# set, or a writer that dropped the field. So every report the suite left behind is read:
+# `verdict == "SETUP_ERROR"` implies `setup_error_reason` is a member of the page's set,
+# and a `setup_failed` carries at most one of the two integers. What is read is what the
+# suite leaves behind — checks that `rm -rf` their directory at the end are not seen, so
+# this is "every report left under /tmp/acc*", not "every report written". `/tmp/acc*`,
+# not `/tmp/acc-*`: `/tmp/acc/` is the suite's largest report directory and the first
+# draft's glob skipped it (review). Red with zero implementation (today's reports carry
+# no such field), and the count of reports read is printed so an empty scan cannot pass
+# as a clean one.
+sr_out=$(python3 - "$ROOT/docs/report-schema.md" <<'PY'
+import glob, json, re, sys
+doc = open(sys.argv[1], encoding="utf-8").read()
+m = re.search(r"`setup_error_reason` values \(closed set[^)]*\):(.*?)\n\n", doc, re.S)
+members = set(re.findall(r"`([a-z0-9_]+)`", m.group(1))) if m else set()
+if not members:
+    print("FAIL: the page has no setup_error_reason closed-set paragraph"); sys.exit(1)
+paths = sorted(glob.glob("/tmp/acc*/**/*.json", recursive=True))
+seen = 0; setup = 0; bad = []
+for pth in paths:
+    try:
+        d = json.load(open(pth))
+    except Exception:
+        continue
+    if not isinstance(d, dict) or d.get("schema") != "sideeye/report":
+        continue
+    seen += 1
+    if d.get("verdict") != "SETUP_ERROR":
+        if "setup_error_reason" in d: bad.append("%s: %s carries setup_error_reason" % (pth, d.get("verdict")))
+        continue
+    setup += 1
+    r = d.get("setup_error_reason")
+    if r not in members:
+        bad.append("%s: setup_error_reason=%r not in %s" % (pth, r, sorted(members)))
+    if r != "setup_failed" and ("setup_exit_code" in d or "setup_signal" in d):
+        bad.append("%s: a status under class %r" % (pth, r))
+    if r == "setup_failed" and "setup_exit_code" in d and "setup_signal" in d:
+        bad.append("%s: both an exit code and a signal on one setup" % pth)
+if setup == 0:
+    print("FAIL: no SETUP_ERROR report was found under /tmp/acc* (%d reports read); the scan is vacuous" % seen); sys.exit(1)
+for b in bad: print("FAIL: " + b)
+if bad: sys.exit(1)
+print("ok   %d report(s) read, %d SETUP_ERROR, every one carrying a class from the set of %d" % (seen, setup, len(members)))
+PY
+)
+sr_rc=$?
+echo "$sr_out"
+if [ "$sr_rc" != "0" ]; then
     fails=$((fails + 1))
 fi
 

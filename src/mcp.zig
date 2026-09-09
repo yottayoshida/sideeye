@@ -1086,6 +1086,18 @@ test "the summary carries next_step after the region and before case, and only w
     try std.testing.expect(std.mem.indexOf(u8, without, "\nnext: ") == null);
 }
 
+test "a SETUP_ERROR's class rides in the reason slot ahead of the region, and an older report without one keeps the bare verdict (#518)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const with = summarize(a, "{\"verdict\":\"SETUP_ERROR\",\"setup_error_reason\":\"setup_failed\",\"setup_exit_code\":7,\"message\":\"--setup exited 7\"}") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.startsWith(u8, with, "SETUP_ERROR (setup_failed):\n"));
+    // The numbers stay in structuredContent: the text line carries the class only.
+    try std.testing.expect(std.mem.indexOf(u8, with, "setup_exit_code") == null);
+    const without = summarize(a, "{\"verdict\":\"SETUP_ERROR\",\"message\":\"m\"}") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.startsWith(u8, without, "SETUP_ERROR:\n"));
+}
+
 test "the summary carries apparatus after next_step and before case, joined, and only when the report does (ADR 0041)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
@@ -1228,13 +1240,17 @@ fn summarize(arena: std.mem.Allocator, report_min: []const u8) ?[]const u8 {
     const verdict = strField(o, "verdict") orelse "?";
     var out: std.ArrayList(u8) = .empty;
     out.appendSlice(arena, verdict) catch return null;
-    if (strField(o, "unknown_reason")) |r| {
+    // One slot, either closed set: `unknown_reason` on an UNKNOWN, `setup_error_reason` on
+    // a SETUP_ERROR (#518). Both are names the engine spells, never target bytes, so the
+    // slot may sit ahead of the marked region; and no report carries both, since each is
+    // written only under its own verdict. mcp 17 derives the expected prefix the same way.
+    if (strField(o, "unknown_reason") orelse strField(o, "setup_error_reason")) |r| {
         out.appendSlice(arena, " (") catch return null;
         out.appendSlice(arena, r) catch return null;
         out.appendSlice(arena, ")") catch return null;
     }
-    // `message` is the one field here a target influences: `verdict` and `unknown_reason`
-    // are closed sets, and `case`/`replay` are paths the engine minted. It carries target
+    // `message` is the one field here a target influences: `verdict`, `unknown_reason` and
+    // `setup_error_reason` are closed sets, and `case`/`replay` are paths the engine minted. It carries target
     // bytes two ways — an entry name spliced into a refusal, and, through
     // `divergenceDetail`, a raw oracle line, which under `-y` quotes what the target wrote
     // into a state file.

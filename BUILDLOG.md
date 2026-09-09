@@ -2,6 +2,73 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-09 — A SETUP_ERROR that says why, as data (#518)
+
+The second of the batch's three. #483 made a failing `--setup` say `--setup exited 7`,
+and #518 followed: the 7 lived only inside the sentence. `spike/acceptance.sh` asserted
+the contract by grepping English, and the MCP adapter forwarded the sentence inside the
+region it marks as target-influenced, so the one caller that has to branch on *why* setup
+failed could only regex text this project rewords at will. UNKNOWN had the shape all
+along — `unknown_reason`, a closed set, `divergence_syscall` for the one fact a divergence
+carries — and SETUP_ERROR had neither.
+
+**The owner chose the set over the number.** The issue offered both, cheapest first; the
+status alone answers the quoted sentence and nothing else. The set is five classes, not
+193 branches: `define_invalid`, `setup_failed`, `environment`, `platform_unsupported`,
+`internal`, with the rule that places a site written on each member. `setupError` takes
+the class as a required first argument — the rule `unknown()` keeps for `next_step` —
+so the compiler holds every one of its 193 sites to choosing, and the adversarial reader
+of the plan is the one who said what that guarantee is worth: one class per *syntactic*
+site, and six of the sites are funnels. `restoreFailure` already told `UnsafeRoot` from
+`PathTooLong`; `spawnFailure` holds a `SpawnError`; `snapshotRefusal` holds the
+`UnknownReason` it would have raised. Each now chooses by an exhaustive switch on what it
+holds, even where every arm lands on `environment`, so a member added to the discriminant
+has to be given a class. The same reader's first finding — that a `--setup` which could
+not be *started* would land in `environment` — was measured false: `SpawnError` has no
+exec member, and a failed exec brings an unexecutable image to the `.exited` arm as the
+child's `_exit(127)` — measured on this machine: a `--setup` path that does not exist
+reports `setup_failed` with exit code 127 — while a child the fork stub could not arrange
+before exec arrives the same way as 126, with #546's stderr line naming the call. The first
+draft of this entry said 126 for both; the dry run said otherwise. Recorded as a rejection
+with its measurement, and the definition written where a reader meets it.
+
+**What the plan had missed and the reader found.** `spike/mcp-acceptance.sh` mcp 17 is
+where the #339 prefix rule is pinned — it derives the expected prefix from the run's own
+report and checks both values against the closed sets read off the page — and it was
+absent from the plan; it now derives from the third field and reads the second paragraph.
+The signal fixture cannot be an inline command (`splitArgs` has no quoting), and a
+generated report has to be named in `check-report-schema.py`'s argument list before claim
+2 can see the row. The count was 193, not 194. And the falsifiable check that mattered was
+not "the page equals the enum" — the script's own claim — but a leg over every report the
+suite leaves behind, holding `verdict == SETUP_ERROR` to a member of the set: red with zero
+implementation, and the one thing that sees a funnel handed a class the page does not
+know.
+
+**What the second reader and the cleanup pass changed.** The confirming reader found one
+sentence in `docs/freeze-audit.md` written in the past tense about a ledger row that does
+not exist — the sweep "records the set's birth the way `sc-18` recorded" an earlier one,
+where `sc-18` is itself a row the ledger does not yet hold, as `docs/contract-freeze.md`
+says two files away. It also found that `rewriteFailureDisposition`'s new class arm had no
+test: the loop below it walks every `RestoreError` in both phases and asserted only the
+exit and the wording, so the `define_invalid` arm was covered nowhere. Both fixed, the
+second seen red by handing `PathTooLong` the environment class. The cleanup pass took five
+simplifications, of which two were the same shape: the setup's status is assigned once from
+the value the switch is over, rather than rebuilt in three arms where a fourth `Term` member
+would be silently missed, and the rewrite disposition's step and class come from one switch
+because they split the same way. The MCP summary and its acceptance leg went to one slot and
+one lookup — the two closed-set fields never share a report — and the schema check's two
+closed sets became one helper called twice, falsified on both. The report scan's second glob
+was dead: `**` under `recursive=True` already matches zero directories, measured.
+
+**What stays where it was.** The text line is `SETUP ERROR  <detail>`, unchanged — the
+JSON is the complete record and the text the reader's view (DESIGN §13), and the suite
+reads the rest of that line as the detail. `next_step` stays UNKNOWN-only (#483's ruling,
+not reopened). `contract_version` does not move for a field. The freeze audit is not
+touched: it reports drift and says in its own words that a change which moved a surface
+has nothing to do there; what it lacks — an extraction for the new set — is written down
+for the next sweep in two places rather than added to a gate whose pin side would read
+empty and fail.
+
 ## 2026-09-09 — A refusal that names nothing and blames the wrong party (#535)
 
 The first of the three issues in `/pickup` batch `b_047dc6f77789`. lbdb's fetcher takes a

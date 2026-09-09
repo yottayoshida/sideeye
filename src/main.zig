@@ -433,6 +433,12 @@ var case_note: []const u8 = "(none)";
 /// keep that property; the alignment tests on both sides are where a new one would be
 /// noticed, not here.
 var divergence_syscall: []const u8 = "";
+/// How the `--setup` run ended (#518), set once from the value the refusal switches on and
+/// read by `buildJson` under `setup_failed` only — so a run whose setup succeeded leaves a
+/// status here that no report can reach. Carried the way `divergence_syscall` is, a global
+/// the one site with the value sets, rather than threaded through `setupError`, whose 190
+/// other sites have no status to hand over.
+var setup_status: ?posix.Term = null;
 var replay_note: []const u8 = "-";
 /// What the run has *established* about process boundaries, as it establishes it.
 ///
@@ -878,7 +884,7 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // statement wide: this snapshot exiting 2 for OOM while the `classify` that
         // consumes it exits 3 for the same cause. The ruling on #351 listed it among the
         // errors to move; this is the deviation, taken deliberately and approved.
-        if (e == error.OutOfMemory) setupError(what);
+        if (e == error.OutOfMemory) setupError(.environment, what);
 
         // **Decided once, for every exit below.** Threading the reason through as a
         // parameter was the first design, and review counted what could then go wrong:
@@ -907,16 +913,18 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // environment the operator fixes (an entry that could not be classified, or a
         // read that failed some other way), and a sorted-entry invariant that is
         // Sideeye's to fix. A reason-keyed table could not say that.
-        const answer: struct { reason: contract.UnknownReason, bare: []const u8, next: contract.NextStep } = switch (e) {
+        const answer: struct { reason: contract.UnknownReason, bare: []const u8, next: contract.NextStep, setup: contract.SetupErrorReason } = switch (e) {
             error.FileTooLarge => .{
                 .reason = .state_file_too_large,
                 .bare = "a state file is too large for byte-level judgment",
                 .next = .narrow_state,
+                .setup = .environment,
             },
             error.TreeTooLarge => .{
                 .reason = .state_tree_too_large,
                 .bare = "the state tree is too large to snapshot",
                 .next = .narrow_state,
+                .setup = .environment,
             },
             error.TooDeep,
             error.PathTooLong,
@@ -924,6 +932,7 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
                 .reason = .state_unsnapshotable,
                 .bare = "the state tree could not be snapshotted",
                 .next = .narrow_state,
+                .setup = .environment,
             },
             // An entry the walk could not read (#535). The step is rendered only past
             // the recording run — before it, `snapshotRefusal` calls `setupError`, which
@@ -934,6 +943,7 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
                 .reason = .state_unsnapshotable,
                 .bare = "the state tree could not be snapshotted",
                 .next = readFailedStep(diag.entry.errno),
+                .setup = .environment,
             },
             // An entry whose kind could not be told: `statNoFollow` failing is the
             // filesystem's answer, and the environment is where that is fixed.
@@ -941,17 +951,22 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
                 .reason = .state_unsnapshotable,
                 .bare = "the state tree could not be snapshotted",
                 .next = .environment,
+                .setup = .environment,
             },
             error.EntriesNotSortedUnique => .{
                 .reason = .state_unsnapshotable,
                 .bare = "the state tree could not be snapshotted",
                 .next = .sideeye_defect,
+                // The one snapshot failure that is Sideeye's own (#518): the SETUP_ERROR class
+                // is chosen here, in the arm that already calls it a defect, and not from the
+                // reason — `state_unsnapshotable` covers this and four environment failures.
+                .setup = .internal,
             },
             error.OutOfMemory => unreachable, // refused above
         };
         const reason = answer.reason;
 
-        if (json_arena) |ja| snapshotRefusal(reason, snapshotDetail(ja, e, what, &diag), answer.next);
+        if (json_arena) |ja| snapshotRefusal(reason, answer.setup, snapshotDetail(ja, e, what, &diag), answer.next);
 
         // Unreachable in practice: json_arena is assigned unconditionally before the
         // parse loop, ahead of every call site. Kept so this function's contract does
@@ -964,7 +979,7 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // else }` over `UnknownReason` it was not compiler-covered at all, and a new
         // reason silently took the catch-all sentence — the mistake the switch above is
         // exhaustive to prevent, one level down and on the path nothing exercises (#323).
-        snapshotRefusal(reason, answer.bare, answer.next);
+        snapshotRefusal(reason, answer.setup, answer.bare, answer.next);
     };
 }
 
@@ -1083,9 +1098,12 @@ fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const 
 }
 
 /// A snapshot refusal's one exit, split by how far the run has got (#330, widened by #351).
-fn snapshotRefusal(reason: contract.UnknownReason, detail: []const u8, next: contract.NextStep) noreturn {
+/// `setup` is the SETUP_ERROR class the raising arm chose beside its reason and step
+/// (#518): decided on `SnapshotError`, where an unsorted entry list is known to be
+/// Sideeye's own, not on `UnknownReason`, where it hides among four environment failures.
+fn snapshotRefusal(reason: contract.UnknownReason, setup: contract.SetupErrorReason, detail: []const u8, next: contract.NextStep) noreturn {
     switch (run_phase) {
-        .before_exploration => setupError(detail),
+        .before_exploration => setupError(setup, detail),
         .exploring => unknown(reason, detail, next),
     }
 }
@@ -1304,8 +1322,8 @@ fn readTraceOrRefuse(path: []const u8, cap: usize, setup_msg: []const u8) engine
     // happen today — `main` installs the budget before any argument is parsed — and a
     // local budget could not stand in if it could, because the `TraceInfo` returned here
     // outlives this frame and frees through the budget's child.
-    const b = trace_budget orelse setupError("internal: a trace was read before the whole-trace ceiling was installed");
-    return engine.readTraceCapped(b, path, cap) catch setupError(setup_msg);
+    const b = trace_budget orelse setupError(.internal, "internal: a trace was read before the whole-trace ceiling was installed");
+    return engine.readTraceCapped(b, path, cap) catch setupError(.environment, setup_msg);
 }
 
 /// The cap's refusal, separate from the read so a caller can classify first. The
@@ -2112,7 +2130,7 @@ fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.Ne
     dropCapture();
     const next_step = next.render();
     if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), detail, next_step);
+        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), null, detail, next_step);
     // The classification lines appear here too. The reason used to be written as
     // "DESIGN §13 demands text and JSON carry identical content, and the JSON below
     // already does" -- false where it stood, on the most divergent path of the three,
@@ -2214,11 +2232,19 @@ fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
 /// the same `--json` path read the *previous* run's document as this run's result. Since
 /// several of these fire mid-run — after the trace is read, after a world is restored —
 /// that stale verdict could be a PASS for a run that never explored anything.
-fn setupError(detail: []const u8) noreturn {
+///
+/// `reason` is required, not optional, on purpose (#518, ADR 0057) — the rule `unknown()`
+/// keeps for `next`: the site that refuses is the one that knows which class it is, and the
+/// compiler is what holds every site to choosing. A site that funnels several failures
+/// chooses by an exhaustive switch on what it holds (`spawnFailure`, `snapshotRefusal`,
+/// `restoreFailure`). The reason reaches the JSON as `setup_error_reason`; the text line
+/// is unchanged, because its sentence already says what happened and the acceptance suite
+/// reads the rest of that line as the detail.
+fn setupError(reason: contract.SetupErrorReason, detail: []const u8) noreturn {
     _ = stopLiveSidecar();
     dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, detail, null);
+        writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, reason, detail, null);
     say("SETUP ERROR  {s}\n", .{detail});
     std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
 }
@@ -2279,10 +2305,17 @@ const SpawnPhase = enum {
 var run_phase: SpawnPhase = .before_exploration;
 
 fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
+    // The SETUP_ERROR class, decided once for the whole error set (#518): every member is
+    // the engine needing something of the machine — a fork, memory, a descriptor, a capture,
+    // a wait — so every arm is `environment`, and the switch is exhaustive so a member added
+    // to `SpawnError` has to be given a class here rather than inherit one.
+    const reason: contract.SetupErrorReason = switch (e) {
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => .environment,
+    };
     if (e == error.WaitFailed) {
         const detail = "a child process ran, but its exit status could never be read: the wait was interrupted repeatedly, or failed permanently. Every verdict here rests on how that child ended, so the run refuses instead of deriving one from a status that was never written";
         switch (phase) {
-            .before_exploration => setupError(detail),
+            .before_exploration => setupError(reason, detail),
             .exploring => unknown(.child_wait_failed, detail, .retry_then_report),
         }
     }
@@ -2293,7 +2326,7 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
     // arranged, and no child ran whose exit status could be read as anything.
     if (e == error.StdinUnavailable) {
         var buf: [512]u8 = undefined;
-        setupError(std.fmt.bufPrint(&buf, "{s}: /dev/null could not be opened, so the command could not be started with its stdin at end-of-file", .{doing}) catch doing);
+        setupError(reason, std.fmt.bufPrint(&buf, "{s}: /dev/null could not be opened, so the command could not be started with its stdin at end-of-file", .{doing}) catch doing);
     }
     // The child's stdout capture, refused in the parent before any fork (#469). Same
     // phase-independent SETUP_ERROR as the stdin arm above and for the same reason: the
@@ -2322,11 +2355,11 @@ fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noret
     // for `ForkFailed` and `OutOfMemory` below, which nothing had made reachable.
     if (e == error.CaptureUnavailable) {
         var buf: [512]u8 = undefined;
-        setupError(std.fmt.bufPrint(&buf, "{s}: the command's stdout capture in the work directory could not be opened. The engine refuses a capture path that is a symlink, or that already holds a file or directory the engine did not just create — check --work, and what is at the capture path inside it", .{doing}) catch doing);
+        setupError(reason, std.fmt.bufPrint(&buf, "{s}: the command's stdout capture in the work directory could not be opened. The engine refuses a capture path that is a symlink, or that already holds a file or directory the engine did not just create — check --work, and what is at the capture path inside it", .{doing}) catch doing);
     }
     // Fork and allocation failures are environment problems in either phase, and the
     // caller's wording already says which step was starting.
-    setupError(doing);
+    setupError(reason, doing);
 }
 
 /// How much fs_usage capture the engine will hold.
@@ -2428,11 +2461,11 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     const probe = posix.runChildCapture(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/true" }, &.{}, .{ .path = "/dev/null" }, null) catch |e|
         spawnFailure(e, .before_exploration, "could not run sudo to start fs_usage");
     switch (probe) {
-        .exited => |c| if (c != 0) setupError("fs_usage needs root and sudo has no cached credentials; run `sudo -v` in this terminal first, then re-run. The credential cache is per-terminal, so a `sudo -v` elsewhere does not reach this process"),
-        else => setupError("the sudo credential check did not exit normally"),
+        .exited => |c| if (c != 0) setupError(.environment, "fs_usage needs root and sudo has no cached credentials; run `sudo -v` in this terminal first, then re-run. The credential cache is per-terminal, so a `sudo -v` elsewhere does not reach this process"),
+        else => setupError(.environment, "the sudo credential check did not exit normally"),
     }
 
-    const limit = std.fmt.allocPrint(arena, "{d}", .{limit_s}) catch setupError("out of memory");
+    const limit = std.fmt.allocPrint(arena, "{d}", .{limit_s}) catch setupError(.environment, "out of memory");
     // Unfiltered: `fs_usage`'s pid filter does not follow a fork, so filtering by the
     // subject leaves a raw-forked child invisible to this witness exactly where it is
     // already invisible to the shim (#405). Scope is the state root, decided in
@@ -2462,7 +2495,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // root and waits for that path to appear in the capture; until it does, nothing
     // the subject would do is guaranteed to be recorded.
     var zb: [contract.max_path]u8 = undefined;
-    const sz = std.fmt.bufPrintZ(&zb, "{s}", .{sentinel}) catch setupError("path too long");
+    const sz = std.fmt.bufPrintZ(&zb, "{s}", .{sentinel}) catch setupError(.define_invalid, "path too long");
     // Created ONCE, before the loop. Inside it, the second iteration's O_EXCL open
     // necessarily fails on the file the first one made — which is how the first
     // version of this refused every run that needed more than one poll, under a
@@ -2471,7 +2504,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // retry that waits for the observer are two different concerns; only the first
     // belongs on the open.
     const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
-    if (fd < 0) setupError("the fs_usage handshake could not create its sentinel inside the state directory; a file of that name is already there, or the directory is not writable");
+    if (fd < 0) setupError(.environment, "the fs_usage handshake could not create its sentinel inside the state directory; a file of that name is already there, or the directory is not writable");
     _ = posix.close(fd);
 
     var waited: u64 = 0;
@@ -2485,7 +2518,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         if (w == pid or w < 0) {
             fsu_live = null;
             removeFile(sentinel);
-            setupError("fs_usage exited before the handshake completed; if it printed `ktrace_start: Resource busy` above, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run");
+            setupError(.environment, "fs_usage exited before the handshake completed; if it printed `ktrace_start: Resource busy` above, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run");
         }
 
         // Flush pressure. fs_usage writes its capture through stdio, and a file is
@@ -2517,7 +2550,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         waited += 100;
     }
     removeFile(sentinel);
-    setupError("fs_usage started but its capture never showed the engine's own sentinel, so nothing proves the observer was recording; the run would have been judged against a capture of unknown coverage");
+    setupError(.environment, "fs_usage started but its capture never showed the engine's own sentinel, so nothing proves the observer was recording; the run would have been judged against a capture of unknown coverage");
 }
 
 /// Spawn the operation under observation, the way the recording run does.
@@ -2563,7 +2596,7 @@ fn runOperationObserved(
         // and strace's own file operations would land in the trace as if the
         // target had produced them.
         var list: std.ArrayList([]const u8) = .empty;
-        list.append(arena, strace_path) catch setupError("out of memory");
+        list.append(arena, strace_path) catch setupError(.environment, "out of memory");
         // `-f` follows children and `%process` covers clone/fork/execve. Without
         // both, a target that creates a child through a raw clone is invisible to
         // the oracle as well as to the shim, and the child's work on the state
@@ -2571,7 +2604,7 @@ fn runOperationObserved(
         // because `%process` does not include them (measured), and an *unshimmed*
         // child detaching from the containment group is visible nowhere else.
         for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid", "-o", oracle_out }) |a|
-            list.append(arena, a) catch setupError("out of memory");
+            list.append(arena, a) catch setupError(.environment, "out of memory");
         const pairs = [_][2][]const u8{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
@@ -2584,11 +2617,11 @@ fn runOperationObserved(
             .{ preload_var, shim },
         };
         for (pairs) |kv| {
-            list.append(arena, "-E") catch setupError("out of memory");
-            const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError("out of memory");
-            list.append(arena, joined) catch setupError("out of memory");
+            list.append(arena, "-E") catch setupError(.environment, "out of memory");
+            const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError(.environment, "out of memory");
+            list.append(arena, joined) catch setupError(.environment, "out of memory");
         }
-        for (op_argv) |a| list.append(arena, a) catch setupError("out of memory");
+        for (op_argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
         return posix.runChildCapture(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
     }
     return posix.runChildCapture(gpa, op_argv, &.{
@@ -2796,7 +2829,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             continue;
         }
         if (std.mem.eql(u8, argv[i], "--fresh-state")) {
-            if (mode != .replay) setupError("--fresh-state applies to replay only (explore's state may be legitimately pre-populated)");
+            if (mode != .replay) setupError(.define_invalid, "--fresh-state applies to replay only (explore's state may be legitimately pre-populated)");
             args.fresh_state = true;
             i += 1;
             continue;
@@ -2804,7 +2837,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (std.mem.eql(u8, argv[i], "--stop-when-orphaned")) {
             // #269. A flag and not an environment variable, for reasons measured and
             // recorded in ADR 0010 (argv is per-invocation and is not inherited).
-            if (mode == .preflight) setupError("preflight explores no worlds; --stop-when-orphaned belongs to explore and replay");
+            if (mode == .preflight) setupError(.define_invalid, "preflight explores no worlds; --stop-when-orphaned belongs to explore and replay");
             stop_when_orphaned = true;
             i += 1;
             continue;
@@ -2815,16 +2848,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // operation a second time — the un-killed baseline world is that run, and
             // `baseline_run_failed` is what they say when the re-run disagrees. What
             // preflight lacks is any second observation at all.
-            if (mode != .preflight) setupError("--twice belongs to preflight; explore and replay already re-run the operation in the un-killed baseline world, and a divergent re-run refuses there: as baseline_run_failed when it does not end the way the recording did, as baseline_violates_invariant when its bytes differ");
+            if (mode != .preflight) setupError(.define_invalid, "--twice belongs to preflight; explore and replay already re-run the operation in the un-killed baseline world, and a divergent re-run refuses there: as baseline_run_failed when it does not end the way the recording did, as baseline_violates_invariant when its bytes differ");
             args.twice = true;
             i += 1;
             continue;
         }
-        if (i + 1 >= argv.len) setupError("an option is missing its value");
+        if (i + 1 >= argv.len) setupError(.define_invalid, "an option is missing its value");
         const v = argv[i + 1];
         if (std.mem.eql(u8, argv[i], "--observe")) {
             args.observe = contract.ObserveMode.parse(v) orelse
-                setupError("--observe takes `wrappers` (the default) or `syscalls`");
+                setupError(.define_invalid, "--observe takes `wrappers` (the default) or `syscalls`");
         } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).
@@ -2848,7 +2881,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // #263. Worlds only — the recording run, setup and checkers have no
             // budget, and the help text says so: the flag must not read as a promise
             // of a hang-free run.
-            if (mode == .preflight) setupError("preflight explores no worlds; --world-timeout belongs to explore and replay");
+            if (mode == .preflight) setupError(.define_invalid, "preflight explores no worlds; --world-timeout belongs to explore and replay");
             args.world_timeout_s = parseWorldTimeout(v);
             // The budget's kill-safety and its bounded teardown both stand on
             // unreaped children staying zombies, so SIGCHLD goes to its default
@@ -2865,23 +2898,23 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // state is part of what the operator vets (#96); accepting the flag there
             // would be a second confinement feature nobody asked for, and preflight
             // destroys nothing.
-            if (mode != .replay) setupError("--state-under applies to replay only: a config's state is part of what the operator vets, and preflight never destroys");
+            if (mode != .replay) setupError(.define_invalid, "--state-under applies to replay only: a config's state is part of what the operator vets, and preflight never destroys");
             // A confinement flag must not be last-wins: two spellings in one argv is
             // a caller bug, and silently taking the second would let a widened range
             // ride behind a narrow-looking one.
-            if (args.state_under != null) setupError("--state-under was given twice; refusing rather than letting the second spelling win");
+            if (args.state_under != null) setupError(.define_invalid, "--state-under was given twice; refusing rather than letting the second spelling win");
             args.state_under = v;
         } else if (std.mem.eql(u8, argv[i], "--config")) args.config = v else if (std.mem.eql(u8, argv[i], "--json")) {
             // Rejected before the removeFile below: a rejection that had already deleted
             // the caller's previous report would be a refusal with a side effect.
-            if (mode == .preflight) setupError("preflight has no machine-readable form; sideeye explore --config answers strictly more, and --json lives there");
+            if (mode == .preflight) setupError(.define_invalid, "preflight has no machine-readable form; sideeye explore --config answers strictly more, and --json lives there");
             args.json = v;
             json_path = v;
             // Any document at this path describes some earlier run. Removing it now means
             // an exit that never reaches a writer leaves *no* report rather than a stale
             // one: absence is unambiguous, a previous verdict is not.
             removeFile(v);
-        } else setupError("unknown option");
+        } else setupError(.define_invalid, "unknown option");
         i += 2;
     }
 
@@ -2894,7 +2927,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // verdict rests on. Refused by name rather than resolved by precedence — the
     // accepted-but-inert shape this parser refuses everywhere else (ADR 0007).
     if (args.oracle != null and args.oracle_fs_usage)
-        setupError("--oracle and --oracle-fs-usage both name a completeness oracle; pass one");
+        setupError(.define_invalid, "--oracle and --oracle-fs-usage both name a completeness oracle; pass one");
     args.has_oracle = args.oracle != null or args.oracle_fs_usage;
     // Only now can "no --oracle given" be said: the whole argv has been read and no flag
     // named one. Before this line the account says nothing was established (#352).
@@ -2914,11 +2947,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         boundary_ev.witness = .{ .unread = .strace };
 
     if (mode == .preflight) {
-        if (args.oracle_fs_usage) setupError("--oracle-fs-usage belongs to explore and replay; preflight asks whether the recording phase accepts this target, and answers that without a second witness");
-        if (args.check != null) setupError("preflight runs before an invariant exists; --check belongs to explore, which also falsifies it before trusting it");
-        if (args.marker != null) setupError("--marker belongs to explore; preflight makes no claim a marker could strengthen");
-        if (args.config != null) setupError("preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more");
-        if (args.allow_unverified) setupError("preflight never claims PASS, so there is nothing --allow-unverified could weaken");
+        if (args.oracle_fs_usage) setupError(.define_invalid, "--oracle-fs-usage belongs to explore and replay; preflight asks whether the recording phase accepts this target, and answers that without a second witness");
+        if (args.check != null) setupError(.define_invalid, "preflight runs before an invariant exists; --check belongs to explore, which also falsifies it before trusting it");
+        if (args.marker != null) setupError(.define_invalid, "--marker belongs to explore; preflight makes no claim a marker could strengthen");
+        if (args.config != null) setupError(.define_invalid, "preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more");
+        if (args.allow_unverified) setupError(.define_invalid, "preflight never claims PASS, so there is nothing --allow-unverified could weaken");
     }
 
     // A replay's define comes from the case file itself: the counterexample's
@@ -2929,18 +2962,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (args.state != null or args.setup != null or args.operation != null or
             args.check != null or args.marker != null or args.expect_status != null or
             args.cwd != null or args.config != null or args.apparatus.len != 0 or args.scratch.len != 0)
-            setupError("replay takes its define from the case file; the define-surface flags (--apparatus and --scratch included) and --config do not apply");
+            setupError(.define_invalid, "replay takes its define from the case file; the define-surface flags (--apparatus and --scratch included) and --config do not apply");
         const rarena = arena_state.allocator();
         const ctext = readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, .{ .require_regular = true }) orelse setupError(
+            .environment,
             std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
         );
         const parsed = std.json.parseFromSlice(ReplayCase, rarena, ctext, .{}) catch
-            setupError("the case file could not be parsed as a sideeye case");
+            setupError(.define_invalid, "the case file could not be parsed as a sideeye case");
         const c = parsed.value;
         if (!std.mem.eql(u8, c.schema, "sideeye/case"))
-            setupError("the file does not declare itself a sideeye case");
+            setupError(.define_invalid, "the file does not declare itself a sideeye case");
         if (c.case_version != 1 and c.case_version != 2 and c.case_version != 3 and c.case_version != 4 and c.case_version != 5)
-            setupError("this binary understands case schema versions 1, 2, 3, 4 and 5 only");
+            setupError(.define_invalid, "this binary understands case schema versions 1, 2, 3, 4 and 5 only");
         // The same travel-together law, extended to the command shape (ADR 0019): the
         // argv form arrived with version 3, so an older file carrying it is not an
         // older file — it is malformed, and reading it under a guessed contract would
@@ -2949,7 +2983,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             (c.define.setup != null and c.define.setup.? == .argv) or
             (c.define.check != null and c.define.check.? == .argv);
         if (c.case_version < 3 and carries_argv)
-            setupError("a case_version 1 or 2 file cannot carry an argv-form command; the array form arrived with version 3");
+            setupError(.define_invalid, "a case_version 1 or 2 file cannot carry an argv-form command; the array form arrived with version 3");
         // The version and the declaration travel together (ADR 0014): a v1 file
         // carrying a declaration is not a v1 file, and a v2 file without one has
         // lost the very fact the version exists to freeze. Both are refused as
@@ -2959,9 +2993,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // passes — null is not a declaration, and the meaning ("0 was the
         // contract") is the same either way. A v2 `null` refuses like an absence.
         if (c.case_version == 1 and c.define.expected_status != null)
-            setupError("a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
+            setupError(.define_invalid, "a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
         if (c.case_version >= 2 and c.define.expected_status == null)
-            setupError("a case_version 2, 3, 4 or 5 file must carry define.expected_status; the case freezes the declaration");
+            setupError(.define_invalid, "a case_version 2, 3, 4 or 5 file must carry define.expected_status; the case freezes the declaration");
         // The same law again, for the directory the define declared it runs in. A cwd is
         // part of what the counterexample was found against — replaying the same commands
         // somewhere else is replaying a different define — so the version moves with it.
@@ -2969,9 +3003,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // malformed rather than old, and a v4 file without one has lost the fact the
         // version exists to freeze.
         if (c.case_version < 4 and c.define.cwd != null)
-            setupError("a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4");
+            setupError(.define_invalid, "a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4");
         if (c.case_version == 4 and c.define.cwd == null)
-            setupError("a case_version 4 file must carry define.cwd; the version exists to freeze it");
+            setupError(.define_invalid, "a case_version 4 file must carry define.cwd; the version exists to freeze it");
         // Version 5 (ADR 0043) carries the scratch declaration, which decides verdicts, and
         // it holds two independent optional fields where version 4 held one — so the gate
         // above cannot be copied: a v5 file without a cwd is not malformed. From version 5
@@ -2983,22 +3017,22 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // ran somewhere else. The entries themselves are validated where they are
         // normalised, in the apply block below, with the same refusals the flag gives.
         if (c.case_version < 5 and c.define.scratch != null)
-            setupError("a case_version 1, 2, 3 or 4 file cannot carry a scratch declaration; it arrived with version 5");
+            setupError(.define_invalid, "a case_version 1, 2, 3 or 4 file cannot carry a scratch declaration; it arrived with version 5");
         if (c.case_version == 5) {
-            const decl = c.define.scratch orelse setupError("a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
-            if (decl.len == 0) setupError("a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
+            const decl = c.define.scratch orelse setupError(.define_invalid, "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
+            if (decl.len == 0) setupError(.define_invalid, "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
             const raw = std.json.parseFromSlice(std.json.Value, rarena, ctext, .{}) catch
-                setupError("the case file could not be parsed as a sideeye case");
+                setupError(.define_invalid, "the case file could not be parsed as a sideeye case");
             const def: std.json.Value = switch (raw.value) {
-                .object => |o| o.get("define") orelse setupError("the case file has no define object"),
-                else => setupError("the case file is not a JSON object"),
+                .object => |o| o.get("define") orelse setupError(.define_invalid, "the case file has no define object"),
+                else => setupError(.define_invalid, "the case file is not a JSON object"),
             };
             const has_cwd = switch (def) {
                 .object => |o| o.contains("cwd"),
                 else => false,
             };
             if (!has_cwd)
-                setupError("a case_version 5 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit");
+                setupError(.define_invalid, "a case_version 5 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit");
         }
         // A relative `state` resolves against the CASE FILE, not the cwd of whoever
         // invoked the replay (#325). ADR 0007 Decision 4 states the rule for a
@@ -3034,10 +3068,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const case_dir = blk: {
             const raw = std.fs.path.dirname(case_arg.?) orelse ".";
             var dz_buf: [contract.max_path]u8 = undefined;
-            const dz = std.fmt.bufPrintZ(&dz_buf, "{s}", .{raw}) catch setupError("the case file's directory is too long to resolve against");
+            const dz = std.fmt.bufPrintZ(&dz_buf, "{s}", .{raw}) catch setupError(.define_invalid, "the case file's directory is too long to resolve against");
             var real_buf: [contract.max_path]u8 = undefined;
-            const abs = posix.realpath(dz.ptr, &real_buf) orelse setupError("the case file's directory could not be resolved");
-            break :blk rarena.dupe(u8, std.mem.span(abs)) catch setupError("out of memory");
+            const abs = posix.realpath(dz.ptr, &real_buf) orelse setupError(.environment, "the case file's directory could not be resolved");
+            break :blk rarena.dupe(u8, std.mem.span(abs)) catch setupError(.environment, "out of memory");
         };
         args.state = resolvePathAgainst(rarena, case_dir, c.define.state);
         args.setup = c.define.setup;
@@ -3060,10 +3094,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // already normalised and passes through unchanged, a hand-written `cache/` would
         // otherwise be accepted by the grammar and match nothing.
         if (c.define.scratch) |decl| {
-            const norm = rarena.alloc([]const u8, decl.len) catch setupError("out of memory");
+            const norm = rarena.alloc([]const u8, decl.len) catch setupError(.environment, "out of memory");
             for (decl, 0..) |e, j| norm[j] = switch (config.parseScratchEntry(e)) {
                 .ok => |p| p,
-                .bad => |m| setupError(m),
+                .bad => |m| setupError(.define_invalid, m),
             };
             args.scratch = norm;
         }
@@ -3088,7 +3122,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // on its own, and which line was in effect would be invisible.
     if (args.config) |cfg_path| {
         if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0)
-            setupError("--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch) are mutually exclusive: the define lives in one place or the other");
+            setupError(.define_invalid, "--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         // Bounded, and the only reader that is. The path is operator-named and may
         // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
@@ -3098,9 +3132,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // call used not to return (`/dev/zero`; the other two were the open waiting for
         // a peer, and a read waiting for one that had opened but sent nothing).
         const text = readFileAllocCapped(arena, cfg_path, 1024 * 1024, .{ .bounded = true }) orelse setupError(
+            .environment,
             std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
         );
-        switch (config.parse(arena, text) catch setupError("out of memory")) {
+        switch (config.parse(arena, text) catch setupError(.environment, "out of memory")) {
             .ok => |d| {
                 // The toml is the last source of a checker and a marker under --config (the
                 // flags were refused), and it has been read: settle both accounts here, before
@@ -3113,10 +3148,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 // different command from every other cwd.
                 const dir_raw = std.fs.path.dirname(cfg_path) orelse ".";
                 var dir_z: [contract.max_path]u8 = undefined;
-                const dz = std.fmt.bufPrintZ(&dir_z, "{s}", .{dir_raw}) catch setupError("--config path is too long");
+                const dz = std.fmt.bufPrintZ(&dir_z, "{s}", .{dir_raw}) catch setupError(.define_invalid, "--config path is too long");
                 var dir_real: [contract.max_path]u8 = undefined;
-                const dir_abs = posix.realpath(dz.ptr, &dir_real) orelse setupError("--config's directory could not be resolved");
-                const dir = arena.dupe(u8, std.mem.span(dir_abs)) catch setupError("out of memory");
+                const dir_abs = posix.realpath(dz.ptr, &dir_real) orelse setupError(.environment, "--config's directory could not be resolved");
+                const dir = arena.dupe(u8, std.mem.span(dir_abs)) catch setupError(.environment, "out of memory");
                 args.state = resolvePathAgainst(arena, dir, d.state);
                 args.setup = if (d.setup) |s| resolveCommand(arena, dir, s) else null;
                 args.operation = resolveCommand(arena, dir, d.operation);
@@ -3137,13 +3172,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
                     std.fmt.allocPrint(arena, "{s}: {s}", .{ cfg_path, f.what }) catch f.what
                 else
                     std.fmt.allocPrint(arena, "{s} line {d}: {s}", .{ cfg_path, f.line, f.what }) catch f.what;
-                setupError(msg);
+                setupError(.define_invalid, msg);
             },
         }
     }
 
-    const state = args.state orelse setupError("--state is required");
-    const operation = args.operation orelse setupError("--operation is required");
+    const state = args.state orelse setupError(.define_invalid, "--state is required");
+    const operation = args.operation orelse setupError(.define_invalid, "--operation is required");
     // One declared value, resolved once, governs every un-killed run of the operation:
     // the recording run and the baseline world are the same command over the same
     // state, so they answer to the same success status (ADR 0014). Killed worlds are
@@ -3152,8 +3187,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     const expect_status: u8 = args.expect_status orelse 0;
     expected_status_val = expect_status;
     if (args.marker) |m| {
-        if (m.len == 0) setupError("the marker is empty");
-        if (m.len >= 4096) setupError("the marker is unreasonably long (>= 4 KiB)");
+        if (m.len == 0) setupError(.define_invalid, "the marker is empty");
+        if (m.len >= 4096) setupError(.define_invalid, "the marker is unreasonably long (>= 4 KiB)");
         l1_configured = true;
         // Already settled by whichever block read the marker's source; re-stated here so
         // the vet and the account it vouches for sit together.
@@ -3171,7 +3206,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // exactly what ADR 0007 exists to remove.
     if (args.cwd) |declared| {
         var cwd_z_buf: [contract.max_path]u8 = undefined;
-        const cwd_z = std.fmt.bufPrintZ(&cwd_z_buf, "{s}", .{declared}) catch setupError("the declared cwd is too long");
+        const cwd_z = std.fmt.bufPrintZ(&cwd_z_buf, "{s}", .{declared}) catch setupError(.define_invalid, "the declared cwd is too long");
         var cwd_real: [contract.max_path]u8 = undefined;
         // Both refusals print a string that arrived from a config or a case file, and
         // both are declared trust boundaries — so both go through `textShown`, the way
@@ -3179,6 +3214,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // same batch that found it (#266): a refusal firing *on* a hostile declaration is
         // exactly where a forged control sequence would reach the console.
         const cwd_abs = posix.realpath(cwd_z.ptr, &cwd_real) orelse setupError(
+            .environment,
             std.fmt.allocPrint(arena_state.allocator(), "the declared cwd could not be resolved: {s}", .{textShown(arena_state.allocator(), declared)}) catch "the declared cwd could not be resolved",
         );
         const cwd_span = std.mem.span(cwd_abs);
@@ -3186,9 +3222,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // reads as the operation exiting 125 — a diagnosis about the target for what is
         // a fault in the declaration. Refused by name here instead.
         if (!posix.isDirPath(cwd_abs)) setupError(
+            .environment,
             std.fmt.allocPrint(arena_state.allocator(), "the declared cwd is not a directory: {s}", .{textShown(arena_state.allocator(), cwd_span)}) catch "the declared cwd is not a directory",
         );
-        args.cwd = arena_state.allocator().dupe(u8, cwd_span) catch setupError("out of memory");
+        args.cwd = arena_state.allocator().dupe(u8, cwd_span) catch setupError(.environment, "out of memory");
 
         // The engine's own paths are pinned here, and only here, because only a declared
         // cwd can move them. `--work`, `--shim` and `--oracle` name things the ENGINE
@@ -3228,7 +3265,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // spelling of the path. The shim resolves what it sees the same way.
     var real_buf: [contract.max_path]u8 = undefined;
     var state_z_buf: [contract.max_path]u8 = undefined;
-    const state_z = std.fmt.bufPrintZ(&state_z_buf, "{s}", .{state}) catch setupError("--state is too long");
+    const state_z = std.fmt.bufPrintZ(&state_z_buf, "{s}", .{state}) catch setupError(.define_invalid, "--state is too long");
     // Create the directory before resolving it, and refuse to continue if resolution
     // still fails.
     //
@@ -3251,13 +3288,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // Minor-3: this and the two --work refusals below predate the rule's helper
         // and were the last three keeping their side effect).
         if (state_created) _ = posix.rmdir(state_z.ptr);
-        setupErrorFmt(arena_state.allocator(), "--state {s}: {s}. Until it resolves, the shim and the engine would filter on different spellings of it", .{ textShown(arena_state.allocator(), state), resolveFailure(arena_state.allocator(), state, why) });
+        setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, the shim and the engine would filter on different spellings of it", .{ textShown(arena_state.allocator(), state), resolveFailure(arena_state.allocator(), state, why) });
     };
 
     // Still before setup runs, so the refusal is a configuration error and nothing has
     // been touched. See the flag's parse site for why this is not raised there.
     if (args.oracle_fs_usage and builtin.os.tag != .macos)
-        setupError("--oracle-fs-usage is macOS only; on Linux the completeness oracle is --oracle <strace>, which needs no privilege");
+        setupError(.platform_unsupported, "--oracle-fs-usage is macOS only; on Linux the completeness oracle is --oracle <strace>, which needs no privilege");
 
     // With no descriptor number exempt from observation (contract v8), the engine's
     // own artifacts under --work — every operation's stdout capture rides the target's
@@ -3278,7 +3315,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var work_buf: [contract.max_path]u8 = undefined;
     const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch {
         if (state_created) _ = posix.rmdir(state_z.ptr);
-        setupError("--work is too long");
+        setupError(.define_invalid, "--work is too long");
     };
     const work_created = posix.mkdir(work_z.ptr, 0o755) == 0;
     {
@@ -3288,7 +3325,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Before undoSetupMkdirs, which issues syscalls of its own (#486).
             const why = std.c._errno().*;
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupErrorFmt(arena_state.allocator(), "--work {s}: {s}", .{ textShown(arena_state.allocator(), args.work), resolveFailure(arena_state.allocator(), args.work, why) });
+            setupErrorFmt(arena_state.allocator(), .environment, "--work {s}: {s}", .{ textShown(arena_state.allocator(), args.work), resolveFailure(arena_state.allocator(), args.work, why) });
         };
         if (contract.isInsideDir(work_abs, state_abs)) {
             // Remove only what this invocation just created: refusing while leaving
@@ -3296,7 +3333,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // check exists to prevent. (The state root too — `--state /opt/x --work
             // /opt/x/work` creates both, one directory up.)
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError("--work must not be the state directory or inside it: the engine's own captures and traces there would be observed as the target's state operations");
+            setupError(.define_invalid, "--work must not be the state directory or inside it: the engine's own captures and traces there would be observed as the target's state operations");
         }
     }
 
@@ -3316,17 +3353,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // and a planted file with it, and still exited 1 as if nothing were wrong.
     if (mode == .replay) {
         var case_z_buf: [contract.max_path]u8 = undefined;
-        const czb = std.fmt.bufPrintZ(&case_z_buf, "{s}", .{case_arg.?}) catch setupError("the case file's path is too long");
+        const czb = std.fmt.bufPrintZ(&case_z_buf, "{s}", .{case_arg.?}) catch setupError(.define_invalid, "the case file's path is too long");
         var case_real: [contract.max_path]u8 = undefined;
         // Unresolvable here means it moved since the read a moment ago: refuse rather
         // than skip the vet.
         const case_abs = posix.realpath(czb.ptr, &case_real) orelse {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError("the case file could not be resolved for the destruction vet");
+            setupError(.environment, "the case file could not be resolved for the destruction vet");
         };
         if (contract.isInsideDir(std.mem.span(case_abs), state_abs)) {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError("the case file lies inside the state directory this replay empties, so replaying it would delete the case (and any sibling case beside it); point define.state at a directory that does not contain the case");
+            setupError(.define_invalid, "the case file lies inside the state directory this replay empties, so replaying it would delete the case (and any sibling case beside it); point define.state at a directory that does not contain the case");
         }
     }
 
@@ -3347,7 +3384,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var su_z_buf: [contract.max_path]u8 = undefined;
         const su_z = std.fmt.bufPrintZ(&su_z_buf, "{s}", .{su}) catch {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError("--state-under is too long");
+            setupError(.define_invalid, "--state-under is too long");
         };
         var su_real_buf: [contract.max_path]u8 = undefined;
         const su_abs = blk: {
@@ -3357,13 +3394,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // regular file resolves and passes here; everything under it then fails
             // strict-inside, so the outcome is refusal either way.
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError("--state-under could not be resolved; refusing rather than running unconfined");
+            setupError(.environment, "--state-under could not be resolved; refusing rather than running unconfined");
         };
         // "/" satisfies isInsideDir for every absolute path — a range that confines
         // nothing is a misconfiguration, not a wide range.
         if (su_abs.len <= 1) {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError("--state-under / would confine nothing; name the directory the case's state may live under");
+            setupError(.define_invalid, "--state-under / would confine nothing; name the directory the case's state may live under");
         }
         if (!contract.isStrictlyInsideDir(state_abs, su_abs)) {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
@@ -3374,7 +3411,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // `snapshotOrRefuse` above, same batch that introduced it (#266), found by the
             // review that followed the first fix rather than by the scan that accompanied
             // it. `su_abs` is operator-supplied and takes the same treatment for free.
-            setupError(std.fmt.allocPrint(arena, "the case's state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Replay directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this case's state may live under", .{ textShown(arena, state_abs), textShown(arena, su_abs) }) catch "the case's state directory resolves outside the allowed range (--state-under)");
+            setupError(.define_invalid, std.fmt.allocPrint(arena, "the case's state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Replay directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this case's state may live under", .{ textShown(arena, state_abs), textShown(arena, su_abs) }) catch "the case's state directory resolves outside the allowed range (--state-under)");
         }
     }
 
@@ -3398,7 +3435,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // create the very directory it is refusing to use.
     engine.assertSafeRoot(state_abs) catch {
         undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-        setupError("--state names a location nothing sacrificial belongs in: exploration empties and rebuilds this directory once per world, hundreds of times. Point it at a scratch directory the run owns");
+        setupError(.define_invalid, "--state names a location nothing sacrificial belongs in: exploration empties and rebuilds this directory once per world, hundreds of times. Point it at a scratch directory the run owns");
     };
 
     // --fresh-state (#69): empty the case's state dir before setup runs. The dir is
@@ -3433,8 +3470,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // ---- setup -------------------------------------------------------------------
     if (args.setup) |cmd| {
         const a = arena_state.allocator();
-        const setup_argv = commandArgv(a, cmd) catch setupError("--setup is empty");
-        if (setup_argv.len == 0) setupError("--setup is empty");
+        const setup_argv = commandArgv(a, cmd) catch setupError(.define_invalid, "--setup is empty");
+        if (setup_argv.len == 0) setupError(.define_invalid, "--setup is empty");
         // The pid is in the name and every other work-directory artifact's is not, and
         // that asymmetry is deliberate: this is the first capture whose *contents* reach
         // `message`. Two runs sharing a work directory already collide on
@@ -3450,7 +3487,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             &setup_out_buf,
             "{s}/setup-output-{d}.txt",
             .{ args.work, posix.getpid() },
-        ) catch setupError("path too long");
+        ) catch setupError(.define_invalid, "path too long");
         // `exclusive` needs it, and `Capture.exclusive`'s doc asks for both halves by
         // name: without the unlink a second run refuses on its own leftover, and without
         // `O_EXCL` a FIFO planted at the name blocks the parent's `O_WRONLY` before any
@@ -3469,19 +3506,25 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .stderr_too = true,
             .exclusive = true,
         }, args.cwd) catch |e| spawnFailure(e, .before_exploration, "could not run --setup");
+        // The status this refusal will carry (#518), taken from the value being switched
+        // on rather than rebuilt in each arm — a fourth `Term` member would otherwise need
+        // a fourth assignment nobody would notice was missing. Set before the switch and
+        // read only under `setup_failed`, so the success path below leaves it where a
+        // report that never refuses cannot reach it.
+        setup_status = term;
         switch (term) {
             // The status is the observation; "non-zero" was a restatement of the
             // refusal's own name (#483). The number alone is what #483 asks for, and it
             // is all this can honestly carry: a first draft annotated 127 as "command
             // not found", and `exec /no/such/binary` under /bin/sh measured 126 here —
             // the mapping from a failed exec to a status is the shell's, not ours.
-            .exited => |code| if (code != 0) setupErrorFmt(a, "--setup exited {d}{s}{s}", .{ code, setupOutputDetail(a, setup_out), exit126Note(code) }),
+            .exited => |code| if (code != 0) setupErrorFmt(a, .setup_failed, "--setup exited {d}{s}{s}", .{ code, setupOutputDetail(a, setup_out), exit126Note(code) }),
             // The same class, found by this PR's own same-class scan: `Term` carries
             // `signaled: u8` and `unknown: c_int`, and the old `else` threw both away.
             // A setup killed by a guard on the machine (the case #483 was filed from)
             // lands here, not in `.exited`.
-            .signaled => |sig| setupErrorFmt(a, "--setup was killed by signal {d}{s}", .{ sig, setupOutputDetail(a, setup_out) }),
-            .unknown => |st| setupErrorFmt(a, "--setup ended in a way waitpid reported as status {d}{s}", .{ st, setupOutputDetail(a, setup_out) }),
+            .signaled => |sig| setupErrorFmt(a, .setup_failed, "--setup was killed by signal {d}{s}", .{ sig, setupOutputDetail(a, setup_out) }),
+            .unknown => |st| setupErrorFmt(a, .setup_failed, "--setup ended in a way waitpid reported as status {d}{s}", .{ st, setupOutputDetail(a, setup_out) }),
         }
         // The setup succeeded and nothing in the report names this file — but it is now
         // the only place its output exists at all, because capturing it took it off the
@@ -3530,14 +3573,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     run_phase = .exploring;
 
     var rec_trace_buf: [contract.max_path]u8 = undefined;
-    const rec_trace = std.fmt.bufPrint(&rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError("path too long");
+    const rec_trace = std.fmt.bufPrint(&rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(rec_trace);
 
-    const op_argv = commandArgv(arena_state.allocator(), operation) catch setupError("--operation is empty");
-    if (op_argv.len == 0) setupError("--operation is empty");
+    const op_argv = commandArgv(arena_state.allocator(), operation) catch setupError(.define_invalid, "--operation is empty");
+    if (op_argv.len == 0) setupError(.define_invalid, "--operation is empty");
 
     var oracle_out_buf: [contract.max_path]u8 = undefined;
-    const oracle_out = std.fmt.bufPrint(&oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError("path too long");
+    const oracle_out = std.fmt.bufPrint(&oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(oracle_out);
 
     // The operation's stdout is evidence — the L1 marker is read from it (ADR 0008) —
@@ -3546,7 +3589,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // an isatty branch in the target must not differ between the recording run and
     // the worlds, or the recorded operation sequence describes a different execution.
     var rec_stdout_buf: [contract.max_path]u8 = undefined;
-    const rec_stdout = std.fmt.bufPrint(&rec_stdout_buf, "{s}/stdout-record.txt", .{args.work}) catch setupError("path too long");
+    const rec_stdout = std.fmt.bufPrint(&rec_stdout_buf, "{s}/stdout-record.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(rec_stdout);
 
     const arena = arena_state.allocator();
@@ -3558,9 +3601,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // pass identically on a machine with no strace, so the check discriminated nothing.
     if (args.oracle) |oracle_path| {
         var ob: [contract.max_path]u8 = undefined;
-        const oz = std.fmt.bufPrintZ(&ob, "{s}", .{oracle_path}) catch setupError("--oracle path is too long");
+        const oz = std.fmt.bufPrintZ(&ob, "{s}", .{oracle_path}) catch setupError(.define_invalid, "--oracle path is too long");
         if (posix.access(oz.ptr, posix.X_OK) != 0)
-            setupError("--oracle is not an executable file; the completeness check cannot run");
+            setupError(.environment, "--oracle is not an executable file; the completeness check cannot run");
     }
 
     // Checked here for the reason the line above is: before the operation runs, so that
@@ -3578,9 +3621,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // it is the half that catches the ordinary environment before anything runs.
     if (args.observe == .syscalls) {
         if (builtin.os.tag != .linux)
-            setupError("--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default)");
+            setupError(.platform_unsupported, "--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default)");
         if (!posix.seccompTrapAvailable())
-            setupError("--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere");
+            setupError(.platform_unsupported, "--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere");
     }
 
     // Read before the spawn, not after: `--twice` reports the interval between the two
@@ -3627,9 +3670,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // The bound counts what fs_usage prints, not what the caller typed: the data
         // volume's firmlink prefix and the sentinel's own name ride on every line.
         if (state_abs.len > fsu_sentinel_max_root)
-            setupError("--oracle-fs-usage cannot scope a state directory this deep: fs_usage prints pathnames with the data volume's firmlink prefix (20 bytes) and cuts long ones from the left at a display cap measured at 144, 153 and 156 bytes, and the sentinel's own name takes 40, so the state root must be 96 bytes or fewer (under a smaller cap a root over 84 passes here and is refused at the handshake or as missing_sentinel instead, never judged). Use a shorter --state path");
+            setupError(.define_invalid, "--oracle-fs-usage cannot scope a state directory this deep: fs_usage prints pathnames with the data volume's firmlink prefix (20 bytes) and cuts long ones from the left at a display cap measured at 144, 153 and 156 bytes, and the sentinel's own name takes 40, so the state root must be 96 bytes or fewer (under a smaller cap a root over 84 passes here and is refused at the handshake or as missing_sentinel instead, never judged). Use a shorter --state path");
         const pair = fsUsageSentinels(state_abs, &fsu_sentinel_a_buf, &fsu_sentinel_b_buf) orelse
-            setupError("could not name the fs_usage sentinels: either getentropy refused to supply the eight bytes each name is drawn from, or the state path plus 40 bytes did not fit the path buffer; refusing to start an observer whose sentinel a target could name");
+            setupError(.environment, "could not name the fs_usage sentinels: either getentropy refused to supply the eight bytes each name is drawn from, or the state path plus 40 bytes did not fit the path buffer; refusing to start an observer whose sentinel a target could name");
         fsu_sentinel_a = pair.a;
         fsu_sentinel_b = pair.b;
         // 90 seconds, not the ten minutes this first carried. The observer covers the
@@ -3670,7 +3713,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // ended. A start sentinel alone establishes only that it began, and
         // `oracle_verified` now rests on the whole window.
         var zb: [contract.max_path]u8 = undefined;
-        const sz = std.fmt.bufPrintZ(&zb, "{s}", .{fsu_sentinel_b}) catch setupError("path too long");
+        const sz = std.fmt.bufPrintZ(&zb, "{s}", .{fsu_sentinel_b}) catch setupError(.define_invalid, "path too long");
         const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
         // `unknown` stops the observer on its way out; this site does not have to.
         if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created inside the state directory, so nothing can establish that the capture covered the end of the recording", .environment);
@@ -3723,7 +3766,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // fingerprint come from the same bytes, and this is the first of the two samples
     // the tolerated-boundary path compares after containment.
     const rec_capture = observeCapture(rec_stdout, args.marker) catch
-        setupError("the recording run's stdout capture could not be read back");
+        setupError(.environment, "the recording run's stdout capture could not be read back");
     if (args.marker != null) {
         if (!rec_capture.marker_seen) {
             l1_note = "marker configured; never observed, even in the recording run";
@@ -3744,7 +3787,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // `scratch_declared` was published beside the apparatus check, before the recording
     // run: the plan matches on the same slice, so no rendering can name a declaration the
     // judge did not read, and a refusal raised between there and here carries it too.
-    var l0_plan = engine.classifyWith(gpa, initial, final, scratch_declared) catch setupError("out of memory");
+    var l0_plan = engine.classifyWith(gpa, initial, final, scratch_declared) catch setupError(.environment, "out of memory");
     defer l0_plan.deinit();
     l0_history_count = l0_plan.history_count;
     l0_note = buildL0Note(arena, l0_plan);
@@ -3802,10 +3845,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // same reading the `apparatus` check uses for a device that was not there.
     if (args.observe == .syscalls and !std.mem.eql(u8, trace.observe_aux, contract.observe_aux.armed)) {
         if (std.mem.eql(u8, trace.observe_aux, contract.observe_aux.unsupported))
-            setupError("--observe syscalls was asked for and the shim reports it cannot install a filter at all: this shim was built for a platform or an architecture whose trap frame it does not know. Rebuild the pair, or use --observe wrappers");
+            setupError(.platform_unsupported, "--observe syscalls was asked for and the shim reports it cannot install a filter at all: this shim was built for a platform or an architecture whose trap frame it does not know. Rebuild the pair, or use --observe wrappers");
         if (std.mem.eql(u8, trace.observe_aux, contract.observe_aux.failed))
-            setupError("--observe syscalls was asked for and the shim's filter installation was refused inside the target's own process, although this kernel accepts SECCOMP_RET_TRAP. A target that drops privileges or clears PR_SET_NO_NEW_PRIVS reaches this; --observe wrappers does not need a filter");
-        setupError("--observe syscalls was asked for and the subject's announcement does not say the filter was installed: the trace was written by a shim that did not read the request. Rebuild the engine and the shim from the same tree");
+            setupError(.environment, "--observe syscalls was asked for and the shim's filter installation was refused inside the target's own process, although this kernel accepts SECCOMP_RET_TRAP. A target that drops privileges or clears PR_SET_NO_NEW_PRIVS reaches this; --observe wrappers does not need a filter");
+        setupError(.environment, "--observe syscalls was asked for and the subject's announcement does not say the filter was installed: the trace was written by a shim that did not read the request. Rebuild the engine and the shim from the same tree");
     }
 
     // The shim's half of the boundary evidence, recorded the moment the trace is known
@@ -4003,7 +4046,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{ .no_follow = true }) orelse
                 unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read", .environment)
         else
-            readFileAlloc(arena, oracle_out) orelse setupError("the oracle's capture file could not be read");
+            readFileAlloc(arena, oracle_out) orelse setupError(.environment, "the oracle's capture file could not be read");
         // The bytes are in the arena now; the file has done its job. The capture is
         // system-wide and one measured run left 2.9 GB of it, so it does not stay.
         dropCapture();
@@ -4023,7 +4066,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const oracle_cwd = args.cwd orelse
             if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
         const parsed = if (args.oracle_fs_usage) blk: {
-            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd) catch setupError("out of memory");
+            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd) catch setupError(.environment, "out of memory");
             // A capture with a hole in it is not an account to compare against. Each
             // of these says the witness itself is unreadable, which is a different
             // statement from "the two witnesses disagreed" — and only the second one
@@ -4038,7 +4081,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 .missing_sentinel => |sp| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the fs_usage capture is missing a sentinel the engine placed ({s}), so nothing establishes that the observer covered the whole recording", .{textShown(arena, sp)}) catch "the fs_usage capture is missing a sentinel the engine placed", .environment),
             };
             break :blk r.parsed;
-        } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError("out of memory");
+        } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError(.environment, "out of memory");
 
         // The witness has now looked, and what it saw is part of the account from here
         // on — including on the refusals immediately below, which are exactly the runs
@@ -4126,8 +4169,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // subject. A tolerated child's records (its own shim_ready arrives when it
             // execs something dynamically linked) are not operations to reconcile.
             if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
-            shim_classes.append(arena, op.class) catch setupError("out of memory");
-            shim_ops.append(arena, op) catch setupError("out of memory");
+            shim_classes.append(arena, op.class) catch setupError(.environment, "out of memory");
+            shim_ops.append(arena, op) catch setupError(.environment, "out of memory");
         }
 
         // Both witnesses are of this one run in every mode now, so the hint is no longer
@@ -4270,7 +4313,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // sample was the marker scan above; the oracle-output parse sits between the
         // two, so the observed window is wide without costing an extra wait.
         const rec_capture_again = observeCapture(rec_stdout, null) catch
-            setupError("the recording run's stdout capture could not be read back");
+            setupError(.environment, "the recording run's stdout capture could not be read back");
         if (rec_capture.sawTruncation() or rec_capture_again.sawTruncation() or
             !rec_capture.fingerprintEql(rec_capture_again))
             unknown(.state_not_quiescent, "the stdout capture changed between two samples taken after the recording run was contained: something is still writing to the inherited stdout", .quiesce);
@@ -4351,11 +4394,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const pf_msg = "preflight takes the define-surface flags, which carry the string form; the argv form lives in a sideeye.toml, and `sideeye explore --config` answers strictly more";
         const pf_setup: ?[]const u8 = if (args.setup) |s| switch (s) {
             .str => |x| x,
-            .argv => setupError(pf_msg),
+            .argv => setupError(.define_invalid, pf_msg),
         } else null;
         const pf_op: []const u8 = switch (operation) {
             .str => |x| x,
-            .argv => setupError(pf_msg),
+            .argv => setupError(.define_invalid, pf_msg),
         };
         // #199: the second observation, opt-in. Without `--twice` this is the answer
         // preflight has always given from one run, and the report names determinism as
@@ -4393,7 +4436,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\
         , .{ expected_status_val, l0_note, oracle_note, metadata_note, l1_note, case_note, notTestedText() });
         sayApparatus(arena, "      apparatus: {s}\n");
-        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
+        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -4405,8 +4448,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // derived from an instrument that was never shown to respond.
     var check_argv: ?[]const []const u8 = null;
     if (args.check) |check_cmd| {
-        const cargv = commandArgv(arena, check_cmd) catch setupError("--check is empty");
-        if (cargv.len == 0) setupError("--check is empty");
+        const cargv = commandArgv(arena, check_cmd) catch setupError(.define_invalid, "--check is empty");
+        if (cargv.len == 0) setupError(.define_invalid, "--check is empty");
         check_argv = cargv;
         // Before the falsification exits, for the same reason as the oracle note above:
         // `checker_not_falsified` next to `checker: none configured` is a report arguing
@@ -4432,7 +4475,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // evidence" (the buku correction, PR #133). A fence would not travel with an
         // excerpt; a per-line prefix does.
         var fal_buf: [contract.max_path]u8 = undefined;
-        const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError("path too long");
+        const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(fal_out);
         const probe = posix.runChildCapture(gpa, cargv, &.{
             .{ "TOY_STATE", state_abs },
@@ -4502,7 +4545,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var checks_run: u32 = 0;
 
     var world_stdout_buf: [contract.max_path]u8 = undefined;
-    const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError("path too long");
+    const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
 
     var k: u32 = 1;
     while (k <= n + 1) : (k += 1) {
@@ -4531,7 +4574,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var kbuf: [16]u8 = undefined;
         const kstr = std.fmt.bufPrint(&kbuf, "{d}", .{k}) catch unreachable;
         var wt_buf: [contract.max_path]u8 = undefined;
-        const world_trace = std.fmt.bufPrint(&wt_buf, "{s}/trace-{d}.bin", .{ args.work, k }) catch setupError("path too long");
+        const world_trace = std.fmt.bufPrint(&wt_buf, "{s}/trace-{d}.bin", .{ args.work, k }) catch setupError(.define_invalid, "path too long");
         removeFile(world_trace);
         removeFile(world_stdout);
 
@@ -4594,7 +4637,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // "the mode is a fact and not a request" applies here more sharply than to the
         // recording, because a wrong answer here is a verdict rather than a refusal.
         if (args.observe == .syscalls and !std.mem.eql(u8, wtrace.observe_aux, contract.observe_aux.armed))
-            setupError("--observe syscalls was asked for and an explored world's shim does not report the filter installed, although the recording run's did: the crash point this world was told to stop at is an index into a sequence it did not count. Re-run, and if it repeats the environment is refusing the filter for some processes and not others");
+            setupError(.environment, "--observe syscalls was asked for and an explored world's shim does not report the filter installed, although the recording run's did: the crash point this world was told to stop at is an index into a sequence it did not count. Re-run, and if it repeats the environment is refusing the filter for some processes and not others");
 
         // The world's own boundary evidence, before the refusals that read it. Without
         // this the account for a world-side refusal is the *recording's* clause, which
@@ -4760,7 +4803,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // The capture's first sample (#46). The second rides the marker scan below,
             // so the observed window brackets the checker and the scan itself.
             world_capture_first = observeCapture(world_stdout, null) catch
-                setupError("a world's stdout capture could not be read back");
+                setupError(.environment, "a world's stdout capture could not be read back");
         }
 
         explored += 1;
@@ -4790,7 +4833,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         var marker_seen = false;
         if (args.marker != null or world_capture_first != null) {
             const world_capture = observeCapture(world_stdout, args.marker) catch
-                setupError("a world's stdout capture could not be read back");
+                setupError(.environment, "a world's stdout capture could not be read back");
             // The refusal comes before the marker bit is used anywhere: a scan raced
             // by a live writer must not decide whether L1 applies (#46). Two equal
             // samples are an observation, never a proof of future quiet.
@@ -4923,13 +4966,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // running the result left this one. Acceptance now executes what is printed.
         var repro_buf: [contract.max_path]u8 = undefined;
         const repro_trace = std.fmt.bufPrint(&repro_buf, "{s}/trace-repro.bin", .{args.work}) catch
-            setupError("path too long");
+            setupError(.define_invalid, "path too long");
         // Only when the two spellings differ. Printing `A=x B=x` invites the reader to
         // wonder which one matters, and the answer would be "neither, they are the same".
         var alt_env_buf: [contract.max_path + 64]u8 = undefined;
         const alt_env = if (alt_differs)
             std.fmt.bufPrint(&alt_env_buf, " {s}={s}", .{ contract.env.state_dir_alt, state_alt }) catch
-                setupError("path too long")
+                setupError(.define_invalid, "path too long")
         else
             "";
         // The counterexample outlives the console (ADR 0009). Saved on explore only:
@@ -5083,7 +5126,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .subject = path_shown,
             .observed = what,
             .invariant = invariant,
-        }, checker_detail, null, null, null);
+        }, checker_detail, null, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
@@ -5105,7 +5148,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     , .{ explored, explored, singleCrashPointClause(n), explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundaryAccount(), notTestedText() });
     sayApparatus(arena, "      apparatus: {s}\n");
     saySingleCrashPointNote(n);
-    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null);
+    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -5130,24 +5173,24 @@ pub fn main(init: std.process.Init.Minimal) !void {
 /// millisecond conversion trivially inside u64.
 fn parseWorldTimeout(s: []const u8) u32 {
     const msg = "--world-timeout must be a whole number of seconds, 1..86400";
-    if (s.len == 0 or s.len > 5) setupError(msg);
+    if (s.len == 0 or s.len > 5) setupError(.define_invalid, msg);
     var v: u32 = 0;
     for (s) |ch| {
-        if (ch < '0' or ch > '9') setupError(msg);
+        if (ch < '0' or ch > '9') setupError(.define_invalid, msg);
         v = v * 10 + (ch - '0');
     }
-    if (v == 0 or v > 86400) setupError(msg);
+    if (v == 0 or v > 86400) setupError(.define_invalid, msg);
     return v;
 }
 
 fn parseExpectStatus(s: []const u8, msg: []const u8) u8 {
-    if (s.len == 0 or s.len > 3) setupError(msg);
+    if (s.len == 0 or s.len > 3) setupError(.define_invalid, msg);
     var v: u32 = 0;
     for (s) |ch| {
-        if (ch < '0' or ch > '9') setupError(msg);
+        if (ch < '0' or ch > '9') setupError(.define_invalid, msg);
         v = v * 10 + (ch - '0');
     }
-    if (v > 255) setupError(msg);
+    if (v > 255) setupError(.define_invalid, msg);
     return @intCast(v);
 }
 
@@ -5298,11 +5341,11 @@ fn observeAgain(
     engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory before the second observed run");
 
     var trace_buf: [contract.max_path]u8 = undefined;
-    const trace_b = std.fmt.bufPrint(&trace_buf, "{s}/trace-record-2.bin", .{work}) catch setupError("path too long");
+    const trace_b = std.fmt.bufPrint(&trace_buf, "{s}/trace-record-2.bin", .{work}) catch setupError(.define_invalid, "path too long");
     var stdout_buf: [contract.max_path]u8 = undefined;
-    const stdout_b = std.fmt.bufPrint(&stdout_buf, "{s}/stdout-record-2.txt", .{work}) catch setupError("path too long");
+    const stdout_b = std.fmt.bufPrint(&stdout_buf, "{s}/stdout-record-2.txt", .{work}) catch setupError(.define_invalid, "path too long");
     var oracle_buf: [contract.max_path]u8 = undefined;
-    const oracle_out_b = std.fmt.bufPrint(&oracle_buf, "{s}/oracle-2.txt", .{work}) catch setupError("path too long");
+    const oracle_out_b = std.fmt.bufPrint(&oracle_buf, "{s}/oracle-2.txt", .{work}) catch setupError(.define_invalid, "path too long");
     removeFile(trace_b);
     removeFile(stdout_b);
     // The oracle capture too, for the same reason the recording run removes its own:
@@ -5456,7 +5499,7 @@ fn observeAgain(
     if (!snapshotsEqual(initial, second) and trace.mutation_count == 0)
         unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed", .class_wall);
 
-    const diffs = arena.alloc(engine.Difference, repeat_diff_slots) catch setupError("out of memory");
+    const diffs = arena.alloc(engine.Difference, repeat_diff_slots) catch setupError(.environment, "out of memory");
     // A declared scratch path is left out of the comparison (ADR 0043), the way the
     // exploration leaves it out of the judgement: README points at --twice as the
     // byte-repeatability wall's measurement, and a wall the exploration no longer hits on
@@ -5474,7 +5517,7 @@ fn observeAgain(
     // rather than lifting `second` out, because the borrow rule belongs to the value:
     // a `Difference` that escapes its snapshots has to own its bytes.
     for (diffs[0..count.stored]) |*d|
-        d.rel = arena.dupe(u8, d.rel) catch setupError("out of memory");
+        d.rel = arena.dupe(u8, d.rel) catch setupError(.environment, "out of memory");
     return .{
         .gap_ms = started -| first_started_ms,
         .count = count,
@@ -5686,16 +5729,16 @@ test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
 /// other aborted the process. This function now owns exactly what is different about the
 /// CLI — that absence is fatal here and answerable there.
 fn findShim(arena: std.mem.Allocator) []const u8 {
-    const self = mcp.canonicalSelf() orelse setupError("could not resolve the canonical path of this binary to look beside it for the shim; pass --shim <path>");
-    const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
+    const self = mcp.canonicalSelf() orelse setupError(.environment, "could not resolve the canonical path of this binary to look beside it for the shim; pass --shim <path>");
+    const self_owned = arena.dupe(u8, self) catch setupError(.environment, "out of memory");
     switch (mcp.findShimBeside(arena, self_owned)) {
         .found => |f| return f,
         // A refused candidate is fatal here rather than absent: falling through to the
         // message below would say nothing was found at a place where something was, and
         // the operator would go looking for a missing file instead of a planted one.
-        .refused => |r| setupError(mcp.refusalMessage(arena, r)),
-        .absent => |cands| setupError(mcp.absentMessage(arena, cands, std.fmt.allocPrint(arena, "Pass --shim <path to {s}>", .{shim_basename}) catch "Pass --shim <path>")),
-        .unsearchable => setupError("out of memory while looking for the shim"),
+        .refused => |r| setupError(.environment, mcp.refusalMessage(arena, r)),
+        .absent => |cands| setupError(.environment, mcp.absentMessage(arena, cands, std.fmt.allocPrint(arena, "Pass --shim <path to {s}>", .{shim_basename}) catch "Pass --shim <path>")),
+        .unsearchable => setupError(.environment, "out of memory while looking for the shim"),
     }
     unreachable;
 }
@@ -5778,14 +5821,14 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
 /// escape, not a denylist.
 fn shellSingleQuote(arena: std.mem.Allocator, s: []const u8) []const u8 {
     var out: std.ArrayList(u8) = .empty;
-    out.append(arena, '\'') catch setupError("out of memory");
+    out.append(arena, '\'') catch setupError(.environment, "out of memory");
     for (s) |ch| {
         if (ch == '\'')
-            out.appendSlice(arena, "'\\''") catch setupError("out of memory")
+            out.appendSlice(arena, "'\\''") catch setupError(.environment, "out of memory")
         else
-            out.append(arena, ch) catch setupError("out of memory");
+            out.append(arena, ch) catch setupError(.environment, "out of memory");
     }
-    out.append(arena, '\'') catch setupError("out of memory");
+    out.append(arena, '\'') catch setupError(.environment, "out of memory");
     return out.items;
 }
 
@@ -5831,17 +5874,17 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
     var i: usize = 0;
     while (i < rest.len) {
         if (std.mem.eql(u8, rest[i], "--shim")) {
-            if (i + 1 >= rest.len) setupError("--shim is missing its value");
+            if (i + 1 >= rest.len) setupError(.define_invalid, "--shim is missing its value");
             shim_flag = rest[i + 1];
             i += 2;
             continue;
         }
-        setupError("demo takes only --shim <lib>; everything else it arranges itself");
+        setupError(.define_invalid, "demo takes only --shim <lib>; everything else it arranges itself");
     }
 
-    const self = mcp.canonicalSelf() orelse setupError("could not resolve the canonical path of this binary; refusing to guess what to self-exec");
+    const self = mcp.canonicalSelf() orelse setupError(.environment, "could not resolve the canonical path of this binary; refusing to guess what to self-exec");
     // canonicalSelf answers from a static buffer; copy before anything else reuses it.
-    const self_owned = arena.dupe(u8, self) catch setupError("out of memory");
+    const self_owned = arena.dupe(u8, self) catch setupError(.environment, "out of memory");
 
     const shim = shim_flag orelse findShim(arena);
 
@@ -5856,15 +5899,15 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
         break :blk "/tmp";
     };
     var templ_buf: [contract.max_path]u8 = undefined;
-    const templ = std.fmt.bufPrintZ(&templ_buf, "{s}/sideeye-demo-XXXXXX", .{troot}) catch setupError("TMPDIR is unreasonably long");
-    const tmp_raw = posix.mkdtemp(templ.ptr) orelse setupError("could not create the demo's scratch directory");
-    const tmp = arena.dupe(u8, std.mem.span(tmp_raw)) catch setupError("out of memory");
+    const templ = std.fmt.bufPrintZ(&templ_buf, "{s}/sideeye-demo-XXXXXX", .{troot}) catch setupError(.environment, "TMPDIR is unreasonably long");
+    const tmp_raw = posix.mkdtemp(templ.ptr) orelse setupError(.environment, "could not create the demo's scratch directory");
+    const tmp = arena.dupe(u8, std.mem.span(tmp_raw)) catch setupError(.environment, "out of memory");
 
-    const toy_src = std.fmt.allocPrint(arena, "{s}/toy.c", .{tmp}) catch setupError("out of memory");
-    const tool = std.fmt.allocPrint(arena, "{s}/demo-tool", .{tmp}) catch setupError("out of memory");
-    const check_path = std.fmt.allocPrint(arena, "{s}/check.sh", .{tmp}) catch setupError("out of memory");
+    const toy_src = std.fmt.allocPrint(arena, "{s}/toy.c", .{tmp}) catch setupError(.environment, "out of memory");
+    const tool = std.fmt.allocPrint(arena, "{s}/demo-tool", .{tmp}) catch setupError(.environment, "out of memory");
+    const check_path = std.fmt.allocPrint(arena, "{s}/check.sh", .{tmp}) catch setupError(.environment, "out of memory");
     if (!writeWholeFile(toy_src, &.{demo_toy_c}))
-        setupError("could not write the demo's toy source into the scratch directory");
+        setupError(.environment, "could not write the demo's toy source into the scratch directory");
     // TOY is baked into the script rather than passed through the environment: the
     // checker runs in a fresh process several layers down, and a baked value cannot be
     // lost to a change in how those layers pass environments around. Single-quoted —
@@ -5872,7 +5915,7 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
     // its metacharacters to the shell (R1 finding). The embedded script's shebang
     // becomes a comment mid-file, which /bin/sh does not mind.
     if (!writeWholeFile(check_path, &.{ "TOY=", shellSingleQuote(arena, tool), "\nexport TOY\n", demo_check_sh }))
-        setupError("could not write the demo's checker into the scratch directory");
+        setupError(.environment, "could not write the demo's checker into the scratch directory");
 
     // Compile on the spot. cc first — every toolchain installs the alias — then the
     // real names. Each is tried with -lpthread first (older glibc needs it spelled)
@@ -5887,8 +5930,8 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
             // to this repo's developers, not to a demo viewer's terminal. Errors
             // still print — they are how a broken compile diagnoses itself.
             for ([_][]const u8{ cc, "-O0", "-w", "-DBUGGY=1", "-o", tool, toy_src }) |a|
-                argv_l.append(arena, a) catch setupError("out of memory");
-            if (with_pthread) argv_l.append(arena, "-lpthread") catch setupError("out of memory");
+                argv_l.append(arena, a) catch setupError(.environment, "out of memory");
+            if (with_pthread) argv_l.append(arena, "-lpthread") catch setupError(.environment, "out of memory");
             // No cwd: this child is the demo's own compiler, not a define's command.
             const term = posix.runChild(gpa, argv_l.items, &.{}, null) catch |e| {
                 // Trying the next candidate is right for a compiler that could not be
@@ -5909,7 +5952,7 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
             }
         }
     }
-    const cc_used = chosen orelse setupError("the demo compiles its planted-bug tool on this machine and needs a C compiler; none of cc, gcc, clang worked (Debian/Ubuntu: apt install gcc; macOS: xcode-select --install)");
+    const cc_used = chosen orelse setupError(.environment, "the demo compiles its planted-bug tool on this machine and needs a C compiler; none of cc, gcc, clang worked (Debian/Ubuntu: apt install gcc; macOS: xcode-select --install)");
 
     say(
         \\demo  compiled the planted-bug tool with {s} into {s}
@@ -5919,11 +5962,11 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
         \\
     , .{ cc_used, tmp });
 
-    const state_dir = std.fmt.allocPrint(arena, "{s}/state", .{tmp}) catch setupError("out of memory");
-    const work_dir = std.fmt.allocPrint(arena, "{s}/work", .{tmp}) catch setupError("out of memory");
-    const setup_cmd = std.fmt.allocPrint(arena, "{s} init", .{tool}) catch setupError("out of memory");
-    const op_cmd = std.fmt.allocPrint(arena, "{s} rotate", .{tool}) catch setupError("out of memory");
-    const check_cmd = std.fmt.allocPrint(arena, "/bin/sh {s}", .{check_path}) catch setupError("out of memory");
+    const state_dir = std.fmt.allocPrint(arena, "{s}/state", .{tmp}) catch setupError(.environment, "out of memory");
+    const work_dir = std.fmt.allocPrint(arena, "{s}/work", .{tmp}) catch setupError(.environment, "out of memory");
+    const setup_cmd = std.fmt.allocPrint(arena, "{s} init", .{tool}) catch setupError(.environment, "out of memory");
+    const op_cmd = std.fmt.allocPrint(arena, "{s} rotate", .{tool}) catch setupError(.environment, "out of memory");
+    const check_cmd = std.fmt.allocPrint(arena, "/bin/sh {s}", .{check_path}) catch setupError(.environment, "out of memory");
 
     const exec_argv = [_][]const u8{
         self_owned,    "explore",
@@ -5935,10 +5978,10 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
         "--work",      work_dir,
     };
     var argv_z: [exec_argv.len + 1]?[*:0]const u8 = undefined;
-    for (exec_argv, 0..) |a, j| argv_z[j] = (arena.dupeZ(u8, a) catch setupError("out of memory")).ptr;
+    for (exec_argv, 0..) |a, j| argv_z[j] = (arena.dupeZ(u8, a) catch setupError(.environment, "out of memory")).ptr;
     argv_z[exec_argv.len] = null;
     _ = posix.execvp(argv_z[0].?, &argv_z);
-    setupError("could not self-exec the exploration");
+    setupError(.environment, "could not self-exec the exploration");
 }
 
 /// One sentence naming which form judged which files. Counts and names come from the
@@ -6103,12 +6146,12 @@ fn reconcileOrRefuse(
     // would still report `total` correctly, but the names it printed would be an
     // arbitrary prefix of the problem.
     const cap = initial.entries.items.len + final.entries.items.len + 1;
-    const diffs = gpa.alloc(engine.Difference, cap) catch setupError("out of memory");
+    const diffs = gpa.alloc(engine.Difference, cap) catch setupError(.environment, "out of memory");
     defer gpa.free(diffs);
     const dc = engine.diffSnapshots(initial, final, diffs);
     if (dc.equal()) return;
 
-    const found = gpa.alloc(engine.Unaccounted, dc.stored + 1) catch setupError("out of memory");
+    const found = gpa.alloc(engine.Unaccounted, dc.stored + 1) catch setupError(.environment, "out of memory");
     defer gpa.free(found);
 
     // The tree's own symlinks, from the snapshots rather than from the filesystem. The
@@ -6119,8 +6162,8 @@ fn reconcileOrRefuse(
     // Reading the live tree instead would answer about the tree after the run, not the
     // one the operation crossed.
     var links: std.ArrayList(engine.Link) = .empty;
-    engine.collectLinks(arena, initial, final, &links) catch setupError("out of memory");
-    const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError("out of memory");
+    engine.collectLinks(arena, initial, final, &links) catch setupError(.environment, "out of memory");
+    const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError(.environment, "out of memory");
     defer gpa.free(scratch);
 
     const r = engine.reconcile(diffs[0..dc.stored], ops, links.items, root, alt, scratch, found);
@@ -6932,9 +6975,9 @@ fn readFileAllocCapped(
 
 /// `--apparatus ENTRY`: the same grammar the toml key uses, refused with the same words.
 fn appendApparatusFlag(args: *Args, v: []const u8) void {
-    if (config.apparatusFault(v)) |m| setupError(m);
+    if (config.apparatusFault(v)) |m| setupError(.define_invalid, m);
     const n = args.apparatus.len;
-    if (n == max_apparatus) setupError("--apparatus: more than 32 entries; a define this large belongs in a toml");
+    if (n == max_apparatus) setupError(.define_invalid, "--apparatus: more than 32 entries; a define this large belongs in a toml");
     apparatus_flag_buf[n] = v;
     args.apparatus = apparatus_flag_buf[0 .. n + 1];
 }
@@ -6944,10 +6987,10 @@ fn appendApparatusFlag(args: *Args, v: []const u8) void {
 fn appendScratchFlag(args: *Args, v: []const u8) void {
     const norm = switch (config.parseScratchEntry(v)) {
         .ok => |p| p,
-        .bad => |m| setupError(m),
+        .bad => |m| setupError(.define_invalid, m),
     };
     const n = args.scratch.len;
-    if (n == max_scratch) setupError("--scratch: more than 32 entries; a define this large belongs in a toml");
+    if (n == max_scratch) setupError(.define_invalid, "--scratch: more than 32 entries; a define this large belongs in a toml");
     scratch_flag_buf[n] = norm;
     args.scratch = scratch_flag_buf[0 .. n + 1];
 }
@@ -6965,8 +7008,46 @@ fn scratchNote(arena: std.mem.Allocator) []const u8 {
 
 /// A SETUP ERROR whose sentence carries values; when even the sentence cannot be built
 /// the format string itself is the fallback, so the refusal still names its subject.
-fn setupErrorFmt(arena: std.mem.Allocator, comptime fmt: []const u8, args: anytype) noreturn {
-    setupError(std.fmt.allocPrint(arena, fmt, args) catch fmt);
+fn setupErrorFmt(arena: std.mem.Allocator, reason: contract.SetupErrorReason, comptime fmt: []const u8, args: anytype) noreturn {
+    setupError(reason, std.fmt.allocPrint(arena, fmt, args) catch fmt);
+}
+
+test "a SETUP_ERROR report carries its class, and the setup's status only under setup_failed and only as measured (#518)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const saved = setup_status;
+    defer setup_status = saved;
+
+    setup_status = .{ .exited = 7 };
+    const exited = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .setup_failed, "--setup exited 7", null);
+    try std.testing.expect(std.mem.indexOf(u8, exited, "\n  \"setup_error_reason\": \"setup_failed\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, exited, "\n  \"setup_exit_code\": 7") != null);
+    try std.testing.expect(std.mem.indexOf(u8, exited, "setup_signal") == null);
+    // The class comes right after the other closed set's slot and before the message.
+    try std.testing.expect(std.mem.indexOf(u8, exited, "\"setup_error_reason\"").? < std.mem.indexOf(u8, exited, "\"message\"").?);
+
+    setup_status = .{ .signaled = 9 };
+    const killed = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .setup_failed, "--setup was killed by signal 9", null);
+    try std.testing.expect(std.mem.indexOf(u8, killed, "\n  \"setup_signal\": 9") != null);
+    try std.testing.expect(std.mem.indexOf(u8, killed, "setup_exit_code") == null);
+
+    // A status waitpid did not decode: the class, and no number nobody decoded.
+    setup_status = .{ .unknown = 0x1234 };
+    const undecoded = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .setup_failed, "--setup ended in a way waitpid reported as status 4660", null);
+    try std.testing.expect(std.mem.indexOf(u8, undecoded, "\"setup_error_reason\": \"setup_failed\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, undecoded, "setup_exit_code") == null and std.mem.indexOf(u8, undecoded, "setup_signal") == null);
+
+    // A status left behind by an earlier arm never reaches another class, nor a verdict
+    // that carries no class at all.
+    setup_status = .{ .exited = 7 };
+    const env = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .environment, "out of memory", null);
+    try std.testing.expect(std.mem.indexOf(u8, env, "\"setup_error_reason\": \"environment\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, env, "setup_exit_code") == null);
+    const unk = try buildJson(a, "UNKNOWN", 2, null, null, "no_shim_marker", null, "m", "Do this.");
+    try std.testing.expect(std.mem.indexOf(u8, unk, "setup_error_reason") == null and std.mem.indexOf(u8, unk, "setup_exit_code") == null);
+    const pass = try buildJson(a, "PASS", 0, null, null, null, null, null, null);
+    try std.testing.expect(std.mem.indexOf(u8, pass, "setup_") == null);
 }
 
 test "resolveFailure names the shallowest missing directory, and the errno otherwise (#486)" {
@@ -7132,34 +7213,34 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
     for (entries) |e| {
         const parsed = switch (config.parseApparatusEntry(e)) {
             .ok => |p| p,
-            .bad => |msg| setupError(msg),
+            .bad => |msg| setupError(.define_invalid, msg),
         };
         switch (parsed) {
             .env => |v| {
-                const got = envValue(v.name) orelse setupErrorFmt(arena, "apparatus {s}: the environment the operation inherits has no {s}", .{ e, v.name });
+                const got = envValue(v.name) orelse setupErrorFmt(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s}", .{ e, v.name });
                 if (v.value) |want| if (!std.mem.eql(u8, got, want))
-                    setupErrorFmt(arena, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
+                    setupErrorFmt(arena, .environment, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
             },
             .preload => |lib| {
                 if (builtin.os.tag == .macos)
-                    setupErrorFmt(arena, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
+                    setupErrorFmt(arena, .platform_unsupported, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
                 if (preload_file == null) preload_file = readFileAllocCapped(arena, "/etc/ld.so.preload", 64 * 1024, .{ .require_regular = true }) orelse blk: {
                     // Absent is the common case and means "no preload"; present but unreadable
                     // is a different fact and must not be reported as "no line names it".
                     if (posix.access("/etc/ld.so.preload", posix.F_OK) == 0)
-                        setupErrorFmt(arena, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB)", .{e});
+                        setupErrorFmt(arena, .environment, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB)", .{e});
                     break :blk "";
                 };
                 if (!preloadNamed(preload_file.?, lib)) {
                     if (envValue("LD_PRELOAD")) |lp| if (namesLib(lp, lib))
-                        setupErrorFmt(arena, "apparatus {s}: {s} is in LD_PRELOAD, which the engine replaces with its own shim for every child, so it does not reach the operation; a global preload goes in /etc/ld.so.preload", .{ e, lib });
-                    setupErrorFmt(arena, "apparatus {s}: no line of /etc/ld.so.preload names {s}", .{ e, lib });
+                        setupErrorFmt(arena, .environment, "apparatus {s}: {s} is in LD_PRELOAD, which the engine replaces with its own shim for every child, so it does not reach the operation; a global preload goes in /etc/ld.so.preload", .{ e, lib });
+                    setupErrorFmt(arena, .environment, "apparatus {s}: no line of /etc/ld.so.preload names {s}", .{ e, lib });
                 }
             },
             .pythonpath => |file| {
-                const pp = envValue("PYTHONPATH") orelse setupErrorFmt(arena, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits", .{e});
+                const pp = envValue("PYTHONPATH") orelse setupErrorFmt(arena, .environment, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits", .{e});
                 if (!pythonpathHas(arena, pp, file, cwd))
-                    setupErrorFmt(arena, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
+                    setupErrorFmt(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
             },
             .note => {},
         }
@@ -7413,7 +7494,11 @@ fn buildJson(
     exit_code: u8,
     detail: ?Earliest,
     checker_detail: ?CheckerEarliest,
+    // Typed, not a third `?[]const u8` beside the two this already takes (#518): with
+    // `unknown_reason` and `message` adjacent and same-typed, a positional slip compiles
+    // and writes the reason into the message.
     unknown_reason: ?[]const u8,
+    setup_error_reason: ?contract.SetupErrorReason,
     message: ?[]const u8,
     next_step: ?[]const u8,
 ) ![]const u8 {
@@ -7464,6 +7549,26 @@ fn buildJson(
     if (unknown_reason) |r| {
         try w.appendSlice(arena, ",\n  \"unknown_reason\": ");
         try jsonString(w, arena, r);
+    }
+    // #518, ADR 0057: the SETUP_ERROR's class, beside the other closed set, and the status
+    // a failing `--setup` ended with — one integer or the other, only under `setup_failed`,
+    // and neither for a status `waitpid` did not decode (the message quotes the raw number).
+    // Gated on the reason rather than on `setup_status` alone: the global is set only in
+    // the failing arms, but the gate is what keeps a later PASS from ever carrying it.
+    if (setup_error_reason) |r| {
+        try w.appendSlice(arena, ",\n  \"setup_error_reason\": ");
+        try jsonString(w, arena, r.name());
+        if (r == .setup_failed) if (setup_status) |st| switch (st) {
+            .exited => |code| {
+                try w.appendSlice(arena, ",\n  \"setup_exit_code\": ");
+                try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{code}));
+            },
+            .signaled => |sig| {
+                try w.appendSlice(arena, ",\n  \"setup_signal\": ");
+                try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{sig}));
+            },
+            .unknown => {},
+        };
     }
     if (message) |m| {
         try w.appendSlice(arena, ",\n  \"message\": ");
@@ -7583,10 +7688,11 @@ fn writeJsonReport(
     detail: ?Earliest,
     checker_detail: ?CheckerEarliest,
     unknown_reason: ?[]const u8,
+    setup_error_reason: ?contract.SetupErrorReason,
     message: ?[]const u8,
     next_step: ?[]const u8,
 ) void {
-    const doc = buildJson(arena, verdict, exit_code, detail, checker_detail, unknown_reason, message, next_step) catch
+    const doc = buildJson(arena, verdict, exit_code, detail, checker_detail, unknown_reason, setup_error_reason, message, next_step) catch
         return jsonFailed("the document could not be built");
 
     var pbuf: [contract.max_path]u8 = undefined;
@@ -7638,13 +7744,17 @@ fn writeJsonReport(
 /// Typed and exhaustive on purpose: a new member of `engine.RestoreError` must stop
 /// compilation here rather than inherit `state_rewrite_failed` unexamined — the same
 /// containment the snapshot's spawn-error switch keeps.
-const RewriteDisposition = struct { exit: enum { setup, unknown }, detail: []const u8, next: contract.NextStep };
+const RewriteDisposition = struct { exit: enum { setup, unknown }, detail: []const u8, next: contract.NextStep, setup_reason: contract.SetupErrorReason };
 
 fn rewriteFailureDisposition(
     phase: SpawnPhase,
     e: engine.RestoreError,
     doing: []const u8,
 ) RewriteDisposition {
+    const ends: struct { next: contract.NextStep, setup: contract.SetupErrorReason } = switch (e) {
+        error.PathTooLong => .{ .next = .narrow_state, .setup = .define_invalid },
+        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed => .{ .next = .environment, .setup = .environment },
+    };
     const detail: []const u8 = switch (e) {
         // Four causes now, and the fourth reads nothing like the other three. #327 added
         // the third by moving a non-directory at the root from DeleteFailed to UnsafeRoot,
@@ -7676,17 +7786,23 @@ fn rewriteFailureDisposition(
         // the engine cannot spell is the operator's tree to shorten; a root that
         // resolves elsewhere, or a delete or create the filesystem refused, is the
         // environment to put right. None is the define's.
-        .next = switch (e) {
-            error.PathTooLong => .narrow_state,
-            error.UnsafeRoot, error.DeleteFailed, error.CreateFailed => .environment,
-        },
+        // Step and SETUP_ERROR class, from one switch because they split the same way
+        // (#274 for the step, #518 for the class): a path the engine cannot spell is the
+        // operator's tree to shorten and the define's as written; a root that resolves
+        // elsewhere, or a delete or create the filesystem refused, is the environment to
+        // put right and the machine's answer. `UnsafeRoot` here and the parse-time
+        // `assertSafeRoot` refusal are two classes on purpose: at parse time the define
+        // named a root nothing sacrificial belongs in (`define_invalid`); here a root that
+        // was vetted moved under the run (`environment`).
+        .next = ends.next,
+        .setup_reason = ends.setup,
     };
 }
 
 fn restoreFailure(e: engine.RestoreError, doing: []const u8) noreturn {
     const d = rewriteFailureDisposition(run_phase, e, doing);
     switch (d.exit) {
-        .setup => setupError(d.detail),
+        .setup => setupError(d.setup_reason, d.detail),
         .unknown => unknown(.state_rewrite_failed, d.detail, d.next),
     }
 }
@@ -7714,6 +7830,15 @@ test "a failed rewrite is SETUP_ERROR before exploration and UNKNOWN after, Unsa
             } else {
                 try std.testing.expectEqualStrings(doing, d.detail);
             }
+            // The SETUP_ERROR class, also phase-invariant and also decided by the error
+            // (#518): a path the engine cannot spell is the define's as written, and the
+            // other three are the filesystem's answer. Asserted here because the
+            // `define_invalid` arm has no other coverage — the fresh-state acceptance leg
+            // reaches the `environment` one only.
+            try std.testing.expectEqual(
+                if (e == error.PathTooLong) contract.SetupErrorReason.define_invalid else contract.SetupErrorReason.environment,
+                d.setup_reason,
+            );
         }
     }
 }
@@ -7729,7 +7854,7 @@ fn removeFile(path: []const u8) void {
 /// from anywhere, or a replayed define quietly points at a different state.
 fn resolvePathAgainst(arena: std.mem.Allocator, dir: []const u8, path: []const u8) []const u8 {
     if (path.len == 0 or path[0] == '/') return path;
-    return std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, path }) catch setupError("out of memory");
+    return std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, path }) catch setupError(.environment, "out of memory");
 }
 
 /// Commands resolve their argv[0] only when it names a place (`./check.sh`), never a
@@ -7746,7 +7871,7 @@ fn resolveCommandAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const
     const head = if (sp) |p| rest[0..p] else rest;
     const tail = if (sp) |p| rest[p..] else "";
     if (head.len == 0 or head[0] == '/' or std.mem.indexOfScalar(u8, head, '/') == null) return cmd;
-    return std.fmt.allocPrint(arena, "{s}/{s}{s}", .{ dir, head, tail }) catch setupError("out of memory");
+    return std.fmt.allocPrint(arena, "{s}/{s}{s}", .{ dir, head, tail }) catch setupError(.environment, "out of memory");
 }
 
 /// The Command-shaped face of the same rule. The string form goes through
@@ -7767,8 +7892,8 @@ fn resolveCommand(arena: std.mem.Allocator, dir: []const u8, cmd: config.Command
             const head = a[0];
             if (head.len == 0 or head[0] == '/' or head[0] == ' ' or std.mem.indexOfScalar(u8, head, '/') == null)
                 return .{ .argv = a };
-            const out = arena.alloc([]const u8, a.len) catch setupError("out of memory");
-            out[0] = std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, head }) catch setupError("out of memory");
+            const out = arena.alloc([]const u8, a.len) catch setupError(.environment, "out of memory");
+            out[0] = std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, head }) catch setupError(.environment, "out of memory");
             for (a[1..], 1..) |e, idx| out[idx] = e;
             return .{ .argv = out };
         },
@@ -8289,6 +8414,11 @@ test "every OpClass name is its own tag, which is why the hand-written switch co
     }
     inline for (@typeInfo(contract.UnknownReason).@"enum".fields) |f| {
         const v: contract.UnknownReason = @enumFromInt(f.value);
+        try std.testing.expectEqualStrings(f.name, v.name());
+    }
+    // The second closed set (#518), held to the same shape.
+    inline for (@typeInfo(contract.SetupErrorReason).@"enum".fields) |f| {
+        const v: contract.SetupErrorReason = @enumFromInt(f.value);
         try std.testing.expectEqualStrings(f.name, v.name());
     }
     // The oracle kind's name(), the third of the three and the one the first scan for

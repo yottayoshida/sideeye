@@ -129,7 +129,10 @@ REGION_ADVISORY = ("\nnote: the counted region above quotes the target under tes
                    "line beginning with the closing banner is this engine speaking.")
 def expected_text(s):
     t = s["verdict"] if isinstance(s.get("verdict"), str) else "?"
-    if isinstance(s.get("unknown_reason"), str): t += " (%s)" % s["unknown_reason"]
+    # One slot, either closed set (#518): the reason on an UNKNOWN, the class on a
+    # SETUP_ERROR. Never both, since each is written only under its own verdict.
+    slot = s.get("unknown_reason") or s.get("setup_error_reason")
+    if isinstance(slot, str): t += " (%s)" % slot
     if isinstance(s.get("message"), str): t += ":\n" + marked(s["message"])
     # #274: next_step rides after the region and before case — engine text, outside
     # the counted region, so the prefix rule of mcp 17 is untouched.
@@ -817,8 +820,11 @@ if tb[start:start + n] != mb:
 # The new assertion. The expected prefix is derived from THIS run's own structured report,
 # not written out here: a literal would pass a summarizer that stopped printing the reason.
 exp = sc["verdict"].encode("utf-8")
-if sc.get("unknown_reason"):
-    exp += b" (" + sc["unknown_reason"].encode("utf-8") + b")"
+# One slot, either closed set (#518), derived from this run's own report and checked below
+# against the set the page documents for it.
+slot = sc.get("unknown_reason") or sc.get("setup_error_reason")
+if slot:
+    exp += b" (" + slot.encode("utf-8") + b")"
 exp += b":\n"
 if tb[:i] != exp:
     sys.exit("bytes before the first opening banner are not the verdict line alone: %r" % (tb[:i],))
@@ -831,14 +837,21 @@ mv = re.search(r"\| `verdict` \|[^|]*\|[^|]*\| (.*?)\n", doc)
 verdicts = set(re.findall(r'`"([A-Z_]+)"`', mv.group(1))) if mv else set()
 mr = re.search(r"`unknown_reason` values \(closed set[^)]*\):(.*?)\n\n", doc, re.S)
 reasons = set(re.findall(r"`([a-z0-9_]+)`", mr.group(1))) if mr else set()
+ms = re.search(r"`setup_error_reason` values \(closed set[^)]*\):(.*?)\n\n", doc, re.S)
+setup_reasons = set(re.findall(r"`([a-z0-9_]+)`", ms.group(1))) if ms else set()
 # An empty set would make both tests below vacuous, and a docs rewrite is how that happens.
-if not verdicts or not reasons:
+if not verdicts or not reasons or not setup_reasons:
     sys.exit("could not read the closed sets from docs/report-schema.md; the prefix test would be vacuous")
 if sc["verdict"] not in verdicts:
     sys.exit("verdict %r is outside the documented closed set the prefix argument rests on" % (sc["verdict"],))
 r = sc.get("unknown_reason")
 if r is not None and r not in reasons:
     sys.exit("unknown_reason %r is outside the documented closed set" % (r,))
+sr = sc.get("setup_error_reason")
+if sr is not None and sr not in setup_reasons:
+    sys.exit("setup_error_reason %r is outside the documented closed set" % (sr,))
+if r is not None and sr is not None:
+    sys.exit("a report carries both closed-set fields; the prefix slot holds one")
 # The line rule, with its own positive control, as in mcp 13: the planted name carries a
 # newline, and the defang has to be what removes it.
 name = open("/tmp/mcp-forged-open-name", "rb").read()
