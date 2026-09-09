@@ -1052,6 +1052,12 @@ pub const NextStep = enum {
     retry_then_report,
     /// A ceiling the operator can move by giving Sideeye less to hold.
     narrow_state,
+    /// A snapshot past the recording run met an entry this user cannot read (#535, ADR
+    /// 0056). The initial snapshot read the tree, so the entry appeared during the run —
+    /// a lock the target created mode 0000 is the common case — and it is not the
+    /// operator's environment to fix. Chosen only on a measured `EACCES`/`EPERM`
+    /// (`readFailedStep`); a read that failed some other way keeps `environment`.
+    unreadable_entry_appeared,
     /// The state directory was still changing after the run was contained.
     quiesce,
     /// The process that launched the exploration went away.
@@ -1074,6 +1080,7 @@ pub const NextStep = enum {
             .re_record => "Explore the define again under this build; the saved case does not apply here, and a fresh recording yields a fresh case.",
             .environment => "Fix what the detail above names in the environment, then re-run; the define itself is unchanged.",
             .retry_then_report => "Re-run once; if it happens again, file it with the report attached, because the detail cannot say whether the machine or Sideeye stopped short.",
+            .unreadable_entry_appeared => "An entry this user cannot read appeared in the state during the run (a lock created with mode 0000 is the common case): re-run as a user that can read it, or point --state at a directory that leaves it outside.",
             .narrow_state => "Point --state at a smaller or shallower directory, or reduce what the operation writes there and how deep it nests; the ceiling the detail names is fixed in this build.",
             .quiesce => "Wait for whatever the target left running to finish, or stop it, so the state directory holds still; then re-run.",
             .relaunch => "Start the exploration from a process that stays alive for its whole duration; the one that launched this run has exited.",

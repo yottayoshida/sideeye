@@ -318,6 +318,9 @@ pub const AT_REMOVEDIR: c_int = std.posix.AT.REMOVEDIR;
 /// it cannot be written out the way `EINTR` and `ENOENT` above are; `ENOTDIR` agrees
 /// across both but comes from the same place so the pair cannot drift apart.
 pub const ELOOP: c_int = @intFromEnum(std.posix.E.LOOP);
+pub const EACCES: c_int = @intFromEnum(std.posix.E.ACCES);
+pub const EPERM: c_int = @intFromEnum(std.posix.E.PERM);
+pub const EIO: c_int = @intFromEnum(std.posix.E.IO);
 pub const EEXIST: c_int = @intFromEnum(std.posix.E.EXIST);
 pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
 /// Taken from `std.posix.E` for the same reason as its two neighbours, and with more at

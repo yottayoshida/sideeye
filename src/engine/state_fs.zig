@@ -170,20 +170,65 @@ pub const SnapshotCaps = struct {
     pub const shipped: SnapshotCaps = .{ .file = max_state_file_bytes, .tree = max_state_tree_bytes };
 };
 
+/// An entry's path relative to the state root, held by value so a refusal can name it
+/// after the walk's arena is gone. One shape for every diag that names an entry, so the
+/// buffer-and-length pair is written once (#535).
+pub const EntryRel = struct {
+    buf: [contract.max_path]u8 = undefined,
+    len: usize = 0,
+
+    pub fn get(self: *const EntryRel) []const u8 {
+        return self.buf[0..self.len];
+    }
+
+    /// A path that does not fit is not cut: `len` stays 0 and the refusal falls back to
+    /// naming nothing, because a cut path names a file that does not exist. Unreachable
+    /// from the walk — every `rel` handed here has already passed through `joinZ`'s
+    /// `[max_path]u8` with the root in front of it — and kept honest for the caller
+    /// that has not.
+    pub fn set(self: *EntryRel, rel_path: []const u8) void {
+        if (rel_path.len > self.buf.len) {
+            self.len = 0;
+            return;
+        }
+        self.len = rel_path.len;
+        @memcpy(self.buf[0..self.len], rel_path[0..self.len]);
+    }
+};
+
+test "EntryRel names nothing rather than a cut path when the path does not fit (#535)" {
+    var rel: EntryRel = .{};
+    rel.set("a/b");
+    try std.testing.expectEqualStrings("a/b", rel.get());
+    const long = [_]u8{'x'} ** (contract.max_path + 1);
+    rel.set(&long);
+    try std.testing.expectEqual(@as(usize, 0), rel.get().len);
+}
+
 /// Which file broke the cap, for the refusal that names it (#265). Zig errors carry
 /// no payload, and the snapshot's own arena dies with the error — so the caller
 /// hands this fixed-size, caller-owned box in and reads it back on error.FileTooLarge.
 pub const FileTooLargeDiag = struct {
-    rel_buf: [contract.max_path]u8 = undefined,
-    rel_len: usize = 0,
+    rel: EntryRel = .{},
     /// From lseek(SEEK_END) at the moment the cap broke; null when even that failed
     /// (the refusal then says "over the cap" and no more — a size nobody measured
     /// must not appear in the message).
     size: ?u64 = null,
+};
 
-    pub fn rel(self: *const FileTooLargeDiag) []const u8 {
-        return self.rel_buf[0..self.rel_len];
-    }
+/// What a refusal for an entry the walk could not read or classify can say (#535),
+/// filled at the moment the walk gave up on it.
+pub const EntryDiag = struct {
+    rel: EntryRel = .{},
+    /// The errno of the libc call that failed, read before anything else ran. Null when
+    /// no call failed — a descriptor that turned out not to be a regular file, a
+    /// `readlink` that filled its buffer — and for `unclassified`, whose `statNoFollow`
+    /// hands none out (it reads errno for its own `ENOENT` test on Darwin and returns a
+    /// kind, not a number). A number nobody measured must not appear in the message.
+    errno: ?c_int = null,
+    kind: Kind = .file,
+
+    pub const Kind = enum { file, symlink, unclassified };
 };
 
 /// What the whole-tree refusal can say (#323), filled at the moment the ceiling broke.
@@ -214,6 +259,7 @@ pub const TreeTooLargeDiag = struct {
 pub const SnapshotDiag = struct {
     file: FileTooLargeDiag = .{},
     tree: TreeTooLargeDiag = .{},
+    entry: EntryDiag = .{},
 };
 
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
@@ -281,10 +327,17 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
         var kind = posix.kindFromDirent(ent);
         // Some filesystems leave dirent.type unset; ask the path directly then —
         // without opening it (a FIFO would block) and without following links (#5).
-        if (kind == .missing) kind = posix.kindOfPathNoFollow(full.ptr) catch
+        if (kind == .missing) kind = posix.kindOfPathNoFollow(full.ptr) catch {
             // Fail-closed: an entry that cannot be classified must not silently
             // vanish from the snapshot — that would route it around #5's refusal.
+            // Named, so the refusal can say which entry (#535); no errno, because
+            // `statNoFollow` carries none.
+            if (ctx.diag) |d| {
+                d.entry.rel.set(rel);
+                d.entry.kind = .unclassified;
+            }
             return error.ClassifyFailed;
+        };
 
         // Bytes this entry added to the arena's content, for the refusal's account.
         var charged: usize = 0;
@@ -299,11 +352,21 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
             },
             .file => {
                 var size: ?u64 = null;
-                const content = read.readWhole(arena, full.ptr, ctx.caps.file, &size, .follow) catch |e| {
-                    if (e == error.FileTooLarge) if (ctx.diag) |d| {
-                        d.file.rel_len = @min(rel.len, d.file.rel_buf.len);
-                        @memcpy(d.file.rel_buf[0..d.file.rel_len], rel[0..d.file.rel_len]);
-                        d.file.size = size;
+                var read_errno: ?c_int = null;
+                const content = read.readWholeDiag(arena, full.ptr, ctx.caps.file, &size, .follow, &read_errno) catch |e| {
+                    if (ctx.diag) |d| switch (e) {
+                        error.FileTooLarge => {
+                            d.file.rel.set(rel);
+                            d.file.size = size;
+                        },
+                        // The entry the refusal will name (#535), with the errno of the
+                        // call that failed — or none, when none did.
+                        error.ReadFailed => {
+                            d.entry.rel.set(rel);
+                            d.entry.errno = read_errno;
+                            d.entry.kind = .file;
+                        },
+                        else => {},
                     };
                     return e;
                 };
@@ -313,7 +376,15 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
             .symlink => {
                 // The link itself, never what it points at: readlink, no following.
                 var tbuf: [contract.max_path]u8 = undefined;
-                const target = readLinkTarget(full.ptr, &tbuf) orelse return error.ReadFailed;
+                var link_errno: ?c_int = null;
+                const target = readLinkTarget(full.ptr, &tbuf, &link_errno) orelse {
+                    if (ctx.diag) |d| {
+                        d.entry.rel.set(rel);
+                        d.entry.errno = link_errno;
+                        d.entry.kind = .symlink;
+                    }
+                    return error.ReadFailed;
+                };
                 const held = try arena.dupe(u8, target);
                 try ctx.entries.append(arena, .{ .rel = rel, .kind = .symlink, .content = held });
                 charged = held.len;
@@ -340,9 +411,17 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
 /// against `max_path` (== PATH_MAX) no real platform can make readlink fill it, so a
 /// guard buried in `walk` would be a claim nobody can falsify (R1); against a small
 /// buffer the test below fires it for real.
-fn readLinkTarget(path_z: [*:0]const u8, buf: []u8) ?[]const u8 {
+fn readLinkTarget(path_z: [*:0]const u8, buf: []u8, errno_out: ?*?c_int) ?[]const u8 {
+    if (errno_out) |eo| eo.* = null;
     const n = posix.readlink(path_z, buf.ptr, buf.len);
-    if (n < 0 or @as(usize, @intCast(n)) >= buf.len) return null;
+    if (n < 0) {
+        // The one failure here that is a failed call (#535): read now, before anything
+        // else runs. A target that filled the buffer is a successful readlink and gets
+        // no errno.
+        if (errno_out) |eo| eo.* = std.c._errno().*;
+        return null;
+    }
+    if (@as(usize, @intCast(n)) >= buf.len) return null;
     return buf[0..@intCast(n)];
 }
 
@@ -2132,16 +2211,22 @@ test "readLinkTarget is fail-closed at its own boundary (#122)" {
     }
 
     var small: [8]u8 = undefined;
-    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &small));
+    var trunc_errno: ?c_int = 99;
+    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &small, &trunc_errno));
+    // A filled buffer is a successful readlink: no failed call, no errno (#535).
+    try std.testing.expectEqual(@as(?c_int, null), trunc_errno);
     var exact: [10]u8 = undefined;
-    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &exact));
+    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &exact, null));
     var roomy: [11]u8 = undefined;
-    try std.testing.expectEqualStrings("0123456789", readLinkTarget(link_z.ptr, &roomy).?);
+    try std.testing.expectEqualStrings("0123456789", readLinkTarget(link_z.ptr, &roomy, null).?);
     // n < 0: not a link at all.
     var missing_buf: [contract.max_path]u8 = undefined;
     const missing_z = std.fmt.bufPrintZ(&missing_buf, "{s}/absent", .{dir_z}) catch unreachable;
     var big: [64]u8 = undefined;
-    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(missing_z.ptr, &big));
+    var missing_errno: ?c_int = null;
+    try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(missing_z.ptr, &big, &missing_errno));
+    // A readlink that failed names why (#535).
+    try std.testing.expectEqual(@as(?c_int, posix.ENOENT), missing_errno);
 }
 
 test "snapshot, restore and corruptState carry symlinks as links (#122)" {
@@ -2339,7 +2424,7 @@ test "the per-file cap refuses, names the file, and carries its size (#265)" {
         error.FileTooLarge,
         takeSnapshotCapped(gpa, root, onlyFileCap(8), &diag),
     );
-    try std.testing.expectEqualStrings("grown.log", diag.file.rel());
+    try std.testing.expectEqualStrings("grown.log", diag.file.rel.get());
     try std.testing.expectEqual(@as(?u64, 9), diag.file.size);
 
     // Positive control, same tree: at the cap exactly, the read is not a breach —
@@ -2591,14 +2676,44 @@ test "the tree ceiling counts what the snapshot holds, not the bytes it read (#3
     try std.testing.expect(diag.tree.reached > 32 * 1024);
 }
 
-test "this file's public surface is the nineteen the facade re-exports (#491)" {
+test "this file's public surface is the twenty-one the facade re-exports (#491)" {
     // The three aliases above (`Snapshot`, `Entry`, `finalizeEntries`) are private on
     // purpose, and `engine.zig`'s facade walk cannot see it if one becomes `pub`: it would
     // find that name already re-exported from `snapshot.zig`, and the identity check would
     // compare the same declaration to itself. So the count is checked here instead, the way
     // `judge.zig` checks its eight. `std.meta.declarations` lists public declarations only.
     //
-    // A twentieth public declaration is not a mistake by itself — it is a new name for the
-    // facade to re-export, and this number moves with it.
-    try std.testing.expectEqual(@as(usize, 19), std.meta.declarations(@This()).len);
+    // Another public declaration is not a mistake by itself — it is a new name for the
+    // facade to re-export, and this number moves with it: nineteen until #535 added
+    // `EntryRel` and `EntryDiag`, twenty-one since.
+    try std.testing.expectEqual(@as(usize, 21), std.meta.declarations(@This()).len);
+}
+
+test "an entry the walk cannot read is named in the diag, with the open's errno (#535)" {
+    if (posix.geteuid() == 0) return error.SkipZigTest; // root reads mode 0000
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir = std.fmt.bufPrintZ(&dbuf, "/tmp/sideeye-unreadable-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(dir.ptr, 0o755);
+    var fb: [contract.max_path]u8 = undefined;
+    const ok_z = try joinZ(&fb, dir, "readable.txt");
+    const fd0 = posix.open(ok_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    try std.testing.expect(fd0 >= 0);
+    _ = posix.close(fd0);
+    var lb: [contract.max_path]u8 = undefined;
+    const lock_z = try joinZ(&lb, dir, "m_inmail.lock");
+    const fd = posix.open(lock_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o000));
+    try std.testing.expect(fd >= 0);
+    _ = posix.close(fd);
+    defer {
+        _ = posix.unlink(lock_z.ptr);
+        _ = posix.unlink(ok_z.ptr);
+        _ = posix.rmdir(dir.ptr);
+    }
+    var diag: SnapshotDiag = .{};
+    try std.testing.expectError(error.ReadFailed, takeSnapshotCapped(std.testing.allocator, dir, SnapshotCaps.shipped, &diag));
+    try std.testing.expectEqualStrings("m_inmail.lock", diag.entry.rel.get());
+    try std.testing.expectEqual(EntryDiag.Kind.file, diag.entry.kind);
+    try std.testing.expectEqual(@as(?c_int, posix.EACCES), diag.entry.errno);
+    // The other diags stayed untouched: this was not a cap.
+    try std.testing.expectEqual(@as(usize, 0), diag.file.rel.len);
 }
