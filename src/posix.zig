@@ -95,6 +95,12 @@ pub extern "c" fn symlinkat(target: [*:0]const u8, newdirfd: c_int, linkpath: [*
 pub extern "c" fn fdopendir(fd: c_int) ?*anyopaque;
 
 pub extern "c" fn getpid() c_int;
+/// `getentropy(2)`: macOS 10.12+, glibc 2.25+ (the Linux artefacts' floor is 2.28,
+/// `release.yml`). Zig 0.16's std declares it for android and emscripten only, so the
+/// engine declares it itself, the way the shim declares its libc. Declared and linked on
+/// both platforms — `fs_usage` is macOS-only, but its call sites sit under a runtime
+/// flag and compile everywhere.
+pub extern "c" fn getentropy(buf: [*]u8, len: usize) c_int;
 /// The parent's pid — or, once the parent has died and this process has been reparented,
 /// the reaper's: pid 1 or the nearest subreaper on Linux, launchd on macOS. Parentage
 /// changes only when the parent dies, so "getppid() no longer answers what it answered at
@@ -918,6 +924,32 @@ pub fn runChildCaptureMinimalEnv(
     // the oracle's path resolution are all read against. A define's `cwd` is applied one
     // level down, by that engine, to the commands it runs.
     return runChildImpl(gpa, argv, env_pairs, cap, true, null);
+}
+
+/// Sixteen lowercase hex digits from eight bytes of kernel entropy, or null when the
+/// kernel refused (`getentropy` fails only on EFAULT, EIO or a kernel without it). Used
+/// for the fs_usage sentinels' names (#549): a name a target can derive from its parent's
+/// pid is a name it can forge a capture line for, and eight bytes it never sees is not.
+pub fn randomHex(out: *[16]u8) ?[]const u8 {
+    var raw: [8]u8 = undefined;
+    if (getentropy(&raw, raw.len) != 0) return null;
+    const digits = "0123456789abcdef";
+    for (raw, 0..) |b, i| {
+        out[2 * i] = digits[b >> 4];
+        out[2 * i + 1] = digits[b & 0x0f];
+    }
+    return out[0..];
+}
+
+test "randomHex: sixteen lowercase hex digits, and two draws differ" {
+    var a: [16]u8 = undefined;
+    var b: [16]u8 = undefined;
+    const ha = randomHex(&a) orelse return error.TestUnexpectedResult;
+    const hb = randomHex(&b) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(usize, 16), ha.len);
+    for (ha) |c| try std.testing.expect((c >= '0' and c <= '9') or (c >= 'a' and c <= 'f'));
+    // Sixty-four bits twice: equal only if the source is not entropy.
+    try std.testing.expect(!std.mem.eql(u8, ha, hb));
 }
 
 /// Child side of the stdin discipline (#263): make fd 0 the descriptor the parent

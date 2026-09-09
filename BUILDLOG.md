@@ -2,6 +2,62 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-09 — A sentinel a target can name is a sentinel a target can forge (#549)
+
+The fragment work (#547, #548) showed that `fs_usage` prints a file name raw, newline and
+all, and #549 followed: a name holding a newline and then a grammatical line puts that
+line into the capture. Most forged lines fail closed — a mutating line under an unknown
+thread refuses, a forged open of the trace path makes the subject ambiguous — but the
+closing sentinel's line is the one thing that says the observer lived through the
+recording, and its name was `.sideeye-fsusage-close.<engine pid>`: a child reads its
+parent's pid. That is the false-PASS direction.
+
+**The first plan was to bind sentinel lines to the engine's own thread id**, and the
+adversarial reader took it apart: a child can read its parent's thread ids during the
+run, so the binding raises the bar without closing the door; the test that pins the
+handshake predicate carries a line from `fseventsd` — the handshake has passed on a
+daemon's line, and binding to the engine's thread could stop every macOS run at the
+door; and `pthread_threadid_np` is not in glibc, so a runtime-flagged call site links on
+Linux only if the extern is behind a comptime branch. The reader's alternative was the
+one taken: make the name unguessable. The opening sentinel is created and removed before
+the target starts; the closing one is created after it exits; a target that never sees a
+name cannot put it into a file name. Two draws, not one — the opening name is readable
+from the capture (the engine's own `0600` file, same user) once the handshake has passed,
+so a shared draw would hand the closing name over — and the confirming reader is the one
+who noticed a single draw would have passed every planned check.
+
+**Two things measured along the way.** `pthread_threadid_np` and the kernel's thread id
+are the same number space on this machine (`sample` prints `Thread_105159379` for the
+value the call returns) — the repository already had that measurement for `fs_usage`
+itself (`spike/fsusage/RESULTS.md`), which the first plan had missed. And the display
+cap is measured on what `fs_usage` prints: the data volume's firmlink prefix
+(`/System/Volumes/Data`, 20 bytes — the shape of `capturesPath`'s own measured line)
+rides on every path. The plan read that as "the bound of 96 counts neither the prefix nor
+the name, tighten it to 84"; the implementation's first reader read the numbers back:
+96 = 156 − 20 − 40 exactly, the largest of the three measured caps, and roots between
+85 and 96 pass on two of the three machines — the tightening would have refused runs
+that work on the owner's own laptop, and the plan's "already failing by timeout" was false
+there. Kept at 96 by owner ruling; the arithmetic now lives beside the constant, and the
+refusal for a deeper root names the three caps and what happens under the smallest
+(`missing_sentinel`, not a timeout: the opening name fits at 144 and the closing one, a
+byte longer, does not). The same reader found the helper's insertion had taken
+`shellSingleQuote`'s doc comment with it, that the null from `fsUsageSentinels` has two
+causes where the message named one, and that a sentinel a killed run leaves behind no
+longer collides with the next run — a behaviour change the ADR and the CHANGELOG now
+carry.
+
+**Seen red.** One draw shared by both names (the test's independence assertion), and
+`getentropy` replaced by fixed bytes (`randomHex`'s two-draws-differ, and the names). The
+real handshake with the new names is the macOS CI job's fs_usage leg — a name cut by the
+cap fails it by timeout, so a green there is the length arithmetic measured on a real
+capture.
+
+**Not closed, and named in the ADR.** A process that outlives the target and watches the
+state directory sees the closing sentinel when it is created; by then the real line is in
+the capture and a dead observer is refused by the stop's observation, so the forgery has
+nothing to buy. The closing sentinel is still one `open` with no flush pressure behind it
+(the opening one gets sixty-four `access` calls) — the same as before, a different promise.
+
 ## 2026-09-09 — The other half of the cut line: the fragments after a skipped head
 
 With #547 merged, the v1.3.0 bump's CI (#545) refused the same fs_usage leg again — on a
