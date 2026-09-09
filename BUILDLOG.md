@@ -2,6 +2,65 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-09 — A refusal that names nothing and blames the wrong party (#535)
+
+The first of the three issues in `/pickup` batch `b_047dc6f77789`. lbdb's fetcher takes a
+dotlock — `O_CREAT|O_EXCL`, mode 0 — and a world killed before the lock is released leaves
+a file nobody can read; the crashed-state snapshot refuses `state_unsnapshotable` with "a
+file or symlink inside the state tree could not be read" and a step that says to fix the
+environment. Two sentences, both false in the way that matters: the detail names nothing,
+and the environment did not do it.
+
+**The plan's first design was taken apart, and the readers were right twice.** The first
+draft branched the step on `run_phase` — "before exploration it is the operator's tree,
+during it the run left it" — and the adversarial reader pointed out that the before-side of
+that branch is never rendered: `snapshotRefusal` calls `setupError` there, which writes no
+`next_step` at all, so the branch had an unfalsifiable half and the plan's third check
+would have passed with zero implementation. The design became one new step, rendered only
+where a step is rendered. The same reader counted the ways `readWhole` returns
+`ReadFailed` — five — and found the first draft's "read errno at the catch" would have
+printed EACCES for runs in which no call failed at all: `kindOfFd` is a raw `statx` on
+Linux, and a descriptor that turns out not to be a regular file fails nothing. The
+confirming reader then caught the correction overshooting the other way — lseek and read
+do fail with a real errno, and `defer close` cannot overwrite a value already captured —
+so the rule is now the plain one: read errno immediately after the call that failed, and
+leave it null wherever nothing failed. `FileTooLargeDiag.size` had said the same thing
+about sizes since #265; the diag that names the entry shares its `EntryRel` with it.
+
+**The leg.** The plan's first operation was a `#!/bin/sh` script running `chmod 000`, and
+the confirming reader found that it would have refused for the wrong reason: the shell
+forks `chmod`, and the process-boundary machinery meets the child before the snapshot does
+(`splitArgs`'s doc records exactly that run). The leg uses `install -m 0000 /dev/null
+lock` — one image, no shell — and the refusal it reaches is the post-recording snapshot's.
+Non-root only, for `acc-rw`'s reason.
+
+**What stays.** The `opendir(...) orelse return` in the walk treats a directory it cannot
+open as empty; the plan's first draft called that a false-PASS direction and the reader
+asked for the measurement first — in `explore` the restore meets such a directory before
+any comparison does and refuses `state_rewrite_failed`. Measured with a single-image
+target that makes a directory, writes a file holding its own pid inside, and sets the
+directory to mode 0000: `explore` refuses `state_rewrite_failed` ("could not restore before
+falsifying the checker") and `preflight --twice` refuses the same reason before its second
+run — the plan had assumed `--twice` compares without a restore, and it does not. Neither
+reaches a verdict, so no false PASS was shown and nothing was filed; the rewrite refusal
+names no entry either, which is the same shape as this issue under a different reason
+code, and no predicate is met.
+
+**The first-read review of the diff found the step attached too widely.** The draft gave
+every `ReadFailed` past the recording run the sentence "an entry this user cannot read
+appeared", and `readWhole` has five ways to fail: an entry gone between `readdir` and
+`open` (`ENOENT` — the state still moving after the run was contained, which the `quiesce`
+step already describes), `EIO`, a descriptor that was not a regular file (no errno), a
+`readlink` that filled its buffer. One report could have said `errno 2 ENOENT` in its
+detail and "this user cannot read" in its step. The step is now chosen on the measured
+errno — `EACCES`/`EPERM` blame the user's access, `ENOENT` waits for the state to hold
+still, everything else keeps the environment step with the entry named — and only the
+errno can choose it, which is the second reason the diag carries one. The same reader
+found the leg inserted between the two halves of the neighbouring check, so a failure of
+the second half would have printed under this leg's heading, and that the leg did not pin
+which snapshot refused: it now greps the final-state prefix, which the real run on this
+machine prints.
+
 ## 2026-09-09 — A sentinel a target can name is a sentinel a target can forge (#549)
 
 The fragment work (#547, #548) showed that `fs_usage` prints a file name raw, newline and

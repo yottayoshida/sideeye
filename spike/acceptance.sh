@@ -3298,6 +3298,7 @@ else
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
+
 rm -rf /tmp/acc-deep-late
 
 # Planted from the shell, the way 2fc plants its oversized file — routing it through
@@ -3320,6 +3321,41 @@ else
     fails=$((fails + 1))
 fi
 rm -rf /tmp/acc-deep-init
+
+echo "=========== check 2ff: an entry the run left unreadable is named, and the step says so (#535) ==========="
+# A target that leaves a file nobody can read — the dotlock idiom, O_CREAT|O_EXCL with
+# mode 0 — used to refuse `state_unsnapshotable` with "a file or symlink inside the
+# state tree could not be read" and a step pointing at the operator's environment,
+# naming nothing to fix, for a file the run itself left. The operation is a single
+# image (no shell: a `chmod` child would meet the process-boundary machinery first and
+# the leg would refuse for the wrong reason), and the refusal is the final-state
+# snapshot's, which the leg pins by that prefix — no --check, because nothing past that
+# snapshot runs. Non-root only, for acc-rw's reason: root reads mode 0000, so the plant
+# does not fire there and this leg FAILs loudly rather than skipping.
+rm -rf /tmp/acc-unreadable && mkdir -p /tmp/acc-unreadable/state
+echo seed > /tmp/acc-unreadable/state/mail.eml
+o=$("$SIDEEYE" explore --state /tmp/acc-unreadable/state \
+    --operation "/usr/bin/install -m 0000 /dev/null /tmp/acc-unreadable/state/lock" \
+    --shim "$SHIM" --work /tmp/acc-unreadable/work \
+    --json /tmp/acc-unreadable/r.json 2>&1)
+rc=$?
+if [ "$rc" = "2" ] \
+    && echo "$o" | grep -q "state_unsnapshotable" \
+    && echo "$o" | grep -q "final state" \
+    && echo "$o" | grep -q "lock could not be read (file; errno" \
+    && echo "$o" | grep -q "EACCES" \
+    && echo "$o" | grep -q "appeared in the state during the run" \
+    && ! echo "$o" | grep -q "in the environment" \
+    && grep -q '"unknown_reason": "state_unsnapshotable"' /tmp/acc-unreadable/r.json \
+    && grep -q 'lock could not be read (file; errno' /tmp/acc-unreadable/r.json \
+    && grep -q 'appeared in the state during the run' /tmp/acc-unreadable/r.json; then
+    echo "ok   an entry the run left unreadable is named with its errno, in text and JSON, and the step says the run left it"
+else
+    echo "FAIL unreadable entry: exit $rc (wanted 2 + state_unsnapshotable at the final-state snapshot naming lock/EACCES + the appeared-during-the-run step, no 'environment')"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-unreadable
 
 echo "=========== check 2vw: the vectored positional writes are counted (#256) ==========="
 # The oracle has classified pwritev since v0.1; the shim never exported it, so a

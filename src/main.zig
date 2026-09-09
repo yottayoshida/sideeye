@@ -826,6 +826,32 @@ fn apparatusHasUnchecked() bool {
     return false;
 }
 
+/// The step for a `ReadFailed` past the recording run, chosen on the errno the walk
+/// measured (#535). Only a permission failure says "an entry this user cannot read":
+/// `EACCES`, and `EPERM` for the same reason on the platforms that answer with it. An
+/// entry that was gone by the time `open` reached it (`ENOENT`) is the state still
+/// moving after the run was contained — the step `quiesce` already describes — and
+/// every other failure, or a read that failed without a libc call (a descriptor that
+/// was not a regular file, a `readlink` that filled its buffer: errno `null`), keeps
+/// the environment step, which now has a named entry to point at. A first-read review
+/// of the first draft found the permission sentence attached to all five ways a read
+/// can fail, so one report could say `errno 2 ENOENT` in its detail and "this user
+/// cannot read" in its step.
+fn readFailedStep(errno: ?c_int) contract.NextStep {
+    const en = errno orelse return .environment;
+    if (en == posix.EACCES or en == posix.EPERM) return .unreadable_entry_appeared;
+    if (en == posix.ENOENT) return .quiesce;
+    return .environment;
+}
+
+test "the step for an unreadable entry is chosen on the measured errno, and only a permission failure blames the user's access (#535)" {
+    try std.testing.expectEqual(contract.NextStep.unreadable_entry_appeared, readFailedStep(posix.EACCES));
+    try std.testing.expectEqual(contract.NextStep.unreadable_entry_appeared, readFailedStep(posix.EPERM));
+    try std.testing.expectEqual(contract.NextStep.quiesce, readFailedStep(posix.ENOENT));
+    try std.testing.expectEqual(contract.NextStep.environment, readFailedStep(posix.EIO));
+    try std.testing.expectEqual(contract.NextStep.environment, readFailedStep(null));
+}
+
 /// Snapshot with the per-file cap, or refuse naming the file (#265). `what` is the
 /// call site's existing message, kept byte-identical for every failure except the
 /// cap — there the refusal must name the file, its size and the cap, or the operator
@@ -838,7 +864,7 @@ fn apparatusHasUnchecked() bool {
 /// introducers; unlike the JSON side there is no second escaper behind the text.
 ///
 /// The *verdict* every snapshot failure refuses with depends on `run_phase`: SETUP_ERROR
-/// only at the initial snapshot, UNKNOWN at the four sites at or past the recording run —
+/// only at the initial snapshot, UNKNOWN at every site at or past the recording run —
 /// `state_file_too_large` for the cap (#330), `state_unsnapshotable` for the rest (#351).
 /// The wording does not change with the verdict; whichever message applies, it applies on
 /// both sides of the split, so this reads as one refusal with two exits rather than two
@@ -856,9 +882,10 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
 
         // **Decided once, for every exit below.** Threading the reason through as a
         // parameter was the first design, and review counted what could then go wrong:
-        // of the four sites that refuse here, two — the no-measured-size branch and the
-        // no-arena fallback — are reached by nothing, so either could have named the
-        // wrong reason with every check in the tree still green. That is what #330
+        // of the sites that refuse here, the no-measured-size branch and the no-arena
+        // fallback (and, since #535, the empty-name fallbacks in `snapshotDetail`) are
+        // reached by nothing, so any of them could have named the wrong reason with
+        // every check in the tree still green. That is what #330
         // rejected a per-site parameter to avoid. Computed here, the mistake has no
         // shape to take, and inverting this line reddens the cap leg and the non-cap
         // leg together — one expression cannot be half-broken.
@@ -874,10 +901,12 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
         // there unobserved. One arm cannot disagree with itself.
         //
         // The next step is decided in the same arm (#274), and it is what splits the
-        // `state_unsnapshotable` group: one reason, three remedies — a tree the operator
-        // shapes (too deep, a path too long), an environment the operator fixes (an
-        // entry that could not be read or classified), and a sorted-entry invariant
-        // that is Sideeye's to fix. A reason-keyed table could not say that.
+        // `state_unsnapshotable` group: one reason, several remedies — a tree the
+        // operator shapes (too deep, a path too long), an entry the run left that this
+        // user cannot read (#535, chosen on the measured errno by `readFailedStep`), an
+        // environment the operator fixes (an entry that could not be classified, or a
+        // read that failed some other way), and a sorted-entry invariant that is
+        // Sideeye's to fix. A reason-keyed table could not say that.
         const answer: struct { reason: contract.UnknownReason, bare: []const u8, next: contract.NextStep } = switch (e) {
             error.FileTooLarge => .{
                 .reason = .state_file_too_large,
@@ -896,9 +925,19 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
                 .bare = "the state tree could not be snapshotted",
                 .next = .narrow_state,
             },
-            error.ReadFailed,
-            error.ClassifyFailed,
-            => .{
+            // An entry the walk could not read (#535). The step is rendered only past
+            // the recording run — before it, `snapshotRefusal` calls `setupError`, which
+            // carries no step — and by then the initial snapshot has read the tree, so
+            // the entry appeared during the run. Which step depends on *why* the read
+            // failed, and only the measured errno can say: see `readFailedStep`.
+            error.ReadFailed => .{
+                .reason = .state_unsnapshotable,
+                .bare = "the state tree could not be snapshotted",
+                .next = readFailedStep(diag.entry.errno),
+            },
+            // An entry whose kind could not be told: `statNoFollow` failing is the
+            // filesystem's answer, and the environment is where that is fixed.
+            error.ClassifyFailed => .{
                 .reason = .state_unsnapshotable,
                 .bare = "the state tree could not be snapshotted",
                 .next = .environment,
@@ -929,6 +968,49 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
     };
 }
 
+/// The few errno values a snapshot refusal is likely to carry, spelled the way `man 2
+/// open` spells them, so the operator does not have to look the number up; anything
+/// else stays a number. Not `@errorName`: that would tie a message to a Zig identifier.
+fn errnoName(en: c_int) []const u8 {
+    if (en == posix.EACCES) return " EACCES";
+    if (en == posix.EPERM) return " EPERM";
+    if (en == posix.ENOENT) return " ENOENT";
+    if (en == posix.EIO) return " EIO";
+    if (en == posix.ELOOP) return " ELOOP";
+    return "";
+}
+
+test "a snapshot refusal for an unreadable entry names it, and the errno only when one was measured (#535)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var diag: engine.SnapshotDiag = .{};
+    diag.entry.rel.set("m_inmail.6c3e.69");
+    diag.entry.kind = .file;
+    diag.entry.errno = posix.EACCES;
+    const with = snapshotDetail(a, error.ReadFailed, "could not snapshot a crashed state", &diag);
+    try std.testing.expect(std.mem.indexOf(u8, with, "m_inmail.6c3e.69 could not be read (file; errno ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, with, " EACCES)") != null);
+    // No measured errno: the entry is still named, and no number is invented.
+    diag.entry.errno = null;
+    diag.entry.kind = .symlink;
+    const without = snapshotDetail(a, error.ReadFailed, "could not snapshot a crashed state", &diag);
+    try std.testing.expect(std.mem.indexOf(u8, without, "m_inmail.6c3e.69 could not be read (symlink)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, without, "errno") == null);
+    // An entry that could not be classified is named too, with no errno clause.
+    diag.entry.kind = .unclassified;
+    const cls = snapshotDetail(a, error.ClassifyFailed, "could not snapshot a crashed state", &diag);
+    try std.testing.expect(std.mem.indexOf(u8, cls, "m_inmail.6c3e.69 could not be classified") != null);
+    try std.testing.expect(std.mem.indexOf(u8, cls, "errno") == null);
+    // A diag nobody filled keeps the old sentence rather than naming an empty path.
+    var empty: engine.SnapshotDiag = .{};
+    const bare = snapshotDetail(a, error.ReadFailed, "could not snapshot a crashed state", &empty);
+    try std.testing.expectEqualStrings("could not snapshot a crashed state: a file or symlink inside the state tree could not be read", bare);
+    // The names the table knows, and a number it does not.
+    try std.testing.expectEqualStrings(" EACCES", errnoName(posix.EACCES));
+    try std.testing.expectEqualStrings("", errnoName(12345));
+}
+
 /// What the operator is told, beyond which snapshot failed.
 ///
 /// Sentences rather than error names: `@errorName` appears nowhere in this codebase, and
@@ -954,9 +1036,9 @@ fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) 
 fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const u8, diag: *engine.SnapshotDiag) []const u8 {
     return switch (e) {
         error.FileTooLarge => if (diag.file.size) |sz|
-            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment"
+            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel.get()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment"
         else
-            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment",
+            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel.get()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment",
         // Says which of two things the numbers describe, because they are the prefix the
         // walk had read when the ceiling broke and not the tree — `TreeTooLargeDiag`
         // records why the honest answer is to point at `du`/`find` rather than to keep
@@ -974,8 +1056,23 @@ fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const 
         // path of exactly this many bytes already fails: "at least", not "longer than",
         // for the same reason `max_depth`'s message says "deeper than" and not "cap".
         error.PathTooLong => std.fmt.allocPrint(ja, "{s}: the state root and an entry inside it spell a path of at least {d} bytes, which is the limit the snapshot can hold", .{ what, contract.max_path }) catch what,
-        error.ReadFailed => std.fmt.allocPrint(ja, "{s}: a file or symlink inside the state tree could not be read", .{what}) catch what,
-        error.ClassifyFailed => std.fmt.allocPrint(ja, "{s}: an entry inside the state tree could not be classified as a file, directory or symlink", .{what}) catch what,
+        // The entry is named when the walk recorded it (#535) — always, on the paths that
+        // reach here — and the errno only when a call actually failed with one:
+        // `readWholeDiag` leaves it null for a descriptor that was not a regular file.
+        error.ReadFailed => blk: {
+            const rel = diag.entry.rel.get();
+            if (rel.len == 0) break :blk std.fmt.allocPrint(ja, "{s}: a file or symlink inside the state tree could not be read", .{what}) catch what;
+            const kind: []const u8 = if (diag.entry.kind == .symlink) "symlink" else "file";
+            if (diag.entry.errno) |en| {
+                break :blk std.fmt.allocPrint(ja, "{s}: {s} could not be read ({s}; errno {d}{s})", .{ what, textShown(ja, rel), kind, en, errnoName(en) }) catch what;
+            }
+            break :blk std.fmt.allocPrint(ja, "{s}: {s} could not be read ({s})", .{ what, textShown(ja, rel), kind }) catch what;
+        },
+        error.ClassifyFailed => blk: {
+            const rel = diag.entry.rel.get();
+            if (rel.len == 0) break :blk std.fmt.allocPrint(ja, "{s}: an entry inside the state tree could not be classified as a file, directory or symlink", .{what}) catch what;
+            break :blk std.fmt.allocPrint(ja, "{s}: {s} could not be classified as a file, directory or symlink", .{ what, textShown(ja, rel) }) catch what;
+        },
         // Not the operator's tree. Say so, or they go looking through their own files for
         // a broken invariant of ours.
         error.EntriesNotSortedUnique => std.fmt.allocPrint(ja, "{s}: the snapshot's own entry list came out unsorted or holding duplicates — that is a defect in sideeye, not in the state tree", .{what}) catch what,
@@ -2165,10 +2262,10 @@ const SpawnPhase = enum {
 
 /// The phase the snapshot cap reads (#330). A *variable* rather than an argument
 /// threaded through `snapshotOrRefuse`, and the difference is what can be verified:
-/// `snapshotOrRefuse` has five call sites, one before the recording run and four at or
-/// past it, and an acceptance leg can only reach one of the four. Passed as an argument,
-/// the other three could name the wrong phase and every check in the tree would stay
-/// green. Assigned once, immediately before the recording run, a per-site mistake is not
+/// `snapshotOrRefuse` has one call site before the recording run and the rest at or
+/// past it, and an acceptance leg can only reach one of the later ones. Passed as an
+/// argument, the others could name the wrong phase and every check in the tree would
+/// stay green. Assigned once, immediately before the recording run, a per-site mistake is not
 /// representable at all — what remains is where the single assignment sits, and the two
 /// legs bound that from both sides: move it above the initial snapshot and check 2fc goes
 /// red, delete it and check 2fd does. **They bound an interval, not a point** — measured,
@@ -2176,7 +2273,7 @@ const SpawnPhase = enum {
 /// green because nothing between reads the variable. What is pinned is that the
 /// assignment lies after the initial snapshot and at or before the final one.
 ///
-/// A *sixth* call site added above this assignment would be misread, and no check would
+/// Another call site added above this assignment would be misread, and no check would
 /// say so — the same gap `answerForOversizedTrace` states for its own sites: caught in
 /// review, not by the compiler.
 var run_phase: SpawnPhase = .before_exploration;

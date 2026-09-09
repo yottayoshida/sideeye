@@ -8,6 +8,7 @@
 //! have been a cycle, which #491 names as the point to stop (ADR 0047).
 
 const std = @import("std");
+const contract = @import("contract");
 const posix = @import("../posix.zig");
 
 const Allocator = std.mem.Allocator;
@@ -38,6 +39,12 @@ pub const ReadWholeError = error{ OutOfMemory, ReadFailed, FileTooLarge };
 /// declines to inherit.
 pub const LinkPolicy = enum { follow, refuse };
 
+/// The one place errno is read for a caller (#535): the first statement after a failed
+/// libc call, before anything else can run.
+fn captureErrno(eo: ?*?c_int) void {
+    if (eo) |p| p.* = std.c._errno().*;
+}
+
 /// The cap is a parameter for the same reason readLinkTarget's buffer is one: against
 /// the production constant a test would need a 64 MiB fixture to see the refusal fire,
 /// so the boundary would be a claim nobody falsifies — against a small cap the tests
@@ -46,13 +53,29 @@ pub const LinkPolicy = enum { follow, refuse };
 /// refusal that names the file wants to name its size, and the read loop stopped
 /// before it could know. `links` is documented on `LinkPolicy` above.
 pub fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy) ReadWholeError![]const u8 {
+    return readWholeDiag(arena, path, max, size_out, links, null);
+}
+
+/// `readWhole` with one more answer for a caller that has to say *why* a read failed
+/// (#535): `errno_out`, when given, receives the errno of the libc call that failed —
+/// `open`, `lseek` or `read` — read immediately after that call and before anything
+/// else runs, so the `defer close` on the way out cannot overwrite it. It stays null
+/// when nothing failed and when the refusal was not a failed call: a descriptor that
+/// turned out not to be a regular file, or `kindOfFd` refusing (a raw `statx` on Linux,
+/// which never touches libc's errno; `fstat` on Darwin does, and nothing reads it there).
+/// A number nobody measured must not reach a message.
+pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy, errno_out: ?*?c_int) ReadWholeError![]const u8 {
+    if (errno_out) |eo| eo.* = null;
     const flags: c_int = posix.O_RDONLY | posix.O_NONBLOCK |
         @as(c_int, switch (links) {
             .follow => 0,
             .refuse => posix.O_NOFOLLOW,
         });
     const fd = posix.open(path, flags, @as(c_uint, 0));
-    if (fd < 0) return error.ReadFailed;
+    if (fd < 0) {
+        captureErrno(errno_out);
+        return error.ReadFailed;
+    }
     defer _ = posix.close(fd);
 
     // Nothing that is not a regular file may reach the loop below (#400). The loop reads
@@ -89,7 +112,10 @@ pub fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*
     // entry is the shape a state tree of many small files is made of.
     const reserve_from = posix.lseek(fd, 0, posix.SEEK_END);
     if (reserve_from > 0) {
-        if (posix.lseek(fd, 0, posix.SEEK_SET) < 0) return error.ReadFailed;
+        if (posix.lseek(fd, 0, posix.SEEK_SET) < 0) {
+            captureErrno(errno_out);
+            return error.ReadFailed;
+        }
         const len: usize = @intCast(reserve_from);
         // Past the cap the read stops one chunk over it, so that is all it can need.
         //
@@ -105,7 +131,10 @@ pub fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*
     }
     while (true) {
         const n = posix.read(fd, &chunk, chunk.len);
-        if (n < 0) return error.ReadFailed;
+        if (n < 0) {
+            captureErrno(errno_out);
+            return error.ReadFailed;
+        }
         if (n == 0) break;
         try list.appendSlice(arena, chunk[0..@intCast(n)]);
         if (list.items.len > max) {
@@ -159,4 +188,33 @@ test "readWhole classifies the descriptor before the loop, and /dev/zero is what
     const got = try readWhole(arena_state.allocator(), path_z.ptr, 4096, null, .follow);
     try std.testing.expectEqualStrings(bytes, got);
     _ = posix.unlink(path_z.ptr);
+}
+
+test "readWholeDiag: a file this user cannot open reports the open's errno; a directory reports none (#535)" {
+    if (posix.geteuid() == 0) return error.SkipZigTest; // root reads mode 0000
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var dbuf: [contract.max_path]u8 = undefined;
+    const dir = std.fmt.bufPrintZ(&dbuf, "/tmp/sideeye-readdiag-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(dir.ptr, 0o755);
+    var fbuf: [contract.max_path]u8 = undefined;
+    const lock = std.fmt.bufPrintZ(&fbuf, "{s}/lock", .{dir}) catch unreachable;
+    const fd = posix.open(lock.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o000));
+    try std.testing.expect(fd >= 0);
+    _ = posix.close(fd);
+    defer {
+        _ = posix.unlink(lock.ptr);
+        _ = posix.rmdir(dir.ptr);
+    }
+    // The failed call is `open`, and its errno is what the caller gets.
+    var err: ?c_int = 99;
+    try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, lock.ptr, 4096, null, .follow, &err));
+    try std.testing.expectEqual(@as(?c_int, posix.EACCES), err);
+    // A directory opens, then fails the regular-file check: no call failed, no errno.
+    err = 99;
+    try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, dir.ptr, 4096, null, .follow, &err));
+    try std.testing.expectEqual(@as(?c_int, null), err);
+    // The plain form still reads what it always read.
+    try std.testing.expectError(error.ReadFailed, readWhole(arena, lock.ptr, 4096, null, .follow));
 }
