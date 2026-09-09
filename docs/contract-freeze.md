@@ -82,6 +82,23 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    a sweep re-reads the surfaces and moves the pin in one commit. **The rule for
    1.x is still unchanged**, and a third member would need a third ruling; two
    is not a pattern that grants the next one.
+
+   **A second closed set, 2026-09-09 (#518, ADR 0057).** `setup_error_reason`
+   is a new optional field, which the additive allowance covers, and its
+   values are a closed set of five classes, which the allowance does not
+   speak to — so this paragraph does. The set is closed by name from the
+   release that carries it: a class added afterwards is the same break the
+   `unknown_reason` amendments above record, and needs its own ruling. It is
+   held to `contract.SetupErrorReason` by `spike/check-report-schema.py` in
+   both directions and by the acceptance suite's scan of every SETUP_ERROR
+   report it leaves behind. The MCP text block's first line carries the class
+   the way it carries `unknown_reason` — `SETUP_ERROR (setup_failed):` where it
+   read `SETUP_ERROR:` — a byte-visible change to prose the freeze does not
+   cover, named here so nobody has to discover it. The freeze audit has no extraction for it yet
+   (`spike/freeze-audit/surface-sets.sh` names six sets); the next sweep adds
+   one and pins it in the same commit, as `docs/freeze-audit.md` says. Two
+   integer fields ride beside it, `setup_exit_code` and `setup_signal`, plain
+   additive fields.
    **Amended 2026-09-08: this promise was broken a third time, deliberately, by
    owner ruling — and this one is a REMOVAL, not an addition.**
    `oracle_verified_across_runs` is gone. It was set under `--observe syscalls`,

@@ -8,7 +8,8 @@ Five claims, each enforced:
      first cell backticks the field name);
   2. every documented field appears in at least one given report — a row that
      nothing generates is a claim nobody measured;
-  3. the doc's closed unknown_reason set equals the contract's enum, exactly;
+  3. the doc's closed unknown_reason set equals the contract's enum, exactly — and
+     the same for setup_error_reason (#518), the second closed set;
   4. the contract version the doc names is the one the code speaks;
   5. every prose value the JSON report carries is read from the same place the text
      report reads it, never built again inside the JSON writer (#280).
@@ -69,19 +70,26 @@ def main():
     # names ([a-z0-9_]: l0/l2-class names carry digits; the first version of
     # the FIELD regex dropped them, and the enum regex repeated that mistake
     # 14 lines later — caught in review, not by the author).
-    m = re.search(r"UnknownReason = enum \{(.*?)\n\};", zig, re.S)
-    if not m:
-        sys.exit("could not find the UnknownReason enum in %s" % zig_path)
-    enum_values = set(re.findall(r"^    ([a-z0-9_]+),", m.group(1), re.M))
-    para = re.search(r"`unknown_reason` values \(closed set[^)]*\):(.*?)\n\n", md, re.S)
-    if not para:
-        problems.append("the doc has no '`unknown_reason` values (closed set...)' paragraph")
-    else:
+    # Both closed sets, one comparison each and one shape (#518 added the second). The
+    # paragraphs are keyed on the field name, and the SETUP_ERROR one sits after the other
+    # so claim 4's first-match version anchor keeps reading the older paragraph.
+    def closed_set(enum_name, field):
+        m = re.search(r"%s = enum \{(.*?)\n\};" % enum_name, zig, re.S)
+        if not m:
+            sys.exit("could not find the %s enum in %s" % (enum_name, zig_path))
+        enum_values = set(re.findall(r"^    ([a-z0-9_]+),", m.group(1), re.M))
+        para = re.search(r"`%s` values \(closed set[^)]*\):(.*?)\n\n" % field, md, re.S)
+        if not para:
+            problems.append("the doc has no '`%s` values (closed set...)' paragraph" % field)
+            return
         doc_values = set(re.findall(r"`([a-z0-9_]+)`", para.group(1)))
         if doc_values != enum_values:
-            problems.append("unknown_reason drift — doc-only: %s; enum-only: %s"
-                            % (sorted(doc_values - enum_values) or "-",
+            problems.append("%s drift — doc-only: %s; enum-only: %s"
+                            % (field, sorted(doc_values - enum_values) or "-",
                                sorted(enum_values - doc_values) or "-"))
+
+    closed_set("UnknownReason", "unknown_reason")
+    closed_set("SetupErrorReason", "setup_error_reason")
 
     # Claim 4. This drifted for real — v8 shipped while the page still said "v7
     # today" — and claims 1-3 stayed green because none of them read the version

@@ -348,6 +348,19 @@ buys — the row landing earlier — the next sweep buys again anyway. **(A) is
 taken.** (B) is recorded because it is the shape to move to if
 `spike/freeze-audit/` ever stops being sweep-owned.
 
+**For the next sweep (#518, 2026-09-09):** the report gained a second closed set,
+`setup_error_reason` (five classes, `contract.SetupErrorReason`, ADR 0057). No
+extraction exists for it — `spike/freeze-audit/surface-sets.sh` still names six
+sets — so the surface-drift rungs do not see it, and a set added to `SETS` before
+the pin holds it fails the gate outright (the pin side extracts empty). The sweep
+that next re-reads the surfaces adds the extraction and the pin in the same
+commit, and records the set's birth in `surface-changes.tsv` the way `sc-18` is
+meant to record `state_changed_unaccounted` (that row is not in the ledger yet
+either — the ledger ends at `sc-17`, as `docs/contract-freeze.md` says). Until then the set is held by
+`spike/check-report-schema.py` (page ↔ enum, both directions) and by the
+acceptance suite's scan of every SETUP_ERROR report it leaves behind — measured on
+every CI run, unlike this audit.
+
 ## Every open issue, classified
 
 Classes, per #86's amendment and no longer restricted to touchers (see the

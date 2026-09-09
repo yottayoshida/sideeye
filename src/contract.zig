@@ -943,6 +943,55 @@ pub const UnknownReason = enum {
     }
 };
 
+/// Why the engine could not get what it needed (#518, ADR 0057) — the machine-readable half
+/// of a `SETUP_ERROR`, beside the `message` a reader gets. **Classes, not branches**: unlike
+/// `UnknownReason`, whose members are one-to-one with the sites that raise them, these five
+/// are what a caller can branch on — was it my define, my setup, this machine, or Sideeye —
+/// and a site is assigned by the rule written on each member, not by its wording. `main.zig`'s
+/// `setupError` takes one as a required argument, so a site that names none does not compile;
+/// a site that funnels several failures chooses by an exhaustive `switch` on what it holds.
+///
+/// The set is closed by name from the release that carries it (`docs/contract-freeze.md`
+/// surface 2): a member added later is the same break the page records for `unknown_reason`.
+/// A site the rule cannot place is a reason to doubt the rule before adding a member.
+pub const SetupErrorReason = enum {
+    /// The refusal is about what the define *says* and could have been raised from its text
+    /// and its declared values alone: a flag the mode refuses, an option missing its value,
+    /// an empty command, a marker too long, a toml or case file that does not parse or
+    /// declares the wrong version, a path spelled longer than the engine can hold, two
+    /// declared paths that overlap (`--work` inside `--state`). Resolving a path the define
+    /// names is the machine's answer, not the define's — that is `environment`.
+    define_invalid,
+    /// `--setup` was handed to `exec` and ended badly: exited non-zero, was killed by a
+    /// signal, or ended in a status `waitpid` did not decode. An image that could not be
+    /// executed at all arrives here too, as the child's `_exit(127)` after the failed `exec`
+    /// (measured: a `--setup` path that does not exist reports exit code 127) — and a child
+    /// the fork stub could not arrange before `exec` as its `_exit(126)`, with a stderr line
+    /// naming the call and errno. `posix.SpawnError` has no exec member. The
+    /// report carries the status as `setup_exit_code` or `setup_signal`; neither for the
+    /// undecoded shape, where `message` quotes the raw number.
+    setup_failed,
+    /// The engine asked the machine for something and was refused: memory, a path that
+    /// would not resolve, a file it could not open, read back or create (captures, the
+    /// oracle's account, the demo's scratch), a process it could not fork or wait for, a
+    /// privilege (`sudo` for `fs_usage`), a tool (a C compiler for the demo), the state tree
+    /// it could not snapshot or rewrite before exploration, an apparatus entry the
+    /// environment does not carry.
+    environment,
+    /// What the define asks for does not exist on this platform or kernel: `--oracle-fs-usage`
+    /// off macOS, `--observe syscalls` off Linux or on a kernel that refuses
+    /// `SECCOMP_RET_TRAP`, a shim built without the filter, `apparatus preload:` on macOS,
+    /// which has no global preload file.
+    platform_unsupported,
+    /// The engine contradicted itself — an invariant of its own that did not hold. Not the
+    /// define's, not the machine's; file it.
+    internal,
+
+    pub fn name(self: SetupErrorReason) []const u8 {
+        return @tagName(self);
+    }
+};
+
 /// What the operator does next about a refusal (#274). Every UNKNOWN carries one — the
 /// report's `next_step` field and the text report's `next` line are the same sentence,
 /// rendered once — and `main.zig`'s `unknown()` takes it as a required argument, so a
