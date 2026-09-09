@@ -3530,7 +3530,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // The bound counts what fs_usage prints, not what the caller typed: the data
         // volume's firmlink prefix and the sentinel's own name ride on every line.
         if (state_abs.len > fsu_sentinel_max_root)
-            setupError("--oracle-fs-usage cannot scope a state directory this deep: fs_usage prints pathnames with the data volume's firmlink prefix (20 bytes) and cuts long ones from the left at a display cap measured at 144, 153 and 156 bytes, and the sentinel's own name takes 40, so the state root must be 96 bytes or fewer (on a machine with the smallest cap, roots over 84 fail the handshake with missing_sentinel instead). Use a shorter --state path");
+            setupError("--oracle-fs-usage cannot scope a state directory this deep: fs_usage prints pathnames with the data volume's firmlink prefix (20 bytes) and cuts long ones from the left at a display cap measured at 144, 153 and 156 bytes, and the sentinel's own name takes 40, so the state root must be 96 bytes or fewer (under a smaller cap a root over 84 passes here and is refused at the handshake or as missing_sentinel instead, never judged). Use a shorter --state path");
         const pair = fsUsageSentinels(state_abs, &fsu_sentinel_a_buf, &fsu_sentinel_b_buf) orelse
             setupError("could not name the fs_usage sentinels: either getentropy refused to supply the eight bytes each name is drawn from, or the state path plus 40 bytes did not fit the path buffer; refusing to start an observer whose sentinel a target could name");
         fsu_sentinel_a = pair.a;
@@ -5609,13 +5609,16 @@ fn findShim(arena: std.mem.Allocator) []const u8 {
 /// and cuts long ones from the left at a display cap measured at 144, 153 and 156 on
 /// two machines; the sentinel's own name below is `/.sideeye-fsusage-close.` (24) plus
 /// sixteen hex digits. 156 − 20 − 40 = 96: the bound fits the largest measured cap, and
-/// has since it was set (the arithmetic was not written down then; it is now). On a
-/// machine with the smallest cap a root over 84 passes this check and fails the
-/// handshake instead — the opening name fits at 144 and the closing one, a byte
-/// longer, is cut — refusing `missing_sentinel`, never judging. Kept at the largest
-/// cap by owner ruling (2026-09-09): roots between 85 and 96 work on the machines this
-/// was measured on, and the smaller cap refuses rather than misjudges. A root the
-/// caller already spelled with the prefix is charged for it twice; accepted.
+/// has since it was set (the arithmetic was not written down then; it is now). Under a
+/// smaller cap a root over 84 passes this check and is refused later, at the handshake
+/// (the cut opening name never matches) or as `missing_sentinel` (the closing name a
+/// byte longer than the opening one is the one cut) — never judged. Kept at the largest
+/// cap by owner ruling (2026-09-09): under that cap every root up to 96 works, and the
+/// smaller caps refuse rather than misjudge. With the pid gone the name grew from about
+/// thirty bytes to forty, so the root a smaller cap tolerates shrank by about ten. A
+/// root the caller already spelled with the prefix is charged for it twice; whether a
+/// root on another volume (`/Volumes/...`) is printed with a prefix at all is not
+/// measured — it is charged the twenty either way, which refuses rather than misjudges.
 const fsu_sentinel_max_root: usize = 156 - 20 - 40;
 
 const SentinelPair = struct { a: []const u8, b: []const u8 };
@@ -5667,10 +5670,10 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
     // The next run draws again: the same state root, different names, both of them.
     try std.testing.expect(!std.mem.eql(u8, p1.a, p2.a));
     try std.testing.expect(!std.mem.eql(u8, p1.b, p2.b));
-    // The printed-length arithmetic the bound above rests on: name = root + 40, and
-    // 20 + 96 + 40 is the largest measured cap.
+    // The printed-length arithmetic the bound above rests on: the opening name is
+    // root + 39, the closing one root + 40 (a byte longer — the one a cap cuts first).
+    try std.testing.expectEqual("/tmp/st".len + 39, p1.a.len);
     try std.testing.expectEqual("/tmp/st".len + 40, p1.b.len);
-    try std.testing.expectEqual(@as(usize, 156 - 20), fsu_sentinel_max_root + 40);
 }
 
 /// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete

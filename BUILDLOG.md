@@ -34,13 +34,19 @@ cap is measured on what `fs_usage` prints: the data volume's firmlink prefix
 (`/System/Volumes/Data`, 20 bytes — the shape of `capturesPath`'s own measured line)
 rides on every path. The plan read that as "the bound of 96 counts neither the prefix nor
 the name, tighten it to 84"; the implementation's first reader read the numbers back:
-96 = 156 − 20 − 40 exactly, the largest of the three measured caps, and roots between
-85 and 96 pass on two of the three machines — the tightening would have refused runs
-that work on the owner's own laptop, and the plan's "already failing by timeout" was false
-there. Kept at 96 by owner ruling; the arithmetic now lives beside the constant, and the
-refusal for a deeper root names the three caps and what happens under the smallest
-(`missing_sentinel`, not a timeout: the opening name fits at 144 and the closing one, a
-byte longer, does not). The same reader found the helper's insertion had taken
+96 = 156 − 20 − 40 exactly, the largest of the three measured caps (two machines: the
+runner gave 144 and 153, the laptop 156), and under the largest every root up to 96
+passes — the tightening would have refused runs that work on the owner's own laptop, and
+the plan's "already failing by timeout" was false there. Kept at 96 by owner ruling; the
+arithmetic now lives beside the constant, and the refusal for a deeper root names the
+three caps and what a smaller one does. The confirming reader then caught the correction
+overshooting: "refuses `missing_sentinel`" is true at one root (85 under 144, where the
+opening name fits and the closing one is cut) and the handshake times out for the rest,
+so the four places say "at the handshake or as `missing_sentinel`, never judged" — and
+"two of three machines" was two of three caps. Two things named that were not: the name
+grew from about thirty bytes to forty with the pid gone, so the root a smaller cap
+tolerates shrank by about ten; and whether a root on another volume is printed with the
+firmlink prefix is not measured (it is charged the twenty either way). The same reader found the helper's insertion had taken
 `shellSingleQuote`'s doc comment with it, that the null from `fsUsageSentinels` has two
 causes where the message named one, and that a sentinel a killed run leaves behind no
 longer collides with the next run — a behaviour change the ADR and the CHANGELOG now

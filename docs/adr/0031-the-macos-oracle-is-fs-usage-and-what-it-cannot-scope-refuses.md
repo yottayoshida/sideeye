@@ -129,9 +129,12 @@ thread, as before. The strace oracle has no liveness handshake to forge — stra
 the target, so `exec` is the proof. The bound on the state root's depth stays at 96
 bytes, and its arithmetic is written where it lives: the display cap is measured on what
 `fs_usage` prints — the data volume's 20-byte firmlink prefix, the root, the sentinel's
-40 — at 144, 153 and 156 bytes on the machines measured, and 96 fits the largest; on the
-smallest, a root over 84 passes the check and the closing sentinel's line is cut, so the
-run refuses `missing_sentinel` rather than judging.)
+40 — at 144, 153 and 156 bytes across the two machines measured, and 96 fits the largest;
+under a smaller cap a root over 84 passes the check and is refused later, at the
+handshake or as `missing_sentinel`, never judged. The name grew from about thirty bytes
+to forty with the pid gone, so the root a smaller cap tolerates shrank by about ten.
+Whether a root on another volume is printed with the firmlink prefix is not measured; it
+is charged the twenty bytes either way.)
 
 Drops inside the window are fail-safe in the direction that matters: a line the shim
 recorded and the kernel lost becomes a divergence and a refusal, never a false
