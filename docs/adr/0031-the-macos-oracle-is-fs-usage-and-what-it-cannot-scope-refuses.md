@@ -106,6 +106,36 @@ whose pre-signal observation says it was still running (a `-t` expiry means the 
 closed early, and refuses); and both sentinels removed before anything judges the
 state.
 
+(**Narrowed 2026-09-09, #549.** The sentinels' names are drawn from entropy per run, one
+draw each — `.sideeye-fsusage-open.<16 hex>` and `…-close.<16 hex>` — where they used to
+carry the engine's pid, which a child derives with `getppid`. `fs_usage` prints names raw,
+so a target that knows a sentinel's name can put a grammatical line naming it into the
+capture through a file name holding a newline; the closing sentinel is what proves the
+observer survived the recording, and its name is born after the target has exited: while
+the target runs it is nowhere the target or its children can read — in particular not
+the state directory, not the capture file, not the observer's argv. The opening name is
+not a secret: it is in the capture from the moment the handshake passes, and the capture
+is the engine's own file the target can read; forging a line for it buys nothing, because
+the real one is already there. What this does not close: a process that outlives the
+target and watches the state directory — an orphaned child, an earlier run's daemon —
+sees the closing sentinel when it is created, and by then the real line is in the capture
+too, and an observer that had already died is refused by the stop's own observation. Two
+things the pid used to do that entropy does differently: two concurrent explores over one
+state directory are still told apart, and a sentinel a killed run left behind no longer
+collides with the next run's `O_EXCL` — it stays in the state directory and enters that
+run's initial snapshot like any other file, where the pid-named one refused by name. The
+account's exclusion of sentinel lines in the second pass looks at the path and not the
+thread, as before. The strace oracle has no liveness handshake to forge — strace wraps
+the target, so `exec` is the proof. The bound on the state root's depth stays at 96
+bytes, and its arithmetic is written where it lives: the display cap is measured on what
+`fs_usage` prints — the data volume's 20-byte firmlink prefix, the root, the sentinel's
+40 — at 144, 153 and 156 bytes across the two machines measured, and 96 fits the largest;
+under a smaller cap a root over 84 passes the check and is refused later, at the
+handshake or as `missing_sentinel`, never judged. The name grew from about thirty bytes
+to forty with the pid gone, so the root a smaller cap tolerates shrank by about ten.
+Whether a root on another volume is printed with the firmlink prefix is not measured; it
+is charged the twenty bytes either way.)
+
 Drops inside the window are fail-safe in the direction that matters: a line the shim
 recorded and the kernel lost becomes a divergence and a refusal, never a false
 agreement. Two residues are disclosed rather than closed. A drop coinciding exactly

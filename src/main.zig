@@ -3509,11 +3509,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var fsu_pid: ?c_int = null;
     var fsu_sentinel_a_buf: [contract.max_path]u8 = undefined;
     var fsu_sentinel_b_buf: [contract.max_path]u8 = undefined;
-    // The engine's own pid is in the name, and both are created O_EXCL. A fixed name
-    // would truncate a state file that happened to carry it — and a failed handshake
-    // exits before the initial snapshot is restored, so the loss would be permanent.
-    // O_EXCL makes the overwrite unmakeable rather than detected, and the pid keeps two
-    // concurrent explores over one state directory from colliding with each other.
+    // Each name carries sixteen hex digits of its own entropy (#549), and both are
+    // created O_EXCL. A fixed name would truncate a state file that happened to carry it
+    // — and a failed handshake exits before the initial snapshot is restored, so the
+    // loss would be permanent. O_EXCL makes the overwrite unmakeable rather than
+    // detected; the entropy keeps two concurrent explores over one state directory from
+    // colliding, which the engine's pid used to do, and keeps the closing name out of a
+    // target's reach, which the pid could not (a child derives it with `getppid`).
     // Built inside the flag's own branch. Constructed unconditionally, the suffix would
     // push a state root near `contract.max_path` over the limit on runs that never
     // asked for this observer — a behaviour change in the path this work promises to
@@ -3521,14 +3523,18 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var fsu_sentinel_a: []const u8 = "";
     var fsu_sentinel_b: []const u8 = "";
     if (args.oracle_fs_usage) {
-        fsu_sentinel_a = std.fmt.bufPrint(&fsu_sentinel_a_buf, "{s}/.sideeye-fsusage-open.{d}", .{ state_abs, posix.getpid() }) catch setupError("path too long");
-        fsu_sentinel_b = std.fmt.bufPrint(&fsu_sentinel_b_buf, "{s}/.sideeye-fsusage-close.{d}", .{ state_abs, posix.getpid() }) catch setupError("path too long");
         // The display cap cuts a pathname from the LEFT (measured: 144, 153 and 156 on
         // two machines), so a state root long enough to be cut takes its own prefix off
         // every line and nothing in the capture can be scoped to it. Checked before the
         // observer starts, so the refusal is a setup error rather than a silent hole.
-        if (state_abs.len > 96)
-            setupError("--oracle-fs-usage cannot scope a state directory this deep: fs_usage cuts long pathnames from the left, so the state root's own prefix would be missing from the capture and no line could be attributed to it. Use a shorter --state path");
+        // The bound counts what fs_usage prints, not what the caller typed: the data
+        // volume's firmlink prefix and the sentinel's own name ride on every line.
+        if (state_abs.len > fsu_sentinel_max_root)
+            setupError("--oracle-fs-usage cannot scope a state directory this deep: fs_usage prints pathnames with the data volume's firmlink prefix (20 bytes) and cuts long ones from the left at a display cap measured at 144, 153 and 156 bytes, and the sentinel's own name takes 40, so the state root must be 96 bytes or fewer (under a smaller cap a root over 84 passes here and is refused at the handshake or as missing_sentinel instead, never judged). Use a shorter --state path");
+        const pair = fsUsageSentinels(state_abs, &fsu_sentinel_a_buf, &fsu_sentinel_b_buf) orelse
+            setupError("could not name the fs_usage sentinels: either getentropy refused to supply the eight bytes each name is drawn from, or the state path plus 40 bytes did not fit the path buffer; refusing to start an observer whose sentinel a target could name");
+        fsu_sentinel_a = pair.a;
+        fsu_sentinel_b = pair.b;
         // 90 seconds, not the ten minutes this first carried. The observer covers the
         // recording run alone — `--oracle` has never watched the crash worlds — and a
         // recording is seconds. `-t` is the insurance against a stop that does not
@@ -5595,6 +5601,79 @@ fn findShim(arena: std.mem.Allocator) []const u8 {
         .unsearchable => setupError("out of memory while looking for the shim"),
     }
     unreachable;
+}
+
+/// The deepest state root `--oracle-fs-usage` accepts, in bytes of the caller's path.
+/// fs_usage prints a pathname with the data volume's firmlink prefix
+/// (`/System/Volumes/Data`, 20 bytes — the shape `capturesPath`'s measured line has)
+/// and cuts long ones from the left at a display cap measured at 144, 153 and 156 on
+/// two machines; the sentinel's own name below is `/.sideeye-fsusage-close.` (24) plus
+/// sixteen hex digits. 156 − 20 − 40 = 96: the bound fits the largest measured cap, and
+/// has since it was set (the arithmetic was not written down then; it is now). Under a
+/// smaller cap a root over 84 passes this check and is refused later, at the handshake
+/// (the cut opening name never matches) or as `missing_sentinel` (the closing name a
+/// byte longer than the opening one is the one cut) — never judged. Kept at the largest
+/// cap by owner ruling (2026-09-09): under that cap every root up to 96 works, and the
+/// smaller caps refuse rather than misjudge. With the pid gone the name grew from about
+/// thirty bytes to forty, so the root a smaller cap tolerates shrank by about ten. A
+/// root the caller already spelled with the prefix is charged for it twice; whether a
+/// root on another volume (`/Volumes/...`) is printed with a prefix at all is not
+/// measured — it is charged the twenty either way, which refuses rather than misjudges.
+const fsu_sentinel_max_root: usize = 156 - 20 - 40;
+
+const SentinelPair = struct { a: []const u8, b: []const u8 };
+
+/// The two fs_usage sentinels for one run (#549): `<state>/.sideeye-fsusage-open.<hex>`
+/// and `<state>/.sideeye-fsusage-close.<hex>`, each from its own eight bytes of entropy.
+/// Two draws, not one shared: the opening name is readable from the capture once the
+/// handshake has passed (the capture is the engine's own file, `0600`, and the target
+/// runs as the same user), so a name derived from it would hand the closing name over
+/// too. The closing name is born after the target has exited and is never in a place
+/// the target or its children can read, which is what makes a forged capture line for
+/// it impossible rather than merely hard. Null when the kernel refuses entropy or a
+/// path does not fit; the caller refuses to start the observer either way.
+fn fsUsageSentinels(state_abs: []const u8, a_buf: *[contract.max_path]u8, b_buf: *[contract.max_path]u8) ?SentinelPair {
+    var hex_a: [16]u8 = undefined;
+    var hex_b: [16]u8 = undefined;
+    const ha = posix.randomHex(&hex_a) orelse return null;
+    const hb = posix.randomHex(&hex_b) orelse return null;
+    const a = std.fmt.bufPrint(a_buf, "{s}/.sideeye-fsusage-open.{s}", .{ state_abs, ha }) catch return null;
+    const b = std.fmt.bufPrint(b_buf, "{s}/.sideeye-fsusage-close.{s}", .{ state_abs, hb }) catch return null;
+    return .{ .a = a, .b = b };
+}
+
+fn isHex16(s: []const u8) bool {
+    if (s.len != 16) return false;
+    for (s) |c| if (!((c >= '0' and c <= '9') or (c >= 'a' and c <= 'f'))) return false;
+    return true;
+}
+
+test "fs_usage sentinels: the shape, two names per run that differ from each other, and a next run that differs from both (#549)" {
+    var a1: [contract.max_path]u8 = undefined;
+    var b1: [contract.max_path]u8 = undefined;
+    var a2: [contract.max_path]u8 = undefined;
+    var b2: [contract.max_path]u8 = undefined;
+    const p1 = fsUsageSentinels("/tmp/st", &a1, &b1) orelse return error.TestUnexpectedResult;
+    const p2 = fsUsageSentinels("/tmp/st", &a2, &b2) orelse return error.TestUnexpectedResult;
+    const open_prefix = "/tmp/st/.sideeye-fsusage-open.";
+    const close_prefix = "/tmp/st/.sideeye-fsusage-close.";
+    try std.testing.expect(std.mem.startsWith(u8, p1.a, open_prefix));
+    try std.testing.expect(std.mem.startsWith(u8, p1.b, close_prefix));
+    const ha = p1.a[open_prefix.len..];
+    const hb = p1.b[close_prefix.len..];
+    try std.testing.expect(isHex16(ha));
+    try std.testing.expect(isHex16(hb));
+    // Independence inside one run: the opening name is readable from the capture, so
+    // the closing name must not be derivable from it. One draw shared by both would
+    // pass every other assertion here.
+    try std.testing.expect(!std.mem.eql(u8, ha, hb));
+    // The next run draws again: the same state root, different names, both of them.
+    try std.testing.expect(!std.mem.eql(u8, p1.a, p2.a));
+    try std.testing.expect(!std.mem.eql(u8, p1.b, p2.b));
+    // The printed-length arithmetic the bound above rests on: the opening name is
+    // root + 39, the closing one root + 40 (a byte longer — the one a cap cuts first).
+    try std.testing.expectEqual("/tmp/st".len + 39, p1.a.len);
+    try std.testing.expectEqual("/tmp/st".len + 40, p1.b.len);
 }
 
 /// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete
