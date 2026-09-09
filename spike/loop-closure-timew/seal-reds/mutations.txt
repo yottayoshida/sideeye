@@ -17,3 +17,6 @@ unauditable-off	rc=1	killed: unauditable
 restore-silent	rc=1	killed: restore-fail 
 always-clean	rc=1	killed: name-unsealed name-mcp-foreign name-off-allowlist name-mcp-nested net-bare net-git net-pkg net-url path-repo path-dotclaude path-tilde docker-nonet docker-mount 
 case-deleted	rc=1	killed: COUNT 
+record-sha-blind	rc=1	killed: record-sha 
+record-torn-blind	rc=1	killed: record-torn 
+finalize-blind	rc=1	killed: finalize-unverified 

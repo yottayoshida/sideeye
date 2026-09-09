@@ -176,7 +176,18 @@ if not model:
 PY
 
 echo ""
-echo "next: judge.sh audit --root $ROOT --transcript $RESULTS/transcript.jsonl"
+# `--record-sha` (#515): the audit reports whether the record it read is the record that
+# was made, and `finalize` refuses a manifest whose audit verified no digest. This
+# launcher does not yet compute the digest as it records — that is #515's other half —
+# so the operator supplies one here, and its value is only as good as this file was.
+echo "next: judge.sh audit --root $ROOT --transcript $RESULTS/transcript.jsonl \\"
+if [ -f "$RESULTS/transcript.jsonl" ]; then
+    echo "        --record-sha $(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$RESULTS/transcript.jsonl")"
+else
+    # No transcript, no digest: printing an empty --record-sha would read as one that
+    # was supplied, and the substitution would put a traceback in the operator's way.
+    echo "        (no transcript at $RESULTS/transcript.jsonl — nothing to digest)"
+fi
 echo "      judge.sh eval  --root $ROOT --mode run"
 echo "      judge.sh secondary --root $ROOT --mode run   (evidence: after eval, which restores; this only verifies)"
 echo "      judge.sh finalize --root $ROOT"

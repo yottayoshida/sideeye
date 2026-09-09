@@ -2,6 +2,69 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-09 — Two designs measured, both false, and a promise cut in half (#515)
+
+The third of the batch. `judge.sh`'s header has carried its own caveat since #63: the
+discipline covers what the judge decides, not the judge's inputs, and "closing that is a
+separate promise, filed rather than claimed here". This change closes half of it and says so.
+
+**The first design was killed by the author's own measurement before the reviewer saw it.**
+Write the transcript to a file whose name has been removed — `exec 3<>tmp; rm tmp; claude …
+>&3 3>&-` — and no path reaches it. Measured on macOS: a walk finds nothing, and the subject
+wiped the record anyway. Its stdout *is* the record; `ftruncate(1, 0)` returned success.
+Closing fd 3 for the child closes fd 3, not fd 1. The adversarial reader of the plan raised
+the same point as its first Critical, independently, and proposed the pipe.
+
+**The second design was killed by the second reader.** Put the record behind a pipe, with a
+recorder process holding the only handle: measured, `ftruncate(1, 0)` then fails `EINVAL`
+and the bytes read back are the bytes written. But the handle now lives in the launcher and
+the recorder, both the same user as the agent, and on Linux `/proc/<recorder>/fd/3` reaches
+the same inode. "Unreachable" would have been a sentence this repository cannot keep on the
+platform its own container runs. The promise moved from unreachability to **detection**,
+which is what the issue actually needs: the audit cannot stop the record being edited, but
+it can refuse to judge a record that was.
+
+**What the second reader found beyond that** is why the PR is half a promise. Making
+`--record-sha` optional — necessary, since the selftest's sixteen audit invocations record
+nothing — reopens the hole it was meant to close: a later, digest-less `audit` overwrites
+`audit.json` with a clean verdict and `finalize` never notices. So the requirement moved to
+`finalize`, and it is a *positive* mark: `record_sha == "verified"`, not the absence of an
+accusing file. The same reader pointed out that marks whose presence voids (`tamper.json`,
+`leftovers.json`) can be deleted by the process they accuse — the same shape as the
+`mcp.json` hole it had found an hour earlier. And it found the one thing a digest cannot
+catch: a line corrupted *inside* the stream is hashed as it arrives, so the sha matches
+while the evidence is gone. `except json.JSONDecodeError: continue` did the rest. That is
+now its own void channel, with `spike/onboarding-clock` as the precedent.
+
+**Measured.** The old judge, handed a transcript with one torn line, prints
+`audit: clean (1 tool calls, 1 bash)` and exits 0. `record-sha-blind` and
+`record-torn-blind` each kill exactly their own case; `always-clean` kills neither, because
+both channels exit ahead of the assembled verdict the way `unauditable` does — re-measured
+rather than assumed, and no count quoted for that older mutation, whose committed row came
+from a different runner. `record-torn-blind` took two tries: the first program targeted a
+line containing `[:120]`, a bracket expression to `sed`, so the copy came back identical —
+a BROKEN mutation, recorded as such.
+
+**The second reader found the half that was about to ship unmeasured.** `finalize`'s new
+demand — a *verified* digest, not the absence of an accusation — is the load-bearing end of
+the promise, and it had no case in the selftest. The reason recorded in this file's own
+header was that `finalize`'s refusals are shell `exit`s, which end the script rather than
+returning to a `|| rc=$?`. That is true of the seal and transcript preconditions and false
+of `finalize`, whose refusal is a `sys.exit` inside a python child — the same shape every
+audit refusal has, and every audit refusal is driven. The reader drove it on four synthetic
+roots to show it. The gate now has a case and a control (`finalize-unverified`,
+`finalize-verified`), a mutation that kills the case alone, and a header that no longer
+misdescribes it. The same reader found that the committed `record-torn-blind` program
+anchored eight leading spaces where the file has four — the loop had moved out of a `with`
+block while the P0 fix was applied and the program was not re-derived — so it was a no-op,
+and `mutations.txt` recorded a kill nobody could reproduce. Second failure of one class in
+one PR, both caught by someone else and both catchable by the `cmp` guard this record's own
+contract asks for.
+
+**What is still false, written where it cannot be missed** (the ADR, the CHANGELOG, the
+header, and the PR): the record lives where the agent can write, and the digest comes from
+the caller. #515 stays open for the launcher half.
+
 ## 2026-09-09 — A SETUP_ERROR that says why, as data (#518)
 
 The second of the batch's three. #483 made a failing `--setup` say `--setup exited 7`,
